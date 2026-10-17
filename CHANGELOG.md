@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Time reader: "the last day of this month", "next month on the 3rd", "a week from friday" and "30 minutes from now" are read as what they say, not as the month, the weekday or nothing.
 - A weekday's place in a month is that day: "the first monday of november", "third friday of october", "the last friday of next month" read as the day they name (they read as the next Monday or Friday), for a reminder and for a note about the past
 - A day offset keeps the time said beside it: "call bob in 2 days at 3pm" fires at 15:00 in two days, not at the hour it was typed (Magic Add and the typed reminder command)
 - A time said aloud is read: "half past 4", "a quarter to five", "ten past 6pm" in a reminder, a note date and a repeat ("every day at half past 7" kept its repeat rule rather than becoming one 19:30 reminder); "from ten to five" and "the 5 to 7 train" stay unread

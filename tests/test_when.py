@@ -236,3 +236,38 @@ def test_a_note_about_the_past_reads_the_month_gone():
 
     assert recognise.span("the first monday of march", date(2026, 9, 21), "past") == (date(2026, 3, 2),) * 2 + ("day",)
     assert recognise.span("the first monday of march", date(2026, 9, 21), "future") == (date(2027, 3, 1),) * 2 + ("day",)
+
+
+@pytest.mark.parametrize(
+    ("phrase", "expected"),
+    [
+        ("the last day of this month", "2026-09-30 09:00"),
+        ("last day of next month", "2026-10-31 09:00"),
+        ("first day of march", "2027-03-01 09:00"),
+        ("next month on the 3rd", "2026-10-03 09:00"),
+        ("the 3rd of next month", "2026-10-03 09:00"),
+    ],
+)
+def test_a_day_named_by_its_month_is_that_day(phrase, expected):
+    """"The last day of this month" read as 1 September, "next month on the
+    3rd" as 1 October: the month was read and the day ignored."""
+    got = when.resolve(phrase, NOW)
+    assert got is not None and got.strftime("%Y-%m-%d %H:%M") == expected, phrase
+
+
+@pytest.mark.parametrize(
+    ("phrase", "expected"),
+    [
+        ("a week from friday", "2026-10-02 09:00"),
+        ("two days from today", "2026-09-23 09:00"),
+        ("a week from today", "2026-09-28 09:00"),
+        ("30 minutes from now", "2026-09-21 16:25"),
+        ("half an hour from now", "2026-09-21 16:25"),
+        ("2 hours from now", "2026-09-21 17:55"),
+    ],
+)
+def test_an_offset_from_a_day_or_from_now_is_read(phrase, expected):
+    """"A week from Friday" read as Friday and "30 minutes from now" was
+    unread: only "in 30 minutes" counted as an offset."""
+    got = when.resolve(phrase, NOW)
+    assert got is not None and got.astimezone(NOW.tzinfo).strftime("%Y-%m-%d %H:%M") == expected, phrase
