@@ -81,3 +81,41 @@ def test_the_dashboard_sky_does_not_parse_a_p5_colour_per_shape():
         assert call not in scene, call
     assert "createLinearGradient" in scene
     assert "washHue" in DASH[start - 600 : start] or "washHue ??=" in scene
+
+
+FRONTEND = JS.parent
+MOTION_SHEET = "motion-still.css"
+CALM = "(prefers-reduced-motion: reduce)"
+
+
+def test_the_still_motion_blankets_are_a_sheet_that_exists_only_while_a_switch_is_on():
+    """Every tab entry restyles hundreds of elements, and the reduced-motion
+    blankets (the OS hint's, `:root[data-motion="reduced"] *:where(:not(...))`
+    with 7 selectors, and the three of `[data-ui-motion="off"]`) were tried
+    against each of them while no switch was on: the subject is
+    `*:where(:not(:is(...) *))`, so each element walked its ancestors before
+    the cheap `:root[...]` test on the far end could reject it. Deleting the
+    four rules of the manual pair took the Library's reveal from 22.6 to 13.3
+    ms of style at 1x on 2,611 styled elements (about 40%). They live in a
+    sheet whose `media` is the OS hint until `data-motion="reduced"` or
+    `data-ui-motion="off"` is set (theme-boot.js before first paint, then
+    `applyAppearance`), so the default state matches none of them."""
+    index = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    link = re.search(
+        r'<link rel="stylesheet" href="/css/%s\?v=[^"]+" media="%s" id="motion-still-sheet">' % (MOTION_SHEET, re.escape(CALM)),
+        index,
+    )
+    assert link, "the still-motion sheet is not linked with the OS hint as its media"
+    chat = '<link rel="stylesheet" href="/css/02-chat-graph.css'
+    assert index.index(chat) < link.start() < index.index('<link rel="stylesheet" href="/css/03-dashboard-widgets.css')
+    base = (FRONTEND / "css" / "02-chat-graph.css").read_text(encoding="utf-8")
+    sheet = (FRONTEND / "css" / MOTION_SHEET).read_text(encoding="utf-8")
+    for selector in (
+        ':root[data-motion="reduced"] *',
+        ':root[data-ui-motion="off"] *',
+        "@media (prefers-reduced-motion: reduce) {\n  *:where(:not(:is(#nm-buddy",
+    ):
+        assert selector in sheet and selector not in base, selector
+    for source in ((JS / "theme-boot.js").read_text(encoding="utf-8"), (JS / "settings.js").read_text(encoding="utf-8")):
+        assert 'getElementById("motion-still-sheet")' in source
+        assert re.search(r'\.media = [^;]*"reduced"[^;]*"off"[^;]*"all" : "%s"' % re.escape(CALM), source)

@@ -27,6 +27,8 @@ CSS_FILES = [
     CSS_DIR / "00-tokens-shell.css",
     CSS_DIR / "01-forms-settings.css",
     CSS_DIR / "02-chat-graph.css",
+    #: Linked right after 02 with media="not all"; on only while a motion switch is.
+    CSS_DIR / "motion-still.css",
     CSS_DIR / "03-dashboard-widgets.css",
     CSS_DIR / "04-chat-dock-appearance.css",
     CSS_DIR / "05-sidebars-themes.css",

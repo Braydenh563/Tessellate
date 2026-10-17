@@ -2150,56 +2150,6 @@ kbd {
   color: var(--muted);
   font-size: var(--text-lg);
 }
-/* Vestibular safety: kill every animation when the OS asks for calm.
-   Except the faces and the companion (avatars.js, atlas.js): their own
-   reduced-motion blocks in 08-consistency.css slow every loop to a calm
-   pace and keep the expression, which is the rule for them (DESIGN.md,
-   "Motion"); this !important kill froze them all mid-frame instead, and
-   the companion's walk is already skipped in script under the same hint.
-   **The exemption is inside `:where()`, and has to stay there** (INBOX 426
-   h). A `:not()` or `:is()` takes the specificity of its most specific
-   argument, so writing it bare made this whole blanket 1,0,0 because of
-   `#nm-buddy`, and a 1,0,0 `!important` beats every `:root ... !important`
-   rule that exists to escape it: the emblem's turn (03-dashboard-widgets.css)
-   and the progress indicators all ran once in 0.01ms and stopped. Measured
-   with the hint on: the emblem's transform identical 500ms apart on the lock
-   screen, the dashboard, the top bar and the chat. `:where()` counts for
-   nothing, so the blanket is a bare `*` again as far as the cascade is
-   concerned. `tests/test_emblem_turns.py` holds it there.
-   The polish set's own animations (a menu's or popover's grow, a toast)
-   are exempt too while Interface animations is on: the owner's switch, not
-   this hint, decides them (DESIGN.md, "Interface animations"); so are the
-   app mark's layers (`.emblem-art *`), which the owner asked to keep moving
-   under the hint and which follow the same switch. */
-@media (prefers-reduced-motion: reduce) {
-  *:where(:not(:is(#nm-buddy, .name-mark, .nm-atlas, .nm-figure), :is(#nm-buddy, .name-mark, .nm-atlas, .nm-figure) *, [data-ui-motion="on"] :is(.action-menu, .dock-menu-list, .help-popover, .toast, .emblem-art *))),
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    scroll-behavior: auto !important;
-  }
-  /* **Transitions are the interface's own switch's** (the owner,
-     2026-10-05): with Interface animations on they play under this hint,
-     so this half applies only while that switch is off, and to the
-     decorative surfaces (the graph, the whiteboard, the companion's parts),
-     which keep the hint whatever the switch says. Zero, not 0.01ms: every
-     element's `transition-property` is `all` unless it says otherwise, so a
-     tiny duration gave every element a real transition on every property,
-     and a rect read straight after a style write was where the element had
-     been. The companion's menu was placed from such a rect, 276 to 565px
-     from it (the owner, several times; `companionmenulow.js`). A zero
-     duration and delay start none; `tests/test_motion_tokens.py` holds it. */
-  :where(:root:not([data-ui-motion="on"])) *:where(:not(:is(#nm-buddy, .name-mark, .nm-atlas, .nm-figure), :is(#nm-buddy, .name-mark, .nm-atlas, .nm-figure) *)),
-  :where(:root:not([data-ui-motion="on"])) *::before,
-  :where(:root:not([data-ui-motion="on"])) *::after,
-  :where(#graph-svg, .graph-minimap, #whiteboard-container) *,
-  :where(#graph-svg, .graph-minimap, #whiteboard-container, #nm-buddy, .name-mark, .nm-atlas, .nm-figure) *::before,
-  :where(#graph-svg, .graph-minimap, #whiteboard-container, #nm-buddy, .name-mark, .nm-atlas, .nm-figure) *::after {
-    transition-duration: 0s !important;
-    transition-delay: 0s !important;
-  }
-}
 /* --- Wave J: generative art + note tools + undo toast --------------------------- */
 .art-holder {
   position: relative;
@@ -2433,36 +2383,6 @@ kbd {
   #note-sort {
     max-width: none;
   }
-}
-/* Manual "reduce motion" override (Appearance): still the animations for
-   people who want a still UI regardless of their OS setting. Transitions
-   follow Interface animations, as under the system hint above: stilled only
-   while that switch is not on, and always on the decorative surfaces. */
-:root[data-motion="reduced"] *:where(:not([data-ui-motion="on"] :is(.action-menu, .dock-menu-list, .help-popover, .toast))),
-:root[data-motion="reduced"] *::before,
-:root[data-motion="reduced"] *::after {
-  animation-duration: 0.001ms !important;
-  animation-iteration-count: 1 !important;
-  scroll-behavior: auto !important;
-}
-:root[data-motion="reduced"]:where(:not([data-ui-motion="on"])) *,
-:root[data-motion="reduced"]:where(:not([data-ui-motion="on"])) *::before,
-:root[data-motion="reduced"]:where(:not([data-ui-motion="on"])) *::after,
-:root[data-motion="reduced"] :where(#graph-svg, .graph-minimap, #whiteboard-container, #nm-buddy, .name-mark, .nm-atlas, .nm-figure),
-:root[data-motion="reduced"] :where(#graph-svg, .graph-minimap, #whiteboard-container, #nm-buddy, .name-mark, .nm-atlas, .nm-figure) *,
-:root[data-motion="reduced"] :where(#graph-svg, .graph-minimap, #whiteboard-container, #nm-buddy, .name-mark, .nm-atlas, .nm-figure) *::before,
-:root[data-motion="reduced"] :where(#graph-svg, .graph-minimap, #whiteboard-container, #nm-buddy, .name-mark, .nm-atlas, .nm-figure) *::after {
-  /* Zero, for the reason written at the system hint's blanket above. */
-  transition-duration: 0s !important;
-  transition-delay: 0s !important;
-}
-/* Interface animations off: every transition of the interface is instant,
-   reduced motion or not; the decorative surfaces keep their own switches. */
-:root[data-ui-motion="off"] *:where(:not(:is(#graph-svg, .graph-minimap, #whiteboard-container, #nm-buddy, .name-mark, .nm-atlas, .nm-figure), :is(#graph-svg, .graph-minimap, #whiteboard-container, #nm-buddy, .name-mark, .nm-atlas, .nm-figure) *)),
-:root[data-ui-motion="off"] *:where(:not(:is(#graph-svg, .graph-minimap, #whiteboard-container, #nm-buddy, .name-mark, .nm-atlas, .nm-figure) *))::before,
-:root[data-ui-motion="off"] *:where(:not(:is(#graph-svg, .graph-minimap, #whiteboard-container, #nm-buddy, .name-mark, .nm-atlas, .nm-figure) *))::after {
-  transition-duration: 0s !important;
-  transition-delay: 0s !important;
 }
 /* **The exception: things that say work is happening.**
    ==================================================================

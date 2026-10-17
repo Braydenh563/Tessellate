@@ -2307,6 +2307,9 @@ function applyAppearance() {
   root.dataset.themePreset = activeThemePreset();
   root.dataset.motion = perf ? "reduced" : appearancePref("motion");
   root.dataset.uiMotion = appearancePref("ui-motion");
+  //: The blankets for these two switches are a sheet that matches only while one is on (motion-still.css).
+  const stillSheet = document.getElementById("motion-still-sheet");
+  if (stillSheet) stillSheet.media = root.dataset.motion === "reduced" || root.dataset.uiMotion === "off" ? "all" : "(prefers-reduced-motion: reduce)";
   //: The Capture box holds its line-number column from first paint when this is on.
   root.dataset.noteGutter = prefs.get("doc-gutter", null) === "1" ? "on" : "off";
   root.dataset.progressMotion = appearancePref("progress-motion");

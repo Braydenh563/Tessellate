@@ -463,7 +463,7 @@ the edge it lives on, and nothing moves to decorate.
   key in prefs.js), and the polish reads the `--ui-*` tokens
   (00-tokens-shell.css: `--ui-fast`, `--ui-base`, `--ui-slow`, `--ui-exit`,
   `--ui-step`), which are the `--motion-*` scale when on and `0s` when off;
-  the reduced-motion blankets in 02-chat-graph.css still the animations but
+  the reduced-motion blankets in motion-still.css (a sheet that matches only while the OS hint or a switch is on) still the animations but
   leave transitions to the switch. **The large decorative motion keeps
   reduced motion and its own settings**: Atlas and the faces, the
   background art, the graph's simulation and the whiteboard (the blankets
