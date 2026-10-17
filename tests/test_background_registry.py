@@ -51,7 +51,6 @@ api/routes_backups.py::export_bundle::request-task::1
 api/routes_import.py::export_notebook_folder::request-task::1
 api/routes_models.py::_installed_or_last_known::thread::1
 api/routes_settings.py::export_backup::request-task::1
-api/routes_settings.py::import_directory::request-task::1
 api/routes_settings.py::restart_app::request-task::1
 api/routes_settings.py::set_console_mode::request-task::1
 api/routes_tasks.py::shutdown::timer::1

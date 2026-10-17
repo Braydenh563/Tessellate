@@ -86,6 +86,26 @@
   line-height: 1;
 }
 
+/* A Japanese emoticon (INBOX 904 B81) is a face of several characters: a wide
+   tile of four cells, one line in the interface font (the system's emoji
+   fonts have no kana), clipped by the tile rather than overflowing it. */
+.icon-picker-tile-wide {
+  grid-column: span 4;
+  aspect-ratio: auto;
+  min-height: var(--control-h);
+  padding-inline: var(--space-1);
+  overflow: hidden;
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+
+.icon-picker-emoji.icon-picker-kaomoji {
+  max-width: 100%;
+  overflow: hidden;
+  font-family: var(--font-sans), "Noto Sans CJK JP", "Yu Gothic", "Hiragino Sans", "MS Gothic", sans-serif;
+  text-overflow: ellipsis;
+}
+
 .icon-picker-more {
   margin-top: var(--space-1);
 }

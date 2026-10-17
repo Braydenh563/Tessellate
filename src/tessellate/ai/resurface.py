@@ -314,6 +314,22 @@ def _relatedness(session: Session, context_entry_id: int, pool: list[Entry]) -> 
     return out
 
 
+def _comparable_vectors(session: Session, pool_ids: list[int], context_entry_id: int) -> dict[int, bytes]:
+    """The stored vectors of the pool and the context note that are the
+    context note's size. Another model's size (a rebuild in progress) cannot
+    be compared: it counts as having no vector rather than raising."""
+    from tessellate.core.database import EmbeddingRecord
+
+    vectors = {
+        row.entry_id: row.embedding
+        for row in session.scalars(
+            select(EmbeddingRecord).where(EmbeddingRecord.entry_id.in_(pool_ids + [context_entry_id]))
+        ).all()
+    }
+    anchor = vectors.get(context_entry_id)
+    return {key: blob for key, blob in vectors.items() if anchor is None or len(blob) == len(anchor)}
+
+
 def for_context(
     session: Session, context_entry_id: int, limit: int = DAILY
 ) -> list[Entry]:
@@ -336,7 +352,6 @@ def for_context(
     Never the context note itself, whatever it scores.
     """
     from tessellate.ai.embeddings import bytes_to_vector, cosine_similarity
-    from tessellate.core.database import EmbeddingRecord
 
     #: Deeper than the vector path once needed, because relatedness now
     #: filters: the most faded 24 of a notebook may hold nothing joined to
@@ -356,14 +371,7 @@ def for_context(
     #: this comprehension had never run a single iteration and the attribute
     #: had never been read. A loop body nothing has entered is not covered by
     #: the test that surrounds it.
-    vectors = {
-        row.entry_id: row.embedding
-        for row in session.scalars(
-            select(EmbeddingRecord).where(
-                EmbeddingRecord.entry_id.in_([entry.id for entry in pool] + [context_entry_id])
-            )
-        ).all()
-    }
+    vectors = _comparable_vectors(session, [entry.id for entry in pool], context_entry_id)
     anchor = vectors.get(context_entry_id)
     if anchor is None:
         # `pool` is already most-faded first and `sorted` is stable, so among

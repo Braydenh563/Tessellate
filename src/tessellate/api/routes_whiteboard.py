@@ -398,6 +398,11 @@ class WhiteboardObjectData(BaseModel):
     #: this node stands for. Only meaningful for `MAP_REFERENCE_KINDS`; a
     #: topic has nothing to point at and leaves it None.
     ref_id: int | None = Field(default=None, ge=1)
+    #: What a reference node says on the map in place of the item's own name
+    #: (B38: "a node that I cant edit"). The tree still resolves the item's
+    #: name, so renaming the note renames every node that has no caption; one
+    #: that was captioned keeps the words its owner chose.
+    caption: str | None = Field(default=None, max_length=120)
     #: A collapsed branch hides its children (Coggle's "tidy on demand"), and
     #: a pinned node keeps the position it was dragged to when the map is
     #: re-laid-out. Both are per-node view state on a node that already

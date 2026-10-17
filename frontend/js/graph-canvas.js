@@ -899,6 +899,10 @@ function gcResize(s = gcTab) {
   const dpr = window.devicePixelRatio || 1;
   if (width === s.dims.w && height === s.dims.h && dpr === s.dpr) return false;
   s.dims = { w: width, h: height };
+  //: Whether this size was read off a laid-out box, not the fallback for one
+  //: never measured (a map drawn while its tab is hidden): the resize
+  //: observer reframes a fallback-sized map at once instead of gliding.
+  s.dimsReal = Boolean(box && box.clientWidth && box.clientHeight);
   s.dpr = dpr;
   s.canvas.width = Math.max(1, Math.round(width * dpr));
   s.canvas.height = Math.max(1, Math.round(height * dpr));
@@ -933,6 +937,7 @@ function gcEnsureCanvas(s = gcTab) {
   if (!s.observer && typeof ResizeObserver !== "undefined") {
     s.observer = new ResizeObserver((entries) => {
       const before = { ...s.dims };
+      const wasReal = s.dimsReal !== false;
       if (!gcResize(s)) {
         if (entries.some((entry) => entry.target.id !== s.boxId && !entry.target.matches(GC_FIT_MENUS))) gcRefitForPanels(s);
         return;
@@ -943,7 +948,7 @@ function gcEnsureCanvas(s = gcTab) {
       //: person moved keeps its middle in the middle, so a panel opening or
       //: closing beside it never leaves the map off to one side.
       if (s.zoom && s.svg && before.w && before.h && s.nodes?.length) {
-        if (!s.userZoomed) fitGraphToView(s.svg, null, s.zoom, s.nodes, s.dims.w, s.dims.h);
+        if (!s.userZoomed) fitGraphToView(s.svg, null, s.zoom, s.nodes, s.dims.w, s.dims.h, !wasReal);
         else s.svg.call(s.zoom.translateBy, (s.dims.w - before.w) / 2 / s.transform.k, (s.dims.h - before.h) / 2 / s.transform.k);
       }
       gcRequestDraw(s);
@@ -1910,8 +1915,20 @@ function gcGlideFinish(s) {
   s.quadtreeDirty = true;
 }
 
+//: **A map on a hidden tab is not drawn.** Leaving Graph stops the worker,
+//: but its last ticks are already on their way and each asks for a frame:
+//: measured, 37 draws and 60 ms (240 ms at 4x CPU) after the press on the
+//: next tab, in the window where that tab's own page is being drawn. The
+//: tab's map only; a local map lives in a panel that decides for itself.
+//: Coming back is `switchTab` -> `renderGraph`, which draws in full.
+function gcTabHidden(s) {
+  if (s.size !== "full") return false;
+  const page = document.getElementById("tab-graph");
+  return !!page && page.classList.contains("hidden");
+}
+
 function gcRequestDraw(s = gcTab) {
-  if (s.drawQueued || !s.ctx) return;
+  if (s.drawQueued || !s.ctx || gcTabHidden(s)) return;
   s.drawQueued = true;
   requestAnimationFrame(() => {
     s.drawQueued = false;
@@ -2055,6 +2072,7 @@ function gcExportPng(scale = 2, s = gcTab) {
 
 function gcDraw(s = gcTab) {
   if (!s.ctx || !s.canvas) return;
+  if (gcTabHidden(s)) return;
   const started = performance.now();
   //: Advanced once, before anything is measured, so every radius in this frame
   //: agrees, and another frame is asked for only while it is still moving.
@@ -3246,6 +3264,13 @@ function gcWireInteraction(s = gcTab) {
     // picked up.
     .filter((event) => {
       if (event.type === "wheel") return true;
+      //: **The wheel pressed down pans from anywhere, over a node too** (B37:
+      //: "pressing down the scroll wheel and dragging sometimes glitches a
+      //: little initially"). Only the primary button was let through, so a
+      //: middle drag moved the camera 1.8px of 93 and the press kept its
+      //: default (Windows' autoscroll circle, below). The node drag declines
+      //: any button but the primary on its own.
+      if (event.button === 1) return true;
       if (event.button) return false;
       // Shift and drag on empty map is the lasso, not a pan.
       if (event.shiftKey) return false;
@@ -3291,6 +3316,16 @@ function gcWireInteraction(s = gcTab) {
       gcRequestDraw(s);
     });
   selection.call(zoom).on("dblclick.zoom", null);
+  //: A middle press that keeps its default starts the page's autoscroll
+  //: (Windows) before the first move; its release is a paste on Linux. The
+  //: board refuses both the same way (`initWhiteboard`).
+  //: Capture, because d3-zoom's own mousedown listener stops the event.
+  s.canvas.addEventListener("mousedown", (event) => {
+    if (event.button === 1) event.preventDefault();
+  }, true);
+  s.canvas.addEventListener("auxclick", (event) => {
+    if (event.button === 1) event.preventDefault();
+  }, true);
 
   // The rest of the app drives zoom through `graphSvg`/`graphZoom`, the
   // +/-/fit buttons, the keyboard, the minimap, saved views, `fitGraphToView`.
@@ -3557,10 +3592,7 @@ function gcWireInteraction(s = gcTab) {
         after: { x: node.fx, y: node.fy },
       });
       if (pins.length) pins.push({ id: node.id, x: node.fx, y: node.fy });
-      else apiJson(`/graph/pin/${node.id}`, {
-        method: "PUT",
-        body: JSON.stringify({ x: node.graph_pin_x, y: node.graph_pin_y }),
-      }).catch(() => {
+      else graphPinSave(node.id, node.graph_pin_x, node.graph_pin_y).catch(() => {
         // Best-effort, exactly as on the SVG path: the placement has
         // already taken effect in memory, so a failed save costs the
         // reload and nothing else.
@@ -3703,10 +3735,7 @@ function gcTogglePin(node, s = gcTab) {
     before: wasPinned ? { x: node.x, y: node.y } : null,
     after: node.graph_pin_x == null ? null : { x: node.graph_pin_x, y: node.graph_pin_y },
   }]);
-  apiJson(`/graph/pin/${node.id}`, {
-    method: "PUT",
-    body: JSON.stringify({ x: node.graph_pin_x, y: node.graph_pin_y }),
-  }).catch(() => {
+  graphPinSave(node.id, node.graph_pin_x, node.graph_pin_y).catch(() => {
   });
 }
 
@@ -4029,6 +4058,12 @@ function gcShowNodeMenu(node, clientX, clientY, s = gcTab) {
       title: "Open this note in the notes list",
       run: () => flashEntry(node.id),
     });
+  } else if (node.type === "attachment" || node.type === "document") {
+    items.push({
+      label: "ph:arrow-square-out Open",
+      title: node.type === "document" ? "Open this document" : "Open this file",
+      run: () => gcOpenNodeTarget(node),
+    });
   }
   items.push({
     label: node.fx != null ? "ph:push-pin-slash Unpin" : "ph:push-pin Pin in place",
@@ -4142,6 +4177,10 @@ function gcClickNode(event, node, s = gcTab) {
     openEntityPage(String(node.id).slice("entity:".length));
     return;
   }
+  //: **A file or a document on the map opens what it stands for** (B73: "Cant
+  //: select on separate attachment nodes in the graph??"). Both fell to the
+  //: line below and a click did nothing at all.
+  if (gcOpenNodeTarget(node)) return;
   if (!gcIsNote(node)) return;
   if (traceModeActive) {
     pickTraceEnd(node);
@@ -4152,6 +4191,22 @@ function gcClickNode(event, node, s = gcTab) {
     return;
   }
   openGraphPopup(event || { clientX: 0, clientY: 0, stopPropagation() {} }, node);
+}
+
+//: What a file node or a document node opens: the file in the lightbox every
+//: attachment opens in, the document in the editor. False for any other node,
+//: so a caller falls through to its own meaning of a click.
+function gcOpenNodeTarget(node) {
+  const id = String(node.id).replace(/^[a-z]+:/, "");
+  if (node.type === "attachment" && /^\d+$/.test(id)) {
+    openLightbox([{ filename: node.preview, getUrl: () => mediaSrc(`/files/${id}`) }], 0);
+    return true;
+  }
+  if (node.type === "document" && /^\d+$/.test(id)) {
+    openDocument(Number(id));
+    return true;
+  }
+  return false;
 }
 
 //: GRAPH_PLAN 514 (3): a click on an unwritten [[name]] writes the note, with

@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import captions, librarian, voice
 from tessellate.core import activity, deps
+from tessellate.api.this_computer import this_computer_only
 from tessellate.core.deps import get_session
 from tessellate.entry.manager import log_action
 
@@ -33,6 +34,9 @@ def status() -> dict:
     return {
         "available": available,
         "model": deps.get_config().get_preference("voice_model", "base"),
+        #: Which sizes are downloaded (B61): Settings marks them and offers to
+        #: remove one. A size is fetched at its first dictation, not on choosing.
+        "models": voice.model_states(),
         "hint": None if available else voice.INSTALL_HINT,
         #: Live captions are a separate optional helper (decision 5), so they
         #: have their own availability, model and hint.
@@ -41,6 +45,17 @@ def status() -> dict:
         #: Brief 83): shown only once true, so no control does nothing.
         "translate": False,
     }
+
+
+@router.delete("/models/{size}", dependencies=[Depends(this_computer_only)])
+def remove_model(size: str) -> dict:
+    """Delete one downloaded dictation size, by its allowlist name."""
+    if size not in voice.WHISPER_SIZES:
+        raise HTTPException(status_code=404, detail="No such dictation model.")
+    removed, message = voice.remove_model(size)
+    if not removed:
+        raise HTTPException(status_code=404 if "isn't on this computer" in message else 500, detail=message)
+    return {"removed": True, "message": message}
 
 
 def _transcribe_upload(

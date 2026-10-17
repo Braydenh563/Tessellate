@@ -703,6 +703,12 @@ function noteOfferReplace(field, offer) {
   return true;
 }
 
+//: A taken reminder's notice opens the calendar on its day (INBOX 904 B72).
+function noteOfferCalendar(dueAt) {
+  switchTab("timeline");
+  timelineCalendarCall("timelineCalendarOn", timelineBucketKey(new Date(dueAt), "day"));
+}
+
 async function noteOfferTake(state, offer, el) {
   state.done.add(noteOfferKey(offer));
   el.remove();
@@ -734,7 +740,7 @@ async function noteOfferTake(state, offer, el) {
         body: JSON.stringify({ text: offer.value.text, due_at: offer.value.due_at, entry_id: state.opts.entryId || null, priority: "normal", recurring: "none" }),
       });
       loadReminders();
-      toast(`Reminder set: ${relativeWhen(reminder.due_at)}.`);
+      toastAction(`Reminder set: ${relativeWhen(reminder.due_at)}, on the timeline and the calendar.`, "Show on calendar", () => noteOfferCalendar(reminder.due_at));
       pushBinPairUndo("Reminder set", `/reminders/${reminder.id}`, `/reminders/${reminder.id}/restore`, true, loadReminders);
     } catch (error) {
       state.done.delete(noteOfferKey(offer));

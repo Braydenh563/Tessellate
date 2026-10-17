@@ -55,10 +55,20 @@ let graphNodesRef = null;
 //: `{ x, y }` or null for "not pinned". Undo and Redo write the pin through
 //: `PUT /graph/pin/{id}` and set it on the live node of whichever renderer is
 //: drawn, so the map shows it without a reload.
+//: **Only a node with a row to keep it on is written down** (B78: `PUT
+//: /graph/pin/document:2` was a 422 in the owner's console). A note and a
+//: document have one; a tag, an entity, a file or a topic does not, so its
+//: pin holds for the session and the server is not asked. The one door for
+//: every pin write, in this file and in graph-canvas.js.
+function graphPinSave(id, x, y) {
+  if (!/^(document:)?\d+$/.test(String(id))) return Promise.resolve(null);
+  return apiJson(`/graph/pin/${id}`, { method: "PUT", body: JSON.stringify({ x, y }) });
+}
+
 async function graphSetPin(id, point) {
   const x = point ? point.x : null;
   const y = point ? point.y : null;
-  await apiJson(`/graph/pin/${id}`, { method: "PUT", body: JSON.stringify({ x, y }) });
+  await graphPinSave(id, x, y);
   const live = (typeof gcTab !== "undefined" && gcTab?.byId?.get(id)) || (graphNodesRef || []).find((n) => n.id === id);
   if (!live) return;
   live.graph_pin_x = x;
@@ -2614,10 +2624,7 @@ async function renderGraphSvg() {
               before: d.wasPinnedBeforeThisDrag ? { x: d.dragStartX, y: d.dragStartY } : null,
               after: { x: d.fx, y: d.fy },
             }]);
-            apiJson(`/graph/pin/${d.id}`, {
-              method: "PUT",
-              body: JSON.stringify({ x: d.graph_pin_x, y: d.graph_pin_y }),
-            }).catch(() => {
+            graphPinSave(d.id, d.graph_pin_x, d.graph_pin_y).catch(() => {
               // Best-effort, exactly as the double-click path already is: the
               // in-memory placement above has already taken effect, so a
               // failed save costs the reload and nothing else.
@@ -2685,10 +2692,7 @@ async function renderGraphSvg() {
       d.graph_pin_y = wasPinned ? null : d.fy;
       const was = wasPinned ? { x: d.fx ?? d.x, y: d.fy ?? d.y } : null;
       graphPinStep(wasPinned ? "Unpinned a note" : "Pinned a note", [{ id: d.id, before: was, after: d.graph_pin_x == null ? null : { x: d.graph_pin_x, y: d.graph_pin_y } }]);
-      apiJson(`/graph/pin/${d.id}`, {
-        method: "PUT",
-        body: JSON.stringify({ x: d.graph_pin_x, y: d.graph_pin_y }),
-      }).catch(() => {
+      graphPinSave(d.id, d.graph_pin_x, d.graph_pin_y).catch(() => {
         // Best-effort: a failed save leaves the pin working for this
         // session (the in-memory fx/fy above already took effect) and
         // simply not surviving a reload, the same degraded-but-working

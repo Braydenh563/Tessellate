@@ -381,7 +381,7 @@ def test_a_finished_task_opens_its_log():
     row ("Installing Search by meaning (sentence-transformers)"): the row has
     Logs (32 px line), pressing it opens Settings, Logs with the filter
     "sentence-transformers"."""
-    assert "row.append(name, when, taskLogButton(item));" in frontend_text("ai-tools.js")
+    assert "row.append(name, taskLogButton(item));" in frontend_text("chat-tasks.js")
     settings = frontend_text("settings.js")
     assert "function taskLogButton(item)" in settings
     assert "async function openTaskLog(item)" in frontend_text("settings-controls.js")

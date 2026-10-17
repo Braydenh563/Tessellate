@@ -35,6 +35,9 @@ const TIMELINE_CAL_FIRST_HOUR = 8;
 const TIMELINE_CAL_SPANS = ["month", "week", "day"];
 const TIMELINE_CAL_SPAN_STORE = "timeline-cal-span";
 const TIMELINE_CAL_DRAG = "application/x-memorymap-calendar";
+//: Long enough for a double click, short enough that one press still feels
+//: like it opened the day.
+const TIMELINE_CAL_DOUBLE_MS = 250;
 
 const timelineCal = {
   span: TIMELINE_CAL_SPANS.includes(prefs.get(TIMELINE_CAL_SPAN_STORE, "")) ? prefs.get(TIMELINE_CAL_SPAN_STORE, "") : "month",
@@ -46,6 +49,8 @@ const timelineCal = {
   //: a removable chip and never stored.
   only: null,
   drag: null,
+  //: A press on a day waits this long for a second one (a double click adds).
+  pickTimer: 0,
   painted: "",
   renders: 0,
 };
@@ -131,7 +136,17 @@ function timelineCalDays(rows) {
       day.dots.push(ghost);
     }
   }
-  for (const day of days.values()) day.items.sort((a, b) => a.when - b.when);
+  //: An event's own reminder (the add sheet's "Remind me at the start") is
+  //: the event's chip, said in its title, not a second chip saying the same.
+  for (const day of days.values()) {
+    const events = new Map(day.items.filter((r) => r.placedBy === "meeting").map((r) => [`${r.id}@${+r.when}`, r]));
+    day.items = day.items.filter((row) => {
+      const event = row.kind === "reminder" && events.get(`${row.entryId}@${+row.when}`);
+      if (event) event.reminded = true;
+      return !event;
+    });
+    day.items.sort((a, b) => a.when - b.when);
+  }
   return days;
 }
 
@@ -263,6 +278,11 @@ function timelineCalHead(span, first) {
   back.dataset.calAct = "earlier";
   on.dataset.calAct = "later";
   head.prepend(back, title, on);
+  //: The way in without a double click (a touch screen, the agenda).
+  const add = smallButton("ph:plus Add", "Add a reminder or an event on the chosen day (or double-click a day, or press N)", () => timelineCalAdd(timelineCal.focus));
+  add.classList.add("timeline-cal-add");
+  add.dataset.calAct = "add";
+  seg ? seg.before(add) : head.appendChild(add);
   if (timelineCal.only) {
     const only = smallButton("ph:x Show: reminders", "Show every kind again", () => {
       timelineCal.only = null;
@@ -270,7 +290,7 @@ function timelineCalHead(span, first) {
     }, false);
     only.className = "library-chip active timeline-cal-only";
     only.dataset.calAct = "only";
-    seg ? seg.before(only) : head.appendChild(only);
+    add.before(only);
   }
   if (seg && seg.parentNode !== head) head.appendChild(seg);
   return head;
@@ -503,7 +523,7 @@ function timelineCalItem(row, stop) {
   //: A written note's moment is when it was typed, which is not its time on the grid.
   const clocked = row.kind === "reminder" || row.placedBy === "meeting" || row.placedBy === "mentioned";
   const time = row.allDay || !clocked ? "" : TIMELINE_CAL_TIME.format(row.when);
-  const item = smallButton(`${timelineCalGlyph(row)} ${time ? `${time} ` : ""}${row.title}`, row.also ? `Also on this day: ${row.title}` : `${row.title}${time ? `, ${time}` : ""}`, () => timelineCalOpenRow(row));
+  const item = smallButton(`${timelineCalGlyph(row)} ${time ? `${time} ` : ""}${row.title}`, row.also ? `Also on this day: ${row.title}` : `${row.title}${time ? `, ${time}` : ""}${row.reminded ? ", with a reminder" : ""}`, () => timelineCalOpenRow(row));
   item.classList.toggle("is-also", Boolean(row.also));
   const timed = row.kind === "reminder" || row.placedBy === "meeting";
   item.classList.add("timeline-cal-item", `is-${timed ? row.kind === "reminder" ? "reminder" : "meeting" : "note"}`);
@@ -639,6 +659,19 @@ function timelineCalendarToday() {
   paintTimelineCalendar();
 }
 
+//: A note offer's "Show on calendar" (INBOX 904 B72): this view on that day,
+//: every kind shown, the span the reader last chose kept. The read is dropped:
+//: the reminder was made after it, and the month's cached rows lack it.
+function timelineCalendarOn(key) {
+  timelineCal.url = "";
+  timelineCal.only = null;
+  timelineCal.focus = key;
+  $("timeline-calendar").dataset.refocus = "1";
+  prefs.set("timeline-view", "calendar");
+  syncTimelineViewSeg();
+  paintTimeline();
+}
+
 //: The reminders tab's Calendar button (decision 19): this view, reminders
 //: only, on today.
 function timelineCalendarReminders() {
@@ -651,7 +684,7 @@ function timelineCalendarReminders() {
 
 //: The keys (decision 18): T today, the arrows a day or a week, Page Up and
 //: Page Down a month, Home and End the week's ends, Enter the day in the
-//: feed, N a new reminder on the day. Only on a day, not inside a row.
+//: feed, N the add sheet on the day. Only on a day, not inside a row.
 function timelineCalKeys(event) {
   if (event.altKey && timelineCalKeyMove(event)) return;
   const cell = event.target.closest?.(".timeline-cal-stop");
@@ -669,7 +702,7 @@ function timelineCalKeys(event) {
     timelineCalMove(event.key === "PageUp" ? -1 : 1, "month");
   } else if (event.key === "t" || event.key === "T") timelineCalendarToday();
   else if (event.key === "Enter" || event.key === " ") timelineCalPick(key);
-  else if (event.key === "n" || event.key === "N") timelineCalNewReminder(key);
+  else if (event.key === "n" || event.key === "N") timelineCalAdd(key);
   else return;
   event.preventDefault();
   if (next) timelineCalFocus(next);
@@ -711,11 +744,10 @@ function timelineCalFocus(key) {
   target.focus();
 }
 
-//: N: the reminders box with the day filled, the old month grid's door.
-function timelineCalNewReminder(key) {
-  switchTab("reminders");
-  $("reminder-date").value = key;
-  $("reminder-text").focus();
+//: N, a double click and the head's Add: the add sheet, its own lazy file
+//: (timeline-cal-add.js), since most visits to the calendar add nothing.
+function timelineCalAdd(key, hour = null) {
+  return lazyScript("/js/timeline-cal-add.js").then((ok) => ok && timelineCalAddOpen(key, hour));
 }
 
 // --- Drag to reschedule (decision 16) ---------------------------------------
@@ -834,10 +866,18 @@ async function timelineCalMovePage(row, day) {
   box.addEventListener("click", (event) => {
     const span = event.target.closest?.("[data-cal-span]");
     if (span) return timelineCalSetSpan(span.dataset.calSpan);
-    const cell = event.target.closest?.(".timeline-cal-stop");
+    const cell = event.target.closest?.(".timeline-cal-stop, .timeline-cal-hourcell");
+    if (!cell || event.target.closest("button")) return undefined;
+    clearTimeout(timelineCal.pickTimer);
+    //: A double click adds on the day, or at the hour (INBOX 904 B72).
+    if (event.detail >= 2) return timelineCalAdd(cell.dataset.calDay, cell.dataset.calHour === undefined ? null : Number(cell.dataset.calHour));
     //: A press on a day's own ground opens the day (the owner, 2026-10-11:
-    //: "I cant click on or interact with calender dates").
-    if (cell && !event.target.closest("button")) timelineCalPick(cell.dataset.calDay);
+    //: "I cant click on or interact with calender dates"), held for a double
+    //: click's length so the second press adds rather than landing in the
+    //: Day view the first one drew.
+    if (cell.classList.contains("timeline-cal-stop") && event.detail === 1) {
+      timelineCal.pickTimer = setTimeout(() => timelineCalPick(cell.dataset.calDay), TIMELINE_CAL_DOUBLE_MS);
+    }
     return undefined;
   });
   //: Crossing 768 or 1024 changes the span drawn.

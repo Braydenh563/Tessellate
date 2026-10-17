@@ -31,6 +31,7 @@ from tessellate.ai.ollama_client import (
     ToolsUnsupportedError,
 )
 from tessellate.ai.provider import tools_unsupported_message
+from tessellate.search.snippet import clip_words
 
 # A runaway model must not loop forever on a local machine.
 MAX_ROUNDS = 6
@@ -932,8 +933,7 @@ def _tool_sources(name: str, result: dict) -> list[dict]:
     rows: list[dict] = []
 
     def _clip_text(value: object) -> str:
-        text = " ".join(str(value or "").split())
-        return text[:SOURCE_SNIPPET_CHARS]
+        return clip_words(value, SOURCE_SNIPPET_CHARS)
 
     if name == "web_search":
         for hit in (result.get("results") or [])[:SOURCE_LIMIT]:
@@ -1680,6 +1680,19 @@ class _TurnPlan:
     ceiling: int
 
 
+def _narrow_keeps(name: str, question: str, keep_pref: bool) -> bool:
+    """Whether a small model's stable toolbox keeps `name`: no orchestration
+    tool unless the request itself says to call `make_plan` (Plan mode), and
+    `save_user_preference` only when the request is about the user."""
+    plan = name == "make_plan" and tools.asks_for_plan(question)
+    return (name not in tools.ORCHESTRATION_TOOLS or plan) and (keep_pref or name != "save_user_preference")
+
+
+def _plan_exempt(question: str) -> frozenset[str]:
+    """Orchestration tools a small window may not drop for this request."""
+    return frozenset({"make_plan"}) if tools.asks_for_plan(question) else frozenset()
+
+
 def _prepare_turn(
     session: Session,
     question: str,
@@ -1798,8 +1811,7 @@ def _prepare_turn(
         focus_names = [
             name
             for name in dict.fromkeys([*tools.CORE_TOOLS, *cued])
-            if name not in tools.ORCHESTRATION_TOOLS
-            and (keep_pref or name != "save_user_preference")
+            if _narrow_keeps(name, question, keep_pref)
         ]
     if focus_names is not None and allowed_tools is None and _picture_in_hand(question, notes):
         focus_names = [name for name in focus_names if name not in _CANVAS_TOOLS]
@@ -1873,17 +1885,16 @@ def _prepare_turn(
         if budget is not None and budget.window_tokens <= SMALL_WINDOW_TOKENS:
             every_tool = tools.compact_schemas(every_tool)
         keep = tools.keep_first_for(question)
-        every_tool, _ = tools.within_budget(every_tool, budget.tool_schema_chars, keep)
-        offered, dropped = tools.within_budget(offered, budget.tool_schema_chars, keep)
+        exempt = _plan_exempt(question)
+        chances = dict(tools.rank_tools(question, _recent_text(history)))
+        every_tool, _ = tools.within_budget(every_tool, budget.tool_schema_chars, keep, exempt, chances)
+        offered, dropped = tools.within_budget(offered, budget.tool_schema_chars, keep, exempt, chances)
         if dropped:
             # Visible in Settings → Logs, because "the AI didn't use the tool I
             # expected" is otherwise indistinguishable from the model choosing
-            # not to.
+            # not to. Each name carries the chance the question gave it.
             logging.getLogger("tessellate.agent").info(
-                "tool budget: %d-token window fits %d tools; held back %s",
-                budget.window_tokens,
-                len(offered),
-                ", ".join(dropped[:8]) + ("…" if len(dropped) > 8 else ""),
+                "%s (%d-token window)", tools.ranking_line([t["function"]["name"] for t in offered], dropped, chances), budget.window_tokens
             )
     # Roadmap §11a's prescribed first step: measure before cutting. One line
     # per turn saying what the prompt is made of, so "which half dominates a

@@ -105,11 +105,11 @@ def good_for(kind: str, entry: dict) -> list[str]:
     return tags
 
 
-def fit_for(need_gb: float | None, total_gb: float | None) -> str:
-    """``fits``, ``tight``, ``too_big``, or ``unknown`` when either number is."""
-    if need_gb is None or not total_gb:
-        return "unknown"
-    share = need_gb / total_gb
+_FIT_ORDER = ("fits", "tight", "too_big")
+
+
+def _share_fit(need_gb: float, pool_gb: float) -> str:
+    share = need_gb / pool_gb
     if share <= FITS_BELOW:
         return "fits"
     if share <= TIGHT_BELOW:
@@ -117,9 +117,58 @@ def fit_for(need_gb: float | None, total_gb: float | None) -> str:
     return "too_big"
 
 
-def decorate(kind: str, entry: dict, total_gb: float | None) -> dict:
-    """The catalogue entry plus what the card shows."""
+def fit_reason(
+    need_gb: float | None, total_gb: float | None, free_gb: float | None = None, vram_gb: float | None = None
+) -> str | None:
+    """Why the verdict is not the plain share of memory: ``gpu`` (the video
+    memory holds the model more comfortably, so it runs there) or ``low_free``
+    (little memory is free right now). None when the verdict is the plain one."""
+    if need_gb is None or not total_gb:
+        return None
+    plain = _share_fit(need_gb, total_gb)
+    on_card = _share_fit(need_gb, vram_gb) if vram_gb else None
+    if on_card and _FIT_ORDER.index(on_card) < _FIT_ORDER.index(plain):
+        return "gpu"
+    if on_card == "fits":
+        return None  # runs on the card: free system memory is not the limit
+    if free_gb is not None and plain == "fits" and need_gb > free_gb * TIGHT_BELOW:
+        return "low_free"
+    return None
+
+
+def fit_for(
+    need_gb: float | None, total_gb: float | None, free_gb: float | None = None, vram_gb: float | None = None
+) -> str:
+    """``fits``, ``tight``, ``too_big``, or ``unknown`` when either number is.
+
+    The share of the computer's memory decides. Video memory that holds the
+    model more comfortably wins (it runs on the card), and memory that is free
+    only right now (``free_gb``) can take a Fits down to Tight, never further:
+    other programs come and go, the total does not.
+    """
+    if need_gb is None or not total_gb:
+        return "unknown"
+    reason = fit_reason(need_gb, total_gb, free_gb, vram_gb)
+    if reason == "gpu":
+        return _share_fit(need_gb, vram_gb)  # type: ignore[arg-type]
+    return "tight" if reason == "low_free" else _share_fit(need_gb, total_gb)
+
+
+def decorate(
+    kind: str,
+    entry: dict,
+    total_gb: float | None,
+    free_gb: float | None = None,
+    vram_gb: float | None = None,
+    loaded: bool = False,
+) -> dict:
+    """The catalogue entry plus what the card shows.
+
+    ``loaded``: Ollama holds this model in memory now, so the memory it asks
+    for is already taken out of ``free_gb`` and must not count against it.
+    """
     need = ram_needed_gb(entry)
+    free = None if loaded else free_gb
     return {
         **entry,
         "kind": kind,
@@ -127,7 +176,8 @@ def decorate(kind: str, entry: dict, total_gb: float | None) -> dict:
         "ram_gb": need,
         "good_for": good_for(kind, entry),
         "recommended": RECOMMENDED.get(kind) == entry["name"],
-        "fit": fit_for(need, total_gb),
+        "fit": fit_for(need, total_gb, free, vram_gb),
+        "fit_reason": fit_reason(need, total_gb, free, vram_gb),
     }
 
 

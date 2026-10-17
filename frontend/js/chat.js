@@ -690,6 +690,17 @@ function atlasSuggestion(question, label = `Ask Atlas: ${question}`) {
   return line;
 }
 
+//: The starters are not coming (or took too long): the skeletons go and an
+//: empty box hides, as `loadChatSuggestions` leaves it when it has no picks.
+function chatEmptySettle(empty) {
+  if (!empty.classList.contains("chat-empty-waiting")) return;
+  empty.classList.remove("chat-empty-waiting");
+  const suggest = $("chat-suggest");
+  if (!suggest || !empty.contains(suggest)) return;
+  clearSkeletons(suggest);
+  suggest.classList.toggle("hidden", !suggest.children.length);
+}
+
 // The welcome shown in an empty chat so the page isn't a blank box.
 function renderChatEmptyState() {
   const box = $("chat-messages");
@@ -762,14 +773,23 @@ function renderChatEmptyState() {
   const suggest = $("chat-suggest");
   if (suggest && !suggest.classList.contains("hidden")) {
     empty.appendChild(suggest);
-  } else {
-    //: **Whole, then shown** (INBOX 580): the starters land after their
-    //: fetch, and the card grew round them in view, 222 to 296px tall and
-    //: 250px wider (layout shift 0.015 on Chat's first visit,
-    //: `scratchpad/ui-sweeps/smooth1005-tabs.js`). It waits unseen for them
-    //: (`loadChatSuggestions` lets it go), 700ms at most, and fades in.
+  } else if (suggest) {
+    //: **The card is drawn at once, the starters are skeletons** (the owner,
+    //: 2026-10-12: the page "appears a second or two late and all at once").
+    //: It used to wait unseen for them (INBOX 580: it grew round them in
+    //: view, 222 to 296px, layout shift 0.015). Now the mark and the heading
+    //: paint on the first frame and `#chat-suggest` holds four skeleton
+    //: pieces in the starters' own box, so nothing moves when the real ones
+    //: replace them (`loadChatSuggestions` calls `clearSkeletons`, which
+    //: settles them in). A render with no fetch coming (`pending` unset a
+    //: tick later) settles at once; a fetch that hangs settles at 3s.
     empty.classList.add("chat-empty-waiting");
-    setTimeout(() => empty.classList.remove("chat-empty-waiting"), 700);
+    suggest.replaceChildren();
+    suggest.classList.remove("hidden");
+    showSkeletons(suggest, 4, "span");
+    empty.appendChild(suggest);
+    setTimeout(() => loadChatSuggestions.pending || chatEmptySettle(empty), 0);
+    setTimeout(() => chatEmptySettle(empty), 3000);
   }
   box.appendChild(empty);
   // Animated like the ai-mark: a new chat is the AI waiting, and the slow
@@ -809,6 +829,7 @@ function clearChatEmptyState() {
   const suggest = empty.querySelector("#chat-suggest");
   if (suggest) {
     suggest.classList.add("hidden");
+    clearSkeletons(suggest);
     document.querySelector(".chat-dock")?.prepend(suggest);
   }
   empty.remove();
@@ -1048,13 +1069,9 @@ async function refreshWebSearxngStrip() {
   } else if (provider === "duckduckgo") {
     setWebEngineDot("remote", provider);
   }
-  if (provider === "duckduckgo") {
-    // This provider never touches SearXNG, a command here would control
-    // nothing a search actually uses.
-    webEngineInfo = null;
-    renderWebPanelMenu(null);
-    return;
-  }
+  //: DuckDuckGo never touches SearXNG, so the dot above keeps saying DuckDuckGo
+  //: answers; the menu still offers the engine's command, since starting it is
+  //: how someone on DuckDuckGo gets to try SearXNG (B55: the item was "gone").
   const info = await apiJson("/websearch/searxng/status").catch(() => null);
   if (!info || !info.backend) {
     // No usable backend (Docker or a virtualenv) to run it at all, Settings
@@ -1075,7 +1092,7 @@ async function refreshWebSearxngStrip() {
           ? "absent"
           : "stopped";
   webEngineInfo = { state, running };
-  if (!prefsCache || prefsCache.web_search_enabled) setWebEngineDot(state, provider);
+  if (!prefsCache || prefsCache.web_search_enabled) setWebEngineDot(provider === "duckduckgo" ? "remote" : state, provider);
   renderWebPanelMenu(webEngineInfo);
   // Keep polling while it settles, same as Settings' own richer view:
   // otherwise "starting" can stick with no way to tell it's still moving.
@@ -1606,8 +1623,10 @@ function renderModelContextBox(modelName, spec) {
   //: this control must never do.
   box.value = set > 0 ? String(set) : "";
   box.disabled = !modelContextModel;
-  if (!note) return;
   const usable = spec && spec.usable_context;
+  //: B56: the empty box says what Auto found, not only the word.
+  box.placeholder = usable ? `Auto (${Number(usable).toLocaleString()})` : "Auto";
+  if (!note) return;
   if (!modelContextModel) {
     note.textContent = "";
     return;

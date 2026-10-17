@@ -26,11 +26,11 @@ FUNCTIONAL_CATEGORIES = taxonomy.functional_categories()
 
 class TaxonomyTests(unittest.TestCase):
     def test_counts(self):
-        self.assertEqual(audit_taxonomy()["category_count"], 527)
+        self.assertEqual(audit_taxonomy()["category_count"], 528)
         #: The pack's own file: the live map also carries Tessellate's everyday
         #: vocabulary (`memorymap_everyday.json`, INBOX 1297), which has its own tests.
         pack = json.loads((DATA_DIR / "memorymap_taxonomy.json").read_text(encoding="utf-8"))["taxonomy"]
-        self.assertEqual(len({normalize_text(k).lower() for words in pack.values() for k in words}), 6434)
+        self.assertEqual(len({normalize_text(k).lower() for words in pack.values() for k in words}), 6441)
     def test_no_duplicates(self):
         self.assertEqual(audit_taxonomy()["duplicates_within_categories"], {})
     def test_functions_are_defined(self):

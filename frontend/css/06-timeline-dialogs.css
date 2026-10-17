@@ -3460,11 +3460,7 @@ aside[data-resizable="1"] {
    line beside the time (INBOX 523, 811), which put them at the bottom of a
    multi-line row. The owner expected them "in the middle or top right": they
    are the row's right-edge column, centred on the row, drawn at rest so the
-   column is a designed edge and not a gap that appears on hover. The read
-   toggle keeps its accent when the row is unread. */
-.notif-row.notif-unread .notif-read-toggle {
-  color: var(--accent-text);
-}
+   column is a designed edge and not a gap that appears on hover. */
 /* The calendar strip under the Timeline's dock (WORLD_CLASS_PLAN D6; INBOX
    543). One header row: the month between its two arrows (one group, so
    the arrows sit by what they move), then the seven days as one well

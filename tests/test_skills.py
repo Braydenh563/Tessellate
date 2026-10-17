@@ -1242,4 +1242,9 @@ def test_the_skill_nudge_waits_for_a_model_and_tools() -> None:
     assert len(skill_offer) == 2, "the skill offer moved; this test must follow it"
     gate = skill_offer[1].split("{", 1)[0]
     assert "aiIsOff()" in gate and '$("tools-toggle")?.checked' in gate
-    assert 'trigger.dataset.needsModel = "' in app.split("async function loadChatSkills(", 1)[1].split("\nfunction ", 1)[0]
+    # O7 (B69): the intent moved. The Skills button is no longer gated whole,
+    # because the composer runs nine skills with no model; the menu disables
+    # only the ones it cannot (`skill.composer`), each marked "(needs a model)".
+    assert "needsModel" not in app.split("async function loadChatSkills(", 1)[1].split("\nfunction ", 1)[0]
+    fill = app.split("function fillSkillSelect(", 1)[1].split("\nfunction ", 1)[0]
+    assert "aiIsOff() && !skill.composer" in fill and "(needs a model)" in fill

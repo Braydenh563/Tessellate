@@ -392,3 +392,32 @@ def test_what_counts_as_an_announced_action():
         assert not agent.announces_unacted_tool(text, offered), text
     # Nothing to call, nothing to nudge toward.
     assert not agent.announces_unacted_tool("I'll count them.", [])
+
+
+def test_plan_mode_leaves_a_small_model_the_tool_it_is_told_to_call(monkeypatch, app_state):
+    """Owner, 2026-10-17 (INBOX 904): Plan mode appends "Call make_plan with the
+    goal and the steps", and the small-model toolbox had dropped `make_plan`, so
+    the model reasoned about a tool it did not have. The request names it, so
+    it stays; the other two orchestration tools still do not."""
+    question = (
+        "Plan an app for stored snippets.\n\nPlan this before you do any of it. "
+        "Call make_plan with the goal and the steps, then carry the plan out."
+    )
+    monkeypatch.setattr(agent.tools, "execute_tool", lambda *a, **k: {"ok": True})
+    fake = _Recorder([], content="done")
+    list(agent.run_agent(_Session(), question, [], _Models("qwen3.5:4b"), fake))
+    offered = set(_names(fake.offered[0]))
+    assert "make_plan" in offered, offered
+    assert not offered & {"run_skill", "save_skill"}, offered
+
+
+def test_plan_mode_survives_a_small_window(app_state):
+    """The window-budget drop of orchestration tools must not undo it either."""
+    question = "Do it.\n\nCall make_plan with the goal and the steps."
+    every = agent.tools.ollama_tools(None)
+    keep = agent.tools.keep_first_for(question)
+    exempt = frozenset({"make_plan"}) if agent.tools.asks_for_plan(question) else frozenset()
+    kept, dropped = agent.tools.within_budget(every, 3000, keep, exempt)
+    assert "make_plan" in _names(kept), dropped
+    kept, _ = agent.tools.within_budget(every, 3000, agent.tools.keep_first_for("hello"))
+    assert "make_plan" not in _names(kept)

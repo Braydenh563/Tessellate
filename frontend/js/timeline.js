@@ -593,6 +593,7 @@ async function renderTimeline() {
   fillTimelineBandOptions();
   renderTimelineKinds();
   paintTimeline();
+  if (timelineViewMode() === "feed") timelineScrollToToday();
   //: The rows are the answer to the click (TIMELINE_PLAN 10 row 8): they
   //: paint first, and the scrubber, the day strip and the recall row a
   //: frame later. Drawn in the same task they held the first frame back
@@ -926,6 +927,8 @@ function paintTimelineFeed(rows) {
   const feed = $("timeline-feed");
   const scale = timelineResolvedScale();
   const density = TIMELINE_DENSITY[scale];
+  //: B56: Auto names the bucket it chose, as the other Auto options do.
+  $("timeline-scale").options[0].textContent = `Auto (${scale} now)`;
   feed.dataset.scale = scale;
   feed.dataset.density = density;
   feed.replaceChildren();
@@ -963,14 +966,22 @@ function paintTimelineFeed(rows) {
   //: "this week" and "this month" already contain today by definition.
   const todayKey = timelineBucketKey(new Date(), "day");
   const showsToday = scale === "day" && !timelineFilter && !$("timeline-search").value.trim();
-  if (showsToday && !buckets.some((bucket) => bucket.key === todayKey)) {
-    fragment.appendChild(timelineBucketSection({ key: todayKey, rows: [] }, scale, density));
-  }
-  for (const bucket of buckets) {
+  for (const bucket of showsToday ? timelineAheadBuckets(buckets, todayKey) : buckets) {
     fragment.appendChild(timelineBucketSection(bucket, scale, density, showsToday && bucket.key === todayKey));
   }
   feed.appendChild(fragment);
   applyTimelineRowTabOrder();
+}
+
+//: Today and the week ahead whether or not anything is in them, newest first
+//: (INBOX 904 B72: "scroll above today's date to see future dates").
+function timelineAheadBuckets(buckets, todayKey) {
+  const all = [...buckets];
+  for (let n = 0; n <= 7; n += 1) {
+    const key = timelineDayShift(todayKey, n);
+    if (!all.some((b) => b.key === key)) all.push({ key, rows: [] });
+  }
+  return all.sort((a, b) => (a.key < b.key ? 1 : -1));
 }
 
 //: One bucket: its header, its rows, and, on today, the journal's own action.
@@ -1017,7 +1028,11 @@ function timelineBucketSection(bucket, scale, density, isToday = bucket.rows.len
   list.className = "timeline-rows";
   for (const row of bucket.rows) list.appendChild(timelineRowElement(row, density));
   section.append(head, list);
-  if (!bucket.rows.length) {
+  //: A day ahead with nothing in it is its head and the calendar's Add.
+  if (!bucket.rows.length && bucket.key > timelineBucketKey(new Date(), "day")) {
+    head.appendChild(smallButton("ph:plus Add", "Add a reminder or an event on this day", () => timelineCalendarCall("timelineCalAdd", bucket.key)));
+    head.lastElementChild.classList.add("timeline-today-action");
+  } else if (!bucket.rows.length) {
     const empty = document.createElement("p");
     empty.className = "muted timeline-bucket-empty";
     empty.textContent = "Nothing written today yet.";
@@ -1644,141 +1659,12 @@ function closeTimelineRow(el) {
   if (timelineOpenKey === el.dataset.key) timelineOpenKey = null;
 }
 
-async function openTimelineRowDetail(detail, row) {
-  const actions = document.createElement("div");
-  actions.className = "row timeline-row-actions";
-
-  //: A document's body is not a note's: it is long, it is `file_type`-shaped,
-  //: and loading it into a row would put a thousand lines inside a feed. The
-  //: row says what it is and opens the editor, which is where a document is
-  //: read (TIMELINE_PLAN Phase 4).
-  if (row.kind === "document") {
-    const line = document.createElement("p");
-    line.className = "timeline-row-body";
-    line.textContent = row.snippet || "This document is empty.";
-    detail.appendChild(line);
-    actions.appendChild(
-      smallButton("ph:file-text Open this document", "Open it in the editor", () => {
-        switchTab("documents");
-        openDocument(row.id);
-      })
-    );
-    detail.appendChild(actions);
-    return;
-  }
-
-  if (row.kind === "reminder") {
-    const line = document.createElement("p");
-    line.className = "timeline-row-body";
-    line.textContent = row.done ? "Done." : "Not done yet.";
-    detail.appendChild(line);
-    //: A reminder attached to a note can reach it, which is the one link the
-    //: Reminders tab has that a row here would otherwise lose.
-    if (row.entryId) {
-      actions.appendChild(
-        smallButton("ph:note The note this is about", "Open the note this reminder is on", () => {
-          flashEntry(row.entryId);
-        })
-      );
-    }
-    actions.appendChild(
-      smallButton("ph:bell Open in reminders", "Show this in the Reminders tab", () => {
-        switchTab("reminders");
-      })
-    );
-    detail.appendChild(actions);
-    return;
-  }
-
-  if (row.kind === "board") {
-    // A map has no prose to render. Its own chip says what it is and how big
-    // it is, which is what the Library and the dashboard show for one too.
-    detail.append(mapChip(row.board, { interactive: false }));
-    actions.appendChild(
-      smallButton("ph:tree-structure Open this map", "Open this map on the whiteboard", () =>
-        openWhiteboardBoard(row.board.id)
-      )
-    );
-    detail.appendChild(actions);
-    return;
-  }
-
-  const body = document.createElement("div");
-  body.className = "timeline-row-body";
-  body.textContent = "Loading…";
-  const media = document.createElement("div");
-  media.className = "timeline-row-media hidden";
-  detail.append(body, media, actions);
-
-  actions.appendChild(
-    smallButton("ph:pencil-simple Open in editor", "Open this note in the Notes tab", () => {
-      switchTab("notes");
-      showNotesSection("browse");
-      flashEntry(row.id);
-    })
-  );
-
-  const entry = await apiJson(`/entries/${row.id}`).catch(() => null);
-  // The row may have been closed, or the feed repainted, while this was in
-  // flight; writing into a detached node would be invisible and confusing.
-  if (!detail.isConnected) return;
-  if (!entry) {
-    body.textContent = "Couldn't load this note.";
-    return;
-  }
-  body.replaceChildren();
-  renderMarkdown(body, entry.content || "");
-  renderTimelineRowMedia(entry, media);
+//: A row's detail is a lazy file (timeline-detail.js): most reads of the
+//: feed open no row, and the boot scripts are at their budget.
+function openTimelineRowDetail(detail, row) {
+  return lazyScript("/js/timeline-detail.js").then((ok) => ok && timelineRowDetail(detail, row));
 }
 
-//: **Everything attached, not only the pictures.** Reported twice against the
-//: popup this moved out of: "a photo i attached to a note ... doesn't render"
-//: and "files and attachments dont render in the timeline and popups". The
-//: non-image half is `fileCard`, the same control the note cards, the chat
-//: transcript and the widgets use, so a file looks the same wherever the app
-//: shows it. Kept through the redesign on purpose: the popup went, the two
-//: fixes it carried did not.
-function renderTimelineRowMedia(entry, box) {
-  box.replaceChildren();
-  const all = entry.attachments || [];
-  box.classList.toggle("hidden", all.length === 0);
-  if (!all.length) return;
-  const images = all.filter((a) => a.is_image);
-  for (const attachment of all.filter((a) => !a.is_image)) {
-    //: `url` is what every other file surface is given; attachments carry
-    //: theirs as `/files/{id}` when the row does not spell one out.
-    box.appendChild(
-      fileCard(attachment.filename || attachment.name || "", attachment.url || `/files/${attachment.id}`)
-    );
-  }
-  for (const attachment of images) {
-    const img = document.createElement("img");
-    img.className = "timeline-row-thumb";
-    img.alt = attachment.filename;
-    img.title = `${attachment.filename}: click to view full size`;
-    attachmentObjectUrl(attachment)
-      .then((url) => {
-        img.src = url;
-      })
-      .catch(() => img.remove());
-    img.addEventListener("click", () => {
-      openLightbox(
-        images.map((a) => ({ filename: a.filename, getUrl: () => attachmentObjectUrl(a) })),
-        images.indexOf(attachment)
-      );
-    });
-    box.appendChild(img);
-  }
-}
-
-//: The keys are the app's (TIMELINE_PLAN §6): arrows walk the rows in document
-//: order, Enter and Space open one in place, Escape closes it. Delegated to the
-//: feed rather than bound per row, because a repaint builds every row again and
-//: a listener per row is a listener per row per repaint.
-//:
-//: Guarded on the row itself being the target: a chip inside a row is its own
-//: `role="button"` with its own Enter, and an arrow pressed inside one should
-//: not steal the key from it.
 $("timeline-scroll").addEventListener("keydown", (event) => {
   const row = event.target.closest?.(".timeline-row");
   if (!row || event.target !== row) return;
@@ -1842,7 +1728,9 @@ $("timeline-scroll").addEventListener(
     //: The browser's own page zoom would otherwise take the gesture.
     event.preventDefault();
     const now = performance.now();
-    if (now - timelineZoom.at > TIMELINE_ZOOM_GAP) timelineZoom = { sum: 0, at: now, stepped: false };
+    //: Fields, not a new object: `timelineZoom` is a const, and assigning it
+    //: threw on the first gesture after a pause.
+    if (now - timelineZoom.at > TIMELINE_ZOOM_GAP) Object.assign(timelineZoom, { sum: 0, stepped: false });
     timelineZoom.at = now;
     if (timelineZoom.stepped) return;
     timelineZoom.sum += event.deltaY;
@@ -2519,8 +2407,8 @@ $("timeline-end-date")?.addEventListener("change", () => {
   if ($("timeline-start-date").value) renderTimeline();
 });
 
-//: Today is at the top of a newest-first feed, so this is a scroll rather than
-//: a search. It still looks the bucket up by key rather than assuming the
+//: Today is under the days ahead in a newest-first feed, so this is a scroll
+//: rather than a search. It still looks the bucket up by key rather than assuming the
 //: first section is today's: a notebook with nothing written today should land
 //: on the newest day it has, not claim that day is today.
 $("timeline-jump-today")?.addEventListener("click", () => {
@@ -2530,15 +2418,19 @@ $("timeline-jump-today")?.addEventListener("click", () => {
     timelineStripEnd = null;
     renderTimelineDayStrip();
   }
+  timelineScrollToToday()?.querySelector(".timeline-row")?.focus();
+});
+
+//: Today's section at the top of the feed's window, the days ahead above it
+//: (INBOX 904 B72); a fresh read and the dock's Today both land here.
+function timelineScrollToToday() {
   const feed = $("timeline-feed");
   const today = timelineBucketKey(new Date(), feed.dataset.scale || "day");
-  const section =
-    feed.querySelector(`.timeline-bucket[data-bucket="${today}"]`) || feed.firstElementChild;
-  if (!section) return;
+  const section = feed.querySelector(`.timeline-bucket[data-bucket="${today}"]`) || feed.firstElementChild;
   const box = $("timeline-scroll");
-  box.scrollTop += section.getBoundingClientRect().top - box.getBoundingClientRect().top;
-  section.querySelector(".timeline-row")?.focus();
-});
+  if (section) box.scrollTop += section.getBoundingClientRect().top - box.getBoundingClientRect().top;
+  return section;
+}
 
 //: **Search filters, it does not dim** (decision 2). Dimming left every row in
 //: place: the same scroll distance, the same Ctrl+F hits, 48 rows to read past

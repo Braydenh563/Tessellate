@@ -420,6 +420,7 @@ async function submitHelpChatQuestion(question) {
       signal.aborted ? null : result?.system || null
     );
     if (answerRow && result?.greeting && !signal.aborted) renderHelpChatGreeting(answerRow);
+    if (answerRow && result?.asks?.length && !signal.aborted) renderHelpChatAsks(answerRow, result.asks, result.asks_to);
     helpChatHistory.push({ role: "user", content: question });
     helpChatHistory.push({ role: "assistant", content });
   } catch (error) {
@@ -563,6 +564,8 @@ async function helpChatStreamTurn({ pending, signal, body, line = null }) {
     sources: done?.sources || [],
     system: done?.system || null,
     greeting: !!done?.greeting,
+    asks: done?.asks || [],
+    asks_to: done?.asks_to || "chat",
     shown: text,
   };
 }
@@ -704,19 +707,46 @@ function renderAtlasStarters() {
 //: with the open tab's topic). The reply says who is answering; the tab's
 //: starters go under it as chips, the same ones the empty state offers.
 function renderHelpChatGreeting(row) {
+  helpChatChips(row, atlasStartersFor(agentCurrentTab()), (question) => askAtlas(question), "Ask Atlas: ");
+}
+
+function helpChatChips(row, items, pick, titled) {
   const host = document.createElement("div");
   host.className = "help-chat-badges";
-  const tab = agentCurrentTab();
-  for (const question of atlasStartersFor(tab)) {
+  for (const item of items) {
     const chip = document.createElement("button");
     chip.type = "button";
     chip.className = "ghost small atlas-starter";
-    chip.textContent = question;
-    chip.title = `Ask Atlas: ${question}`;
-    chip.addEventListener("click", () => askAtlas(question));
+    chip.textContent = item;
+    chip.title = titled + item;
+    chip.addEventListener("click", () => pick(item));
     host.appendChild(chip);
   }
   row.appendChild(host);
+}
+
+//: B11, B86: asked what to ask, the asks are chips that fill Chat's or
+//: Ask's box (not sent), in the greeting's chip recipe.
+function renderHelpChatAsks(row, asks, to) {
+  helpChatChips(row, asks, (ask) => fillAskBox(ask, to), to === "notes" ? "Put in Notes, Ask: " : "Put in Chat: ");
+}
+
+async function fillAskBox(text, to) {
+  if (to === "notes") {
+    await switchTab("notes");
+    showNotesSection("ask");
+  } else {
+    await switchTab("chat");
+  }
+  const box = $(to === "notes" ? "question" : "chat-input");
+  if (!box) return;
+  box.value = text;
+  box.dispatchEvent(new Event("input", { bubbles: true }));
+  //: After the tab switch's own focus.
+  setTimeout(() => {
+    box.focus();
+    box.setSelectionRange?.(text.length, text.length);
+  }, 140);
 }
 
 //: The one way in with a question already chosen: used by the starters, and

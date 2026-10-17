@@ -48,7 +48,9 @@ CALLED_FLOOR = {
     #: Every face shipped is declared by an @font-face (row 1595).
     "atkinson": 4,
     "d3": 19,
-    "p5": 21,
+    #: 12 since the Dashboard sky draws on the canvas context (its colour parsing was
+    #: 426 ms of 540 ms busy idle at 4x CPU); p5 keeps the sketch, noise and timing.
+    "p5": 12,
     "flashtext": 2,
     "stencils": 7,
     "mammoth": 2,

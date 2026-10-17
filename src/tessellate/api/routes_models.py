@@ -408,6 +408,10 @@ def status(session: Session = Depends(get_session)) -> dict:
         "supports_pull": ollama.supports_pull(),
         "installed_models": installed,
         "chat_model": chat_model,
+        #: What "Small model mode: Auto" resolves to for this model (B56):
+        #: True / False, or None when the name carries no size ("no idea",
+        #: which the runner treats as off).
+        "chat_model_small": jobs.is_small_model(chat_model),
         # None = unknown because Ollama is off (don't warn about nothing)
         "chat_model_installed": _name_matches(chat_model, installed) if running else None,
         #: False on a fresh install that never chose one (the stored default
@@ -650,10 +654,16 @@ def suggested() -> dict:
 
     #: The card's numbers (INBOX 444): the memory a model asks for, what it is
     #: good at, the group's starting pick, and whether it fits this computer.
-    total_gb = hardware.total_memory_gb()
+    #: Judged on the person's corrected numbers, the memory free now and the
+    #: models Ollama holds in memory now (INBOX 904 B67).
+    machine = _hardware_profile()
+    loaded = _loaded_names()
 
     def described(kind: str, entry: dict) -> dict:
-        entry = model_cards.decorate(kind, entry, total_gb)
+        entry = model_cards.decorate(
+            kind, entry, machine["ram_gb"], machine["free_ram_gb"], machine["vram_gb"],
+            loaded=entry["name"].removesuffix(":latest") in loaded,
+        )
         real = installed.get(entry["name"])
         if real:
             return {**entry, "size": _human_bytes(real), "size_source": "measured"}
@@ -662,10 +672,45 @@ def suggested() -> dict:
     return {kind: [described(kind, m) for m in models] for kind, models in SUGGESTED_MODELS.items()}
 
 
+def _hardware_profile() -> dict:
+    return hardware.profile(deps.get_config().get_preference("hardware_override"))
+
+
+def _loaded_names() -> set[str]:
+    """Models Ollama holds in memory now, without `:latest`; empty when unknown."""
+    try:
+        names = deps.get_ollama().loaded_models() or []
+    except Exception:  # noqa: BLE001  # the backend being off is not an error here
+        names = []
+    return {str(n).removesuffix(":latest") for n in names if n}
+
+
+class HardwareBody(BaseModel):
+    """The person's correction. A missing or null field means "as detected";
+    `vram_gb: 0` means "no graphics card"."""
+
+    ram_gb: float | None = Field(default=None, gt=0, le=4096)
+    vram_gb: float | None = Field(default=None, ge=0, le=4096)
+
+
 @router.get("/hardware")
 def hardware_memory() -> dict:
-    """This computer's memory, for the cards' fit badges. None when unknown."""
-    return {"ram_gb": hardware.total_memory_gb()}
+    """This computer's memory and graphics, for the cards' fit badges: what was
+    detected, the memory free now and the person's correction on top (B67).
+    `ram_gb` is None when it is unknown."""
+    return {**_hardware_profile(), "models_installed": len(_installed_names()), "models_loaded": len(_loaded_names())}
+
+
+@router.put("/hardware")
+def save_hardware(body: HardwareBody) -> dict:
+    """Correct what was detected. Both fields empty puts the detected values back."""
+    fixed = {key: value for key, value in body.model_dump().items() if value is not None}
+    config = deps.get_config()
+    if fixed:
+        config.set_preference("hardware_override", fixed)
+    else:
+        config.unset_preference("hardware_override")
+    return hardware_memory()
 
 
 class InspectBody(BaseModel):

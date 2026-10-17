@@ -291,7 +291,8 @@ def test_the_blankets_leave_transitions_to_the_switch():
     """Both reduced-motion blankets still the animations; their transition half
     applies only while Interface animations is not on (or to the decorative
     surfaces), and an off blanket exists of its own."""
-    text = _blank_comments((CSS_DIR / "02-chat-graph.css").read_text(encoding="utf-8"))
+    # The manual and off blankets are motion-still.css (media on only while a switch is).
+    text = _blank_comments("\n".join((CSS_DIR / n).read_text(encoding="utf-8") for n in ("02-chat-graph.css", "motion-still.css")))
     rules = [(" ".join(m.group(1).split()), m.group(2))
              for m in re.finditer(r"([^{};]+)\{([^{}]*transition-duration:\s*0s !important[^{}]*)\}", text)]
     assert rules, "no transition blanket found"

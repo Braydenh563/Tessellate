@@ -233,4 +233,24 @@ async function waitForBoardOpen(page, objects = 0, timeout = 20000) {
   await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
 }
 
-module.exports = {boot, OUT, PW, BASE, openBoardsTab, waitForBoardOpen};
+// BEFORE_DIR (a sweep's before and after): a directory of older copies of
+// frontend js and css files, by their own names (atlas-life.js,
+// 08-consistency.css...), served in place of the current ones; the page is
+// reloaded and unlocked under them. Returns whether it routed anything.
+async function routeBefore(ctx, page, dir = process.env.BEFORE_DIR) {
+  if (!dir) return false;
+  const fs = require('fs');
+  for (const name of fs.readdirSync(dir)) {
+    const kind = name.endsWith('.css') ? 'css' : name.endsWith('.js') ? 'js' : '';
+    if (!kind) continue;
+    const re = new RegExp(`/${kind}/${name.replace(/[.]/g, '\\.')}(\\?|$)`);
+    await ctx.route(re, (r) => r.fulfill({ path: `${dir}/${name}`, contentType: kind === 'css' ? 'text/css' : 'text/javascript' }));
+  }
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(800);
+  if (await page.isVisible('#lock-password')) { await page.fill('#lock-password', PW); await page.click('#lock-submit'); }
+  await page.waitForTimeout(2500);
+  return true;
+}
+
+module.exports = {boot, OUT, PW, BASE, openBoardsTab, waitForBoardOpen, routeBefore};

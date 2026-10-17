@@ -32,7 +32,8 @@ MORE_TOPICS: list[dict] = [
             "The corner companion is a small character that lives on the page, "
             "not in any tab: it finds a free spot on each page, perches on a "
             "panel or a toolbar and rides with it as the page scrolls, reacts "
-            "to what you do, and naps when you are away. It steps out of the "
+            "to what you do (you type, it keeps quiet company; you idle, it "
+            "plays), and naps when you are away. It steps out of the "
             "way of menus, popups and the guided tour. Choose who it is in "
             "Settings, Appearance, Atlas and faces, Corner companion: Off, "
             "You, The chat's persona, Atlas, or Your own character (a name and "
@@ -428,10 +429,14 @@ MORE_TOPICS: list[dict] = [
             "above the list; they run one after another and one that fails "
             "does not stop the rest; a bundle's row shows each of its packages "
             "as it goes, waiting, installing or done. An installed package's ⋮ has Reinstall "
-            "(for a feature that is on but not working) and Remove, and its "
-            "row shows its version and size on disk. What pip is "
+            "(for a feature that is on but not working) and Remove (the "
+            "packaged app keeps its Desktop window, so that row has Reinstall "
+            "only), and its row shows its version and size on disk. What pip is "
             "doing shows an install as it runs. Dictation model size runs from "
-            "Tiny (fastest) to Medium (most accurate). Skip silence before "
+            "Tiny (fastest) to Medium (most accurate); each size says whether it "
+            "is on this computer, a size that is not downloads the first time "
+            "you dictate with it (choosing it asks first, and nothing downloads "
+            "until then), and Remove this size frees the disk. Skip silence before "
             "transcribing (on) stops Whisper writing words into the quiet around "
             "a clip; Dictation language skips the guess; Words to expect lists "
             "names and terms it should spell your way. Embedding models lists "
@@ -562,7 +567,7 @@ MORE_TOPICS: list[dict] = [
             "build a scheme", "border style", "shadow", "interface animations",
         ),
         "body": (
-            "Settings, Appearance. Themes: hover a theme to see it on the whole app, "
+            "Settings, Appearance. Themes: hover a theme, or press the eye in its corner, to see it on the whole app, "
             "press Surprise me for a random one, save and switch your own. Theme & "
             "colour: Palette, Mode (light, dark or system), Accent colour or a "
             "custom one (a colour a button's words cannot be read on is "
@@ -628,7 +633,9 @@ MORE_TOPICS: list[dict] = [
             "meaning follow under Close in meaning. A long section lists its "
             "groups under its own name in that list: press one to go to it, and "
             "the one you are reading is marked as you scroll. On a phone the "
-            "section picker holds the same groups under the section you are in."
+            "section picker holds the same groups under the section you are in. "
+            "A section with several folded groups has Expand all at the top of "
+            "its page (Collapse all once every group is open)."
         ),
         "badge": {"label": "General", "section": "general"},
     },
@@ -722,7 +729,7 @@ MORE_TOPICS: list[dict] = [
         ),
         "body": (
             "Settings, Import & export, Web clipper has a bookmark called Clip to "
-            "Tessellate. Drag it to your browser's bookmarks bar (or press Copy the "
+            "Tessellate (typing clipper in the command palette opens it). Drag it to your browser's bookmarks bar (or press Copy the "
             "bookmark and make a bookmark with it as the address). On any page, "
             "press it: a small Tessellate window opens beside the page with its "
             "title and address, and Save as a note keeps the page's main text, or "
@@ -852,7 +859,7 @@ MORE_TOPICS: list[dict] = [
         "id": "first-steps",
         "keywords": (
             "first steps", "start in three steps", "sample notebook", "sample notes", "example notes",
-            "remove the sample notes", "demo notes", "try it out", "hide these steps",
+            "remove the sample notes", "demo notes", "try it out", "hide these steps", "get started", "setup popup", "closed the welcome", "checklist",
         ),
         "body": (
             "A new notebook's Dashboard shows Start in three steps: 1. Your name, "
@@ -864,7 +871,10 @@ MORE_TOPICS: list[dict] = [
             "linked notes in the Graph); it is offered until you write your own "
             "first note. Remove the sample notes moves them all to the bin, where "
             "Restore brings one back, and takes away the categories they made. The steps leave once all three are done and "
-            "the sample notes are gone, or with Hide these steps."
+            "the sample notes are gone, or with Hide these steps. They are never lost: the "
+            "dashboard's Get started menu (beside Customise) lists the same three, ticked as "
+            "they are done, with Take the tour and Replay the welcome, and the same checklist "
+            "is the first row of the notifications bell until all three are done."
         ),
         "badge": {"label": "Dashboard", "tab": "dashboard"},
     },
@@ -1048,14 +1058,15 @@ MORE_TOPICS.extend(
         {
             "id": "editor-offers",
             "keywords": (
-                "offers under the note", "offers while i write", "remind me from a note",
+                "offers under the note", "offers while i write", "remind me from a note", "date in a note to calendar",
                 "sum checked", "check my sums", "wrong sum", "wrong total", "check the total", "link suggestion", "suggest a link",
                 "filing suggestion", "why this category", "chips under the note",
             ),
             "body": (
                 "While you write a note (Capture, or a note's Edit form), offers show as "
                 "chips under the box when you pause: a day in the text becomes Remind me "
-                "(press it to set the reminder, with Undo), a sum written with a wrong "
+                "(press it to set the reminder, with Undo; it goes on the Timeline and its "
+                "calendar, and the notice's Show on calendar opens that day), a sum written with a wrong "
                 "answer shows the right one (press it to put it in), and so does a Total: "
                 "line under a column of amounts that does not add up; a name another note "
                 "opens with becomes a [[link]], and File in names the category with its "
@@ -1189,7 +1200,9 @@ MORE_TOPICS.extend(
                 "Edit form lists the ones turned down under Not suggested, each "
                 "one press from coming back). With no AI running they come from your own tags: "
                 "the ones the note names (\"stats\" finds statistics), its title and first line "
-                "first, then those on the notes most like it and the notes it links to. Words in "
+                "first, then those on the notes most like it and the notes it links to; with room left, "
+                "a subject the note names in two different words and you have not tagged yet (gym and squats "
+                "make #fitness). Words in "
                 "quotation marks and a scan's footer do not count. Either way a tag is offered "
                 "only when the note has a word for it, at most three, and "
                 "pointing at one says which word. A tag turned down on three notes is offered "
@@ -1621,7 +1634,7 @@ MORE_TOPICS.extend(
                 "dates in my notes", "time words", "this friday", "next friday",
                 "saved recently", "recently saved", "lately", "last note", "latest note",
                 "newest note", "newest notes", "what did i write", "what did i save",
-                "recent notes",
+                "recent notes", "out of date", "newer note", "older note",
             ),
             "body": (
                 "Ask and Chat read a note's time words as the note meant them: "
@@ -1631,7 +1644,12 @@ MORE_TOPICS.extend(
                 "notebook rather than by searching for the words: \"What have I "
                 "saved recently?\", \"what did I write lately\" or \"my last "
                 "note\" lists your newest notes newest first, each cited with when "
-                "it was written, and works with no AI model running."
+                "it was written, and works with no AI model running. When a newer "
+                "note says something else about the same thing (\"my address is "
+                "now ...\"), the answer comes from the newer one and one line says "
+                "what the older said; and a note that says how long it holds "
+                "(\"until June\") gets a line once that time has passed, saying "
+                "it may be out of date."
             ),
             "badge": {"label": "Chat", "tab": "chat"},
         },
@@ -1649,7 +1667,10 @@ MORE_TOPICS.extend(
                 "(chat and filing, bigger machines, search, images, reading "
                 "text), each with its size on disk, the memory it asks for, what "
                 "it is good at and whether it fits this computer, and one "
-                "starting pick per group. One button downloads it or puts it to "
+                "starting pick per group. A line above the cards shows the "
+                "memory, free memory and graphics card it detected, and Edit "
+                "corrects them when they are wrong; the badges use the "
+                "corrected numbers and the memory free now. One button downloads it or puts it to "
                 "use, with progress and Cancel on the card; Remove and Copy name "
                 "are in its menu. Hide models too big for this computer leaves "
                 "out the ones that will not fit. Download another model takes any "
@@ -1752,7 +1773,9 @@ MORE_TOPICS.extend(
             "body": (
                 "Emoji and icons. One picker holds every Phosphor icon the app ships "
                 "and about 470 emoji: Emoji or Icons in the tab strip under its title, "
-                "type to search, Recent first, arrows and Enter to choose, Escape to close. On a board or a "
+                "type to search, Recent first, arrows and Enter to choose, Escape to close. "
+                "The last Emoji group is Japanese emoticons (kaomoji such as a shrug or a table flip), "
+                "found by name or by words like happy, cry and angry. On a board or a "
                 "map, the smiley on the tool dock (Add on a board, Map on a map) or Insert, "
                 "Emoji and icons… keeps it open: press one to place it "
                 "in the middle of the view, or drag it where it goes. An emoji lands "
@@ -2104,7 +2127,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "tags-categories", "filing", "suggested-tags", "tag-manager", "manage-categories", "tidy",
     )),
     ("Asking Atlas", (
-        "ask-chat", "answers-from-notes", "chat-controls", "chat-acts", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions",
+        "ask-chat", "answers-from-notes", "chat-controls", "slash-commands", "chat-acts", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions",
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
@@ -2122,7 +2145,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     )),
     ("Graph, Timeline, Reminders and Dashboard", (
         "graph", "graph-controls", "graph-display", "entities", "properties", "timeline", "timeline-controls", "reminders",
-        "reminders-controls", "dashboard", "dashboard-controls", "notifications", "spaces", "statistics",
+        "reminders-controls", "dashboard", "dashboard-controls", "patterns", "notifications", "spaces", "statistics",
     )),
     ("Small tools", (
         "timer", "count-words", "insert-template",
@@ -2468,8 +2491,10 @@ MORE_TOPICS.append({
     "body": (
         "Autocorrect fixes a clear typo, such as teh, as you finish the "
         "word, in the note boxes, the chat and Ask composers and the titles. "
-        "The corrected word is underlined for five seconds: click it to put "
-        "back what you typed, or press Backspace or Ctrl+Z straight after, and "
+        "The corrected word is underlined for five seconds: rest the pointer on "
+        "it or click it for a small menu to keep it, put back what you typed, "
+        "or edit the word (a document gets the same underline), "
+        "or press Backspace or Ctrl+Z straight after to put it back, and "
         "the toast carries Undo too. A word you put back is left alone for the "
         "rest of the session, and a word in your dictionary never changes. It "
         "never runs in code, links, tags or search boxes. Turn it off in "
@@ -2498,3 +2523,50 @@ MORE_TOPICS.append({
     "badge": {"label": "Help", "section": "help", "target": "credits-fold"},
 })
 TOPIC_META["credits"] = {"title": "Credits and licences", "path": "Settings, Help, Credits", "target": "credits-fold"}
+
+
+#: Patterns (INBOX 904 B84, the owner: "Do the patterns ever change?? What's
+#: the meaning or use of them?? Can I view them"), with the line that opens.
+MORE_TOPICS.append({
+    "id": "patterns",
+    "keywords": (
+        "patterns", "pattern", "what are patterns", "times since", "weeks running", "keeps coming up",
+        "patterns line", "do patterns change", "see the patterns",
+    ),
+    "body": (
+        "Patterns are what your notes keep coming back to, counted from the notes "
+        "themselves with no AI: a subject that came up again and again (\"university "
+        "came up 4 times since 16 July\"), one written about every week, a plan "
+        "still open, a decision you went back on, or a busy week. They change as you write, "
+        "since each is counted again whenever the dashboard draws. Press the "
+        "pattern on the dashboard's line to see the notes behind it; Notes, Tidy "
+        "lists every pattern whole. Its ... menu has Confirm, which says it as a "
+        "fact from then on, and Not right, which never shows it or anything like "
+        "it again."
+    ),
+    "badge": {"label": "Dashboard", "tab": "dashboard"},
+})
+#: Slash commands (O6, `ai/slash.py`): written from the registry, so a command
+#: added there is in this topic, `/help` and the "/" menu at once.
+def _slash_commands_topic() -> dict:
+    from tessellate.ai.slash_table import TABLE
+
+    listed = " ".join(f"{usage}: {summary}" for _, usage, summary, _ in TABLE)
+    return {
+        "id": "slash-commands",
+        "keywords": ("slash commands", "slash command", "commands", "exact answers", "chat commands", "type a command"),
+        "body": (
+            "Type a command in the chat box for an exact answer from your notes, with no AI. "
+            f"{listed} Typing / opens a menu with a row for each command; one that takes words "
+            "fills the box with its name and waits for them. Asking in plain words "
+            "(\"which notes have no tags\") runs the same command."
+        ),
+        "badge": {"label": "Chat", "tab": "chat"},
+    }
+
+
+MORE_TOPICS.append(_slash_commands_topic())
+TOPIC_META["slash-commands"] = {"title": "Slash commands", "path": "Chat tab, type / in the box, Commands"}
+
+
+TOPIC_META["patterns"] = {"title": "Patterns", "path": "The dashboard's line under the greeting, and Notes, Tidy"}

@@ -115,12 +115,14 @@ OFFLINE_MESSAGE = (
 HELP_TOPICS: list[dict] = [
     {
         "id": "capture",
-        "keywords": ("capture", "note", "template", "dictate", "sketch", "improve", "proofread", "draft", "tag", "category", "categorise", "write", "compose"),
+        "keywords": ("capture", "note", "template", "dictate", "sketch", "improve", "proofread", "generate title", "generate a title", "title from its words", "draft", "tag", "category", "categorise", "write", "compose"),
         "body": (
             "Notes tab: type into \"Capture a thought\" and Save. A local AI files "
             "it into a category and suggests tags; you can re-file or edit anytime. "
             "Use a template, dictate with the microphone icon, sketch with the "
-            "palette icon, or run \"Improve\" to proofread first. The Writing room has "
+            "palette icon, or run \"Improve\" to proofread first, which needs no model (rewording does). "
+            "A note's ... menu has Generate title, which with no model takes the title from the "
+            "note's first sentence and is named Title from its words. The Writing room has "
             "\"Split into notes\", which turns a block of pasted text into several "
             "AI-drafted, auto-linked notes."
         ),
@@ -172,7 +174,11 @@ HELP_TOPICS: list[dict] = [
             "own in Settings, Skills (New skill in the pane's bar opens the form). A skill can use the AI's tools, so it "
             "does the work rather than just describing it. A skill can also be "
             "a Markdown file saved in the skills folder that Settings, Skills "
-            "names; it is listed without a restart."
+            "names; it is listed without a restart. With no model running, nine built-in skills "
+            "still run, read straight off your notes with no AI and labelled as such: Summarise my week, "
+            "Daily review, Catch up on a topic, Find loose ends, Auto-tag my notes, Link related notes, "
+            "Tidy suggestions, Notebook health check and Find notes worth combining. "
+            "The others are marked (needs a model) in the Skills menu."
         ),
         "badge": {"label": "Skills", "section": "skills"},
     },
@@ -202,7 +208,9 @@ HELP_TOPICS: list[dict] = [
         "keywords": ("reminder", "due date", "snooze", "recur", "recurring", "early alert"),
         "body": (
             "The Reminders tab groups items into Overdue / Today / Upcoming / "
-            "Done. Set a priority, snooze, edit inline, or make one recurring: "
+            "Done. Add a reminder at the top of the Reminders tab: type it in plain words on the "
+            "Magic add line and press the sparkle, or fill in Remind me to, the "
+            "date and the time, then Add. Set a priority, snooze, edit inline, or make one recurring: "
             "\"every weekday\", \"every 2 weeks\", \"the last Friday of the month\", "
             "with an early alert such as \"1 day before\". "
             "The date and time fields open a month and the day's times, and "
@@ -327,7 +335,9 @@ HELP_TOPICS: list[dict] = [
         "keywords": ("timeline",),
         "body": (
             "The Timeline tab lists what you wrote newest first, grouped by day, "
-            "week, month or year (Auto picks the finest that reads well), as a "
+            "week, month or year (Auto picks the finest that reads well); the feed "
+            "opens on today with the week ahead above it, and an empty day ahead has "
+            "an Add for a reminder or an event. It shows as a "
             "feed, as a sortable table or as a calendar of a month, a week or a "
             "day. Kinds chooses notes, boards and maps, documents "
             "and reminders; Options sets the grouping, Group by (category, tag "
@@ -469,14 +479,17 @@ HELP_TOPICS: list[dict] = [
         "id": "models",
         "keywords": ("model", "ollama", "lm studio", "vllm", "llama.cpp", "utility model", "chat model", "sampling", "temperature", "no model connected", "no model notice", "hide notice", "banner", "popup"),
         "body": (
-            "Settings, Models picks the chat model and an optional smaller "
+            "Connect a model in Settings, Models, which picks the chat model and an optional smaller "
             "utility model for background jobs. Any OpenAI-compatible server "
             "works, not just Ollama, LM Studio, llama-server, Jan, vLLM. "
             "Sampling parameters (temperature, top-p, top-k, min-p, repeat "
             "penalty) are exposed there too, starting at what the model itself "
             "recommends. The No model connected banner above Ask, Chat and "
             "the writing desk can be hidden for good with Hide the \"No model "
-            "connected\" notices under Model backend (saved on this device); "
+            "connected\" notices under Model backend (saved on this device), "
+            "or from the banner itself: the caret beside Connect a model has "
+            "Hide these popups, and the toast that follows offers Show them "
+            "again; "
             "Atlas still answers from your notes without a model."
         ),
         "badge": {"label": "Models", "section": "models"},
@@ -1898,7 +1911,7 @@ HELP_TOPICS.extend(
                 "to your next question, and Ctrl+Shift+A opens the same agent over "
                 "any tab. Typing / in the box opens the chat menu: attach a note, a "
                 "document, a file or an image, upload one, Web search, "
-                "Plan first, Skills, "
+                "Plan first, Skills, Commands, "
                 "and Agent or Ask mode. The note button beside the box opens Attach: "
                 "a tab each for notes, documents, files, images and mind maps, with "
                 "a search; the arrows move, Space "
@@ -1980,7 +1993,7 @@ HELP_TOPICS.extend(
         },
         {
             "id": "timeline-controls",
-            "keywords": ("time bucket", "feed view", "table view", "calendar view", "month view", "week view", "reschedule", "jump to today", "density strip", "group by"),
+            "keywords": ("time bucket", "feed view", "table view", "calendar view", "month view", "week view", "reschedule", "jump to today", "density strip", "group by", "add an event"),
             "body": (
                 (
                     "Timeline controls. Feed shows the newest first, grouped by date; Table shows every "
@@ -1990,7 +2003,8 @@ HELP_TOPICS.extend(
                     "a +n opens the day in the feed. Drag a reminder to another day or hour to move it, or "
                     "press Alt and an arrow on it (Undo puts it back); the arrows walk the days, Page Up and "
                     "Page Down the months, T is today, Enter or Space opens the day (from a Day view, in the "
-                    "feed) and N starts a reminder on it. Below a tablet's width the calendar is the month's "
+                    "feed); double-click a day or an hour, or press Add or N, to add a reminder or an event (a "
+                    "meeting note) there. Below a tablet's width the calendar is the month's "
                     "rows as a list. Pick the time bucket (Auto, Day, Week, Month or Year; Auto takes the "
                     "finest one that keeps the headers few and filled: days for a few weeks of notes, weeks "
                     "for a year, months for several years), what rows are grouped by (Category, Tag, Thread, "
@@ -2627,6 +2641,14 @@ def topics_for(question: str, tab: str | None = None) -> list[dict]:
         #: A greeting names no feature, so the open tab's topics are not its
         #: answer either (INBOX 787: "hey" was answered with the Dashboard).
         return []
+    #: What the words ask comes before what they share a keyword with (B11):
+    #: "how do I use the app" is the overview from any tab, "what is this
+    #: page for" the tab's own topic, never the board library's "page".
+    from tessellate.ai import guide_intent
+
+    read = guide_intent.topics(question, tab, {topic["id"]: topic for topic in HELP_TOPICS}, TAB_TOPICS)
+    if read:
+        return read
     topics = _reading_topics(question)
     if not tab or topics:
         return topics
@@ -2916,6 +2938,16 @@ def offline_answer(
     if social:
         return social
     question, said = _read_as(question)
+    #: Read from the words, not the tab (B11, B86): asked for ideas, for help,
+    #: or what Atlas can change. Understood, so "Taking that as" is not said.
+    from tessellate.ai import guide_intent
+
+    read = guide_intent.reply(question, tab, {topic["id"]: topic for topic in HELP_TOPICS})
+    if read:
+        read["content"] = f"{read['content']}\n\n{OFFLINE_LEAD}" if not read.get("greeting") else read["content"]
+        return read
+    if guide_intent.read(question):
+        said = ""
     topics = topics_for(question, tab) if question else []
     if not topics:
         #: The app's help text for whatever is on screen, when there is any:
@@ -3080,6 +3112,22 @@ _HOW_TO = re.compile(
 )
 HELP_BLOCK_MAX_TOPICS = 2
 HELP_BLOCK_MAX_CHARS = 1400
+
+
+def names_app(question: str) -> bool:
+    """Whether a how-to the notes could not answer plainly names a part of the
+    app: a keyword of several words ("connect a model"), or two keywords of
+    the topic it matches. One single-word keyword is not enough: "how do I
+    learn python" matches Code files on "python", and "how can I improve my
+    sleep" Capture on "improve" (O1, measured 2026-10-17)."""
+    if not question or not _HOW_FRAME.match(question):
+        return False
+    topics = _matching_topics(question)
+    if not topics:
+        return False
+    lowered = question.lower()
+    hits = [k for k in topics[0]["keywords"] if _keyword_in(k, lowered)]
+    return len(hits) >= 2 or any(" " in k.strip() and not _HOW_FRAME.match(k) for k in hits)
 
 
 def help_block_for(question: str) -> str:

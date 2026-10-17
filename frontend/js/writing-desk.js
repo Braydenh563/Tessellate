@@ -32,7 +32,7 @@ async function composeDraft() {
   }
   const instruction = $("draft-instruction").value.trim();
   setDraftStatus("");
-  setLabel($("draft-status"), draft.trim() ? "ph:spin Revising…" : "ph:spin Drafting…");
+  setDraftWorking(draft.trim() ? "ph:spin Revising…" : "ph:spin Drafting…");
   const thinkingHost = $("draft-thinking");
   const thinking = thinkingFoldIn(thinkingHost);
   const thinkingText = thinking.querySelector(".thinking");
@@ -173,17 +173,15 @@ async function streamDraft(body, signal, onEvent) {
 //: pressing this twice must not leave two of them.
 async function suggestDraftTitle() {
   const box = $("draft-text");
-  const status = $("draft-status");
   const button = $("draft-title");
   const draft = box.value.trim();
   if (!draft) {
-    status.classList.add("error");
-    status.textContent = "Write a draft first, then it has something to name.";
+    setDraftStatus("Write a draft first, then it has something to name.", true);
     return;
   }
   button.disabled = true;
-  status.classList.remove("error");
-  setLabel(status, "ph:spin Thinking of a title…");
+  setDraftStatus("");
+  setDraftWorking("ph:spin Thinking of a title…");
   try {
     const body = await apiJson("/drafts/title", {
       method: "POST",
@@ -195,20 +193,19 @@ async function suggestDraftTitle() {
     //: `drafter.suggest_title`). That is a real answer and it gets a real
     //: sentence, not a thrown error.
     if (!title) {
-      status.classList.add("error");
-      status.textContent = `Couldn't think of a title for this one. ${aiNameNow()} may not be running.`;
+      setDraftStatus(`Couldn't think of a title for this one. ${aiNameNow()} may not be running.`, true);
       return;
     }
     pushDraftUndo();
     box.value = draftWithHeading(box.value, title);
     updateDraftCount();
     saveDraftLocally();
-    status.textContent = `Titled "${title}". Undo puts it back.`;
+    setDraftStatus(`Titled "${title}". Undo puts it back.`);
   } catch (error) {
-    status.classList.add("error");
-    status.textContent = error.message;
+    setDraftStatus(error.message, true);
   } finally {
     button.disabled = false;
+    setDraftWorking();
   }
 }
 
@@ -220,7 +217,7 @@ function draftWithHeading(draft, title) {
   return `# ${title}\n\n${rest.replace(/^\n+/, "")}`;
 }
 
-async function saveDraftAsNote() {
+async function saveDraftAsNote(asDraft = false) {
   const content = $("draft-text").value.trim();
   const status = $("draft-status");
   if (!content) {
@@ -257,14 +254,15 @@ async function saveDraftAsNote() {
         { content }
       );
     } else {
-      // Marked as a draft on the way in, same as the text-selection popup's
-      // "Save as draft note", asked for directly, so a note drafted here is
-      // just as findable in the Drafts filter (sidebar, Library) as one
-      // captured that way, not silently indistinguishable from a note typed
-      // straight into Notes.
+      // **A note by default, a draft when the caret says so** (owner,
+      // 2026-10-17: "the translated note I filed got filed as a draft"). The
+      // press says "Save as note" and now does it: filed in the background
+      // like any capture. "Save as draft" keeps the old behaviour, findable
+      // in the Drafts filter (sidebar, Library) like the text-selection
+      // popup's draft.
       entry = await apiJson("/entries", {
         method: "POST",
-        body: JSON.stringify({ content, tags, is_draft: true, defer_filing: true }),
+        body: JSON.stringify({ content, tags, is_draft: asDraft === true, defer_filing: true }),
       });
     }
     const wroteBack = draftNoteId !== null;
@@ -283,14 +281,23 @@ async function saveDraftAsNote() {
     renderDraftVersions();
     updateDraftCount();
     saveDraftLocally();
-    status.textContent = wroteBack ? "Saved back to the note." : "Saved as a note.";
-    toast(wroteBack ? "The note has been updated." : "Draft saved as a note.");
+    const kept = asDraft === true && !wroteBack;
+    status.textContent = wroteBack ? "Saved back to the note." : kept ? "Saved as a draft." : "Saved as a note.";
+    toast(wroteBack ? "The note has been updated." : kept ? "Saved as a draft, find it under Drafts." : "Saved as a note, Atlas is filing it.");
     await refreshEntries([entry.id]);
     flashEntry(entry.id); // show them where it landed
   } catch (error) {
     status.classList.add("error");
     status.textContent = error.message;
   }
+}
+
+//: The spinner and its words while a pass runs, in the Atlas column's head
+//: (INBOX 904 B76); no argument clears it. The status line below the user's
+//: thoughts keeps what a pass said when it ended.
+function setDraftWorking(label = "") {
+  setLabel($("draft-working"), label);
+  $("draft-working").classList.toggle("hidden", !label);
 }
 
 function setDraftBusy(busy) {
@@ -300,6 +307,31 @@ function setDraftBusy(busy) {
   // The draft box is being written into while this runs, so editing it would
   // be editing something that is about to be overwritten by the next chunk.
   $("draft-text").readOnly = busy;
+  if (!busy) setDraftWorking();
   $("draft-refine").disabled = busy;
   $("writing-room").classList.toggle("draft-writing", busy);
+}
+
+
+//: The caret half of the Save split button: one other way to save, as a draft
+//: (`kebabMenu`'s opener dressed as the split's second half, as the OCR
+//: workspace's Read does in `ocrSyncReadMenu`). Drawn when the writing room is
+//: first shown (`showNotesSection`), so the boot scripts do not carry it.
+function draftSaveMenuInit() {
+  const slot = $("draft-save-menu-slot");
+  if (!slot || slot.firstChild) return;
+  const wrap = kebabMenu(
+    [{ label: "ph:note-pencil Save as draft", title: "Keep it in Drafts to finish later, unfiled", run: () => saveDraftAsNote(true) }],
+    "More ways to save: as a draft"
+  );
+  const opener = wrap.querySelector(":scope > button");
+  if (opener) {
+    opener.id = "draft-save-menu";
+    opener.classList.remove("icon-only");
+    opener.classList.add("split-button-caret");
+    setLabel(opener, "ph:caret-down");
+    opener.title = "More ways to save";
+    opener.setAttribute("aria-label", "More ways to save: as a draft");
+  }
+  slot.replaceChildren(wrap);
 }

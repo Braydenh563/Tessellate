@@ -1622,6 +1622,9 @@ function wbMapHidden(index) {
 //: moment between creating one and the next tree refresh.
 function wbMapLabel(obj) {
   if (obj.kind === "topic") return obj.data?.content || "";
+  //: A caption the person gave a reference node wins over the item's name
+  //: (B38); without one the node still follows the item's name.
+  if (obj.data?.caption) return obj.data.caption;
   const resolved = window.wbMapState?.labels?.get(obj.id);
   if (resolved) return resolved;
   return obj.data?.content || `${obj.kind} ${obj.data?.ref_id ?? ""}`.trim();
@@ -3077,10 +3080,28 @@ function wbMapOpenReference(d) {
     openDocument(refId);
     return;
   }
-  // A file and a bookmark have no single "open this" entry point that is safe
-  // to guess at from here, so both go to the Library, which is where the item
-  // actually lives. Saying so beats a click that appears to do nothing.
-  toast(`This node points at a ${d.kind}: open it from the Library.`);
+  //: A file opens in the viewer every attachment opens in (an image zoomable,
+  //: a document readable); a bookmark opens its address in a new tab, held to
+  //: the schemes a link on a page may have (B38: "I cant ... even go to the
+  //: thing attached"; both used to send the person away to the Library).
+  if (d.kind === "file") {
+    openLightbox([{ filename: wbMapLabel(d), getUrl: () => mediaSrc(`/files/${refId}`) }], 0);
+    return;
+  }
+  if (d.kind === "link") {
+    apiJson("/bookmarks?limit=1000", { silent: true })
+      .then((rows) => {
+        const href = String((rows || []).find((row) => row.id === refId)?.url || "").trim();
+        if (!WB_MAP_LINK_SCHEMES.test(href)) {
+          toast("That bookmark is not a web address.", "info");
+          return;
+        }
+        window.open(href, "_blank", "noopener,noreferrer");
+      })
+      .catch(() => toast("That bookmark could not be opened.", "info"));
+    return;
+  }
+  toast(`This node points at a ${d.kind}, which has nothing to open here.`, "info");
 }
 
 //: A node's drawn size. The DOM first, because a map node is `height: auto`
@@ -4936,7 +4957,7 @@ function wbMapEditNode(id, { now = false } = {}) {
   if (!node || node.kind !== "topic") wbMapTypeahead = null;
   if (!node) return;
   if (node.kind !== "topic") {
-    toast("This node's name comes from the item it points at.");
+    wbMapEditCaption(node);
     return;
   }
   // The render that just ran replaced this element, so it is looked up fresh
@@ -4968,6 +4989,20 @@ function wbMapEditNode(id, { now = false } = {}) {
   };
   if (now) open();
   else requestAnimationFrame(open);
+}
+
+//: **A reference node's own words** (B38). Its name is the item's, so a
+//: rename here is a caption on the node: the item is untouched, the tree
+//: still resolves the item's name, and typing the item's own name back (or
+//: the caption cleared by the Reset row) returns the node to following it.
+//: Escape answers "" like an empty field, so an empty answer changes nothing.
+async function wbMapEditCaption(node) {
+  const resolved = window.wbMapState?.labels?.get(node.id) || "";
+  const current = node.data?.caption || resolved;
+  const answer = String((await promptDialog("What should this node say?", current, { confirmLabel: "Rename the node" })) ?? "").trim();
+  if (!answer || answer === current) return;
+  await wbMapSetNodeStyle(node, { caption: answer === resolved ? null : answer.slice(0, 120) });
+  renderWhiteboardNow();
 }
 
 //: **A map always keeps one topic** (MINDMAP_PLAN.md §12.0, decided after the
@@ -9094,7 +9129,7 @@ function wbOutlineRowEl(node, depth) {
   row.appendChild(field);
   //: A reference's name is the note or file behind it, not the map's to edit.
   if (node.kind !== "topic") {
-    field.title = "This topic's name comes from the item it points at";
+    field.title = "This topic's name comes from the item it points at. Press F2 on the map to give it a caption.";
   } else {
     const pencil = document.createElement("button");
     pencil.type = "button";

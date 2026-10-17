@@ -47,4 +47,22 @@ def test_the_dashboard_level_is_stored_only_when_chosen_and_follows_compact():
     body = dash[dash.index("function applyDashDensity(") :]
     body = body[: body.index("\n}\n")]
     assert "if (persist) prefs.set(DASH_DENSITY_KEY, density);" in body
-    assert 'density === "full" && appCompact ? "compact" : density' in body
+    assert 'density === "full" && appCompact && (appChosen || !dashDensityChosen())' in body
+
+
+def test_an_explicit_full_dashboard_beats_the_automatic_short_window_compact():
+    # INBOX 904 B12 + B64: "why does the quick access look so small on the full
+    # view", "sometimes loses its full form and goes really small and short".
+    # One cause: a window 700px tall or less made Full the compact dashboard
+    # (tile 79px x 274px with its hint became 34px x 115px, no hint) while the
+    # View menu still ticked Full. A Full the person picked now holds; an app
+    # density they chose in Appearance still folds it. Measured by
+    # `scratchpad/ui-sweeps/quickstrip.js`.
+    dash = _text("dashboard.js")
+    body = dash[dash.index("function applyDashDensity(") :]
+    body = body[: body.index("\n}\n")]
+    assert "dashDensityChosen()" in body and 'prefs.get("density", null)' in body
+    assert 'density === "full" && appCompact && (appChosen || !dashDensityChosen())' in body
+    menu = dash[dash.index("function dashCustomiseItems(") :]
+    menu = menu[: menu.index("DASH_VIEW_LABELS[value]")]
+    assert 'dataset.density' in menu, "the View menu must tick what the page is showing"

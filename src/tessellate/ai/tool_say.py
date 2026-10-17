@@ -307,14 +307,19 @@ def _contradictions(result: dict, args: dict) -> Said:
 def _summary(result: dict, args: dict) -> Said:
     notes = [n for n in result.get("notes") or [] if isinstance(n, dict)]
     period = str(result.get("period") or "lately")
+    #: "all time" is no window: "In the all time you wrote four notes" was
+    #: the needle path's summary (O1 probe, 2026-10-17).
+    whole = period in ("all time", "lately")
     n = int(result.get("count") or len(notes))
     if not notes:
-        return f"You wrote no notes in the {period}.", "", _chips(("Open your notes", NOTES))
+        empty = "You have no notes yet." if whole else f"You wrote no notes in the {period}."
+        return empty, "", _chips(("Open your notes", NOTES))
     kinds: dict[str, int] = {}
     for note in notes:
         kinds[str(note.get("category") or "Uncategorised")] = kinds.get(str(note.get("category") or "Uncategorised"), 0) + 1
     top = sorted(kinds.items(), key=lambda kv: -kv[1])
-    lead = f"In the {period} you wrote {count_noun(n, 'note')}, most in {top[0][0]}." if len(top) > 1 else f"In the {period} you wrote {count_noun(n, 'note')}, all in {top[0][0]}."
+    said = f"You have {count_noun(n, 'note')}" if whole else f"In the {period} you wrote {count_noun(n, 'note')}"
+    lead = f"{said}, most in {top[0][0]}." if len(top) > 1 else f"{said}, all in {top[0][0]}."
     body = _table(["Category", "Notes"], [[k, v] for k, v in top]) + "\n\n" + "\n".join(_note_row(x) for x in notes[:6])
     return lead, body, _chips(("Open your notes", NOTES))
 
@@ -390,6 +395,8 @@ def _reminders(result: dict, args: dict) -> Said:
 
 
 def _skills(result: dict, args: dict) -> Said:
+    if "tools" in result or result.get("example") is not None:
+        return _tools(result, args)
     rows = [s for s in result.get("skills") or [] if isinstance(s, dict)]
     if not rows:
         return "You have no skills yet.", "", _chips(("Open Skills", SKILLS))
@@ -404,8 +411,51 @@ def _help(result: dict, args: dict) -> Said:
         return "The help has nothing on that.", "", _chips(("Open Help", settings_at("help")))
     first = rows[0].split(":", 1)
     lead = f"From the app's help, on {first[0].strip().lower()}:" if len(first) == 2 else "From the app's help:"
+    #: The sentence that answers the asking, the one Chat's help register
+    #: leads with (`composer.help_line`), before the topic's opening.
+    answer = str(result.get("answer") or "").strip()
+    if answer:
+        return f"{lead} {answer}", "", _chips(("Open Help", settings_at("help")))
     body = "\n\n".join(cut_title(r.split(":", 1)[1].strip() if ":" in r else r, 320) for r in rows[:2])
     return lead, body, _chips(("Open Help", settings_at("help")))
+
+
+_GROUP_WORDS = {"read": "reads", "write": "changes notes", "confirm": "asks first", "online": "goes online"}
+
+
+def _tool_name(name: object) -> str:
+    """A tool's name as words ("search_notes" is "Search notes"), B48: a
+    tool is named for the person, never by its identifier."""
+    said = str(name or "").replace("_", " ").strip()
+    return said[:1].upper() + said[1:]
+
+
+def _tools(result: dict, args: dict) -> Said:
+    """`list_tools` (O10): how many, then a table of what each does; with a
+    name, that one tool and a call to copy."""
+    if result.get("example") is not None:
+        return _tool_described(result, args)
+    rows = [r for r in result.get("tools") or [] if isinstance(r, dict)]
+    if not rows:
+        return "No tool matches that.", "", _chips(("Open Settings, Tools it can use", settings_at("tools")))
+    off = sum(1 for r in rows if not r.get("enabled", True))
+    lead = f"I have {count_noun(len(rows), 'tool')}" + (f", {count_word_of(off)} of them turned off in Settings" if off else "") + "."
+    body = _table(["Tool", "What it does", "Kind"], [[_tool_name(r.get("name")), _plain(r.get("does")), _GROUP_WORDS.get(str(r.get("group")), "")]
+                                                     for r in rows[:30]])
+    return lead, body, _chips(("Open Settings, Tools it can use", settings_at("tools")))
+
+
+def _tool_described(result: dict, args: dict) -> Said:
+    """One tool (O10): what it does, then what it takes, in words (the call
+    itself, JSON, is the model's: `example` in the result)."""
+    name = _tool_name(result.get("name"))
+    state = "" if result.get("enabled", True) else " It is turned off in Settings, Tools it can use."
+    lead = f"{name} is one of my tools. {_sentence(str(result.get('description') or ''))}{state}"
+    schema = result.get("parameters") if isinstance(result.get("parameters"), dict) else {}
+    takes = list((schema.get("properties") or {}).keys())
+    needed = [k for k in schema.get("required") or [] if k in takes]
+    body = f"It takes {join_items(takes)}" + (f", and needs {join_items(needed)}." if needed else ".") if takes else "It takes nothing."
+    return lead, body, _chips(("Open Settings, Tools it can use", settings_at("tools")))
 
 
 def _chat_history(result: dict, args: dict) -> Said:

@@ -9,6 +9,7 @@
  "atlas.js::interval": 1,
  "atlas.js::mutation-observer": 3,
  "atlas.js::raf": 3,
+ "autocorrect.js::raf": 1,
  "avatars.js::interval": 2,
  "avatars.js::mutation-observer": 6,
  "avatars.js::raf": 9,

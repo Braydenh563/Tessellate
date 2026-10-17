@@ -21,6 +21,7 @@ from tessellate.ai import model_manager
 from tessellate.core import deps, jobruns, taskhistory
 from tessellate.core.database import EmbeddingRecord, JobRun
 from tests._app_js import frontend_text
+from tests._pool_wait import pool_idle
 from tests._repo_files import repo_files
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -279,6 +280,7 @@ def test_a_folder_import_records_an_import(client, tmp_path, monkeypatch):
     monkeypatch.setenv("HOME", str(home))
     monkeypatch.setenv("USERPROFILE", str(home))
     assert client.post("/import/directory", json={"path": str(home / "vault")}).status_code == 202
+    pool_idle()
     assert _runs(client)["import"]["result"] == "imported 1 note from a folder"
 
 
@@ -597,3 +599,23 @@ def test_the_logs_button_filters_on_the_run_and_an_empty_log_is_the_empty_state(
     assert "This job wrote no log lines" in shared and '"log-none"' in shared
     html = (ROOT / "frontend/index.html").read_text(encoding="utf-8")
     assert re.search(r'id="logs-empty" class="empty-state hidden"', html)
+
+
+def test_an_interrupted_run_keeps_when_it_started_and_claims_no_finish_time(client):
+    """B66 (INBOX 904): "Last run 26 min ago, failed: The app closed before
+    this finished" on an app that had not been running all day. The row was
+    stamped finished at the moment the next start settled it, so the line read
+    the start-up time as the run's time. The run's own start is the only time
+    anyone knows; there is no finish."""
+    from datetime import datetime, timedelta
+
+    jobruns.begin("reindex")
+    long_ago = datetime.utcnow() - timedelta(days=2)
+    with deps.get_db().session() as session:
+        session.get(JobRun, "reindex").started_at = long_ago
+        session.commit()
+    assert jobruns.mark_interrupted() == 1
+    row = _runs(client)["reindex"]
+    assert row["status"] == "failed"
+    assert row["finished_at"] is None
+    assert row["started_at"].startswith(long_ago.strftime("%Y-%m-%dT%H"))

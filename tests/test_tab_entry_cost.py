@@ -1,0 +1,197 @@
+"""Tab entry cost (perf sweep 2026-10-17, scratchpad/ui-sweeps/tabenter.js).
+
+The frame spikes on a tab press were measured with the companion off at 4x
+CPU, on a 2,000-note notebook, and traced by Chromium event
+(scratchpad/ui-sweeps/tabtrace.js). Each test here holds one win that a
+source-level check can hold; the numbers are in the commit that added it.
+"""
+
+import re
+from pathlib import Path
+
+JS = Path(__file__).resolve().parent.parent / "frontend" / "js"
+CANVAS = (JS / "graph-canvas.js").read_text(encoding="utf-8")
+
+
+def _body(source: str, signature: str) -> str:
+    start = source.index(signature)
+    return source[start : source.index("\n}\n", start)]
+
+
+def test_a_hidden_graph_tab_draws_nothing():
+    """Leaving the Graph tab left the canvas drawing for about a second (37
+    draws, 60 ms at 1x, 240 ms at 4x) into the next tab's entry window: the
+    worker's last ticks still arrived and each asked for a frame of a map
+    nobody could see. A draw for the tab's own map is dropped while the page
+    is hidden; the next visit renders the map in full (`switchTab`)."""
+    hidden = _body(CANVAS, "function gcTabHidden(")
+    assert 'tab-graph' in hidden and 'classList.contains("hidden")' in hidden
+    request = _body(CANVAS, "function gcRequestDraw(")
+    assert request.index("gcTabHidden(s)") < request.index("requestAnimationFrame")
+    draw = _body(CANVAS, "function gcDraw(")
+    assert re.search(r"if \(gcTabHidden\(s\)\)", draw[:400])
+
+
+EDITOR = (JS / "editor.js").read_text(encoding="utf-8")
+
+
+def test_focusing_a_composer_does_not_fetch_the_library_bundle_at_once():
+    """Arriving on Chat focuses the composer (`switchTab`), and the warm-up on
+    focus used to fetch and run the Library bundle (d3, documents.js, the
+    whiteboard files: 17 scripts, ~2 MB) in that same press: the first long
+    task of every first Chat visit. It now waits out the arrival and runs when
+    the page is idle, and a keystroke that needs the adapter still asks for
+    the bundle itself (`editorSurfaceFor`), so the first "/" is not lost."""
+    listener = EDITOR[EDITOR.index("if (typeof asSurface === \"function\") return;\n    editorWarmSurfaceModule") :]
+    listener = listener[: listener.index("\n);\n")]
+    assert "editorWarmSurfaceModule(el)" in listener
+    assert "editorEnsureSurfaceModule" not in listener
+    warm = _body(EDITOR, "function editorWarmSurfaceModule(")
+    assert re.search(r"setTimeout\([^;]*,\s*(\d{4,})\s*\)", warm) or "EDITOR_WARM_DELAY_MS" in warm
+    assert "requestIdleCallback" in warm
+    assert 'document.activeElement === el' in warm
+    assert re.search(r"EDITOR_WARM_DELAY_MS = (\d+)", EDITOR) and int(re.search(r"EDITOR_WARM_DELAY_MS = (\d+)", EDITOR).group(1)) >= 1500
+    # The keystroke path is untouched.
+    assert "editorEnsureSurfaceModule(box);" in _body(EDITOR, "function editorSurfaceFor(")
+
+
+def test_a_caret_does_not_resolve_the_surface_adapter():
+    """`selectionchange` fires as a composer takes focus; the selection bar
+    resolved the surface first, which fetched the Library bundle, to learn
+    there was no selection. A collapsed caret in a plain box is answered
+    before the adapter is asked for."""
+    sync = _body(EDITOR, "function selectionBarSync(")
+    assert sync.index("raw.selectionStart === raw.selectionEnd") < sync.index("editorSurfaceFor(")
+    assert 'typeof asSurface !== "function"' in sync[: sync.index("editorSurfaceFor(")]
+
+
+DASH = (JS / "dashboard.js").read_text(encoding="utf-8")
+
+
+def test_the_dashboard_sky_does_not_parse_a_p5_colour_per_shape():
+    """Idle on the Dashboard at 4x CPU the constellation was 527 ms of the 540
+    ms the page was busy in 5 s, 426 ms of it p5's colour parser (`value`):
+    one `fill` per wash strip (55), one `stroke` per connecting line and two
+    `fill`s per star, every frame. The scene draws on the canvas context with
+    one gradient for the wash and a colour string per shape, and reads the
+    accent's hue once."""
+    start = DASH.index("    const scene = (t, settled = false) => {")
+    scene = DASH[start : DASH.index("\n    };\n", start)]
+    for call in ("p.fill(", "p.stroke(", "p.rect(", "p.circle(", "p.line(", "p.color("):
+        assert call not in scene, call
+    assert "createLinearGradient" in scene
+    assert "washHue" in DASH[start - 600 : start] or "washHue ??=" in scene
+
+
+FRONTEND = JS.parent
+MOTION_SHEET = "motion-still.css"
+CALM = "(prefers-reduced-motion: reduce)"
+
+
+def test_the_still_motion_blankets_are_a_sheet_that_exists_only_while_a_switch_is_on():
+    """Every tab entry restyles hundreds of elements, and the reduced-motion
+    blankets (the OS hint's, `:root[data-motion="reduced"] *:where(:not(...))`
+    with 7 selectors, and the three of `[data-ui-motion="off"]`) were tried
+    against each of them while no switch was on: the subject is
+    `*:where(:not(:is(...) *))`, so each element walked its ancestors before
+    the cheap `:root[...]` test on the far end could reject it. Deleting the
+    four rules of the manual pair took the Library's reveal from 22.6 to 13.3
+    ms of style at 1x on 2,611 styled elements (about 40%). They live in a
+    sheet whose `media` is the OS hint until `data-motion="reduced"` or
+    `data-ui-motion="off"` is set (theme-boot.js before first paint, then
+    `applyAppearance`), so the default state matches none of them."""
+    index = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    link = re.search(
+        r'<link rel="stylesheet" href="/css/%s\?v=[^"]+" media="%s" id="motion-still-sheet">' % (MOTION_SHEET, re.escape(CALM)),
+        index,
+    )
+    assert link, "the still-motion sheet is not linked with the OS hint as its media"
+    chat = '<link rel="stylesheet" href="/css/02-chat-graph.css'
+    assert index.index(chat) < link.start() < index.index('<link rel="stylesheet" href="/css/03-dashboard-widgets.css')
+    base = (FRONTEND / "css" / "02-chat-graph.css").read_text(encoding="utf-8")
+    sheet = (FRONTEND / "css" / MOTION_SHEET).read_text(encoding="utf-8")
+    for selector in (
+        ':root[data-motion="reduced"] *',
+        ':root[data-ui-motion="off"] *',
+        "@media (prefers-reduced-motion: reduce) {\n  *:where(:not(:is(#nm-buddy",
+    ):
+        assert selector in sheet and selector not in base, selector
+    for source in ((JS / "theme-boot.js").read_text(encoding="utf-8"), (JS / "settings.js").read_text(encoding="utf-8")):
+        assert 'getElementById("motion-still-sheet")' in source
+        assert re.search(r'\.media = [^;]*"reduced"[^;]*"off"[^;]*"all" : "%s"' % re.escape(CALM), source)
+
+
+def _has_with_universal_descendant(selector: str) -> bool:
+    """True when a compound holding `:has(` is followed by a descendant or
+    child combinator and the subject is `*`, only `:not()`/`:where()` or a
+    `::first-line`/`::first-letter` box."""
+    from tests.test_css_invalidation import _split_top
+
+    norm = re.sub(r"\s*([>+~])\s*", r" \1 ", selector.strip())
+    compounds: list[list] = []
+    for token in (t for t in _split_top(norm, " ") if t):
+        if token in (">", "+", "~"):
+            if compounds:
+                compounds[-1][1] = token
+            continue
+        compounds.append([token, " "])
+    if len(compounds) < 2:
+        return False
+    last = compounds[-1][0]
+    open_ended = (
+        last == "*"
+        or re.fullmatch(r"\*?(:not\([^)]*\)|:where\([^)]*\))+", last) is not None
+        or "::first-line" in last
+        or "::first-letter" in last
+    )
+    return open_ended and any(":has(" in c and comb in (" ", ">") for c, comb in compounds[:-1])
+
+
+def test_the_universal_descendant_detector_knows_the_shape():
+    assert _has_with_universal_descendant("a:is(:focus-visible, :has(:focus-visible)) > :not(.x):not(.y)")
+    assert _has_with_universal_descendant("a:has(:focus-visible)>*:not(.x)")
+    assert _has_with_universal_descendant("li:not(:has(> .t)) > .c::first-line")
+    assert not _has_with_universal_descendant("a:has(:focus-visible)")
+    assert not _has_with_universal_descendant(".steps:has(> :nth-child(2)) > .step::before")
+    assert not _has_with_universal_descendant("a:has(:focus-visible) > .x")
+
+
+def test_no_has_anchor_carries_a_universal_descendant():
+    """Timeline entry at 4x CPU, 2,000 notes, companion off: 46 style recalcs
+    of about 11,000 elements, 624 ms median, one per `appendTimelineRows`
+    chunk. Each chunk restyled the whole Timeline card, 897 elements with its
+    rows locked by `content-visibility` (3,487 without). Cause: a `:has()`
+    anchor whose selector ends in a universal child (`> :not(...)`, `> *`) or a
+    `::first-line` box is invalidated for every descendant, on any ancestor that
+    might hold the anchor, whenever anything under it is inserted. Four rules
+    did it (the collapsed sidebars' keyboard peek in 07 and 08, the opened
+    row's first line, Atlas's blink). The anchor now sets custom properties the
+    children read, and the children are named. One empty append went from 897
+    elements and 50-90 ms to 59-61 elements and 11-14 ms. The whole Timeline
+    entry (scratchpad/ui-sweeps, same session, old and new stylesheet on one
+    server): style 654 to 246 ms and 10,375 to 2,823 restyled elements at 4x,
+    84 to 39 ms and 6,830 to 2,271 at 1x; layout 197 to 130 ms and the worst
+    task 246 to 178 ms at 4x. The hover twin of the peek is in the same
+    anchor rule, so tests/test_hover_focus_pairs.py still reads a twin; the
+    token budget paid for the three `--sb-peek*` tokens by inlining
+    `--measure` and `--outline-step`, each read once."""
+    from tests.test_css_invalidation import _selectors, _split_top
+
+    found = []
+    for sheet in sorted((FRONTEND / "css").glob("*.css")):
+        for line, prelude in _selectors(sheet.read_text(encoding="utf-8")):
+            for selector in _split_top(prelude, ","):
+                if _has_with_universal_descendant(selector):
+                    found.append("%s:%d %s" % (sheet.name, line, selector.strip()[:120]))
+    assert not found, "\n".join(found)
+
+
+def test_the_peek_and_first_line_and_blink_rules_keep_their_new_shape():
+    base = (FRONTEND / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    cons = (FRONTEND / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    assert "--sb-peek: 1" in base and "opacity: var(--sb-peek)" in base
+    assert "--sb-peek-transform: none" in cons and "transform: var(--sb-peek-transform)" in cons
+    assert "li.row-expanded:not(:has(> .entry-title)) > .entry-content::first-line" not in cons
+    assert "> .entry-title ~ .entry-content::first-line" in cons
+    blink = [ln for ln in cons.splitlines() if "&.atl-layer :is(" in ln]
+    assert blink and all(".atl-blink.nm-blinks > *" not in ln for ln in blink)

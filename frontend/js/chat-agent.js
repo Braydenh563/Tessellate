@@ -2664,6 +2664,7 @@ function renderDraftTarget() {
   chip.textContent = draftNoteId === null ? "" : `Carrying on: ${draftNoteLabel}`;
   chip.title = draftNoteId === null ? "" : `Saving writes back to "${draftNoteLabel}"`;
   setLabel(save, draftNoteId === null ? "ph:floppy-disk Save as note" : "ph:floppy-disk Save to that note");
+  $("draft-save-menu-slot")?.classList.toggle("hidden", draftNoteId !== null);
   save.title = draftNoteId === null
     ? ""
     : `Write this back to "${draftNoteLabel}" rather than filing a second copy`;

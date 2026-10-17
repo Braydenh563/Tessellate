@@ -18,3 +18,4 @@ Setup (replace NAME and PORT with the brief's values; BRANCH is the integration 
 - Token rule: no narration, no restating the brief; read only line ranges (`sed -n`, `grep -n`), never whole files over 300 lines; skip screenshots, numbers only.
 - Find code through the map first: `grep -n 'NAME' docs/CODEMAP.md` gives `name | file:line` for every function, id, route, CSS section, test file and plan heading (17,700 lines: grep it, never read it). Grep the source only when the map has no row; regenerate with `python scripts/codemap.py` when `tests/test_codemap_fresh.py` fails.
 - Final report, five lines and no more: status; commits (short hashes, one phrase each); numbers measured (before to after); not verified; found-not-fixed.
+- Send the final report once, only after every command you started (a gate, a test run, a server) has exited; never an interim "waiting on background work" report. Each extra hand-back wakes the orchestrator and re-reads its whole context.

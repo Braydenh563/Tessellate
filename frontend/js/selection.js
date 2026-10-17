@@ -574,6 +574,10 @@ function fieldSelection() {
   // `selectionStart` is null on input types that do not support it (number,
   // email, colour…), which is exactly the set we should not offer this on.
   if (el.selectionStart == null || el.selectionStart === el.selectionEnd) return null;
+  //: A one-line field with all of its text selected is a name waiting to be
+  //: replaced (a new document's "Untitled document N", a board's rename), not
+  //: a passage: the popup used to open over it (INBOX 904 B17, B24).
+  if (el.tagName === "INPUT" && el.selectionStart === 0 && el.selectionEnd === el.value.length) return null;
   //: A search box's selected query is not writing (the Finder and the
   //: palette open with their query selected so typing replaces it), and a
   //: field inside an overlay belongs to that overlay: the popup drew its

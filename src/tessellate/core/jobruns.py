@@ -595,7 +595,9 @@ def mark_interrupted(db=None) -> int:  # noqa: ANN001
             for row in rows:
                 row.status = "failed"
                 row.error = "The app closed before this finished."
-                row.finished_at = datetime.now(timezone.utc)
+                # No `finished_at`: nobody knows when it ended, and stamping the
+                # start-up time made "Last run 26 min ago" of a run from days
+                # before (B66). The line then reads the run's own start.
             session.commit()
             return len(rows)
     except Exception:  # noqa: BLE001

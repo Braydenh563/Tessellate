@@ -490,6 +490,8 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         "hint": None,
         # And with the sticky note's corner flap, per note (INBOX 792).
         "fold": None,
+        # Added with the reference node caption (INBOX 904 B38); None until set.
+        "caption": None,
     }
 
     moved = board_client.put(

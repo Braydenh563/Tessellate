@@ -204,10 +204,103 @@ const ICON_EMOJI_SOURCE = [
     "triangular_flag_on_post=\u{1F6A9},chequered_flag=\u{1F3C1},"],
 ];
 
+//: **Everyday names for emoji** (owner, 2026-10-17: the folded hands "should
+//: be both high five and pray"). Search reads the Unicode name, which nobody
+//: types; these are the words people do, keyed by the name as the picker shows
+//: it. A key that is not a name in the lists above fails
+//: `tests/test_icon_picker_aliases.py`.
+const ICON_EMOJI_ALIASES = {
+  "person with folded hands": "pray prayer please thanks thank you high five namaste hope beg",
+  "handshake": "deal agree agreement shake hands partnership",
+  "flexed biceps": "strong strength muscle gym flex power",
+  "face with tears of joy": "lol laugh laughing funny haha crying laughing",
+  "rolling on the floor laughing": "rofl lmao lol laugh funny",
+  "loudly crying face": "sob sad cry crying tears upset",
+  "crying face": "sad cry tear tears upset",
+  "face screaming in fear": "scream scared shocked omg fear horror",
+  "smiling face with sunglasses": "cool chill sunglasses awesome",
+  "thinking face": "hmm think wondering ponder",
+  "winking face": "wink flirt joke",
+  "thumbs up sign": "like yes approve good ok agree",
+  "thumbs down sign": "dislike no bad disapprove",
+  "clapping hands sign": "applause clap bravo well done congrats",
+  "waving hand sign": "hello hi bye wave goodbye",
+  "ok hand sign": "okay perfect fine good",
+  "victory hand": "peace two fingers win",
+  "raised hand": "stop wait hand high five",
+  "party popper": "celebrate celebration congrats party tada",
+  "birthday cake": "birthday cake party dessert",
+  "fire": "hot flame lit burn trending",
+  "sparkles": "magic shiny new clean glitter",
+  "glowing star": "star shine favourite favorite",
+  "hundred points symbol": "100 perfect score full marks",
+  "electric light bulb": "idea lightbulb light bulb tip",
+  "pile of poo": "poop poo crap shit",
+  "skull": "dead death danger spooky",
+  "rocket": "launch ship fast startup",
+  "white heavy check mark": "done tick check complete yes correct",
+  "heavy check mark": "done tick check complete yes correct",
+  "cross mark": "no wrong x cancel delete",
+  "warning sign": "caution alert danger careful",
+  "collision symbol": "boom bang crash explosion",
+  "eyes": "look see watching looking",
+};
+
+//: **Japanese emoticons** (kaomoji; INBOX 904 B81). `[name, text, aliases]`,
+//: an array rather than `ICON_EMOJI_SOURCE`'s comma and equals delimited
+//: strings, because the faces are made of commas, equals signs and backslashes.
+//: Names are what the tile says; the aliases are the words people type.
+const ICON_KAOMOJI = [
+  ["shrug", "¯\\_(ツ)_/¯", "idk dunno whatever meh who knows"],
+  ["table flip", "(╯°□°)╯︵ ┻━┻", "flip table rage angry mad"],
+  ["table back", "┬─┬ ノ( ゜-゜ノ)", "put table back calm unflip"],
+  ["rage flip", "(ノಠ益ಠ)ノ彡┻━┻", "table flip furious angry mad"],
+  ["happy", "(＾▽＾)", "smile glad cheerful pleased"],
+  ["big smile", "(≧▽≦)", "happy grin laugh delighted"],
+  ["cheer", "\\(^o^)/", "yay hooray happy celebrate arms up"],
+  ["yay", "ヽ(>∀<☆)ノ", "happy excited celebrate cheer"],
+  ["cute", "(｡◕‿◕｡)", "sweet happy kawaii smile"],
+  ["wink", "(^_~)", "joke flirt"],
+  ["blush", "(*/ω＼)", "shy embarrassed bashful"],
+  ["love", "(♡´▽`♡)", "heart hearts crush adore"],
+  ["hug", "(づ｡◕‿‿◕｡)づ", "hugs cuddle embrace comfort"],
+  ["crying", "(T_T)", "cry sad tears sob upset"],
+  ["sobbing", "(╥﹏╥)", "cry crying sad tears heartbroken"],
+  ["sad", "(︶︹︺)", "unhappy down blue upset"],
+  ["angry", "(｀Д´)", "mad furious rage upset annoyed"],
+  ["disapproval", "ಠ_ಠ", "disapprove stare judging unimpressed look"],
+  ["facepalm", "(－‸ლ)", "oh no ugh fail embarrassed"],
+  ["surprised", "Σ(°ロ°)", "shock shocked gasp omg wow"],
+  ["confused", "(°ー°〃)", "puzzled what huh unsure"],
+  ["worried", "(；一_一)", "nervous anxious uneasy concerned"],
+  ["nervous", "(°▽°;)", "sweat awkward anxious oops"],
+  ["tired", "(´-ω-`)", "sleepy exhausted weary"],
+  ["sleeping", "(－_－) zzZ", "sleep sleepy nap zzz tired"],
+  ["bow", "m(_ _)m", "sorry thanks thank you apologise respect please"],
+  ["salute", "(￣^￣)ゞ", "yes sir ok roger"],
+  ["thumbs up", "(b ᵔ▽ᵔ)b", "good great ok approve like"],
+  ["wave", "(￣▽￣)ノ", "hello hi bye goodbye"],
+  ["pointing", "(☞ﾟヮﾟ)☞", "you this that point"],
+  ["dancing", "♪(┌・。・)┌", "dance music party"],
+  ["running away", "ε=ε=┏( ・_・)┛", "run flee escape leave"],
+  ["lenny face", "( ͡° ͜ʖ ͡°)", "lenny smirk cheeky"],
+  ["cool", "(⌐■_■)", "sunglasses shades chill"],
+  ["bear", "ʕ•ᴥ•ʔ", "animal teddy cute"],
+  ["cat", "(=^･ω･^=)", "kitty kitten neko animal"],
+  ["magic", "(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧", "sparkle sparkles wand wizard"],
+];
+
 //: This file's only mutable state, one object (the global-scope ratchet): the
 //: emoji groups, parsed once on first open as `[{key, label, items: [{name, glyph}]}]`,
 //: the icon groups likewise, and the open panel.
 const iconPickerState = { emojiGroups: null, phGroups: null, open: null };
+
+//: The text a search reads for one tile: its name, its everyday aliases and its
+//: group, lower case.
+function iconPickerHay(choice, groupLabel) {
+  const aliases = choice.aliases || ICON_EMOJI_ALIASES[choice.name] || "";
+  return `${choice.name} ${aliases} ${groupLabel}`.toLowerCase();
+}
 
 function iconPickerEmojiGroups() {
   if (!iconPickerState.emojiGroups) {
@@ -219,6 +312,12 @@ function iconPickerEmojiGroups() {
         return { kind: "emoji", value: pair.slice(at + 1), name: pair.slice(0, at).replace(/_/g, " ") };
       }),
     }));
+    //: Last: a long face is a wide tile (`wide`), and a pick is inserted as text.
+    iconPickerState.emojiGroups.push({
+      key: "kaomoji",
+      label: "Japanese emoticons",
+      items: ICON_KAOMOJI.map(([name, value, aliases]) => ({ kind: "emoji", value, name, aliases, wide: true })),
+    });
   }
   return iconPickerState.emojiGroups;
 }
@@ -300,7 +399,7 @@ function iconPickerText(choice) {
 function iconPickerGlyph(choice) {
   const glyph = document.createElement(choice.kind === "emoji" ? "span" : "i");
   if (choice.kind === "emoji") {
-    glyph.className = "icon-picker-emoji";
+    glyph.className = choice.wide ? "icon-picker-emoji icon-picker-kaomoji" : "icon-picker-emoji";
     glyph.textContent = choice.value;
   } else {
     glyph.className = `ph ph-${choice.value}`;
@@ -444,6 +543,7 @@ function openIconPicker({ anchor = null, onPick = null, modes = ["emoji", "icon"
     el.dataset.name = choice.name;
     el.draggable = true;
     el._choice = choice;
+    if (choice.wide) el.classList.add("icon-picker-tile-wide");
     el.appendChild(iconPickerGlyph(choice));
     return el;
   };
@@ -496,7 +596,7 @@ function openIconPicker({ anchor = null, onPick = null, modes = ["emoji", "icon"
       const found = [];
       for (const group of groups) {
         for (const choice of group.items) {
-          const hay = `${choice.name} ${group.label}`.toLowerCase();
+          const hay = iconPickerHay(choice, group.label);
           if (words.every((w) => hay.includes(w))) found.push(choice);
         }
       }

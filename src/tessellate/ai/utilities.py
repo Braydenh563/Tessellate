@@ -326,7 +326,35 @@ def _heard(question: str) -> str:
     from tessellate.ai import question_noise
 
     fixed = question_noise.repair(question)
-    return fixed if fixed != question and _kind_of(fixed) is not None else question
+    if fixed != question and _kind_of(fixed) is not None:
+        return fixed
+    #: One word a slip from a word a utility reads ("what tmie is it in
+    #: japan", "concert 5 miles to km"), when that makes it one (O3). The
+    #: patterns are anchored, so a real word is tried too; the weather words
+    #: are not (`_WEATHER` is found anywhere), so they are not in the list.
+    #: Three words at least: a bare "time" is the clock, so "home" or "Tom"
+    #: alone would be read as it.
+    if len(question.split()) < 3:
+        return question
+    guided = question_noise.guided(question, lambda t: _kind_of(t) is not None, _utility_words(), real_to=None)
+    return guided or question
+
+
+def _utility_words() -> frozenset[str]:
+    """The words the utilities read: their own trigger words, every unit and
+    currency name the recogniser has."""
+    if not _UTILITY_WORDS:
+        words = set(
+            "what whats time date day year month today now convert how many much far long heavy roll throw die dice "
+            "flip toss coin heads tails pick choose random number between percent calculate "
+            "translate until days".split()
+        )
+        words.update(n.lower() for n in [*_UNITS, *_CURRENCY_NAMES] if n.isalpha() and len(n) >= 3)
+        _UTILITY_WORDS.append(frozenset(words))
+    return _UTILITY_WORDS[0]
+
+
+_UTILITY_WORDS: list[frozenset[str]] = []
 
 
 def kind_of(question: str) -> str | None:
@@ -483,12 +511,17 @@ def place_name_for(place: str) -> str | None:
     #: A misspelling is read only for a name of five letters or more, and only
     #: within one edit (two from nine letters; a swapped pair is one), so "wz"
     #: or "cat" never becomes a zone. A tie goes to the table, read first.
-    if len(key) < 5:
-        return None
+    #: Four letters only as a five-letter name with one letter dropped ("jaan"
+    #: is japan, O3's slip test): never a change or an added letter.
+    return _nearest_place(key) if len(key) >= 4 else None
+
+
+def _nearest_place(key: str) -> str | None:
+    """The place name `key` is a misspelling of, within its allowance."""
     allowed = 2 if len(key) >= 9 else 1
     best = None
     for name in (*PLACE_ZONES, *_zone_cities()):
-        if len(name) < 5 or abs(len(name) - len(key)) > allowed:
+        if len(name) < 5 or abs(len(name) - len(key)) > allowed or (len(key) == 4 and len(name) != 5):
             continue
         cost = _edits(key, name)
         if cost <= allowed and (best is None or cost < best[0]):

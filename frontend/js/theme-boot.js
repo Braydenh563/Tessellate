@@ -78,6 +78,9 @@
   _r.dataset.glass = perf ? "off" : pref("glass", "on");
   _r.dataset.motion = perf ? "reduced" : pref("motion", "auto");
   _r.dataset.uiMotion = pref("ui-motion", "on");
+  // The blankets for these two switches are a sheet that matches only while one is on (motion-still.css).
+  const stillSheet = document.getElementById("motion-still-sheet");
+  if (stillSheet) stillSheet.media = _r.dataset.motion === "reduced" || _r.dataset.uiMotion === "off" ? "all" : "(prefers-reduced-motion: reduce)";
   _r.dataset.themePreset = themePreset || "";
   _r.style.setProperty("--radius", pref("radius", "14") + "px");
   _r.style.setProperty("--glass-blur", pref("glass-blur", "14") + "px");

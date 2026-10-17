@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import pytest
 
+from tests._pool_wait import pool_idle
+
 
 @pytest.fixture()
 def vault(tmp_path, monkeypatch):
@@ -30,10 +32,12 @@ def _contents(client):
 
 def test_importing_the_same_folder_twice_adds_nothing_the_second_time(client, vault):
     assert client.post("/import/directory", json={"path": str(vault)}).status_code == 202
+    pool_idle()
     first = _contents(client)
     # Same text at two different paths is two files, so two notes.
     assert len(first) == 6
     assert client.post("/import/directory", json={"path": str(vault)}).status_code == 202
+    pool_idle()
     assert _contents(client) == first
 
 
@@ -44,17 +48,21 @@ def test_an_interrupted_import_run_again_finishes_it(client, vault):
     for name in ("d3.md", "d4.md"):
         (vault / name).rename(keep / name)
     client.post("/import/directory", json={"path": str(vault)})
+    pool_idle()
     assert len(_contents(client)) == 4
     for name in ("d3.md", "d4.md"):
         (keep / name).rename(vault / name)
     client.post("/import/directory", json={"path": str(vault)})
+    pool_idle()
     assert len(_contents(client)) == 6
 
 
 def test_a_changed_file_comes_in_again(client, vault):
     client.post("/import/directory", json={"path": str(vault)})
+    pool_idle()
     (vault / "d1.md").write_text("note number 1, edited since", encoding="utf-8")
     client.post("/import/directory", json={"path": str(vault)})
+    pool_idle()
     contents = _contents(client)
     assert "note number 1, edited since" in contents and "note number 1" in contents
     assert len(contents) == 7
@@ -66,12 +74,14 @@ def test_a_note_made_private_is_not_brought_back_in_the_clear(client, app_state,
     from tessellate.core.database import Entry
 
     client.post("/import/directory", json={"path": str(vault)})
+    pool_idle()
     with deps.get_db().session() as session:
         row = session.query(Entry).filter(Entry.source_path == "d2.md").one()
         row.is_private = True
         row.content = "(encrypted)"
         session.commit()
     client.post("/import/directory", json={"path": str(vault)})
+    pool_idle()
     with deps.get_db().session() as session:
         assert session.query(Entry).filter(Entry.source_path == "d2.md").count() == 1
 
@@ -92,6 +102,7 @@ def test_one_failing_file_does_not_take_the_rest_with_it(client, vault, monkeypa
 
     monkeypatch.setattr(routes_settings.manager, "create_entry", flaky)
     client.post("/import/directory", json={"path": str(vault)})
+    pool_idle()
     contents = _contents(client)
     assert "note number 2" not in contents
     assert len(contents) == 5

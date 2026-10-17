@@ -224,8 +224,8 @@ function renderTaskHistory(history) {
       .join(" · ");
     //: Its log (the owner, 2026-10-10: "no way to view logs of bg
     //: processes"): Settings, Logs, filtered to this task (settings.js).
-    row.append(name, when, taskLogButton(item));
-    li.appendChild(row);
+    row.append(name, taskLogButton(item));
+    li.append(row, when);
 
     // The reason, which is the whole point for a failure, until now it
     // existed only in the log console, a screen you have to know to open.

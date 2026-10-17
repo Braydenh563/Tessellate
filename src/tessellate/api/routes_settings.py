@@ -32,9 +32,9 @@ from sqlalchemy.orm import Session
 
 from tessellate import __version__
 from tessellate.ai import budget as run_budget
-from tessellate.ai import librarian, presets, skills
+from tessellate.ai import librarian, presets, skill_composer, skills
 from tessellate.api.routes_categories import CATEGORY_PALETTE_KEYS
-from tessellate.core import backup, backup_bundle, deps, embedmodels, events, extras, jobruns, logbuffer, security
+from tessellate.core import backup, backup_bundle, deps, embedmodels, events, extras, jobruns, jobs, logbuffer, security
 from tessellate.core.config import default_preferences
 from tessellate.core.database import AuditLog, Category, Entry, EntryLink, utcnow
 from tessellate.core.deps import get_session
@@ -1470,6 +1470,8 @@ def list_skills() -> dict:
                 "changes": bool(set(skill["tools"]) & tools.WRITE_TOOLS)
                 or (not skill["tools"] and bool(skill["steps"])),
                 "needs_larger_model": skills.larger_model_reason(skill["name"], rates) if rates else "",
+                #: Runs with no model, composed from the notes (O7, `ai/skill_composer.py`).
+                "composer": skill_composer.can_run(skill),
             }
         )
     where = skill_folder.folder(config)
@@ -3071,7 +3073,7 @@ def _import_directory_files(directory_path: str, run: "jobruns.Run"):
             run.result = "no markdown files found in that folder"
 
 @router.post("/import/directory", status_code=202, dependencies=[Depends(this_computer_only)])
-def import_directory(req: ImportDirectoryRequest, background_tasks: BackgroundTasks):
+def import_directory(req: ImportDirectoryRequest):
     try:
         p = _validated_import_directory(req.path)
     except ValueError:
@@ -3082,7 +3084,12 @@ def import_directory(req: ImportDirectoryRequest, background_tasks: BackgroundTa
     # The validated, resolved path, not req.path, is what the background
     # job and the response both carry from here on.
     canonical_path = str(p)
-    background_tasks.add_task(_run_directory_import, canonical_path)
+    # On the pool, not a request task: the job is remembered, so a quit
+    # part-way is finished at the next launch (Brief 9). One folder waiting
+    # twice is one job.
+    jobs.enqueue(
+        "import", _run_directory_import, canonical_path, name=p.name, dedupe_key=("import", canonical_path)
+    )
     return {"status": "started", "path": canonical_path}
 
 @router.post("/import/markdown", status_code=201)

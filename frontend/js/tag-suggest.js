@@ -259,14 +259,28 @@ let noteTagPop = null;
 
 function closeNoteTagPopover({ restoreFocus = false } = {}) {
   if (!noteTagPop) return;
-  const { panel, anchor, outside } = noteTagPop;
+  const { panel, anchor, outside, entryId } = noteTagPop;
   document.removeEventListener("pointerdown", outside, true);
   closeHelpPopovers();
   closeActionMenus();
   panel.remove();
   anchor.setAttribute("aria-expanded", "false");
   noteTagPop = null;
-  if (restoreFocus && anchor.isConnected) anchor.focus({ preventScroll: true });
+  if (restoreFocus) noteTagFocusTarget(anchor, entryId)?.focus({ preventScroll: true });
+}
+
+//: Where focus goes when the popover closes. A list re-render under an open
+//: popover replaces the "+ Tag" chip it was opened from, and focus then fell to
+//: the body: the chip the new card drew, else that card's tag area, else the
+//: list's heading.
+function noteTagFocusTarget(anchor, entryId) {
+  if (anchor.isConnected) return anchor;
+  const card = document.querySelector(`li[data-id="${CSS.escape(String(entryId))}"]`);
+  const chip = card?.querySelector(".note-meta > .tag-add");
+  if (chip) return chip;
+  const target = card?.querySelector(".note-meta") || document.getElementById("entries-heading");
+  if (target) target.tabIndex = -1;
+  return target;
 }
 
 async function noteTagChoices(entry, { fetchMore = true } = {}) {
@@ -394,7 +408,7 @@ async function openNoteTagPopover(entry, anchor) {
   });
   document.addEventListener("pointerdown", outside, true);
   document.body.appendChild(panel);
-  noteTagPop = { panel, anchor, outside };
+  noteTagPop = { panel, anchor, outside, entryId: entry.id };
   anchor.setAttribute("aria-expanded", "true");
   wireHelpPopover(help, helpBody);
   placeHelpPopover(panel, anchor);
@@ -417,3 +431,157 @@ async function openNoteTagPopover(entry, anchor) {
     }).catch(() => {});
   }
 }
+//: Tag a note: one PUT, one toast, one undo. True when it took.
+async function addTagTo(entry, tag) {
+  if (!tag || entry.tags.includes(tag)) return false;
+  try {
+    await api(`/entries/${entry.id}`, { method: "PUT", body: JSON.stringify({ tags: [...entry.tags, tag] }) });
+    pushEntryPutUndo(entry.id, `Tagged a note “${tag}”`, { tags: [...entry.tags] }, { tags: [...entry.tags, tag] });
+    toast(`Tagged “${tag}”.`);
+    loadEntries();
+    return true;
+  } catch (error) {
+    toast(error.message, true);
+    return false;
+  }
+}
+
+function renderReevaluateResult(entry, wrap) {
+  const data = inlineAction.data;
+  const confidence = data.entry ? data.entry.ai_confidence : entry.ai_confidence;
+
+  const head = document.createElement("p");
+  head.className = "muted";
+  head.textContent = data.recategorised_to
+    ? `Read: confidence ${confidence}%, moved to “${data.recategorised_to}”.`
+    : `Read: confidence now ${confidence}%.`;
+  wrap.appendChild(head);
+
+  // Drop suggestions the user already applied (the card re-renders after each).
+  const haveTags = new Set(entry.tags);
+  const linkedIds = new Set((entry.links || []).map((l) => l.entry_id));
+  const tags = (data.suggested_tags || []).filter((t) => !haveTags.has(t));
+  const links = (data.suggested_links || []).filter((l) => !linkedIds.has(l.id));
+
+  if (tags.length) {
+    const tagRow = document.createElement("div");
+    tagRow.className = "recent";
+    const label = document.createElement("span");
+    label.className = "muted";
+    label.textContent = "Add tags:";
+    tagRow.appendChild(label);
+    for (const tag of tags) {
+      const tagChip = chip(`ph:plus ${tag}`, "tag", async () => {
+        if (await addTagTo(entry, tag)) tagChip.remove();
+      });
+      tagChip.title = data.suggested_tag_reasons?.[tag] || `Add the “${tag}” tag`;
+      tagRow.appendChild(tagChip);
+    }
+    wrap.appendChild(tagRow);
+  }
+
+  if (links.length) {
+    const label = document.createElement("p");
+    label.className = "muted";
+    label.textContent = "Link to related notes:";
+    wrap.appendChild(label);
+    for (const link of links) {
+      const row = document.createElement("div");
+      row.className = "row space-between reevaluate-link";
+      const preview = document.createElement("span");
+      renderInlineMarkdown(preview, link.preview, [], true);
+      row.appendChild(preview);
+      row.appendChild(
+        smallButton("ph:link Link", "Link these two notes", async () => {
+          try {
+            const updated = await apiJson(`/entries/${entry.id}/links`, {
+              method: "POST",
+              body: JSON.stringify({ target_id: link.id }),
+            });
+            row.remove();
+            toast("Notes linked.");
+            refreshEntries([entry.id, link.id]);
+            let liveLinkId = updated.links.find((l) => l.entry_id === link.id)?.link_id;
+            pushUndo(
+              "Linked two notes",
+              async () => {
+                if (liveLinkId == null) return;
+                await api(`/entries/${entry.id}/links/${liveLinkId}`, { method: "DELETE" });
+                await refreshEntries([entry.id, link.id]);
+              },
+              async () => {
+                const redone = await apiJson(`/entries/${entry.id}/links`, {
+                  method: "POST",
+                  body: JSON.stringify({ target_id: link.id }),
+                });
+                liveLinkId = redone.links.find((l) => l.entry_id === link.id)?.link_id ?? liveLinkId;
+                await refreshEntries([entry.id, link.id]);
+              }
+            );
+          } catch (error) {
+            toast(error.message, true);
+          }
+        })
+      );
+      wrap.appendChild(row);
+    }
+  }
+
+  //: Where else the note could live, with the reason on hover (owner,
+  //: 2026-10-17: Tag with Atlas offered only links). One tap moves it, the
+  //: same call and undo as the batch bar's Move to.
+  const categories = (data.suggested_categories || []).filter((c) => c.name !== entry.category);
+  if (categories.length) {
+    const catRow = document.createElement("div");
+    catRow.className = "recent";
+    const catLabel = document.createElement("span");
+    catLabel.className = "muted";
+    catLabel.textContent = "Could also go in:";
+    catRow.appendChild(catLabel);
+    for (const option of categories) {
+      const catChip = chip(`ph:folder-simple ${option.name}`, "tag", async () => {
+        await moveNotesToCategory([entry.id], option.name);
+        inlineAction = null;
+        renderEntries();
+      });
+      catChip.title = option.why || `Move this note to “${option.name}”`;
+      catRow.appendChild(catChip);
+    }
+    wrap.appendChild(catRow);
+  }
+
+  if (!tags.length && !links.length && !categories.length) {
+    const none = document.createElement("p");
+    none.className = "muted";
+    none.textContent = "No new tags, links or categories to suggest right now.";
+    wrap.appendChild(none);
+  } else if (!tags.length) {
+    const noTags = document.createElement("p");
+    noTags.className = "muted";
+    noTags.textContent = "No tags to suggest for this one.";
+    wrap.appendChild(noTags);
+  }
+
+  //: A field of one's own, always: the suggestions can come back empty and
+  //: the person still wants to tag the note from here.
+  const own = document.createElement("form");
+  own.className = "row";
+  const ownInput = document.createElement("input");
+  ownInput.placeholder = "Add a tag of your own";
+  ownInput.setAttribute("aria-label", "Add a tag of your own");
+  own.append(ownInput, smallButton("Add", "Add this tag to the note", () => {}));
+  own.lastChild.type = "submit";
+  own.addEventListener("submit", (event) => {
+    event.preventDefault();
+    addTagTo(entry, ownInput.value.trim().replace(/^#/, ""));
+  });
+  wrap.appendChild(own);
+
+  wrap.appendChild(
+    smallButton("Done", "Close", () => {
+      inlineAction = null;
+      renderEntries();
+    })
+  );
+}
+

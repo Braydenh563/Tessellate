@@ -77,7 +77,7 @@ SOURCES: tuple[Source, ...] = (
     ),
     Source("core/ocr.py", assigns=("reason", "note"), functions=("engine_status",)),
     Source("core/docview.py", returns=("editability",), keywords=("message",)),
-    Source("ai/voice.py", raises=("RuntimeError",), consts=("INSTALL_HINT",)),
+    Source("ai/voice.py", raises=("RuntimeError",), consts=("INSTALL_HINT",), returns=("remove_model",)),
     Source("ai/captions.py", raises=("CaptionsError",), consts=("NO_HELPER_HINT", "NOT_LOCAL_HINT")),
     Source("entry/importer.py", raises=("RuntimeError",), consts=("INSTALL_HINT",)),
     Source(
@@ -335,6 +335,7 @@ REVIEWED_COMPUTED: dict[tuple[str, str], str] = {
     ("routes_voice.py", "voice.INSTALL_HINT"): "ai/voice.py INSTALL_HINT",
     ("routes_voice.py", "over_limit_detail"): "the two callers pass literals, which collect() checks",
     ("routes_insights.py", "str(exc)"): "ValueError from ai/insights.py confirm and dismiss",
+    ("routes_voice.py", "message"): "the sentences ai/voice.py remove_model returns, checked in SOURCES",
     ("routes_voice.py", "str(exc)"): "RuntimeError from ai/voice.py transcribe",
     ("routes_webclip.py", "WEB_OFF"): "a constant in routes_webclip.py, checked below",
     ("routes_webclip.py", "str(exc)"): "ClipRefused from core/webclip.py",

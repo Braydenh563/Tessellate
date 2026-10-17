@@ -70,8 +70,11 @@ async function runImprove() {
       }),
     });
     result.textContent = body.improved;
-    status.textContent = "";
-    $("improve-apply").disabled = false;
+    //: With no model the app proofreads itself (O7, INBOX 904 B33) and says
+    //: so: who did it and what it changed, never "Atlas's suggestion".
+    status.textContent = body.by === "composer" ? body.said || "" : "";
+    result.dataset.by = body.by === "composer" ? "composer" : "";
+    $("improve-apply").disabled = body.improved === $("improve-original").textContent;
   } catch (error) {
     status.textContent = error.message;
     status.classList.add("error");
@@ -86,5 +89,5 @@ function applyImprove() {
     improveTarget.dispatchEvent(new Event("input")); // refresh char count
   }
   closeImprove();
-  toast("Applied Atlas's suggestion.");
+  toast($("improve-result").dataset.by === "composer" ? "Applied the proofreading." : "Applied Atlas's suggestion.");
 }

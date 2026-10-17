@@ -32,6 +32,25 @@
 .timeline-cal-span {
   margin-left: auto;
 }
+/* Add sits at the head's end, before the span strip (or alone, in the agenda). */
+.timeline-cal-add {
+  margin-left: auto;
+}
+.timeline-cal-add ~ .timeline-cal-span {
+  margin-left: 0;
+}
+
+/* The add sheet (`timelineCalAdd`): the New meeting sheet's form, its fields
+   targets as its buttons are, Day page at the start of the actions. */
+.timeline-cal-adder > .status:empty {
+  display: none;
+}
+.timeline-cal-adder .prop-row input {
+  min-height: var(--target-min);
+}
+.timeline-cal-addpage {
+  margin-right: auto;
+}
 
 .timeline-cal-month {
   display: grid;

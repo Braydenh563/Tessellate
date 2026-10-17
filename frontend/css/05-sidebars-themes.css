@@ -3009,9 +3009,6 @@ button.outline-twist:focus-visible {
    run right *and* a shorter heading starts further right still, so the
    left edges came out in no order at all. Left-aligned and evenly stepped,
    depth is the only thing that moves an entry. */
-.doc-outline {
-  --outline-step: 0.8rem;
-}
 /* **Depth is carried by weight, colour and a guide line, not by indent
    alone.** Measured with a 21-heading document open: h1 and h2 rows were
    13.6px and h3 rows 12.8px, every one of them weight 400 in the same
@@ -5788,8 +5785,10 @@ button.ghost.doc-template-choice[aria-checked="true"] {
   line-height: 1;
 }
 .note-edit-meta .note-edit-tag-input {
-  flex: 1 0 6rem;
-  width: 6rem;
+  /* A line of its own under the chips at every tag count (INBOX 904 B06):
+     sharing the chip row, it shrank to whatever the chips left. */
+  flex: 1 0 100%;
+  width: 100%;
   height: 1.625rem;
   margin: 0;
   padding: 0 var(--space-1);

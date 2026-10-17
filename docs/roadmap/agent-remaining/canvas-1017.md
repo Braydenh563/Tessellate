@@ -1,0 +1,12 @@
+# canvas-1017: B29, B35, B37, B38, B73, B70, B78 (INBOX 904)
+
+Order: B29, B35, B37, B38, B73, B70, B78. Sweeps: scratchpad/ui-sweeps/wb1017-*.js, companion1017-*.js.
+
+- B29 whiteboard: done (commit below). "Popup controls all over the place" not pinned to a measurement: the multi bar measured one row, all tops equal (5px), 575x38; placed as a design request.
+- B35 companion: done (adopts a scroll area that only began to scroll after the perch; drift 71px mid / 2037px settled to 0/0, companion1017-dash3.js). dash2.js (perch on each panel with the page already scrollable) drift 0 before the fix: that case was never the bug.
+- B37: fixed on the graph (middle drag moved camera 1.8px of 93 and mousedown default not prevented; now 93/-47 and prevented, pan1017-b37graph.js). Board and mind map measured clean (pan1017-b37.js: worst deviation 0px from the first 1px move); Windows autoscroll itself not observable here (Linux Chromium).
+- B38: fixed (file/bookmark nodes open; F2 captions a reference node via data.caption, server field added; mapfile1017-b38.js: dblclick toasted/opened nothing -> lightbox / https://example.org/x; F2 refused -> caption stored).
+- B73: fixed (click on attachment/document graph node did nothing -> opens lightbox / document; node menu Open row; graph1017-b73.js lightbox false -> true).
+- B78: fixed (PUT /graph/pin/document:5 422 -> 200; documents hold graph_pin_x/y (additive columns); /graph/pins takes document ids; client asks only for note/document ids via graphPinSave; graph1017-b78.js).
+- B70: partly fixed (a leash force, tetherForce, holds a linked note within 1.4x its category's typical reach; synthetic 46-note notebooks on the real worker: mean worst/median nearest-same-category distance 4.8 -> 2.9, tests/test_graph_tether.py 276px -> 195px on the fixed fixture). Not reproduced on the owner's notebook (no data, no screenshot position). Remaining outliers are loose notes (deg 0) on orbit seats and a lone linked note bridging a category whose other notes are all loose. Browser sweep graph1017-b70.js had one category only (no filing model), uninformative. Question for the owner: which note and which tags/links does 'Gym Routine Overview' have?
+- B29 popup placement: wb1017-popup.js measured the bar on screen, nothing spilling, at 1440 and 390 for text box, shape, two items, group; kept as a design request. Left: nothing in this file open except the B70 question.

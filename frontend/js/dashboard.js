@@ -498,7 +498,7 @@ async function renderDashSubmessage() {
     nameMarkBuddyStreak(streak);
   }
   const pattern = patterns?.patterns?.[0];
-  if (pattern) bits.push(["patterns", `Patterns: ${pattern.short}`, pattern.text]);
+  if (pattern) bits.push(["patterns", "Pattern: ", pattern.text]);
   //: One span per fact, its separator inside it, so a view can fold one fact
   //: away whole: the Focused hero's glance says what is due (INBOX 675), and
   //: hides the reminders fact here rather than saying it twice.
@@ -509,20 +509,8 @@ async function renderDashSubmessage() {
       bit.dataset.bit = kind;
       bit.textContent = i ? ` · ${text}` : text;
       if (whole) bit.title = whole;
-      //: The pattern's Confirm and Not right (CHAT_PLAN decision 60) behind
-      //: one ⋯, so the line stays one line; a confirmed one has neither.
-      if (kind === "patterns" && !pattern.confirmed) {
-        const send = (verdict) =>
-          insightSend(pattern, verdict)
-            .then(() => renderDashSubmessage())
-            .catch((error) => toast(error.message, true));
-        bit.appendChild(
-          kebabMenu(
-            INSIGHT_VERDICT_ITEMS.map((item) => ({ label: item.label, title: item.title, run: () => send(item.verdict) })),
-            "Is this pattern right?"
-          )
-        );
-      }
+      //: B84: its words open its notes; its ⋯ asks if it is right (dash-day.js).
+      if (kind === "patterns") dashPatternBit(bit, pattern);
       return bit;
     })
   );
@@ -1088,6 +1076,11 @@ function dashDensity() {
   return DASH_DENSITIES.includes(saved) ? saved : "full";
 }
 
+//: Whether the level was picked, as opposed to being the default.
+function dashDensityChosen() {
+  return DASH_DENSITIES.includes(prefs.get(DASH_DENSITY_KEY, null));
+}
+
 //: **The emblem is the hero's art, and art is what a density step spends**
 //: (INBOX 279). The first cut of the three levels hid the mark outright at the
 //: first step down and then kept a display-sized clock beside a greeting it had
@@ -1205,8 +1198,15 @@ function applyDashDensity(value, { persist = true } = {}) {
   //: by default (`effectiveDensity`, settings.js): measured at 1093x614 the
   //: first widget started 32px under the fold with the hero, the Start
   //: something tiles and the stats at full size. Focused stays Focused.
+  //: **Unless Full was picked and Compact is only the window's height**
+  //: (INBOX 904 B12 and B64: "why does the quick access look so small on the
+  //: full view", "sometimes loses its full form"). The View menu ticked Full
+  //: while a window under 700px made the tiles 34px tall with no hint line.
+  //: A choice always wins over Auto: an app density chosen in Appearance still
+  //: folds Full, a short window alone no longer does once Full is chosen.
   const appCompact = document.documentElement.dataset.density === "compact";
-  if (page) page.dataset.density = density === "full" && appCompact ? "compact" : density;
+  const appChosen = Boolean(prefs.get("density", null));
+  if (page) page.dataset.density = density === "full" && appCompact && (appChosen || !dashDensityChosen()) ? "compact" : density;
   //: The mark is the one part of the banner CSS cannot resize (see
   //: `DASH_EMBLEM_SIZE`), so the level change redraws it, but only once the
   //: dashboard has drawn one: this function also runs at wiring time, before
@@ -1429,7 +1429,9 @@ function dashMoreItems(entries) {
 function dashCustomiseItems() {
   const items = [];
   if (!window.matchMedia("(max-width: 599.98px)").matches) {
-    const current = dashDensity();
+    //: What the page is showing, not what is stored: with no choice made, a
+    //: short window shows Compact, and the tick used to say Full.
+    const current = document.getElementById("tab-dashboard")?.dataset.density || dashDensity();
     items.push({
       label: "ph:layout View",
       group: "page",
@@ -1599,8 +1601,9 @@ function renderFeatures(query) {
 function renderFirstStepsLazy() {
   const host = $("dash-first-steps");
   if (!host || !entriesEverLoaded) return;
-  if (dashEditMode || (allEntries.length && prefs.get("firstStepsHidden", null) === "1")) return void host.replaceChildren();
-  lazyScript("/js/first-run.js").then((ok) => ok && renderFirstSteps(host));
+  const skip = dashEditMode || (allEntries.length && prefs.get("firstStepsHidden", null) === "1");
+  //: The Get started menu beside Customise is drawn whether or not the card is.
+  lazyScript("/js/first-run.js").then((ok) => ok && renderFirstSteps(host, skip));
 }
 
 //: A widget that throws, or never draws, says so and offers Retry (INBOX
@@ -2539,21 +2542,34 @@ async function startArt(holder) {
     let glide = null;
     //: The quick cross-fade's picture of the old sky, and when it began.
     let fade = null;
+    //: The wash's hue and gradient, made once: the accent and the height do not
+    //: change for the life of a sketch (a theme change rebuilds it).
+    let washHue = null;
+    let washGradient = null;
+    const washHueOf = () => p.hue(p.color(accentHex));
 
     //: `settled` draws the arrangement the glide is heading for, whatever
     //: point it has reached: what Save PNG saves.
     const scene = (t, settled = false) => {
-      // A soft vertical wash instead of a flat fill, more depth (Wave N).
-      p.noStroke();
-      const washHue = p.hue(p.color(accentHex));
-      for (let y = 0; y < height; y += 4) {
-        //: Light is an off-white well, lightness 95 down to 91, the accent's hue
-        //: faintly in it, as dark is a deep one: it was 250 to 240, which HSL
-        //: clamps to pure white, the same as the card it sat on (INBOX 803).
-        const shade = dark ? 14 + (y / height) * 10 : 95 - (y / height) * 4;
-        p.fill(washHue, 30, shade, 1);
-        p.rect(0, y, width, 4);
+      //: **Drawn on the canvas context, not through p5's colour calls.** Idle
+      //: on the Dashboard at 4x CPU this scene was 527 ms of the 540 ms the
+      //: page was busy in five seconds, 426 ms of it p5 parsing a colour for
+      //: each of 55 wash strips, each connecting line and each star's two
+      //: fills, thirty times a second. One gradient, the accent's hue read once,
+      //: and a colour string per shape say the same thing for a tenth of it.
+      const ctx = p.drawingContext;
+      //: A soft vertical wash instead of a flat fill, more depth (Wave N).
+      //: Light is an off-white well, lightness 95 down to 91, the accent's hue
+      //: faintly in it, as dark is a deep one: it was 250 to 240, which HSL
+      //: clamps to pure white, the same as the card it sat on (INBOX 803).
+      washHue ??= washHueOf();
+      if (!washGradient) {
+        washGradient = ctx.createLinearGradient(0, 0, 0, height);
+        washGradient.addColorStop(0, `hsl(${washHue} 30% ${dark ? 14 : 95}%)`);
+        washGradient.addColorStop(1, `hsl(${washHue} 30% ${dark ? 24 : 91}%)`);
       }
+      ctx.fillStyle = washGradient;
+      ctx.fillRect(0, 0, width, height);
       const now = p.millis();
       //: The glide's own clock, advanced by each drawn frame and by no more
       //: than `ART_GLIDE_STEP_MS` per frame: it starts at the first frame
@@ -2580,15 +2596,19 @@ async function startArt(holder) {
       const lines = u < 1 ? artLineFade(glide.lineFrom, u) : 1;
       // Faint connecting lines between nearby stars (O(n²), but n is
       // capped low enough that it stays cheap at 60fps).
+      ctx.lineWidth = 1;
+      const lineLight = dark ? 72 : 55;
       for (let i = 0; lines > 0 && i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const a = particles[i];
           const b = particles[j];
-          const d = p.dist(a.x, a.y, b.x, b.y);
+          const d = Math.hypot(a.x - b.x, a.y - b.y);
           if (d < 70) {
-            p.stroke(a.hue, 65, dark ? 72 : 55, p.map(d, 0, 70, 0.45, 0) * lines * Math.min(a.vis, b.vis));
-            p.strokeWeight(1);
-            p.line(a.x, a.y, b.x, b.y);
+            ctx.strokeStyle = `hsla(${a.hue}, 65%, ${lineLight}%, ${(0.45 * (1 - d / 70) * lines * Math.min(a.vis, b.vis)).toFixed(3)})`;
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
           }
         }
       }
@@ -2597,18 +2617,21 @@ async function startArt(holder) {
       const leaving = u < 1 ? glide.leaving : [];
       const out = artEaseOut(Math.min(1, u / 0.6));
       for (const dot of leaving) dot.vis = dot.from.vis * (1 - out);
-      // The stars themselves: a soft glow halo + a bright core, twinkling.
-      p.noStroke();
+      //: The stars themselves: a soft glow halo + a bright core, twinkling.
+      const glowLight = dark ? 65 : 55;
       for (const dot of leaving.concat(particles)) {
         const twinkle = (0.6 + 0.4 * Math.sin(t * 2 + dot.phase)) * dot.vis;
-        p.fill(dot.hue, 75, dark ? 65 : 55, 0.14 * twinkle);
-        p.circle(dot.x, dot.y, dot.drawSize * 4); // glow
-        p.fill(dot.hue, 80, dark ? 78 : artCoreLight(dot.hue), twinkle);
-        p.circle(dot.x, dot.y, dot.drawSize); // core
+        ctx.fillStyle = `hsla(${dot.hue}, 75%, ${glowLight}%, ${(0.14 * twinkle).toFixed(3)})`;
+        ctx.beginPath();
+        ctx.arc(dot.x, dot.y, (dot.drawSize * 4) / 2, 0, Math.PI * 2); // glow
+        ctx.fill();
+        ctx.fillStyle = `hsla(${dot.hue}, 80%, ${dark ? 78 : artCoreLight(dot.hue)}%, ${twinkle.toFixed(3)})`;
+        ctx.beginPath();
+        ctx.arc(dot.x, dot.y, dot.drawSize / 2, 0, Math.PI * 2); // core
+        ctx.fill();
       }
       if (fade && !settled) {
         const k = 1 - Math.min(1, (now - fade.start) / ART_FADE_MS);
-        const ctx = p.drawingContext;
         ctx.save();
         ctx.globalAlpha = k;
         ctx.drawImage(fade.snap, 0, 0, width, height);

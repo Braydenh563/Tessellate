@@ -1,0 +1,93 @@
+/* settings-controls-lazy.css: what the Settings listeners add to the page
+   (loaded with settings-controls.js through LAZY_MODULES.settingsControls, so
+   it costs the boot sheets nothing; they are at their cap).
+
+   Themes (INBOX 904 B58): an eye in each card's corner previews that theme at
+   once, because resting the pointer on a card waits 450 ms. The card is a
+   <button>, and a button cannot hold a button, so the eye is its sibling in a
+   cell that is the grid item. */
+.theme-card-cell {
+  position: relative;
+  display: flex;
+  min-width: 0;
+}
+.theme-card-cell > .theme-card {
+  flex: 1 1 auto;
+}
+.theme-eye {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  z-index: 1;
+}
+
+/* Models, Suggested downloads (INBOX 904 B67): the detected hardware reads as
+   a line with Edit at its end, not an Edit button wrapped under it, and the
+   correction form is two labelled numbers over their Save row. */
+#settings-modal .settings-section .suggested-hardware-row {
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+#settings-modal .settings-section .suggested-hardware-row > p {
+  flex: 1 1 14rem;
+  min-width: 0;
+  margin: 0;
+}
+#settings-modal .settings-section .suggested-hardware-row > button {
+  flex: 0 0 auto;
+}
+#suggested-hardware-form {
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+#suggested-hardware-form label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+}
+#suggested-hardware-form input {
+  width: 8rem;
+}
+
+/* Settings (the owner, 2026-10-12): the pane's '?' sat mid-row and a reset
+   touched its dropdown. The title bar's actions (Expand all, the '?') and the
+   "Reset N changes" button each carried `margin-inline-start: auto`, so they
+   split the free space and the actions floated in the middle; the actions keep
+   theirs and the reset follows at the dock's own token gap. A reset inside or after a
+   dropdown's shell (`settings-rows.js` appends it to the shell) keeps a token
+   gap from it, where `auto` is no gap once the row has no room to spare. */
+#settings-modal .dock > .dock-actions ~ .settings-reset-section {
+  margin-inline-start: 0;
+}
+#settings-modal :is(.select-shell > .setting-reset, .select-shell + .setting-reset) {
+  margin-inline-start: var(--space-2);
+}
+/* On a phone the actions are ordered after the title (`order: 2`); the reset
+   goes after them, so the '?' stays to its left. */
+@media (max-width: 599.98px) {
+  #settings-modal .settings-section > .dock > .settings-reset-section {
+    order: 3;
+    margin-inline-start: auto;
+  }
+}
+
+/* Appearance, Interface zoom at 390 (a11ysurfaces.js): minus, slider, plus,
+   value and Reset in 264 px with 44 px buttons left the slider 24 px wide.
+   The row wraps and the slider keeps a width a finger can use. */
+.setting-control:has(> #zoom-slider) {
+  flex-wrap: wrap;
+}
+#zoom-slider {
+  flex: 1 1 8rem;
+  min-width: 8rem;
+}
+
+/* Appearance at 390 (a11ysurfaces.js): the custom accent picker shrank to
+   22.5 px wide in its wrapping row, under the 24 px floor. A colour swatch
+   keeps its own width. */
+.setting-row input[type="color"] {
+  flex: none;
+  min-width: var(--target-min);
+}

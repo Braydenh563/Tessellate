@@ -53,6 +53,7 @@ count, a rename or a tag list names nothing you can open.
 from __future__ import annotations
 
 from tessellate.entry.properties import strip as strip_properties
+from tessellate.search.snippet import clip_words
 
 #: The kinds the chat can draw, in the order the cards appear under a tool
 #: call. PLAN.md §4 A1 names exactly these five ("note, document, file, board,
@@ -112,7 +113,7 @@ def _note_item(row: dict) -> dict | None:
     return {
         "id": note_id,
         "label": _clip(body, LABEL_CHARS) or f"Note #{note_id}",
-        "snippet": _clip(body, SNIPPET_CHARS),
+        "snippet": clip_words(body, SNIPPET_CHARS),
     }
 
 
@@ -127,7 +128,7 @@ def _document_item(row: dict) -> dict | None:
     return {
         "id": doc_id,
         "label": _clip(title, LABEL_CHARS) or f"Document #{doc_id}",
-        "snippet": _clip(_first_text(row, "preview", "content"), SNIPPET_CHARS),
+        "snippet": clip_words(_first_text(row, "preview", "content"), SNIPPET_CHARS),
     }
 
 
@@ -149,7 +150,7 @@ def _file_item(row: dict) -> dict | None:
         "id": file_id,
         "file_kind": file_kind,
         "label": _clip(name, LABEL_CHARS) or f"File #{file_id}",
-        "snippet": _clip(_first_text(row, "caption", "text"), SNIPPET_CHARS),
+        "snippet": clip_words(_first_text(row, "caption", "text"), SNIPPET_CHARS),
         "url": str(row.get("url") or ""),
     }
     if isinstance(row.get("attached_to_note"), int):
@@ -175,7 +176,7 @@ def _board_item(row: dict) -> dict | None:
     return {
         "id": board_id,
         "label": _clip(title, LABEL_CHARS) or ("Default board" if board_id is None else f"Board #{board_id}"),
-        "snippet": _clip(_first_text(row, "preview", "text", "next"), SNIPPET_CHARS),
+        "snippet": clip_words(_first_text(row, "preview", "text", "next"), SNIPPET_CHARS),
     }
 
 

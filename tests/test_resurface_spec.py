@@ -306,3 +306,36 @@ def test_near_without_vectors_is_related_or_nothing(client):
 
     lonely = unrelated[0]
     assert client.get(f"/resurface/near/{lonely['id']}").json()["items"] == []
+
+
+def test_context_ranking_survives_vectors_of_another_dimension(session, fake_embeddings):
+    """A notebook re-embedded with a different model holds two sizes at once
+    until the rebuild ends. `/resurface/near/{id}` answered 500 ("shapes (384,)
+    and (4,) not aligned"); a candidate whose vector cannot be compared to the
+    anchor's is measured like one with none: kept only when it is joined."""
+    import struct
+
+    from tessellate.ai import resurface
+    from tessellate.core.database import EmbeddingRecord
+    from tessellate.entry import manager
+
+    anchor = manager.create_entry(session, "sourdough starter feeding schedule", tags=["bread"])
+    same = manager.create_entry(session, "sourdough loaf crumb and hydration", tags=["bread"])
+    odd = manager.create_entry(session, "rye bread notes", tags=["bread"])
+    session.commit()
+    vectors = {anchor.id: [1.0, 0.0], same.id: [1.0, 0.0], odd.id: [1.0, 0.0, 0.0, 0.0]}
+    for entry_id, values in vectors.items():
+        session.add(
+            EmbeddingRecord(
+                entry_id=entry_id,
+                embedding=struct.pack(f"<{len(values)}f", *values),
+                dim=len(values),
+                model_version="test",
+            )
+        )
+    session.commit()
+    resurface.compute_scores(session)
+
+    ids = [entry.id for entry in resurface.for_context(session, context_entry_id=anchor.id, limit=5)]
+    assert same.id in ids
+    assert odd.id in ids, "the shared tag still joins it"

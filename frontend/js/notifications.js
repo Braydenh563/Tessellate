@@ -280,6 +280,18 @@ async function openNotifications({ keepWatermark = false } = {}) {
     list.appendChild(row);
   }
 
+  //: **The first steps, pinned first while one is left** (INBOX 904 B01): the
+  //: card on the dashboard goes away with the first note or Hide, and a
+  //: popup closed by accident had no way back. Drawn after the panel is up,
+  //: since it asks three routes for its ticks.
+  lazyScript("/js/first-run.js").then(async (ok) => {
+    if (!ok || typeof firstStepsBellRow !== "function") return;
+    const start = await firstStepsBellRow().catch(() => null);
+    if (!start || list.querySelector(".notif-start")) return;
+    list.prepend(start);
+    list.querySelector(".notif-empty")?.remove();
+  });
+
   // Opening the panel *is* reading them. Marked after rendering, so the
   // unread ones are still highlighted in the list you are looking at.
   //

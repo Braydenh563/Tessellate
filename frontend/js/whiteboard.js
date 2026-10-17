@@ -522,7 +522,23 @@ function wbEndPanShield() {
   }, 250);
 }
 
+//: **No blur over moving pixels** (the owner, 2026-10-12: a trackpad pan of a
+//: mind map "slow and laggy" with a tool panel showing). The panels over a
+//: board are glass, and a backdrop blur samples what is under it, which moves
+//: every pan frame: five panels re-blurred per frame, 85 frames in 2 s against
+//: 117 with Glass off (tests/test_wb_pan_blur.py). The blur is dropped while
+//: the board moves (`#wb-canvas-view.wb-moving`, library-lazy.css) and comes
+//: back this long after the last pan or zoom step.
+const WB_MOVING_MS = 180;
+function wbMarkMoving() {
+  const view = document.getElementById("wb-canvas-view");
+  if (view && !view.classList.contains("wb-moving")) view.classList.add("wb-moving");
+  clearTimeout(wbMarkMoving.timer);
+  wbMarkMoving.timer = setTimeout(() => view?.classList.remove("wb-moving"), WB_MOVING_MS);
+}
+
 function handleWbZoom(e) {
+  wbMarkMoving();
   //: A view that is not where the last fit put it is not "fitted" any more,
   //: so a panel opening does not pull it back (`wbRefitIfFitted`).
   if (wbFit.on && (e.sourceEvent || (Date.now() > wbFit.until && !wbSameView(e.transform, wbFit.target)))) wbFit.on = false;
@@ -1920,6 +1936,24 @@ async function wbGroupSelection() {
     else await wbSaveObject(item);
   }
   toast("Grouped.");
+  wbUpdateContextBar();
+}
+
+//: **Which of Group and Ungroup the selection can use** (B29: "the ungroup
+//: button on the popup tools doesn't change"). Both buttons stayed on the bar
+//: through every selection, so grouping changed nothing the eye could see.
+//: Group is offered unless the selection already is exactly one group;
+//: Ungroup only while some member belongs to one.
+function wbGroupButtonState(items) {
+  const ids = items.map((i) => i.group_id || null);
+  const oneGroup = ids.length > 0 && ids[0] !== null && ids.every((g) => g === ids[0]);
+  return { canGroup: ids.length > 1 && !oneGroup, canUngroup: ids.some(Boolean) };
+}
+
+function wbSyncGroupButtons() {
+  const state = wbGroupButtonState(wbSelectionEntries().map((e) => e.item));
+  document.getElementById("wb-multi-group")?.classList.toggle("hidden", !state.canGroup);
+  document.getElementById("wb-multi-ungroup")?.classList.toggle("hidden", !state.canUngroup);
 }
 
 //: Clears `group_id` on every currently-selected member, the current
@@ -1944,6 +1978,7 @@ async function wbUngroupSelection() {
     else await wbSaveObject(item);
   }
   if (ungrouped) toast("Ungrouped.");
+  wbUpdateContextBar();
 }
 
 //: **The element a card or object is drawn as, looked up once, not per call**
@@ -1983,6 +2018,9 @@ function wbItemBBox(kind, item) {
     // still where the shape started, and a link following it would lag a
     // whole gesture behind.
     if (typeof item._dragLiveD === "string") return wbPathBBox(item._dragLiveD);
+    //: A resize in flight keeps its path in `_liveD` until release; the
+    //: Format panel's numbers read this box while the grip is held.
+    if (typeof item._liveD === "string") return wbPathBBox(item._liveD);
     const parsed = wbSketchParsedData(item);
     if (!parsed) return null; // a link sketch: no shape of its own to align
     return wbPathBBox(parsed.d);
@@ -4722,6 +4760,7 @@ function wbFillContextBar() {
       return null;
     }
     wbApplyContextRow(WB_CONTEXT_CONTROLS.multi);
+    wbSyncGroupButtons();
     // Extract notes (BACKLOG.md §62) only makes sense once the selection
     // actually includes a note card's content to extract from; a selection of
     // pure shapes has no "notes-in-context".

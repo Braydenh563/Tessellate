@@ -1750,3 +1750,24 @@ def test_the_companion_menu_opens_in_the_enlarged_view():
     assert "if (nmb.visit) return;" not in handler
     menu = frontend_text("companion-menu.js")
     assert 'nmb.visit ? items.filter((item) => item.group === "who") : items' in menu
+
+
+# The fall is not choppy (owner 2026-10-12, "about 4 frames a second").
+
+
+def test_a_flight_frame_never_restyles_the_whole_figure():
+    """Measured (scratchpad sweep, Atlas, 1440x900, thrown across Notes): the
+    flight loop set the inherited custom property `--nmb-sway` on #nm-buddy
+    every frame, which restyles every element of the drawing under it; 29
+    frames in 1.6 s (p50 50 ms, p95 117 ms, 14 long tasks) against 92 (p50
+    16.7 ms) with that one call removed. The lean is written to the three
+    elements that wear it (`nameMarkBuddySway`), whose `rotate` is not
+    inherited, so a frame restyles only them."""
+    avatars = frontend_text("avatars.js")
+    assert 'setProperty("--nmb-sway"' not in avatars
+    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    assert "var(--nmb-sway)" not in css
+    sway = _fn("nameMarkBuddySway", avatars)
+    assert "style.rotate" in sway and "querySelectorAll" in sway
+    # Every writer goes through it: the flight, the drag, and their stops.
+    assert avatars.count("nameMarkBuddySway(buddy,") >= 5

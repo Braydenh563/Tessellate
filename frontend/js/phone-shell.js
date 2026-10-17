@@ -249,6 +249,10 @@ function renderBrandLogo() {
   }
   //: The assistant heads that wear the emblem take the new colour or motion.
   repaintAssistantAvatars(true);
+  //: The dashboard hero's mark is no slot above (it is sized by the density
+  //: and may be a face), so it was drawn once and kept its old colours until a
+  //: reload (B63).
+  if (typeof dashEmblemDrawn !== "undefined" && dashEmblemDrawn) paintDashEmblem();
 }
 
 //: **An emblem nobody can see is drawn when it can be** (2026-09-27): a slot

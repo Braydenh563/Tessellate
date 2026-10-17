@@ -29,6 +29,10 @@ def test_the_fade_uses_the_motion_token_so_reduced_motion_removes_it():
 def test_an_opened_row_with_no_title_gives_its_first_line_a_title_lines_height():
     """Ledger 1548: measured 19.4 against the chevron's 22 before, 22 and 22 after
     (scratchpad/ui-sweeps/house1-chevron.js, 1440)."""
-    rule = CSS[CSS.index("li.row-expanded:not(:has(> .entry-title)) > .entry-content::first-line"):]
+    rule = CSS[CSS.index("#entry-list.is-rows > li.row-expanded > .entry-content::first-line"):]
     rule = rule[: rule.index("}")]
     assert "line-height: var(--target-min)" in rule
+    # A title gives the height back by sibling, not `:not(:has())`: that anchor restyled a
+    # whole card on every insert (tests/test_tab_entry_cost.py).
+    titled = CSS[CSS.index("li.row-expanded > .entry-title ~ .entry-content::first-line"):]
+    assert "line-height: inherit" in titled[: titled.index("}")]

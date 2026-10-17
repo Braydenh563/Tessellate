@@ -32,6 +32,8 @@ BOUNDED = {
     # literals in the source and change only when somebody edits them.
     "/chat/modes",
     "/chat/tools",
+    # The slash commands (ai/slash.py): a registry in code, like the modes.
+    "/chat/commands",
     "/skills",
     "/extras",
     # The document file types the importer accepts: also a literal.

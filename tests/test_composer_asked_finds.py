@@ -108,13 +108,13 @@ def test_mentions_is_an_asking_word_and_not_a_subject(client, session):
 def test_a_turn_that_asks_for_the_web_goes_to_the_web_first():
     """'hey can u pls search the web for ...' was answered from two unrelated
     notes: a note matched, and the web was only the fallback."""
-    from tessellate.ai import composer_digest
+    from tessellate.ai import composer_digest, toolwords
 
     asked = 'hey can u pls search the web for the book series "He Who Fights With Monsters" by Shirtaloon??'
-    assert composer_digest.asks_web(asked)
+    assert toolwords.asks_web(asked)
     assert composer_digest.web_query(asked).startswith("the book series")
-    assert not composer_digest.asks_web("when did I buy that gamin mouse earlier this year??")
-    assert not composer_digest.asks_web("what did I order online last week")
+    assert not toolwords.asks_web("when did I buy that gamin mouse earlier this year??")
+    assert not toolwords.asks_web("what did I order online last week")
 
 
 def test_cadence_takes_the_bare_unit():
@@ -127,6 +127,6 @@ def test_cadence_takes_the_bare_unit():
 
 
 def test_search_up_is_a_web_ask():
-    from tessellate.ai import composer_digest as d
-    assert d.asks_web("search up sandwich recipes including ham and cheese")
+    from tessellate.ai import composer_digest as d, toolwords
+    assert toolwords.asks_web("search up sandwich recipes including ham and cheese")
     assert d.web_query("search up sandwich recipes") == "sandwich recipes"

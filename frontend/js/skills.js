@@ -358,7 +358,6 @@ async function loadChatSkills() {
   trigger.type = "button";
   trigger.id = "chat-skills-btn";
   trigger.className = "ghost small";
-  trigger.dataset.needsModel = "Skills require an AI model";
   trigger.setAttribute("aria-haspopup", "dialog");
   trigger.setAttribute("aria-expanded", "false");
   trigger.setAttribute("aria-controls", "chat-skills-panel");
@@ -403,7 +402,13 @@ function fillSkillSelect(select) {
       option.title = skillSummary(skill);
       //: Phase E, decision 2: measured below the bar on a small model, so
       //: shown with why rather than offered and hoped.
-      if (skill.needs_larger_model) {
+      //: O7 (B69): with no model, a skill the composer cannot read off the
+      //: notes says so and waits; the ones it runs stay open.
+      if (aiIsOff() && !skill.composer) {
+        option.textContent += "  (needs a model)";
+        option.title = "Needs a model: this skill writes in its own words. Connect one in Settings, Models.";
+        option.disabled = true;
+      } else if (skill.needs_larger_model) {
         option.textContent += "  (needs a larger model)";
         option.title = skill.needs_larger_model;
         option.disabled = true;
@@ -461,9 +466,13 @@ function buildSkillsPanel(box, label, select, run, trigger) {
 
   panel.append(pickRow, paceRow, runRow);
 
-  const close = () => {
+  //: `refocus`: Escape or Run, with the focus inside, hands it back to the
+  //: trigger; hidden with the focus in it, it fell to the page (WCAG 2.4.3).
+  const close = (refocus) => {
+    const had = refocus === true && panel.contains(document.activeElement);
     panel.classList.add("hidden");
     trigger.setAttribute("aria-expanded", "false");
+    if (had) trigger.focus();
   };
   trigger.addEventListener("click", (event) => {
     event.stopPropagation();
@@ -478,10 +487,10 @@ function buildSkillsPanel(box, label, select, run, trigger) {
     if (!box.contains(event.target)) close();
   }, { signal });
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") close();
+    if (event.key === "Escape") close(true);
   }, { signal });
   // Running one is the end of the interaction, so the menu gets out of the way.
-  run.addEventListener("click", close);
+  run.addEventListener("click", () => close(true));
 
   // The trigger says which skill is armed, so the dock still answers "what is
   // this about to do?" without being opened.
@@ -870,6 +879,7 @@ function renderSmallModelMode(current) {
   const select = $("small-model-mode");
   if (!select) return;
   select.value = current || "auto";
+  renderSmallModelAuto();
 }
 
 //: **The run budget** (Brief 13), the same shape as the two controls above:

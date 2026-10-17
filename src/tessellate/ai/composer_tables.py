@@ -1032,31 +1032,15 @@ EXTRA_LEAD_INS: tuple[str, ...] = (
 
 #: More natural lines per kind of turn, appended to `composer.SOCIAL`.
 SOCIAL_NATURAL_EXTRA: dict[str, tuple[str, ...]] = {
-    "greeting": (
-        "Hey. What can I find for you?",
-        "Hi again. Ask me anything about your notes.",
-        "Hello. Your notes are all here, so ask away.",
-        "Hey there. Want to look something up?",
-    ),
     "morning": (
         "Good morning. What would you like to check first?",
         "Morning. Ask me about anything you wrote down.",
         "Good morning. Your notes are all here.",
     ),
-    "thanks": (
-        "No problem. Ask again whenever you like.",
-        "Glad to help.",
-        "You are most welcome. Anything else to look up?",
-    ),
     "how": (
         "Good, thanks. What would you like to find?",
         "All well here. Anything you want to check in your notes?",
         "Doing fine. What can I look up for you?",
-    ),
-    "bye": (
-        "Goodbye for now. Your notes are saved.",
-        "Talk soon. Everything you wrote is here.",
-        "See you next time.",
     ),
     "sorry": (
         "That is fine. What would you like to look up?",
@@ -1087,32 +1071,15 @@ SOCIAL_NATURAL_EXTRA: dict[str, tuple[str, ...]] = {
 
 #: The professional voice's lines, one tuple per kind. Same kinds as `SOCIAL`.
 SOCIAL_PROFESSIONAL: dict[str, tuple[str, ...]] = {
-    "greeting": (
-        "Hello. How may I help you with your notes?",
-        "Good day. What would you like to look up in your notes?",
-        "Hello. I can answer questions from what you have recorded.",
-        "Welcome back. What would you like to review?",
-    ),
     "morning": (
         "Good morning. What would you like to review?",
         "Good morning. Your notes are available whenever you are ready.",
         "Good morning. How may I assist?",
     ),
-    "thanks": (
-        "You are welcome.",
-        "My pleasure. Please ask again whenever you need something from your notes.",
-        "Glad to be of help.",
-        "Not at all. Is there anything else you would like to review?",
-    ),
     "how": (
         "Well, thank you. How may I help with your notes?",
         "Very well, thank you. What would you like to look up?",
         "I am well. What would you like to find in your notes?",
-    ),
-    "bye": (
-        "Goodbye. Your notes remain saved.",
-        "Thank you. Everything you recorded is saved.",
-        "Until next time.",
     ),
     "sorry": (
         "There is no need to apologise. How may I help?",
@@ -1139,10 +1106,10 @@ SOCIAL_PROFESSIONAL: dict[str, tuple[str, ...]] = {
         "Noted. Please ask whenever you are ready.",
         "Very good. What would you like to review next?",
     ),
-    #: The engine is Atlas (CHAT_PLAN decision 36), in both voices.
+    #: The engine is Atlas's assistant (CHAT_PLAN decision 36, amended 2026-10-17), in both voices.
     "who": (
-        "I am Atlas, the notebook's assistant. Without a model running, I answer from your notes in their own words.",
-        "This is Atlas. I locate entries in your notes and report what they say.",
+        "I am Atlas's assistant. Without a model running, I answer from your notes in their own words.",
+        "This is Atlas's assistant. It locates entries in your notes and reports what they say.",
     ),
     "joke": (
         "I do not compose jokes; I report what your notes contain. If you recorded one, ask for it.",
@@ -1153,9 +1120,9 @@ SOCIAL_PROFESSIONAL: dict[str, tuple[str, ...]] = {
         "The message was not recognised as words. What should be located?",
     ),
     "about_app": (
-        "I am Atlas. I answer from your notes: dates, decisions and the status of a project. I also set reminders and "
+        "I am Atlas's assistant. I answer from your notes: dates, decisions and the status of a project. I also set reminders and "
         "tag, move or pin notes on request. Connecting a model adds writing and summaries.",
-        "Atlas answers from what you have recorded: a date, a decision, a list or the status of a project, and acts on "
+        "Atlas's assistant answers from what you have recorded: a date, a decision, a list or the status of a project, and acts on "
         "request (reminders, tags, pins). Connecting a model adds writing and tools.",
     ),
 }
@@ -1486,11 +1453,7 @@ NEXT_STEPS_PROFESSIONAL = NEXT_STEPS_PROFESSIONAL + tuple(['Would you like me to
  'Would it be beneficial to retrieve related data on “{subject}”?',
  'I can examine the surrounding context of “{subject}” if you prefer.',
  'Shall I present additional documentation on “{subject}”?'])
-for _kind, _lines in {'greeting': ['Hi. What are we looking for today?',
-              'Hello again. Need me to find something?',
-              "Hey, I'm ready. What's on your mind?",
-              'Hi there. How can I help with your notes?',
-              'Hey, ready when you are. What should we search?'],
+for _kind, _lines in {
  'morning': ['Good morning. Need to find anything today?'],
  'compliment': ['I try my best. Anything else to check?',
                 "Thanks. Ask away when you're ready.",
@@ -1513,20 +1476,10 @@ for _kind, _lines in {'greeting': ['Hi. What are we looking for today?',
              "I understand. Let's focus on what we can find in your notes.",
              'It happens to the best of us. What can I look up for you?',
              "I've got you covered. What do you need from your notes?"],
- 'thanks': ['Any time. Let me know if you need anything else.',
-            "Happy to assist. What's next?",
-            'You bet. What else can I find?',
-            'Of course. Anything more you want to check?',
-            'Not a problem. Ask away.'],
  'how': ["I'm doing great, thanks for asking. What should we search for?",
          "Everything's running smoothly here. What's on your mind?",
          "I'm well. Let's dive into your notes.",
          'Doing good. Ready to find whatever you need.'],
- 'bye': ['Catch you later. Your notes will be right here.',
-         'Bye. Come back whenever you need to check something.',
-         "Take care. Your notes aren't going anywhere.",
-         'Until next time. Have a good one.',
-         "Goodbye. I'll be here if you need me."],
  'sorry': ["It's all good. Let's try again.",
            "Don't worry about it. What can I find for you?",
            'No worries at all. What should we search for?',
@@ -1552,15 +1505,7 @@ for _kind, _lines in {'greeting': ['Hi. What are we looking for today?',
  'about_app': [("I'm designed to retrieve answers directly from your notes. Ask me anything you've recorded, "
                "and I'll find it.")]}.items():
     SOCIAL_NATURAL_EXTRA[_kind] = tuple(SOCIAL_NATURAL_EXTRA.get(_kind, ())) + tuple(_lines)
-for _kind, _lines in {'greeting': ['Hey. What can I find for you?',
-              'Hi again. Ask me anything about your notes.',
-              'Hello. Your notes are all here, so ask away.',
-              'Hey there. Want to look something up?',
-              'Hi. What are we looking for today?',
-              'Hello again. Need me to find something?',
-              "Hey, I'm ready. What's on your mind?",
-              'Hi there. How can I help with your notes?',
-              'Hey, ready when you are. What should we search?'],
+for _kind, _lines in {
  'morning': ['Good morning. What would you like to check first?',
              'Good morning. Need to find anything today?'],
  'compliment': ['Thank you. Is there anything else you would like to review?',
@@ -1600,7 +1545,7 @@ INSIGHT_SLOTS: dict[str, str] = {
     "after": "clause", "hedge": "hedge",
 }
 
-#: Who it is and what it does are said as Atlas (CHAT_PLAN decision 36,
+#: Who it is and what it does are said as Atlas's assistant (CHAT_PLAN decision 36,
 #: `composer.SOCIAL`): the unnamed lines added for these two kinds are retired.
 for _retired in ("who", "about_app"):
     SOCIAL_NATURAL_EXTRA.pop(_retired, None)

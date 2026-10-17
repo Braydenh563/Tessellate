@@ -226,6 +226,16 @@ function utilityPaletteRows(lowered) {
       });
     }
   }
+  //: B55: the clipper lived only in Settings, Import & export. Typing clip, clipper
+  //: or bookmarklet finds it, and the row opens it with the bookmark in view.
+  if (/\b(?:clip(?:per)?|bookmarklet)\b/.test(lowered)) {
+    rows.push({
+      group: "Do it",
+      label: "ph:bookmark-simple Web clipper",
+      about: "Keep a page from your browser as a note: drag the bookmark to your bookmarks bar, then press it on the page.",
+      run: () => openSettingsModal("data", "web-clip-box"),
+    });
+  }
   const asked = lowered.match(/^(?:insert )?(?:a )?(?:templates?|snippets?)\b ?(.*)$/);
   if (asked) {
     //: Before note-templates.js has loaded this is its stand-in's promise:

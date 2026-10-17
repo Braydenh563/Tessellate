@@ -1647,6 +1647,9 @@ function entryOverflowMenu(entry) {
       },
     ];
 
+    //: With no model the app does these itself and the menu says so (O7;
+    //: BACKLOG "The composer does Improve writing and Generate title").
+    const off = aiIsOff();
     const aiItems = [
       {
         //: **Named for what it does, not for what it is called internally**
@@ -1656,13 +1659,13 @@ function entryOverflowMenu(entry) {
         //: filed it themselves, *and* suggests tags and links for them to
         //: apply. "Re-evaluate" named the smallest part of that, and tags,
         //: the part it is actually reached for, were not in the name at all.
-        label: "ph:sparkle Tag and file with Atlas",
+        label: off ? "ph:tag Tag and file" : "ph:sparkle Tag and file with Atlas",
         title: "Atlas re-reads the note, suggests tags and links, and may refile it",
         run: () => reevaluateEntry(entry),
       },
       {
-        label: "ph:sparkle Improve writing",
-        title: "Proofread or rewrite this note with AI",
+        label: off ? "ph:text-aa Proofread" : "ph:sparkle Improve writing",
+        title: off ? "Spelling and capitals put right with no model; rewording needs one" : "Proofread or rewrite this note with AI",
         run: async () => {
           if (!(await openNoteEditor(entry.id))) return;
           // The edit textarea now exists, improve it in place.
@@ -1674,8 +1677,8 @@ function entryOverflowMenu(entry) {
         // Recognising a title the note already wrote (a leading `# Heading`)
         // is free; writing one costs a real model call, so it's this
         // separate, on-request action rather than something automatic.
-        label: entry.title ? "ph:sparkle Regenerate title" : "ph:sparkle Generate title",
-        title: "Write a short title for this note with AI",
+        label: off ? "ph:text-h Title from its words" : entry.title ? "ph:sparkle Regenerate title" : "ph:sparkle Generate title",
+        title: off ? "A title taken from the note's first sentence, with no model" : "Write a short title for this note with AI",
         run: () => generateEntryTitle(entry),
       },
       ...(entry.title

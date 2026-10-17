@@ -7,6 +7,21 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## OPEN.md rows closed, 2026-10-17 (the open-rows agent: resurface and the time reader)
+
+Each found by probing the head, test first, one commit per item.
+
+- **Row 464, `/resurface/near/{id}` 500 on mixed vector sizes** (87b18e4): `_comparable_vectors` keeps only vectors the anchor's length; `tests/test_resurface_spec.py`.
+- **Typed reminder command ignored the locale's date order** (195fdb3): locale threaded through `commands.read` and `reading.read`.
+- **Clock said in words** (04b9456): "half past 4", "quarter to five", "twenty past nine pm" resolve; "every day at half past 7" keeps its repeat.
+- **"in 3 days at 3pm" lost the clock** (c026045): `_with_clock` in `parse_relative`.
+- **"the first monday of november" read as next Monday** (fb23605): `_NTH_IN_MONTH`; a note about the past reads the month gone.
+- **Month edges and offsets** (60a637b): "the last day of this month", "next month on the 3rd", "a week from friday", "30 minutes from now". Complexity seed: `resolve` 50 to 44, `span` 66 to 60.
+- **Clocks in words and 24-hour figures** (df05e0a): "3 o'clock", "at three", "at ten thirty", "at 1530", "at 0330", "at 15h30" (`word_clock`, `_word_clock`); figure forms are 24-hour, word and o'clock forms keep the bare-hour rule; "at one point", "at three people", "the 1530 train" stay unread; "thrity", "fiften" repaired in `question_noise`. Complexity seed: `_time_cands` 26 to 22.
+- **Hours-and-minutes offsets and "eod"** (1f024b7): "in 1h30", "in 2h", "in 1.5h", "in 1 hour and 30 minutes" (the last read as one hour, the half hour left in the words); "eod" is 17:00 on its day, else the next 17:00 once five has passed.
+- **A weekday after a week offset** (dde77cd): "in two weeks on wednesday" is Wednesday of the week two weeks on (Monday to Sunday weeks, as "next friday"; "in a week on friday" is "next friday"). Decision recorded in `_weeks_on_day`.
+- **Midnight and the new year** (the fourth commit of the series, after dde77cd): midnight alone is tonight's, the next one; "midnight on 5 october" keeps the night-of-the-day rule; bare "new year" is the midnight that opens the year (1 January 00:00), "new year's eve" and "new year's day" follow the day rule. A holiday after "the" stays in the reminder's words; the stranded "to" after a cut "at" is dropped. Complexity seed: `parse_reminder_text` 33 to 27.
+
 ## OPEN.md rows closed, 2026-10-05 (the pre-0.4.0 buildable rows, sweeps on port 8815)
 
 Each row was checked against the head before anything was built.
@@ -490,6 +505,24 @@ the gesture guard moved onto the surface first; see HISTORY.md ("From OPEN.md,
 2026-09-23 (askcite agent): Phase 8c, the board's note card").
 
 
+## Moved from the plans, 2026-10-17 (New chat page, BACKLOG)
+
+From BACKLOG, as it stood:
+
+> New chat page: its content (the mark, "Explore your notebook with Atlas", the starter chips) appears a second or two late and all at once (owner, 2026-10-12). It waits for its starters (`renderChatEmptyState`, chat.js, `.chat-empty-waiting`); show the mark and heading at once, skeleton the chips, and fade each in.
+
+Built 2026-10-17 (ui-1017b): the card is drawn at once and `#chat-suggest` holds four skeleton pieces in its own box (`showSkeletons`, cleared by `loadChatSuggestions`, which settles the real chips in). Measured with `scratchpad/ui-sweeps/chatemptypaint.js` (NEW=1 DELAY=1200, 1440): heading visible at 854 ms before and 15 ms after; heading top moved 39px (350.7 to 389.7) before and 0 after; card height 222.5 to 300.6 before, constant 300.6 after. At 390 and 1024 the heading and card did not move. The boot CSS cap was paid for by moving sixteen pure OCR rules to library-lazy.css (boot CSS 178,971 to 178,865 gzipped with the skeleton rules in, boot JS 587,615 to 587,757; computed styles of the workspace identical at 1440, 1024 and 390).
+
+## Moved from the plans, 2026-10-17 (Source notes, BACKLOG)
+
+From BACKLOG, as it stood:
+
+> Source notes: the source cards and the "Searched notes" chips show raw markdown ("**The Complete Social Skills Guide**", "Follow- Up", clipped mid-word starts such as "uding servers") instead of rendered inline markdown; run the snippet through the inline renderer (bold, italics, code, links) and start snippets at a word boundary.
+
+Built 2026-10-17 (backlog sweep): the cards already rendered inline markdown (`renderInlineMarkdown` in `chat-agent.js`); what was left was the cut. `engine._snippet` cut a window at a character offset (a start inside "including" gave "uding servers"), and the card, document, file and board previews and the agent's source rows cut the end at a character count. `search/snippet.py` (`window_words`, `clip_words`) moves each cut to a space and marks it with an ellipsis; `tests/test_snippet_word_boundaries.py` (10 tests). The "Searched notes" chips are the tool step's label (a clipped query), not a snippet, and carry no markdown.
+
+Two BACKLOG rows about CodeQL's "Unused global variable" on `lantrust._run_allowance` and `reminder_token._loaded_from` were dropped: neither name exists in the code any more (grep, 2026-10-17).
+
 ## Moved from the plans, 2026-10-12 (Brief 34)
 
 The whole brief, closed with its last row (2026-10-12: the name-mark pairs under the 15% floor, 9 down to 2 on the default look (Jade/Maya 11.5%, You/Chloe 11.8%) and 0 on the feminine, by teal cloth in one colour pair and the hair style and garment joining the hair and cloth rolls; the masculine look keeps its one pair under the floor (Chloe/Quinn 9.6%, unchanged); 15% on all three looks was not reachable in this step). The idle-cost step is still in OPEN.md. The brief, as it stood:
@@ -867,6 +900,15 @@ The filing agent's Built block (standing order 10); WORLD_CLASS_PLAN's "Placed f
 - Measured and not shipped: tags from the note's own words for a notebook with no tags (a title word said twice): 4 of 12 right on the set, below the bar.
 - Learning from turn-downs: a tag discarded on three notes or more is offered at 0.3 of its vote everywhere (`tagging.turned_down`, `_damp`); Manage tags lists them under Turned down with Offer again (`GET /tags/turned-down`, `POST /tags/turned-down/offer-again`, preference `tags_offered_again`). Driven at 1440 and 390 on port 8851: the row shows, its button 122x32 (44 tall at 390), no overflow, and Offer again hides it. Capture: title "Biology revision" and a body without the word gave the chip "biology", titled "It says “biology”.", focus left in the editor.
 - Help moved with it: the Guide topic `suggested-tags`, the tag manager's '?' popover.
+## Moved from the plans, 2026-10-17 (TIMELINE B72)
+
+The calendar-b72-1017 agent's Built block (standing order 10); TIMELINE_PLAN section 12 row 6 and the INBOX 561 placement carry the pointer. The owner, INBOX 904 B72: "I wanna be able to double click on a date and be able to add an event and set a reminder ... scroll above today's date to see future dates ... recognise future date and time mentions and suggest to use magic add". Decisions taken are in `agent-remaining/calendar-b72-1017.md` (archived with it).
+
+- Step 1, the add sheet (row 6, decision 18): a double click on a month cell, a week or day hour cell, the head's new Add, or N on a focused day opens one sheet (`openSheet`, `timeline-cal-add.js`, lazy: the calendar's one-keydown lint) on that day: Reminder or Event (`.tabs-line.popup-kinds`), the words with quick add's chips, a date and a time (an hour cell's hour, else 09:00, today after 9 the next hour), "Remind me at the start" for an event. An event is a meeting note (decision 27) with a linked reminder, drawn as one chip ("with a reminder"); a time alone in the words keeps the pressed day. A single press waits 250 ms before the Day view so a double click adds. Measured (`scratchpad/ui-sweeps/caladd.js`, light and dark): "Dentist at 3pm" from a double click on 21 October saved due 2026-10-21 15:00, in that cell, Undo left 0; the week's 14:00 opened at 14:00; an event saved the note and its reminder as one chip, Undo binned both; at 390 the head's Add is 76 by 44, the sheet inside the window, 0 px horizontal scroll, 0 text in the sheet under 4.5:1; `calendar.js` still 0 overflowing cells at 1440, 1024, 768 and 390. `tests/test_timeline_cal_add.py` (4).
+- Step 2, the week ahead: the feed draws today and the next seven days above it (an empty day ahead is a head with an Add into the same sheet) and a fresh read lands on today (`timelineAheadBuckets`, `timelineScrollToToday`). Before: rows ahead sat above today at scrollTop 0, an empty today sat above later days, and an empty week ahead drew nothing. Measured (`feedahead.js`): today's head 0 px from the scroller's top at 1358 (scrollTop 750) and 390 (941), newest first, unique, 0 px horizontal scroll. A row's detail moved to the lazy `timeline-detail.js` to stay under the boot cap (588,462 to 587,787 gz bytes); `timelineZoom`, a const reassigned after a pause, now resets in place. `tests/test_timeline_feed_ahead.py` (3).
+- Step 3, dates in a note: the existing Remind me offer (`ai/offers.py`) now says the reminder goes on the timeline and the calendar, and its notice has Show on calendar (`timelineCalendarOn`, which drops the cached month read: at 390 the new reminder was missing from the agenda until it did). Measured (`noteoffercal.js`, light and dark): "Dinner with Sam on Friday at 7pm" at 1358 opened October with "7:00 PM Dinner with Sam" in the 23rd; at 390 the agenda showed "Pay the gas bill" on the 20th in view; both on the feed above today; 0 errors, 0 px horizontal scroll. `tests/test_note_offer_calendar.py` (3).
+- Help moved with it: the Timeline's '?' popover, the Guide's `timeline`, `timeline-controls` and `editor-offers` topics, DESIGN.md's calendar recipe row.
+
 ## Moved from the plans, 2026-10-11 (TIMELINE Brief 55)
 
 The calendar55 agent's Built block (standing order 10); TIMELINE_PLAN section 9's gates, section 10 row 4, section 11 row 9 and section 12 rows 1 to 5 carry the pointer. Decisions 14 to 19: the calendar as the Timeline's third view, from the same rows.
@@ -50482,6 +50524,8 @@ Left: `python3 scratchpad/help-audit/count.py frontend/index.html` prints TOTAL 
 - **The panel on the stream**: `/jobs/stream` carries a `tasks` event (the `/tasks` body, resent only when its rows change, looked at each second); Settings, Running now repaints from it (`renderTasks`, the one row recipe) and the status poll stops painting the panel while the stream is open.
 
 Decisions taken (standing order 3): a **skill run** stays on its chat request, not a pool job: it is a turn streamed to the person, and replaying it after a kill would repeat its tool calls. The **startup embedding backfill** stays at the end of the warm-up thread (the A3 reason recorded there); its Run now is durable through `pass`.
+
+**Built 2026-10-17 (the folder import, the last kind).** `POST /import/directory` queues kind `import` (handler `routes_settings._run_directory_import`, lane `batch`, its own ledger run, dedupe on the folder) instead of a request task, so a quit part-way is finished at the next launch; the runner already skips a file by path and text hash. `tests/test_import_job.py` (route, resume of a left row, kind table); the five test files that read the result straight after the POST wait on `tests/_pool_wait.py`.
 
 ### Brief 45 part 2, the dead defs (briefs-1011)
 

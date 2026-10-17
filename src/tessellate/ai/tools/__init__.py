@@ -23,7 +23,7 @@ from datetime import timedelta
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import librarian, skills, toolwords
+from tessellate.ai import librarian, skills, toolrank, toolwords
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.ai.provider import set_write_tools
 from tessellate.core import activity, deps, events
@@ -915,12 +915,55 @@ def _search_help(session: Session, args: dict) -> dict:
     """The app's own help for a feature, so a question about how Tessellate
     works is answered from its guide rather than from the notes or the
     model's guesses (the same block `help_chat` adds to an app question)."""
-    from tessellate.ai import help_chat
+    from tessellate.ai import composer, help_chat
     query = args.get("query") or ""
-    text = help_chat.help_block_for(query)
+    #: A tool call is already the asking: "reminder" is a topic to look up,
+    #: not a sentence that has to read as a how-to first (help_block_for's
+    #: gate returned nothing for it, O1 probe 2026-10-17).
+    text = help_chat.help_block_for(query) or help_chat.help_block_for(f"how do I use {query}")
+    line = composer.help_line(query, help_chat.topics_for(query)) if text else None
     return {
         "guide_text": text,
+        "answer": line[0] if line else "",
         "label": f"ph:book-open Read the guide on “{_clip(query, 40)}”",
+    }
+
+
+def _tool_group(name: str) -> str:
+    """What a tool does to the notebook, as Settings, Tools groups it."""
+    if name in ("web_search", "read_url"):
+        return "online"
+    spec = TOOLS[name]
+    return "confirm" if spec.destructive else "write" if name in WRITE_TOOLS else "read"
+
+
+def _list_tools(session: Session, args: dict) -> dict:
+    """Every tool the assistant has, so a model asked what it can do, or
+    reaching for one it was not shown, looks it up instead of guessing (O10;
+    BACKLOG "A tool to list the tools"). `filter` keeps the ones whose name
+    or description holds the word. Read-only."""
+    if str(args.get("name") or "").strip():
+        return _describe_tool(session, args)
+    word = str(args.get("filter") or "").strip().lower()
+    rows = [
+        {"name": spec.name, "does": spec.description.split(". ")[0].rstrip(".")[:140], "group": _tool_group(spec.name),
+         "enabled": tool_enabled(spec.name)}
+        for spec in TOOLS.values()
+        if not word or word in spec.name.lower() or word in spec.description.lower()
+    ]
+    return {"tools": rows, "total": len(rows), "label": f"ph:wrench Listed {len(rows)} tools" + (f" for “{_clip(word, 30)}”" if word else "")}
+
+
+def _describe_tool(session: Session, args: dict) -> dict:
+    """One tool's whole description, its arguments and a worked call
+    (`list_tools` with a name)."""
+    name = str(args.get("name") or "").strip()
+    spec = TOOLS.get(name)
+    if spec is None:
+        return {"error": f"There is no tool called “{_clip(name, 40)}”; list_tools names them."}
+    return {
+        "name": name, "description": spec.description, "parameters": spec.parameters, "example": call_example(name),
+        "group": _tool_group(name), "enabled": tool_enabled(name), "label": f"ph:wrench Read how {name} works",
     }
 
 
@@ -1193,8 +1236,11 @@ def _list_skills(session: Session, args: dict) -> dict:
 
     The built-ins used to live only in `app.js`, so a model asked "what skills
     do I have?" answered with the user's own and nothing else, while the
-    interface showed ten more.
+    interface showed ten more. `tools` or `tool` asks for the tools instead
+    (`_list_tools`).
     """
+    if args.get("tools") or str(args.get("tool") or "").strip():
+        return _list_tools(session, {"name": args.get("tool")})
     config = deps.get_config()
     catalog = skills.catalog(config, set(TOOLS))
     return {
@@ -3022,7 +3068,7 @@ TOOLS: dict[str, ToolSpec] = {
             "Place a tree of notes on a board in one call. Each node is a new note ('title') "
             "or an existing one ('note_id'), with a short 'ref' that children name as their "
             "'parent_ref'. One node has no parent_ref (the root), or parent_ref is card:<id> "
-            "to grow from a card on the board. Never invent x/y. Up to 60 nodes."
+            "to grow from a card on the board. Never invent x/y. "
             f"Up to {MAX_DIAGRAM_NODES} nodes.",
             {
                 "type": "object",
@@ -3293,10 +3339,13 @@ TOOLS: dict[str, ToolSpec] = {
         ),
         ToolSpec(
             "list_skills",
+            #: And the tools (O10, BACKLOG "A tool to list the tools, and the
+            #: skills"): folded in here, not a tool of its own, because every
+            #: schema must fit a 32k window untrimmed and a new tool tipped it.
             "List the user's saved skills: repeatable jobs you can start "
             "with run_skill. Each says when_to_use and whether it changes "
-            "notes.",
-            {"type": "object", "properties": {}},
+            "notes. tools:true lists your tools; tool: one's details.",
+            {"type": "object", "properties": {"tools": {"type": "boolean"}, "tool": {"type": "string"}}},
             _list_skills,
         ),
         ToolSpec(
@@ -4076,7 +4125,7 @@ TOOL_GROUPS: list[tuple[tuple[str, ...], tuple[str, ...]]] = [
     ),
     (
         ("list_skills", "run_skill", "save_skill", "delete_skill"),
-        ("skill", "shortcut"),
+        ("skill", "shortcut", "what can you do", "your tools", "which tool", "what tools", "list the tools", "capabilities"),
     ),
     (
         ("summarize_notes",),
@@ -4565,21 +4614,59 @@ def compact_schemas(offered: list[dict]) -> list[dict]:
     return out
 
 
+#: Plan mode's own sentence (`PLAN_PREFIX`, frontend/js/wiring.js): the request
+#: names the tool, so a small model must be handed it (owner, 2026-10-17).
+_PLAN_MODE_CUE = re.compile(r"\bcall make_plan\b", re.IGNORECASE)
+
+
+def asks_for_plan(question: str) -> bool:
+    return bool(_PLAN_MODE_CUE.search(question or ""))
+
+
 def keep_first_for(question: str) -> list[str] | None:
     """The tools a small window must not drop for this question: a turn that
     asks for the web outright keeps `web_search` and `read_url` at the head of
     the budget. They were appended last and so cut first, and the model, told
     about web search by the help text but not handed the tool, thought for 150
     seconds and answered that it had no way to look (owner, 2026-10-12)."""
-    from tessellate.ai import composer_digest
-
-    if composer_digest.asks_web(question) and tool_enabled("web_search"):
+    if toolwords.asks_web(question) and tool_enabled("web_search"):
         return ["web_search", "read_url", *CORE_TOOLS]
+    if asks_for_plan(question):
+        return ["make_plan", *CORE_TOOLS]
     return None
 
 
+def rank_tools(question: str, recent: str = "", recent_tools: tuple[str, ...] = ()) -> list[tuple[str, float]]:
+    """Every registered tool with the probability the question wants it,
+    likeliest first (`ai/toolrank.py`). Not filtered by Settings: whether a
+    tool is on is a separate fact, and a ranking that hid the off ones could
+    not say what a turn held back."""
+    focus = focus_detail(question, recent)
+    specs = [{"function": {"name": s.name, "description": s.description, "parameters": s.parameters}} for s in TOOLS.values()]
+    return toolrank.rank(
+        question,
+        specs,
+        core=CORE_TOOLS,
+        groups=TOOL_GROUPS,
+        ranked_groups=focus.ranked,
+        kept_first=keep_first_for(question),
+        writes=WRITE_TOOLS,
+        asking_about=focus.asking_about,
+        recent_tools=recent_tools,
+    )
+
+
+def ranking_line(offered: list[str], held_back: list[str], chances: dict[str, float]) -> str:
+    """The log line for a turn's ranking, see `toolrank.line`."""
+    return toolrank.line(offered, held_back, chances)
+
+
 def within_budget(
-    offered: list[dict], budget_chars: int, keep_first: list[str] | None = None
+    offered: list[dict],
+    budget_chars: int,
+    keep_first: list[str] | None = None,
+    exempt: frozenset[str] = frozenset(),
+    ranking: dict[str, float] | None = None,
 ) -> tuple[list[dict], list[str]]:
     """(the tools that fit, the names dropped), most important kept.
 
@@ -4602,7 +4689,10 @@ def within_budget(
         offered = compact_schemas(offered)
     priority = list(keep_first or CORE_TOOLS)
     rank = {name: index for index, name in enumerate(priority)}
-    ordered = sorted(offered, key=lambda t: rank.get(t["function"]["name"], len(rank)))
+    chances = ranking or {}
+    # The priority list first, then the likeliest (`rank_tools`); equal chances
+    # keep the order the focus gave them.
+    ordered = sorted(offered, key=lambda t: (rank.get(t["function"]["name"], len(rank)), -chances.get(t["function"]["name"], 0.0)))
 
     kept: list[dict] = []
     dropped: list[str] = []
@@ -4610,7 +4700,7 @@ def within_budget(
 
     for spec in ordered:
         name = spec["function"]["name"]
-        if small_window and name in ORCHESTRATION_TOOLS:
+        if small_window and name in ORCHESTRATION_TOOLS and name not in exempt:
             dropped.append(name)
             continue
         # Measured against the list as it will actually be serialised, rather

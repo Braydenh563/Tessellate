@@ -123,7 +123,9 @@ SUGGESTED_MODELS: dict[str, list[dict]] = {
          "purpose": "MoE, quantisation-aware 4-bit: e2b answers at roughly half the download"},
         {"name": "hf.co/unsloth/gemma-4-E4B-it-qat-GGUF:UD-Q4_K_XL", "size": "~5.3 GB",
          "purpose": "MoE, quantisation-aware 4-bit: e4b answers at roughly half the download"},
-        {"name": "gemma4:26b", "size": "~19 GB", "purpose": "MoE: 12B-class speed with far better answers. Needs ~16 GB", "ram_gb": 16},
+        # `label`: what the card prints. The pull tag stays "gemma4:26b" (the
+        # model is the 26B-A4B one: 26B of weights, about 4B active per word).
+        {"name": "gemma4:26b", "label": "gemma4:26b (a4b)", "size": "~19 GB", "purpose": "MoE (a4b): 26B of weights, about 4B working at a time, so far better answers than its speed suggests. Needs ~16 GB", "ram_gb": 16},
         {"name": "qwen3.5:35b-a3b", "size": "~21 GB", "purpose": "MoE: the most capable here, still quick. Needs ~24 GB", "ram_gb": 24},
     ],
     "embedding": [

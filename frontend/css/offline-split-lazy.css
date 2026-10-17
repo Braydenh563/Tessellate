@@ -1,0 +1,62 @@
+/* offline-split-lazy.css: the no-model notice's split button (INBOX 904 B05),
+   fetched with offline-split.js. library-lazy.css holds the general recipe
+   (`.split-button`) but is the Library's, so this notice carries its own
+   few lines. One seam: the caret overlaps the action's end edge. */
+.ai-offline-note > .ai-offline-split {
+  display: inline-flex;
+  height: auto;
+  margin-inline-start: auto;
+}
+
+.ai-offline-split > .split-button-main {
+  margin: 0;
+  border: 1px solid var(--ghost-btn-border);
+  background: var(--btn-quiet-bg);
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+}
+
+.ai-offline-split .menu-wrap > .split-button-caret {
+  height: 100%;
+  margin: 0 0 0 -1px;
+  padding-inline: var(--space-2);
+  border: 1px solid var(--ghost-btn-border);
+  background: var(--btn-quiet-bg);
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+}
+
+.ai-offline-split > .split-button-main:is(:hover, :focus-visible),
+.ai-offline-split .menu-wrap > .split-button-caret:is(:hover, :focus-visible) {
+  position: relative;
+  z-index: 1;
+  background: var(--ghost-btn-bg);
+  border-color: var(--ghost-btn-border-hover);
+}
+
+/* In a dashboard card the action sits under the words. */
+#dash-grid .ai-offline-note > .ai-offline-split {
+  grid-area: 2 / 2 / 3 / 3;
+  justify-self: start;
+  margin-inline-start: 0;
+}
+
+#dash-grid .ai-offline-split > .split-button-main {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--accent-text);
+}
+
+@media (max-width: 599.98px) {
+  .ai-offline-note > .ai-offline-split {
+    grid-area: 2 / 2 / 3 / 3;
+    justify-self: start;
+    margin-inline-start: 0;
+  }
+
+  .ai-offline-split > .split-button-main {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--accent-text);
+  }
+}

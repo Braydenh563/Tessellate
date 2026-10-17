@@ -51,6 +51,10 @@ TAG_LEAD_VOTE = 0.8
 #: for #journal): too loose to offer alone, enough beside a neighbour's vote.
 TAG_FOLDED_VOTE = 0.2
 TAG_PHRASE_VOTE = 0.2
+#: A tag the notebook has never used is offered only for a subject the note
+#: names in this many different phrases ("gym" and "squat" are Fitness; "eggs"
+#: alone is not Cooking).
+NEW_TOPIC_PHRASES = 2
 #: The title and first line's words count this many times in the note.
 LEAD_WEIGHT = 2.0
 #: A tag on a note this one links to, or that links to it.
@@ -418,6 +422,36 @@ def _choose(ask: _Ask, vocab: _Vocab, ranked: list[str], own: set[str], have: li
 def grounded_keys(content: str, keys: list[str], vocabulary: dict[str, str]) -> list[str]:
     kept = set(grounded(content, [vocabulary[key] for key in keys], limit=len(keys)))
     return [key for key in keys if vocabulary[key] in kept]
+
+
+def filled(session: Session, content: str, tags: list[str], have: list[str], limit: int = TAG_LIMIT) -> list[str]:
+    """`tags` (the notebook's own, a model's) with any room left filled by
+    subjects the notebook has never tagged (B80)."""
+    room = limit - len(tags)
+    return [*tags, *new_topics(session, content, [*have, *tags])[:room]] if room > 0 else tags
+
+
+def new_topics(session: Session, content: str, taken: list[str]) -> list[str]:
+    """Tags for the subjects `content` names (the pack's topics, in at least
+    `NEW_TOPIC_PHRASES` different phrases, most phrases first) that the
+    notebook has not used and `taken` does not hold: the new-tag suggestions
+    with no model to coin one. A sensitive subject (an illness, a debt) is
+    never offered as a tag the person did not choose."""
+    from tessellate.ai import taxonomy
+
+    sensitive = taxonomy.sensitive_topics()
+    named = {
+        topic: len(set(phrases)) for topic, phrases in _read(content).hits.items()
+        if topic not in sensitive and not re.search(r"[&/]", topic) and len(set(phrases)) >= NEW_TOPIC_PHRASES
+    }
+    if not named:
+        return []
+    with lexical_filing._corpus_lock:
+        scope = lexical_filing._scope(session)
+        used = {_key(tag) for doc in lexical_filing._corpus_for(session).docs.values() if scope(doc) for tag in doc.tags}
+    skip = used | {_key(tag) for tag in taken}
+    tags = [topic.casefold().replace(" ", "-") for topic in sorted(named, key=named.get, reverse=True)]
+    return [tag for tag in tags if _key(tag) not in skip]
 
 
 def merged(first: list[str], then: list[str], have: list[str], limit: int = TAG_LIMIT) -> list[str]:

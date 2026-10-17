@@ -331,8 +331,13 @@ function quickAccessManage(ids) {
       }
       warn("");
       draft = box.checked ? [...draft, link.id] : draft.filter((id) => id !== link.id);
+      //: The row changes lists, so it lands far from where it was; the list
+      //: stays where it is (INBOX 904 B13: focusing it scrolled to it, and a
+      //: second untick meant scrolling back up).
+      const top = scroll.scrollTop;
       draw();
-      boxOf(link.id)?.focus();
+      boxOf(link.id)?.focus({ preventScroll: true });
+      scroll.scrollTop = top;
       tell(`${link.label}: ${box.checked ? "added" : "removed"}, ${draft.length} of ${QUICK_ACCESS_MAX}`);
     });
     const lines = document.createElement("span");

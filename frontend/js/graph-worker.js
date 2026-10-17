@@ -75,7 +75,7 @@ let dragging = false;
 //: The heat a released drag leaves the layout at: enough for the dropped
 //: note and its neighbours to ease into place, too little for its links to
 //: haul it back across the map.
-const RELEASE_ALPHA = 0.02;
+const RELEASE_ALPHA = 0.016;
 const RELEASE_ALPHA_MIN = 0.01;
 // Performance mode (init.perf): the loop rests twice as long between ticks.
 let perf = false;
@@ -1179,6 +1179,62 @@ function hubForce(alpha) {
 }
 hubForce.initialize = () => {};
 
+//: **A note stays within reach of its own category** (INBOX 904 B70, the
+//: owner: "why does this node wanna be all the way down there?? the graph
+//: force structuring is still a bit messy"). A linked note whose lines go to
+//: another category is pulled by them harder than the soft category pull holds
+//: it, and came to rest a whole cluster away from its own: measured on a
+//: 46-note, 8-category notebook (`scratchpad/ui-sweeps/graph1017-b70.js`), the
+//: farthest note stood 3 to 8 times the median nearest-same-category distance
+//: from its category, stretching the category's outline across the map with
+//: it. This is a leash, not a place: nothing acts inside `TETHER_SLACK` times
+//: the category's own typical reach (the median distance of its notes from
+//: their median point, never under `TETHER_FLOOR`), and past it the note is drawn
+//: back by `TETHER_PULL` of the excess a tick. Not scaled by alpha, like the
+//: collision: it is a rule about where a note may be at rest. Loose notes keep
+//: their orbit seats, a pin is never moved, and a category of fewer than
+//: three has no outline to hold to.
+const TETHER_SLACK = 1.4;
+const TETHER_FLOOR = 70;
+const TETHER_PULL = 0.4;
+const TETHER_MIN_GROUP = 3;
+const tether = { groups: new Map() };
+const median = (values) => {
+  const sorted = values.slice().sort((a, b) => a - b);
+  return sorted[Math.floor(sorted.length / 2)];
+};
+function tetherForce() {
+  if (!ring.on) return;
+  const groups = tether.groups;
+  groups.clear();
+  for (const node of nodes) {
+    let list = groups.get(node.group);
+    if (!list) groups.set(node.group, (list = []));
+    list.push(node);
+  }
+  for (const list of groups.values()) {
+    if (list.length < TETHER_MIN_GROUP) continue;
+    // The middle is the median of each axis, not the mean: the note the leash
+    // is holding must not drag the middle toward itself (a mean over four
+    // notes let one stray note hold the limit 300 away).
+    const cx = median(list.map((n) => n.x));
+    const cy = median(list.map((n) => n.y));
+    const typical = median(list.map((n) => Math.hypot(n.x - cx, n.y - cy)));
+    const limit = Math.max(TETHER_FLOOR, typical * TETHER_SLACK);
+    for (const node of list) {
+      if (!node.degree || node.fx != null || node.placed) continue;
+      const dx = cx - node.x;
+      const dy = cy - node.y;
+      const d = Math.hypot(dx, dy);
+      if (d <= limit) continue;
+      const k = ((d - limit) * TETHER_PULL) / d;
+      node.vx += dx * k;
+      node.vy += dy * k;
+    }
+  }
+}
+tetherForce.initialize = () => {};
+
 //: **A bridge stands on its cluster's rim, facing what it joins** (INBOX
 //: 693, the owner: cross-cluster lines "short"). Pulled to the middle of its
 //: category's place, a note whose lines go to other categories drew every
@@ -1314,15 +1370,17 @@ function applyGrouping(params) {
   //: no clear home"). Its pull home rises with the share of its lines that
   //: go to other categories (`node.away`, 0 to 1), so a bridge stands at the
   //: edge of its own cluster facing the ones it joins, not in the gap.
+  //: A note the reader dropped (`placed`) has no home pull: it settles where
+  //: it was put, and a reheat's other forces still move it.
   const pull = (node) =>
-    at(node)
+    at(node) && !node.placed
       ? node.degree === 0
         ? orbit.on
           ? 0.02
           : 0.12
         : clustered()
           ? gather.pull * (1 + HUB_PULL * node.hub * node.hub) * (1 + HOME_PULL * node.away)
-          : gather.pull
+          : gather.pull * (1 + HOME_PULL * node.away)
       : 0;
   simulation
     .force("groupX")
@@ -1691,6 +1749,7 @@ self.onmessage = (event) => {
         .force("orbit", orbitForce)
         .force("clear", clearanceForce)
         .force("hub", hubForce)
+        .force("tether", tetherForce)
         .force("shape", shapeForce)
         .force("leaf", leafForce)
         .force(
@@ -1757,6 +1816,11 @@ self.onmessage = (event) => {
           node.fx = null;
           node.fy = null;
           simulation.alpha(Math.min(Math.max(simulation.alpha(), RELEASE_ALPHA_MIN), RELEASE_ALPHA));
+          //: A note the reader put somewhere is on its leash no longer: the
+          //: tether is a rule for where the layout leaves a note, and it
+          //: pulled a dropped one 296px back toward its category.
+          node.placed = true;
+          if (ring.params) applyGrouping(ring.params);
         }
       }
       run();

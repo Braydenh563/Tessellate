@@ -184,7 +184,9 @@ function firstStepsCard(host, state) {
   return card;
 }
 
-async function renderFirstSteps(host) {
+async function renderFirstSteps(host, cardOff = false) {
+  renderGetStarted();
+  if (cardOff) return void host.replaceChildren();
   lazyScript("/css/first-run-lazy.css");
   const state = await firstStepsState();
   //: All three done and no sample notes left: the steps have done their job.
@@ -196,4 +198,105 @@ async function renderFirstSteps(host) {
   host.replaceChildren(firstStepsCard(host, state));
   //: The greeting's "Add your name" is step one's second door: one is enough.
   document.getElementById("dash-name-nudge")?.remove();
+}
+
+//: **The steps stay reachable** (INBOX 904 B01: a setup popup was closed by
+//: accident and there was no way back). The card above hides itself once
+//: there are notes or Hide is pressed; these two doors never do: the
+//: dashboard's "Get started" menu (`renderGetStarted`, below) and the
+//: same checklist as the first row of the notifications panel
+//: (`firstStepsBellRow`, called from `openNotifications`). Both are built
+//: from the steps below, so a step is worded once.
+function getStartedSteps(state) {
+  return [
+    {
+      done: state.named, label: "Add your name",
+      note: "For the greeting and Atlas.", doneNote: "Done. Change it in Settings, General.",
+      run: () => openSettingsModal("preferences"),
+    },
+    {
+      done: state.noted, label: "Write a note",
+      note: "A half sentence is fine; add a #tag if you like.", doneNote: "Done. Write another any time.",
+      run: () => startNewNote(),
+    },
+    {
+      done: state.asked, label: "Ask your notebook",
+      note: "An answer from your notes, no AI model needed.", doneNote: "Done. Ask again from Notes, Ask.",
+      run: () => openAskFromDashboard(),
+    },
+  ];
+}
+
+function getStartedItems(state) {
+  const items = getStartedSteps(state).map((step) => ({
+    label: `${step.done ? "ph:check-circle" : "ph:circle"} ${step.label}${step.done ? " · done" : ""}`,
+    title: step.done ? step.doneNote : step.note,
+    group: "steps",
+    run: step.run,
+  }));
+  items.push(
+    { label: "ph:compass Take the tour", title: "Two minutes through what is here", group: "more", run: () => openTour("basics") },
+    { label: "ph:hand-waving Replay the welcome", title: "The first screen a new notebook shows", group: "more", run: () => openOnboarding() },
+    { label: "ph:book-open-text Read the manual", title: "Every help topic on one page", group: "more", run: () => lazyScript("/js/manual.js").then((ok) => ok && openManual()) }
+  );
+  return items;
+}
+
+//: A row for the notifications panel while a step is left; none once all three
+//: are done (the dashboard's menu still lists them, ticked).
+async function firstStepsBellRow() {
+  lazyScript("/css/first-run-lazy.css");
+  const steps = getStartedSteps(await firstStepsState());
+  const left = steps.filter((step) => !step.done).length;
+  if (!left) return null;
+  const row = document.createElement("li");
+  row.className = "notif-row notif-start";
+  const icon = document.createElement("span");
+  icon.className = "notif-icon";
+  setLabel(icon, "ph:list-checks");
+  icon.setAttribute("aria-hidden", "true");
+  const body = document.createElement("div");
+  body.className = "notif-body";
+  const title = document.createElement("strong");
+  title.className = "notif-title";
+  title.textContent = `Get started, ${steps.length - left} of ${steps.length} done`;
+  const list = document.createElement("ul");
+  list.className = "notif-start-steps";
+  for (const step of steps) {
+    const item = document.createElement("li");
+    const button = smallButton(`${step.done ? "ph:check-circle" : "ph:circle"} ${step.label}`, step.done ? step.doneNote : step.note, () => {
+      closeNotifications();
+      step.run();
+    });
+    button.removeAttribute("aria-label");
+    button.classList.add("quiet", "notif-start-step");
+    button.classList.toggle("is-done", step.done);
+    item.appendChild(button);
+    list.appendChild(item);
+  }
+  body.append(title, list);
+  row.append(icon, body);
+  return row;
+}
+
+//: **Get started, the menu** (INBOX 904 B01): the same steps ticked, in the
+//: dock beside Customise, whatever the card did. Built once first-run.js and
+//: the three ticks have arrived, so the dock gains it a moment after the page.
+async function renderGetStarted() {
+  const slot = $("dash-start");
+  if (!slot) return;
+  const state = await firstStepsState().catch(() => null);
+  if (!state) return;
+  const menu = kebabMenu(getStartedItems(state), "Get started: the first steps");
+  const opener = menu.querySelector("button");
+  setLabel(opener, "ph:list-checks");
+  opener.querySelector("i")?.classList.add("ph-lead");
+  const word = document.createElement("span");
+  word.className = "dock-word";
+  word.textContent = "Get started";
+  opener.append(word);
+  opener.classList.remove("icon-only");
+  opener.classList.add("ghost");
+  opener.id = "dash-start-menu";
+  slot.replaceChildren(menu);
 }

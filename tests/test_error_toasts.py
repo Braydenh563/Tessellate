@@ -49,12 +49,12 @@ EXPECTED = {
     'attachment-actions.js': [
         '`Describing a file needs the local AI. ${AI_OFFLINE_HINT}.`',
     ],
-    'avatars.js': [
-        '"Give the companion a name first."',
-        '`You can keep ${NMB_PRESET_MAX} saved companions: delete one first.`',
-    ],
     'capture-ask.js': [
         '"Couldn\'t read the clipboard, so that part of the template is empty."',
+    ],
+    'companion-menu.js': [
+        '"Give the companion a name first."',
+        '`You can keep ${NMB_PRESET_MAX} saved companions: delete one first.`',
     ],
     'categories-panel.js': [
         '"Name the new category first."',

@@ -34,17 +34,6 @@ with its owner named in the entry.
 
 ## Open items
 
-561. **The owner, 2026-10-05, verbatim.** "I dont like this section in th
-     timeline, it needs redesigning, restructuring, moving ro smth"
-     (screenshot: the "Sep to Oct 2026" month button over a row of seven
-     boxed day cells, Tue 29 to Mon 5, each its own bordered tile).
-     Placed: the design agent, whose 543 rework of this strip is not merged
-     yet; it is told this is still not right.
-     Merged 2026-10-05 (543): the month sits between its arrows and the days
-     are one well to the dock's edge, one Tab stop, arrows walk them
-     (daystrip.js 44/44). Waits on the owner's look before closing.
-     Owner: TIMELINE_PLAN, UI_MODERNISATION_PLAN 12 (the day strip becomes the week row); built in 543 and waiting on the owner's look, so it stays here until then.
-
 725. **The owner, 2026-10-06, verbatim**: "can you like maximise the application
      responses and sentence concatenation and responses?? I want it soooo good it is
      almost like a chat bot. make them something the world hasnt seen before like
@@ -273,6 +262,104 @@ with its owner named in the entry.
      (`_stream_lines` 93 to 106, `_generate_diagram` 27 to 47, `mcp_server.handle_request`
      17 to 30 and 15 more; `python scripts/complexity.py` lists them): bring each
      back to its seed.
+
+904. **The owner, 2026-10-17, verbatim** (a OneNote bug list pasted into a Word document, 86 items, screenshots described in `agent-remaining/bugs-1017.md`; the pasted model-thinking transcript under B42 is elided). Triage and per-bug status: `docs/roadmap/agent-remaining/bugs-1017.md`.
+
+     B01. A first install setup popup showed as I was looking through the app but I accidentally clicked off it and idk what it was, there should be some way to access it, like a get started dropdown checklist to complete and maybe they can go in the notifications as well??
+     B02. The composer needs more understanding, it still has a lot of flaws
+     B03. Use composer to refine magic add on reminders like with bad sentence grammar and spelling mistakes and intent etc
+     B04. Autocorrect on reminders and other app surfaces with harper, maybe other libraries and the composer, but also subtly highlight or colour the change for the user to notice in case it is wrong, then the user can hover over it and confirm it, edit it, or rewind the change.
+     B05. I think the connect a model buttons in the no ai available popups should have a mini dropdown arrow on the side of the button so the user can click it as the connect a model button, or they can click the dropdown menu and press a shortcut button for hiding the popups instead of having to go into settings to manually find and toggle it.
+     B06. When adding tags in the edit notes form, the tag textbox just keeps getting shorter and shortyer until it eventually goes to a new line, I feel like it should just permanently be on the line below with the tags being placed above
+     B07. Should this have an '?'?? I want the composer to have more variation, could it be more dynamic and actually come up with responses like an ai and not just preprepared responses?? idk
+     B08. This is alright but I feel like it should have acknowledged that it could be a test note?? Don't just account for this exact example, the composer needs to respond well to anything like this or similar scenarios. Like what if the user just button mashes or does a random string of keyboard charracters?? The composer needs to be like apple's siri with the same utility and usefullness and decent responses but better
+     B09. It autocorrected my spelling, and it underlined it blue which is good, but when I clicked the word that was underlinedd, it instantly reverted, it should probablu show a little undo icon popup button near the word for confirming or reverting if the word is clicked on instead.
+     B10. Also the composer is "Atlas's Assistant" and the ai models are Atlas themselves, it shouldn stay composer. Also it should probably tell the user that it is the assistant and if they want to talk to atlas, they should connect a model. And it should also give a composed general rundown of capabilities. This should be composed and not a set response, with variations, longer or shorter based on response style and user request etc. if the user asks about specific features or more yk??
+     B11. The guide should alo consider that some queries may not be related to the current page the user is on and needs to bnetter detect intent
+     B12. Why does the quick access look so small on the full view??
+     B13. Unchecking a quick access option in the edit quick access panel navigates me to the unchecked option and then if I want to uncheck multiple I have to keep scrolling up.
+     B14. Each settings page should have an expand and collapse all sections button at the top
+     B15. I think we should market the application as "Tessellate Notes" but it is Tessellate for short…
+     B16. The properties panel popups like with the date select arent the custom style like sued in the reminders tab
+     B17. When making ned documents, I shouldn’t have to enter a title, it should fill it with "Untitled Document #[number}" and then have it preselected and highlighted for the user to replace it. That way if the user cant be bothered or cant think of a name they don’t have to. Also there should be an option in the editor to have the composer and ai if it is available suggest and rename the document. This should be the same for boards and maps as well.
+     B18. On the document editor, I want a library of prefileld templates and curated text sections and stuff like the code snippets but for general documents as well
+     B19. Also there needs to be more debugging and running tools for the other offered document types and languages, and also there needs to be code snippets and prewritten code examples and skeletons for all document types and code languages. And I want to be able to have it like it is now  where I select somehwere in the document and click the snippet and it pastes there, but also I can drag the snippet from the library and paste it whwere I drag it to and there'll be a ghose cursor under my dragging cursor where it will place and if I drag my mouse to the bottom or top of the document then it wills begin to scroll up or down if the document is long and scrollable.
+     B20. On lined documents I want there to be a togglable temporary manage or edit mode or smth where it allows me to rearrange content by line and or elements
+     B21. I switched from a md document to a code document and then back to md but it still thought it was and treated it like a code document.
+     B22. Also live view on the document editor for md files should be default not source.
+     B23. Also the tables in the live view for document editor should have more management capability, like lines on the edges and rows and columns on the outside etc to select whole rows or columns, or to add new rows or columns or even dragging icons to drag and rearrange coumns and rows if they are selected yk?? I cant even highlight select the live view table or multiple rows, columns or cells, and Im not given a popup menu for tables when I righ click them. This needs expansion and probably the same for other elements and the whole luve view for md as well.
+     B24. Awkward popup in board
+     B25. I want to be able to make wireframes and diagrams like erd, orm, uml, class and other diagrams on the boards so I want the proper elements available for them and templates
+     B26. These dropdowns don’t show anything
+     B27. I shouldn’t be able to uninstall the desktop view in the packaged windows app
+     B28. Is it possible for tessellate to run on its own hosted and managed local server instead of on local host??
+     B29. The whiteboard needs a lot of work, like the ungroup button on the popup tools doesn’t change, I cant widen objects on one axis when grouped, resizing or moving objects doesn’t update their xywh values in the format panel in real time, the popup controls are all over the place, it just needs soo much fixing, refining, redesigning and more.
+     B30. Composer still needs a lot of refining and fixing. It is still very buggy, lacks a lot of understanding, and just straight up gives me the note back to me without any actual composing in the ask tab.
+     B31. Add tessellate as a taxonomy option
+     B32. It filed my newest note about uni assignments in the about tessellate category?? That's wrong and now I need to go and manually change it and probably make a uni or studies or smth category idk
+     B33. Can the comoposer do these ai actions well and just as good?? And they arent ai actions If the comoser does them when the ai isnt available
+     B34. More workflows and actions??
+     B35. Companion doesn’t scroll with what it is perched on if the thing it is perched on is scrollable sometimes on the dashboard.
+     B36. On draw.io I can pan by holding down my right mouse button and dragging, scrolling on the mouse is zoom.
+     B37. Pressing down the scroll wheel and dragging sometimes glitches a little initially when starting to drag.
+     B38. Attaching a file or thing to a mind map node makes a node that I cant edit or even go to the thing attached.
+     B39. Rebuild or vendor jupyter notebook in tessellate document editor??
+     B40. The ai should be aware of the user's current time in its responses through ai harness context.
+     B41. No numbers on matching records while the ai is thinking
+     B42. I used plan mode and the model didn’t have access to the make_plan tool
+     B43. Thinking
+     B44. The user wants me to plan a development of an app that acts as a "backpack on screen" - like Microsoft Sticky Notes, but where the user can store things (copy and paste regularly), then press one click "copy" on stored content to easily copy it.
+     B45. They say "Plan this before you do any of it. Call make_plan with the goal and the steps, then carry the plan out."
+     B46. […elided: the pasted model-thinking transcript, 82 paragraphs; its point: plan mode was on, the task said "Call make_plan", and the model's tool list had no make_plan, so it spent its turns reasoning about the missing tool and created no plan…]
+     B47. Poor agent harness design and needs a lot of improvement.
+     B48. Use composer to custom name tool calls?? The way tools are offered and other parts of the agentic harness need to be refined and improved.
+     B49. The agent failed
+     B50. I think the splash needs a bit of refining in how it l;oosk and works visually, and I can't minimise it (if that is possible)
+     B51. I think the user's should have a button or way to access the project's github from the settings pages.
+     B52. Easier way to set up docker and mcp server and get a link or smth I can use to connect claude or another ai to it if I wish. Can we give the mcp server the ability to restrict access to certain notes or things?? Like a custom settings or token that the user can use to give other ai's access through the mcp server but one that the user can control that the ai's have access to in their notebook through that token or url etc.
+     B53. Cant set up mcp server in settings??
+     B54. Is that side selection line on the right wrong??
+     B55. Idk how to use the web clipper, it is unintuitive to use and hidden in settings, can you redesign the ui and ux of how it can be used and accessed?? Also the button in the dropdown for starting searxng in the web sidebar in the chat tab is gone.
+     B56. When settings are on auto, I cant tell what it autoed to…
+     B57. If I change the app's appearance colour and then try to change back to default, it changes to indigo instead…
+     B58. I want the hover time to preview themes to be slightly longer or add like a small eye icon button in the corner to preview. Also across the app, there are quite a few instances where clicking an icon button to toggle smth doesn’t change the icon's look so it is hard to tell if it worked or not.
+     B59. The app seemingly redownloaded the embedding model (I already had It but idk), except it still says it is connected to the internet which it isnt really right?? Idk
+     B60. This dropdown combobox and the text next to it arent aligned properly
+     B61. For the dictation model size there is no idication for which ones are installed, does the app check which modesl are stored even if they arent offered?? Also gemma 2 embeddings doesn’t need the lisence if you use the unsloth version, unsloth versions I find are a lot better than the main versions. Also if I click a different dictation model size, does it download immediately?? What if I change my mind?? Can I delete or uninstall models like for dictation and embedding etc that I don’t want??
+     B62. The profile avatar in the enlarged popup from double clicking the profile picture doesn’t have any life to it.
+     B63. When I change the theme or colour in settings, the animated app logo in the dashboard hero doesn’t update to the new colour until I reload or switch tabs and go back
+     B64. The quick access sometimes loses it's full form and then goes really small and short.
+     B65. Stop th emodel options should probs be disabled when no ai model is running
+     B66. I didn’t even have the app running the whole day until less than 26 minutes ago
+     B67. The top of the suggested models section should show the detected hardware of the user and allow the user to adjust or edit it if it is incorrect. Also I feel like the "fits" or "tight" suggestions etc should take into account the user's current memory and stuff if possible and what and how many ai models they already have installed.
+     B68. Gemma4 26b is a4b
+     B69. Can the composer run skills and do them well?? The composer needs a lot of work and upgrading and making better.
+     B70. Why does this node wanna be all  the way down there?? The graph force structuring is still a bit messy and uncool looking
+     B71. This image is me separating them out as it was soo messy and stuck together before I couldn’t read it.
+     B72. Have the timeline calendar on the timelone act and be more usable as a calendar, I wanna be able to double click on a date and be able to add an event and set a reminder and stuff. Also on the timeline I wanna be able to scroll above today's date to see future dates and also I want the app to be able to recognise future date and time mentions and suggest to use magic add to add it to the timeline, calendar and as a reminder
+     B73. Cant select on separate attachment nodes in the graph??
+     B74. Could there be a way to print out or render a document or attachment in the whiteboard?? Like a pdf or document viewer object that the user can resize and move around, or even print the documents as separate pages like images that the user can move around, like dragging a document on onenote and having the option to print it out or place as an attachment
+     B75. The text size in tooltip dropdowns across the app are always different and arent consistent (I think)
+     B76. Should the drafting rotating animation and text be at the top of the ai side not the bottom of the user input side in the writing room??
+     B77. The agent run still says the note is filing but it is finished. Though there needs to be some more metrics like how long it took to file and similar across the app.
+     B78. 9:57:12 pm INFO:    tessellate.embeddings: retrieval matrix warm with 46 vector(s)
+          10:02:29 pm ERROR:   browser: [HTTP 422] PUT /graph/pin/document:2: Check the entry id and try again.
+          10:04:57 pm INFO:    tessellate.jobruns: [run-7] Drafting started
+          10:05:27 pm INFO:    tessellate.jobruns: [run-7] Thinking.
+          10:07:01 pm INFO:    tessellate.jobruns: [run-7] Writing the answer.
+          10:07:03 pm INFO:    tessellate.jobruns: [run-7] Done: 1 word.
+          10:07:03 pm INFO:    tessellate.jobruns: [run-7] Drafting finished
+          10:08:18 pm INFO:    tessellate.jobruns: [run-8] Filing a note started
+          10:08:30 pm INFO:    tessellate.janitor: janitor: the model said 95% for 'Thoughts & Ideas'; shown as 78%
+     B79. The writing room translated note I filed got filed as a draft, is that intentional??
+     B80. Tag with atlas didn’t work right, it didn’t suggest tags, it doesn’t have a field for me to add more tags, it didn’t suggest alternate categories to make or move to if they  were viable, and all it gave me were suggested links…
+     B81. Can you add the japanese emoticons library to the available emojis library??
+     B82. Some emojis don’t appear in the search when the user tries to look for them and uses the wrong name like🙏 this is called folded hands but It should be both high five and pray orsmth yk??
+     B83. The composer written weekly digest sentences count as a clickable button in the weekly digest
+     B84. Do the patterns ever change?? What's the meaning or use of them?? Can I view them or smth?? {"
+          Patterns: university, 4 times since 16 July"}
+     B85. Composer's wording and grammar, especially around dates is a bit off and hard to read. And other things could be improved as well
+     B86. The compsoer guide didn’t answer my question :(
 
 ## Placed (last 20, newest first)
 

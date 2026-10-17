@@ -253,3 +253,16 @@ def looks_like_a_question_about(text: str) -> bool:
     # whole message rather than what follows the opener: "can you explain how
     # to tag, and tag these for me" carries its marker at the end.
     return not _INSTRUCTION_MARKER.search(text)
+
+
+#: Asked for the web in so many words, anywhere in the turn: "hey can u pls
+#: search the web for ..." was answered from two unrelated notes (owner,
+#: 2026-10-12), because a note matched and the web was only the fallback.
+_ASKS_WEB = re.compile(
+    r"\b(?:search|look(?: it)? up|google|check)\b.{0,12}?\b(?:the )?(?:web|internet|online)\b|\bsearch up\b|\bweb search\b|\bon the (?:web|internet)\b",
+    re.I,
+)
+
+
+def asks_web(question: str) -> bool:
+    return bool(_ASKS_WEB.search(question or ""))

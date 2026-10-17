@@ -313,6 +313,13 @@ The levers, in order:
   session. Fable only as section 2.4 says.
 - `max`: at most three agents at once, at most one of them Opus. `pro`: one
   agent at a time, no Opus agents, targeted tests only, no check-in loop.
+- Tests take a fixed "now" (an injected clock or frozen time), never the
+  real clock; a date read at test time is a bug waiting for its day.
+- Never weaken a test to make it pass: fix the cause, or change the test
+  only when its stated intent moved, and say why in the commit.
+- Replace, do not layer: change the existing implementation and remove the
+  old path (a re-export, a shim, a flag) unless persisted data or a public
+  interface needs it.
 - Retries: one per new hypothesis. The same call three times in a row is a
   stop: report the blocker.
 - Independent checks on risky or UI changes: `reviewer` (the diff),

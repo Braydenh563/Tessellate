@@ -87,6 +87,11 @@ ALLOWED: dict[str, list[tuple[str, str]]] = {
             "glyphs a person chooses to put in their own map, board or text, never "
             "the app's own icons",
         ),
+        (
+            "block:const ICON_KAOMOJI",
+            "the picker's Japanese emoticons (INBOX 904 B81): text a person inserts "
+            "into their own note, made of these characters; no Phosphor glyph can stand in",
+        ),
     ],
     "frontend/js/avatars.js": [
         (

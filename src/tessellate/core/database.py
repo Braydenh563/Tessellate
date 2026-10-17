@@ -1447,6 +1447,11 @@ class Document(Base, WorkspaceMixin):
     # every document that existed before file types did as markdown, which is
     # what all of them are.
     file_type: Mapped[str] = mapped_column(String(20), default="md")
+    #: Where the Graph holds this document's node in place, as a note's
+    #: `graph_pin_x`/`graph_pin_y` do (B78: a document node can be pinned by
+    #: double-click or drag, and had nowhere to keep it). Additive.
+    graph_pin_x: Mapped[float | None] = mapped_column(Float, default=None)
+    graph_pin_y: Mapped[float | None] = mapped_column(Float, default=None)
     # Same "kept, out of the way" column as Entry.archived_at/
     # Conversation.archived_at (BACKLOG §30b): never implies deletion.
     archived_at: Mapped[datetime | None] = mapped_column(DateTime, default=None)

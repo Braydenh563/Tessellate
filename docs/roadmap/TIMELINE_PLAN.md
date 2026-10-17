@@ -204,6 +204,21 @@ Entries are the owner's words, then the recommendation.
 - "The circle on the vertical line on the left isnt in line with the text line"
   Recommendation: align the rail circle to the first line's centre in timeline.js and the timeline CSS, measured with getBoundingClientRect against the line box. Earlier notes on this fix were not verified; measure it again. Also carried by Brief 41 (timeline.js in its file list).
 
+### Placed from INBOX 561 (2026-10-17)
+
+The day strip rework (543) is merged and waits on the owner's look; INBOX 904 B72 widened it into the calendar view: built 2026-10-17, HISTORY.md, "Moved from the plans, 2026-10-17 (TIMELINE B72)".
+
+Item 561, **The owner, 2026-10-05, verbatim.** "I dont like this section in th
+     timeline, it needs redesigning, restructuring, moving ro smth"
+     (screenshot: the "Sep to Oct 2026" month button over a row of seven
+     boxed day cells, Tue 29 to Mon 5, each its own bordered tile).
+     Placed: the design agent, whose 543 rework of this strip is not merged
+     yet; it is told this is still not right.
+     Merged 2026-10-05 (543): the month sits between its arrows and the days
+     are one well to the dock's edge, one Tab stop, arrows walk them
+     (daystrip.js 44/44). Waits on the owner's look before closing.
+     Owner: TIMELINE_PLAN, UI_MODERNISATION_PLAN 12 (the day strip becomes the week row); built in 543 and waiting on the owner's look, so it stays here until then.
+
 ## 9. Phase 5: the calendar as the third view (Fable, 2026-10-10; WORLD_CLASS_PLAN 25, decision 47; Brief 55)
 
 The owner's 2026-10-10 list asks for a calendar; UI Phase 12 names a
@@ -398,6 +413,6 @@ reschedule, week view), Google Calendar's agenda on the phone.
 | 3 | expansion | Drag to reschedule with the undo bar (decision 16) | Built 2026-10-11 (Brief 55): HISTORY.md, "Moved from the plans, 2026-10-11 (TIMELINE Brief 55)" | |
 | 4 | expansion | Week grid with hour rows; agenda below 768 | Built 2026-10-11 (Brief 55): HISTORY.md, "Moved from the plans, 2026-10-11 (TIMELINE Brief 55)" | |
 | 5 | expansion | Notes as dots, day notes as heads, meetings on the grid (decision 15) | Built 2026-10-11 (Brief 55): HISTORY.md, "Moved from the plans, 2026-10-11 (TIMELINE Brief 55)" | |
-| 6 | expansion | `N` on a day opens quick add with the day filled (decision 18, CHAT_PLAN decision 50) | the saved due day equals the cell | 2, 12 |
+| 6 | expansion | `N` on a day opens quick add with the day filled (decision 18, CHAT_PLAN decision 50) | Built 2026-10-17 (INBOX 904 B72): HISTORY.md, "Moved from the plans, 2026-10-17 (TIMELINE B72)" | |
 
-**Briefs.** 66 (row 6); 55's rows 1 to 5 are built.
+**Briefs.** Rows 1 to 6 are built.

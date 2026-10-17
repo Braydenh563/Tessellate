@@ -47,11 +47,13 @@ NOTEBOOK = [
 #: (question, must hold, must not hold) a turn.
 CONVERSATIONS = {
     "gym, a window, running and back": [
-        ("what have I saved about the gym?", ["90 kg", "two notes"], []),
+        #: O11: the 7 October squat is current, the 28 August one is said as earlier.
+        ("what have I saved about the gym?", ["90 kg", "earlier note", "80 kg"], []),
         ("what about running?", ["5k", "two notes"], ["squat"]),
         ("when was that?", ["minutes"], ["squat"]),
         ("and the gym?", ["kg"], ["5k"]),
-        ("tell me more", ["kg"], ["5k"]),
+        #: Both gym notes were said by now: it says so and stays on the gym.
+        ("tell me more", ["all your notes say on gym", "two notes"], ["5k"]),
     ],
     "films": [
         ("what did I think of Dune?", ["7 out of 10", "Loved"], ["Part Two: 7"]),

@@ -836,6 +836,11 @@ input[type="checkbox"] {
   min-width: var(--target-min);
   min-height: var(--target-min);
 }
+/* A slider's thumb is its target and a range has no box of its own: 16px tall
+   measured on the three Appearance sliders, under WCAG 2.5.8's 24. */
+input[type="range"] {
+  min-height: var(--target-min);
+}
 /* **The exceptions, and getting this list wrong broke every toggle in the
    app once already.** Two different patterns opt out:
    1. A checkbox whose *visible* control is drawn by a sibling is clipped to
@@ -4012,8 +4017,8 @@ html.modal-open body {
   cursor: pointer;
 }
 @media (hover: hover) {
-  .dash-list li:hover,
-  .dash-list li:is(:focus-visible, :has(:focus-visible)) {
+  .dash-list li:not(.digest-day-said):hover,
+  .dash-list li:not(.digest-day-said):is(:focus-visible, :has(:focus-visible)) {
     background: var(--accent-soft);
   }
 }
@@ -6285,9 +6290,11 @@ select {
   }
 }
 
-/* A finished job's Logs button sits at the row's right end, on the title line,
-   so it is at the same x on every row (the row-actions recipe). */
-#task-history .entry-meta > .row-actions {
+/* A finished job's Logs button stays top right on one line (BACKLOG). */
+#task-history .entry-meta {
+  flex-wrap: nowrap;
+}
+#task-history .row-actions {
   margin-inline-start: auto;
 }
 /* No lines to show: the empty state takes the list's place, not an empty bar. */

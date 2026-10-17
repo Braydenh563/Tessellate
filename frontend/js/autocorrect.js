@@ -12,8 +12,9 @@
 // owner's own slips (Brief 90's fixtures).
 //
 // One switch, Settings, General, Writing (`autocorrect`, on by default). A
-// correction is underlined for five seconds, and a click on the underline puts
-// the word back; Ctrl+Z or Backspace straight after it does the same, and the
+// correction is underlined for five seconds, and a click on the underline opens
+// a small menu (keep, put back, edit); Ctrl+Z or Backspace straight after it
+// puts the word back at once, and the
 // toast carries Undo. A word put back is not corrected again this session,
 // and a word in the dictionary never is.
 
@@ -54,6 +55,11 @@ const AUTOCORRECT_TYPOS = {
 };
 
 const AUTOCORRECT_SECONDS = 5;
+//: A pointer resting on the underline asks after this long, and not at all
+//: while keys are still going down (the menu takes the focus).
+const AUTOCORRECT_HOVER_MS = 350;
+const AUTOCORRECT_TYPING_MS = 900;
+const autocorrectState = { key: 0 };
 //: The keystrokes that finish a word: the only moment a correction is
 //: unambiguous. Mid-word it would rewrite "teh" on the way to "tehran".
 const AUTOCORRECT_ENDS = /^[\s.,;:!?)\]]$/;
@@ -128,6 +134,7 @@ function autocorrectUndo(entry = autocorrectLast) {
 function autocorrectForget(entry = autocorrectLast) {
   if (!entry) return false;
   clearTimeout(entry.timer);
+  clearTimeout(entry.hover);
   entry.mark?.remove();
   entry.mark = null;
   if (autocorrectLast === entry) autocorrectLast = null;
@@ -142,15 +149,89 @@ function autocorrectMark(entry) {
   mark.type = "button";
   mark.className = "autocorrect-mark";
   mark.tabIndex = -1;
-  mark.title = `Corrected from “${entry.typed}”. Click to put it back.`;
-  mark.setAttribute("aria-label", `Put back “${entry.typed}”`);
+  mark.title = `Corrected from “${entry.typed}”. Click to keep it, put it back or edit it.`;
+  mark.setAttribute("aria-label", `Corrected “${entry.typed}” to “${entry.fixed}”: keep, put back or edit`);
   mark.style.zIndex = autocorrectLayer(entry.box.el);
   mark.addEventListener("mousedown", (event) => event.preventDefault());
-  mark.addEventListener("click", () => autocorrectUndo(entry));
+  mark.addEventListener("click", () => autocorrectMenu(entry));
+  //: **Hover asks too** (INBOX 904 B04: "hover over it and confirm it, edit it,
+  //: or rewind"). A mouse resting on the word opens the click's menu; leaving
+  //: first cancels it; a finger has no hover and keeps the click.
+  mark.addEventListener("pointerenter", (event) => {
+    if (event.pointerType !== "mouse") return;
+    clearTimeout(entry.hover);
+    const ask = () => {
+      if (!entry.mark || entry.asked) return;
+      if (Date.now() - autocorrectState.key < AUTOCORRECT_TYPING_MS) entry.hover = setTimeout(ask, AUTOCORRECT_HOVER_MS);
+      else autocorrectMenu(entry);
+    };
+    entry.hover = setTimeout(ask, AUTOCORRECT_HOVER_MS);
+  });
+  mark.addEventListener("pointerleave", () => clearTimeout(entry.hover));
   document.body.appendChild(mark);
   entry.mark = mark;
   entry.timer = setTimeout(() => autocorrectForget(entry), AUTOCORRECT_SECONDS * 1000);
   autocorrectPlace(entry);
+}
+
+//: **A click on the underline asks, it does not undo** (INBOX 904 B09: "when I
+//: clicked the word that was underlined, it instantly reverted"). The app's one
+//: menu-at-a-point recipe, under the word: Keep it (the underline goes), Put
+//: back what was typed, or Edit it (the word is selected in its box, so typing
+//: replaces it). The five-second timer stops while it is open: a menu that
+//: closed itself under the pointer would be the same surprise again.
+function autocorrectMenu(entry) {
+  const rect = entry.mark?.getBoundingClientRect();
+  if (!rect || typeof openMenuAtPoint !== "function") return;
+  entry.asked = true;
+  clearTimeout(entry.hover);
+  clearTimeout(entry.timer);
+  entry.timer = setTimeout(() => autocorrectForget(entry), 60 * 1000);
+  openMenuAtPoint(
+    [
+      { label: `ph:check Keep “${entry.fixed}”`, title: "Leave the corrected word as it is", run: () => autocorrectForget(entry) },
+      { label: `ph:arrow-counter-clockwise Put back “${entry.typed}”`, title: "Restore what you typed, and leave it alone from now on", run: () => autocorrectUndo(entry) },
+      { label: "ph:pencil-simple Edit the word", title: "Select it so you can type over it", run: () => autocorrectEdit(entry) },
+    ],
+    `Autocorrected “${entry.typed}”`,
+    rect.left,
+    rect.bottom + 4
+  );
+  //: Under the word; but a menu that flipped up from the window's edge lands on
+  //: the very word it is about, so a frame later (once the recipe has placed and
+  //: focused it) it is moved to sit over the word instead.
+  requestAnimationFrame(() => {
+    const menu = document.querySelector(".action-menu.action-menu-escaped") || (typeof pointerMenuHost !== "undefined" && pointerMenuHost?.querySelector(".action-menu"));
+    const box = menu?.getBoundingClientRect();
+    if (!box || !(box.top < rect.bottom && box.bottom > rect.top)) return;
+    menu.style.bottom = "auto";
+    menu.style.top = `${Math.max(8, rect.top - 4 - box.height)}px`;
+  });
+}
+
+//: The document editor's own correction (documents.js `docAutocorrectAt`), shown
+//: with the same underline and menu. The document keeps the replacement, the
+//: toast and Ctrl+Z (its own history step), so the entry is `native`: the key
+//: handler below leaves it alone. Put back adds the word to the same refused
+//: set the document reads.
+function autocorrectShow(surface, start, typed, fixed) {
+  if (!surface?.view?.dom || typeof surface.coordsAt !== "function") return false;
+  //: The file may have been fetched since the keystroke: still the same word?
+  if (surface.text.slice(start, start + fixed.length) !== fixed) return false;
+  autocorrectForget();
+  const box = autocorrectSurface(surface);
+  const entry = { box, start, typed, fixed, sep: "", caret: surface.selection().from, text: box.text, native: true };
+  autocorrectLast = entry;
+  autocorrectMark(entry);
+  return true;
+}
+
+//: The corrected word selected in its box, for typing over it.
+function autocorrectEdit(entry) {
+  const end = entry.start + entry.fixed.length;
+  if (entry.box.text.slice(entry.start, end) !== entry.fixed) return autocorrectForget(entry);
+  entry.box.select(entry.start, end);
+  return autocorrectForget(entry);
 }
 
 //: Placed, and placed again when anything scrolls; a word out of view hides it.
@@ -191,6 +272,10 @@ function autocorrectField(el) {
       }
     },
     setSelection: (at) => el.setSelectionRange(at, at),
+    select(from, to) {
+      el.focus();
+      el.setSelectionRange(from, to);
+    },
     rect: (from, to) => autocorrectFieldRect(el, from, to),
   };
 }
@@ -203,6 +288,10 @@ function autocorrectSurface(surface) {
     selection: () => surface.selection(),
     replace: (from, to, text) => surface.replaceRange(from, to, text),
     setSelection: (at) => surface.setSelection(at),
+    select(from, to) {
+      surface.focus();
+      surface.setSelection(from, to);
+    },
     rect(from, to) {
       const a = surface.coordsAt(from);
       const b = surface.coordsAt(to);
@@ -295,8 +384,15 @@ document.addEventListener("note-typed", (event) => {
 document.addEventListener(
   "keydown",
   (event) => {
+    autocorrectState.key = Date.now();
     const entry = autocorrectLast;
     if (!entry || event.altKey || event.isComposing) return;
+    //: The document's own correction keeps its own Ctrl+Z; only the underline
+    //: needs to hear that the text moved.
+    if (entry.native) {
+      setTimeout(() => autocorrectMoved(entry.box.el), 50);
+      return;
+    }
     const undo = (event.ctrlKey || event.metaKey) && !event.shiftKey && event.key.toLowerCase() === "z";
     const back = event.key === "Backspace" && !event.ctrlKey && !event.metaKey;
     if (!(undo || back) || !autocorrectFresh(entry, event.target)) return;

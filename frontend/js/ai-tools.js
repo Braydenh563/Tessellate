@@ -199,14 +199,27 @@ function renderChatModelPicker(status) {
         ? "No chat model is chosen yet. Pick one you have, or download one below."
         : `${aiNameNow()} was running “${status.chat_model}”, which is not installed any more. Pick another or download it below.`
       : `${aiNameNow()}, running ${status.chat_model}${status.chat_model_chosen_why ? ` (chosen at start: ${status.chat_model_chosen_why})` : ""}`;
-  //: Whether it is in memory now, beside its Stop (rule 5).
+  //: B65: "Use this model" needs a model to pick; "Stop the model" needs
+  //: something to stop. Both were enabled with no model at all.
+  $("chat-model-apply").disabled = !names.length;
+  const stop = $("chat-model-stop");
+  const noModel = status.chat_model_installed === false;
+  stop.disabled = noModel; // the rest waits for /activity, so a poll does not flicker it
+  stop.title = noModel ? "No model is running" : "Stop any answer and unload the model from memory";
+  //: Whether it is in memory now, beside its Stop (rule 5). Stop is live only
+  //: while the model is in memory or an answer can still be stopped.
   apiJson("/activity", { silent: true })
     .then((body) => {
       const loaded = body && body.model ? body.model.loaded : null;
-      if (loaded === null || status.chat_model_installed === false) return;
+      const answering = ((body && body.jobs) || []).some((job) => job.stoppable);
+      stop.disabled = noModel || !(loaded === true || answering);
+      if (stop.disabled && !noModel) stop.title = "The model is not in memory, and no answer is running";
+      if (loaded === null || noModel) return;
       $("chat-model-note").textContent += loaded ? ", in memory now" : ", not in memory";
     })
-    .catch(() => {});
+    .catch(() => {
+      stop.disabled = noModel;
+    });
 }
 
 // Nielsen #6, recognition over recall: which model answers was previously

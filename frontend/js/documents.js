@@ -131,6 +131,8 @@ function syncDocFileType({ prose = true } = {}) {
       : button.dataset.docTitle || button.title;
   }
   if (!type.previewable && !DOC_VIEWS_UNRENDERED.includes(docView)) setDocView("source");
+  //: And back: a markdown type again, and Source was only the code file's.
+  else if (type.previewable && docViewState.held) setDocView(docDefaultView());
   //: The engine's own language and wrapping, where it is mounted.
   docCmSyncFileType();
   docCmApplySpellcheck();
@@ -319,6 +321,25 @@ const DOC_VIEWS = ["source", "live", "split", "rendered", "plain"];
 //: out as `!== "source"` and Plain would have been refused by all three.
 const DOC_VIEWS_UNRENDERED = ["source", "plain"];
 let docView = "source";
+//: True while Source is on screen only because the open file is code (INBOX
+//: 904 B21/B22: a code file's forced Source was written to the stored view,
+//: so every markdown document after it opened in Source, and a document
+//: switched back from `.py` to `.md` stayed there). Nothing stored, nothing
+//: remembered as the last editing view; the file type coming back to a
+//: markdown one restores the view the person actually chose.
+const docViewState = { held: false };
+
+//: The view a markdown document opens in when it is not holding one: the
+//: stored choice, else Live (Rendered on a phone, Phase 11 item 6).
+function docDefaultView() {
+  let stored = null;
+  try {
+    stored = prefs.get(DOC_VIEW_KEY, null);
+  } catch {
+    stored = null;
+  }
+  return stored || (window.matchMedia("(max-width: 599.98px)").matches ? "rendered" : "live");
+}
 
 // The two modes that put #doc-preview on screen. Kept as one predicate because
 // every "is the rendered pane showing?" decision below has to agree with every
@@ -651,8 +672,10 @@ function setDocView(mode) {
   // rather than an empty pane.
   if (!type.previewable && !DOC_VIEWS_UNRENDERED.includes(mode)) mode = "source";
   docView = DOC_VIEWS.includes(mode) ? mode : "source";
+  //: Source in a code file is the file's only editing view, not a choice.
+  docViewState.held = !type.previewable && docView === "source";
   try {
-    prefs.set(DOC_VIEW_KEY, docView);
+    if (!docViewState.held) prefs.set(DOC_VIEW_KEY, docView);
   } catch {
     // A private window with storage blocked is not a reason to refuse to
     // change view: the choice just does not survive the reload.
@@ -687,7 +710,7 @@ function setDocView(mode) {
   $("doc-panes").classList.toggle("split", docView === "split");
   $("doc-panes").classList.toggle("reading", docView === "rendered");
 
-  if (docView !== "rendered") lastEditView = docView;
+  if (docView !== "rendered" && !docViewState.held) lastEditView = docView;
   for (const button of document.querySelectorAll("#doc-view-seg [data-doc-view], #doc-view-menu [data-doc-view]")) {
     // Edit is on for every mode that is not Read; the menu items behind
     // it mark the one editing mode in use.
@@ -13309,7 +13332,7 @@ function setNoteSurfaceSource(host, source) {
 //: would have run in the textarea.
 function noteSurfaceUpdate(host, update) {
   const view = update.view;
-  if (update.docChanged || update.selectionSet) noteSurfaceMirror(host, view);
+  if (update.docChanged || update.selectionSet) noteSurfaceMirror(host, view, update.docChanged);
   if (!update.docChanged) return;
   const surface = noteSurfaceFor(host);
   const meta = noteSurfaceMeta(host);
@@ -13325,26 +13348,60 @@ function noteSurfaceUpdate(host, update) {
   }
 }
 
-function noteSurfaceMirror(host, view) {
-  const text = view.state.doc.toString();
-  const range = view.state.selection.main;
+//: **The hidden textarea is written once typing pauses, not on every key**
+//: (the owner, 2026-10-12: backspace and delete lag in a long note). Writing a
+//: textarea's value makes the browser rebuild its inner text, a text node and a
+//: <br> per line, and restyle them: 10,962 <br> insertions and 141 restyles of
+//: 1,764 elements in 25 Backspaces of a 1500-word note, every stack ending in
+//: that write. Reads of `value` and the selection come live from the view
+//: (`noteSurfaceOwnValue`), so the `input` event below sees the same text; the
+//: textarea itself is brought level `NOTE_MIRROR_MS` after the last change, or
+//: at once if something calls into it (`noteMirrorFlush`).
+const NOTE_MIRROR_MS = 250;
+function noteSurfaceMirror(host, view, docChanged) {
+  host.noteMirrorStale = true;
+  clearTimeout(host.noteMirrorTimer);
+  host.noteMirrorTimer = setTimeout(() => host.noteMirrorFlush?.(), NOTE_MIRROR_MS);
+  //: A script's own `box.value = ...` already told everyone; only a change
+  //: made in the view raises the event.
+  if (!docChanged || host.noteSettingValue) return;
   noteSurfaceMirroring = true;
   try {
-    const changed = host.value !== text;
-    if (changed) host.value = text;
-    //: Selection too, and on every update rather than only on a change:
-    //: app.js's `[[` suggest and "ask about the selection" both read
-    //: `selectionStart` off this element.
-    try {
-      host.setSelectionRange(Math.min(range.from, text.length), Math.min(range.to, text.length));
-    } catch (error) {
-      //: Some engines refuse a selection on a box that is not rendered. The
-      //: layering above is what makes this rare rather than routine, and a
-      //: refusal is not a reason to drop the text.
-    }
-    if (changed) host.dispatchEvent(new Event("input", { bubbles: true }));
+    host.dispatchEvent(new Event("input", { bubbles: true }));
   } finally {
     noteSurfaceMirroring = false;
+  }
+}
+
+//: What brings the textarea level with the view, and keeps anything that
+//: reaches into the textarea itself from finding it behind.
+function noteSurfaceMirrorTools(host, view, valueProto) {
+  const nativeRange = HTMLTextAreaElement.prototype.setSelectionRange;
+  host.noteMirrorStale = false;
+  host.noteMirrorFlush = () => {
+    clearTimeout(host.noteMirrorTimer);
+    if (!host.noteMirrorStale) return;
+    host.noteMirrorStale = false;
+    const text = view.state.doc.toString();
+    const range = view.state.selection.main;
+    noteSurfaceMirroring = true;
+    try {
+      valueProto.set.call(host, text);
+      //: Some engines refuse a selection on a box that is not rendered, and a
+      //: refusal is not a reason to drop the text.
+      nativeRange.call(host, Math.min(range.from, text.length), Math.min(range.to, text.length));
+    } catch (error) {
+      // The text is in; the caret there is the view's to keep.
+    } finally {
+      noteSurfaceMirroring = false;
+    }
+  };
+  for (const name of ["setRangeText", "select"]) {
+    const native = HTMLTextAreaElement.prototype[name];
+    host[name] = function mirrored(...args) {
+      host.noteMirrorFlush();
+      return native.apply(this, args);
+    };
   }
 }
 
@@ -13357,17 +13414,25 @@ function noteSurfaceMirror(host, view) {
 function noteSurfaceOwnValue(host, view) {
   const proto = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value");
   if (!proto || !proto.set) return;
+  noteSurfaceMirrorTools(host, view, proto);
   Object.defineProperty(host, "value", {
     configurable: true,
+    //: Live: the textarea behind it is only brought level once typing pauses.
     get() {
-      return proto.get.call(this);
+      return view.state.doc.toString();
     },
     set(next) {
       proto.set.call(this, next);
+      host.noteMirrorStale = false;
       if (noteSurfaceMirroring) return;
       const current = view.state.doc.toString();
       if (next === current) return;
-      view.dispatch({ changes: { from: 0, to: current.length, insert: String(next) } });
+      host.noteSettingValue = true;
+      try {
+        view.dispatch({ changes: { from: 0, to: current.length, insert: String(next) } });
+      } finally {
+        host.noteSettingValue = false;
+      }
     },
   });
   //: **And the selection, which is the half that looks like it works.**
@@ -13379,6 +13444,7 @@ function noteSurfaceOwnValue(host, view) {
   //: position 0 with its placeholder text instead of around the word.
   const setRange = host.setSelectionRange.bind(host);
   host.setSelectionRange = (from, to, direction) => {
+    host.noteMirrorFlush();
     setRange(from, to, direction);
     if (noteSurfaceMirroring) return;
     const length = view.state.doc.length;
@@ -13389,15 +13455,19 @@ function noteSurfaceOwnValue(host, view) {
   for (const name of ["selectionStart", "selectionEnd"]) {
     const own = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, name);
     if (!own || !own.set) continue;
+    const native = (key) => Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, key).get.call(host);
     Object.defineProperty(host, name, {
       configurable: true,
+      //: Live from the view's caret, as the value is.
       get() {
-        return own.get.call(this);
+        const range = view.state.selection.main;
+        return name === "selectionStart" ? range.from : range.to;
       },
       set(at) {
+        host.noteMirrorFlush();
         own.set.call(this, at);
         if (noteSurfaceMirroring) return;
-        host.setSelectionRange(this.selectionStart, this.selectionEnd);
+        host.setSelectionRange(native("selectionStart"), native("selectionEnd"));
       },
     });
   }
@@ -13633,10 +13703,7 @@ try {
   //: **A phone opens a document to read it** (UI_MODERNISATION_PLAN Phase
   //: 11 item 6). Nothing stored means the width decides: Rendered below 600,
   //: Live Preview above, and a stored choice still wins at every width.
-  setDocView(
-    prefs.get(DOC_VIEW_KEY, null)
-      || (window.matchMedia("(max-width: 599.98px)").matches ? "rendered" : "live")
-  );
+  setDocView(docDefaultView());
 } catch {
   setDocView("source");
 }
@@ -16938,6 +17005,9 @@ function docAutocorrectAt(box) {
   //: says. The dictionary is the reader's answer to this feature, and an
   //: autocorrect that ignored it would be the app overruling them mid-sentence.
   if (docDictionary().has(lower)) return false;
+  //: And a word put back from the underline's menu (autocorrect.js) is not
+  //: rewritten again this session, the same promise the note boxes keep.
+  if (typeof autocorrectRefused !== "undefined" && autocorrectRefused.has(lower)) return false;
   let better = DOC_AUTOCORRECT[lower] || docVariantLookup().get(lower);
   //: **The dictionary's own unambiguous answers, on the same terms as the
   //: table's.** The table is 42 strings that are not words in any English
@@ -16980,6 +17050,11 @@ function docAutocorrectAt(box) {
   //: names both words so a wrong correction is visible rather than found
   //: later.
   toast(`“${match[1]}” → “${replacement}”. Ctrl+Z undoes it.`);
+  //: **Highlighted, with a menu on hover or click** (INBOX 904 B04), the same
+  //: underline the note boxes get. autocorrect.js is lazy: the first
+  //: correction of a visit fetches it (cached, so a promise already settled).
+  const typedWord = match[1];
+  lazyScript("/js/autocorrect.js").then(() => autocorrectShow(box, start, typedWord, replacement));
   return true;
 }
 

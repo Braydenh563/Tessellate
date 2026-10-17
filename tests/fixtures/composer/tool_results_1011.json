@@ -2017,6 +2017,66 @@
      "note_to_model": "Built-in skills can be run but not edited. A skill's steps and tools are what it does, copy that shape when you make one. `when_to_use` says when a skill applies; `changes_notes` says whether running it would alter the notebook. Start one with run_skill, passing its name exactly as written here and values for any `inputs`, that ends your turn and the run takes over. Only start one that matches what was asked; a skill that changes notes is not the way to answer a question.",
      "label": "ph:lightning Listed the saved skills"
     }
+   },
+   {
+    "args": {},
+    "result": {
+     "tools": [
+      {
+       "name": "search_notes",
+       "does": "Search the user's notes by meaning",
+       "group": "read",
+       "enabled": true
+      },
+      {
+       "name": "set_reminder",
+       "does": "Create a reminder",
+       "group": "write",
+       "enabled": true
+      },
+      {
+       "name": "delete_note",
+       "does": "Move a note to the recycle bin",
+       "group": "confirm",
+       "enabled": true
+      },
+      {
+       "name": "web_search",
+       "does": "Search the web",
+       "group": "online",
+       "enabled": false
+      }
+     ],
+     "total": 4,
+     "label": "ph:wrench Listed 4 tools"
+    }
+   },
+   {
+    "args": {
+     "name": "set_reminder"
+    },
+    "result": {
+     "name": "set_reminder",
+     "description": "Create a reminder; put when in the user's own words.",
+     "parameters": {
+      "type": "object",
+      "properties": {
+       "text": {
+        "type": "string"
+       },
+       "when": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "text"
+      ]
+     },
+     "example": "set_reminder({\"text\": \"...\"})",
+     "group": "write",
+     "enabled": true,
+     "label": "ph:wrench Read how set_reminder works"
+    }
    }
   ],
   "run_skill": [

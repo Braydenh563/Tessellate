@@ -838,7 +838,7 @@ def _lines(out: _Out, facts: list[Fact], limit: int, skip: set[tuple] | None = N
             #: 2026-10-11: no label lines), the time since the last one first.
             gap = (written - before).days if i and before and written else 0
             lead = _gap_on(gap, label) if gap >= 2 else f"on {label}, "
-            heading, line_body = True, lead[0].upper() + lead[1:] + line_body
+            heading, line_body = True, lead[0].upper() + lead[1:] + _reported(line_body, i)
             said = line_body + _relate(line_body, by_day)
         elif heading:
             line_body = _prose(label, held, bodies, i, by_day) + (pins[-1] if pins else "")
@@ -847,11 +847,11 @@ def _lines(out: _Out, facts: list[Fact], limit: int, skip: set[tuple] | None = N
             on_day = f"On {_day(written, by_day or written)}, " if written else ""
             if on_day and before and (written - before).days >= 2 and line_body.startswith(on_day):
                 lead = _gap_on((written - before).days, _day(written, by_day or written))
-                line_body = lead[0].upper() + lead[1:] + line_body[len(on_day):]
+                line_body = lead[0].upper() + lead[1:] + _reported(line_body[len(on_day):], i)
             said = line_body + _relate(line_body, by_day)
         elif weave and i and before and written and (written - before).days >= 2 and mine:
             #: "A week later" names its day too (the owner, 2026-10-11).
-            said = _gap_on((written - before).days, _day(written, by_day or written)) + line_body
+            said = _gap_on((written - before).days, _day(written, by_day or written)) + _reported(line_body, i)
         if written:
             seen_days.append(written)
         (out.lines if i < limit else out.more).append(f"{said}." if heading else f"**{label}:** {said}.")
@@ -871,6 +871,52 @@ def _gap_on(days: int, day: str) -> str:
     second "on"."""
     lead = _vary("gap").format(gap=_gap(days))
     return lead + ("by " if lead.endswith(" on, ") else "on ") + f"{day}, "
+
+
+#: **A dated line reports what the note said then** (B85; BACKLOG INBOX 1299,
+#: the owner: "it probably should have said instead 'A week on, by 9 August,
+#: you mentioned that you had just recently begun playing League of
+#: Legends'"). A clause in the present, or one pinned to its note's own day
+#: ("just", "recently"), is true of that day, not of today: after "by 9
+#: August," it is said as reported speech, one tense back. A plain past
+#: ("you bought a headset") is already the day's and stays as it is.
+_NOW_WORDS = re.compile(r"\b(?:just|recently|currently|now|at the moment|these days|so far|lately)\b", re.I)
+_PRESENT = re.compile(r"\byou(?:'re|'ve| are| have| am| can| will| don't| do not| need| want| feel| think| like| love| hate| know)\b", re.I)
+_BACKSHIFT = (
+    (re.compile(r"\byou're\b"), "you were"), (re.compile(r"\byou are\b"), "you were"),
+    (re.compile(r"\byou've\b"), "you had"), (re.compile(r"\byou have\b"), "you had"),
+    (re.compile(r"\byou can\b"), "you could"), (re.compile(r"\byou will\b"), "you would"),
+    (re.compile(r"\byou don't\b"), "you didn't"), (re.compile(r"\byou do not\b"), "you did not"),
+    (re.compile(r"\byou (need|want|feel|think|like|love|hate|know)\b"),
+     lambda m: "you " + {"need": "needed", "want": "wanted", "feel": "felt", "think": "thought", "like": "liked",
+                         "love": "loved", "hate": "hated", "know": "knew"}[m.group(1)]),
+)
+_PAST_PARTICIPLE = {
+    "began": "begun", "went": "gone", "saw": "seen", "took": "taken", "did": "done", "wrote": "written",
+    "ate": "eaten", "gave": "given", "came": "come", "ran": "run", "drove": "driven", "rode": "ridden",
+    "swam": "swum", "sang": "sung", "drank": "drunk", "spoke": "spoken", "broke": "broken", "chose": "chosen",
+    "forgot": "forgotten", "knew": "known", "grew": "grown", "threw": "thrown", "flew": "flown", "fell": "fallen",
+    "became": "become", "wore": "worn", "hid": "hidden", "woke": "woken", "froze": "frozen", "stole": "stolen",
+}
+_HAD_PAST = re.compile(r"^you((?: (?:just|recently|only|finally|already|also|actually))*) ([a-z]+ed|" + "|".join(_PAST_PARTICIPLE) + r"|bought|felt|made|found|left|met|paid|sent|spent|told|thought|heard|kept|lost|read|said|sat|slept|stood|taught|won|built|got|put|set|cut|hit|quit)\b")
+_REPORTS = ("you mentioned that ", "you wrote that ", "you noted that ", "you said that ", "you recorded that ",
+            "you put down that ", "you jotted down that ", "your note said that ")
+
+
+def _reported(body: str, i: int) -> str:
+    """`body`, a clause of the person's own under a dated lead, as reported
+    speech when it is in the present or pinned to its note's day; as it is
+    otherwise. The reporting verb turns with the line (`i`)."""
+    if not re.match(r"you\b", body) or not (_NOW_WORDS.search(body) or _PRESENT.search(body)):
+        return body
+    said = body
+    past = _HAD_PAST.match(said)
+    if past and not _PRESENT.match(said):
+        verb = past.group(2)
+        said = f"you had{past.group(1)} {_PAST_PARTICIPLE.get(verb, verb)}" + said[past.end():]
+    for pattern, repl in _BACKSHIFT:
+        said = pattern.sub(repl, said)
+    return _REPORTS[i % len(_REPORTS)] + said
 
 
 _PINNED = re.compile(r" \(you pinned this as true, [^)]+\)")
@@ -2085,19 +2131,6 @@ def _result(out: _Out, kind: str, question: str) -> dict:
 
 #: "search the web for X", "look up X": the words that ask, not the subject.
 _WEB_ASK = re.compile(r"^(?:(?:hey|hi|ok|okay),? )?(?:(?:can|could|will) (?:you|u) )?(?:(?:please|pls|plz) )?(?:search (?:the )?(?:web|internet|online) (?:for|about)|search up|look up|google|find (?:on|from) the web|web search(?: for)?)\s+", re.I)
-
-
-#: Asked for the web in so many words, anywhere in the turn: "hey can u pls
-#: search the web for ..." was answered from two unrelated notes (owner,
-#: 2026-10-12), because a note matched and the web was only the fallback.
-_ASKS_WEB = re.compile(
-    r"\b(?:search|look(?: it)? up|google|check)\b.{0,12}?\b(?:the )?(?:web|internet|online)\b|\bsearch up\b|\bweb search\b|\bon the (?:web|internet)\b",
-    re.I,
-)
-
-
-def asks_web(question: str) -> bool:
-    return bool(_ASKS_WEB.search(question or ""))
 
 
 def web_query(question: str) -> str:

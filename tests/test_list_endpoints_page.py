@@ -34,6 +34,7 @@ BOUNDED_BY_THE_APP = {
     "list_activity": "what is running now: one row per live job, bounded by the workers, not the notebook",
     "list_modes": "the chat modes this app ships, a fixed list in code",
     "list_tools": "the AI tools this app defines, a fixed list in code",
+    "list_commands": "the slash commands this app defines (ai/slash.py), a fixed registry in code",
     "list_file_types": "the file types this app knows how to read",
     "list_embedding_models": "the embedding models this app offers",
     "list_extras": "the optional installs this app knows about",

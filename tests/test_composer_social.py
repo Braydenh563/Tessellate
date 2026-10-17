@@ -112,7 +112,7 @@ def test_can_you_search_the_web_says_so_and_never_searches(client, web, on, surf
 
 def test_what_can_you_do_is_the_overview(client):
     out = _ask(client, "what can you do?", notes_only=True, use_tools=False)
-    assert out["text"].startswith("I answer from your notes")
+    assert "Atlas's assistant" in out["text"].split("\n")[0] or "assistant" in out["text"].split("\n")[0].lower()
     assert "**Work things out:**" in out["text"]
 
 

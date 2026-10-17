@@ -95,7 +95,7 @@ def test_a_topic_drag_is_one_pin_write_with_its_core_note():
     beside the group's PUT /graph/pins. It now joins the group's write."""
     end = CANVAS[CANVAS.index("function gcDragEnd(event)") : CANVAS.index('s.canvas.addEventListener("pointermove"')]
     assert "if (pins.length) pins.push({ id: node.id, x: node.fx, y: node.fy });" in end
-    assert "else apiJson(`/graph/pin/${node.id}`" in end
+    assert "else graphPinSave(node.id, node.graph_pin_x, node.graph_pin_y)" in end, "the lone note goes through the one pin door"
     assert end.index("pins.push({ id: node.id") < end.rindex("if (pins.length) savePins();")
 
 

@@ -514,5 +514,48 @@
  {
   "typed": "can it have more varied responses??",
   "repaired": "can it have more varied responses??"
+ },
+ {
+  "typed": "needs to bnetter detect intent",
+  "repaired": "needs to better detect intent"
+ },
+ {
+  "typed": "the compsoer guide",
+  "repaired": "the composer guide"
+ },
+ {
+  "typed": "random string of keyboard charracters",
+  "repaired": "random string of keyboard characters"
+ },
+ {
+  "typed": "dissconnected from the server",
+  "repaired": "disconnected from the server"
+ },
+ {
+  "typed": "the mouce is broken",
+  "repaired": "the mouse is broken"
+ },
+ {
+  "typed": "usefullness of the app",
+  "repaired": "usefulness of the app"
+ },
+ {
+  "typed": "Cristopher called",
+  "repaired": "Cristopher called"
+ },
+ {
+  "typed": "pin the dentist noe",
+  "repaired": "pin the dentist noe",
+  "intent": "act"
+ },
+ {
+  "typed": "unlnk the gym note from the running note",
+  "repaired": "unlink the gym note from the running note",
+  "intent": "act"
+ },
+ {
+  "typed": "concert 5 miles to km",
+  "repaired": "concert 5 miles to km",
+  "intent": "utility"
  }
 ]

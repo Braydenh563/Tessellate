@@ -22,9 +22,12 @@ def test_improve_writing_returns_edited_text(ai_client, fake_ollama):
     assert body["original"] == "i goed to teh shop"
 
 
-def test_improve_writing_offline_is_503(client):
+def test_improve_writing_offline_proofreads_and_rewording_is_503(client):
+    """O7 (INBOX 904 B33): with no model the app proofreads itself; rewording
+    still needs a model and says so (tests/test_composer_ai_actions.py)."""
     response = client.post("/entries/improve", json={"text": "fix me"})
-    assert response.status_code == 503
+    assert response.status_code == 200 and response.json()["by"] == "composer"
+    assert client.post("/entries/improve", json={"text": "fix me", "mode": "rewrite"}).status_code == 503
 
 
 def test_improve_writing_rejects_empty(ai_client):
@@ -82,9 +85,13 @@ def test_generate_title_replaces_an_existing_one(ai_client, fake_ollama):
     assert body["content"].count("#") == 1
 
 
-def test_generate_title_offline_is_503(client):
-    note = _save(client, "some text")
-    assert client.post(f"/entries/{note['id']}/generate-title").status_code == 503
+def test_generate_title_offline_takes_one_from_the_note(client):
+    """O7: with no model the title is the note's own words; a note with no
+    sentence to take one from says so."""
+    note = _save(client, "Packed the tent and the stove for the coast trip on Friday.")
+    assert client.post(f"/entries/{note['id']}/generate-title").json()["title"]
+    bare = _save(client, "some text")
+    assert client.post(f"/entries/{bare['id']}/generate-title").status_code == 422
 
 
 def test_remove_title_takes_the_heading_out(ai_client):

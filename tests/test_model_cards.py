@@ -143,9 +143,9 @@ def test_the_catalogue_says_unknown_when_the_memory_is_not_known(ai_client, monk
 
 def test_the_hardware_route_reports_the_memory(client, monkeypatch):
     monkeypatch.setenv("TESSELLATE_RAM_GB", "8")
-    assert client.get("/models/hardware").json() == {"ram_gb": 8.0}
+    assert client.get("/models/hardware").json()["ram_gb"] == 8.0
     monkeypatch.setattr(hardware, "total_memory_bytes", lambda: None)
-    assert client.get("/models/hardware").json() == {"ram_gb": None}
+    assert client.get("/models/hardware").json()["ram_gb"] is None
 
 
 # --- "Download another model": say what it is before it downloads -----------------------

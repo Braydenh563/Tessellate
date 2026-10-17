@@ -232,14 +232,14 @@ def for_subject(subject: str, notes: list[dict], today: date, question: str = ""
     return [run] if run else []
 
 
-#: The short form of each rule for the dashboard's line ("golf, 4 times since
+#: The short form of each rule for the dashboard's line ("golf came up 4 times since
 #: 5 September"), from the same slots: a count, a date, a subject.
 def short(insight: Insight) -> str:
     slots = insight.slots
     if insight.rule == "recurrence":
-        return f"{slots['subject']}, {slots['count']} times since {slots['since']}"
+        return f"{slots['subject']} came up {slots['count']} times since {slots['since']}"
     if insight.rule == "streak":
-        return f"{slots['subject']}, {slots['weeks']} weeks running"
+        return f"{slots['subject']} every week for {slots['weeks']} weeks"
     if insight.rule == "drift":
         return f"a plan from {slots['since']} still open"
     if insight.rule == "contrast":

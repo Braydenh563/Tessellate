@@ -101,10 +101,16 @@ function openNameMarkViewer(seed, { visit = false } = {}) {
       shut();
     }
   };
+  //: Poked, its face answers too, more each poke in a row (B62).
+  let pokes = 0;
+  let pokedAt = 0;
   if (!visiting) {
     stage.addEventListener("click", () => {
       nameMarkReact(stage.querySelector(".name-mark"));
       nameMarkSay(stage, nameMarkLine(seed));
+      pokes = performance.now() - pokedAt < 4000 ? pokes + 1 : 1;
+      pokedAt = performance.now();
+      nameMarkViewerFace(figure, seed, NM_VIEWER_POKED[Math.min(pokes, NM_VIEWER_POKED.length) - 1], 2400);
     });
   }
   //: Not closed by the second click of the double-click that opened it:
@@ -127,11 +133,17 @@ function openNameMarkViewer(seed, { visit = false } = {}) {
       if (!overlay.isConnected) return;
       const asleep = !!home && nameMarkBuddyAsleep(document.getElementById("nm-buddy"));
       const host = home ? document.getElementById("nm-buddy") : stage;
-      if (!asleep && host && !host.querySelector(":scope > .nm-say")) nameMarkSay(host, nameMarkLine(seed));
+      if (!asleep && host && !host.querySelector(":scope > .nm-say")) {
+        nameMarkSay(host, nameMarkLine(seed));
+        //: A line said with a face to match, a neighbouring one, and back.
+        if (!home) nameMarkViewerFace(figure, seed, nameMarkViewerNear(seed), 2600);
+      }
       talk();
     }, 7000 + Math.random() * 6000);
   };
   talk();
+  //: Glad to be looked at: a brighter face as the view opens (B62).
+  if (!home) setTimeout(() => nameMarkViewerFace(figure, seed, nameMarkViewerNear(seed, true), 2400), 350);
   if (nameMarkIdleQuiet()) {
     blinks = nameMarkViewerBlinks(figure);
     return;
@@ -140,7 +152,8 @@ function openNameMarkViewer(seed, { visit = false } = {}) {
   //: and its eyes and head on the pointer (INBOX 591; its loops are the
   //: CSS's, under `.nm-viewer-figure > .nm-figure.nm-live`).
   if (!home) {
-    setTimeout(() => figure.isConnected && nameMarkIdleAct(figure, "glance"), 900);
+    setTimeout(() => figure.isConnected && nameMarkIdleAct(figure, nameMarkBuddyActOff("wave") ? "glance" : "wave"), 700);
+    setTimeout(() => figure.isConnected && nameMarkIdleAct(figure, "glance"), 2600);
     nameMarkIdleWake();
     nameMarkViewerFollow(overlay, figure);
   }
@@ -413,13 +426,15 @@ function nameMarkViewerFit(figure) {
 //: Nothing with Faces follow the pointer off; never under reduced motion
 //: (the caller returns before this); gone with the dialog.
 function nameMarkViewerFollow(overlay, figure) {
-  const drawn = figure.querySelector(":scope > .nm-figure");
-  if (!drawn) return;
+  //: The face it has now: a reaction swaps it (`nameMarkViewerFace`).
+  const face = () => figure.querySelector(":scope > .nm-figure:not(.nmv-leaving)");
+  if (!face()) return;
   let frame = 0;
   let at = null;
   const set = (x, y) => {
-    drawn.style.setProperty("--nmv-x", x.toFixed(2));
-    drawn.style.setProperty("--nmv-y", y.toFixed(2));
+    const drawn = face();
+    drawn?.style.setProperty("--nmv-x", x.toFixed(2));
+    drawn?.style.setProperty("--nmv-y", y.toFixed(2));
   };
   overlay.addEventListener("pointermove", (event) => {
     if (document.documentElement.dataset.avatarFollow === "off") return;
@@ -427,6 +442,8 @@ function nameMarkViewerFollow(overlay, figure) {
     if (frame) return;
     frame = requestAnimationFrame(() => {
       frame = 0;
+      const drawn = face();
+      if (!drawn) return;
       const head = (drawn.querySelector(".nm-buddy-head") || drawn).getBoundingClientRect();
       const reach = Math.max(240, head.width * 3);
       const clamp = (v) => Math.max(-1, Math.min(1, v));
@@ -436,6 +453,38 @@ function nameMarkViewerFollow(overlay, figure) {
   //: The pointer gone from the window: it looks ahead again, slowly (the
   //: CSS's transition).
   overlay.addEventListener("pointerleave", () => set(0, 0), { passive: true });
+}
+
+//: **Its face reacts** (B62, the owner: "The profile avatar in the enlarged
+//: popup from double clicking the profile picture doesn't have any life to
+//: it"). A face drawn from a name has one mood, and the view kept it: its
+//: loops and small acts moved it, but under reduced motion (only blinks) it
+//: was a still picture with a caption. Now its face changes the way the
+//: companion's does (`nameMarkBuddyExpress`): brighter as the view opens,
+//: glad, then excited, then laughing as it is poked in a row, a
+//: neighbouring look with each line it says, and back, each a crossfade
+//: (an opacity change, so also under reduced motion). Not with Avatar
+//: animation off; not Atlas (its moods are its own) or a character of its own.
+const NM_VIEWER_POKED = ["happy", "excited", "laughing", "laughing", "unimpressed"];
+function nameMarkViewerNear(seed, bright = false) {
+  const mood = nameMood(seed).mood || "";
+  const near = (bright ? ["happy", "excited", "cute"] : NMB_EXPR_NEAR[mood] || NMB_EXPR_NEAR[""]).filter((e) => e !== mood);
+  return near[Math.floor(Math.random() * near.length)] || "happy";
+}
+function nameMarkViewerFace(figure, seed, expr, ms) {
+  if (!figure.isConnected || document.documentElement.dataset.avatarMotion === "off" || isAtlasSeed(seed) || characterRendererFor(seed)) return;
+  const old = figure.querySelector(":scope > .nm-figure:not(.nmv-leaving)");
+  if (!old || (old.dataset.expr || "") === expr) return;
+  const next = nameCharacterFigure(seed, expr);
+  next.dataset.expr = expr;
+  for (const k of ["--nmv-x", "--nmv-y"]) next.style.setProperty(k, old.style.getPropertyValue(k) || "0");
+  old.classList.add("nmv-leaving");
+  old.after(next);
+  const gone = () => old.remove();
+  if (typeof next.animate === "function") next.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 280, easing: "ease-in-out" }).finished.then(gone, gone);
+  else gone();
+  clearTimeout(figure.nmvFace);
+  figure.nmvFace = ms ? setTimeout(() => nameMarkViewerFace(figure, seed, "", 0), ms) : 0;
 }
 
 //: **Under reduced motion, a blink now and then** and nothing else (the
@@ -452,3 +501,251 @@ function nameMarkViewerBlinks(figure) {
   let timer = setTimeout(run, 1500);
   return timer;
 }
+
+// Settings, Appearance, Saved companions: opened only with that pane, so
+// it lives here (boot budget, 2026-10-17) behind a stand-in for
+// `mountBuddyPresets` (LAZY_ENTRY_POINTS.companionMenu).
+//: **Saved companions**, the custom themes' pattern for the companion:
+//: every setting that makes it who it is, kept under a name in this
+//: browser, applied in one press, renamed (its name back in the field, then
+//: saved) and deleted. At most twelve.
+const NMB_PRESET_KEYS = ["avatar-buddy", "atlas-look", "face-look", "avatar-buddy-custom", "avatar-buddy-size", "avatar-buddy-actions", "avatar-buddy-acts-off", "avatar-buddy-motion"];
+const NMB_PRESET_MAX = 12;
+let nmbPresetRenaming = "";
+function nameMarkBuddyPresets() {
+  try {
+    const list = prefs.json("avatar-buddy-presets", []);
+    return Array.isArray(list) ? list : [];
+  } catch (e) {
+    return [];
+  }
+}
+function nameMarkBuddyKeepPresets(list) {
+  try {
+    prefs.set("avatar-buddy-presets", JSON.stringify(list));
+  } catch (e) {
+    // Not kept this time.
+  }
+  mountBuddyPresets();
+}
+function nameMarkBuddySavePreset() {
+  const input = document.getElementById("avatar-buddy-preset-name");
+  const name = (input?.value || "").trim().slice(0, 30);
+  if (!name) {
+    toast("Give the companion a name first.", "info");
+    input?.focus();
+    return;
+  }
+  const values = {};
+  for (const key of NMB_PRESET_KEYS) {
+    const v = prefs.get(key, null);
+    if (v !== null) values[key] = v;
+  }
+  const others = nameMarkBuddyPresets().filter((p) => p.name !== name && p.name !== nmbPresetRenaming);
+  if (others.length >= NMB_PRESET_MAX) {
+    toast(`You can keep ${NMB_PRESET_MAX} saved companions: delete one first.`, "info");
+    return;
+  }
+  nmbPresetRenaming = "";
+  input.value = "";
+  nameMarkBuddyKeepPresets([...others, { name, values }]);
+  toast(`Saved “${name}”.`);
+}
+function nameMarkBuddyApplyPreset(preset) {
+  for (const key of NMB_PRESET_KEYS) {
+    if (preset.values?.[key] !== undefined) prefs.set(key, preset.values[key]);
+    else prefs.remove(key);
+  }
+  nameMarkBuddyCustomCache = null;
+  const acts = document.getElementById("avatar-buddy-activities");
+  if (acts) acts.replaceChildren();
+  if (typeof applyAppearance === "function") applyAppearance();
+  if (typeof renderAppearance === "function") renderAppearance();
+  const buddy = document.getElementById("nm-buddy");
+  if (buddy) {
+    delete buddy.dataset.seed;
+    nameMarkBuddySetSize(nameMarkBuddyScaleSaved(), false);
+    nameMarkBuddyToggles(buddy);
+  }
+  syncNameMarkBuddy();
+  mountBuddyActivities();
+  toast(`Applied “${preset.name}”.`);
+}
+function mountBuddyPresets() {
+  const box = document.getElementById("avatar-buddy-presets");
+  if (!box) return;
+  box.replaceChildren();
+  const list = nameMarkBuddyPresets();
+  if (!list.length) {
+    const empty = document.createElement("p");
+    empty.className = "muted";
+    empty.textContent = "Nothing saved yet: set the companion up how you like it, then save it here.";
+    box.appendChild(empty);
+  }
+  for (const preset of list) {
+    const row = document.createElement("div");
+    row.className = "row avatar-buddy-preset";
+    const apply = document.createElement("button");
+    apply.type = "button";
+    apply.className = "small";
+    apply.textContent = preset.name;
+    apply.title = `Apply “${preset.name}”`;
+    apply.addEventListener("click", () => nameMarkBuddyApplyPreset(preset));
+    const rename = document.createElement("button");
+    rename.type = "button";
+    rename.className = "ghost small";
+    rename.textContent = "Rename";
+    rename.addEventListener("click", () => {
+      const input = document.getElementById("avatar-buddy-preset-name");
+      nmbPresetRenaming = preset.name;
+      input.value = preset.name;
+      input.focus();
+      input.select();
+    });
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "ghost small";
+    remove.textContent = "Delete";
+    remove.setAttribute("aria-label", `Delete the saved companion “${preset.name}”`);
+    remove.addEventListener("click", () => {
+      nameMarkBuddyKeepPresets(nameMarkBuddyPresets().filter((p) => p.name !== preset.name));
+      toast(`Deleted “${preset.name}”.`);
+    });
+    row.append(apply, rename, remove);
+    box.appendChild(row);
+  }
+  const save = document.getElementById("avatar-buddy-preset-save");
+  if (save && !save.dataset.wired) {
+    save.dataset.wired = "1";
+    save.addEventListener("click", nameMarkBuddySavePreset);
+    document.getElementById("avatar-buddy-preset-name")?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") nameMarkBuddySavePreset();
+    });
+  }
+}
+
+//: **The companion's mind** (B87c and B88c, the owner, 2026-10-17: "the
+//: companion needs a lot of improvements in behaviour, actions and lifelike
+//: ncp decision making"; "more movement, more transition and actions").
+//: The pick (`nameMarkBuddyDecide`) weighed mood, the hour, warmth and its
+//: perch, but not what you were doing, and the wait between picks was a
+//: plain 20 to 60 second roll. With this file loaded (the first tick fetches
+//: it, `nameMarkBuddyTick`), `nmb.mind` adds:
+//: - **what you are doing** (`drive`): typing, it keeps you company quietly
+//:   (it reads along, stops to think) and saves the big gestures; scrolling,
+//:   it looks about; sitting there idle, it plays (juggles, stretches,
+//:   tosses a star); gone a while, it winds down; the pointer close by, it
+//:   notices you; each tab leans it to its own thing (a map on the graph,
+//:   a book in notes, a think in chat);
+//: - **when** (`nextIn`): still the decided 20 to 60 seconds (Brief 34,
+//:   "fewer, longer, calmer"), placed in it by its energy, your typing, a
+//:   big act just done and you idling, not by a roll alone;
+//: - **into and out of an act** (`lead`, `after`): a beat of anticipation
+//:   before a big gesture (a dip at the knees, a glance your way before a
+//:   wave), a breath out after one, and sometimes the act that follows from
+//:   it (a pleased nod after juggling, a think after reading its map, a
+//:   stretch after meditating);
+//: - **three new acts** (`NMB_MIND_ACTS`): it stops to think (a tilt, its
+//:   hands a little up, a thinking face), it sighs, and Atlas tosses one
+//:   star from its hand (the rig, atlas-motion.js).
+//: All of it on the one timer and the acts' own timers: nothing new runs
+//: between acts. Reduced motion and Still have none of the beats.
+const NMB_MIND_ACTS = {
+  ponder: { ms: 4200, w: 1, cool: 45000, poses: ["stand", "sit", "float", "lean"] },
+  sigh: { ms: 1700, w: 0.7, cool: 60000, poses: ["stand", "sit", "float", "lean"] },
+  toss: { ms: 4400, w: 1, cool: 70000, poses: ["stand", "float"], atlas: true },
+};
+const NMB_MIND_LEAD = ["wave", "stretch", "juggle", "toss", "shrug", "scratch", "facepalm", "map", "swing", "onehand", "feet", "kick"];
+//: What follows from what, and how often: [act, chance].
+const NMB_MIND_NEXT = {
+  juggle: [["nod", 0.5]], toss: [["nod", 0.35]], map: [["ponder", 0.45], ["look", 0.25]],
+  read: [["ponder", 0.35], ["stretch", 0.3]], meditate: [["stretch", 0.5]], stretch: [["yawn", 0.25], ["look", 0.25]],
+  ponder: [["nod", 0.35], ["shrug", 0.2]], scratch: [["shrug", 0.2]], wave: [["glance", 0.35]], hop: [["look", 0.3]],
+  lie: [["stretch", 0.55]], nap: [["stretch", 0.4], ["yawn", 0.2]], sigh: [["look", 0.3]],
+};
+const NMB_MIND_TABS = {
+  notes: { read: 1.4, ponder: 1.2 }, documents: { read: 1.4, ponder: 1.2 }, library: { read: 1.5 },
+  graph: { map: 1.8, look: 1.3, ponder: 1.2 }, chat: { ponder: 1.6, tilt: 1.2 }, timeline: { look: 1.2, map: 1.2 },
+};
+const NMB_MIND = {
+  //: Multipliers on the pick's weights for what you are doing right now.
+  drive(now = Date.now(), idle = now - nmb.lastInput, scrollAgo = nameMarkBuddyScrollAgo(), tab = nameMarkBuddyTab()) {
+    const out = {};
+    const mul = (table) => {
+      for (const [act, k] of Object.entries(table)) out[act] = (out[act] ?? 1) * k;
+    };
+    const typing = now - (nmb.keyAt || 0) < 8000;
+    if (typing) mul({ read: 1.6, ponder: 1.8, tilt: 1.3, look: 0.6, glance: 0.5, wave: 0.3, hop: 0.3, stretch: 0.5, juggle: 0.4, toss: 0.5, sigh: 0.6 });
+    else if (scrollAgo < 4000) mul({ look: 1.8, turn: 1.4, glance: 1.4, read: 0.6 });
+    else if (idle > 3 * 60 * 1000) mul({ yawn: 1.5, meditate: 1.8, sigh: 1.5, lie: 1.3, beanbag: 1.3, juggle: 0.6, hop: 0.5, wave: 0.6 });
+    else if (idle > 20000) mul({ juggle: 1.8, toss: 1.8, stretch: 1.6, map: 1.4, hop: 1.3, wave: 1.3, ponder: 1.2, swing: 1.4, kick: 1.4 });
+    //: The pointer within reach a moment ago: it has noticed you.
+    const p = nmb.pointer;
+    if (p && idle < 5000 && !typing && Number.isFinite(nmb.x) && Math.hypot(p[0] - nmb.x - NMB_W / 2, p[1] - nmb.y - NMB_HEAD / 2) < 240) mul({ glance: 2.2, wave: 1.5, tilt: 1.3 });
+    mul(NMB_MIND_TABS[tab] || {});
+    return out;
+  },
+  //: How long until the next pick, within the decided 20 to 60 seconds.
+  nextIn: (now = Date.now(), roll = Math.random()) => {
+    const idle = now - nmb.lastInput;
+    let f = 0.3 + 0.35 * (1 - (nmb.mood?.energy ?? 0.6)) + 0.3 * (roll - 0.5);
+    if (now - (nmb.keyAt || 0) < 8000) f += 0.25;
+    if (now - (nmb.loudAt || 0) < 40000) f += 0.15;
+    if (idle > 20000 && idle < 3 * 60 * 1000) f -= 0.3;
+    return 20000 + 40000 * Math.max(0, Math.min(1, f));
+  },
+  //: Into a big act on a beat: true when it has taken the act on.
+  lead(buddy, act) {
+    if (!NMB_MIND_LEAD.includes(act) || nameMarkBuddyStill() || nameMarkIdleQuiet()) return false;
+    const char = buddy.querySelector(".nm-buddy-char");
+    if (!char || typeof char.animate !== "function") return false;
+    if (act === "wave" && nmb.pointer) nameMarkBuddyAim(nmb.pointer);
+    char.animate([{ translate: "0 0" }, { translate: "0 1.6px", offset: 0.6 }, { translate: "0 0" }], { duration: 300, easing: "ease-in-out", composite: "add" });
+    clearTimeout(nmb.timer);
+    nmb.timer = setTimeout(() => {
+      nmb.timer = 0;
+      if (!buddy.isConnected || nmb.act || nmb.flight || buddy.classList.contains("nm-buddy-dragging") || buddy.classList.contains("nmb-walking")) nameMarkBuddySchedule();
+      else nameMarkBuddyAct(act);
+    }, 220);
+    return true;
+  },
+  //: An act it starts that has no CSS of its own: its limbs, its face.
+  start(buddy, act, ms) {
+    if (!NMB_MIND_ACTS[act] || nameMarkBuddyStill()) return;
+    if (act === "ponder") {
+      nameMarkBuddyLimbs(buddy, "ponder", ms);
+      nameMarkBuddyTilt(Math.random() < 0.5 ? -0.45 : 0.45, ms - 500);
+      const atlas = isAtlasSeed(buddy.dataset.seed || "");
+      nameMarkBuddyExpress(atlas ? "thinking" : "confused", ms - 300, { drift: atlas });
+    } else if (act === "sigh") {
+      nameMarkBuddyLimbs(buddy, "sigh", ms);
+      buddy.querySelector(".nm-buddy-char")?.animate?.([{ translate: "0 0" }, { translate: "0 -1.4px", offset: 0.35 }, { translate: "0 0.8px", offset: 0.7 }, { translate: "0 0" }], { duration: ms, easing: "ease-in-out", composite: "add" });
+    }
+  },
+  //: Out of an act: a breath out after a big one, and what follows, if
+  //: anything does and suits the moment ("" when nothing).
+  after(buddy, act, roll = Math.random(), now = Date.now()) {
+    if (nameMarkBuddyStill()) return "";
+    if ((NMB_MIND_LEAD.includes(act) || NMB_LOUD_ACTS.includes(act)) && !nameMarkIdleQuiet()) {
+      buddy.querySelector(".nm-buddy-char")?.animate?.([{ translate: "0 0" }, { translate: "0 -1px", offset: 0.3 }, { translate: "0 0.6px", offset: 0.7 }, { translate: "0 0" }], { duration: 600, easing: "ease-in-out", composite: "add" });
+    }
+    if (nmb.visit || buddy.classList.contains("nmb-sleep") || nameMarkBuddyActions() === "off") return "";
+    let r = roll;
+    for (const [next, chance] of NMB_MIND_NEXT[act] || []) {
+      r -= chance;
+      if (r >= 0) continue;
+      const spec = NAME_MARK_BUDDY_ACTS[next];
+      if (!spec || !spec.poses.includes(nmb.pose) || (nmb.cool[next] || 0) > now || nameMarkBuddyActOff(next)) return "";
+      if (NMB_LOUD_ACTS.includes(next) && !nameMarkBuddyCalmAllows(now, nmb.loudAt || 0, nmb.loudGap || NMB_LOUD_GAP_MS, nmb.keyAt || 0, nameMarkBuddyScrollAgo())) return "";
+      if (spec.atlas && !nmb.atlasLook) return "";
+      return next;
+    }
+    return "";
+  },
+};
+Object.assign(NAME_MARK_BUDDY_ACTS, NMB_MIND_ACTS);
+Object.assign(NMB_LIMB_MOVES, {
+  ponder: { arm: [[0.18, 16], [0.82, 16]] },
+  sigh: { arm: [[0.3, -10], [0.5, -10], [0.8, 4]] },
+});
+nmb.mind = NMB_MIND;

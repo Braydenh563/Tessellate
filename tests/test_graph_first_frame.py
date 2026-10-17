@@ -86,3 +86,17 @@ def test_an_instant_fit_is_applied_now_not_as_a_zero_length_transition():
         start = GRAPH.index(f"\nfunction {name}(")
         body = GRAPH[start : GRAPH.index("\n}\n", start)]
         assert "if (instant)" in body and "svg.interrupt().call(zoomBehavior.transform, framed);" in body, name
+
+
+def test_a_map_framed_for_a_box_never_measured_is_reframed_at_once_not_glided():
+    """Owner 2026-10-12, "it shifts or glitches in". Measured (400 notes,
+    1440x900, every fit logged): the map is first drawn while its tab is
+    hidden, framed for the 800x540 fallback (`gcResize`, "a box never
+    measured"); opening the tab fired the resize observer, whose refit
+    glided the camera from k 0.53 to 0.68 and 234 px across, in view. A box
+    that was never really measured is reframed at once, before the paint."""
+    resize = CANVAS[CANVAS.index("function gcResize(") : CANVAS.index("function gcEnsureCanvas(")]
+    assert "s.dimsReal = " in resize
+    observer = CANVAS[CANVAS.index("s.observer = new ResizeObserver(") :][:1600]
+    assert "const wasReal = s.dimsReal !== false;" in observer
+    assert "s.dims.w, s.dims.h, !wasReal)" in observer

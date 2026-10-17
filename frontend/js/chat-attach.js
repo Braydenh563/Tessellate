@@ -2271,7 +2271,14 @@ async function sendChatMessage(preset, opts = {}) {
     } else {
       // The timeline is this turn's own, detached or not, so it is always
       // marked failed; only the shared status line is conditional.
-      timeline.failRunningStep("Failed due to error");
+      //: The step names what failed, in the server's own plain sentence
+      //: (owner, 2026-10-17: the old fixed line said nothing). A message
+      //: too long to be a sentence, or none, falls back to a line that still
+      //: says what to do next.
+      const said = String(error && error.message ? error.message : "").trim();
+      timeline.failRunningStep(
+        said && said.length <= 160 ? said : "The model stopped before it finished. Try again, or check Settings, Models."
+      );
       if (viewing()) {
         status.textContent = error.message;
         status.classList.add("error");

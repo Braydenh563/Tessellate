@@ -101,7 +101,9 @@ def _reminders(text: str, spans: list[recognise.Span], now: datetime, quoted: li
         out.append({
             "kind": "reminder", "start": span.start, "end": span.end, "said": span.text,
             "label": f"Remind me {when}",
-            "reason": f"“{span.text}” reads as {span.read_as}" + ("" if due[1] else "; no time was said"),
+            # B72: the reminder is the timeline's row and the calendar's chip; say so.
+            "reason": f"“{span.text}” reads as {span.read_as}" + ("" if due[1] else "; no time was said")
+            + "; a reminder goes on the timeline and the calendar",
             "value": {"text": words, "due_at": due[0].isoformat(timespec="minutes")},
         })
     return out

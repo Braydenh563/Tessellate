@@ -229,13 +229,34 @@ document.addEventListener("focusin", (event) => editorHintPlaceholder(event.targ
 //: And warmed on focus, so the bundle is usually already there by the time
 //: anything is typed. Focusing an editing surface is the earliest honest
 //: signal that these commands are about to be wanted.
+//:
+//: **But not in the frame of the press.** Arriving on Chat focuses the
+//: composer, and fetching the bundle there put 17 scripts (d3, documents.js,
+//: the whiteboard files, about 2 MB) on the main thread in the window the
+//: page itself is being drawn: the first long task of a first Chat visit
+//: (`scratchpad/ui-sweeps/tabenter.js`, 192 ms of `documents.js` at 4x CPU).
+//: It waits out the arrival and runs when the page is idle. A key that needs
+//: the adapter before then still asks for the bundle itself
+//: (`editorSurfaceFor`), so the first "/" is replayed, not lost.
+const EDITOR_WARM_DELAY_MS = 2000;
+const editorWarm = { timer: 0 };
+function editorWarmSurfaceModule(el) {
+  clearTimeout(editorWarm.timer);
+  editorWarm.timer = setTimeout(() => {
+    const run = () => {
+      if (document.activeElement === el && typeof asSurface !== "function") editorEnsureSurfaceModule(el);
+    };
+    if (window.requestIdleCallback) requestIdleCallback(run, { timeout: 2000 });
+    else run();
+  }, EDITOR_WARM_DELAY_MS);
+}
 document.addEventListener(
   "focusin",
   (event) => {
     const el = event.target;
     if (!el || el.nodeType !== 1 || !(el.id in EDITOR_SURFACES)) return;
     if (typeof asSurface === "function") return;
-    editorEnsureSurfaceModule(el);
+    editorWarmSurfaceModule(el);
   },
   true
 );
@@ -568,6 +589,31 @@ async function editorInsertBoardObject(textarea) {
 // "specialised boxes and frames", which is nobody's idea of the word
 // "callout", and a menu you can only search by its internal vocabulary is a
 // menu you have to already know.
+//: **One row a command** (O6; `ai/slash.py`'s registry, `GET /chat/commands`),
+//: so this menu, `/help` and the route cannot drift (tests/test_slash.py).
+//: The list is fetched once, on the first "/"; until it arrives, or offline,
+//: one row sends `/help`. A command that takes words fills the box with its
+//: name and waits for them; one that takes none runs.
+const chatSlash = { list: null };
+function chatSlashRows(afterPress) {
+  if (chatSlash.list === null) {
+    chatSlash.list = [];
+    apiJson("/chat/commands").then((r) => { chatSlash.list = r.commands || []; if (editorMenuState.trigger) editorRefreshMenu(); }).catch(() => { chatSlash.list = null; });
+  }
+  if (!chatSlash.list.length) {
+    return [{ id: "chat-commands", group: "Commands", icon: "ph:terminal", label: "Commands", hint: "exact answers, no AI", keywords: ["command", "slash", "help"], run: afterPress(() => sendChatMessage("/help")) }];
+  }
+  const fill = (name) => {
+    const box = $("chat-input");
+    box.value = `/${name} `;
+    box.focus();
+  };
+  return chatSlash.list.map((c) => ({
+    id: `chat-cmd-${c.name}`, group: "Commands", icon: "ph:terminal", label: c.usage, hint: c.summary.replace(/\.$/, ""), keywords: [c.name, "command", "slash"],
+    run: afterPress(() => (/[[<]/.test(c.usage) ? fill(c.name) : sendChatMessage(`/${c.name}`))),
+  }));
+}
+
 //: **What "/" offers in the chat box.** Not the note commands: a callout box
 //: or a template pasted into a question is nobody's intent, and the document
 //: AI actions have nowhere to run here. Each of these presses a control the
@@ -622,6 +668,7 @@ function chatCommands() {
     { id: "chat-web", primary: true, group: "This message", icon: "ph:globe", label: "Web search", hint: "toggle", keywords: ["web", "search", "online", "internet"], run: press("web-search-toggle") },
     { id: "chat-plan", primary: true, group: "This message", icon: "ph:compass", label: "Plan first", hint: "toggle", keywords: ["plan", "steps", "think"], run: press("chat-plan") },
     { id: "chat-skills", primary: true, group: "This message", icon: "ph:lightning", label: "Skills", hint: "run a saved skill", keywords: ["skill", "skills", "run", "workflow"], run: press("chat-skills-btn") },
+    ...chatSlashRows(afterPress),
     { id: "chat-mode-agent", group: "Mode", icon: "ph:strategy", label: "Agent mode", hint: "let it act on the notebook", keywords: ["agent", "mode", "tools", "act"], run: mode("agent") },
     { id: "chat-mode-chat", group: "Mode", icon: "ph:sparkle", label: "Ask mode", hint: "answer only", keywords: ["ask", "chat", "mode", "answer"], run: mode("chat") },
   ];
@@ -1058,8 +1105,21 @@ function editorPositionMenu(textarea, retried = false) {
   menu.style.left = `${Math.round(x)}px`;
 }
 
+//: The box that keeps the focus names the listbox it types into, so a screen
+//: reader hears the menu open and each row the highlight lands on (WCAG 4.1.2).
+function editorLinkBox(surface, on) {
+  const box = surface?.el;
+  if (!box) return;
+  for (const name of ["aria-controls", "aria-haspopup", "aria-activedescendant"]) box.removeAttribute(name);
+  if (on) {
+    box.setAttribute("aria-controls", "editor-menu-list");
+    box.setAttribute("aria-haspopup", "listbox");
+  }
+}
+
 function editorCloseMenu(reason = "") {
   const { textarea, trigger } = editorMenuState;
+  editorLinkBox(textarea, false);
   editorMenuState.open = false;
   editorMenuState.textarea = null;
   editorMenuState.items = [];
@@ -1412,6 +1472,7 @@ function editorSetActive(position, reveal) {
     row.setAttribute("aria-selected", String(on));
     if (on) {
       list.setAttribute("aria-activedescendant", row.id);
+      editorMenuState.textarea?.el?.setAttribute("aria-activedescendant", row.id);
       if (reveal) editorRevealRow(list, row);
     }
   }
@@ -1514,6 +1575,7 @@ function editorOpenMenu(textarea, trigger) {
   if (typeof hideDocComplete === "function") hideDocComplete();
   editorMenuState.open = true;
   editorMenuState.textarea = textarea;
+  editorLinkBox(textarea, true);
   editorMenuState.trigger = trigger;
   editorMenuState.index = 0;
   const pane = $("editor-menu-preview");
@@ -1972,6 +2034,14 @@ function selectionBarSync() {
   //: other the moment an answer lands, and the one underneath is the one with
   //: Keep and Undo on it.
   if (inlineAiState.phase !== "idle") return selectionBarHide();
+  //: **A caret in a plain box asks nothing of the adapters.** `selectionchange`
+  //: fires when a composer takes focus, and resolving the surface fetched the
+  //: whole Library bundle there (`editorSurfaceFor`) just to find that nothing
+  //: was selected: the same long task `editorWarmSurfaceModule` waits out.
+  const raw = document.activeElement;
+  if (typeof asSurface !== "function" && raw && raw.selectionStart !== undefined && raw.selectionStart === raw.selectionEnd) {
+    return selectionBarHide();
+  }
   const active = editorSurfaceFor(document.activeElement);
   if (!isEditorSurface(active)) {
     return selectionBarHide();

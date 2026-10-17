@@ -617,11 +617,6 @@ select optgroup {
      nothing. `--space-6` keeps the shell readable as a shell without paying
      for it twice on every boundary. */
   --page-gutter: clamp(var(--space-3), 1.2vw, var(--space-6));
-  /* The reading measure: the widest a run of prose may be before the eye
-     loses the line. 54rem is what the chat bubble already capped itself at
-     (the recipe most used, so the winner); anything that shows paragraphs in
-     a wide column reads this rather than choosing its own. */
-  --measure: 54rem;
   /* **A document's page** (DOCUMENTS_PLAN 17a): the measure its prose is set
      in and the margin either side of it. The measure is in `ch` so it counts
      characters of whatever face the editor is drawing in: measured with

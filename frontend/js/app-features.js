@@ -21,7 +21,7 @@ function featureCatalog() {
     { group: "Capture & notes", items: [
       { name: "Capture a thought", desc: "Save anything; Atlas files it into a category and suggests tags.", reveal: "notes-capture" },
       { name: "Templates", desc: "Start a note from a prefilled shape (journal, recipe, meeting…).", reveal: "notes-template" },
-      { name: "Improve writing", desc: "Proofread, rewrite, or condense a note with AI before saving.", reveal: "notes-improve" },
+      { name: "Improve writing", desc: "Proofread a note before saving, no model needed; rewrite or condense it with AI.", reveal: "notes-improve" },
       // The writing room is a sub-tab of Notes and was in the palette but in
       // no catalogue row, which is the shape this audit was for: a surface
       // that shipped, got a command, and never got its line in the list of

@@ -325,3 +325,14 @@ def test_the_highlight_is_chosen_with_the_swatch_picker_from_the_tile_menu():
     assert "dashboard_quick_tints" in DASH
     assert "No highlight" in EDIT
     assert "Start something" not in _block(DASH, "function renderQuickLinks()", "\n}\n")
+
+
+def test_ticking_a_row_in_the_manager_does_not_scroll_the_list():
+    # INBOX 904 B13: an unticked row moves to "More commands", far below, and
+    # focusing it there scrolled the list 454px down; each further untick meant
+    # scrolling back up. Measured with scratchpad/ui-sweeps/quickmanage904.js.
+    manage = _block(EDIT, "function quickAccessManage(", "\n}\n")
+    change = manage[manage.index('box.addEventListener("change"'):]
+    change = change[: change.index("const lines =")]
+    assert "preventScroll: true" in change
+    assert "scroll.scrollTop = top" in change

@@ -272,11 +272,13 @@ def _engine_tags(session: Session, content: str, have: list[str], model: list[st
     the note has a word for them (WORLD_CLASS 23, decision 5: its reply to
     "prefer one of those" was the first two, whatever the note said, the
     Study bug), then the notebook's own (`ai/tagging.suggest`) filling the
-    rest, so a model that offers one tag no longer hides two good ones."""
+    rest, so a model that offers one tag no longer hides two good ones. Room
+    still left goes to a subject the note names that the notebook has never
+    tagged (`tagging.filled`, B80)."""
     from tessellate.ai import tagging
 
     own = tagging.suggest(session, content, have=have, exclude_entry_id=entry_id)
-    return tagging.merged(tagging.grounded(content, model), own, have)
+    return tagging.filled(session, content, tagging.merged(tagging.grounded(content, model), own, have), have)
 
 
 def _to_out_bulk(session: Session, entries: list) -> list[EntryOut]:
@@ -1564,10 +1566,30 @@ def reevaluate_entry(entry_id: int, session: Session = Depends(get_session)) -> 
     return {
         "entry": _to_out(session, entry, filed_by=filed_by).model_dump(),
         "recategorised_to": recategorised_to,
+        "suggested_categories": _other_categories(session, entry),
         "suggested_tags": suggested_tags,
         "suggested_tag_reasons": {} if getattr(entry, "is_private", False) else _tag_reasons(entry.content or "", suggested_tags),
         "suggested_links": suggested_links,
     }
+
+
+def _other_categories(session: Session, entry) -> list[dict]:  # noqa: ANN001
+    """The other places the note could go, with why (owner, 2026-10-17: Tag with
+    Atlas "didn't suggest alternate categories to make or move to"). Not from a
+    private note's text, like the tags."""
+    if getattr(entry, "is_private", False):
+        return []
+    try:
+        from tessellate.ai import lexical_filing
+
+        here = manager.category_name_for(session, entry)
+        found = lexical_filing.suggest_categories_explained(
+            session, manager.readable_content(entry) or "", exclude_entry_id=entry.id, limit=4,
+        )
+        return [{"name": name, "why": why} for name, why in found if name not in (here, manager.UNCATEGORISED)][:3]
+    except Exception:
+        logger.info("re-evaluation's category step failed", exc_info=True)
+        return []
 
 
 def _reevaluate_tags(session: Session, entry) -> list[str]:  # noqa: ANN001
@@ -1616,10 +1638,20 @@ def improve_writing(body: ImproveBody) -> dict:
             status_code=400, detail="Say what you want changed, then try again."
         )
     if not deps.get_ollama().is_running():
-        raise HTTPException(
-            status_code=503,
-            detail="The AI isn't available right now (Ollama doesn't seem to be running).",
-        )
+        #: O7 (INBOX 904 B33): proofreading is the app's own with no model;
+        #: rewording is writing, and says so.
+        if body.mode != "proofread":
+            raise HTTPException(
+                status_code=503,
+                detail="Rewording needs a model (Settings, Models). Proofread works without one.",
+            )
+        from tessellate.ai import proofread
+
+        improved, changes = proofread.proofread(text)
+        return {
+            "original": text, "improved": improved, "mode": body.mode, "by": "composer",
+            "said": proofread.said(changes, text), "truncated": proofread.covered(text) < len(text),
+        }
     try:
         improved = librarian.improve_writing(
             text,
@@ -3568,10 +3600,7 @@ def generate_entry_title(
     if not content.strip():
         raise HTTPException(status_code=400, detail="There's no text to title yet.")
     if not deps.get_ollama().is_running():
-        raise HTTPException(
-            status_code=503,
-            detail="The AI isn't available right now (Ollama doesn't seem to be running).",
-        )
+        return _composed_title(session, entry, content)
     try:
         title = librarian.generate_title(content, deps.get_model_manager(), deps.get_ollama())
     except OllamaError as exc:
@@ -3584,6 +3613,25 @@ def generate_entry_title(
     entry.content = manager.apply_title(content, title)
     manager.mark_edited(entry)
     manager.log_action(session, "edited", "entry", entry.id, f"generated title: {title}")
+    session.commit()
+    session.refresh(entry)
+    return _to_out(session, entry)
+
+
+def _composed_title(session: Session, entry, content: str) -> EntryOut:  # noqa: ANN001
+    """**A title with no model** (O7; INBOX 904 B33: "they arent ai actions
+    if the composer does them"): the note's own words, its first sentence cut
+    at seven words (`composer_voice.title_for`), never a word it does not
+    hold. The client says it was taken, not written."""
+    from tessellate.ai import composer_voice
+
+    title = composer_voice.title_for(manager.remove_title(content) or content)
+    if not title:
+        raise HTTPException(status_code=422, detail="There's no sentence here to take a title from yet.")
+    manager.record_revision(session, entry)
+    entry.content = manager.apply_title(content, title)
+    manager.mark_edited(entry)
+    manager.log_action(session, "edited", "entry", entry.id, f"title from its own words: {title}")
     session.commit()
     session.refresh(entry)
     return _to_out(session, entry)

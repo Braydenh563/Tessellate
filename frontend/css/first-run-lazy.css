@@ -39,3 +39,22 @@
   flex: 1 1 auto;
   min-width: 0;
 }
+/* The bell's copy of the steps (INBOX 904 B01): a list of quiet rows under
+   the row's title; a done step steps back, its tick in the ok colour. */
+.notif-start-steps {
+  display: grid;
+  gap: var(--space-1);
+  margin: var(--space-1) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.notif-start-step {
+  justify-content: flex-start;
+  max-width: 100%;
+}
+.notif-start-step.is-done {
+  color: var(--muted);
+}
+.notif-start-step.is-done .ph-lead {
+  color: var(--ok);
+}

@@ -43,7 +43,7 @@ const wbLibFolds = new Map();
 //: `libPress` where a tile was pressed, before the drag began;
 //: `libLastClick` is where the last click placed, for the next one to step
 //: off it.
-const wbLibState = { lib: null, libIcons: null, libIconShown: WB_ICON_PAGE, libLastClick: null, libDragging: null, libGrab: null, libPress: null, layersDrag: null, pagesDrag: null, sideRefreshTimer: 0 };
+const wbLibState = { libQuery: "", lib: null, libIcons: null, libIconShown: WB_ICON_PAGE, libLastClick: null, libDragging: null, libGrab: null, libPress: null, layersDrag: null, pagesDrag: null, sideRefreshTimer: 0 };
 
 function wbSideState() {
   const saved = prefs.json(WB_SIDE_KEY, {});
@@ -425,6 +425,13 @@ function wbRenderLibrary() {
   };
   const active = list.querySelector(".wb-lib-tile.is-active")?.dataset.ref;
   const hadFocus = list.contains(document.activeElement);
+  //: Where the list was scrolled to, put back at the end (INBOX 904 B26): the
+  //: redraw empties it, and a draw.io group opened low in the list redraws
+  //: when its shapes arrive, which sent the list to the top and the opened
+  //: group out of sight ("these dropdowns don't show anything"). A new search
+  //: starts at the top, as it did.
+  const top = query === wbLibState.libQuery ? list.scrollTop : 0;
+  wbLibState.libQuery = query;
   clearSkeletons(list);
   list.replaceChildren();
   const map = wbIsMap();
@@ -501,6 +508,7 @@ function wbRenderLibrary() {
   const keep = tiles.find((t) => t.dataset.ref === active) || tiles[0];
   //: A redraw under the keyboard (a star, a rename) keeps the reader's place.
   if (keep) wbLibSetActive(keep, { focus: hadFocus });
+  list.scrollTop = top;
   wbLibAnnounceCount(tiles.length, words.length > 0);
 }
 

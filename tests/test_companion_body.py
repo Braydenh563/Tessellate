@@ -190,7 +190,8 @@ def test_atlas_plays_its_own_three_acts() -> None:
     assert "Object.assign(NAME_MARK_BUDDY_ACTS, NMB_ATLAS_ACTS);" in AV
     # Only Atlas picks them, and each has its switch in What it does.
     assert "if (spec.atlas && !nmb.atlasLook) w = 0;" in AV
-    assert '["atlas", "Atlas juggles stars, reads its map and meditates", Object.keys(NMB_ATLAS_ACTS)],' in AV
+    # The same switch covers its tossed star (companion-menu.js's mind, B88c).
+    assert '["atlas", "Atlas juggles stars, reads its map and meditates", [...Object.keys(NMB_ATLAS_ACTS), "toss"]],' in AV
 
 
 def test_the_large_view_asks_for_an_act() -> None:

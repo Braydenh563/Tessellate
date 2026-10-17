@@ -414,7 +414,9 @@ async function wbOpenTemplateGallery(kind = "board") {
     inner.className = "wb-template-preview-inner";
     inner.append(caption, art);
     preview.replaceChildren(inner);
-    if (!nameField.dataset.typed) nameField.value = choice.ref ? choice.name : "";
+    //: A blank one is named for you too (INBOX 904 B17): the default name is
+    //: the value, selected when the dialog opens, so typing replaces it.
+    if (!nameField.dataset.typed) nameField.value = choice.ref ? choice.name : untitled[kind === "map" ? "map" : "board"];
   };
   const row = (choice) => {
     const li = document.createElement("li");
@@ -527,6 +529,7 @@ async function wbOpenTemplateGallery(kind = "board") {
   fill();
   dialog.showModal();
   nameField.focus();
+  nameField.select();
   return done;
 }
 

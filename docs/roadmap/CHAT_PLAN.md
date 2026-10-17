@@ -948,7 +948,6 @@ Entries are the owner's words, then the recommendation. Bugs come first, then de
 - "should we store recently retrieved website content for easy reretieval??"
   Recommendation: keep fetched page text with its fetch time and a re-fetch control, and show it in the sources list. No brief carries it; Brief 37 (web sources) is the nearest.
 
-
 ## The assistant catalogue, 2026-10-10
 
 The owner: "the app needs to be the best thing the world has seen without the
@@ -1868,6 +1867,7 @@ more"; volunteered insight "should be togglable and also dynamic".
     (B20 to B27). Each row is gated by decision 70's gold answers or its own
     measured gate.
 75. **Model up: it leads, the composer's facts are only labelled context (a test per surface); model down: the composer covers every act** (the owner, 2026-10-11, HANDOVER).
+76. **The engine is Atlas's assistant; Atlas is the model (the owner, 2026-10-17, INBOX 904 B10; amends decision 36).** With no model the composer says it is Atlas's assistant ("I'm Atlas's assistant"), never "I'm Atlas", and says that to talk to Atlas itself a model must be connected (Settings, Models). The capability rundown is composed, not stored (`capability.overview`): an opening that names who is speaking, three groups by default, one line for "briefly", six for "everything", what a model adds, one thing to try; each part has several phrasings and none repeats the last reply. A test message ("test", "testing 123", "is this thing on") is acknowledged as one (`intent.is_test`, social kind `test`); keys pressed at random ("asdkjhfgs", "jkjkjkjk") are said to be that, never taken for a nickname (`intent.is_mash`).
 
 | # | Idea | Gate |
 | --- | --- | --- |

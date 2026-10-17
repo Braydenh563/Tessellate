@@ -751,11 +751,13 @@ def test_the_nested_surfaces_are_concentric():
 #: tokens, the top bar at 44, docks dense. Literal heights outside the tokens
 #: file are a ratchet: these are the counts on 2026-10-10 (comments stripped),
 #: and a file may only go down. A new control height reads a token.
+#: 2026-10-17: one `min-height: 12rem` (an OCR workspace pane) moved with its
+#: rule from 07 to library-lazy.css for the boot CSS cap: 45 to 44 and 21 to 22.
 LITERAL_HEIGHTS = {
     "01-forms-settings.css": 22, "02-chat-graph.css": 34, "03-dashboard-widgets.css": 23,
     "04-chat-dock-appearance.css": 25, "05-sidebars-themes.css": 34, "06-timeline-dialogs.css": 24,
-    "07-whiteboard-misc.css": 45, "08-consistency.css": 46, "09-editor.css": 6, "10-responsive.css": 6,
-    "library-lazy.css": 21, "nav-history-lazy.css": 1,
+    "07-whiteboard-misc.css": 44, "08-consistency.css": 46, "09-editor.css": 6, "10-responsive.css": 6,
+    "library-lazy.css": 22, "nav-history-lazy.css": 1,
 }
 LITERAL_HEIGHT = re.compile(r"(?<![-\w])(?:min-|max-)?height:\s*[0-9.]+(?:rem|px)\s*[;}]")
 

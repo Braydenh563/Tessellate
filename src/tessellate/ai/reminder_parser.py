@@ -13,6 +13,7 @@ every relative reminder hours out.
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime, timedelta
 
 from tessellate.ai import recognise
@@ -41,6 +42,18 @@ def _tidy(text: str, phrase: str) -> str:
     return without[0].upper() + without[1:]
 
 
+def _with_clock(text: str, phrase: str, due: datetime, now: datetime) -> tuple[datetime, str]:
+    """"In 2 days at 3pm": the offset lands on a day and the time said beside
+    it is the time. Only a day-sized offset takes one ("in 20 minutes at 3pm"
+    is not a sentence)."""
+    if due - now < timedelta(days=1):
+        return due, phrase
+    for span in recognise.recognise(text, now=now, tense="future", bare_hours=True):
+        if span.rank == 0 and span.kind == "datetime" and phrase in span.text and len(span.text) > len(phrase):
+            return span.value, span.text
+    return due, phrase
+
+
 def parse_relative(text: str, now: datetime) -> dict | None:
     """A reminder from an "in ..." phrase ("in 20 minutes", "in 1.5 hours",
     "in 6 months"), with no model involved."""
@@ -52,6 +65,7 @@ def parse_relative(text: str, now: datetime) -> dict | None:
         if months is None:
             return None
         due, phrase = months
+    due, phrase = _with_clock(text, phrase, due, now)
     return {
         "text": _tidy(text, phrase)[:500],
         "due_at": due,
@@ -128,3 +142,69 @@ def parse_reminder(text: str, ollama, model_manager, now: datetime) -> dict:
         except ValueError:
             pass  # keep the fallback due time
     return result
+
+
+# --- the wording, through the composer (O8; INBOX 904 B03) -------------------------
+#
+# The owner, 2026-10-17: "Use composer to refine magic add on reminders like
+# with bad sentence grammar and spelling mistakes and intent etc". Measured
+# the same day on /reminders/parse with no model: "remnd me to cal mum tmrw at
+# 5pm" was saved as "Remnd me to cal mum tmrw" due today, the day unread;
+# "dont forget to water the plants every sunday" as "Dont forget to water
+# the plants"; "pay the rent friday plz" as "Pay the rent plz". The rule (what
+# a reminder's words are: the thing to do, said as a task) lives here; the
+# engine (the speller, the proofreader) is the composer's.
+
+#: How a sentence asks for a reminder, not what it is about.
+_ASKING = re.compile(
+    r"^(?:(?:can you |could you |please )?remind me (?:to |that |about )?|(?:do not|don'?t|dont) forget (?:to |that |about )?"
+    r"|remember (?:to |that )?|note to self:? ?|todo:? ?|to do:? ?)?"
+    r"(?:i (?:need|have|must|should|want|ought) to |i'?ve got to |i gotta |need to |have to |must )?",
+    re.I,
+)
+_PLEASE_WORDS = ("thank you", "thanks", "please", "pls", "plz", "ty")
+
+
+def _drop_please(said: str) -> str:
+    """A closing "please" / "thanks" off the end, with the comma or space
+    before it. A suffix check, not a regex over the whole line, so a long
+    run of spaces cannot make it slow (CodeQL)."""
+    tail = said.rstrip()
+    tail = tail[:-1] if tail.endswith(".") else tail
+    for word in _PLEASE_WORDS:
+        if tail.lower().endswith(word):
+            head = tail[: -len(word)]
+            if head and (head[-1] == "," or head[-1].isspace()):
+                return head.rstrip(", \t\n\r\f\v")
+    return said
+#: Real-word slips the speller cannot see: "too buy milk", "cal mum".
+_TOO_VERB = re.compile(
+    r"\btoo (buy|call|get|pay|go|do|see|make|take|send|book|finish|start|check|ask|pick|clean|cook|write|read|water|feed|"
+    r"walk|email|text|ring|visit|fix|order|return|renew|cancel|prepare|bring|collect|post|print|sign|submit)\b",
+    re.I,
+)
+_CAL = re.compile(r"\b([Cc])al (mum|mom|dad|nan|nana|gran|grandma|grandad|him|her|them|back|the|[A-Z]\w*)\b")
+
+
+def heard(text: str) -> str:
+    """The sentence as the reminder readers should read it: misspellings
+    and shorthand put right ("tmrw" is tomorrow, so the day is read)."""
+    from tessellate.ai import question_noise
+
+    tidy = question_noise.tidy(text or "") or (text or "")
+    return question_noise.repair(tidy) or tidy
+
+
+def worded(text: str) -> str:
+    """A reminder's words as a task: the asking taken off ("remind me to",
+    "don't forget to", "I need to"), the please, real-word slips and
+    misspellings put right, the first letter raised."""
+    from tessellate.ai import proofread
+
+    said = " ".join((text or "").split())
+    said = _TOO_VERB.sub(lambda m: f"to {m.group(1)}", said)
+    said = _ASKING.sub("", said)
+    said = _drop_please(said)
+    said = _CAL.sub(lambda m: f"{m.group(1)}all {m.group(2)}", said)
+    said = proofread.proofread(said)[0].strip(" ,;:")
+    return said[:1].upper() + said[1:] if said else (text or "")

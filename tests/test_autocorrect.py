@@ -181,3 +181,55 @@ def test_help_moves_with_it():
         assert words in topic["body"], words
     dictionary_help = INDEX[INDEX.index('id="doc-dictionary-help"') :][:2000]
     assert "Settings, General" in dictionary_help
+
+
+def test_a_click_on_the_underline_opens_a_menu_and_does_not_revert():
+    # INBOX 904 B09: "when I clicked the word that was underlined, it instantly
+    # reverted, it should show a little popup near the word for confirming or
+    # reverting". The click opens `openMenuAtPoint`'s menu at the word (Keep,
+    # Put back, Edit); only Put back reverts. Browser check:
+    # scratchpad/ui-sweeps/autocorrectmenu.js.
+    mark = SOURCE[SOURCE.index("function autocorrectMark(") :]
+    mark = mark[: mark.index("\n}\n")]
+    assert 'addEventListener("click", () => autocorrectMenu(entry))' in mark
+    assert 'addEventListener("click", () => autocorrectUndo(entry))' not in mark
+    menu = SOURCE[SOURCE.index("function autocorrectMenu(") :]
+    menu = menu[: menu.index("\n}\n")]
+    assert "openMenuAtPoint(" in menu
+    for row in ("Keep", "Put back", "Edit"):
+        assert row in menu, row
+    assert "autocorrectUndo(entry)" in menu and "autocorrectForget(entry)" in menu
+
+
+def test_hovering_the_underline_opens_the_same_menu():
+    # INBOX 904 B04: "the user can hover over it and confirm it, edit it, or
+    # rewind the change". A resting pointer opens the click's menu after a short
+    # beat; leaving first cancels it; a finger (no hover) still clicks.
+    mark = SOURCE[SOURCE.index("function autocorrectMark(") :]
+    mark = mark[: mark.index("\n}\n")]
+    assert '"pointerenter"' in mark and '"pointerleave"' in mark
+    assert 'pointerType !== "mouse"' in mark
+    assert "AUTOCORRECT_HOVER_MS" in SOURCE
+    assert "clearTimeout(entry.hover)" in SOURCE
+
+
+def test_the_document_editor_shows_the_same_underline_and_menu():
+    # B04 beyond the popup: the document editor corrected a word with only a
+    # toast (measured: no `.autocorrect-mark` after typing "teh "). documents.js
+    # hands its correction to autocorrect.js (`autocorrectShow`), which draws the
+    # underline over the CodeMirror view and offers Keep, Put back, Edit. Ctrl+Z
+    # stays the document's own (its history step), so the entry is `native`.
+    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    fn = docs[docs.index("function docAutocorrectAt(") :]
+    fn = fn[: fn.index("\n}\n")]
+    assert 'lazyScript("/js/autocorrect.js")' in fn
+    assert "autocorrectShow(" in fn
+    assert "function autocorrectShow(" in SOURCE
+    show = SOURCE[SOURCE.index("function autocorrectShow(") :]
+    show = show[: show.index("\n}\n")]
+    assert "native: true" in show
+    keys = SOURCE[SOURCE.index("Ctrl+Z or Backspace straight after") :]
+    assert "entry.native" in keys[: keys.index("document.addEventListener(\"focusout\"")]
+    # A word put back in the menu is not corrected again in the document.
+    assert "autocorrectRefused" in fn
+    assert "autocorrectShow(box, start," in fn

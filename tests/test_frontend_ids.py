@@ -273,10 +273,9 @@ def test_every_appearance_setting_has_a_default():
 #: Adding an AI control means adding it here and marking it in the markup. A
 #: control that degrades without a model does NOT belong here: Ask falls back
 #: to the search results beside it and says so, and the meeting note's Save
-#: summarises when it can and files the note either way, so neither is gated.
+#: summarises when it can and files the note either way, so neither is gated;
+#: nor is Improve, which proofreads with no model (O7) and says rewording needs one.
 MODEL_GATED_CONTROLS = {
-    "improve-btn": "/entries/improve",
-    "improve-retry": "/entries/improve",
     # The desk streams its draft, so the gate is the streaming route.
     "draft-compose": "/drafts/compose/stream",
     "draft-title": "/drafts/title",

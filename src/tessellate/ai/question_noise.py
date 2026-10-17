@@ -142,7 +142,8 @@ SLANG.update({
     "dident": "did not", "wudnt": "would not", "cudnt": "could not", "shudnt": "should not",
     "havnt": "have not", "cnt": "cannot", "dnt": "do not", "whatre": "what are", "tdy": "today",
     "tday": "today", "tmmrw": "tomorrow", "tomorow": "tomorrow", "tommorow": "tomorrow",
-    "tomorro": "tomorrow", "tomoz": "tomorrow", "tmz": "tomorrow", "2mro": "tomorrow", "tonyt": "tonight",
+    "thrity": "thirty", "thirtey": "thirty", "thirthy": "thirty", "fiften": "fifteen", "fithteen": "fifteen",
+    "twnty": "twenty", "tomorro": "tomorrow", "tomoz": "tomorrow", "tmz": "tomorrow", "2mro": "tomorrow", "tonyt": "tonight",
     "tnite": "tonight", "tngt": "tonight", "yest": "yesterday", "yesterdy": "yesterday",
     "yestday": "yesterday", "morn": "morning", "mornin": "morning", "evng": "evening", "aftn": "afternoon",
     "arvo": "afternoon", "wkly": "weekly", "mthly": "monthly", "mth": "month", "mths": "months",
@@ -2250,6 +2251,11 @@ def _repair_by_speller(word: str, tail: str, after: str, out: list[str], report,
     read = spelling.fix(
         low, after=after.lower(), before=out[-1].strip("?!.,:;") if out else "", known=known, distance=distance,
     )
+    #: A capitalised word read as a name the lists hold is a name of the
+    #: person's own, spelled their way: "Cristopher called" is not
+    #: "Kristopher called" (Brief 90's list, O3).
+    if read and word[:1].isupper() and read[0] not in spelling._common():
+        read = None
     if read:
         chosen = read[0].capitalize() if word[0].isupper() else read[0]
         if report is not None and read[1]:
@@ -2274,6 +2280,70 @@ def _at_asking_place(before: list[str]) -> bool:
         return True
     last = before[-1].lower().strip("?!.,:;")
     return last in ("how", "what", "when", "where", "who", "why", "which")
+
+
+# --- 2b. repair guided by a router ------------------------------------------------
+#
+# O3 (BACKLOG "Type tolerance everywhere": "every registered command phrase
+# with one keyboard-neighbour slip, one swap, one dropped and one doubled
+# letter must route as the clean phrase does"). Measured 2026-10-17: 283 of
+# 339 such slips routed as the clean phrase. The speller reads a slip as the
+# nearest everyday word ("tmie" as "the", "remive" as "remind", "fid" as
+# "did") or leaves a real word alone ("form", "concert"), because it cannot
+# know which word a router needs. Here the router decides: a word one slip
+# from a word the router reads is read as that word only when the router
+# then takes the sentence and did not take it as typed.
+
+#: Words a command reads besides the act registry's own: what a note is
+#: called and joined by. A real word ("form", "nore") is read as one of these
+#: only, never as a content word, so "a form about taxes" is never a command.
+_COMMAND_GLUE = frozenset("note notes from about into to with the my called named".split())
+
+
+def router_words() -> frozenset[str]:
+    """Every word the act registry says a command with: verbs, labels,
+    examples and the palette's stems, and the glue between them."""
+    if _ROUTER_WORDS:
+        return _ROUTER_WORDS[0]
+    words = set(_COMMAND_GLUE)
+    for act in act_registry.ACTS.values():
+        for text in (act.verb, act.intent, act.label, act.example, act.stem):
+            words.update(w for w in re.findall(r"[a-z]+", text.lower()) if len(w) >= 2)
+    _ROUTER_WORDS.append(frozenset(words))
+    return _ROUTER_WORDS[0]
+
+
+_ROUTER_WORDS: list[frozenset[str]] = []
+
+
+def guided(text: str, accepts, vocabulary=None, *, real_to=_COMMAND_GLUE, known=frozenset()) -> str | None:  # noqa: ANN001
+    """`text` with one word read as the `vocabulary` word it is one slip from
+    (`router_words` by default), when `accepts` takes that reading; None when
+    no such reading exists. A real word is read only as a word of `real_to`
+    (None: any), and a word of the person's own (`known`) never."""
+    vocabulary = router_words() if vocabulary is None else vocabulary
+    tokens = text.split()
+    for i, token in enumerate(tokens):
+        core = token.rstrip("?!.,:;")
+        low = core.lower()
+        if len(low) < 3 or not low.isalpha() or low in vocabulary or low in known or (core[:1].isupper() and i):
+            continue
+        pool = vocabulary if real_to is None or not spelling.is_word(low) else vocabulary & real_to
+        for word in _one_slip_from(low, pool):
+            reading = " ".join([*tokens[:i], word + token[len(core):], *tokens[i + 1:]])
+            if accepts(reading):
+                return reading
+    return None
+
+
+def _one_slip_from(low: str, pool) -> list[str]:  # noqa: ANN001
+    """The words of `pool` one slip from `low`, nearest first. One slip
+    changes at most two letters of the set, so the weighted distance is
+    measured only for words that pass that (13 ms a question without it,
+    measured on five ordinary questions)."""
+    letters = set(low)
+    near = [v for v in pool if abs(len(v) - len(low)) <= 1 and len(letters ^ set(v)) <= 2]
+    return [word for gap, word in sorted((distance(low, v), v) for v in near) if gap <= 1.0]
 
 
 # --- 3. meaning as the fallback --------------------------------------------------

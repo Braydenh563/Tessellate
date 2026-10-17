@@ -327,7 +327,7 @@ user moves them, they should settle into place in that general position".
 INBOX 802's hold (a dropped note held at the drop until the layout rested,
 then let go into a map with no heat left) read as a pin. Now the drag holds
 the note under the pointer only while dragging; on release `fx`/`fy` clear
-and the layout is left at a low heat (`RELEASE_ALPHA` 0.02, graph-worker.js),
+and the layout is left at a low heat (`RELEASE_ALPHA` 0.016, graph-worker.js),
 so the note eases into place near the drop (a 360-unit drop: 58 from it at
 rest, `test_graph_feel_100.py`). Double-click toggles a real pin with its
 held ring; Shift and drag still pins; Unpin all clears only real pins; a

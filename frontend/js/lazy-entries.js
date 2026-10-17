@@ -20,5 +20,5 @@ installStandIns({
   libraryPick: ["pickLibraryItemDialog"],
   statusPanels: ["renderSearchEngineHealth", "emailSupportReport", "renderBackendPicker", "openUndoHistoryMenu"],
   featureModelSheet: ["openFeatureModelSheet"],
-  dashLazy: ["renderOrphanNotesWidget", "renderNightWidget", "renderDayDigest"],
+  dashLazy: ["renderOrphanNotesWidget", "renderNightWidget", "renderDayDigest", "dashPatternBit"],
 });

@@ -1000,6 +1000,10 @@ def _status_row(extra: Extra) -> dict:
         #: can read, it is noise under a green "Installed".
         "caveat": "" if extra.id == "ocr" and is_installed(extra) else extra.caveat,
         "unavailable": unavailable_reason(extra),
+        #: Whether Settings may offer Remove: a packaged build is its own
+        #: desktop window, so that one is kept (INBOX 904 B27).
+        "removable": not removal_locked(extra),
+        "locked": removal_locked(extra),
         "packages": list(extra.packages),
         "kind": extra.kind,
         "licence": extra.licence,
@@ -1109,6 +1113,19 @@ def bulk_status() -> dict:
 
 def bulk() -> BulkState:
     return _bulk
+
+
+def removal_locked(extra: Extra) -> str:
+    """Why this extra cannot be removed here, or "".
+
+    The packaged app (`sys.frozen`) is its own desktop window: "I shouldn't be
+    able to uninstall the desktop view in the packaged windows app" (INBOX 904
+    B27). Removing pywebview there leaves an app with no way to open. A source
+    install runs in a browser tab and may take it out.
+    """
+    if extra.id == "desktop" and getattr(sys, "frozen", False):
+        return "The desktop window is how the packaged app opens, so it stays. Reinstall it if it misbehaves."
+    return ""
 
 
 def unavailable_reason(extra: Extra) -> str:
@@ -1707,7 +1724,7 @@ def remove(extra_id: str) -> tuple[bool, str]:
     extra = EXTRAS_BY_ID.get(extra_id)
     if extra is None:
         return False, "No such extra."
-    blocked = _loaded_in_process_reason(extra)
+    blocked = removal_locked(extra) or _loaded_in_process_reason(extra)
     if blocked:
         return False, blocked
     with _lock:
@@ -1803,6 +1820,13 @@ def _run_bulk() -> None:
         _finish_bulk()
 
 
+def _uninstall_skip(extra, installed: bool) -> str:  # noqa: ANN001
+    """Why a bulk uninstall passes this package by, or "" when it goes ahead."""
+    if not installed:
+        return "Not installed, so there was nothing to remove."
+    return removal_locked(extra) or ""
+
+
 def _run_bulk_item(item: dict) -> None:
     """One package of a bulk action, with the guards its own button has."""
     extra = EXTRAS_BY_ID[item["id"]]
@@ -1810,9 +1834,9 @@ def _run_bulk_item(item: dict) -> None:
     installed = is_installed(extra)
     reinstall = action == "reinstall" and installed
     if action == "uninstall":
-        if not installed:
-            item["outcome"] = "skipped"
-            item["message"] = "Not installed, so there was nothing to remove."
+        skipped = _uninstall_skip(extra, installed)
+        if skipped:
+            item["outcome"], item["message"] = "skipped", skipped
             return
         refused = _loaded_in_process_reason(extra)
     else:

@@ -3391,7 +3391,8 @@ const NMB_ACTIVITIES = [
   ["legs", "Swing its legs over an edge", ["dangle", "kick"]],
   ["hang", "Hanging tricks", ["swing", "sloth", "onehand", "feet"]],
   ["stances", "Stances at rest", Object.keys(NMB_STANCES)],
-  ["atlas", "Atlas juggles stars, reads its map and meditates", Object.keys(NMB_ATLAS_ACTS)],
+  ["atlas", "Atlas juggles stars, reads its map and meditates", [...Object.keys(NMB_ATLAS_ACTS), "toss"]],
+  ["think", "Stop to think, or sigh", ["ponder", "sigh"]],
   ["lie", "Lie down for a nap", ["lie"]],
   ["read", "Read a book", ["read"]],
   ["beanbag", "Sink into a beanbag", ["beanbag"]],
@@ -3434,125 +3435,6 @@ function nameMarkBuddyEmote(kind) {
     { opacity: 1, transform: "translate(2px, -7px) scale(1)", offset: 0.8 },
     { opacity: 0, transform: "translate(3px, -10px) scale(0.95)" },
   ], { duration: 1600, easing: "ease-out" });
-}
-
-//: **Saved companions**, the custom themes' pattern for the companion:
-//: every setting that makes it who it is, kept under a name in this
-//: browser, applied in one press, renamed (its name back in the field, then
-//: saved) and deleted. At most twelve.
-const NMB_PRESET_KEYS = ["avatar-buddy", "atlas-look", "face-look", "avatar-buddy-custom", "avatar-buddy-size", "avatar-buddy-actions", "avatar-buddy-acts-off", "avatar-buddy-motion"];
-const NMB_PRESET_MAX = 12;
-let nmbPresetRenaming = "";
-function nameMarkBuddyPresets() {
-  try {
-    const list = prefs.json("avatar-buddy-presets", []);
-    return Array.isArray(list) ? list : [];
-  } catch (e) {
-    return [];
-  }
-}
-function nameMarkBuddyKeepPresets(list) {
-  try {
-    prefs.set("avatar-buddy-presets", JSON.stringify(list));
-  } catch (e) {
-    // Not kept this time.
-  }
-  mountBuddyPresets();
-}
-function nameMarkBuddySavePreset() {
-  const input = document.getElementById("avatar-buddy-preset-name");
-  const name = (input?.value || "").trim().slice(0, 30);
-  if (!name) {
-    toast("Give the companion a name first.", "info");
-    input?.focus();
-    return;
-  }
-  const values = {};
-  for (const key of NMB_PRESET_KEYS) {
-    const v = prefs.get(key, null);
-    if (v !== null) values[key] = v;
-  }
-  const others = nameMarkBuddyPresets().filter((p) => p.name !== name && p.name !== nmbPresetRenaming);
-  if (others.length >= NMB_PRESET_MAX) {
-    toast(`You can keep ${NMB_PRESET_MAX} saved companions: delete one first.`, "info");
-    return;
-  }
-  nmbPresetRenaming = "";
-  input.value = "";
-  nameMarkBuddyKeepPresets([...others, { name, values }]);
-  toast(`Saved “${name}”.`);
-}
-function nameMarkBuddyApplyPreset(preset) {
-  for (const key of NMB_PRESET_KEYS) {
-    if (preset.values?.[key] !== undefined) prefs.set(key, preset.values[key]);
-    else prefs.remove(key);
-  }
-  nameMarkBuddyCustomCache = null;
-  const acts = document.getElementById("avatar-buddy-activities");
-  if (acts) acts.replaceChildren();
-  if (typeof applyAppearance === "function") applyAppearance();
-  if (typeof renderAppearance === "function") renderAppearance();
-  const buddy = document.getElementById("nm-buddy");
-  if (buddy) {
-    delete buddy.dataset.seed;
-    nameMarkBuddySetSize(nameMarkBuddyScaleSaved(), false);
-    nameMarkBuddyToggles(buddy);
-  }
-  syncNameMarkBuddy();
-  mountBuddyActivities();
-  toast(`Applied “${preset.name}”.`);
-}
-function mountBuddyPresets() {
-  const box = document.getElementById("avatar-buddy-presets");
-  if (!box) return;
-  box.replaceChildren();
-  const list = nameMarkBuddyPresets();
-  if (!list.length) {
-    const empty = document.createElement("p");
-    empty.className = "muted";
-    empty.textContent = "Nothing saved yet: set the companion up how you like it, then save it here.";
-    box.appendChild(empty);
-  }
-  for (const preset of list) {
-    const row = document.createElement("div");
-    row.className = "row avatar-buddy-preset";
-    const apply = document.createElement("button");
-    apply.type = "button";
-    apply.className = "small";
-    apply.textContent = preset.name;
-    apply.title = `Apply “${preset.name}”`;
-    apply.addEventListener("click", () => nameMarkBuddyApplyPreset(preset));
-    const rename = document.createElement("button");
-    rename.type = "button";
-    rename.className = "ghost small";
-    rename.textContent = "Rename";
-    rename.addEventListener("click", () => {
-      const input = document.getElementById("avatar-buddy-preset-name");
-      nmbPresetRenaming = preset.name;
-      input.value = preset.name;
-      input.focus();
-      input.select();
-    });
-    const remove = document.createElement("button");
-    remove.type = "button";
-    remove.className = "ghost small";
-    remove.textContent = "Delete";
-    remove.setAttribute("aria-label", `Delete the saved companion “${preset.name}”`);
-    remove.addEventListener("click", () => {
-      nameMarkBuddyKeepPresets(nameMarkBuddyPresets().filter((p) => p.name !== preset.name));
-      toast(`Deleted “${preset.name}”.`);
-    });
-    row.append(apply, rename, remove);
-    box.appendChild(row);
-  }
-  const save = document.getElementById("avatar-buddy-preset-save");
-  if (save && !save.dataset.wired) {
-    save.dataset.wired = "1";
-    save.addEventListener("click", nameMarkBuddySavePreset);
-    document.getElementById("avatar-buddy-preset-name")?.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") nameMarkBuddySavePreset();
-    });
-  }
 }
 
 function mountBuddyActivities() {
@@ -4741,9 +4623,11 @@ function nameMarkBuddyDrop(x, y) {
       if (!fall || d < fall.d) fall = { kind: "yours", ...spot, edge, d, falls: true };
     }
   }
-  //: Nothing under it to stand on: it floats where it was let go, stepped
-  //: aside if that is over a control.
-  return fall || nameMarkBuddyStepAside({ kind: "yours", pose: "float", legs: "", x, y }, obstacles);
+  if (fall) return fall;
+  //: Nothing under it: it floats, stepped aside from a control; one it cannot
+  //: clear (chat's mode switch) gets the nearest good perch instead.
+  const open = nameMarkBuddyStepAside({ kind: "yours", pose: "float", legs: "", x, y }, obstacles);
+  return nameMarkBuddyHits(open.x, open.y, "float", obstacles) ? nameMarkBuddyChoose(tab, obstacles, [x, y], 4) || open : open;
 }
 
 //: **Where it is drawn: one `transform` on the host.** Its `left` and
@@ -4761,6 +4645,18 @@ function nameMarkBuddyPut(buddy, x, y) {
   nmb.ly = r ? y - r.top + r.el.scrollTop : y;
   buddy.style.transform = `translate(${nmb.lx}px, ${nmb.ly}px)`;
   if (nmb.menuPlace && nameMarkBuddyMenuOpen()) nmb.menuPlace();
+}
+
+//: The lean of a carried or flying companion, against the pull: the body by
+//: 0.4 deg a unit and each leg by 1 deg, 0 clearing it. Written to the
+//: elements that wear it, not as a custom property on #nm-buddy: an inherited
+//: property set every frame restyled the whole drawing, and a thrown Atlas ran
+//: at 29 frames in 1.6 s against 92 without it (test_companion_motion.py).
+function nameMarkBuddySway(buddy, sway) {
+  const lean = Math.round(sway * 10) / 10;
+  for (const el of buddy.querySelectorAll(".nm-figure:not(.nmb-fig-leaving), .nmb-leg")) {
+    el.style.rotate = lean ? `${el.classList.contains("nmb-leg") ? lean : lean * 0.4}deg` : "";
+  }
 }
 
 //: **Leaves with its panel, like the page does** (INBOX 426 x, the owner:
@@ -5004,6 +4900,7 @@ function nameMarkBuddyGlue(spot, x, y) {
   if (!box || (!box.width && !box.height)) {
     nmb.glue = null;
     nameMarkBuddyRide(null, x, y);
+    nameMarkBuddyWatch();
     return;
   }
   const scroller = nameMarkBuddyScroller(el);
@@ -5393,8 +5290,14 @@ document.addEventListener("visibilitychange", () => {
 function nameMarkBuddyWatch() {
   const g = nmb.glue;
   if (typeof ResizeObserver === "function") {
-    if (!nmbFollow.observer) nmbFollow.observer = new ResizeObserver(() => nameMarkBuddyKeepUp());
+    //: One observer. Following a panel it keeps the follow loop up; on a bar,
+    //: which holds nothing to follow, its going (hidden, emptied, folded away,
+    //: with no scroll, resize or class change to say so) is a look at the
+    //: perch now. A resize observer costs nothing while it rests.
+    if (!nmbFollow.observer) nmbFollow.observer = new ResizeObserver(() => (nmb.glue ? nameMarkBuddyKeepUp() : queueNameMarkBuddyCheck()));
     nmbFollow.observer.disconnect();
+    const bar = !g && ["bar", "hang"].includes(nmb.spot?.edge?.kind) ? nmb.spot.edge.el : null;
+    if (bar) nmbFollow.observer.observe(bar);
     if (g) {
       nmbFollow.observer.observe(g.el);
       const page = g.el.closest(".tab-page") || document.getElementById(`tab-${nameMarkBuddyTab()}`);
@@ -5416,6 +5319,26 @@ function nameMarkBuddyWatch() {
     if (`${nmb.x},${nmb.y}` !== was) queueNameMarkBuddyCheck();
   }, 700) : 0;
 }
+//: **An area that only began to scroll after the perch** (B29's neighbour,
+//: INBOX 904 B35: "doesn't scroll with what it is perched on if the thing it
+//: is perched on is scrollable sometimes on the dashboard"). The area is
+//: chosen once, when the companion lands (`nameMarkBuddyGlue`), and the
+//: dashboard fills in after first paint: a perch made while it had nothing
+//: to scroll chose none, so the companion was carried by script, 71px off its
+//: panel mid-scroll and 2037px off once settled (companion1017-dash3.js).
+//: The first scroll of the area that is now the panel's nearest one adopts it
+//: and rides from where the panel is this frame.
+function nameMarkBuddyAdoptScroller(g, target) {
+  if (!(target instanceof Element) || nmb.ride?.el === target || nmb.visit) return false;
+  if (nameMarkBuddyScroller(g.el) !== target || !nameMarkBuddyScrollsWith(g.el, target)) return false;
+  const box = g.el.getBoundingClientRect();
+  const x = Math.round(box.left + g.dx);
+  const y = Math.round(box.top + g.dy);
+  g.scroller = target;
+  nameMarkBuddyGlueBand(g, y);
+  nameMarkBuddyRide(target, x, y);
+  return Boolean(nmb.ride);
+}
 document.addEventListener("scroll", (event) => {
   //: Any scroll, glued or not: the checks and its idle motion wait for the
   //: page to be still (`nameMarkBuddyCheck`, `nameMarkBuddyTempo`).
@@ -5431,6 +5354,7 @@ document.addEventListener("scroll", (event) => {
     nmb.y = nmb.ride.top + nmb.ly - target.scrollTop;
     return;
   }
+  if (nameMarkBuddyAdoptScroller(g, target)) return;
   //: In the scroll's own frame, so it rides with the panel rather than a
   //: frame behind it.
   nmbFollow.scrollAt = performance.now();
@@ -6118,7 +6042,7 @@ function nameMarkBuddyThrow(buddy, vx, vy) {
       if (nmb.flight !== flight) return;
       nmb.flight = null;
       buddy.classList.remove("nm-buddy-dragging");
-      buddy.style.setProperty("--nmb-sway", "0");
+      nameMarkBuddySway(buddy, 0);
       if (!char) return;
       //: Stopped while still turned (the cap, a grab): eased upright, the
       //: short way, never snapped.
@@ -6142,7 +6066,7 @@ function nameMarkBuddyThrow(buddy, vx, vy) {
     }
     nameMarkBuddyPut(buddy, Math.round(s.x), Math.round(s.y));
     if (char) char.style.rotate = `${s.rot.toFixed(1)}deg`;
-    buddy.style.setProperty("--nmb-sway", Math.max(-28, Math.min(28, -s.vx * 10)).toFixed(1));
+    nameMarkBuddySway(buddy, Math.max(-28, Math.min(28, -s.vx * 10)));
     if (hit > 0.5 && char && typeof char.animate === "function") {
       //: Squashed by how hard it came down.
       const a = Math.min(0.22, hit * 0.09);
@@ -6401,7 +6325,15 @@ function placeNameMarkBuddy(buddy = document.getElementById("nm-buddy"), instant
 //: what is drawn on a board, a map or the graph is never one.
 const NMB_CANVAS = "#whiteboard-container, #graph-canvas, #graph-svg, #graph-pane-canvas, canvas";
 function nameMarkBuddySupported() {
-  if (!["sit", "stand", "hang"].includes(nmb.pose) || nmb.legs === "peek" || nmb.spot?.side || nmb.pinned) return true;
+  if (nmb.pinned) return true;
+  //: Peeking over a bar or leaning on a side holds on to its edge, which
+  //: can still go (a status bar emptied on a phone is `visibility: hidden`):
+  //: then it is in the air, as any other perch lost.
+  if (nmb.legs === "peek" || nmb.spot?.side) {
+    const held = nmb.spot?.edge?.el;
+    return !held || Boolean(held.isConnected && nameMarkBuddyPerchShown(held));
+  }
+  if (!["sit", "stand", "hang"].includes(nmb.pose)) return true;
   const buddy = document.getElementById("nm-buddy");
   if (!buddy) return true;
   //: Where it is drawn: the host is not scaled (its face is, about this
@@ -6479,6 +6411,26 @@ function nameMarkBuddyLockSync() {
   const lock = document.getElementById("lock-overlay");
   if (band) band.style.display = lock && !lock.classList.contains("hidden") && lock.dataset.mode !== "prompt" ? "none" : "";
 }
+//: `data-cover` (read by the CSS) moves it off a modal or the lock screen. A
+//: document-wide `:has()` did this and cost 4.7 of each 16.7 ms drag frame.
+const NMB_COVER_SEL = "dialog, .modal-overlay, .lock-overlay";
+function nameMarkBuddyCoverCheck() {
+  const buddy = document.getElementById("nm-buddy");
+  if (!buddy) return;
+  const lock = document.querySelector("#lock-overlay:not(.hidden)");
+  const cover = lock ? "lock" : document.querySelector("dialog[open]:modal, .modal-overlay:not(.hidden), .lock-overlay:not(.hidden)") ? "modal" : "";
+  if (cover) buddy.dataset.cover = cover;
+  else delete buddy.dataset.cover;
+}
+function nameMarkBuddyCoverWatch(records) {
+  const hit = (n) => n.nodeType === 1 && (n.matches(NMB_COVER_SEL) || n.querySelector(NMB_COVER_SEL));
+  const touched = records.some((m) => (m.type === "attributes" ? m.target.matches(NMB_COVER_SEL) : [...m.addedNodes, ...m.removedNodes].some(hit)));
+  //: Read on the perch check's own frame (`queueNameMarkBuddyCheck`).
+  if (touched) {
+    nmb.coverDirty = true;
+    queueNameMarkBuddyCheck();
+  }
+}
 //: `typeof MutationObserver`: tests/test_atlas_shape.py loads this file in a node vm with a bare `document`.
 if (typeof MutationObserver === "function" && document.getElementById("lock-overlay")) {
   new MutationObserver(nameMarkBuddyLockSync).observe(document.getElementById("lock-overlay"), { attributes: true, attributeFilter: ["class", "data-mode"] });
@@ -6553,7 +6505,15 @@ function nameMarkBuddyCheck() {
   //: the way, not a perch.
   //: Once in three seconds at most, so a perch this cannot see from here is
   //: never a loop.
-  if (Date.now() - (nmb.unheldAt || 0) > 3000 && ![nmb.anim, nmb.hopAnim, nmb.glideAnim].some((a) => a?.playState === "running") && !nameMarkBuddySupported()) {
+  const wait = 3000 - (Date.now() - (nmb.unheldAt || 0));
+  if (![nmb.anim, nmb.hopAnim, nmb.glideAnim].some((a) => a?.playState === "running") && !nameMarkBuddySupported()) {
+    //: Lost inside the three seconds: looked at again when they are up, not
+    //: left in the air until the next idle look.
+    if (wait > 0) {
+      clearTimeout(nmbFollow.recheck);
+      nmbFollow.recheck = setTimeout(queueNameMarkBuddyCheck, wait + 50);
+      return;
+    }
     nmb.unheldAt = Date.now();
     nmb.moves = (nmb.moves || 0) + 1;
     nmb.moveWhy = "its perch went";
@@ -6576,6 +6536,10 @@ function queueNameMarkBuddyCheck() {
   if (nmb.checkFrame || !document.getElementById("nm-buddy")) return;
   nmb.checkFrame = requestAnimationFrame(() => {
     nmb.checkFrame = 0;
+    if (nmb.coverDirty) {
+      nmb.coverDirty = false;
+      nameMarkBuddyCoverCheck();
+    }
     nameMarkBuddyCheck();
   });
 }
@@ -6646,7 +6610,7 @@ function nameMarkBuddyViewChanged() {
   queueNameMarkBuddyCheck();
   nameMarkBuddyQueuePlace();
 }
-if (typeof MutationObserver === "function") {
+if (globalThis.MutationObserver) {
   const views = new MutationObserver((records) => {
     for (const r of records) {
       const el = r.target;
@@ -7221,6 +7185,7 @@ function nameMarkBuddyAct(act, ms) {
   nameMarkBuddyBlend(buddy, () => buddy.classList.add(`nmb-act-${act}`), NMB_BLEND_IN_MS);
   //: A new act starts with its arms (INBOX 469): a small lift and back.
   if (act !== was && !NMB_FACELESS_ACTS.includes(act) && !NMB_RESTING_ACTS.has(act) && !nameMarkBuddyStill()) nameMarkBuddyLimbs(buddy, "cue", 420);
+  nmb.mind?.start(buddy, act, ms || spec?.ms || 1200);
   nmb.act = act;
   nmb.lastAct = act;
   //: The idle pool's memory (Brief 34 step 5, ledger 678 and 679): the last
@@ -7232,7 +7197,7 @@ function nameMarkBuddyAct(act, ms) {
   if (face) nameMarkBuddyExpress(face, spec?.ms || 2000);
   if (spec?.cool) nmb.cool[act] = Date.now() + spec.cool;
   nmb.timer = setTimeout(() => {
-    const next = act === "land" && nmb.afterLand ? "look" : "";
+    const next = act === "land" && nmb.afterLand ? "look" : nmb.mind?.after(buddy, act) || "";
     if (act === "land") nmb.afterLand = false;
     nameMarkBuddyAct(next);
   }, (ms || spec?.ms || 1200) * (act === "land" ? 1 : 1 + Math.random() * 0.3));
@@ -7507,7 +7472,8 @@ function nameMarkBuddySchedule() {
   //: on the compositor and nothing runs here. **In its large view, every 2.5
   //: to 6 seconds** (INBOX 443, the owner: "needs more life and not just a
   //: statue"): it is being watched, and that is the place for it to play.
-  nmb.timer = setTimeout(nameMarkBuddyTick, nmb.visit ? 2500 + Math.random() * 3500 : 20000 + Math.random() * 40000);
+  //: Its mind (companion-menu.js, `NMB_MIND.nextIn`) places the wait in that range.
+  nmb.timer = setTimeout(nameMarkBuddyTick, nmb.visit ? 2500 + Math.random() * 3500 : nmb.mind?.nextIn() || 20000 + Math.random() * 40000);
 }
 
 //: The weighted pick: every behaviour that suits where it is and is off
@@ -7528,6 +7494,8 @@ function nameMarkBuddyDecide(now = Date.now(), hour = new Date().getHours()) {
   const calm = !!nmb.visit || nameMarkBuddyCalmAllows(now, nmb.loudAt || 0, nmb.loudGap || NMB_LOUD_GAP_MS, nmb.keyAt || 0, nameMarkBuddyScrollAgo());
   //: Which Atlas it is, for its stances (none for any other companion).
   nmb.atlasLook = document.querySelector("#nm-buddy svg.atl-layer")?.dataset.atlasLook || "";
+  //: What you are doing (`NMB_MIND.drive`, companion-menu.js), once loaded.
+  const drive = nmb.mind?.drive(now, idle) || {};
   const pool = [];
   let total = 0;
   for (const [act, spec] of Object.entries(NAME_MARK_BUDDY_ACTS)) {
@@ -7570,6 +7538,7 @@ function nameMarkBuddyDecide(now = Date.now(), hour = new Date().getHours()) {
     if (stance && (!nmb.atlasLook || nmb.atlasLook !== stance.look)) w = 0;
     if (spec.atlas && !nmb.atlasLook) w = 0;
     if (!NMB_QUIET_ACTS.includes(act)) w *= { off: 0, fewer: nmb.visit ? 1 : 0.33, normal: 1 }[actions] ?? 0.33;
+    w *= drive[act] ?? 1;
     if (w > 0) {
       pool.push([act, w]);
       total += w;
@@ -7660,7 +7629,10 @@ function nameMarkBuddyTick() {
   else if (!nmb.act && nameMarkBuddyHasAtlas(buddy) && !/^(lie|curl)/.test(buddy.dataset.pose || "") && Math.random() < 0.45) {
     buddy.dataset.atlasVariant = String(nameMarkBuddyPickVariant(3, Number(buddy.dataset.atlasVariant ?? -1)));
   }
-  nameMarkBuddyAct(nameMarkBuddyDecide());
+  //: Its mind is fetched at the first tick; once here it may lead into a big act on a beat (`NMB_MIND.lead`).
+  if (!nmb.mind) ensureModule("companionMenu");
+  const act = nameMarkBuddyDecide();
+  if (!nmb.mind?.lead(buddy, act)) nameMarkBuddyAct(act);
 }
 
 //: **Its face changes with what is happening** (INBOX 426 x, the owner:
@@ -9126,6 +9098,17 @@ function nameMarkBuddyBuild() {
   nameMarkBuddyLockSync();
   nameMarkBuddySetSize(nameMarkBuddyScaleSaved(), false);
   nameMarkBuddyToggles(buddy);
+  if (typeof MutationObserver === "function") {
+    nmb.coverObserver?.disconnect();
+    //: The one watch of the page: the body's own class (the back-to-top button) asks for a
+    //: perch check, and a dialog or overlay anywhere sets `data-cover`.
+    nmb.coverObserver = new MutationObserver((records) => {
+      if (records.some((r) => r.type === "attributes" && r.target === document.body)) queueNameMarkBuddyCheck();
+      nameMarkBuddyCoverWatch(records);
+    });
+    nmb.coverObserver.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["class", "open"] });
+  }
+  nameMarkBuddyCoverCheck();
   if (typeof IntersectionObserver === "function") {
     nmb.seenObserver?.disconnect();
     nmb.seenObserver = new IntersectionObserver((entries) => nameMarkBuddySeen(entries[entries.length - 1].isIntersecting), { threshold: 0 });
@@ -9149,10 +9132,12 @@ function nameMarkBuddyBuild() {
     const vx = drag.x - (drag.lastX ?? drag.x);
     drag.lastX = drag.x;
     const sway = Math.max(-28, Math.min(28, -vx * 1.4));
-    buddy.style.setProperty("--nmb-sway", sway.toFixed(1));
-    if (Math.abs(vx) > 1) buddy.dataset.turn = vx < 0 ? "l" : "r";
+    nameMarkBuddySway(buddy, sway);
+    //: Only on a change: a same-value attribute write still dirties its style.
+    const turn = vx < 0 ? "l" : "r";
+    if (Math.abs(vx) > 1 && buddy.dataset.turn !== turn) buddy.dataset.turn = turn;
     clearTimeout(drag.settle);
-    drag.settle = setTimeout(() => buddy.style.setProperty("--nmb-sway", "0"), 120);
+    drag.settle = setTimeout(() => nameMarkBuddySway(buddy, 0), 120);
   };
   face.addEventListener("pointerdown", (event) => {
     if (event.button !== 0 || nmb.visit) return;
@@ -9171,7 +9156,10 @@ function nameMarkBuddyBuild() {
     drag.x = event.clientX;
     drag.y = event.clientY;
     //: The pull's last moves, for the speed it is let go at.
-    const t = performance.now();
+    //: The input's own time, not when this ran: on a busy main thread the
+    //: handler runs late, and a late stamp read the pull as having stopped
+    //: (a throw let go at speed came down as a plain drop at 4x CPU).
+    const t = event.timeStamp;
     (drag.samples ||= []).push([event.clientX, event.clientY, t]);
     while (drag.samples.length > 2 && t - drag.samples[0][2] > 160) drag.samples.shift();
     //: A click wobbles a pixel or two; only a real pull is a drag.
@@ -9208,7 +9196,7 @@ function nameMarkBuddyBuild() {
     }
     if (!dragFrame) dragFrame = requestAnimationFrame(follow);
   });
-  const release = () => {
+  const release = (event) => {
     if (drag?.flipped) nameMarkBuddyFlip(buddy, false);
     if (drag?.moved) {
       cancelAnimationFrame(dragFrame);
@@ -9218,12 +9206,12 @@ function nameMarkBuddyBuild() {
       buddy.style.translate = "";
       buddy.classList.remove("nm-buddy-dragging");
       clearTimeout(drag.settle);
-      buddy.style.setProperty("--nmb-sway", "0");
+      nameMarkBuddySway(buddy, 0);
       delete buddy.dataset.turn;
       nameMarkBuddyPut(buddy, Math.round(box.left), Math.round(box.top));
       //: **Thrown** (INBOX 882): let go while still moving fast, it flies
       //: (`nameMarkBuddyThrow`).
-      const v = nameMarkBuddyReleaseVelocity(drag.samples || [], performance.now());
+      const v = nameMarkBuddyReleaseVelocity(drag.samples || [], event?.timeStamp ?? performance.now());
       if (v && Math.hypot(v[0], v[1]) > NMB_TOSS_SPEED) {
         nameMarkBuddyThrow(buddy, v[0], v[1]);
         face.dataset.dragged = "1";
@@ -9523,7 +9511,6 @@ function syncNameMarkBuddy() {
 //: settles (a card it stands on may have moved), and on resize, where it
 //: chooses again.
 if (typeof MutationObserver === "function") {
-  new MutationObserver(queueNameMarkBuddyCheck).observe(document.body, { attributes: true, attributeFilter: ["class"] });
   const toasts = document.getElementById("toast-box");
   if (toasts) {
     new MutationObserver((records) => {

@@ -558,14 +558,17 @@ def magic_add_reminder(body: MagicAddBody, session: Session = Depends(get_sessio
     # A phrase the rules can read needs no model at all, and refusing to add
     # "remind me in 20 minutes" because Ollama is off would break design
     # principle 2 for a request that needs nothing but arithmetic.
-    parsed = reminder_parser.parse_relative(body.text, local_now)
+    #: Read as the composer hears it (O8, INBOX 904 B03): "tmrw" is tomorrow,
+    #: so the day is read, and the saved words are the task, put right.
+    text = reminder_parser.heard(body.text)
+    parsed = reminder_parser.parse_relative(text, local_now)
     if parsed is None:
         # Wall-clock phrases ("tomorrow at 5pm", "next Friday", "tonight") are
         # read by `when` with no model too (audit 2026-10-05, UX-01): the model
         # is only for what neither reader understands.
         from tessellate.ai import when
 
-        parsed = when.parse_reminder_text(body.text, local_now)
+        parsed = when.parse_reminder_text(text, local_now)
     if parsed is None:
         if not ollama.is_running():
             raise HTTPException(
@@ -578,6 +581,7 @@ def magic_add_reminder(body: MagicAddBody, session: Session = Depends(get_sessio
         parsed = reminder_parser.parse_reminder(
             body.text, ollama, deps.get_model_manager(), local_now
         )
+    parsed["text"] = reminder_parser.worded(parsed["text"])
 
     due_at = parsed["due_at"]
     if due_at.tzinfo is None:

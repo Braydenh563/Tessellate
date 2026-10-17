@@ -77,7 +77,7 @@ from collections import Counter
 from dataclasses import dataclass, field
 from datetime import date, datetime
 
-from tessellate.ai import act_registry, composer_ack, composer_overview, composer_replies, composer_tables, grounding, phrasing, question_noise, realise, spelling, utilities, variants
+from tessellate.ai import act_registry, composer_ack, composer_overview, composer_parts, composer_replies, composer_tables, grounding, phrasing, question_noise, realise, spelling, utilities, variants
 from tessellate.ai import recognise as rec
 from tessellate.ai import when as when_words
 from tessellate.search import query as query_understanding
@@ -469,6 +469,15 @@ _ANYTHING_ON = re.compile(
     r"what(?: is|'s)? the deal with|what is going on with|what's going on with)\b",
     re.I,
 )
+
+
+def _still_recent(question: str) -> bool:
+    """Whether a retrieval that fell back to the newest notes still answers
+    `question`: it does when there is no subject, or when the whole question is
+    a recency ask ("What have I saved recently?": "saved" is a verb there)."""
+    from tessellate.search.search_manager import is_recency_ask
+
+    return not subject_terms(question) or is_recency_ask(question)
 
 
 def _respell(text: str) -> str:
@@ -3158,28 +3167,10 @@ def _fit_terms(terms: list[str], views: list[NoteView], report: list | None = No
 #: greeting twice in a row is not answered word for word the same. Nothing
 #: here says anything about the notes: these are the app's own words.
 SOCIAL: dict[str, tuple[str, ...]] = {
-    "greeting": (
-        "Hello. Ask me anything about your notes and I will answer from what you wrote.",
-        "Hi. What would you like to find in your notes?",
-        "Hello again. What is on your mind?",
-        "Hi there. I can tell you when something is, what you decided, or what the latest is on a project.",
-        "Greetings. What can I look up for you today?",
-        "Hey. Just let me know what you need from your records.",
-    ),
     "morning": (
         "Good morning. What would you like to look up?",
         "Morning. Your notes are ready when you are.",
         "Morning. Ask me about anything you have jotted down.",
-    ),
-    "thanks": (
-        "You are welcome.",
-        "Glad that helped.",
-        "Any time. Ask again whenever you need something from your notes.",
-        "Happy to help.",
-        "No problem at all.",
-        "You got it. Anything else?",
-        "My pleasure. What else can we find?",
-        "Happy to assist. Let me know if you need more.",
     ),
     "how": (
         "All good here, and your notes are in order. What can I find for you?",
@@ -3187,14 +3178,6 @@ SOCIAL: dict[str, tuple[str, ...]] = {
         "Fine, thank you. Anything you want to look up?",
         "Everything is excellent. How can I assist you with your notes?",
         "I am well, thanks. Let's dig into your records.",
-    ),
-    "bye": (
-        "Bye for now. Your notes will be here.",
-        "See you soon.",
-        "Take care. Everything you wrote is saved.",
-        "Goodbye. Feel free to return when you need me.",
-        "Catch you later. I'll keep your notes safe.",
-        "Farewell. Let me know if you need anything else later.",
     ),
     "sorry": (
         "No need to apologise. What would you like to try?",
@@ -3295,17 +3278,17 @@ SOCIAL_PROFESSIONAL = composer_tables.SOCIAL_PROFESSIONAL
 #: doesn't know it is atlas"): who it is and what it does are said in its
 #: name, in both voices, with no model and with one.
 SOCIAL["who"] = (
-    "I am Atlas, this notebook's assistant. With no model running I answer from your notes in their own words.",
-    "I'm Atlas. I find things in your notes and say what they say.",
-    "Atlas, at your service: I answer from your notes, and with a model connected I write and use tools too.",
-    "I am Atlas. Ask me when something is, what you decided or what you did last week.",
+    "This is Atlas's assistant speaking. With no model running I answer from your notes in their own words.",
+    "The assistant that works for Atlas, that's me. I find things in your notes and say what they say.",
+    "Atlas's assistant, at your service: I answer from your notes, and to talk to Atlas itself you can connect a model.",
+    "Think of me as Atlas's assistant: ask me when something is, what you decided or what you did last week.",
 )
 SOCIAL["about_app"] = (
-    "I'm Atlas. I answer from your notes: when something is, who said what, what the latest is on a project. "
+    "I'm Atlas's assistant. I answer from your notes: when something is, who said what, what the latest is on a project. "
     "I also set reminders, tag, pin and move notes, and work out sums and conversions. Connecting a model adds writing in its own words.",
-    "Atlas here. Ask about anything you wrote down: a date, a decision, a list, how a project is going or what you did "
+    "Atlas's assistant here. Ask about anything you wrote down: a date, a decision, a list, how a project is going or what you did "
     "last week. Say \"remind me to...\" and I set it. Connecting a model adds writing and tools.",
-    "I'm Atlas, and I read your notes for you: ask when something happened or who said what, or tell me to pin, tag or delete a note.",
+    "I'm Atlas's assistant, and I read your notes for you: ask when something happened or who said what, or tell me to pin, tag or delete a note.",
 )
 
 #: Eight phrasings or more in every family, of more than one shape
@@ -3314,6 +3297,10 @@ for _kind, _more in composer_replies.SOCIAL_NATURAL.items():
     SOCIAL[_kind] = SOCIAL.get(_kind, ()) + _more
 for _kind, _more in composer_replies.SOCIAL_PROFESSIONAL.items():
     SOCIAL_PROFESSIONAL[_kind] = SOCIAL_PROFESSIONAL.get(_kind, ()) + _more
+#: A hello, a thanks and a goodbye are a head and a tail chosen as a pair
+#: (`composer_parts`), not a stored line said whole.
+SOCIAL.update(composer_parts.lines("natural"))
+SOCIAL_PROFESSIONAL.update(composer_parts.lines("professional"))
 
 _SOCIAL_KIND = (
     ("morning", re.compile(r"\bgood (?:morning|afternoon|evening|day)\b|^morning\b", re.I)),
@@ -3339,11 +3326,48 @@ NEXT_STEPS = (
 )
 NEXT_STEPS_PROFESSIONAL = composer_tables.NEXT_STEPS_PROFESSIONAL
 
+#: **A greeting composed from parts, one of them the person's own** (O5;
+#: INBOX 904 B07, the owner: replies should vary and feel alive; CHAT_PLAN
+#: decision 76's rundown is composed the same way). After a stored opener, a
+#: hello, a test or an unclear turn gets an invitation built on a word of
+#: the newest note (`invite`, the route's), so the same "hi" reads
+#: differently as the notebook changes, and the ask it offers is one the
+#: notes answer.
+_INVITE_KINDS = ("greeting", "morning", "test", "unclear")
+INVITES = {
+    "natural": (
+        "Your newest note mentions {subject}: ask “what did I write about {subject}” to pick up from there.",
+        "Lately you've been writing about {subject}, if you'd like to pick that back up.",
+        "Your last note was about {subject}, so “what did I write about {subject}” is a good place to start.",
+        "Picking up where you left off: try “what did I write about {subject}”.",
+        "The last thing you wrote touched on {subject}. Ask about it and I'll pull the notes.",
+        "If it helps, “what did I write about {subject}” brings back your newest note.",
+        "Your notes most recently turned to {subject}; I can go through them with you.",
+        "Carry on from your latest note with “what did I write about {subject}”.",
+    ),
+    "professional": (
+        "The most recent note concerns {subject}; ask “what did I write about {subject}” to review it.",
+        "The latest entry mentions {subject}. A question about it will bring up the notes.",
+        "Your most recent entry refers to {subject}; it can be reviewed on request.",
+        "To continue, ask “what did I write about {subject}”.",
+        "The newest note relates to {subject}, should you wish to return to it.",
+        "Recent entries mention {subject}; a question about it retrieves them.",
+        "Ask “what did I write about {subject}” to see the most recent entry.",
+        "The last entry recorded was about {subject}.",
+    ),
+}
+
 
 def social_kind(message: str, intent: str = "smalltalk") -> str:
     """The kind of conversational turn `message` is: one of `SOCIAL`."""
     if intent == "about_app":
         return "about_app"
+    from tessellate.ai import intent as intent_module
+
+    if intent_module.is_mash(message):
+        return "unclear"
+    if intent_module.is_test(message):
+        return "test"
     return question_noise.social_kind(message) or next(
         (name for name, pattern in _SOCIAL_KIND if pattern.search(message or "")), "ack"
     )
@@ -3357,6 +3381,7 @@ def social(
     voice: str = composer_tables.DEFAULT_VOICE,
     recent: list[str] | tuple = (),
     seed: str = "",
+    invite: str = "",
 ) -> str:
     """The app's reply to a conversational turn with no model running (INBOX
     741: "any and all conversational messages"): warm, short, of the turn's
@@ -3364,20 +3389,36 @@ def social(
     first; `previous` alone when that is all there is) and shaped unlike the
     last (`phrasing.choose`), and after an acknowledgement or thanks, a next
     step on what was being talked about. `seed` is the conversation's: the
-    same seed and turns give the same words."""
+    same seed and turns give the same words. `invite` is a word of the
+    newest note: a hello, a test or an unclear turn ends on an ask about it
+    (`INVITES`) when its opener offered none."""
     kind = social_kind(message, intent)
+    line = _social_line(message, kind, previous, last_question, voice, recent, seed)
+    if invite and kind in _INVITE_KINDS and "“" not in line and not line.endswith("?"):
+        said = "professional" if composer_tables.voice_of(voice) == "professional" else "natural"
+        line = f"{line} {_pick(f'{message}|{invite}', f'invite:{seed}', list(INVITES[said])).format(subject=invite)}"
+    return line
+
+
+def _social_line(message: str, kind: str, previous: str, last_question: str, voice: str, recent, seed: str) -> str:  # noqa: ANN001
+    """The stored opener of `kind`, and a next step after an acknowledgement."""
     recent = [r for r in recent if r] or ([previous] if previous else [])
     professional = composer_tables.voice_of(voice) == "professional"
     lines = (SOCIAL_PROFESSIONAL if professional else SOCIAL)[kind]
+    #: A composed line never ends on a sentence one of the last few ended on.
+    lines = [x for x in lines if not composer_parts.repeats_tail(x, recent[-phrasing.RECENT:])] or lines
     line = phrasing.choose(lines, f"social:{kind}:{message}", recent, seed or _SESSION.get())
     subject = _asked_span(last_question, subject_terms(last_question)) if last_question else ""
     if kind in _NEXT_STEP_KINDS and subject and len(subject) <= 40:
-        #: Never two questions back to back: after a line that asks, the
-        #: next step is said, not asked.
-        steps = [n for n in (NEXT_STEPS_PROFESSIONAL if professional else NEXT_STEPS) if not (line.endswith("?") and n.endswith("?"))]
-        step = _pick(f"{message}|{subject}", "social:next", steps).format(subject=subject)
-        line = f"{line} {step}"
+        line = f"{line} {_next_step(line, message, subject, professional)}"
     return line
+
+
+def _next_step(line: str, message: str, subject: str, professional: bool) -> str:
+    """Never two questions back to back: after a line that asks, the next
+    step is said, not asked."""
+    steps = [n for n in (NEXT_STEPS_PROFESSIONAL if professional else NEXT_STEPS) if not (line.endswith("?") and n.endswith("?"))]
+    return _pick(f"{message}|{subject}", "social:next", steps).format(subject=subject)
 
 
 def call(names: list[str] | str, recent: list[str] | tuple = (), seed: str = "", voice: str = composer_tables.DEFAULT_VOICE) -> str:
@@ -3459,8 +3500,19 @@ def _time_phrase(question: str) -> str:
     return found[0][2] if found else ""
 
 
+#: What the planner reads of a question. Its passes cost words x length, so a
+#: 20,000-character paste took 38 s; the model still gets the whole question.
+PLAN_CHARS = 2000
+
+
+def _planned_text(question: str | None) -> str:
+    return (question or "")[:PLAN_CHARS]
+
+
 def plan(question: str, today: date | None = None, *, recent: bool = False, embed=None) -> Plan:  # noqa: ANN001
-    """The query plan for `question` on `today` (the person's own day)."""
+    """The query plan for `question` on `today` (the person's own day), read
+    from its first `PLAN_CHARS` characters."""
+    question = _planned_text(question)
     today = today or date.today()
     utility = utilities.kind_of(question)
     shape = "recent" if recent else classify(question, embed)
@@ -3536,6 +3588,7 @@ _HELP_DOING: dict[str, frozenset[str]] = {
         frozenset({"change", "switch", "pick", "choose", "edit"}),
         frozenset({"find", "search", "look", "open"}),
         frozenset({"stop", "disable", "pause", "off", "hide"}),
+        frozenset({"see", "view", "show", "list", "read"}),
     )
     for word in group
 }
@@ -3543,6 +3596,24 @@ _HELP_DOING: dict[str, frozenset[str]] = {
 
 #: Words that count a quarter: how many, not what ("two notes", "lots").
 _HELP_WEAK = frozenset("one two three four five lots many several all every".split())
+
+
+def _help_verb(question: str) -> str:
+    """The doing a how-to asks about, its first word after the asking frame
+    ("export" in "how do I export my notes"), or ""."""
+    from tessellate.ai import help_chat
+
+    frame = help_chat._HOW_FRAME.match(question or "")
+    rest = _words(question[frame.end():]) if frame else []
+    return rest[0] if rest else ""
+
+
+def _help_pairs(question: str) -> set[str]:
+    """Adjacent content words of a question, as typed ("back up", "hide
+    unlinked"), the asking and counting words left out."""
+    typed = re.findall(r"[a-z0-9]+", (question or "").lower())
+    content = [bool(_words(w)) and w not in _HELP_WEAK for w in typed]
+    return {f"{typed[i]} {typed[i + 1]}" for i in range(len(typed) - 1) if content[i] and content[i + 1]}
 
 
 def help_line(question: str, topics: list[dict]) -> tuple[str, str] | None:
@@ -3563,8 +3634,14 @@ def help_line(question: str, topics: list[dict]) -> tuple[str, str] | None:
     #: words that are noise in a notebook ("note") name the control in Help.
     wanted = set(_words(question))
     #: The topic's own name is what every one of its sentences is about, so it
-    #: counts half: the verb asked ("make") is what picks the sentence.
-    named = set(_words(str(topic.get("id", "")).replace("-", " ")))
+    #: counts half: the verb asked ("make") is what picks the sentence. Unless
+    #: the name is the verb asked: "how do I export my notes" in import-export
+    #: led with Tidy up duplicates, since "notes" outweighed a halved "export".
+    verb = _help_verb(question)
+    named = set(_words(str(topic.get("id", "")).replace("-", " "))) - {verb}
+    #: Two content words side by side in the question and the sentence are
+    #: the control's name ("back up", "hide unlinked"): half a word more.
+    pairs = _help_pairs(question)
 
     def shared(line: str) -> float:
         #: A word and its longer form ("remind", "reminder") are one word here;
@@ -3576,7 +3653,8 @@ def help_line(question: str, topics: list[dict]) -> tuple[str, str] | None:
 
         hits = sum(0.25 if w in _HELP_WEAK else 0.5 if w in named else 1 for w in wanted if any(one(w, h) for h in have))
         kin = sum(1 for w in wanted if not any(one(w, h) for h in have) and any(one(g, h) for g in _HELP_DOING.get(w, ()) for h in have))
-        return hits + 0.5 * kin
+        said = " " + " ".join(re.findall(r"[a-z0-9]+", line.lower())) + " "
+        return hits + 0.5 * kin + 0.5 * sum(1 for p in pairs if f" {p} " in said)
 
     #: A later sentence must say more to lead: the topic opens on its point
     #: ("Link one note to another by typing [[" over the Suggestions sheet,
@@ -3622,7 +3700,7 @@ def _recall(out: _Answer, p: Plan, views: list[NoteView], question: str) -> None
     """Recall by time (decision 31's schema): the notes in the window, newest
     first, grouped by day, under the count; "nothing from then" when none."""
     inside = sorted((v for v in views if v.sentences and _in_window(v, p.window)), key=lambda v: (v.written, -v.rank), reverse=True)
-    said = _as_typed(p.window_phrase, question)
+    said = window_said(_as_typed(p.window_phrase, question))
     if not inside:
         out.t("recall_none").asked(said).t("stop")
         return
@@ -3923,6 +4001,21 @@ def _absent(terms: list[str], views: list[NoteView]) -> list[str]:
     return absent if terms and len(absent) == len(terms) else []
 
 
+#: A rolling window ("the last 7 days", "past week") is "in" it; "last week"
+#: and "last month" are calendar spans and read without.
+_ROLLING = re.compile(r"^(?P<the>the )?(?P<which>past|last|previous) (?P<n>(?:[\w-]+(?: of)? )?)?(?:days?|weeks?|months?|years?)$", re.I)
+
+
+def window_said(phrase: str) -> str:
+    """A time window as an adverbial: "in the last 7 days" for a rolling one,
+    the phrase as it is for "last week", "today" or "since 3 October"."""
+    found = _ROLLING.match((phrase or "").strip())
+    if not found or not (found.group("n") or found.group("the") or found.group("which").lower() == "past"):
+        return phrase
+    text = phrase.strip()
+    return f"in {text if found.group('the') else 'the ' + text}"
+
+
 def _as_typed(word: str, question: str) -> str:
     """`word` as the question spelled it: "Sam", not the lowered "sam"."""
     found = re.search(rf"\b{re.escape(word)}\b", question or "", re.I)
@@ -3944,6 +4037,69 @@ def _bare_title(out: _Answer, terms: list[str], views: list[NoteView]) -> NoteVi
             out.t("bare_a", "open_quote").asked(v.title).t("close_quote", "bare_b")
             return v
     return None
+
+
+#: A window asked about that holds no note ("what did I write last month" in
+#: a notebook begun this week): said as that, with where the notes are, never
+#: "I couldn't find any saved notes matching that question" (O1, measured
+#: 2026-10-17 on the Guide's own suggested asks).
+_EMPTY_WINDOW = {
+    "natural": (
+        "You wrote nothing {when}.",
+        "Nothing went into your notes {when}.",
+        "No notes were written {when}.",
+        "I can't find a note written {when}.",
+        "{When}, you wrote nothing down.",
+        "There's nothing written {when}.",
+        "Your notebook has nothing {when}.",
+        "Nothing turns up {when}.",
+    ),
+    "professional": (
+        "No notes were recorded {when}.",
+        "There are no entries {when}.",
+        "The notebook holds nothing {when}.",
+        "Nothing was recorded {when}.",
+        "{When}, nothing was recorded.",
+        "No records exist {when}.",
+        "The notes contain nothing written {when}.",
+        "Nothing was entered {when}.",
+    ),
+}
+_EMPTY_WINDOW_SPAN = {
+    "natural": (
+        "Your notes run from {first} to {last}.",
+        "Your earliest note is from {first}.",
+        "Everything you have is from {first} on.",
+        "Your notebook starts on {first}.",
+    ),
+    "professional": (
+        "The notes span {first} to {last}.",
+        "The earliest entry is dated {first}.",
+        "Entries begin on {first}.",
+        "The notebook begins on {first}.",
+    ),
+}
+
+
+def empty_window(when: str, first: date | None, last: date | None, *, voice: str = "natural", seed: str = "",
+                 today: date | None = None) -> str:
+    """A time window with no note in it, said as that, and where the notes
+    are (`first` and `last` written days; None for an empty notebook)."""
+    voice = "professional" if composer_tables.voice_of(voice) == "professional" else "natural"
+    today = today or date.today()
+    when = window_said(when)
+    lead = _pick(seed or when, "empty_window", list(_EMPTY_WINDOW[voice])).format(when=when, When=when[:1].upper() + when[1:])
+    if first is None or last is None:
+        return lead
+
+    def day(d: date) -> str:
+        return f"{d.day} {d:%B}" if d.year == today.year else f"{d.day} {d:%B %Y}"
+
+    if first == last:
+        span = ("All your notes are from {first}." if voice == "natural" else "Every entry is dated {first}.").format(first=day(first))
+    else:
+        span = _pick(seed or when, "empty_window_span", list(_EMPTY_WINDOW_SPAN[voice])).format(first=day(first), last=day(last))
+    return f"{lead} {span}"
 
 
 def _nothing(
@@ -3977,6 +4133,8 @@ def _nothing(
         "parts": parts,
         "next": ["".join(part[1] for part in chip) for chip in chips],
         "next_parts": chips,
+        #: No answer in the notes: `compose` may give the app's help instead.
+        "missed": True,
     }
 
 
@@ -4045,9 +4203,22 @@ def compose(
         _SESSION.reset(token)
         _LEARNED.reset(known)
         _KNOWN.reset(owned)
+    #: A how-to the notes have nothing on that plainly names the app ("how do
+    #: I connect a model") is the help register's (O1): it was answered 'No
+    #: note I found says anything about "connect" or "model"'.
+    if result.get("missed") and _names_app(asked):
+        helped = _help_result(asked, salt=salt, turn=turn, dialogue=None, previous=previous)
+        if helped:
+            result = helped
     if dialogue is not None:
         dialogue.record(asked, result)
     return result
+
+
+def _names_app(question: str) -> bool:
+    from tessellate.ai import help_chat
+
+    return help_chat.names_app(question)
 
 
 def _help_result(question: str, *, salt: str, turn: int | None, dialogue: Dialogue | None, previous: str) -> dict | None:
@@ -4100,7 +4271,16 @@ def _acknowledged(result: dict, asked: str, *, voice: str, seed: str, history: l
     if not result or not result.get("parts") or not (asked or "").strip():
         return result
     fixed: list[tuple[str, str]] = []
-    repaired = question_noise.repair(question_noise.tidy(" ".join(asked.split())), fixed=fixed, known=known)
+    tidy = question_noise.tidy(" ".join(asked.split()))
+    repaired = question_noise.repair(tidy, fixed=fixed, known=known)
+    #: A worked answer says the reading the utility used, which may be a
+    #: router's reading rather than the speller's: "what tmie is it in jaan"
+    #: was answered for Tokyo under "I took that to mean 'what the is it in
+    #: jan'" (O3).
+    if result.get("shape") == "utility" or utilities.kind_of(tidy) not in (None, "until_note"):
+        heard = utilities._heard(tidy)
+        fixed = [(a, b) for a, b in zip(tidy.split(), heard.split()) if a != b] if heard != tidy else []
+        repaired = heard
     if not fixed:
         return result
     parts = [*composer_ack.acknowledge(repaired, voice=voice, seed=seed, history=history, previous=previous), *result["parts"]]
@@ -4169,8 +4349,9 @@ def _compose(
     #: retrieval fell back to them for a question with a subject ("summarise
     #: my gym notes" with no gym note), the subject is answered, or said to
     #: be in no note found (engine probe P7).
-    if recent and subject_terms(question):
-        recent = False
+    #: Unless retrieval read it as a recency ask outright ("What have I saved
+    #: recently?": "saved" is a verb there, not a subject; owner, 2026-10-17).
+    recent = recent and _still_recent(question)
     if not recent and not said:
         parts = split_parts(question)
         if len(parts) > 1:

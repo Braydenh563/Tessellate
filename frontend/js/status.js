@@ -1695,6 +1695,10 @@ async function loadMostUsed() {
 // --- model manager (Phase 3.5) ---------------------------------------------------
 
 let modelStatus = null; // latest /models/status payload
+//: The readouts settings-controls.js (a lazy bundle) draws, by name: it fills
+//: them in when it loads, so a boot file calls `settingsReadouts.auto?.()`
+//: rather than guarding a function that may not exist yet.
+const settingsReadouts = {};
 
 //: **The start-up choice, said once with Change** (the owner, 2026-10-07: on
 //: a fresh install with five models it ran a llama3.2 it did not have). Once
@@ -2130,19 +2134,13 @@ const aiOfflineDismissedNow = new Set();
 
 //: The person's own switch (Settings, Models): the banners never show.
 function aiOfflineNoticeHidden() {
-  try {
-    return prefs.get("hideOfflineNotice", null) === "on";
-  } catch {
-    return false;
-  }
+  return prefs.get("hideOfflineNotice", null) === "on"; // prefs.get never throws
 }
 
 function aiOfflineDismissed(id) {
-  if (aiOfflineNoticeHidden()) return true;
-  if (aiOfflineDismissedNow.has(id)) return true;
   try {
-    return JSON.parse(sessionStorage.getItem(AI_OFFLINE_DISMISSED_KEY) || "[]").includes(id);
-  } catch (err) {
+    return aiOfflineDismissedNow.has(id) || JSON.parse(sessionStorage.getItem(AI_OFFLINE_DISMISSED_KEY) || "[]").includes(id);
+  } catch {
     return false;
   }
 }
@@ -2151,7 +2149,7 @@ function dismissAiOffline(id) {
   aiOfflineDismissedNow.add(id);
   try {
     sessionStorage.setItem(AI_OFFLINE_DISMISSED_KEY, JSON.stringify([...aiOfflineDismissedNow]));
-  } catch (err) { /* memory alone still lasts until the window closes */ }
+  } catch { /* memory alone still lasts until the window closes */ }
 }
 
 //: One row (DESIGN.md, "A notice"): an icon, one short sentence, the button
@@ -2164,11 +2162,13 @@ function dismissAiOffline(id) {
 //: "A notice that can be closed"): a dismissed one stays hidden for the session.
 function renderAiOfflineNotice(container, what, { dismissible = false, detail = "" } = {}) {
   if (!container) return;
+  const show = aiIsOff() && !aiOfflineNoticeHidden() && !(dismissible && aiOfflineDismissed(container.id));
+  //: Left alone when nothing changed: the poll must not close the caret's open menu.
+  if (show && container._k === what + detail) return;
+  container._k = show ? what + detail : "";
   container.replaceChildren();
-  const off = aiIsOff();
-  const closed = aiOfflineNoticeHidden() || (dismissible && aiOfflineDismissed(container.id));
-  container.classList.toggle("hidden", !off || closed);
-  if (!off || closed) return;
+  container.classList.toggle("hidden", !show);
+  if (!show) return;
   //: The icon is the container's first child, which is where `.notice > .ph`
   //: styles it; `setLabel` on the container builds exactly that.
   setLabel(container, "ph:plugs");
@@ -2181,6 +2181,9 @@ function renderAiOfflineNotice(container, what, { dismissible = false, detail = 
   link.textContent = AI_OFFLINE_HINT;
   link.title = `Open Settings at Models, where a local or remote model is connected.${detail ? ` ${detail}` : ""}`;
   link.addEventListener("click", () => openSettingsModal("models"));
+  //: **Connect a model is a split button** (INBOX 904 B05): offline-split.js wraps
+  //: it and adds the caret that hides these notices.
+  lazyScript("/js/offline-split.js").then((ok) => ok && aiOfflineSplit(link));
   container.append(text, link);
   if (!dismissible) return;
   const close = document.createElement("button");
@@ -2845,6 +2848,7 @@ function renderSettings() {
   //: settings, and a person with the server down still needs to see and clear
   //: an override (WORLD_CLASS_PLAN 20, "Still open").
   renderFeatureModels(status);
+  settingsReadouts.smallModel?.();
   if (status.ollama_running) {
     renderChatModelPicker(status);
     renderUtilityModelPicker(status);

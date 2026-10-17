@@ -5263,6 +5263,7 @@ async function ocrLoadPage(image, page = 0, opts = {}) {
     ocrSyncMoreMenu();
     ocrPaintCaption(image);
     if (ocrIsPdf(image)) ocrBuildPageRail(image, body.pages || 1);
+    ocrNoRendererLink();
     ocrSyncPager(image);
     //: The mode can only be honoured once the page count is known, a
     //: continuous view of a document whose length is still unknown would
@@ -5279,6 +5280,16 @@ async function ocrLoadPage(image, page = 0, opts = {}) {
   } catch (error) {
     $("ocr-message").textContent = error.message || "That page could not be read.";
   }
+}
+
+//: **A PDF the page renderer cannot draw** (BACKLOG "Start of the next PR": the
+//: "m o" chord opened on a PDF with nothing selected and a blank viewer). The
+//: server's sentence already says which package; this adds the way to it, as a
+//: button in the same notice.
+function ocrNoRendererLink() {
+  const message = $("ocr-message");
+  if (!message.textContent.includes("Settings, Packages") || message.querySelector("button")) return;
+  message.append(" ", smallButton("ph:package Open Settings, Packages", "Install the PDF pages package", () => openSettingsModal("extras")));
 }
 
 //: One rail item per page of a document, built from the page count the region
@@ -5300,7 +5311,13 @@ function ocrBuildPageRail(image, pages) {
   //: sibling list with pages and leave the switch claiming otherwise, the
   //: state and the control disagreeing, which is the shape that makes a
   //: feature feel broken rather than merely limited.
-  if (ocrRailMode !== "pages") return;
+  //: A one-page document has no Pages list, so the switch has fallen back to
+  //: Files or Images: the rail shows that list, this file lit, rather than
+  //: staying empty (measured with no page renderer: Files 1, rail 0 items).
+  if (ocrRailMode !== "pages") {
+    if (!rail.children.length) ocrRenderRail(image);
+    return;
+  }
   if (rail.dataset.pagesFor === `${ocrRailKey(image)}:${ocrWorkspacePages}`) {
     for (const thumb of rail.querySelectorAll(".ocr-rail-item")) {
       const active = thumb.dataset.key === `page:${ocrWorkspacePage}`;

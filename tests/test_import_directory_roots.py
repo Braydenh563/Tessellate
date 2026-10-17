@@ -19,6 +19,7 @@ from sqlalchemy import select
 from tessellate.api import routes_settings
 from tessellate.core import deps
 from tessellate.core.database import Entry
+from tests._pool_wait import pool_idle
 
 
 @pytest.fixture()
@@ -43,6 +44,7 @@ def _contents(session):
 
 def test_a_folder_in_home_imports(client, home, session):
     response = client.post("/import/directory", json={"path": str(_vault(home))})
+    pool_idle()
     assert response.status_code == 202
     assert "inside the vault" in _contents(session)
 
@@ -50,11 +52,13 @@ def test_a_folder_in_home_imports(client, home, session):
 def test_a_folder_in_the_data_folder_imports(client, home, session):
     vault = _vault(deps.get_config().data_dir, "imports")
     assert client.post("/import/directory", json={"path": str(vault)}).status_code == 202
+    pool_idle()
 
 
 def test_a_folder_outside_home_and_data_is_refused(client, home, tmp_path):
     elsewhere = _vault(tmp_path / "elsewhere")
     response = client.post("/import/directory", json={"path": str(elsewhere)})
+    pool_idle()
     assert response.status_code == 400
 
 
@@ -71,6 +75,7 @@ def test_a_symlinked_file_pointing_out_of_the_vault_is_not_read(client, home, tm
     vault = _vault(home)
     os.symlink(secret, vault / "innocent.md")
     assert client.post("/import/directory", json={"path": str(vault)}).status_code == 202
+    pool_idle()
     contents = _contents(session)
     assert "inside the vault" in contents
     assert "a file outside the vault" not in contents
@@ -83,6 +88,7 @@ def test_a_symlinked_directory_inside_the_vault_is_not_walked(client, home, tmp_
     vault = _vault(home)
     os.symlink(outside, vault / "linked", target_is_directory=True)
     client.post("/import/directory", json={"path": str(vault)})
+    pool_idle()
     assert "from a linked folder" not in _contents(session)
 
 

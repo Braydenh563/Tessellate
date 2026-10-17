@@ -120,7 +120,7 @@ def test_it_comes_down_on_a_ledge_under_its_path_and_never_through_one() -> None
 
 def test_the_flight_is_one_frame_loop_on_transforms_and_lands_as_a_drop() -> None:
     build = AV[AV.index("function nameMarkBuddyBuild(") :]
-    assert "nameMarkBuddyReleaseVelocity(drag.samples || [], performance.now())" in build
+    assert "nameMarkBuddyReleaseVelocity(drag.samples || [], event?.timeStamp ?? performance.now())" in build
     assert "nameMarkBuddyThrow(buddy, v[0], v[1]);" in build
     throw = _fn("nameMarkBuddyThrow")
     # One requestAnimationFrame, its step capped so a hidden tab resumes in
@@ -164,3 +164,42 @@ def test_every_throw_feels_a_little_different_and_a_hard_one_tumbles() -> None:
     assert tumble["peak"] > 180
     # Upright at rest, or at the 1.2 s cap eased upright by the stop.
     assert abs(tumble["rot"]) <= 1 or (tumble["t"] >= 1200 and "char.animate([{ rotate: `${r}deg` }, { rotate: \"0deg\" }]" in _fn("nameMarkBuddyThrow"))
+
+
+def _drop(obstacles: str):
+    # `nameMarkBuddyDrop` as written, against a page with no panels (no edges)
+    # and the given controls; `nameMarkBuddyChoose` stands in as the tab's nearest
+    # good perch, a dock.
+    script = "\n".join(
+        [
+            "const NMB_W = 64, NMB_H = 130, NMB_SEAT = 60, NMB_FEET = 90, NMB_GRIP = 8;",
+            "const innerWidth = 1440, innerHeight = 900; const nmb = {};",
+            f"const OBS = {obstacles};",
+            'function nameMarkBuddyTab() { return "chat"; }',
+            "function nameMarkBuddyObstacles() { return OBS; }",
+            "function nameMarkBuddyEdges() { return []; }",
+            "function nameMarkBuddyYoursObstacles(o) { return o; }",
+            "function nameMarkBuddyStepAside(spot) { return spot; }",
+            "function nameMarkBuddyHits(x, y, pose, obs) { return obs.some((b) => x < b.right && x + NMB_W > b.left && y < b.bottom && y + NMB_H > b.top); }",
+            'function nameMarkBuddyChoose() { return { kind: "dock", pose: "stand", legs: "", x: 40, y: 600, edge: {} }; }',
+            _fn("nameMarkBuddyDrop"),
+            "console.log(JSON.stringify([nameMarkBuddyDrop(1350, 774), nameMarkBuddyDrop(300, 300)]));",
+        ]
+    )
+    return json.loads(subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True).stdout)
+
+
+@needs_node
+def test_a_throw_that_comes_down_over_controls_is_never_left_floating_over_them() -> None:
+    # The owner, 2026-10-17: the companion "sometimes loses its perch and is
+    # left stuck floating and not anchored to something". Measured (chat,
+    # 1440x900): a throw that came down on the window's foot at the right had
+    # the composer's controls in the way of every stance within 48px, so it
+    # floated over the mode switch at (1350, 774) and stayed. Open air with
+    # nothing under it is still a place of your own; open air over a control
+    # is not, and the nearest good perch is where it comes down.
+    over, clear = _drop("[{ left: 1300, top: 789, right: 1400, bottom: 821 }]")
+    assert over["pose"] == "stand" and over["kind"] == "dock", over
+    assert clear["pose"] == "float" and clear["kind"] == "yours", clear
+    free, _ = _drop("[]")
+    assert free["pose"] == "float", "open air with no control under it still floats where it was let go"

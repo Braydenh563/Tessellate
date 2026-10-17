@@ -422,7 +422,7 @@ def build_conversational_messages(
     messages = [
         {
             "role": "system",
-            "content": f"{persona} {brief} {style_hint}{profile_hint}{length_hint(mode)}",
+            "content": f"{persona} {brief} {style_hint}{profile_hint}{length_hint(mode)}{clock_hint()}",
         }
     ]
     messages.extend(history_messages(history))
@@ -560,7 +560,27 @@ def system_content(
     # say "use only these notes", and a prompt that says it twice in different
     # words is two chances for a small model to weigh them against each other.
     brief = ASK_OVERVIEW if ask_overview else GROUNDING
-    return f"{persona} {brief} {style_hint}{profile_hint}{length_hint(mode)}"
+    return f"{persona} {brief} {style_hint}{profile_hint}{length_hint(mode)}{clock_hint()}"
+
+
+def clock_hint() -> str:
+    """The user's weekday, the week ahead and the date and time to the minute,
+    last in a system message so a ticking minute re-reads nothing ahead of it
+    (`tests/test_prompt_prefix_stability.py`). The agent prompt carried this;
+    the plain Ask and Chat prompts did not (owner, 2026-10-17: the AI should
+    know the user's time through the harness context)."""
+    from datetime import timedelta
+
+    from tessellate.core import deps
+    from tessellate.core.config import user_now
+
+    local = user_now(deps.get_config())
+    week = ", ".join(f"{day:%a} {day.day} {day:%b}" for day in (local + timedelta(days=n) for n in range(1, 8)))
+    return (
+        f" Today is {local.strftime('%A')}, and the next seven days are {week}."
+        f" The current date and time is {local.replace(second=0, microsecond=0).isoformat()}"
+        f" ({local.tzname() or 'local time'})."
+    )
 
 
 def plan_budget(

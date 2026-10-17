@@ -14,28 +14,12 @@ acknowledged now and then rather than every time.
 from __future__ import annotations
 
 SOCIAL_NATURAL: dict[str, tuple[str, ...]] = {
-    "greeting": (
-        "Hey, what's up?",
-        "Hello, good to see you.",
-        "Hi. I'm here whenever you want to look something up, plan the day or tidy a few notes.",
-        "Hey hey. Ask me anything.",
-    ),
     "morning": (
         "Good morning to you too.",
         "Morning, hope the day is starting gently. Want a look at what's on today?",
         "Morning. Coffee first, then notes?",
         "Good morning. Shall I pull up today's reminders?",
         "Morning. I'm ready when you are, whether that's today's plans or something you wrote last week.",
-    ),
-    "thanks": (
-        "Sure thing.",
-        "Glad it was useful. If anything else comes up, just ask and I'll dig it out of your notes.",
-    ),
-    "bye": (
-        "Take it easy.",
-        "Bye for now, and good luck with the rest of your day.",
-        "Off you go then. I'll be right here with everything you wrote whenever you're back.",
-        "Have a good one.",
     ),
     "ack": (
         "Sounds good.",
@@ -95,18 +79,18 @@ SOCIAL_NATURAL: dict[str, tuple[str, ...]] = {
         "Cheers. I'm only as good as the notes you write, so some of the credit is yours.",
     ),
     "who": (
-        "I'm Atlas, your notebook's assistant.",
-        "Atlas. I live in this notebook and know what's in it.",
-        "Name's Atlas. What can I find for you?",
-        "I'm Atlas. I stay on this computer and only know what you wrote.",
-        "Atlas, the one who reads your notes so you don't have to. Want to try me?",
+        "Your notebook's helper, Atlas's assistant. Atlas is the model you connect.",
+        "Here to help as Atlas's assistant: I live in this notebook and know what's in it.",
+        "Assistant here; Atlas is the model. Connect one in Settings, Models to talk to Atlas.",
+        "I'm Atlas's assistant. I stay on this computer and only know what you wrote.",
+        "Reading your notes so you don't have to is my job, as Atlas's assistant. Want to try me?",
     ),
     "about_app": (
-        "Plenty. I'm Atlas: I answer questions from your notes, set reminders, and tag, pin or move notes for you. With a model connected I can also write.",
-        "Ask Atlas, that's me, what's on today, what you decided about something, or where a setting lives, and I'll answer from what you wrote.",
-        "I'm Atlas. Think of me as a search that answers: dates, lists, decisions and how things are going, all from your notes.",
-        "Short version: Atlas finds things in your notes and does small jobs like reminders and tags. Want to try one?",
-        "Mostly, Atlas reads your notes for you. Try “what did I do last week” or “remind me to call the dentist on Friday”.",
+        "Plenty. I'm Atlas's assistant: I answer questions from your notes, set reminders, and tag, pin or move notes for you. With a model connected I can also write.",
+        "Ask me, Atlas's assistant, what's on today, what you decided about something, or where a setting lives, and I'll answer from what you wrote.",
+        "I'm Atlas's assistant. Think of me as a search that answers: dates, lists, decisions and how things are going, all from your notes.",
+        "Short version: Atlas's assistant finds things in your notes and does small jobs like reminders and tags. Want to try one?",
+        "Mostly, Atlas's assistant reads your notes for you. Try “what did I do last week” or “remind me to call the dentist on Friday”.",
     ),
     "joke": (
         "Here's one: why did the notebook never panic? It had everything written down.",
@@ -115,6 +99,19 @@ SOCIAL_NATURAL: dict[str, tuple[str, ...]] = {
         "Comedy isn't my strength. Finding your notes is.",
         "If you've written a joke down, I'll find it. Otherwise that notebook one is all I've got.",
         "Nothing funny in my head, only your notes. Want me to search them for a joke?",
+    ),
+    #: A test message ("test", "testing 123", "is this thing on"): said to have
+    #: arrived, with a real thing to try (owner, 2026-10-17: "it should have
+    #: acknowledged that it could be a test note").
+    "test": (
+        "Test received. I'm up and reading your notes, so ask me something real whenever you like.",
+        "Loud and clear. Try “what's on today” or “remind me to call the dentist on Friday”.",
+        "Working. Everything runs on this computer, and I can answer from your notes right now.",
+        "Test noted. Ask a question about your notes and I'll show where each answer comes from.",
+        "I'm here and this works. Want to see what I can do with your notes?",
+        "Got your test. Try asking about a date, a list or something you wrote last week.",
+        "All good on my end. What would you like to find?",
+        "Testing, testing, and it works. Say “what can you do” for the short tour.",
     ),
     "unclear": (
         "I couldn't make that out. Try a word or two about what you need?",
@@ -132,25 +129,12 @@ SOCIAL_PROFESSIONAL: dict[str, tuple[str, ...]] = {
         "Good morning to you.",
         "Good morning. I am ready whenever you would like to review your plans or an earlier note.",
     ),
-    "thanks": (
-        "Certainly.",
-        "You are most welcome. Please ask whenever you need something further.",
-        "Happy to help. Is there anything else?",
-        "Of course.",
-    ),
     "how": (
         "Very well, thank you. And you?",
         "All is in order here.",
         "Everything is running as it should. What would you like to review?",
         "Well, thank you. Your notes are up to date and ready to search.",
         "Quite well. How may I assist?",
-    ),
-    "bye": (
-        "Goodbye.",
-        "Thank you, and goodbye for now.",
-        "Until next time. Your notes and reminders are saved.",
-        "Have a good day.",
-        "Goodbye. I will be available whenever you return.",
     ),
     "sorry": (
         "Not at all.",
@@ -188,12 +172,12 @@ SOCIAL_PROFESSIONAL: dict[str, tuple[str, ...]] = {
         "Thank you. Please let me know what you need next, whether a date, a list or a note.",
     ),
     "who": (
-        "I am Atlas.",
-        "Atlas, the notebook's assistant.",
-        "My name is Atlas. How may I help?",
-        "I am Atlas. I run on this computer and know only what you have recorded.",
-        "This is Atlas, which reads your notes and reports what they contain. What would you like to find?",
-        "Atlas, at your service.",
+        "The assistant to Atlas, answering from your notes.",
+        "The notebook's assistant, working for Atlas.",
+        "To speak with Atlas itself, a model must be connected; I am its assistant.",
+        "Running on this computer, I am Atlas's assistant and know only what you have recorded.",
+        "Your notes are read by Atlas's assistant, which reports what they contain. What would you like to find?",
+        "Atlas's assistant, at your service.",
     ),
     "joke": (
         "I am not a comedian, I am afraid.",
@@ -202,6 +186,16 @@ SOCIAL_PROFESSIONAL: dict[str, tuple[str, ...]] = {
         "I know one: why was the notebook never anxious? Everything was written down.",
         "I do not keep jokes. Shall I search your notes for one?",
         "Regrettably, no. I report what your notes contain.",
+    ),
+    "test": (
+        "Test received. The notebook is available and ready for a question.",
+        "The test was received. Ask about a note, a date or a reminder to continue.",
+        "All systems are working. What should be located?",
+        "Test noted. Answers are drawn from your notes, with the source shown.",
+        "The notebook is responding. Would you like a list of what can be done?",
+        "Received. Say “what can you do” for a summary of the available functions.",
+        "Working as expected. Please state what to find.",
+        "Test acknowledged. Questions about your notes, dates and reminders can follow.",
     ),
     "unclear": (
         "That message was not clear.",
@@ -212,12 +206,12 @@ SOCIAL_PROFESSIONAL: dict[str, tuple[str, ...]] = {
         "I did not understand that. Please ask about a note, a date or a reminder.",
     ),
     "about_app": (
-        "Atlas answers questions from your notes.",
-        "Atlas locates notes, answers from them and carries out small tasks such as reminders and tags.",
-        "Ask Atlas what is on today, what was decided about a matter, or where a setting is located.",
-        "I am Atlas. I answer from your notes and, on request, set reminders and tag, pin or move notes.",
-        "In brief: Atlas searches your notes and answers from them. Shall I demonstrate?",
-        "Atlas reads your notes on your behalf. With a model connected, it can also write and use tools.",
+        "Atlas's assistant answers questions from your notes.",
+        "Atlas's assistant locates notes, answers from them and carries out small tasks such as reminders and tags.",
+        "Ask Atlas's assistant what is on today, what was decided about a matter, or where a setting is located.",
+        "I am Atlas's assistant. I answer from your notes and, on request, set reminders and tag, pin or move notes.",
+        "In brief: Atlas's assistant searches your notes and answers from them. Shall I demonstrate?",
+        "The assistant reads your notes on your behalf. With a model connected, Atlas can also write and use tools.",
     ),
     "compliment": (
         "Thank you.",

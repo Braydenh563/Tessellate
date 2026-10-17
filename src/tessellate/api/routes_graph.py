@@ -26,7 +26,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai.embeddings import bytes_to_vector, similar_pairs
 from tessellate.core import deps
-from tessellate.core.database import Attachment, EmbeddingRecord, Entry, EntryLink, EntryProperty, NoteType
+from tessellate.core.database import Attachment, Document, EmbeddingRecord, Entry, EntryLink, EntryProperty, NoteType
 from tessellate.core.deps import get_session
 from tessellate.entry import manager, paths
 from tessellate.entry import topics as topic_finder
@@ -466,6 +466,8 @@ def _add_document_nodes(
                     "preview": document.title,
                     "category": "Document",
                     "created_at": document.created_at.isoformat(),
+                    "graph_pin_x": document.graph_pin_x,
+                    "graph_pin_y": document.graph_pin_y,
                 }
             )
         for link in doc_links:
@@ -1746,31 +1748,61 @@ class PinBody(BaseModel):
     # `graph_pin_x`/`graph_pin_y` verbatim: the column names carry "graph_"
     # because they live on the shared `Entry` table, but this endpoint is
     # already scoped to the graph by its own path.
-    x: float | None = None
-    y: float | None = None
+    #: No NaN or infinity: SQLite keeps an infinity, and the graph's response
+    #: then cannot be encoded, so one bad pin broke the whole tab.
+    x: float | None = Field(default=None, allow_inf_nan=False)
+    y: float | None = Field(default=None, allow_inf_nan=False)
 
 
-@router.put("/graph/pin/{entry_id}")
+def _pin_target(node_id: object) -> tuple[str, int] | None:
+    """`("", note id)` or `("document", id)` for a drawn node id, else None.
+    ASCII digits only and a length an id can have: `str.isdigit` is true for
+    "²" and `int` then raises, and a 30-digit number overflows SQLite."""
+    kind, _, number = str(node_id).rpartition(":")
+    if kind not in ("", "document") or not number.isascii() or not number.isdigit() or len(number) > 15:
+        return None
+    return kind, int(number)
+
+
+@router.put("/graph/pin/{node_id}")
 def pin_node(
-    entry_id: int, body: PinBody, session: Session = Depends(get_session)
+    node_id: str, body: PinBody, session: Session = Depends(get_session)
 ) -> dict:
     """Hold a node in place, or release it, the persistence half of the
     Graph tab's double-click pin (graph.js), which used to live only on the
     in-memory D3 node object and vanish the moment `/graph` was refetched
     (ROADMAP §87.1's own audit named this gap directly).
 
+    `node_id` is the id the graph draws: a note's number, or `document:N`
+    for a document node (B78: `PUT /graph/pin/document:2` was a 422 because
+    the path was an integer). Those are the two with a row to keep a pin on;
+    a tag, an entity or a file is refused with a plain 404 rather than
+    accepted and forgotten.
+
     `x`/`y` both null clears the pin; both set pins it there. One set and
     one null is refused rather than silently coerced, a lone coordinate is
     not a position, and guessing which axis was meant would be worse than
     asking again.
     """
-    entry = session.get(Entry, entry_id)
-    if entry is None or entry.is_deleted:
-        raise HTTPException(status_code=404, detail="No such note.")
     if (body.x is None) != (body.y is None):
         raise HTTPException(
             status_code=400, detail="A pin needs both x and y, or neither."
         )
+    target = _pin_target(node_id)
+    if target is None:
+        raise HTTPException(status_code=404, detail="That node cannot be pinned.")
+    kind, number = target
+    if kind == "document":
+        document = session.get(Document, number)
+        if document is None or document.deleted_at is not None:
+            raise HTTPException(status_code=404, detail="No such document.")
+        document.graph_pin_x = body.x
+        document.graph_pin_y = body.y
+        session.commit()
+        return {"id": node_id, "graph_pin_x": document.graph_pin_x, "graph_pin_y": document.graph_pin_y}
+    entry = session.get(Entry, number)
+    if entry is None or entry.is_deleted:
+        raise HTTPException(status_code=404, detail="No such note.")
     entry.graph_pin_x = body.x
     entry.graph_pin_y = body.y
     session.commit()
@@ -1778,9 +1810,11 @@ def pin_node(
 
 
 class PinRow(BaseModel):
-    id: int
-    x: float
-    y: float
+    #: A note's number, or `document:N` for a document node (B78); the topic
+    #: "Document" is a ring of them, so a drag of it carries both kinds.
+    id: int | str
+    x: float = Field(allow_inf_nan=False)
+    y: float = Field(allow_inf_nan=False)
 
 
 class PinsBody(BaseModel):
@@ -1789,23 +1823,38 @@ class PinsBody(BaseModel):
 
 @router.put("/graph/pins")
 def pin_nodes(body: PinsBody, session: Session = Depends(get_session)) -> dict:
-    """Pin several notes in one write: a topic dragged by its name moves and
+    """Pin several nodes in one write: a topic dragged by its name moves and
     pins every member (the owner, 2026-10-10: "I want to be able to drag
     whole topics around on the graph"), which was one `PUT /graph/pin` a
     member. Both coordinates are required here (a release is `pin_node` or
-    Unpin all), and a note that is gone is skipped rather than failing the
-    rest."""
-    wanted = {row.id: row for row in body.pins}
+    Unpin all), and a node that is gone, or has no row to keep a pin on, is
+    skipped rather than failing the rest."""
+    notes: dict[int, PinRow] = {}
+    documents: dict[int, PinRow] = {}
+    for row in body.pins:
+        target = _pin_target(row.id)
+        if target is None:
+            continue
+        kind, number = target
+        (notes if kind == "" else documents)[number] = row
     entries = (
         session.query(Entry)
-        .filter(Entry.id.in_(wanted), Entry.is_deleted == False)  # noqa: E712
+        .filter(Entry.id.in_(notes), Entry.is_deleted == False)  # noqa: E712
         .all()
     )
     for entry in entries:
-        entry.graph_pin_x = wanted[entry.id].x
-        entry.graph_pin_y = wanted[entry.id].y
+        entry.graph_pin_x = notes[entry.id].x
+        entry.graph_pin_y = notes[entry.id].y
+    held = (
+        session.query(Document)
+        .filter(Document.id.in_(documents), Document.deleted_at.is_(None))
+        .all()
+    )
+    for document in held:
+        document.graph_pin_x = documents[document.id].x
+        document.graph_pin_y = documents[document.id].y
     session.commit()
-    return {"pinned": len(entries)}
+    return {"pinned": len(entries) + len(held)}
 
 
 @router.post("/graph/unpin-all")

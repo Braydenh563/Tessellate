@@ -34,6 +34,10 @@
   <link rel="stylesheet" href="/css/00-tokens-shell.css?v=0.5.0">
   <link rel="stylesheet" href="/css/01-forms-settings.css?v=0.5.0">
   <link rel="stylesheet" href="/css/02-chat-graph.css?v=0.5.0">
+  <!-- The reduced-motion blankets (the OS hint's, the manual switch's, Interface
+       animations off): matched against no element unless the OS asks for calm
+       or theme-boot.js / applyAppearance turn the media on (motion-still.css). -->
+  <link rel="stylesheet" href="/css/motion-still.css?v=0.5.0" media="(prefers-reduced-motion: reduce)" id="motion-still-sheet">
   <link rel="stylesheet" href="/css/03-dashboard-widgets.css?v=0.5.0">
   <link rel="stylesheet" href="/css/04-chat-dock-appearance.css?v=0.5.0">
   <link rel="stylesheet" href="/css/05-sidebars-themes.css?v=0.5.0">
@@ -1361,6 +1365,9 @@
       <div class="dock-actions">
         <!-- The menu (`kebabMenu`, built by `renderDashMore`): grouped, an
              action sheet on a phone, keyboard from the recipe. -->
+        <!-- Get started (`renderGetStarted`, dashboard.js; INBOX 904 B01): the
+             first steps as a ticked menu, reachable after the card is hidden. -->
+        <span id="dash-start" class="dash-customise dash-start"></span>
         <span id="dash-customise" class="dash-customise"></span>
         <!-- The '?' every other tab's dock ends with (WORLD_CLASS_PLAN A8):
              the `data-help-for` recipe, markup only, before the menu. -->
@@ -1368,7 +1375,7 @@
           data-help-for="dash-help" aria-controls="dash-help" aria-expanded="false"
           title="About the dashboard" aria-label="About the dashboard"><i class="ph ph-question" aria-hidden="true"></i></button>
         <div class="help-body hidden" id="dash-help" role="dialog" aria-label="About the dashboard">
-          <p>Today at a glance: your recent notes, reminders and widgets. Search finds notes, documents, files and app actions, and Ctrl+K opens the command palette for commands and places. Customise, then Edit layout, lets you add, move, resize and remove widgets. In the Focused view the greeting card shows what is due today, your meetings, the notes to file and the note you were last in.</p>
+          <p>Today at a glance: your recent notes, reminders and widgets. Search finds notes, documents, files and app actions, and Ctrl+K opens the command palette for commands and places. Get started lists the first steps, ticked as you finish them. Customise, then Edit layout, lets you add, move, resize and remove widgets. In the Focused view the greeting card shows what is due today, your meetings, the notes to file and the note you were last in.</p>
         </div>
         <span id="dash-more" class="dock-more dash-more"></span>
       </div>
@@ -1711,7 +1718,7 @@ Link to another note with [[its first few words]]."></textarea>
             <!-- Improve rewrites what is typed; the four before it add a
                  thing. Two families, one hairline between them. -->
             <span class="capture-tools-sep" aria-hidden="true"></span>
-            <button id="improve-btn" data-needs-model="Proofreading needs the local AI" class="ghost" type="button" title="Let Atlas proofread or rewrite this before you save" aria-label="Improve writing with AI"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Improve</button>
+            <button id="improve-btn" class="ghost" type="button" title="Proofread this before you save; with a model, Atlas can also rewrite it" aria-label="Improve writing"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Improve</button>
           </div>
           <!-- **Where this note goes**, both halves of it. A category and a
                document are the same question asked twice, so they are one
@@ -1964,6 +1971,11 @@ Link to another note with [[its first few words]]."></textarea>
               <div class="row space-between draft-column-head">
                 <label for="draft-text" class="muted draft-head-label"><span class="msg-role msg-role-assistant"><span class="msg-avatar" data-assistant-head aria-hidden="true"></span><span>Atlas</span></span> The draft</label>
                 <span class="row draft-head-facts">
+                  <!-- The working state, on the side that is working (INBOX 904
+                       B76: it sat under the user's thoughts, away from the
+                       Thinking panel). Hidden unless a pass runs; in the head's
+                       row, so showing it moves nothing. -->
+                  <span id="draft-working" class="draft-working muted hidden" role="status"></span>
                   <!-- Which note this draft goes back to, when it came from
                        one. A fact about the draft, so a chip. -->
                   <span id="draft-target" class="chip hidden"></span>
@@ -2017,7 +2029,13 @@ Link to another note with [[its first few words]]."></textarea>
                   title="Copy the draft to the clipboard"><i class="ph ph-copy ph-lead" aria-hidden="true"></i> Copy</button>
                 <button id="draft-insert" class="ghost" type="button"
                   title="Add this draft to the end of a note you already have"><i class="ph ph-arrow-line-down ph-lead" aria-hidden="true"></i> Insert into a note</button>
-                <button id="draft-save"><i class="ph ph-floppy-disk ph-lead" aria-hidden="true"></i> Save as note</button>
+                <!-- A split button (DESIGN.md): the press files a note; the caret
+                     keeps it as a draft instead (owner, 2026-10-17: a note saved
+                     here arrived as a draft). Hidden while carrying a note on. -->
+                <div id="draft-save-split" class="split-button draft-save-split">
+                  <button id="draft-save" class="split-button-main" type="button"><i class="ph ph-floppy-disk ph-lead" aria-hidden="true"></i> Save as note</button>
+                  <span id="draft-save-menu-slot" class="split-button-slot"></span>
+                </div>
               </div>
             </div>
           </div>
@@ -3563,7 +3581,9 @@ Link to another note with [[its first few words]]."></textarea>
       <div class="help-body hidden" id="timeline-intro" role="dialog" aria-label="How to read this">
   <p>A note sits where it is <em>about</em> when it says so, "the deadline
         is next Friday" plots on that Friday, marked with a clock, and at when it was
-        written otherwise. Arrow keys walk the rows, Enter opens one where it sits.
+        written otherwise. The feed opens on today with the week ahead above it (scroll up),
+        and an empty day ahead has an Add for a reminder or an event.
+        Arrow keys walk the rows, Enter opens one where it sits.
         The strip below shows the last seven days: a dot marks a day with a page,
         and pressing a day opens its page or starts it. The arrows beside the
         month walk a week, and the month opens a calendar to jump to any earlier day.
@@ -3578,7 +3598,8 @@ Link to another note with [[its first few words]]."></textarea>
         Day view; a +n opens the day in the feed. Drag a reminder to another day or hour to move it, or press Alt and an
         arrow on it (Undo puts it back).
         Arrows walk the days, Page Up and Page Down the months, T is today,
-        Enter or Space opens the day (from a Day view, in the feed) and N starts a reminder on it.
+        Enter or Space opens the day (from a Day view, in the feed). Double-click a day or an hour,
+        or press Add or N, to add a reminder or an event there (an event is a meeting note, with a reminder at its start).
   </p>
 </div>
       <!-- The calendar strip (WORLD_CLASS_PLAN D6; INBOX 543 redesign): one
@@ -6503,9 +6524,7 @@ Link to another note with [[its first few words]]."></textarea>
           <p class="wb-help-lead">Pick a tool below, paste or drop anything here, or drag notes in from the Library.</p>
           <div class="wb-empty-hint-actions" id="wb-empty-hint-actions">
             <button id="wb-empty-hint-keys" class="ghost small" type="button" title="Every key and gesture on a board (?)"><i class="ph ph-keyboard ph-lead" aria-hidden="true"></i> Keys and controls</button>
-          </div>
-          <div class="wb-help-foot">
-            <button id="wb-empty-hint-dismiss" class="ghost small wb-empty-hint-close" type="button">Don't show this on new boards</button>
+            <button id="wb-empty-hint-dismiss" class="ghost small" type="button" title="Keep this card off new boards">Don't show on new boards</button>
           </div>
         </div>
       </div>
@@ -9435,7 +9454,8 @@ Link to another note with [[its first few words]]."></textarea>
                   <small class="muted">
                     Atlas still answers from your notes without a model. This
                     only stops the banner above Ask, Chat and the writing
-                    desk. Saved on this device.
+                    desk. The caret beside Connect a model in the banner
+                    turns it on too. Saved on this device.
                   </small>
                 </span>
               </label>
@@ -9755,14 +9775,33 @@ Link to another note with [[its first few words]]."></textarea>
                   <i class="ph ph-question" aria-hidden="true"></i>
                 </button>
               </div>
-              <p id="suggested-hardware" class="muted">Models Ollama can download for you.</p>
+              <div class="row suggested-hardware-row">
+                <p id="suggested-hardware" class="muted">Models Ollama can download for you.</p>
+                <button type="button" id="suggested-hardware-edit" class="ghost small hidden"
+                  aria-expanded="false" aria-controls="suggested-hardware-form"
+                  title="Correct the memory and graphics card this page detected">Edit</button>
+              </div>
+              <form id="suggested-hardware-form" class="row hidden" autocomplete="off">
+                <label>Memory (GB)
+                  <input type="number" id="hardware-ram" min="1" max="4096" step="0.5" inputmode="decimal">
+                </label>
+                <label>Video memory (GB)
+                  <input type="number" id="hardware-vram" min="0" max="4096" step="0.5" inputmode="decimal"
+                    placeholder="0 for none">
+                </label>
+                <button type="submit" class="ghost small">Save</button>
+                <button type="button" id="hardware-reset" class="ghost small">Use detected</button>
+                <button type="button" id="hardware-cancel" class="ghost small">Cancel</button>
+              </form>
               <div class="help-body hidden" id="suggested-help" role="dialog" aria-label="About these downloads">
                 <p>
                   Each card says how much memory the model asks for and whether
                   that fits this computer: Fits is under 60% of its memory,
-                  Tight is up to 85%, and Too big is more than that. It counts
-                  system memory only; a graphics card with enough memory of its
-                  own runs the same model faster than the badge suggests.
+                  Tight is up to 85%, and Too big is more than that. A graphics
+                  card whose own memory holds the model counts instead of the
+                  system memory, and memory that is free only right now can
+                  take a Fits down to Tight. The line above the cards shows
+                  what was detected; Edit corrects it when it is wrong.
                 </p>
                 <p>
                   Sizes with a ~ are the download size we shipped and have not
@@ -10750,8 +10789,8 @@ Link to another note with [[its first few words]]."></textarea>
                   A theme sets everything below in one go. Anything you then
                   change by hand sits on top of it and wins, so you can pick
                   a theme and still choose your own accent colour. Rest the
-                  pointer on a theme to see it before you pick it, or press
-                  Surprise me for one at random.
+                  pointer on a theme, or press the eye in its corner, to see it
+                  before you pick it, or press Surprise me for one at random.
                 </p>
               </div>
               <div id="theme-presets" class="theme-presets"></div>
@@ -11602,6 +11641,12 @@ Link to another note with [[its first few words]]."></textarea>
                   <option value="small">Small: more accurate, slower</option>
                   <option value="medium">Medium: most accurate, slowest</option>
                 </select>
+              </div>
+              <!-- B61: a size is fetched the first time it is used, not when it
+                   is chosen. Says which are on this computer, and removes one. -->
+              <div class="row space-between setting-row hidden" id="voice-model-state">
+                <p id="voice-model-note" class="muted"></p>
+                <button type="button" id="voice-model-remove" class="ghost small hidden">Remove this size</button>
               </div>
               <!-- Brief 87 step 2: Whisper's options (ai/voice.py options_from).
                    Measured on 20 clips with silence and hum around them. -->
@@ -13796,15 +13841,16 @@ Link to another note with [[its first few words]]."></textarea>
                  question it answers. -->
             <div class="settings-group about-hero">
               <div id="about-emblem" class="emblem" aria-hidden="true"></div>
-              <h3>Tessellate</h3>
+              <h3>Tessellate Notes</h3>
               <p class="muted">
                 A 100% offline, local-first notebook where a local AI files your
                 thoughts and answers questions about them. Your data never leaves
                 this computer.
               </p>
-              <p class="muted">Formerly MemoryMap AI.</p>
+              <p class="muted">Tessellate for short. Formerly MemoryMap AI.</p>
               <p class="muted" id="about-version"></p>
-              <p class="muted">Free software, licensed under the GNU Affero General Public License v3.</p>              <!-- How much the companion moves and why (`nameMarkBuddyMotion`):
+              <p class="muted">Free software, licensed under the GNU Affero General Public License v3.
+                <a id="about-github" href="https://github.com/Braydenh563/Tessellate" target="_blank" rel="noopener">Source and releases on GitHub</a>.</p>              <!-- How much the companion moves and why (`nameMarkBuddyMotion`):
                    checkable here when it seems not to move. -->
               <p class="muted" id="about-motion"></p>
               <!-- ROADMAP item C: several extras only take effect on restart
@@ -14520,7 +14566,7 @@ Link to another note with [[its first few words]]."></textarea>
       <!-- The dialog foot (INBOX 599): Start or Try again, then the one
            filled Use the suggestion, at the right. -->
       <div class="row right space-dialog-actions">
-        <button id="improve-retry" data-needs-model="Proofreading needs the local AI" class="ghost small">Start</button>
+        <button id="improve-retry" class="ghost small">Start</button>
         <button id="improve-apply" class="small">Use the suggestion</button>
       </div>
     </div>
