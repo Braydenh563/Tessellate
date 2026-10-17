@@ -2542,21 +2542,34 @@ async function startArt(holder) {
     let glide = null;
     //: The quick cross-fade's picture of the old sky, and when it began.
     let fade = null;
+    //: The wash's hue and gradient, made once: the accent and the height do not
+    //: change for the life of a sketch (a theme change rebuilds it).
+    let washHue = null;
+    let washGradient = null;
+    const washHueOf = () => p.hue(p.color(accentHex));
 
     //: `settled` draws the arrangement the glide is heading for, whatever
     //: point it has reached: what Save PNG saves.
     const scene = (t, settled = false) => {
-      // A soft vertical wash instead of a flat fill, more depth (Wave N).
-      p.noStroke();
-      const washHue = p.hue(p.color(accentHex));
-      for (let y = 0; y < height; y += 4) {
-        //: Light is an off-white well, lightness 95 down to 91, the accent's hue
-        //: faintly in it, as dark is a deep one: it was 250 to 240, which HSL
-        //: clamps to pure white, the same as the card it sat on (INBOX 803).
-        const shade = dark ? 14 + (y / height) * 10 : 95 - (y / height) * 4;
-        p.fill(washHue, 30, shade, 1);
-        p.rect(0, y, width, 4);
+      //: **Drawn on the canvas context, not through p5's colour calls.** Idle
+      //: on the Dashboard at 4x CPU this scene was 527 ms of the 540 ms the
+      //: page was busy in five seconds, 426 ms of it p5 parsing a colour for
+      //: each of 55 wash strips, each connecting line and each star's two
+      //: fills, thirty times a second. One gradient, the accent's hue read once,
+      //: and a colour string per shape say the same thing for a tenth of it.
+      const ctx = p.drawingContext;
+      //: A soft vertical wash instead of a flat fill, more depth (Wave N).
+      //: Light is an off-white well, lightness 95 down to 91, the accent's hue
+      //: faintly in it, as dark is a deep one: it was 250 to 240, which HSL
+      //: clamps to pure white, the same as the card it sat on (INBOX 803).
+      washHue ??= washHueOf();
+      if (!washGradient) {
+        washGradient = ctx.createLinearGradient(0, 0, 0, height);
+        washGradient.addColorStop(0, `hsl(${washHue} 30% ${dark ? 14 : 95}%)`);
+        washGradient.addColorStop(1, `hsl(${washHue} 30% ${dark ? 24 : 91}%)`);
       }
+      ctx.fillStyle = washGradient;
+      ctx.fillRect(0, 0, width, height);
       const now = p.millis();
       //: The glide's own clock, advanced by each drawn frame and by no more
       //: than `ART_GLIDE_STEP_MS` per frame: it starts at the first frame
@@ -2583,15 +2596,19 @@ async function startArt(holder) {
       const lines = u < 1 ? artLineFade(glide.lineFrom, u) : 1;
       // Faint connecting lines between nearby stars (O(n²), but n is
       // capped low enough that it stays cheap at 60fps).
+      ctx.lineWidth = 1;
+      const lineLight = dark ? 72 : 55;
       for (let i = 0; lines > 0 && i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const a = particles[i];
           const b = particles[j];
-          const d = p.dist(a.x, a.y, b.x, b.y);
+          const d = Math.hypot(a.x - b.x, a.y - b.y);
           if (d < 70) {
-            p.stroke(a.hue, 65, dark ? 72 : 55, p.map(d, 0, 70, 0.45, 0) * lines * Math.min(a.vis, b.vis));
-            p.strokeWeight(1);
-            p.line(a.x, a.y, b.x, b.y);
+            ctx.strokeStyle = `hsla(${a.hue}, 65%, ${lineLight}%, ${(0.45 * (1 - d / 70) * lines * Math.min(a.vis, b.vis)).toFixed(3)})`;
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
           }
         }
       }
@@ -2600,18 +2617,21 @@ async function startArt(holder) {
       const leaving = u < 1 ? glide.leaving : [];
       const out = artEaseOut(Math.min(1, u / 0.6));
       for (const dot of leaving) dot.vis = dot.from.vis * (1 - out);
-      // The stars themselves: a soft glow halo + a bright core, twinkling.
-      p.noStroke();
+      //: The stars themselves: a soft glow halo + a bright core, twinkling.
+      const glowLight = dark ? 65 : 55;
       for (const dot of leaving.concat(particles)) {
         const twinkle = (0.6 + 0.4 * Math.sin(t * 2 + dot.phase)) * dot.vis;
-        p.fill(dot.hue, 75, dark ? 65 : 55, 0.14 * twinkle);
-        p.circle(dot.x, dot.y, dot.drawSize * 4); // glow
-        p.fill(dot.hue, 80, dark ? 78 : artCoreLight(dot.hue), twinkle);
-        p.circle(dot.x, dot.y, dot.drawSize); // core
+        ctx.fillStyle = `hsla(${dot.hue}, 75%, ${glowLight}%, ${(0.14 * twinkle).toFixed(3)})`;
+        ctx.beginPath();
+        ctx.arc(dot.x, dot.y, (dot.drawSize * 4) / 2, 0, Math.PI * 2); // glow
+        ctx.fill();
+        ctx.fillStyle = `hsla(${dot.hue}, 80%, ${dark ? 78 : artCoreLight(dot.hue)}%, ${twinkle.toFixed(3)})`;
+        ctx.beginPath();
+        ctx.arc(dot.x, dot.y, dot.drawSize / 2, 0, Math.PI * 2); // core
+        ctx.fill();
       }
       if (fade && !settled) {
         const k = 1 - Math.min(1, (now - fade.start) / ART_FADE_MS);
-        const ctx = p.drawingContext;
         ctx.save();
         ctx.globalAlpha = k;
         ctx.drawImage(fade.snap, 0, 0, width, height);

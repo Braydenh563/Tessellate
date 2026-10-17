@@ -63,3 +63,21 @@ def test_a_caret_does_not_resolve_the_surface_adapter():
     sync = _body(EDITOR, "function selectionBarSync(")
     assert sync.index("raw.selectionStart === raw.selectionEnd") < sync.index("editorSurfaceFor(")
     assert 'typeof asSurface !== "function"' in sync[: sync.index("editorSurfaceFor(")]
+
+
+DASH = (JS / "dashboard.js").read_text(encoding="utf-8")
+
+
+def test_the_dashboard_sky_does_not_parse_a_p5_colour_per_shape():
+    """Idle on the Dashboard at 4x CPU the constellation was 527 ms of the 540
+    ms the page was busy in 5 s, 426 ms of it p5's colour parser (`value`):
+    one `fill` per wash strip (55), one `stroke` per connecting line and two
+    `fill`s per star, every frame. The scene draws on the canvas context with
+    one gradient for the wash and a colour string per shape, and reads the
+    accent's hue once."""
+    start = DASH.index("    const scene = (t, settled = false) => {")
+    scene = DASH[start : DASH.index("\n    };\n", start)]
+    for call in ("p.fill(", "p.stroke(", "p.rect(", "p.circle(", "p.line(", "p.color("):
+        assert call not in scene, call
+    assert "createLinearGradient" in scene
+    assert "washHue" in DASH[start - 600 : start] or "washHue ??=" in scene
