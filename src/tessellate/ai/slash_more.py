@@ -80,8 +80,10 @@ def _day(moment: datetime) -> str:
     return f"{moment.day} {moment:%B}"
 
 
-#: An open checkbox line: "- [ ] call the dentist".
-_OPEN_BOX = re.compile(r"^\s*[-*]\s+\[ \]\s+(\S.*)$", re.M)
+#: An open checkbox line: "- [ ] call the dentist". Spaces and tabs only, never
+#: `\s`: with `re.M` a `\s*` at each line start would read on through every
+#: blank line below it, quadratic in a note of many (CodeQL py/polynomial-redos).
+_OPEN_BOX = re.compile(r"^[ \t]*[-*][ \t]+\[ \][ \t]+(\S.*)$", re.M)
 
 
 def _newest(session: Session, *conditions, order=None, limit: int = 200) -> list:  # noqa: ANN001

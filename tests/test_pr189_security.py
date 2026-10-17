@@ -4,6 +4,7 @@ end in a 500, a poisoned stored value or a slow regex."""
 from __future__ import annotations
 
 import json
+import time
 
 
 def test_a_pin_id_that_is_not_an_ascii_number_is_a_404_not_a_500(client):
@@ -50,6 +51,33 @@ def test_slash_find_reads_a_few_words_and_none_as_a_pattern(client):
     # "_" and "%" are LIKE wildcards: they match themselves only.
     assert _said(client, "/find __").startswith("No note holds")
     assert "No note is tagged #%" in _said(client, "/count %")
+
+
+def _seconds(call) -> float:
+    started = time.perf_counter()
+    call()
+    return time.perf_counter() - started
+
+
+def test_open_checkbox_scan_is_linear_in_blank_lines():
+    # Before: 20,000 whitespace lines took 5.1 s (each line start read on to the end).
+    from tessellate.ai import slash_more
+
+    note = "[ ]\n" + " \n" * 20000 + "- [ ] call the dentist"
+    found = []
+    assert _seconds(lambda: found.extend(slash_more._OPEN_BOX.findall(note))) < 0.5
+    assert found == ["call the dentist"]
+    assert slash_more._OPEN_BOX.findall("  * [ ] \tbuy milk\n- [x] done") == ["buy milk"]
+
+
+def test_proofread_modal_lookup_is_linear_in_a_long_word():
+    # Before: 40,000 letters then a slip took 12 s, the 20,000 case 3 s.
+    from tessellate.ai import proofread
+
+    line = "x" * 30000 + " we shoud"
+    assert _seconds(lambda: proofread._modal("shoud", line)) < 1.0
+    assert proofread._modal("shoud", "we shoud prepare") == "should"
+    assert proofread._modal("shoud", "shoud prepare") == ""
 
 
 def test_a_number_too_big_for_a_duration_is_not_a_crash(client):

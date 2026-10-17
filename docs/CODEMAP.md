@@ -2,7 +2,7 @@
 
 Generated 2026-10-17 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 5955, frontend ids 2509, CSS sections 495, backend routes 607, backend modules 5637, test files 1226, tests 11112, plan headings 957.
+Counts: frontend functions 5955, frontend ids 2509, CSS sections 495, backend routes 607, backend modules 5637, test files 1226, tests 11114, plan headings 957.
 
 ## Frontend functions (5955)
 
@@ -12018,7 +12018,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_modal` | src/tessellate/ai/proofread.py:80 |
 | `_proofread_plain` | src/tessellate/ai/proofread.py:46 |
 | `proofread` | src/tessellate/ai/proofread.py:31 |
-| `said` | src/tessellate/ai/proofread.py:92 |
+| `said` | src/tessellate/ai/proofread.py:95 |
 
 ### src/tessellate/ai/provider.py (27)
 
@@ -12474,26 +12474,26 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_calc` | src/tessellate/ai/slash_more.py:198 |
-| `_categories` | src/tessellate/ai/slash_more.py:149 |
+| `_calc` | src/tessellate/ai/slash_more.py:200 |
+| `_categories` | src/tessellate/ai/slash_more.py:151 |
 | `_day` | src/tessellate/ai/slash_more.py:78 |
-| `_due` | src/tessellate/ai/slash_more.py:184 |
-| `_find` | src/tessellate/ai/slash_more.py:100 |
-| `_listed` | src/tessellate/ai/slash_more.py:93 |
+| `_due` | src/tessellate/ai/slash_more.py:186 |
+| `_find` | src/tessellate/ai/slash_more.py:102 |
+| `_listed` | src/tessellate/ai/slash_more.py:95 |
 | `_more` | src/tessellate/ai/slash_more.py:51 |
-| `_newest` | src/tessellate/ai/slash_more.py:87 |
+| `_newest` | src/tessellate/ai/slash_more.py:89 |
 | `_notes` | src/tessellate/ai/slash_more.py:44 |
-| `_oldest` | src/tessellate/ai/slash_more.py:120 |
-| `_orphans` | src/tessellate/ai/slash_more.py:231 |
-| `_pinned` | src/tessellate/ai/slash_more.py:112 |
-| `_random` | src/tessellate/ai/slash_more.py:130 |
+| `_oldest` | src/tessellate/ai/slash_more.py:122 |
+| `_orphans` | src/tessellate/ai/slash_more.py:233 |
+| `_pinned` | src/tessellate/ai/slash_more.py:114 |
+| `_random` | src/tessellate/ai/slash_more.py:132 |
 | `_rows` | src/tessellate/ai/slash_more.py:29 |
-| `_stats` | src/tessellate/ai/slash_more.py:217 |
-| `_streak` | src/tessellate/ai/slash_more.py:209 |
-| `_tags` | src/tessellate/ai/slash_more.py:138 |
+| `_stats` | src/tessellate/ai/slash_more.py:219 |
+| `_streak` | src/tessellate/ai/slash_more.py:211 |
+| `_tags` | src/tessellate/ai/slash_more.py:140 |
 | `_tags_of` | src/tessellate/ai/slash_more.py:55 |
-| `_todo` | src/tessellate/ai/slash_more.py:164 |
-| `_when` | src/tessellate/ai/slash_more.py:177 |
+| `_todo` | src/tessellate/ai/slash_more.py:166 |
+| `_when` | src/tessellate/ai/slash_more.py:179 |
 | `count_arg` | src/tessellate/ai/slash_more.py:63 |
 
 ### src/tessellate/ai/source_check.py (5)
@@ -17593,7 +17593,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11112)
+## Tests (11114)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18428,7 +18428,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_plan_hygiene.py | 7 |
 | tests/test_popup_agent_persona_avatar.py | 3 |
 | tests/test_portable_strftime.py | 1 |
-| tests/test_pr189_security.py | 5 |
+| tests/test_pr189_security.py | 7 |
 | tests/test_preferences_api.py | 27 |
 | tests/test_preferences_roundtrip.py | 4 |
 | tests/test_prefs_module.py | 6 |
