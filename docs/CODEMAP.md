@@ -2,7 +2,7 @@
 
 Generated 2026-10-17 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 5956, frontend ids 2510, CSS sections 495, backend routes 607, backend modules 5642, test files 1226, tests 11128, plan headings 957.
+Counts: frontend functions 5956, frontend ids 2510, CSS sections 495, backend routes 607, backend modules 5643, test files 1226, tests 11129, plan headings 957.
 
 ## Frontend functions (5956)
 
@@ -10455,7 +10455,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (5642)
+## Backend modules (5643)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -12325,18 +12325,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `explain_pair` | src/tessellate/ai/relations.py:230 |
 | `recognise` | src/tessellate/ai/relations.py:118 |
 
-### src/tessellate/ai/reminder_parser.py (8)
+### src/tessellate/ai/reminder_parser.py (9)
 
 | Name | File:line |
 |---|---|
-| `_drop_please` | src/tessellate/ai/reminder_parser.py:155 |
-| `_extract_json` | src/tessellate/ai/reminder_parser.py:83 |
-| `_fallback` | src/tessellate/ai/reminder_parser.py:78 |
+| `_drop_please` | src/tessellate/ai/reminder_parser.py:168 |
+| `_extract_json` | src/tessellate/ai/reminder_parser.py:96 |
+| `_fallback` | src/tessellate/ai/reminder_parser.py:91 |
 | `_tidy` | src/tessellate/ai/reminder_parser.py:35 |
-| `heard` | src/tessellate/ai/reminder_parser.py:176 |
-| `parse_relative` | src/tessellate/ai/reminder_parser.py:45 |
-| `parse_reminder` | src/tessellate/ai/reminder_parser.py:95 |
-| `worded` | src/tessellate/ai/reminder_parser.py:185 |
+| `_with_clock` | src/tessellate/ai/reminder_parser.py:45 |
+| `heard` | src/tessellate/ai/reminder_parser.py:189 |
+| `parse_relative` | src/tessellate/ai/reminder_parser.py:57 |
+| `parse_reminder` | src/tessellate/ai/reminder_parser.py:108 |
+| `worded` | src/tessellate/ai/reminder_parser.py:198 |
 
 ### src/tessellate/ai/resurface.py (10)
 
@@ -17601,7 +17602,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11128)
+## Tests (11129)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18508,7 +18509,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_reminder_snooze_row34.py | 4 |
 | tests/test_reminder_sw_notify.py | 4 |
 | tests/test_reminder_targets_row15.py | 5 |
-| tests/test_reminder_times.py | 19 |
+| tests/test_reminder_times.py | 20 |
 | tests/test_reminders_api.py | 17 |
 | tests/test_reminders_ics.py | 10 |
 | tests/test_reminders_reschedule.py | 5 |

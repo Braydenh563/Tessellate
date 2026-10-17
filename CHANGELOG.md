@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- A day offset keeps the time said beside it: "call bob in 2 days at 3pm" fires at 15:00 in two days, not at the hour it was typed (Magic Add and the typed reminder command)
 - A time said aloud is read: "half past 4", "a quarter to five", "ten past 6pm" in a reminder, a note date and a repeat ("every day at half past 7" kept its repeat rule rather than becoming one 19:30 reminder); "from ten to five" and "the 5 to 7 train" stay unread
 - A typed reminder command ("remind me 3/4 at 9am") reads a numeric date in the person's date order: 4 March for en-US, 3 April for en-GB; the command path took no locale and read day first for everyone
 - Notes close to this one no longer answer 500 when the notebook holds vectors of two sizes (a model switch mid-rebuild): a vector that cannot be compared counts as none, and the note is kept only when it is joined by a link, tag or category
