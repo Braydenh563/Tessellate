@@ -90,7 +90,10 @@ process.stdout.write(JSON.stringify(res));
     assert 1.015 < sx < 1.02 and 1.01 < sy < 1.015, out["1150"]
     assert out["still"] == ["", ""], "still by setting, off screen or hidden: back at rest"
     assert out["within"] == "marker", "ten a second by the clock: a frame 60 ms on writes nothing"
-    assert out["after"] == "1.0350 1.0250"
+    # The rise's clock is read once a refresh and run on by the wall's
+    # (tests/test_atlas_frame_reads.py): read at 2300 when the wall said 1000,
+    # it is 2400 at 1100, a hair past the peak.
+    assert out["after"] == "1.0348 1.0249"
 
 
 def test_it_rides_the_tail_loop_which_knows_the_motion_gates():

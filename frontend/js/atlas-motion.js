@@ -218,7 +218,12 @@ function atlasRigWake(host) {
   //: The tail (`atlasTailFrame`) wakes with it: back on screen, a new
   //: state, a figure just put on the page.
   atlasTailWake(box);
+  //: A wake is a change of what the CSS has the figure do (a class, a pose,
+  //: a mood, a gesture): the rig and the props read the page's style again
+  //: (`atlasRigFrame`, `atlasPropsFrame`) and hold what they read otherwise.
+  if (box) box.atlasDirtyAt = performance.now();
   if (!rig) return;
+  rig.dirty = true;
   if (!rig.observer && typeof MutationObserver === "function" && box.isConnected) {
     rig.host = box.closest("#nm-buddy") || box;
     rig.observer = new MutationObserver(() => atlasRigWake(box));
@@ -254,10 +259,26 @@ function atlasRigFrame(rig, now) {
   //: flight's own writes (a thrown Atlas at 4x CPU: 5 frames a second, 0.9 s
   //: of 5 s in `atlasRigRead` alone). Read once, up front, from one clean
   //: style; the writes follow and the browser restyles once.
-  const reads = rig.arms.map((arm) => ({ ...atlasRigRead(arm), anim: live && arm.probe.getAnimations().length > 0 }));
-  const turnMatrix = rig.pose && rig.heads.length ? /matrix\(([^)]+)\)/.exec(getComputedStyle(rig.pose).transform) : null;
+  //: **And only when it may have changed** (B87a: a carried Atlas at 4x CPU
+  //: was 30 fps, 254 forced restyles and layouts in 1.3 s, 137 of them here,
+  //: each read landing after the carry's or the flight's own writes). What
+  //: the probe and the pose show changes with a class, a pose or a mood,
+  //: which wakes the rig (`rig.dirty`), or while an animation runs on the
+  //: arm; once both arms and the turn have held a quarter second with none
+  //: running, the rig works from what it read until the next wake.
+  const look = rig.dirty || !rig.reads;
+  const reads = look ? rig.arms.map((arm) => ({ ...atlasRigRead(arm), anim: live && arm.probe.getAnimations().length > 0 })) : rig.reads;
+  const turnMatrix = !look ? rig.turnMatrix : rig.pose && rig.heads.length ? /matrix\(([^)]+)\)/.exec(getComputedStyle(rig.pose).transform) : null;
+  if (look) {
+    const was = rig.reads;
+    const held = !!was && (turnMatrix?.[1] || "") === (rig.turnMatrix?.[1] || "") && reads.every((r, i) => !r.anim && Math.abs(r.ang - was[i].ang) < 0.01 && Math.abs(r.sy - was[i].sy) < 0.001);
+    rig.heldAt = held ? rig.heldAt || now : 0;
+    if (held && now - rig.heldAt >= 250) rig.dirty = false;
+    rig.reads = reads;
+    rig.turnMatrix = turnMatrix;
+  }
   for (const [i, arm] of rig.arms.entries()) {
-    const got = reads[i];
+    const got = { ...reads[i] };
     //: Unwrap the angle against the last target so a turn past 180
     //: degrees does not spin the long way round.
     const prev = arm.hist.length ? arm.hist[arm.hist.length - 1][1] : got.ang;
