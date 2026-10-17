@@ -13,8 +13,6 @@ its head stayed shifted 8px under the toggle. The sweep that measures it is
 
 from __future__ import annotations
 
-import re
-
 from tests._css_paths import CSS_DIR
 
 
@@ -36,8 +34,13 @@ def test_the_peeked_toggle_sits_where_the_pinned_one_does():
 
 
 def test_skill_logs_peeked_head_is_not_shifted():
+    """The peek is a variable the aside sets (07-whiteboard-misc.css says why), so the id rule's
+    own `--sb-peek-transform` must be reset by an id selector of the same rank, hover and focus."""
     css = _css("08-consistency.css")
-    assert re.search(
-        r"\.layout-sidebar-collapsed > #skills-sidebar\[data-resizable\]\.sidebar-collapsed:hover > [^{]*\{[^}]*transform: none",
-        css,
-    ), "the id-specific fold transform on #skills-sidebar needs its own peek reset"
+    for state in (":hover", ":is(:focus-visible, :has(:focus-visible))"):
+        at = css.find(".layout-sidebar-collapsed > #skills-sidebar[data-resizable].sidebar-collapsed" + state)
+        assert at >= 0, "the id-specific fold transform on #skills-sidebar needs its own peek reset: " + state
+        body = css[css.index("{", at) :]
+        assert "--sb-peek-transform: none" in body[: body.index("}")]
+    fold = css.index("#skills-sidebar[data-resizable].sidebar-collapsed {")
+    assert "--sb-peek-transform: translateX(var(--space-3))" in css[fold : css.index("}", fold)]

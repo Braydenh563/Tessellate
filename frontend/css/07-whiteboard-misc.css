@@ -469,10 +469,22 @@
   box-shadow: none;
   border-right: 1px solid var(--border);
 }
+/* **The peek is a variable, not a selector.** Opening a collapsed sidebar for
+   a focus inside it used to be `:is(:focus-visible, :has(:focus-visible)) >
+   *:not(...)`: a `:has()` anchor with a child that could be anything, which no
+   engine can narrow, so every insert anywhere in a card restyled the card's
+   whole subtree (the Timeline's feed, 300 rows in chunks: 897 elements per
+   chunk instead of 59, `tests/test_tab_entry_cost.py`). The aside (hover or
+   keyboard, below) only sets `--sb-peek` 0 to 1 and the pointer rule; the
+   children read them. */
+.sidebar-collapsed {
+  --sb-peek: 0;
+  --sb-peek-events: none;
+}
 .sidebar-collapsed>*:not(.sidebar-collapse-toggle):not(.sidebar-resize):not(.sidebar-rail-name) {
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--ui-fast) var(--ease-out);
+  opacity: var(--sb-peek);
+  pointer-events: var(--sb-peek-events);
+  transition: opacity calc(var(--ui-fast) + (var(--ui-slow) - var(--ui-fast)) * var(--sb-peek)) var(--ease-out) calc(var(--ui-fast) * var(--sb-peek));
 }
 /* Hover-peek */
 .layout-sidebar-collapsed>.sidebar-collapsed:hover,
@@ -502,11 +514,10 @@
 .layout-sidebar-collapsed>.sidebar-collapsed:is(:focus-visible, :has(:focus-visible)) .sidebar-collapse-toggle .icon-peek {
   display: block;
 }
-.layout-sidebar-collapsed>.sidebar-collapsed:hover>*:not(.sidebar-collapse-toggle):not(.sidebar-resize),
-.layout-sidebar-collapsed>.sidebar-collapsed:is(:focus-visible, :has(:focus-visible))>*:not(.sidebar-collapse-toggle):not(.sidebar-resize) {
-  opacity: 1;
-  pointer-events: auto;
-  transition: opacity var(--ui-slow) var(--ease-out) var(--ui-fast);
+.layout-sidebar-collapsed>.sidebar-collapsed:hover,
+.layout-sidebar-collapsed>.sidebar-collapsed:is(:focus-visible, :has(:focus-visible)) {
+  --sb-peek: 1;
+  --sb-peek-events: auto;
 }
 /* The toggle moves back to the right edge on hover-peek (above): the same
    spot §88.0's `--sidebar-toggle-lane` reserve already exists to clear, but
