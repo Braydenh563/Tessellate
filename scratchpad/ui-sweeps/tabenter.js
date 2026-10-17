@@ -22,6 +22,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   // A fresh data dir asks about update checks once; it would block every click.
   await page.getByRole('button', { name: "Don't check" }).click({ timeout: 3000 }).catch(() => {});
   const self = new Map();
+  const incl = new Map();
   const rows = {};
   for (const pass of [1, 2]) {
     for (const tab of TABS) {
@@ -43,6 +44,15 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         // style and layout lands there) is blamed on the nearest page-script caller.
         const owner = (nd) => { let cur = nd; while (cur && !cur.callFrame.url.includes('/js/')) cur = byId.get(parent.get(cur.id)); return cur || nd; };
         prof.samples.forEach((id, i) => {
+          // Inclusive: every page function on the stack gets the sample's time once.
+          const seen = new Set();
+          for (let cur = byId.get(id); cur; cur = byId.get(parent.get(cur.id))) {
+            if (!cur.callFrame.url.includes('/js/')) continue;
+            const k = `${tab} ${cur.callFrame.functionName || '(anon)'} ${cur.callFrame.url.split('/').pop().split('?')[0]}:${cur.callFrame.lineNumber + 1}`;
+            if (seen.has(k)) continue;
+            seen.add(k);
+            incl.set(k, (incl.get(k) || 0) + (prof.timeDeltas[i] || 0));
+          }
           let nd = byId.get(id); const fn0 = nd.callFrame.functionName;
           if (fn0 === '(idle)' || fn0 === '(program)' || fn0 === '(root)') return;
           const native = nd.callFrame.url === '';
@@ -63,6 +73,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     console.log('top self time per tab (both passes summed):');
     for (const tab of TABS) {
       const top = [...self.entries()].filter(([k]) => k.startsWith(`${tab} `)).sort((a, b) => b[1] - a[1]).slice(0, 7);
+      const inc = [...incl.entries()].filter(([k]) => k.startsWith(`${tab} `)).sort((a, b) => b[1] - a[1]).slice(0, 14);
+      if (process.env.INCL) console.log('  INCL', tab, inc.map(([k, us]) => `${(us / 1000).toFixed(0)}ms ${k.slice(tab.length + 1)}`).join(' | '));
       console.log(' ', tab, top.map(([k, us]) => `${(us / 1000).toFixed(0)}ms ${k.slice(tab.length + 1)}`).join(' | '));
     }
   }
