@@ -3500,8 +3500,19 @@ def _time_phrase(question: str) -> str:
     return found[0][2] if found else ""
 
 
+#: What the planner reads of a question. Its passes cost words x length, so a
+#: 20,000-character paste took 38 s; the model still gets the whole question.
+PLAN_CHARS = 2000
+
+
+def _planned_text(question: str | None) -> str:
+    return (question or "")[:PLAN_CHARS]
+
+
 def plan(question: str, today: date | None = None, *, recent: bool = False, embed=None) -> Plan:  # noqa: ANN001
-    """The query plan for `question` on `today` (the person's own day)."""
+    """The query plan for `question` on `today` (the person's own day), read
+    from its first `PLAN_CHARS` characters."""
+    question = _planned_text(question)
     today = today or date.today()
     utility = utilities.kind_of(question)
     shape = "recent" if recent else classify(question, embed)

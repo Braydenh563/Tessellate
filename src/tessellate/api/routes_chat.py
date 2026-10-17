@@ -1977,6 +1977,14 @@ class _StreamRequest:
     #: What the message called the assistant ("hey lil bro, ..."), taken off
     #: `question` (`vocative.split`); `call` when that was all it said.
     address: vocative.Address | None = None
+    #: The whole of a question longer than `composer.PLAN_CHARS`, which only the
+    #: model and the saved turn read; `question` is what the app plans over.
+    full_question: str | None = None
+
+
+def _in_full(req: _StreamRequest) -> str:
+    """The question as asked, for the model and the saved turn."""
+    return req.full_question or req.question
 
 
 def _composed(req: _StreamRequest, ollama_running: bool) -> bool:
@@ -2674,7 +2682,7 @@ def _plain_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> 
             #: replaces it (`_assist`).
             yield prepared["preview"]
         messages = librarian.build_messages(
-            f"{req.question}\n\n{req.image_context}" if req.image_context else req.question,
+            f"{_in_full(req)}\n\n{req.image_context}" if req.image_context else _in_full(req),
             prepared.get("model_notes") or prepared["notes"],
             style=prepared["style"],
             profile=prepared["profile"],
@@ -2917,7 +2925,7 @@ def _agent_events(req: _StreamRequest, prepared: dict, tools_provider) -> Iterat
     else:
         agent_events = agent.run_agent(
             req.session,
-            req.question,
+            _in_full(req),
             prepared.get("model_notes") or prepared["notes"],
             req.model_manager,
             tools_provider,
@@ -3389,7 +3397,7 @@ def _stream_lines(req: _StreamRequest) -> Iterator[str]:
                 **({"checks": model_checks["findings"]} if model_checks else {}),
             })
     if req.body.notes_only and answer_text:
-        _save_ask_turn(req.session, req.question, answer_text, prepared, grounding)
+        _save_ask_turn(req.session, _in_full(req), answer_text, prepared, grounding)
     if answer_text:
         marks["done"] = time.perf_counter() - started
         yield event({"type": "why", "lines": _why(req, prepared, grounding, composing, will_answer, tools_only, ollama_running, shape, marks)})
@@ -3413,6 +3421,20 @@ def _why(req, prepared, grounding, composing, will_answer, tools_only, ollama_ru
         loading=bool(prepared.get("meaning_loading")),
         marks=marks,
     )
+
+
+def _asked(body: ChatRequest, session: Session, skill: dict | None) -> tuple:
+    """The question the app reads, the name it was addressed by, and the whole
+    of a question the app only read the start of (else None).
+
+    Cleaned before anything reads it (INBOX 801): a stray backslash, a run of
+    spaces, a sentence typed in capitals (`question_noise.tidy`). Everything
+    that routes, searches or plans reads its first `composer.PLAN_CHARS`
+    characters (those passes cost words x length: 38 s for a 20,000-character
+    paste); the model is given all of it (`_in_full`)."""
+    head, tail = body.question[: composer.PLAN_CHARS], body.question[composer.PLAN_CHARS :]
+    question, address = _address(skill["question"] if skill else question_noise.tidy(head) or head, session, skill)
+    return question, address, (None if skill or not tail else question + tail)
 
 
 def _address(question: str, session: Session, skill: dict | None) -> tuple:
@@ -3478,10 +3500,7 @@ def chat_stream(body: ChatRequest, session: Session = Depends(get_session)):
     skill = _resolve_skill(body) or _resolve_plan(body)
     if body.as_of is not None and not skill:
         use_tools = False
-    #: Cleaned before anything reads it (INBOX 801): a stray backslash, a run
-    #: of spaces, a sentence typed in capitals (`question_noise.tidy`).
-    question = skill["question"] if skill else question_noise.tidy(body.question) or body.question
-    question, address = _address(question, session, skill)
+    question, address, full_question = _asked(body, session, skill)
     allowed_tools = skill["tools"] if skill else None
     if skill and skill["acts"]:
         # An action skill without tools is just a paragraph, so the route
@@ -3508,6 +3527,7 @@ def chat_stream(body: ChatRequest, session: Session = Depends(get_session)):
         question=question,
         allowed_tools=allowed_tools,
         address=address,
+        full_question=full_question,
     )
 
     # X-Accel-Buffering: no tells reverse proxies (nginx) not to buffer the
