@@ -139,3 +139,14 @@ def test_my_birthday_is_the_one_the_notes_give(client, session):
     got = client.get("/read", params={"q": "call Sam on my birthday", "surface": "reminder", "now": "2026-10-07T10:00:00+00:00"},
                      headers={"X-Auth-Token": token}).json()
     assert got["slots"]["due_at"].startswith("2026-11-20"), got
+
+
+def test_a_typed_reminder_command_reads_a_numeric_date_in_the_locales_order():
+    """"remind me 3/4 at 9am" is 3 April in en-GB and 4 March in en-US. The
+    reminder surface already honoured the locale; the command path
+    (`commands.read`) took none, so the same words read day first for everyone."""
+    now = datetime(2026, 10, 17, 10, 0)
+    gb = reading.read("remind me 3/4 at 9am", now=now, context={"locale": "en-GB"})
+    us = reading.read("remind me 3/4 at 9am", now=now, context={"locale": "en-US"})
+    assert gb.slots["due_at"] == datetime(2027, 4, 3, 9, 0)
+    assert us.slots["due_at"] == datetime(2027, 3, 4, 9, 0)

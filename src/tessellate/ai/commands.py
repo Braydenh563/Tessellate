@@ -191,7 +191,7 @@ _TIME_FIRST = ("on ", "at ", "this ", "next ", "tomorrow", "today", "tonight", "
                "wednesday", "thursday", "friday", "saturday", "sunday")
 
 
-def _reminder(text: str, now: datetime) -> dict | None:
+def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | None:
     low = text.lower()
     cut = low.find(" remind me ")
     if 0 < cut <= 40 and low.startswith(_TIME_FIRST):
@@ -217,7 +217,7 @@ def _reminder(text: str, now: datetime) -> dict | None:
             break
     if not rest:
         return None
-    parsed = reminder_parser.parse_relative(rest, now) or when.parse_reminder_text(rest, now)
+    parsed = reminder_parser.parse_relative(rest, now) or when.parse_reminder_text(rest, now, locale=locale)
     if parsed is None:
         if about:
             # "Remind me about my trip" with no time is a question as often
@@ -594,35 +594,36 @@ def _summarise(text: str) -> dict | None:
     return None
 
 
-def read_typed(text: str, now: datetime) -> dict | None:
+def read_typed(text: str, now: datetime, locale: str | None = None) -> dict | None:
     """`read` of the sentence as the speller puts it right ("remnd me to pay
     rent on friday", "delte my old wifi note"), else as typed: the owner's
     typos are part of the gold (`fixtures/composer/tasks_1011.json`)."""
     from tessellate.ai import question_noise
 
     fixed = question_noise.repair(question_noise.tidy(text or ""))
-    found = (read(fixed, now) if fixed and fixed != text else None) or read(text, now)
+    found = (read(fixed, now, locale) if fixed and fixed != text else None) or read(text, now, locale)
     if found is not None or not text:
         return found
     #: One word a slip from a word the commands read ("pin the dentist noe",
     #: "unlnk the gym note"), read so when that makes it a command (O3).
-    guided = question_noise.guided(question_noise.tidy(text), lambda t: read(t, now) is not None)
-    return read(guided, now) if guided else None
+    guided = question_noise.guided(question_noise.tidy(text), lambda t: read(t, now, locale) is not None)
+    return read(guided, now, locale) if guided else None
 
 
 #: Intent reads the typed commands through the leaf (act_registry.py says why).
 act_registry.typed_reader = read_typed
 
 
-def read(text: str, now: datetime) -> dict | None:
-    """The command `text` is, as {"intent", ...arguments}, or None."""
+def read(text: str, now: datetime, locale: str | None = None) -> dict | None:
+    """The command `text` is, as {"intent", ...arguments}, or None. `locale`
+    orders a numeric date in a reminder ("3/4"); none reads day first."""
     command, question, polite = _fold(text)
     if not command:
         return None
     if re.match(r"(?i)archive\b", command):
         #: Decision 42: archiving stays a UI action; no act archives.
         return None
-    for reader in (_meeting, lambda t: _reminder(t, now), _new_note, _untag, _tag, _move, _delete, _pin, _link, _rename,
+    for reader in (_meeting, lambda t: _reminder(t, now, locale), _new_note, _untag, _tag, _move, _delete, _pin, _link, _rename,
                    _append, _summarise, _navigate, _find):
         found = reader(command)
         if found is None:
