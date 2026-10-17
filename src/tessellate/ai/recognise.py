@@ -68,6 +68,16 @@ _IN_PATTERN = re.compile(
     re.IGNORECASE,
 )
 _FRACTION_PATTERNS = [(re.compile(p, re.IGNORECASE), d) for p, d in _FRACTIONS]
+#: "in 1h30", "in 2h", "in 1.5h", "in 1h30m", "in 1 hour 30 minutes", "in an hour
+#: and 20 minutes": hours, then optionally the minutes beside them. "in 2
+#: hours" alone is the same offset the unit table reads; the point is that the
+#: minutes after the hours are never dropped. Bare "1h30" (no "in") stays a
+#: duration the recogniser reports, not a time to come.
+_IN_HOURS_MINUTES_SRC = (
+    rf"\bin\s+(\d{{1,3}}(?:\.\d{{1,2}})?|{_COUNT_WORDS})\s?(?:hours?|hrs?|h)"
+    rf"(?:(?:\s+and\s+|\s+|,\s?)(\d{{1,3}}|{_COUNT_WORDS})\s?(?:minutes?|mins?|m)\b|(\d{{2}})(?:m(?:ins?)?)?\b|\b(?!\s+and\s+a\s+half))"
+)
+_IN_HOURS_MINUTES = re.compile(_IN_HOURS_MINUTES_SRC, re.IGNORECASE)
 _IN_MONTHS = re.compile(rf"\bin\s+(\d{{1,2}}|{_COUNT_WORDS})\s+(months?|years?)\b", re.IGNORECASE)
 
 
@@ -93,6 +103,9 @@ def relative_delta(text: str) -> tuple[timedelta, str] | None:
         found = pattern.search(text)
         if found:
             return delta, found.group(0)
+    compound = _in_hours_minutes(text)
+    if compound is not None:
+        return compound
     found = _IN_PATTERN.search(text)
     if not found:
         return None
@@ -110,6 +123,20 @@ def relative_delta(text: str) -> tuple[timedelta, str] | None:
     if seconds > 366 * 86400:
         return None
     return timedelta(seconds=round(seconds)), found.group(0)
+
+
+def _in_hours_minutes(text: str) -> tuple[timedelta, str] | None:
+    """(offset, phrase) of "in 1h30" or "in 1 hour and 30 minutes", else None."""
+    found = _IN_HOURS_MINUTES.search(text)
+    if not found:
+        return None
+    hours = _WORD_COUNTS.get(found.group(1).lower())
+    hours = float(found.group(1)) if hours is None and found.group(1)[0].isdigit() else hours
+    said = (found.group(2) or found.group(3) or "0").lower()
+    minutes = _WORD_COUNTS.get(said, float(said) if said.isdigit() else None)
+    if hours is None or minutes is None or minutes >= 60 and found.group(3):
+        return None
+    return timedelta(minutes=round(hours * 60 + minutes)), found.group(0)
 
 
 def relative_months(text: str, now: datetime) -> tuple[datetime, str] | None:
@@ -237,6 +264,9 @@ def _clock(text: str) -> tuple[int, int, str | None] | None:
         return 12, 0, "pm"
     if re.search(r"\bmidnight\b", text):
         return 24, 0, None
+    eod = _end_of_day(text)
+    if eod:
+        return eod
     spoken = _rx("spoken_clock").search(text)
     if spoken:
         return _spoken_clock(spoken)
@@ -244,6 +274,13 @@ def _clock(text: str) -> tuple[int, int, str | None] | None:
     if worded:
         return _word_clock(worded)
     return _digit_clock(text)
+
+
+def _end_of_day(text: str) -> tuple[int, int, str] | None:
+    """5pm for "eod" and "end of (the) day": the hour the repo has always
+    given it. On its own day, or today; once five has passed it is the next
+    day's, the rule for every clock with no day."""
+    return (5, 0, "pm") if re.search(r"\b(?:eod|end of (?:the )?day)\b", text) else None
 
 
 def _digit_clock(text: str) -> tuple[int, int, str | None] | None:
@@ -389,8 +426,6 @@ def resolve(phrase: str, now: datetime, *, locale: str | None = None) -> datetim
         later = now + timedelta(hours=3)
         cap = datetime.combine(now.date(), time(20), now.tzinfo)
         return min(later, cap) if cap > now else later
-    if text in ("end of day", "end of the day", "by end of day"):
-        return datetime.combine(now.date(), time(17), now.tzinfo)
     day, rest = _first_day(text, now)
     if day is None:
         numeric = _numeric_dates(text, now.date(), locale, "future")
@@ -403,6 +438,8 @@ def resolve(phrase: str, now: datetime, *, locale: str | None = None) -> datetim
     for start, end, phrase in find(text):
         if day is not None and not phrase.lower().startswith("last "):
             break
+        if _end_of_day(phrase):
+            continue  # a clock (17:00), not a day: `_clock` reads it
         found = span(phrase, now.date(), "future")
         if found is not None:
             day, rest = found[0], text[:start] + " " + text[end:]
@@ -804,7 +841,7 @@ _DATE_PHRASE_SOURCE = (
             #: with a clock right after it (engine probe: it was tomorrow).
             r"\d{1,2}(?:st|nd|rd|th)(?= (?:at \d|\d{1,2}(?::\d{2})? ?(?:am|pm|a\.m\.|p\.m\.)))",
             r"(?:mid|early|late|end of) " + _MONTH_RE,
-            r"(?:the )?end of (?:the )?(?:day|week|month|year)",
+            r"(?:the )?end of (?:the )?(?:day|week|month|year)|eod",
             r"(?:in|during|from|by) " + _MONTH_RE + r"(?: \d{4})?",
             r"christmas(?: day| eve)?|new year'?s? (?:day|eve)|new year",
             r"later today|today|tonight|yesterday|tomorrow",
@@ -984,7 +1021,7 @@ def span(phrase: str, anchor: date, tense: str | None = None) -> tuple[date, dat
         "tomorrow": (a + timedelta(days=1),) * 2, "the day after tomorrow": (a + timedelta(days=2),) * 2,
         "day after tomorrow": (a + timedelta(days=2),) * 2, "the day before yesterday": (a - timedelta(days=2),) * 2,
         "day before yesterday": (a - timedelta(days=2),) * 2, "end of day": (a, a), "the end of the day": (a, a),
-        "end of the day": (a, a),
+        "end of the day": (a, a), "eod": (a, a),
     }
     if text in fixed:
         return (*fixed[text], "day")
@@ -1730,7 +1767,7 @@ _SOURCES: dict[str, object] = {
     "date_range": r"\b(?:from|between)\s",
     "anchored": lambda: rf"\b(\d{{1,3}}|{_COUNT_WORDS}|half an)\s(minutes?|mins?|hours?|hrs?)\s(before|after)\s",
     "from_now": lambda: _FROM_NOW.pattern,
-    "relative": lambda: rf"\bin\s(?:half an hour|a half hour|an? hour and a half|a quarter of an hour|"
+    "relative": lambda: rf"{_IN_HOURS_MINUTES_SRC}|\bin\s(?:half an hour|a half hour|an? hour and a half|a quarter of an hour|"
                         rf"(\d{{1,4}}(?:\.\d{{1,2}})?|{_COUNT_WORDS})\s?(minutes?|mins?|hours?|hrs?))\b",
     "words_duration": lambda: (
         rf"\b(?:(an?|one|\d+) (hour|minute)s? and a half|half an hour|"
@@ -1836,7 +1873,7 @@ def _date_cands(raw: str, low: str, now: datetime, locale: str | None, tense: st
         if words in ("later today",):
             out.append((start, end, "datetime", resolve("later today", now), "", 0))
             continue
-        if words in ("end of day", "end of the day", "the end of the day"):
+        if words in ("end of day", "end of the day", "the end of the day", "eod"):
             out.append((start, end, "datetime", datetime.combine(today, time(17), now.tzinfo), "", 0))
             continue
         monthly = month_only.fullmatch(words)

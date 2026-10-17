@@ -361,3 +361,78 @@ def test_a_repeat_keeps_its_rule_when_the_clock_is_in_words_or_figures():
         "FREQ=WEEKLY;BYDAY=FR;BYHOUR=15;BYMINUTE=30",
         "FREQ=DAILY;BYHOUR=10;BYMINUTE=30",
     }
+
+
+@pytest.mark.parametrize(
+    ("phrase", "expected"),
+    [
+        ("in 1h30", "2026-09-21 17:25"),
+        ("in 1h30m", "2026-09-21 17:25"),
+        ("in 2h", "2026-09-21 17:55"),
+        ("in 1.5h", "2026-09-21 17:25"),
+        ("in 1 hour 30 minutes", "2026-09-21 17:25"),
+        ("in 1 hour and 30 minutes", "2026-09-21 17:25"),
+        ("in two hours 15 mins", "2026-09-21 18:10"),
+        ("in an hour and 20 minutes", "2026-09-21 17:15"),
+        ("in 2 hours", "2026-09-21 17:55"),
+        ("in 90 mins", "2026-09-21 17:25"),
+    ],
+)
+def test_an_hours_and_minutes_offset_is_read_whole(phrase, expected):
+    """"In 1h30" was unread, and "in 1 hour 30 minutes" read as one hour with
+    the half hour left in the reminder's text."""
+    got = when.resolve(phrase, NOW)
+    assert got is not None and got.strftime("%Y-%m-%d %H:%M") == expected, phrase
+
+
+def test_an_hours_and_minutes_offset_leaves_the_reminders_words_alone():
+    for sentence, due, task in (
+        ("take the bread out in 1h30", "17:25", "Take the bread out"),
+        ("remind me in 1 hour 30 minutes to call mum", "17:25", "Call mum"),
+        ("check the oven in 2h", "17:55", "Check the oven"),
+    ):
+        got = when.parse_reminder_text(sentence, NOW)
+        assert got is not None, sentence
+        assert got["due_at"].strftime("%H:%M") == due and got["text"] == task, (sentence, got)
+
+
+@pytest.mark.parametrize("phrase", ["in 2 hot dogs", "in 1h75", "in h30", "1h30"])
+def test_words_that_only_look_like_an_offset_stay_unread(phrase):
+    assert when.resolve(phrase, NOW) is None, phrase
+
+
+@pytest.mark.parametrize(
+    ("phrase", "expected"),
+    [
+        ("eod", "2026-09-21 17:00"),
+        ("by eod", "2026-09-21 17:00"),
+        ("end of day", "2026-09-21 17:00"),
+        ("eod tomorrow", "2026-09-22 17:00"),
+        ("by end of the day friday", "2026-09-25 17:00"),
+    ],
+)
+def test_end_of_day_is_five_in_the_afternoon(phrase, expected):
+    """"eod" was unread. The rule is the existing one for "end of day": 17:00,
+    on the day named, else today."""
+    got = when.resolve(phrase, NOW)
+    assert got is not None and got.strftime("%Y-%m-%d %H:%M") == expected, phrase
+
+
+def test_end_of_day_said_after_five_is_the_next_one():
+    late = NOW.replace(hour=18, minute=30)
+    got = when.resolve("eod", late)
+    assert got is not None and got.strftime("%Y-%m-%d %H:%M") == "2026-09-22 17:00"
+
+
+def test_a_reminder_keeps_its_words_around_eod_even_misspelt():
+    from tessellate.ai import reminder_parser
+
+    for sentence, due, task in (
+        ("send the report eod", "2026-09-21 17:00", "Send the report"),
+        ("send the report by eod tomorrow", "2026-09-22 17:00", "Send the report"),
+        (reminder_parser.heard("sned the repot by eod tmrw plz"), "2026-09-22 17:00", "Send the report"),
+    ):
+        got = when.parse_reminder_text(sentence, NOW)
+        assert got is not None, sentence
+        assert got["due_at"].strftime("%Y-%m-%d %H:%M") == due, (sentence, got)
+        assert got["text"].lower().startswith(task.lower()[:9]), (sentence, got)
