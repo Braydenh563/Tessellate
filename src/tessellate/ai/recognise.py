@@ -95,6 +95,8 @@ def relative_delta(text: str) -> tuple[timedelta, str] | None:
     "tomorrow morning" name a wall-clock target, which `resolve` reads
     against the user's date.
     """
+    if _rx("weeks_on").search(text):
+        return None  # "in two weeks on wednesday" is a day, read by `_weeks_on_day`
     from_now = _FROM_NOW.search(text)
     if from_now:
         inner = relative_delta("in " + from_now.group(1))
@@ -394,9 +396,40 @@ def _offset_from(text: str, now: datetime) -> datetime | None:
     return base + timedelta(days={"d": 1, "w": 7, "f": 14}[moved.group(2)[0]] * amount) if base else None
 
 
+def _weeks_on_day(found: re.Match, today: date) -> date | None:
+    """The day "in two weeks on wednesday" names. Decided to match "next
+    friday" (the Friday of next week, in `_day` and `span`): weeks run Monday
+    to Sunday, "in N weeks" is the week N weeks on, and the weekday is its day
+    there. So "in a week on friday" is "next friday", and said on a Friday,
+    "in two weeks on wednesday" is the Wednesday before the mark two weeks out
+    (the 14th day on), never the one after it. Counting 14 days and then
+    finding the weekday would make the same words mean a different week
+    depending on the day they were said."""
+    amount = 1 if found["f"] else _amount(found["n"])
+    if amount is None:
+        return None
+    weeks = amount * (2 if found["f"] or found["u"].startswith("f") else 1)
+    return today - timedelta(days=today.weekday()) + timedelta(weeks=weeks, days=_WEEKDAYS[found["d"]])
+
+
+def _weeks_on_cands(low: str, now: datetime) -> list[tuple]:
+    """"in two weeks on wednesday" as one day, longer than the offset inside it."""
+    out = []
+    for found in _rx("weeks_on").finditer(low):
+        day = _weeks_on_day(found, now.date())
+        if day is not None:
+            out.append((found.start(), found.end(), "date", day, "", 0))
+    return out
+
+
 def _first_day(text: str, now: datetime) -> tuple[date | None, str]:
     """`_day`, except a weekday's place in a month ("the first monday of
-    november") is that day and not the next Monday."""
+    november") is that day and not the next Monday, and "in two weeks on
+    wednesday" is the week's Wednesday and not a fortnight on."""
+    weeks = _rx("weeks_on").search(text)
+    day = _weeks_on_day(weeks, now.date()) if weeks else None
+    if day:
+        return day, text[: weeks.start()] + " " + text[weeks.end():]
     nth = _rx("nth_in_month").search(text)
     day = _nth_in_month(nth, now.date(), "future") if nth else None
     return (day, text[: nth.start()] + " " + text[nth.end():]) if day else _day(text, now)
@@ -1763,6 +1796,10 @@ _SOURCES: dict[str, object] = {
         r"|(?:at|by|around|about) (?P<hh>[01]\d|2[0-3])(?P<mm>[0-5]\d)(?: ?(?:h|hrs|hours))?"
         r"|(?:at|by|around|about) (?P<h2>\d{1,2})h(?P<m2>[0-5]\d))(?![\w:/-])"
     ),
+    "weeks_on": lambda: (
+        r"\bin (?:(?P<f>a fortnight)|(?P<n>\d{1,2}|an?|one|two|three|four|five|six|seven|eight|nine|ten|twelve) "
+        r"(?P<u>weeks?|fortnights?)),? (?:on )?(?P<d>" + "|".join(sorted(_WEEKDAYS, key=len, reverse=True)) + r")\b"
+    ),
     "time_range": r"\b(?:from\s)?(\d{1,2})(?::(\d{2}))?\s?(am|pm)?\s?(?:-|–|to|until|till)\s?(\d{1,2})(?::(\d{2}))?\s?(am|pm)\b",
     "date_range": r"\b(?:from|between)\s",
     "anchored": lambda: rf"\b(\d{{1,3}}|{_COUNT_WORDS}|half an)\s(minutes?|mins?|hours?|hrs?)\s(before|after)\s",
@@ -2006,7 +2043,7 @@ def _time_cands(low: str) -> list[tuple]:
 def _relative_cands(low: str, now: datetime, tense: str | None) -> list[tuple]:
     if tense == "past":
         return []  # "ran 10k in 52 minutes" is how long it took, not when
-    out = []
+    out = _weeks_on_cands(low, now)
     for found in (*_rx("relative").finditer(low), *_rx("from_now").finditer(low)):
         got = relative_delta(found.group(0))
         if got is not None:

@@ -436,3 +436,47 @@ def test_a_reminder_keeps_its_words_around_eod_even_misspelt():
         assert got is not None, sentence
         assert got["due_at"].strftime("%Y-%m-%d %H:%M") == due, (sentence, got)
         assert got["text"].lower().startswith(task.lower()[:9]), (sentence, got)
+
+
+@pytest.mark.parametrize(
+    ("phrase", "expected"),
+    [
+        ("in two weeks on wednesday", "2026-10-07 09:00"),
+        ("in 2 weeks wednesday", "2026-10-07 09:00"),
+        ("in two weeks, on wednesday at 3pm", "2026-10-07 15:00"),
+        ("in a week on friday", "2026-10-02 09:00"),
+        ("in a fortnight on friday", "2026-10-09 09:00"),
+        ("in 3 weeks on monday", "2026-10-12 09:00"),
+        ("in two weeks on monday", "2026-10-05 09:00"),
+        ("in two weeks on sunday", "2026-10-11 09:00"),
+        ("in two weeks", "2026-10-05 15:55"),
+    ],
+)
+def test_a_weekday_named_after_a_week_offset_is_that_weekday_of_that_week(phrase, expected):
+    """"In two weeks on wednesday" read 5 October 15:55: the weekday was
+    dropped. Decided, to match "next friday" (the Friday of next week, in
+    `_day` and `span`): weeks are Monday to Sunday, "in N weeks" is the week
+    N weeks on, and the weekday is its day there. So "in a week on friday" is
+    "next friday", and said on a Friday, "in two weeks on wednesday" is the
+    Wednesday before the mark two weeks out, never the one after it."""
+    got = when.resolve(phrase, NOW)
+    assert got is not None and got.strftime("%Y-%m-%d %H:%M") == expected, phrase
+
+
+def test_a_week_offset_weekday_is_by_calendar_week_not_by_day_count():
+    friday = datetime(2026, 9, 25, 10, 0, tzinfo=NOW.tzinfo)
+    got = when.resolve("in two weeks on wednesday", friday)
+    assert got is not None and got.strftime("%Y-%m-%d %H:%M") == "2026-10-07 09:00"
+    assert when.resolve("in a week on friday", friday) == when.resolve("next friday", friday)
+
+
+def test_a_reminder_keeps_its_words_around_a_week_offset_and_a_weekday():
+    got = when.parse_reminder_text("dentist in two weeks on wednesday", NOW)
+    assert got is not None and got["text"] == "Dentist"
+    assert got["due_at"].strftime("%Y-%m-%d %H:%M") == "2026-10-07 09:00"
+
+    from tessellate.ai import reminder_parser
+
+    typed = when.parse_reminder_text(reminder_parser.heard("dentst in 2 wks on wensday at 3pm"), NOW)
+    assert typed is not None and typed["due_at"].strftime("%Y-%m-%d %H:%M") == "2026-10-07 15:00"
+    assert typed["text"] == "Dentist"
