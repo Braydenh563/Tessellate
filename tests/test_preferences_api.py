@@ -218,10 +218,12 @@ def test_console_mode_route_does_not_restart_when_nothing_actually_changed(
     assert restarted == [True]  # hidden=True, since show_console_on_startup is now False
 
 
-def test_restart_route_is_a_no_op_without_the_launcher(client):
+def test_restart_route_is_a_no_op_without_the_launcher(client, monkeypatch):
     """ROADMAP item C's "second caller", not tied to any preference
     changing. A bare `uvicorn --factory` (and the tests) has no launcher to
     start a new copy, so it says so rather than pretending."""
+    monkeypatch.delenv("TESSELLATE_LAUNCHED", raising=False)
+    monkeypatch.delenv("TESSELLATE_DESKTOP", raising=False)
     body = client.post("/system/restart").json()
     assert body == {"restarting": False}
 

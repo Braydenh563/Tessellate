@@ -239,6 +239,10 @@ def test_repair_leaves_a_running_copys_window_profile_alone(tmp_path, monkeypatc
     from tessellate import __main__ as launcher
 
     monkeypatch.setenv("TESSELLATE_DATA_DIR", str(tmp_path))
+    # main() marks the process as launched by the launcher; recording the old
+    # value here makes monkeypatch clear it afterwards, or a later test in this
+    # worker that posts /system/restart really restarts (and kills the worker).
+    monkeypatch.setenv("TESSELLATE_LAUNCHED", "")
     profile = tmp_path / "webview"
     profile.mkdir()
     (profile / "Local State").write_text("{}", encoding="utf-8")
