@@ -274,9 +274,11 @@ function atlasTossState(rig, now, live, buddy) {
   if (live && game?.flight && t.spillOf !== game.flight && has("nm-buddy-dragging") && !nameMarkBuddyActOff("juggle")) {
     t.spillOf = game.flight;
     start("spill");
-  } else if (live && t.mode !== "spill" && has("nmb-act-juggle")) {
-    if (t.mode !== "juggle") start("juggle");
-  } else if (live && t.mode === "juggle") start("back");
+  } else if (live && t.mode !== "spill" && (has("nmb-act-juggle") || has("nmb-act-toss"))) {
+    const mode = has("nmb-act-juggle") ? "juggle" : "toss";
+    if (t.mode !== mode) start(mode);
+    t.kind = mode;
+  } else if (live && (t.mode === "juggle" || t.mode === "toss")) start("back");
   const e = now - t.at;
   const ease = (x) => 1 - (1 - Math.min(1, x)) ** 3;
   if (!live || (t.mode === "spill" && e >= 1000) || (t.mode === "back" && e >= 250)) t.mode = "";
@@ -288,6 +290,18 @@ function atlasTossState(rig, now, live, buddy) {
   }
   let op = "";
   const lift = { l: 0, r: 0 };
+  //: One star tossed from the right hand and caught (`nmb-act-toss`, an act
+  //: of companion-menu.js's mind): the arm up as for a juggle, the others
+  //: away. Over (`back`), it fades in the hand rather than flying home.
+  if (t.kind === "toss" && (t.mode === "toss" || t.mode === "back")) {
+    const b = ease(e / 300);
+    const p = (e / 1100) % 1;
+    const u = Math.min(1, p / 0.8);
+    const [x, y] = p < 0.8 ? [52 - 3 * Math.sin(Math.PI * u), 17 - 60 * u * (1 - u)] : [52, 17 + 1.2 * Math.sin((Math.PI * (p - 0.8)) / 0.2)];
+    if (t.mode === "toss") t.off = t.off.map((o, k) => (k === 1 ? [t.from[1][0] + (x - 31 - t.from[1][0]) * b, t.from[1][1] + (y - 4 - t.from[1][1]) * b] : [0, 0]));
+    lift.r = t.mode === "toss" ? b * atlasTossBob(p) : 0;
+    return { mode: t.mode, off: t.off, op: ["0", "", "0"], lift, hold: t.mode === "toss" ? { r: 64 } : null, shown: t.mode === "toss" };
+  }
   if (t.mode === "spill") {
     const s = e / 1000;
     t.off = t.from.map(([x, y], k) => [x + ATLAS_TOSS_FLING[k][0] * s, y + ATLAS_TOSS_FLING[k][1] * s + 100 * s * s]);
@@ -320,12 +334,12 @@ function atlasTossDraw(rig, toss) {
   for (const [k, star] of els.stars.entries()) {
     const o = toss.off?.[k];
     set(star, "transform", o ? `translate(${atlasFix(o[0])}px, ${atlasFix(o[1])}px)` : "");
-    set(star, "opacity", toss.op);
+    set(star, "opacity", Array.isArray(toss.op) ? toss.op[k] : toss.op);
   }
   //: Spilled, the prop shows whatever the act (the CSS shows it only for the
   //: juggle) and the thread it runs on does not.
-  set(els.root, "opacity", toss.mode === "spill" ? "1" : "");
-  set(els.arc, "opacity", toss.mode === "spill" ? "0" : "");
+  set(els.root, "opacity", toss.mode === "spill" || toss.shown ? "1" : "");
+  set(els.arc, "opacity", toss.mode === "spill" || Array.isArray(toss.op) ? "0" : "");
 }
 function atlasRigFrame(rig, now) {
   rig.raf = 0;
@@ -398,6 +412,10 @@ function atlasRigFrame(rig, now) {
       const amp = rig.look === "masculine" ? 9 : 6;
       sh += amp * Math.sin(ph);
       elT += amp * 0.6 * (1 + Math.sin(ph - 0.8)) * 0.5;
+    }
+    if (toss?.hold?.[arm.side]) {
+      sh = -toss.hold[arm.side] * arm.sgn;
+      [elT] = atlasRigGesture(arm, toss.hold[arm.side], buddy);
     }
     if (toss?.lift) {
       sh -= toss.lift[arm.side] * arm.sgn;

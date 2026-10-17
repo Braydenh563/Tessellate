@@ -3391,7 +3391,8 @@ const NMB_ACTIVITIES = [
   ["legs", "Swing its legs over an edge", ["dangle", "kick"]],
   ["hang", "Hanging tricks", ["swing", "sloth", "onehand", "feet"]],
   ["stances", "Stances at rest", Object.keys(NMB_STANCES)],
-  ["atlas", "Atlas juggles stars, reads its map and meditates", Object.keys(NMB_ATLAS_ACTS)],
+  ["atlas", "Atlas juggles stars, reads its map and meditates", [...Object.keys(NMB_ATLAS_ACTS), "toss"]],
+  ["think", "Stop to think, or sigh", ["ponder", "sigh"]],
   ["lie", "Lie down for a nap", ["lie"]],
   ["read", "Read a book", ["read"]],
   ["beanbag", "Sink into a beanbag", ["beanbag"]],
@@ -7184,6 +7185,7 @@ function nameMarkBuddyAct(act, ms) {
   nameMarkBuddyBlend(buddy, () => buddy.classList.add(`nmb-act-${act}`), NMB_BLEND_IN_MS);
   //: A new act starts with its arms (INBOX 469): a small lift and back.
   if (act !== was && !NMB_FACELESS_ACTS.includes(act) && !NMB_RESTING_ACTS.has(act) && !nameMarkBuddyStill()) nameMarkBuddyLimbs(buddy, "cue", 420);
+  nmb.mind?.start(buddy, act, ms || spec?.ms || 1200);
   nmb.act = act;
   nmb.lastAct = act;
   //: The idle pool's memory (Brief 34 step 5, ledger 678 and 679): the last
@@ -7195,7 +7197,7 @@ function nameMarkBuddyAct(act, ms) {
   if (face) nameMarkBuddyExpress(face, spec?.ms || 2000);
   if (spec?.cool) nmb.cool[act] = Date.now() + spec.cool;
   nmb.timer = setTimeout(() => {
-    const next = act === "land" && nmb.afterLand ? "look" : "";
+    const next = act === "land" && nmb.afterLand ? "look" : nmb.mind?.after(buddy, act) || "";
     if (act === "land") nmb.afterLand = false;
     nameMarkBuddyAct(next);
   }, (ms || spec?.ms || 1200) * (act === "land" ? 1 : 1 + Math.random() * 0.3));
@@ -7470,7 +7472,8 @@ function nameMarkBuddySchedule() {
   //: on the compositor and nothing runs here. **In its large view, every 2.5
   //: to 6 seconds** (INBOX 443, the owner: "needs more life and not just a
   //: statue"): it is being watched, and that is the place for it to play.
-  nmb.timer = setTimeout(nameMarkBuddyTick, nmb.visit ? 2500 + Math.random() * 3500 : 20000 + Math.random() * 40000);
+  //: Its mind (companion-menu.js, `NMB_MIND.nextIn`) places the wait in that range.
+  nmb.timer = setTimeout(nameMarkBuddyTick, nmb.visit ? 2500 + Math.random() * 3500 : nmb.mind?.nextIn() || 20000 + Math.random() * 40000);
 }
 
 //: The weighted pick: every behaviour that suits where it is and is off
@@ -7491,6 +7494,8 @@ function nameMarkBuddyDecide(now = Date.now(), hour = new Date().getHours()) {
   const calm = !!nmb.visit || nameMarkBuddyCalmAllows(now, nmb.loudAt || 0, nmb.loudGap || NMB_LOUD_GAP_MS, nmb.keyAt || 0, nameMarkBuddyScrollAgo());
   //: Which Atlas it is, for its stances (none for any other companion).
   nmb.atlasLook = document.querySelector("#nm-buddy svg.atl-layer")?.dataset.atlasLook || "";
+  //: What you are doing (`NMB_MIND.drive`, companion-menu.js), once loaded.
+  const drive = nmb.mind?.drive(now, idle) || {};
   const pool = [];
   let total = 0;
   for (const [act, spec] of Object.entries(NAME_MARK_BUDDY_ACTS)) {
@@ -7533,6 +7538,7 @@ function nameMarkBuddyDecide(now = Date.now(), hour = new Date().getHours()) {
     if (stance && (!nmb.atlasLook || nmb.atlasLook !== stance.look)) w = 0;
     if (spec.atlas && !nmb.atlasLook) w = 0;
     if (!NMB_QUIET_ACTS.includes(act)) w *= { off: 0, fewer: nmb.visit ? 1 : 0.33, normal: 1 }[actions] ?? 0.33;
+    w *= drive[act] ?? 1;
     if (w > 0) {
       pool.push([act, w]);
       total += w;
@@ -7623,7 +7629,10 @@ function nameMarkBuddyTick() {
   else if (!nmb.act && nameMarkBuddyHasAtlas(buddy) && !/^(lie|curl)/.test(buddy.dataset.pose || "") && Math.random() < 0.45) {
     buddy.dataset.atlasVariant = String(nameMarkBuddyPickVariant(3, Number(buddy.dataset.atlasVariant ?? -1)));
   }
-  nameMarkBuddyAct(nameMarkBuddyDecide());
+  //: Its mind is fetched at the first tick; once here it may lead into a big act on a beat (`NMB_MIND.lead`).
+  if (!nmb.mind) ensureModule("companionMenu");
+  const act = nameMarkBuddyDecide();
+  if (!nmb.mind?.lead(buddy, act)) nameMarkBuddyAct(act);
 }
 
 //: **Its face changes with what is happening** (INBOX 426 x, the owner:

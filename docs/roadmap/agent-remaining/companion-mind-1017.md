@@ -9,3 +9,5 @@ Steps, one commit each:
 4. Perch re-verify (`perchloss.js`) and B62 (the popup's face reacts).
 
 done: 52efa72 (step 1); next: step 3 throwing stars, atlas-motion.js atlasRigFrame, 08-consistency.css 8040.
+done: b3d2971 (step 3); next: step 2 the mind, companion-menu.js `NMB_MIND`, avatars.js hooks (Decide, Schedule, Tick, Act).
+done: step 2 (the commit after b3d2971); next: step 4 B62 (companion-menu.js `nameMarkViewerFace`), perchloss.js, final A/B fps.

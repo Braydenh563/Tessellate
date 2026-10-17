@@ -574,3 +574,129 @@ function mountBuddyPresets() {
     });
   }
 }
+
+//: **The companion's mind** (B87c and B88c, the owner, 2026-10-17: "the
+//: companion needs a lot of improvements in behaviour, actions and lifelike
+//: ncp decision making"; "more movement, more transition and actions").
+//: The pick (`nameMarkBuddyDecide`) weighed mood, the hour, warmth and its
+//: perch, but not what you were doing, and the wait between picks was a
+//: plain 20 to 60 second roll. With this file loaded (the first tick fetches
+//: it, `nameMarkBuddyTick`), `nmb.mind` adds:
+//: - **what you are doing** (`drive`): typing, it keeps you company quietly
+//:   (it reads along, stops to think) and saves the big gestures; scrolling,
+//:   it looks about; sitting there idle, it plays (juggles, stretches,
+//:   tosses a star); gone a while, it winds down; the pointer close by, it
+//:   notices you; each tab leans it to its own thing (a map on the graph,
+//:   a book in notes, a think in chat);
+//: - **when** (`nextIn`): still the decided 20 to 60 seconds (Brief 34,
+//:   "fewer, longer, calmer"), placed in it by its energy, your typing, a
+//:   big act just done and you idling, not by a roll alone;
+//: - **into and out of an act** (`lead`, `after`): a beat of anticipation
+//:   before a big gesture (a dip at the knees, a glance your way before a
+//:   wave), a breath out after one, and sometimes the act that follows from
+//:   it (a pleased nod after juggling, a think after reading its map, a
+//:   stretch after meditating);
+//: - **three new acts** (`NMB_MIND_ACTS`): it stops to think (a tilt, its
+//:   hands a little up, a thinking face), it sighs, and Atlas tosses one
+//:   star from its hand (the rig, atlas-motion.js).
+//: All of it on the one timer and the acts' own timers: nothing new runs
+//: between acts. Reduced motion and Still have none of the beats.
+const NMB_MIND_ACTS = {
+  ponder: { ms: 4200, w: 1, cool: 45000, poses: ["stand", "sit", "float", "lean"] },
+  sigh: { ms: 1700, w: 0.7, cool: 60000, poses: ["stand", "sit", "float", "lean"] },
+  toss: { ms: 4400, w: 1, cool: 70000, poses: ["stand", "float"], atlas: true },
+};
+const NMB_MIND_LEAD = ["wave", "stretch", "juggle", "toss", "shrug", "scratch", "facepalm", "map", "swing", "onehand", "feet", "kick"];
+//: What follows from what, and how often: [act, chance].
+const NMB_MIND_NEXT = {
+  juggle: [["nod", 0.5]], toss: [["nod", 0.35]], map: [["ponder", 0.45], ["look", 0.25]],
+  read: [["ponder", 0.35], ["stretch", 0.3]], meditate: [["stretch", 0.5]], stretch: [["yawn", 0.25], ["look", 0.25]],
+  ponder: [["nod", 0.35], ["shrug", 0.2]], scratch: [["shrug", 0.2]], wave: [["glance", 0.35]], hop: [["look", 0.3]],
+  lie: [["stretch", 0.55]], nap: [["stretch", 0.4], ["yawn", 0.2]], sigh: [["look", 0.3]],
+};
+const NMB_MIND_TABS = {
+  notes: { read: 1.4, ponder: 1.2 }, documents: { read: 1.4, ponder: 1.2 }, library: { read: 1.5 },
+  graph: { map: 1.8, look: 1.3, ponder: 1.2 }, chat: { ponder: 1.6, tilt: 1.2 }, timeline: { look: 1.2, map: 1.2 },
+};
+const NMB_MIND = {
+  //: Multipliers on the pick's weights for what you are doing right now.
+  drive(now = Date.now(), idle = now - nmb.lastInput, scrollAgo = nameMarkBuddyScrollAgo(), tab = nameMarkBuddyTab()) {
+    const out = {};
+    const mul = (table) => {
+      for (const [act, k] of Object.entries(table)) out[act] = (out[act] ?? 1) * k;
+    };
+    const typing = now - (nmb.keyAt || 0) < 8000;
+    if (typing) mul({ read: 1.6, ponder: 1.8, tilt: 1.3, look: 0.6, glance: 0.5, wave: 0.3, hop: 0.3, stretch: 0.5, juggle: 0.4, toss: 0.5, sigh: 0.6 });
+    else if (scrollAgo < 4000) mul({ look: 1.8, turn: 1.4, glance: 1.4, read: 0.6 });
+    else if (idle > 3 * 60 * 1000) mul({ yawn: 1.5, meditate: 1.8, sigh: 1.5, lie: 1.3, beanbag: 1.3, juggle: 0.6, hop: 0.5, wave: 0.6 });
+    else if (idle > 20000) mul({ juggle: 1.8, toss: 1.8, stretch: 1.6, map: 1.4, hop: 1.3, wave: 1.3, ponder: 1.2, swing: 1.4, kick: 1.4 });
+    //: The pointer within reach a moment ago: it has noticed you.
+    const p = nmb.pointer;
+    if (p && idle < 5000 && !typing && Number.isFinite(nmb.x) && Math.hypot(p[0] - nmb.x - NMB_W / 2, p[1] - nmb.y - NMB_HEAD / 2) < 240) mul({ glance: 2.2, wave: 1.5, tilt: 1.3 });
+    mul(NMB_MIND_TABS[tab] || {});
+    return out;
+  },
+  //: How long until the next pick, within the decided 20 to 60 seconds.
+  nextIn: (now = Date.now(), roll = Math.random()) => {
+    const idle = now - nmb.lastInput;
+    let f = 0.3 + 0.35 * (1 - (nmb.mood?.energy ?? 0.6)) + 0.3 * (roll - 0.5);
+    if (now - (nmb.keyAt || 0) < 8000) f += 0.25;
+    if (now - (nmb.loudAt || 0) < 40000) f += 0.15;
+    if (idle > 20000 && idle < 3 * 60 * 1000) f -= 0.3;
+    return 20000 + 40000 * Math.max(0, Math.min(1, f));
+  },
+  //: Into a big act on a beat: true when it has taken the act on.
+  lead(buddy, act) {
+    if (!NMB_MIND_LEAD.includes(act) || nameMarkBuddyStill() || nameMarkIdleQuiet()) return false;
+    const char = buddy.querySelector(".nm-buddy-char");
+    if (!char || typeof char.animate !== "function") return false;
+    if (act === "wave" && nmb.pointer) nameMarkBuddyAim(nmb.pointer);
+    char.animate([{ translate: "0 0" }, { translate: "0 1.6px", offset: 0.6 }, { translate: "0 0" }], { duration: 300, easing: "ease-in-out", composite: "add" });
+    clearTimeout(nmb.timer);
+    nmb.timer = setTimeout(() => {
+      nmb.timer = 0;
+      if (!buddy.isConnected || nmb.act || nmb.flight || buddy.classList.contains("nm-buddy-dragging") || buddy.classList.contains("nmb-walking")) nameMarkBuddySchedule();
+      else nameMarkBuddyAct(act);
+    }, 220);
+    return true;
+  },
+  //: An act it starts that has no CSS of its own: its limbs, its face.
+  start(buddy, act, ms) {
+    if (!NMB_MIND_ACTS[act] || nameMarkBuddyStill()) return;
+    if (act === "ponder") {
+      nameMarkBuddyLimbs(buddy, "ponder", ms);
+      nameMarkBuddyTilt(Math.random() < 0.5 ? -0.45 : 0.45, ms - 500);
+      const atlas = isAtlasSeed(buddy.dataset.seed || "");
+      nameMarkBuddyExpress(atlas ? "thinking" : "confused", ms - 300, { drift: atlas });
+    } else if (act === "sigh") {
+      nameMarkBuddyLimbs(buddy, "sigh", ms);
+      buddy.querySelector(".nm-buddy-char")?.animate?.([{ translate: "0 0" }, { translate: "0 -1.4px", offset: 0.35 }, { translate: "0 0.8px", offset: 0.7 }, { translate: "0 0" }], { duration: ms, easing: "ease-in-out", composite: "add" });
+    }
+  },
+  //: Out of an act: a breath out after a big one, and what follows, if
+  //: anything does and suits the moment ("" when nothing).
+  after(buddy, act, roll = Math.random(), now = Date.now()) {
+    if (nameMarkBuddyStill()) return "";
+    if ((NMB_MIND_LEAD.includes(act) || NMB_LOUD_ACTS.includes(act)) && !nameMarkIdleQuiet()) {
+      buddy.querySelector(".nm-buddy-char")?.animate?.([{ translate: "0 0" }, { translate: "0 -1px", offset: 0.3 }, { translate: "0 0.6px", offset: 0.7 }, { translate: "0 0" }], { duration: 600, easing: "ease-in-out", composite: "add" });
+    }
+    if (nmb.visit || buddy.classList.contains("nmb-sleep") || nameMarkBuddyActions() === "off") return "";
+    let r = roll;
+    for (const [next, chance] of NMB_MIND_NEXT[act] || []) {
+      r -= chance;
+      if (r >= 0) continue;
+      const spec = NAME_MARK_BUDDY_ACTS[next];
+      if (!spec || !spec.poses.includes(nmb.pose) || (nmb.cool[next] || 0) > now || nameMarkBuddyActOff(next)) return "";
+      if (NMB_LOUD_ACTS.includes(next) && !nameMarkBuddyCalmAllows(now, nmb.loudAt || 0, nmb.loudGap || NMB_LOUD_GAP_MS, nmb.keyAt || 0, nameMarkBuddyScrollAgo())) return "";
+      if (spec.atlas && !nmb.atlasLook) return "";
+      return next;
+    }
+    return "";
+  },
+};
+Object.assign(NAME_MARK_BUDDY_ACTS, NMB_MIND_ACTS);
+Object.assign(NMB_LIMB_MOVES, {
+  ponder: { arm: [[0.18, 16], [0.82, 16]] },
+  sigh: { arm: [[0.3, -10], [0.5, -10], [0.8, 4]] },
+});
+nmb.mind = NMB_MIND;
