@@ -927,6 +927,8 @@ function paintTimelineFeed(rows) {
   const feed = $("timeline-feed");
   const scale = timelineResolvedScale();
   const density = TIMELINE_DENSITY[scale];
+  //: B56: Auto names the bucket it chose, as the other Auto options do.
+  $("timeline-scale").options[0].textContent = `Auto (${scale} now)`;
   feed.dataset.scale = scale;
   feed.dataset.density = density;
   feed.replaceChildren();

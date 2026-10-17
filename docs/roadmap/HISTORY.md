@@ -509,6 +509,16 @@ From BACKLOG, as it stood:
 
 Built 2026-10-17 (ui-1017b): the card is drawn at once and `#chat-suggest` holds four skeleton pieces in its own box (`showSkeletons`, cleared by `loadChatSuggestions`, which settles the real chips in). Measured with `scratchpad/ui-sweeps/chatemptypaint.js` (NEW=1 DELAY=1200, 1440): heading visible at 854 ms before and 15 ms after; heading top moved 39px (350.7 to 389.7) before and 0 after; card height 222.5 to 300.6 before, constant 300.6 after. At 390 and 1024 the heading and card did not move. The boot CSS cap was paid for by moving sixteen pure OCR rules to library-lazy.css (boot CSS 178,971 to 178,865 gzipped with the skeleton rules in, boot JS 587,615 to 587,757; computed styles of the workspace identical at 1440, 1024 and 390).
 
+## Moved from the plans, 2026-10-17 (Source notes, BACKLOG)
+
+From BACKLOG, as it stood:
+
+> Source notes: the source cards and the "Searched notes" chips show raw markdown ("**The Complete Social Skills Guide**", "Follow- Up", clipped mid-word starts such as "uding servers") instead of rendered inline markdown; run the snippet through the inline renderer (bold, italics, code, links) and start snippets at a word boundary.
+
+Built 2026-10-17 (backlog sweep): the cards already rendered inline markdown (`renderInlineMarkdown` in `chat-agent.js`); what was left was the cut. `engine._snippet` cut a window at a character offset (a start inside "including" gave "uding servers"), and the card, document, file and board previews and the agent's source rows cut the end at a character count. `search/snippet.py` (`window_words`, `clip_words`) moves each cut to a space and marks it with an ellipsis; `tests/test_snippet_word_boundaries.py` (10 tests). The "Searched notes" chips are the tool step's label (a clipped query), not a snippet, and carry no markdown.
+
+Two BACKLOG rows about CodeQL's "Unused global variable" on `lantrust._run_allowance` and `reminder_token._loaded_from` were dropped: neither name exists in the code any more (grep, 2026-10-17).
+
 ## Moved from the plans, 2026-10-12 (Brief 34)
 
 The whole brief, closed with its last row (2026-10-12: the name-mark pairs under the 15% floor, 9 down to 2 on the default look (Jade/Maya 11.5%, You/Chloe 11.8%) and 0 on the feminine, by teal cloth in one colour pair and the hair style and garment joining the hair and cloth rolls; the masculine look keeps its one pair under the floor (Chloe/Quinn 9.6%, unchanged); 15% on all three looks was not reachable in this step). The idle-cost step is still in OPEN.md. The brief, as it stood:
@@ -50510,6 +50520,8 @@ Left: `python3 scratchpad/help-audit/count.py frontend/index.html` prints TOTAL 
 - **The panel on the stream**: `/jobs/stream` carries a `tasks` event (the `/tasks` body, resent only when its rows change, looked at each second); Settings, Running now repaints from it (`renderTasks`, the one row recipe) and the status poll stops painting the panel while the stream is open.
 
 Decisions taken (standing order 3): a **skill run** stays on its chat request, not a pool job: it is a turn streamed to the person, and replaying it after a kill would repeat its tool calls. The **startup embedding backfill** stays at the end of the warm-up thread (the A3 reason recorded there); its Run now is durable through `pass`.
+
+**Built 2026-10-17 (the folder import, the last kind).** `POST /import/directory` queues kind `import` (handler `routes_settings._run_directory_import`, lane `batch`, its own ledger run, dedupe on the folder) instead of a request task, so a quit part-way is finished at the next launch; the runner already skips a file by path and text hash. `tests/test_import_job.py` (route, resume of a left row, kind table); the five test files that read the result straight after the POST wait on `tests/_pool_wait.py`.
 
 ### Brief 45 part 2, the dead defs (briefs-1011)
 

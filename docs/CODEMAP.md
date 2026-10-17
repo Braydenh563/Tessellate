@@ -2,7 +2,7 @@
 
 Generated 2026-10-17 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 5957, frontend ids 2510, CSS sections 495, backend routes 607, backend modules 5658, test files 1230, tests 11148, plan headings 957.
+Counts: frontend functions 5957, frontend ids 2510, CSS sections 495, backend routes 607, backend modules 5661, test files 1232, tests 11161, plan headings 957.
 
 ## Frontend functions (5957)
 
@@ -424,79 +424,79 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aiWritingTrace` | frontend/js/chat.js:2215 |
-| `applyCompression` | frontend/js/chat.js:2075 |
+| `aiWritingTrace` | frontend/js/chat.js:2217 |
+| `applyCompression` | frontend/js/chat.js:2077 |
 | `askAboutPage` | frontend/js/chat.js:1464 |
 | `assistantLabel` | frontend/js/chat.js:52 |
 | `assistantMessageActions` | frontend/js/chat.js:162 |
 | `atlasSuggestion` | frontend/js/chat.js:674 |
-| `batteryModeOn` | frontend/js/chat.js:2117 |
+| `batteryModeOn` | frontend/js/chat.js:2119 |
 | `bookmarkWebResult` | frontend/js/chat.js:1267 |
 | `buildWebResultRow` | frontend/js/chat.js:1144 |
 | `chatEmptySettle` | frontend/js/chat.js:695 |
 | `chatHistoryToSend` | frontend/js/chat.js:36 |
 | `chatMessageActions` | frontend/js/chat.js:65 |
-| `chatTranscriptText` | frontend/js/chat.js:2013 |
+| `chatTranscriptText` | frontend/js/chat.js:2015 |
 | `chatTurnTranscript` | frontend/js/chat.js:125 |
 | `citeWebPage` | frontend/js/chat.js:1521 |
 | `clearChatEmptyState` | frontend/js/chat.js:823 |
 | `clearWebSearchHistory` | frontend/js/chat.js:1335 |
 | `closeWebReader` | frontend/js/chat.js:893 |
 | `compactTokens` | frontend/js/chat.js:490 |
-| `compressChatContext` | frontend/js/chat.js:2041 |
+| `compressChatContext` | frontend/js/chat.js:2043 |
 | `continueRunControls` | frontend/js/chat.js:226 |
 | `copyToClipboard` | frontend/js/chat.js:547 |
 | `copyViaTextarea` | frontend/js/chat.js:514 |
 | `copyWebLink` | frontend/js/chat.js:1259 |
-| `fillPersonaMark` | frontend/js/chat.js:1796 |
+| `fillPersonaMark` | frontend/js/chat.js:1798 |
 | `flashCopied` | frontend/js/chat.js:536 |
 | `forkFromBubble` | frontend/js/chat.js:626 |
-| `livingInterval` | frontend/js/chat.js:2201 |
-| `loadResponseModes` | frontend/js/chat.js:1751 |
+| `livingInterval` | frontend/js/chat.js:2203 |
+| `loadResponseModes` | frontend/js/chat.js:1753 |
 | `loadWebSearchHistory` | frontend/js/chat.js:1310 |
 | `manualPauseControls` | frontend/js/chat.js:272 |
 | `messageMetaLine` | frontend/js/chat.js:340 |
 | `metaItem` | frontend/js/chat.js:306 |
-| `mountChatActionsMenu` | frontend/js/chat.js:1937 |
+| `mountChatActionsMenu` | frontend/js/chat.js:1939 |
 | `openWebPageExternally` | frontend/js/chat.js:1255 |
 | `openWebReader` | frontend/js/chat.js:1481 |
-| `personaOptions` | frontend/js/chat.js:1813 |
-| `progressLine` | frontend/js/chat.js:2543 |
-| `progressMotionWanted` | frontend/js/chat.js:2153 |
-| `progressPhaseText` | frontend/js/chat.js:2411 |
+| `personaOptions` | frontend/js/chat.js:1815 |
+| `progressLine` | frontend/js/chat.js:2545 |
+| `progressMotionWanted` | frontend/js/chat.js:2155 |
+| `progressPhaseText` | frontend/js/chat.js:2413 |
 | `pushWebSearchHistory` | frontend/js/chat.js:1319 |
 | `questionForBubble` | frontend/js/chat.js:580 |
-| `reducedMotionWanted` | frontend/js/chat.js:2123 |
+| `reducedMotionWanted` | frontend/js/chat.js:2125 |
 | `refreshWebSearxngStrip` | frontend/js/chat.js:1064 |
 | `regenerateFromBubble` | frontend/js/chat.js:598 |
 | `regenerateLastAnswer` | frontend/js/chat.js:653 |
 | `removeChatBubble` | frontend/js/chat.js:500 |
-| `renderChatContextMeter` | frontend/js/chat.js:1887 |
+| `renderChatContextMeter` | frontend/js/chat.js:1889 |
 | `renderChatEmptyState` | frontend/js/chat.js:705 |
-| `renderChatTurnCount` | frontend/js/chat.js:1917 |
-| `renderChatUsage` | frontend/js/chat.js:1870 |
-| `renderCompressionState` | frontend/js/chat.js:2088 |
+| `renderChatTurnCount` | frontend/js/chat.js:1919 |
+| `renderChatUsage` | frontend/js/chat.js:1872 |
+| `renderCompressionState` | frontend/js/chat.js:2090 |
 | `renderModelContextBox` | frontend/js/chat.js:1614 |
-| `renderModelHealthNote` | frontend/js/chat.js:1714 |
-| `renderModelSpec` | frontend/js/chat.js:1642 |
+| `renderModelHealthNote` | frontend/js/chat.js:1716 |
+| `renderModelSpec` | frontend/js/chat.js:1644 |
 | `renderWebPageAttachment` | frontend/js/chat.js:1548 |
 | `renderWebPanelMenu` | frontend/js/chat.js:998 |
 | `renderWebSearchHistory` | frontend/js/chat.js:1344 |
 | `rewriteAnswerWith` | frontend/js/chat.js:617 |
 | `runWebSearch` | frontend/js/chat.js:1379 |
-| `saveChatAsDocument` | frontend/js/chat.js:1989 |
-| `scheduleThinkingWordTick` | frontend/js/chat.js:2329 |
-| `setResponseMode` | frontend/js/chat.js:1774 |
+| `saveChatAsDocument` | frontend/js/chat.js:1991 |
+| `scheduleThinkingWordTick` | frontend/js/chat.js:2331 |
+| `setResponseMode` | frontend/js/chat.js:1776 |
 | `setWebEngineDot` | frontend/js/chat.js:984 |
 | `setWebSearxngRunning` | frontend/js/chat.js:1049 |
-| `showCompressReview` | frontend/js/chat.js:2063 |
-| `startThinkingWordRotation` | frontend/js/chat.js:2357 |
-| `stopThinkingWordRotation` | frontend/js/chat.js:2379 |
+| `showCompressReview` | frontend/js/chat.js:2065 |
+| `startThinkingWordRotation` | frontend/js/chat.js:2359 |
+| `stopThinkingWordRotation` | frontend/js/chat.js:2381 |
 | `stopWebRequest` | frontend/js/chat.js:878 |
-| `togglePersonaPrompt` | frontend/js/chat.js:1862 |
+| `togglePersonaPrompt` | frontend/js/chat.js:1864 |
 | `toggleWebPanel` | frontend/js/chat.js:906 |
-| `toolPhaseVerb` | frontend/js/chat.js:2426 |
-| `typingDots` | frontend/js/chat.js:2440 |
+| `toolPhaseVerb` | frontend/js/chat.js:2428 |
+| `typingDots` | frontend/js/chat.js:2442 |
 | `webEngineWords` | frontend/js/chat.js:967 |
 | `webPageContextBlock` | frontend/js/chat.js:1579 |
 | `webPageMarkdown` | frontend/js/chat.js:1488 |
@@ -505,8 +505,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `webRequestEnd` | frontend/js/chat.js:868 |
 | `webRequestStart` | frontend/js/chat.js:859 |
 | `webResultMark` | frontend/js/chat.js:1110 |
-| `wheelScrollsHorizontally` | frontend/js/chat.js:2264 |
-| `wireHorizontalWheelScrolling` | frontend/js/chat.js:2297 |
+| `wheelScrollsHorizontally` | frontend/js/chat.js:2266 |
+| `wireHorizontalWheelScrolling` | frontend/js/chat.js:2299 |
 
 ### frontend/js/chat-agent.js (71)
 
@@ -1986,76 +1986,76 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `appendTimelineRows` | frontend/js/timeline.js:738 |
-| `applyTimelineRowTabOrder` | frontend/js/timeline.js:1433 |
-| `closeTimelineRow` | frontend/js/timeline.js:1649 |
-| `dailyNotePair` | frontend/js/timeline.js:1109 |
+| `applyTimelineRowTabOrder` | frontend/js/timeline.js:1435 |
+| `closeTimelineRow` | frontend/js/timeline.js:1651 |
+| `dailyNotePair` | frontend/js/timeline.js:1111 |
 | `dailyNoteTitle` | frontend/js/timeline.js:184 |
-| `drawTimelineScrubber` | frontend/js/timeline.js:1847 |
-| `drawTimelineWindow` | frontend/js/timeline.js:1915 |
+| `drawTimelineScrubber` | frontend/js/timeline.js:1849 |
+| `drawTimelineWindow` | frontend/js/timeline.js:1917 |
 | `fillTimelineBandOptions` | frontend/js/timeline.js:821 |
-| `focusTimelineRow` | frontend/js/timeline.js:1599 |
-| `openDayPage` | frontend/js/timeline.js:1077 |
-| `openTimelineRowDetail` | frontend/js/timeline.js:1662 |
-| `openTimelineTableDetail` | frontend/js/timeline.js:2245 |
-| `openTodaysPage` | frontend/js/timeline.js:1065 |
+| `focusTimelineRow` | frontend/js/timeline.js:1601 |
+| `openDayPage` | frontend/js/timeline.js:1079 |
+| `openTimelineRowDetail` | frontend/js/timeline.js:1664 |
+| `openTimelineTableDetail` | frontend/js/timeline.js:2247 |
+| `openTodaysPage` | frontend/js/timeline.js:1067 |
 | `paintTimeline` | frontend/js/timeline.js:884 |
 | `paintTimelineFeed` | frontend/js/timeline.js:926 |
-| `paintTimelineTable` | frontend/js/timeline.js:2069 |
+| `paintTimelineTable` | frontend/js/timeline.js:2071 |
 | `renderTimeline` | frontend/js/timeline.js:561 |
-| `renderTimelineDayStrip` | frontend/js/timeline.js:1194 |
+| `renderTimelineDayStrip` | frontend/js/timeline.js:1196 |
 | `renderTimelineKinds` | frontend/js/timeline.js:342 |
-| `renderTimelineMonthPop` | frontend/js/timeline.js:1314 |
+| `renderTimelineMonthPop` | frontend/js/timeline.js:1316 |
 | `renderTimelineRecall` | frontend/js/timeline.js:617 |
-| `setTimelineRowSelected` | frontend/js/timeline.js:2233 |
-| `shortDate` | frontend/js/timeline.js:1776 |
-| `startDayNote` | frontend/js/timeline.js:1140 |
-| `startTodaysNote` | frontend/js/timeline.js:1136 |
-| `syncTimelineDetailSpans` | frontend/js/timeline.js:2124 |
+| `setTimelineRowSelected` | frontend/js/timeline.js:2235 |
+| `shortDate` | frontend/js/timeline.js:1778 |
+| `startDayNote` | frontend/js/timeline.js:1142 |
+| `startTodaysNote` | frontend/js/timeline.js:1138 |
+| `syncTimelineDetailSpans` | frontend/js/timeline.js:2126 |
 | `syncTimelineFilterChip` | frontend/js/timeline.js:851 |
 | `syncTimelineKindsLabel` | frontend/js/timeline.js:398 |
-| `syncTimelineSelectUi` | frontend/js/timeline.js:2262 |
-| `syncTimelineViewSeg` | frontend/js/timeline.js:2313 |
+| `syncTimelineSelectUi` | frontend/js/timeline.js:2264 |
+| `syncTimelineViewSeg` | frontend/js/timeline.js:2315 |
 | `syncTimelineYears` | frontend/js/timeline.js:668 |
-| `timelineAheadBuckets` | frontend/js/timeline.js:976 |
+| `timelineAheadBuckets` | frontend/js/timeline.js:978 |
 | `timelineAutoScale` | frontend/js/timeline.js:452 |
 | `timelineBucketKey` | frontend/js/timeline.js:217 |
 | `timelineBucketLabel` | frontend/js/timeline.js:234 |
-| `timelineBucketSection` | frontend/js/timeline.js:986 |
-| `timelineCalendarCall` | frontend/js/timeline.js:2297 |
+| `timelineBucketSection` | frontend/js/timeline.js:988 |
+| `timelineCalendarCall` | frontend/js/timeline.js:2299 |
 | `timelineDailyNote` | frontend/js/timeline.js:201 |
-| `timelineDayKeys` | frontend/js/timeline.js:1258 |
-| `timelineDayLabel` | frontend/js/timeline.js:1189 |
-| `timelineDayPages` | frontend/js/timeline.js:1173 |
-| `timelineDayShift` | frontend/js/timeline.js:1130 |
-| `timelineDensitySpan` | frontend/js/timeline.js:1824 |
-| `timelineDensitySpanOf` | frontend/js/timeline.js:1830 |
-| `timelineForgetRows` | frontend/js/timeline.js:1910 |
+| `timelineDayKeys` | frontend/js/timeline.js:1260 |
+| `timelineDayLabel` | frontend/js/timeline.js:1191 |
+| `timelineDayPages` | frontend/js/timeline.js:1175 |
+| `timelineDayShift` | frontend/js/timeline.js:1132 |
+| `timelineDensitySpan` | frontend/js/timeline.js:1826 |
+| `timelineDensitySpanOf` | frontend/js/timeline.js:1832 |
+| `timelineForgetRows` | frontend/js/timeline.js:1912 |
 | `timelineIsDailyNote` | frontend/js/timeline.js:308 |
-| `timelineJumpToDay` | frontend/js/timeline.js:1301 |
+| `timelineJumpToDay` | frontend/js/timeline.js:1303 |
 | `timelineKindChoice` | frontend/js/timeline.js:292 |
 | `timelineLoadMore` | frontend/js/timeline.js:693 |
-| `timelineMonthKeys` | frontend/js/timeline.js:1368 |
-| `timelineMonthShift` | frontend/js/timeline.js:1295 |
-| `timelineMonthStart` | frontend/js/timeline.js:1291 |
+| `timelineMonthKeys` | frontend/js/timeline.js:1370 |
+| `timelineMonthShift` | frontend/js/timeline.js:1297 |
+| `timelineMonthStart` | frontend/js/timeline.js:1293 |
 | `timelineQuery` | frontend/js/timeline.js:531 |
 | `timelineResolvedScale` | frontend/js/timeline.js:479 |
 | `timelineRow` | frontend/js/timeline.js:115 |
-| `timelineRowElement` | frontend/js/timeline.js:1461 |
+| `timelineRowElement` | frontend/js/timeline.js:1463 |
 | `timelineRowGroups` | frontend/js/timeline.js:807 |
 | `timelineRowMoment` | frontend/js/timeline.js:102 |
 | `timelineScaleChoice` | frontend/js/timeline.js:436 |
-| `timelineScrollToToday` | frontend/js/timeline.js:2424 |
-| `timelineScrubTo` | frontend/js/timeline.js:1963 |
-| `timelineSortValue` | frontend/js/timeline.js:2040 |
-| `timelineSortedRows` | frontend/js/timeline.js:2051 |
-| `timelineStepScale` | frontend/js/timeline.js:1745 |
-| `timelineTableColumnCount` | frontend/js/timeline.js:2104 |
-| `timelineTableRow` | frontend/js/timeline.js:2131 |
-| `timelineViewMode` | frontend/js/timeline.js:2013 |
+| `timelineScrollToToday` | frontend/js/timeline.js:2426 |
+| `timelineScrubTo` | frontend/js/timeline.js:1965 |
+| `timelineSortValue` | frontend/js/timeline.js:2042 |
+| `timelineSortedRows` | frontend/js/timeline.js:2053 |
+| `timelineStepScale` | frontend/js/timeline.js:1747 |
+| `timelineTableColumnCount` | frontend/js/timeline.js:2106 |
+| `timelineTableRow` | frontend/js/timeline.js:2133 |
+| `timelineViewMode` | frontend/js/timeline.js:2015 |
 | `timelineVisibleRows` | frontend/js/timeline.js:864 |
-| `timelineWatchRow` | frontend/js/timeline.js:1899 |
+| `timelineWatchRow` | frontend/js/timeline.js:1901 |
 | `toggleTimelineKind` | frontend/js/timeline.js:417 |
-| `toggleTimelineRow` | frontend/js/timeline.js:1623 |
+| `toggleTimelineRow` | frontend/js/timeline.js:1625 |
 
 ### frontend/js/palette.js (28)
 
@@ -10005,7 +10005,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/export` | GET | `export_learned` | src/tessellate/api/routes_learned.py:176 |
 | `/export.ics` | GET | `export_ics` | src/tessellate/api/routes_reminders.py:356 |
 | `/export/backup` | GET | `export_backup` | src/tessellate/api/routes_settings.py:2580 |
-| `/export/csv` | GET | `export_csv` | src/tessellate/api/routes_settings.py:3293 |
+| `/export/csv` | GET | `export_csv` | src/tessellate/api/routes_settings.py:3298 |
 | `/export/folder` | GET | `export_notebook_folder` | src/tessellate/api/routes_import.py:121 |
 | `/export/json` | GET | `export_json` | src/tessellate/api/routes_settings.py:2604 |
 | `/export/markdown` | GET | `export_markdown` | src/tessellate/api/routes_settings.py:2734 |
@@ -10075,8 +10075,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/import.ics` | POST | `import_ics` | src/tessellate/api/routes_reminders.py:401 |
 | `/import/app` | POST | `import_app` | src/tessellate/api/routes_import.py:63 |
 | `/import/directory` | POST | `import_directory` | src/tessellate/api/routes_settings.py:3075 |
-| `/import/document` | POST | `import_document` | src/tessellate/api/routes_settings.py:3197 |
-| `/import/markdown` | POST | `import_markdown` | src/tessellate/api/routes_settings.py:3090 |
+| `/import/document` | POST | `import_document` | src/tessellate/api/routes_settings.py:3202 |
+| `/import/markdown` | POST | `import_markdown` | src/tessellate/api/routes_settings.py:3095 |
 | `/import/reports/{report_id}` | GET | `import_report_page` | src/tessellate/api/routes_import.py:112 |
 | `/improve` | POST | `improve_writing` | src/tessellate/api/routes_entries.py:1627 |
 | `/inspect` | POST | `inspect_model` | src/tessellate/api/routes_models.py:727 |
@@ -10456,7 +10456,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (5658)
+## Backend modules (5661)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -10561,8 +10561,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `SizeTier` | src/tessellate/ai/agent.py:55 |
-| `_TurnCard` | src/tessellate/ai/agent.py:168 |
+| `SizeTier` | src/tessellate/ai/agent.py:56 |
+| `_TurnCard` | src/tessellate/ai/agent.py:169 |
 | `_TurnPlan` | src/tessellate/ai/agent.py:1655 |
 | `_TurnState` | src/tessellate/ai/agent.py:1963 |
 | `_bare_host` | src/tessellate/ai/agent.py:1302 |
@@ -10571,7 +10571,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_change_document_id` | src/tessellate/ai/agent.py:1046 |
 | `_change_note_id` | src/tessellate/ai/agent.py:1028 |
 | `_change_reminder_id` | src/tessellate/ai/agent.py:1068 |
-| `_check_sources` | src/tessellate/ai/agent.py:234 |
+| `_check_sources` | src/tessellate/ai/agent.py:235 |
 | `_cleared_page` | src/tessellate/ai/agent.py:1333 |
 | `_clip_strings` | src/tessellate/ai/agent.py:2034 |
 | `_copies_what_was_read` | src/tessellate/ai/agent.py:1588 |
@@ -10583,7 +10583,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_focus` | src/tessellate/ai/agent.py:1635 |
 | `_handoff_refused` | src/tessellate/ai/agent.py:2522 |
 | `_hosts_named` | src/tessellate/ai/agent.py:1307 |
-| `_labelled` | src/tessellate/ai/agent.py:246 |
+| `_labelled` | src/tessellate/ai/agent.py:247 |
 | `_names_an_existing_category` | src/tessellate/ai/agent.py:2153 |
 | `_narrow_keeps` | src/tessellate/ai/agent.py:1683 |
 | `_one_option_ask` | src/tessellate/ai/agent.py:2510 |
@@ -10595,26 +10595,26 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_prefetch_outbound` | src/tessellate/ai/agent.py:2082 |
 | `_prepare_turn` | src/tessellate/ai/agent.py:1696 |
 | `_recent_text` | src/tessellate/ai/agent.py:1548 |
-| `_recovery_hint` | src/tessellate/ai/agent.py:680 |
+| `_recovery_hint` | src/tessellate/ai/agent.py:681 |
 | `_requires_a_call` | src/tessellate/ai/agent.py:2110 |
-| `_result_summary` | src/tessellate/ai/agent.py:749 |
+| `_result_summary` | src/tessellate/ai/agent.py:750 |
 | `_result_urls` | src/tessellate/ai/agent.py:1312 |
 | `_round_stream` | src/tessellate/ai/agent.py:2223 |
 | `_run_and_record` | src/tessellate/ai/agent.py:2375 |
-| `_seen_ids` | src/tessellate/ai/agent.py:869 |
+| `_seen_ids` | src/tessellate/ai/agent.py:870 |
 | `_tidied_arguments` | src/tessellate/ai/agent.py:2485 |
 | `_tool_event` | src/tessellate/ai/agent.py:2235 |
 | `_tool_events` | src/tessellate/ai/agent.py:2300 |
-| `_tool_sources` | src/tessellate/ai/agent.py:916 |
-| `_touched_items` | src/tessellate/ai/agent.py:806 |
-| `_touched_kind` | src/tessellate/ai/agent.py:788 |
+| `_tool_sources` | src/tessellate/ai/agent.py:917 |
+| `_touched_items` | src/tessellate/ai/agent.py:807 |
+| `_touched_kind` | src/tessellate/ai/agent.py:789 |
 | `_wrap_up_round` | src/tessellate/ai/agent.py:2825 |
-| `announces_unacted_tool` | src/tessellate/ai/agent.py:297 |
+| `announces_unacted_tool` | src/tessellate/ai/agent.py:298 |
 | `build_agent_messages` | src/tessellate/ai/agent.py:1346 |
 | `plan_now` | src/tessellate/ai/agent.py:2345 |
 | `run_agent` | src/tessellate/ai/agent.py:2862 |
-| `size_tier` | src/tessellate/ai/agent.py:88 |
-| `tools_guide` | src/tessellate/ai/agent.py:510 |
+| `size_tier` | src/tessellate/ai/agent.py:89 |
+| `tools_guide` | src/tessellate/ai/agent.py:511 |
 | `unsupported_claims` | src/tessellate/ai/agent.py:1219 |
 
 ### src/tessellate/ai/answer_trim.py (5)
@@ -10746,22 +10746,22 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_B` | src/tessellate/ai/cards.py:237 |
-| `_D` | src/tessellate/ai/cards.py:229 |
-| `_F` | src/tessellate/ai/cards.py:233 |
-| `_N` | src/tessellate/ai/cards.py:225 |
-| `_R` | src/tessellate/ai/cards.py:241 |
-| `_Where` | src/tessellate/ai/cards.py:208 |
-| `_board_item` | src/tessellate/ai/cards.py:160 |
-| `_clip` | src/tessellate/ai/cards.py:84 |
-| `_document_item` | src/tessellate/ai/cards.py:119 |
-| `_file_item` | src/tessellate/ai/cards.py:134 |
-| `_first_text` | src/tessellate/ai/cards.py:89 |
-| `_flat` | src/tessellate/ai/cards.py:80 |
-| `_note_item` | src/tessellate/ai/cards.py:101 |
-| `_reminder_item` | src/tessellate/ai/cards.py:182 |
-| `_rows` | src/tessellate/ai/cards.py:361 |
-| `result_cards` | src/tessellate/ai/cards.py:368 |
+| `_B` | src/tessellate/ai/cards.py:238 |
+| `_D` | src/tessellate/ai/cards.py:230 |
+| `_F` | src/tessellate/ai/cards.py:234 |
+| `_N` | src/tessellate/ai/cards.py:226 |
+| `_R` | src/tessellate/ai/cards.py:242 |
+| `_Where` | src/tessellate/ai/cards.py:209 |
+| `_board_item` | src/tessellate/ai/cards.py:161 |
+| `_clip` | src/tessellate/ai/cards.py:85 |
+| `_document_item` | src/tessellate/ai/cards.py:120 |
+| `_file_item` | src/tessellate/ai/cards.py:135 |
+| `_first_text` | src/tessellate/ai/cards.py:90 |
+| `_flat` | src/tessellate/ai/cards.py:81 |
+| `_note_item` | src/tessellate/ai/cards.py:102 |
+| `_reminder_item` | src/tessellate/ai/cards.py:183 |
+| `_rows` | src/tessellate/ai/cards.py:362 |
+| `result_cards` | src/tessellate/ai/cards.py:369 |
 
 ### src/tessellate/ai/chunks.py (4)
 
@@ -14796,7 +14796,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_already_imported` | src/tessellate/api/routes_settings.py:2931 |
 | `_apply_preference` | src/tessellate/api/routes_settings.py:1072 |
 | `_clean_avatar_style` | src/tessellate/api/routes_settings.py:96 |
-| `_create_document_notes` | src/tessellate/api/routes_settings.py:3268 |
+| `_create_document_notes` | src/tessellate/api/routes_settings.py:3273 |
 | `_csv_safe` | src/tessellate/api/routes_settings.py:1754 |
 | `_desktop_entry` | src/tessellate/api/routes_settings.py:1314 |
 | `_export_rows` | src/tessellate/api/routes_settings.py:2570 |
@@ -14804,13 +14804,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_exported_created` | src/tessellate/api/routes_settings.py:2766 |
 | `_feed_item` | src/tessellate/api/routes_settings.py:1843 |
 | `_import_directory_files` | src/tessellate/api/routes_settings.py:2952 |
-| `_import_markdown_files` | src/tessellate/api/routes_settings.py:3125 |
+| `_import_markdown_files` | src/tessellate/api/routes_settings.py:3130 |
 | `_import_root_for` | src/tessellate/api/routes_settings.py:2896 |
 | `_import_roots` | src/tessellate/api/routes_settings.py:2880 |
 | `_import_skip_reason` | src/tessellate/api/routes_settings.py:1212 |
 | `_inside` | src/tessellate/api/routes_settings.py:2904 |
 | `_keep_exported_state` | src/tessellate/api/routes_settings.py:2783 |
-| `_link_imported` | src/tessellate/api/routes_settings.py:3111 |
+| `_link_imported` | src/tessellate/api/routes_settings.py:3116 |
 | `_merged_list` | src/tessellate/api/routes_settings.py:1169 |
 | `_models_status_snapshot` | src/tessellate/api/routes_settings.py:2554 |
 | `_not_private_events` | src/tessellate/api/routes_settings.py:1761 |
@@ -14850,7 +14850,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `empty_recycle_bin` | src/tessellate/api/routes_settings.py:1989 |
 | `event_feed` | src/tessellate/api/routes_settings.py:1915 |
 | `export_backup` | src/tessellate/api/routes_settings.py:2581 |
-| `export_csv` | src/tessellate/api/routes_settings.py:3294 |
+| `export_csv` | src/tessellate/api/routes_settings.py:3299 |
 | `export_json` | src/tessellate/api/routes_settings.py:2606 |
 | `export_markdown` | src/tessellate/api/routes_settings.py:2735 |
 | `export_preferences` | src/tessellate/api/routes_settings.py:1184 |
@@ -14858,8 +14858,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `get_preference_defaults` | src/tessellate/api/routes_settings.py:1145 |
 | `get_preferences` | src/tessellate/api/routes_settings.py:749 |
 | `import_directory` | src/tessellate/api/routes_settings.py:3076 |
-| `import_document` | src/tessellate/api/routes_settings.py:3198 |
-| `import_markdown` | src/tessellate/api/routes_settings.py:3092 |
+| `import_document` | src/tessellate/api/routes_settings.py:3203 |
+| `import_markdown` | src/tessellate/api/routes_settings.py:3097 |
 | `import_preferences` | src/tessellate/api/routes_settings.py:1228 |
 | `install_extra` | src/tessellate/api/routes_settings.py:2045 |
 | `list_embedding_models` | src/tessellate/api/routes_settings.py:2068 |
@@ -16023,58 +16023,58 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Pool` | src/tessellate/core/jobs.py:266 |
-| `_Job` | src/tessellate/core/jobs.py:228 |
+| `Pool` | src/tessellate/core/jobs.py:270 |
+| `_Job` | src/tessellate/core/jobs.py:232 |
 | `_cpu_width` | src/tessellate/core/jobs.py:65 |
-| `_ledger_run` | src/tessellate/core/jobs.py:185 |
-| `_start_heartbeat` | src/tessellate/core/jobs.py:197 |
-| `enqueue` | src/tessellate/core/jobs.py:598 |
-| `forget` | src/tessellate/core/jobs.py:617 |
-| `pending` | src/tessellate/core/jobs.py:609 |
-| `pool` | src/tessellate/core/jobs.py:584 |
-| `resubmit` | src/tessellate/core/jobs.py:613 |
-| `resume` | src/tessellate/core/jobs.py:625 |
-| `shutdown` | src/tessellate/core/jobs.py:640 |
+| `_ledger_run` | src/tessellate/core/jobs.py:188 |
+| `_start_heartbeat` | src/tessellate/core/jobs.py:200 |
+| `enqueue` | src/tessellate/core/jobs.py:602 |
+| `forget` | src/tessellate/core/jobs.py:621 |
+| `pending` | src/tessellate/core/jobs.py:613 |
+| `pool` | src/tessellate/core/jobs.py:588 |
+| `resubmit` | src/tessellate/core/jobs.py:617 |
+| `resume` | src/tessellate/core/jobs.py:629 |
+| `shutdown` | src/tessellate/core/jobs.py:644 |
 
 ### src/tessellate/core/jobstore.py (35)
 
 | Name | File:line |
 |---|---|
-| `NotDurable` | src/tessellate/core/jobstore.py:161 |
-| `_as_key` | src/tessellate/core/jobstore.py:183 |
-| `_beat` | src/tessellate/core/jobstore.py:453 |
-| `_changed` | src/tessellate/core/jobstore.py:145 |
-| `_clip` | src/tessellate/core/jobstore.py:120 |
-| `_database` | src/tessellate/core/jobstore.py:125 |
-| `_decode` | src/tessellate/core/jobstore.py:175 |
-| `_dotted` | src/tessellate/core/jobstore.py:211 |
-| `_encode` | src/tessellate/core/jobstore.py:165 |
-| `_fail_unrun` | src/tessellate/core/jobstore.py:611 |
-| `_hold` | src/tessellate/core/jobstore.py:435 |
-| `_iso` | src/tessellate/core/jobstore.py:661 |
-| `_now` | src/tessellate/core/jobstore.py:116 |
-| `_release` | src/tessellate/core/jobstore.py:443 |
-| `_schedule` | src/tessellate/core/jobstore.py:589 |
-| `cancel` | src/tessellate/core/jobstore.py:353 |
-| `cancel_queued` | src/tessellate/core/jobstore.py:387 |
-| `decode_payload` | src/tessellate/core/jobstore.py:195 |
-| `durable_kind` | src/tessellate/core/jobstore.py:215 |
-| `encode_payload` | src/tessellate/core/jobstore.py:191 |
-| `finish` | src/tessellate/core/jobstore.py:301 |
-| `held` | src/tessellate/core/jobstore.py:448 |
-| `lease` | src/tessellate/core/jobstore.py:263 |
-| `list_jobs` | src/tessellate/core/jobstore.py:665 |
-| `peek_db` | src/tessellate/core/jobstore.py:134 |
-| `prune` | src/tessellate/core/jobstore.py:629 |
-| `record` | src/tessellate/core/jobstore.py:237 |
-| `register` | src/tessellate/core/jobstore.py:205 |
-| `renew` | src/tessellate/core/jobstore.py:468 |
-| `resolve` | src/tessellate/core/jobstore.py:222 |
-| `resume` | src/tessellate/core/jobstore.py:495 |
-| `set_forget` | src/tessellate/core/jobstore.py:417 |
-| `stop` | src/tessellate/core/jobstore.py:602 |
-| `supersede` | src/tessellate/core/jobstore.py:330 |
-| `version` | src/tessellate/core/jobstore.py:151 |
+| `NotDurable` | src/tessellate/core/jobstore.py:164 |
+| `_as_key` | src/tessellate/core/jobstore.py:186 |
+| `_beat` | src/tessellate/core/jobstore.py:456 |
+| `_changed` | src/tessellate/core/jobstore.py:148 |
+| `_clip` | src/tessellate/core/jobstore.py:123 |
+| `_database` | src/tessellate/core/jobstore.py:128 |
+| `_decode` | src/tessellate/core/jobstore.py:178 |
+| `_dotted` | src/tessellate/core/jobstore.py:214 |
+| `_encode` | src/tessellate/core/jobstore.py:168 |
+| `_fail_unrun` | src/tessellate/core/jobstore.py:614 |
+| `_hold` | src/tessellate/core/jobstore.py:438 |
+| `_iso` | src/tessellate/core/jobstore.py:664 |
+| `_now` | src/tessellate/core/jobstore.py:119 |
+| `_release` | src/tessellate/core/jobstore.py:446 |
+| `_schedule` | src/tessellate/core/jobstore.py:592 |
+| `cancel` | src/tessellate/core/jobstore.py:356 |
+| `cancel_queued` | src/tessellate/core/jobstore.py:390 |
+| `decode_payload` | src/tessellate/core/jobstore.py:198 |
+| `durable_kind` | src/tessellate/core/jobstore.py:218 |
+| `encode_payload` | src/tessellate/core/jobstore.py:194 |
+| `finish` | src/tessellate/core/jobstore.py:304 |
+| `held` | src/tessellate/core/jobstore.py:451 |
+| `lease` | src/tessellate/core/jobstore.py:266 |
+| `list_jobs` | src/tessellate/core/jobstore.py:668 |
+| `peek_db` | src/tessellate/core/jobstore.py:137 |
+| `prune` | src/tessellate/core/jobstore.py:632 |
+| `record` | src/tessellate/core/jobstore.py:240 |
+| `register` | src/tessellate/core/jobstore.py:208 |
+| `renew` | src/tessellate/core/jobstore.py:471 |
+| `resolve` | src/tessellate/core/jobstore.py:225 |
+| `resume` | src/tessellate/core/jobstore.py:498 |
+| `set_forget` | src/tessellate/core/jobstore.py:420 |
+| `stop` | src/tessellate/core/jobstore.py:605 |
+| `supersede` | src/tessellate/core/jobstore.py:333 |
+| `version` | src/tessellate/core/jobstore.py:154 |
 
 ### src/tessellate/core/lancert.py (22)
 
@@ -17338,51 +17338,51 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Hit` | src/tessellate/search/engine.py:100 |
-| `_Matrix` | src/tessellate/search/engine.py:147 |
-| `_backend_id` | src/tessellate/search/engine.py:492 |
-| `_candidates` | src/tessellate/search/engine.py:750 |
-| `_compact` | src/tessellate/search/engine.py:655 |
+| `Hit` | src/tessellate/search/engine.py:101 |
+| `_Matrix` | src/tessellate/search/engine.py:148 |
+| `_backend_id` | src/tessellate/search/engine.py:493 |
+| `_candidates` | src/tessellate/search/engine.py:751 |
+| `_compact` | src/tessellate/search/engine.py:656 |
 | `_cosine_scores` | src/tessellate/search/engine.py:1339 |
-| `_explain` | src/tessellate/search/engine.py:930 |
-| `_filter_only` | src/tessellate/search/engine.py:791 |
+| `_explain` | src/tessellate/search/engine.py:931 |
+| `_filter_only` | src/tessellate/search/engine.py:792 |
 | `_flag_filters` | src/tessellate/search/engine.py:989 |
-| `_forget` | src/tessellate/search/engine.py:617 |
-| `_forget_from` | src/tessellate/search/engine.py:626 |
+| `_forget` | src/tessellate/search/engine.py:618 |
+| `_forget_from` | src/tessellate/search/engine.py:627 |
 | `_has_attachment_ids` | src/tessellate/search/engine.py:996 |
 | `_has_ids` | src/tessellate/search/engine.py:1026 |
-| `_hops_from` | src/tessellate/search/engine.py:870 |
-| `_keep_matrix_in_step` | src/tessellate/search/engine.py:530 |
-| `_keyword_pass` | src/tessellate/search/engine.py:844 |
-| `_live_matrix` | src/tessellate/search/engine.py:515 |
-| `_load_all_vectors` | src/tessellate/search/engine.py:275 |
-| `_match_expression` | src/tessellate/search/engine.py:683 |
-| `_matrix_key` | src/tessellate/search/engine.py:245 |
-| `_mentions` | src/tessellate/search/engine.py:836 |
-| `_normalised_bm25` | src/tessellate/search/engine.py:914 |
-| `_put` | src/tessellate/search/engine.py:571 |
-| `_reconcile` | src/tessellate/search/engine.py:426 |
-| `_remember` | src/tessellate/search/engine.py:552 |
+| `_hops_from` | src/tessellate/search/engine.py:871 |
+| `_keep_matrix_in_step` | src/tessellate/search/engine.py:531 |
+| `_keyword_pass` | src/tessellate/search/engine.py:845 |
+| `_live_matrix` | src/tessellate/search/engine.py:516 |
+| `_load_all_vectors` | src/tessellate/search/engine.py:276 |
+| `_match_expression` | src/tessellate/search/engine.py:684 |
+| `_matrix_key` | src/tessellate/search/engine.py:246 |
+| `_mentions` | src/tessellate/search/engine.py:837 |
+| `_normalised_bm25` | src/tessellate/search/engine.py:915 |
+| `_put` | src/tessellate/search/engine.py:572 |
+| `_reconcile` | src/tessellate/search/engine.py:427 |
+| `_remember` | src/tessellate/search/engine.py:553 |
 | `_row_has` | src/tessellate/search/engine.py:1062 |
-| `_row_ids` | src/tessellate/search/engine.py:265 |
-| `_session_space` | src/tessellate/search/engine.py:732 |
-| `_snippet` | src/tessellate/search/engine.py:969 |
-| `_space_clause` | src/tessellate/search/engine.py:712 |
-| `_table_fingerprint` | src/tessellate/search/engine.py:250 |
-| `_term_groups` | src/tessellate/search/engine.py:673 |
-| `_unit` | src/tessellate/search/engine.py:336 |
+| `_row_ids` | src/tessellate/search/engine.py:266 |
+| `_session_space` | src/tessellate/search/engine.py:733 |
+| `_snippet` | src/tessellate/search/engine.py:970 |
+| `_space_clause` | src/tessellate/search/engine.py:713 |
+| `_table_fingerprint` | src/tessellate/search/engine.py:251 |
+| `_term_groups` | src/tessellate/search/engine.py:674 |
+| `_unit` | src/tessellate/search/engine.py:337 |
 | `_with_meaning` | src/tessellate/search/engine.py:1246 |
 | `cached_similar_pairs` | src/tessellate/search/engine.py:1453 |
-| `current_matrix` | src/tessellate/search/engine.py:365 |
-| `forget_vector` | src/tessellate/search/engine.py:603 |
-| `index_counts` | src/tessellate/search/engine.py:668 |
+| `current_matrix` | src/tessellate/search/engine.py:366 |
+| `forget_vector` | src/tessellate/search/engine.py:604 |
+| `index_counts` | src/tessellate/search/engine.py:669 |
 | `related` | src/tessellate/search/engine.py:1383 |
-| `rows_for` | src/tessellate/search/engine.py:400 |
+| `rows_for` | src/tessellate/search/engine.py:401 |
 | `search` | src/tessellate/search/engine.py:1086 |
 | `stats` | src/tessellate/search/engine.py:1499 |
-| `vector_view` | src/tessellate/search/engine.py:472 |
+| `vector_view` | src/tessellate/search/engine.py:473 |
 | `vectors_by_id` | src/tessellate/search/engine.py:1407 |
-| `warm_vectors` | src/tessellate/search/engine.py:343 |
+| `warm_vectors` | src/tessellate/search/engine.py:344 |
 
 ### src/tessellate/search/index.py (36)
 
@@ -17579,6 +17579,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `getpwuid` | src/tessellate/search/searxng_settings.py:202 |
 | `settings_path` | src/tessellate/search/searxng_settings.py:264 |
 
+### src/tessellate/search/snippet.py (3)
+
+| Name | File:line |
+|---|---|
+| `_flat` | src/tessellate/search/snippet.py:13 |
+| `clip_words` | src/tessellate/search/snippet.py:17 |
+| `window_words` | src/tessellate/search/snippet.py:32 |
+
 ### src/tessellate/search/websearch.py (34)
 
 | Name | File:line |
@@ -17618,7 +17626,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11148)
+## Tests (11161)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18146,6 +18154,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_import_dates.py | 4 |
 | tests/test_import_directory_roots.py | 7 |
 | tests/test_import_idempotent.py | 5 |
+| tests/test_import_job.py | 3 |
 | tests/test_import_markdown_links.py | 3 |
 | tests/test_import_module_cycles.py | 2 |
 | tests/test_import_one_step.py | 5 |
@@ -18589,7 +18598,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_server_time_readers.py | 1 |
 | tests/test_session_navigation.py | 6 |
 | tests/test_setting_label_toggles.py | 3 |
-| tests/test_settings_bugs_1017.py | 12 |
+| tests/test_settings_bugs_1017.py | 14 |
 | tests/test_settings_field_edge.py | 2 |
 | tests/test_settings_group_heads.py | 2 |
 | tests/test_settings_ia.py | 7 |
@@ -18619,6 +18628,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_slash.py | 18 |
 | tests/test_slash_falls_through.py | 1 |
 | tests/test_smooth_boot.py | 16 |
+| tests/test_snippet_word_boundaries.py | 8 |
 | tests/test_source_check.py | 8 |
 | tests/test_space_delete_cascades.py | 1 |
 | tests/test_spaces.py | 25 |
@@ -19240,84 +19250,84 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | B6 · Designed states: Medium | docs/roadmap/MODERNISATION_AUDIT.md:454 |
 | B7 The API contract | docs/roadmap/WORLD_CLASS_PLAN.md:648 |
 | B8 Extensions | docs/roadmap/WORLD_CLASS_PLAN.md:660 |
-| Brief 100: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:330 |
-| Brief 101 (Sonnet, three agents): the found-not-fixed ledger, placed (the owner: "make sure you cover all bugs and issues found and not fixed as well") | docs/roadmap/SESSION_BRIEFS.md:332 |
-| Brief 102 (Opus, lansafe): LAN safe by default on any network (INBOX 867) | docs/roadmap/SESSION_BRIEFS.md:341 |
-| Brief 103: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:350 |
-| Brief 104 (Opus, after atlas): typos read in context, not as slang (INBOX 869) | docs/roadmap/SESSION_BRIEFS.md:352 |
-| Brief 10: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:92 |
-| Brief 11: built; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (SESSION_BRIEFS Briefs 1 to 33)") | docs/roadmap/SESSION_BRIEFS.md:94 |
-| Brief 12: built; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (SESSION_BRIEFS Briefs 1 to 33)") | docs/roadmap/SESSION_BRIEFS.md:96 |
-| Brief 13: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:98 |
-| Brief 14: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:100 |
-| Brief 15: built; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (SESSION_BRIEFS Briefs 1 to 33)") | docs/roadmap/SESSION_BRIEFS.md:102 |
-| Brief 16: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:116 |
-| Brief 17: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:118 |
-| Brief 18: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:120 |
-| Brief 19: built; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (SESSION_BRIEFS Briefs 1 to 33)") | docs/roadmap/SESSION_BRIEFS.md:122 |
+| Brief 100: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:326 |
+| Brief 101 (Sonnet, three agents): the found-not-fixed ledger, placed (the owner: "make sure you cover all bugs and issues found and not fixed as well") | docs/roadmap/SESSION_BRIEFS.md:328 |
+| Brief 102 (Opus, lansafe): LAN safe by default on any network (INBOX 867) | docs/roadmap/SESSION_BRIEFS.md:337 |
+| Brief 103: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:346 |
+| Brief 104 (Opus, after atlas): typos read in context, not as slang (INBOX 869) | docs/roadmap/SESSION_BRIEFS.md:348 |
+| Brief 10: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:88 |
+| Brief 11: built; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (SESSION_BRIEFS Briefs 1 to 33)") | docs/roadmap/SESSION_BRIEFS.md:90 |
+| Brief 12: built; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (SESSION_BRIEFS Briefs 1 to 33)") | docs/roadmap/SESSION_BRIEFS.md:92 |
+| Brief 13: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:94 |
+| Brief 14: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:96 |
+| Brief 15: built; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (SESSION_BRIEFS Briefs 1 to 33)") | docs/roadmap/SESSION_BRIEFS.md:98 |
+| Brief 16: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:112 |
+| Brief 17: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:114 |
+| Brief 18: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:116 |
+| Brief 19: built; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (SESSION_BRIEFS Briefs 1 to 33)") | docs/roadmap/SESSION_BRIEFS.md:118 |
 | Brief 1: W3-1: one visibility-aware scheduler (PLAN P1) | docs/roadmap/MODERNISATION_AUDIT.md:1111 |
 | Brief 1: built; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (SESSION_BRIEFS Briefs 1 to 33)") | docs/roadmap/SESSION_BRIEFS.md:70 |
-| Brief 20: built; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (SESSION_BRIEFS Briefs 1 to 33)") | docs/roadmap/SESSION_BRIEFS.md:124 |
-| Brief 21: built; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (SESSION_BRIEFS Briefs 1 to 33)") | docs/roadmap/SESSION_BRIEFS.md:126 |
-| Brief 22: built; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (SESSION_BRIEFS Briefs 1 to 33)") | docs/roadmap/SESSION_BRIEFS.md:128 |
-| Brief 23: built; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (SESSION_BRIEFS Briefs 1 to 33)") | docs/roadmap/SESSION_BRIEFS.md:130 |
-| Brief 24: built; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (SESSION_BRIEFS Briefs 1 to 33)") | docs/roadmap/SESSION_BRIEFS.md:132 |
-| Brief 27 (Opus): UI Phase 11, the phone | docs/roadmap/SESSION_BRIEFS.md:136 |
+| Brief 20: built; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (SESSION_BRIEFS Briefs 1 to 33)") | docs/roadmap/SESSION_BRIEFS.md:120 |
+| Brief 21: built; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (SESSION_BRIEFS Briefs 1 to 33)") | docs/roadmap/SESSION_BRIEFS.md:122 |
+| Brief 22: built; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (SESSION_BRIEFS Briefs 1 to 33)") | docs/roadmap/SESSION_BRIEFS.md:124 |
+| Brief 23: built; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (SESSION_BRIEFS Briefs 1 to 33)") | docs/roadmap/SESSION_BRIEFS.md:126 |
+| Brief 24: built; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (SESSION_BRIEFS Briefs 1 to 33)") | docs/roadmap/SESSION_BRIEFS.md:128 |
+| Brief 27 (Opus): UI Phase 11, the phone | docs/roadmap/SESSION_BRIEFS.md:132 |
 | Brief 2: W2-1: collapse the Notes chrome stack | docs/roadmap/MODERNISATION_AUDIT.md:1157 |
 | Brief 2: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:72 |
-| Brief 32: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:148 |
-| Brief 33: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:146 |
-| Brief 34 (built 2026-10-12): characters, the faces, the companion and Atlas | docs/roadmap/SESSION_BRIEFS.md:150 |
-| Brief 34 continues (Opus, high): Atlas and the companion | docs/roadmap/SESSION_BRIEFS.md:156 |
+| Brief 32: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:144 |
+| Brief 33: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:142 |
+| Brief 34 (built 2026-10-12): characters, the faces, the companion and Atlas | docs/roadmap/SESSION_BRIEFS.md:146 |
+| Brief 34 continues (Opus, high): Atlas and the companion | docs/roadmap/SESSION_BRIEFS.md:152 |
 | Brief 3: W4-1: the error contract (PLAN B3) | docs/roadmap/MODERNISATION_AUDIT.md:1199 |
 | Brief 3: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:74 |
-| Brief 43 (Opus, high; Sonnet medium for the fixes it names): the expert audit | docs/roadmap/SESSION_BRIEFS.md:172 |
-| Brief 43: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:171 |
-| Brief 44: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)"); part 2 is WHITEBOARD_PLAN's expansion row 5 and `agent-remaining/drawio-1010.md` | docs/roadmap/SESSION_BRIEFS.md:213 |
-| Brief 45 part 2 (Opus, high): structure and complexity, acted on | docs/roadmap/SESSION_BRIEFS.md:215 |
+| Brief 43 (Opus, high; Sonnet medium for the fixes it names): the expert audit | docs/roadmap/SESSION_BRIEFS.md:168 |
+| Brief 43: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:167 |
+| Brief 44: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)"); part 2 is WHITEBOARD_PLAN's expansion row 5 and `agent-remaining/drawio-1010.md` | docs/roadmap/SESSION_BRIEFS.md:209 |
+| Brief 45 part 2 (Opus, high): structure and complexity, acted on | docs/roadmap/SESSION_BRIEFS.md:211 |
 | Brief 4: W1-3: glass as shell furniture, with an O(1) invariant | docs/roadmap/MODERNISATION_AUDIT.md:1243 |
 | Brief 4: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:76 |
-| Brief 56: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:227 |
-| Brief 57: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:229 |
-| Brief 58 (Opus, high): the stylesheet's structure (13b) | docs/roadmap/SESSION_BRIEFS.md:231 |
-| Brief 59 (Opus, high): the surfaces (13c) | docs/roadmap/SESSION_BRIEFS.md:235 |
+| Brief 56: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:223 |
+| Brief 57: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:225 |
+| Brief 58 (Opus, high): the stylesheet's structure (13b) | docs/roadmap/SESSION_BRIEFS.md:227 |
+| Brief 59 (Opus, high): the surfaces (13c) | docs/roadmap/SESSION_BRIEFS.md:231 |
 | Brief 5: W2-3: the note card's actions stop covering its text on touch | docs/roadmap/MODERNISATION_AUDIT.md:1281 |
 | Brief 5: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:78 |
-| Brief 60: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:245 |
-| Brief 61: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:247 |
-| Brief 62 (Opus, high): data out of code (26c) | docs/roadmap/SESSION_BRIEFS.md:249 |
-| Brief 63 (Opus, high): the runners (26d) | docs/roadmap/SESSION_BRIEFS.md:254 |
+| Brief 60: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:241 |
+| Brief 61: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:243 |
+| Brief 62 (Opus, high): data out of code (26c) | docs/roadmap/SESSION_BRIEFS.md:245 |
+| Brief 63 (Opus, high): the runners (26d) | docs/roadmap/SESSION_BRIEFS.md:250 |
 | Brief 6: W8-1: the audit scripts become the e2e suite | docs/roadmap/MODERNISATION_AUDIT.md:1310 |
 | Brief 6: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:80 |
 | Brief 7: W5-4: `ai/scheduler.py`, one gate in front of every model call | docs/roadmap/MODERNISATION_AUDIT.md:1347 |
 | Brief 7: built; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (SESSION_BRIEFS Briefs 1 to 33)") | docs/roadmap/SESSION_BRIEFS.md:82 |
-| Brief 85 (built 2026-10-12): the launch splash, reimagined (INBOX 834) | docs/roadmap/SESSION_BRIEFS.md:268 |
-| Brief 86: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (Brief 86)") | docs/roadmap/SESSION_BRIEFS.md:272 |
-| Brief 87 step 2 (Opus): build the top two vendor candidates (INBOX 833) | docs/roadmap/SESSION_BRIEFS.md:274 |
-| Brief 88 (Opus): Atlas and the companions, alive (INBOX 835) | docs/roadmap/SESSION_BRIEFS.md:278 |
-| Brief 89 (Sonnet): Add tags on lightly tagged notes (INBOX 836) | docs/roadmap/SESSION_BRIEFS.md:283 |
+| Brief 85 (built 2026-10-12): the launch splash, reimagined (INBOX 834) | docs/roadmap/SESSION_BRIEFS.md:264 |
+| Brief 86: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (Brief 86)") | docs/roadmap/SESSION_BRIEFS.md:268 |
+| Brief 87 step 2 (Opus): build the top two vendor candidates (INBOX 833) | docs/roadmap/SESSION_BRIEFS.md:270 |
+| Brief 88 (Opus): Atlas and the companions, alive (INBOX 835) | docs/roadmap/SESSION_BRIEFS.md:274 |
+| Brief 89 (Sonnet): Add tags on lightly tagged notes (INBOX 836) | docs/roadmap/SESSION_BRIEFS.md:279 |
 | Brief 8: W1-4: the three 18.4px switches, and making DESIGN.md true | docs/roadmap/MODERNISATION_AUDIT.md:1392 |
 | Brief 8: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:84 |
-| Brief 9 (Opus): the job runtime, the rest (B2) | docs/roadmap/SESSION_BRIEFS.md:86 |
-| Brief 90 (Sonnet, standing): the owner's own typos as composer fixtures (INBOX 837) | docs/roadmap/SESSION_BRIEFS.md:287 |
-| Brief 91 (Sonnet, ownerfix2): the owner's small UI reports, 2026-10-11 afternoon (INBOX 838 to 842) | docs/roadmap/SESSION_BRIEFS.md:292 |
-| Brief 92 (Opus, after the queue): the whole-app pass the owner asked for (INBOX 843) | docs/roadmap/SESSION_BRIEFS.md:296 |
-| Brief 93: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:303 |
-| Brief 94: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:305 |
-| Brief 95 (Opus): themes, dug deep (INBOX 858) | docs/roadmap/SESSION_BRIEFS.md:307 |
-| Brief 96: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:312 |
-| Brief 97 (Opus, after Atlas): the composer as the place to go, the graph maker (INBOX 860) | docs/roadmap/SESSION_BRIEFS.md:314 |
-| Brief 98 (Opus): goals and lists (INBOX 861) | docs/roadmap/SESSION_BRIEFS.md:322 |
-| Brief 99: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:328 |
-| Briefs 25 to 31: 25, 26 and 28 to 31 built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:134 |
-| Briefs 35 to 42: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:154 |
-| Briefs 46 to 55: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:220 |
-| Briefs 56 to 59 (2026-10-10, Fable): the design review | docs/roadmap/SESSION_BRIEFS.md:222 |
-| Briefs 60 to 63 (2026-10-10, Fable): the backend review | docs/roadmap/SESSION_BRIEFS.md:240 |
-| Briefs 64 to 68: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:260 |
-| Briefs 69 to 71: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:262 |
-| Briefs 72 to 75: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:264 |
-| Briefs 76 to 84 (from 72a and 72b): built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:266 |
+| Brief 90 (Sonnet, standing): the owner's own typos as composer fixtures (INBOX 837) | docs/roadmap/SESSION_BRIEFS.md:283 |
+| Brief 91 (Sonnet, ownerfix2): the owner's small UI reports, 2026-10-11 afternoon (INBOX 838 to 842) | docs/roadmap/SESSION_BRIEFS.md:288 |
+| Brief 92 (Opus, after the queue): the whole-app pass the owner asked for (INBOX 843) | docs/roadmap/SESSION_BRIEFS.md:292 |
+| Brief 93: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:299 |
+| Brief 94: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:301 |
+| Brief 95 (Opus): themes, dug deep (INBOX 858) | docs/roadmap/SESSION_BRIEFS.md:303 |
+| Brief 96: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:308 |
+| Brief 97 (Opus, after Atlas): the composer as the place to go, the graph maker (INBOX 860) | docs/roadmap/SESSION_BRIEFS.md:310 |
+| Brief 98 (Opus): goals and lists (INBOX 861) | docs/roadmap/SESSION_BRIEFS.md:318 |
+| Brief 99: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:324 |
+| Brief 9: built; moved to HISTORY.md ("Brief 9, the rest of B2", with the 2026-10-17 folder import) | docs/roadmap/SESSION_BRIEFS.md:86 |
+| Briefs 25 to 31: 25, 26 and 28 to 31 built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:130 |
+| Briefs 35 to 42: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:150 |
+| Briefs 46 to 55: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:216 |
+| Briefs 56 to 59 (2026-10-10, Fable): the design review | docs/roadmap/SESSION_BRIEFS.md:218 |
+| Briefs 60 to 63 (2026-10-10, Fable): the backend review | docs/roadmap/SESSION_BRIEFS.md:236 |
+| Briefs 64 to 68: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:256 |
+| Briefs 69 to 71: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:258 |
+| Briefs 72 to 75: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:260 |
+| Briefs 76 to 84 (from 72a and 72b): built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:262 |
 | Bugs | docs/roadmap/CHAT_PLAN.md:845 |
 | Bugs | docs/roadmap/DOCUMENTS_PLAN.md:1451 |
 | Bugs | docs/roadmap/TIMELINE_PLAN.md:202 |
@@ -19502,7 +19512,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Open items | docs/roadmap/INBOX.md:35 |
 | OpenJarvis (open-jarvis) | docs/roadmap/ANALYSIS.md:2894 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1360 |
-| Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4390 |
+| Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4387 |
 | PDF viewer and OCR workspace, against pdfcraft | docs/roadmap/ANALYSIS.md:3922 |
 | PR 144 is done when (the owner's checklist, 2026-09-09 05:30 UTC) | docs/roadmap/HANDOVER.md:88 |
 | Parity matrix, 2026-10-10 | docs/roadmap/ANALYSIS.md:3703 |
@@ -19565,7 +19575,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/MINDMAP_PLAN.md:1822 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/WHITEBOARD_PLAN.md:1573 |
 | Placed from INBOX 561 (2026-10-17) | docs/roadmap/TIMELINE_PLAN.md:207 |
-| Placed from INBOX 904 (the owner, 2026-10-17) | docs/roadmap/BACKLOG.md:4405 |
+| Placed from INBOX 904 (the owner, 2026-10-17) | docs/roadmap/BACKLOG.md:4402 |
 | Placed from INBOX, 2026-09-09 | docs/roadmap/CHAT_PLAN.md:595 |
 | Placed from INBOX, 2026-09-09 | docs/roadmap/GRAPH_PLAN.md:206 |
 | Placed from INBOX, 2026-09-09 | docs/roadmap/MINDMAP_PLAN.md:1448 |
@@ -19706,7 +19716,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Still open: the upload split, and what it collides with | docs/roadmap/BACKLOG.md:2783 |
 | Table | docs/roadmap/ANALYSIS.md:4430 |
 | Tables in notes and documents, against gridcraft | docs/roadmap/ANALYSIS.md:3891 |
-| The 2026-10-12 sweep: everything said and not done, so nothing is missed | docs/roadmap/BACKLOG.md:4357 |
+| The 2026-10-12 sweep: everything said and not done, so nothing is missed | docs/roadmap/BACKLOG.md:4354 |
 | The `pytesseract` vendoring question, measured | docs/roadmap/ANALYSIS.md:2102 |
 | The app's stack (outside boards and documents) | docs/roadmap/WHITEBOARD_PLAN.md:498 |
 | The assistant catalogue, 2026-10-10 | docs/roadmap/CHAT_PLAN.md:951 |
@@ -19732,7 +19742,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | The owner's brainstorm, 2026-10-11 (after INBOX 812) | docs/roadmap/CHAT_PLAN.md:1846 |
 | The peer apps: fourteen triaged, five read properly | docs/roadmap/ANALYSIS.md:3250 |
 | The plan documents, in one list (read this before opening any of them) | docs/ROADMAP.md:268 |
-| The quarter's briefs: each item is a row in its plan; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:104 |
+| The quarter's briefs: each item is a row in its plan; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:100 |
 | The reform, in phases | docs/roadmap/AGENT_SKILLS_REFORM.md:52 |
 | The road to 1.0: milestones with exit criteria (the owner, 2026-10-10: "still very much a demo and beta") | docs/ROADMAP.md:171 |
 | The scripts, and what each produced | docs/roadmap/MODERNISATION_AUDIT.md:40 |
@@ -19769,7 +19779,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | W7: The table-stakes backlog (owner: BE + FE) | docs/roadmap/MODERNISATION_AUDIT.md:1003 |
 | W8: Reliability, testing and observability (owner: QA) | docs/roadmap/MODERNISATION_AUDIT.md:1013 |
 | What "fake / vibe coded / performative" means here, concretely | docs/roadmap/UI_MODERNISATION_PLAN.md:26 |
-| What "quality" means for a smaller model here, in one paragraph | docs/roadmap/SESSION_BRIEFS.md:106 |
+| What "quality" means for a smaller model here, in one paragraph | docs/roadmap/SESSION_BRIEFS.md:102 |
 | What Coggle specifically does that the phases below must keep | docs/roadmap/MINDMAP_PLAN.md:132 |
 | What exists (checked) | docs/roadmap/WORLD_CLASS_PLAN.md:1467 |
 | What is actually open, 2026-09-14 | docs/roadmap/INBOX.md:24 |

@@ -57,6 +57,7 @@ from tessellate.search import chunks as search_chunks
 from tessellate.search import index as search_index
 from tessellate.search import query as query_understanding
 from tessellate.search import search_manager
+from tessellate.search.snippet import clip_words, window_words
 
 if TYPE_CHECKING:
     # Annotation-only: see ai/embeddings.py's own TYPE_CHECKING import for
@@ -981,9 +982,8 @@ def _snippet(body: str, terms: list[str], width: int = 160) -> str:
         if at >= 0:
             break
     if at < 0:
-        return flat[:width]
-    start = max(0, at - width // 3)
-    return ("…" if start else "") + flat[start : start + width]
+        return clip_words(flat, width)
+    return window_words(flat, max(0, at - width // 3), width)
 
 
 def _flag_filters(asked) -> tuple[list[str], list[str]]:

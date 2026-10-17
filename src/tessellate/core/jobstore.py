@@ -86,6 +86,9 @@ HANDLERS: dict[str, str] = {
     "pull": "tessellate.ai.model_manager:pull_model",
     "pass": "tessellate.core.passes:run_pass",
     "autonomous": "tessellate.ai.autonomous:run_pass",
+    #: A chosen folder of notes. Its runner skips a file by path and text
+    #: hash, so a resumed job finishes the folder rather than doubling it.
+    "import": "tessellate.api.routes_settings:_run_directory_import",
 }
 
 #: A lease lasts this long without a heartbeat. Long enough that a busy

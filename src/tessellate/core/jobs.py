@@ -142,6 +142,9 @@ KIND_LANES: dict[str, str] = {
     #: Brief 9: a model download, and an autonomous pass (see the lanes).
     "pull": "download",
     "autonomous": "agent",
+    #: A chosen folder of notes: a notebook-wide write, nothing a person
+    #: waits behind (`routes_settings._run_directory_import`).
+    "import": "batch",
 }
 
 DEFAULT_LANE = "cpu"
@@ -174,7 +177,7 @@ QUIET_KINDS = frozenset({
 #: loop): the pool does not open a second ledger run around them.
 OWN_RUN_KINDS = frozenset({
     "pass", "maintenance", "bench", "tidy-link-reasons", "redate", "reindex", "embed-switch", "extras",
-    "reminder-notifier", "ledger", "pull", "autonomous",
+    "reminder-notifier", "ledger", "pull", "autonomous", "import",
 })
 
 #: Where a pool kind's ending is recorded in `taskhistory` under another
@@ -222,6 +225,7 @@ LABELS: dict[str, str] = {
     "redate": "Reading dates in notes",
     "pull": "Downloading a model",
     "autonomous": "Autonomous pass",
+    "import": "Importing a folder of notes",
 }
 
 
