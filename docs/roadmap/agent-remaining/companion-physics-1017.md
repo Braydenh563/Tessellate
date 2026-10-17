@@ -13,3 +13,4 @@ Still to do: finish that fix; the perch-loss repro (resize, scroll, hide the per
 
 - done: step 3 (frame times at 4x: scratchpad/ui-sweeps/throwframes.js, appframes.js); CI fix 47d3f10.
 - next (not done): Atlas still 25-28 fps at 4x during carry/flight; atlasBreathFrame atlas-life.js:549, atlasRigFrame atlas-motion.js:310, atlasTailDraw atlas-life.js:392 each schedule a style recalc per frame (UpdateLayoutTree 220 passes, 44 elements each, over a 0.7 s carry): merge them into one write per frame. Throwing-stars and new actions stay with the Opus brief (B87c/B88b/c).
+- picked up: the Atlas 4x frame cost by `companion-mind-1017.md` step 1 (52efa72).

@@ -331,7 +331,13 @@ function atlasTossDraw(rig, toss) {
   const set = (el, k, v) => {
     if (el && el.style[k] !== v) el.style[k] = v;
   };
-  for (const [k, star] of els.stars.entries()) {
+  //: Spilled in a flight, the stars are drawn every other frame (30 a
+  //: second, as a walk's swing is): each move restyles its star's drawing
+  //: on top of the flight's own (`atlasinval.js`, one throw: 2,277 style
+  //: invalidations with no spill, 3,348 with it drawn every frame, 2,986 to
+  //: 3,074 every other).
+  const skip = toss.mode === "spill" && rig.tick % 2 === 1;
+  for (const [k, star] of skip ? [] : els.stars.entries()) {
     const o = toss.off?.[k];
     set(star, "transform", o ? `translate(${atlasFix(o[0])}px, ${atlasFix(o[1])}px)` : "");
     set(star, "opacity", Array.isArray(toss.op) ? toss.op[k] : toss.op);

@@ -2453,7 +2453,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasLowerState` | frontend/js/atlas-motion.js:91 |
 | `atlasMotionOK` | frontend/js/atlas-motion.js:109 |
 | `atlasRigAttach` | frontend/js/atlas-motion.js:116 |
-| `atlasRigFrame` | frontend/js/atlas-motion.js:344 |
+| `atlasRigFrame` | frontend/js/atlas-motion.js:350 |
 | `atlasRigGesture` | frontend/js/atlas-motion.js:177 |
 | `atlasRigRead` | frontend/js/atlas-motion.js:150 |
 | `atlasRigSpring` | frontend/js/atlas-motion.js:202 |
