@@ -30,3 +30,36 @@ def test_a_hidden_graph_tab_draws_nothing():
     assert request.index("gcTabHidden(s)") < request.index("requestAnimationFrame")
     draw = _body(CANVAS, "function gcDraw(")
     assert re.search(r"if \(gcTabHidden\(s\)\)", draw[:400])
+
+
+EDITOR = (JS / "editor.js").read_text(encoding="utf-8")
+
+
+def test_focusing_a_composer_does_not_fetch_the_library_bundle_at_once():
+    """Arriving on Chat focuses the composer (`switchTab`), and the warm-up on
+    focus used to fetch and run the Library bundle (d3, documents.js, the
+    whiteboard files: 17 scripts, ~2 MB) in that same press: the first long
+    task of every first Chat visit. It now waits out the arrival and runs when
+    the page is idle, and a keystroke that needs the adapter still asks for
+    the bundle itself (`editorSurfaceFor`), so the first "/" is not lost."""
+    listener = EDITOR[EDITOR.index("if (typeof asSurface === \"function\") return;\n    editorWarmSurfaceModule") :]
+    listener = listener[: listener.index("\n);\n")]
+    assert "editorWarmSurfaceModule(el)" in listener
+    assert "editorEnsureSurfaceModule" not in listener
+    warm = _body(EDITOR, "function editorWarmSurfaceModule(")
+    assert re.search(r"setTimeout\([^;]*,\s*(\d{4,})\s*\)", warm) or "EDITOR_WARM_DELAY_MS" in warm
+    assert "requestIdleCallback" in warm
+    assert 'document.activeElement === el' in warm
+    assert re.search(r"EDITOR_WARM_DELAY_MS = (\d+)", EDITOR) and int(re.search(r"EDITOR_WARM_DELAY_MS = (\d+)", EDITOR).group(1)) >= 1500
+    # The keystroke path is untouched.
+    assert "editorEnsureSurfaceModule(box);" in _body(EDITOR, "function editorSurfaceFor(")
+
+
+def test_a_caret_does_not_resolve_the_surface_adapter():
+    """`selectionchange` fires as a composer takes focus; the selection bar
+    resolved the surface first, which fetched the Library bundle, to learn
+    there was no selection. A collapsed caret in a plain box is answered
+    before the adapter is asked for."""
+    sync = _body(EDITOR, "function selectionBarSync(")
+    assert sync.index("raw.selectionStart === raw.selectionEnd") < sync.index("editorSurfaceFor(")
+    assert 'typeof asSurface !== "function"' in sync[: sync.index("editorSurfaceFor(")]
