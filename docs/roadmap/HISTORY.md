@@ -7,6 +7,17 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## OPEN.md rows closed, 2026-10-17 (the open-rows agent: resurface and the time reader)
+
+Each found by probing the head, test first, one commit per item.
+
+- **Row 464, `/resurface/near/{id}` 500 on mixed vector sizes** (87b18e4): `_comparable_vectors` keeps only vectors the anchor's length; `tests/test_resurface_spec.py`.
+- **Typed reminder command ignored the locale's date order** (195fdb3): locale threaded through `commands.read` and `reading.read`.
+- **Clock said in words** (04b9456): "half past 4", "quarter to five", "twenty past nine pm" resolve; "every day at half past 7" keeps its repeat.
+- **"in 3 days at 3pm" lost the clock** (c026045): `_with_clock` in `parse_relative`.
+- **"the first monday of november" read as next Monday** (fb23605): `_NTH_IN_MONTH`; a note about the past reads the month gone.
+- **Month edges and offsets** (60a637b): "the last day of this month", "next month on the 3rd", "a week from friday", "30 minutes from now". Complexity seed: `resolve` 50 to 44, `span` 66 to 60.
+
 ## OPEN.md rows closed, 2026-10-05 (the pre-0.4.0 buildable rows, sweeps on port 8815)
 
 Each row was checked against the head before anything was built.
