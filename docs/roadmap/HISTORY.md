@@ -17,6 +17,10 @@ Each found by probing the head, test first, one commit per item.
 - **"in 3 days at 3pm" lost the clock** (c026045): `_with_clock` in `parse_relative`.
 - **"the first monday of november" read as next Monday** (fb23605): `_NTH_IN_MONTH`; a note about the past reads the month gone.
 - **Month edges and offsets** (60a637b): "the last day of this month", "next month on the 3rd", "a week from friday", "30 minutes from now". Complexity seed: `resolve` 50 to 44, `span` 66 to 60.
+- **Clocks in words and 24-hour figures** (df05e0a): "3 o'clock", "at three", "at ten thirty", "at 1530", "at 0330", "at 15h30" (`word_clock`, `_word_clock`); figure forms are 24-hour, word and o'clock forms keep the bare-hour rule; "at one point", "at three people", "the 1530 train" stay unread; "thrity", "fiften" repaired in `question_noise`. Complexity seed: `_time_cands` 26 to 22.
+- **Hours-and-minutes offsets and "eod"** (1f024b7): "in 1h30", "in 2h", "in 1.5h", "in 1 hour and 30 minutes" (the last read as one hour, the half hour left in the words); "eod" is 17:00 on its day, else the next 17:00 once five has passed.
+- **A weekday after a week offset** (dde77cd): "in two weeks on wednesday" is Wednesday of the week two weeks on (Monday to Sunday weeks, as "next friday"; "in a week on friday" is "next friday"). Decision recorded in `_weeks_on_day`.
+- **Midnight and the new year** (the fourth commit of the series, after dde77cd): midnight alone is tonight's, the next one; "midnight on 5 october" keeps the night-of-the-day rule; bare "new year" is the midnight that opens the year (1 January 00:00), "new year's eve" and "new year's day" follow the day rule. A holiday after "the" stays in the reminder's words; the stranded "to" after a cut "at" is dropped. Complexity seed: `parse_reminder_text` 33 to 27.
 
 ## OPEN.md rows closed, 2026-10-05 (the pre-0.4.0 buildable rows, sweeps on port 8815)
 

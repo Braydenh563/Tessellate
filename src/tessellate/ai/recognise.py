@@ -68,6 +68,16 @@ _IN_PATTERN = re.compile(
     re.IGNORECASE,
 )
 _FRACTION_PATTERNS = [(re.compile(p, re.IGNORECASE), d) for p, d in _FRACTIONS]
+#: "in 1h30", "in 2h", "in 1.5h", "in 1h30m", "in 1 hour 30 minutes", "in an hour
+#: and 20 minutes": hours, then optionally the minutes beside them. "in 2
+#: hours" alone is the same offset the unit table reads; the point is that the
+#: minutes after the hours are never dropped. Bare "1h30" (no "in") stays a
+#: duration the recogniser reports, not a time to come.
+_IN_HOURS_MINUTES_SRC = (
+    rf"\bin\s+(\d{{1,3}}(?:\.\d{{1,2}})?|{_COUNT_WORDS})\s?(?:hours?|hrs?|h)"
+    rf"(?:(?:\s+and\s+|\s+|,\s?)(\d{{1,3}}|{_COUNT_WORDS})\s?(?:minutes?|mins?|m)\b|(\d{{2}})(?:m(?:ins?)?)?\b|\b(?!\s+and\s+a\s+half))"
+)
+_IN_HOURS_MINUTES = re.compile(_IN_HOURS_MINUTES_SRC, re.IGNORECASE)
 _IN_MONTHS = re.compile(rf"\bin\s+(\d{{1,2}}|{_COUNT_WORDS})\s+(months?|years?)\b", re.IGNORECASE)
 
 
@@ -85,6 +95,8 @@ def relative_delta(text: str) -> tuple[timedelta, str] | None:
     "tomorrow morning" name a wall-clock target, which `resolve` reads
     against the user's date.
     """
+    if _rx("weeks_on").search(text):
+        return None  # "in two weeks on wednesday" is a day, read by `_weeks_on_day`
     from_now = _FROM_NOW.search(text)
     if from_now:
         inner = relative_delta("in " + from_now.group(1))
@@ -93,6 +105,9 @@ def relative_delta(text: str) -> tuple[timedelta, str] | None:
         found = pattern.search(text)
         if found:
             return delta, found.group(0)
+    compound = _in_hours_minutes(text)
+    if compound is not None:
+        return compound
     found = _IN_PATTERN.search(text)
     if not found:
         return None
@@ -110,6 +125,20 @@ def relative_delta(text: str) -> tuple[timedelta, str] | None:
     if seconds > 366 * 86400:
         return None
     return timedelta(seconds=round(seconds)), found.group(0)
+
+
+def _in_hours_minutes(text: str) -> tuple[timedelta, str] | None:
+    """(offset, phrase) of "in 1h30" or "in 1 hour and 30 minutes", else None."""
+    found = _IN_HOURS_MINUTES.search(text)
+    if not found:
+        return None
+    hours = _WORD_COUNTS.get(found.group(1).lower())
+    hours = float(found.group(1)) if hours is None and found.group(1)[0].isdigit() else hours
+    said = (found.group(2) or found.group(3) or "0").lower()
+    minutes = _WORD_COUNTS.get(said, float(said) if said.isdigit() else None)
+    if hours is None or minutes is None or minutes >= 60 and found.group(3):
+        return None
+    return timedelta(minutes=round(hours * 60 + minutes)), found.group(0)
 
 
 def relative_months(text: str, now: datetime) -> tuple[datetime, str] | None:
@@ -237,9 +266,27 @@ def _clock(text: str) -> tuple[int, int, str | None] | None:
         return 12, 0, "pm"
     if re.search(r"\bmidnight\b", text):
         return 24, 0, None
+    eod = _end_of_day(text)
+    if eod:
+        return eod
     spoken = _rx("spoken_clock").search(text)
     if spoken:
         return _spoken_clock(spoken)
+    worded = next((m for m in _rx("word_clock").finditer(text) if _word_clock_ok(text, m)), None)
+    if worded:
+        return _word_clock(worded)
+    return _digit_clock(text)
+
+
+def _end_of_day(text: str) -> tuple[int, int, str] | None:
+    """5pm for "eod" and "end of (the) day": the hour the repo has always
+    given it. On its own day, or today; once five has passed it is the next
+    day's, the rule for every clock with no day."""
+    return (5, 0, "pm") if re.search(r"\b(?:eod|end of (?:the )?day)\b", text) else None
+
+
+def _digit_clock(text: str) -> tuple[int, int, str | None] | None:
+    """The first "9", "9:30" or "9pm" in the phrase that is a time."""
     for found in _CLOCK.finditer(text):
         hour, minute = int(found.group(1)), int(found.group(2) or 0)
         meridiem = (found.group(3) or "").replace(".", "") or None
@@ -278,6 +325,44 @@ def _spoken_clock(found: re.Match) -> tuple[int, int, str | None] | None:
     return hour, minute, (meridiem or "").replace(".", "") or None
 
 
+_WORD_MINUTES = {
+    "fifteen": 15, "twenty": 20, "twenty-five": 25, "twenty five": 25, "thirty": 30, "thirty-five": 35,
+    "thirty five": 35, "forty": 40, "forty-five": 45, "forty five": 45, "fifty": 50, "fifty-five": 55,
+    "fifty five": 55,
+}
+#: Words after a bare word hour that make it a count, not a time ("at three
+#: people"); "at one" alone is never read (it is "at one point" as often).
+_NOT_A_CLOCK_NEXT = frozenset({"of", "more", "x", "people", "point", "time", "with", "another"})
+
+
+def _word_clock(found: re.Match) -> tuple[int, int, str | None] | None:
+    """(hour, minute, "am"/"pm"/None) of "3 o'clock", "at three", "at ten
+    thirty", "at 1530", "at 15h30". The figure forms are 24-hour notation, so
+    their hour is stated, never guessed: 1 to 11 is am, 12 is noon, 0 and
+    13 to 23 stand as written. The word and o'clock forms keep the bare-hour
+    rule (`_hour24`) unless they say am or pm."""
+    got = found.groupdict()
+    if got["o"] or got["w"]:
+        said = got["o"] or got["w"]
+        hour = int(said) if said.isdigit() else _SPOKEN_HOURS[said]
+        meridiem = (got["wa"] or "").replace(".", "") or None
+        return (hour, _WORD_MINUTES.get(got["wm"] or "", 0), meridiem) if 1 <= hour <= 12 else None
+    hour, minute = int(got["hh"] or got["h2"]), int(got["mm"] or got["m2"])
+    if hour > 23:
+        return None
+    return hour, minute, "am" if 1 <= hour <= 11 else "pm" if hour == 12 else None
+
+
+def _word_clock_ok(low: str, found: re.Match) -> bool:
+    """A bare word hour ("at three") is a time unless a count follows it
+    ("at three people"), and never "one" ("at one point")."""
+    got = found.groupdict()
+    if not got["w"] or got["wm"] or got["wa"]:
+        return True
+    rest = low[found.end():].split()
+    return got["w"] != "one" and not (rest and (rest[0].endswith("s") or rest[0] in UNITS or rest[0] in _NOT_A_CLOCK_NEXT))
+
+
 def _hour24(hour: int, meridiem: str | None, evening: bool) -> int:
     if meridiem == "am":
         return 0 if hour == 12 else hour
@@ -311,9 +396,40 @@ def _offset_from(text: str, now: datetime) -> datetime | None:
     return base + timedelta(days={"d": 1, "w": 7, "f": 14}[moved.group(2)[0]] * amount) if base else None
 
 
+def _weeks_on_day(found: re.Match, today: date) -> date | None:
+    """The day "in two weeks on wednesday" names. Decided to match "next
+    friday" (the Friday of next week, in `_day` and `span`): weeks run Monday
+    to Sunday, "in N weeks" is the week N weeks on, and the weekday is its day
+    there. So "in a week on friday" is "next friday", and said on a Friday,
+    "in two weeks on wednesday" is the Wednesday before the mark two weeks out
+    (the 14th day on), never the one after it. Counting 14 days and then
+    finding the weekday would make the same words mean a different week
+    depending on the day they were said."""
+    amount = 1 if found["f"] else _amount(found["n"])
+    if amount is None:
+        return None
+    weeks = amount * (2 if found["f"] or found["u"].startswith("f") else 1)
+    return today - timedelta(days=today.weekday()) + timedelta(weeks=weeks, days=_WEEKDAYS[found["d"]])
+
+
+def _weeks_on_cands(low: str, now: datetime) -> list[tuple]:
+    """"in two weeks on wednesday" as one day, longer than the offset inside it."""
+    out = []
+    for found in _rx("weeks_on").finditer(low):
+        day = _weeks_on_day(found, now.date())
+        if day is not None:
+            out.append((found.start(), found.end(), "date", day, "", 0))
+    return out
+
+
 def _first_day(text: str, now: datetime) -> tuple[date | None, str]:
     """`_day`, except a weekday's place in a month ("the first monday of
-    november") is that day and not the next Monday."""
+    november") is that day and not the next Monday, and "in two weeks on
+    wednesday" is the week's Wednesday and not a fortnight on."""
+    weeks = _rx("weeks_on").search(text)
+    day = _weeks_on_day(weeks, now.date()) if weeks else None
+    if day:
+        return day, text[: weeks.start()] + " " + text[weeks.end():]
     nth = _rx("nth_in_month").search(text)
     day = _nth_in_month(nth, now.date(), "future") if nth else None
     return (day, text[: nth.start()] + " " + text[nth.end():]) if day else _day(text, now)
@@ -343,8 +459,6 @@ def resolve(phrase: str, now: datetime, *, locale: str | None = None) -> datetim
         later = now + timedelta(hours=3)
         cap = datetime.combine(now.date(), time(20), now.tzinfo)
         return min(later, cap) if cap > now else later
-    if text in ("end of day", "end of the day", "by end of day"):
-        return datetime.combine(now.date(), time(17), now.tzinfo)
     day, rest = _first_day(text, now)
     if day is None:
         numeric = _numeric_dates(text, now.date(), locale, "future")
@@ -357,6 +471,8 @@ def resolve(phrase: str, now: datetime, *, locale: str | None = None) -> datetim
     for start, end, phrase in find(text):
         if day is not None and not phrase.lower().startswith("last "):
             break
+        if _end_of_day(phrase):
+            continue  # a clock (17:00), not a day: `_clock` reads it
         found = span(phrase, now.date(), "future")
         if found is not None:
             day, rest = found[0], text[:start] + " " + text[end:]
@@ -375,7 +491,7 @@ def resolve(phrase: str, now: datetime, *, locale: str | None = None) -> datetim
     if clock is not None:
         hour, minute, meridiem = clock
         if hour == 24:
-            return datetime.combine((day or now.date()) + timedelta(days=1), time(0), now.tzinfo)
+            return _midnight(day or now.date(), text, now)
         hour = _hour24(hour, meridiem, evening)
         if day is None and meridiem is None and hour < 12:
             # "at 9" with no day: the next 9 o'clock, morning or evening.
@@ -392,6 +508,17 @@ def resolve(phrase: str, now: datetime, *, locale: str | None = None) -> datetim
     elif at <= now and day == now.date() and _WEEKDAY.search(text):
         at += timedelta(days=7)  # "Monday 9am", said on a Monday afternoon
     return at
+
+
+def _midnight(day: date, text: str, now: datetime) -> datetime:
+    """The midnight a phrase means. Midnight belongs to the night of the day it
+    is said with, so alone it is tonight's (the next one) and "midnight on 5
+    october" is the turn into the 6th. The one exception, decided 2026-10-17:
+    "new year" (not "new year's eve" or "new year's day", which name their day
+    and follow the rule) is the midnight that opens the year, so "remind me at
+    midnight to see the new year" is 00:00 on 1 January, not a night later."""
+    opens = re.search(r"\bnew year(?!'?s? (?:eve|day)\b)", text)
+    return datetime.combine(day + timedelta(days=0 if opens else 1), time(0), now.tzinfo)
 
 
 def _part_alone(text: str) -> str | None:
@@ -556,7 +683,7 @@ def parse_reminder_text(
         at = first_of(repeat.value, now) or at
     if at is None:
         return None
-    cuts = [(s.start, s.end) for s in spans if s.kind in _TIME_KINDS or (s.kind == "duration" and s.text.lower().startswith("in "))]
+    cuts = [(s.start, s.end) for s in spans if _is_time_words(s, text)]
     priority = "normal"
     said = _PRIORITY.search(text)
     if said:
@@ -566,14 +693,7 @@ def parse_reminder_text(
     for start, end in sorted(cuts, reverse=True):
         rest = rest[:start] + " " + rest[end:]
     rest = strip_lead(re.sub(r"\s+", " ", rest).strip(" ,.;:-"))
-    #: A dangling "on" or "at" left by the cut, dropped by word rather than
-    #: by a `\s+...$` pattern, which backtracks on a long run of spaces.
-    words = rest.split(" ")
-    while words and words[-1].lower() in {"on", "at", "by", "for", "every", "each"}:
-        words.pop()
-    while words and words[0].lower() in {"on", "at", "by"}:
-        words.pop(0)
-    rest = " ".join(words).strip(" ,.;:-")
+    rest = _trim_dangling(rest)
     if not rest:
         rest = text.strip() or "Reminder"
     parsed = {
@@ -584,6 +704,33 @@ def parse_reminder_text(
     }
     _repeat_and_alert(parsed, repeat, spans)
     return parsed
+
+
+def _trim_dangling(rest: str) -> str:
+    """The words a cut time left stranded. A dangling "on" or "at", dropped by
+    word rather than by a `\\s+...$` pattern, which backtracks on a long run
+    of spaces; and the "to" that "remind me at midnight to lock up" has left
+    in front ("To lock up") once the "at" is gone, which `strip_lead` could
+    not see through it."""
+    words = rest.split(" ")
+    while words and words[-1].lower() in {"on", "at", "by", "for", "every", "each"}:
+        words.pop()
+    lead = 0
+    while lead < len(words) and words[lead].lower() in {"on", "at", "by"}:
+        lead += 1
+    if lead and words[lead:lead + 2][:1] == ["to"] and len(words) > lead + 1:
+        lead += 1
+    return " ".join(words[lead:]).strip(" ,.;:-")
+
+
+def _is_time_words(found: Span, text: str) -> bool:
+    """Whether a span's words are the reminder's time and so come out of its
+    text. A holiday after "the" is the thing to do ("see the new year"), not
+    the time, which is still read from it."""
+    if found.kind == "duration":
+        return found.text.lower().startswith("in ")
+    thing = re.match(r"(?:new year|christmas)", found.text.lower()) and text[:found.start].lower().endswith("the ")
+    return found.kind in _TIME_KINDS and not thing
 
 
 def _repeat_and_alert(parsed: dict, repeat: Span | None, spans: list) -> None:
@@ -758,7 +905,7 @@ _DATE_PHRASE_SOURCE = (
             #: with a clock right after it (engine probe: it was tomorrow).
             r"\d{1,2}(?:st|nd|rd|th)(?= (?:at \d|\d{1,2}(?::\d{2})? ?(?:am|pm|a\.m\.|p\.m\.)))",
             r"(?:mid|early|late|end of) " + _MONTH_RE,
-            r"(?:the )?end of (?:the )?(?:day|week|month|year)",
+            r"(?:the )?end of (?:the )?(?:day|week|month|year)|eod",
             r"(?:in|during|from|by) " + _MONTH_RE + r"(?: \d{4})?",
             r"christmas(?: day| eve)?|new year'?s? (?:day|eve)|new year",
             r"later today|today|tonight|yesterday|tomorrow",
@@ -938,7 +1085,7 @@ def span(phrase: str, anchor: date, tense: str | None = None) -> tuple[date, dat
         "tomorrow": (a + timedelta(days=1),) * 2, "the day after tomorrow": (a + timedelta(days=2),) * 2,
         "day after tomorrow": (a + timedelta(days=2),) * 2, "the day before yesterday": (a - timedelta(days=2),) * 2,
         "day before yesterday": (a - timedelta(days=2),) * 2, "end of day": (a, a), "the end of the day": (a, a),
-        "end of the day": (a, a),
+        "end of the day": (a, a), "eod": (a, a),
     }
     if text in fixed:
         return (*fixed[text], "day")
@@ -1670,11 +1817,25 @@ _SOURCES: dict[str, object] = {
         r"(half|quarter|five|ten|twenty-five|twenty five|twenty|\d{1,2}(?= past)) (past|to) "
         rf"(\d{{1,2}}|{'|'.join(_SPOKEN_HOURS)})(?:\s?(am|pm|a\.m\.|p\.m\.))?(?![\w:])"
     ),
+    #: Clocks said or written without a colon: "3 o'clock", "at three", "at ten
+    #: thirty", "at 1530", "at 15h30". The figure forms need "at" (or the like),
+    #: so "the 1530 train" and "1h30" (a duration) are not clocks.
+    "word_clock": lambda: (
+        rf"(?<![\w:])(?:(?:(?:at|by|around|about) )?(?P<o>\d{{1,2}}|{'|'.join(_SPOKEN_HOURS)}) ?o['’]? ?clock"
+        rf"|(?:at|by|around|about) (?P<w>{'|'.join(_SPOKEN_HOURS)})(?: (?P<wm>{'|'.join(sorted(_WORD_MINUTES, key=len, reverse=True))}))?"
+        r"(?: ?(?P<wa>am|pm|a\.m\.|p\.m\.))?"
+        r"|(?:at|by|around|about) (?P<hh>[01]\d|2[0-3])(?P<mm>[0-5]\d)(?: ?(?:h|hrs|hours))?"
+        r"|(?:at|by|around|about) (?P<h2>\d{1,2})h(?P<m2>[0-5]\d))(?![\w:/-])"
+    ),
+    "weeks_on": lambda: (
+        r"\bin (?:(?P<f>a fortnight)|(?P<n>\d{1,2}|an?|one|two|three|four|five|six|seven|eight|nine|ten|twelve) "
+        r"(?P<u>weeks?|fortnights?)),? (?:on )?(?P<d>" + "|".join(sorted(_WEEKDAYS, key=len, reverse=True)) + r")\b"
+    ),
     "time_range": r"\b(?:from\s)?(\d{1,2})(?::(\d{2}))?\s?(am|pm)?\s?(?:-|–|to|until|till)\s?(\d{1,2})(?::(\d{2}))?\s?(am|pm)\b",
     "date_range": r"\b(?:from|between)\s",
     "anchored": lambda: rf"\b(\d{{1,3}}|{_COUNT_WORDS}|half an)\s(minutes?|mins?|hours?|hrs?)\s(before|after)\s",
     "from_now": lambda: _FROM_NOW.pattern,
-    "relative": lambda: rf"\bin\s(?:half an hour|a half hour|an? hour and a half|a quarter of an hour|"
+    "relative": lambda: rf"{_IN_HOURS_MINUTES_SRC}|\bin\s(?:half an hour|a half hour|an? hour and a half|a quarter of an hour|"
                         rf"(\d{{1,4}}(?:\.\d{{1,2}})?|{_COUNT_WORDS})\s?(minutes?|mins?|hours?|hrs?))\b",
     "words_duration": lambda: (
         rf"\b(?:(an?|one|\d+) (hour|minute)s? and a half|half an hour|"
@@ -1780,7 +1941,7 @@ def _date_cands(raw: str, low: str, now: datetime, locale: str | None, tense: st
         if words in ("later today",):
             out.append((start, end, "datetime", resolve("later today", now), "", 0))
             continue
-        if words in ("end of day", "end of the day", "the end of the day"):
+        if words in ("end of day", "end of the day", "the end of the day", "eod"):
             out.append((start, end, "datetime", datetime.combine(today, time(17), now.tzinfo), "", 0))
             continue
         monthly = month_only.fullmatch(words)
@@ -1860,6 +2021,28 @@ def _spoken_cands(low: str) -> list[tuple]:
     return out
 
 
+def _with_part_said(low: str, at: time, end: int, said_meridiem: bool) -> tuple[time, int]:
+    """A clock followed by its part of day: "at 5 in the morning" is five, "at
+    9 at night" twenty-one. The clock and where its words now end."""
+    part = _rx("part_said").match(low[end:end + 20])
+    if part and not said_meridiem:
+        return time(at.hour % 12 + (0 if part.group(1) == "morning" else 12), at.minute), end + part.end()
+    return at, end
+
+
+def _word_cands(low: str) -> list[tuple]:
+    """The clocks said or written without a colon ("3 o'clock", "at three",
+    "at 1530", "at 15h30") as time spans."""
+    out = []
+    for found in _rx("word_clock").finditer(low):
+        said = _word_clock(found) if _word_clock_ok(low, found) else None
+        at = _hour_from(*said) if said else None
+        if at is not None:
+            at, end = _with_part_said(low, at, found.end(), bool(said[2]))
+            out.append((found.start(), end, "time", at, "", 0))
+    return out
+
+
 def _time_cands(low: str) -> list[tuple]:
     out = []
     for found in _rx("clock").finditer(low):
@@ -1875,15 +2058,10 @@ def _time_cands(low: str) -> list[tuple]:
             if after[:1] in ("%", "°") or (word in UNITS and word not in _GLUED_ONLY):
                 continue
             at = _hour_from(int(found.group(7)), 0, None)
-        end = found.end()
-        part = _rx("part_said").match(low[end:end + 20])
-        if at is not None and part and not (found.group(4) or found.group(6)):
-            #: "at 5 in the morning" is five, "at 9 at night" twenty-one.
-            hour = at.hour % 12 + (0 if part.group(1) == "morning" else 12)
-            at, end = time(hour, at.minute), end + part.end()
         if at is not None:
+            at, end = _with_part_said(low, at, found.end(), bool(found.group(4) or found.group(6)))
             out.append((found.start(), end, "time", at, "", 0))
-    out += _spoken_cands(low)
+    out += _spoken_cands(low) + _word_cands(low)
     for found in _rx("time_range").finditer(low):
         h1, m1, ap1, h2, m2, ap2 = found.groups()
         first = _hour_from(int(h1), int(m1 or 0), ap1 or (ap2 if int(h1) <= int(h2) else None))
@@ -1896,7 +2074,7 @@ def _time_cands(low: str) -> list[tuple]:
 def _relative_cands(low: str, now: datetime, tense: str | None) -> list[tuple]:
     if tense == "past":
         return []  # "ran 10k in 52 minutes" is how long it took, not when
-    out = []
+    out = _weeks_on_cands(low, now)
     for found in (*_rx("relative").finditer(low), *_rx("from_now").finditer(low)):
         got = relative_delta(found.group(0))
         if got is not None:
@@ -1914,10 +2092,13 @@ def _clock_after(low: str, end: int, evening: bool) -> tuple[time, int] | None:
         if at is not None:
             return at, len(clock.group(0))
     lead = len(tail) - len(tail.lstrip(" ,"))
-    spoken = _rx("spoken_clock").match(tail, lead)
-    said = _spoken_clock(spoken) if spoken else None
-    at = _hour_from(*said) if said else None
-    return (at, spoken.end()) if at is not None and spoken else None
+    for name, read in (("spoken_clock", _spoken_clock), ("word_clock", _word_clock)):
+        found = _rx(name).match(tail, lead)
+        said = read(found) if found and (name == "spoken_clock" or _word_clock_ok(tail, found)) else None
+        at = _hour_from(*said, evening) if said else None
+        if at is not None:
+            return at, found.end()
+    return None
 
 
 def _recurrence_cands(low: str) -> list[tuple]:

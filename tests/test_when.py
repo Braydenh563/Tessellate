@@ -271,3 +271,262 @@ def test_an_offset_from_a_day_or_from_now_is_read(phrase, expected):
     unread: only "in 30 minutes" counted as an offset."""
     got = when.resolve(phrase, NOW)
     assert got is not None and got.astimezone(NOW.tzinfo).strftime("%Y-%m-%d %H:%M") == expected, phrase
+
+
+@pytest.mark.parametrize(
+    ("phrase", "expected"),
+    [
+        ("3 o'clock", "2026-09-22 15:00"),
+        ("tomorrow at 3 o'clock", "2026-09-22 15:00"),
+        ("9 oclock", "2026-09-21 21:00"),
+        ("friday at three", "2026-09-25 15:00"),
+        ("at nine", "2026-09-21 21:00"),
+        ("tomorrow at nine", "2026-09-22 09:00"),
+        ("at ten thirty", "2026-09-21 22:30"),
+        ("tomorrow at ten thirty", "2026-09-22 10:30"),
+        ("tomorrow at three thirty pm", "2026-09-22 15:30"),
+        ("tomorrow at eleven forty-five am", "2026-09-22 11:45"),
+        ("tomorrow at 1530", "2026-09-22 15:30"),
+        ("at 1630", "2026-09-21 16:30"),
+        ("tomorrow at 0330", "2026-09-22 03:30"),
+        ("tomorrow at 1030", "2026-09-22 10:30"),
+        ("tomorrow at 15h30", "2026-09-22 15:30"),
+        ("at 16h30", "2026-09-21 16:30"),
+        ("friday at 0900 hours", "2026-09-25 09:00"),
+    ],
+)
+def test_a_clock_in_words_or_24_hour_figures_resolves(phrase, expected):
+    """"3 o'clock", "at three", "at ten thirty", "at 1530", "at 15h30" were
+    unread and asked "Remind you when?". The 12-hour forms keep the bare-hour
+    rule (3 is afternoon, 9 the next nine); the figure forms (1530, 15h30,
+    0330) are 24-hour notation, so their hour is never guessed."""
+    got = when.resolve(phrase, NOW)
+    assert got is not None and got.strftime("%Y-%m-%d %H:%M") == expected, phrase
+
+
+@pytest.mark.parametrize(
+    "phrase",
+    ["at one point", "at three of them", "at three people", "at 2561", "at 2460", "at 15h75", "at 153", "o'clock", "the 1530 train"],
+)
+def test_words_that_only_look_like_a_clock_stay_unread(phrase):
+    assert when.resolve(phrase, NOW) is None, phrase
+
+
+@pytest.mark.parametrize(("locale", "expected"), [("en-US", "2027-02-11 15:30"), ("en-AU", "2026-11-02 15:30")])
+def test_a_24_hour_clock_beside_a_numeric_date_follows_the_locale_date_order(locale, expected):
+    """The clock is the same in every locale; only the day order moves."""
+    got = when.resolve("2/11 at 1530", NOW, locale=locale)
+    assert got is not None and got.strftime("%Y-%m-%d %H:%M") == expected
+
+
+def test_a_reminder_keeps_its_words_around_a_clock_in_words():
+    for sentence, due, task in (
+        ("call mum at three", "15:00", "Call mum"),
+        ("pay rent tomorrow at 15h30", "15:30", "Pay rent"),
+        ("feed the cat at 1630", "16:30", "Feed the cat"),
+        ("lock up at ten thirty", "22:30", "Lock up"),
+        ("be home by 9 o'clock", "21:00", "Be home"),
+    ):
+        got = when.parse_reminder_text(sentence, NOW)
+        assert got is not None, sentence
+        assert got["due_at"].strftime("%H:%M") == due and got["text"] == task, (sentence, got)
+
+
+def test_the_owners_typos_in_a_clock_are_put_right_before_it_is_read():
+    """"thre", "thrity", "oclock", "tmrw": heard() repairs the spelling, then
+    the one reader reads the clock."""
+    from tessellate.ai import reminder_parser
+
+    for typed, due in (
+        ("cal mum tmrw at thre oclock", "2026-09-22 15:00"),
+        ("remnd me tmrw at ten thrity to feed the cat", "2026-09-22 10:30"),
+        ("pay the rent tomorow at 1530 plz", "2026-09-22 15:30"),
+    ):
+        got = when.parse_reminder_text(reminder_parser.heard(typed), NOW)
+        assert got is not None and got["due_at"].strftime("%Y-%m-%d %H:%M") == due, (typed, got)
+
+
+def test_a_repeat_keeps_its_rule_when_the_clock_is_in_words_or_figures():
+    from tessellate.ai import recognise
+
+    rules = {
+        span.value
+        for text in ("every day at three", "every monday at 1530", "every friday at 15h30", "every day at ten thirty")
+        for span in recognise.recognise(text, now=NOW.replace(tzinfo=None))
+        if span.kind == "recurrence"
+    }
+    assert rules == {
+        "FREQ=DAILY;BYHOUR=15;BYMINUTE=0",
+        "FREQ=WEEKLY;BYDAY=MO;BYHOUR=15;BYMINUTE=30",
+        "FREQ=WEEKLY;BYDAY=FR;BYHOUR=15;BYMINUTE=30",
+        "FREQ=DAILY;BYHOUR=10;BYMINUTE=30",
+    }
+
+
+@pytest.mark.parametrize(
+    ("phrase", "expected"),
+    [
+        ("in 1h30", "2026-09-21 17:25"),
+        ("in 1h30m", "2026-09-21 17:25"),
+        ("in 2h", "2026-09-21 17:55"),
+        ("in 1.5h", "2026-09-21 17:25"),
+        ("in 1 hour 30 minutes", "2026-09-21 17:25"),
+        ("in 1 hour and 30 minutes", "2026-09-21 17:25"),
+        ("in two hours 15 mins", "2026-09-21 18:10"),
+        ("in an hour and 20 minutes", "2026-09-21 17:15"),
+        ("in 2 hours", "2026-09-21 17:55"),
+        ("in 90 mins", "2026-09-21 17:25"),
+    ],
+)
+def test_an_hours_and_minutes_offset_is_read_whole(phrase, expected):
+    """"In 1h30" was unread, and "in 1 hour 30 minutes" read as one hour with
+    the half hour left in the reminder's text."""
+    got = when.resolve(phrase, NOW)
+    assert got is not None and got.strftime("%Y-%m-%d %H:%M") == expected, phrase
+
+
+def test_an_hours_and_minutes_offset_leaves_the_reminders_words_alone():
+    for sentence, due, task in (
+        ("take the bread out in 1h30", "17:25", "Take the bread out"),
+        ("remind me in 1 hour 30 minutes to call mum", "17:25", "Call mum"),
+        ("check the oven in 2h", "17:55", "Check the oven"),
+    ):
+        got = when.parse_reminder_text(sentence, NOW)
+        assert got is not None, sentence
+        assert got["due_at"].strftime("%H:%M") == due and got["text"] == task, (sentence, got)
+
+
+@pytest.mark.parametrize("phrase", ["in 2 hot dogs", "in 1h75", "in h30", "1h30"])
+def test_words_that_only_look_like_an_offset_stay_unread(phrase):
+    assert when.resolve(phrase, NOW) is None, phrase
+
+
+@pytest.mark.parametrize(
+    ("phrase", "expected"),
+    [
+        ("eod", "2026-09-21 17:00"),
+        ("by eod", "2026-09-21 17:00"),
+        ("end of day", "2026-09-21 17:00"),
+        ("eod tomorrow", "2026-09-22 17:00"),
+        ("by end of the day friday", "2026-09-25 17:00"),
+    ],
+)
+def test_end_of_day_is_five_in_the_afternoon(phrase, expected):
+    """"eod" was unread. The rule is the existing one for "end of day": 17:00,
+    on the day named, else today."""
+    got = when.resolve(phrase, NOW)
+    assert got is not None and got.strftime("%Y-%m-%d %H:%M") == expected, phrase
+
+
+def test_end_of_day_said_after_five_is_the_next_one():
+    late = NOW.replace(hour=18, minute=30)
+    got = when.resolve("eod", late)
+    assert got is not None and got.strftime("%Y-%m-%d %H:%M") == "2026-09-22 17:00"
+
+
+def test_a_reminder_keeps_its_words_around_eod_even_misspelt():
+    from tessellate.ai import reminder_parser
+
+    for sentence, due, task in (
+        ("send the report eod", "2026-09-21 17:00", "Send the report"),
+        ("send the report by eod tomorrow", "2026-09-22 17:00", "Send the report"),
+        (reminder_parser.heard("sned the repot by eod tmrw plz"), "2026-09-22 17:00", "Send the report"),
+    ):
+        got = when.parse_reminder_text(sentence, NOW)
+        assert got is not None, sentence
+        assert got["due_at"].strftime("%Y-%m-%d %H:%M") == due, (sentence, got)
+        assert got["text"].lower().startswith(task.lower()[:9]), (sentence, got)
+
+
+@pytest.mark.parametrize(
+    ("phrase", "expected"),
+    [
+        ("in two weeks on wednesday", "2026-10-07 09:00"),
+        ("in 2 weeks wednesday", "2026-10-07 09:00"),
+        ("in two weeks, on wednesday at 3pm", "2026-10-07 15:00"),
+        ("in a week on friday", "2026-10-02 09:00"),
+        ("in a fortnight on friday", "2026-10-09 09:00"),
+        ("in 3 weeks on monday", "2026-10-12 09:00"),
+        ("in two weeks on monday", "2026-10-05 09:00"),
+        ("in two weeks on sunday", "2026-10-11 09:00"),
+        ("in two weeks", "2026-10-05 15:55"),
+    ],
+)
+def test_a_weekday_named_after_a_week_offset_is_that_weekday_of_that_week(phrase, expected):
+    """"In two weeks on wednesday" read 5 October 15:55: the weekday was
+    dropped. Decided, to match "next friday" (the Friday of next week, in
+    `_day` and `span`): weeks are Monday to Sunday, "in N weeks" is the week
+    N weeks on, and the weekday is its day there. So "in a week on friday" is
+    "next friday", and said on a Friday, "in two weeks on wednesday" is the
+    Wednesday before the mark two weeks out, never the one after it."""
+    got = when.resolve(phrase, NOW)
+    assert got is not None and got.strftime("%Y-%m-%d %H:%M") == expected, phrase
+
+
+def test_a_week_offset_weekday_is_by_calendar_week_not_by_day_count():
+    friday = datetime(2026, 9, 25, 10, 0, tzinfo=NOW.tzinfo)
+    got = when.resolve("in two weeks on wednesday", friday)
+    assert got is not None and got.strftime("%Y-%m-%d %H:%M") == "2026-10-07 09:00"
+    assert when.resolve("in a week on friday", friday) == when.resolve("next friday", friday)
+
+
+def test_a_reminder_keeps_its_words_around_a_week_offset_and_a_weekday():
+    got = when.parse_reminder_text("dentist in two weeks on wednesday", NOW)
+    assert got is not None and got["text"] == "Dentist"
+    assert got["due_at"].strftime("%Y-%m-%d %H:%M") == "2026-10-07 09:00"
+
+    from tessellate.ai import reminder_parser
+
+    typed = when.parse_reminder_text(reminder_parser.heard("dentst in 2 wks on wensday at 3pm"), NOW)
+    assert typed is not None and typed["due_at"].strftime("%Y-%m-%d %H:%M") == "2026-10-07 15:00"
+    assert typed["text"] == "Dentist"
+
+
+@pytest.mark.parametrize(
+    ("phrase", "expected"),
+    [
+        ("midnight", "2026-09-22 00:00"),
+        ("at midnight", "2026-09-22 00:00"),
+        ("midnight tonight", "2026-09-22 00:00"),
+        ("tomorrow at midnight", "2026-09-23 00:00"),
+        ("midnight on 5 october", "2026-10-06 00:00"),
+        ("midnight on new year's eve", "2027-01-01 00:00"),
+        ("midnight at new year", "2027-01-01 00:00"),
+        ("new year at midnight", "2027-01-01 00:00"),
+        ("midnight on new years eve", "2027-01-01 00:00"),
+    ],
+)
+def test_midnight_is_the_next_one_unless_the_phrase_names_the_new_year(phrase, expected):
+    """"Remind me at midnight to see the new year" read 2 January: midnight
+    belongs to the night of the day it is said with (so "midnight on 5
+    october" is the turn into the 6th), and "new year" is 1 January, which put
+    it a night late. Decided: midnight alone is tonight's, the next one; a date
+    keeps that rule; "new year" (not "new year's eve" or "new year's day", which
+    name their day and follow the rule) is the midnight that opens the year."""
+    got = when.resolve(phrase, NOW)
+    assert got is not None and got.strftime("%Y-%m-%d %H:%M") == expected, phrase
+
+
+def test_midnight_said_just_after_midnight_is_the_next_one():
+    after = NOW.replace(day=22, hour=0, minute=20)
+    got = when.resolve("at midnight", after)
+    assert got is not None and got.strftime("%Y-%m-%d %H:%M") == "2026-09-23 00:00"
+
+
+def test_the_new_year_is_the_thing_to_do_not_the_time_in_a_reminder():
+    got = when.parse_reminder_text("remind me at midnight to see the new year", NOW)
+    assert got is not None
+    assert got["due_at"].strftime("%Y-%m-%d %H:%M") == "2027-01-01 00:00"
+    assert got["text"] == "See the new year"
+    plain = when.parse_reminder_text("remind me at midnight to lock up", NOW)
+    assert plain is not None and plain["due_at"].strftime("%Y-%m-%d %H:%M") == "2026-09-22 00:00"
+    assert plain["text"] == "Lock up"
+    dated = when.parse_reminder_text("call nan on new year's day at 9am", NOW)
+    assert dated is not None and dated["text"] == "Call nan"
+
+
+def test_the_owners_typos_around_midnight_and_the_new_year_are_put_right_first():
+    from tessellate.ai import reminder_parser
+
+    got = when.parse_reminder_text(reminder_parser.heard("remnd me at midnite to see the new yaer"), NOW)
+    assert got is not None and got["due_at"].strftime("%Y-%m-%d %H:%M") == "2027-01-01 00:00", got
