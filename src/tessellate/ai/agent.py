@@ -31,6 +31,7 @@ from tessellate.ai.ollama_client import (
     ToolsUnsupportedError,
 )
 from tessellate.ai.provider import tools_unsupported_message
+from tessellate.search.snippet import clip_words
 
 # A runaway model must not loop forever on a local machine.
 MAX_ROUNDS = 6
@@ -932,8 +933,7 @@ def _tool_sources(name: str, result: dict) -> list[dict]:
     rows: list[dict] = []
 
     def _clip_text(value: object) -> str:
-        text = " ".join(str(value or "").split())
-        return text[:SOURCE_SNIPPET_CHARS]
+        return clip_words(value, SOURCE_SNIPPET_CHARS)
 
     if name == "web_search":
         for hit in (result.get("results") or [])[:SOURCE_LIMIT]:

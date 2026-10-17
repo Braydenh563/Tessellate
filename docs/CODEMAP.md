@@ -2,7 +2,7 @@
 
 Generated 2026-10-17 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 5957, frontend ids 2510, CSS sections 495, backend routes 607, backend modules 5658, test files 1231, tests 11153, plan headings 957.
+Counts: frontend functions 5957, frontend ids 2510, CSS sections 495, backend routes 607, backend modules 5661, test files 1232, tests 11161, plan headings 957.
 
 ## Frontend functions (5957)
 
@@ -10456,7 +10456,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (5658)
+## Backend modules (5661)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -10561,8 +10561,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `SizeTier` | src/tessellate/ai/agent.py:55 |
-| `_TurnCard` | src/tessellate/ai/agent.py:168 |
+| `SizeTier` | src/tessellate/ai/agent.py:56 |
+| `_TurnCard` | src/tessellate/ai/agent.py:169 |
 | `_TurnPlan` | src/tessellate/ai/agent.py:1655 |
 | `_TurnState` | src/tessellate/ai/agent.py:1963 |
 | `_bare_host` | src/tessellate/ai/agent.py:1302 |
@@ -10571,7 +10571,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_change_document_id` | src/tessellate/ai/agent.py:1046 |
 | `_change_note_id` | src/tessellate/ai/agent.py:1028 |
 | `_change_reminder_id` | src/tessellate/ai/agent.py:1068 |
-| `_check_sources` | src/tessellate/ai/agent.py:234 |
+| `_check_sources` | src/tessellate/ai/agent.py:235 |
 | `_cleared_page` | src/tessellate/ai/agent.py:1333 |
 | `_clip_strings` | src/tessellate/ai/agent.py:2034 |
 | `_copies_what_was_read` | src/tessellate/ai/agent.py:1588 |
@@ -10583,7 +10583,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_focus` | src/tessellate/ai/agent.py:1635 |
 | `_handoff_refused` | src/tessellate/ai/agent.py:2522 |
 | `_hosts_named` | src/tessellate/ai/agent.py:1307 |
-| `_labelled` | src/tessellate/ai/agent.py:246 |
+| `_labelled` | src/tessellate/ai/agent.py:247 |
 | `_names_an_existing_category` | src/tessellate/ai/agent.py:2153 |
 | `_narrow_keeps` | src/tessellate/ai/agent.py:1683 |
 | `_one_option_ask` | src/tessellate/ai/agent.py:2510 |
@@ -10595,26 +10595,26 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_prefetch_outbound` | src/tessellate/ai/agent.py:2082 |
 | `_prepare_turn` | src/tessellate/ai/agent.py:1696 |
 | `_recent_text` | src/tessellate/ai/agent.py:1548 |
-| `_recovery_hint` | src/tessellate/ai/agent.py:680 |
+| `_recovery_hint` | src/tessellate/ai/agent.py:681 |
 | `_requires_a_call` | src/tessellate/ai/agent.py:2110 |
-| `_result_summary` | src/tessellate/ai/agent.py:749 |
+| `_result_summary` | src/tessellate/ai/agent.py:750 |
 | `_result_urls` | src/tessellate/ai/agent.py:1312 |
 | `_round_stream` | src/tessellate/ai/agent.py:2223 |
 | `_run_and_record` | src/tessellate/ai/agent.py:2375 |
-| `_seen_ids` | src/tessellate/ai/agent.py:869 |
+| `_seen_ids` | src/tessellate/ai/agent.py:870 |
 | `_tidied_arguments` | src/tessellate/ai/agent.py:2485 |
 | `_tool_event` | src/tessellate/ai/agent.py:2235 |
 | `_tool_events` | src/tessellate/ai/agent.py:2300 |
-| `_tool_sources` | src/tessellate/ai/agent.py:916 |
-| `_touched_items` | src/tessellate/ai/agent.py:806 |
-| `_touched_kind` | src/tessellate/ai/agent.py:788 |
+| `_tool_sources` | src/tessellate/ai/agent.py:917 |
+| `_touched_items` | src/tessellate/ai/agent.py:807 |
+| `_touched_kind` | src/tessellate/ai/agent.py:789 |
 | `_wrap_up_round` | src/tessellate/ai/agent.py:2825 |
-| `announces_unacted_tool` | src/tessellate/ai/agent.py:297 |
+| `announces_unacted_tool` | src/tessellate/ai/agent.py:298 |
 | `build_agent_messages` | src/tessellate/ai/agent.py:1346 |
 | `plan_now` | src/tessellate/ai/agent.py:2345 |
 | `run_agent` | src/tessellate/ai/agent.py:2862 |
-| `size_tier` | src/tessellate/ai/agent.py:88 |
-| `tools_guide` | src/tessellate/ai/agent.py:510 |
+| `size_tier` | src/tessellate/ai/agent.py:89 |
+| `tools_guide` | src/tessellate/ai/agent.py:511 |
 | `unsupported_claims` | src/tessellate/ai/agent.py:1219 |
 
 ### src/tessellate/ai/answer_trim.py (5)
@@ -10746,22 +10746,22 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_B` | src/tessellate/ai/cards.py:237 |
-| `_D` | src/tessellate/ai/cards.py:229 |
-| `_F` | src/tessellate/ai/cards.py:233 |
-| `_N` | src/tessellate/ai/cards.py:225 |
-| `_R` | src/tessellate/ai/cards.py:241 |
-| `_Where` | src/tessellate/ai/cards.py:208 |
-| `_board_item` | src/tessellate/ai/cards.py:160 |
-| `_clip` | src/tessellate/ai/cards.py:84 |
-| `_document_item` | src/tessellate/ai/cards.py:119 |
-| `_file_item` | src/tessellate/ai/cards.py:134 |
-| `_first_text` | src/tessellate/ai/cards.py:89 |
-| `_flat` | src/tessellate/ai/cards.py:80 |
-| `_note_item` | src/tessellate/ai/cards.py:101 |
-| `_reminder_item` | src/tessellate/ai/cards.py:182 |
-| `_rows` | src/tessellate/ai/cards.py:361 |
-| `result_cards` | src/tessellate/ai/cards.py:368 |
+| `_B` | src/tessellate/ai/cards.py:238 |
+| `_D` | src/tessellate/ai/cards.py:230 |
+| `_F` | src/tessellate/ai/cards.py:234 |
+| `_N` | src/tessellate/ai/cards.py:226 |
+| `_R` | src/tessellate/ai/cards.py:242 |
+| `_Where` | src/tessellate/ai/cards.py:209 |
+| `_board_item` | src/tessellate/ai/cards.py:161 |
+| `_clip` | src/tessellate/ai/cards.py:85 |
+| `_document_item` | src/tessellate/ai/cards.py:120 |
+| `_file_item` | src/tessellate/ai/cards.py:135 |
+| `_first_text` | src/tessellate/ai/cards.py:90 |
+| `_flat` | src/tessellate/ai/cards.py:81 |
+| `_note_item` | src/tessellate/ai/cards.py:102 |
+| `_reminder_item` | src/tessellate/ai/cards.py:183 |
+| `_rows` | src/tessellate/ai/cards.py:362 |
+| `result_cards` | src/tessellate/ai/cards.py:369 |
 
 ### src/tessellate/ai/chunks.py (4)
 
@@ -17338,51 +17338,51 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Hit` | src/tessellate/search/engine.py:100 |
-| `_Matrix` | src/tessellate/search/engine.py:147 |
-| `_backend_id` | src/tessellate/search/engine.py:492 |
-| `_candidates` | src/tessellate/search/engine.py:750 |
-| `_compact` | src/tessellate/search/engine.py:655 |
+| `Hit` | src/tessellate/search/engine.py:101 |
+| `_Matrix` | src/tessellate/search/engine.py:148 |
+| `_backend_id` | src/tessellate/search/engine.py:493 |
+| `_candidates` | src/tessellate/search/engine.py:751 |
+| `_compact` | src/tessellate/search/engine.py:656 |
 | `_cosine_scores` | src/tessellate/search/engine.py:1339 |
-| `_explain` | src/tessellate/search/engine.py:930 |
-| `_filter_only` | src/tessellate/search/engine.py:791 |
+| `_explain` | src/tessellate/search/engine.py:931 |
+| `_filter_only` | src/tessellate/search/engine.py:792 |
 | `_flag_filters` | src/tessellate/search/engine.py:989 |
-| `_forget` | src/tessellate/search/engine.py:617 |
-| `_forget_from` | src/tessellate/search/engine.py:626 |
+| `_forget` | src/tessellate/search/engine.py:618 |
+| `_forget_from` | src/tessellate/search/engine.py:627 |
 | `_has_attachment_ids` | src/tessellate/search/engine.py:996 |
 | `_has_ids` | src/tessellate/search/engine.py:1026 |
-| `_hops_from` | src/tessellate/search/engine.py:870 |
-| `_keep_matrix_in_step` | src/tessellate/search/engine.py:530 |
-| `_keyword_pass` | src/tessellate/search/engine.py:844 |
-| `_live_matrix` | src/tessellate/search/engine.py:515 |
-| `_load_all_vectors` | src/tessellate/search/engine.py:275 |
-| `_match_expression` | src/tessellate/search/engine.py:683 |
-| `_matrix_key` | src/tessellate/search/engine.py:245 |
-| `_mentions` | src/tessellate/search/engine.py:836 |
-| `_normalised_bm25` | src/tessellate/search/engine.py:914 |
-| `_put` | src/tessellate/search/engine.py:571 |
-| `_reconcile` | src/tessellate/search/engine.py:426 |
-| `_remember` | src/tessellate/search/engine.py:552 |
+| `_hops_from` | src/tessellate/search/engine.py:871 |
+| `_keep_matrix_in_step` | src/tessellate/search/engine.py:531 |
+| `_keyword_pass` | src/tessellate/search/engine.py:845 |
+| `_live_matrix` | src/tessellate/search/engine.py:516 |
+| `_load_all_vectors` | src/tessellate/search/engine.py:276 |
+| `_match_expression` | src/tessellate/search/engine.py:684 |
+| `_matrix_key` | src/tessellate/search/engine.py:246 |
+| `_mentions` | src/tessellate/search/engine.py:837 |
+| `_normalised_bm25` | src/tessellate/search/engine.py:915 |
+| `_put` | src/tessellate/search/engine.py:572 |
+| `_reconcile` | src/tessellate/search/engine.py:427 |
+| `_remember` | src/tessellate/search/engine.py:553 |
 | `_row_has` | src/tessellate/search/engine.py:1062 |
-| `_row_ids` | src/tessellate/search/engine.py:265 |
-| `_session_space` | src/tessellate/search/engine.py:732 |
-| `_snippet` | src/tessellate/search/engine.py:969 |
-| `_space_clause` | src/tessellate/search/engine.py:712 |
-| `_table_fingerprint` | src/tessellate/search/engine.py:250 |
-| `_term_groups` | src/tessellate/search/engine.py:673 |
-| `_unit` | src/tessellate/search/engine.py:336 |
+| `_row_ids` | src/tessellate/search/engine.py:266 |
+| `_session_space` | src/tessellate/search/engine.py:733 |
+| `_snippet` | src/tessellate/search/engine.py:970 |
+| `_space_clause` | src/tessellate/search/engine.py:713 |
+| `_table_fingerprint` | src/tessellate/search/engine.py:251 |
+| `_term_groups` | src/tessellate/search/engine.py:674 |
+| `_unit` | src/tessellate/search/engine.py:337 |
 | `_with_meaning` | src/tessellate/search/engine.py:1246 |
 | `cached_similar_pairs` | src/tessellate/search/engine.py:1453 |
-| `current_matrix` | src/tessellate/search/engine.py:365 |
-| `forget_vector` | src/tessellate/search/engine.py:603 |
-| `index_counts` | src/tessellate/search/engine.py:668 |
+| `current_matrix` | src/tessellate/search/engine.py:366 |
+| `forget_vector` | src/tessellate/search/engine.py:604 |
+| `index_counts` | src/tessellate/search/engine.py:669 |
 | `related` | src/tessellate/search/engine.py:1383 |
-| `rows_for` | src/tessellate/search/engine.py:400 |
+| `rows_for` | src/tessellate/search/engine.py:401 |
 | `search` | src/tessellate/search/engine.py:1086 |
 | `stats` | src/tessellate/search/engine.py:1499 |
-| `vector_view` | src/tessellate/search/engine.py:472 |
+| `vector_view` | src/tessellate/search/engine.py:473 |
 | `vectors_by_id` | src/tessellate/search/engine.py:1407 |
-| `warm_vectors` | src/tessellate/search/engine.py:343 |
+| `warm_vectors` | src/tessellate/search/engine.py:344 |
 
 ### src/tessellate/search/index.py (36)
 
@@ -17579,6 +17579,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `getpwuid` | src/tessellate/search/searxng_settings.py:202 |
 | `settings_path` | src/tessellate/search/searxng_settings.py:264 |
 
+### src/tessellate/search/snippet.py (3)
+
+| Name | File:line |
+|---|---|
+| `_flat` | src/tessellate/search/snippet.py:13 |
+| `clip_words` | src/tessellate/search/snippet.py:17 |
+| `window_words` | src/tessellate/search/snippet.py:32 |
+
 ### src/tessellate/search/websearch.py (34)
 
 | Name | File:line |
@@ -17618,7 +17626,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11153)
+## Tests (11161)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18620,6 +18628,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_slash.py | 18 |
 | tests/test_slash_falls_through.py | 1 |
 | tests/test_smooth_boot.py | 16 |
+| tests/test_snippet_word_boundaries.py | 8 |
 | tests/test_source_check.py | 8 |
 | tests/test_space_delete_cascades.py | 1 |
 | tests/test_spaces.py | 25 |
@@ -19503,7 +19512,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Open items | docs/roadmap/INBOX.md:35 |
 | OpenJarvis (open-jarvis) | docs/roadmap/ANALYSIS.md:2894 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1360 |
-| Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4390 |
+| Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4387 |
 | PDF viewer and OCR workspace, against pdfcraft | docs/roadmap/ANALYSIS.md:3922 |
 | PR 144 is done when (the owner's checklist, 2026-09-09 05:30 UTC) | docs/roadmap/HANDOVER.md:88 |
 | Parity matrix, 2026-10-10 | docs/roadmap/ANALYSIS.md:3703 |
@@ -19566,7 +19575,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/MINDMAP_PLAN.md:1822 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/WHITEBOARD_PLAN.md:1573 |
 | Placed from INBOX 561 (2026-10-17) | docs/roadmap/TIMELINE_PLAN.md:207 |
-| Placed from INBOX 904 (the owner, 2026-10-17) | docs/roadmap/BACKLOG.md:4405 |
+| Placed from INBOX 904 (the owner, 2026-10-17) | docs/roadmap/BACKLOG.md:4402 |
 | Placed from INBOX, 2026-09-09 | docs/roadmap/CHAT_PLAN.md:595 |
 | Placed from INBOX, 2026-09-09 | docs/roadmap/GRAPH_PLAN.md:206 |
 | Placed from INBOX, 2026-09-09 | docs/roadmap/MINDMAP_PLAN.md:1448 |
@@ -19707,7 +19716,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Still open: the upload split, and what it collides with | docs/roadmap/BACKLOG.md:2783 |
 | Table | docs/roadmap/ANALYSIS.md:4430 |
 | Tables in notes and documents, against gridcraft | docs/roadmap/ANALYSIS.md:3891 |
-| The 2026-10-12 sweep: everything said and not done, so nothing is missed | docs/roadmap/BACKLOG.md:4357 |
+| The 2026-10-12 sweep: everything said and not done, so nothing is missed | docs/roadmap/BACKLOG.md:4354 |
 | The `pytesseract` vendoring question, measured | docs/roadmap/ANALYSIS.md:2102 |
 | The app's stack (outside boards and documents) | docs/roadmap/WHITEBOARD_PLAN.md:498 |
 | The assistant catalogue, 2026-10-10 | docs/roadmap/CHAT_PLAN.md:951 |
