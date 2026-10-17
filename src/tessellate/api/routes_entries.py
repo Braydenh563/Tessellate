@@ -1646,7 +1646,10 @@ def improve_writing(body: ImproveBody) -> dict:
         from tessellate.ai import proofread
 
         improved, changes = proofread.proofread(text)
-        return {"original": text, "improved": improved, "mode": body.mode, "by": "composer", "said": proofread.said(changes)}
+        return {
+            "original": text, "improved": improved, "mode": body.mode, "by": "composer",
+            "said": proofread.said(changes, text), "truncated": proofread.covered(text) < len(text),
+        }
     try:
         improved = librarian.improve_writing(
             text,

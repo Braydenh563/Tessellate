@@ -28,11 +28,36 @@ _TIGHT = re.compile(r"(?<=[a-z])([,.])(?=[A-Za-z]{2,})")
 _UNTOUCHED = re.compile(r"(https?://\S+|\S{1,100}@\S{1,255}|`[^`]{0,500}`|#\w+|\[\[[^\]]{0,200}\]\])")
 
 
+#: How much of a note is proofread: the speller costs about 0.4 ms a
+#: character, so a 40,000-character note took 14 to 21 s. The rest of a longer
+#: note is returned as typed, and the result says so (`said`).
+PROOFREAD_CHARS = 4000
+
+
+def covered(text: str) -> int:
+    """How many leading characters of `text` `proofread` reads: all of a short
+    text, else up to the last line (or word) break inside `PROOFREAD_CHARS`."""
+    if len(text) <= PROOFREAD_CHARS:
+        return len(text)
+    cut = text.rfind("\n", 0, PROOFREAD_CHARS)
+    if cut < 1:
+        cut = text.rfind(" ", 0, PROOFREAD_CHARS)
+    return cut + 1 if cut > 0 else PROOFREAD_CHARS
+
+
 def proofread(text: str, known=frozenset()) -> tuple[str, list[tuple[str, str]]]:  # noqa: ANN001
     """`(proofread text, [(typed, made)])`. `known` are words of the
-    person's own (their notes'), never changed."""
+    person's own (their notes'), never changed. Only the first `covered(text)`
+    characters are read; the rest is returned exactly as typed."""
+    text = text or ""
+    head, rest = text[: covered(text)], text[covered(text) :]
+    improved, changes = _proofread_head(head, known)
+    return improved + rest, changes
+
+
+def _proofread_head(text: str, known) -> tuple[str, list[tuple[str, str]]]:  # noqa: ANN001
     changes: list[tuple[str, str]] = []
-    pieces = _UNTOUCHED.split(text or "")
+    pieces = _UNTOUCHED.split(text)
     out = []
     for n, piece in enumerate(pieces):
         out.append(piece if n % 2 else _proofread_plain(piece, known, changes))
@@ -92,8 +117,19 @@ def _modal(typed: str, line: str) -> str:
     return near[0] if len(near) == 1 else ""
 
 
-def said(changes: list[tuple[str, str]]) -> str:
-    """One line on what the proofreading changed, for the sheet."""
+def said(changes: list[tuple[str, str]], text: str = "") -> str:
+    """One line on what the proofreading changed, for the sheet, and when
+    `text` was longer than `covered(text)`, that only the start was read."""
+    return _said(changes) + _only_the_start(covered(text), len(text))
+
+
+def _only_the_start(read: int, whole: int) -> str:
+    if read >= whole:
+        return ""
+    return f" Only the first {read:,} of {whole:,} characters were proofread; the rest is as you typed it."
+
+
+def _said(changes: list[tuple[str, str]]) -> str:
     words = [(a, b) for a, b in changes if a not in ("sentence starts", "i", "day names")]
     if not changes:
         return "Atlas's assistant read it through and found nothing to change. Rewording needs a model."
