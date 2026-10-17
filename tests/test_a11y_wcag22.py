@@ -443,3 +443,14 @@ def test_the_calendar_add_tabs_control_a_panel_each():
     assert 'tab.setAttribute("aria-controls", `timeline-cal-add-panel-${kind}`)' in source
     assert 'holder.setAttribute("role", "tabpanel")' in source
     assert 'holder.setAttribute("aria-labelledby", tab.id)' in source
+
+
+# The chat dock's Skills panel (a non-modal dialog): Escape closed it with the
+# focus on a select inside it, which fell to the page (a11ysurfaces.js: "focus
+# did not return to #chat-skills-btn").
+def test_the_skills_panel_hands_the_focus_back_to_its_trigger():
+    source = _js("skills.js")
+    close = source[source.index("  const close = (refocus) => {") :][:420]
+    assert "panel.contains(document.activeElement)" in close and "trigger.focus()" in close
+    assert 'if (event.key === "Escape") close(true);' in source
+    assert 'run.addEventListener("click", () => close(true));' in source

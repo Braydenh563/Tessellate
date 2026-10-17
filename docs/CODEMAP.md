@@ -2,7 +2,7 @@
 
 Generated 2026-10-17 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 5948, frontend ids 2509, CSS sections 495, backend routes 607, backend modules 5636, test files 1220, tests 11090, plan headings 957.
+Counts: frontend functions 5948, frontend ids 2509, CSS sections 495, backend routes 607, backend modules 5636, test files 1220, tests 11091, plan headings 957.
 
 ## Frontend functions (5948)
 
@@ -725,66 +725,66 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `allSkills` | frontend/js/skills.js:28 |
-| `appendToolRow` | frontend/js/skills.js:958 |
-| `applyToolFilter` | frontend/js/skills.js:1022 |
+| `appendToolRow` | frontend/js/skills.js:962 |
+| `applyToolFilter` | frontend/js/skills.js:1026 |
 | `askSkillInputs` | frontend/js/skills.js:226 |
-| `batchArchive` | frontend/js/skills.js:1391 |
-| `batchDelete` | frontend/js/skills.js:1434 |
-| `batchEach` | frontend/js/skills.js:1358 |
-| `batchExport` | frontend/js/skills.js:1428 |
-| `batchFavourite` | frontend/js/skills.js:1385 |
-| `batchMove` | frontend/js/skills.js:1336 |
-| `batchNoun` | frontend/js/skills.js:1381 |
-| `batchPublish` | frontend/js/skills.js:1402 |
-| `batchPut` | frontend/js/skills.js:1377 |
-| `batchSelection` | frontend/js/skills.js:1330 |
-| `batchTag` | frontend/js/skills.js:1350 |
-| `blobToBase64` | frontend/js/skills.js:1143 |
+| `batchArchive` | frontend/js/skills.js:1395 |
+| `batchDelete` | frontend/js/skills.js:1438 |
+| `batchEach` | frontend/js/skills.js:1362 |
+| `batchExport` | frontend/js/skills.js:1432 |
+| `batchFavourite` | frontend/js/skills.js:1389 |
+| `batchMove` | frontend/js/skills.js:1340 |
+| `batchNoun` | frontend/js/skills.js:1385 |
+| `batchPublish` | frontend/js/skills.js:1406 |
+| `batchPut` | frontend/js/skills.js:1381 |
+| `batchSelection` | frontend/js/skills.js:1334 |
+| `batchTag` | frontend/js/skills.js:1354 |
+| `blobToBase64` | frontend/js/skills.js:1147 |
 | `buildSkillsPanel` | frontend/js/skills.js:436 |
 | `customSkills` | frontend/js/skills.js:35 |
-| `desktopShell` | frontend/js/skills.js:1092 |
-| `downloadBlob` | frontend/js/skills.js:1175 |
-| `downloadFromApi` | frontend/js/skills.js:1159 |
-| `downloadJson` | frontend/js/skills.js:1058 |
-| `enterSelectMode` | frontend/js/skills.js:1302 |
-| `exitSelectMode` | frontend/js/skills.js:1320 |
-| `fillBatchCategories` | frontend/js/skills.js:1275 |
-| `fillBatchMore` | frontend/js/skills.js:1408 |
+| `desktopShell` | frontend/js/skills.js:1096 |
+| `downloadBlob` | frontend/js/skills.js:1179 |
+| `downloadFromApi` | frontend/js/skills.js:1163 |
+| `downloadJson` | frontend/js/skills.js:1062 |
+| `enterSelectMode` | frontend/js/skills.js:1306 |
+| `exitSelectMode` | frontend/js/skills.js:1324 |
+| `fillBatchCategories` | frontend/js/skills.js:1279 |
+| `fillBatchMore` | frontend/js/skills.js:1412 |
 | `fillSkillSelect` | frontend/js/skills.js:378 |
-| `healthFacts` | frontend/js/skills.js:1082 |
+| `healthFacts` | frontend/js/skills.js:1086 |
 | `inputsToText` | frontend/js/skills.js:49 |
 | `loadChatSkills` | frontend/js/skills.js:308 |
 | `loadSkills` | frontend/js/skills.js:19 |
-| `looksLikeAnAgentRequest` | frontend/js/skills.js:615 |
-| `markOtherDevice` | frontend/js/skills.js:1108 |
-| `onOtherDevice` | frontend/js/skills.js:1125 |
-| `refuseOnOtherDevice` | frontend/js/skills.js:1133 |
-| `renderChatNudge` | frontend/js/skills.js:658 |
-| `renderRunBudget` | frontend/js/skills.js:886 |
-| `renderSkillFolderLine` | frontend/js/skills.js:827 |
-| `renderSkillSettings` | frontend/js/skills.js:810 |
+| `looksLikeAnAgentRequest` | frontend/js/skills.js:619 |
+| `markOtherDevice` | frontend/js/skills.js:1112 |
+| `onOtherDevice` | frontend/js/skills.js:1129 |
+| `refuseOnOtherDevice` | frontend/js/skills.js:1137 |
+| `renderChatNudge` | frontend/js/skills.js:662 |
+| `renderRunBudget` | frontend/js/skills.js:890 |
+| `renderSkillFolderLine` | frontend/js/skills.js:831 |
+| `renderSkillSettings` | frontend/js/skills.js:814 |
 | `renderSkillToolPicker` | frontend/js/skills.js:88 |
 | `renderSkillVerifyPicker` | frontend/js/skills.js:116 |
-| `renderSmallModelMode` | frontend/js/skills.js:874 |
-| `renderToolFocus` | frontend/js/skills.js:848 |
-| `renderToolSettings` | frontend/js/skills.js:915 |
-| `resetChatNudge` | frontend/js/skills.js:726 |
+| `renderSmallModelMode` | frontend/js/skills.js:878 |
+| `renderToolFocus` | frontend/js/skills.js:852 |
+| `renderToolSettings` | frontend/js/skills.js:919 |
+| `resetChatNudge` | frontend/js/skills.js:730 |
 | `runSkill` | frontend/js/skills.js:159 |
-| `saveFile` | frontend/js/skills.js:1191 |
-| `saveSkillList` | frontend/js/skills.js:744 |
-| `saveToolSwitch` | frontend/js/skills.js:897 |
+| `saveFile` | frontend/js/skills.js:1195 |
+| `saveSkillList` | frontend/js/skills.js:748 |
+| `saveToolSwitch` | frontend/js/skills.js:901 |
 | `setSkillVerify` | frontend/js/skills.js:136 |
-| `skillMatchingDraft` | frontend/js/skills.js:625 |
-| `skillPacePill` | frontend/js/skills.js:513 |
-| `skillRow` | frontend/js/skills.js:754 |
-| `skillSummary` | frontend/js/skills.js:731 |
+| `skillMatchingDraft` | frontend/js/skills.js:629 |
+| `skillPacePill` | frontend/js/skills.js:517 |
+| `skillRow` | frontend/js/skills.js:758 |
+| `skillSummary` | frontend/js/skills.js:735 |
 | `startEditingSkill` | frontend/js/skills.js:55 |
 | `startPlannedRun` | frontend/js/skills.js:171 |
 | `startSkill` | frontend/js/skills.js:176 |
 | `stepsToText` | frontend/js/skills.js:45 |
 | `stopEditingSkill` | frontend/js/skills.js:73 |
 | `syncSkillVerifyRow` | frontend/js/skills.js:151 |
-| `updateBatchCount` | frontend/js/skills.js:1251 |
+| `updateBatchCount` | frontend/js/skills.js:1255 |
 
 ### frontend/js/shell-reminders.js (49)
 
@@ -17585,13 +17585,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11090)
+## Tests (11091)
 
 `def test_` lines in each `tests/test_*.py`.
 
 | File | Tests |
 |---|---|
-| tests/test_a11y_wcag22.py | 31 |
+| tests/test_a11y_wcag22.py | 32 |
 | tests/test_about_github_link.py | 1 |
 | tests/test_accent_text.py | 3 |
 | tests/test_account.py | 16 |

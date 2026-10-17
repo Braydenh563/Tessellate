@@ -176,6 +176,9 @@ const AUDIT = ({ scope, floor }) => {
   // Menus and dialogs reached from the surfaces above.
   await tab('chat');
   await dialog('no-model caret menu', async () => { await page.click('.ai-offline-split .split-button-caret'); }, '.action-menu:not(.hidden)', { returnsTo: '.ai-offline-split .split-button-caret', trap: false });
+  await dialog('chat Skills panel', async () => { await page.click('#chat-skills-btn'); }, '#chat-skills-panel', { returnsTo: '#chat-skills-btn', trap: false });
+  await tab('notes');
+  await dialog('add tags popover', async () => { await page.click('#entry-list > li:first-child .chip.untagged'); }, '[role="dialog"][aria-label="Add tags to this note"]', { trap: false });
   await tab('dashboard');
   await dialog('get started menu', async () => { await page.click('#dash-start-menu'); }, '.action-menu:not(.hidden)', { returnsTo: '#dash-start-menu', trap: false });
   await dialog('find anything', async () => { await page.click('#dash-find'); }, '#finder-overlay', { returnsTo: '#dash-find', trap: true });
