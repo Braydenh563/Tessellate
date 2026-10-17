@@ -1623,8 +1623,10 @@ function renderModelContextBox(modelName, spec) {
   //: this control must never do.
   box.value = set > 0 ? String(set) : "";
   box.disabled = !modelContextModel;
-  if (!note) return;
   const usable = spec && spec.usable_context;
+  //: B56: the empty box says what Auto found, not only the word.
+  box.placeholder = usable ? `Auto (${Number(usable).toLocaleString()})` : "Auto";
+  if (!note) return;
   if (!modelContextModel) {
     note.textContent = "";
     return;

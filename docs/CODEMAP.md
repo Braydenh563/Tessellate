@@ -2,7 +2,7 @@
 
 Generated 2026-10-17 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 5957, frontend ids 2510, CSS sections 495, backend routes 607, backend modules 5658, test files 1231, tests 11151, plan headings 957.
+Counts: frontend functions 5957, frontend ids 2510, CSS sections 495, backend routes 607, backend modules 5658, test files 1231, tests 11153, plan headings 957.
 
 ## Frontend functions (5957)
 
@@ -424,79 +424,79 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aiWritingTrace` | frontend/js/chat.js:2215 |
-| `applyCompression` | frontend/js/chat.js:2075 |
+| `aiWritingTrace` | frontend/js/chat.js:2217 |
+| `applyCompression` | frontend/js/chat.js:2077 |
 | `askAboutPage` | frontend/js/chat.js:1464 |
 | `assistantLabel` | frontend/js/chat.js:52 |
 | `assistantMessageActions` | frontend/js/chat.js:162 |
 | `atlasSuggestion` | frontend/js/chat.js:674 |
-| `batteryModeOn` | frontend/js/chat.js:2117 |
+| `batteryModeOn` | frontend/js/chat.js:2119 |
 | `bookmarkWebResult` | frontend/js/chat.js:1267 |
 | `buildWebResultRow` | frontend/js/chat.js:1144 |
 | `chatEmptySettle` | frontend/js/chat.js:695 |
 | `chatHistoryToSend` | frontend/js/chat.js:36 |
 | `chatMessageActions` | frontend/js/chat.js:65 |
-| `chatTranscriptText` | frontend/js/chat.js:2013 |
+| `chatTranscriptText` | frontend/js/chat.js:2015 |
 | `chatTurnTranscript` | frontend/js/chat.js:125 |
 | `citeWebPage` | frontend/js/chat.js:1521 |
 | `clearChatEmptyState` | frontend/js/chat.js:823 |
 | `clearWebSearchHistory` | frontend/js/chat.js:1335 |
 | `closeWebReader` | frontend/js/chat.js:893 |
 | `compactTokens` | frontend/js/chat.js:490 |
-| `compressChatContext` | frontend/js/chat.js:2041 |
+| `compressChatContext` | frontend/js/chat.js:2043 |
 | `continueRunControls` | frontend/js/chat.js:226 |
 | `copyToClipboard` | frontend/js/chat.js:547 |
 | `copyViaTextarea` | frontend/js/chat.js:514 |
 | `copyWebLink` | frontend/js/chat.js:1259 |
-| `fillPersonaMark` | frontend/js/chat.js:1796 |
+| `fillPersonaMark` | frontend/js/chat.js:1798 |
 | `flashCopied` | frontend/js/chat.js:536 |
 | `forkFromBubble` | frontend/js/chat.js:626 |
-| `livingInterval` | frontend/js/chat.js:2201 |
-| `loadResponseModes` | frontend/js/chat.js:1751 |
+| `livingInterval` | frontend/js/chat.js:2203 |
+| `loadResponseModes` | frontend/js/chat.js:1753 |
 | `loadWebSearchHistory` | frontend/js/chat.js:1310 |
 | `manualPauseControls` | frontend/js/chat.js:272 |
 | `messageMetaLine` | frontend/js/chat.js:340 |
 | `metaItem` | frontend/js/chat.js:306 |
-| `mountChatActionsMenu` | frontend/js/chat.js:1937 |
+| `mountChatActionsMenu` | frontend/js/chat.js:1939 |
 | `openWebPageExternally` | frontend/js/chat.js:1255 |
 | `openWebReader` | frontend/js/chat.js:1481 |
-| `personaOptions` | frontend/js/chat.js:1813 |
-| `progressLine` | frontend/js/chat.js:2543 |
-| `progressMotionWanted` | frontend/js/chat.js:2153 |
-| `progressPhaseText` | frontend/js/chat.js:2411 |
+| `personaOptions` | frontend/js/chat.js:1815 |
+| `progressLine` | frontend/js/chat.js:2545 |
+| `progressMotionWanted` | frontend/js/chat.js:2155 |
+| `progressPhaseText` | frontend/js/chat.js:2413 |
 | `pushWebSearchHistory` | frontend/js/chat.js:1319 |
 | `questionForBubble` | frontend/js/chat.js:580 |
-| `reducedMotionWanted` | frontend/js/chat.js:2123 |
+| `reducedMotionWanted` | frontend/js/chat.js:2125 |
 | `refreshWebSearxngStrip` | frontend/js/chat.js:1064 |
 | `regenerateFromBubble` | frontend/js/chat.js:598 |
 | `regenerateLastAnswer` | frontend/js/chat.js:653 |
 | `removeChatBubble` | frontend/js/chat.js:500 |
-| `renderChatContextMeter` | frontend/js/chat.js:1887 |
+| `renderChatContextMeter` | frontend/js/chat.js:1889 |
 | `renderChatEmptyState` | frontend/js/chat.js:705 |
-| `renderChatTurnCount` | frontend/js/chat.js:1917 |
-| `renderChatUsage` | frontend/js/chat.js:1870 |
-| `renderCompressionState` | frontend/js/chat.js:2088 |
+| `renderChatTurnCount` | frontend/js/chat.js:1919 |
+| `renderChatUsage` | frontend/js/chat.js:1872 |
+| `renderCompressionState` | frontend/js/chat.js:2090 |
 | `renderModelContextBox` | frontend/js/chat.js:1614 |
-| `renderModelHealthNote` | frontend/js/chat.js:1714 |
-| `renderModelSpec` | frontend/js/chat.js:1642 |
+| `renderModelHealthNote` | frontend/js/chat.js:1716 |
+| `renderModelSpec` | frontend/js/chat.js:1644 |
 | `renderWebPageAttachment` | frontend/js/chat.js:1548 |
 | `renderWebPanelMenu` | frontend/js/chat.js:998 |
 | `renderWebSearchHistory` | frontend/js/chat.js:1344 |
 | `rewriteAnswerWith` | frontend/js/chat.js:617 |
 | `runWebSearch` | frontend/js/chat.js:1379 |
-| `saveChatAsDocument` | frontend/js/chat.js:1989 |
-| `scheduleThinkingWordTick` | frontend/js/chat.js:2329 |
-| `setResponseMode` | frontend/js/chat.js:1774 |
+| `saveChatAsDocument` | frontend/js/chat.js:1991 |
+| `scheduleThinkingWordTick` | frontend/js/chat.js:2331 |
+| `setResponseMode` | frontend/js/chat.js:1776 |
 | `setWebEngineDot` | frontend/js/chat.js:984 |
 | `setWebSearxngRunning` | frontend/js/chat.js:1049 |
-| `showCompressReview` | frontend/js/chat.js:2063 |
-| `startThinkingWordRotation` | frontend/js/chat.js:2357 |
-| `stopThinkingWordRotation` | frontend/js/chat.js:2379 |
+| `showCompressReview` | frontend/js/chat.js:2065 |
+| `startThinkingWordRotation` | frontend/js/chat.js:2359 |
+| `stopThinkingWordRotation` | frontend/js/chat.js:2381 |
 | `stopWebRequest` | frontend/js/chat.js:878 |
-| `togglePersonaPrompt` | frontend/js/chat.js:1862 |
+| `togglePersonaPrompt` | frontend/js/chat.js:1864 |
 | `toggleWebPanel` | frontend/js/chat.js:906 |
-| `toolPhaseVerb` | frontend/js/chat.js:2426 |
-| `typingDots` | frontend/js/chat.js:2440 |
+| `toolPhaseVerb` | frontend/js/chat.js:2428 |
+| `typingDots` | frontend/js/chat.js:2442 |
 | `webEngineWords` | frontend/js/chat.js:967 |
 | `webPageContextBlock` | frontend/js/chat.js:1579 |
 | `webPageMarkdown` | frontend/js/chat.js:1488 |
@@ -505,8 +505,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `webRequestEnd` | frontend/js/chat.js:868 |
 | `webRequestStart` | frontend/js/chat.js:859 |
 | `webResultMark` | frontend/js/chat.js:1110 |
-| `wheelScrollsHorizontally` | frontend/js/chat.js:2264 |
-| `wireHorizontalWheelScrolling` | frontend/js/chat.js:2297 |
+| `wheelScrollsHorizontally` | frontend/js/chat.js:2266 |
+| `wireHorizontalWheelScrolling` | frontend/js/chat.js:2299 |
 
 ### frontend/js/chat-agent.js (71)
 
@@ -1986,76 +1986,76 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `appendTimelineRows` | frontend/js/timeline.js:738 |
-| `applyTimelineRowTabOrder` | frontend/js/timeline.js:1433 |
-| `closeTimelineRow` | frontend/js/timeline.js:1649 |
-| `dailyNotePair` | frontend/js/timeline.js:1109 |
+| `applyTimelineRowTabOrder` | frontend/js/timeline.js:1435 |
+| `closeTimelineRow` | frontend/js/timeline.js:1651 |
+| `dailyNotePair` | frontend/js/timeline.js:1111 |
 | `dailyNoteTitle` | frontend/js/timeline.js:184 |
-| `drawTimelineScrubber` | frontend/js/timeline.js:1847 |
-| `drawTimelineWindow` | frontend/js/timeline.js:1915 |
+| `drawTimelineScrubber` | frontend/js/timeline.js:1849 |
+| `drawTimelineWindow` | frontend/js/timeline.js:1917 |
 | `fillTimelineBandOptions` | frontend/js/timeline.js:821 |
-| `focusTimelineRow` | frontend/js/timeline.js:1599 |
-| `openDayPage` | frontend/js/timeline.js:1077 |
-| `openTimelineRowDetail` | frontend/js/timeline.js:1662 |
-| `openTimelineTableDetail` | frontend/js/timeline.js:2245 |
-| `openTodaysPage` | frontend/js/timeline.js:1065 |
+| `focusTimelineRow` | frontend/js/timeline.js:1601 |
+| `openDayPage` | frontend/js/timeline.js:1079 |
+| `openTimelineRowDetail` | frontend/js/timeline.js:1664 |
+| `openTimelineTableDetail` | frontend/js/timeline.js:2247 |
+| `openTodaysPage` | frontend/js/timeline.js:1067 |
 | `paintTimeline` | frontend/js/timeline.js:884 |
 | `paintTimelineFeed` | frontend/js/timeline.js:926 |
-| `paintTimelineTable` | frontend/js/timeline.js:2069 |
+| `paintTimelineTable` | frontend/js/timeline.js:2071 |
 | `renderTimeline` | frontend/js/timeline.js:561 |
-| `renderTimelineDayStrip` | frontend/js/timeline.js:1194 |
+| `renderTimelineDayStrip` | frontend/js/timeline.js:1196 |
 | `renderTimelineKinds` | frontend/js/timeline.js:342 |
-| `renderTimelineMonthPop` | frontend/js/timeline.js:1314 |
+| `renderTimelineMonthPop` | frontend/js/timeline.js:1316 |
 | `renderTimelineRecall` | frontend/js/timeline.js:617 |
-| `setTimelineRowSelected` | frontend/js/timeline.js:2233 |
-| `shortDate` | frontend/js/timeline.js:1776 |
-| `startDayNote` | frontend/js/timeline.js:1140 |
-| `startTodaysNote` | frontend/js/timeline.js:1136 |
-| `syncTimelineDetailSpans` | frontend/js/timeline.js:2124 |
+| `setTimelineRowSelected` | frontend/js/timeline.js:2235 |
+| `shortDate` | frontend/js/timeline.js:1778 |
+| `startDayNote` | frontend/js/timeline.js:1142 |
+| `startTodaysNote` | frontend/js/timeline.js:1138 |
+| `syncTimelineDetailSpans` | frontend/js/timeline.js:2126 |
 | `syncTimelineFilterChip` | frontend/js/timeline.js:851 |
 | `syncTimelineKindsLabel` | frontend/js/timeline.js:398 |
-| `syncTimelineSelectUi` | frontend/js/timeline.js:2262 |
-| `syncTimelineViewSeg` | frontend/js/timeline.js:2313 |
+| `syncTimelineSelectUi` | frontend/js/timeline.js:2264 |
+| `syncTimelineViewSeg` | frontend/js/timeline.js:2315 |
 | `syncTimelineYears` | frontend/js/timeline.js:668 |
-| `timelineAheadBuckets` | frontend/js/timeline.js:976 |
+| `timelineAheadBuckets` | frontend/js/timeline.js:978 |
 | `timelineAutoScale` | frontend/js/timeline.js:452 |
 | `timelineBucketKey` | frontend/js/timeline.js:217 |
 | `timelineBucketLabel` | frontend/js/timeline.js:234 |
-| `timelineBucketSection` | frontend/js/timeline.js:986 |
-| `timelineCalendarCall` | frontend/js/timeline.js:2297 |
+| `timelineBucketSection` | frontend/js/timeline.js:988 |
+| `timelineCalendarCall` | frontend/js/timeline.js:2299 |
 | `timelineDailyNote` | frontend/js/timeline.js:201 |
-| `timelineDayKeys` | frontend/js/timeline.js:1258 |
-| `timelineDayLabel` | frontend/js/timeline.js:1189 |
-| `timelineDayPages` | frontend/js/timeline.js:1173 |
-| `timelineDayShift` | frontend/js/timeline.js:1130 |
-| `timelineDensitySpan` | frontend/js/timeline.js:1824 |
-| `timelineDensitySpanOf` | frontend/js/timeline.js:1830 |
-| `timelineForgetRows` | frontend/js/timeline.js:1910 |
+| `timelineDayKeys` | frontend/js/timeline.js:1260 |
+| `timelineDayLabel` | frontend/js/timeline.js:1191 |
+| `timelineDayPages` | frontend/js/timeline.js:1175 |
+| `timelineDayShift` | frontend/js/timeline.js:1132 |
+| `timelineDensitySpan` | frontend/js/timeline.js:1826 |
+| `timelineDensitySpanOf` | frontend/js/timeline.js:1832 |
+| `timelineForgetRows` | frontend/js/timeline.js:1912 |
 | `timelineIsDailyNote` | frontend/js/timeline.js:308 |
-| `timelineJumpToDay` | frontend/js/timeline.js:1301 |
+| `timelineJumpToDay` | frontend/js/timeline.js:1303 |
 | `timelineKindChoice` | frontend/js/timeline.js:292 |
 | `timelineLoadMore` | frontend/js/timeline.js:693 |
-| `timelineMonthKeys` | frontend/js/timeline.js:1368 |
-| `timelineMonthShift` | frontend/js/timeline.js:1295 |
-| `timelineMonthStart` | frontend/js/timeline.js:1291 |
+| `timelineMonthKeys` | frontend/js/timeline.js:1370 |
+| `timelineMonthShift` | frontend/js/timeline.js:1297 |
+| `timelineMonthStart` | frontend/js/timeline.js:1293 |
 | `timelineQuery` | frontend/js/timeline.js:531 |
 | `timelineResolvedScale` | frontend/js/timeline.js:479 |
 | `timelineRow` | frontend/js/timeline.js:115 |
-| `timelineRowElement` | frontend/js/timeline.js:1461 |
+| `timelineRowElement` | frontend/js/timeline.js:1463 |
 | `timelineRowGroups` | frontend/js/timeline.js:807 |
 | `timelineRowMoment` | frontend/js/timeline.js:102 |
 | `timelineScaleChoice` | frontend/js/timeline.js:436 |
-| `timelineScrollToToday` | frontend/js/timeline.js:2424 |
-| `timelineScrubTo` | frontend/js/timeline.js:1963 |
-| `timelineSortValue` | frontend/js/timeline.js:2040 |
-| `timelineSortedRows` | frontend/js/timeline.js:2051 |
-| `timelineStepScale` | frontend/js/timeline.js:1745 |
-| `timelineTableColumnCount` | frontend/js/timeline.js:2104 |
-| `timelineTableRow` | frontend/js/timeline.js:2131 |
-| `timelineViewMode` | frontend/js/timeline.js:2013 |
+| `timelineScrollToToday` | frontend/js/timeline.js:2426 |
+| `timelineScrubTo` | frontend/js/timeline.js:1965 |
+| `timelineSortValue` | frontend/js/timeline.js:2042 |
+| `timelineSortedRows` | frontend/js/timeline.js:2053 |
+| `timelineStepScale` | frontend/js/timeline.js:1747 |
+| `timelineTableColumnCount` | frontend/js/timeline.js:2106 |
+| `timelineTableRow` | frontend/js/timeline.js:2133 |
+| `timelineViewMode` | frontend/js/timeline.js:2015 |
 | `timelineVisibleRows` | frontend/js/timeline.js:864 |
-| `timelineWatchRow` | frontend/js/timeline.js:1899 |
+| `timelineWatchRow` | frontend/js/timeline.js:1901 |
 | `toggleTimelineKind` | frontend/js/timeline.js:417 |
-| `toggleTimelineRow` | frontend/js/timeline.js:1623 |
+| `toggleTimelineRow` | frontend/js/timeline.js:1625 |
 
 ### frontend/js/palette.js (28)
 
@@ -17618,7 +17618,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11151)
+## Tests (11153)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18590,7 +18590,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_server_time_readers.py | 1 |
 | tests/test_session_navigation.py | 6 |
 | tests/test_setting_label_toggles.py | 3 |
-| tests/test_settings_bugs_1017.py | 12 |
+| tests/test_settings_bugs_1017.py | 14 |
 | tests/test_settings_field_edge.py | 2 |
 | tests/test_settings_group_heads.py | 2 |
 | tests/test_settings_ia.py | 7 |

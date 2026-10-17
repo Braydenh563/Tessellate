@@ -220,3 +220,20 @@ def test_b55_the_palette_finds_the_web_clipper():
     assert "Web clipper" in palette and 'openSettingsModal("data", "web-clip-box")' in palette
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert 'id="web-clip-box"' in html
+
+
+# B56, the rest: the Timeline's "Bucket by" Auto and the Context window box said
+# only "Auto". Measured at 1440: the bucket shell read "Auto (week now)" for 14
+# months of notes (216 px wide for a 109 px label), and the box placeholder read
+# "Auto (131,072)" at 207 px wide for a 91 px label.
+def test_b56_timeline_bucket_auto_names_the_bucket_it_chose():
+    js = (ROOT / "frontend" / "js" / "timeline.js").read_text(encoding="utf-8")
+    paint = js[js.index("function paintTimelineFeed") :][:700]
+    assert '$("timeline-scale").options[0].textContent = `Auto (${scale} now)`' in paint
+    assert '<option value="auto" selected>Auto</option>' in (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+
+
+def test_b56_context_window_placeholder_carries_what_auto_found():
+    js = (ROOT / "frontend" / "js" / "chat.js").read_text(encoding="utf-8")
+    box = js[js.index("function renderModelContextBox") :][:1200]
+    assert 'box.placeholder = usable ? `Auto (${Number(usable).toLocaleString()})` : "Auto";' in box
