@@ -449,10 +449,10 @@ def resolve(phrase: str, now: datetime, *, locale: str | None = None) -> datetim
         return shifted
     relative = relative_delta(text)
     if relative is not None:
-        return now + relative[0]
+        return _with_clock(now + relative[0], relative[1], text, now, relative[0] >= timedelta(days=1))
     months = relative_months(text, now)
     if months is not None:
-        return months[0]
+        return _with_clock(months[0], months[1], text, now, True)
     if text == "later today":
         #: Three hours on, never past eight in the evening (engine probe: it
         #: was nine this morning, already gone).
@@ -508,6 +508,16 @@ def resolve(phrase: str, now: datetime, *, locale: str | None = None) -> datetim
     elif at <= now and day == now.date() and _WEEKDAY.search(text):
         at += timedelta(days=7)  # "Monday 9am", said on a Monday afternoon
     return at
+
+
+def _with_clock(target: datetime, said: str, text: str, now: datetime, day_sized: bool) -> datetime:
+    """An offset of a day or more with a clock beside it ("in 2 weeks at 3pm"):
+    the day the offset lands on, at that clock. An offset of hours keeps the
+    instant, and a day-sized one with no clock keeps `now`'s time of day."""
+    rest = " ".join(text.replace(said, " ", 1).split())
+    if not day_sized or not rest or not (_clock(rest) or any(re.search(rf"\b{p}\b", rest) for p in _PARTS)):
+        return target
+    return resolve(f"{target.date().isoformat()} {rest}", now) or target
 
 
 def _midnight(day: date, text: str, now: datetime) -> datetime:

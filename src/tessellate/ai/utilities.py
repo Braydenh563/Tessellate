@@ -317,11 +317,18 @@ def _clock_swap(text: str) -> tuple | None:
     return (found, a, b) if a and b else None
 
 
+_UTILITY_MAX_WORDS = 40
+
+
 def _heard(question: str) -> str:
     """The question as the utilities read it: as typed when it is a utility,
     else with its misspellings put right ("the time in westen australia",
     INBOX 837), when that makes it one."""
     if _kind_of(question) is not None:
+        return question
+    #: A utility is a short ask. Past this a paste is never one, and reading
+    #: each of its words for a slip cost 0.5 s a pass (the route makes seven).
+    if len(question.split()) > _UTILITY_MAX_WORDS:
         return question
     from tessellate.ai import question_noise
 
@@ -334,7 +341,8 @@ def _heard(question: str) -> str:
     #: are not (`_WEATHER` is found anywhere), so they are not in the list.
     #: Three words at least: a bare "time" is the clock, so "home" or "Tom"
     #: alone would be read as it.
-    if len(question.split()) < 3:
+    words = len(question.split())
+    if words < 3 or words > _UTILITY_MAX_WORDS:
         return question
     guided = question_noise.guided(question, lambda t: _kind_of(t) is not None, _utility_words(), real_to=None)
     return guided or question
@@ -357,6 +365,7 @@ def _utility_words() -> frozenset[str]:
 _UTILITY_WORDS: list[frozenset[str]] = []
 
 
+@functools.lru_cache(maxsize=128)
 def kind_of(question: str) -> str | None:
     """Which utility `question` is, or None: the router's question, answered
     without working anything out."""

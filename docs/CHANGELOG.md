@@ -7,6 +7,8 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- "in 2 weeks at 3pm" keeps its clock. `when.resolve` read a day-sized offset (days, weeks, months) as `now` plus the offset and dropped the "at 3pm"; the offset's day now takes the clock or part of day beside it, and hours offsets are unchanged (`recognise._with_clock`, `tests/test_when.py`).
+- A 20,000-character question answers in 0.7 s of route time, down from 4.1 s. `utilities.kind_of` ran seven times a turn and each run read all 364 words of the first 2,000 characters against the utility vocabulary; it is now cached and skips the per-word slip search past 40 words, since a utility is a short ask (`tests/test_composer_long_question.py`).
 - A quoted line starts and ends at a word. Search results, source cards and the agent's source rows cut a window out of a note at a character offset, so a card could begin "uding servers"; both cuts now move to the nearest space and carry an ellipsis (`search/snippet.py`, `tests/test_snippet_word_boundaries.py`).
 - Settings: the last two Autos say what they resolved to (INBOX 904 B56). The Timeline's Bucket by reads "Auto (week now)" for the bucket it chose, and the Context window box reads "Auto (131,072)" once the model reports its window (measured at 1440: a 216 px select shell for a 109 px label, a 207 px box for a 91 px one).
 - The folder import is a durable pool job (Brief 9, the last kind of B2): `POST /import/directory` queues kind `import` on the `batch` lane instead of a request task, so a quit part-way is finished at the next launch (the runner skips a file already imported by path and text hash) and the panel lists it as "Importing a folder of notes" (`tests/test_import_job.py`).

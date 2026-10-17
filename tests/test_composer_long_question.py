@@ -17,6 +17,21 @@ def test_planning_a_twenty_thousand_character_question_is_bounded():
     assert elapsed < 5.0, f"planning took {elapsed:.1f}s"
 
 
+def test_a_long_question_is_not_read_for_a_utility_word_by_word():
+    """The route asked `kind_of` seven times a turn and each read 364 words
+    against the utility vocabulary: 5 s of a 6 s turn."""
+    from tessellate.ai import utilities
+
+    question = "the cat or " * 1800
+    started = time.perf_counter()
+    assert utilities.kind_of(question[: composer.PLAN_CHARS]) is None
+    assert time.perf_counter() - started < 0.15
+    started = time.perf_counter()
+    for _ in range(7):
+        utilities.kind_of(question[: composer.PLAN_CHARS])
+    assert time.perf_counter() - started < 0.05
+
+
 def test_a_short_question_is_planned_over_all_of_it():
     assert composer.plan("what did I write about golf") == composer.plan("what did I write about golf"[: composer.PLAN_CHARS])
 
