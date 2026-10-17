@@ -239,14 +239,14 @@ document.addEventListener("focusin", (event) => editorHintPlaceholder(event.targ
 //: the adapter before then still asks for the bundle itself
 //: (`editorSurfaceFor`), so the first "/" is replayed, not lost.
 const EDITOR_WARM_DELAY_MS = 2000;
-let editorWarmTimer = 0;
+const editorWarm = { timer: 0 };
 function editorWarmSurfaceModule(el) {
-  clearTimeout(editorWarmTimer);
-  editorWarmTimer = setTimeout(() => {
+  clearTimeout(editorWarm.timer);
+  editorWarm.timer = setTimeout(() => {
     const run = () => {
       if (document.activeElement === el && typeof asSurface !== "function") editorEnsureSurfaceModule(el);
     };
-    if (typeof requestIdleCallback === "function") requestIdleCallback(run, { timeout: 2000 });
+    if (window.requestIdleCallback) requestIdleCallback(run, { timeout: 2000 });
     else run();
   }, EDITOR_WARM_DELAY_MS);
 }
