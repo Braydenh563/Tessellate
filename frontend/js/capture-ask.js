@@ -2984,7 +2984,7 @@ function askStatusBusy(text) {
   //: which is the same thing as not having one.
   requestAnimationFrame(() => {
     try {
-      line.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      line.scrollIntoView({ block: "nearest", behavior: reducedMotionWanted() ? "auto" : "smooth" });
     } catch {
       //: An older engine without the options object still gets the default.
       line.scrollIntoView();

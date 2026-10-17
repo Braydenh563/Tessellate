@@ -466,9 +466,13 @@ function buildSkillsPanel(box, label, select, run, trigger) {
 
   panel.append(pickRow, paceRow, runRow);
 
-  const close = () => {
+  //: `refocus`: Escape or Run, with the focus inside, hands it back to the
+  //: trigger; hidden with the focus in it, it fell to the page (WCAG 2.4.3).
+  const close = (refocus) => {
+    const had = refocus === true && panel.contains(document.activeElement);
     panel.classList.add("hidden");
     trigger.setAttribute("aria-expanded", "false");
+    if (had) trigger.focus();
   };
   trigger.addEventListener("click", (event) => {
     event.stopPropagation();
@@ -483,10 +487,10 @@ function buildSkillsPanel(box, label, select, run, trigger) {
     if (!box.contains(event.target)) close();
   }, { signal });
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") close();
+    if (event.key === "Escape") close(true);
   }, { signal });
   // Running one is the end of the interaction, so the menu gets out of the way.
-  run.addEventListener("click", close);
+  run.addEventListener("click", () => close(true));
 
   // The trigger says which skill is armed, so the dock still answers "what is
   // this about to do?" without being opened.

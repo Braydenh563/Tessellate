@@ -86,7 +86,7 @@ const run=async(label)=>{const r=await page.evaluate(()=>{
   // phone band's settings sections were reached by clicking a strip that is
   // hidden below 600, so every one of them was "ok" by never being looked at.
   const out=[];const seen=new Set();let checked=0;
-  for(const el of document.querySelectorAll('.tab-page:not(.hidden) *, #settings-modal:not(.hidden) *, .modal-overlay:not(.hidden) *')){
+  for(const el of document.querySelectorAll('.tab-page:not(.hidden) *, #settings-modal:not(.hidden) *, .modal-overlay:not(.hidden) *, [data-sheet] *, .action-menu *, #editor-menu:not(.hidden) *')){
     if(!el.checkVisibility||!el.checkVisibility())continue;
     const text=[...el.childNodes].filter(n=>n.nodeType===3&&n.textContent.trim()).map(n=>n.textContent.trim()).join(' ');
     if(!text)continue;const cs=getComputedStyle(el);const fg=parse(cs.color);if(!fg||fg.a<1)continue;checked++;
@@ -115,6 +115,32 @@ if(process.env.ONLY==='document'){
   await page.evaluate(()=>setDocView('live'));await page.waitForTimeout(600);
   const tab=await page.evaluate(()=>{const b=[...document.querySelectorAll('#doc-sidebar [role="tab"], #doc-sidebar button')].find((x)=>/^Outline/.test(x.textContent.trim()));if(b){b.click();return true;}return false;});
   if(tab){await page.waitForTimeout(500);await run('documents/outline');}
+  console.log(`== done at ${WIDTH}x${HEIGHT}, theme ${process.env.THEME||'light'}`);
+  await browser.close();process.exit(empty.length||low.length?1:0);
+}
+// ONLY=pr: the surfaces the 2026-10-17 PR changed, each opened the way a
+// person opens it: the new chat page, the chat "/" menu, the timeline
+// calendar (month, week, day) and its add sheet, the autocorrect menu.
+if(process.env.ONLY==='pr'){
+  await page.evaluate(async()=>{if((await apiJson('/entries?limit=1')).length)return;for(let i=0;i<4;i++)await apiJson('/entries',{method:'POST',body:JSON.stringify({content:`Sweep note ${i}\n\nSomething written about topic ${i}.`,category:'Sweep'})});const d=new Date();d.setHours(d.getHours()+3);await apiJson('/reminders',{method:'POST',body:JSON.stringify({text:'Sweep reminder',due_at:d.toISOString()})});}).catch(()=>{});
+  await go('chat');await run('pr/chat (new)');
+  await page.focus('#chat-input').catch(()=>{});await page.keyboard.type('/');await page.waitForTimeout(1200);await run('pr/chat slash menu');
+  await page.keyboard.press('Escape');await page.fill('#chat-input','').catch(()=>{});
+  for(const span of ['month','week','day']){
+    await page.evaluate((sp)=>{localStorage.setItem('timeline-view','calendar');localStorage.setItem('timeline-cal-span',sp);switchTab('timeline');if(typeof timelineCal!=='undefined'){timelineCal.url='';timelineCal.span=sp;}paintTimeline();},span);
+    await page.waitForTimeout(1500);await run('pr/timeline calendar '+span);
+    if(span==='month'){
+      await page.focus('.timeline-cal-monthcell[tabindex="0"]').catch(()=>{});await page.keyboard.press('n');await page.waitForTimeout(900);
+      await page.keyboard.type('Dentist at 3pm');await page.waitForTimeout(900);await run('pr/calendar add sheet');
+      await page.keyboard.press('Escape');await page.waitForTimeout(400);
+    }
+  }
+  await go('notes');
+  await page.evaluate(()=>document.querySelector('#notes-subtabs button[data-section="capture"], #notes-subtabs button[data-subtab="capture"]')?.click());await page.waitForTimeout(900);
+  await page.click('#entry-content',{force:true}).catch(()=>{});await page.keyboard.type('I ran a teh ',{delay:30});await page.waitForTimeout(600);
+  const m=await page.evaluate(()=>{const k=document.querySelector('.autocorrect-mark');if(!k)return false;const r=k.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2};});
+  if(m){await page.mouse.move(m.x,m.y);await page.mouse.click(m.x,m.y);await page.waitForTimeout(500);await run('pr/autocorrect menu');}
+  else console.log('== pr/autocorrect menu: SKIPPED, no mark was drawn');
   console.log(`== done at ${WIDTH}x${HEIGHT}, theme ${process.env.THEME||'light'}`);
   await browser.close();process.exit(empty.length||low.length?1:0);
 }

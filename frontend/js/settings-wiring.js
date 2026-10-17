@@ -1617,12 +1617,12 @@ $("notes-page-prev").addEventListener("click", () => {
   if (notesCurrentPage <= 1) return;
   notesCurrentPage -= 1;
   renderEntries();
-  $("entries-heading").scrollIntoView({ block: "start", behavior: "smooth" });
+  $("entries-heading").scrollIntoView({ block: "start", behavior: reducedMotionWanted() ? "auto" : "smooth" });
 });
 $("notes-page-next").addEventListener("click", () => {
   notesCurrentPage += 1; // clamped back down inside renderEntries if this overshoots
   renderEntries();
-  $("entries-heading").scrollIntoView({ block: "start", behavior: "smooth" });
+  $("entries-heading").scrollIntoView({ block: "start", behavior: reducedMotionWanted() ? "auto" : "smooth" });
 });
 //: **The files a note's text points at, as attachment cards** (INBOX 440 (2)),
 //: in the Capture box and in a note's edit form alike. The text is where an

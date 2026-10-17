@@ -389,3 +389,76 @@ def test_a_worded_menu_draws_its_groups_and_the_document_adder_declares_them():
     assert 'rule.className = "menu-sep"' in sheets[at : at + 2600]
     capture = _js("capture-ask.js")
     assert 'group: "Documents"' in capture and 'group: "New"' in capture
+
+
+# Sweep 2026-10-17 (scratchpad/ui-sweeps/a11ysurfaces.js): the "/" menu in the
+# chat box and the note boxes kept the focus in the textarea, but the listbox's
+# `aria-activedescendant` sat on the list, which is never focused, so a screen
+# reader heard nothing when the menu opened or the highlight moved.
+def test_the_slash_menu_is_announced_through_the_box_that_has_the_focus():
+    editor = _js("editor.js")
+    assert "function editorLinkBox(" in editor
+    opener = editor[editor.index("function editorOpenMenu(") :][:900]
+    assert "editorLinkBox(textarea, true)" in opener
+    closer = _function(editor, "editorCloseMenu")
+    assert "editorLinkBox(textarea, false)" in closer
+    active = _function(editor, "editorSetActive")
+    assert 'editorMenuState.textarea?.el?.setAttribute("aria-activedescendant", row.id)' in active
+
+
+# WCAG 2.5.8: the Appearance sliders (and every other range input) were
+# 144x16, under the 24 px target floor; a range has no box of its own, so the
+# floor is the checkbox's `--target-min` rule restated for it.
+def test_a_range_input_keeps_the_target_floor():
+    forms = (CSS / "01-forms-settings.css").read_text(encoding="utf-8")
+    assert re.search(r'^input\[type="range"\] \{\s*min-height: var\(--target-min\);\s*\}', forms, re.M)
+
+
+# Settings, Appearance at 390: the zoom row (minus, slider, plus, value, Reset)
+# is 264 px wide with 44 px buttons, and the slider was squeezed to 24 px, a
+# slider nobody can land a finger on (scratchpad/ui-sweeps/a11ysurfaces.js,
+# measured 24x44). The row wraps and the slider keeps 8rem.
+def test_the_zoom_slider_keeps_a_usable_width_on_a_phone():
+    lazy = (CSS / "settings-controls-lazy.css").read_text(encoding="utf-8")
+    assert re.search(r"\.setting-control:has\(> #zoom-slider\) \{\s*flex-wrap: wrap;", lazy)
+    assert re.search(r"#zoom-slider \{\s*flex: 1 1 8rem;\s*min-width: 8rem;", lazy)
+
+
+# A scroll asked for as "smooth" is not slowed by the system's reduced-motion
+# setting; four did not ask (capture-ask, settings-wiring twice, wiring).
+def test_no_scroll_is_smooth_without_asking_for_reduced_motion():
+    bad = []
+    for path in sorted((FRONTEND / "js").glob("*.js")):
+        for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            if 'behavior: "smooth"' in line:
+                bad.append(f"{path.name}:{number}")
+    assert not bad, f'use `behavior: reducedMotionWanted() ? "auto" : "smooth"`: {bad}'
+
+
+# The calendar add sheet's Reminder and Event tabs named no panel: a screen
+# reader said "tab 1 of 2" and nothing changed when the form beneath did
+# (a11ysurfaces.js, addtabs probe: tabs 2, tabpanels 0, aria-controls null).
+def test_the_calendar_add_tabs_control_a_panel_each():
+    source = _js("timeline-cal-add.js")
+    assert 'tab.setAttribute("aria-controls", `timeline-cal-add-panel-${kind}`)' in source
+    assert 'holder.setAttribute("role", "tabpanel")' in source
+    assert 'holder.setAttribute("aria-labelledby", tab.id)' in source
+
+
+# The chat dock's Skills panel (a non-modal dialog): Escape closed it with the
+# focus on a select inside it, which fell to the page (a11ysurfaces.js: "focus
+# did not return to #chat-skills-btn").
+def test_the_skills_panel_hands_the_focus_back_to_its_trigger():
+    source = _js("skills.js")
+    close = source[source.index("  const close = (refocus) => {") :][:420]
+    assert "panel.contains(document.activeElement)" in close and "trigger.focus()" in close
+    assert 'if (event.key === "Escape") close(true);' in source
+    assert 'run.addEventListener("click", () => close(true));' in source
+
+
+# Settings, Appearance at 390: a colour input is 2.6rem wide, but in a wrapping
+# flex row it shrank to 22.5 px (the custom accent picker), under the 24 px
+# floor in one dimension (a11ysurfaces.js). A swatch does not shrink.
+def test_a_colour_input_does_not_shrink_under_the_target_floor():
+    lazy = (CSS / "settings-controls-lazy.css").read_text(encoding="utf-8")
+    assert re.search(r'\.setting-row input\[type="color"\] \{\s*flex: none;\s*min-width: var\(--target-min\);', lazy)
