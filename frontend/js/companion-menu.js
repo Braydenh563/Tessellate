@@ -101,10 +101,16 @@ function openNameMarkViewer(seed, { visit = false } = {}) {
       shut();
     }
   };
+  //: Poked, its face answers too, more each poke in a row (B62).
+  let pokes = 0;
+  let pokedAt = 0;
   if (!visiting) {
     stage.addEventListener("click", () => {
       nameMarkReact(stage.querySelector(".name-mark"));
       nameMarkSay(stage, nameMarkLine(seed));
+      pokes = performance.now() - pokedAt < 4000 ? pokes + 1 : 1;
+      pokedAt = performance.now();
+      nameMarkViewerFace(figure, seed, NM_VIEWER_POKED[Math.min(pokes, NM_VIEWER_POKED.length) - 1], 2400);
     });
   }
   //: Not closed by the second click of the double-click that opened it:
@@ -127,11 +133,17 @@ function openNameMarkViewer(seed, { visit = false } = {}) {
       if (!overlay.isConnected) return;
       const asleep = !!home && nameMarkBuddyAsleep(document.getElementById("nm-buddy"));
       const host = home ? document.getElementById("nm-buddy") : stage;
-      if (!asleep && host && !host.querySelector(":scope > .nm-say")) nameMarkSay(host, nameMarkLine(seed));
+      if (!asleep && host && !host.querySelector(":scope > .nm-say")) {
+        nameMarkSay(host, nameMarkLine(seed));
+        //: A line said with a face to match, a neighbouring one, and back.
+        if (!home) nameMarkViewerFace(figure, seed, nameMarkViewerNear(seed), 2600);
+      }
       talk();
     }, 7000 + Math.random() * 6000);
   };
   talk();
+  //: Glad to be looked at: a brighter face as the view opens (B62).
+  if (!home) setTimeout(() => nameMarkViewerFace(figure, seed, nameMarkViewerNear(seed, true), 2400), 350);
   if (nameMarkIdleQuiet()) {
     blinks = nameMarkViewerBlinks(figure);
     return;
@@ -140,7 +152,8 @@ function openNameMarkViewer(seed, { visit = false } = {}) {
   //: and its eyes and head on the pointer (INBOX 591; its loops are the
   //: CSS's, under `.nm-viewer-figure > .nm-figure.nm-live`).
   if (!home) {
-    setTimeout(() => figure.isConnected && nameMarkIdleAct(figure, "glance"), 900);
+    setTimeout(() => figure.isConnected && nameMarkIdleAct(figure, nameMarkBuddyActOff("wave") ? "glance" : "wave"), 700);
+    setTimeout(() => figure.isConnected && nameMarkIdleAct(figure, "glance"), 2600);
     nameMarkIdleWake();
     nameMarkViewerFollow(overlay, figure);
   }
@@ -413,13 +426,15 @@ function nameMarkViewerFit(figure) {
 //: Nothing with Faces follow the pointer off; never under reduced motion
 //: (the caller returns before this); gone with the dialog.
 function nameMarkViewerFollow(overlay, figure) {
-  const drawn = figure.querySelector(":scope > .nm-figure");
-  if (!drawn) return;
+  //: The face it has now: a reaction swaps it (`nameMarkViewerFace`).
+  const face = () => figure.querySelector(":scope > .nm-figure:not(.nmv-leaving)");
+  if (!face()) return;
   let frame = 0;
   let at = null;
   const set = (x, y) => {
-    drawn.style.setProperty("--nmv-x", x.toFixed(2));
-    drawn.style.setProperty("--nmv-y", y.toFixed(2));
+    const drawn = face();
+    drawn?.style.setProperty("--nmv-x", x.toFixed(2));
+    drawn?.style.setProperty("--nmv-y", y.toFixed(2));
   };
   overlay.addEventListener("pointermove", (event) => {
     if (document.documentElement.dataset.avatarFollow === "off") return;
@@ -427,6 +442,8 @@ function nameMarkViewerFollow(overlay, figure) {
     if (frame) return;
     frame = requestAnimationFrame(() => {
       frame = 0;
+      const drawn = face();
+      if (!drawn) return;
       const head = (drawn.querySelector(".nm-buddy-head") || drawn).getBoundingClientRect();
       const reach = Math.max(240, head.width * 3);
       const clamp = (v) => Math.max(-1, Math.min(1, v));
@@ -436,6 +453,38 @@ function nameMarkViewerFollow(overlay, figure) {
   //: The pointer gone from the window: it looks ahead again, slowly (the
   //: CSS's transition).
   overlay.addEventListener("pointerleave", () => set(0, 0), { passive: true });
+}
+
+//: **Its face reacts** (B62, the owner: "The profile avatar in the enlarged
+//: popup from double clicking the profile picture doesn't have any life to
+//: it"). A face drawn from a name has one mood, and the view kept it: its
+//: loops and small acts moved it, but under reduced motion (only blinks) it
+//: was a still picture with a caption. Now its face changes the way the
+//: companion's does (`nameMarkBuddyExpress`): brighter as the view opens,
+//: glad, then excited, then laughing as it is poked in a row, a
+//: neighbouring look with each line it says, and back, each a crossfade
+//: (an opacity change, so also under reduced motion). Not with Avatar
+//: animation off; not Atlas (its moods are its own) or a character of its own.
+const NM_VIEWER_POKED = ["happy", "excited", "laughing", "laughing", "unimpressed"];
+function nameMarkViewerNear(seed, bright = false) {
+  const mood = nameMood(seed).mood || "";
+  const near = (bright ? ["happy", "excited", "cute"] : NMB_EXPR_NEAR[mood] || NMB_EXPR_NEAR[""]).filter((e) => e !== mood);
+  return near[Math.floor(Math.random() * near.length)] || "happy";
+}
+function nameMarkViewerFace(figure, seed, expr, ms) {
+  if (!figure.isConnected || document.documentElement.dataset.avatarMotion === "off" || isAtlasSeed(seed) || characterRendererFor(seed)) return;
+  const old = figure.querySelector(":scope > .nm-figure:not(.nmv-leaving)");
+  if (!old || (old.dataset.expr || "") === expr) return;
+  const next = nameCharacterFigure(seed, expr);
+  next.dataset.expr = expr;
+  for (const k of ["--nmv-x", "--nmv-y"]) next.style.setProperty(k, old.style.getPropertyValue(k) || "0");
+  old.classList.add("nmv-leaving");
+  old.after(next);
+  const gone = () => old.remove();
+  if (typeof next.animate === "function") next.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 280, easing: "ease-in-out" }).finished.then(gone, gone);
+  else gone();
+  clearTimeout(figure.nmvFace);
+  figure.nmvFace = ms ? setTimeout(() => nameMarkViewerFace(figure, seed, "", 0), ms) : 0;
 }
 
 //: **Under reduced motion, a blink now and then** and nothing else (the

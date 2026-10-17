@@ -10,4 +10,5 @@ Steps, one commit each:
 
 done: 52efa72 (step 1); next: step 3 throwing stars, atlas-motion.js atlasRigFrame, 08-consistency.css 8040.
 done: b3d2971 (step 3); next: step 2 the mind, companion-menu.js `NMB_MIND`, avatars.js hooks (Decide, Schedule, Tick, Act).
-done: step 2 (the commit after b3d2971); next: step 4 B62 (companion-menu.js `nameMarkViewerFace`), perchloss.js, final A/B fps.
+done: 06797e5 (step 2); next: step 4 B62 (companion-menu.js `nameMarkViewerFace`), perchloss.js, final A/B fps.
+done: step 4 (the commit after 06797e5); next: final A/B fps (measure.sh), status rows in bugs-1017.md and BACKLOG.

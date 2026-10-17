@@ -2,9 +2,9 @@
 
 Generated 2026-10-17 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 5948, frontend ids 2509, CSS sections 494, backend routes 607, backend modules 5578, test files 1220, tests 11058, plan headings 957.
+Counts: frontend functions 5950, frontend ids 2509, CSS sections 494, backend routes 607, backend modules 5578, test files 1221, tests 11059, plan headings 957.
 
-## Frontend functions (5948)
+## Frontend functions (5950)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -2621,20 +2621,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `chordGuideKey` | frontend/js/chord-guide.js:76 |
 | `showTabJumpHint` | frontend/js/chord-guide.js:83 |
 
-### frontend/js/companion-menu.js (11)
+### frontend/js/companion-menu.js (13)
 
 | Name | File:line |
 |---|---|
-| `mountBuddyPresets` | frontend/js/companion-menu.js:525 |
-| `nameMarkBuddyApplyPreset` | frontend/js/companion-menu.js:505 |
-| `nameMarkBuddyKeepPresets` | frontend/js/companion-menu.js:474 |
-| `nameMarkBuddyMenu` | frontend/js/companion-menu.js:194 |
-| `nameMarkBuddyPresets` | frontend/js/companion-menu.js:466 |
-| `nameMarkBuddySavePreset` | frontend/js/companion-menu.js:482 |
-| `nameMarkViewerActs` | frontend/js/companion-menu.js:160 |
-| `nameMarkViewerBlinks` | frontend/js/companion-menu.js:444 |
-| `nameMarkViewerFit` | frontend/js/companion-menu.js:373 |
-| `nameMarkViewerFollow` | frontend/js/companion-menu.js:415 |
+| `mountBuddyPresets` | frontend/js/companion-menu.js:574 |
+| `nameMarkBuddyApplyPreset` | frontend/js/companion-menu.js:554 |
+| `nameMarkBuddyKeepPresets` | frontend/js/companion-menu.js:523 |
+| `nameMarkBuddyMenu` | frontend/js/companion-menu.js:207 |
+| `nameMarkBuddyPresets` | frontend/js/companion-menu.js:515 |
+| `nameMarkBuddySavePreset` | frontend/js/companion-menu.js:531 |
+| `nameMarkViewerActs` | frontend/js/companion-menu.js:173 |
+| `nameMarkViewerBlinks` | frontend/js/companion-menu.js:493 |
+| `nameMarkViewerFace` | frontend/js/companion-menu.js:474 |
+| `nameMarkViewerFit` | frontend/js/companion-menu.js:386 |
+| `nameMarkViewerFollow` | frontend/js/companion-menu.js:428 |
+| `nameMarkViewerNear` | frontend/js/companion-menu.js:469 |
 | `openNameMarkViewer` | frontend/js/companion-menu.js:30 |
 
 ### frontend/js/connections.js (6)
@@ -17506,7 +17508,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11058)
+## Tests (11059)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -17693,6 +17695,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_companion_stacking.py | 4 |
 | tests/test_companion_throw.py | 8 |
 | tests/test_companion_toggle.py | 3 |
+| tests/test_companion_viewer_face.py | 1 |
 | tests/test_companion_viewer_sleep.py | 6 |
 | tests/test_complexity.py | 4 |
 | tests/test_composer_688.py | 40 |
