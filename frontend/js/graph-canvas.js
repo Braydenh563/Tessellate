@@ -1915,8 +1915,20 @@ function gcGlideFinish(s) {
   s.quadtreeDirty = true;
 }
 
+//: **A map on a hidden tab is not drawn.** Leaving Graph stops the worker,
+//: but its last ticks are already on their way and each asks for a frame:
+//: measured, 37 draws and 60 ms (240 ms at 4x CPU) after the press on the
+//: next tab, in the window where that tab's own page is being drawn. The
+//: tab's map only; a local map lives in a panel that decides for itself.
+//: Coming back is `switchTab` -> `renderGraph`, which draws in full.
+function gcTabHidden(s) {
+  if (s.size !== "full") return false;
+  const page = document.getElementById("tab-graph");
+  return !!page && page.classList.contains("hidden");
+}
+
 function gcRequestDraw(s = gcTab) {
-  if (s.drawQueued || !s.ctx) return;
+  if (s.drawQueued || !s.ctx || gcTabHidden(s)) return;
   s.drawQueued = true;
   requestAnimationFrame(() => {
     s.drawQueued = false;
@@ -2060,6 +2072,7 @@ function gcExportPng(scale = 2, s = gcTab) {
 
 function gcDraw(s = gcTab) {
   if (!s.ctx || !s.canvas) return;
+  if (gcTabHidden(s)) return;
   const started = performance.now();
   //: Advanced once, before anything is measured, so every radius in this frame
   //: agrees, and another frame is asked for only while it is still moving.
