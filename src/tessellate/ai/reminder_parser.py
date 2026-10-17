@@ -42,6 +42,18 @@ def _tidy(text: str, phrase: str) -> str:
     return without[0].upper() + without[1:]
 
 
+def _with_clock(text: str, phrase: str, due: datetime, now: datetime) -> tuple[datetime, str]:
+    """"In 2 days at 3pm": the offset lands on a day and the time said beside
+    it is the time. Only a day-sized offset takes one ("in 20 minutes at 3pm"
+    is not a sentence)."""
+    if due - now < timedelta(days=1):
+        return due, phrase
+    for span in recognise.recognise(text, now=now, tense="future", bare_hours=True):
+        if span.rank == 0 and span.kind == "datetime" and phrase in span.text and len(span.text) > len(phrase):
+            return span.value, span.text
+    return due, phrase
+
+
 def parse_relative(text: str, now: datetime) -> dict | None:
     """A reminder from an "in ..." phrase ("in 20 minutes", "in 1.5 hours",
     "in 6 months"), with no model involved."""
@@ -53,6 +65,7 @@ def parse_relative(text: str, now: datetime) -> dict | None:
         if months is None:
             return None
         due, phrase = months
+    due, phrase = _with_clock(text, phrase, due, now)
     return {
         "text": _tidy(text, phrase)[:500],
         "due_at": due,

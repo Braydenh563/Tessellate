@@ -271,7 +271,7 @@ def read(text: str, *, now: datetime, context: dict | None = None) -> Reading:
 
     from tessellate.ai import commands, intent, utilities
 
-    act = commands.read(raw, now)
+    act = commands.read(raw, now, context.get("locale"))
     if act is not None:
         slots = {k: v for k, v in act.items() if k != "intent"}
         if act["intent"] == "reminder":

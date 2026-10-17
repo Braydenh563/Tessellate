@@ -162,3 +162,112 @@ def test_the_list_tools_take_since_in_words(app_state, session, monkeypatch):
     assert _common._since_days("whenever") is None
     spec = tools.TOOLS["list_notes"].parameters["properties"]["since"]["description"]
     assert "this week" in spec
+
+
+@pytest.mark.parametrize(
+    ("phrase", "expected"),
+    [
+        ("half past 4", "2026-09-21 16:30"),
+        ("at half past four", "2026-09-21 16:30"),
+        ("quarter to 5", "2026-09-21 16:45"),
+        ("a quarter past 6pm", "2026-09-21 18:15"),
+        ("ten to nine tomorrow", "2026-09-22 08:50"),
+        ("twenty past 4", "2026-09-21 16:20"),
+        ("5 past 5 on friday", "2026-09-25 17:05"),
+        ("half past 12 tomorrow", "2026-09-22 12:30"),
+        ("quarter to 1 tomorrow", "2026-09-22 12:45"),
+    ],
+)
+def test_a_clock_said_in_words_resolves(phrase, expected):
+    """"Half past four", "quarter to five": how people say a time aloud,
+    which neither time reader knew (the digits-only clock read "half past 4"
+    as no time at all and asked "Remind you when?")."""
+    got = when.resolve(phrase, NOW)
+    assert got is not None and got.strftime("%Y-%m-%d %H:%M") == expected
+
+
+def test_a_reminder_keeps_its_words_around_a_spoken_clock():
+    got = when.parse_reminder_text("call mum at half past 4", NOW)
+    assert got["due_at"].strftime("%H:%M") == "16:30"
+    assert got["text"].lower().startswith("call mum")
+    assert "half" not in got["text"].lower() and "past" not in got["text"].lower()
+
+
+@pytest.mark.parametrize("phrase", ["half past", "past 4", "quarter to", "the 5 to 7 train", "open from ten to five"])
+def test_words_that_are_not_a_clock_stay_unread(phrase):
+    assert when.resolve(phrase, NOW) is None
+
+
+def test_a_repeat_keeps_its_rule_when_the_clock_is_said_aloud():
+    """"Every day at half past 7" read as one 19:30 reminder: the repeat was
+    dropped because only the digits clock followed it."""
+    from tessellate.ai import recognise
+
+    rules = {
+        span.value
+        for text in ("every day at half past 7", "every monday at quarter to 9")
+        for span in recognise.recognise(text, now=NOW.replace(tzinfo=None))
+        if span.kind == "recurrence"
+    }
+    assert rules == {"FREQ=DAILY;BYHOUR=7;BYMINUTE=30", "FREQ=WEEKLY;BYDAY=MO;BYHOUR=8;BYMINUTE=45"}
+
+
+@pytest.mark.parametrize(
+    ("phrase", "expected"),
+    [
+        ("the first monday of november", "2026-11-02 09:00"),
+        ("third friday of october", "2026-10-16 09:00"),
+        ("the last friday of next month", "2026-10-30 09:00"),
+        ("the second tuesday of september", "2027-09-14 09:00"),
+        ("first monday of november at 2pm", "2026-11-02 14:00"),
+    ],
+)
+def test_a_weekdays_place_in_a_month_is_that_day(phrase, expected):
+    """"The first Monday of November" read as the next Monday (28 September):
+    the weekday was found and the month and the place were ignored."""
+    got = when.resolve(phrase, NOW)
+    assert got is not None and got.strftime("%Y-%m-%d %H:%M") == expected
+
+
+def test_a_note_about_the_past_reads_the_month_gone():
+    from datetime import date
+
+    from tessellate.ai import recognise
+
+    assert recognise.span("the first monday of march", date(2026, 9, 21), "past") == (date(2026, 3, 2),) * 2 + ("day",)
+    assert recognise.span("the first monday of march", date(2026, 9, 21), "future") == (date(2027, 3, 1),) * 2 + ("day",)
+
+
+@pytest.mark.parametrize(
+    ("phrase", "expected"),
+    [
+        ("the last day of this month", "2026-09-30 09:00"),
+        ("last day of next month", "2026-10-31 09:00"),
+        ("first day of march", "2027-03-01 09:00"),
+        ("next month on the 3rd", "2026-10-03 09:00"),
+        ("the 3rd of next month", "2026-10-03 09:00"),
+    ],
+)
+def test_a_day_named_by_its_month_is_that_day(phrase, expected):
+    """"The last day of this month" read as 1 September, "next month on the
+    3rd" as 1 October: the month was read and the day ignored."""
+    got = when.resolve(phrase, NOW)
+    assert got is not None and got.strftime("%Y-%m-%d %H:%M") == expected, phrase
+
+
+@pytest.mark.parametrize(
+    ("phrase", "expected"),
+    [
+        ("a week from friday", "2026-10-02 09:00"),
+        ("two days from today", "2026-09-23 09:00"),
+        ("a week from today", "2026-09-28 09:00"),
+        ("30 minutes from now", "2026-09-21 16:25"),
+        ("half an hour from now", "2026-09-21 16:25"),
+        ("2 hours from now", "2026-09-21 17:55"),
+    ],
+)
+def test_an_offset_from_a_day_or_from_now_is_read(phrase, expected):
+    """"A week from Friday" read as Friday and "30 minutes from now" was
+    unread: only "in 30 minutes" counted as an offset."""
+    got = when.resolve(phrase, NOW)
+    assert got is not None and got.astimezone(NOW.tzinfo).strftime("%Y-%m-%d %H:%M") == expected, phrase

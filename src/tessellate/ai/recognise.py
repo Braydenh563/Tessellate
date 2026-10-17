@@ -71,12 +71,24 @@ _FRACTION_PATTERNS = [(re.compile(p, re.IGNORECASE), d) for p, d in _FRACTIONS]
 _IN_MONTHS = re.compile(rf"\bin\s+(\d{{1,2}}|{_COUNT_WORDS})\s+(months?|years?)\b", re.IGNORECASE)
 
 
+_FROM_NOW = re.compile(
+    rf"\b(half\s+an\s+hour|an?\s+hour\s+and\s+a\s+half|(?:a\s+)?quarter\s+of\s+an\s+hour|"
+    rf"(?:\d{{1,4}}(?:\.\d{{1,2}})?|{_COUNT_WORDS})\s*(?:{'|'.join(sorted(_UNIT_SECONDS, key=len, reverse=True))}))\s+from\s+now\b",
+    re.IGNORECASE,
+)
+
+
 def relative_delta(text: str) -> tuple[timedelta, str] | None:
     """(how far ahead, the phrase that said so), or None.
 
-    Only "in ..." forms: "at 8pm" and "tomorrow morning" name a wall-clock
-    target, which `resolve` reads against the user's date.
+    Only offsets: "in 20 minutes", "30 minutes from now". "At 8pm" and
+    "tomorrow morning" name a wall-clock target, which `resolve` reads
+    against the user's date.
     """
+    from_now = _FROM_NOW.search(text)
+    if from_now:
+        inner = relative_delta("in " + from_now.group(1))
+        return (inner[0], from_now.group(0)) if inner else None
     for pattern, delta in _FRACTION_PATTERNS:
         found = pattern.search(text)
         if found:
@@ -225,6 +237,9 @@ def _clock(text: str) -> tuple[int, int, str | None] | None:
         return 12, 0, "pm"
     if re.search(r"\bmidnight\b", text):
         return 24, 0, None
+    spoken = _rx("spoken_clock").search(text)
+    if spoken:
+        return _spoken_clock(spoken)
     for found in _CLOCK.finditer(text):
         hour, minute = int(found.group(1)), int(found.group(2) or 0)
         meridiem = (found.group(3) or "").replace(".", "") or None
@@ -242,6 +257,27 @@ def _clock(text: str) -> tuple[int, int, str | None] | None:
     return None
 
 
+_SPOKEN_HOURS = {
+    "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
+    "ten": 10, "eleven": 11, "twelve": 12,
+}
+_SPOKEN_MINUTES = {"half": 30, "quarter": 15, "five": 5, "ten": 10, "twenty": 20, "twenty-five": 25, "twenty five": 25}
+
+
+def _spoken_clock(found: re.Match) -> tuple[int, int, str | None] | None:
+    """(hour, minute, "am"/"pm"/None) of "half past 4", "a quarter to five",
+    "ten past 6pm": the clock as people say it aloud. "To" counts back from
+    the next hour, so "quarter to 5" is 4:45."""
+    minutes, direction, said, meridiem = found.groups()
+    hour = int(said) if said.isdigit() else _SPOKEN_HOURS[said]
+    if not 1 <= hour <= 12:
+        return None
+    minute = _SPOKEN_MINUTES.get(minutes) or int(minutes)
+    if direction == "to":
+        minute, hour = 60 - minute, 12 if hour == 1 else hour - 1
+    return hour, minute, (meridiem or "").replace(".", "") or None
+
+
 def _hour24(hour: int, meridiem: str | None, evening: bool) -> int:
     if meridiem == "am":
         return 0 if hour == 12 else hour
@@ -254,6 +290,35 @@ def _hour24(hour: int, meridiem: str | None, evening: bool) -> int:
     return hour + 12 if 1 <= hour <= 6 else hour
 
 
+_FROM_DAY = re.compile(
+    r"^(\d{1,3}|a|an|one|two|three|four|five|six|seven|eight|nine|ten|twelve|a couple of|a few) (days?|weeks?|fortnights?) from (.+)$"
+)
+
+
+def _offset_from(text: str, now: datetime) -> datetime | None:
+    """A time moved off another phrase's: "2 hours before midnight", "a week
+    from friday" (the Friday coming, then seven days on)."""
+    anchored = _ANCHORED.match(text)
+    if anchored:
+        amount = _NUMBERS.get(anchored.group(1))
+        amount = int(anchored.group(1)) if amount is None and anchored.group(1).isdigit() else amount
+        base = resolve(anchored.group(4), now)
+        unit = timedelta(hours=1) if anchored.group(2).startswith("h") else timedelta(minutes=1)
+        return None if amount is None or base is None else base + unit * amount * (-1 if anchored.group(3) == "before" else 1)
+    moved = _FROM_DAY.match(text)
+    amount = _amount(moved.group(1)) if moved else None
+    base = resolve(moved.group(3), now) if moved and amount else None
+    return base + timedelta(days={"d": 1, "w": 7, "f": 14}[moved.group(2)[0]] * amount) if base else None
+
+
+def _first_day(text: str, now: datetime) -> tuple[date | None, str]:
+    """`_day`, except a weekday's place in a month ("the first monday of
+    november") is that day and not the next Monday."""
+    nth = _rx("nth_in_month").search(text)
+    day = _nth_in_month(nth, now.date(), "future") if nth else None
+    return (day, text[: nth.start()] + " " + text[nth.end():]) if day else _day(text, now)
+
+
 def resolve(phrase: str, now: datetime, *, locale: str | None = None) -> datetime | None:
     """The instant `phrase` means, on `now`'s clock, or None. `locale` orders
     a numeric date ("2/11"): day first unless it is a month-first locale."""
@@ -263,16 +328,9 @@ def resolve(phrase: str, now: datetime, *, locale: str | None = None) -> datetim
     iso = _iso(text, now)
     if iso is not None:
         return iso
-    anchored = _ANCHORED.match(text)
-    if anchored:
-        amount = _NUMBERS.get(anchored.group(1))
-        if amount is None and anchored.group(1).isdigit():
-            amount = int(anchored.group(1))
-        base = resolve(anchored.group(4), now)
-        if amount is None or base is None:
-            return None
-        unit = timedelta(hours=1) if anchored.group(2).startswith("h") else timedelta(minutes=1)
-        return base + unit * amount * (-1 if anchored.group(3) == "before" else 1)
+    shifted = _offset_from(text, now)
+    if shifted is not None:
+        return shifted
     relative = relative_delta(text)
     if relative is not None:
         return now + relative[0]
@@ -287,7 +345,7 @@ def resolve(phrase: str, now: datetime, *, locale: str | None = None) -> datetim
         return min(later, cap) if cap > now else later
     if text in ("end of day", "end of the day", "by end of day"):
         return datetime.combine(now.date(), time(17), now.tzinfo)
-    day, rest = _day(text, now)
+    day, rest = _first_day(text, now)
     if day is None:
         numeric = _numeric_dates(text, now.date(), locale, "future")
         if numeric:
@@ -649,6 +707,12 @@ def days_since(phrase: str, now: datetime) -> int | None:
 _ORD = r"(\d{1,2})(?:st|nd|rd|th)"
 _MONTH_RE = r"(" + "|".join(sorted(_MONTHS, key=len, reverse=True)) + r")"
 _WEEKDAY_RE = r"(" + "|".join(sorted(_WEEKDAYS, key=len, reverse=True)) + r")"
+#: "the first monday of november", "the last friday of next month": groups
+#: are the place, the weekday, this/next/last month, the month's name, a year.
+_NTH_IN_MONTH = (
+    r"(?:the )?(first|second|third|fourth|last|1st|2nd|3rd|4th) " + _WEEKDAY_RE
+    + r" (?:of|in) (?:(this|next|last) month|" + _MONTH_RE + r"(?: (\d{4}))?)"
+)
 _UNIT_RE = r"(days?|weeks?|fortnights?|months?|years?)"
 _AMOUNT_RE = r"(\d{1,3}|a|an|one|two|three|four|five|six|seven|eight|nine|ten|twelve|a couple of|a few)"
 
@@ -671,6 +735,9 @@ _DATE_PHRASE_SOURCE = (
     r"\b(?:"
     + "|".join(
         (
+            _NTH_IN_MONTH,
+            r"(?:next|this|last) month,? (?:on )?(?:the )?\d{1,2}(?:st|nd|rd|th)",
+            r"(?:the )?(?:first|last) day of (?:(?:this|next|last) month|the month|" + _MONTH_RE + r")",
             r"since (?:the )?(?:\d{1,2}(?:st|nd|rd|th)? (?:of )?" + _MONTH_RE + r"|" + _MONTH_RE + r"(?: \d{1,2}(?:st|nd|rd|th)?)?|"
             + _WEEKDAY_RE + r"|last (?:week|month|year)|yesterday|\d{4}-\d{2}-\d{2})",
             r"(?:the )?week before last",
@@ -783,6 +850,74 @@ def _back(anchor: date, amount: int, unit: str) -> date:
         return anchor.replace(year=anchor.year - amount, day=28)
 
 
+def _calendar_unit_span(which: str, unit: str, a: date) -> tuple[date, date, str]:
+    """"last week", "next month", "this year", "past week": a whole calendar unit."""
+    step = {"last": -1, "past": -1, "this": 0, "next": 1, "coming": 1}[which]
+    if unit == "week":
+        if which == "past":
+            return a - timedelta(days=7), a, "week"
+        first, last = _week_of(a + timedelta(days=7 * step))
+        return first, last, "week"
+    if unit == "weekend":
+        saturday = a + timedelta(days=(5 - a.weekday()) % 7) if a.weekday() != 6 else a - timedelta(days=1)
+        saturday += timedelta(days=7 * step)
+        return saturday, saturday + timedelta(days=1), "week"
+    if unit == "month":
+        if which == "past":
+            return _back(a, 1, "month"), a, "month"
+        first = _shift_months(a.replace(day=1), step)
+        return first, _month_end(first), "month"
+    if which == "past":
+        return _back(a, 1, "year"), a, "year"
+    return date(a.year + step, 1, 1), date(a.year + step, 12, 31), "year"
+
+
+_SHIFT = {"next": 1, "this": 0, "last": -1}
+_MONTH_DAY_FORMS = (
+    r"(?:the )?(?P<ord>\d{1,2})(?:st|nd|rd|th) of (?P<which>next|this|last) month",
+    r"(?P<which>next|this|last) month,? (?:on )?(?:the )?(?P<ord>\d{1,2})(?:st|nd|rd|th)",
+)
+#: "the last day of this month", "first day of march": the month's edges.
+_MONTH_EDGE = r"(?:the )?(?P<edge>first|last) day of (?:(?P<which>this|next|last) month|(?P<the>the) month|(?P<month>" + "|".join(sorted(_MONTHS, key=len, reverse=True)) + r"))"
+
+
+def _month_day_span(text: str, a: date, tense: str | None) -> tuple[date, date, str] | None:
+    """A day named by its month: "the 3rd of next month", "next month on the
+    3rd", "the last day of this month", "first day of march"."""
+    for form in _MONTH_DAY_FORMS:
+        found = re.fullmatch(form, text)
+        if found:
+            first = _shift_months(a.replace(day=1), _SHIFT[found.group("which")])
+            number = int(found.group("ord"))
+            day = first.replace(day=number) if 1 <= number <= _month_end(first).day else None
+            return (day, day, "day") if day else None
+    found = re.fullmatch(_MONTH_EDGE, text)
+    if not found:
+        return None
+    if found.group("which") or found.group("the"):
+        first = _shift_months(a.replace(day=1), _SHIFT.get(found.group("which") or "this"))
+    else:
+        first = _month_span(_MONTHS[found.group("month")], a, tense or "future")[0]
+    day = first if found.group("edge") == "first" else _month_end(first)
+    return day, day, "day"
+
+
+def _nth_in_month(found: re.Match, anchor: date, tense: str | None) -> date | None:
+    """The day an `_NTH_IN_MONTH` match names: a named month with no year is
+    the next one to come (the last one gone, for a note about the past)."""
+    nth, name, which, month_name, year = found.groups()
+    code = f"{_ORDINAL_N[nth]}{_WEEKDAY_CODES[_WEEKDAYS[name]]}"
+    if which:
+        first = _shift_months(anchor.replace(day=1), {"last": -1, "this": 0, "next": 1}[which])
+        return _nth_of_month(first.year, first.month, code)
+    month = _MONTHS[month_name]
+    if year:
+        return _nth_of_month(int(year), month, code)
+    days = [d for d in (_nth_of_month(anchor.year + k, month, code) for k in (-1, 0, 1)) if d]
+    gone = [d for d in days if d < anchor]
+    return max(gone, default=None) if tense == "past" else min((d for d in days if d >= anchor), default=None)
+
+
 def span(phrase: str, anchor: date, tense: str | None = None) -> tuple[date, date, str] | None:
     """(first day, last day, grain) the phrase names, read against `anchor`,
     or None. `tense` ("past", "future" or None) picks between the Friday
@@ -812,25 +947,7 @@ def span(phrase: str, anchor: date, tense: str | None = None) -> tuple[date, dat
         return first, last, "week"
     found = re.fullmatch(r"(last|this|next|past|coming) (week|weekend|month|year)", text)
     if found:
-        which, unit = found.groups()
-        step = {"last": -1, "past": -1, "this": 0, "next": 1, "coming": 1}[which]
-        if unit == "week":
-            if which == "past":
-                return a - timedelta(days=7), a, "week"
-            first, last = _week_of(a + timedelta(days=7 * step))
-            return first, last, "week"
-        if unit == "weekend":
-            saturday = a + timedelta(days=(5 - a.weekday()) % 7) if a.weekday() != 6 else a - timedelta(days=1)
-            saturday += timedelta(days=7 * step)
-            return saturday, saturday + timedelta(days=1), "week"
-        if unit == "month":
-            if which == "past":
-                return _back(a, 1, "month"), a, "month"
-            first = _shift_months(a.replace(day=1), step)
-            return first, _month_end(first), "month"
-        if which == "past":
-            return _back(a, 1, "year"), a, "year"
-        return date(a.year + step, 1, 1), date(a.year + step, 12, 31), "year"
+        return _calendar_unit_span(*found.groups(), a)
     found = re.fullmatch(r"(?:the )?(?:last|past|previous) (?:(\d{1,3}|few|couple of|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve) )?(days|weeks|months|years)", text)
     if found:
         amount = _amount(found.group(1) or "one") or {"few": 3, "couple of": 2}.get(found.group(1) or "", 1)
@@ -857,6 +974,10 @@ def span(phrase: str, anchor: date, tense: str | None = None) -> tuple[date, dat
             else:
                 day = a + timedelta(days=amount * {"day": 1, "week": 7, "fortnight": 14}[unit])
         return day, day, "day"
+    found = re.fullmatch(_NTH_IN_MONTH, text)
+    if found:
+        day = _nth_in_month(found, a, tense)
+        return (day, day, "day") if day else None
     found = re.fullmatch(r"(?:(last|this|next|coming|on) )?" + _WEEKDAY_RE + r"(?: (?:morning|afternoon|evening|night))?", text)
     if found:
         which, target = found.group(1), _WEEKDAYS[found.group(2)]
@@ -879,14 +1000,9 @@ def span(phrase: str, anchor: date, tense: str | None = None) -> tuple[date, dat
         except ValueError:
             return None
         return day, day, "day"
-    found = re.fullmatch(r"(?:the )?" + _ORD + r" of (next|this|last) month", text)
+    found = _month_day_span(text, a, tense)
     if found:
-        first = _shift_months(a.replace(day=1), {"next": 1, "this": 0, "last": -1}[found.group(2)])
-        try:
-            day = first.replace(day=int(found.group(1)))
-        except ValueError:
-            return None
-        return day, day, "day"
+        return found
     found = re.fullmatch(r"(?:the )?(\d{1,2})(?:st|nd|rd|th)? (?:of )?" + _MONTH_RE + r"(?: (\d{4}))?", text) or re.fullmatch(
         _MONTH_RE + r" (?:the )?(\d{1,2})(?:st|nd|rd|th)?(?:,? (\d{4}))?", text
     )
@@ -1524,6 +1640,7 @@ _SOURCES: dict[str, object] = {
     "adverb": r"\b(daily|weekly|monthly|yearly|annually|fortnightly|nightly)\b",
     #: "the last friday of the month", "every first monday": a weekday's
     #: place in its month (TIMELINE_PLAN 11 row 8).
+    "nth_in_month": _NTH_IN_MONTH,
     "nth_weekday": lambda: (
         r"\b(?:(every|each)\s+)?(?:the\s+)?(first|second|third|fourth|last|1st|2nd|3rd|4th)\s+("
         + "|".join(n for n in _WEEKDAYS if len(n) > 3) + r")(\s+(?:of|in)\s+(?:the|every|each)\s+month)?\b"
@@ -1546,9 +1663,17 @@ _SOURCES: dict[str, object] = {
     "part_said": r"^ (?:in the (morning|afternoon|evening)|at (night))\b",
     "clock": r"\b(noon|midday|midnight)\b|(?<![\d:.])\b(\d{1,2}):(\d{2})(?:\s?(am|pm|a\.m\.|p\.m\.))?(?![\w:])|"
              r"(?<![\d:.])\b(\d{1,2})\s?(am|pm|a\.m\.|p\.m\.)(?!\w)|\b(?:at|by|around|about)\s(\d{1,2})\b(?![:.,]\d)",
+    #: "to" takes a word for its minutes ("the 5 to 7 train" is not a time) and
+    #: never follows "from" or "between" ("open from ten to five" is a range).
+    "spoken_clock": lambda: (
+        r"(?:\b(?:at|by|around|about) )?(?<!from )(?<!between )\b(?:an? )?"
+        r"(half|quarter|five|ten|twenty-five|twenty five|twenty|\d{1,2}(?= past)) (past|to) "
+        rf"(\d{{1,2}}|{'|'.join(_SPOKEN_HOURS)})(?:\s?(am|pm|a\.m\.|p\.m\.))?(?![\w:])"
+    ),
     "time_range": r"\b(?:from\s)?(\d{1,2})(?::(\d{2}))?\s?(am|pm)?\s?(?:-|–|to|until|till)\s?(\d{1,2})(?::(\d{2}))?\s?(am|pm)\b",
     "date_range": r"\b(?:from|between)\s",
     "anchored": lambda: rf"\b(\d{{1,3}}|{_COUNT_WORDS}|half an)\s(minutes?|mins?|hours?|hrs?)\s(before|after)\s",
+    "from_now": lambda: _FROM_NOW.pattern,
     "relative": lambda: rf"\bin\s(?:half an hour|a half hour|an? hour and a half|a quarter of an hour|"
                         rf"(\d{{1,4}}(?:\.\d{{1,2}})?|{_COUNT_WORDS})\s?(minutes?|mins?|hours?|hrs?))\b",
     "words_duration": lambda: (
@@ -1724,6 +1849,17 @@ def _date_cands(raw: str, low: str, now: datetime, locale: str | None, tense: st
     return out
 
 
+def _spoken_cands(low: str) -> list[tuple]:
+    """The clocks said aloud ("half past 4") as time spans."""
+    out = []
+    for found in _rx("spoken_clock").finditer(low):
+        said = _spoken_clock(found)
+        at = _hour_from(*said) if said else None
+        if at is not None:
+            out.append((found.start(), found.end(), "time", at, "", 0))
+    return out
+
+
 def _time_cands(low: str) -> list[tuple]:
     out = []
     for found in _rx("clock").finditer(low):
@@ -1747,6 +1883,7 @@ def _time_cands(low: str) -> list[tuple]:
             at, end = time(hour, at.minute), end + part.end()
         if at is not None:
             out.append((found.start(), end, "time", at, "", 0))
+    out += _spoken_cands(low)
     for found in _rx("time_range").finditer(low):
         h1, m1, ap1, h2, m2, ap2 = found.groups()
         first = _hour_from(int(h1), int(m1 or 0), ap1 or (ap2 if int(h1) <= int(h2) else None))
@@ -1760,25 +1897,40 @@ def _relative_cands(low: str, now: datetime, tense: str | None) -> list[tuple]:
     if tense == "past":
         return []  # "ran 10k in 52 minutes" is how long it took, not when
     out = []
-    for found in _rx("relative").finditer(low):
+    for found in (*_rx("relative").finditer(low), *_rx("from_now").finditer(low)):
         got = relative_delta(found.group(0))
         if got is not None:
             out.append((found.start(), found.end(), "datetime", now + got[0], "", 0))
     return out
 
 
+def _clock_after(low: str, end: int, evening: bool) -> tuple[time, int] | None:
+    """The clock a repeat names right after its words ("every day at 7:30",
+    "... at half past 7") and how much text it took."""
+    tail = low[end:end + 30]
+    clock = _rx("clock_after").match(tail[:24])
+    if clock and clock.group(0).strip(" ,"):
+        at = _clock_match(clock, evening)
+        if at is not None:
+            return at, len(clock.group(0))
+    lead = len(tail) - len(tail.lstrip(" ,"))
+    spoken = _rx("spoken_clock").match(tail, lead)
+    said = _spoken_clock(spoken) if spoken else None
+    at = _hour_from(*said) if said else None
+    return (at, spoken.end()) if at is not None and spoken else None
+
+
 def _recurrence_cands(low: str) -> list[tuple]:
     out = []
 
     def add(start: int, end: int, rule: list[str], words: str) -> None:
-        clock = _rx("clock_after").match(low[end:end + 24])
-        if clock and clock.group(0).strip(" ,"):
-            evening = "BYHOUR=18" in ";".join(rule) or "BYHOUR=20" in ";".join(rule)
-            at = _clock_match(clock, evening)
-            if at is not None:
-                rule = [r for r in rule if not r.startswith(("BYHOUR", "BYMINUTE"))] + [f"BYHOUR={at.hour}", f"BYMINUTE={at.minute}"]
-                end += len(clock.group(0))
-                words += f" at {_clock_words(at)}"
+        evening = "BYHOUR=18" in ";".join(rule) or "BYHOUR=20" in ";".join(rule)
+        found = _clock_after(low, end, evening)
+        if found is not None:
+            at, used = found
+            rule = [r for r in rule if not r.startswith(("BYHOUR", "BYMINUTE"))] + [f"BYHOUR={at.hour}", f"BYMINUTE={at.minute}"]
+            end += used
+            words += f" at {_clock_words(at)}"
         out.append((start, end, "recurrence", ";".join(rule), words, 0))
 
     for found in _rx("every").finditer(low):

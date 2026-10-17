@@ -171,6 +171,25 @@ def test_the_shapes_people_actually_type(phrase, minutes):
 
 
 @pytest.mark.parametrize(
+    ("text", "due", "kept"),
+    [
+        ("call bob in 2 days at 3pm", (2026, 8, 3, 15, 0), "call bob"),
+        ("in 3 days at 9:30 water the plants", (2026, 8, 4, 9, 30), "water the plants"),
+        ("check the post in a week at noon", (2026, 8, 8, 12, 0), "check the post"),
+    ],
+)
+def test_a_day_offset_keeps_the_clock_that_was_said(text, due, kept):
+    """"In 2 days at 3pm" was 12:00 in two days: the offset was taken and the
+    time said beside it was dropped, so the reminder fired at the wrong hour
+    with no word of it."""
+    now = datetime(2026, 8, 1, 12, 0, tzinfo=timezone.utc)
+    parsed = reminder_parser.parse_relative(text, now)
+    assert parsed is not None
+    assert parsed["due_at"] == datetime(*due, tzinfo=timezone.utc)
+    assert parsed["text"].lower() == kept
+
+
+@pytest.mark.parametrize(
     "phrase",
     ["at 8pm", "tomorrow morning", "next tuesday", "on the 5th", "sometime soon"],
 )

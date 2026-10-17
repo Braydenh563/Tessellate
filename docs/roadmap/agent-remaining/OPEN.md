@@ -497,7 +497,6 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 461 | A reminder with no time said is guessed as tomorrow at 9, shown "(no time was said)" (commands.py, when.resolve("tomorrow")); decisions 48 and 50 say... | docs/roadmap/agent-remaining/OPEN.md:3587 | M | unassigned |
 | 462 | Ask draws no Confirm and Not right: capture-ask.js keeps onGrounding's insights unread though the route sends them (decision 60 lists chat, Tidy and... | docs/roadmap/agent-remaining/OPEN.md:3588 | S | unassigned |
 | 463 | tag: with words still filters after the keyword pass's 200 candidates (engine.search, the wanted_tags block), so a common word plus a rare tag can... | docs/roadmap/agent-remaining/OPEN.md:3597 | L | unassigned |
-| 464 | GET /resurface/near/{id} 500s ("shapes (384,) and (4,) not aligned") when the notebook holds vectors of another dimension (the scale_test fixture's... | docs/roadmap/agent-remaining/OPEN.md:3598 | S | unassigned |
 | 465 | Note editor: offers on the Edit form are wired (note-edit-panels.js after li.append(surface, ...)) but measured only on the Capture composer; the... | docs/roadmap/agent-remaining/OPEN.md:3604 | M | unassigned |
 | 466 | Filters: "last week" is the last seven days here (the search's meaning) and the Monday to Sunday week in recognise; F1's owner decision row still... | docs/roadmap/agent-remaining/OPEN.md:3610 | S | unassigned |
 | 467 | Import: people and places are named in the summary only; they are not written as tags or entities (the save's own extraction runs as before).... | docs/roadmap/agent-remaining/OPEN.md:3612 | M | unassigned |
@@ -3570,7 +3569,6 @@ The file, with the T0 table, is in [`../archive/agent-remaining/trust-1010.md`](
 
 - A chat is one search row (the whole thread), so a hit opens the chat, not the turn that matched (`index._conversation_row`). [search-1010]
 - `tag:` with words still filters after the keyword pass's 200 candidates (`engine.search`, the `wanted_tags` block), so a common word plus a rare tag can miss notes. [search-1010]
-- `GET /resurface/near/{id}` 500s ("shapes (384,) and (4,) not aligned") when the notebook holds vectors of another dimension (the scale_test fixture's 4-d vectors after a 384-d save); a model switch with stale vectors would do the same (`api/routes_resurface*`). Bug. [search-1010]
 - Brief 47's "the sidebar's search field routes here": the Notes sidebar has no search field; the no-match Search everything button and the saved-search rows are the routes built. [search-1010]
 - Not verified: hybrid ranking cost at 5,000 notes with a real embedding model (keyword plus the fake backend only); the saved-search ⋯ menu opened in a browser; the phone's saved-search rows at 390 beyond the DOM count. [search-1010]
 
@@ -3645,3 +3643,14 @@ Not verified: A real disk failure or power cut; damage was made by overwriting p
 - Sweeps: touch.js reports Settings appearance and privacy "did not open" (section names moved); overlap.js still counts 4 px rows on `#notes-tidy`, `#dash-quicklinks`, `.library-controls`. [density-1010]
 - One focus ring at 1:1 in Chat (`button.active`, its outline takes the ground colour, both themes; `scratchpad/ui-sweeps/focusring.js`). Bug. [density-1010]
 - Not verified: tests elsewhere that relied on blank lines removed from CSS files 00, 01, 02, 05, 06, 07 and 10 to pay for the CSS budget; the picker on the Timeline range and Ask's as-of day beyond a smoke check; 390 beyond Reminders. [density-1010]
+
+## Left by the open-rows agent (time reader, 2026-10-17)
+
+Closed (see HISTORY, "OPEN.md rows closed, 2026-10-17"): row 464 and five time-reader gaps found while probing. Still open, none built:
+
+- Clocks that ask "Remind you when?": "3 o'clock", "at three", "at ten thirty", "at 1530", "at 15h30", "in 1h30", "eod" are unread by `recognise` and `when.resolve`.
+- "in two weeks on wednesday" reads 5 October 15:55 (the weekday is dropped).
+- "remind me at midnight to see the new year" is ambiguous between tonight and New Year's Eve.
+- A `before:tuesday` search operator is an owner decision (which side of the day it excludes).
+- chat-agent.js result box budget line (row 243) is blocked by the eager-script gzip caps.
+
