@@ -10,6 +10,8 @@ from __future__ import annotations
 import io
 import zipfile
 
+from tests._pool_wait import pool_idle
+
 
 def _save(client, content, **extra):
     response = client.post("/entries", json={"content": content, **extra})
@@ -81,6 +83,7 @@ def test_directory_import_walks_a_folder_and_files_notes(client, tmp_path, monke
     (vault / "empty.md").write_text("   ", encoding="utf-8")
 
     response = client.post("/import/directory", json={"path": str(vault)})
+    pool_idle()
     assert response.status_code == 202
     assert response.json()["status"] == "started"
 

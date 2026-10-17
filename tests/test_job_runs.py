@@ -21,6 +21,7 @@ from tessellate.ai import model_manager
 from tessellate.core import deps, jobruns, taskhistory
 from tessellate.core.database import EmbeddingRecord, JobRun
 from tests._app_js import frontend_text
+from tests._pool_wait import pool_idle
 from tests._repo_files import repo_files
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -279,6 +280,7 @@ def test_a_folder_import_records_an_import(client, tmp_path, monkeypatch):
     monkeypatch.setenv("HOME", str(home))
     monkeypatch.setenv("USERPROFILE", str(home))
     assert client.post("/import/directory", json={"path": str(home / "vault")}).status_code == 202
+    pool_idle()
     assert _runs(client)["import"]["result"] == "imported 1 note from a folder"
 
 
