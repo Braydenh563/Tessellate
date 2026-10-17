@@ -46,8 +46,7 @@ class Command:
 
 def _recent(session: Session, arg: str, now: datetime) -> str:
     entry, visible = _notes()
-    n = int(arg) if arg.isdigit() else 5
-    n = max(1, min(n, 20))
+    n = slash_more.count_arg(arg)
     rows = list(session.scalars(select(entry).where(*visible).order_by(entry.created_at.desc(), entry.id.desc()).limit(n)))
     if not rows:
         return "You have no notes yet."
@@ -74,7 +73,7 @@ def _count(session: Session, arg: str, now: datetime) -> str:
     ) or 0
     if filed:
         return of_yours(filed, f"{'is' if filed == 1 else 'are'} in {arg.strip()}")
-    said = session.scalar(select(func.count(entry.id)).where(*visible, func.lower(entry.content).contains(word))) or 0
+    said = session.scalar(select(func.count(entry.id)).where(*visible, func.lower(entry.content).contains(word, autoescape=True))) or 0
     if said:
         return of_yours(said, f"{'mentions' if said == 1 else 'mention'} “{arg.strip()}”")
     return f"No note is tagged #{word}, filed in {arg.strip()} or mentions it. You have {realise.count_noun(total, 'note')} in all."

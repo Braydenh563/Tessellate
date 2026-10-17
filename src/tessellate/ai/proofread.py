@@ -82,7 +82,10 @@ def _modal(typed: str, line: str) -> str:
     verb is the modal: the speller, reading the word alone, said "shout"."""
     from tessellate.ai import question_noise
 
-    before = re.search(rf"(\w+)\s+{re.escape(typed)}(?![\w'])", line)
+    #: The word before starts at a word start and is a short one (a subject is):
+    #: an open-ended `\w+` tried at every letter of a long unbroken run was
+    #: quadratic (CodeQL py/polynomial-redos).
+    before = re.search(rf"(?<!\w)(\w{{1,20}})\s+{re.escape(typed)}(?![\w'])", line)
     if not before or before.group(1).lower() not in _SUBJECTS:
         return ""
     near = [m for m in _MODALS if question_noise.distance(typed.lower(), m) <= 1.0]
