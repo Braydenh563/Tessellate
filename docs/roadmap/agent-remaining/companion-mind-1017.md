@@ -7,3 +7,5 @@ Steps, one commit each:
 2. Lifelike decisions: when and what from mood, idle time, place and what you are doing; anticipation and settle; more acts (lazy, `companion-menu.js`).
 3. Throwing stars on the rig (`atlas-motion.js`, the rig's own loop), juggling and when thrown; reduced motion keeps the drawn stars.
 4. Perch re-verify (`perchloss.js`) and B62 (the popup's face reacts).
+
+done: 52efa72 (step 1); next: step 3 throwing stars, atlas-motion.js atlasRigFrame, 08-consistency.css 8040.

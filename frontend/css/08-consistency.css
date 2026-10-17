@@ -8037,9 +8037,6 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
     &[data-atlas-mood="sleepy"].atl-layer-fx-1 { animation: atl-z-drift 4.2s ease-in-out infinite; }
     &[data-atlas-mood="sleepy"].atl-layer-fx-2 { animation: atl-z-drift 4.2s ease-in-out -2.1s infinite; }
     &.atl-layer :is(.atl-juggle-0, .atl-juggle-1, .atl-juggle-2) { animation: none; }
-    #nm-buddy.nmb-act-juggle &.atl-layer .atl-juggle-0 { animation: atl-juggle 1.8s linear infinite; }
-    #nm-buddy.nmb-act-juggle &.atl-layer .atl-juggle-1 { animation: atl-juggle 1.8s linear -0.6s infinite; }
-    #nm-buddy.nmb-act-juggle &.atl-layer .atl-juggle-2 { animation: atl-juggle 1.8s linear -1.2s infinite; }
     & .atl-juggle-0 { animation: atl-juggle 1.8s linear infinite; }
     & .atl-juggle-1 { animation: atl-juggle 1.8s linear -0.6s infinite; }
     & .atl-juggle-2 { animation: atl-juggle 1.8s linear -1.2s infinite; }

@@ -233,6 +233,100 @@ function atlasRigWake(host) {
   rig.still = 0;
   if (!rig.raf) rig.raf = requestAnimationFrame((now) => atlasRigFrame(rig, now));
 }
+//: **Throwing stars** (B88b, the owner, 2026-10-17: "the throwing stars
+//: action for atlas isnt animated"). The juggle turned each star on a CSS
+//: circle about one point over the head while both arms held still. The rig
+//: throws them now, in its own frame: a shower, each star thrown from the
+//: right hand high over the head to the left, held a moment, thrown back
+//: low, three a third of a cycle apart, each hand dipping as it catches and
+//: flicking up as it throws. Thrown across the screen, Atlas loses them: they
+//: fly out of its hands, fall and fade, once a flight. Reduced motion is not
+//: `live`, so the drawn stars stay where they are drawn.
+const ATLAS_TOSS_SPOTS = [[10, 17], [31, 4], [52, 17]];
+const ATLAS_TOSS_FLING = [[-28, -70], [18, -85], [40, -60]];
+function atlasTossAt(p) {
+  if (p < 0.42) {
+    const u = p / 0.42;
+    return [52 - 42 * u, 17 - 56 * u * (1 - u)];
+  }
+  if (p < 0.5) return [10, 17 + 1.5 * Math.sin((Math.PI * (p - 0.42)) / 0.08)];
+  if (p < 0.92) {
+    const u = (p - 0.5) / 0.42;
+    return [10 + 42 * u, 17 - 40 * u * (1 - u)];
+  }
+  return [52, 17 + 1.5 * Math.sin((Math.PI * (p - 0.92)) / 0.08)];
+}
+//: A hand's lift in degrees, `d` cycles from its throw: down as it carries
+//: the caught star, up as it lets go.
+function atlasTossBob(d) {
+  const w = d - Math.round(d);
+  if (w >= -0.08 && w < 0) return -6 * Math.sin((Math.PI * (w + 0.08)) / 0.08);
+  if (w >= 0 && w < 0.1) return 12 * Math.sin((Math.PI * w) / 0.1);
+  return 0;
+}
+//: What the stars do this frame: `juggle`, `spill` (thrown), `back` (the act
+//: over, eased home) or nothing; null when there is nothing to draw or clear.
+function atlasTossState(rig, now, live, buddy) {
+  const t = rig.toss || (rig.toss = { mode: "", at: 0, from: null, off: ATLAS_TOSS_SPOTS.map(() => [0, 0]), spillOf: null });
+  const game = typeof nmb === "object" ? nmb : null;
+  const has = (c) => !!buddy && buddy.classList.contains(c);
+  const start = (mode) => Object.assign(t, { mode, at: now, from: t.off.map((o) => [...o]) });
+  if (live && game?.flight && t.spillOf !== game.flight && has("nm-buddy-dragging") && !nameMarkBuddyActOff("juggle")) {
+    t.spillOf = game.flight;
+    start("spill");
+  } else if (live && t.mode !== "spill" && has("nmb-act-juggle")) {
+    if (t.mode !== "juggle") start("juggle");
+  } else if (live && t.mode === "juggle") start("back");
+  const e = now - t.at;
+  const ease = (x) => 1 - (1 - Math.min(1, x)) ** 3;
+  if (!live || (t.mode === "spill" && e >= 1000) || (t.mode === "back" && e >= 250)) t.mode = "";
+  if (!t.mode) {
+    if (!t.from) return null;
+    t.from = null;
+    t.off = t.off.map(() => [0, 0]);
+    return { mode: "", off: null, op: "", lift: null };
+  }
+  let op = "";
+  const lift = { l: 0, r: 0 };
+  if (t.mode === "spill") {
+    const s = e / 1000;
+    t.off = t.from.map(([x, y], k) => [x + ATLAS_TOSS_FLING[k][0] * s, y + ATLAS_TOSS_FLING[k][1] * s + 100 * s * s]);
+    op = (s < 0.45 ? 1 : Math.max(0, 1 - (s - 0.45) / 0.55)).toFixed(2);
+  } else if (t.mode === "back") {
+    const b = ease(e / 250);
+    t.off = t.from.map(([x, y]) => [x * (1 - b), y * (1 - b)]);
+  } else {
+    const b = ease(e / 300);
+    t.off = ATLAS_TOSS_SPOTS.map((spot, k) => {
+      const p = (e / 1800 + (2 - k) / 3) % 1;
+      lift.r += b * atlasTossBob(p);
+      lift.l += b * atlasTossBob(p - 0.5);
+      const [x, y] = atlasTossAt(p);
+      return [t.from[k][0] + (x - spot[0] - t.from[k][0]) * b, t.from[k][1] + (y - spot[1] - t.from[k][1]) * b];
+    });
+  }
+  return { mode: t.mode, off: t.off, op, lift };
+}
+function atlasTossDraw(rig, toss) {
+  const { box } = rig;
+  const els = rig.tossEls || (rig.tossEls = {
+    root: box.querySelector(".atl-layer .nmp-stars"),
+    arc: box.querySelector(".atl-layer .nmp-stars .atl-juggle-arc"),
+    stars: [...box.querySelectorAll(".atl-layer .nmp-stars > .atl-juggle")],
+  });
+  const set = (el, k, v) => {
+    if (el && el.style[k] !== v) el.style[k] = v;
+  };
+  for (const [k, star] of els.stars.entries()) {
+    const o = toss.off?.[k];
+    set(star, "transform", o ? `translate(${atlasFix(o[0])}px, ${atlasFix(o[1])}px)` : "");
+    set(star, "opacity", toss.op);
+  }
+  //: Spilled, the prop shows whatever the act (the CSS shows it only for the
+  //: juggle) and the thread it runs on does not.
+  set(els.root, "opacity", toss.mode === "spill" ? "1" : "");
+  set(els.arc, "opacity", toss.mode === "spill" ? "0" : "");
+}
 function atlasRigFrame(rig, now) {
   rig.raf = 0;
   const { box } = rig;
@@ -277,6 +371,7 @@ function atlasRigFrame(rig, now) {
     rig.reads = reads;
     rig.turnMatrix = turnMatrix;
   }
+  const toss = atlasTossState(rig, now, live, buddy);
   for (const [i, arm] of rig.arms.entries()) {
     const got = { ...reads[i] };
     //: Unwrap the angle against the last target so a turn past 180
@@ -303,6 +398,10 @@ function atlasRigFrame(rig, now) {
       const amp = rig.look === "masculine" ? 9 : 6;
       sh += amp * Math.sin(ph);
       elT += amp * 0.6 * (1 + Math.sin(ph - 0.8)) * 0.5;
+    }
+    if (toss?.lift) {
+      sh -= toss.lift[arm.side] * arm.sgn;
+      elT -= 0.5 * toss.lift[arm.side];
     }
     if (arm.antic && now < arm.antic.until) sh = arm.antic.to;
     //: The hand trails a fast swing of the arm.
@@ -361,6 +460,10 @@ function atlasRigFrame(rig, now) {
   //: The lower body's pose for the state, once atlas-life.js has given the
   //: rig its lower body (`atlasRigLowerAttach`).
   if (rig.lower) atlasRigLower(rig, now, live, buddy);
+  if (toss) {
+    atlasTossDraw(rig, toss);
+    if (toss.mode) busy = true;
+  }
   box.toggleAttribute("data-atl-moving", busy);
   //: Six quiet frames in a row and it sleeps until the next change.
   rig.still = busy ? 0 : rig.still + 1;
