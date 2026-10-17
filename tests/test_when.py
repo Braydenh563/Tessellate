@@ -210,3 +210,29 @@ def test_a_repeat_keeps_its_rule_when_the_clock_is_said_aloud():
         if span.kind == "recurrence"
     }
     assert rules == {"FREQ=DAILY;BYHOUR=7;BYMINUTE=30", "FREQ=WEEKLY;BYDAY=MO;BYHOUR=8;BYMINUTE=45"}
+
+
+@pytest.mark.parametrize(
+    ("phrase", "expected"),
+    [
+        ("the first monday of november", "2026-11-02 09:00"),
+        ("third friday of october", "2026-10-16 09:00"),
+        ("the last friday of next month", "2026-10-30 09:00"),
+        ("the second tuesday of september", "2027-09-14 09:00"),
+        ("first monday of november at 2pm", "2026-11-02 14:00"),
+    ],
+)
+def test_a_weekdays_place_in_a_month_is_that_day(phrase, expected):
+    """"The first Monday of November" read as the next Monday (28 September):
+    the weekday was found and the month and the place were ignored."""
+    got = when.resolve(phrase, NOW)
+    assert got is not None and got.strftime("%Y-%m-%d %H:%M") == expected
+
+
+def test_a_note_about_the_past_reads_the_month_gone():
+    from datetime import date
+
+    from tessellate.ai import recognise
+
+    assert recognise.span("the first monday of march", date(2026, 9, 21), "past") == (date(2026, 3, 2),) * 2 + ("day",)
+    assert recognise.span("the first monday of march", date(2026, 9, 21), "future") == (date(2027, 3, 1),) * 2 + ("day",)

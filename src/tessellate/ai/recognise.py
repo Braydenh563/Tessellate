@@ -278,6 +278,14 @@ def _hour24(hour: int, meridiem: str | None, evening: bool) -> int:
     return hour + 12 if 1 <= hour <= 6 else hour
 
 
+def _first_day(text: str, now: datetime) -> tuple[date | None, str]:
+    """`_day`, except a weekday's place in a month ("the first monday of
+    november") is that day and not the next Monday."""
+    nth = _rx("nth_in_month").search(text)
+    day = _nth_in_month(nth, now.date(), "future") if nth else None
+    return (day, text[: nth.start()] + " " + text[nth.end():]) if day else _day(text, now)
+
+
 def resolve(phrase: str, now: datetime, *, locale: str | None = None) -> datetime | None:
     """The instant `phrase` means, on `now`'s clock, or None. `locale` orders
     a numeric date ("2/11"): day first unless it is a month-first locale."""
@@ -311,7 +319,7 @@ def resolve(phrase: str, now: datetime, *, locale: str | None = None) -> datetim
         return min(later, cap) if cap > now else later
     if text in ("end of day", "end of the day", "by end of day"):
         return datetime.combine(now.date(), time(17), now.tzinfo)
-    day, rest = _day(text, now)
+    day, rest = _first_day(text, now)
     if day is None:
         numeric = _numeric_dates(text, now.date(), locale, "future")
         if numeric:
@@ -673,6 +681,12 @@ def days_since(phrase: str, now: datetime) -> int | None:
 _ORD = r"(\d{1,2})(?:st|nd|rd|th)"
 _MONTH_RE = r"(" + "|".join(sorted(_MONTHS, key=len, reverse=True)) + r")"
 _WEEKDAY_RE = r"(" + "|".join(sorted(_WEEKDAYS, key=len, reverse=True)) + r")"
+#: "the first monday of november", "the last friday of next month": groups
+#: are the place, the weekday, this/next/last month, the month's name, a year.
+_NTH_IN_MONTH = (
+    r"(?:the )?(first|second|third|fourth|last|1st|2nd|3rd|4th) " + _WEEKDAY_RE
+    + r" (?:of|in) (?:(this|next|last) month|" + _MONTH_RE + r"(?: (\d{4}))?)"
+)
 _UNIT_RE = r"(days?|weeks?|fortnights?|months?|years?)"
 _AMOUNT_RE = r"(\d{1,3}|a|an|one|two|three|four|five|six|seven|eight|nine|ten|twelve|a couple of|a few)"
 
@@ -695,6 +709,7 @@ _DATE_PHRASE_SOURCE = (
     r"\b(?:"
     + "|".join(
         (
+            _NTH_IN_MONTH,
             r"since (?:the )?(?:\d{1,2}(?:st|nd|rd|th)? (?:of )?" + _MONTH_RE + r"|" + _MONTH_RE + r"(?: \d{1,2}(?:st|nd|rd|th)?)?|"
             + _WEEKDAY_RE + r"|last (?:week|month|year)|yesterday|\d{4}-\d{2}-\d{2})",
             r"(?:the )?week before last",
@@ -807,6 +822,44 @@ def _back(anchor: date, amount: int, unit: str) -> date:
         return anchor.replace(year=anchor.year - amount, day=28)
 
 
+def _calendar_unit_span(which: str, unit: str, a: date) -> tuple[date, date, str]:
+    """"last week", "next month", "this year", "past week": a whole calendar unit."""
+    step = {"last": -1, "past": -1, "this": 0, "next": 1, "coming": 1}[which]
+    if unit == "week":
+        if which == "past":
+            return a - timedelta(days=7), a, "week"
+        first, last = _week_of(a + timedelta(days=7 * step))
+        return first, last, "week"
+    if unit == "weekend":
+        saturday = a + timedelta(days=(5 - a.weekday()) % 7) if a.weekday() != 6 else a - timedelta(days=1)
+        saturday += timedelta(days=7 * step)
+        return saturday, saturday + timedelta(days=1), "week"
+    if unit == "month":
+        if which == "past":
+            return _back(a, 1, "month"), a, "month"
+        first = _shift_months(a.replace(day=1), step)
+        return first, _month_end(first), "month"
+    if which == "past":
+        return _back(a, 1, "year"), a, "year"
+    return date(a.year + step, 1, 1), date(a.year + step, 12, 31), "year"
+
+
+def _nth_in_month(found: re.Match, anchor: date, tense: str | None) -> date | None:
+    """The day an `_NTH_IN_MONTH` match names: a named month with no year is
+    the next one to come (the last one gone, for a note about the past)."""
+    nth, name, which, month_name, year = found.groups()
+    code = f"{_ORDINAL_N[nth]}{_WEEKDAY_CODES[_WEEKDAYS[name]]}"
+    if which:
+        first = _shift_months(anchor.replace(day=1), {"last": -1, "this": 0, "next": 1}[which])
+        return _nth_of_month(first.year, first.month, code)
+    month = _MONTHS[month_name]
+    if year:
+        return _nth_of_month(int(year), month, code)
+    days = [d for d in (_nth_of_month(anchor.year + k, month, code) for k in (-1, 0, 1)) if d]
+    gone = [d for d in days if d < anchor]
+    return max(gone, default=None) if tense == "past" else min((d for d in days if d >= anchor), default=None)
+
+
 def span(phrase: str, anchor: date, tense: str | None = None) -> tuple[date, date, str] | None:
     """(first day, last day, grain) the phrase names, read against `anchor`,
     or None. `tense` ("past", "future" or None) picks between the Friday
@@ -836,25 +889,7 @@ def span(phrase: str, anchor: date, tense: str | None = None) -> tuple[date, dat
         return first, last, "week"
     found = re.fullmatch(r"(last|this|next|past|coming) (week|weekend|month|year)", text)
     if found:
-        which, unit = found.groups()
-        step = {"last": -1, "past": -1, "this": 0, "next": 1, "coming": 1}[which]
-        if unit == "week":
-            if which == "past":
-                return a - timedelta(days=7), a, "week"
-            first, last = _week_of(a + timedelta(days=7 * step))
-            return first, last, "week"
-        if unit == "weekend":
-            saturday = a + timedelta(days=(5 - a.weekday()) % 7) if a.weekday() != 6 else a - timedelta(days=1)
-            saturday += timedelta(days=7 * step)
-            return saturday, saturday + timedelta(days=1), "week"
-        if unit == "month":
-            if which == "past":
-                return _back(a, 1, "month"), a, "month"
-            first = _shift_months(a.replace(day=1), step)
-            return first, _month_end(first), "month"
-        if which == "past":
-            return _back(a, 1, "year"), a, "year"
-        return date(a.year + step, 1, 1), date(a.year + step, 12, 31), "year"
+        return _calendar_unit_span(*found.groups(), a)
     found = re.fullmatch(r"(?:the )?(?:last|past|previous) (?:(\d{1,3}|few|couple of|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve) )?(days|weeks|months|years)", text)
     if found:
         amount = _amount(found.group(1) or "one") or {"few": 3, "couple of": 2}.get(found.group(1) or "", 1)
@@ -881,6 +916,10 @@ def span(phrase: str, anchor: date, tense: str | None = None) -> tuple[date, dat
             else:
                 day = a + timedelta(days=amount * {"day": 1, "week": 7, "fortnight": 14}[unit])
         return day, day, "day"
+    found = re.fullmatch(_NTH_IN_MONTH, text)
+    if found:
+        day = _nth_in_month(found, a, tense)
+        return (day, day, "day") if day else None
     found = re.fullmatch(r"(?:(last|this|next|coming|on) )?" + _WEEKDAY_RE + r"(?: (?:morning|afternoon|evening|night))?", text)
     if found:
         which, target = found.group(1), _WEEKDAYS[found.group(2)]
@@ -1548,6 +1587,7 @@ _SOURCES: dict[str, object] = {
     "adverb": r"\b(daily|weekly|monthly|yearly|annually|fortnightly|nightly)\b",
     #: "the last friday of the month", "every first monday": a weekday's
     #: place in its month (TIMELINE_PLAN 11 row 8).
+    "nth_in_month": _NTH_IN_MONTH,
     "nth_weekday": lambda: (
         r"\b(?:(every|each)\s+)?(?:the\s+)?(first|second|third|fourth|last|1st|2nd|3rd|4th)\s+("
         + "|".join(n for n in _WEEKDAYS if len(n) > 3) + r")(\s+(?:of|in)\s+(?:the|every|each)\s+month)?\b"
