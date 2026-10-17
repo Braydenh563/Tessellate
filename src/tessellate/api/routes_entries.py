@@ -272,11 +272,13 @@ def _engine_tags(session: Session, content: str, have: list[str], model: list[st
     the note has a word for them (WORLD_CLASS 23, decision 5: its reply to
     "prefer one of those" was the first two, whatever the note said, the
     Study bug), then the notebook's own (`ai/tagging.suggest`) filling the
-    rest, so a model that offers one tag no longer hides two good ones."""
+    rest, so a model that offers one tag no longer hides two good ones. Room
+    still left goes to a subject the note names that the notebook has never
+    tagged (`tagging.filled`, B80)."""
     from tessellate.ai import tagging
 
     own = tagging.suggest(session, content, have=have, exclude_entry_id=entry_id)
-    return tagging.merged(tagging.grounded(content, model), own, have)
+    return tagging.filled(session, content, tagging.merged(tagging.grounded(content, model), own, have), have)
 
 
 def _to_out_bulk(session: Session, entries: list) -> list[EntryOut]:
