@@ -229,13 +229,34 @@ document.addEventListener("focusin", (event) => editorHintPlaceholder(event.targ
 //: And warmed on focus, so the bundle is usually already there by the time
 //: anything is typed. Focusing an editing surface is the earliest honest
 //: signal that these commands are about to be wanted.
+//:
+//: **But not in the frame of the press.** Arriving on Chat focuses the
+//: composer, and fetching the bundle there put 17 scripts (d3, documents.js,
+//: the whiteboard files, about 2 MB) on the main thread in the window the
+//: page itself is being drawn: the first long task of a first Chat visit
+//: (`scratchpad/ui-sweeps/tabenter.js`, 192 ms of `documents.js` at 4x CPU).
+//: It waits out the arrival and runs when the page is idle. A key that needs
+//: the adapter before then still asks for the bundle itself
+//: (`editorSurfaceFor`), so the first "/" is replayed, not lost.
+const EDITOR_WARM_DELAY_MS = 2000;
+let editorWarmTimer = 0;
+function editorWarmSurfaceModule(el) {
+  clearTimeout(editorWarmTimer);
+  editorWarmTimer = setTimeout(() => {
+    const run = () => {
+      if (document.activeElement === el && typeof asSurface !== "function") editorEnsureSurfaceModule(el);
+    };
+    if (typeof requestIdleCallback === "function") requestIdleCallback(run, { timeout: 2000 });
+    else run();
+  }, EDITOR_WARM_DELAY_MS);
+}
 document.addEventListener(
   "focusin",
   (event) => {
     const el = event.target;
     if (!el || el.nodeType !== 1 || !(el.id in EDITOR_SURFACES)) return;
     if (typeof asSurface === "function") return;
-    editorEnsureSurfaceModule(el);
+    editorWarmSurfaceModule(el);
   },
   true
 );
@@ -1998,6 +2019,14 @@ function selectionBarSync() {
   //: other the moment an answer lands, and the one underneath is the one with
   //: Keep and Undo on it.
   if (inlineAiState.phase !== "idle") return selectionBarHide();
+  //: **A caret in a plain box asks nothing of the adapters.** `selectionchange`
+  //: fires when a composer takes focus, and resolving the surface fetched the
+  //: whole Library bundle there (`editorSurfaceFor`) just to find that nothing
+  //: was selected: the same long task `editorWarmSurfaceModule` waits out.
+  const raw = document.activeElement;
+  if (typeof asSurface !== "function" && raw && raw.selectionStart !== undefined && raw.selectionStart === raw.selectionEnd) {
+    return selectionBarHide();
+  }
   const active = editorSurfaceFor(document.activeElement);
   if (!isEditorSurface(active)) {
     return selectionBarHide();
