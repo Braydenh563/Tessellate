@@ -404,3 +404,21 @@ def test_the_slash_menu_is_announced_through_the_box_that_has_the_focus():
     assert "editorLinkBox(textarea, false)" in closer
     active = _function(editor, "editorSetActive")
     assert 'editorMenuState.textarea?.el?.setAttribute("aria-activedescendant", row.id)' in active
+
+
+# WCAG 2.5.8: the Appearance sliders (and every other range input) were
+# 144x16, under the 24 px target floor; a range has no box of its own, so the
+# floor is the checkbox's `--target-min` rule restated for it.
+def test_a_range_input_keeps_the_target_floor():
+    forms = (CSS / "01-forms-settings.css").read_text(encoding="utf-8")
+    assert re.search(r'^input\[type="range"\] \{\s*min-height: var\(--target-min\);\s*\}', forms, re.M)
+
+
+# Settings, Appearance at 390: the zoom row (minus, slider, plus, value, Reset)
+# is 264 px wide with 44 px buttons, and the slider was squeezed to 24 px, a
+# slider nobody can land a finger on (scratchpad/ui-sweeps/a11ysurfaces.js,
+# measured 24x44). The row wraps and the slider keeps 8rem.
+def test_the_zoom_slider_keeps_a_usable_width_on_a_phone():
+    lazy = (CSS / "settings-controls-lazy.css").read_text(encoding="utf-8")
+    assert re.search(r"\.setting-control:has\(> #zoom-slider\) \{\s*flex-wrap: wrap;", lazy)
+    assert re.search(r"#zoom-slider \{\s*flex: 1 1 8rem;\s*min-width: 8rem;", lazy)

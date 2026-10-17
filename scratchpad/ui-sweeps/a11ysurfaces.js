@@ -56,7 +56,8 @@ const AUDIT = ({ scope, floor }) => {
     const r = e.getBoundingClientRect();
     const name = nameOf(e);
     if (!name && !(e.getAttribute('role') === 'presentation')) out.push(['noname', desc(e), `${Math.round(r.width)}x${Math.round(r.height)}`]);
-    const skipSize = e.tagName === 'A' && e.closest('p, li, .md, .note-body') && !e.closest('nav');
+    //: Inline in a sentence (2.5.8's inline exception): a link, a .linklike button, a role=link span.
+    const skipSize = (e.tagName === 'A' && e.closest('p, li, .md, .note-body') && !e.closest('nav')) || e.matches('.linklike, [role=link]');
     const isCbLabel = e.tagName === 'INPUT' && ['checkbox', 'radio'].includes(e.type) && e.labels?.length;
     let rr = r;
     if (isCbLabel) rr = e.labels[0].getBoundingClientRect();
@@ -76,7 +77,8 @@ const AUDIT = ({ scope, floor }) => {
       return true;
     };
     if (!hidden && !skipSize && Math.min(rr.width, rr.height) < floor - 0.5 && getComputedStyle(e).pointerEvents !== 'none' && !spaced()) out.push(['size', desc(e), `${Math.round(rr.width * 10) / 10}x${Math.round(rr.height * 10) / 10}`, name.slice(0, 24)]);
-    if (e.tabIndex < 0 && !e.closest('[role=listbox], [role=menu], [role=tablist], [role=radiogroup], [role=grid]') && !e.hasAttribute('data-roving') && !e.matches('.visually-hidden') && ['BUTTON', 'A', 'INPUT', 'SELECT', 'TEXTAREA'].includes(e.tagName) && !e.disabled) out.push(['tabindex-1', desc(e), name.slice(0, 24)]);
+    //: A roving row (a note card, a calendar week's day head) keeps its inner buttons at -1 until the row has the focus.
+    if (e.tabIndex < 0 && !e.closest('li[tabindex], [data-roving-off], .timeline-cal-dayhead, [role=listbox], [role=menu], [role=tablist], [role=radiogroup], [role=grid]') && !e.hasAttribute('data-roving') && !e.matches('.visually-hidden') && ['BUTTON', 'A', 'INPUT', 'SELECT', 'TEXTAREA'].includes(e.tagName) && !e.disabled) out.push(['tabindex-1', desc(e), name.slice(0, 24)]);
   }
   return { findings: out };
 };

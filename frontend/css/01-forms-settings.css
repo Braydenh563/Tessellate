@@ -836,6 +836,11 @@ input[type="checkbox"] {
   min-width: var(--target-min);
   min-height: var(--target-min);
 }
+/* A slider's thumb is its target and a range has no box of its own: 16px tall
+   measured on the three Appearance sliders, under WCAG 2.5.8's 24. */
+input[type="range"] {
+  min-height: var(--target-min);
+}
 /* **The exceptions, and getting this list wrong broke every toggle in the
    app once already.** Two different patterns opt out:
    1. A checkbox whose *visible* control is drawn by a sibling is clipped to
