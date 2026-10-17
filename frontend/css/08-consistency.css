@@ -9630,8 +9630,8 @@ aside[data-resizable].sidebar-collapsed {
 }
 aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.sidebar-resize):not(.sidebar-rail-name) {
   transform: var(--sb-peek-transform);
-  transition: opacity calc(var(--ui-fast) + (var(--ui-slow) - var(--ui-fast)) * var(--sb-peek)) var(--ease-out) calc(var(--ui-fast) * var(--sb-peek)),
-    transform calc(var(--ui-fast) + (var(--ui-slow) - var(--ui-fast)) * var(--sb-peek)) var(--ease-out) calc(var(--ui-fast) * var(--sb-peek));
+  transition: opacity var(--sb-peek-time) var(--ease-out) var(--sb-peek-delay),
+    transform var(--sb-peek-time) var(--ease-out) var(--sb-peek-delay);
 }
 /* Peeked (the pointer over the aside, or a keyboard focus inside it; see
    07-whiteboard-misc.css for why the children read variables). The id rule

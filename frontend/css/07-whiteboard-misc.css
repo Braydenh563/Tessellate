@@ -480,11 +480,13 @@
 .sidebar-collapsed {
   --sb-peek: 0;
   --sb-peek-events: none;
+  --sb-peek-time: calc(var(--ui-fast) + (var(--ui-slow) - var(--ui-fast)) * var(--sb-peek));
+  --sb-peek-delay: calc(var(--ui-fast) * var(--sb-peek));
 }
 .sidebar-collapsed>*:not(.sidebar-collapse-toggle):not(.sidebar-resize):not(.sidebar-rail-name) {
   opacity: var(--sb-peek);
   pointer-events: var(--sb-peek-events);
-  transition: opacity calc(var(--ui-fast) + (var(--ui-slow) - var(--ui-fast)) * var(--sb-peek)) var(--ease-out) calc(var(--ui-fast) * var(--sb-peek));
+  transition: opacity var(--sb-peek-time) var(--ease-out) var(--sb-peek-delay);
 }
 /* Hover-peek */
 .layout-sidebar-collapsed>.sidebar-collapsed:hover,
@@ -4117,13 +4119,10 @@ summary:not(.icon-only):not(.icon-button) {
    input keeps its 16px font, matching the button's smaller one would fix
    the height by reintroducing the iOS zoom-on-focus that 16px exists to
    avoid. */
-.row.field-row {
-  --field-row-h: var(--control-h-lg);
-}
 .row.field-row > input,
 .row.field-row > button,
 .row.field-row > .select-shell > .select-opener {
-  min-height: var(--field-row-h);
+  min-height: var(--control-h-lg);
 }
 .row.field-row > input {
   padding-block: 0;

@@ -2062,7 +2062,6 @@ button.recording.live-level {
      reduced motion keeps a slow breathe of the bars below instead of
      nothing. */
   --sk-bar: color-mix(in srgb, var(--ink) 10%, transparent);
-  --sk-sheen: color-mix(in srgb, var(--ink) 7%, transparent);
   position: relative;
   overflow: hidden;
   height: 3.2rem;
@@ -2073,7 +2072,7 @@ button.recording.live-level {
      (3.3 widths a second, twice that mid-ease). Now a 50%-wide band on a 200%
      image that crosses the box once, 2 box-widths in 2s, eased, resting
      off-screen at both ends of the loop. */
-  background: linear-gradient(100deg, transparent 25%, var(--sk-sheen) 50%, transparent 75%) var(--card);
+  background: linear-gradient(100deg, transparent 25%, color-mix(in srgb, var(--ink) 7%, transparent) 50%, transparent 75%) var(--card);
   background-size: 200% 100%;
   animation: shimmer 2s ease-in-out infinite;
   margin-bottom: 0.5rem;
