@@ -44,6 +44,11 @@ _PRUNE_DIRS = frozenset({".git", ".venv", "node_modules", "__pycache__", ".gate"
 #: Never walked into: directories by path relative to the root.
 _PRUNE_PATHS = frozenset({(".claude", "worktrees")})
 
+#: SQLite's sidecar files. A test that opens the app's default `data/` database
+#: makes and removes them while the suite runs, so a cached walk and a fresh one
+#: disagree about them; no scanner reads them.
+_TRANSIENT = ("-shm", "-wal", "-journal")
+
 # One entry per file: (path, parts relative to ROOT).
 _Entry = tuple[Path, tuple[str, ...]]
 
@@ -56,7 +61,7 @@ def _walk_top(top: str) -> tuple[_Entry, ...]:
     for dirpath, dirnames, filenames in os.walk(base):
         rel = Path(dirpath).relative_to(ROOT).parts
         dirnames[:] = [d for d in dirnames if d not in _PRUNE_DIRS and (*rel, d) not in _PRUNE_PATHS]
-        out.extend((Path(dirpath, name), (*rel, name)) for name in filenames if name not in _PRUNE_DIRS)
+        out.extend((Path(dirpath, name), (*rel, name)) for name in filenames if name not in _PRUNE_DIRS and not name.endswith(_TRANSIENT))
     out.sort(key=lambda entry: entry[0])
     return tuple(out)
 

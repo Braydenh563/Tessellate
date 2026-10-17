@@ -38,7 +38,7 @@ def test_the_whole_repo_matches_a_fresh_walk_less_the_pruned_directories():
     for dirpath, dirnames, filenames in os.walk(ROOT):
         here = Path(dirpath)
         dirnames[:] = [d for d in dirnames if d not in pruned and here / d != ROOT / ".claude" / "worktrees"]
-        expected.extend(here / name for name in filenames if name not in pruned)
+        expected.extend(here / name for name in filenames if name not in pruned and not name.endswith(("-shm", "-wal", "-journal")))
     assert repo_files() == sorted(expected)
     assert repo_files(ROOT, suffixes=(".bat",)) == sorted(p for p in expected if p.name.endswith(".bat"))
 
