@@ -2,7 +2,7 @@
 
 Generated 2026-10-17 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 5955, frontend ids 2509, CSS sections 495, backend routes 607, backend modules 5635, test files 1225, tests 11107, plan headings 957.
+Counts: frontend functions 5955, frontend ids 2509, CSS sections 495, backend routes 607, backend modules 5636, test files 1226, tests 11109, plan headings 957.
 
 ## Frontend functions (5955)
 
@@ -10045,13 +10045,13 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/graph/local/{entry_id}` | GET | `graph_local` | src/tessellate/api/routes_graph.py:1203 |
 | `/graph/match` | GET | `graph_match` | src/tessellate/api/routes_graph.py:328 |
 | `/graph/path` | GET | `graph_path` | src/tessellate/api/routes_graph.py:1553 |
-| `/graph/pin/{node_id}` | PUT | `pin_node` | src/tessellate/api/routes_graph.py:1755 |
-| `/graph/pins` | PUT | `pin_nodes` | src/tessellate/api/routes_graph.py:1811 |
+| `/graph/pin/{node_id}` | PUT | `pin_node` | src/tessellate/api/routes_graph.py:1767 |
+| `/graph/pins` | PUT | `pin_nodes` | src/tessellate/api/routes_graph.py:1824 |
 | `/graph/structure` | GET | `graph_structure` | src/tessellate/api/routes_graph.py:1327 |
 | `/graph/topics/name` | PUT | `name_topic` | src/tessellate/api/routes_graph.py:1402 |
 | `/graph/topics/of` | GET | `graph_topics_of` | src/tessellate/api/routes_graph.py:1365 |
 | `/graph/topics/summary` | POST | `topic_summary` | src/tessellate/api/routes_graph.py:1420 |
-| `/graph/unpin-all` | POST | `unpin_all_nodes` | src/tessellate/api/routes_graph.py:1849 |
+| `/graph/unpin-all` | POST | `unpin_all_nodes` | src/tessellate/api/routes_graph.py:1860 |
 | `/greeting` | GET | `greeting` | src/tessellate/api/routes_insights.py:172 |
 | `/hardware` | GET | `hardware_memory` | src/tessellate/api/routes_models.py:696 |
 | `/hardware` | PUT | `save_hardware` | src/tessellate/api/routes_models.py:704 |
@@ -10452,7 +10452,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (5635)
+## Backend modules (5636)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14256,13 +14256,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `upload_media` | src/tessellate/api/routes_files.py:1296 |
 | `vision_ocr_media` | src/tessellate/api/routes_files.py:4057 |
 
-### src/tessellate/api/routes_graph.py (42)
+### src/tessellate/api/routes_graph.py (43)
 
 | Name | File:line |
 |---|---|
 | `PinBody` | src/tessellate/api/routes_graph.py:1746 |
-| `PinRow` | src/tessellate/api/routes_graph.py:1799 |
-| `PinsBody` | src/tessellate/api/routes_graph.py:1807 |
+| `PinRow` | src/tessellate/api/routes_graph.py:1812 |
+| `PinsBody` | src/tessellate/api/routes_graph.py:1820 |
 | `TopicNameBody` | src/tessellate/api/routes_graph.py:1397 |
 | `TopicSummaryBody` | src/tessellate/api/routes_graph.py:1414 |
 | `_add_attachment_nodes` | src/tessellate/api/routes_graph.py:620 |
@@ -14284,6 +14284,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_note_texts` | src/tessellate/api/routes_graph.py:151 |
 | `_path_node` | src/tessellate/api/routes_graph.py:1316 |
 | `_payload_key` | src/tessellate/api/routes_graph.py:669 |
+| `_pin_target` | src/tessellate/api/routes_graph.py:1757 |
 | `_preview` | src/tessellate/api/routes_graph.py:196 |
 | `_preview_line` | src/tessellate/api/routes_graph.py:221 |
 | `_similarity_edges` | src/tessellate/api/routes_graph.py:230 |
@@ -14297,11 +14298,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `graph_structure` | src/tessellate/api/routes_graph.py:1328 |
 | `graph_topics_of` | src/tessellate/api/routes_graph.py:1366 |
 | `name_topic` | src/tessellate/api/routes_graph.py:1403 |
-| `pin_node` | src/tessellate/api/routes_graph.py:1756 |
-| `pin_nodes` | src/tessellate/api/routes_graph.py:1812 |
+| `pin_node` | src/tessellate/api/routes_graph.py:1768 |
+| `pin_nodes` | src/tessellate/api/routes_graph.py:1825 |
 | `reset_graph_cache` | src/tessellate/api/routes_graph.py:135 |
 | `topic_summary` | src/tessellate/api/routes_graph.py:1421 |
-| `unpin_all_nodes` | src/tessellate/api/routes_graph.py:1850 |
+| `unpin_all_nodes` | src/tessellate/api/routes_graph.py:1861 |
 
 ### src/tessellate/api/routes_help.py (8)
 
@@ -17591,7 +17592,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11107)
+## Tests (11109)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18426,6 +18427,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_plan_hygiene.py | 7 |
 | tests/test_popup_agent_persona_avatar.py | 3 |
 | tests/test_portable_strftime.py | 1 |
+| tests/test_pr189_security.py | 2 |
 | tests/test_preferences_api.py | 27 |
 | tests/test_preferences_roundtrip.py | 4 |
 | tests/test_prefs_module.py | 6 |
