@@ -3646,11 +3646,9 @@ Not verified: A real disk failure or power cut; damage was made by overwriting p
 
 ## Left by the open-rows agent (time reader, 2026-10-17)
 
-Closed (see HISTORY, "OPEN.md rows closed, 2026-10-17"): row 464 and five time-reader gaps found while probing. Still open, none built:
+Closed (see HISTORY, "OPEN.md rows closed, 2026-10-17"): row 464 and the time-reader gaps found while probing. Still open, none built:
 
-- Clocks that ask "Remind you when?": "3 o'clock", "at three", "at ten thirty", "at 1530", "at 15h30", "in 1h30", "eod" are unread by `recognise` and `when.resolve`.
-- "in two weeks on wednesday" reads 5 October 15:55 (the weekday is dropped).
-- "remind me at midnight to see the new year" is ambiguous between tonight and New Year's Eve.
+- `when.resolve("in 2 weeks at 3pm")` still reads 15:55 on the day: the clock after a day-sized offset is applied only in `reminder_parser.parse_relative` (`_with_clock`), not in `resolve`. A bare "at one" ("lunch at one") is deliberately unread, since "at one point" is as common; say so to the owner if it matters.
 - A `before:tuesday` search operator is an owner decision (which side of the day it excludes).
 - chat-agent.js result box budget line (row 243) is blocked by the eager-script gzip caps.
 

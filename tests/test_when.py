@@ -480,3 +480,53 @@ def test_a_reminder_keeps_its_words_around_a_week_offset_and_a_weekday():
     typed = when.parse_reminder_text(reminder_parser.heard("dentst in 2 wks on wensday at 3pm"), NOW)
     assert typed is not None and typed["due_at"].strftime("%Y-%m-%d %H:%M") == "2026-10-07 15:00"
     assert typed["text"] == "Dentist"
+
+
+@pytest.mark.parametrize(
+    ("phrase", "expected"),
+    [
+        ("midnight", "2026-09-22 00:00"),
+        ("at midnight", "2026-09-22 00:00"),
+        ("midnight tonight", "2026-09-22 00:00"),
+        ("tomorrow at midnight", "2026-09-23 00:00"),
+        ("midnight on 5 october", "2026-10-06 00:00"),
+        ("midnight on new year's eve", "2027-01-01 00:00"),
+        ("midnight at new year", "2027-01-01 00:00"),
+        ("new year at midnight", "2027-01-01 00:00"),
+        ("midnight on new years eve", "2027-01-01 00:00"),
+    ],
+)
+def test_midnight_is_the_next_one_unless_the_phrase_names_the_new_year(phrase, expected):
+    """"Remind me at midnight to see the new year" read 2 January: midnight
+    belongs to the night of the day it is said with (so "midnight on 5
+    october" is the turn into the 6th), and "new year" is 1 January, which put
+    it a night late. Decided: midnight alone is tonight's, the next one; a date
+    keeps that rule; "new year" (not "new year's eve" or "new year's day", which
+    name their day and follow the rule) is the midnight that opens the year."""
+    got = when.resolve(phrase, NOW)
+    assert got is not None and got.strftime("%Y-%m-%d %H:%M") == expected, phrase
+
+
+def test_midnight_said_just_after_midnight_is_the_next_one():
+    after = NOW.replace(day=22, hour=0, minute=20)
+    got = when.resolve("at midnight", after)
+    assert got is not None and got.strftime("%Y-%m-%d %H:%M") == "2026-09-23 00:00"
+
+
+def test_the_new_year_is_the_thing_to_do_not_the_time_in_a_reminder():
+    got = when.parse_reminder_text("remind me at midnight to see the new year", NOW)
+    assert got is not None
+    assert got["due_at"].strftime("%Y-%m-%d %H:%M") == "2027-01-01 00:00"
+    assert got["text"] == "See the new year"
+    plain = when.parse_reminder_text("remind me at midnight to lock up", NOW)
+    assert plain is not None and plain["due_at"].strftime("%Y-%m-%d %H:%M") == "2026-09-22 00:00"
+    assert plain["text"] == "Lock up"
+    dated = when.parse_reminder_text("call nan on new year's day at 9am", NOW)
+    assert dated is not None and dated["text"] == "Call nan"
+
+
+def test_the_owners_typos_around_midnight_and_the_new_year_are_put_right_first():
+    from tessellate.ai import reminder_parser
+
+    got = when.parse_reminder_text(reminder_parser.heard("remnd me at midnite to see the new yaer"), NOW)
+    assert got is not None and got["due_at"].strftime("%Y-%m-%d %H:%M") == "2027-01-01 00:00", got

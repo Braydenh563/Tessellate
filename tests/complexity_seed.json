@@ -99,7 +99,7 @@
  "src/tessellate/ai/recognise.py::_recurrence_cands": 25,
  "src/tessellate/ai/recognise.py::_time_cands": 22,
  "src/tessellate/ai/recognise.py::days_since": 19,
- "src/tessellate/ai/recognise.py::parse_reminder_text": 33,
+ "src/tessellate/ai/recognise.py::parse_reminder_text": 27,
  "src/tessellate/ai/recognise.py::recognise": 18,
  "src/tessellate/ai/recognise.py::resolve": 44,
  "src/tessellate/ai/recognise.py::span": 60,

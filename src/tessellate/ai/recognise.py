@@ -491,7 +491,7 @@ def resolve(phrase: str, now: datetime, *, locale: str | None = None) -> datetim
     if clock is not None:
         hour, minute, meridiem = clock
         if hour == 24:
-            return datetime.combine((day or now.date()) + timedelta(days=1), time(0), now.tzinfo)
+            return _midnight(day or now.date(), text, now)
         hour = _hour24(hour, meridiem, evening)
         if day is None and meridiem is None and hour < 12:
             # "at 9" with no day: the next 9 o'clock, morning or evening.
@@ -508,6 +508,17 @@ def resolve(phrase: str, now: datetime, *, locale: str | None = None) -> datetim
     elif at <= now and day == now.date() and _WEEKDAY.search(text):
         at += timedelta(days=7)  # "Monday 9am", said on a Monday afternoon
     return at
+
+
+def _midnight(day: date, text: str, now: datetime) -> datetime:
+    """The midnight a phrase means. Midnight belongs to the night of the day it
+    is said with, so alone it is tonight's (the next one) and "midnight on 5
+    october" is the turn into the 6th. The one exception, decided 2026-10-17:
+    "new year" (not "new year's eve" or "new year's day", which name their day
+    and follow the rule) is the midnight that opens the year, so "remind me at
+    midnight to see the new year" is 00:00 on 1 January, not a night later."""
+    opens = re.search(r"\bnew year(?!'?s? (?:eve|day)\b)", text)
+    return datetime.combine(day + timedelta(days=0 if opens else 1), time(0), now.tzinfo)
 
 
 def _part_alone(text: str) -> str | None:
@@ -672,7 +683,7 @@ def parse_reminder_text(
         at = first_of(repeat.value, now) or at
     if at is None:
         return None
-    cuts = [(s.start, s.end) for s in spans if s.kind in _TIME_KINDS or (s.kind == "duration" and s.text.lower().startswith("in "))]
+    cuts = [(s.start, s.end) for s in spans if _is_time_words(s, text)]
     priority = "normal"
     said = _PRIORITY.search(text)
     if said:
@@ -682,14 +693,7 @@ def parse_reminder_text(
     for start, end in sorted(cuts, reverse=True):
         rest = rest[:start] + " " + rest[end:]
     rest = strip_lead(re.sub(r"\s+", " ", rest).strip(" ,.;:-"))
-    #: A dangling "on" or "at" left by the cut, dropped by word rather than
-    #: by a `\s+...$` pattern, which backtracks on a long run of spaces.
-    words = rest.split(" ")
-    while words and words[-1].lower() in {"on", "at", "by", "for", "every", "each"}:
-        words.pop()
-    while words and words[0].lower() in {"on", "at", "by"}:
-        words.pop(0)
-    rest = " ".join(words).strip(" ,.;:-")
+    rest = _trim_dangling(rest)
     if not rest:
         rest = text.strip() or "Reminder"
     parsed = {
@@ -700,6 +704,33 @@ def parse_reminder_text(
     }
     _repeat_and_alert(parsed, repeat, spans)
     return parsed
+
+
+def _trim_dangling(rest: str) -> str:
+    """The words a cut time left stranded. A dangling "on" or "at", dropped by
+    word rather than by a `\\s+...$` pattern, which backtracks on a long run
+    of spaces; and the "to" that "remind me at midnight to lock up" has left
+    in front ("To lock up") once the "at" is gone, which `strip_lead` could
+    not see through it."""
+    words = rest.split(" ")
+    while words and words[-1].lower() in {"on", "at", "by", "for", "every", "each"}:
+        words.pop()
+    lead = 0
+    while lead < len(words) and words[lead].lower() in {"on", "at", "by"}:
+        lead += 1
+    if lead and words[lead:lead + 2][:1] == ["to"] and len(words) > lead + 1:
+        lead += 1
+    return " ".join(words[lead:]).strip(" ,.;:-")
+
+
+def _is_time_words(found: Span, text: str) -> bool:
+    """Whether a span's words are the reminder's time and so come out of its
+    text. A holiday after "the" is the thing to do ("see the new year"), not
+    the time, which is still read from it."""
+    if found.kind == "duration":
+        return found.text.lower().startswith("in ")
+    thing = re.match(r"(?:new year|christmas)", found.text.lower()) and text[:found.start].lower().endswith("the ")
+    return found.kind in _TIME_KINDS and not thing
 
 
 def _repeat_and_alert(parsed: dict, repeat: Span | None, spans: list) -> None:
