@@ -257,7 +257,10 @@ function atlasTailFrame(tail, now) {
   //: `data-atlas-hidden`: a hidden window, or the app locked (atlas.js).
   const live = atlasMotionOK(box) && !box.classList.contains("atl-off") && !document.hidden && !document.documentElement.hasAttribute("data-atlas-hidden");
   //: The rings' and the planets' loops run and rest with it (`atlasRingLoops`).
-  for (const anim of box.atlasLoops || []) if (live !== (anim.playState === "running")) live ? anim.play() : anim.pause();
+  //: And hold while it is carried or thrown, as its CSS loops do there
+  //: (atlas-lazy.css, B87a): drawn every frame then, each one restyles.
+  const loops = live && !box.closest("#nm-buddy.nm-buddy-dragging");
+  for (const anim of box.atlasLoops || []) if (loops !== (anim.playState === "running")) loops ? anim.play() : anim.pause();
   //: Thirty a second: each draw repaints the tail's layer.
   tail.tick += 1;
   //: The props' own loops, while each is shown (`atlasPropsFrame`).
@@ -482,9 +485,16 @@ function atlasPropLoops(box) {
 //: playing state is the pacer's to set while one runs. Read every eighth
 //: frame of the tail's loop: a prop's own fade-in is 0.16s, so it is moving
 //: by the time it is whole.
+//: A prop shows by a class (an act, a mood), which wakes the rig
+//: (`atlasRigWake`, `box.atlasDirtyAt`): it is looked for in the 1.5 s after
+//: a wake, its fade's time and more, and not again until the next (B87a: an
+//: opacity read every eighth frame was 22 forced restyles in a 1.3 s carry).
 function atlasPropsFrame(box, live, tick) {
   const loops = box.atlasPropLoops;
   if (!loops?.length || (live && tick % 8)) return;
+  if (!live) box.atlasPropsAt = 0;
+  else if (box.atlasPropsAt > (box.atlasDirtyAt || 0) + 1500) return;
+  else box.atlasPropsAt = performance.now();
   const shown = new Map();
   for (const loop of loops) {
     if (!shown.has(loop.root)) shown.set(loop.root, live && +getComputedStyle(loop.root).opacity > 0.05);
@@ -532,17 +542,20 @@ function atlasBreathFrame(box, live, now) {
   box.atlasTorsos ||= [...box.querySelectorAll(".atl-layer-body .nmb-torso")];
   let k = 0;
   if (live) {
-    //: The rise's animation is looked up once in a while, not every step:
-    //: `getAnimations` brings the page's style up to date to answer, a
-    //: second recalc each step.
-    if (!box.atlasRise || now > (box.atlasRiseAt || 0)) {
-      box.atlasRise = box.querySelector(".atl-lw-breathe")?.getAnimations()[0] || null;
-      box.atlasRisePeriod = box.atlasRise ? +box.atlasRise.effect.getComputedTiming().duration : 0;
+    //: The rise's clock is read once in a while, not every step, and run on
+    //: by the wall's between: `getAnimations`, and an animation's
+    //: `playState` and `currentTime`, each bring the page's style up to date
+    //: to answer (B87a: 81 forced restyles and layouts in 1.3 s of a carry).
+    if (now > (box.atlasRiseAt || 0)) {
+      const rise = box.querySelector(".atl-lw-breathe")?.getAnimations()[0] || null;
+      const at = rise && rise.playState !== "idle" ? rise.currentTime : null;
+      box.atlasRisePeriod = at !== null ? +rise.effect.getComputedTiming().duration : 0;
+      box.atlasRiseOff = at !== null ? +at - now : null;
       box.atlasRiseAt = now + 5000;
     }
-    const rise = box.atlasRise?.playState === "idle" ? null : box.atlasRise;
+    const rise = box.atlasRiseOff !== null && box.atlasRisePeriod > 0;
     const period = rise ? box.atlasRisePeriod : box.dataset.atlasLook === "feminine" ? 4000 : 4600;
-    const at = rise && rise.currentTime !== null ? +rise.currentTime : now;
+    const at = rise ? now + box.atlasRiseOff : now;
     k = (1 - Math.cos((2 * Math.PI * at) / period)) / 2;
   }
   const scale = k ? `${(1 + ATLAS_BREATH_SWELL[0] * k).toFixed(4)} ${(1 + ATLAS_BREATH_SWELL[1] * k).toFixed(4)}` : "";

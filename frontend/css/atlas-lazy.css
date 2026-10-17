@@ -50,3 +50,11 @@
    them as it does every pose. */
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="calm"] { --atl-ar0: -16deg; --atl-al0: 12deg; --atl-ar1: -52deg; --atl-al1: 8deg; --atl-ar2: 34deg; --atl-al2: -30deg; }
 .nm-atlas[data-atlas-look="feminine"][data-atlas-mood="calm"] { --atl-ar0: -26deg; --atl-al0: 8deg; --atl-ar1: -48deg; --atl-al1: 10deg; --atl-ar2: 24deg; --atl-al2: -34deg; }
+/* Carried or thrown (B87a), the slow idle loops hold where they are and
+   go on from there when it lands. While a main frame is drawn every
+   vsync, as it is for the whole carry and flight, Chromium restyles each
+   running animation's element every frame, composited or not: the flight
+   at 1x was 10,169 style invalidations in 1.3 s, 3,000 of them the rings'
+   and the planets' loops (atlasinval.js). The legs' flick while held
+   (`atl-lower-flick`) is the carry's own and keeps running. */
+#nm-buddy.nm-buddy-dragging :is(.atl-lw, .atl-lw-breathe, .atl-orbit-arm, .atl-orbiter) { animation-play-state: paused !important; }
