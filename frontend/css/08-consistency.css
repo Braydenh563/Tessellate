@@ -8031,7 +8031,7 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
     &.atl-layer-neb-front { animation-delay: -5.4s; }
     &.atl-layer-lower { animation-delay: -2.8s; }
     &[data-atlas-mood="happy"].atl-layer-tail, &[data-atlas-mood="delighted"].atl-layer-tail, &[data-atlas-mood="love"].atl-layer-tail, &[data-atlas-mood="laughing"].atl-layer-tail { animation: atl-wag 0.8s ease-in-out infinite alternate; }
-    &.atl-layer :is(.atl-rig, .atl-blink.nm-blinks, .atl-blink.nm-blinks .atl-lid, .atl-blink.nm-blinks > *, .atl-sway, .atl-mane, .atl-tail-swish, .atl-ring-drift, .atl-ring-glint, .atl-aura, .atl-core-glow, .atl-mood, .atl-float) { animation: none; }
+    &.atl-layer :is(.atl-rig, .atl-blink.nm-blinks, .atl-blink.nm-blinks .atl-lid, .atl-blink.nm-blinks > :is(.atl-lashes,.atl-liner:not(.atl-liner-low)), .atl-sway, .atl-mane, .atl-tail-swish, .atl-ring-drift, .atl-ring-glint, .atl-aura, .atl-core-glow, .atl-mood, .atl-float) { animation: none; }
     &[data-atlas-mood="love"].atl-layer-fx-1 { animation: atl-rise 2.6s ease-out infinite; }
     &[data-atlas-mood="love"].atl-layer-fx-2 { animation: atl-rise 2.6s ease-out -1.3s infinite; }
     &[data-atlas-mood="sleepy"].atl-layer-fx-1 { animation: atl-z-drift 4.2s ease-in-out infinite; }
@@ -9621,24 +9621,28 @@ aside[data-resizable] > :not(.sidebar-collapse-toggle):not(.sidebar-resize):not(
     translate var(--ui-fast) var(--ease-out), scale var(--ui-fast) var(--ease-out),
     background-color var(--ui-fast) var(--ease-out);
 }
-aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.sidebar-resize):not(.sidebar-rail-name) {
-  transform: translateX(calc(var(--space-3) * -1));
-  transition: opacity var(--ui-fast) var(--ease-out), transform var(--ui-fast) var(--ease-out);
+aside[data-resizable].sidebar-collapsed {
+  --sb-peek-transform: translateX(calc(var(--space-3) * -1));
 }
 /* Skill logs folds to the right (RIGHT_SIDE_SIDEBARS). */
-#skills-sidebar[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.sidebar-resize):not(.sidebar-rail-name) {
-  transform: translateX(var(--space-3));
+#skills-sidebar[data-resizable].sidebar-collapsed {
+  --sb-peek-transform: translateX(var(--space-3));
 }
-.layout-sidebar-collapsed > aside[data-resizable].sidebar-collapsed:hover > :not(.sidebar-collapse-toggle):not(.sidebar-resize):not(.sidebar-rail-name),
-.layout-sidebar-collapsed > #skills-sidebar[data-resizable].sidebar-collapsed:hover > :not(.sidebar-collapse-toggle):not(.sidebar-resize):not(.sidebar-rail-name),
-.layout-sidebar-collapsed > aside[data-resizable].sidebar-collapsed:is(:focus-visible, :has(:focus-visible)) > :not(.sidebar-collapse-toggle):not(.sidebar-resize):not(.sidebar-rail-name),
-.layout-sidebar-collapsed > #skills-sidebar[data-resizable].sidebar-collapsed:is(:focus-visible, :has(:focus-visible)) > :not(.sidebar-collapse-toggle):not(.sidebar-resize):not(.sidebar-rail-name) {
-  /* The id rule above out-ranks this one, so Skill logs' head stayed shifted
-     8px toward its edge while peeked, under the toggle (INBOX 495): the
-     second selector matches it. */
-  transform: none;
-  transition: opacity var(--ui-slow) var(--ease-out) var(--ui-fast),
-    transform var(--ui-slow) var(--ease-out) var(--ui-fast);
+aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.sidebar-resize):not(.sidebar-rail-name) {
+  transform: var(--sb-peek-transform);
+  transition: opacity calc(var(--ui-fast) + (var(--ui-slow) - var(--ui-fast)) * var(--sb-peek)) var(--ease-out) calc(var(--ui-fast) * var(--sb-peek)),
+    transform calc(var(--ui-fast) + (var(--ui-slow) - var(--ui-fast)) * var(--sb-peek)) var(--ease-out) calc(var(--ui-fast) * var(--sb-peek));
+}
+/* Peeked (the pointer over the aside, or a keyboard focus inside it; see
+   07-whiteboard-misc.css for why the children read variables). The id rule
+   above out-ranks the class rule, so Skill logs' head stayed shifted 8px
+   toward its edge while peeked, under the toggle (INBOX 495): the second
+   selector of each pair matches it. */
+.layout-sidebar-collapsed > aside[data-resizable].sidebar-collapsed:hover,
+.layout-sidebar-collapsed > aside[data-resizable].sidebar-collapsed:is(:focus-visible, :has(:focus-visible)),
+.layout-sidebar-collapsed > #skills-sidebar[data-resizable].sidebar-collapsed:hover,
+.layout-sidebar-collapsed > #skills-sidebar[data-resizable].sidebar-collapsed:is(:focus-visible, :has(:focus-visible)) {
+  --sb-peek-transform: none;
 }
 /* Focus mode opens the documents sidebar whole as its own panel, folded on
    the page or not; its rows are where they belong there. */
@@ -10257,9 +10261,16 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
    chevron: centres 19.4 and 22, 2.6px apart, ledger 1548). Give the text's
    first line the same height a title line has, `--target-min`, so both
    centres are the anchor. `::first-line` takes `line-height` and follows the
-   user's text size; no number per font size. */
-#entry-list.is-rows > li.row-expanded:not(:has(> .entry-title)) > .entry-content::first-line {
+   user's text size; no number per font size.
+   A row with a title gives the height back with a sibling selector (the title
+   is always the content's earlier sibling), not `:not(:has(> .entry-title))`:
+   a `:has()` anchor over a pseudo-element cannot be narrowed, so every insert
+   in the card restyled the card's whole subtree (tests/test_tab_entry_cost.py). */
+#entry-list.is-rows > li.row-expanded > .entry-content::first-line {
   line-height: var(--target-min);
+}
+#entry-list.is-rows > li.row-expanded > .entry-title ~ .entry-content::first-line {
+  line-height: inherit;
 }
 /* A collapsed row's preview is one line in its own grid column, nowhere near
    the strip, so the float that keeps an opened card's first line out from

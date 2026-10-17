@@ -119,3 +119,79 @@ def test_the_still_motion_blankets_are_a_sheet_that_exists_only_while_a_switch_i
     for source in ((JS / "theme-boot.js").read_text(encoding="utf-8"), (JS / "settings.js").read_text(encoding="utf-8")):
         assert 'getElementById("motion-still-sheet")' in source
         assert re.search(r'\.media = [^;]*"reduced"[^;]*"off"[^;]*"all" : "%s"' % re.escape(CALM), source)
+
+
+def _has_with_universal_descendant(selector: str) -> bool:
+    """True when a compound holding `:has(` is followed by a descendant or
+    child combinator and the subject is `*`, only `:not()`/`:where()` or a
+    `::first-line`/`::first-letter` box."""
+    from tests.test_css_invalidation import _split_top
+
+    norm = re.sub(r"\s*([>+~])\s*", r" \1 ", selector.strip())
+    compounds: list[list] = []
+    for token in (t for t in _split_top(norm, " ") if t):
+        if token in (">", "+", "~"):
+            if compounds:
+                compounds[-1][1] = token
+            continue
+        compounds.append([token, " "])
+    if len(compounds) < 2:
+        return False
+    last = compounds[-1][0]
+    open_ended = (
+        last == "*"
+        or re.fullmatch(r"\*?(:not\([^)]*\)|:where\([^)]*\))+", last) is not None
+        or "::first-line" in last
+        or "::first-letter" in last
+    )
+    return open_ended and any(":has(" in c and comb in (" ", ">") for c, comb in compounds[:-1])
+
+
+def test_the_universal_descendant_detector_knows_the_shape():
+    assert _has_with_universal_descendant("a:is(:focus-visible, :has(:focus-visible)) > :not(.x):not(.y)")
+    assert _has_with_universal_descendant("a:has(:focus-visible)>*:not(.x)")
+    assert _has_with_universal_descendant("li:not(:has(> .t)) > .c::first-line")
+    assert not _has_with_universal_descendant("a:has(:focus-visible)")
+    assert not _has_with_universal_descendant(".steps:has(> :nth-child(2)) > .step::before")
+    assert not _has_with_universal_descendant("a:has(:focus-visible) > .x")
+
+
+def test_no_has_anchor_carries_a_universal_descendant():
+    """Timeline entry at 4x CPU, 2,000 notes, companion off: 46 style recalcs
+    of about 11,000 elements, 624 ms median, one per `appendTimelineRows`
+    chunk. Each chunk restyled the whole Timeline card, 897 elements with its
+    rows locked by `content-visibility` (3,487 without). Cause: a `:has()`
+    anchor whose selector ends in a universal child (`> :not(...)`, `> *`) or a
+    `::first-line` box is invalidated for every descendant, on any ancestor that
+    might hold the anchor, whenever anything under it is inserted. Four rules
+    did it (the collapsed sidebars' keyboard peek in 07 and 08, the opened
+    row's first line, Atlas's blink). The anchor now sets custom properties the
+    children read, and the children are named. One empty append went from 897
+    elements and 50-90 ms to 59-61 elements and 11-14 ms. The whole Timeline
+    entry (scratchpad/ui-sweeps, same session, old and new stylesheet on one
+    server): style 654 to 246 ms and 10,375 to 2,823 restyled elements at 4x,
+    84 to 39 ms and 6,830 to 2,271 at 1x; layout 197 to 130 ms and the worst
+    task 246 to 178 ms at 4x. The hover twin of the peek is in the same
+    anchor rule, so tests/test_hover_focus_pairs.py still reads a twin; the
+    token budget paid for the three `--sb-peek*` tokens by inlining
+    `--measure` and `--outline-step`, each read once."""
+    from tests.test_css_invalidation import _selectors, _split_top
+
+    found = []
+    for sheet in sorted((FRONTEND / "css").glob("*.css")):
+        for line, prelude in _selectors(sheet.read_text(encoding="utf-8")):
+            for selector in _split_top(prelude, ","):
+                if _has_with_universal_descendant(selector):
+                    found.append("%s:%d %s" % (sheet.name, line, selector.strip()[:120]))
+    assert not found, "\n".join(found)
+
+
+def test_the_peek_and_first_line_and_blink_rules_keep_their_new_shape():
+    base = (FRONTEND / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    cons = (FRONTEND / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    assert "--sb-peek: 1" in base and "opacity: var(--sb-peek)" in base
+    assert "--sb-peek-transform: none" in cons and "transform: var(--sb-peek-transform)" in cons
+    assert "li.row-expanded:not(:has(> .entry-title)) > .entry-content::first-line" not in cons
+    assert "> .entry-title ~ .entry-content::first-line" in cons
+    blink = [ln for ln in cons.splitlines() if "&.atl-layer :is(" in ln]
+    assert blink and all(".atl-blink.nm-blinks > *" not in ln for ln in blink)

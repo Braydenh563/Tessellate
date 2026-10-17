@@ -224,7 +224,7 @@ def test_secondary_motion_is_compositor_only_and_still_under_reduced_motion():
     for name in ("atl-idle-sway", "atl-idle-sway-soft", "atl-tail-flow", "atl-neb-flow"):
         assert not re.search(rf"&[^{{\n]*\.atl-layer[^{{\n]*\{{[^}}\n]*{name}", CSS), name
     assert "&.atl-full .atl-mane { animation: atl-hair-flow" in CSS
-    assert "&.atl-layer :is(.atl-rig, .atl-blink.nm-blinks, .atl-blink.nm-blinks .atl-lid, .atl-blink.nm-blinks > *, .atl-sway, .atl-mane," in CSS
+    assert "&.atl-layer :is(.atl-rig, .atl-blink.nm-blinks, .atl-blink.nm-blinks .atl-lid, .atl-blink.nm-blinks > :is(.atl-lashes,.atl-liner:not(.atl-liner-low)), .atl-sway, .atl-mane," in CSS
     assert "&:is(.atl-layer-neb, .atl-layer-neb-front), & .atl-mane, " in CSS
 
 

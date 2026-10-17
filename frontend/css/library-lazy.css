@@ -4683,7 +4683,7 @@ button.ghost.doc-template-choice.wb-template-choice {
 }
 .outline-row {
   --tree-depth: 0;
-  padding-left: calc(var(--tree-depth) * var(--outline-step));
+  padding-left: calc(var(--tree-depth) * 0.8rem); /* the outline's even step (05-sidebars-themes.css, depth is what moves an entry) */
 }
 .outline-h2 { --tree-depth: 1; }
 .outline-h3 { --tree-depth: 2; }

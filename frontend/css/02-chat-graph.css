@@ -13,7 +13,7 @@
      the single biggest reason a wide window makes this app's transcript look
      unlike theirs. The percentage stays as the *narrow*-window rule: `min`
      takes whichever is smaller, so nothing changes below ~1000px. */
-  max-width: min(82%, var(--measure));
+  max-width: min(82%, 54rem); /* the reading measure: the widest a line of prose goes */
   /* The per-message action row floats over this bubble's corner (see
      `.msg-actions`), so the bubble has to be its containing block. */
   position: relative;

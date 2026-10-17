@@ -3009,9 +3009,6 @@ button.outline-twist:focus-visible {
    run right *and* a shorter heading starts further right still, so the
    left edges came out in no order at all. Left-aligned and evenly stepped,
    depth is the only thing that moves an entry. */
-.doc-outline {
-  --outline-step: 0.8rem;
-}
 /* **Depth is carried by weight, colour and a guide line, not by indent
    alone.** Measured with a 21-heading document open: h1 and h2 rows were
    13.6px and h3 rows 12.8px, every one of them weight 400 in the same
