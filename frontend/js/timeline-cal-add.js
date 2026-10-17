@@ -85,10 +85,15 @@ function timelineCalAddBuild(card, close, key, start) {
     tab.title = kind === "event" ? "An event: a meeting note on the day, at its time" : "A reminder at the day and time";
     tab.setAttribute("role", "tab");
     tab.dataset.addKind = kind;
+    tab.id = `timeline-cal-add-tab-${kind}`;
+    tab.setAttribute("aria-controls", `timeline-cal-add-panel-${kind}`);
     tab.addEventListener("click", () => timelineCalAddKind(form, kind));
     form.tabs.appendChild(tab);
     const input = Object.assign(document.createElement("input"), { type: "text", maxLength: 200, className: "prop-value", placeholder: hint });
     const holder = document.createElement("div");
+    holder.id = `timeline-cal-add-panel-${kind}`;
+    holder.setAttribute("role", "tabpanel");
+    holder.setAttribute("aria-labelledby", tab.id);
     holder.appendChild(timelineCalAddRow("What", input, `timeline-cal-add-${kind}`));
     body.appendChild(holder);
     form.words[kind] = { input, holder };

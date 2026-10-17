@@ -157,7 +157,8 @@ def test_the_constellation_has_a_light_well_and_fades_between_themes():
     js = (ROOT / "frontend" / "js" / "dashboard.js").read_text(encoding="utf-8")
     # HSL lightness 250 clamps to white, the card's own colour: no well.
     assert "250 - (y / height) * 10" not in js
-    assert "95 - (y / height) * 4" in js
+    # One gradient from lightness 95 down to 91 (it was 55 strips of 95 - (y / height) * 4).
+    assert "${dark ? 14 : 95}%" in js and "${dark ? 24 : 91}%" in js
     body = js[js.index("function refreshArtForTheme("):].split("\nfunction buildArtParticles", 1)[0]
     assert 'className = "art-veil"' in body
     # No veil, so an instant change, with reduced motion or animations off.

@@ -1885,6 +1885,14 @@ def _figure(raw: str) -> float:
     return int(value) if value.is_integer() else value
 
 
+def _duration_cand(start: int, end: int, seconds: float) -> list[tuple]:
+    try:
+        span = timedelta(seconds=seconds)
+    except OverflowError:  # "last 99999999999999999999 days" is no span
+        return []
+    return [(start, end, "duration", span, "", 0)]
+
+
 def _measure_cands(raw: str, low: str, locale: str | None) -> list[tuple]:
     out = []
     us = (locale or "").lower() in _FAHRENHEIT
@@ -1906,7 +1914,7 @@ def _measure_cands(raw: str, low: str, locale: str | None) -> list[tuple]:
         dimension, _size, said = UNITS[name]
         amount = _figure(found.group(1))
         if dimension == "time":
-            out.append((found.start(), found.end(), "duration", timedelta(seconds=amount * _size), "", 0))
+            out += _duration_cand(found.start(), found.end(), amount * _size)
         elif dimension == "temperature":
             out.append((found.start(), found.end(), "temperature", (amount, said), "", 0))
         else:
