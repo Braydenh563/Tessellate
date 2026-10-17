@@ -240,6 +240,14 @@ def _clock(text: str) -> tuple[int, int, str | None] | None:
     spoken = _rx("spoken_clock").search(text)
     if spoken:
         return _spoken_clock(spoken)
+    worded = next((m for m in _rx("word_clock").finditer(text) if _word_clock_ok(text, m)), None)
+    if worded:
+        return _word_clock(worded)
+    return _digit_clock(text)
+
+
+def _digit_clock(text: str) -> tuple[int, int, str | None] | None:
+    """The first "9", "9:30" or "9pm" in the phrase that is a time."""
     for found in _CLOCK.finditer(text):
         hour, minute = int(found.group(1)), int(found.group(2) or 0)
         meridiem = (found.group(3) or "").replace(".", "") or None
@@ -276,6 +284,44 @@ def _spoken_clock(found: re.Match) -> tuple[int, int, str | None] | None:
     if direction == "to":
         minute, hour = 60 - minute, 12 if hour == 1 else hour - 1
     return hour, minute, (meridiem or "").replace(".", "") or None
+
+
+_WORD_MINUTES = {
+    "fifteen": 15, "twenty": 20, "twenty-five": 25, "twenty five": 25, "thirty": 30, "thirty-five": 35,
+    "thirty five": 35, "forty": 40, "forty-five": 45, "forty five": 45, "fifty": 50, "fifty-five": 55,
+    "fifty five": 55,
+}
+#: Words after a bare word hour that make it a count, not a time ("at three
+#: people"); "at one" alone is never read (it is "at one point" as often).
+_NOT_A_CLOCK_NEXT = frozenset({"of", "more", "x", "people", "point", "time", "with", "another"})
+
+
+def _word_clock(found: re.Match) -> tuple[int, int, str | None] | None:
+    """(hour, minute, "am"/"pm"/None) of "3 o'clock", "at three", "at ten
+    thirty", "at 1530", "at 15h30". The figure forms are 24-hour notation, so
+    their hour is stated, never guessed: 1 to 11 is am, 12 is noon, 0 and
+    13 to 23 stand as written. The word and o'clock forms keep the bare-hour
+    rule (`_hour24`) unless they say am or pm."""
+    got = found.groupdict()
+    if got["o"] or got["w"]:
+        said = got["o"] or got["w"]
+        hour = int(said) if said.isdigit() else _SPOKEN_HOURS[said]
+        meridiem = (got["wa"] or "").replace(".", "") or None
+        return (hour, _WORD_MINUTES.get(got["wm"] or "", 0), meridiem) if 1 <= hour <= 12 else None
+    hour, minute = int(got["hh"] or got["h2"]), int(got["mm"] or got["m2"])
+    if hour > 23:
+        return None
+    return hour, minute, "am" if 1 <= hour <= 11 else "pm" if hour == 12 else None
+
+
+def _word_clock_ok(low: str, found: re.Match) -> bool:
+    """A bare word hour ("at three") is a time unless a count follows it
+    ("at three people"), and never "one" ("at one point")."""
+    got = found.groupdict()
+    if not got["w"] or got["wm"] or got["wa"]:
+        return True
+    rest = low[found.end():].split()
+    return got["w"] != "one" and not (rest and (rest[0].endswith("s") or rest[0] in UNITS or rest[0] in _NOT_A_CLOCK_NEXT))
 
 
 def _hour24(hour: int, meridiem: str | None, evening: bool) -> int:
@@ -1670,6 +1716,16 @@ _SOURCES: dict[str, object] = {
         r"(half|quarter|five|ten|twenty-five|twenty five|twenty|\d{1,2}(?= past)) (past|to) "
         rf"(\d{{1,2}}|{'|'.join(_SPOKEN_HOURS)})(?:\s?(am|pm|a\.m\.|p\.m\.))?(?![\w:])"
     ),
+    #: Clocks said or written without a colon: "3 o'clock", "at three", "at ten
+    #: thirty", "at 1530", "at 15h30". The figure forms need "at" (or the like),
+    #: so "the 1530 train" and "1h30" (a duration) are not clocks.
+    "word_clock": lambda: (
+        rf"(?<![\w:])(?:(?:(?:at|by|around|about) )?(?P<o>\d{{1,2}}|{'|'.join(_SPOKEN_HOURS)}) ?o['’]? ?clock"
+        rf"|(?:at|by|around|about) (?P<w>{'|'.join(_SPOKEN_HOURS)})(?: (?P<wm>{'|'.join(sorted(_WORD_MINUTES, key=len, reverse=True))}))?"
+        r"(?: ?(?P<wa>am|pm|a\.m\.|p\.m\.))?"
+        r"|(?:at|by|around|about) (?P<hh>[01]\d|2[0-3])(?P<mm>[0-5]\d)(?: ?(?:h|hrs|hours))?"
+        r"|(?:at|by|around|about) (?P<h2>\d{1,2})h(?P<m2>[0-5]\d))(?![\w:/-])"
+    ),
     "time_range": r"\b(?:from\s)?(\d{1,2})(?::(\d{2}))?\s?(am|pm)?\s?(?:-|–|to|until|till)\s?(\d{1,2})(?::(\d{2}))?\s?(am|pm)\b",
     "date_range": r"\b(?:from|between)\s",
     "anchored": lambda: rf"\b(\d{{1,3}}|{_COUNT_WORDS}|half an)\s(minutes?|mins?|hours?|hrs?)\s(before|after)\s",
@@ -1860,6 +1916,28 @@ def _spoken_cands(low: str) -> list[tuple]:
     return out
 
 
+def _with_part_said(low: str, at: time, end: int, said_meridiem: bool) -> tuple[time, int]:
+    """A clock followed by its part of day: "at 5 in the morning" is five, "at
+    9 at night" twenty-one. The clock and where its words now end."""
+    part = _rx("part_said").match(low[end:end + 20])
+    if part and not said_meridiem:
+        return time(at.hour % 12 + (0 if part.group(1) == "morning" else 12), at.minute), end + part.end()
+    return at, end
+
+
+def _word_cands(low: str) -> list[tuple]:
+    """The clocks said or written without a colon ("3 o'clock", "at three",
+    "at 1530", "at 15h30") as time spans."""
+    out = []
+    for found in _rx("word_clock").finditer(low):
+        said = _word_clock(found) if _word_clock_ok(low, found) else None
+        at = _hour_from(*said) if said else None
+        if at is not None:
+            at, end = _with_part_said(low, at, found.end(), bool(said[2]))
+            out.append((found.start(), end, "time", at, "", 0))
+    return out
+
+
 def _time_cands(low: str) -> list[tuple]:
     out = []
     for found in _rx("clock").finditer(low):
@@ -1875,15 +1953,10 @@ def _time_cands(low: str) -> list[tuple]:
             if after[:1] in ("%", "°") or (word in UNITS and word not in _GLUED_ONLY):
                 continue
             at = _hour_from(int(found.group(7)), 0, None)
-        end = found.end()
-        part = _rx("part_said").match(low[end:end + 20])
-        if at is not None and part and not (found.group(4) or found.group(6)):
-            #: "at 5 in the morning" is five, "at 9 at night" twenty-one.
-            hour = at.hour % 12 + (0 if part.group(1) == "morning" else 12)
-            at, end = time(hour, at.minute), end + part.end()
         if at is not None:
+            at, end = _with_part_said(low, at, found.end(), bool(found.group(4) or found.group(6)))
             out.append((found.start(), end, "time", at, "", 0))
-    out += _spoken_cands(low)
+    out += _spoken_cands(low) + _word_cands(low)
     for found in _rx("time_range").finditer(low):
         h1, m1, ap1, h2, m2, ap2 = found.groups()
         first = _hour_from(int(h1), int(m1 or 0), ap1 or (ap2 if int(h1) <= int(h2) else None))
@@ -1914,10 +1987,13 @@ def _clock_after(low: str, end: int, evening: bool) -> tuple[time, int] | None:
         if at is not None:
             return at, len(clock.group(0))
     lead = len(tail) - len(tail.lstrip(" ,"))
-    spoken = _rx("spoken_clock").match(tail, lead)
-    said = _spoken_clock(spoken) if spoken else None
-    at = _hour_from(*said) if said else None
-    return (at, spoken.end()) if at is not None and spoken else None
+    for name, read in (("spoken_clock", _spoken_clock), ("word_clock", _word_clock)):
+        found = _rx(name).match(tail, lead)
+        said = read(found) if found and (name == "spoken_clock" or _word_clock_ok(tail, found)) else None
+        at = _hour_from(*said, evening) if said else None
+        if at is not None:
+            return at, found.end()
+    return None
 
 
 def _recurrence_cands(low: str) -> list[tuple]:

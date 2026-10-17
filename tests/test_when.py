@@ -271,3 +271,93 @@ def test_an_offset_from_a_day_or_from_now_is_read(phrase, expected):
     unread: only "in 30 minutes" counted as an offset."""
     got = when.resolve(phrase, NOW)
     assert got is not None and got.astimezone(NOW.tzinfo).strftime("%Y-%m-%d %H:%M") == expected, phrase
+
+
+@pytest.mark.parametrize(
+    ("phrase", "expected"),
+    [
+        ("3 o'clock", "2026-09-22 15:00"),
+        ("tomorrow at 3 o'clock", "2026-09-22 15:00"),
+        ("9 oclock", "2026-09-21 21:00"),
+        ("friday at three", "2026-09-25 15:00"),
+        ("at nine", "2026-09-21 21:00"),
+        ("tomorrow at nine", "2026-09-22 09:00"),
+        ("at ten thirty", "2026-09-21 22:30"),
+        ("tomorrow at ten thirty", "2026-09-22 10:30"),
+        ("tomorrow at three thirty pm", "2026-09-22 15:30"),
+        ("tomorrow at eleven forty-five am", "2026-09-22 11:45"),
+        ("tomorrow at 1530", "2026-09-22 15:30"),
+        ("at 1630", "2026-09-21 16:30"),
+        ("tomorrow at 0330", "2026-09-22 03:30"),
+        ("tomorrow at 1030", "2026-09-22 10:30"),
+        ("tomorrow at 15h30", "2026-09-22 15:30"),
+        ("at 16h30", "2026-09-21 16:30"),
+        ("friday at 0900 hours", "2026-09-25 09:00"),
+    ],
+)
+def test_a_clock_in_words_or_24_hour_figures_resolves(phrase, expected):
+    """"3 o'clock", "at three", "at ten thirty", "at 1530", "at 15h30" were
+    unread and asked "Remind you when?". The 12-hour forms keep the bare-hour
+    rule (3 is afternoon, 9 the next nine); the figure forms (1530, 15h30,
+    0330) are 24-hour notation, so their hour is never guessed."""
+    got = when.resolve(phrase, NOW)
+    assert got is not None and got.strftime("%Y-%m-%d %H:%M") == expected, phrase
+
+
+@pytest.mark.parametrize(
+    "phrase",
+    ["at one point", "at three of them", "at three people", "at 2561", "at 2460", "at 15h75", "at 153", "o'clock", "the 1530 train"],
+)
+def test_words_that_only_look_like_a_clock_stay_unread(phrase):
+    assert when.resolve(phrase, NOW) is None, phrase
+
+
+@pytest.mark.parametrize(("locale", "expected"), [("en-US", "2027-02-11 15:30"), ("en-AU", "2026-11-02 15:30")])
+def test_a_24_hour_clock_beside_a_numeric_date_follows_the_locale_date_order(locale, expected):
+    """The clock is the same in every locale; only the day order moves."""
+    got = when.resolve("2/11 at 1530", NOW, locale=locale)
+    assert got is not None and got.strftime("%Y-%m-%d %H:%M") == expected
+
+
+def test_a_reminder_keeps_its_words_around_a_clock_in_words():
+    for sentence, due, task in (
+        ("call mum at three", "15:00", "Call mum"),
+        ("pay rent tomorrow at 15h30", "15:30", "Pay rent"),
+        ("feed the cat at 1630", "16:30", "Feed the cat"),
+        ("lock up at ten thirty", "22:30", "Lock up"),
+        ("be home by 9 o'clock", "21:00", "Be home"),
+    ):
+        got = when.parse_reminder_text(sentence, NOW)
+        assert got is not None, sentence
+        assert got["due_at"].strftime("%H:%M") == due and got["text"] == task, (sentence, got)
+
+
+def test_the_owners_typos_in_a_clock_are_put_right_before_it_is_read():
+    """"thre", "thrity", "oclock", "tmrw": heard() repairs the spelling, then
+    the one reader reads the clock."""
+    from tessellate.ai import reminder_parser
+
+    for typed, due in (
+        ("cal mum tmrw at thre oclock", "2026-09-22 15:00"),
+        ("remnd me tmrw at ten thrity to feed the cat", "2026-09-22 10:30"),
+        ("pay the rent tomorow at 1530 plz", "2026-09-22 15:30"),
+    ):
+        got = when.parse_reminder_text(reminder_parser.heard(typed), NOW)
+        assert got is not None and got["due_at"].strftime("%Y-%m-%d %H:%M") == due, (typed, got)
+
+
+def test_a_repeat_keeps_its_rule_when_the_clock_is_in_words_or_figures():
+    from tessellate.ai import recognise
+
+    rules = {
+        span.value
+        for text in ("every day at three", "every monday at 1530", "every friday at 15h30", "every day at ten thirty")
+        for span in recognise.recognise(text, now=NOW.replace(tzinfo=None))
+        if span.kind == "recurrence"
+    }
+    assert rules == {
+        "FREQ=DAILY;BYHOUR=15;BYMINUTE=0",
+        "FREQ=WEEKLY;BYDAY=MO;BYHOUR=15;BYMINUTE=30",
+        "FREQ=WEEKLY;BYDAY=FR;BYHOUR=15;BYMINUTE=30",
+        "FREQ=DAILY;BYHOUR=10;BYMINUTE=30",
+    }
