@@ -1084,8 +1084,21 @@ function editorPositionMenu(textarea, retried = false) {
   menu.style.left = `${Math.round(x)}px`;
 }
 
+//: The box that keeps the focus names the listbox it types into, so a screen
+//: reader hears the menu open and each row the highlight lands on (WCAG 4.1.2).
+function editorLinkBox(surface, on) {
+  const box = surface?.el;
+  if (!box) return;
+  for (const name of ["aria-controls", "aria-haspopup", "aria-activedescendant"]) box.removeAttribute(name);
+  if (on) {
+    box.setAttribute("aria-controls", "editor-menu-list");
+    box.setAttribute("aria-haspopup", "listbox");
+  }
+}
+
 function editorCloseMenu(reason = "") {
   const { textarea, trigger } = editorMenuState;
+  editorLinkBox(textarea, false);
   editorMenuState.open = false;
   editorMenuState.textarea = null;
   editorMenuState.items = [];
@@ -1438,6 +1451,7 @@ function editorSetActive(position, reveal) {
     row.setAttribute("aria-selected", String(on));
     if (on) {
       list.setAttribute("aria-activedescendant", row.id);
+      editorMenuState.textarea?.el?.setAttribute("aria-activedescendant", row.id);
       if (reveal) editorRevealRow(list, row);
     }
   }
@@ -1540,6 +1554,7 @@ function editorOpenMenu(textarea, trigger) {
   if (typeof hideDocComplete === "function") hideDocComplete();
   editorMenuState.open = true;
   editorMenuState.textarea = textarea;
+  editorLinkBox(textarea, true);
   editorMenuState.trigger = trigger;
   editorMenuState.index = 0;
   const pane = $("editor-menu-preview");

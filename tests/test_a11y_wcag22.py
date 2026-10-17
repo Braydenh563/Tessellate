@@ -389,3 +389,18 @@ def test_a_worded_menu_draws_its_groups_and_the_document_adder_declares_them():
     assert 'rule.className = "menu-sep"' in sheets[at : at + 2600]
     capture = _js("capture-ask.js")
     assert 'group: "Documents"' in capture and 'group: "New"' in capture
+
+
+# Sweep 2026-10-17 (scratchpad/ui-sweeps/a11ysurfaces.js): the "/" menu in the
+# chat box and the note boxes kept the focus in the textarea, but the listbox's
+# `aria-activedescendant` sat on the list, which is never focused, so a screen
+# reader heard nothing when the menu opened or the highlight moved.
+def test_the_slash_menu_is_announced_through_the_box_that_has_the_focus():
+    editor = _js("editor.js")
+    assert "function editorLinkBox(" in editor
+    opener = editor[editor.index("function editorOpenMenu(") :][:900]
+    assert "editorLinkBox(textarea, true)" in opener
+    closer = _function(editor, "editorCloseMenu")
+    assert "editorLinkBox(textarea, false)" in closer
+    active = _function(editor, "editorSetActive")
+    assert 'editorMenuState.textarea?.el?.setAttribute("aria-activedescendant", row.id)' in active

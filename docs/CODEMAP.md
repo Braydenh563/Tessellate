@@ -2,9 +2,9 @@
 
 Generated 2026-10-17 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 5947, frontend ids 2509, CSS sections 495, backend routes 607, backend modules 5636, test files 1220, tests 11085, plan headings 957.
+Counts: frontend functions 5948, frontend ids 2509, CSS sections 495, backend routes 607, backend modules 5636, test files 1220, tests 11086, plan headings 957.
 
-## Frontend functions (5947)
+## Frontend functions (5948)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -1756,11 +1756,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `richPickerSplitLabel` | frontend/js/rich-picker.js:33 |
 | `richPickerTile` | frontend/js/rich-picker.js:86 |
 
-### frontend/js/editor.js (72)
+### frontend/js/editor.js (73)
 
 | Name | File:line |
 |---|---|
-| `askAboutSelection` | frontend/js/editor.js:2089 |
+| `askAboutSelection` | frontend/js/editor.js:2104 |
 | `calloutHint` | frontend/js/editor.js:347 |
 | `calloutKindOf` | frontend/js/editor.js:285 |
 | `calloutRewriteHead` | frontend/js/editor.js:299 |
@@ -1772,65 +1772,66 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `editorBlock` | frontend/js/editor.js:786 |
 | `editorBlockRows` | frontend/js/editor.js:827 |
 | `editorCaretPoint` | frontend/js/editor.js:1046 |
-| `editorChoiceDialog` | frontend/js/editor.js:2113 |
-| `editorCloseMenu` | frontend/js/editor.js:1087 |
+| `editorChoiceDialog` | frontend/js/editor.js:2128 |
+| `editorCloseMenu` | frontend/js/editor.js:1099 |
 | `editorCodeLanguageRows` | frontend/js/editor.js:815 |
 | `editorCommands` | frontend/js/editor.js:939 |
 | `editorEnsureSurfaceModule` | frontend/js/editor.js:129 |
-| `editorFinishFence` | frontend/js/editor.js:1104 |
+| `editorFinishFence` | frontend/js/editor.js:1117 |
 | `editorFuzzyMatch` | frontend/js/editor.js:307 |
 | `editorFuzzyRank` | frontend/js/editor.js:327 |
-| `editorGroupStarts` | frontend/js/editor.js:1472 |
-| `editorHandleInput` | frontend/js/editor.js:1617 |
+| `editorGroupStarts` | frontend/js/editor.js:1486 |
+| `editorHandleInput` | frontend/js/editor.js:1632 |
 | `editorHintAllPlaceholders` | frontend/js/editor.js:216 |
 | `editorHintPlaceholder` | frontend/js/editor.js:190 |
 | `editorInsertBlock` | frontend/js/editor.js:525 |
 | `editorInsertBoardObject` | frontend/js/editor.js:555 |
 | `editorInsertBookmarkLink` | frontend/js/editor.js:542 |
-| `editorLinkMatches` | frontend/js/editor.js:1151 |
-| `editorLoadFiles` | frontend/js/editor.js:1274 |
-| `editorMenuIcon` | frontend/js/editor.js:1314 |
-| `editorMenuList` | frontend/js/editor.js:1319 |
-| `editorNextGroupStart` | frontend/js/editor.js:1482 |
+| `editorLinkBox` | frontend/js/editor.js:1089 |
+| `editorLinkMatches` | frontend/js/editor.js:1164 |
+| `editorLoadFiles` | frontend/js/editor.js:1287 |
+| `editorMenuIcon` | frontend/js/editor.js:1327 |
+| `editorMenuList` | frontend/js/editor.js:1332 |
+| `editorNextGroupStart` | frontend/js/editor.js:1496 |
 | `editorNotifyHost` | frontend/js/editor.js:373 |
-| `editorOpenMenu` | frontend/js/editor.js:1538 |
+| `editorOpenMenu` | frontend/js/editor.js:1552 |
 | `editorOpenMenuByShortcut` | frontend/js/editor.js:173 |
 | `editorPickGlyph` | frontend/js/editor.js:432 |
 | `editorPositionMenu` | frontend/js/editor.js:1060 |
-| `editorRankCommands` | frontend/js/editor.js:1144 |
+| `editorRankCommands` | frontend/js/editor.js:1157 |
 | `editorRecentIds` | frontend/js/editor.js:759 |
-| `editorRefreshMenu` | frontend/js/editor.js:1552 |
+| `editorRefreshMenu` | frontend/js/editor.js:1567 |
 | `editorRememberBlock` | frontend/js/editor.js:768 |
-| `editorRenderMenu` | frontend/js/editor.js:1323 |
-| `editorRenderPreview` | frontend/js/editor.js:1393 |
-| `editorRevealRow` | frontend/js/editor.js:1449 |
-| `editorRunItem` | frontend/js/editor.js:1494 |
-| `editorSetActive` | frontend/js/editor.js:1429 |
+| `editorRenderMenu` | frontend/js/editor.js:1336 |
+| `editorRenderPreview` | frontend/js/editor.js:1406 |
+| `editorRevealRow` | frontend/js/editor.js:1463 |
+| `editorRunItem` | frontend/js/editor.js:1508 |
+| `editorSetActive` | frontend/js/editor.js:1442 |
 | `editorSplice` | frontend/js/editor.js:398 |
 | `editorSurfaceFor` | frontend/js/editor.js:105 |
 | `editorSurfaceKind` | frontend/js/editor.js:72 |
-| `editorTokenAt` | frontend/js/editor.js:1120 |
-| `inlineAiAvailable` | frontend/js/editor.js:2509 |
-| `inlineAiClose` | frontend/js/editor.js:2548 |
-| `inlineAiDescribeScope` | frontend/js/editor.js:2451 |
-| `inlineAiElement` | frontend/js/editor.js:2345 |
-| `inlineAiIsCode` | frontend/js/editor.js:2472 |
-| `inlineAiOpen` | frontend/js/editor.js:2514 |
-| `inlineAiPosition` | frontend/js/editor.js:2430 |
-| `inlineAiRetry` | frontend/js/editor.js:2570 |
-| `inlineAiSubmit` | frontend/js/editor.js:2581 |
-| `inlineAiSyncModel` | frontend/js/editor.js:2480 |
-| `inlineAiUndo` | frontend/js/editor.js:2561 |
-| `isEditorSurface` | frontend/js/editor.js:1991 |
-| `offerToCreateWikiTarget` | frontend/js/editor.js:2178 |
+| `editorTokenAt` | frontend/js/editor.js:1133 |
+| `inlineAiAvailable` | frontend/js/editor.js:2524 |
+| `inlineAiClose` | frontend/js/editor.js:2563 |
+| `inlineAiDescribeScope` | frontend/js/editor.js:2466 |
+| `inlineAiElement` | frontend/js/editor.js:2360 |
+| `inlineAiIsCode` | frontend/js/editor.js:2487 |
+| `inlineAiOpen` | frontend/js/editor.js:2529 |
+| `inlineAiPosition` | frontend/js/editor.js:2445 |
+| `inlineAiRetry` | frontend/js/editor.js:2585 |
+| `inlineAiSubmit` | frontend/js/editor.js:2596 |
+| `inlineAiSyncModel` | frontend/js/editor.js:2495 |
+| `inlineAiUndo` | frontend/js/editor.js:2576 |
+| `isEditorSurface` | frontend/js/editor.js:2006 |
+| `offerToCreateWikiTarget` | frontend/js/editor.js:2193 |
 | `pickIconOrEmoji` | frontend/js/editor.js:424 |
-| `selectionBarElement` | frontend/js/editor.js:1830 |
-| `selectionBarHide` | frontend/js/editor.js:1901 |
-| `selectionBarShow` | frontend/js/editor.js:1906 |
-| `selectionBarSync` | frontend/js/editor.js:1995 |
-| `selectionContextFrom` | frontend/js/editor.js:2037 |
-| `selectionContextSource` | frontend/js/editor.js:2070 |
-| `selectionOffsets` | frontend/js/editor.js:2047 |
+| `selectionBarElement` | frontend/js/editor.js:1845 |
+| `selectionBarHide` | frontend/js/editor.js:1916 |
+| `selectionBarShow` | frontend/js/editor.js:1921 |
+| `selectionBarSync` | frontend/js/editor.js:2010 |
+| `selectionContextFrom` | frontend/js/editor.js:2052 |
+| `selectionContextSource` | frontend/js/editor.js:2085 |
+| `selectionOffsets` | frontend/js/editor.js:2062 |
 | `skillCommands` | frontend/js/editor.js:671 |
 
 ### frontend/js/dashboard.js (141)
@@ -17584,13 +17585,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11085)
+## Tests (11086)
 
 `def test_` lines in each `tests/test_*.py`.
 
 | File | Tests |
 |---|---|
-| tests/test_a11y_wcag22.py | 26 |
+| tests/test_a11y_wcag22.py | 27 |
 | tests/test_about_github_link.py | 1 |
 | tests/test_accent_text.py | 3 |
 | tests/test_account.py | 16 |
