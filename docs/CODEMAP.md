@@ -2,7 +2,7 @@
 
 Generated 2026-10-17 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 5948, frontend ids 2509, CSS sections 495, backend routes 607, backend modules 5636, test files 1220, tests 11089, plan headings 957.
+Counts: frontend functions 5948, frontend ids 2509, CSS sections 495, backend routes 607, backend modules 5636, test files 1220, tests 11090, plan headings 957.
 
 ## Frontend functions (5948)
 
@@ -5408,13 +5408,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `timelineCalAddBuild` | frontend/js/timeline-cal-add.js:55 |
-| `timelineCalAddEvent` | frontend/js/timeline-cal-add.js:188 |
+| `timelineCalAddEvent` | frontend/js/timeline-cal-add.js:193 |
 | `timelineCalAddFields` | frontend/js/timeline-cal-add.js:27 |
-| `timelineCalAddKind` | frontend/js/timeline-cal-add.js:128 |
+| `timelineCalAddKind` | frontend/js/timeline-cal-add.js:133 |
 | `timelineCalAddOpen` | frontend/js/timeline-cal-add.js:32 |
-| `timelineCalAddReminder` | frontend/js/timeline-cal-add.js:178 |
+| `timelineCalAddReminder` | frontend/js/timeline-cal-add.js:183 |
 | `timelineCalAddRow` | frontend/js/timeline-cal-add.js:43 |
-| `timelineCalAddSave` | frontend/js/timeline-cal-add.js:148 |
+| `timelineCalAddSave` | frontend/js/timeline-cal-add.js:153 |
 | `timelineCalAddStart` | frontend/js/timeline-cal-add.js:15 |
 
 ### frontend/js/timeline-calendar.js (45)
@@ -17585,13 +17585,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11089)
+## Tests (11090)
 
 `def test_` lines in each `tests/test_*.py`.
 
 | File | Tests |
 |---|---|
-| tests/test_a11y_wcag22.py | 30 |
+| tests/test_a11y_wcag22.py | 31 |
 | tests/test_about_github_link.py | 1 |
 | tests/test_accent_text.py | 3 |
 | tests/test_account.py | 16 |

@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Accessibility, calendar add sheet: its Reminder and Event tabs now each control a tab panel (`aria-controls`, `role="tabpanel"`, `aria-labelledby`). Before: 2 tabs, 0 panels, `aria-controls` empty, so a screen reader said "tab 1 of 2" and nothing for the form beneath.
 - Reduced motion, from the 2026-10-17 sweep: four scrolls asked for `behavior: "smooth"` outright (the thinking line while an answer streams, the notes list's page buttons, the find-in-page match), which the system setting does not slow. They now use `reducedMotionWanted()` like the chat scroll does.
 - Accessibility, from the 2026-10-17 sweep: every range input keeps the 24 px target floor (`--target-min`, 44 on a phone). The Appearance sliders were 144 by 16; they are 144 by 28, and 205 by 44 at 390. The Interface zoom slider was squeezed to 24 px wide at 390 between its 44 px buttons; that row now wraps and the slider keeps 152 px.
 - Accessibility, from the 2026-10-17 sweep (`scratchpad/ui-sweeps/a11ysurfaces.js`): the "/" menu in the chat box and the note boxes now names its listbox on the box that keeps the focus (`aria-controls`, `aria-haspopup`, and `aria-activedescendant` following the highlighted row), so a screen reader hears the menu open and each row. Before: the active descendant sat on the list, which is never focused.

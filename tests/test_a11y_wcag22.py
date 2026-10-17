@@ -433,3 +433,13 @@ def test_no_scroll_is_smooth_without_asking_for_reduced_motion():
             if 'behavior: "smooth"' in line:
                 bad.append(f"{path.name}:{number}")
     assert not bad, f'use `behavior: reducedMotionWanted() ? "auto" : "smooth"`: {bad}'
+
+
+# The calendar add sheet's Reminder and Event tabs named no panel: a screen
+# reader said "tab 1 of 2" and nothing changed when the form beneath did
+# (a11ysurfaces.js, addtabs probe: tabs 2, tabpanels 0, aria-controls null).
+def test_the_calendar_add_tabs_control_a_panel_each():
+    source = _js("timeline-cal-add.js")
+    assert 'tab.setAttribute("aria-controls", `timeline-cal-add-panel-${kind}`)' in source
+    assert 'holder.setAttribute("role", "tabpanel")' in source
+    assert 'holder.setAttribute("aria-labelledby", tab.id)' in source

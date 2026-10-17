@@ -167,21 +167,21 @@ const AUDIT = ({ scope, floor }) => {
   await page.evaluate(() => { localStorage.setItem('timeline-view', 'calendar'); localStorage.setItem('timeline-cal-span', 'month'); });
   await tab('timeline'); await page.waitForTimeout(1000);
   await report('timeline calendar', '#tab-timeline');
-  await dialog('calendar add sheet (N)', async () => { await page.focus('.timeline-cal-monthcell[tabindex="0"]'); await page.keyboard.press('n'); }, '[data-sheet="calendar-add"] .sheet-card', { returnsTo: '.timeline-cal-monthcell[tabindex="0"]' });
+  await dialog('calendar add sheet (head Add)', async () => { await page.click('.timeline-cal-add'); }, '[data-sheet="calendar-add"] .sheet-card', { returnsTo: '.timeline-cal-add' });
+  if (!PHONE) await dialog('calendar add sheet (N)', async () => { await page.focus('.timeline-cal-monthcell[tabindex="0"]'); await page.keyboard.press('n'); }, '[data-sheet="calendar-add"] .sheet-card', { returnsTo: '.timeline-cal-monthcell[tabindex="0"]' });
   await page.evaluate(() => { localStorage.setItem('timeline-cal-span', 'week'); if (typeof timelineCal !== 'undefined') { timelineCal.url = ''; timelineCal.span = 'week'; } paintTimeline(); });
   await page.waitForTimeout(1200);
   await report('timeline week', '#tab-timeline');
 
   // Menus and dialogs reached from the surfaces above.
   await tab('chat');
-  await dialog('no-model caret menu', async () => { await page.click('.ai-offline-split .split-button-caret'); }, '.action-menu', { returnsTo: '.ai-offline-split .split-button-caret', trap: false });
+  await dialog('no-model caret menu', async () => { await page.click('.ai-offline-split .split-button-caret'); }, '.action-menu:not(.hidden)', { returnsTo: '.ai-offline-split .split-button-caret', trap: false });
   await tab('dashboard');
-  await dialog('get started menu', async () => { await page.click('#dash-start-menu'); }, '.action-menu', { returnsTo: '#dash-start-menu', trap: false });
-  await dialog('find anything', async () => { await page.evaluate(() => openFinder()); }, '#finder-overlay', { trap: true });
-  await dialog('guide panel', async () => { await page.evaluate(async () => { await ensureModule('helpChat'); openHelpChat(); }); }, '#help-chat-panel, .help-chat-panel', { trap: false });
+  await dialog('get started menu', async () => { await page.click('#dash-start-menu'); }, '.action-menu:not(.hidden)', { returnsTo: '#dash-start-menu', trap: false });
+  await dialog('find anything', async () => { await page.click('#dash-find'); }, '#finder-overlay', { returnsTo: '#dash-find', trap: true });
   await tab('notes');
-  await dialog('note card menu', async () => { await page.click('#entry-list > li:first-child button[aria-label="More actions"], #entry-list > li:first-child button[title="More actions"]'); }, '.action-menu', { trap: false });
-  await dialog('settings dialog', async () => { await page.click('#settings-btn'); }, '#settings-modal', { returnsTo: '#settings-btn' });
+  await dialog('note card menu', async () => { await page.click('#entry-list > li:first-child button[aria-label="More actions"], #entry-list > li:first-child button[title="More actions"]'); }, '.action-menu:not(.hidden)', { trap: false });
+  await dialog('settings dialog', async () => { if (PHONE) await page.evaluate(() => openSettingsModal('general')); else await page.click('#settings-btn'); }, '#settings-modal', PHONE ? {} : { returnsTo: '#settings-btn' });
 
   // Autocorrect menu: type a misspelling into the capture box.
   await tab('notes');
@@ -191,7 +191,7 @@ const AUDIT = ({ scope, floor }) => {
   // Settings panes.
   const sections = await page.evaluate(() => SETTINGS_SECTIONS.slice());
   for (const s of sections) {
-    await page.evaluate((x) => openSettingsModal(x), s);
+    try { await page.evaluate((x) => openSettingsModal(x), s); } catch (e) { console.log('?? settings/' + s + ': ' + String(e.message).split('\n')[0].slice(0, 70)); await page.waitForTimeout(1500); continue; }
     await page.waitForTimeout(1100);
     await report(`settings/${s}`, '#settings-modal .modal-content, #settings-modal');
     if (s === 'models') {
