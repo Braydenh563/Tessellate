@@ -60,6 +60,21 @@ def _tags_of(raw: str) -> list[str]:
     return [str(t).strip().lower() for t in parsed if str(t).strip()] if isinstance(parsed, list) else []
 
 
+def count_arg(arg: str, default: int = 5, most: int = 20) -> int:
+    """How many rows `arg` asks for, kept between 1 and `most`. ASCII digits
+    only: `str.isdigit` is true for "²", which `int` refuses, and a number of
+    thousands of digits is refused too."""
+    typed = arg.strip()
+    if not (typed.isascii() and typed.isdigit()):
+        return default
+    return max(1, min(int(typed) if len(typed) <= 6 else most, most))
+
+
+#: Words `/find` reads; every one is a condition in the query, and SQLite
+#: refuses an expression tree over 1,000 deep.
+FIND_WORDS = 8
+
+
 def _day(moment: datetime) -> str:
     """A day as "17 October", with no platform-only strftime flag."""
     return f"{moment.day} {moment:%B}"
@@ -83,12 +98,12 @@ def _listed(session: Session, rows: list, one: str, many: str) -> str:
 
 
 def _find(session: Session, arg: str, now: datetime) -> str:
-    words = [w for w in re.findall(r"[\w'-]+", arg.lower()) if len(w) > 1 or w.isdigit()]
+    words = [w for w in re.findall(r"[\w'-]+", arg.lower()) if len(w) > 1 or w.isdigit()][:FIND_WORDS]
     if not words:
         return "Say what to find: /find golf, or /find dentist tuesday for notes that hold both words."
     entry, _ = _notes()
     said = " ".join(words)
-    rows = _newest(session, *(func.lower(entry.content).contains(w) for w in words))
+    rows = _newest(session, *(func.lower(entry.content).contains(w, autoescape=True) for w in words))
     if not rows:
         return f"No note holds {'both ' if len(words) > 1 else ''}“{said}”."
     return _listed(session, rows, f"One note mentions “{said}”:", f"{{n}} mention “{said}”:")
@@ -104,7 +119,7 @@ def _pinned(session: Session, arg: str, now: datetime) -> str:
 
 def _oldest(session: Session, arg: str, now: datetime) -> str:
     entry, _ = _notes()
-    n = max(1, min(int(arg) if arg.isdigit() else 5, 20))
+    n = count_arg(arg)
     rows = _newest(session, order=entry.created_at.asc(), limit=n)
     if not rows:
         return "You have no notes yet."

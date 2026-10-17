@@ -26,3 +26,32 @@ def test_a_pin_cannot_hold_a_value_the_graph_cannot_send(client):
     sent = client.put("/graph/pins", content=body, headers={"content-type": "application/json"})
     assert sent.status_code == 422
     assert client.get("/graph").status_code == 200
+
+
+def _said(client, question: str) -> str:
+    sent = client.post("/chat/stream", json={"question": question})
+    assert sent.status_code == 200, sent.text[:200]
+    events = [json.loads(line) for line in sent.text.splitlines() if line.strip()]
+    return " ".join(str(e.get("delta") or "") for e in events if e.get("type") == "answer")
+
+
+def test_a_slash_count_that_is_not_an_ascii_number_does_not_crash(client):
+    client.post("/entries", json={"content": "Golf on Sunday"})
+    assert "newest note" in _said(client, "/recent ²")
+    assert "oldest note" in _said(client, "/oldest " + "9" * 5000)
+    assert "newest note" in _said(client, "/recent 99999999999999999999")
+
+
+def test_slash_find_reads_a_few_words_and_none_as_a_pattern(client):
+    client.post("/entries", json={"content": "Golf on Sunday"})
+    client.post("/entries", json={"content": "Dentist on Monday"})
+    many = _said(client, "/find " + " ".join(f"word{i}" for i in range(1200)))
+    assert many.startswith("No note holds")
+    # "_" and "%" are LIKE wildcards: they match themselves only.
+    assert _said(client, "/find __").startswith("No note holds")
+    assert "No note is tagged #%" in _said(client, "/count %")
+
+
+def test_a_number_too_big_for_a_duration_is_not_a_crash(client):
+    assert _said(client, "/made last 99999999999999999999 days")
+    assert _said(client, "what did I write in the last 99999999999999999999 days")

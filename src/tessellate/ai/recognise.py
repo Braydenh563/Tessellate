@@ -1906,7 +1906,11 @@ def _measure_cands(raw: str, low: str, locale: str | None) -> list[tuple]:
         dimension, _size, said = UNITS[name]
         amount = _figure(found.group(1))
         if dimension == "time":
-            out.append((found.start(), found.end(), "duration", timedelta(seconds=amount * _size), "", 0))
+            try:
+                span = timedelta(seconds=amount * _size)
+            except OverflowError:  # "last 99999999999999999999 days" is no span
+                continue
+            out.append((found.start(), found.end(), "duration", span, "", 0))
         elif dimension == "temperature":
             out.append((found.start(), found.end(), "temperature", (amount, said), "", 0))
         else:
