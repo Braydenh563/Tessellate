@@ -259,14 +259,28 @@ let noteTagPop = null;
 
 function closeNoteTagPopover({ restoreFocus = false } = {}) {
   if (!noteTagPop) return;
-  const { panel, anchor, outside } = noteTagPop;
+  const { panel, anchor, outside, entryId } = noteTagPop;
   document.removeEventListener("pointerdown", outside, true);
   closeHelpPopovers();
   closeActionMenus();
   panel.remove();
   anchor.setAttribute("aria-expanded", "false");
   noteTagPop = null;
-  if (restoreFocus && anchor.isConnected) anchor.focus({ preventScroll: true });
+  if (restoreFocus) noteTagFocusTarget(anchor, entryId)?.focus({ preventScroll: true });
+}
+
+//: Where focus goes when the popover closes. A list re-render under an open
+//: popover replaces the "+ Tag" chip it was opened from, and focus then fell to
+//: the body: the chip the new card drew, else that card's tag area, else the
+//: list's heading.
+function noteTagFocusTarget(anchor, entryId) {
+  if (anchor.isConnected) return anchor;
+  const card = document.querySelector(`li[data-id="${CSS.escape(String(entryId))}"]`);
+  const chip = card?.querySelector(".note-meta > .tag-add");
+  if (chip) return chip;
+  const target = card?.querySelector(".note-meta") || document.getElementById("entries-heading");
+  if (target) target.tabIndex = -1;
+  return target;
 }
 
 async function noteTagChoices(entry, { fetchMore = true } = {}) {
@@ -394,7 +408,7 @@ async function openNoteTagPopover(entry, anchor) {
   });
   document.addEventListener("pointerdown", outside, true);
   document.body.appendChild(panel);
-  noteTagPop = { panel, anchor, outside };
+  noteTagPop = { panel, anchor, outside, entryId: entry.id };
   anchor.setAttribute("aria-expanded", "true");
   wireHelpPopover(help, helpBody);
   placeHelpPopover(panel, anchor);

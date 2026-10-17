@@ -2,9 +2,9 @@
 
 Generated 2026-10-17 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 5956, frontend ids 2510, CSS sections 495, backend routes 607, backend modules 5646, test files 1229, tests 11131, plan headings 957.
+Counts: frontend functions 5957, frontend ids 2510, CSS sections 495, backend routes 607, backend modules 5646, test files 1229, tests 11132, plan headings 957.
 
-## Frontend functions (5956)
+## Frontend functions (5957)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -5367,20 +5367,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `tagNotesWord` | frontend/js/tag-manager.js:19 |
 | `wireTagKeys` | frontend/js/tag-manager.js:651 |
 
-### frontend/js/tag-suggest.js (13)
+### frontend/js/tag-suggest.js (14)
 
 | Name | File:line |
 |---|---|
-| `addTagTo` | frontend/js/tag-suggest.js:421 |
+| `addTagTo` | frontend/js/tag-suggest.js:435 |
 | `answerSuggestedTags` | frontend/js/tag-suggest.js:224 |
 | `closeNoteTagPopover` | frontend/js/tag-suggest.js:260 |
 | `closeTagSuggest` | frontend/js/tag-suggest.js:25 |
 | `fillTagSuggest` | frontend/js/tag-suggest.js:58 |
-| `noteTagChoices` | frontend/js/tag-suggest.js:272 |
-| `openNoteTagPopover` | frontend/js/tag-suggest.js:292 |
+| `noteTagChoices` | frontend/js/tag-suggest.js:286 |
+| `noteTagFocusTarget` | frontend/js/tag-suggest.js:276 |
+| `openNoteTagPopover` | frontend/js/tag-suggest.js:306 |
 | `openTagSuggest` | frontend/js/tag-suggest.js:147 |
 | `placeTagSuggest` | frontend/js/tag-suggest.js:39 |
-| `renderReevaluateResult` | frontend/js/tag-suggest.js:435 |
+| `renderReevaluateResult` | frontend/js/tag-suggest.js:449 |
 | `tagSuggestSaid` | frontend/js/tag-suggest.js:121 |
 | `tagSuggestToken` | frontend/js/tag-suggest.js:19 |
 | `takeTagSuggest` | frontend/js/tag-suggest.js:132 |
@@ -17605,13 +17606,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11131)
+## Tests (11132)
 
 `def test_` lines in each `tests/test_*.py`.
 
 | File | Tests |
 |---|---|
-| tests/test_a11y_wcag22.py | 33 |
+| tests/test_a11y_wcag22.py | 34 |
 | tests/test_about_github_link.py | 1 |
 | tests/test_accent_text.py | 3 |
 | tests/test_account.py | 16 |

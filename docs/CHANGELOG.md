@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Closing the "+ Tag" popover after the list re-rendered under it (Escape or the close button) no longer drops focus to the page: it goes to the chip the new card drew, else that card's tag area, else the Notes heading (`noteTagFocusTarget`). In Chromium, `document.activeElement` after closing went from `body` (both ways) to the new `+ Tag` chip (both ways), and to `#entries-heading` with its card gone (`tests/test_a11y_wcag22.py`).
 - A slash command that raises an unforeseen error no longer ends the chat stream in a 500: the turn falls through to the ordinary one and the log names only the failure's class (`_guarded_slash_lines`, `tests/test_slash_falls_through.py`).
 - Improve with no model proofreads the first 4,000 characters of a note (cut at a line) and returns the rest exactly as typed, saying "Only the first N of M characters were proofread" and `truncated: true`; no 4xx for a long note. Proofreading a 40,000-character misspelled note took 21.1 s on the way in (13.8 s earlier) and 2.2 s now (`tests/test_proofread_bounded.py`).
 - A long question no longer stalls the composer: the app plans, routes and searches over the first 2,000 characters (`composer.PLAN_CHARS`) and still gives the model, and the saved turn, the whole of it. Planning a 20,000-character paste (`the cat or` x 1,800) went from 34 s to 0.3 s, and the same question through `/chat/stream` with no model from over 100 s to about 5 s (`tests/test_composer_long_question.py`).

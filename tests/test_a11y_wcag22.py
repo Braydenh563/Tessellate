@@ -462,3 +462,18 @@ def test_the_skills_panel_hands_the_focus_back_to_its_trigger():
 def test_a_colour_input_does_not_shrink_under_the_target_floor():
     lazy = (CSS / "settings-controls-lazy.css").read_text(encoding="utf-8")
     assert re.search(r'\.setting-row input\[type="color"\] \{\s*flex: none;\s*min-width: var\(--target-min\);', lazy)
+
+
+def test_the_tag_popover_gives_focus_back_after_a_list_re_render():
+    """The "+ Tag" chip is replaced when the list re-renders under an open
+    popover; closing it then dropped focus to the body (measured in Chromium,
+    Escape and the close button both: `body`). Focus goes to the chip the new
+    card drew, else the card's tag area, else the list's heading."""
+    source = _read("tag-suggest.js")
+    close = _function(source, "closeNoteTagPopover")
+    assert "noteTagFocusTarget(" in close and "anchor.isConnected" not in close
+    target = _function(source, "noteTagFocusTarget")
+    assert "anchor.isConnected" in target
+    assert "li[data-id=" in target and ".tag-add" in target and ".note-meta" in target
+    assert "entries-heading" in target
+    assert "tabIndex = -1" in target
