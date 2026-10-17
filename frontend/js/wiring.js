@@ -552,7 +552,7 @@ function globalFindShowActive() {
   }
   const mark = globalFindMatches[globalFindActive];
   mark.classList.add("global-find-current");
-  mark.scrollIntoView({ block: "center", behavior: "smooth" });
+  mark.scrollIntoView({ block: "center", behavior: reducedMotionWanted() ? "auto" : "smooth" });
   count.textContent = `${globalFindActive + 1} of ${globalFindMatches.length}`;
 }
 

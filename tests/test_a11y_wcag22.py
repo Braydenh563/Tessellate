@@ -422,3 +422,14 @@ def test_the_zoom_slider_keeps_a_usable_width_on_a_phone():
     lazy = (CSS / "settings-controls-lazy.css").read_text(encoding="utf-8")
     assert re.search(r"\.setting-control:has\(> #zoom-slider\) \{\s*flex-wrap: wrap;", lazy)
     assert re.search(r"#zoom-slider \{\s*flex: 1 1 8rem;\s*min-width: 8rem;", lazy)
+
+
+# A scroll asked for as "smooth" is not slowed by the system's reduced-motion
+# setting; four did not ask (capture-ask, settings-wiring twice, wiring).
+def test_no_scroll_is_smooth_without_asking_for_reduced_motion():
+    bad = []
+    for path in sorted((FRONTEND / "js").glob("*.js")):
+        for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            if 'behavior: "smooth"' in line:
+                bad.append(f"{path.name}:{number}")
+    assert not bad, f'use `behavior: reducedMotionWanted() ? "auto" : "smooth"`: {bad}'
