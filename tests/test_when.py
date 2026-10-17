@@ -162,3 +162,51 @@ def test_the_list_tools_take_since_in_words(app_state, session, monkeypatch):
     assert _common._since_days("whenever") is None
     spec = tools.TOOLS["list_notes"].parameters["properties"]["since"]["description"]
     assert "this week" in spec
+
+
+@pytest.mark.parametrize(
+    ("phrase", "expected"),
+    [
+        ("half past 4", "2026-09-21 16:30"),
+        ("at half past four", "2026-09-21 16:30"),
+        ("quarter to 5", "2026-09-21 16:45"),
+        ("a quarter past 6pm", "2026-09-21 18:15"),
+        ("ten to nine tomorrow", "2026-09-22 08:50"),
+        ("twenty past 4", "2026-09-21 16:20"),
+        ("5 past 5 on friday", "2026-09-25 17:05"),
+        ("half past 12 tomorrow", "2026-09-22 12:30"),
+        ("quarter to 1 tomorrow", "2026-09-22 12:45"),
+    ],
+)
+def test_a_clock_said_in_words_resolves(phrase, expected):
+    """"Half past four", "quarter to five": how people say a time aloud,
+    which neither time reader knew (the digits-only clock read "half past 4"
+    as no time at all and asked "Remind you when?")."""
+    got = when.resolve(phrase, NOW)
+    assert got is not None and got.strftime("%Y-%m-%d %H:%M") == expected
+
+
+def test_a_reminder_keeps_its_words_around_a_spoken_clock():
+    got = when.parse_reminder_text("call mum at half past 4", NOW)
+    assert got["due_at"].strftime("%H:%M") == "16:30"
+    assert got["text"].lower().startswith("call mum")
+    assert "half" not in got["text"].lower() and "past" not in got["text"].lower()
+
+
+@pytest.mark.parametrize("phrase", ["half past", "past 4", "quarter to", "the 5 to 7 train", "open from ten to five"])
+def test_words_that_are_not_a_clock_stay_unread(phrase):
+    assert when.resolve(phrase, NOW) is None
+
+
+def test_a_repeat_keeps_its_rule_when_the_clock_is_said_aloud():
+    """"Every day at half past 7" read as one 19:30 reminder: the repeat was
+    dropped because only the digits clock followed it."""
+    from tessellate.ai import recognise
+
+    rules = {
+        span.value
+        for text in ("every day at half past 7", "every monday at quarter to 9")
+        for span in recognise.recognise(text, now=NOW.replace(tzinfo=None))
+        if span.kind == "recurrence"
+    }
+    assert rules == {"FREQ=DAILY;BYHOUR=7;BYMINUTE=30", "FREQ=WEEKLY;BYDAY=MO;BYHOUR=8;BYMINUTE=45"}
