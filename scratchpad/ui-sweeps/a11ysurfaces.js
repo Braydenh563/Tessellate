@@ -103,7 +103,7 @@ const AUDIT = ({ scope, floor }) => {
   const dialog = async (label, open, inside, opts = {}) => {
     try { await open(); } catch (e) { console.log(`?? ${label}: could not open (${String(e.message).split('\n')[0].slice(0, 80)})`); return; }
     await page.waitForTimeout(700);
-    const state = () => page.evaluate((s) => { const el = document.querySelector(s); const a = document.activeElement; return { present: !!el && el.getClientRects().length > 0, within: !!(el && a && el.contains(a)), active: a ? (a.id || a.className || a.tagName) : null }; }, inside);
+    const state = () => page.evaluate((s) => { const el = document.querySelector(s); const a = document.activeElement; return { present: !!el && el.getClientRects().length > 0, within: !!(el && a && (el.contains(a) || (a.closest('[data-sheet]') && a.closest('[data-sheet]') === el.closest('[data-sheet]')))), active: a ? (a.id || a.className || a.tagName) : null }; }, inside);
     const s0 = await state();
     if (!s0.present) { console.log(`?? ${label}: ${inside} did not open`); return; }
     const probs = [];
@@ -178,7 +178,9 @@ const AUDIT = ({ scope, floor }) => {
   await dialog('no-model caret menu', async () => { await page.click('.ai-offline-split .split-button-caret'); }, '.action-menu:not(.hidden)', { returnsTo: '.ai-offline-split .split-button-caret', trap: false });
   await dialog('chat Skills panel', async () => { await page.click('#chat-skills-btn'); }, '#chat-skills-panel', { returnsTo: '#chat-skills-btn', trap: false });
   await tab('notes');
-  await dialog('add tags popover', async () => { await page.click('#entry-list > li:first-child .chip.untagged'); }, '[role="dialog"][aria-label="Add tags to this note"]', { trap: false });
+  await page.evaluate(async () => { await apiJson('/entries/' + allEntries[0].id, { method: 'PUT', body: JSON.stringify({ tags: ['sweep-tag'] }) }); await loadEntries?.(); });
+  await page.waitForTimeout(1200);
+  await dialog('add tags popover', async () => { await page.click('#entry-list > li:has(.chip.tag-add) .chip.tag-add'); }, '[role="dialog"][aria-label="Add tags to this note"]', { trap: false });
   await tab('dashboard');
   await dialog('get started menu', async () => { await page.click('#dash-start-menu'); }, '.action-menu:not(.hidden)', { returnsTo: '#dash-start-menu', trap: false });
   await dialog('find anything', async () => { await page.click('#dash-find'); }, '#finder-overlay', { returnsTo: '#dash-find', trap: true });

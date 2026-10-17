@@ -454,3 +454,11 @@ def test_the_skills_panel_hands_the_focus_back_to_its_trigger():
     assert "panel.contains(document.activeElement)" in close and "trigger.focus()" in close
     assert 'if (event.key === "Escape") close(true);' in source
     assert 'run.addEventListener("click", () => close(true));' in source
+
+
+# Settings, Appearance at 390: a colour input is 2.6rem wide, but in a wrapping
+# flex row it shrank to 22.5 px (the custom accent picker), under the 24 px
+# floor in one dimension (a11ysurfaces.js). A swatch does not shrink.
+def test_a_colour_input_does_not_shrink_under_the_target_floor():
+    lazy = (CSS / "settings-controls-lazy.css").read_text(encoding="utf-8")
+    assert re.search(r'\.setting-row input\[type="color"\] \{\s*flex: none;\s*min-width: var\(--target-min\);', lazy)

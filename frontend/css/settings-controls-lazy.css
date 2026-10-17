@@ -83,3 +83,11 @@
   flex: 1 1 8rem;
   min-width: 8rem;
 }
+
+/* Appearance at 390 (a11ysurfaces.js): the custom accent picker shrank to
+   22.5 px wide in its wrapping row, under the 24 px floor. A colour swatch
+   keeps its own width. */
+.setting-row input[type="color"] {
+  flex: none;
+  min-width: var(--target-min);
+}

@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Accessibility, Settings Appearance on a phone: the custom accent, page background and scheme colour pickers keep their 2.6rem width instead of shrinking to 22.5 px in a wrapping row
 - Accessibility, chat Skills panel: Escape or Run with the focus inside now returns it to the Skills button; before it fell to the page
 - Accessibility, calendar add sheet: its Reminder and Event tabs now each control a tab panel (`aria-controls`, `role="tabpanel"`, `aria-labelledby`). Before: 2 tabs, 0 panels, `aria-controls` empty, so a screen reader said "tab 1 of 2" and nothing for the form beneath.
 - Reduced motion, from the 2026-10-17 sweep: four scrolls asked for `behavior: "smooth"` outright (the thinking line while an answer streams, the notes list's page buttons, the find-in-page match), which the system setting does not slow. They now use `reducedMotionWanted()` like the chat scroll does.
