@@ -3580,8 +3580,22 @@ def _run_title(req) -> str:  # noqa: ANN001
 
 def _answer_lines(req: _StreamRequest) -> Iterator[str]:
     """The turn's stream: a slash command's exact lines, else the full turn."""
-    commanded = _slash_lines(req)
+    commanded = _guarded_slash_lines(req)
     return iter(commanded) if commanded is not None else _interactive_lines(req)
+
+
+def _guarded_slash_lines(req: _StreamRequest) -> list[str] | None:
+    """`_slash_lines`, but a command that raises is no 500: the turn carries
+    on as an ordinary one. The log names the failure's class through
+    `safe_value`, never the exception's text or the question, which can quote
+    the person's notes."""
+    try:
+        return _slash_lines(req)
+    except Exception as exc:  # noqa: BLE001  # an unforeseen command failure is an ordinary turn
+        logging.getLogger("tessellate.chat").warning(
+            "chat: slash command failed (%s); answering as an ordinary turn", safe_value(type(exc).__name__, 60),
+        )
+        return None
 
 
 def _slash_lines(req: _StreamRequest) -> list[str] | None:
