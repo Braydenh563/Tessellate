@@ -2,7 +2,7 @@
 
 Generated 2026-10-17 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 5956, frontend ids 2510, CSS sections 495, backend routes 607, backend modules 5638, test files 1226, tests 11122, plan headings 957.
+Counts: frontend functions 5956, frontend ids 2510, CSS sections 495, backend routes 607, backend modules 5639, test files 1226, tests 11123, plan headings 957.
 
 ## Frontend functions (5956)
 
@@ -10455,7 +10455,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (5638)
+## Backend modules (5639)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -12335,16 +12335,17 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `parse_reminder` | src/tessellate/ai/reminder_parser.py:95 |
 | `worded` | src/tessellate/ai/reminder_parser.py:185 |
 
-### src/tessellate/ai/resurface.py (9)
+### src/tessellate/ai/resurface.py (10)
 
 | Name | File:line |
 |---|---|
 | `_clamp` | src/tessellate/ai/resurface.py:61 |
+| `_comparable_vectors` | src/tessellate/ai/resurface.py:317 |
 | `_dismissed` | src/tessellate/ai/resurface.py:177 |
 | `_relatedness` | src/tessellate/ai/resurface.py:279 |
 | `compute_scores` | src/tessellate/ai/resurface.py:73 |
 | `ensure_fresh` | src/tessellate/ai/resurface.py:147 |
-| `for_context` | src/tessellate/ai/resurface.py:317 |
+| `for_context` | src/tessellate/ai/resurface.py:333 |
 | `for_day` | src/tessellate/ai/resurface.py:230 |
 | `ranked` | src/tessellate/ai/resurface.py:185 |
 | `score_for` | src/tessellate/ai/resurface.py:65 |
@@ -17597,7 +17598,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11122)
+## Tests (11123)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18513,7 +18514,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_repo_files_helper.py | 6 |
 | tests/test_restart_everywhere.py | 7 |
 | tests/test_restore_roundtrip.py | 2 |
-| tests/test_resurface_spec.py | 14 |
+| tests/test_resurface_spec.py | 15 |
 | tests/test_review_queue_17.py | 6 |
 | tests/test_ring_room.py | 6 |
 | tests/test_round2_sweep_fixes.py | 3 |
