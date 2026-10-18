@@ -2445,13 +2445,45 @@ def _app_said(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list
     return None
 
 
-def _stats_events(stats: dict) -> list[dict]:
-    """A counted answer, its chart, and its one acting offer (decision 70),
-    drawn as a link on its line."""
+#: The stats kinds that ask about the notebook as a whole, which carry the
+#: Statistics panel of cards (INBOX 1300 C06).
+_STATS_PANEL_KINDS = {"overview", "coverage"}
+
+
+def reply_panel(kind: str, question: str) -> dict | None:
+    """The panel an answer carries under its words (INBOX 1300 C06): the
+    notebook's cards for a question about it as a whole, the calculator for a
+    sum or a conversion. Sent whoever writes the words (decision 75: it
+    assists the model, never replaces it); `renderReplyPanel` draws it."""
+    if kind in _STATS_PANEL_KINDS or kind == "stats":
+        return {"type": "panel", "panel": "statistics"}
+    if kind == "calc" or (kind == "utility" and _worked_kind(question) in _CALCULATOR_KINDS):
+        return {"type": "panel", "panel": "calculator", "input": question.strip()}
+    return None
+
+
+#: The utility answers the calculator can redo: a sum, a list's total, a
+#: root, a percentage, a unit and a currency (not a clock, a date or a
+#: translation, which it does not work out).
+_CALCULATOR_KINDS = {"sum", "list", "root", "percent", "units", "currency"}
+
+
+def _worked_kind(question: str) -> str | None:
+    from tessellate.ai import utilities
+
+    return utilities.kind_of(question)
+
+
+def _stats_events(stats: dict, question: str = "") -> list[dict]:
+    """A counted answer, its chart, its panel, and its one acting offer
+    (decision 70), drawn as a link on its line."""
     out = [{"type": "answer", "delta": stats["text"]}]
     drawn = _stats_chart(stats)
     if drawn is not None:
         out.append({"type": "chart", "chart": drawn})
+    panel = reply_panel(str(stats.get("kind") or ""), question)
+    if panel is not None:
+        out.append(panel)
     if stats.get("offer"):
         out.append({"type": "offer", "offer": stats["offer"]})
     return out
@@ -2468,7 +2500,7 @@ def _exact_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> 
     if said is not None:
         return said
     if prepared["stats"] is not None:
-        return _stats_events(prepared["stats"])
+        return _stats_events(prepared["stats"], req.question or "")
     if not ollama_running or prepared.get("tool_read"):
         shown = prepared["tool_read"] if "tool_read" in prepared else _tool_read_events(req, prepared["notes"])
         if shown:
@@ -3343,10 +3375,12 @@ def _stream_lines(req: _StreamRequest) -> Iterator[str]:
     #: and the extractive answers): kept, saved, and never re-grounded.
     exact_grounding: list[dict] | None = None
     shape: str | None = None
+    panel_sent = False
     try:
         for payload in events:
             kind = payload.get("type")
             live_rows: list[dict] = []
+            panel_sent = panel_sent or kind == "panel"
             if kind == "grounding" and payload.get("exact"):
                 exact_grounding = payload.get("sentences") or []
             if kind == "grounding":
@@ -3476,6 +3510,13 @@ def _stream_lines(req: _StreamRequest) -> Iterator[str]:
             })
     if req.body.notes_only and answer_text:
         _save_ask_turn(req.session, _in_full(req), answer_text, prepared, grounding)
+    #: A model that wrote a counted answer's words still gets its panel
+    #: (INBOX 1300 C06; decision 75: the panel assists, the model leads).
+    counted = prepared.get("stats")
+    if counted and answer_text and not panel_sent:
+        panel = reply_panel(str(counted.get("kind") or ""), req.question or "")
+        if panel is not None:
+            yield event(panel)
     if answer_text:
         marks["done"] = time.perf_counter() - started
         yield event({"type": "why", "lines": _why(req, prepared, grounding, composing, will_answer, tools_only, ollama_running, shape, marks)})
@@ -3689,7 +3730,10 @@ def _slash_lines(req: _StreamRequest) -> list[str] | None:
     said = slash.answer(req.session, req.body.question or "", user_now(deps.get_config()).replace(tzinfo=None), typed_only=typed_only)
     if said is None:
         return None
-    return _composed_lines(req, [{"type": "answer", "delta": said}])
+    events = [{"type": "answer", "delta": said}]
+    typed = slash.parse(req.body.question or "")
+    panel = reply_panel(typed[0], typed[1]) if typed else None
+    return _composed_lines(req, events + ([panel] if panel else []))
 
 
 def _composed_lines(req: _StreamRequest, events: list[dict]) -> list[str]:

@@ -408,7 +408,9 @@ async function submitHelpChatQuestion(question) {
     const content = result?.content || "Sorry, I couldn't answer that.";
     //: What was on screen when the turn ended: the streamed text itself, or,
     //: on the fallback path, whatever the timed reveal had reached.
-    const shown = result?.shown ?? (await helpChatReveal(pending, content, signal));
+    //: A composed answer (no model) is not typed out word by word: it lands
+    //: whole and takes the one reveal every surface shares (`finishReply`).
+    const shown = result?.shown ?? (result?.composed ? content : await helpChatReveal(pending, content, signal));
     pending.remove();
     //: Stopped mid-reveal: what was shown stays, marked, and the history
     //: keeps the whole answer so a follow-up still makes sense to the model.
@@ -419,6 +421,9 @@ async function submitHelpChatQuestion(question) {
       signal.aborted ? [] : result?.sources || [],
       signal.aborted ? null : result?.system || null
     );
+    if (answerRow && !signal.aborted) {
+      finishReply(answerRow.querySelector(".help-chat-prose"), { composed: result?.composed, head: answerRow.querySelector(".msg-role"), help: true });
+    }
     if (answerRow && result?.greeting && !signal.aborted) renderHelpChatGreeting(answerRow);
     if (answerRow && result?.asks?.length && !signal.aborted) renderHelpChatAsks(answerRow, result.asks, result.asks_to);
     helpChatHistory.push({ role: "user", content: question });
@@ -563,6 +568,7 @@ async function helpChatStreamTurn({ pending, signal, body, line = null }) {
     badges: done?.badges || [],
     sources: done?.sources || [],
     system: done?.system || null,
+    composed: !!done?.composed,
     greeting: !!done?.greeting,
     asks: done?.asks || [],
     asks_to: done?.asks_to || "chat",

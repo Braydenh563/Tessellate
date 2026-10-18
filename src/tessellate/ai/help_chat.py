@@ -3045,7 +3045,9 @@ def answer_stream(
         #: `offline_answer`.
         offline = offline_answer(question, tab, context)
         yield {"type": "delta", "text": offline["content"]}
-        yield {"type": "done", **offline}
+        #: `composed`: no model wrote it, so it arrives with the app's reveal
+        #: (INBOX 1300 C28, `replyReveal` in reply-kit.js).
+        yield {"type": "done", **offline, "composed": True}
         return
 
     messages, topics = _prompt_for(question, history, tab, context)
@@ -3094,7 +3096,7 @@ def answer(
     if not question:
         return {"content": "", "badges": [], "sources": []}
     if not ollama.is_running():
-        return offline_answer(question, tab, context)
+        return {**offline_answer(question, tab, context), "composed": True}
 
     messages, topics = _prompt_for(question, history, tab, context)
     #: Still `"quick"`, not `GUIDE_MODE`: this is the one-shot fallback, taken

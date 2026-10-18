@@ -135,7 +135,7 @@ MORE_TOPICS: list[dict] = [
             "tools it can use", "which tools", "turn off a tool", "disable a tool",
             "small model mode", "run budget", "tool list", "tokens per step",
             "tools offered", "using a tool", "use a tool", "stop atlas using",
-            "cut that reply short", "model size", "calculator", "does atlas do sums",
+            "cut that reply short", "model size", "does atlas do sums",
         ),
         "body": (
             "Settings, Tools it can use also has Use these tools from another "
@@ -294,6 +294,7 @@ MORE_TOPICS: list[dict] = [
             "natural wording", "wording when no model", "composer voice",
             "voice", "playful", "plain answers", "neutral", "how atlas sounds",
             "insight", "patterns in answers", "what atlas adds",
+            "long text in an answer", "wall of text", "folded text",
         ),
         "body": (
             "Settings, Personas, Answer style: how Atlas words its answers, "
@@ -304,7 +305,10 @@ MORE_TOPICS: list[dict] = [
             "The facts and the sources are the same in every voice. What "
             "Atlas adds of its own sets whether an answer about a topic ends "
             "with a pattern from your notes: Nothing, One line (the default) "
-            "or Everything it finds; each Not right raises the bar."
+            "or Everything it finds; each Not right raises the bar. A long "
+            "block in any reply (the text read from a picture, say) is folded "
+            "to one line, its first sentence and its length; press it to read "
+            "the whole."
         ),
         "badge": {"label": "Answer style", "section": "personas", "target": "pref-style"},
     },
@@ -586,7 +590,8 @@ MORE_TOPICS: list[dict] = [
             "indicators, Reduce motion (stills Atlas, the background art, the "
             "graph and the whiteboard) and Interface animations (on by default: "
             "a button's press, menus and dialogs opening, a tab's sliding marker, "
-            "even with Reduce motion on; off makes them instant). Advanced has "
+            "even with Reduce motion on; off makes them instant) with Reveal "
+            "replies under it (a reply no model wrote rises into place). Advanced has "
             "Custom CSS. Ctrl+Shift+L "
             "switches light and dark from anywhere."
         ),
@@ -831,10 +836,33 @@ MORE_TOPICS: list[dict] = [
             "written and reminders done since Monday with the whole of last week. "
             "Open it from the Statistics button under the Dashboard's Activity "
             "heatmap (or a click on the heatmap), the This week card's All "
-            "statistics, or Statistics in the command palette (Ctrl+K). Private "
-            "and binned notes are not counted."
+            "statistics, or Statistics in the command palette (Ctrl+K). Ask "
+            "\"notebook stats\" or type /stats in Chat, Ask or the popup agent and "
+            "the answer carries the figures as cards with small charts, and Open "
+            "Statistics in their head. Private and binned notes are not counted."
         ),
         "badge": {"label": "Dashboard", "tab": "dashboard"},
+    },
+    {
+        "id": "calculator",
+        "keywords": (
+            "calculator", "open the calculator", "keypad", "unit converter",
+            "convert units", "currency converter", "work out a sum",
+        ),
+        "body": (
+            "The calculator works out sums, percentages and conversions with no "
+            "model, the same way /calc does. Open it from the command palette "
+            "(Ctrl+K, Calculator), by typing /calc with nothing after it, or "
+            "with Open the calculator under an answer that worked something "
+            "out. Work out takes a sum typed or keyed (12 * (3 + 4), 15% of 80, "
+            "5 km to miles), shows the result as you type and says how it read "
+            "it; Enter or = keeps it in the list of earlier results, and Copy "
+            "result copies it. The keypad is one Tab stop: the arrow keys move "
+            "around it. Convert units picks a kind (length, weight, currency "
+            "and more), an amount and two units, with a swap button; currency "
+            "rates are set by hand and dated, not today's rate."
+        ),
+        "badge": {"label": "Chat", "tab": "chat"},
     },
     {
         "id": "timer",
@@ -1500,9 +1528,9 @@ MORE_TOPICS.extend(
                     "mode is greyed unless the Needle extra can run it (the app's own tools go first). Every "
                     "sentence is quoted from a note and cited like any answer; the app adds only the joining "
                     "words and the counts and dates it measured, names two notes that may disagree, and says "
-                    "which of your words none of the notes found mention. In Ask the chip over the answer "
-                    "reads From your notes; in Chat the reply's head reads Atlas, from your notes (Atlas and "
-                    "the model's name when a model wrote it). The No model connected line above the Chat box "
+                    "which of your words none of the notes found mention. Beside the name on every answer a "
+                    "badge says who wrote it: From your notes, the model's name, or Composer when the app "
+                    "answered itself. The No model connected line above the Chat box "
                     "and the Ask box has a close button (the small x at its end): it hides that line until "
                     "the next time you start the app, a new session, and connecting a model in Settings, "
                     "Models always brings the answers back. Hide it for good under Model backend."
@@ -1979,6 +2007,7 @@ TOPIC_META: dict[str, dict] = {
     "usage-ledger": {"title": "What you use", "path": "Settings, General, What you use", "target": "usage-box"},
     "statistics": {"title": "Statistics", "path": "Dashboard, Activity heatmap, Statistics"},
     "timer": {"title": "Timer and stopwatch", "path": "Command palette, timer"},
+    "calculator": {"title": "The calculator", "path": "Command palette, Calculator"},
     "manual": {"title": "The manual", "path": "Settings, Help, Open the manual"},
     "first-steps": {"title": "First steps and the sample notebook", "path": "Dashboard, Start in three steps"},
     "live-captions": {"title": "How do I get live captions", "path": "Library, Recordings, Captions"},
@@ -2162,7 +2191,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "reminders-controls", "dashboard", "dashboard-controls", "patterns", "notifications", "spaces", "statistics",
     )),
     ("Small tools", (
-        "timer", "count-words", "insert-template",
+        "timer", "calculator", "count-words", "insert-template",
     )),
     ("Look and feel", (
         "appearance", "themes", "simple-mode", "accessibility", "performance", "background-art",
@@ -2577,7 +2606,10 @@ def _slash_commands_topic() -> dict:
             "Type a command in the chat box for an exact answer from your notes, with no AI. "
             f"{listed} Typing / opens a menu with a row for each command; one that takes words "
             "fills the box with its name and waits for them. Asking in plain words "
-            "(\"which notes have no tags\") runs the same command."
+            "(\"which notes have no tags\") runs the same command. A note named "
+            "in any reply (Chat, Ask, the popup agent, the Guide) previews on hover "
+            "or focus, and a reply that gives one to three notes shows each as a "
+            "card under it; press a card to open the note."
         ),
         "badge": {"label": "Chat", "tab": "chat"},
     }

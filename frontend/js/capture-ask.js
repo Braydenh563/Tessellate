@@ -1643,44 +1643,6 @@ function clearCitedPassage() {
   for (const card of document.querySelectorAll(".is-cited")) card.classList.remove("is-cited");
 }
 
-// The "nothing in your notes, but…" row. Sent only on the empty path (see
-// `_related_elsewhere`, routes_chat.py): a question whose answer lives in a
-// document, a saved chat or a reminder used to end at "I couldn't find any
-// saved notes matching that question", which is true and a dead end.
-//
-// Chips, matching every other "here is something to open" row in this app,
-// each landing on the thing itself rather than on a search for it.
-function renderRelatedElsewhere(target, items) {
-  if (!target || !items || !items.length) return;
-  const row = document.createElement("div");
-  row.className = "answer-related";
-  const label = document.createElement("span");
-  label.className = "muted answer-grounding-label";
-  label.textContent = "Elsewhere in your notebook:";
-  row.appendChild(label);
-  const icons = { document: "ph:file-text", chat: "ph:chat-circle", reminder: "ph:bell" };
-  for (const item of items) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "chip chip-interactive answer-related-chip";
-    setNoteLabel(button, icons[item.kind] || "ph:link", item.label || item.kind, 120);
-    button.title = `Open this ${item.kind}`;
-    button.addEventListener("click", () => {
-      if (item.kind === "document") {
-        switchTab("documents");
-        openDocument(item.id);
-      } else if (item.kind === "chat") {
-        switchTab("chat");
-        openConversation?.(item.id);
-      } else if (item.kind === "reminder") {
-        switchTab("reminders");
-      }
-    });
-    row.appendChild(button);
-  }
-  target.appendChild(row);
-}
-
 //: The citation number, printed on the record it belongs to (INBOX 299).
 //:
 //: Guarded on the Ask tab's own grounding holder: the Chat tab calls
@@ -1746,28 +1708,6 @@ function renderAnswerSupport(answerEl, support) {
           "The rest is the model's own writing, treat it as a draft."
   );
   first.parentElement.insertBefore(line, first);
-}
-
-//: INBOX 272 part 1, "every failure names its way out": the same
-//: `.notice.notice-warn` recipe as `renderAnswerSupport` above, plus the one
-//: control that fixes it, right under the turn that hit it rather than a
-//: sentence pointing at a different screen. Only the Chat tab's Agent mode
-//: can produce this event (the Ask box always sends `useTools: false`), so
-//: this has one caller.
-function renderToolsUnsupportedNotice(container, event) {
-  if (!container || !event) return;
-  const line = document.createElement("p");
-  line.className = "notice notice-warn tools-unsupported-notice";
-  line.setAttribute("role", "note");
-  setLabel(line, `ph:warning ${event.message || "This model can't call tools."}`);
-  const row = document.createElement("div");
-  row.className = "row tools-unsupported-fix-row";
-  row.appendChild(
-    smallButton("ph:gear Change the model", "Open Settings, Models", () => {
-      openSettingsModal("models", "chat-model-select");
-    })
-  );
-  container.append(line, row);
 }
 
 //: **A cited note's pictures beside its citation** (INBOX 502): up to three
@@ -2223,7 +2163,7 @@ function renderAskAnswerFoot(object, meta) {
   const related = $("ask-answer-related");
   related.replaceChildren();
   related.classList.toggle("hidden", !object.related.length);
-  if (object.related.length) renderRelatedElsewhere(related, object.related);
+  if (object.related.length) ensureModule("replyKit").then(() => renderRelatedElsewhere(related, object.related)).catch(() => {});
 
   const sources = $("ask-answer-sources");
   sources.replaceChildren();
@@ -2317,6 +2257,20 @@ function renderAskHint(box, hint) {
   }
   if (row.childElementCount) card.appendChild(row);
   box.appendChild(card);
+}
+
+//: The app's panels under an answer (INBOX 1300 C06), in the order they
+//: came: the web pages read and the notebook's cards or the calculator. One
+//: drawer for Chat, Ask and the popup agent (reply-kit.js `replyDrawAll`).
+function drawAnswerPanels(holder, panels, before = null) {
+  return ensureModule("replyKit")
+    .then(() => replyDrawAll(holder, panels, before))
+    .catch(() => {});
+}
+
+//: A reply whose words are final (INBOX 1300 C07): reply-kit.js `replyFinish`.
+function finishReply(answers, opts) {
+  ensureModule("replyKit").then(() => replyFinish(answers, opts)).catch(() => {});
 }
 
 //: **The badge in the answer head, and the sentence behind it.**
@@ -2588,6 +2542,7 @@ async function streamChatEvents({
   onHint,
   onStats,
   onChart,
+  onPanel,
   onGrounding,
   onGroundingLive,
   onAnswerFinal,
@@ -2598,6 +2553,8 @@ async function streamChatEvents({
   onOffer,
   attempt,
 }) {
+  //: Fetched now, so a composed reply's reveal (`finishReply`) never waits on it.
+  ensureModule("replyKit").catch(() => {});
   const body = { question, history: history || [] };
   //: "Try again" (CHAT_PLAN decision 34): an answer from the notes reworded.
   if (attempt) body.attempt = attempt;
@@ -2774,6 +2731,8 @@ async function streamChatEvents({
       //: A bar of counts the realiser drew from a no-model answer (CHAT_PLAN
       //: decision 59, step 2), drawn with the Ask box's chart recipe.
       else if (event.type === "chart" && onChart) onChart(event);
+      //: A panel the app draws under the answer (INBOX 1300 C06, reply-kit.js).
+      else if (event.type === "panel" && onPanel) onPanel(event);
       // ROADMAP.md item 36: which retrieved note backs which sentence of a
       // direct-Q&A answer. Only ever sent for that path (routes_chat.py).
       else if (event.type === "grounding" && onGrounding) onGrounding(event);
@@ -3081,6 +3040,7 @@ async function askQuestion(preset) {
   let groundedInsights = []; // the lines it volunteered (decision 73)
   let answerWhy = []; // how it was made (B30)
   let answerOffer = null; // a counted answer's offer (decision 70)
+  const answerPanels = []; // the app's panels under the answer (INBOX 1300 C06)
   let composedNext = []; // a composed answer's own next questions (INBOX 725)
   //: Kept beyond the callback that receives them, because the answer element
   //: is rebuilt after the stream ends and the markers have to be put back.
@@ -3218,6 +3178,11 @@ async function askQuestion(preset) {
       onOffer: (event) => {
         answerOffer = event.offer || null;
       },
+      //: Drawn with the foot, once the answer's text is final.
+      onPanel: (event) => answerPanels.push(event),
+      //: The web pages a composed answer read, as cards (decision 66), drawn
+      //: with the panels for the same reason.
+      onWebSources: (event) => answerPanels.push({ web: event.sources }),
       onWhy: (event) => {
         answerWhy = Array.isArray(event.lines) ? event.lines : [];
       },
@@ -3297,6 +3262,8 @@ async function askQuestion(preset) {
       ensureModule("askCompose").then(() => renderAskInsights(groundedInsights)).catch(() => {});
       ensureModule("askCompose").then(() => renderAskWhy(answerWhy)).catch(() => {});
       if (answerOffer) ensureModule("askCompose").then(() => digestOffer(answerBox, answerOffer)).catch(() => {});
+      if (answerPanels.length) drawAnswerPanels(answerBox, answerPanels);
+      finishReply(answerBox, { composed: answerMeta?.composed });
       //: Not awaited: it is a second model call, and the answer is already on
       //: screen. The same contract `offerFollowups` has in the Chat tab. An
       //: answer composed from the notes brings its own (INBOX 725), built

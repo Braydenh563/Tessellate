@@ -2001,7 +2001,7 @@ async function sendChatMessage(preset, opts = {}) {
         status.textContent = m && m.composed ? "Composing from your notes, no AI…" : "The model is writing…";
       },
       onRelated: (event) => {
-        renderRelatedElsewhere(groundingHolder, event.items);
+        ensureModule("replyKit").then(() => renderRelatedElsewhere(groundingHolder, event.items)).catch(() => {});
       },
       onUnsupported: (event) => {
         toolsUnsupportedEvent = event;
@@ -2140,6 +2140,10 @@ async function sendChatMessage(preset, opts = {}) {
           timeline.tool(card.firstElementChild || card);
         }
         if (event.ok) toolsActed = true;
+        //: A page the model read opens in place under its step (INBOX 1300
+        //: C06): the web fold's reader, the same one a composed answer's
+        //: results use. Its search results are the Sources panel's cards.
+        if (event.ok && event.tool === "read_url") drawAnswerPanels(timeline.holder, [{ web: event.sources, read: true }]);
         status.textContent = "The model is making changes…";
         chatScrollToEnd();
       },
@@ -2154,6 +2158,9 @@ async function sendChatMessage(preset, opts = {}) {
         drawAskChart(host, event.chart);
         chatScrollToEnd();
       }),
+      //: The notebook's cards or the calculator (INBOX 1300 C06), drawn by
+      //: the one reply renderer every answer surface shares.
+      onPanel: (event) => drawAnswerPanels(timeline.holder, [event]).then(chatScrollToEnd),
       onConfirm: (event) => {
         clearPending();
         const card = document.createElement("div");
@@ -2386,7 +2393,12 @@ async function sendChatMessage(preset, opts = {}) {
       turnSources
     );
   }
-  placeAnswerFigures(bubble.querySelectorAll(".bubble-answer"), meta, question);
+  const answerEls = bubble.querySelectorAll(".bubble-answer");
+  placeAnswerFigures(answerEls, meta, question);
+  //: Who wrote it (INBOX 1300 C14), as a badge beside the name in the head.
+  const head = bubble.querySelector(".msg-role");
+  const model = stats?.model || meta?.answered_by;
+  finishReply(answerEls, { composed: meta?.composed, head, model, engine: Boolean(meta), bubble, unsupported: toolsUnsupportedEvent });
   //: An answer's one acting offer, the Ask box's (`digestOffer`): a place's link.
   if (chatOffer) ensureModule("askCompose").then(() => digestOffer([...bubble.querySelectorAll(".bubble-answer")].pop(), chatOffer)).catch(() => {});
   const answerRaw = timeline.text();
@@ -2406,9 +2418,7 @@ async function sendChatMessage(preset, opts = {}) {
   // INBOX 272 part 1: drawn once the stream is over, same reason
   // `groundingSentences` waits (a notice inserted mid-stream is inside a
   // bubble the live renderer is about to rebuild from raw markdown).
-  if (toolsUnsupportedEvent) {
-    renderToolsUnsupportedNotice(bubble, toolsUnsupportedEvent);
-  }
+  //: Drawn by `replyFinish` (`finishReply` above), above the facts line.
   // What this answer cost: model, wall-clock time, tokens, speed.
   const elapsedMs = Math.round(performance.now() - startedAt);
   //: For the status bar's AI dot (Placed 2026-09-09 item 99 (c)).
@@ -2419,22 +2429,9 @@ async function sendChatMessage(preset, opts = {}) {
   // A turn that only ran tools still cost time and tokens, so it gets a meta
   // line too: previously an agent turn with no prose showed nothing at all.
   //: **Who wrote it, in the head** (the owner, 2026-10-10: "should say if the
-  //: composer or a specific ai model generated it"): "Atlas, from your notes"
-  //: or "Atlas, <model>", where a chip under the answer used to say only the
-  //: first. **And a composed answer arrives** ("Composer responses just
-  //: appear, I think there should be an animation"): it lands in one piece,
-  //: so its blocks rise in turn, `--motion-step` apart, as a streamed one
-  //: grows; under reduced motion it simply appears.
-  //: No model wrote it and it is not quoted from the notes (a greeting, a
-  //: time, a count, a capability answer): the engine answered, and says so
-  //: ("hey :D" got an unlabelled "Atlas", the owner, 2026-10-12).
-  const by = meta?.composed ? "from your notes" : stats?.model || meta?.answered_by || (meta ? "composer" : "");
-  const who = bubble.querySelector(".msg-role > span:last-child");
-  if (answerRaw && by && who) who.textContent = `${bubble.dataset.persona}, ${by}`;
-  if (meta?.composed && !reducedMotionWanted()) {
-    bubble.querySelectorAll(".bubble-answer > *").forEach((el, i) =>
-      el.animate([{ opacity: 0, translate: "0 4px" }, {}], { duration: 200, delay: i * 60, easing: "ease-out", fill: "backwards" }));
-  }
+  //: composer or a specific ai model generated it"; INBOX 1300 C14: "a badge
+  //: or smnth similar"): the `replyByline` chip through `finishReply` above,
+  //: From your notes, the model, or Composer when the app answered itself.
   if (answerRaw || toolEvents.length) {
     bubble.appendChild(
       messageMetaLine({

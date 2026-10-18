@@ -45,45 +45,107 @@
 }
 .web-results-list,
 .web-reader {
-  max-block-size: 18rem;
   overflow-y: auto;
   margin: 0;
-  padding: 0 var(--space-4) var(--space-3);
+  padding: 0 var(--space-3) var(--space-3);
   font-size: var(--text-sm);
 }
 .web-results-list {
+  max-block-size: 22rem;
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  padding-inline-start: var(--space-7);
+  list-style: none;
+}
+/* A page read in place is the semi-large panel (INBOX 1300 C06): most of
+   the window's height at most, scrolling on its own. */
+.web-reader {
+  max-block-size: min(32rem, 60dvh);
+}
+/* **A result is a card** (INBOX 1300 C06): a globe tile, then the title, the
+   site and two lines of what it says. The title is the card's one opener
+   (`.card-open`, 08-consistency.css: its press covers the card), the
+   browser arrow sits above that press. */
+.web-result-card {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: start;
+  padding: var(--space-2) var(--space-3);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+/* Hover and focus are one state (DESIGN.md decision 15): the row veil. */
+.web-result-card:hover,
+.web-result-card:has(.card-open:focus-visible) {
+  background-image: linear-gradient(var(--hover-veil), var(--hover-veil));
+}
+.web-result-tile {
+  display: grid;
+  place-items: center;
+  inline-size: var(--space-9);
+  block-size: var(--space-9);
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-size: var(--text-md);
+}
+.web-result-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
 }
 .web-result-head {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--space-1);
+}
+.web-result-open {
+  position: relative;
+  z-index: 2;
+  flex: none;
 }
 .web-fold .web-result-title,
 .web-fold .web-reader-back {
   width: fit-content;
   text-align: start;
 }
+.web-fold .web-result-title {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.web-result-site {
+  font-size: var(--text-xs);
+}
 .web-result-line {
-  margin: 0;
+  margin: var(--space-1) 0 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .web-fold .web-reader-title {
   margin: var(--space-2) 0 0;
   font-size: var(--text-md);
 }
 .web-reader-where {
-  margin: 0 0 var(--space-2);
+  margin: 0;
   overflow-wrap: anywhere;
+}
+.web-reader-facts {
+  margin: 0 0 var(--space-2);
+}
+.web-reader-text {
+  line-height: 1.5;
 }
 .web-reader-text > p {
   margin: 0 0 var(--space-2);
-  line-height: 1.5;
 }
 
 

@@ -240,19 +240,29 @@ function renderActCard(holder, event) {
 
 //: **The web pages an answer read** (CHAT_PLAN decisions 37 and 66): one
 //: fold under the answer in the Thinking fold's look (`.web-fold`,
-//: ask-compose-lazy.css), its summary the count, each result its title, its
-//: site and one line. A title opens the page here: `/websearch/read`'s text,
-//: as text, with its address and the time it was read, and Back returns to
-//: the list; the arrow beside it opens the page in the browser. Only http
-//: and https addresses are drawn.
-function renderWebSources(holder, sources) {
+//: ask-compose-lazy.css), its summary the count, each result a card (INBOX
+//: 1300 C06: "a websearch shows the link as a clickable card not just a
+//: url"): a globe tile, its title, its site and two lines of what it says. A
+//: press anywhere on the card reads the page here (`readWebPage`); the arrow
+//: opens it in the browser. Only http and https addresses are drawn.
+//: `{ read: true }` is a page the model read (`read_url`) or one address on
+//: its own: the summary names the page and opening the fold reads it, the
+//: same reader, so a fetch is a disclosure that opens the page in place.
+function renderWebSources(holder, sources, { read = false } = {}) {
   const pages = (sources || []).filter((source) => /^https?:\/\//.test(source.url || ""));
-  if (!pages.length) return;
+  if (!pages.length) return null;
   const fold = document.createElement("details");
   fold.className = "agent-step web-fold";
   const summary = document.createElement("summary");
   summary.className = "fold-summary";
-  setLabel(summary, `ph:globe Web results: ${pages.length} ${pages.length === 1 ? "page" : "pages"}`);
+  const first = pages[0];
+  const site = first.domain || sourceHost(first.url);
+  setLabel(
+    summary,
+    read
+      ? `ph:file-text Read ${site || "a page"}: ${first.title && first.title !== first.url ? first.title : sourceHost(first.url) || first.url}`
+      : `ph:globe Web results: ${pages.length} ${pages.length === 1 ? "page" : "pages"}`
+  );
   const list = document.createElement("ol");
   list.className = "web-results-list";
   list.setAttribute("aria-label", "Web pages read for this answer");
@@ -260,58 +270,81 @@ function renderWebSources(holder, sources) {
   reader.className = "web-reader hidden";
   for (const source of pages) {
     const item = document.createElement("li");
+    item.className = "web-result-card";
+    const tile = document.createElement("span");
+    tile.className = "web-result-tile";
+    setLabel(tile, "ph:globe");
+    tile.setAttribute("aria-hidden", "true");
+    const body = document.createElement("div");
+    body.className = "web-result-body";
     const head = document.createElement("div");
     head.className = "web-result-head";
-    const read = document.createElement("button");
-    read.type = "button";
-    read.className = "linklike web-result-title";
-    read.textContent = source.title || source.domain;
-    read.title = "Read this page here";
-    read.addEventListener("click", () => readWebPage(fold, list, reader, source));
+    const title = document.createElement("button");
+    title.type = "button";
+    title.className = "linklike web-result-title card-open";
+    title.textContent = source.title || source.domain || sourceHost(source.url);
+    title.title = "Read this page here";
+    title.addEventListener("click", () => readWebPage(fold, list, reader, source));
     const open = document.createElement("a");
     open.className = "ghost icon-only small web-result-open";
     open.href = source.url;
     open.target = "_blank";
     open.rel = "noopener noreferrer";
-    open.setAttribute("aria-label", `Open ${source.domain || "the page"} in the browser`);
+    open.setAttribute("aria-label", `Open ${source.domain || sourceHost(source.url) || "the page"} in the browser`);
     open.title = "Open in the browser";
     setLabel(open, "ph:arrow-square-out");
-    head.append(read, open);
-    const site = document.createElement("span");
-    site.className = "muted web-result-site";
-    site.textContent = source.domain || "";
-    item.append(head, site);
+    head.append(title, open);
+    const where = document.createElement("span");
+    where.className = "muted web-result-site";
+    where.textContent = source.domain || sourceHost(source.url);
+    body.append(head, where);
     if (source.snippet) {
       const line = document.createElement("p");
       line.className = "muted web-result-line";
       line.textContent = source.snippet;
-      item.appendChild(line);
+      body.appendChild(line);
     }
+    item.append(tile, body);
     list.appendChild(item);
   }
   fold.append(summary, list, reader);
+  if (read) {
+    list.classList.add("hidden");
+    fold.addEventListener("toggle", () => {
+      if (fold.open && !reader.childElementCount) readWebPage(fold, list, reader, first, { back: false });
+    });
+  }
   holder.appendChild(fold);
+  return fold;
 }
 
-//: A result read in place (decision 66): the page's readable text, never
-//: its markup, in the fold that listed it.
-async function readWebPage(fold, list, reader, source) {
+//: **A result read in place** (decision 66; INBOX 1300 C06: "a dropdown that
+//: opens a semi large panel with the extracted and formatted contents inside
+//: as well as a link and data"): the page's readable blocks as Markdown
+//: (`webPageMarkdown`, the reader's own), never its markup; over them its
+//: title, its address as a link, and one facts line (site, words, minutes to
+//: read, when it was read).
+async function readWebPage(fold, list, reader, source, { back: withBack = true } = {}) {
   fold.open = true;
   list.classList.add("hidden");
   reader.classList.remove("hidden");
-  const back = document.createElement("button");
-  back.type = "button";
-  back.className = "ghost small web-reader-back";
-  setLabel(back, "ph:arrow-left Back to results");
-  back.addEventListener("click", () => {
-    reader.classList.add("hidden");
-    reader.replaceChildren();
-    list.classList.remove("hidden");
-  });
+  const parts = [];
+  if (withBack) {
+    const back = document.createElement("button");
+    back.type = "button";
+    back.className = "ghost small web-reader-back";
+    setLabel(back, "ph:arrow-left Back to results");
+    back.addEventListener("click", () => {
+      reader.classList.add("hidden");
+      reader.replaceChildren();
+      list.classList.remove("hidden");
+    });
+    parts.push(back);
+  }
   const status = document.createElement("p");
   status.className = "muted";
-  status.textContent = `Reading ${source.domain || "the page"}`;
-  reader.replaceChildren(back, status);
+  status.textContent = `Reading ${source.domain || sourceHost(source.url) || "the page"}`;
+  reader.replaceChildren(...parts, status);
   try {
     const page = await apiJson(`/websearch/read?url=${encodeURIComponent(source.url)}`);
     const title = document.createElement("h4");
@@ -324,16 +357,27 @@ async function readWebPage(fold, list, reader, source) {
     link.target = "_blank";
     link.rel = "noopener noreferrer";
     link.textContent = page.url || source.url;
+    where.appendChild(link);
     const at = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-    where.append(link, document.createTextNode(`, read at ${at}`));
+    const facts = document.createElement("p");
+    facts.className = "library-file-meta web-reader-facts";
+    const said = [page.domain || sourceHost(page.url || source.url)];
+    if (page.words) said.push(`${Number(page.words).toLocaleString()} words`);
+    if (page.read_minutes) said.push(`${page.read_minutes} min read`);
+    said.push(`read at ${at}`);
+    facts.textContent = said.filter(Boolean).join(" · ");
     const body = document.createElement("div");
     body.className = "web-reader-text";
-    for (const block of String(page.text || "").split(/\n{2,}/).filter((b) => b.trim())) {
-      const para = document.createElement("p");
-      para.textContent = block.trim();
-      body.appendChild(para);
+    const markdown = webPageMarkdown(page);
+    if (markdown) renderMarkdown(body, markdown);
+    else {
+      for (const block of String(page.text || "").split(/\n{2,}/).filter((b) => b.trim())) {
+        const para = document.createElement("p");
+        para.textContent = block.trim();
+        body.appendChild(para);
+      }
     }
-    status.replaceWith(title, where, body);
+    status.replaceWith(title, where, facts, body);
   } catch (error) {
     status.textContent = error.message;
   }
@@ -445,6 +489,7 @@ function digestOffer(answerEl, offer) {
   const button = document.createElement("button");
   button.type = "button";
   button.className = "linklike digest-offer";
+  button.dataset.surface = offer.surface || "";
   button.textContent = offer.label;
   button.addEventListener("click", async () => {
     button.disabled = true;

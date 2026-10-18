@@ -220,5 +220,5 @@ def test_a_badge_with_no_text_is_hidden():
     # The two Ask badges are empty in the markup and filled by renderChatMeta,
     # so they are what the rule is for; a space inside would defeat :empty.
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-    assert '<span id="answered-by" class="chip answer-model"></span>' in html
+    assert '<span id="answered-by" class="chip item-label answer-model"></span>' in html
     assert '<span id="search-mode" class="chip"></span>' in html
