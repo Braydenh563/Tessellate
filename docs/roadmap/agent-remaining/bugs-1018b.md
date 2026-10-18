@@ -38,7 +38,7 @@ audits reproduced each bug in the app (ports 8791, 8792). A row is **open**,
 | C14 composer and model badge | O, design | open | `chat-attach.js:2430` byline |
 | C18 paper swatches as dropdown | O, design | open | `index.html:7506` |
 | C37 graph box titles clipped, no ellipsis; nodes all one size | O, design batch 2 | open | a question is a bug report: size by weight (links or uses) and a label line-clamp with ellipsis |
-| C39 timeline opens on empty future days | S, next free Sonnet | open | screenshot: seven empty future rows above Today; open scrolled so Today is the first row, future reachable by scrolling up |
+| C39 timeline opens on empty future days | S, next free Sonnet | fixed HASH | the c39 sweep measures Today's row top against the feed top on open and after the Today button |
 | C40 recording transcript lines cannot be copied | S, with C34 | open | per-line copy on hover or focus, shift-click range select, "Copy selected" and "Copy all" (with or without times) |
 | C41 force graph messy | O, graph batch with C11, C27, C37 | open | screenshot: labels collide, edges cross clusters, duplicate titles unexplained; label collision avoidance, cluster separation, edge bundling or fade, measured overlap count before and after |
 | C43 categories sidebar messy, sections not collapsible | O, design batch 2 | open | screenshots: nested scrollbars plus a blue bar on the outer one, list clipped mid-row, near-duplicate "Courses & Study" / "Courses \| Study", empty categories; collapsible sections with remembered state, one scroll container, merge offer for near-duplicates, hide empty |

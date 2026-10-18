@@ -432,22 +432,6 @@ function libraryPickLabel(kind, row) {
   return row.title || row.url || "Link";
 }
 
-//: And its second line: what tells two rows with one name apart.
-function libraryPickAbout(kind, row) {
-  const when = relativeTime(row.updated_at || row.created_at);
-  if (kind === "note") return pickerNoteAbout(row);
-  if (kind === "document") return notePickerFacts(when && `Edited ${when}`, row.words ? `${row.words} word${row.words === 1 ? "" : "s"}` : "");
-  if (kind === "file") return notePickerFacts(row.size_bytes ? formatFileSize(row.size_bytes) : "", notePickerUsedIn(row) || when);
-  if (kind === "board") return notePickerFacts(row.type === "board" ? "Whiteboard" : "Mind map", when);
-  let host = "";
-  try {
-    host = new URL(row.url).hostname.replace(/^www\./, "");
-  } catch {
-    host = row.url || "";
-  }
-  return notePickerFacts(host, row.group || "");
-}
-
 //: The source the person last chose, so the map's picker opens where they
 //: were (INBOX 572). A per-viewer convenience: storage that is blocked or
 //: empty just opens on the first source.

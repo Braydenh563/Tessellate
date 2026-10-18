@@ -600,9 +600,11 @@ async function renderTimeline() {
   //: (a 51 ms task after the paint, measured from the dashboard).
   requestAnimationFrame(() =>
     setTimeout(() => {
+      //: The strip, the recall row and the row gap's 0.3s ease all move Today.
       drawTimelineScrubber();
       renderTimelineDayStrip();
       renderTimelineRecall();
+      setTimeout(timelineScrollToToday, 700);
       timelineLoadMore(TIMELINE_PAGE - TIMELINE_FIRST);
     }, 0)
   );
@@ -2413,6 +2415,9 @@ $("timeline-end-date")?.addEventListener("change", () => {
 //: rather than a search. It still looks the bucket up by key rather than assuming the
 //: first section is today's: a notebook with nothing written today should land
 //: on the newest day it has, not claim that day is today.
+//: The Options menu's switches are wired by the lazy ticks file (C36).
+$("timeline-options-menu").addEventListener("toggle", () => lazyScript("/js/timeline-ticks.js"), { once: true });
+
 $("timeline-jump-today")?.addEventListener("click", () => {
   if (timelineViewMode() === "calendar") return void timelineCalendarCall("timelineCalendarToday");
   //: Home for the strip too, when it was walked back to an earlier week.
@@ -2430,7 +2435,18 @@ function timelineScrollToToday() {
   const today = timelineBucketKey(new Date(), feed.dataset.scale || "day");
   const section = feed.querySelector(`.timeline-bucket[data-bucket="${today}"]`) || feed.firstElementChild;
   const box = $("timeline-scroll");
-  if (section) box.scrollTop += section.getBoundingClientRect().top - box.getBoundingClientRect().top;
+  //: **Today is the top row on open; the days ahead are above it, reached by
+  //: scrolling up** (INBOX 1300 C39). A feed shorter than its window cannot
+  //: scroll that far (measured: Today 316px down with scrollTop stuck at
+  //: 105), so the missing distance is added as space under the feed. Rows
+  //: below Today change height as they are scrolled past, hence the loop.
+  const gap = () => section.getBoundingClientRect().top - box.getBoundingClientRect().top;
+  if (section) {
+    feed.style.paddingBottom = "0px";
+    box.scrollTop += gap();
+    feed.style.paddingBottom = `${Math.max(0, gap())}px`;
+    box.scrollTop += gap();
+  }
   return section;
 }
 
