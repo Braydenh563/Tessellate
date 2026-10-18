@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Live view: a rendered section break (---) is drawn as a line inside a full-height row, so the gutter numbers no longer overlap (INBOX 1300 C44).
 - A reply that brings its own next-question chips ("yo <name>") no longer loses its text on reload: the chips waited for the turn save instead of racing it (INBOX 1300 C42); `tests/test_chat_followups_race.py`.
 - A notice that names "Settings, Packages" (not installed) now has an Open Settings, Packages button that scrolls to that package's row (INBOX 1300 C35); `tests/test_package_notice_action.py`.
 - Undo and redo on a board or a document show "Undone: last change on this board" even with notifications muted (INBOX 1300 C32); `tests/test_link_types.py`.

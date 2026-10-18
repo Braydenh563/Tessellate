@@ -4,7 +4,7 @@ A "yo <name>" call answers with text plus an "ask" offer, and the offer saved
 its follow-up chips while the reply was still streaming, racing the turn's own
 save: the chips write read the checkpoint row (empty answer) and wrote it back
 over the finished turn. The offer now only draws the chips; `offerFollowups`
-saves them after the turn is saved (`scratchpad/ui-sweeps/c42.js` measures it
+saves them after the turn is saved (the `c42` Playwright sweep (kept out of the repo, which is at its scratchpad file cap) measures it
 in the app)."""
 
 from __future__ import annotations

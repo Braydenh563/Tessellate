@@ -42,7 +42,7 @@ audits reproduced each bug in the app (ports 8791, 8792). A row is **open**,
 | C40 recording transcript lines cannot be copied | S, with C34 | open | per-line copy on hover or focus, shift-click range select, "Copy selected" and "Copy all" (with or without times) |
 | C41 force graph messy | O, graph batch with C11, C27, C37 | open | screenshot: labels collide, edges cross clusters, duplicate titles unexplained; label collision avoidance, cluster separation, edge bundling or fade, measured overlap count before and after |
 | C43 categories sidebar messy, sections not collapsible | O, design batch 2 | open | screenshots: nested scrollbars plus a blue bar on the outer one, list clipped mid-row, near-duplicate "Courses & Study" / "Courses \| Study", empty categories; collapsible sections with remembered state, one scroll container, merge offer for near-duplicates, hide empty |
-| C44 live view section break overlaps gutter numbers | S, next free Sonnet | open | screenshot: rule line 1 shorter than its number, numbers 1 and 2 overlap; the gutter line height must follow the rendered block height |
+| C44 live view section break overlaps gutter numbers | S, next free Sonnet | fixed HASH | the c44 sweep measures the gutter row height against the rule line; test_live_rule_line_height.py |
 | C04 UML, ERD, wireframe sets | plan | placed | WHITEBOARD_PLAN |
 | C16, C26 composer variety, greeting sub line | plan | placed | CHAT_PLAN; `composer_voice.today_line` unused |
 | C24 Logs panel scroll | none | not reproduced | equal heights at five sizes; Settings nav overflow placed in WORLD_CLASS row 32 |
