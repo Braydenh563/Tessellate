@@ -13,7 +13,7 @@
 set -euo pipefail
 PORT="${1:?port}"; DIR="${2:?data dir}"
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-VENV="${VENV:-/home/user/MemoryMap-AI/.venv}"
+VENV="${VENV:-$(cd "$(dirname "$0")/../.." && pwd)/.venv}"
 mkdir -p "$DIR"
 if curl -s -o /dev/null "http://127.0.0.1:$PORT/"; then
   echo "something already answers on :$PORT — pick another port" >&2; exit 1
