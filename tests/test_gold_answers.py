@@ -52,8 +52,9 @@ def _answer(item: dict) -> dict:
 
 def test_the_fixture_is_twenty_answers_across_the_kinds_decision_71_names():
     kinds = {a["type"] for a in FIXTURE["answers"]}
-    #: Twenty, and the owner's gaming mouse question (2026-10-11) as typed.
-    assert len(FIXTURE["answers"]) == 21
+    #: Twenty, the owner's gaming mouse question (2026-10-11) as typed, and
+    #: the owner's social connections notebook (INBOX 1301 D5).
+    assert len(FIXTURE["answers"]) == 22
     assert {"fact", "overview", "compare", "count", "who", "left"} <= kinds
 
 

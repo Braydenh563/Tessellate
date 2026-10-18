@@ -118,7 +118,6 @@ async function viewAskHistoryTurn(id) {
   $("suggested-questions").classList.add("hidden");
   $("question").value = turn.question;
   lastQuestion = turn.question;
-  renderAskedQuestion(turn.question);
   const answerBox = $("ai-answer");
   renderMarkdown(answerBox, turn.answer);
   $("ai-answer-grounding").replaceChildren();
