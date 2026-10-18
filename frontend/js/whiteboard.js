@@ -9129,12 +9129,15 @@ function wbBulletTextLines() {
   wbScheduleRender();
 }
 
-function wbBeginTextEdit(contentEl) {
+function wbBeginTextEdit(contentEl, ownText) {
   if (!contentEl || contentEl.isContentEditable) return;
   //: Back to the source while editing, whatever the rendered view showed.
+  //: `ownText`: a frame's title or hint line is not the object's `content` (C17).
   const objectEl = contentEl.closest(".wb-object");
   const item = (wbState.objects || []).find((o) => String(o.id) === objectEl?.dataset.id);
-  if (item) {
+  if (ownText !== undefined) {
+    contentEl.textContent = ownText;
+  } else if (item) {
     contentEl.classList.remove("wb-text-md");
     contentEl.textContent = item.data.content || "";
   }
@@ -9694,6 +9697,8 @@ async function wbUndo() {
   try {
     if (!(await wbApplyHistoryEntry(wbUndoStack, wbRedoStack))) return;
     wbUpdateUndoRedoButtons();
+    //: C32: no labels on a board's history, so the notice names the place; "info" shows even when muted.
+    toast("Undone: last change on this board", "info");
     if (wbIsMap()) {
       const parentId = wbUndoParents.find((id) => (wbState.objects || []).some((o) => o.id === id));
       if (parentId != null) selectWbItem("object", parentId);
@@ -9714,6 +9719,7 @@ async function wbRedo() {
   try {
     if (!(await wbApplyHistoryEntry(wbRedoStack, wbUndoStack))) return;
     wbUpdateUndoRedoButtons();
+    toast("Redone: last change on this board", "info");
     wbScheduleRender();
   } catch {
     toast(voiceLine("failed", { what: "redo that" }), true);
@@ -10789,7 +10795,7 @@ function wbEditFrameTitle(titleEl, frame, field = "content") {
   const isHint = field === "hint";
   const before = isHint ? frame.data?.hint || "" : wbFrameTitle(frame);
   //: The board's one way into an edit (DESIGN.md: `wbBeginTextEdit`).
-  wbBeginTextEdit(titleEl);
+  wbBeginTextEdit(titleEl, before);
   const range = document.createRange();
   range.selectNodeContents(titleEl);
   const sel = window.getSelection();
@@ -10815,6 +10821,10 @@ function wbEditFrameTitle(titleEl, frame, field = "content") {
     if (isHint && !name) delete frame.data.hint;
     titleEl.textContent = name;
     if (isHint) titleEl.hidden = !name;
+    //: C17: the text went straight into the element, so an undo matched the
+    //: old paint key and repainted nothing.
+    const objectEl = titleEl.closest(".wb-object");
+    if (objectEl) objectEl._wbPaintKey = null;
     wbSaveObject(frame);
   }, { once: true });
 }

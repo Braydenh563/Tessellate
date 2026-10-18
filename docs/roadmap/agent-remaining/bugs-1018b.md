@@ -7,13 +7,13 @@ audits reproduced each bug in the app (ports 8791, 8792). A row is **open**,
 | Item | Rung, agent | Status | Evidence |
 | --- | --- | --- | --- |
 | C42 composer reply text lost after restart (first, data) | S, next free Sonnet | open | screenshot: reload shows the reply bubble with only its "Next:" chips; check what the chat store saves for a composer (no model) reply to small talk, and the reload render path |
-| C10 statistics in quick access | S, fixes1 | open | `settings-panes.js:1499` row has no `quick` key |
-| C09 attach list Enter | S, fixes1 | open | `chat-attach.js:1224` `notePickerKeydown` |
-| C13 table plus off centre | S, fixes1 | open | glyph 0.6 to 0.75 px low, `library-lazy.css:6293` |
-| C17 frame hint becomes header | S, fixes1 | open | `wbBeginTextEdit` `whiteboard.js:9132`, from `wbEditFrameTitle` `:10787` |
-| C31 link kind cannot be cleared | S, fixes1 | open | `link-types.js:109` |
-| C32 undo shows nothing | S, fixes1 | open | `performUndo` surface branch `status.js:1517` |
-| C35 missing package toast, no link | S, fixes1 | open | `captions.js:84`; `toastAction` |
+| C10 statistics in quick access | S, fixes1 | fixed 8430914 | `quickCatalogue()` now returns `act:statistics` beside `act:captions` |
+| C09 attach list Enter | S, fixes1 | fixed 1ce15c0 | two ArrowDowns then Enter: row 1 checked, focus on it, panel open; Enter in search is Done |
+| C13 table plus off centre | S, fixes1 | fixed 300e718 | plus drawn in CSS; ink centre 0.875 css px low at 4x before, 0.25 (one device pixel) after |
+| C17 frame hint becomes header | S, fixes1 | fixed 9a5e195 | hint edit opens its own text; edit then Ctrl+Z restores it; click-off with no change keeps it |
+| C31 link kind cannot be cleared | S, fixes1 | fixed 4487b44 | test only; sheet not driven in the app |
+| C32 undo shows nothing | S, fixes1 | fixed ae8174e, 4b45f60 | muted: board Undo shows "Undone: last change on this board"; document path test only |
+| C35 missing package toast, no link | S, fixes1 | fixed 4b45f60 | Translate notice: Open Packages click lands `extra-row-translate` at top 371 of 900 |
 | C03 right-drag pan | S, fixes2 | open | button 2 refused `whiteboard.js:91`, menu `:8640` |
 | C12 sticky panel header | S, fixes2 | open | `.dialog-head` static in `.stats-card` |
 | C25 Help scroll lag | S, fixes2 | open | 4x CPU: median 33 to 50 ms a frame, 1954 nodes |

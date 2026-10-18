@@ -5982,10 +5982,8 @@ function docTableGripsPlugin(CM) {
         });
         const addCol = put("doc-table-add doc-table-add-col", "add-col", 0,
           { x: lastCol.x + lastCol.w - band, y: geo.box.top - band, w: band, h: band }, "Add a column at the end");
-        addCol.textContent = "+";
         const addRow = put("doc-table-add doc-table-add-row", "add-row", 0,
           { x: geo.box.left, y: geo.box.bottom, w: band, h: band }, "Add a row at the end");
-        addRow.textContent = "+";
         this.layer.appendChild(this.line);
       }
 
@@ -20046,7 +20044,8 @@ function docCmIsolate() {
 
 function docUndo() {
   const CM = window.CM6;
-  if (docCmView && CM) return CM.commands.undo(docCmView);
+  //: C32: these histories hold no labels, so the notice names the place; "info" shows even when muted.
+  if (docCmView && CM) return CM.commands.undo(docCmView) && (toast("Undone: last change on this document", "info"), true);
   //: The fallback is one textarea, so the browser's own history is the right
   //: one and a second would only disagree with Ctrl+Z: which is what
   //: `applyMarkdown`'s own comment said before Live ever existed.
@@ -20093,7 +20092,7 @@ window.docCanRedo = () => (docCmView && window.CM6 ? window.CM6.commands.redoDep
 
 function docRedo() {
   const CM = window.CM6;
-  if (docCmView && CM) return CM.commands.redo(docCmView);
+  if (docCmView && CM) return CM.commands.redo(docCmView) && (toast("Redone: last change on this document", "info"), true);
   docSurface()?.focus();
   return document.execCommand("redo");
 }

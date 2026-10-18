@@ -6291,6 +6291,7 @@ input[type="color"].wb-mixed {
 }
 
 .doc-table-add {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -6302,6 +6303,30 @@ input[type="color"].wb-mixed {
   font-size: var(--text-sm);
   line-height: 1;
   cursor: pointer;
+}
+
+/* The plus is drawn, not typed: a "+" glyph sits on the font's baseline and
+   came out about 0.9px low in the circle (INBOX 1300 C13). Two bars centred
+   by the box cannot drift with the font. */
+.doc-table-add::before,
+.doc-table-add::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: var(--radius-sm);
+  background: currentColor;
+  transform: translate(-50%, -50%);
+}
+
+.doc-table-add::before {
+  width: var(--space-2);
+  height: calc(var(--space-1) / 2);
+}
+
+.doc-table-add::after {
+  width: calc(var(--space-1) / 2);
+  height: var(--space-2);
 }
 
 .doc-table-add:hover,

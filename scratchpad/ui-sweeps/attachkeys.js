@@ -82,7 +82,11 @@ const focused = (page) => page.evaluate(() => {
     await page.keyboard.press('Enter');
     await page.waitForTimeout(300);
     const closed = await page.evaluate(() => document.getElementById('note-picker-panel').classList.contains('hidden'));
-    ok('Enter is Done', closed);
+    ok('Enter on a row ticks it and keeps the panel open (C09)', !closed);
+    await page.focus('#note-picker-search');
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(300);
+    ok('Enter in the search field is Done', await page.evaluate(() => document.getElementById('note-picker-panel').classList.contains('hidden')));
     await page.click('#attach-note');
     await page.waitForTimeout(400);
     await page.keyboard.press('Escape');

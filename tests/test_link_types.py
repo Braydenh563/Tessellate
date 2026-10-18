@@ -116,3 +116,22 @@ def test_a_link_made_without_a_kind_is_null(client):
         if e.get("kind") == "link" and {e["source"], e["target"]} == {a, b}
     )
     assert edge["link_type"] is None
+
+
+def test_pressing_the_current_kind_again_clears_it() -> None:
+    """INBOX 1300 C31: the ticked kind in the Kind of link sheet did nothing on
+    a second press; it now clears like "No kind"."""
+    js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "link-types.js").read_text(encoding="utf-8")
+    assert "link_type: current ? null : t.key" in js
+
+
+def test_an_undo_on_a_board_or_document_says_so_even_when_muted() -> None:
+    """INBOX 1300 C32: undo and redo on a board or document gave no feedback;
+    they now raise the exempt ("info") toast naming the place. The words live
+    in the lazy surfaces (whiteboard.js, documents.js), not the boot's status.js."""
+    js = Path(__file__).resolve().parents[1] / "frontend" / "js"
+    board = (js / "whiteboard.js").read_text(encoding="utf-8")
+    doc = (js / "documents.js").read_text(encoding="utf-8")
+    for verb in ("Undone", "Redone"):
+        assert f'toast("{verb}: last change on this board", "info")' in board
+        assert f'toast("{verb}: last change on this document", "info")' in doc

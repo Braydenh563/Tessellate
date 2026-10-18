@@ -3721,6 +3721,17 @@ def test_the_attach_panel_rows_are_one_renderer_with_keys() -> None:
     assert 'data-help-for="note-picker-help"' in html and 'id="note-picker-help"' in html
 
 
+def test_enter_on_an_attach_row_ticks_it_and_keeps_focus() -> None:
+    """INBOX 1300 C09: arrows down the list then Enter did nothing the owner
+    expected (it closed the panel as Done with the row unticked). Enter on a
+    row ticks it like Space; Enter in the search field is still Done."""
+    js = (ROOT / "frontend" / "js" / "chat-attach.js").read_text(encoding="utf-8")
+    keys = _function_body(js, "notePickerKeydown")
+    enter = keys[keys.index('event.key === "Enter"', keys.index("if (at < 0) return;")) :]
+    enter = enter[: enter.index("} else if")]
+    assert "target.click()" in enter and "note-picker-done" not in enter
+
+
 def test_the_attach_picker_rows_show_what_they_hold() -> None:
     """UI_MODERNISATION_PLAN, "the picker's other four sources have no
     thumbnail" (op4-1005): a map's row draws the map (`mapPreview` at its row
@@ -4102,7 +4113,11 @@ def test_a_frame_is_one_kind_reached_three_ways() -> None:
     assert 'data-tool="frame"' in index and 'data-wb-insert="frame"' in index
     assert "Frame (F)" in index
     edit = wb[wb.index("function wbEditFrameTitle(") :][:2000]
-    assert "wbBeginTextEdit(titleEl)" in edit and "wbEndTextEdit(titleEl)" in edit
+    assert "wbBeginTextEdit(titleEl, before)" in edit and "wbEndTextEdit(titleEl)" in edit
+    # C17: the hint edits its own text, and an undo repaints what the edit wrote.
+    assert "wbBeginTextEdit(titleEl, before)" in edit and "_wbPaintKey = null" in edit
+    begin = wb[wb.index("function wbBeginTextEdit(") :][:900]
+    assert "ownText !== undefined" in begin
     assert "|| wbFrameDragOrigin(d, d._dragAlone)" in wb
     assert "wbCaptureBulkMoveOrigin(null, keys)" in wb[wb.index("function wbFrameDragOrigin(") :][:400]
     frame_rule = css[css.index(".wb-object-frame {") :][:600]

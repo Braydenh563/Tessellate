@@ -239,3 +239,13 @@ function renderTaskHistory(history) {
     list.appendChild(li);
   }
 }
+
+//: Moved from status.js for the boot budget: only the Tasks history calls it.
+//: The history's half of the same rule: a finished run whose "Started:" row
+//: is still stored (the page reloaded mid-run, so the poll never saw it end)
+//: is settled by its run id.
+function settleStartedNotification(item, key) {
+  if (storedNotifications().some((n) => n.id === key)) return true;
+  const started = item.run_id && storedNotifications().find((n) => n.runId === item.run_id);
+  return Boolean(started) && settleNotification(started.id, { key, ...taskEndingWords(item, item.label) });
+}
