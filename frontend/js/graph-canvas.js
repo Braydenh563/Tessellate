@@ -498,6 +498,33 @@ function gcPlaceLabels(items, discs, lineCount = null, blocked = [], bounds = nu
     }
     return false;
   };
+  //: **A name is nearer its own dot than any other** (INBOX 1300 C41, the
+  //: owner: "labels overlap nodes"; measured at the fit on the 57-note seed,
+  //: 6 of 16 names stood nearer another note's dot, and so read as its
+  //: name). A place where some other dot is closer than its own is no place.
+  const own = new Map(discs.map((disc) => [disc.id, disc]));
+  const edgeGap = (box, disc) => {
+    const nx = Math.max(box.left, Math.min(disc.x, box.right));
+    const ny = Math.max(box.top, Math.min(disc.y, box.bottom));
+    return Math.max(0, Math.hypot(nx - disc.x, ny - disc.y) - disc.r);
+  };
+  const nearerOther = (box) => {
+    const mine = own.get(box.id);
+    if (!mine) return false;
+    const reach = edgeGap(box, mine);
+    const x0 = Math.floor((box.left - reach) / cell) - 1;
+    const x1 = Math.floor((box.right + reach) / cell) + 1;
+    const y0 = Math.floor((box.top - reach) / cell) - 1;
+    const y1 = Math.floor((box.bottom + reach) / cell) + 1;
+    for (let cx = x0; cx <= x1; cx++) {
+      for (let cy = y0; cy <= y1; cy++) {
+        for (const disc of grid.get(`${cx},${cy}`) || []) {
+          if (disc.id !== box.id && edgeGap(box, disc) < reach) return true;
+        }
+      }
+    }
+    return false;
+  };
   //: A place past the edge of the canvas is no place (INBOX 693: names "cut
   //: by the viewport"); `bounds` is the canvas in world units.
   const outside = (box) =>
@@ -573,15 +600,20 @@ function gcPlaceLabels(items, discs, lineCount = null, blocked = [], bounds = nu
     if (box.force) {
       //: Asked for by name: drawn whatever it lands on, at the clearest
       //: place that covers no label and no dot if there is one.
-      placed.push(best(spots, (spot) => !clashes(spot) && !coversDisc(spot)) || gcClampBox(box, bounds));
+      placed.push(
+        best(spots, (spot) => !clashes(spot) && !coversDisc(spot) && !nearerOther(spot)) ||
+          best(spots, (spot) => !clashes(spot) && !coversDisc(spot)) ||
+          gcClampBox(box, bounds)
+      );
       continue;
     }
+    const clear = (spot) => !clashes(spot) && !coversDisc(spot) && !nearerOther(spot);
     if (box.landmark) {
-      const pick = best(spots, (spot) => !clashes(spot) && !coversDisc(spot));
+      const pick = best(spots, clear);
       if (pick) placed.push(pick);
       continue;
     }
-    const pick = best(spots, (spot) => !clashes(spot) && !coversDisc(spot));
+    const pick = best(spots, clear);
     if (pick && fewest === 0) placed.push(pick);
   }
   return placed;
@@ -863,7 +895,13 @@ function gcEdgeLook(edge, a, b, simLo, simHi, epoch) {
   }
   edge._tint = tint;
   edge._style = style;
-  edge._cross = a._cluster != null && a._cluster !== b._cluster && edge.link_type !== "contradicts";
+  //: Quiet between two categories in every Force shape (INBOX 1300 C41:
+  //: bridges drew at 0.40 beside 0.55 inside a category, and a long one
+  //: through a cluster read as part of it); Clusters' own rule is the same.
+  edge._cross =
+    edge.link_type !== "contradicts" &&
+    ((a._cluster != null && a._cluster !== b._cluster) ||
+      (a._bridgeCat != null && b._bridgeCat != null && a._bridgeCat !== b._bridgeCat));
   edge._quietStyle = edge._cross
     ? { ...style, width: style.width * GC_CROSS_WIDTH, alpha: style.alpha * GC_CROSS_ALPHA }
     : style;
@@ -1751,6 +1789,34 @@ const GC_FIT_OVERLAYS = [
 //: refit the map: a menu over the map moves nothing on it (graphmenustill.js).
 const GC_FIT_MENUS = "#graph-options, #graph-help-panel, #graph-card > .graph-overlay > .dock";
 const GC_FIT_GAP = 4;
+//: **The overlays a name is kept out from under**, in world units for this
+//: frame (INBOX 1300 C41: at 1.8x on the 57-note seed, 6 names were drawn
+//: under the dock, the legend, the minimap or the zoom strip, half read).
+//: The fit's overlays plus the corner furniture the fit leaves alone. Read
+//: from the DOM at most every 300ms (a layout read per frame is not free),
+//: then mapped through this frame's transform.
+function gcOverlayBoxes(s, t) {
+  if (s.size !== "full" || !s.canvas) return [];
+  const now = performance.now();
+  if (!s._overlayRects || now - s._overlayAt > 300) {
+    s._overlayAt = now;
+    const c = s.canvas.getBoundingClientRect();
+    s._overlayRects = [];
+    for (const selector of [...GC_FIT_OVERLAYS, "#graph-minimap", "#graph-zoom"]) {
+      const el = document.querySelector(selector);
+      if (!el || el.hidden || !el.getClientRects().length) continue;
+      const b = el.getBoundingClientRect();
+      if (!b.width || !b.height || b.right <= c.left || b.left >= c.right || b.bottom <= c.top || b.top >= c.bottom) continue;
+      s._overlayRects.push({ left: b.left - c.left, right: b.right - c.left, top: b.top - c.top, bottom: b.bottom - c.top });
+    }
+  }
+  return s._overlayRects.map((r) => ({
+    left: (r.left - t.x) / t.k,
+    right: (r.right - t.x) / t.k,
+    top: (r.top - t.y) / t.k,
+    bottom: (r.bottom - t.y) / t.k,
+  }));
+}
 function gcFitInsets(s = gcTab) {
   const insets = { top: 0, right: 0, bottom: 0, left: 0 };
   if (s.size !== "full" || !s.canvas || !s.dims.w || !s.dims.h) return insets;
@@ -2858,7 +2924,8 @@ function gcDraw(s = gcTab) {
       right: (s.dims.w - t.x) / k - inset,
       bottom: (s.dims.h - t.y) / k - inset,
     };
-    const placed = gcPlaceLabels(items, discs, lines ? (box, limit) => gcBoxLineCount(lines, box, limit) : null, s.topicPlates || [], frame);
+    const blocked = [...(s.topicPlates || []), ...gcOverlayBoxes(s, t)];
+    const placed = gcPlaceLabels(items, discs, lines ? (box, limit) => gcBoxLineCount(lines, box, limit) : null, blocked, frame);
     placedLabels = placed;
     s.labelBoxes = placed;
     s.labelsDrawn = placed.length;
@@ -3259,7 +3326,14 @@ function gcLabelText(node, s = gcTab) {
   const limit = s.tree ? (s.tree.arc ? 12 : s.tree.radial ? 16 : 30) : hub ? 36 : 26;
   const text = node.preview || "";
   const pointed = !s.tree && (node.id === s.hoveredId || node.id === gcKeyboardId(s));
-  return gcLabelCut(text, pointed ? GC_LABEL_FULL : limit);
+  const cut = gcLabelCut(text, pointed ? GC_LABEL_FULL : limit);
+  //: A title another note shares says where this one is filed, or, filed
+  //: together, when it was written (INBOX 1300 C41).
+  if (!s.dupTitles || !s.dupTitles.has(text)) return cut;
+  const twin = (s.nodes || []).some((n) => n !== node && n.preview === text && (n.category || "") === (node.category || ""));
+  const at = Date.parse(node.created_at || "");
+  const where = twin && Number.isFinite(at) ? new Date(at).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : node.category || "Unfiled";
+  return `${cut} (${where})`;
 }
 
 //: The trace overlay. Drawn from the same `graphTrace`/`graphTraceRoutes`
@@ -5161,8 +5235,16 @@ async function renderGraphCanvas(s = gcTab) {
     if (node.cell) node.r = Math.min(node.r, Math.max(2.5, Math.min(node.cell.w, node.cell.h) * 0.36));
     node.colour = s.colourOf(node);
     node._cluster = shape === "clusters" ? node.category || "" : null;
+    //: Which category a note stands in for the quiet bridge (`gcEdgeLook`),
+    //: in every Force shape, not only Clusters (INBOX 1300 C41).
+    node._bridgeCat = !s.tree && gcIsNote(node) ? node.category || "" : null;
     node._straight = Boolean(shape) && shape !== "organic";
   }
+  //: Titles two notes or more share (INBOX 1300 C41, two "Ice Breakers:"
+  //: with nothing to tell them apart): `gcLabelText` adds where each is.
+  const titleCount = new Map();
+  for (const node of nodes) if (gcIsNote(node) && node.preview) titleCount.set(node.preview, (titleCount.get(node.preview) || 0) + 1);
+  s.dupTitles = new Set([...titleCount].filter(([, n]) => n > 1).map(([title]) => title));
   //: **A note with no position yet is placed here, not in the worker.**
   //: d3-force assigns its phyllotaxis spiral inside `forceSimulation`, which
   //: means the main thread has no positions at all until the first tick comes
@@ -5488,7 +5570,7 @@ function gcLegendEdgeKey(data, s = gcTab) {
   const category = new Map((data?.nodes || []).map((n) => [n.id, n.category || ""]));
   const id = (end) => (end && typeof end === "object" ? end.id : end);
   const cross =
-    gcShape(s) === "clusters" &&
+    !graphLayoutIsComputed() &&
     (data?.edges || []).some((e) => e.kind !== "similar" && category.get(id(e.source)) !== category.get(id(e.target)));
   if (!legend || !data || !(similar || cross)) return;
   const key = document.createElement("span");
