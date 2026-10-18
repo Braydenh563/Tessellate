@@ -262,7 +262,10 @@ def test_the_notes_chrome_says_less():
     sheets = _read("sheets-selects.js")
     assert "sidebarCollapsed:${aside.id}" in sheets and "ph-push-pin icon-peek" in sheets
     css = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
-    assert "#sidebar #category-list {\n    max-height:" in css
+    #: C43 moved the scroller: the list no longer scrolls inside the sidebar's
+    #: own scroller (two bars, cut mid-row); the sidebar does, head sticky.
+    assert "#sidebar #category-list {\n    max-height:" not in css
+    assert "#sidebar > .sidebar-head {\n    position: sticky;" in css
 
 
 def test_a_row_is_one_line_with_the_time_at_its_end():

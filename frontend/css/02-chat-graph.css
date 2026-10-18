@@ -1954,10 +1954,16 @@ button.recording.live-level {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-inner);
-  padding: var(--space-3) var(--space-4);
+  /* A group inside the dialog's pane, so the second surface tier like
+     `.settings-group` (DESIGN.md → Surface tiers): a tone, no visible edge, the
+     card's own corner. It was `--card` on `--border` at `--radius-inner`, which
+     is 0 at the default corner (the inset is wider than the corner), so a
+     square, same-coloured box (C34, measured: radius 0px, background equal to
+     the card's). */
+  background: var(--surface-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  padding: var(--space-4);
   margin-bottom: var(--space-4);
 }
 /* One height for both rows of this dialog, and it is the app's control height

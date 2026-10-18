@@ -1169,7 +1169,9 @@ HELP_TOPICS.extend(
                 "choose a category yourself in Capture's Filing menu; while you type, "
                 "Capture offers File under a category (with the reason on hover) "
                 "beside the suggested tags, and pressing it sets the Filing menu. The categories "
-                "are the sidebar of Your notes. Settings, Skills has Reorganise my "
+                "are the sidebar of Your notes: the arrow beside Categories, Most used "
+                "or Saved searches folds that section (it stays folded), and "
+                "Show empty reveals categories with no notes. Settings, Skills has Reorganise my "
                 "categories and Clean up my tags for a bigger tidy."
             ),
             "badge": {"label": "Notes", "tab": "notes"},

@@ -2212,6 +2212,7 @@ const LAZY_ENTRY_POINTS = {
     "showCategoryNotes",
     "moveNotesToCategory",
     "pickCategoryColour",
+    "foldSide",
   ],
   tagManager: ["openTagsSheet", "openBulkTags", "renameTagEverywhere", "removeTagFromNote"],
   chipMenus: ["openCategoryChipMenu", "openTagChipMenu"],
