@@ -30,4 +30,12 @@ Order taken: (1) Expand from my notes; (2) the dark and 820 measurements of sect
 
 - done: 95eb617 Expand from my notes (`/expand`, `wbMapExpandFromNote`, shared picker) and the study note answer (`wbMapStudyQuestions` note questions, `wbPresentCaption`). 12/12 sweeps each at 1440 and 390.
 - decided not to build: a boundary round a lasso'd non-branch set (MINDMAP_PLAN decision 19 excludes it).
-- next: the dark and 820 measurements of section 13 (running, see below), then the open list at the foot.
+- done: the dark and 820 reads of section 13, recorded in MINDMAP_PLAN "Not verified". mapedgelag passes; maptheme and mapnarrow fail identically in light and dark (stale sweeps); one real finding below.
+
+## Remaining (one line each)
+
+- Found, not fixed: at 820x1100 `tree-right` the map strip (412px) covers the "Branch 1" line handle (mapstripcover, 1 of 192). Placement is `wbMapStripClearOfHandle`, called from the strip placement in `frontend/js/whiteboard.js` (~5900); add a below-the-node candidate or icon-only door labels at 900px and under (`.wb-map-strip`, `frontend/css/07-whiteboard-misc.css` ~8433).
+- Stale sweeps to refresh: `scratchpad/ui-sweeps/maptheme.js` (strip select, field count), `mapnarrow.js` (template-name dialog), `mapstrip.js` (shapes and grip expectations).
+- 12.3 item 2 ghost topics on the canvas (waits on boot CSS room); item 3 chat "Make a map" as floating topics (large).
+- 13g middle-button pan, 14.4 linked stickers and reaction stamps: need the owner.
+- VC12 Harper on node labels (OPEN.md 250).
