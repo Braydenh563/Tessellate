@@ -254,7 +254,7 @@ def test_last_turn_delete_answers_with_the_row(client):
 # --- personas ---------------------------------------------------------------------
 
 
-def test_build_messages_keeps_grounding_with_persona():
+def test_build_messages_keeps_grounding_with_persona(app_state):
     messages = librarian.build_messages(
         "q?", [{"content": "n", "category": "c"}], persona_prompt="You are a pirate."
     )
@@ -570,3 +570,12 @@ def test_a_persona_name_is_bounded_and_trimmed(client):
     full = client.get(f"/conversations/{created['id']}").json()
     assert full["messages"][1]["persona"] == "Coach"
     assert "persona" not in full["messages"][3]
+
+
+def test_a_stray_trailing_backslash_never_reaches_a_chat_title():
+    from tessellate.api import routes_conversations as rc
+
+    assert rc._question_title("what is there about a gaming mouse?\\") == "what is there about a gaming mouse?"
+    assert rc._question_title("  two\n lines  ") == "two lines"
+    assert rc._clean_title("Gaming mouse\\") == "Gaming mouse"
+    assert len(rc._question_title("word " * 40)) <= 60

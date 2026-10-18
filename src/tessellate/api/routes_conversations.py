@@ -430,7 +430,7 @@ def unarchive_conversation(
 @router.post("", status_code=201)
 def create_conversation(body: TurnBody, session: Session = Depends(get_session)) -> dict:
     """First turn of a new chat, the question becomes the title."""
-    title = body.question if len(body.question) <= 60 else body.question[:59] + "…"
+    title = _question_title(body.question)
     conversation = Conversation(
         title=title, messages=json.dumps(_turn_messages(body))
     )
@@ -559,9 +559,16 @@ TITLE_PROMPT = (
 )
 
 
+def _question_title(question: str) -> str:
+    """A question as a chat's name: one line, a stray trailing backslash (a
+    pasted escape, "what is there about a gaming mouse?\\") dropped, cut at 60."""
+    text = " ".join((question or "").split()).rstrip("\\ ")
+    return text if len(text) <= 60 else text[:59].rstrip() + "…"
+
+
 def _clean_title(raw: str) -> str | None:
     text = (raw or "").strip().splitlines()[0] if (raw or "").strip() else ""
-    text = text.strip().strip("\"'`*#").rstrip(".!,;:").strip()
+    text = text.strip().strip("\"'`*#").rstrip(".!,;:\\").strip()
     if not text or len(text) > 60 or len(text.split()) > 8:
         return None
     # Models frequently reply in lowercase, a title should start capitalised.
@@ -585,7 +592,7 @@ def retitle_conversation(
     first_question = next(
         (m["content"] for m in messages if m.get("role") == "user"), ""
     )
-    fallback = first_question if len(first_question) <= 60 else first_question[:59] + "…"
+    fallback = _question_title(first_question)
 
     title = None
     ollama = deps.get_ollama()

@@ -72,13 +72,17 @@ def _no_repo_data_folder():
     """A test that builds the app's config without `app_state` falls back to
     `./data`, which is the repo's own folder when pytest runs from the root
     (four `test_mcp_server` tests did, seen as an untracked `data/` after CI).
-    It fails the test that made one and clears it, so the next run is clean."""
+    It clears the folder, and in a serial run fails the test that made it. Under
+    xdist the workers share the folder, so a leak in one would fail whichever
+    test in another worker was running beside it: there it only cleans up, and
+    `pytest -p no:xdist <file>` names the offender."""
     folder = Path(__file__).resolve().parents[1] / "data"
     existed = folder.exists()
     yield
     if not existed and folder.exists():
         shutil.rmtree(folder, ignore_errors=True)
-        pytest.fail("this test wrote the repo's data/ folder: use the app_state fixture (or TESSELLATE_DATA_DIR)")
+        if not os.environ.get("PYTEST_XDIST_WORKER"):
+            pytest.fail("this test wrote the repo's data/ folder: use the app_state fixture (or TESSELLATE_DATA_DIR)")
 
 
 @pytest.fixture()
