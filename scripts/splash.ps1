@@ -60,10 +60,10 @@ param(
 )
 
 # Brief 85: this is a splash, not an installer window. Borderless and rounded,
-# the mark centred, one status line, one slim accent bar. At rest there are no
-# buttons: the step list appears when a start is not instant (first install, an
-# update, a failure) and Details, Copy diagnostics and Cancel appear as quiet
-# links on a slow start or a failure. Not run on Windows from the build box.
+# the mark centred, one status line with "Step N of M" beside it, one slim
+# accent bar, then the steps in a fixed panel (INBOX 1301 D2: the window keeps
+# one size, so it never grows down the screen) and Details, Copy diagnostics
+# and Cancel as quiet links. Not run on Windows from the build box.
 $ErrorActionPreference = "Stop"
 try {
   Add-Type -AssemblyName System.Windows.Forms
@@ -83,14 +83,22 @@ try {
   $panel  = [System.Drawing.Color]::FromArgb(28, 31, 42)
   $track  = [System.Drawing.Color]::FromArgb(38, 43, 58)
 
+  # One size from the first frame to the last (INBOX 1301 D2, the owner: the
+  # splash "is still pushing down to the bottom of the screen every step
+  # completed"). The window used to be centred at 252px and then grow
+  # downwards, a row per finished step and 134px more for Details, so its top
+  # stayed where a short window was centred and its bottom walked off the
+  # screen (586px tall, its top placed for 252, on a 728px work area: 96px
+  # below the taskbar). Now it is centred at
+  # the size it keeps: the steps live in a fixed panel with a row for each of
+  # MAX_ROWS, and Details swaps the log into that same panel.
   $WIDTH            = 520
-  $COLLAPSED_HEIGHT = 252
-  $LINKS_HEIGHT     = 282
-  $ROW_TOP          = 306
+  $HEIGHT           = 440
+  $PANEL_TOP        = 206
+  $PANEL_H          = 148
+  $ROW_TOP          = 10
   $ROW_STEP         = 22
   $MAX_ROWS         = 6
-  $EXPANDED_HEIGHT  = 560
-  $SHOW_LIST_AFTER  = 1
   $SHOW_LINKS_AFTER = 0
 
   # The mark is drawn once into a bitmap here, before the window exists, so the
@@ -168,12 +176,20 @@ try {
   $form                 = New-Object System.Windows.Forms.Form
   $form.FormBorderStyle = "None"
   $form.StartPosition   = "CenterScreen"
-  $form.Size            = New-Object System.Drawing.Size($WIDTH, $COLLAPSED_HEIGHT)
+  $form.Size            = New-Object System.Drawing.Size($WIDTH, $HEIGHT)
   $form.BackColor       = $bg
   $form.TopMost         = $true
   $form.ShowInTaskbar   = $true
   $form.Text            = "Starting Tessellate Notes"
-  $form.Region          = New-RoundRegion $WIDTH $COLLAPSED_HEIGHT 18
+  # Centred in the working area (above the taskbar) at the size it keeps; on
+  # a screen shorter than the window its top stays on screen.
+  $form.Add_Shown({
+    $area = [System.Windows.Forms.Screen]::FromControl($form).WorkingArea
+    $left = [int]($area.X + [Math]::Max(0, ($area.Width - $form.Width) / 2))
+    $top  = [int]($area.Y + [Math]::Max(0, ($area.Height - $form.Height) / 2))
+    $form.Location = New-Object System.Drawing.Point($left, $top)
+  })
+  $form.Region          = New-RoundRegion $WIDTH $HEIGHT 18
   # Double buffered (C38, the owner: "the splash popup flickers quite a bit").
   # `DoubleBuffered` is a protected property, so it is set through reflection;
   # without it every label change repaints straight onto the screen, a row at
@@ -194,13 +210,13 @@ try {
   }
 
   $logo = New-Object System.Windows.Forms.Panel
-  $logo.Size     = New-Object System.Drawing.Size(72, 72)
-  $logo.Location = New-Object System.Drawing.Point(224, 28)
+  $logo.Size     = New-Object System.Drawing.Size(64, 64)
+  $logo.Location = New-Object System.Drawing.Point(228, 24)
   $logo.BackColor = $bg
   $logo.Add_Paint({
     param($src, $e)
     $e.Graphics.InterpolationMode = "HighQualityBicubic"
-    $e.Graphics.DrawImage($logoBmp, 0, 0, 72, 72)
+    $e.Graphics.DrawImage($logoBmp, 0, 0, 64, 64)
   })
 
   $centre = [System.Drawing.ContentAlignment]::MiddleCenter
@@ -213,7 +229,7 @@ try {
   $titleFont = New-Object System.Drawing.Font -ArgumentList "Segoe UI", ([float]17), ([System.Drawing.FontStyle]::Bold)
   $noteFont  = New-Object System.Drawing.Font -ArgumentList "Segoe UI", ([float]12)
   $title           = New-Object System.Windows.Forms.Panel
-  $title.Location  = New-Object System.Drawing.Point(0, 104)
+  $title.Location  = New-Object System.Drawing.Point(0, 94)
   $title.Size      = New-Object System.Drawing.Size($WIDTH, 34)
   $title.BackColor = [System.Drawing.Color]::Transparent
   $title.Add_Paint({
@@ -240,26 +256,37 @@ try {
   $tag.ForeColor   = $muted
   $tag.Font        = New-Object System.Drawing.Font -ArgumentList "Segoe UI", ([float]9)
   $tag.TextAlign   = $centre
-  $tag.Location    = New-Object System.Drawing.Point(0, 138)
+  $tag.Location    = New-Object System.Drawing.Point(0, 128)
   $tag.Size        = New-Object System.Drawing.Size($WIDTH, 20)
 
+  # What is running now on the left, "Step 2 of 6" on the right, over the
+  # bar: the count says how far along without reading the list.
   $status           = New-Object System.Windows.Forms.Label
   $status.Text      = "Starting"
-  $status.ForeColor = $muted
+  $status.ForeColor = $ink
   $status.Font      = New-Object System.Drawing.Font -ArgumentList "Segoe UI", ([float]9)
-  $status.TextAlign = $centre
-  $status.Location  = New-Object System.Drawing.Point(30, 172)
-  $status.Size      = New-Object System.Drawing.Size(460, 20)
+  $status.TextAlign = [System.Drawing.ContentAlignment]::MiddleLeft
+  $status.AutoEllipsis = $true
+  $status.Location  = New-Object System.Drawing.Point(40, 164)
+  $status.Size      = New-Object System.Drawing.Size(330, 20)
+
+  $count           = New-Object System.Windows.Forms.Label
+  $count.Text      = ""
+  $count.ForeColor = $muted
+  $count.Font      = New-Object System.Drawing.Font -ArgumentList "Segoe UI", ([float]9)
+  $count.TextAlign = [System.Drawing.ContentAlignment]::MiddleRight
+  $count.Location  = New-Object System.Drawing.Point(370, 164)
+  $count.Size      = New-Object System.Drawing.Size(110, 20)
 
   # One bar, painted by hand from two panels in the app accent. A stock
   # ProgressBar is green (or white) under the system theme and ignores
   # ForeColor once themed, which is how the old window got two bars of two
   # colours.
-  $BAR_X = 60
-  $BAR_W = 400
+  $BAR_X = 40
+  $BAR_W = 440
   $barTrack          = New-Object System.Windows.Forms.Panel
   $barTrack.BackColor = $track
-  $barTrack.Location = New-Object System.Drawing.Point($BAR_X, 202)
+  $barTrack.Location = New-Object System.Drawing.Point($BAR_X, 190)
   $barTrack.Size     = New-Object System.Drawing.Size($BAR_W, 4)
   $barFill           = New-Object System.Windows.Forms.Panel
   $barFill.BackColor = $accent
@@ -283,15 +310,15 @@ try {
   $tip.ForeColor   = $dim
   $tip.Font        = New-Object System.Drawing.Font -ArgumentList "Segoe UI", ([float]8)
   $tip.TextAlign   = $centre
-  $tip.Location    = New-Object System.Drawing.Point(30, 216)
-  $tip.Size        = New-Object System.Drawing.Size(460, 18)
+  $tip.Location    = New-Object System.Drawing.Point(40, 384)
+  $tip.Size        = New-Object System.Drawing.Size(440, 18)
   $tip.Text        = $tips[0]
 
   # Quiet links, hidden at rest.
   function New-FooterLink([string]$text, [int]$x, [int]$width) {
     $b               = New-Object System.Windows.Forms.Label
     $b.Text          = $text
-    $b.Location      = New-Object System.Drawing.Point($x, 246)
+    $b.Location      = New-Object System.Drawing.Point($x, 410)
     $b.Size          = New-Object System.Drawing.Size($width, 20)
     $b.ForeColor     = $muted
     $b.Font          = New-Object System.Drawing.Font -ArgumentList "Segoe UI", ([float]8.5), ([System.Drawing.FontStyle]::Underline)
@@ -327,8 +354,16 @@ try {
   $hint.ForeColor   = $warn
   $hint.Font        = New-Object System.Drawing.Font -ArgumentList "Segoe UI", ([float]8)
   $hint.TextAlign   = $centre
-  $hint.Location    = New-Object System.Drawing.Point(30, 276)
-  $hint.Size        = New-Object System.Drawing.Size(460, 18)
+  $hint.Location    = New-Object System.Drawing.Point(40, 362)
+  $hint.Size        = New-Object System.Drawing.Size(440, 18)
+
+  # The steps' panel: a fixed box under the bar, MAX_ROWS rows tall, so a
+  # finished step changes a row's words and never the window's height.
+  $list           = New-Object System.Windows.Forms.Panel
+  $list.BackColor = $panel
+  $list.Location  = New-Object System.Drawing.Point($BAR_X, $PANEL_TOP)
+  $list.Size      = New-Object System.Drawing.Size($BAR_W, $PANEL_H)
+  $list.Region    = New-RoundRegion $BAR_W $PANEL_H 10
 
   $BAR_DROP   = 18
   $BAR_HEIGHT = 3
@@ -339,22 +374,26 @@ try {
     $mark            = New-Object System.Windows.Forms.Label
     $mark.Font       = New-Object System.Drawing.Font -ArgumentList "Segoe UI", ([float]10)
     $mark.ForeColor  = $dim
-    $mark.Location   = New-Object System.Drawing.Point(60, ($ROW_TOP + $i * $ROW_STEP))
+    $mark.BackColor  = $panel
+    $mark.Location   = New-Object System.Drawing.Point(12, ($ROW_TOP + $i * $ROW_STEP))
     $mark.Size       = New-Object System.Drawing.Size(18, 20)
     $mark.Text       = ""
 
     $name            = New-Object System.Windows.Forms.Label
     $name.Font       = New-Object System.Drawing.Font -ArgumentList "Segoe UI", ([float]10)
     $name.ForeColor  = $dim
-    $name.Location   = New-Object System.Drawing.Point(80, ($ROW_TOP + $i * $ROW_STEP))
-    $name.Size       = New-Object System.Drawing.Size(118, 20)
+    $name.BackColor  = $panel
+    $name.Location   = New-Object System.Drawing.Point(32, ($ROW_TOP + $i * $ROW_STEP))
+    $name.Size       = New-Object System.Drawing.Size(130, 20)
     $name.Text       = ""
 
     $detail           = New-Object System.Windows.Forms.Label
     $detail.Font      = New-Object System.Drawing.Font -ArgumentList "Segoe UI", ([float]9)
     $detail.ForeColor = $dim
-    $detail.Location  = New-Object System.Drawing.Point(200, ($ROW_TOP + 2 + $i * $ROW_STEP))
-    $detail.Size      = New-Object System.Drawing.Size(260, 16)
+    $detail.BackColor = $panel
+    $detail.AutoEllipsis = $true
+    $detail.Location  = New-Object System.Drawing.Point(166, ($ROW_TOP + 2 + $i * $ROW_STEP))
+    $detail.Size      = New-Object System.Drawing.Size(262, 16)
     $detail.Text      = ""
 
     $rowMark   += $mark
@@ -370,14 +409,20 @@ try {
   $details.ForeColor    = $muted
   $details.BorderStyle  = "None"
   $details.Font         = New-Object System.Drawing.Font -ArgumentList "Consolas", ([float]8)
-  $details.Location     = New-Object System.Drawing.Point(30, 446)
-  $details.Size         = New-Object System.Drawing.Size(460, 88)
+  $details.Location     = New-Object System.Drawing.Point(10, 8)
+  $details.Size         = New-Object System.Drawing.Size(($BAR_W - 20), ($PANEL_H - 16))
   $details.Visible      = $false
 
-  $form.Controls.AddRange(@($logo, $title, $tag, $status, $barTrack, $tip, $hint,
-                            $btnDetails, $btnCopy, $btnRetry, $btnCancel, $details))
+  # Before the launcher's first line, the panel says what it is waiting for
+  # rather than standing empty.
+  $rowName[0].Text = "Starting"
+  $rowName[0].Size = New-Object System.Drawing.Size(400, 20)
+
+  $form.Controls.AddRange(@($logo, $title, $tag, $status, $count, $barTrack, $list, $hint, $tip,
+                            $btnDetails, $btnCopy, $btnRetry, $btnCancel))
+  $list.Controls.Add($details)
   foreach ($i in 0..($MAX_ROWS - 1)) {
-    $form.Controls.AddRange(@($rowMark[$i], $rowName[$i], $rowDetail[$i]))
+    $list.Controls.AddRange(@($rowMark[$i], $rowName[$i], $rowDetail[$i]))
   }
 
   $st = @{
@@ -389,7 +434,6 @@ try {
     started     = (Get-Date)
     cancelled   = $false
     failed      = $false
-    showList    = $false
     showLinks   = $false
     target      = 0.04
     shown       = 0.04
@@ -401,41 +445,20 @@ try {
   $st.layoutKey = ""
 
   function Set-Layout {
-    $key = "$($st.showLinks)|$($st.showList)|$($st.failed)|$($details.Visible)|$([Math]::Min($MAX_ROWS, @($st.rows).Count))"
+    $key = "$($st.showLinks)|$($st.failed)|$($details.Visible)"
     if ($key -eq $st.layoutKey) { return }
     $st.layoutKey = $key
     $form.SuspendLayout()
-    # Capped at MAX_ROWS, the rows Update-Rows paints (C02, the owner: with
-    # details open, finished tasks pushed the window down until it touched the
-    # bottom of the screen).
-    $h = $COLLAPSED_HEIGHT
-    if ($st.showLinks -or $st.failed) { $h = $LINKS_HEIGHT }
-    if ($st.showList -or $st.failed) {
-      $n = [Math]::Min($MAX_ROWS, [Math]::Max(1, @($st.rows).Count))
-      $h = $ROW_TOP + $n * $ROW_STEP + 14
-    }
-    if ($details.Visible) {
-      # The log sits under the step list, wherever that ends, and the window
-      # grows to hold it: a fixed 560 left a gap, then put the log against the
-      # bottom edge of the screen (owner, 2026-10-12: "a little awkward").
-      $n = [Math]::Min($MAX_ROWS, [Math]::Max(1, @($st.rows).Count))
-      $logTop = $ROW_TOP + $n * $ROW_STEP + 16
-      $details.Location = New-Object System.Drawing.Point(30, $logTop)
-      $details.Size = New-Object System.Drawing.Size(460, 104)
-      $h = $logTop + 104 + 28
-    }
+    # Visibility only: the window's size and every position are fixed above
+    # (INBOX 1301 D2). Details swaps the log in for the rows, in the panel.
     $visibleLinks = ($st.showLinks -or $st.failed)
     $btnDetails.Visible = $visibleLinks
     $btnCopy.Visible    = $visibleLinks
     $btnCancel.Visible  = $visibleLinks
     Set-LinkRow
     foreach ($i in 0..($MAX_ROWS - 1)) {
-      $on = ($st.showList -or $st.failed)
+      $on = -not $details.Visible
       $rowMark[$i].Visible = $on; $rowName[$i].Visible = $on; $rowDetail[$i].Visible = $on
-    }
-    if ($form.Height -ne $h) {
-      $form.Height = $h
-      $form.Region = New-RoundRegion $WIDTH $h 18
     }
     $form.ResumeLayout($true)
   }
@@ -479,6 +502,7 @@ try {
 
   function Update-Rows($steps) {
     $all = @($steps)
+    if ($rowName[0].Width -ne 130) { $rowName[0].Size = New-Object System.Drawing.Size(130, 20) }
     # The most recent MAX_ROWS steps: the running one is always the last, so
     # it stays on screen however many have finished (C02).
     $first = [Math]::Max(0, $all.Count - $MAX_ROWS)
@@ -544,7 +568,7 @@ try {
       $details.Visible = $false
       $btnDetails.Text = "Details"
     } else {
-      $details.Text = Read-LogTail 8
+      $details.Text = Read-LogTail 9
       $details.Visible = $true
       $btnDetails.Text = "Hide details"
     }
@@ -636,13 +660,14 @@ try {
     }
   }
   $up = { param($s, $e) $drag.on = $false }
-  foreach ($c in @($form, $logo, $title, $tag, $status, $hint, $tip)) {
+  foreach ($c in @($form, $logo, $title, $tag, $status, $count, $hint, $tip)) {
     $c.Add_MouseDown($down); $c.Add_MouseMove($move); $c.Add_MouseUp($up)
   }
 
   function Show-ErrorCard($step) {
     $st.failed = $true
     $barTrack.Visible = $false
+    $count.Text = "Stopped at step $($step.Step) of $($step.Total)"
     $status.ForeColor = $bad
     $status.Text = "$($step.Title) failed: $($step.Detail)"
     if ($LogPath) {
@@ -707,8 +732,10 @@ try {
       Update-Hint $steps
 
       $elapsed = [int]((Get-Date) - $st.started).TotalSeconds
-      $st.showList = ($elapsed -ge $SHOW_LIST_AFTER)
       $st.showLinks = ($elapsed -ge $SHOW_LINKS_AFTER)
+      $counted = "Step $([Math]::Min($total, $done + 1)) of $total"
+      if ($done -ge $total) { $counted = "Done" }
+      if ($count.Text -ne $counted) { $count.Text = $counted }
 
       # One status line: what is running now, in plain words.
       $line = "$($current.Title)"

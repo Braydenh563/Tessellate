@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Windows launch splash: one size from the first frame (520 by 440, centred in the work area), with "Step N of M" beside the status line and the steps in a fixed panel; Details swaps the log into that panel, so a finished step or the log no longer grows the window down the screen (it reached 586 px from a top centred for 252).
 - Dashboard: Get started is one compact checklist, a head row ("1 of 3 done", a progress bar, a fold that is remembered, a ... menu) over three tiles of one height, so ticking a step no longer changes its size (350 to 114 px tall at 1440, 658 to 275 px on a phone); its menu and the dock's Get started menu add Mark all as done and Hide Get started, and Customise, Show Get started brings it back.
 - Whiteboard: hovering a Library tile (after 300 ms), or focusing it, shows a larger preview beside the sidebar; it hides on leave, Escape, a scroll and when a drag starts, and never shows under a touch.
 - Whiteboard and mind map: a plain mouse wheel zooms about the pointer (it panned before) and the page never scrolls; Shift+wheel pans sideways, Ctrl+wheel and a pinch still zoom; the shortcut sheet and the Guide say so.
