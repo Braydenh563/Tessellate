@@ -178,13 +178,6 @@ with its owner named in the entry.
      judged against written gold answers, not rule counts), first in the
      assistant brief; the empty badges and Atlas over the answer to ownerfix.
 
-1297. **Owner review, from the ledger (tagsearch-1011).** Read
-     `src/tessellate/ai/data/taxonomy/memorymap_everyday.json` (about 630 general
-     words added to 23 pack topics; the pack file is untouched) and say keep,
-     trim or drop. Recommendation: keep; no model it files 0.417 to 0.617 on the
-     120 notes and 0.458 to 0.667 on 48 held-out ones (`tests/test_everyday_vocabulary.py`).
-     Placed: WORLD_CLASS_PLAN 23 step 6.
-
 1298. **The owner, 2026-10-12, verbatim.** "Make the exceptions for the
      complexity but mark them to be fixed start of next pr". The 17 `composer_digest.py` rows are split and deleted
      (composer-1018b, the composer tests as the net). Left: 18 seeded functions that grew this PR

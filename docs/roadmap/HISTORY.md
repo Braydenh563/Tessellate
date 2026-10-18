@@ -50621,3 +50621,11 @@ Decision 62 built: the search model already loaded on first use (or at launch wi
      `tests/test_brand_name.py`), step 2 the internal identifiers with
      fallbacks for existing installs, as its own last commit.
 
+1297. **Owner review, from the ledger (tagsearch-1011).** Read
+     `src/tessellate/ai/data/taxonomy/memorymap_everyday.json` (about 630 general
+     words added to 23 pack topics; the pack file is untouched) and say keep,
+     trim or drop. Recommendation: keep; no model it files 0.417 to 0.617 on the
+     120 notes and 0.458 to 0.667 on 48 held-out ones (`tests/test_everyday_vocabulary.py`).
+     Decision (away run, 2026-10-18, standing order 2.3: the recommendation is taken): keep. Fixed.
+     Placed: WORLD_CLASS_PLAN 23 step 6.
+
