@@ -99,6 +99,11 @@ def _declared_anywhere(path: Path) -> set[str]:
 #: been loaded, with the reason each one is safe. A name here is a promise that
 #: somebody checked the path, not a way to quiet the test.
 REACHED_AFTER_LOAD = {
+    #: Back closing an open overlay (router-overlays.js): preloaded three seconds
+    #: after boot; before that Back steps the tab history as it always did. A
+    #: stand-in would return a promise, which is truthy, and swallow every Back.
+    "routerSettle": "quickNote (carries router-overlays.js), called in the .then of ensureModule('quickNote') in closeSettingsModal",
+    "routerBackHook": "quickNote (carries router-overlays.js), preloaded 3 s after boot; until then Back is the tab history's, as before",
     #: Settings, About, Maintenance: settings.js's showSettingsSection calls it
     #: in the .then of ensureModule('settingsControls').
     "renderMaintenance": "settingsControls, called in the .then of ensureModule('settingsControls') in showSettingsSection",

@@ -219,6 +219,8 @@ async function routerOpen(entry) {
 }
 
 window.addEventListener("popstate", async (event) => {
+  //: router-overlays.js (lazy): Back with an overlay open closes the overlay.
+  if (typeof routerBackHook === "function" && routerBackHook(event)) return;
   const navId = event.state && event.state.navId;
   const index = navId ? tabHistory.stack.findIndex((entry) => entry.navId === navId) : -1;
   if (index >= 0) {
@@ -237,19 +239,4 @@ async function routerRestore() {
   const entry = routeEntry(routerBootHash);
   if (!entry || (entry.tab === "dashboard" && !entry.section)) return false;
   return routerOpen(entry);
-}
-
-//: Settings closed by its own X or Escape rather than by a step through
-//: history: the address and the title name the tab it was over again. The
-//: history entry is kept (Back from here still steps past it), only what it
-//: shows is corrected.
-function routerSettle() {
-  if (!/^#\/settings/.test(location.hash)) return;
-  const entry = { tab: prefs.get("activeTab", null) || "dashboard", section: null };
-  try {
-    history.replaceState(history.state, "", `${location.pathname}${location.search}${routeHash(entry)}`);
-  } catch {
-    // As in routerOnVisit.
-  }
-  routerPaintTitle(entry);
 }

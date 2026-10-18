@@ -621,7 +621,7 @@ function filterSettings(term) {
 
 function closeSettingsModal() {
   //: The address and the title go back to the tab under it (router.js).
-  routerSettle();
+  ensureModule("quickNote").then(() => routerSettle());
   const search = $("settings-search");
   if (search) {
     search.value = "";

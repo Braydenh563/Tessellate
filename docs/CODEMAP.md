@@ -2,9 +2,9 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6040, frontend ids 2527, CSS sections 495, backend routes 609, backend modules 5833, test files 1260, tests 11379, plan headings 959.
+Counts: frontend functions 6042, frontend ids 2527, CSS sections 495, backend routes 609, backend modules 5833, test files 1261, tests 11384, plan headings 959.
 
-## Frontend functions (6040)
+## Frontend functions (6042)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -24,20 +24,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `clearApiCache` | frontend/js/app.js:642 |
 | `confirmDialog` | frontend/js/app.js:1441 |
 | `confirmVerb` | frontend/js/app.js:1434 |
-| `ensureModule` | frontend/js/app.js:2013 |
+| `ensureModule` | frontend/js/app.js:2015 |
 | `enterWithoutPassword` | frontend/js/app.js:721 |
 | `hide` | frontend/js/app.js:168 |
 | `hideBootSplash` | frontend/js/app.js:952 |
 | `initAuth` | frontend/js/app.js:965 |
-| `installStandIns` | frontend/js/app.js:2287 |
+| `installStandIns` | frontend/js/app.js:2289 |
 | `kickBackgroundTaskPoll` | frontend/js/app.js:611 |
-| `lazyAssetStamp` | frontend/js/app.js:1952 |
-| `lazyScript` | frontend/js/app.js:1993 |
+| `lazyAssetStamp` | frontend/js/app.js:1954 |
+| `lazyScript` | frontend/js/app.js:1995 |
 | `lockFieldForPin` | frontend/js/app.js:859 |
 | `lockNow` | frontend/js/app.js:926 |
 | `mediaSrc` | frontend/js/app.js:255 |
-| `mountNoteSurfaceNow` | frontend/js/app.js:2048 |
-| `onDomReady` | frontend/js/app.js:1984 |
+| `mountNoteSurfaceNow` | frontend/js/app.js:2050 |
+| `onDomReady` | frontend/js/app.js:1986 |
 | `promptDialog` | frontend/js/app.js:1551 |
 | `purgeLockedContent` | frontend/js/app.js:912 |
 | `recordBrowserLog` | frontend/js/app.js:23 |
@@ -57,7 +57,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `stagedImageByUrl` | frontend/js/app.js:200 |
 | `startApp` | frontend/js/app.js:1013 |
 | `startWithoutPassword` | frontend/js/app.js:706 |
-| `whenScriptsLoaded` | frontend/js/app.js:1933 |
+| `whenScriptsLoaded` | frontend/js/app.js:1935 |
 | `wireBackdropClose` | frontend/js/app.js:1727 |
 | `zoomWheelDelta` | frontend/js/app.js:249 |
 
@@ -936,7 +936,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `watchDockMenuPlacement` | frontend/js/navigation.js:1409 |
 | `wireLongPress` | frontend/js/navigation.js:24 |
 
-### frontend/js/router.js (13)
+### frontend/js/router.js (12)
 
 | Name | File:line |
 |---|---|
@@ -951,8 +951,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `routerOnVisit` | frontend/js/router.js:178 |
 | `routerOpen` | frontend/js/router.js:210 |
 | `routerPaintTitle` | frontend/js/router.js:161 |
-| `routerRestore` | frontend/js/router.js:236 |
-| `routerSettle` | frontend/js/router.js:246 |
+| `routerRestore` | frontend/js/router.js:238 |
 
 ### frontend/js/settings-panes.js (40)
 
@@ -2063,30 +2062,30 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `agentActStarters` | frontend/js/palette.js:184 |
 | `agentCurrentTab` | frontend/js/palette.js:119 |
-| `agentFocusStarter` | frontend/js/palette.js:1396 |
+| `agentFocusStarter` | frontend/js/palette.js:1397 |
 | `agentOpenSubject` | frontend/js/palette.js:260 |
-| `agentPaletteShut` | frontend/js/palette.js:449 |
-| `agentPhoneSheet` | frontend/js/palette.js:417 |
+| `agentPaletteShut` | frontend/js/palette.js:450 |
+| `agentPhoneSheet` | frontend/js/palette.js:418 |
 | `agentScopeForRun` | frontend/js/palette.js:313 |
-| `agentStarterButtons` | frontend/js/palette.js:1392 |
+| `agentStarterButtons` | frontend/js/palette.js:1393 |
 | `agentStarterRecents` | frontend/js/palette.js:147 |
 | `agentTabLabel` | frontend/js/palette.js:134 |
-| `cmdNoteLink` | frontend/js/palette.js:819 |
-| `cmdNoteName` | frontend/js/palette.js:806 |
-| `cmdPaletteAsk` | frontend/js/palette.js:904 |
-| `cmdPaletteBusy` | frontend/js/palette.js:594 |
-| `cmdPaletteFacts` | frontend/js/palette.js:628 |
-| `cmdPaletteGoToNote` | frontend/js/palette.js:666 |
-| `cmdPaletteGrow` | frontend/js/palette.js:1374 |
-| `cmdPaletteLinkNotes` | frontend/js/palette.js:854 |
-| `cmdPaletteReset` | frontend/js/palette.js:493 |
-| `cmdPaletteSaveAsChat` | frontend/js/palette.js:512 |
-| `cmdPaletteSources` | frontend/js/palette.js:681 |
-| `cmdSourceRow` | frontend/js/palette.js:720 |
-| `paletteLater` | frontend/js/palette.js:1474 |
+| `cmdNoteLink` | frontend/js/palette.js:820 |
+| `cmdNoteName` | frontend/js/palette.js:807 |
+| `cmdPaletteAsk` | frontend/js/palette.js:905 |
+| `cmdPaletteBusy` | frontend/js/palette.js:595 |
+| `cmdPaletteFacts` | frontend/js/palette.js:629 |
+| `cmdPaletteGoToNote` | frontend/js/palette.js:667 |
+| `cmdPaletteGrow` | frontend/js/palette.js:1375 |
+| `cmdPaletteLinkNotes` | frontend/js/palette.js:855 |
+| `cmdPaletteReset` | frontend/js/palette.js:494 |
+| `cmdPaletteSaveAsChat` | frontend/js/palette.js:513 |
+| `cmdPaletteSources` | frontend/js/palette.js:682 |
+| `cmdSourceRow` | frontend/js/palette.js:721 |
+| `paletteLater` | frontend/js/palette.js:1475 |
 | `rememberAgentStarter` | frontend/js/palette.js:164 |
 | `renderAgentStarters` | frontend/js/palette.js:197 |
-| `renderCmdPaletteMenu` | frontend/js/palette.js:567 |
+| `renderCmdPaletteMenu` | frontend/js/palette.js:568 |
 | `syncAgentOpenNoteToggle` | frontend/js/palette.js:336 |
 | `toggleAgentPalette` | frontend/js/palette.js:394 |
 
@@ -4928,6 +4927,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `revealStrip` | frontend/js/reveal-targets.js:127 |
 | `revealSubmenuFor` | frontend/js/reveal-targets.js:109 |
 | `revealWait` | frontend/js/reveal-targets.js:45 |
+
+### frontend/js/router-overlays.js (3)
+
+| Name | File:line |
+|---|---|
+| `routerBackHook` | frontend/js/router-overlays.js:69 |
+| `routerCloseTopOverlay` | frontend/js/router-overlays.js:17 |
+| `routerSettle` | frontend/js/router-overlays.js:95 |
 
 ### frontend/js/run-core.js (10)
 
@@ -17926,7 +17933,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11379)
+## Tests (11384)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18866,6 +18873,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_ring_room.py | 6 |
 | tests/test_round2_sweep_fixes.py | 3 |
 | tests/test_router.py | 13 |
+| tests/test_router_overlays.py | 5 |
 | tests/test_routes_batch.py | 25 |
 | tests/test_routes_named.py | 2 |
 | tests/test_row_enter.py | 3 |

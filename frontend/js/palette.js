@@ -397,6 +397,7 @@ function toggleAgentPalette() {
   //: the More sheet's row and the palette's row all opening something else.
   if (window.matchMedia(PHONE_TABS).matches) return agentPhoneSheet();
   if (cmdPaletteOverlay.classList.contains("hidden")) {
+    cmdPaletteOverlay.opener = document.activeElement;
     cmdPaletteOverlay.classList.remove("hidden");
     //: Both on open rather than once at boot: which starters are recent and
     //: what counts as the open note are answers about the moment the palette
