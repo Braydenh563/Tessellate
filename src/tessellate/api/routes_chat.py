@@ -2480,6 +2480,14 @@ def _worked_kind(question: str) -> str | None:
     return utilities.kind_of(question)
 
 
+def _late_panel(prepared: dict, question: str | None, answer_text: str, sent_kinds: set) -> list[dict]:
+    counted = prepared.get("stats")
+    if not counted or not answer_text or "panel" in sent_kinds:
+        return []
+    panel = reply_panel(str(counted.get("kind") or ""), question or "")
+    return [panel] if panel is not None else []
+
+
 def _stats_events(stats: dict, question: str = "") -> list[dict]:
     """A counted answer, its chart, its panel, and its one acting offer
     (decision 70), drawn as a link on its line."""
@@ -3382,12 +3390,12 @@ def _stream_lines(req: _StreamRequest) -> Iterator[str]:
     #: and the extractive answers): kept, saved, and never re-grounded.
     exact_grounding: list[dict] | None = None
     shape: str | None = None
-    panel_sent = False
+    sent_kinds: set = set()
     try:
         for payload in events:
             kind = payload.get("type")
             live_rows: list[dict] = []
-            panel_sent = panel_sent or kind == "panel"
+            sent_kinds.add(kind)
             if kind == "grounding" and payload.get("exact"):
                 exact_grounding = payload.get("sentences") or []
             if kind == "grounding":
@@ -3519,11 +3527,7 @@ def _stream_lines(req: _StreamRequest) -> Iterator[str]:
         _save_ask_turn(req.session, _in_full(req), answer_text, prepared, grounding)
     #: A model that wrote a counted answer's words still gets its panel
     #: (INBOX 1300 C06; decision 75: the panel assists, the model leads).
-    counted = prepared.get("stats")
-    if counted and answer_text and not panel_sent:
-        panel = reply_panel(str(counted.get("kind") or ""), req.question or "")
-        if panel is not None:
-            yield event(panel)
+    yield from map(event, _late_panel(prepared, req.question, answer_text, sent_kinds))
     if answer_text:
         marks["done"] = time.perf_counter() - started
         yield event({"type": "why", "lines": _why(req, prepared, grounding, composing, will_answer, tools_only, ollama_running, shape, marks)})

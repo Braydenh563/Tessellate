@@ -408,6 +408,18 @@ function replyCalcResult() {
   return out;
 }
 
+//: "12*(3+4) is about 84." to "84". String steps, not a regex: CodeQL
+//: read `^.*? is ` on an answer as polynomial backtracking.
+function calcFigure(answer, dropRates) {
+  let a = String(answer || "");
+  const i = a.indexOf(" is ");
+  if (i >= 0) a = a.slice(i + 4);
+  if (a.startsWith("about ")) a = a.slice(6);
+  if (!a.endsWith(".")) return a;
+  const j = dropRates ? a.indexOf(" at the rates from ") : -1;
+  return j >= 0 ? a.slice(0, j) : a.slice(0, -1);
+}
+
 function replyCalcShow(out, got, { final = false } = {}) {
   const figure = out.querySelector(".calc-figure");
   const read = out.querySelector(".calc-read");
@@ -420,7 +432,7 @@ function replyCalcShow(out, got, { final = false } = {}) {
   }
   //: The figure on its own ("84", not "12*(3+4) is 84."): the sum is in the
   //: box, and how the app read it is the line under.
-  figure.textContent = got.error ? "" : String(got.answer || "").replace(/^.*? is (about )?/, "").replace(/( at the rates from .*)?\.$/, "");
+  figure.textContent = got.error ? "" : calcFigure(got.answer, true);
   read.textContent = got.error ? got.error : got.read_as ? `Read as ${got.read_as}` : "";
 }
 
@@ -543,7 +555,7 @@ function replyCalcHistory(list, box) {
     const again = document.createElement("button");
     again.type = "button";
     again.className = "ghost small calc-again";
-    again.textContent = `${row.input} = ${row.answer.replace(/^.*? is (about )?/, "").replace(/\.$/, "")}`;
+    again.textContent = `${row.input} = ${calcFigure(row.answer, false)}`;
     again.title = "Put this back in the box";
     again.addEventListener("click", () => {
       box.value = row.input;
