@@ -7,6 +7,9 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Quick-nav chord: **t** (for Tessellate) then a letter jumps; **m** still works. Timeline is now t then i (t t closes the guide); on a board bare T stays the text tool. The shortcuts list, Settings, Guide and palette keycaps say so (C23; `scratchpad/ui-sweeps/gokey.js`).
+- "Wat cna u do??" gets the same capability reply as "What can you do??" instead of note citations: the typo reading now decides the route (C15; `tests/test_composer_owner_1017.py`, two fixtures in `owner_typos.json`).
+- Launch splash: the window height is capped at the six rows it paints and shows the latest rows, and it is double buffered, skips unchanged layout and labels, so it neither grows down the screen nor flickers (C02, C38; static tests only, not verified on Windows).
 - Scrolling Settings > Help is smooth: its rows no longer animate their hover colour as the wheel moves them under the pointer (C25; `scratchpad/ui-sweeps/helplag.js` at 4x CPU: median frame 33.3 to 16.7 ms, General 16.7).
 - A modal panel's title row with its close button stays at the top while the panel scrolls (Statistics, Keyboard shortcuts and every other card that is itself the scroll box), on the opaque surface (C12; `scratchpad/ui-sweeps/dialogheadsticky.js`: Statistics head at 17 px after a 400 px scroll, was -383).
 - On the whiteboard a right-button drag on bare canvas pans (past 4 px), like draw.io; a plain right-click still opens the board menu and a card keeps its own menu (C03; `scratchpad/ui-sweeps/wbrightpan.js`: 150 px pan, 0 menus after a drag, 1 after a click).

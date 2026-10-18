@@ -13,12 +13,13 @@ audits reproduced each bug in the app (ports 8791, 8792). A row is **open**,
 | C31 link kind cannot be cleared | S, fixes1 | open | `link-types.js:109` |
 | C32 undo shows nothing | S, fixes1 | open | `performUndo` surface branch `status.js:1517` |
 | C35 missing package toast, no link | S, fixes1 | open | `captions.js:84`; `toastAction` |
-| C03 right-drag pan | S, fixes2 | open | button 2 refused `whiteboard.js:91`, menu `:8640` |
-| C12 sticky panel header | S, fixes2 | open | `.dialog-head` static in `.stats-card` |
-| C25 Help scroll lag | S, fixes2 | open | 4x CPU: median 33 to 50 ms a frame, 1954 nodes |
-| C15 typo question answered from notes | S, fixes2 | open | "Wat cna u do??" read right, then note citations |
-| C02 splash rows grow | S, fixes2 | open | `scripts/splash.ps1:394` uncapped; Windows only |
-| C23 go-key prefix | S, fixes2 | open | decision: prefix `t`, Timeline second key `i`, `m` alias one release |
+| C03 right-drag pan | S, fixes2 | fixed e7b64b0 | `wbrightpan.js`: right-drag 150 px pan, 0 menus after a drag, 1 after a click, card press 0 px |
+| C12 sticky panel header | S, fixes2 | fixed af73696 | `dialogheadsticky.js`: Statistics head 17 px at rest and after 400 px scroll (was -383) |
+| C25 Help scroll lag | S, fixes2 | fixed da029b4 | `helplag.js` 4x CPU: median frame 33.3 to 16.7 ms (General 16.7); Paint 2196 ms to under 600 ms |
+| C15 typo question answered from notes | S, fixes2 | fixed e600092 | route test: capability reply for "Wat cna u do??"; render checked (4 paragraphs, 2 bold, no stray stars) |
+| C02 splash rows grow | S, fixes2 | fixed 03b6bf4 | height capped at MAX_ROWS (static test); not verified on Windows |
+| C38 splash flicker | S, fixes2 | fixed 03b6bf4 | double buffered, layout and labels written only on change; not verified on Windows |
+| C23 go-key prefix | S, fixes2 | fixed bfcb7f5 | `gokey.js`: t guide opens, t t closes, t i Timeline, m d Dashboard, t n Notes |
 | C01 throw lands, peek then fall | O, design | open | `avatars.js:5706`, `:6098` |
 | C19, C20 companion layer and size on boards | O, design | open | band z 44 over Format z 25; WHITEBOARD step 8 |
 | C05 slash commands below fold | O, design | open | first command at 444 px in a 386 px menu |
