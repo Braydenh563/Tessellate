@@ -8,11 +8,11 @@
 
 ## Morning summary (away run 2026-10-18b, branch claude/magical-feynman-7bgj7j, PR 192, 0.6.0)
 
-- Done: INBOX 1300 C01 to C44 and 1301 D1 to D8 fixed; C30 lightbox redesign; UX audit items 1 to 12; composer leftovers; undo/redo race; palette lexical note rows; phone hero height; splat landing reach; CodeQL ReDoS in map-from-notes fixed. Released as 0.6.0 (version, asset stamps, CHANGELOG, README); PR title and description updated.
-- CI: green on every pushed head through the uxfix3 merge.
-- Blocked on the owner: the merge of PR 192; the PR 191 items still listed below (B61, B58, B39, B20, B70).
-- Usage: weekly 47% to about 50% (self-stop 55%); agents fixes1 to 9, design1 to 7, uxfix1 to 3, composer5.
-- Next: the composer's remaining headed label lines in `_lines` ("**Your week:**"); whiteboard and map dark contrast with a seeded board; INBOX open items.
+- Done: INBOX 1300 C01 to C44 (resolved to HISTORY) and 1301 D1 to D8; C30 lightbox redesign; UX audit 1 to 12; undo/redo race; palette lexical rows; phone hero height; splat reach; composer prose openers (composer6); backup rows show what made them and verified (805 part); framed Atlas kept inside (743 tail); 13 complexity splits, 241 to 228 over 15 (1298 part); CodeQL ReDoS fixed; dark contrast on whiteboard and map measured clean (uxfix4). Released as 0.6.0; PR title and description updated.
+- CI: green on every pushed head through da548db; 29351d9 (complexity merge) pushed after the full suite (one stale string test fixed).
+- Blocked on the owner: the merge of PR 192; pale palette branch ribbons under 3:1 (lifting palette colours per theme moves a pinned test, uxfix4-1018.md); PR 191 items below (B61, B58, B39, B20, B70).
+- Usage: weekly 46% to about 51% (self-stop 55%); agents fixes1 to 9, design1 to 7, uxfix1 to 5, composer5 to 6, cx1298.
+- Next: INBOX 1298 rest (agent.run_agent 78, search_manager._retrieve 60, skill_runner._run_one_step 53, routes_chat._prepare 52); 805 process ledger; 743 gestures and enlarged view; INBOX 904 open bugs.
 
 
 > **Where the owner reads screenshots (UI_MODERNISATION_PLAN Phase 11 item 11; ledger 1539):** `docs/screenshots/*.png`, shown in the README and `docs/index.html`; `scratchpad/ui-sweeps/readmeshots.js` retakes them against a running app. A change to a surface retakes that surface's shot in the same commit. The phone picture is `docs/screenshots/phone.png` (390 wide, the same script; `SKIP=phone` leaves it); nothing else is a place the owner reads.
