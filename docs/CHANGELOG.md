@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Chat: Make a mind map, on an answer (Mind map this) and in the chat menu (Make a mind map of this chat), builds a map from the text's headings and lists with no model (`POST /whiteboard/maps/from-text`); Save this chat as a document moved to the lazy quick-note bundle for the boot budget.
 - Ask and Chat: a bare "3/4" in a question follows the browser's locale (the chat request carries it), so in en-US "what's on 3/4" reads as 4 March.
 - Search: a mark's comment on a recording is found by keyword search (pictures' captions already were); a question's "3/4" follows the locale where one is passed (the reading route), day first otherwise.
 - Documents: link offers have a switch (Settings, Writing, and the dictionary dialog) and Ignore on an offer keeps that name out of every document until Settings, Writing offers them again; tag offers stay dropped, a document has no tags.

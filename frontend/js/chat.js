@@ -199,6 +199,7 @@ function assistantMessageActions({ bubble, text, question, onEdit }) {
       title: "Save this answer as a draft note",
       onClick: () => saveChatAnswerAsNote(question, text),
     },
+    { label: "ph:tree-structure", title: "Mind map this", onClick: () => chatKeep("map", text) },
     { label: "ph:alarm", title: "Set a reminder from this answer", onClick: () => reminderFromChatAnswer(text) },
     ...(onEdit ? [{ label: "ph:pencil-simple", title: "Edit this answer", onClick: onEdit }] : []),
     {
@@ -1963,7 +1964,12 @@ function mountChatActionsMenu() {
           //: on rather than as a file in a downloads folder.
           label: "ph:file-text Save this chat as a document",
           group: "keep",
-          run: () => saveChatAsDocument(),
+          run: () => chatKeep("doc"),
+        },
+        {
+          label: "ph:tree-structure Make a mind map of this chat",
+          group: "keep",
+          run: () => chatKeep("map", chatTranscriptText(), $("chat-title")?.textContent),
         },
         {
           label: "ph:copy Copy the whole transcript",
@@ -1980,34 +1986,6 @@ function mountChatActionsMenu() {
       "More actions for this conversation"
     )
   );
-}
-
-//: **A conversation, kept as a document.**
-//:
-//: The transcript already exports as a file (the menu's Export row); this keeps it
-//: *inside* the notebook, where it is searchable, linkable and editable like
-//: everything else. Titled after the conversation so the Documents list reads
-//: as a list of conversations rather than of dated blobs.
-async function saveChatAsDocument() {
-  const text = chatTranscriptText();
-  if (!text) return toast("There is nothing to save yet.");
-  const title = ($("chat-title")?.textContent || "Chat").trim();
-  try {
-    const doc = await apiJson("/documents", {
-      method: "POST",
-      body: JSON.stringify({
-        title: `${title}: chat`,
-        content: `# ${title}\n\n${text}\n`,
-      }),
-    });
-    chatWriteRecord("chatDocumentUndo", doc);
-    toastAction("Saved to your documents.", "Open it", () => {
-      switchTab("documents");
-      if (typeof openDocument === "function") openDocument(doc.id);
-    }, { go: { open: "doc", id: doc.id } });
-  } catch (error) {
-    toast(error.message || "Couldn't save that document.", true);
-  }
 }
 
 //: The transcript as text, the thing a person actually wants when they say

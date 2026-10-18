@@ -2,9 +2,9 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6065, frontend ids 2533, CSS sections 495, backend routes 610, backend modules 5835, test files 1277, tests 11442, plan headings 958.
+Counts: frontend functions 6066, frontend ids 2533, CSS sections 495, backend routes 611, backend modules 5837, test files 1277, tests 11443, plan headings 958.
 
-## Frontend functions (6065)
+## Frontend functions (6066)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -419,93 +419,92 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `watchFiling` | frontend/js/capture-ask.js:48 |
 | `withTitle` | frontend/js/capture-ask.js:435 |
 
-### frontend/js/chat.js (83)
+### frontend/js/chat.js (82)
 
 | Name | File:line |
 |---|---|
-| `aiWritingTrace` | frontend/js/chat.js:2217 |
-| `applyCompression` | frontend/js/chat.js:2077 |
-| `askAboutPage` | frontend/js/chat.js:1464 |
+| `aiWritingTrace` | frontend/js/chat.js:2195 |
+| `applyCompression` | frontend/js/chat.js:2055 |
+| `askAboutPage` | frontend/js/chat.js:1465 |
 | `assistantLabel` | frontend/js/chat.js:52 |
 | `assistantMessageActions` | frontend/js/chat.js:162 |
-| `atlasSuggestion` | frontend/js/chat.js:674 |
-| `batteryModeOn` | frontend/js/chat.js:2119 |
-| `bookmarkWebResult` | frontend/js/chat.js:1267 |
-| `buildWebResultRow` | frontend/js/chat.js:1144 |
-| `chatEmptySettle` | frontend/js/chat.js:695 |
+| `atlasSuggestion` | frontend/js/chat.js:675 |
+| `batteryModeOn` | frontend/js/chat.js:2097 |
+| `bookmarkWebResult` | frontend/js/chat.js:1268 |
+| `buildWebResultRow` | frontend/js/chat.js:1145 |
+| `chatEmptySettle` | frontend/js/chat.js:696 |
 | `chatHistoryToSend` | frontend/js/chat.js:36 |
 | `chatMessageActions` | frontend/js/chat.js:65 |
-| `chatTranscriptText` | frontend/js/chat.js:2015 |
+| `chatTranscriptText` | frontend/js/chat.js:1993 |
 | `chatTurnTranscript` | frontend/js/chat.js:125 |
-| `citeWebPage` | frontend/js/chat.js:1521 |
-| `clearChatEmptyState` | frontend/js/chat.js:823 |
-| `clearWebSearchHistory` | frontend/js/chat.js:1335 |
-| `closeWebReader` | frontend/js/chat.js:893 |
-| `compactTokens` | frontend/js/chat.js:490 |
-| `compressChatContext` | frontend/js/chat.js:2043 |
-| `continueRunControls` | frontend/js/chat.js:226 |
-| `copyToClipboard` | frontend/js/chat.js:547 |
-| `copyViaTextarea` | frontend/js/chat.js:514 |
-| `copyWebLink` | frontend/js/chat.js:1259 |
-| `fillPersonaMark` | frontend/js/chat.js:1798 |
-| `flashCopied` | frontend/js/chat.js:536 |
-| `forkFromBubble` | frontend/js/chat.js:626 |
-| `livingInterval` | frontend/js/chat.js:2203 |
-| `loadResponseModes` | frontend/js/chat.js:1753 |
-| `loadWebSearchHistory` | frontend/js/chat.js:1310 |
-| `manualPauseControls` | frontend/js/chat.js:272 |
-| `messageMetaLine` | frontend/js/chat.js:340 |
-| `metaItem` | frontend/js/chat.js:306 |
-| `mountChatActionsMenu` | frontend/js/chat.js:1939 |
-| `openWebPageExternally` | frontend/js/chat.js:1255 |
-| `openWebReader` | frontend/js/chat.js:1481 |
-| `personaOptions` | frontend/js/chat.js:1815 |
-| `progressLine` | frontend/js/chat.js:2545 |
-| `progressMotionWanted` | frontend/js/chat.js:2155 |
-| `progressPhaseText` | frontend/js/chat.js:2413 |
-| `pushWebSearchHistory` | frontend/js/chat.js:1319 |
-| `questionForBubble` | frontend/js/chat.js:580 |
-| `reducedMotionWanted` | frontend/js/chat.js:2125 |
-| `refreshWebSearxngStrip` | frontend/js/chat.js:1064 |
-| `regenerateFromBubble` | frontend/js/chat.js:598 |
-| `regenerateLastAnswer` | frontend/js/chat.js:653 |
-| `removeChatBubble` | frontend/js/chat.js:500 |
-| `renderChatContextMeter` | frontend/js/chat.js:1889 |
-| `renderChatEmptyState` | frontend/js/chat.js:705 |
-| `renderChatTurnCount` | frontend/js/chat.js:1919 |
-| `renderChatUsage` | frontend/js/chat.js:1872 |
-| `renderCompressionState` | frontend/js/chat.js:2090 |
-| `renderModelContextBox` | frontend/js/chat.js:1614 |
-| `renderModelHealthNote` | frontend/js/chat.js:1716 |
-| `renderModelSpec` | frontend/js/chat.js:1644 |
-| `renderWebPageAttachment` | frontend/js/chat.js:1548 |
-| `renderWebPanelMenu` | frontend/js/chat.js:998 |
-| `renderWebSearchHistory` | frontend/js/chat.js:1344 |
-| `rewriteAnswerWith` | frontend/js/chat.js:617 |
-| `runWebSearch` | frontend/js/chat.js:1379 |
-| `saveChatAsDocument` | frontend/js/chat.js:1991 |
-| `scheduleThinkingWordTick` | frontend/js/chat.js:2331 |
-| `setResponseMode` | frontend/js/chat.js:1776 |
-| `setWebEngineDot` | frontend/js/chat.js:984 |
-| `setWebSearxngRunning` | frontend/js/chat.js:1049 |
-| `showCompressReview` | frontend/js/chat.js:2065 |
-| `startThinkingWordRotation` | frontend/js/chat.js:2359 |
-| `stopThinkingWordRotation` | frontend/js/chat.js:2381 |
-| `stopWebRequest` | frontend/js/chat.js:878 |
-| `togglePersonaPrompt` | frontend/js/chat.js:1864 |
-| `toggleWebPanel` | frontend/js/chat.js:906 |
-| `toolPhaseVerb` | frontend/js/chat.js:2428 |
-| `typingDots` | frontend/js/chat.js:2442 |
-| `webEngineWords` | frontend/js/chat.js:967 |
-| `webPageContextBlock` | frontend/js/chat.js:1579 |
-| `webPageMarkdown` | frontend/js/chat.js:1488 |
-| `webQueryTerms` | frontend/js/chat.js:1131 |
-| `webReaderIsOpen` | frontend/js/chat.js:889 |
-| `webRequestEnd` | frontend/js/chat.js:868 |
-| `webRequestStart` | frontend/js/chat.js:859 |
-| `webResultMark` | frontend/js/chat.js:1110 |
-| `wheelScrollsHorizontally` | frontend/js/chat.js:2266 |
-| `wireHorizontalWheelScrolling` | frontend/js/chat.js:2299 |
+| `citeWebPage` | frontend/js/chat.js:1522 |
+| `clearChatEmptyState` | frontend/js/chat.js:824 |
+| `clearWebSearchHistory` | frontend/js/chat.js:1336 |
+| `closeWebReader` | frontend/js/chat.js:894 |
+| `compactTokens` | frontend/js/chat.js:491 |
+| `compressChatContext` | frontend/js/chat.js:2021 |
+| `continueRunControls` | frontend/js/chat.js:227 |
+| `copyToClipboard` | frontend/js/chat.js:548 |
+| `copyViaTextarea` | frontend/js/chat.js:515 |
+| `copyWebLink` | frontend/js/chat.js:1260 |
+| `fillPersonaMark` | frontend/js/chat.js:1799 |
+| `flashCopied` | frontend/js/chat.js:537 |
+| `forkFromBubble` | frontend/js/chat.js:627 |
+| `livingInterval` | frontend/js/chat.js:2181 |
+| `loadResponseModes` | frontend/js/chat.js:1754 |
+| `loadWebSearchHistory` | frontend/js/chat.js:1311 |
+| `manualPauseControls` | frontend/js/chat.js:273 |
+| `messageMetaLine` | frontend/js/chat.js:341 |
+| `metaItem` | frontend/js/chat.js:307 |
+| `mountChatActionsMenu` | frontend/js/chat.js:1940 |
+| `openWebPageExternally` | frontend/js/chat.js:1256 |
+| `openWebReader` | frontend/js/chat.js:1482 |
+| `personaOptions` | frontend/js/chat.js:1816 |
+| `progressLine` | frontend/js/chat.js:2523 |
+| `progressMotionWanted` | frontend/js/chat.js:2133 |
+| `progressPhaseText` | frontend/js/chat.js:2391 |
+| `pushWebSearchHistory` | frontend/js/chat.js:1320 |
+| `questionForBubble` | frontend/js/chat.js:581 |
+| `reducedMotionWanted` | frontend/js/chat.js:2103 |
+| `refreshWebSearxngStrip` | frontend/js/chat.js:1065 |
+| `regenerateFromBubble` | frontend/js/chat.js:599 |
+| `regenerateLastAnswer` | frontend/js/chat.js:654 |
+| `removeChatBubble` | frontend/js/chat.js:501 |
+| `renderChatContextMeter` | frontend/js/chat.js:1890 |
+| `renderChatEmptyState` | frontend/js/chat.js:706 |
+| `renderChatTurnCount` | frontend/js/chat.js:1920 |
+| `renderChatUsage` | frontend/js/chat.js:1873 |
+| `renderCompressionState` | frontend/js/chat.js:2068 |
+| `renderModelContextBox` | frontend/js/chat.js:1615 |
+| `renderModelHealthNote` | frontend/js/chat.js:1717 |
+| `renderModelSpec` | frontend/js/chat.js:1645 |
+| `renderWebPageAttachment` | frontend/js/chat.js:1549 |
+| `renderWebPanelMenu` | frontend/js/chat.js:999 |
+| `renderWebSearchHistory` | frontend/js/chat.js:1345 |
+| `rewriteAnswerWith` | frontend/js/chat.js:618 |
+| `runWebSearch` | frontend/js/chat.js:1380 |
+| `scheduleThinkingWordTick` | frontend/js/chat.js:2309 |
+| `setResponseMode` | frontend/js/chat.js:1777 |
+| `setWebEngineDot` | frontend/js/chat.js:985 |
+| `setWebSearxngRunning` | frontend/js/chat.js:1050 |
+| `showCompressReview` | frontend/js/chat.js:2043 |
+| `startThinkingWordRotation` | frontend/js/chat.js:2337 |
+| `stopThinkingWordRotation` | frontend/js/chat.js:2359 |
+| `stopWebRequest` | frontend/js/chat.js:879 |
+| `togglePersonaPrompt` | frontend/js/chat.js:1865 |
+| `toggleWebPanel` | frontend/js/chat.js:907 |
+| `toolPhaseVerb` | frontend/js/chat.js:2406 |
+| `typingDots` | frontend/js/chat.js:2420 |
+| `webEngineWords` | frontend/js/chat.js:968 |
+| `webPageContextBlock` | frontend/js/chat.js:1580 |
+| `webPageMarkdown` | frontend/js/chat.js:1489 |
+| `webQueryTerms` | frontend/js/chat.js:1132 |
+| `webReaderIsOpen` | frontend/js/chat.js:890 |
+| `webRequestEnd` | frontend/js/chat.js:869 |
+| `webRequestStart` | frontend/js/chat.js:860 |
+| `webResultMark` | frontend/js/chat.js:1111 |
+| `wheelScrollsHorizontally` | frontend/js/chat.js:2244 |
+| `wireHorizontalWheelScrolling` | frontend/js/chat.js:2277 |
 
 ### frontend/js/chat-agent.js (71)
 
@@ -4842,10 +4841,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `quickAccessTile` | frontend/js/quick-access.js:36 |
 | `saveQuickTint` | frontend/js/quick-access.js:471 |
 
-### frontend/js/quick-note.js (23)
+### frontend/js/quick-note.js (25)
 
 | Name | File:line |
 |---|---|
+| `chatKeep` | frontend/js/quick-note.js:486 |
 | `clearQuickNote` | frontend/js/quick-note.js:246 |
 | `clipPastedLink` | frontend/js/quick-note.js:350 |
 | `createNoteSafely` | frontend/js/quick-note.js:71 |
@@ -4861,11 +4861,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `quickNoteReminder` | frontend/js/quick-note.js:311 |
 | `quickNoteStatus` | frontend/js/quick-note.js:200 |
 | `quickNoteToCapture` | frontend/js/quick-note.js:328 |
-| `reminderFromChatAnswer` | frontend/js/quick-note.js:482 |
+| `reminderFromChatAnswer` | frontend/js/quick-note.js:530 |
 | `renderNoteOutbox` | frontend/js/quick-note.js:137 |
 | `renderPendingNoteRows` | frontend/js/quick-note.js:155 |
 | `returnNoteToCapture` | frontend/js/quick-note.js:127 |
-| `saveChatAnswerAsNote` | frontend/js/quick-note.js:454 |
+| `saveChatAnswerAsNote` | frontend/js/quick-note.js:502 |
+| `saveChatAsDocument` | frontend/js/quick-note.js:460 |
 | `saveQuickNote` | frontend/js/quick-note.js:254 |
 | `scheduleNoteOutboxFlush` | frontend/js/quick-note.js:85 |
 | `writeNoteOutbox` | frontend/js/quick-note.js:42 |
@@ -9984,7 +9985,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/usage-lazy.css | 34 |
 | frontend/css/utilities-lazy.css | 116 |
 
-## Backend routes (610)
+## Backend routes (611)
 
 `@router.<method>(`, `@<name>_router.<method>(` and `@app.<method>(` decorators in `src/tessellate/api/*.py`, sorted by path. The line is the decorator's.
 
@@ -10262,6 +10263,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/logs/stream` | GET | `stream_server_logs` | src/tessellate/api/routes_settings.py:2321 |
 | `/maps/from-note/{note_id}` | POST | `map_from_note` | src/tessellate/api/routes_map_from_notes.py:442 |
 | `/maps/from-notes` | POST | `map_from_notes` | src/tessellate/api/routes_map_from_notes.py:258 |
+| `/maps/from-text` | POST | `map_from_text` | src/tessellate/api/routes_map_from_notes.py:470 |
 | `/media` | GET | `list_media` | src/tessellate/api/routes_files.py:1444 |
 | `/media-session` | POST | `media_session` | src/tessellate/api/routes_auth.py:904 |
 | `/media/meta/{filename}` | GET | `media_meta` | src/tessellate/api/routes_files.py:1601 |
@@ -10601,7 +10603,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (5835)
+## Backend modules (5837)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -11750,40 +11752,40 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_of` | src/tessellate/ai/help_chat.py:2413 |
-| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2344 |
-| `_guide_lead` | src/tessellate/ai/help_chat.py:2861 |
-| `_guide_opening` | src/tessellate/ai/help_chat.py:2877 |
-| `_help_sentences` | src/tessellate/ai/help_chat.py:2844 |
-| `_keyword_in` | src/tessellate/ai/help_chat.py:2334 |
-| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2266 |
-| `_keyword_regex` | src/tessellate/ai/help_chat.py:2330 |
-| `_matching_topics` | src/tessellate/ai/help_chat.py:2463 |
-| `_meaning_topics` | src/tessellate/ai/help_chat.py:2543 |
-| `_normalise_keys` | src/tessellate/ai/help_chat.py:2289 |
-| `_place` | src/tessellate/ai/help_chat.py:2818 |
-| `_preference` | src/tessellate/ai/help_chat.py:2900 |
-| `_prompt_for` | src/tessellate/ai/help_chat.py:2691 |
-| `_read_as` | src/tessellate/ai/help_chat.py:3000 |
-| `_reading_topics` | src/tessellate/ai/help_chat.py:2435 |
-| `_repaired` | src/tessellate/ai/help_chat.py:2452 |
-| `_second_sentence` | src/tessellate/ai/help_chat.py:2848 |
-| `_state_line` | src/tessellate/ai/help_chat.py:2909 |
-| `_stated_lead` | src/tessellate/ai/help_chat.py:2918 |
-| `answer` | src/tessellate/ai/help_chat.py:3077 |
-| `answer_stream` | src/tessellate/ai/help_chat.py:3015 |
-| `badges_for` | src/tessellate/ai/help_chat.py:2631 |
-| `composed_answer` | src/tessellate/ai/help_chat.py:2929 |
-| `help_block_for` | src/tessellate/ai/help_chat.py:3157 |
-| `help_listing` | src/tessellate/ai/help_chat.py:2602 |
-| `help_sentences` | src/tessellate/ai/help_chat.py:2827 |
-| `names_app` | src/tessellate/ai/help_chat.py:3141 |
-| `offline_answer` | src/tessellate/ai/help_chat.py:2947 |
-| `social_reply` | src/tessellate/ai/help_chat.py:2791 |
-| `source_names` | src/tessellate/ai/help_chat.py:2598 |
-| `system_answer` | src/tessellate/ai/help_chat.py:2580 |
-| `topic_title` | src/tessellate/ai/help_chat.py:2566 |
-| `topics_for` | src/tessellate/ai/help_chat.py:2645 |
+| `_act_of` | src/tessellate/ai/help_chat.py:2415 |
+| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2346 |
+| `_guide_lead` | src/tessellate/ai/help_chat.py:2863 |
+| `_guide_opening` | src/tessellate/ai/help_chat.py:2879 |
+| `_help_sentences` | src/tessellate/ai/help_chat.py:2846 |
+| `_keyword_in` | src/tessellate/ai/help_chat.py:2336 |
+| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2268 |
+| `_keyword_regex` | src/tessellate/ai/help_chat.py:2332 |
+| `_matching_topics` | src/tessellate/ai/help_chat.py:2465 |
+| `_meaning_topics` | src/tessellate/ai/help_chat.py:2545 |
+| `_normalise_keys` | src/tessellate/ai/help_chat.py:2291 |
+| `_place` | src/tessellate/ai/help_chat.py:2820 |
+| `_preference` | src/tessellate/ai/help_chat.py:2902 |
+| `_prompt_for` | src/tessellate/ai/help_chat.py:2693 |
+| `_read_as` | src/tessellate/ai/help_chat.py:3002 |
+| `_reading_topics` | src/tessellate/ai/help_chat.py:2437 |
+| `_repaired` | src/tessellate/ai/help_chat.py:2454 |
+| `_second_sentence` | src/tessellate/ai/help_chat.py:2850 |
+| `_state_line` | src/tessellate/ai/help_chat.py:2911 |
+| `_stated_lead` | src/tessellate/ai/help_chat.py:2920 |
+| `answer` | src/tessellate/ai/help_chat.py:3079 |
+| `answer_stream` | src/tessellate/ai/help_chat.py:3017 |
+| `badges_for` | src/tessellate/ai/help_chat.py:2633 |
+| `composed_answer` | src/tessellate/ai/help_chat.py:2931 |
+| `help_block_for` | src/tessellate/ai/help_chat.py:3159 |
+| `help_listing` | src/tessellate/ai/help_chat.py:2604 |
+| `help_sentences` | src/tessellate/ai/help_chat.py:2829 |
+| `names_app` | src/tessellate/ai/help_chat.py:3143 |
+| `offline_answer` | src/tessellate/ai/help_chat.py:2949 |
+| `social_reply` | src/tessellate/ai/help_chat.py:2793 |
+| `source_names` | src/tessellate/ai/help_chat.py:2600 |
+| `system_answer` | src/tessellate/ai/help_chat.py:2582 |
+| `topic_title` | src/tessellate/ai/help_chat.py:2568 |
+| `topics_for` | src/tessellate/ai/help_chat.py:2647 |
 
 ### src/tessellate/ai/help_topics_more.py (2)
 
@@ -14782,11 +14784,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `reinstall_on_start` | src/tessellate/api/routes_maintenance.py:64 |
 | `run_doctor` | src/tessellate/api/routes_maintenance.py:45 |
 
-### src/tessellate/api/routes_map_from_notes.py (15)
+### src/tessellate/api/routes_map_from_notes.py (17)
 
 | Name | File:line |
 |---|---|
 | `MapFromNotes` | src/tessellate/api/routes_map_from_notes.py:247 |
+| `MapFromText` | src/tessellate/api/routes_map_from_notes.py:464 |
 | `_clip` | src/tessellate/api/routes_map_from_notes.py:339 |
 | `_hang_topic` | src/tessellate/api/routes_map_from_notes.py:374 |
 | `_key_category` | src/tessellate/api/routes_map_from_notes.py:68 |
@@ -14800,6 +14803,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `map_from_note` | src/tessellate/api/routes_map_from_notes.py:443 |
 | `map_from_note_entry` | src/tessellate/api/routes_map_from_notes.py:420 |
 | `map_from_notes` | src/tessellate/api/routes_map_from_notes.py:259 |
+| `map_from_text` | src/tessellate/api/routes_map_from_notes.py:471 |
 | `note_outline` | src/tessellate/api/routes_map_from_notes.py:393 |
 
 ### src/tessellate/api/routes_map_suggest.py (18)
@@ -17965,7 +17969,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11442)
+## Tests (11443)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -17994,7 +17998,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_agent_utilities.py | 7 |
 | tests/test_ai_board_edit.py | 10 |
 | tests/test_ai_core.py | 27 |
-| tests/test_ai_mindmap_tools.py | 19 |
+| tests/test_ai_mindmap_tools.py | 20 |
 | tests/test_ai_name.py | 9 |
 | tests/test_ai_reach.py | 19 |
 | tests/test_ai_whiteboard_tools.py | 27 |
@@ -19347,36 +19351,36 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 12.1 Phase 6a, the controls | docs/roadmap/MINDMAP_PLAN.md:466 |
 | 12.2 Phase 6b, structure and richness (1 session) | docs/roadmap/MINDMAP_PLAN.md:471 |
 | 12.3 Phase 6c, what only a notebook can do (½ session) | docs/roadmap/MINDMAP_PLAN.md:505 |
-| 12.4 Not built until asked | docs/roadmap/MINDMAP_PLAN.md:532 |
-| 12.5 One place per action (INBOX 200 and 201, the owner, 2026-09-13 night) | docs/roadmap/MINDMAP_PLAN.md:537 |
+| 12.4 Not built until asked | docs/roadmap/MINDMAP_PLAN.md:534 |
+| 12.5 One place per action (INBOX 200 and 201, the owner, 2026-09-13 night) | docs/roadmap/MINDMAP_PLAN.md:539 |
 | 12z Learnability, 2026-10-10 (INBOX 749) | docs/roadmap/UI_MODERNISATION_PLAN.md:1296 |
 | 13. Images, math, links and tooltips | docs/roadmap/WHITEBOARD_PLAN.md:1285 |
 | 13. Open bugs and gaps from the merged agent reports (with owners) | docs/roadmap/WORLD_CLASS_PLAN.md:954 |
-| 13. The map, read against its six complaints: measured 2026-09-21, phases open | docs/roadmap/MINDMAP_PLAN.md:605 |
+| 13. The map, read against its six complaints: measured 2026-09-21, phases open | docs/roadmap/MINDMAP_PLAN.md:607 |
 | 13. Timeline | docs/roadmap/PLAN.md:234 |
 | 13. Web search effectiveness | docs/roadmap/BACKLOG.md:999 |
 | 13. What a self-contained HTML export is: decided 2026-09-13 | docs/roadmap/DOCUMENTS_PLAN.md:749 |
-| 13.1 Is it slow? The one claim measured before anything was designed | docs/roadmap/MINDMAP_PLAN.md:633 |
+| 13.1 Is it slow? The one claim measured before anything was designed | docs/roadmap/MINDMAP_PLAN.md:635 |
 | 13.1 The principles, each as a rule with a measurement | docs/roadmap/UI_MODERNISATION_PLAN.md:1335 |
 | 13.2 Surface by surface | docs/roadmap/UI_MODERNISATION_PLAN.md:1360 |
-| 13.2 The two kinds of connection | docs/roadmap/MINDMAP_PLAN.md:763 |
+| 13.2 The two kinds of connection | docs/roadmap/MINDMAP_PLAN.md:765 |
 | 13.3 Decisions, 2026-10-10 (do not re-decide; numbered after Phase 12's 8) | docs/roadmap/UI_MODERNISATION_PLAN.md:1382 |
-| 13.3 What the surface offers, and by how many doors | docs/roadmap/MINDMAP_PLAN.md:807 |
+| 13.3 What the surface offers, and by how many doors | docs/roadmap/MINDMAP_PLAN.md:809 |
 | 13.4 Phases with gates | docs/roadmap/UI_MODERNISATION_PLAN.md:1422 |
-| 13.4 What can be customised, against what a map tool offers | docs/roadmap/MINDMAP_PLAN.md:844 |
-| 13.5 Clean and professional: the same measurements section 17 took | docs/roadmap/MINDMAP_PLAN.md:868 |
-| 14. Core nodes, levels and the icon library (INBOX 641, 642; mc1, 2026-10-05) | docs/roadmap/MINDMAP_PLAN.md:1651 |
+| 13.4 What can be customised, against what a map tool offers | docs/roadmap/MINDMAP_PLAN.md:846 |
+| 13.5 Clean and professional: the same measurements section 17 took | docs/roadmap/MINDMAP_PLAN.md:870 |
+| 14. Core nodes, levels and the icon library (INBOX 641, 642; mc1, 2026-10-05) | docs/roadmap/MINDMAP_PLAN.md:1653 |
 | 14. Export and import formats | docs/roadmap/WHITEBOARD_PLAN.md:1298 |
 | 14. More tools worth adding | docs/roadmap/BACKLOG.md:1082 |
 | 14. Reminders | docs/roadmap/PLAN.md:243 |
 | 14. The core algorithms, read line by line (2026-09-08) | docs/roadmap/WORLD_CLASS_PLAN.md:991 |
 | 14. What a document daily note is: decided 2026-09-20 | docs/roadmap/DOCUMENTS_PLAN.md:813 |
-| 14.1 Measured before anything was designed | docs/roadmap/MINDMAP_PLAN.md:1660 |
-| 14.2 What the five apps do, and what is taken | docs/roadmap/MINDMAP_PLAN.md:1664 |
-| 14.3 Decisions made (do not remake) | docs/roadmap/MINDMAP_PLAN.md:1679 |
-| 14.4 What is open | docs/roadmap/MINDMAP_PLAN.md:1756 |
+| 14.1 Measured before anything was designed | docs/roadmap/MINDMAP_PLAN.md:1662 |
+| 14.2 What the five apps do, and what is taken | docs/roadmap/MINDMAP_PLAN.md:1666 |
+| 14.3 Decisions made (do not remake) | docs/roadmap/MINDMAP_PLAN.md:1681 |
+| 14.4 What is open | docs/roadmap/MINDMAP_PLAN.md:1758 |
 | 15. Appearance: more of everything | docs/roadmap/BACKLOG.md:1118 |
-| 15. Deepened 2026-10-10 (Brief 72a, decision 71) | docs/roadmap/MINDMAP_PLAN.md:1777 |
+| 15. Deepened 2026-10-10 (Brief 72a, decision 71) | docs/roadmap/MINDMAP_PLAN.md:1779 |
 | 15. Insert menu, shape picker and the sidebar search | docs/roadmap/WHITEBOARD_PLAN.md:1315 |
 | 15. Inventions: eight things no notebook does, specified for Opus and Sonnet | docs/roadmap/WORLD_CLASS_PLAN.md:1049 |
 | 15. Settings: section by section | docs/roadmap/PLAN.md:252 |
@@ -19791,7 +19795,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Decision made, 2026-10-11: the drawn map is for reading | docs/roadmap/GRAPH_PLAN.md:377 |
 | Decisions left to the owner | docs/roadmap/ANALYSIS.md:3633 |
 | Decisions made | docs/roadmap/AGENT_SKILLS_REFORM.md:141 |
-| Decisions made | docs/roadmap/MINDMAP_PLAN.md:912 |
+| Decisions made | docs/roadmap/MINDMAP_PLAN.md:914 |
 | Decisions made | docs/roadmap/UI_MODERNISATION_PLAN.md:70 |
 | Decisions made | docs/roadmap/UI_MODERNISATION_PLAN.md:1135 |
 | Decisions made | docs/roadmap/WORLD_CLASS_PLAN.md:2225 |
@@ -19889,7 +19893,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:344 |
 | Next: weeks 5–8: "a small model can finish a job, and so can the app" | docs/roadmap/MODERNISATION_AUDIT.md:1049 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:585 |
-| Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1429 |
+| Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1431 |
 | Not verified, stated plainly | docs/roadmap/ANALYSIS.md:4492 |
 | Now: weeks 0–4: "the app stops hiding its own content" | docs/roadmap/MODERNISATION_AUDIT.md:1034 |
 | Odysseus read deeply, 2026-09-21 | docs/roadmap/ANALYSIS.md:2215 |
@@ -19949,7 +19953,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phase E: measured reliability per skill (Fable, 2026-10-10; WORLD_CLASS_PLAN 25; Brief 54) | docs/roadmap/AGENT_SKILLS_REFORM.md:395 |
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1265 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
-| Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1295 |
+| Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1297 |
 | Placed (last 20, newest first) | docs/roadmap/INBOX.md:455 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4173 |
@@ -19957,27 +19961,27 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/CHAT_PLAN.md:1758 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/DOCUMENTS_PLAN.md:1489 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/GRAPH_PLAN.md:640 |
-| Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/MINDMAP_PLAN.md:1823 |
+| Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/MINDMAP_PLAN.md:1825 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/WHITEBOARD_PLAN.md:1530 |
 | Placed from INBOX 561 (2026-10-17) | docs/roadmap/TIMELINE_PLAN.md:207 |
 | Placed from INBOX 904 (the owner, 2026-10-17) | docs/roadmap/BACKLOG.md:4400 |
 | Placed from INBOX, 2026-09-09 | docs/roadmap/CHAT_PLAN.md:593 |
 | Placed from INBOX, 2026-09-09 | docs/roadmap/GRAPH_PLAN.md:206 |
-| Placed from INBOX, 2026-09-09 | docs/roadmap/MINDMAP_PLAN.md:1449 |
+| Placed from INBOX, 2026-09-09 | docs/roadmap/MINDMAP_PLAN.md:1451 |
 | Placed from INBOX, 2026-09-09 | docs/roadmap/WHITEBOARD_PLAN.md:620 |
 | Placed from INBOX, 2026-09-09 | docs/roadmap/WORLD_CLASS_PLAN.md:1533 |
 | Placed from INBOX, 2026-09-09 (the owner's evening batch) | docs/roadmap/CHAT_PLAN.md:625 |
 | Placed from INBOX, 2026-09-09 (the owner's evening batch) | docs/roadmap/DOCUMENTS_PLAN.md:508 |
 | Placed from INBOX, 2026-09-09 (the owner's evening batch) | docs/roadmap/GRAPH_PLAN.md:238 |
-| Placed from INBOX, 2026-09-09 (the owner's evening batch) | docs/roadmap/MINDMAP_PLAN.md:1454 |
+| Placed from INBOX, 2026-09-09 (the owner's evening batch) | docs/roadmap/MINDMAP_PLAN.md:1456 |
 | Placed from INBOX, 2026-09-09 (the owner's evening batch) | docs/roadmap/WHITEBOARD_PLAN.md:714 |
 | Placed from INBOX, 2026-09-09 to 2026-10-03 (all built) | docs/roadmap/UI_MODERNISATION_PLAN.md:1107 |
 | Placed from INBOX, 2026-09-13 | docs/roadmap/GRAPH_PLAN.md:336 |
-| Placed from INBOX, 2026-09-13 | docs/roadmap/MINDMAP_PLAN.md:1461 |
+| Placed from INBOX, 2026-09-13 | docs/roadmap/MINDMAP_PLAN.md:1463 |
 | Placed from INBOX, 2026-09-13 | docs/roadmap/WORLD_CLASS_PLAN.md:1714 |
 | Placed from INBOX, 2026-09-21 | docs/roadmap/DOCUMENTS_PLAN.md:1369 |
 | Placed from INBOX, 2026-09-21 | docs/roadmap/GRAPH_PLAN.md:344 |
-| Placed from INBOX, 2026-09-21 | docs/roadmap/MINDMAP_PLAN.md:1466 |
+| Placed from INBOX, 2026-09-21 | docs/roadmap/MINDMAP_PLAN.md:1468 |
 | Placed from INBOX, 2026-09-21 | docs/roadmap/WHITEBOARD_PLAN.md:719 |
 | Placed from INBOX, 2026-09-21 | docs/roadmap/WORLD_CLASS_PLAN.md:2060 |
 | Placed from INBOX, 2026-09-21 (the Ask sub-tab, four reports in one pass) | docs/roadmap/CHAT_PLAN.md:633 |
@@ -19987,7 +19991,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-09-25 | docs/roadmap/WHITEBOARD_PLAN.md:821 |
 | Placed from INBOX, 2026-09-27 | docs/roadmap/WHITEBOARD_PLAN.md:853 |
 | Placed from INBOX, 2026-09-27 (399) | docs/roadmap/WORLD_CLASS_PLAN.md:2434 |
-| Placed from INBOX, 2026-10-03 (445 (2) audit, found not fixed) | docs/roadmap/MINDMAP_PLAN.md:1484 |
+| Placed from INBOX, 2026-10-03 (445 (2) audit, found not fixed) | docs/roadmap/MINDMAP_PLAN.md:1486 |
 | Placed from INBOX, 2026-10-03 (INBOX 213) | docs/roadmap/BACKLOG.md:3972 |
 | Placed from INBOX, 2026-10-03 (INBOX 266) | docs/roadmap/BACKLOG.md:4016 |
 | Placed from INBOX, 2026-10-03 (INBOX 268) | docs/roadmap/AGENT_SKILLS_REFORM.md:176 |
@@ -20000,7 +20004,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-03 (the tray at its cap) | docs/roadmap/WORLD_CLASS_PLAN.md:2567 |
 | Placed from INBOX, 2026-10-04 (design work for the next Opus slots) | docs/roadmap/WORLD_CLASS_PLAN.md:3026 |
 | Placed from INBOX, 2026-10-04: parity with Obsidian's graph | docs/roadmap/GRAPH_PLAN.md:544 |
-| Placed from INBOX, 2026-10-05 | docs/roadmap/MINDMAP_PLAN.md:1488 |
+| Placed from INBOX, 2026-10-05 | docs/roadmap/MINDMAP_PLAN.md:1490 |
 | Placed from INBOX, 2026-10-05 | docs/roadmap/WHITEBOARD_PLAN.md:868 |
 | Placed from INBOX, 2026-10-05 (OPEN.md triage) | docs/roadmap/AGENT_SKILLS_REFORM.md:339 |
 | Placed from INBOX, 2026-10-05 (OPEN.md triage) | docs/roadmap/CHAT_PLAN.md:710 |
@@ -20015,7 +20019,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-10 (code as documents) | docs/roadmap/DOCUMENTS_PLAN.md:1493 |
 | Placed from INBOX, 2026-10-10 (filing suggestions) | docs/roadmap/WORLD_CLASS_PLAN.md:4180 |
 | Placed from INBOX, 2026-10-10 (the coverage pass over 729 to 744) | docs/roadmap/CHAT_PLAN.md:1749 |
-| Placed from INBOX, 2026-10-10 (the owner on feature depth) | docs/roadmap/MINDMAP_PLAN.md:1827 |
+| Placed from INBOX, 2026-10-10 (the owner on feature depth) | docs/roadmap/MINDMAP_PLAN.md:1829 |
 | Placed from INBOX, 2026-10-10 (the owner on feature depth) | docs/roadmap/WHITEBOARD_PLAN.md:1534 |
 | Placed from INBOX, 2026-10-10 (the owner on the graph, again) | docs/roadmap/GRAPH_PLAN.md:644 |
 | Placed from INBOX, 2026-10-10 (the owner's afternoon reports) | docs/roadmap/UI_MODERNISATION_PLAN.md:1532 |
@@ -20030,7 +20034,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-11 (the owner on dragging the force graph) | docs/roadmap/GRAPH_PLAN.md:649 |
 | Placed from INBOX, 2026-10-11 (the owner's sweep request) | docs/roadmap/UI_MODERNISATION_PLAN.md:1547 |
 | Placed from INBOX, 2026-10-11 (the owner: Atlas as the app's assistant) | docs/roadmap/CHAT_PLAN.md:1762 |
-| Placed from INBOX, 2026-10-11 (the topic's tools) | docs/roadmap/MINDMAP_PLAN.md:1844 |
+| Placed from INBOX, 2026-10-11 (the topic's tools) | docs/roadmap/MINDMAP_PLAN.md:1846 |
 | Placed from INBOX, 2026-10-11 (voice notes, live captions, the focus timer; voiceup) | docs/roadmap/UI_MODERNISATION_PLAN.md:1565 |
 | Placed from INBOX, 2026-10-12 (grammar in digest answers) | docs/roadmap/BACKLOG.md:4294 |
 | Placed from INBOX: 107d, the segmented mini bars | docs/roadmap/DOCUMENTS_PLAN.md:480 |
@@ -20039,7 +20043,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/CHAT_PLAN.md:839 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/DOCUMENTS_PLAN.md:1447 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/GRAPH_PLAN.md:627 |
-| Placed from the owner's list, 2026-10-10 | docs/roadmap/MINDMAP_PLAN.md:1773 |
+| Placed from the owner's list, 2026-10-10 | docs/roadmap/MINDMAP_PLAN.md:1775 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/TIMELINE_PLAN.md:198 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/UI_MODERNISATION_PLAN.md:1236 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/WHITEBOARD_PLAN.md:899 |
@@ -20110,7 +20114,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | The deterministic foundation, 2026-10-10 (INBOX 746) | docs/roadmap/CHAT_PLAN.md:1562 |
 | The dock grammar (the rule the whole phase enforces) | docs/roadmap/UI_MODERNISATION_PLAN.md:433 |
 | The draw.io programme, 2026-10-10 | docs/roadmap/WHITEBOARD_PLAN.md:903 |
-| The features audit's Phase G, what is left (placed 2026-10-05, op3-1005) | docs/roadmap/MINDMAP_PLAN.md:1630 |
+| The features audit's Phase G, what is left (placed 2026-10-05, op3-1005) | docs/roadmap/MINDMAP_PLAN.md:1632 |
 | The forks and draw.io | docs/roadmap/ANALYSIS.md:4062 |
 | The four reports, verbatim | docs/roadmap/CHAT_PLAN.md:671 |
 | The general lesson, which is not about this agent | docs/roadmap/ANALYSIS.md:657 |
@@ -20149,7 +20153,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/CHAT_PLAN.md:1742 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/DOCUMENTS_PLAN.md:1478 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/GRAPH_PLAN.md:634 |
-| Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/MINDMAP_PLAN.md:1817 |
+| Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/MINDMAP_PLAN.md:1819 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/TIMELINE_PLAN.md:309 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/UI_MODERNISATION_PLAN.md:1435 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/WHITEBOARD_PLAN.md:1523 |
@@ -20186,7 +20190,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Your standing task, alongside the plans | docs/roadmap/FABLE_BRIEF.md:71 |
 | better-clawd (x1xhlol) and Clawd-Code (GPT-AGI) | docs/roadmap/ANALYSIS.md:2057 |
 | blobatar (Alain00) | docs/roadmap/ANALYSIS.md:1877 |
-| canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1831 |
+| canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1833 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1538 |
 | cognee (topoteretes) | docs/roadmap/ANALYSIS.md:2765 |
 | cupid-music-player (cupidbity), and the music question attached to it | docs/roadmap/ANALYSIS.md:2976 |

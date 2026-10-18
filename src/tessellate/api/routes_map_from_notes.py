@@ -461,4 +461,36 @@ def map_from_note(note_id: int, db: Session = Depends(get_session)):
     )
 
 
+class MapFromText(BaseModel):
+    name: str = Field(default="", max_length=100)
+    #: A chat answer or a whole conversation, as the chat shows it (Markdown).
+    text: str = Field(min_length=1, max_length=60000)
+
+
+@router.post("/maps/from-text", status_code=201)
+def map_from_text(body: MapFromText, db: Session = Depends(get_session)):
+    """Chat's Make a mind map: an answer or a conversation, outlined like a
+    note (headings and lists become branches, plain prose one topic per
+    paragraph). The same build as `map_from_note_entry`, with no note behind
+    the centre topic."""
+    from tessellate.api import routes_whiteboard as wb
+
+    title, branches = note_outline(body.text)
+    if not branches:
+        raise HTTPException(status_code=422, detail="There is nothing here to make a map from.")
+    name = _clip(body.name.strip() or title or "Chat map", 100)
+    board = Entry(content=f"# {name}", is_board=True)
+    wb._store_board_settings(board, "map", "tree-right")
+    db.add(board)
+    db.flush()
+    created = wb._place_map_nodes(db, board.id, [{"text": title or name, "children": branches}])
+    wb._record_map_creation(db, board.id, name, f"map from chat text, {len(created)} nodes", {}, created)
+    db.commit()
+    db.refresh(board)
+    return wb.BoardOut(
+        id=board.id, title=board.content[2:], node_count=0, sketch_count=0, object_count=len(created),
+        type="map", layout="tree-right", **wb._preview_fields(db, board.id),
+    )
+
+
 __all__ = ["MAX_FANOUT", "build_tree", "layout_both_sides", "map_from_note_entry", "note_outline", "router"]

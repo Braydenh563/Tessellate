@@ -517,7 +517,9 @@ export that claims it.
    HISTORY.md, "Moved from the plans, 2026-10-18 (mindmap-1018)".)
 3. **From a question**: "Make a map of..." in chat proposes a map
    (exists, Phase 4) and now opens it in the map editor with the
-   proposal as floating topics to accept or discard.
+   proposal as floating topics to accept or discard. (Chat's Make a mind map
+   of an answer or a whole chat is built, 2026-10-18 fixes7: no model, the
+   text's headings and lists; the floating-topics proposal is still open.)
 4. ~~**Graph sync**~~ **Built** (HISTORY.md, "Moved from the plans, 2026-10-05
    (docs hygiene before 0.4.0: MINDMAP_PLAN)"): a map is a node in the graph
    with an edge of kind `map` to each note on it (`_add_map_edges`,
