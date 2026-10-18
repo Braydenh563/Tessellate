@@ -33,7 +33,7 @@ audits reproduced each bug in the app (ports 8791, 8792). A row is **open**,
 | C27 graph popup props button | O, design | fixed (design2) | `index.html:4448` |
 | C28 reply reveal animation | O, design | open | chat 0.2 s fade only; guide streams words |
 | C30 lightbox controls | O, design | open | `lightbox-view.js` |
-| C34 recorder panels | O, design | open | `.meeting-stage` radius 0, `meetings.js:922` |
+| C34 recorder panels | O, design | fixed bcabbaf | `.meeting-stage` radius 0, `meetings.js:922`; stage is surface-2, radius 0px to 8px (default), padding 8/9.6px to 9.6px, fixes8-rec.js |
 | C36 timeline tick labels switch | O, design | fixed ae7fb1c | the c36 sweep toggles the switch and counts the tick labels; test_timeline_ticks_switch.py |
 | C14 composer and model badge | O, design | open | `chat-attach.js:2430` byline |
 | C18 paper swatches as dropdown | O, design | fixed 6b6bbbe | sticky bar 749 to 627 px wide at 1440 (paper group 227 to 106), height 38 unchanged; at 560 the bar stays 150 tall (other controls wrap); Enter opens, Arrow+Enter picks, focus returns (probes/c18.js); wbstickylook.js 17/17 |
@@ -41,7 +41,7 @@ audits reproduced each bug in the app (ports 8791, 8792). A row is **open**,
 | C39 timeline opens on empty future days | S, next free Sonnet | fixed 5049124 | the c39 sweep measures Today's row top against the feed top on open and after the Today button |
 | C40 recording transcript lines cannot be copied | S, with C34 | fixed f749f62 | the c40 sweep copies a line, a Shift range and all lines; test_transcript_copy.py |
 | C41 force graph messy | O, graph batch with C11, C27, C37 | fixed (design2) | screenshot: labels collide, edges cross clusters, duplicate titles unexplained; label collision avoidance, cluster separation, edge bundling or fade, measured overlap count before and after |
-| C43 categories sidebar messy, sections not collapsible | O, design batch 2 | open | screenshots: nested scrollbars plus a blue bar on the outer one, list clipped mid-row, near-duplicate "Courses & Study" / "Courses \| Study", empty categories; collapsible sections with remembered state, one scroll container, merge offer for near-duplicates, hide empty |
+| C43 categories sidebar messy, sections not collapsible | O, design batch 2 | fixed 06e97a1 | screenshots: nested scrollbars plus a blue bar on the outer one, list clipped mid-row, near-duplicate "Courses & Study" / "Courses \| Study", empty categories; collapsible sections with remembered state, one scroll container, merge offer for near-duplicates, hide empty; folds on Categories, Most used, Saved searches (remembered), Show empty, one scroller, merge suggestion already in Manage categories Tidy (catches "Courses & Study" / "Courses | Study" at 100%); fixes8-side.js |
 | C44 live view section break overlaps gutter numbers | S, next free Sonnet | fixed 216ac23 | the c44 sweep measures the gutter row height against the rule line; test_live_rule_line_height.py |
 | C04 UML, ERD, wireframe sets | O, whiteboard | fixed 743a2ff | 14 + 10 + 12 elements and 3 templates (17 to 20), placed and drawn in c04.js and c04t.js with 0 page errors; test_board_library_diagram_sets.py |
 | C26 greeting sub line composed and rotating | S, fixes5 | fixed 0aff961 | `/insights/today-line` wired to `renderDashSubmessage`; 13 distinct lines in 20 seeded draws (test_composer_voice.py); C16 stays in CHAT_PLAN B41 |
