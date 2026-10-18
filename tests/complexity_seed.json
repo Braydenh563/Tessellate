@@ -117,7 +117,6 @@
  "src/tessellate/ai/tools/board_edit.py::_restore_board_item": 16,
  "src/tessellate/ai/tools/documents.py::_get_document": 19,
  "src/tessellate/ai/tools/whiteboard.py::_add_map_node": 19,
- "src/tessellate/ai/tools/whiteboard.py::_generate_diagram": 47,
  "src/tessellate/ai/tools/whiteboard.py::_read_whiteboard": 27,
  "src/tessellate/ai/utilities.py::_dates": 18,
  "src/tessellate/ai/utilities.py::answer": 39,

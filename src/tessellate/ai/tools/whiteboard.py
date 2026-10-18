@@ -517,30 +517,14 @@ def _diagram_tree_positions(root_ref: str, children_of: dict[str, list[str]], la
     return positions
 
 
-def _generate_diagram(session: Session, args: dict) -> dict:
-    """Place a whole tree of notes on a whiteboard in one call, the gap
-    named directly (BACKLOG.md §29d, HANDOVER.md): `add_whiteboard_card`/
-    `add_whiteboard_link` already exist, but x/y are free-form numbers the
-    model has to invent itself across many chained calls, exactly the
-    bookkeeping a small (2-8B) tool-calling model gets wrong. Here the
-    model only ever declares *structure* (a title or an existing note, and
-    which other node is its parent); this function creates whatever notes
-    need creating, computes every position server-side, and wires the
-    links: the same job `wbArrangeMindMap` already does client-side for a
-    board someone arranges by hand, now reachable in one round trip.
-    """
-    from tessellate.core.database import WhiteboardNode
-
+def _diagram_nodes(args: dict) -> dict[str, dict]:
+    """The declared nodes keyed by ref, each checked to name exactly one of a
+    title (a new note) or a note id (an existing one)."""
     raw_nodes = args.get("nodes")
     if not isinstance(raw_nodes, list) or not raw_nodes:
         raise ToolError("'nodes' must be a non-empty list.")
     if len(raw_nodes) > MAX_DIAGRAM_NODES:
         raise ToolError(f"That's {len(raw_nodes)} nodes: {MAX_DIAGRAM_NODES} is the most this can place in one call.")
-
-    raw_board_id = args.get("board_id")
-    board_id = int(raw_board_id) if raw_board_id not in (None, "") else None
-    layout = "radial" if args.get("layout") == "radial" else "tree"
-
     by_ref: dict[str, dict] = {}
     for i, raw in enumerate(raw_nodes):
         ref = str(raw.get("ref") or "").strip()
@@ -553,7 +537,11 @@ def _generate_diagram(session: Session, args: dict) -> dict:
         if bool(title) == bool(note_id):
             raise ToolError(f"Node '{ref}' needs exactly one of 'title' (new note) or 'note_id' (existing note).")
         by_ref[ref] = {"title": title, "note_id": note_id, "parent_ref": raw.get("parent_ref") or None}
+    return by_ref
 
+
+def _diagram_attach(by_ref: dict[str, dict]) -> dict[str, int]:
+    """The nodes that hang from a card already on the board."""
     #: A parent can be a card already on the board, written `card:<card_id>`
     #: (the ids `read_whiteboard` lists): the new nodes then grow out of it
     #: instead of starting a diagram of their own (OPEN row 1379).
@@ -565,6 +553,12 @@ def _generate_diagram(session: Session, args: dict) -> dict:
                 attach[ref] = int(parent_ref[5:])
             except ValueError as exc:
                 raise ToolError(f"Node '{ref}' has parent_ref '{parent_ref}': after card: put the card's number.") from exc
+    return attach
+
+
+def _diagram_shape(by_ref: dict[str, dict]) -> tuple[dict[str, int], str, dict[str, list[str]]]:
+    """The cards the new nodes hang from, the root, and each node's children."""
+    attach = _diagram_attach(by_ref)
     roots = [ref for ref, node in by_ref.items() if not node["parent_ref"]]
     if attach and roots:
         raise ToolError("Either one node has no 'parent_ref' (a new diagram) or every top node hangs from a card:<id>, not both.")
@@ -586,7 +580,21 @@ def _generate_diagram(session: Session, args: dict) -> dict:
         if parent_ref not in by_ref:
             raise ToolError(f"Node '{ref}' has parent_ref '{parent_ref}', which isn't in this call's own nodes.")
         children_of.setdefault(parent_ref, []).append(ref)
+    return attach, root_ref, children_of
 
+
+def _diagram_positions(
+    session: Session,
+    board_id: int | None,
+    by_ref: dict[str, dict],
+    shape: tuple[dict[str, int], str, dict[str, list[str]]],
+    layout: str,
+) -> tuple[dict, dict, str]:
+    """Every node's position, the board cards a diagram extends, and the
+    layout actually used (extending a card is always a tree)."""
+    from tessellate.core.database import WhiteboardNode
+
+    attach, root_ref, children_of = shape
     anchors: dict[int, WhiteboardNode] = {}
     if attach:
         layout = "tree"
@@ -609,13 +617,16 @@ def _generate_diagram(session: Session, args: dict) -> dict:
     unreached = [ref for ref in by_ref if ref not in positions]
     if unreached:
         raise ToolError(f"Node '{unreached[0]}' cannot be reached from the root: check parent_ref for a cycle.")
+    return positions, anchors, layout
 
-    # Resolve every ref to a real Entry, creating one for a bare title,
-    # reusing (and permission-checking, same as any other tool) one already
-    # given as note_id. Two passes on purpose: entries have to exist before
-    # any card/link touches them, and failing on node 40 of 60 after
-    # already writing 39 cards would be a worse outcome than failing before
-    # anything is written at all.
+
+def _diagram_entries(session: Session, by_ref: dict[str, dict]) -> dict[str, Entry]:
+    """Resolve every ref to a real Entry, creating one for a bare title,
+    reusing (and permission-checking, same as any other tool) one already
+    given as note_id. Two passes on purpose: entries have to exist before
+    any card/link touches them, and failing on node 40 of 60 after
+    already writing 39 cards would be a worse outcome than failing before
+    anything is written at all."""
     entries: dict[str, Entry] = {}
     for ref, node in by_ref.items():
         if node["note_id"] is not None:
@@ -624,10 +635,15 @@ def _generate_diagram(session: Session, args: dict) -> dict:
             entries[ref] = manager.create_entry(
                 session, node["title"], category_name=manager.UNCATEGORISED, tags=[], ai_confidence=0
             )
-    for ref, entry in entries.items():
+    for entry in entries.values():
         deps.store_quietly(session, entry)
+    return entries
 
-    cards: dict[str, WhiteboardNode] = {}
+
+def _diagram_cards(session: Session, board_id: int | None, entries: dict[str, Entry], positions: dict) -> dict:
+    from tessellate.core.database import WhiteboardNode
+
+    cards = {}
     for ref, entry in entries.items():
         x, y = positions[ref]
         existing = session.scalar(
@@ -640,7 +656,10 @@ def _generate_diagram(session: Session, args: dict) -> dict:
     session.commit()
     for card in cards.values():
         session.refresh(card)
+    return cards
 
+
+def _diagram_links(session: Session, board_id: int | None, by_ref: dict[str, dict], attach: dict, anchors: dict, cards: dict) -> int:
     link_count = 0
     for ref, node in by_ref.items():
         parent_ref = node["parent_ref"]
@@ -654,6 +673,32 @@ def _generate_diagram(session: Session, args: dict) -> dict:
         }
         _draw_link(session, board_id, data)
         link_count += 1
+    return link_count
+
+
+def _generate_diagram(session: Session, args: dict) -> dict:
+    """Place a whole tree of notes on a whiteboard in one call, the gap
+    named directly (BACKLOG.md §29d, HANDOVER.md): `add_whiteboard_card`/
+    `add_whiteboard_link` already exist, but x/y are free-form numbers the
+    model has to invent itself across many chained calls, exactly the
+    bookkeeping a small (2-8B) tool-calling model gets wrong. Here the
+    model only ever declares *structure* (a title or an existing note, and
+    which other node is its parent); this function creates whatever notes
+    need creating, computes every position server-side, and wires the
+    links: the same job `wbArrangeMindMap` already does client-side for a
+    board someone arranges by hand, now reachable in one round trip.
+    """
+    raw_board_id = args.get("board_id")
+    board_id = int(raw_board_id) if raw_board_id not in (None, "") else None
+    layout = "radial" if args.get("layout") == "radial" else "tree"
+
+    by_ref = _diagram_nodes(args)
+    shape = _diagram_shape(by_ref)
+    attach, root_ref, _children = shape
+    positions, anchors, layout = _diagram_positions(session, board_id, by_ref, shape, layout)
+    entries = _diagram_entries(session, by_ref)
+    cards = _diagram_cards(session, board_id, entries, positions)
+    link_count = _diagram_links(session, board_id, by_ref, attach, anchors, cards)
     # One event more than the items' own, and on the board rather than on any
     # of them: that this was one diagram generation, rather than sixty cards
     # that happened to arrive together, is a fact no item's own history can

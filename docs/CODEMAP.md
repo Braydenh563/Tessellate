@@ -2,7 +2,7 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 5961, frontend ids 2510, CSS sections 495, backend routes 607, backend modules 5755, test files 1237, tests 11209, plan headings 957.
+Counts: frontend functions 5961, frontend ids 2510, CSS sections 495, backend routes 607, backend modules 5767, test files 1237, tests 11209, plan headings 957.
 
 ## Frontend functions (5961)
 
@@ -10466,7 +10466,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (5755)
+## Backend modules (5767)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -13219,26 +13219,33 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `check` | src/tessellate/ai/tools/verify.py:230 |
 | `has_verifier` | src/tessellate/ai/tools/verify.py:225 |
 
-### src/tessellate/ai/tools/whiteboard.py (20)
+### src/tessellate/ai/tools/whiteboard.py (27)
 
 | Name | File:line |
 |---|---|
-| `_add_map_node` | src/tessellate/ai/tools/whiteboard.py:874 |
+| `_add_map_node` | src/tessellate/ai/tools/whiteboard.py:919 |
 | `_add_whiteboard_card` | src/tessellate/ai/tools/whiteboard.py:375 |
 | `_add_whiteboard_link` | src/tessellate/ai/tools/whiteboard.py:415 |
-| `_create_mindmap` | src/tessellate/ai/tools/whiteboard.py:790 |
+| `_create_mindmap` | src/tessellate/ai/tools/whiteboard.py:835 |
+| `_diagram_attach` | src/tessellate/ai/tools/whiteboard.py:543 |
+| `_diagram_cards` | src/tessellate/ai/tools/whiteboard.py:643 |
+| `_diagram_entries` | src/tessellate/ai/tools/whiteboard.py:623 |
+| `_diagram_links` | src/tessellate/ai/tools/whiteboard.py:662 |
+| `_diagram_nodes` | src/tessellate/ai/tools/whiteboard.py:520 |
+| `_diagram_positions` | src/tessellate/ai/tools/whiteboard.py:586 |
+| `_diagram_shape` | src/tessellate/ai/tools/whiteboard.py:559 |
 | `_diagram_tree_positions` | src/tessellate/ai/tools/whiteboard.py:466 |
 | `_draw_link` | src/tessellate/ai/tools/whiteboard.py:93 |
-| `_generate_diagram` | src/tessellate/ai/tools/whiteboard.py:520 |
+| `_generate_diagram` | src/tessellate/ai/tools/whiteboard.py:679 |
 | `_inside` | src/tessellate/ai/tools/whiteboard.py:151 |
-| `_link_map_nodes` | src/tessellate/ai/tools/whiteboard.py:961 |
-| `_map_from_note` | src/tessellate/ai/tools/whiteboard.py:845 |
+| `_link_map_nodes` | src/tessellate/ai/tools/whiteboard.py:1006 |
+| `_map_from_note` | src/tessellate/ai/tools/whiteboard.py:890 |
 | `_new_board` | src/tessellate/ai/tools/whiteboard.py:130 |
 | `_outline_extras` | src/tessellate/ai/tools/whiteboard.py:186 |
-| `_outline_lines` | src/tessellate/ai/tools/whiteboard.py:717 |
+| `_outline_lines` | src/tessellate/ai/tools/whiteboard.py:762 |
 | `_place_card` | src/tessellate/ai/tools/whiteboard.py:58 |
 | `_place_object` | src/tessellate/ai/tools/whiteboard.py:114 |
-| `_read_mindmap` | src/tessellate/ai/tools/whiteboard.py:738 |
+| `_read_mindmap` | src/tessellate/ai/tools/whiteboard.py:783 |
 | `_read_whiteboard` | src/tessellate/ai/tools/whiteboard.py:201 |
 | `_search_whiteboard` | src/tessellate/ai/tools/whiteboard.py:311 |
 | `_whiteboard_board_filter` | src/tessellate/ai/tools/whiteboard.py:23 |
@@ -17392,28 +17399,33 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `store_name` | src/tessellate/entry/topics.py:225 |
 | `terms_sentence` | src/tessellate/entry/topics.py:166 |
 
-### src/tessellate/mcp_server.py (18)
+### src/tessellate/mcp_server.py (23)
 
 | Name | File:line |
 |---|---|
+| `_Refused` | src/tessellate/mcp_server.py:282 |
 | `_annotations` | src/tessellate/mcp_server.py:88 |
 | `_call_tool` | src/tessellate/mcp_server.py:261 |
 | `_clean_label` | src/tessellate/mcp_server.py:247 |
 | `_error` | src/tessellate/mcp_server.py:228 |
 | `_first_line` | src/tessellate/mcp_server.py:118 |
+| `_initialize` | src/tessellate/mcp_server.py:291 |
 | `_is_read_only` | src/tessellate/mcp_server.py:84 |
 | `_prompts_get` | src/tessellate/mcp_server.py:209 |
+| `_prompts_get_method` | src/tessellate/mcp_server.py:324 |
 | `_prompts_list` | src/tessellate/mcp_server.py:189 |
 | `_resource_templates` | src/tessellate/mcp_server.py:149 |
 | `_resources_list` | src/tessellate/mcp_server.py:124 |
 | `_resources_offered` | src/tessellate/mcp_server.py:104 |
 | `_resources_read` | src/tessellate/mcp_server.py:164 |
+| `_resources_read_method` | src/tessellate/mcp_server.py:317 |
 | `_run_tool` | src/tessellate/mcp_server.py:109 |
 | `_skills` | src/tessellate/mcp_server.py:183 |
 | `_tool_list_payload` | src/tessellate/mcp_server.py:232 |
-| `handle_request` | src/tessellate/mcp_server.py:282 |
+| `_tools_call` | src/tessellate/mcp_server.py:312 |
+| `handle_request` | src/tessellate/mcp_server.py:346 |
 | `offered_tools` | src/tessellate/mcp_server.py:62 |
-| `serve` | src/tessellate/mcp_server.py:347 |
+| `serve` | src/tessellate/mcp_server.py:373 |
 
 ### src/tessellate/search/chunks.py (18)
 
