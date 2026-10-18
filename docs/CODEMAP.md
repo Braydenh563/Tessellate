@@ -2,7 +2,7 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6035, frontend ids 2527, CSS sections 495, backend routes 609, backend modules 5833, test files 1259, tests 11363, plan headings 959.
+Counts: frontend functions 6035, frontend ids 2527, CSS sections 495, backend routes 609, backend modules 5833, test files 1259, tests 11365, plan headings 959.
 
 ## Frontend functions (6035)
 
@@ -17921,7 +17921,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11363)
+## Tests (11365)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18504,7 +18504,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_lan.py | 120 |
 | tests/test_launch_splash.py | 23 |
 | tests/test_launch_status.py | 25 |
-| tests/test_launcher_scripts.py | 92 |
+| tests/test_launcher_scripts.py | 94 |
 | tests/test_launcher_update_settings.py | 27 |
 | tests/test_lazy_bundle_calls.py | 3 |
 | tests/test_lazy_css.py | 3 |

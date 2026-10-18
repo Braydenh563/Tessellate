@@ -174,6 +174,14 @@ try {
   $form.ShowInTaskbar   = $true
   $form.Text            = "Starting Tessellate Notes"
   $form.Region          = New-RoundRegion $WIDTH $COLLAPSED_HEIGHT 18
+  # Double buffered (C38, the owner: "the splash popup flickers quite a bit").
+  # `DoubleBuffered` is a protected property, so it is set through reflection;
+  # without it every label change repaints straight onto the screen, a row at
+  # a time. Not verified on Windows from this sandbox.
+  try {
+    [System.Windows.Forms.Form].GetProperty("DoubleBuffered", [System.Reflection.BindingFlags]"NonPublic,Instance").SetValue($form, $true, $null)
+  } catch {
+  }
 
   if (-not $IconPath) {
     $IconPath = Join-Path (Split-Path -Parent $PSScriptRoot) "frontend\icon.ico"
@@ -387,11 +395,23 @@ try {
     shown       = 0.04
   }
 
+  # The layout only changes when one of these does, and the timer calls
+  # Set-Layout every 250 ms: re-assigning Location, Size and Visible each tick
+  # made the window relayout four times a second (C38).
+  $st.layoutKey = ""
+
   function Set-Layout {
+    $key = "$($st.showLinks)|$($st.showList)|$($st.failed)|$($details.Visible)|$([Math]::Min($MAX_ROWS, @($st.rows).Count))"
+    if ($key -eq $st.layoutKey) { return }
+    $st.layoutKey = $key
+    $form.SuspendLayout()
+    # Capped at MAX_ROWS, the rows Update-Rows paints (C02, the owner: with
+    # details open, finished tasks pushed the window down until it touched the
+    # bottom of the screen).
     $h = $COLLAPSED_HEIGHT
     if ($st.showLinks -or $st.failed) { $h = $LINKS_HEIGHT }
     if ($st.showList -or $st.failed) {
-      $n = [Math]::Max(1, @($st.rows).Count)
+      $n = [Math]::Min($MAX_ROWS, [Math]::Max(1, @($st.rows).Count))
       $h = $ROW_TOP + $n * $ROW_STEP + 14
     }
     if ($details.Visible) {
@@ -417,6 +437,7 @@ try {
       $form.Height = $h
       $form.Region = New-RoundRegion $WIDTH $h 18
     }
+    $form.ResumeLayout($true)
   }
   Set-Layout
 
@@ -448,49 +469,56 @@ try {
     return ($order | Sort-Object | ForEach-Object { $rows[$_] })
   }
 
+  # A label is only written when its value differs: WinForms repaints on a
+  # write even when the text is the same colour or text it already had for
+  # some properties, and four writes a row a quarter second is the flicker.
+  function Set-Label($label, [string]$text, $color) {
+    if ($label.Text -ne $text) { $label.Text = $text }
+    if ($null -ne $color -and $label.ForeColor -ne $color) { $label.ForeColor = $color }
+  }
+
   function Update-Rows($steps) {
-    $count = @($steps).Count
+    $all = @($steps)
+    # The most recent MAX_ROWS steps: the running one is always the last, so
+    # it stays on screen however many have finished (C02).
+    $first = [Math]::Max(0, $all.Count - $MAX_ROWS)
+    $form.SuspendLayout()
     for ($i = 0; $i -lt $MAX_ROWS; $i++) {
-      if ($i -ge $count) {
-        $rowMark[$i].Text = ""; $rowName[$i].Text = ""; $rowDetail[$i].Text = ""
+      if (($first + $i) -ge $all.Count) {
+        Set-Label $rowMark[$i] "" $null; Set-Label $rowName[$i] "" $null; Set-Label $rowDetail[$i] "" $null
         continue
       }
-      $s = @($steps)[$i]
-      $rowName[$i].Text = $s.Title
+      $s = $all[$first + $i]
       if ($s.State -eq "done") {
-        $rowMark[$i].Text = [char]0x2713
-        $rowMark[$i].ForeColor = $good
-        $rowName[$i].ForeColor = $muted
-        $rowDetail[$i].ForeColor = $dim
-        $rowDetail[$i].Text = $s.Detail
+        Set-Label $rowMark[$i] ([string][char]0x2713) $good
+        Set-Label $rowName[$i] $s.Title $muted
+        Set-Label $rowDetail[$i] $s.Detail $dim
       } elseif ($s.State -eq "failed") {
-        $rowMark[$i].Text = [char]0x00D7
-        $rowMark[$i].ForeColor = $bad
-        $rowName[$i].ForeColor = $bad
-        $rowDetail[$i].ForeColor = $bad
-        $rowDetail[$i].Text = $s.Detail
+        Set-Label $rowMark[$i] ([string][char]0x00D7) $bad
+        Set-Label $rowName[$i] $s.Title $bad
+        Set-Label $rowDetail[$i] $s.Detail $bad
       } else {
-        $rowMark[$i].Text = [char]0x25CF
-        $rowMark[$i].ForeColor = $accent
-        $rowName[$i].ForeColor = $ink
-        $rowDetail[$i].ForeColor = $muted
         $secs = [int]((Get-Date) - $st.activeSince).TotalSeconds
-        $rowDetail[$i].Text = "$($s.Detail)  $($secs)s"
+        Set-Label $rowMark[$i] ([string][char]0x25CF) $accent
+        Set-Label $rowName[$i] $s.Title $ink
+        Set-Label $rowDetail[$i] "$($s.Detail)  $($secs)s" $muted
       }
     }
+    $form.ResumeLayout($true)
   }
 
   function Update-Hint($steps) {
-    $hint.Text = ""
+    $text = ""
     foreach ($s in @($steps)) {
       if ($s.State -ne "active") { continue }
       $secs = ((Get-Date) - $st.activeSince).TotalSeconds
       if ($s.Title -eq "Dependencies" -and $secs -gt 300) {
-        $hint.Text = "Dependencies usually finish inside five minutes. A slow connection can take longer."
+        $text = "Dependencies usually finish inside five minutes. A slow connection can take longer."
       } elseif ($s.Title -eq "Update" -and $secs -gt 30) {
-        $hint.Text = "The update check gives up on its own, and the app starts either way."
+        $text = "The update check gives up on its own, and the app starts either way."
       }
     }
+    if ($hint.Text -ne $text) { $hint.Text = $text }
   }
 
   function Read-LogTail([int]$count) {

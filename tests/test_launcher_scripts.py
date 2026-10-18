@@ -820,6 +820,33 @@ class TestTheWindowsSplash:
             assert depth >= 0, raw
         assert depth == 0
 
+    def test_the_window_height_is_capped_at_the_rows_it_paints(self):
+        """C02: with details open, finished tasks pushed the window down until it
+        touched the bottom of the screen. Layout and painting use one cap, and
+        the rows painted are the most recent, so the running step stays shown.
+        Not verified on Windows."""
+        t = self.text
+        layout = t[t.index("  function Set-Layout {") : t.index("  Set-Layout\n")]
+        assert layout.count("[Math]::Min($MAX_ROWS, [Math]::Max(1, @($st.rows).Count))") == 2
+        rows = t[t.index("  function Update-Rows($steps) {") : t.index("  function Update-Hint($steps) {")]
+        assert "$first = [Math]::Max(0, $all.Count - $MAX_ROWS)" in rows
+        assert "$all[$first + $i]" in rows
+
+    def test_it_does_not_repaint_what_did_not_change(self):
+        """C38: "the splash popup flickers quite a bit". The form is double
+        buffered, the layout is skipped when its inputs are the same as last
+        tick, labels are written only when different, and row updates sit in
+        one Suspend/ResumeLayout. Not verified on Windows."""
+        t = self.text
+        assert '"DoubleBuffered"' in t and "SetValue($form, $true, $null)" in t
+        layout = t[t.index("  function Set-Layout {") : t.index("  Set-Layout\n")]
+        assert "if ($key -eq $st.layoutKey) { return }" in layout
+        assert "$form.SuspendLayout()" in layout and "$form.ResumeLayout($true)" in layout
+        rows = t[t.index("  function Update-Rows($steps) {") : t.index("  function Update-Hint($steps) {")]
+        assert "$form.SuspendLayout()" in rows and "$form.ResumeLayout($true)" in rows
+        assert "if ($label.Text -ne $text) { $label.Text = $text }" in t
+        assert "if ($hint.Text -ne $text) { $hint.Text = $text }" in t
+
     def test_it_parses_the_protocol_not_the_last_line_as_text(self):
         """Between the protocol landing and this, the window showed a raw
         `1|5|Update|...|active` line as its status text."""
@@ -1046,7 +1073,7 @@ class TestTheSplashLayoutDoesNotOverlap:
         """The marquee is moved to the active row, and a list longer than
         MAX_ROWS would otherwise park it beyond the last row that exists."""
         ps1 = self._ps1()
-        assert "$i -ge $count" in ps1
+        assert "($first + $i) -ge $all.Count" in ps1
 
 
 class TestAFlagMissingItsValue:
