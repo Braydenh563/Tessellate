@@ -1769,5 +1769,8 @@ def test_a_flight_frame_never_restyles_the_whole_figure():
     assert "var(--nmb-sway)" not in css
     sway = _fn("nameMarkBuddySway", avatars)
     assert "style.rotate" in sway and "querySelectorAll" in sway
-    # Every writer goes through it: the flight, the drag, and their stops.
-    assert avatars.count("nameMarkBuddySway(buddy,") >= 5
+    # Every writer goes through it: the flight, the drag, and their stops (the
+    # flight and its stop live in the lazy companion-throw.js, INBOX 1301 D6).
+    throw = frontend_text("companion-throw.js")
+    assert avatars.count("nameMarkBuddySway(buddy,") + throw.count("nameMarkBuddySway(buddy,") >= 5
+    assert 'setProperty("--nmb-sway"' not in throw

@@ -2058,6 +2058,7 @@ TOPIC_META: dict[str, dict] = {
     "notifications": {"title": "Notifications", "path": "The bell in the top bar"},
     "companion": {"title": "The corner companion", "path": "Settings, Appearance, Atlas and faces, Corner companion", "steps": (
         "Open Settings, Appearance, Atlas and faces.", "Pick who it is under Corner companion.", "Right-click it on the page for its menu; Ctrl+Shift+Y shows or hides it.")},
+    "companion-throw": {"title": "Throwing the companion", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
     "atlas-look": {"title": "How Atlas looks", "path": "Settings, Appearance, Atlas and faces, Atlas style and Atlas look"},
     "faces": {"title": "Generated faces", "path": "Settings, Appearance, Atlas and faces"},
     "profile": {"title": "Your profile", "path": "Settings, Profile"},
@@ -2218,7 +2219,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     )),
     ("Look and feel", (
         "appearance", "themes", "simple-mode", "accessibility", "performance", "background-art",
-        "statusbar", "companion", "atlas-look", "faces",
+        "statusbar", "companion", "companion-throw", "atlas-look", "faces",
     )),
     ("Models and the AI", (
         "models", "model-downloads", "model-bench", "tools-setting", "autonomous", "websearch",
