@@ -76,6 +76,12 @@ let wbMidPanHeld = false;
 //: Paste and hover-lock bookkeeping, one name in the shared scope.
 const wbBoardState = { pasteArrived: false, lockHoverKey: null, lockHoverFrame: 0, lockHintSaid: false };
 
+//: A two-finger trackpad scroll still pans: it arrives in pixels with a
+//: sideways part, where a mouse wheel's notch has none.
+function wbTrackpadPan(event) {
+  return !event.ctrlKey && !event.metaKey && event.deltaMode === 0 && event.deltaX !== 0;
+}
+
 function wbZoomFilter(event) {
   //: **A plain wheel zooms about the pointer** (the owner, 2026-10-18: "mouse
   //: scroll on the whiteboard and mindmap still doesnt zoom"; this reverses the
@@ -85,7 +91,7 @@ function wbZoomFilter(event) {
   //: the middle button.
   //: Never while the middle button is held: see the plain-wheel listener in
   //: initWhiteboard, the same stray tilt with Ctrl down would zoom mid-pan.
-  if (event.type === "wheel") return (event.ctrlKey || event.metaKey || !event.shiftKey) && !wbMidPanHeld && (event.buttons & 4) !== 4;
+  if (event.type === "wheel") return (event.ctrlKey || event.metaKey || !event.shiftKey) && !wbTrackpadPan(event) && !wbMidPanHeld && (event.buttons & 4) !== 4;
   // Middle button pans from anywhere. `buttons` rather than `button` because
   // mousemove reports the held set, and the drag half of the gesture needs to
   // pass the filter too.
@@ -12668,7 +12674,7 @@ async function initWhiteboard() {
         e.preventDefault();
         return;
       }
-      if (e.ctrlKey || e.metaKey || !e.shiftKey) return;
+      if (e.ctrlKey || e.metaKey || !(e.shiftKey || wbTrackpadPan(e))) return;
       e.preventDefault();
       const k = d3.zoomTransform(container.node()).k || 1;
       const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1;

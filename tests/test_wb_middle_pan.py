@@ -51,7 +51,9 @@ def test_the_middle_press_flag_is_set_by_the_autoscroll_guard() -> None:
     [
         ({"type": "wheel", "ctrlKey": True, "buttons": 0}, True),
         ({"type": "wheel", "ctrlKey": True, "buttons": 4}, False),
-        ({"type": "wheel", "ctrlKey": False, "buttons": 0}, True),  # a plain wheel zooms
+        ({"type": "wheel", "ctrlKey": False, "buttons": 0, "deltaMode": 1, "deltaX": 0}, True),  # a plain wheel zooms
+        ({"type": "wheel", "ctrlKey": False, "buttons": 0, "deltaMode": 0, "deltaX": 3}, False),  # trackpad: pans
+        ({"type": "wheel", "ctrlKey": True, "buttons": 0, "deltaMode": 0, "deltaX": 3}, True),  # pinch zooms
         ({"type": "wheel", "ctrlKey": False, "shiftKey": True, "buttons": 0}, False),  # shifted: the pan listener's
         ({"type": "mousedown", "button": 1, "buttons": 4}, True),
     ],
@@ -64,6 +66,7 @@ def test_the_zoom_filter_never_zooms_mid_pan(event: dict, want: bool) -> None:
 
     script = (
         "let wbSpaceHeld = false; let wbMidPanHeld = false; globalThis.window = { currentTool: 'select' };\n"
+        + _function("wbTrackpadPan")
         + _function("wbZoomFilter")
         + f"\nconsole.log(JSON.stringify(Boolean(wbZoomFilter({json.dumps(event)}))));\n"
     )
