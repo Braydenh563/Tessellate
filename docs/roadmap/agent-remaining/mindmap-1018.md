@@ -28,4 +28,6 @@ Order taken: (1) Expand from my notes; (2) the dark and 820 measurements of sect
 
 ## Log
 
-(commits are appended below)
+- done: 95eb617 Expand from my notes (`/expand`, `wbMapExpandFromNote`, shared picker) and the study note answer (`wbMapStudyQuestions` note questions, `wbPresentCaption`). 12/12 sweeps each at 1440 and 390.
+- decided not to build: a boundary round a lasso'd non-branch set (MINDMAP_PLAN decision 19 excludes it).
+- next: the dark and 820 measurements of section 13 (running, see below), then the open list at the foot.

@@ -2643,7 +2643,13 @@ function wbMapStartResizeDrag(grip, event, d) {
   //: **Shift scales the words with the box** (INBOX 610), by the width's
   //: ratio, inside the same bounds the four named sizes sit in. Read on every
   //: move, so pressing or letting go of Shift mid-drag does what it says.
-  const startFont = d.data?.font_size || WB_MAP_TEXT_DEFAULT;
+  //: The size the words are *drawn* at, which is the topic's own, else its
+  //: level's or the map theme's (the render pass writes it inline), else the
+  //: stylesheet's. Starting from the default instead cleared the inline size
+  //: on the first pixel of the drag, so a topic of 17px dropped to 13.6px
+  //: while it was resized and snapped back on release (measured 2026-10-18).
+  const startInline = node.style.fontSize;
+  const startFont = d.data?.font_size || parseFloat(startInline) || parseFloat(getComputedStyle(node).fontSize) || WB_MAP_TEXT_DEFAULT;
   let font = startFont;
   grip.setPointerCapture?.(event.pointerId);
   const move = (moveEvent) => {
@@ -2654,7 +2660,7 @@ function wbMapStartResizeDrag(grip, event, d) {
     font = moveEvent.shiftKey
       ? Math.round(Math.min(WB_MAP_TEXT_MAX, Math.max(WB_MAP_TEXT_MIN, startFont * (width / startW))))
       : startFont;
-    node.style.fontSize = font === startFont && !d.data?.font_size ? "" : `${font}px`;
+    node.style.fontSize = font === startFont ? startInline : `${font}px`;
     node.style.width = `${width}px`;
     node.style.minHeight = `${height}px`;
     d.width = width;
