@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- `test_the_running_model_manager_is_never_its_module` no longer fails only under `gate.sh`: its child interpreter got no `PYTHONPATH` (pytest.ini's `pythonpath = src` does not reach a child), so it could not import `tessellate`; the test now passes the repo's `src` in the child's environment.
 - The speller loads the app's own words itself: they came from the help topics, registered only when the Guide (`help_chat`) was imported, so a process that had not met it (the first question after launch, `test_composer_725` run alone) left "dayz" as typed; `spelling._app_counts` now imports the topics on first use.
 - Intent routing no longer depends on what ran before: `intent.classify` brings in `commands` (which registers the typed reader) itself, so "pin the dentist noe" and "unlnk the gym note ..." route as acts on a cold process and when `test_owner_typos.py` runs alone; before, they read as notes questions until something else imported `commands`.
 - A chat named from a question no longer keeps a trailing backslash ("what is there about a gaming mouse?\\", INBOX 808): the first-turn name, the rename fallback and a model's title all drop it, and a name is one line (`routes_conversations._question_title`, `tests/test_conversations_api.py`).
