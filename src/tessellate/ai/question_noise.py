@@ -2243,6 +2243,9 @@ def _repair_misspelt(token: str, word: str, tail: str, nxt: str, text: str, out:
     out.append((chosen + tail) if chosen else token)
 
 
+_SMALL_LEADS = frozenset("or an of to in on at by if so do is it as".split())
+
+
 def _repair_by_speller(word: str, tail: str, after: str, out: list[str], report, known, fixed) -> bool:  # noqa: ANN001
     """Reads a misspelt word as the word it is near (`spelling.fix`), or as two
     words run together, one of them small ("thenthe"), tried only when no list
@@ -2265,6 +2268,14 @@ def _repair_by_speller(word: str, tail: str, after: str, out: list[str], report,
             fixed.append((word, chosen))
         return True
     run_on = spelling.split_run_on(low, known) if word.islower() else None
+    #: A small word run into a slang word ("orsmth" is "or smth"): the slang
+    #: is not a list word, so `split_run_on` cannot see it; it is read as its
+    #: own reading so the text is stable under a second repair.
+    if not run_on and word.islower():
+        run_on = next(
+            ((low[:cut], SLANG[low[cut:]]) for cut in (2, 3) if low[:cut] in _SMALL_LEADS and len(low) > cut + 3 and low[cut:] in SLANG),
+            None,
+        )
     if not run_on:
         return False
     out.append(" ".join(run_on) + tail)

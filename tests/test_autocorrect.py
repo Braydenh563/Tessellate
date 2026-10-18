@@ -27,11 +27,12 @@ SOURCE = (JS / "autocorrect.js").read_text(encoding="utf-8")
 
 #: The boxes it serves: prose a person types. Capture, the edit form's two
 #: fields (set in note-edit-panels.js), the graph's note boxes, Write with
-#: the AI, quick note, the chat and Ask composers, and the titles.
+#: the AI, quick note, the chat and Ask composers, the reminder boxes (INBOX
+#: 904 B04) and the titles.
 SERVED = {
     "entry-content", "entry-title", "quick-note-text", "chat-input", "question",
     "graph-new-content", "graph-new-note-title", "graph-popup-content",
-    "draft-text", "draft-thoughts", "doc-title",
+    "draft-text", "draft-thoughts", "doc-title", "reminder-magic", "reminder-text",
 }
 
 

@@ -5539,7 +5539,7 @@ Link to another note with [[its first few words]]."></textarea>
              a single-line box hides all but the last few words of it. Grows
              with the text, and Enter still submits (Shift+Enter for a line
              break) so the quick path stays quick. -->
-        <textarea id="reminder-magic" maxlength="1000" rows="1" class="autogrow" aria-label="New reminder in plain words"
+        <textarea id="reminder-magic" data-autocorrect maxlength="1000" rows="1" class="autogrow" aria-label="New reminder in plain words"
           placeholder="Magic add: “Call mum tomorrow evening”"></textarea>
         <!-- The wand alone (WORLD_CLASS_PLAN 507): the form below has the
              card's one worded "Add", so this reads as "add from the sentence"
@@ -5548,7 +5548,7 @@ Link to another note with [[its first few words]]."></textarea>
       </div>
       <p id="reminder-magic-status" class="status" role="status"></p>
       <div class="reminder-form">
-        <input id="reminder-text" type="text" maxlength="500"
+        <input id="reminder-text" data-autocorrect type="text" maxlength="500"
           placeholder="Remind me to…" aria-label="Reminder text">
         <!-- Split deliberately. One datetime-local field means tabbing through
              six segments in a fixed order to change a time, and its picker is
@@ -11962,7 +11962,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <input type="checkbox" id="pref-autocorrect" checked>
                 <span>Autocorrect as I type</span>
               </label>
-              <p class="muted">Fixes clear typos in notes, chat and titles; Backspace puts it back. Never in code, links, tags or search.</p>
+              <p class="muted">Fixes clear typos in notes, chat, reminders and titles; Backspace puts it back. Never in code, links, tags or search.</p>
             </div>
             <!-- Search (Brief 86, CHAT_PLAN decision 69): the one switch for
                  every box's suggestions; kept on this device like simple mode. -->
