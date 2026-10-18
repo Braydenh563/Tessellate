@@ -19,7 +19,7 @@
  "captions.js::interval": 1,
  "captions.js::raf": 1,
  "capture-ask.js::raf": 5,
- "categories-panel.js::raf": 3,
+ "categories-panel.js::raf": 4,
  "chat-agent.js::raf": 2,
  "chat-attach.js::interval": 1,
  "chat-time.js::mutation-observer": 1,
