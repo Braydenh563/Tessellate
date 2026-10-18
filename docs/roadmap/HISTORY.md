@@ -7,6 +7,12 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## OPEN.md rows closed, 2026-10-18 (open-1018: Library, Notes, App wide, Timeline and Documents leftovers)
+
+Audit table in `docs/roadmap/agent-remaining/open-1018.md`.
+
+- **VC5, link offers in the document editor** (DOCUMENTS_PLAN Brief 75, OPEN 1171). `POST /documents/link-offers` (`routes_documents.py`, `entry/link_offers.py`): the vendored FlashText holds every name a `[[link]]` resolves to (a previewable document's title, a note's opening line without its heading mark) and one scan answers the first mention of each, in text order, at most 12. A one-word name needs its own capital, a name under four characters or with a bracket is not a name, code, existing links, markdown links, addresses and a name the text already links are never offered, and a private note, a binned or archived document and the document itself are not names. The trie is rebuilt only when a count, newest edit or newest id moves. The editor (`documents-prose.js`: `docLinkOfferRequest`, one ask per 700 ms pause, `docLinkOfferCurrent` remaps the last answer through the edits) draws each as a finding of its own kind, `link`: a 1px accent underline, the group "Links to your notes", the check on its row writes `[[Title]]` or `[[Title|as written]]`, Fix never applies it (`DOC_FIX_ALL_NEVER`), and it replaces a "likely typo" on the same span. Tag offers were not built: a document has no tags. Measured: `tests/test_link_offers.py` 15 tests; 5,000 titles cold index 31 ms, warm request 14 ms for 7,634 characters; in the app `linkoffers1018.js` found the 3 names in a probe document (a fenced mention and a second mention not offered), the underline computed `underline solid 1px`, Fix all left the text without a `[[`, the row's check wrote `[[Quarterly roadmap|quarterly roadmap]]`, and a 7,800-character POST took 25 ms.
+
 ## OPEN.md rows closed, 2026-10-17 (the open-rows agent: resurface and the time reader)
 
 Each found by probing the head, test first, one commit per item.
