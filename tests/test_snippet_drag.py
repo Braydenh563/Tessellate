@@ -86,3 +86,11 @@ def test_the_scroll_speed_is_zero_in_the_middle_and_grows_toward_each_edge() -> 
     assert got[3] < 0 and abs(got[3]) < abs(got[1]), "inside the band, slower than at the edge"
     assert got[4] > 0 and got[5] > 0 and got[5] < got[4], "the bottom band scrolls down"
     assert got[6] == 0, "just outside the band"
+
+
+def test_the_no_editor_toast_is_worded_per_document_kind() -> None:
+    """Review note on PR 191: a text document was told to open a code document."""
+    helper = _body("docNeedsDocument")
+    assert '"Open a document first."' in helper and '"Open a code document first."' in helper
+    assert "docNeedsDocument()" in _body("docSnippetDragStart")
+    assert "docNeedsDocument()" in _body("docSnippetInsert")

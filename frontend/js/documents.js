@@ -18316,8 +18316,57 @@ function docTableMenuAtPoint(target, x, y) {
   }
   const context = docTableContext(surface);
   if (!context) return false;
-  openMenuAtPoint(docTableMenuItems(context), "Table row and column actions", x, y);
+  //: The browser's own menu is replaced by this one, so it carries the three
+  //: rows people reach for first (review note on PR 191: no Copy or Paste).
+  openMenuAtPoint([...docClipboardMenuItems(view), ...docTableMenuItems(context)], "Table row and column actions", x, y);
   return true;
+}
+
+//: Copy, Cut and Paste for the right-click menu over a Live table. Plain text
+//: only, which is all a cell holds. Paste reads the clipboard API, which a
+//: webview may refuse; then it says so rather than doing nothing.
+function docClipboardMenuItems(view) {
+  const ranges = () => view.state.selection.ranges.filter((range) => !range.empty);
+  const selected = () => ranges().map((range) => view.state.sliceDoc(range.from, range.to)).join("\n");
+  const none = !ranges().length;
+  return [
+    {
+      label: "Copy",
+      group: "Clipboard",
+      disabled: none,
+      run: async () => {
+        await copyToClipboard(selected());
+        view.focus();
+      },
+    },
+    {
+      label: "Cut",
+      group: "Clipboard",
+      disabled: none,
+      run: async () => {
+        const text = selected();
+        await copyToClipboard(text);
+        view.dispatch(view.state.replaceSelection(""));
+        view.focus();
+      },
+    },
+    {
+      label: "Paste",
+      group: "Clipboard",
+      run: async () => {
+        let text = "";
+        try {
+          text = await navigator.clipboard.readText();
+        } catch (error) {
+          toast("Paste is blocked here. Press Ctrl+V in the cell.", "info");
+          view.focus();
+          return;
+        }
+        if (text) view.dispatch(view.state.replaceSelection(text.replace(/\r?\n/g, " ")));
+        view.focus();
+      },
+    },
+  ];
 }
 
 //: The same menu from an edge grip: the caret goes into the grip's own row or

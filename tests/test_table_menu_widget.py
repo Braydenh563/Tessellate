@@ -77,3 +77,13 @@ def test_an_open_menu_holds_the_kebab_on_screen():
     assert re.search(
         r"if \(r === menuRow && \(inTable \|\| menuHeld\)\)", SOURCE
     ), "the menu widget must be drawn when the caret is in the table OR its own menu is open"
+
+
+def test_the_table_right_click_menu_carries_copy_cut_and_paste():
+    """The right-click menu replaces the browser's, so it must keep the three
+    clipboard rows (review note on PR 191); the behaviour is checked in a browser."""
+    body = re.search(r"function docTableMenuAtPoint\(.*?\n\}\n", SOURCE, re.S).group(0)
+    assert "docClipboardMenuItems(view)" in body
+    rows = re.search(r"function docClipboardMenuItems\(.*?\n\}\n", SOURCE, re.S).group(0)
+    for label in ("Copy", "Cut", "Paste"):
+        assert f'label: "{label}"' in rows

@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Review notes on PR 191: "show me from Paris" and "what are your recent notes" are no longer read as a list of notes; the Live table right-click menu has Copy, Cut and Paste; Replace all on a board rewrites custom property values that Find matches; the find bar sits over the Format panel (z-index 26, measured with elementFromPoint); the snippet panel's no-editor toast is worded per document kind; `tests/test_composer_lists_1018.py`, `tests/test_wb_find_replace.py`, `tests/test_snippet_drag.py`.
 - A notice that names "Settings, Packages" (not installed) now has an Open Settings, Packages button that scrolls to that package's row (INBOX 1300 C35); `tests/test_package_notice_action.py`.
 - Undo and redo on a board or a document show "Undone: last change on this board" even with notifications muted (INBOX 1300 C32); `tests/test_link_types.py`.
 - Pressing the ticked kind in a link's Kind of link sheet (including "has example of") clears it (INBOX 1300 C31); `tests/test_link_types.py`.
