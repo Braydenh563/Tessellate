@@ -347,7 +347,7 @@ class PreferencesBody(BaseModel):
     #: `off` means "do not have an opinion about which side of the Atlantic
     #: this document is on", the honest default for a notebook that does not
     #: know who is writing in it.
-    spelling_variant: Literal["off", "uk", "us"] | None = None
+    spelling_variant: Literal["off", "uk", "us", "au", "ca", "in"] | None = None
     #: The grammar checker (Harper, run in the browser; INBOX 401). On by
     #: default: it costs nothing until a prose document or note box is open,
     #: and nothing on the main thread even then.

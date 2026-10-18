@@ -4864,12 +4864,14 @@ Link to another note with [[its first few words]]."></textarea>
                  (DOCUMENTS_PLAN 25 row 2, docRunSyncAvailability). -->
             <button id="doc-code-run-why" class="linklike small hidden" type="button"
               title="Open Settings, Packages, at Run Python files">Install Python in Settings, Packages</button>
-            <!-- The code panel's way in (INBOX 788): a code file only
-                 (`.doc-code-only`, hidden for prose by library-lazy.css). -->
+            <!-- The code panel's ways in (INBOX 788): the Assistant is a code
+                 file's (`.doc-code-only`, hidden for prose by library-lazy.css);
+                 Snippets is for every document, and reads Sections beside
+                 prose (INBOX 904 B18, `.doc-prose-only`). -->
             <button id="doc-code-assist-open" class="ghost small doc-code-only" type="button" aria-controls="doc-code-side" data-side="assist" aria-expanded="false"
               title="Assistant: explain, fix, write tests or refactor the selection or the file" aria-label="Assistant"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> <span class="doc-ai-label">Assistant</span></button>
-            <button id="doc-code-snippets-open" class="ghost small doc-code-only" type="button" aria-controls="doc-code-side" data-side="snippets" aria-expanded="false"
-              title="Snippets: insert one at the caret, or save the selection as one" aria-label="Snippets"><i class="ph ph-puzzle-piece ph-lead" aria-hidden="true"></i> <span class="doc-ai-label">Snippets</span></button>
+            <button id="doc-code-snippets-open" class="ghost small" type="button" aria-controls="doc-code-side" data-side="snippets" aria-expanded="false"
+              title="Snippets: insert one at the caret, or save the selection as one" aria-label="Snippets"><i class="ph ph-puzzle-piece ph-lead" aria-hidden="true"></i> <span class="doc-ai-label doc-code-only">Snippets</span><span class="doc-ai-label doc-prose-only">Sections</span></button>
             <!-- Export and delete, folded away. Same `<details>` disclosure
                  the Library's image tiles use, for the same reason: the
                  browser gives the open/close, the keyboard handling and the
@@ -5247,7 +5249,7 @@ Link to another note with [[its first few words]]."></textarea>
             <aside id="doc-code-side" class="doc-code-side hidden" aria-label="Code panel">
               <div class="doc-code-side-head">
                 <div class="tabs-line" id="doc-code-side-tabs" role="tablist" aria-label="Code panel sections">
-                  <button role="tab" data-side="assist" aria-selected="false" tabindex="-1"
+                  <button role="tab" data-side="assist" class="doc-code-only" aria-selected="false" tabindex="-1"
                     aria-controls="doc-code-assist">Assistant</button>
                   <button role="tab" data-side="snippets" aria-selected="true"
                     aria-controls="doc-code-snippets">Snippets</button>
@@ -5269,17 +5271,24 @@ Link to another note with [[its first few words]]."></textarea>
                   runs the tool; any other goes to the needle extra when it is installed.
                   Explain, Write tests and Refactor stay on screen, disabled, and say why.</p>
                 <p>Snippets: pick a row, or press Enter on it, to insert it at the
-                  caret; Ctrl+Z takes it out. Built-in rows have stops that Tab walks.</p>
+                  caret, or drag it into the text: a bar shows where it will land and
+                  the text scrolls at its top and bottom edge. Ctrl+Z takes it out.
+                  Built-in rows have stops that Tab walks.</p>
                 <p>Select some code and press Save to keep it; words with
                   a # in its name become tags ("Read a file #io"). The search matches
                   names, tags and languages, and this file's language is listed first.
                   Snippets belong to the notebook, not to one document.</p>
+                <p>In a text document the same panel is Sections: ready-made blocks
+                  (a meeting block, a risk table, a callout) that go in at the caret or
+                  where you drop them, each on its own lines with a blank line round it.
+                  Tab walks the prompts. Select some text and press Save to keep your
+                  own, tagged with # words.</p>
               </div>
               <!-- **The coding assistant** (INBOX 788, the owner: "a way to better
                    interact with the ai as a coding asistant like in vs code??").
                    Asks go to `/documents/{id}/code-assist` (ai/code_assist.py),
                    the documents feature's model: one provider path. -->
-              <section id="doc-code-assist" class="doc-code-side-section hidden" role="tabpanel" aria-label="Assistant">
+              <section id="doc-code-assist" class="doc-code-side-section doc-code-only hidden" role="tabpanel" aria-label="Assistant">
                 <p id="doc-assist-scope" class="muted text-sm doc-assist-scope"></p>
                 <div class="doc-assist-asks" role="group" aria-label="Ask the model">
                   <button type="button" class="ghost small" data-assist="explain"
@@ -9194,6 +9203,9 @@ Link to another note with [[its first few words]]."></textarea>
         <option value="off">No preference</option>
         <option value="uk">British (colour, organise)</option>
         <option value="us">American (color, organize)</option>
+        <option value="au">Australian (colour, organise)</option>
+        <option value="ca">Canadian (colour, organize)</option>
+        <option value="in">Indian (colour, organise)</option>
       </select>
     </div>
     <label class="setting-check doc-grammar-row">
