@@ -894,50 +894,7 @@ Held by the boardmap-1005 agent; the built halves are in HISTORY.md
 
 ## Placed from INBOX, 2026-10-07 (next PR)
 
-740. **The owner, 2026-10-06, verbatim**, with an OKR board from the new templates
-     (frame titles "Objective one", hints "A goal worth the quarter") and a rotated
-     sticky note: "I cant edit the text under the titles in these objects?I rotated
-     an object int he whiteboard (a sticky note) and the arrows jsut off the middle
-     of each edge didnt rotate with it". Two bugs: the template frames' hint line
-     (INBOX 715's `hint` field) has no edit path, double-click should edit it like
-     the title; the quick-connect arrows beside each edge stay axis-aligned on a
-     rotated object, they must sit off its rotated edges.
-     Then, verbatim: "also the arrow head styles in the whiteboard have no
-     variations, not different arrow heads". Connector ends need a set of heads
-     (none, arrow, open arrow, triangle, circle, diamond, bar), per end, in the
-     connector toolbar.
-
-746. **The owner, 2026-10-07, verbatim**, with a board made from the flowchart
-     template (Start, Do the first step, Did it work?, Try again, End) after
-     dragging its shapes apart: "while dragging shapes, the arrows and lines dont
-     move with". The template's connectors (frontend/board-library/templates.json;
-     shapes carry a `key`) stayed where they were drawn: either they are created
-     as free arrows with fixed ends instead of connectors bound to the shapes'
-     keys, or the binding is lost when the template lands
-     (`/board-library/new-board`). Next PR: every template connector is bound
-     at both ends, a drag of a bound shape moves its connectors live, and a
-     test drags each built-in template's shapes and checks every connector
-     still meets its shapes. With 740 (arrows on rotated shapes).
-
-747. **The owner, 2026-10-07, verbatim**: "also in the whiteboard and mindmap,
-     there's no way to reset a object back to default style". No such action
-     exists (grep "Reset style" in whiteboard*.js finds nothing; a map topic's
-     Text, Shape and Branch panels each have their own reset arrow, INBOX 670,
-     but nothing resets the whole object). Next PR: "Reset style" on every
-     object's floating bar menu and right-click menu, and for a multi-selection:
-     colour, fill, stroke, text size and weight, shape and line style back to
-     the kind's defaults (a map topic back to following the map), content and
-     position kept, one undo step, in the command palette as a board command,
-     help text updated.
-
-- **The edge arrows also ignore resize and drag** (the owner, 2026-10-07,
-  verbatim: "can you fix the edge arrows and line arrows not moving or
-  rotating with the objects??", "the arrows dont resize either", with a
-  resized text box whose side triangles stayed at its old size). With 740:
-  the triangles outside each side of a selected object sit just outside the
-  midpoint of each edge of its current box, rotated with it, updated live
-  during drag, resize and rotate; bound connectors follow the same way (746).
-  Measure with getBoundingClientRect after each of the three.
+Built (code and tests read 2026-10-18, whiteboard-1018); moved whole to HISTORY.md ("Moved from the plans, 2026-10-18 (whiteboard-1018, built Placed blocks)").
 
 ## Placed from the owner's list, 2026-10-10
 
@@ -1638,20 +1595,7 @@ the graph agent.
 
 ## Placed from INBOX, 2026-10-11 (fit a frame to its contents)
 
-INBOX 821, the owner, verbatim: "can you add the ability to double tap a resize anchor to resize that edge or the whole frame to snugly fit all the content in it with a comfortable margin??" (screenshot: "Frame 1" far larger than its cards, sticky, sketch and links). Not built (no fit in `whiteboard*.js`). Target: double-click or double-tap an edge handle and that edge moves to the contents' bound plus a 32-unit margin; a corner handle fits its two edges; "Fit to contents" on the frame's menu fits all four. The contents are the items the frame holds (`wbFrameContents`), links' curves included. A frame holding nothing does not move. One Undo step; the move animates in 150 ms (instant under reduced motion). Gate: after fitting each edge, the gap is 32 ± 1 units at 1440 and 390, and nothing the frame held falls outside it. Help moves with it. Owner: the mapfix agent.
-
-INBOX 822, the owner, verbatim: "I cant rename frames in the pages sidebar" (screenshot: Pages, row "1 Frame 1" with only a present icon). Target: double-click or F2 on a page row renames the frame inline (the same one-line editor as a frame's title on the canvas, Enter to keep, Esc to cancel, one Undo step); the row's kebab (row actions recipe) holds Rename, Fit to contents, Present from here and Delete; the canvas title updates live. Owner: the mapfix agent.
-
-INBOX 823, the owner, verbatim: "these popups overlap" (screenshot: the line tool's kind popover, line or arrow, drawn under its own options bar, Size, Plain, Solid, which crosses it). Target: one tool's options are one surface: the kind choice joins the options bar as its first segment, or the popover opens above the bar with no intersection (measured, 0 px at 1440 and 390).
-
-INBOX 824, the owner, verbatim: "why are some elements highlighted blue in the sidebar but not others?? is it because they are in the frame??" (screenshot: Layers, five rows tinted, three Drawing rows plain). Read: the tint is the canvas selection (`aria-selected`, `wbRenderLayers`), and nothing on the panel says so. Target: the panel's head says "4 selected" with Clear; a selected row wears the list recipe's selected state (accent bar and tint), distinct from hover; items a frame holds nest under the frame's row (indented, collapsible), so "in the frame" is shown by place, never by colour. Owner: the mapfix agent.
-
-INBOX 825, the owner, verbatim: "also idk why that show less button is there, all the text is showing. but also I think notes and their content should be dynamic in sizing with the show more or less hyperlink showing or not based off how the note is sized, same with the size of images and files in a note and also the note should be freely sizable and shouldn snap to a size, maybe could have guided snaps?? idk this is all in the mindmap and whiteboard" (screenshot: a note card "Current Commitments" with all its text shown and "Show less" under it). Target, boards and maps alike:
-1. "Show more" shows only when the card's content overflows its size, measured by `scrollHeight > clientHeight` after layout and re-measured on resize. "Show less" shows only after a person expanded a card that overflowed. A card that fits shows neither.
-2. Cards resize freely, to any width and height: no snap to preset sizes. Guided snaps instead, while dragging: to a neighbour's width or height, to the grid when the grid is on, and to "fit content". A guide line shows each one. Alt holds them off.
-3. Images and files in a card scale with the card's width: images keep their ratio up to the card's width, and a file chip is one line that truncates its name.
-4. A double-click on a card's resize handle fits the card to its content (the same gesture as a frame's fit, INBOX 821).
-Gate: 0 cards with a stray Show more or Show less on the owner-shaped fixture at 1440 and 390; any width from 120 to 1200 units is reachable by drag. Owner: the cards agent (Sonnet, queued after mapfix).
+Built (INBOX 821 to 825, code read 2026-10-18); moved whole to HISTORY.md ("Moved from the plans, 2026-10-18 (whiteboard-1018, built Placed blocks)").
 
 ## Placed from INBOX, 2026-10-11 (ends, edge arrows, guides while drawing; canvasdepth3)
 
