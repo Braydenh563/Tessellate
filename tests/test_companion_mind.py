@@ -228,3 +228,18 @@ process.stdout.write(JSON.stringify({ ys, sh, others: [stars[0].style.opacity, s
     assert min(out["ys"]) <= 4 and max(out["ys"]) >= 16, "up over the head and back to the hand"
     assert out["others"] == ["0", "0"] and out["shown"] == "1" and out["arc"] == "0"
     assert out["sh"] < -40, "the right arm is up to throw"
+
+
+def test_every_menu_action_answers_with_something_it_does() -> None:
+    # The BACKLOG popup-actions audit (owner, 2026-10-12: "some popup icons and
+    # actions are not animated"). Each row of the companion's menu, read in
+    # companion-1018: Say hello pokes it, Enlarge opens its view, Let it choose
+    # and Tuck and Call back walk it, Companion and Atlas look rebuild it, Size
+    # eases (`nmb-fitting`), Hide leaves. "Stay here on every page" alone moved
+    # nothing (an instant, pinned move to where it already was), so the press
+    # showed no sign of having worked. It nods, where a nod fits its pose.
+    start = MENU.index("{ group: \"place\", label: \"ph:push-pin Stay here on every page\"")
+    pin = MENU[start : MENU.index("} },", start)]
+    assert 'nameMarkBuddyAct("nod")' in pin
+    assert "NAME_MARK_BUDDY_ACTS.nod.poses.includes(nmb.pose)" in pin and "nameMarkBuddyStill()" in pin
+    assert pin.index('nameMarkBuddyMoveTo(buddy, { kind: "pinned"') < pin.index('nameMarkBuddyAct("nod")')

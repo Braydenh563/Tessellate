@@ -239,6 +239,10 @@ function nameMarkBuddyMenu(buddy, at = null) {
       nmb.hopAnim?.cancel();
       nameMarkBuddyKeepSpots({ "*": { x, y, pose: nmb.pose, legs: nmb.legs, side: buddy.dataset.side || "", w: innerWidth, h: innerHeight, keep: 1 } });
       nameMarkBuddyMoveTo(buddy, { kind: "pinned", x, y, pose: nmb.pose, legs: nmb.legs, side: buddy.dataset.side || "" }, true);
+      //: Pinned where it already is, nothing moved, so the press showed no
+      //: sign of having worked (the popup-actions audit): it nods, where a
+      //: nod fits its pose.
+      if (NAME_MARK_BUDDY_ACTS.nod.poses.includes(nmb.pose) && !nameMarkBuddyStill()) nameMarkBuddyAct("nod");
     } },
   ];
   if (spots[tab]) {
