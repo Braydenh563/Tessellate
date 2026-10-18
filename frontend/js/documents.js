@@ -20044,7 +20044,8 @@ function docCmIsolate() {
 
 function docUndo() {
   const CM = window.CM6;
-  if (docCmView && CM) return CM.commands.undo(docCmView);
+  //: C32: these histories hold no labels, so the notice names the place; "info" shows even when muted.
+  if (docCmView && CM) return CM.commands.undo(docCmView) && (toast("Undone: last change on this document", "info"), true);
   //: The fallback is one textarea, so the browser's own history is the right
   //: one and a second would only disagree with Ctrl+Z: which is what
   //: `applyMarkdown`'s own comment said before Live ever existed.
@@ -20091,7 +20092,7 @@ window.docCanRedo = () => (docCmView && window.CM6 ? window.CM6.commands.redoDep
 
 function docRedo() {
   const CM = window.CM6;
-  if (docCmView && CM) return CM.commands.redo(docCmView);
+  if (docCmView && CM) return CM.commands.redo(docCmView) && (toast("Redone: last change on this document", "info"), true);
   docSurface()?.focus();
   return document.execCommand("redo");
 }

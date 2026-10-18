@@ -106,11 +106,9 @@ async function openLinkTypeSheet(entryId, link) {
       const outgoing = link.direction !== "in";
       for (const t of types) {
         const label = !outgoing && t.directed && t.inverse ? t.inverse : t.name;
-        //: The ticked kind is a toggle: pressing it again clears it (C31).
         const current = link.link_type === t.key;
         const row = sheetRow(`ph ${current ? "ph-check-circle" : "ph-circle"}`, label, async () => {
-          const body = current ? { link_type: null } : { link_type: t.key };
-          if (await patch(body, current ? "Kind cleared." : `Marked as ${label}.`)) close();
+          if (await patch({ link_type: current ? null : t.key }, current ? "Kind cleared." : `Marked as ${label}.`)) close();
         });
         if (link.link_type === t.key) row.setAttribute("aria-current", "true");
         if (t.directed && t.inverse) {

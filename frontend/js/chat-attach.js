@@ -1259,8 +1259,7 @@ function notePickerKeydown(event) {
   else if (event.key === "Home") to = 0;
   else if (event.key === "End") to = boxes.length - 1;
   else if (event.key === "Enter") {
-    //: Ticks the focused row like Space and leaves focus on it (C09); Done is
-    //: Enter in the search field or the Done button.
+    //: C09: ticks the row; Done is Enter in the search field.
     event.preventDefault();
     target.click();
     return;

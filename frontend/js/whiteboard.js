@@ -9132,9 +9132,7 @@ function wbBulletTextLines() {
 function wbBeginTextEdit(contentEl, ownText) {
   if (!contentEl || contentEl.isContentEditable) return;
   //: Back to the source while editing, whatever the rendered view showed.
-  //: A caller that edits a field of its own (a frame's title or hint line)
-  //: passes that field's text: the object's `content` is not it (C17: the
-  //: hint opened as the title).
+  //: `ownText`: a frame's title or hint line is not the object's `content` (C17).
   const objectEl = contentEl.closest(".wb-object");
   const item = (wbState.objects || []).find((o) => String(o.id) === objectEl?.dataset.id);
   if (ownText !== undefined) {
@@ -9699,6 +9697,8 @@ async function wbUndo() {
   try {
     if (!(await wbApplyHistoryEntry(wbUndoStack, wbRedoStack))) return;
     wbUpdateUndoRedoButtons();
+    //: C32: no labels on a board's history, so the notice names the place; "info" shows even when muted.
+    toast("Undone: last change on this board", "info");
     if (wbIsMap()) {
       const parentId = wbUndoParents.find((id) => (wbState.objects || []).some((o) => o.id === id));
       if (parentId != null) selectWbItem("object", parentId);
@@ -9719,6 +9719,7 @@ async function wbRedo() {
   try {
     if (!(await wbApplyHistoryEntry(wbRedoStack, wbUndoStack))) return;
     wbUpdateUndoRedoButtons();
+    toast("Redone: last change on this board", "info");
     wbScheduleRender();
   } catch {
     toast(voiceLine("failed", { what: "redo that" }), true);
@@ -10820,9 +10821,8 @@ function wbEditFrameTitle(titleEl, frame, field = "content") {
     if (isHint && !name) delete frame.data.hint;
     titleEl.textContent = name;
     if (isHint) titleEl.hidden = !name;
-    //: The text was written straight into the element, so the object's paint
-    //: key still names the old data: an undo back to it matched the key and
-    //: repainted nothing (C17). Clearing it makes the next render redraw.
+    //: C17: the text went straight into the element, so an undo matched the
+    //: old paint key and repainted nothing.
     const objectEl = titleEl.closest(".wb-object");
     if (objectEl) objectEl._wbPaintKey = null;
     wbSaveObject(frame);

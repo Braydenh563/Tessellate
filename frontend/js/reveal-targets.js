@@ -659,3 +659,23 @@ async function markNotePassage(id, from) {
   markNotePassage.timer = setTimeout(() => CSS.highlights.delete("source-quote"), 8000);
   return true;
 }
+
+//: Which package row a notice is about, from the package's name as the
+//: server's words give it ("Voice notes", "Translate offline", ...).
+function packagesNoticeTarget(message) {
+  if (/Read scanned PDFs|PDF pages/.test(message)) return "pdfpages";
+  if (/Voice notes/.test(message)) return "voice";
+  if (/Search by meaning/.test(message)) return "semantic";
+  if (/Import documents/.test(message)) return "documents";
+  if (/RapidOCR/.test(message)) return "rapidocr";
+  if (/Search inside images|Tesseract/.test(message)) return "ocr";
+  if (/Python|Pyodide/.test(message)) return "pyodide";
+  if (/Translate/.test(message)) return "translate";
+  if (/Live captions/.test(message)) return "captions";
+  return "";
+}
+
+function packagesNoticeOpen(message) {
+  const id = packagesNoticeTarget(message);
+  return id ? revealFeature("extra-row", id) : revealFeature("settings:extras");
+}

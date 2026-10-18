@@ -126,15 +126,6 @@ function settleNotification(id, { key, kind, title, detail = "" }) {
   return true;
 }
 
-//: The history's half of the same rule: a finished run whose "Started:" row
-//: is still stored (the page reloaded mid-run, so the poll never saw it end)
-//: is settled by its run id.
-function settleStartedNotification(item, key) {
-  if (storedNotifications().some((n) => n.id === key)) return true;
-  const started = item.run_id && storedNotifications().find((n) => n.runId === item.run_id);
-  return Boolean(started) && settleNotification(started.id, { key, ...taskEndingWords(item, item.label) });
-}
-
 //: "Finished: X, took 4 s", "Failed: X" with the reason, "Stopped: X".
 function taskEndingWords(ended, label) {
   const took = ended ? jobDurationWords(ended.duration_ms) : "";
@@ -1050,6 +1041,8 @@ function toast(message, isError = false, { exempt = false, action = null } = {})
     exempt = true;
   }
   if (!exempt && !isError && notificationsMuted()) return;
+  //: C35: a "Settings, Packages" notice gets an Open button.
+  if (!action && /[,→] Packages/.test(message)) return toastAction(message, "Open Packages", () => packagesNoticeOpen(message));
   const key = `${isError ? "1" : "0"}:${message}`;
   if (key === lastToastKey) return;
   lastToastKey = key;
@@ -1514,21 +1507,10 @@ function appStackIsNewer(dir) {
   return Boolean(top) && top.at >= (window.docUndoAt?.() || 0);
 }
 
-//: **An undo on a board or a document says so** (INBOX 1300 C32: "undo shows
-//: no indication (notifications muted)"). Those histories hold no labels, so
-//: the words name the place. `"info"` is the toast's exempt shape: a muted
-//: notebook still shows it, as it still shows the zoom readout, because it
-//: answers a key the person just pressed.
-function surfaceStepNotice(verb, where) {
-  toast(`${verb}: last change on this ${where}`, "info");
-}
-
 async function performUndo() {
   const surface = surfaceHistory();
   if (surface) {
-    const had = surface.canUndo ? surface.canUndo() : true;
     await surface.undo();
-    if (had) surfaceStepNotice("Undone", surface.where);
     renderUndoBar();
     return;
   }
@@ -1551,9 +1533,7 @@ async function performUndo() {
 async function performRedo() {
   const surface = surfaceHistory("redo");
   if (surface) {
-    const had = surface.canRedo ? surface.canRedo() : true;
     await surface.redo();
-    if (had) surfaceStepNotice("Redone", surface.where);
     renderUndoBar();
     return;
   }

@@ -122,14 +122,16 @@ def test_pressing_the_current_kind_again_clears_it() -> None:
     """INBOX 1300 C31: the ticked kind in the Kind of link sheet did nothing on
     a second press; it now clears like "No kind"."""
     js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "link-types.js").read_text(encoding="utf-8")
-    assert "current ? { link_type: null } : { link_type: t.key }" in js
+    assert "link_type: current ? null : t.key" in js
 
 
 def test_an_undo_on_a_board_or_document_says_so_even_when_muted() -> None:
-    """INBOX 1300 C32: the surface branches of performUndo/performRedo gave no
-    feedback; they now raise the exempt ("info") toast naming the place."""
-    js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "status.js").read_text(encoding="utf-8")
-    assert 'toast(`${verb}: last change on this ${where}`, "info")' in js
-    for name in ("performUndo", "performRedo"):
-        body = js[js.index(f"async function {name}(") :].split("\n}\n", 1)[0]
-        assert "surfaceStepNotice(" in body, name
+    """INBOX 1300 C32: undo and redo on a board or document gave no feedback;
+    they now raise the exempt ("info") toast naming the place. The words live
+    in the lazy surfaces (whiteboard.js, documents.js), not the boot's status.js."""
+    js = Path(__file__).resolve().parents[1] / "frontend" / "js"
+    board = (js / "whiteboard.js").read_text(encoding="utf-8")
+    doc = (js / "documents.js").read_text(encoding="utf-8")
+    for verb in ("Undone", "Redone"):
+        assert f'toast("{verb}: last change on this board", "info")' in board
+        assert f'toast("{verb}: last change on this document", "info")' in doc
