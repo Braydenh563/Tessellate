@@ -321,74 +321,91 @@ def _sentence_tense(sentence: str) -> str | None:
     return None
 
 
-def _note_facts(note: dict) -> list[Fact]:
-    _tables()
-    content = str(note.get("content") or "")
-    source = int(note.get("id") or 0)
-    written = _written(note)
-    tags = [str(t) for t in note.get("tags") or []]
-    joke = bool(_JOKE.search(content))
-    facts: list[Fact] = []
-    units = _units(content)
-    for index, (u_start, u_end, u_kind, done) in enumerate(units):
-        sentence = content[u_start:u_end]
-        quoted = _quoted_spans(sentence)
-        tense = _sentence_tense(sentence)
-        local: list[Fact] = []
+def _after_object(sentence: str, pos: int, obj: str) -> int:
+    """Where a verb's object ends: past the spaces after `pos` and the object."""
+    tail = sentence[pos:]
+    return pos + (len(tail) - len(tail.lstrip()) + len(obj) if obj else 0)
 
-        def add(kind: str, s: int, e: int, attrs: dict | None = None, mode: str | None = None, confidence: float = 0.8) -> None:
-            text = sentence[s:e]
-            stripped = text.strip() if kind == "quote" else text.strip().rstrip(".,;:")
-            if not stripped:
-                return
-            s += len(text) - len(text.lstrip())
-            e = s + len(stripped)
-            local.append(Fact(kind, source, u_start + s, u_start + e, content[u_start + s:u_start + e], attrs or {},
-                              mode or _mode(sentence, s, quoted), None, False, confidence))
 
-        if u_kind == "check_item":
-            add("check_item", 0, len(sentence), {"done": bool(done), "index": index}, "asserted", 1.0)
-        elif u_kind == "list_item":
-            add("list_item", 0, len(sentence), {"index": index}, "asserted", 1.0)
-        for s, e, speaker in quoted:
-            add("quote", s, e, {"speaker": speaker}, "quoted", 0.9)
+class _SentenceReader:
+    """The facts of one sentence. The order of the steps in `read` is the order
+    the facts are collected in, which the final stable sort keeps for ties."""
+
+    def __init__(self, content: str, source: int, written: date | None, tags: list[str], unit: tuple) -> None:
+        self.content, self.source, self.written, self.tags = content, source, written, tags
+        self.u_start, u_end, self.u_kind, self.done = unit
+        self.sentence = content[self.u_start:u_end]
+        self.quoted = _quoted_spans(self.sentence)
+        self.tense = _sentence_tense(self.sentence)
+        self.local: list[Fact] = []
+        #: Spans already read as a date, sum or length: not quantities.
+        self.taken: list[tuple[int, int]] = []
+        self.dated: list[tuple] = []
+
+    def add(self, kind: str, s: int, e: int, attrs: dict | None = None, mode: str | None = None, confidence: float = 0.8) -> None:
+        text = self.sentence[s:e]
+        stripped = text.strip() if kind == "quote" else text.strip().rstrip(".,;:")
+        if not stripped:
+            return
+        s += len(text) - len(text.lstrip())
+        e = s + len(stripped)
+        self.local.append(Fact(kind, self.source, self.u_start + s, self.u_start + e, self.content[self.u_start + s:self.u_start + e],
+                               attrs or {}, mode or _mode(self.sentence, s, self.quoted), None, False, confidence))
+
+    def structure(self, index: int) -> None:
+        if self.u_kind == "check_item":
+            self.add("check_item", 0, len(self.sentence), {"done": bool(self.done), "index": index}, "asserted", 1.0)
+        elif self.u_kind == "list_item":
+            self.add("list_item", 0, len(self.sentence), {"index": index}, "asserted", 1.0)
+        for s, e, speaker in self.quoted:
+            self.add("quote", s, e, {"speaker": speaker}, "quoted", 0.9)
+
+    def dates(self) -> None:
         # dates first: their spans are not quantities
-        taken: list[tuple[int, int]] = []
-        dated: list[tuple] = []
-        for s, e, phrase in when_words.find(sentence):
-            resolved = _date_value(phrase, written, tense)
-            add("date", s, e, {"phrase": phrase, "resolved": resolved[0].isoformat() if resolved else None,
-                                "through": resolved[1].isoformat() if resolved else None,
-                                "grain": resolved[2] if resolved else "unknown"}, confidence=0.9 if resolved else 0.5)
-            taken.append((s, e))
+        for s, e, phrase in when_words.find(self.sentence):
+            resolved = _date_value(phrase, self.written, self.tense)
+            self.add("date", s, e, {"phrase": phrase, "resolved": resolved[0].isoformat() if resolved else None,
+                                    "through": resolved[1].isoformat() if resolved else None,
+                                    "grain": resolved[2] if resolved else "unknown"}, confidence=0.9 if resolved else 0.5)
+            self.taken.append((s, e))
             if resolved:
-                dated.append(resolved)
+                self.dated.append(resolved)
+
+    def money(self, spans: list) -> None:
         #: Money is read by `ai/recognise.py` (CHAT_PLAN decision 46). A sum
         #: that also reads as a weight ("lost 5 pounds") is left to the
         #: quantities below, as it always was here.
-        spans = recognise.recognise(sentence, now=datetime.combine(written or date.today(), time(12)))
         for found in spans:
             if found.kind != "money" or found.rank or any(o.rank and (o.start, o.end) == (found.start, found.end) for o in spans):
                 continue
             value, currency = found.value
-            add("money", found.start, found.end, {"value": int(value) if value == int(value) else value, "currency": currency}, confidence=0.95)
-            taken.append((found.start, found.end))
+            self.add("money", found.start, found.end, {"value": int(value) if value == int(value) else value, "currency": currency}, confidence=0.95)
+            self.taken.append((found.start, found.end))
+
+    def durations(self, spans: list) -> None:
         for found in spans:
-            if found.kind != "duration" or found.rank or any(st <= found.start < en for st, en in taken):
+            if found.kind != "duration" or found.rank or any(st <= found.start < en for st, en in self.taken):
                 continue
             #: "three times a week" is how often, not how long.
-            if re.search(r"\b(?:times|once|twice|per|every)\s+$", sentence[: found.start], re.I):
+            if re.search(r"\b(?:times|once|twice|per|every)\s+$", self.sentence[: found.start], re.I):
                 continue
             unit = found.text.lower().split()[-1] if " " in found.text else found.text.lower().lstrip("0123456789.,")
-            add("duration", found.start, found.end, {"seconds": int(found.value.total_seconds()), "unit": unit}, confidence=0.9)
-            taken.append((found.start, found.end))
-        for match in _QUANTITY.finditer(sentence):
-            if any(s <= match.start() < e or s < match.end() <= e for s, e in taken):
+            self.add("duration", found.start, found.end, {"seconds": int(found.value.total_seconds()), "unit": unit}, confidence=0.9)
+            self.taken.append((found.start, found.end))
+
+    @staticmethod
+    def _counted_unit(unit: str) -> bool:
+        """Whether a word after a number is a unit worth keeping."""
+        if unit not in _UNITS and not (unit.endswith("s") and len(unit) > 3 and unit not in ("is", "was", "this", "has", "as")):
+            return False
+        return unit not in ("am", "pm", "st", "nd", "rd", "th") and unit not in _TIME_UNITS
+
+    def quantities(self) -> None:
+        for match in _QUANTITY.finditer(self.sentence):
+            if any(s <= match.start() < e or s < match.end() <= e for s, e in self.taken):
                 continue
             unit = match.group(2).lower()
-            if unit not in _UNITS and not (unit.endswith("s") and len(unit) > 3 and unit not in ("is", "was", "this", "has", "as")):
-                continue
-            if unit in ("am", "pm", "st", "nd", "rd", "th") or unit in _TIME_UNITS:
+            if not self._counted_unit(unit):
                 continue
             raw = match.group(1).lower()
             value = _NUMBER_WORDS.get(raw)
@@ -400,110 +417,160 @@ def _note_facts(note: dict) -> list[Fact]:
             if match.group(3) and not re.fullmatch(r"\d.*", match.group(3)):
                 attrs["of"] = match.group(3)
                 end = match.end(3)
-            add("quantity", match.start(), end, attrs, confidence=0.85)
-            taken.append((match.start(), end))
+            self.add("quantity", match.start(), end, attrs, confidence=0.85)
+            self.taken.append((match.start(), end))
+
+    def _bare_past_verb(self, match: re.Match, low: str) -> bool:
+        """A past form that is really a bare verb or a negation ("did not")."""
+        if low == "did" and re.match(r"\s+(?:not\b|n't)", self.sentence[match.end():]):
+            return True
+        return low in ("left", "set", "put", "cut", "read", "hit", "let", "quit", "shut", "lit") and not re.search(
+            r"\b(?:I|we|you|he|she|they)\s+$", self.sentence[:match.start()], re.I
+        )
+
+    def past_events(self) -> None:
         # events: a past form of a known verb, or a future auxiliary
-        for match in re.finditer(r"[A-Za-z']+", sentence):
+        for match in re.finditer(r"[A-Za-z']+", self.sentence):
             word = match.group(0)
             low = word.lower()
             lemma = _PAST.get(low)
-            event_tense = "past"
-            if lemma is None:
+            if lemma is None or self._bare_past_verb(match, low):
                 continue
-            if low == "did" and re.match(r"\s+(?:not\b|n't)", sentence[match.end():]):
+            _obj_start, obj = _object(self.sentence, match.end())
+            end = _after_object(self.sentence, match.end(), obj)
+            if _inside(self.quoted, match.start(), match.end()):
                 continue
-            if low in ("left", "set", "put", "cut", "read", "hit", "let", "quit", "shut", "lit") and not re.search(r"\b(?:I|we|you|he|she|they)\s+$", sentence[:match.start()], re.I):
-                continue
-            obj_start, obj = _object(sentence, match.end())
-            end = match.end() + len(sentence[match.end():][: len(sentence[match.end():]) - len(sentence[match.end():].lstrip())]) + len(obj) if obj else match.end()
-            if _inside(quoted, match.start(), match.end()):
-                continue
-            add("event", match.start(), end, {"verb": word, "lemma": lemma, "object": obj, "tense": event_tense}, confidence=0.8)
-        for match in _DID_NOT.finditer(sentence):
-            lemma = match.group(1).lower()
-            if lemma not in _LEMMAS or _inside(quoted, match.start(), match.end()):
-                continue
-            _s, obj = _object(sentence, match.end())
-            tail = sentence[match.end():]
-            end = match.end() + (len(tail) - len(tail.lstrip()) + len(obj) if obj else 0)
-            add("event", match.start(), end, {"verb": match.group(0), "lemma": lemma, "object": obj, "tense": "past"}, mode="negated", confidence=0.7)
-        for match in list(_AUX_FUTURE.finditer(sentence)) + list(_PROGRESSIVE_FUTURE.finditer(sentence)):
+            self.add("event", match.start(), end, {"verb": word, "lemma": lemma, "object": obj, "tense": "past"}, confidence=0.8)
+
+    def _event_from(self, match: re.Match, lemma: str, tense: str, mode: str | None, confidence: float) -> None:
+        if lemma not in _LEMMAS or _inside(self.quoted, match.start(), match.end()):
+            return
+        _s, obj = _object(self.sentence, match.end())
+        end = _after_object(self.sentence, match.end(), obj)
+        self.add("event", match.start(), end, {"verb": match.group(0), "lemma": lemma, "object": obj, "tense": tense}, mode=mode, confidence=confidence)
+
+    def negated_and_future_events(self) -> None:
+        for match in _DID_NOT.finditer(self.sentence):
+            self._event_from(match, match.group(1).lower(), "past", "negated", 0.7)
+        for match in list(_AUX_FUTURE.finditer(self.sentence)) + list(_PROGRESSIVE_FUTURE.finditer(self.sentence)):
             verb = match.group(1).lower()
-            lemma = "go" if verb == "going" else verb
-            if lemma not in _LEMMAS or _inside(quoted, match.start(), match.end()):
+            self._event_from(match, "go" if verb == "going" else verb, "future", None, 0.7)
+
+    def decisions(self) -> None:
+        for match in _DECISION.finditer(self.sentence):
+            if _inside(self.quoted, match.start(), match.end()):
                 continue
-            _s, obj = _object(sentence, match.end())
-            tail = sentence[match.end():]
-            end = match.end() + (len(tail) - len(tail.lstrip()) + len(obj) if obj else 0)
-            add("event", match.start(), end, {"verb": match.group(0), "lemma": lemma, "object": obj, "tense": "future"}, confidence=0.7)
-        for match in _DECISION.finditer(sentence):
-            if _inside(quoted, match.start(), match.end()):
-                continue
-            _s, choice = _object(sentence, match.end())
-            tail = sentence[match.end():]
-            add("decision", match.start(), match.end() + len(tail) - len(tail.lstrip()) + len(choice), {"choice": choice}, confidence=0.85)
-        for match in _PREFERENCE.finditer(sentence):
-            if _inside(quoted, match.start(), match.end()):
+            _s, choice = _object(self.sentence, match.end())
+            tail = self.sentence[match.end():]
+            self.add("decision", match.start(), match.end() + len(tail) - len(tail.lstrip()) + len(choice), {"choice": choice}, confidence=0.85)
+
+    def preferences(self) -> None:
+        for match in _PREFERENCE.finditer(self.sentence):
+            if _inside(self.quoted, match.start(), match.end()):
                 continue
             verb = (match.group("verb") or match.group("fav") or "").lower()
             positive = verb not in _NEGATIVE_PREFERENCE
             if match.group("neg"):
                 positive = not positive
-            tail = sentence[match.end():]
+            tail = self.sentence[match.end():]
             obj = re.split(r"[.,;!?]", tail, maxsplit=1)[0].strip()
-            add("preference", match.start(), match.end() + len(tail) - len(tail.lstrip()) + len(obj),
-                {"polarity": 1 if positive else -1, "object": obj, "verb": verb},
-                mode="negated" if match.group("neg") else None, confidence=0.85)
-        for match in _PLAN.finditer(sentence):
-            if _inside(quoted, match.start(), match.end()):
+            self.add("preference", match.start(), match.end() + len(tail) - len(tail.lstrip()) + len(obj),
+                     {"polarity": 1 if positive else -1, "object": obj, "verb": verb},
+                     mode="negated" if match.group("neg") else None, confidence=0.85)
+
+    def plans(self) -> None:
+        for match in _PLAN.finditer(self.sentence):
+            if _inside(self.quoted, match.start(), match.end()):
                 continue
-            tail = sentence[match.end():]
+            tail = self.sentence[match.end():]
             obj = re.split(r"[.;!?]|,\s(?:but|and then)\b", tail, maxsplit=1)[0].strip()
-            if not obj:
-                continue
-            add("plan", match.start(), match.end() + len(obj), {"object": obj, "cue": match.group(1).lower()}, confidence=0.75)
-        if u_kind == "prose" and sentence.rstrip().endswith("?") and not _inside(quoted, len(sentence.rstrip()) - 1, len(sentence.rstrip())):
-            nxt = content[units[index + 1][0]:units[index + 1][1]] if index + 1 < len(units) else ""
-            if not (joke and nxt and not nxt.rstrip().endswith("?")):
-                add("question", 0, len(sentence), {}, "question", 0.95)
-        for match in _LINK.finditer(sentence):
-            target = match.group(0).strip("[]")
-            add("link", match.start(), match.end(), {"target": target}, "asserted", 1.0)
-        for match in _CAPITAL.finditer(sentence):
-            name = match.group(0)
-            if name.split()[0] in _NOT_NAMES or len(name) < 2:
-                continue
-            start = match.start()
-            at_start = not sentence[:start].strip() or re.search(r"[.!?:\"“]\s*$", sentence[:start])
-            after = sentence[match.end():]
-            if at_start and " " in name and not _SPEECH_AFTER.match(after):
-                #: "Ship Harbor": the sentence's own capital is not a name, the
-                #: rest of the run may be.
-                head, name = name.split(" ", 1)
-                start += len(head) + 1
-                at_start = False
-                if name.split()[0] in _NOT_NAMES:
-                    continue
-            before = sentence[:start]
-            if at_start and not _SPEECH_AFTER.match(after) and name.lower() not in {t.lower() for t in tags}:
-                continue
-            if _PLACE_AFTER.match(after) or (_PLACE_BEFORE.search(before) and not _PERSON_BEFORE.search(before)):
-                kind = "place"
-            elif _ORG_AFTER.match(after):
-                kind = "org"
-            elif _SPEECH_AFTER.match(after) or _PERSON_BEFORE.search(before):
-                kind = "person"
-            else:
-                kind = "unknown"
-            add("entity", start, match.end(), {"type": kind, "name": name}, confidence=0.7 if kind == "unknown" else 0.8)
-        topics = _topics(sentence)
+            if obj:
+                self.add("plan", match.start(), match.end() + len(obj), {"object": obj, "cue": match.group(1).lower()}, confidence=0.75)
+
+    def question(self, index: int, units: list, joke: bool) -> None:
+        sentence = self.sentence
+        if not (self.u_kind == "prose" and sentence.rstrip().endswith("?") and not _inside(self.quoted, len(sentence.rstrip()) - 1, len(sentence.rstrip()))):
+            return
+        nxt = self.content[units[index + 1][0]:units[index + 1][1]] if index + 1 < len(units) else ""
+        if not (joke and nxt and not nxt.rstrip().endswith("?")):
+            self.add("question", 0, len(sentence), {}, "question", 0.95)
+
+    def links(self) -> None:
+        for match in _LINK.finditer(self.sentence):
+            self.add("link", match.start(), match.end(), {"target": match.group(0).strip("[]")}, "asserted", 1.0)
+
+    def _entity_of(self, match: re.Match) -> tuple | None:
+        """(start, name, kind) of a capitalised run that names something, or None."""
+        sentence, name = self.sentence, match.group(0)
+        if name.split()[0] in _NOT_NAMES or len(name) < 2:
+            return None
+        start = match.start()
+        at_start = not sentence[:start].strip() or re.search(r"[.!?:\"“]\s*$", sentence[:start])
+        after = sentence[match.end():]
+        if at_start and " " in name and not _SPEECH_AFTER.match(after):
+            #: "Ship Harbor": the sentence's own capital is not a name, the
+            #: rest of the run may be.
+            head, name = name.split(" ", 1)
+            start += len(head) + 1
+            at_start = False
+            if name.split()[0] in _NOT_NAMES:
+                return None
+        before = sentence[:start]
+        if at_start and not _SPEECH_AFTER.match(after) and name.lower() not in {t.lower() for t in self.tags}:
+            return None
+        return start, name, self._entity_kind(after, before)
+
+    @staticmethod
+    def _entity_kind(after: str, before: str) -> str:
+        if _PLACE_AFTER.match(after) or (_PLACE_BEFORE.search(before) and not _PERSON_BEFORE.search(before)):
+            return "place"
+        if _ORG_AFTER.match(after):
+            return "org"
+        if _SPEECH_AFTER.match(after) or _PERSON_BEFORE.search(before):
+            return "person"
+        return "unknown"
+
+    def entities(self) -> None:
+        for match in _CAPITAL.finditer(self.sentence):
+            found = self._entity_of(match)
+            if found is not None:
+                start, name, kind = found
+                self.add("entity", start, match.end(), {"type": kind, "name": name}, confidence=0.7 if kind == "unknown" else 0.8)
+
+    def read(self, index: int, units: list, joke: bool) -> list[Fact]:
+        self.structure(index)
+        self.dates()
+        spans = recognise.recognise(self.sentence, now=datetime.combine(self.written or date.today(), time(12)))
+        self.money(spans)
+        self.durations(spans)
+        self.quantities()
+        self.past_events()
+        self.negated_and_future_events()
+        self.decisions()
+        self.preferences()
+        self.plans()
+        self.question(index, units, joke)
+        self.links()
+        self.entities()
+        topics = _topics(self.sentence)
         if topics:
-            add("topic", 0, len(sentence), {"labels": topics}, "asserted", 0.6)
-        when = dated[0] if dated else ((written, written, "day") if written else None)
-        inherited = not dated and written is not None
-        for fact in local:
-            facts.append(Fact(fact.kind, fact.source_id, fact.start, fact.end, fact.text, fact.attrs, fact.mode,
-                              when, inherited, fact.confidence))
+            self.add("topic", 0, len(self.sentence), {"labels": topics}, "asserted", 0.6)
+        when = self.dated[0] if self.dated else ((self.written, self.written, "day") if self.written else None)
+        inherited = not self.dated and self.written is not None
+        return [Fact(f.kind, f.source_id, f.start, f.end, f.text, f.attrs, f.mode, when, inherited, f.confidence) for f in self.local]
+
+
+def _note_facts(note: dict) -> list[Fact]:
+    _tables()
+    content = str(note.get("content") or "")
+    source = int(note.get("id") or 0)
+    written = _written(note)
+    tags = [str(t) for t in note.get("tags") or []]
+    joke = bool(_JOKE.search(content))
+    units = _units(content)
+    facts: list[Fact] = []
+    for index, unit in enumerate(units):
+        facts += _SentenceReader(content, source, written, tags, unit).read(index, units, joke)
     facts.sort(key=lambda f: (f.start, KINDS.index(f.kind), f.end))
     return facts
 
