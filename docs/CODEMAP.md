@@ -2,7 +2,7 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 5958, frontend ids 2510, CSS sections 495, backend routes 607, backend modules 5675, test files 1233, tests 11191, plan headings 957.
+Counts: frontend functions 5958, frontend ids 2510, CSS sections 495, backend routes 607, backend modules 5675, test files 1233, tests 11192, plan headings 957.
 
 ## Frontend functions (5958)
 
@@ -11591,14 +11591,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `_about_app_first` | src/tessellate/ai/intent.py:133 |
-| `_laughs` | src/tessellate/ai/intent.py:198 |
-| `_mash_word` | src/tessellate/ai/intent.py:215 |
+| `_laughs` | src/tessellate/ai/intent.py:204 |
+| `_mash_word` | src/tessellate/ai/intent.py:221 |
 | `_matches_any` | src/tessellate/ai/intent.py:111 |
 | `_normalise` | src/tessellate/ai/intent.py:102 |
 | `classify` | src/tessellate/ai/intent.py:139 |
-| `is_mash` | src/tessellate/ai/intent.py:232 |
-| `is_test` | src/tessellate/ai/intent.py:252 |
-| `needs_retrieval` | src/tessellate/ai/intent.py:257 |
+| `is_mash` | src/tessellate/ai/intent.py:238 |
+| `is_test` | src/tessellate/ai/intent.py:258 |
+| `needs_retrieval` | src/tessellate/ai/intent.py:263 |
 
 ### src/tessellate/ai/janitor.py (27)
 
@@ -17641,7 +17641,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11191)
+## Tests (11192)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18445,7 +18445,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_outbound_fetch_guard.py | 5 |
 | tests/test_outbound_inventory.py | 4 |
 | tests/test_output_forms.py | 7 |
-| tests/test_owner_typos.py | 20 |
+| tests/test_owner_typos.py | 21 |
 | tests/test_package_check_steps.py | 6 |
 | tests/test_packaging_launchers.py | 3 |
 | tests/test_packaging_spec.py | 13 |

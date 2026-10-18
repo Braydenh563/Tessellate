@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Intent routing no longer depends on what ran before: `intent.classify` brings in `commands` (which registers the typed reader) itself, so "pin the dentist noe" and "unlnk the gym note ..." route as acts on a cold process and when `test_owner_typos.py` runs alone; before, they read as notes questions until something else imported `commands`.
 - A chat named from a question no longer keeps a trailing backslash ("what is there about a gaming mouse?\\", INBOX 808): the first-turn name, the rename fallback and a model's title all drop it, and a name is one line (`routes_conversations._question_title`, `tests/test_conversations_api.py`).
 - CI: the Performance workflow's frame spec no longer waits out its 180 s timeout on a tab that does not exist. It opened `#tab-btn-documents` (Documents became Library), so the click hung and every later scenario was skipped; the spec opens Library, `openTab` fails in 15 s, an idle screen that redraws names the loop (`tests/test_e2e_tab_ids.py` checks every tab the e2e specs open). The dashboard's 62 rAF/s idle on the CI runner did not reproduce locally (0 rAF/s on a seeded notebook).
 - Tests: six `test_mcp_server` tests and one `test_conversations_api` test built the app config without `app_state` and wrote an untracked `data/` folder into the repo; they take the fixture, and an autouse guard in `conftest.py` clears the folder and, in a serial run, fails the test that made it.
