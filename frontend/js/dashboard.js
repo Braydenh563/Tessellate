@@ -372,6 +372,8 @@ function paintDashClock() {
     day: "numeric",
     month: "long",
   });
+  //: The sub line rotates (INBOX 1300): a new draw once its bucket has passed.
+  if (dashLine.bucket && dashLineDraw() !== dashLine.bucket) renderDashSubmessage().catch(() => {});
 }
 
 // A short line about the notebook, note count, plus whatever's most
@@ -460,10 +462,21 @@ async function dashEntries() {
   return notes || apiJson("/entries", { cacheMs: 4000 });
 }
 
+//: **The sub line is composed and rotates** (INBOX 1300, the owner: "Maybe the
+//: sub text below the greeting can rotate or change around a bit??"). The
+//: draw is the three-minute bucket the clock is in, so a repaint inside it
+//: keeps the words and the next bucket (a later visit, or the minute tick
+//: noticing) takes another; it swaps text with no animation, so reduced
+//: motion needs nothing. `dashTodayLine` is in dash-day.js (lazy).
+const DASH_LINE_MS = 180000;
+const dashLine = { bucket: 0 };
+const dashLineDraw = () => Math.floor(Date.now() / DASH_LINE_MS);
+
 async function renderDashSubmessage() {
   const el = $("dash-submessage");
   if (!el) return;
-  const [stats, reminders, patterns] = await Promise.all([
+  dashLine.bucket = dashLineDraw();
+  const [stats, reminders, patterns, composed] = await Promise.all([
     fetchDashStats().catch(() => null),
     // To the end: `/reminders` is `due_at` ascending, so a first page of
     // old, ticked-off rows would hide everything upcoming from this count
@@ -473,9 +486,11 @@ async function renderDashSubmessage() {
     //: The Patterns line (CHAT_PLAN decision 32), its short form here and
     //: the measured sentence on hover; Tidy shows it whole.
     apiJson("/insights/patterns", { silent: true }).catch(() => null),
+    dashTodayLine(dashLine.bucket).catch(() => ""),
   ]);
   const bits = [];
-  if (stats) {
+  if (composed) bits.push(["notes", composed]);
+  else if (stats) {
     const n = stats.total_entries;
     bits.push(["notes", n === 0 ? "No notes yet" : `You have ${n} note${n === 1 ? "" : "s"}`]);
   }

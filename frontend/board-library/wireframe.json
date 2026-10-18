@@ -1,0 +1,723 @@
+{
+ "format": "memorymap-library-set",
+ "version": 1,
+ "key": "wireframe",
+ "name": "Wireframe",
+ "items": [
+  {
+   "key": "window",
+   "kind": "element",
+   "name": "Window",
+   "tags": [
+    "window",
+    "browser",
+    "page",
+    "screen"
+   ],
+   "payload": {
+    "box": {
+     "w": 360,
+     "h": 240
+    },
+    "items": [
+     {
+      "key": "w",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 360 0 L 360 240 L 0 240 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.04,
+       "label": "Page title",
+       "label_area": {
+        "x": 0.2,
+        "y": 0,
+        "w": 0.6,
+        "h": 0.13333333333333333
+       }
+      },
+      "z": 5
+     },
+     {
+      "key": "w_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 32 L 360 32 M 12 16 A 4 4 0 1 0 20 16 A 4 4 0 1 0 12 16 Z M 28 16 A 4 4 0 1 0 36 16 A 4 4 0 1 0 28 16 Z M 44 16 A 4 4 0 1 0 52 16 A 4 4 0 1 0 44 16 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "button",
+   "kind": "element",
+   "name": "Button",
+   "tags": [
+    "button",
+    "action",
+    "submit"
+   ],
+   "payload": {
+    "box": {
+     "w": 120,
+     "h": 40
+    },
+    "items": [
+     {
+      "key": "b",
+      "kind": "sketch",
+      "data": {
+       "d": "M 8 0 L 112 0 A 8 8 0 0 1 120 8 L 120 32 A 8 8 0 0 1 112 40 L 8 40 A 8 8 0 0 1 0 32 L 0 8 A 8 8 0 0 1 8 0 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label": "Button",
+       "label_area": {
+        "x": 0.08,
+        "y": 0,
+        "w": 0.84,
+        "h": 1
+       },
+       "label_bold": true
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "input",
+   "kind": "element",
+   "name": "Text input",
+   "tags": [
+    "input",
+    "field",
+    "text",
+    "form"
+   ],
+   "payload": {
+    "box": {
+     "w": 240,
+     "h": 36
+    },
+    "items": [
+     {
+      "key": "i",
+      "kind": "sketch",
+      "data": {
+       "d": "M 4 0 L 236 0 A 4 4 0 0 1 240 4 L 240 32 A 4 4 0 0 1 236 36 L 4 36 A 4 4 0 0 1 0 32 L 0 4 A 4 4 0 0 1 4 0 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "Placeholder",
+       "label_area": {
+        "x": 0.04,
+        "y": 0,
+        "w": 0.92,
+        "h": 1
+       },
+       "label_align": "left"
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "checkbox",
+   "kind": "element",
+   "name": "Checkbox",
+   "tags": [
+    "checkbox",
+    "tick",
+    "form",
+    "option"
+   ],
+   "payload": {
+    "box": {
+     "w": 160,
+     "h": 28
+    },
+    "items": [
+     {
+      "key": "c",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 5 L 18 5 L 18 23 L 0 23 Z M 4 14 L 8 19 L 15 9",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     },
+     {
+      "key": "l",
+      "kind": "sketch",
+      "data": {
+       "d": "M 26 0 L 160 0 L 160 28 L 26 28 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "Checkbox",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "middle",
+       "label_size": 14
+      },
+      "z": 6
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "radio",
+   "kind": "element",
+   "name": "Radio button",
+   "tags": [
+    "radio",
+    "choice",
+    "form",
+    "option"
+   ],
+   "payload": {
+    "box": {
+     "w": 160,
+     "h": 28
+    },
+    "items": [
+     {
+      "key": "r",
+      "kind": "sketch",
+      "data": {
+       "d": "M 1 14 A 9 9 0 1 0 19 14 A 9 9 0 1 0 1 14 Z M 6 14 A 4 4 0 1 0 14 14 A 4 4 0 1 0 6 14 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     },
+     {
+      "key": "l",
+      "kind": "sketch",
+      "data": {
+       "d": "M 26 0 L 160 0 L 160 28 L 26 28 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "Option",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "middle",
+       "label_size": 14
+      },
+      "z": 6
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "dropdown",
+   "kind": "element",
+   "name": "Dropdown",
+   "tags": [
+    "dropdown",
+    "select",
+    "menu",
+    "form"
+   ],
+   "payload": {
+    "box": {
+     "w": 220,
+     "h": 36
+    },
+    "items": [
+     {
+      "key": "d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 4 0 L 216 0 A 4 4 0 0 1 220 4 L 220 32 A 4 4 0 0 1 216 36 L 4 36 A 4 4 0 0 1 0 32 L 0 4 A 4 4 0 0 1 4 0 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "Choose one",
+       "label_area": {
+        "x": 0.04,
+        "y": 0,
+        "w": 0.8,
+        "h": 1
+       },
+       "label_align": "left"
+      },
+      "z": 5
+     },
+     {
+      "key": "d_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 192 14 L 200 22 L 208 14",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "image",
+   "kind": "element",
+   "name": "Image placeholder",
+   "tags": [
+    "image",
+    "picture",
+    "photo",
+    "placeholder"
+   ],
+   "payload": {
+    "box": {
+     "w": 220,
+     "h": 150
+    },
+    "items": [
+     {
+      "key": "p",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 220 0 L 220 150 L 0 150 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12
+      },
+      "z": 5
+     },
+     {
+      "key": "p_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 220 150 M 220 0 L 0 150",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "nav-bar",
+   "kind": "element",
+   "name": "Navigation bar",
+   "tags": [
+    "nav",
+    "header",
+    "menu",
+    "bar"
+   ],
+   "payload": {
+    "box": {
+     "w": 480,
+     "h": 48
+    },
+    "items": [
+     {
+      "key": "n",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 480 0 L 480 48 L 0 48 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12
+      },
+      "z": 5
+     },
+     {
+      "key": "logo",
+      "kind": "sketch",
+      "data": {
+       "d": "M 16 0 L 96 0 L 96 48 L 16 48 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "Logo",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "middle",
+       "label_size": 15
+      },
+      "z": 6
+     },
+     {
+      "key": "i0",
+      "kind": "sketch",
+      "data": {
+       "d": "M 220 0 L 300 0 L 300 48 L 220 48 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "Home",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "center",
+       "label_valign": "middle",
+       "label_size": 14
+      },
+      "z": 6
+     },
+     {
+      "key": "i1",
+      "kind": "sketch",
+      "data": {
+       "d": "M 300 0 L 380 0 L 380 48 L 300 48 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "About",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "center",
+       "label_valign": "middle",
+       "label_size": 14
+      },
+      "z": 6
+     },
+     {
+      "key": "i2",
+      "kind": "sketch",
+      "data": {
+       "d": "M 380 0 L 460 0 L 460 48 L 380 48 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "Contact",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "center",
+       "label_valign": "middle",
+       "label_size": 14
+      },
+      "z": 6
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "card",
+   "kind": "element",
+   "name": "Card",
+   "tags": [
+    "card",
+    "tile",
+    "panel",
+    "list item"
+   ],
+   "payload": {
+    "box": {
+     "w": 240,
+     "h": 220
+    },
+    "items": [
+     {
+      "key": "c",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 240 0 L 240 220 L 0 220 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.04,
+       "label": "Card title\nA line about it",
+       "label_area": {
+        "x": 0.07,
+        "y": 0.52,
+        "w": 0.86,
+        "h": 0.26
+       },
+       "label_align": "left",
+       "label_valign": "top"
+      },
+      "z": 5
+     },
+     {
+      "key": "c_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 110 L 240 110 M 0 0 L 240 110 M 240 0 L 0 110 M 16 178 L 106 178 L 106 206 L 16 206 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "text-block",
+   "kind": "element",
+   "name": "Text block",
+   "tags": [
+    "text",
+    "paragraph",
+    "heading",
+    "copy"
+   ],
+   "payload": {
+    "box": {
+     "w": 260,
+     "h": 90
+    },
+    "items": [
+     {
+      "key": "t",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 160 0 L 160 16 L 0 16 Z M 0 40 L 260 40 M 0 58 L 260 58 M 0 76 L 200 76",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.3
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "avatar",
+   "kind": "element",
+   "name": "Avatar",
+   "tags": [
+    "avatar",
+    "profile",
+    "person",
+    "user"
+   ],
+   "payload": {
+    "box": {
+     "w": 64,
+     "h": 64
+    },
+    "items": [
+     {
+      "key": "a",
+      "kind": "sketch",
+      "data": {
+       "d": "M 1 32 A 31 31 0 1 0 63 32 A 31 31 0 1 0 1 32 Z M 23 24 A 9 9 0 1 0 41 24 A 9 9 0 1 0 23 24 Z M 12 54 A 22 18 0 0 1 52 54",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.04
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "tabs",
+   "kind": "element",
+   "name": "Tab bar",
+   "tags": [
+    "tabs",
+    "segmented",
+    "navigation"
+   ],
+   "payload": {
+    "box": {
+     "w": 360,
+     "h": 40
+    },
+    "items": [
+     {
+      "key": "t",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 360 0 L 360 40 L 0 40 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12
+      },
+      "z": 5
+     },
+     {
+      "key": "t_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 120 0 L 120 40 M 240 0 L 240 40",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     },
+     {
+      "key": "t0",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 120 0 L 120 40 L 0 40 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "One",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "center",
+       "label_valign": "middle",
+       "label_size": 14
+      },
+      "z": 6
+     },
+     {
+      "key": "t1",
+      "kind": "sketch",
+      "data": {
+       "d": "M 120 0 L 240 0 L 240 40 L 120 40 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "Two",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "center",
+       "label_valign": "middle",
+       "label_size": 14
+      },
+      "z": 6
+     },
+     {
+      "key": "t2",
+      "kind": "sketch",
+      "data": {
+       "d": "M 240 0 L 360 0 L 360 40 L 240 40 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "Three",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "center",
+       "label_valign": "middle",
+       "label_size": 14
+      },
+      "z": 6
+     }
+    ],
+    "links": []
+   }
+  }
+ ]
+}

@@ -48,3 +48,19 @@ def test_question_detection():
     assert composer_voice.asks("when is the harbor launch?")
     assert not composer_voice.asks("harbor launch")
     assert not composer_voice.asks("tag:work")
+
+
+def test_today_line_rotates_with_its_seed_and_stays_grounded():
+    """INBOX 1300: the line under the greeting varies by seed (same seed, same
+    words), every draw traced to the notes."""
+    data = _voice_eval.load()
+    today = date.fromisoformat(data["today"])
+    notes = _voice_eval.notes_until(data, today)
+    draws = [composer_voice.today_line(notes, today=today, seed=s) for s in range(20)]
+    assert all(d for d in draws)
+    assert len({d["text"] for d in draws}) >= 10
+    again = composer_voice.today_line(notes, today=today, seed=3)
+    assert again["text"] == draws[3]["text"]
+    for d in draws:
+        assert EM_DASH not in d["text"] and "!" not in d["text"]
+        assert not _voice_eval.trace(d, notes, today)

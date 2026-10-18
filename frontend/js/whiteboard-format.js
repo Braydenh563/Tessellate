@@ -1727,6 +1727,43 @@ async function wbOpenColourMenu(input) {
   (menu.querySelector('[role="radio"][tabindex="0"]') || menu.querySelector("button"))?.focus({ preventScroll: true });
 }
 
+//: A sticky note's paper in the same popover as the colour wells (INBOX 1300
+//: C18): one row of the seven papers, the current one checked, arrow keys
+//: moving along it, Escape closing and returning focus to the button.
+async function wbOpenPaperMenu(button) {
+  if (typeof swatchPicker !== "function" && !(await ensureModule("categories"))) return;
+  const menu = wbColourMenu();
+  wbStopEyedrop();
+  wbColourState.input = null;
+  menu.setAttribute("aria-label", "Note colour");
+  const head = document.createElement("p");
+  head.className = "wb-colour-head";
+  head.textContent = "Note colour";
+  const byKey = Object.fromEntries(WB_STICKY_PAPERS.map((p) => [p.label.toLowerCase(), p.value]));
+  const now = (button.dataset.paper || "").toLowerCase();
+  const row = swatchPicker({
+    label: "Note colours",
+    value: Object.keys(byKey).find((k) => byKey[k] === now) || null,
+    palette: byKey,
+    none: null,
+    onChoose: (key) => {
+      closeActionMenus();
+      wbSetStickyPaper(byKey[key]);
+      button.focus({ preventScroll: true });
+    },
+  });
+  menu.replaceChildren(head, row);
+  closeActionMenus();
+  window._menuOpenedAt = performance.now();
+  menu._escapedOpener = button;
+  menu.classList.add("action-menu-escaped");
+  menu.classList.remove("hidden");
+  button.setAttribute("aria-expanded", "true");
+  button.classList.add("wb-colour-target");
+  placeEscapedMenu(menu, button);
+  (menu.querySelector('[role="radio"][tabindex="0"]') || menu.querySelector("button"))?.focus({ preventScroll: true });
+}
+
 //: **The eyedropper** (the owner: "I tried to click the colour circle on the
 //: fill colour circle in the tools popup above the shape but it just opened
 //: that colour picker menu instead of getting the colour"). While it is on,
@@ -1763,7 +1800,7 @@ function wbSampleColour(target, border) {
   if (!(target instanceof Element)) return null;
   const field = target.closest('input[type="color"]');
   if (field) return wbHexOf(field.value);
-  const swatch = target.closest(".swatch-picker [role='radio'], .wb-paper-swatch, .wb-swatch-dot");
+  const swatch = target.closest(".swatch-picker [role='radio'], .wb-paper-trigger, .wb-swatch-dot");
   if (swatch) {
     const style = getComputedStyle(swatch);
     return wbHexOf(style.getPropertyValue("--swatch") || swatch.dataset.paper || style.backgroundColor);
