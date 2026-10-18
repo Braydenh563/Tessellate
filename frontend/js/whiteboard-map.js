@@ -2643,7 +2643,13 @@ function wbMapStartResizeDrag(grip, event, d) {
   //: **Shift scales the words with the box** (INBOX 610), by the width's
   //: ratio, inside the same bounds the four named sizes sit in. Read on every
   //: move, so pressing or letting go of Shift mid-drag does what it says.
-  const startFont = d.data?.font_size || WB_MAP_TEXT_DEFAULT;
+  //: The size the words are *drawn* at, which is the topic's own, else its
+  //: level's or the map theme's (the render pass writes it inline), else the
+  //: stylesheet's. Starting from the default instead cleared the inline size
+  //: on the first pixel of the drag, so a topic of 17px dropped to 13.6px
+  //: while it was resized and snapped back on release (measured 2026-10-18).
+  const startInline = node.style.fontSize;
+  const startFont = d.data?.font_size || parseFloat(startInline) || parseFloat(getComputedStyle(node).fontSize) || WB_MAP_TEXT_DEFAULT;
   let font = startFont;
   grip.setPointerCapture?.(event.pointerId);
   const move = (moveEvent) => {
@@ -2654,7 +2660,7 @@ function wbMapStartResizeDrag(grip, event, d) {
     font = moveEvent.shiftKey
       ? Math.round(Math.min(WB_MAP_TEXT_MAX, Math.max(WB_MAP_TEXT_MIN, startFont * (width / startW))))
       : startFont;
-    node.style.fontSize = font === startFont && !d.data?.font_size ? "" : `${font}px`;
+    node.style.fontSize = font === startFont ? startInline : `${font}px`;
     node.style.width = `${width}px`;
     node.style.minHeight = `${height}px`;
     d.width = width;
@@ -8902,7 +8908,8 @@ function wbMapPresentSteps() {
 //: marks it and moves on. Hidden is a view, like focus: nothing is folded
 //: or written. The marks are kept per map on this device (`wbStudy:<id>`),
 //: and a branch missed last time says so in its step.
-const wbStudy = { on: false, hidden: new Set(), steps: [], marks: {}, boardId: null };
+//: `revealed` holds the note questions whose answer has been shown.
+const wbStudy = { on: false, hidden: new Set(), revealed: new Set(), steps: [], marks: {}, boardId: null };
 
 // WB-MAP-STUDY-BEGIN
 //: The questions: each trunk's children with a branch under them, in sibling
@@ -8929,6 +8936,22 @@ function wbMapStudyQuestions(index) {
       if (hides.length) out.push({ id: branch.id, hides });
     }
   }
+  //: **The note behind a topic as the answer** (the plan's open half of item
+  //: 5): a topic with a note that is not already a branch question asks for
+  //: its note, which "Show" reads out. Appended in map order after the
+  //: branches, so the walk through the boxes does not jump back and forth.
+  //: A topic under a branch question is out: it is hidden until that branch
+  //: is shown, so it has no box to walk to.
+  const asked = new Set(out.flatMap((q) => [q.id, ...q.hides]));
+  const seen = new Set();
+  const walk = (node) => {
+    if (seen.has(node.id)) return;
+    seen.add(node.id);
+    const answer = String(node.data?.note || "").trim();
+    if (answer && !asked.has(node.id)) out.push({ id: node.id, hides: [], answer });
+    for (const child of index.childrenOf.get(node.id) || []) walk(child);
+  };
+  for (const root of index.roots) walk(root);
   return out;
 }
 
@@ -8966,8 +8989,9 @@ function wbMapStudySteps() {
     id: q.id,
     title: () => {
       const label = wbMapLabel(wbMapIndex().byId.get(q.id) || {}) || "Topic";
-      const shown = !q.hides.some((id) => wbStudy.hidden.has(id));
+      const shown = wbMapStudyShown(q);
       const was = wbStudy.marks[q.id]?.last === "missed" ? " (not yet, last time)" : "";
+      if (q.answer) return shown ? `${label}: ${q.answer.replace(/\s+/g, " ")}` : `What is the note on “${label}”?${was}`;
       return shown ? label : `What is under “${label}”?${was}`;
     },
     box: () => {
@@ -8979,16 +9003,22 @@ function wbMapStudySteps() {
   }));
 }
 
+//: Whether a question's answer is on screen: its branch drawn, or its note read.
+function wbMapStudyShown(q) {
+  return q.answer ? wbStudy.revealed.has(q.id) : !q.hides.some((id) => wbStudy.hidden.has(id));
+}
+
 function wbMapStartStudy() {
   const questions = wbMapStudyQuestions(wbMapIndex());
   if (!questions.length) {
-    toast("Nothing to recall yet: a branch with topics under it is a question.");
+    toast("Nothing to recall yet: a branch with topics under it, or a topic with a note, is a question.");
     return;
   }
   wbStudy.on = true;
   wbStudy.boardId = window.currentBoardId;
   wbStudy.steps = questions;
   wbStudy.hidden = new Set(questions.flatMap((q) => q.hides));
+  wbStudy.revealed = new Set();
   wbStudy.marks = wbMapStudyLoad();
   renderWhiteboardNow();
   wbStartPresenting();
@@ -9001,7 +9031,7 @@ function wbMapStartStudy() {
 //: Show, then the two marks: the bar's study buttons follow the step.
 function wbMapStudySyncBar() {
   const step = wbStudy.on && wbPresent ? wbStudy.steps[wbPresent.at] : null;
-  const shown = step ? !step.hides.some((id) => wbStudy.hidden.has(id)) : false;
+  const shown = step ? wbMapStudyShown(step) : false;
   document.getElementById("wb-study-show")?.classList.toggle("hidden", !step || shown);
   document.getElementById("wb-study-knew")?.classList.toggle("hidden", !step || !shown);
   document.getElementById("wb-study-missed")?.classList.toggle("hidden", !step || !shown);
@@ -9011,6 +9041,7 @@ function wbMapStudyShow() {
   const step = wbPresent && wbStudy.steps[wbPresent.at];
   if (!step) return;
   for (const id of step.hides) wbStudy.hidden.delete(id);
+  if (step.answer) wbStudy.revealed.add(step.id);
   renderWhiteboardNow();
   wbPresentShow(wbPresent.at);
   wbMapStudySyncBar();
@@ -9039,6 +9070,7 @@ function wbMapEndStudy() {
   if (!wbStudy.on) return;
   wbStudy.on = false;
   wbStudy.hidden = new Set();
+  wbStudy.revealed = new Set();
   wbMapStudySyncBar();
   renderWhiteboardNow();
 }
@@ -9994,14 +10026,59 @@ async function wbMapSuggestBranches(node) {
     toast("None of your notes match this topic's words yet, so there is nothing to suggest.");
     return;
   }
-  const chosen = await new Promise((resolve) => {
+  const said = got.source === "model"
+    ? `Under "${got.topic}", from your notes. Tick the ones to add.`
+    : `Under "${got.topic}": your notes that match it${got.reason === "offline" ? " (no model is running, so these are their titles)" : ""}. Tick the ones to add.`;
+  const chosen = await wbMapBranchPicker(rows, {
+    title: "Branches from your notes",
+    about: said,
+    meta: (row) => [`From your note "${row.note_title}"`],
+  });
+  await wbMapAddChosenBranches(node, boardId, chosen);
+}
+
+//: Whether a topic is one of the person's notes (or documents) rather than
+//: words typed on the map: the only kind Expand from my notes reads.
+function wbMapIsNoteTopic(node) {
+  return Boolean(node && (node.kind === "note" || node.kind === "document") && node.data?.ref_id);
+}
+
+//: **Expand from my notes** (MINDMAP_PLAN 12.3 item 2). For a topic that is a
+//: note: its own headings and the notes it links to, from the server's
+//: `/expand`, which needs no model. The same picker and the same add as
+//: Branches from my notes, so one Undo step takes the ticked ones back.
+async function wbMapExpandFromNote(node) {
+  const boardId = window.currentBoardId;
+  if (!node || !boardId) return;
+  wbAnnounce("Reading the note behind this topic.");
+  let got = null;
+  try {
+    got = await apiJson(`/whiteboard/boards/${boardId}/nodes/${node.id}/expand`, { method: "POST" });
+  } catch (err) {
+    toast(err.message || "This topic could not be expanded.", true);
+    return;
+  }
+  const rows = (got?.suggestions || []).map((s, i) => ({ id: i, ...s }));
+  if (!rows.length) {
+    toast("Everything in this note, its headings and the notes it links to, is already on the map.");
+    return;
+  }
+  const chosen = await wbMapBranchPicker(rows, {
+    title: "Expand from your note",
+    about: `Under "${got.topic}", from the note's headings and the notes it links to. Tick the ones to add.`,
+    meta: (row) => [row.kind === "link" ? "A note it links to" : `A heading in "${row.note_title}"`],
+  });
+  await wbMapAddChosenBranches(node, boardId, chosen);
+}
+
+//: The tick-list both branch doors share: resolves with the ticked rows as
+//: `{text, note_id}`, or null when it is cancelled.
+function wbMapBranchPicker(rows, { title, about, meta }) {
+  return new Promise((resolve) => {
     const list = document.createElement("ul");
     list.className = "note-picker-list entry-pick-list";
     list.setAttribute("aria-label", "Suggested branches");
-    const said = got.source === "model"
-      ? `Under "${got.topic}", from your notes. Tick the ones to add.`
-      : `Under "${got.topic}": your notes that match it${got.reason === "offline" ? " (no model is running, so these are their titles)" : ""}. Tick the ones to add.`;
-    const shell = pickerDialog({ title: "Branches from your notes", about: said, placeholder: "Filter the suggestions", list });
+    const shell = pickerDialog({ title, about, placeholder: "Filter the suggestions", list });
     const on = new Set(rows.map((r) => r.id));
     const count = document.createElement("span");
     count.className = "muted";
@@ -10020,7 +10097,7 @@ async function wbMapSuggestBranches(node) {
     const shape = {
       label: (row) => row.text,
       icon: () => "ph:tree-structure",
-      meta: (row) => [`From your note "${row.note_title}"`],
+      meta,
       isOn: (row) => on.has(row.id),
       add: (row) => {
         on.add(row.id);
@@ -10065,6 +10142,9 @@ async function wbMapSuggestBranches(node) {
     shell.open(resolve, { foot });
     list.querySelector(".note-picker-box")?.focus();
   });
+}
+
+async function wbMapAddChosenBranches(node, boardId, chosen) {
   if (!chosen?.length || window.currentBoardId !== boardId) return;
   let made = [];
   await wbRecordGesture(async () => {

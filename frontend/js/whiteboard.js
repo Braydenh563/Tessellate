@@ -7971,6 +7971,12 @@ function wbBuildContextMenu(kind) {
       sub("Branches from my notes…", "Up to five, each from one of your notes; you tick which", () =>
         wbMapSuggestBranches(mapNode)
       );
+      //: Phase G: a topic that is a note, grown from the note's own headings and links.
+      if (wbMapIsNoteTopic(mapNode)) {
+        sub("Expand from my notes…", "Its headings and the notes it links to; you tick which", () =>
+          wbMapExpandFromNote(mapNode)
+        );
+      }
     });
 
     subItem("Content", sub => {
@@ -22373,6 +22379,7 @@ function wbPresentShow(index) {
   wbPresent.steps = steps;
   const at = Math.max(0, Math.min(steps.length - 1, index));
   wbPresent.at = at;
+  wbPresentCaption(at, steps);
   const box = steps[at].box();
   const container = document.getElementById("whiteboard-container");
   const rect = container.getBoundingClientRect();
@@ -22388,12 +22395,32 @@ function wbPresentShow(index) {
   const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
   const sel = d3.select(container);
   (reduce ? sel : sel.transition().duration(320)).call(wbZoom.transform, target);
+}
+
+//: The bar's caption for a step, set before the frame is fitted because a
+//: caption that wraps makes the bar taller and the frame keeps clear of it.
+//: A caption the bar's width would cut (a study question on a phone, a
+//: study note's answer) takes a line of its own above the buttons instead,
+//: whole on hover as well.
+function wbPresentCaption(at, steps) {
   const count = document.getElementById("wb-present-count");
-  if (count) count.textContent = `${at + 1} of ${steps.length}: ${steps[at].title()}`;
+  const bar = document.getElementById("wb-present-bar");
   const prev = document.getElementById("wb-present-prev");
   const next = document.getElementById("wb-present-next");
   if (prev) prev.disabled = at === 0;
-  if (next) next.disabled = at === steps.length - 1;  if (wbStudy.on) wbMapStudySyncBar();
+  if (next) next.disabled = at === steps.length - 1;
+  if (wbStudy.on) wbMapStudySyncBar();
+  if (!count) return;
+  count.textContent = `${at + 1} of ${steps.length}: ${steps[at].title()}`;
+  count.title = count.textContent;
+  Object.assign(count.style, { flex: "", order: "", whiteSpace: "", textAlign: "", maxHeight: "", overflowY: "" });
+  if (bar) bar.style.flexWrap = "";
+  if (!bar || count.scrollWidth <= count.clientWidth) return;
+  //: Up to about six lines, then it scrolls: a long note never takes the screen.
+  Object.assign(count.style, {
+    flex: "1 0 100%", order: "-1", whiteSpace: "normal", textAlign: "center", maxHeight: "9em", overflowY: "auto",
+  });
+  bar.style.flexWrap = "wrap";
 }
 
 //: **A laser pointer while presenting** (canvasdepth; Excalidraw's and

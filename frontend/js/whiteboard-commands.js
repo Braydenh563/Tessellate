@@ -78,6 +78,7 @@ const wbCommandNeeds = {
   grouped: () => wbFmtEntries().some((e) => e.item.group_id),
   sizeCopied: () => wbFmtState.sizeClip !== null && wbCommandSelectionCount() > 0,
   topic: () => Boolean(wbSelectedMapNode()),
+  notetopic: () => wbMapIsNoteTopic(wbSelectedMapNode()),
   drawing: () => Boolean(wbCommandOneSketch() && wbSketchParsedData(wbCommandOneSketch())?.d),
   styled: () => {
     if (wbMultiSelection.size > 1 || !wbSelectedItem || wbSelectedItem.kind === "node") return false;
@@ -152,6 +153,7 @@ const WB_COMMANDS = [
   { id: "fold-level-2", group: "View", icon: "ph:list-dashes", label: "Show two levels", keys: "Alt+2", surface: "map", run: () => wbMapFoldToLevel(2) },
   { id: "fold-level-3", group: "View", icon: "ph:list-dashes", label: "Show three levels", keys: "Alt+3", surface: "map", run: () => wbMapFoldToLevel(3) },
   { id: "summarise-branch", group: "Item", icon: "ph:text-align-left", label: "Summarise this branch", keys: "", surface: "map", needs: "topic", run: () => wbMapSummariseBranch(wbSelectedMapNode()) },
+  { id: "expand-from-note", group: "Item", icon: "ph:tree-structure", label: "Expand from my notes…", keys: "", surface: "map", needs: "notetopic", run: () => wbMapExpandFromNote(wbSelectedMapNode()) },
   { id: "suggest-branches", group: "Item", icon: "ph:lightbulb", label: "Branches from my notes…", keys: "", surface: "map", needs: "topic", run: () => wbMapSuggestBranches(wbSelectedMapNode()) },
   { id: "save-shape", group: "Library", icon: "ph:polygon", label: "Save as a shape…", keys: "", surface: "board", needs: "drawing", run: () => wbSaveShapeToLibrary() },
   { id: "save-style", group: "Library", icon: "ph:paint-brush", label: "Save this style…", keys: "", surface: "board", needs: "styled", run: () => wbSaveStyleToLibrary() },
@@ -280,6 +282,7 @@ function wbRunCommand(id) {
       comment: "Select one item first.",
       locked: "Nothing on this board is locked.",
       topic: "Select a topic first.",
+      notetopic: "Select a topic that is one of your notes first.",
       drawing: "Select one drawn shape or pen stroke first.",
       styled: "Select one shape, line or text box first.",
       textbox: "Select one sticky or text box first.",
