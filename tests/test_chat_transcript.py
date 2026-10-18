@@ -268,7 +268,9 @@ def test_a_reply_says_who_wrote_it_and_a_composed_one_arrives():
     attach = frontend_text("chat-attach.js")
     assert 'const by = meta?.composed ? "from your notes" : stats?.model || meta?.answered_by || (meta ? "composer" : "");' in attach
     assert "who.textContent = `${bubble.dataset.persona}, ${by}`;" in attach
-    assert "if (meta?.composed && !reducedMotionWanted()) {" in attach
+    #: The arrival is the one reveal every surface shares now (INBOX 1300
+    #: C28, `replyReveal` in reply-kit.js, tests/test_reply_cards.py).
+    assert "finishReply(answerEls, { composed: meta?.composed" in attach
     assert '"ph:notebook Your notes, no AI"' not in attach
 
 

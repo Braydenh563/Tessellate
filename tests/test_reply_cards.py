@@ -161,3 +161,28 @@ def test_a_wall_of_text_in_a_reply_folds_to_its_gist():
     assert "const REPLY_FOLD_CHARS = 600;" in kit and 'block.matches("p, pre, blockquote")' in kit
     css = (ROOT / "frontend" / "css" / "reply-kit-lazy.css").read_text(encoding="utf-8")
     assert "max-block-size: min(24rem, 50dvh);" in css
+
+
+def test_a_composed_reply_takes_one_reveal_on_every_surface(ai_client, fake_ollama):
+    """INBOX 1300 C28: one reveal for a reply no model wrote, on Chat, Ask,
+    the popup agent and the Guide, with a switch under Interface animations
+    and a quick fade under Reduce motion."""
+    kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
+    assert "if (opts.composed) replyReveal(list);" in kit
+    body = kit[kit.index("function replyReveal(answers)") :].split("\n}\n", 1)[0]
+    assert "still ? [{ opacity: 0 }, {}]" in body and "delay: still ? 0" in body
+    assert 'prefs.get("reply-motion", "on") !== "off"' in kit and 'root.dataset.uiMotion !== "off"' in kit
+    #: The one reveal: Chat's own per-block animation is gone.
+    chat = (JS / "chat-attach.js").read_text(encoding="utf-8")
+    assert ".animate([{ opacity: 0, translate" not in chat
+    #: The Guide says when no model wrote it, and then does not type it out.
+    guide = (JS / "help-chat.js").read_text(encoding="utf-8")
+    assert "composed: !!done?.composed," in guide and "result?.composed ? content :" in guide
+    fake_ollama.running = False
+    done = ai_client.post("/help/ask", json={"question": "how do I pin a note"}).json()
+    assert done.get("composed") is True
+    #: The switch, under Interface animations, wired where Settings' rows are.
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert html.index('id="ui-motion-toggle"') < html.index('id="reply-motion-toggle"')
+    rows = (JS / "settings-rows.js").read_text(encoding="utf-8")
+    assert '{ key: "reply-motion", id: "reply-motion-toggle", on: "on", off: "off", base: "on" }' in rows

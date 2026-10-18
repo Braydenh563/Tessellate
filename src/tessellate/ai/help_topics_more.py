@@ -588,7 +588,8 @@ MORE_TOPICS: list[dict] = [
             "indicators, Reduce motion (stills Atlas, the background art, the "
             "graph and the whiteboard) and Interface animations (on by default: "
             "a button's press, menus and dialogs opening, a tab's sliding marker, "
-            "even with Reduce motion on; off makes them instant). Advanced has "
+            "even with Reduce motion on; off makes them instant) with Reveal "
+            "replies under it (a reply no model wrote rises into place). Advanced has "
             "Custom CSS. Ctrl+Shift+L "
             "switches light and dark from anywhere."
         ),

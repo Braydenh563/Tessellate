@@ -10,4 +10,6 @@ Items: C06 (stats panel, link cards and reader, calculator), C07, C08, C28, C14,
 - done: C07 note previews (`replyFinish`, `replyNotePreviews` reply-kit.js; `finishReply` capture-ask.js, called by Chat, Ask, popup, Guide); `renderToolsUnsupportedNotice` moved to reply-kit.js for the boot budget
 - done: C07 6bc004b
 - done: C08 long-block fold (`replyFoldLong` reply-kit.js)
-- next: C28 one reveal: `replyReveal` in `replyFinish` for composed replies (chat-attach.js ~2441 inline animate goes), Settings "Reveal replies" under Interface animations (index.html ~11351, wired in settings-rows.js), reduced motion a fade; Guide composed flag (help_chat.py offline done)
+- done: C08 aeb9488
+- done: C28 one reveal (`replyReveal` reply-kit.js, Settings Reveal replies, Guide `composed`)
+- next: C14 byline badge chip: `chip item-label` for who wrote it, chat head (chat-attach.js ~2438), Ask `#answered-by`, popup head (palette.js ~970), Guide head

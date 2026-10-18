@@ -11222,6 +11222,12 @@ Link to another note with [[its first few words]]."></textarea>
                   once, then breathes slowly, and its cells lift in turn while
                   Atlas works. Either switch off holds it still.
                 </p>
+                <p>
+                  Reveal replies is one of them: a reply written with no model
+                  (from your notes, or the Guide's own help) rises into place a
+                  block at a time in Chat, Ask, the popup agent and the Guide.
+                  Reduce motion makes it a quick fade; off, it simply appears.
+                </p>
               </div>
 
               <div class="setting-row" id="perf-mode-row">
@@ -11353,6 +11359,16 @@ Link to another note with [[its first few words]]."></textarea>
                 <span>
                   Interface animations
                   <small class="muted">Short fades and slides as menus, dialogs and tabs open, and a press on buttons.</small>
+                </span>
+              </label>
+
+              <!-- A reply no model wrote rises into place (INBOX 1300 C28,
+                   `replyReveal` in reply-kit.js); wired by settings-rows.js. -->
+              <label class="setting-check" id="reply-motion-row">
+                <input type="checkbox" id="reply-motion-toggle" checked>
+                <span>
+                  Reveal replies
+                  <small class="muted">A reply written with no model rises into place a block at a time.</small>
                 </span>
               </label>
 

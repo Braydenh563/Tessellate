@@ -2553,6 +2553,8 @@ async function streamChatEvents({
   onOffer,
   attempt,
 }) {
+  //: Fetched now, so a composed reply's reveal (`finishReply`) never waits on it.
+  ensureModule("replyKit").catch(() => {});
   const body = { question, history: history || [] };
   //: "Try again" (CHAT_PLAN decision 34): an answer from the notes reworded.
   if (attempt) body.attempt = attempt;

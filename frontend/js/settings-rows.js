@@ -90,6 +90,7 @@ const LOOK_ROWS = [
   { key: "contrast", id: "contrast-toggle", on: "on", base: "off" },
   { key: "motion", id: "reduce-motion-toggle", on: "reduced", off: "auto" },
   { key: "ui-motion", id: "ui-motion-toggle", on: "on", off: "off" },
+  { key: "reply-motion", id: "reply-motion-toggle", on: "on", off: "off", base: "on" },
   { key: "progress-motion", id: "progress-motion" },
   { key: "show-thinking-words", id: "pref-show-thinking-words", on: "on", off: "off" },
   { key: "perf", id: "perf-mode" },
@@ -491,3 +492,15 @@ function wireSettingsFile() {
     if (chosen) importSettingsFile(chosen);
   });
 }
+
+// --- Reveal replies ---------------------------------------------------------------
+
+//: Settings, Appearance, Reveal replies (INBOX 1300 C28): whether a reply no
+//: model wrote rises into place (`replyReveal`, reply-kit.js, reads it). Kept
+//: on this device, like Interface animations beside it.
+(() => {
+  const box = $("reply-motion-toggle");
+  if (!box) return;
+  box.checked = prefs.get("reply-motion", "on") !== "off";
+  box.addEventListener("change", () => prefs.set("reply-motion", box.checked ? "on" : "off"));
+})();

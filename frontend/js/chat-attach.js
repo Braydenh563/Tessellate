@@ -2428,20 +2428,14 @@ async function sendChatMessage(preset, opts = {}) {
   //: **Who wrote it, in the head** (the owner, 2026-10-10: "should say if the
   //: composer or a specific ai model generated it"): "Atlas, from your notes"
   //: or "Atlas, <model>", where a chip under the answer used to say only the
-  //: first. **And a composed answer arrives** ("Composer responses just
-  //: appear, I think there should be an animation"): it lands in one piece,
-  //: so its blocks rise in turn, `--motion-step` apart, as a streamed one
-  //: grows; under reduced motion it simply appears.
+  //: first. A composed answer's arrival is `replyReveal` (reply-kit.js),
+  //: through `finishReply` above.
   //: No model wrote it and it is not quoted from the notes (a greeting, a
   //: time, a count, a capability answer): the engine answered, and says so
   //: ("hey :D" got an unlabelled "Atlas", the owner, 2026-10-12).
   const by = meta?.composed ? "from your notes" : stats?.model || meta?.answered_by || (meta ? "composer" : "");
   const who = bubble.querySelector(".msg-role > span:last-child");
   if (answerRaw && by && who) who.textContent = `${bubble.dataset.persona}, ${by}`;
-  if (meta?.composed && !reducedMotionWanted()) {
-    bubble.querySelectorAll(".bubble-answer > *").forEach((el, i) =>
-      el.animate([{ opacity: 0, translate: "0 4px" }, {}], { duration: 200, delay: i * 60, easing: "ease-out", fill: "backwards" }));
-  }
   if (answerRaw || toolEvents.length) {
     bubble.appendChild(
       messageMetaLine({

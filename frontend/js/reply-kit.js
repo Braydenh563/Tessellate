@@ -635,6 +635,7 @@ function replyFinish(answers, opts = {}) {
   if (!list.length) return;
   for (const answer of list) replyFoldLong(answer);
   replyNotePreviews(list);
+  if (opts.composed) replyReveal(list);
   if (opts.unsupported) renderToolsUnsupportedNotice(opts.bubble, opts.unsupported);
 }
 
@@ -661,6 +662,40 @@ function renderToolsUnsupportedNotice(container, event) {
   //: Above the turn's facts line, where it was drawn before it moved here.
   container.insertBefore(row, container.querySelector(":scope > .msg-meta"));
   row.before(line);
+}
+
+// --- a composed reply arrives ----------------------------------------------------
+
+//: **One reveal for a reply no model wrote** (INBOX 1300 C28; the owner,
+//: 2026-10-10: "Composer responses just appear, I think there should be an
+//: animation"). A composed reply lands in one piece, so its blocks rise in
+//: turn, `REPLY_REVEAL_STEP` apart, as a streamed one grows: the same on
+//: Chat, Ask, the popup agent and the Guide. Opacity and a short lift only
+//: (DESIGN.md, "An animation of anything"). Reduce motion makes it a quick
+//: fade with no lift and no stagger; Interface animations off, or Settings,
+//: Appearance, Reveal replies off, and it simply appears.
+const REPLY_REVEAL_STEP = 60;
+
+function replyRevealWanted() {
+  const root = document.documentElement;
+  return root.dataset.uiMotion !== "off" && prefs.get("reply-motion", "on") !== "off";
+}
+
+function replyReveal(answers) {
+  if (!replyRevealWanted()) return;
+  const still = reducedMotionWanted();
+  let step = 0;
+  for (const answer of answers) {
+    for (const block of answer.children) {
+      block.animate(still ? [{ opacity: 0 }, {}] : [{ opacity: 0, translate: "0 4px" }, {}], {
+        id: "reply-reveal",
+        duration: still ? 120 : 200,
+        delay: still ? 0 : Math.min(step++, 8) * REPLY_REVEAL_STEP,
+        easing: "ease-out",
+        fill: "backwards",
+      });
+    }
+  }
 }
 
 // --- a long block, folded ------------------------------------------------------------
