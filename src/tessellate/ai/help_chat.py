@@ -156,7 +156,7 @@ HELP_TOPICS: list[dict] = [
             "does every change and web request. "
             "Conversations save and rename in the sidebar; the same agent pops "
             "open over any tab with Ctrl/Cmd+Shift+A (from More on a phone), "
-            "runs with no model, and Ctrl+Z takes back its last write. "
+            "runs with no model, numbers its answers like Chat's, and Ctrl+Z takes back its last write. "
             "While an answer is coming, "
             "the line under it says what is happening: Reaching Atlas, Reading "
             "your notes, Waking the model, Atlas is thinking, Atlas is writing, "

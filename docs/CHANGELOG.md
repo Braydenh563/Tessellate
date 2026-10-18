@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- The popup agent numbers its answers in the text. It listed Sources and drew no marks; it now takes the `grounding` events and places Chat's own numbered marks (`addInlineCitations`) after every paint, over the same list its Sources rows draw, and each row shows its number (`palette.js`, `scratchpad/ui-sweeps/popupcite.js`, `tests/test_inline_citations.py`).
 - "in 2 weeks at 3pm" keeps its clock. `when.resolve` read a day-sized offset (days, weeks, months) as `now` plus the offset and dropped the "at 3pm"; the offset's day now takes the clock or part of day beside it, and hours offsets are unchanged (`recognise._with_clock`, `tests/test_when.py`).
 - A 20,000-character question answers in 0.7 s of route time, down from 4.1 s. `utilities.kind_of` ran seven times a turn and each run read all 364 words of the first 2,000 characters against the utility vocabulary; it is now cached and skips the per-word slip search past 40 words, since a utility is a short ask (`tests/test_composer_long_question.py`).
 - A quoted line starts and ends at a word. Search results, source cards and the agent's source rows cut a window out of a note at a character offset, so a card could begin "uding servers"; both cuts now move to the nearest space and carry an ellipsis (`search/snippet.py`, `tests/test_snippet_word_boundaries.py`).

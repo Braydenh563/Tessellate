@@ -505,6 +505,14 @@ the gesture guard moved onto the surface first; see HISTORY.md ("From OPEN.md,
 2026-09-23 (askcite agent): Phase 8c, the board's note card").
 
 
+## Moved from the plans, 2026-10-18 (Popup agent citations, BACKLOG)
+
+From BACKLOG, as it stood:
+
+> Popup agent: its answers carry no in-text citation numbers (owner, 2026-10-12, four screenshots: "notes about uni" answers in paragraphs with a Sources chip and note list but no superscript marks, as Ask and Chat have). Chat wires them through `addInlineCitations(bubble.querySelectorAll(".bubble-answer"), groundingSentences, meta.raw_results, turnSources)` from the `grounding` stream event (chat-attach.js ~2000, 2365); the popup agent (palette.js `cmdPaletteLinkNotes`, agent-activity.js) only links "note id N" text. Give the popup agent's answer element the same call and the same `grounding` event handling, then a test like Ask's.
+
+Built 2026-10-18 (cite-1018): `cmdPaletteAsk` takes `onGrounding` and `onGroundingLive` and calls `addInlineCitations(answerBox, rows, found, chatSourcesFrom({meta, touched}))` after every paint (`cite`), so the marks are numbered over the list `cmdPaletteSources` draws; `chatSourcesPanel` hands its row hook the card's number (`numbering.indexOf(source) + 1`) and `cmdSourceRow` shows it in `.chat-source-index` inside the title cell (three columns kept). Driven in Chromium with `scratchpad/fake_answer_server.py` (`scratchpad/ui-sweeps/popupcite.js`): two marks, 1 and 2, matching the two rows' numbers, no page errors. The stand-in model quotes each note with its `[General] (written ...)` header, so both sentences ran together and the two marks sit side by side at the end (Ask's sweep, same fixture, puts one per sentence); a real model's prose was not run. `tests/test_inline_citations.py` pins the wiring.
+
 ## Moved from the plans, 2026-10-17 (New chat page, BACKLOG)
 
 From BACKLOG, as it stood:
