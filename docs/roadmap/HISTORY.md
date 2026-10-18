@@ -50611,3 +50611,13 @@ Decision 62 built: the search model already loaded on first use (or at launch wi
      `tests/test_brand_name.py`), step 2 the internal identifiers with
      fallbacks for existing installs, as its own last commit.
 
+
+## Moved from the plans, 2026-10-18 (graph-1018)
+
+Built by the graph-1018 agent (GRAPH_PLAN open work; the audit table is `agent-remaining/graph-1018.md`).
+
+- **VC11, D3 hierarchy layouts as a category overview.** The Layout picker's Treemap (`layoutTreemap`, graph.js; `gcDrawTreemap`, graph-canvas.js): one rectangle per category with its area in proportion to its notes, each note a dot in a cell of it, no lines (the rectangles are the filing), the fit framed by the rectangles (`gcTreeFrameNodes`), the dot kept inside its cell. Measured: `tests/test_graph_treemap.py` at 1,000 notes in six categories, worst area error under 1% and layout under 100 ms; in the app (`scratchpad/ui-sweeps/graphtreemap1018.js`, 200 notes, 8 categories, 1440x900): worst area error 0, 200 of 200 dots inside their rectangle, 0 overlapping dots, 0 dots larger than their cell, 0 category headers under the minimap, panel or zoom strip, 1,000 notes laid out in 1 to 4 ms, 0 console errors. `tests/test_vendor_utilisation.py` d3 floor 19 to 20. Help: the Layout list, the map's help panel and the Guide's graph topic name it.
+- **The graph is idle at rest.** `scratchpad/ui-sweeps/graphrest1018.js`: draws 31 to 60 a second for the first 6 s after the tab opens (the by-design settle), then 0 draws, 0 layouts, 0 script ms and 0 long tasks for as long as it is left.
+- **`/graph` at 5,000 notes.** `scratchpad/kg1005_graph_bench.py`: cold 1,133 ms, warm 113 ms, 3,299 KB (slim 1,920 KB, warm 86 ms); a warm call is a cache hit whose cost is `_payload_key` (136 of 186 ms profiled: ORM column loads 75, sqlite fetch 29, repr 22). Nothing built: a cheaper key would read through Core, which skips the space filter.
+- **Topic plates seated** (B71, INBOX 904): `gcSeatTopicPlates`; plates overlapping 1 to 0, plates on a dot 10 to 0 (`graphtopics1018.js`, 200 notes).
+- **A dragged note's neighbours follow it** (graph100-1011's open item): `carryForce` and `FOLLOW_PULL`, graph-worker.js; in the app neighbours moved 0.28 of the drag distance before and 0.48 after, 0.28 and 0.40 once settled (`graphdrag1018.js`).

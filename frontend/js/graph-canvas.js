@@ -1136,6 +1136,53 @@ function gcDrawNebulae(ctx, s, inView) {
   ctx.globalCompositeOperation = previous;
 }
 
+//: GRAPH_PLAN VC11: the Treemap layout's category rectangles, behind the
+//: notes. Each is the category's colour as a faint wash, a rim and its name and
+//: count in the header the layout left for it (`layoutTreemap`); the gap
+//: between two categories is drawn here, an inset, so the areas stay exact.
+//: The name is clipped to its rectangle and left out of one too small to read.
+function gcTreeFrameNodes(tree, nodes) {
+  return tree.treemap && tree.treemap.length
+    ? tree.treemap.flatMap((r) => [{ x: r.x0, y: r.y0, corner: true }, { x: r.x1, y: r.y1, corner: true }])
+    : nodes;
+}
+
+function gcDrawTreemap(ctx, s, k) {
+  const rects = s.tree && s.tree.treemap;
+  if (!rects || !rects.length) return;
+  ctx.save();
+  ctx.lineJoin = "round";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.font = `600 ${12 / k}px ${gcTokens.font}`;
+  const inset = 1.5;
+  for (const rect of rects) {
+    const x = rect.x0 + inset;
+    const y = rect.y0 + inset;
+    const w = rect.x1 - rect.x0 - 2 * inset;
+    const h = rect.y1 - rect.y0 - 2 * inset;
+    if (w <= 0 || h <= 0) continue;
+    const colour = s.colourOf({ isGroup: true, category: rect.category });
+    ctx.globalAlpha = 0.07;
+    ctx.fillStyle = colour;
+    ctx.fillRect(x, y, w, h);
+    ctx.globalAlpha = 0.5;
+    ctx.strokeStyle = colour;
+    ctx.lineWidth = 1.5 / k;
+    ctx.strokeRect(x, y, w, h);
+    if (w * k < 44) continue;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(x, y, w, h);
+    ctx.clip();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = gcTokens.ink;
+    ctx.fillText(`${rect.category || "Unfiled"} (${rect.count})`, x + 6 / k, y + 9 / k);
+    ctx.restore();
+  }
+  ctx.restore();
+}
+
 //: B71 (INBOX 904, "so messy and stuck together I couldn't read it"): each
 //: topic's name wants the spot straight above its outline's highest point,
 //: and two topics with near tops wanted the same one, or a plate covered
@@ -1720,7 +1767,7 @@ function gcFitInsets(s = gcTab) {
 //: while the warm-up plays (`gcFrameIntro`).
 function gcRefitForPanels(s) {
   if (s.userZoomed || s.intro || !s.zoom || !s.svg || !s.nodes?.length) return;
-  if (s.tree) frameTree(s.svg, s.zoom, null, s.nodes, s.dims.w, s.dims.h, s.tree.radial, s.tree.arc);
+  if (s.tree) frameTree(s.svg, s.zoom, null, gcTreeFrameNodes(s.tree, s.nodes), s.dims.w, s.dims.h, s.tree.radial, s.tree.arc);
   else if (s.fittedOnce) fitGraphToView(s.svg, null, s.zoom, s.nodes, s.dims.w, s.dims.h);
 }
 
@@ -2186,6 +2233,7 @@ function gcDraw(s = gcTab) {
   })();
 
   gcDrawNebulae(ctx, s, inView);
+  gcDrawTreemap(ctx, s, k);
   gcDrawTopicHulls(ctx, s, k);
   //: Read from the switch itself, like the labels above, so what the menu
   //: shows and what is drawn cannot disagree (the owner: "it is showing
@@ -5073,6 +5121,8 @@ async function renderGraphCanvas(s = gcTab) {
   const shape = s.tree ? null : gcShape(s);
   for (const node of nodes) {
     node.r = gcRadius(node, (s.adj.get(node.id) || { size: 0 }).size, maxDegree);
+    //: A treemap cell is only so big: the dot stays inside it.
+    if (node.cell) node.r = Math.min(node.r, Math.max(2.5, Math.min(node.cell.w, node.cell.h) * 0.36));
     node.colour = s.colourOf(node);
     node._cluster = shape === "clusters" ? node.category || "" : null;
     node._straight = Boolean(shape) && shape !== "organic";
@@ -5126,7 +5176,7 @@ async function renderGraphCanvas(s = gcTab) {
       //: framing is instant, as the force layout's first fit is (INBOX 738):
       //: a glide from k 1 to an arc's 0.31 is the zoomed-in start reported.
       const untouched = !s.transform || (s.transform.k === 1 && s.transform.x === 0 && s.transform.y === 0);
-      frameTree(s.svg, s.zoom, null, nodes, width, height, s.tree.radial, s.tree.arc, untouched);
+      frameTree(s.svg, s.zoom, null, gcTreeFrameNodes(s.tree, nodes), width, height, s.tree.radial, s.tree.arc, untouched);
     }
     //: After the frame, which is set on where the notes are going.
     gcTweenFromPrior(s, nodes, prior);
@@ -5460,7 +5510,9 @@ function graphRenderStats(data, nodes, edges, colourMode, layoutKind) {
           ? "categories around the centre; replies branch off the note they answer."
           : layoutKind === "arc"
             ? "one line, filed left to right; arcs below show what answers what."
-            : "";
+            : layoutKind === "treemap"
+              ? "each category's area in proportion to its notes."
+              : "";
   line.textContent = parts.join(" · ");
   line.title = shape;
   graphSyncLayoutChip(layoutKind);
