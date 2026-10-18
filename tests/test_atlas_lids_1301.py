@@ -9,6 +9,7 @@ Every rule that sets it keeps that at 30% or less; only a blink (the
 lid's own sweep, `atlasLids`) passes through the middle, and briefly.
 """
 
+import math
 import re
 from pathlib import Path
 
@@ -18,8 +19,10 @@ ATLAS = (ROOT / "frontend" / "js" / "atlas.js").read_text(encoding="utf-8")
 EYE_H = 7.4
 
 
-def upper_closed(lid):
-    return max(0.0, 11 * lid + 0.15 + 0.8) / EYE_H
+def upper_closed(lid, turn=0.0):
+    # A turned lid (`--atl-lid-r`) dips at one side of the middle: measured
+    # 3.5px either side of the centre, as scratchpad/ui-sweeps/atlaslids.js does.
+    return max(0.0, 11 * lid + 0.15 + 0.8 + 3.5 * math.sin(math.radians(abs(turn)))) / EYE_H
 
 
 def lower_closed(low):
@@ -38,7 +41,9 @@ def test_no_rule_rests_the_upper_lid_half_down():
         if not lid:
             continue
         seen += 1
-        assert upper_closed(float(lid.group(1))) <= 0.30, (sel, lid.group(1))
+        turn = re.search(r"--atl-lid-r:\s*(-?[\d.]+)deg", body)
+        closed = upper_closed(float(lid.group(1)), float(turn.group(1)) if turn else 0.0)
+        assert closed <= 0.30, (sel, lid.group(1), closed)
     assert seen >= 15
 
 
