@@ -75,8 +75,37 @@ function timelineTickPlan(span, height) {
 //: Draws the labels for the strip as it is now, and again whenever its height
 //: changes (a window resize, the dock wrapping). A plan that has not changed
 //: is not redrawn: the strip repaints on every density read.
+//: Whether the labels are wanted (Options, Dates beside the strip): a
+//: remembered, per-viewer choice, on until turned off.
+function timelineTicksWanted() {
+  try {
+    return prefs.get("timeline-ticks", "1") !== "0";
+  } catch {
+    return true;
+  }
+}
+
+// The node harness loads this file without a page, so the wiring waits for one.
+if (typeof document !== "undefined") {
+  $("timeline-ticks-toggle").checked = timelineTicksWanted();
+  $("timeline-ticks-toggle").addEventListener("change", (event) => {
+    try {
+      prefs.set("timeline-ticks", event.target.checked ? "1" : "0");
+    } catch {
+      /* private mode: the choice holds until the page closes */
+    }
+    timelineTickCache.key = "";
+    timelineTicks();
+  });
+}
+
 async function timelineTicks() {
   const strip = $("timeline-scrubber");
+  if (!timelineTicksWanted()) {
+    strip.querySelector(".timeline-ticks")?.remove();
+    strip.classList.remove("has-ticks");
+    return;
+  }
   if (!strip.dataset.ticksWatched) {
     strip.dataset.ticksWatched = "1";
     if (typeof ResizeObserver === "function") new ResizeObserver(() => timelineTicks()).observe(strip);

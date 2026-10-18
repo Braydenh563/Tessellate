@@ -34,7 +34,7 @@ audits reproduced each bug in the app (ports 8791, 8792). A row is **open**,
 | C28 reply reveal animation | O, design | open | chat 0.2 s fade only; guide streams words |
 | C30 lightbox controls | O, design | open | `lightbox-view.js` |
 | C34 recorder panels | O, design | open | `.meeting-stage` radius 0, `meetings.js:922` |
-| C36 timeline tick labels switch | O, design | open | `timeline-ticks.js` |
+| C36 timeline tick labels switch | O, design | fixed HASH | the c36 sweep toggles the switch and counts the tick labels; test_timeline_ticks_switch.py |
 | C14 composer and model badge | O, design | open | `chat-attach.js:2430` byline |
 | C18 paper swatches as dropdown | O, design | open | `index.html:7506` |
 | C37 graph box titles clipped, no ellipsis; nodes all one size | O, design batch 2 | open | a question is a bug report: size by weight (links or uses) and a label line-clamp with ellipsis |

@@ -95,4 +95,4 @@ def test_the_strip_asks_for_labels_through_a_lazy_file_and_boot_names_no_d3():
     lazy = TICKS.read_text(encoding="utf-8")
     assert 'lazyScript("/vendor/d3.v7.min.js")' in lazy and 'lazyScript("/css/timeline-ticks-lazy.css")' in lazy
     index = (FRONTEND / "index.html").read_text(encoding="utf-8")
-    assert "timeline-ticks" not in index, "a lazy file is not a boot script"
+    assert "/js/timeline-ticks.js" not in index and "timeline-ticks-lazy" not in index, "a lazy file is not a boot script"
