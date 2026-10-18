@@ -6226,16 +6226,18 @@ button.ghost.doc-template-choice[aria-checked="true"] {
 .doc-dock .doc-dock-identity > .doc-back.ghost:is(:focus-visible, :has(:focus-visible)) {
   background: var(--chip-bg);
 }
-/* **The list scrolls, the head stays** (INBOX 432). With 36 categories the
-   whole Notes sidebar scrolled as one block, and its head, All, Drafts and
-   Favourites went off the top (head at -427px). On a desktop layout the
-   category list is its own scroller instead, capped so the local map and
-   Most used below it stay reachable. */
+/* **One scroller** (C43; the list used to have its own inside the sidebar's,
+   two bars, cut mid-row). The sidebar scrolls, its head sticks. */
 @media (min-width: 820px) {
-  #sidebar #category-list {
-    max-height: min(60vh, 36rem);
-    overflow-y: auto;
-    overscroll-behavior: contain;
+  #sidebar > .sidebar-head {
+    position: sticky;
+    top: calc(-1 * var(--card-pad-y));
+    z-index: 2;
+    margin-top: calc(-1 * var(--card-pad-y));
+    padding-block: var(--card-pad-y) var(--space-2);
+    background: var(--card);
+  }
+  #sidebar {
     scrollbar-width: thin;
   }
 }

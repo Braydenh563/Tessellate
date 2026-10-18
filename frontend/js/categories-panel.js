@@ -1075,3 +1075,104 @@ async function refreshAfterCategoryChange() {
   await loadCategories();
   manageCategoriesRedraw?.();
 }
+
+// The Notes sidebar's sections, folded and tidied (C43, the owner: "a little
+// messy and there is a lot happening and I want to be able to collapse
+// sections like with the most used section"). A lazy bundle
+// (the Manage categories bundle, loaded by the stand-in for `foldSide`, which `renderSidebar` calls) so
+// the boot scripts stay at their cap. Three things, none of them in boot:
+//   1. a caret in the Categories, Most used and Saved searches headings that
+//      folds the section, the state kept per section in this browser;
+//   2. categories with no notes dimmed and behind one "Show N empty" row,
+//      kept on screen when chosen (the filter) or when asked for;
+//   3. the sidebar is the one scroller (the old inner list scroller is gone).
+
+lazyScript("/css/sidebar-folds-lazy.css");
+
+const SIDEBAR_FOLDS = [
+  { key: "cat", what: "categories", host: () => $("sidebar"), head: () => document.querySelector("#sidebar > .sidebar-head h2"), attr: "data-fold-cat" },
+  { key: "most", what: "Most used", host: () => $("most-used-box"), head: () => document.querySelector("#most-used-box h2"), attr: "data-folded" },
+  { key: "saved", what: "saved searches", host: () => $("saved-finds-box"), head: () => document.querySelector("#saved-finds-box h2"), attr: "data-folded" },
+];
+
+function sidebarFoldSet(fold, folded) {
+  const host = fold.host();
+  const button = fold.head()?.querySelector(".sidebar-fold-toggle");
+  if (!host || !button) return;
+  host.toggleAttribute(fold.attr, folded);
+  button.setAttribute("aria-expanded", String(!folded));
+  const label = `${folded ? "Show" : "Hide"} ${fold.what}`;
+  button.setAttribute("aria-label", label);
+  button.title = label;
+  button.querySelector("i")?.classList.toggle("ph-caret-right", folded);
+  button.querySelector("i")?.classList.toggle("ph-caret-down", !folded);
+}
+
+function sidebarFoldsWire() {
+  for (const fold of SIDEBAR_FOLDS) {
+    const head = fold.head();
+    if (!head || head.querySelector(".sidebar-fold-toggle")) continue;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "ghost small icon-only sidebar-fold-toggle";
+    const icon = document.createElement("i");
+    icon.className = "ph ph-caret-down";
+    icon.setAttribute("aria-hidden", "true");
+    button.appendChild(icon);
+    head.prepend(button);
+    button.addEventListener("click", () => {
+      const folded = !fold.host().hasAttribute(fold.attr);
+      sidebarFoldSet(fold, folded);
+      prefs.set(`sidebarFold:${fold.key}`, folded ? "1" : "0");
+    });
+    sidebarFoldSet(fold, prefs.bool(`sidebarFold:${fold.key}`, false));
+  }
+}
+
+//: Empty categories: a row with a count of 0 that is not the one in use.
+function sidebarEmptyRows() {
+  const ul = $("category-list");
+  if (!ul) return;
+  ul.querySelector(".category-empty-toggle")?.remove();
+  const empty = [...ul.children].filter((li) => !li.classList.contains("category-drafts-row")
+    && li.querySelector(".category-actions") && li.querySelector(".count")?.textContent === "0"
+    && li.getAttribute("aria-current") !== "true");
+  const show = prefs.bool("sidebarShowEmpty", false);
+  for (const li of empty) {
+    li.classList.add("category-empty");
+    if (!show) li.remove();
+  }
+  if (!empty.length) return;
+  const row = document.createElement("li");
+  row.className = "category-empty-toggle";
+  row.tabIndex = 0;
+  row.setAttribute("role", "button");
+  row.setAttribute("aria-pressed", String(show));
+  const name = document.createElement("span");
+  name.className = "category-name";
+  name.textContent = show ? `Hide ${empty.length} empty` : `Show ${empty.length} empty`;
+  row.title = "Categories with no notes in them";
+  row.appendChild(name);
+  const flip = () => {
+    prefs.set("sidebarShowEmpty", show ? "0" : "1");
+    renderSidebar();
+    requestAnimationFrame(() => $("category-list").querySelector(".category-empty-toggle")?.focus());
+  };
+  row.addEventListener("click", flip);
+  row.addEventListener("keydown", (event) => {
+    if (event.target !== row) return;
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      flip();
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      row.previousElementSibling?.focus();
+    }
+  });
+  ul.appendChild(row);
+}
+
+function foldSide() {
+  sidebarFoldsWire();
+  sidebarEmptyRows();
+}

@@ -2,9 +2,9 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6065, frontend ids 2533, CSS sections 495, backend routes 610, backend modules 5835, test files 1276, tests 11442, plan headings 958.
+Counts: frontend functions 6069, frontend ids 2533, CSS sections 495, backend routes 610, backend modules 5835, test files 1276, tests 11442, plan headings 958.
 
-## Frontend functions (6065)
+## Frontend functions (6069)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -29,7 +29,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `hide` | frontend/js/app.js:168 |
 | `hideBootSplash` | frontend/js/app.js:952 |
 | `initAuth` | frontend/js/app.js:965 |
-| `installStandIns` | frontend/js/app.js:2289 |
+| `installStandIns` | frontend/js/app.js:2290 |
 | `kickBackgroundTaskPoll` | frontend/js/app.js:611 |
 | `lazyAssetStamp` | frontend/js/app.js:1954 |
 | `lazyScript` | frontend/js/app.js:1995 |
@@ -208,7 +208,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `_loadEntries` | frontend/js/notes-list.js:2877 |
+| `_loadEntries` | frontend/js/notes-list.js:2878 |
 | `appendInline` | frontend/js/notes-list.js:1192 |
 | `appendInlineRun` | frontend/js/notes-list.js:964 |
 | `applyEntryListTabOrder` | frontend/js/notes-list.js:2417 |
@@ -225,16 +225,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `categoryColour` | frontend/js/notes-list.js:2506 |
 | `categoryColoursChanged` | frontend/js/notes-list.js:2523 |
 | `categoryDotColour` | frontend/js/notes-list.js:2516 |
-| `categoryMenuItems` | frontend/js/notes-list.js:2759 |
-| `clearSkeletons` | frontend/js/notes-list.js:2825 |
-| `compareCategoryNames` | frontend/js/notes-list.js:2715 |
-| `dockConnectionsInRail` | frontend/js/notes-list.js:3590 |
+| `categoryMenuItems` | frontend/js/notes-list.js:2760 |
+| `clearSkeletons` | frontend/js/notes-list.js:2826 |
+| `compareCategoryNames` | frontend/js/notes-list.js:2716 |
+| `dockConnectionsInRail` | frontend/js/notes-list.js:3591 |
 | `engineQueryIds` | frontend/js/notes-list.js:194 |
-| `ensureCardCounts` | frontend/js/notes-list.js:3281 |
-| `ensureMapChipsFor` | frontend/js/notes-list.js:3323 |
-| `ensureOneCardCount` | frontend/js/notes-list.js:3285 |
+| `ensureCardCounts` | frontend/js/notes-list.js:3282 |
+| `ensureMapChipsFor` | frontend/js/notes-list.js:3324 |
+| `ensureOneCardCount` | frontend/js/notes-list.js:3286 |
 | `entryListItems` | frontend/js/notes-list.js:2415 |
-| `entryListOrder` | frontend/js/notes-list.js:2997 |
+| `entryListOrder` | frontend/js/notes-list.js:2998 |
 | `entryNeedsReview` | frontend/js/notes-list.js:225 |
 | `expandAngleAutolinks` | frontend/js/notes-list.js:876 |
 | `fileCard` | frontend/js/notes-list.js:727 |
@@ -245,7 +245,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `filterNotesByTag` | frontend/js/notes-list.js:2202 |
 | `focusNoteRow` | frontend/js/notes-list.js:62 |
 | `foldNoteToolbarForFirstPaint` | frontend/js/notes-list.js:17 |
-| `followNoteChanges` | frontend/js/notes-list.js:3063 |
+| `followNoteChanges` | frontend/js/notes-list.js:3064 |
 | `highlightIconsInto` | frontend/js/notes-list.js:1655 |
 | `highlightInto` | frontend/js/notes-list.js:1682 |
 | `initEntryListKeyboardNav` | frontend/js/notes-list.js:2427 |
@@ -256,8 +256,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `liveQueryBar` | frontend/js/notes-list.js:314 |
 | `liveQueryIds` | frontend/js/notes-list.js:163 |
 | `loadCategories` | frontend/js/notes-list.js:2532 |
-| `loadEntries` | frontend/js/notes-list.js:2869 |
-| `markSidebarRowCurrent` | frontend/js/notes-list.js:2719 |
+| `loadEntries` | frontend/js/notes-list.js:2870 |
+| `markSidebarRowCurrent` | frontend/js/notes-list.js:2720 |
 | `matchesSearch` | frontend/js/notes-list.js:381 |
 | `matchesTagCount` | frontend/js/notes-list.js:360 |
 | `noteCountExcludingDrafts` | frontend/js/notes-list.js:2192 |
@@ -267,59 +267,59 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `noteQueryIsEmpty` | frontend/js/notes-list.js:343 |
 | `noteSemanticLoaded` | frontend/js/notes-list.js:377 |
 | `noteSortName` | frontend/js/notes-list.js:1787 |
-| `noteTopicChip` | frontend/js/notes-list.js:3211 |
-| `notesRailFocusSubject` | frontend/js/notes-list.js:3583 |
-| `notesRailHiddenByChoice` | frontend/js/notes-list.js:3410 |
-| `notesRailNearGroup` | frontend/js/notes-list.js:3554 |
-| `notesRailSync` | frontend/js/notes-list.js:3421 |
-| `notesRailWanted` | frontend/js/notes-list.js:3438 |
-| `nudgeReviewQueue` | frontend/js/notes-list.js:3334 |
-| `nudgeUntaggedNotes` | frontend/js/notes-list.js:3355 |
-| `offerWikiRename` | frontend/js/notes-list.js:3674 |
+| `noteTopicChip` | frontend/js/notes-list.js:3212 |
+| `notesRailFocusSubject` | frontend/js/notes-list.js:3584 |
+| `notesRailHiddenByChoice` | frontend/js/notes-list.js:3411 |
+| `notesRailNearGroup` | frontend/js/notes-list.js:3555 |
+| `notesRailSync` | frontend/js/notes-list.js:3422 |
+| `notesRailWanted` | frontend/js/notes-list.js:3439 |
+| `nudgeReviewQueue` | frontend/js/notes-list.js:3335 |
+| `nudgeUntaggedNotes` | frontend/js/notes-list.js:3356 |
+| `offerWikiRename` | frontend/js/notes-list.js:3675 |
 | `openNoteEditor` | frontend/js/notes-list.js:76 |
 | `orderedNotesForCurrentView` | frontend/js/notes-list.js:1987 |
 | `paginateNotesForDisplay` | frontend/js/notes-list.js:1953 |
 | `paintCategoryDot` | frontend/js/notes-list.js:2519 |
-| `paintEntriesProgress` | frontend/js/notes-list.js:2857 |
+| `paintEntriesProgress` | frontend/js/notes-list.js:2858 |
 | `parseNoteQuery` | frontend/js/notes-list.js:247 |
 | `propQuery` | frontend/js/notes-list.js:2209 |
 | `readableUrl` | frontend/js/notes-list.js:903 |
-| `referenceCountChip` | frontend/js/notes-list.js:3140 |
-| `referenceCountText` | frontend/js/notes-list.js:3128 |
-| `refreshEntries` | frontend/js/notes-list.js:3005 |
+| `referenceCountChip` | frontend/js/notes-list.js:3141 |
+| `referenceCountText` | frontend/js/notes-list.js:3129 |
+| `refreshEntries` | frontend/js/notes-list.js:3006 |
 | `refreshNoteSearchWhy` | frontend/js/notes-list.js:1745 |
-| `reminderCountChip` | frontend/js/notes-list.js:3183 |
+| `reminderCountChip` | frontend/js/notes-list.js:3184 |
 | `renderEntries` | frontend/js/notes-list.js:2254 |
 | `renderIncrementally` | frontend/js/notes-list.js:1858 |
 | `renderInlineMarkdown` | frontend/js/notes-list.js:920 |
 | `renderNoteInline` | frontend/js/notes-list.js:1572 |
 | `renderNoteText` | frontend/js/notes-list.js:1441 |
-| `renderNotesRail` | frontend/js/notes-list.js:3457 |
+| `renderNotesRail` | frontend/js/notes-list.js:3458 |
 | `renderSidebar` | frontend/js/notes-list.js:2547 |
 | `resolveCategoryChoice` | frontend/js/notes-list.js:127 |
 | `resolveNotePage` | frontend/js/notes-list.js:2027 |
 | `resolveWikiTarget` | frontend/js/notes-list.js:1331 |
 | `safeHref` | frontend/js/notes-list.js:853 |
-| `scheduleEntriesProgress` | frontend/js/notes-list.js:2864 |
-| `scheduleNotesRail` | frontend/js/notes-list.js:3433 |
+| `scheduleEntriesProgress` | frontend/js/notes-list.js:2865 |
+| `scheduleNotesRail` | frontend/js/notes-list.js:3434 |
 | `searchHighlightTerms` | frontend/js/notes-list.js:1717 |
-| `setNotesRailHidden` | frontend/js/notes-list.js:3596 |
+| `setNotesRailHidden` | frontend/js/notes-list.js:3597 |
 | `setNotesViewMode` | frontend/js/notes-list.js:2110 |
-| `showEntrySkeletons` | frontend/js/notes-list.js:2796 |
+| `showEntrySkeletons` | frontend/js/notes-list.js:2797 |
 | `showNotesFilter` | frontend/js/notes-list.js:236 |
-| `showSkeletons` | frontend/js/notes-list.js:2814 |
+| `showSkeletons` | frontend/js/notes-list.js:2815 |
 | `sortEntries` | frontend/js/notes-list.js:1791 |
-| `syncNotesRailToggle` | frontend/js/notes-list.js:3446 |
+| `syncNotesRailToggle` | frontend/js/notes-list.js:3447 |
 | `toggleExpandAllRows` | frontend/js/notes-list.js:2099 |
 | `toggleRowExpanded` | frontend/js/notes-list.js:2132 |
-| `topicRepeatsTag` | frontend/js/notes-list.js:3205 |
+| `topicRepeatsTag` | frontend/js/notes-list.js:3206 |
 | `unlatex` | frontend/js/notes-list.js:771 |
 | `updateExpandAllButton` | frontend/js/notes-list.js:2079 |
 | `whyThisResultChip` | frontend/js/notes-list.js:1729 |
 | `wikiForms` | frontend/js/notes-list.js:1251 |
 | `wikiStem` | frontend/js/notes-list.js:1269 |
-| `wireCategoryDropTarget` | frontend/js/notes-list.js:2778 |
-| `wireSidebarRowKeys` | frontend/js/notes-list.js:2728 |
+| `wireCategoryDropTarget` | frontend/js/notes-list.js:2779 |
+| `wireSidebarRowKeys` | frontend/js/notes-list.js:2729 |
 
 ### frontend/js/capture-ask.js (93)
 
@@ -2537,7 +2537,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `stopRecorderWords` | frontend/js/captions.js:307 |
 | `toggleLiveCaptions` | frontend/js/captions.js:315 |
 
-### frontend/js/categories-panel.js (27)
+### frontend/js/categories-panel.js (31)
 
 | Name | File:line |
 |---|---|
@@ -2553,6 +2553,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `drawManageCategoryFooter` | frontend/js/categories-panel.js:398 |
 | `drawManageCategoryRows` | frontend/js/categories-panel.js:173 |
 | `dropEmptyCategory` | frontend/js/categories-panel.js:949 |
+| `foldSide` | frontend/js/categories-panel.js:1175 |
 | `manageCatHead` | frontend/js/categories-panel.js:147 |
 | `mergeCategoriesFromPanel` | frontend/js/categories-panel.js:516 |
 | `mergeCategoryFromPanel` | frontend/js/categories-panel.js:611 |
@@ -2565,6 +2566,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `restoreCategoryMoves` | frontend/js/categories-panel.js:860 |
 | `saveCategoryColour` | frontend/js/categories-panel.js:1015 |
 | `showCategoryNotes` | frontend/js/categories-panel.js:339 |
+| `sidebarEmptyRows` | frontend/js/categories-panel.js:1133 |
+| `sidebarFoldSet` | frontend/js/categories-panel.js:1098 |
+| `sidebarFoldsWire` | frontend/js/categories-panel.js:1111 |
 | `splitCategoryFromPanel` | frontend/js/categories-panel.js:657 |
 | `swatchPicker` | frontend/js/categories-panel.js:968 |
 | `wireManageCategoryKeys` | frontend/js/categories-panel.js:360 |
@@ -9944,7 +9948,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/02-chat-graph.css | 5663 |
 | frontend/css/03-dashboard-widgets.css | 5029 |
 | frontend/css/04-chat-dock-appearance.css | 6476 |
-| frontend/css/05-sidebars-themes.css | 6243 |
+| frontend/css/05-sidebars-themes.css | 6245 |
 | frontend/css/06-timeline-dialogs.css | 3708 |
 | frontend/css/07-whiteboard-misc.css | 11826 |
 | frontend/css/08-consistency.css | 10626 |
@@ -9978,6 +9982,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/search-lazy.css | 153 |
 | frontend/css/settings-controls-lazy.css | 94 |
 | frontend/css/settings-data-lazy.css | 60 |
+| frontend/css/sidebar-folds-lazy.css | 18 |
 | frontend/css/tidy-lazy.css | 333 |
 | frontend/css/timeline-calendar-lazy.css | 292 |
 | frontend/css/timeline-ticks-lazy.css | 42 |
@@ -11750,40 +11755,40 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_of` | src/tessellate/ai/help_chat.py:2413 |
-| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2344 |
-| `_guide_lead` | src/tessellate/ai/help_chat.py:2861 |
-| `_guide_opening` | src/tessellate/ai/help_chat.py:2877 |
-| `_help_sentences` | src/tessellate/ai/help_chat.py:2844 |
-| `_keyword_in` | src/tessellate/ai/help_chat.py:2334 |
-| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2266 |
-| `_keyword_regex` | src/tessellate/ai/help_chat.py:2330 |
-| `_matching_topics` | src/tessellate/ai/help_chat.py:2463 |
-| `_meaning_topics` | src/tessellate/ai/help_chat.py:2543 |
-| `_normalise_keys` | src/tessellate/ai/help_chat.py:2289 |
-| `_place` | src/tessellate/ai/help_chat.py:2818 |
-| `_preference` | src/tessellate/ai/help_chat.py:2900 |
-| `_prompt_for` | src/tessellate/ai/help_chat.py:2691 |
-| `_read_as` | src/tessellate/ai/help_chat.py:3000 |
-| `_reading_topics` | src/tessellate/ai/help_chat.py:2435 |
-| `_repaired` | src/tessellate/ai/help_chat.py:2452 |
-| `_second_sentence` | src/tessellate/ai/help_chat.py:2848 |
-| `_state_line` | src/tessellate/ai/help_chat.py:2909 |
-| `_stated_lead` | src/tessellate/ai/help_chat.py:2918 |
-| `answer` | src/tessellate/ai/help_chat.py:3077 |
-| `answer_stream` | src/tessellate/ai/help_chat.py:3015 |
-| `badges_for` | src/tessellate/ai/help_chat.py:2631 |
-| `composed_answer` | src/tessellate/ai/help_chat.py:2929 |
-| `help_block_for` | src/tessellate/ai/help_chat.py:3157 |
-| `help_listing` | src/tessellate/ai/help_chat.py:2602 |
-| `help_sentences` | src/tessellate/ai/help_chat.py:2827 |
-| `names_app` | src/tessellate/ai/help_chat.py:3141 |
-| `offline_answer` | src/tessellate/ai/help_chat.py:2947 |
-| `social_reply` | src/tessellate/ai/help_chat.py:2791 |
-| `source_names` | src/tessellate/ai/help_chat.py:2598 |
-| `system_answer` | src/tessellate/ai/help_chat.py:2580 |
-| `topic_title` | src/tessellate/ai/help_chat.py:2566 |
-| `topics_for` | src/tessellate/ai/help_chat.py:2645 |
+| `_act_of` | src/tessellate/ai/help_chat.py:2415 |
+| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2346 |
+| `_guide_lead` | src/tessellate/ai/help_chat.py:2863 |
+| `_guide_opening` | src/tessellate/ai/help_chat.py:2879 |
+| `_help_sentences` | src/tessellate/ai/help_chat.py:2846 |
+| `_keyword_in` | src/tessellate/ai/help_chat.py:2336 |
+| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2268 |
+| `_keyword_regex` | src/tessellate/ai/help_chat.py:2332 |
+| `_matching_topics` | src/tessellate/ai/help_chat.py:2465 |
+| `_meaning_topics` | src/tessellate/ai/help_chat.py:2545 |
+| `_normalise_keys` | src/tessellate/ai/help_chat.py:2291 |
+| `_place` | src/tessellate/ai/help_chat.py:2820 |
+| `_preference` | src/tessellate/ai/help_chat.py:2902 |
+| `_prompt_for` | src/tessellate/ai/help_chat.py:2693 |
+| `_read_as` | src/tessellate/ai/help_chat.py:3002 |
+| `_reading_topics` | src/tessellate/ai/help_chat.py:2437 |
+| `_repaired` | src/tessellate/ai/help_chat.py:2454 |
+| `_second_sentence` | src/tessellate/ai/help_chat.py:2850 |
+| `_state_line` | src/tessellate/ai/help_chat.py:2911 |
+| `_stated_lead` | src/tessellate/ai/help_chat.py:2920 |
+| `answer` | src/tessellate/ai/help_chat.py:3079 |
+| `answer_stream` | src/tessellate/ai/help_chat.py:3017 |
+| `badges_for` | src/tessellate/ai/help_chat.py:2633 |
+| `composed_answer` | src/tessellate/ai/help_chat.py:2931 |
+| `help_block_for` | src/tessellate/ai/help_chat.py:3159 |
+| `help_listing` | src/tessellate/ai/help_chat.py:2604 |
+| `help_sentences` | src/tessellate/ai/help_chat.py:2829 |
+| `names_app` | src/tessellate/ai/help_chat.py:3143 |
+| `offline_answer` | src/tessellate/ai/help_chat.py:2949 |
+| `social_reply` | src/tessellate/ai/help_chat.py:2793 |
+| `source_names` | src/tessellate/ai/help_chat.py:2600 |
+| `system_answer` | src/tessellate/ai/help_chat.py:2582 |
+| `topic_title` | src/tessellate/ai/help_chat.py:2568 |
+| `topics_for` | src/tessellate/ai/help_chat.py:2647 |
 
 ### src/tessellate/ai/help_topics_more.py (2)
 
@@ -19823,7 +19828,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E2 · The complexity of the AI path is where the next bug will be, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:653 |
 | E3 · Model calls are scattered across request handlers, background threads and module singletons, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:666 |
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:556 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:558 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4267 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
@@ -19856,7 +19861,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Harper (Automattic) | docs/roadmap/ANALYSIS.md:1783 |
 | Headroom: evaluated, not adopted | docs/roadmap/BACKLOG.md:710 |
 | How far each plan actually is (honest, as of 2026-10-03) | docs/roadmap/HANDOVER.md:337 |
-| How to proceed after PR 149 (the owner asked, 2026-09-14) | docs/roadmap/HANDOVER.md:510 |
+| How to proceed after PR 149 (the owner asked, 2026-09-14) | docs/roadmap/HANDOVER.md:512 |
 | How to proceed after PR 149 (written 2026-09-14; the live order is CLAUDE.md standing order 1 and HANDOVER's Now line) | docs/ROADMAP.md:295 |
 | How to read the evidence in here | docs/roadmap/MODERNISATION_AUDIT.md:23 |
 | How to work on this repo | docs/ROADMAP.md:364 |

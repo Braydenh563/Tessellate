@@ -1,0 +1,18 @@
+/* The Notes sidebar's folds and empty categories (sidebar-folds.js). */
+.sidebar-fold-toggle {
+  margin-inline-end: var(--space-2);
+  vertical-align: middle;
+}
+#sidebar[data-fold-cat] #category-list,
+#sidebar[data-fold-cat] #manage-categories-foot,
+#most-used-box[data-folded] > ul,
+#saved-finds-box[data-folded] > ul {
+  display: none;
+}
+#sidebar li.category-empty {
+  opacity: 0.6;
+}
+#sidebar li.category-empty-toggle {
+  color: var(--muted);
+  font-size: var(--text-md);
+}
