@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard and mind map contrast measured in dark and light at 1440 and 390 on a seeded board and nine maps (every sticky paper, tinted frames, shapes, a connector, every branch palette, filled topics, markers, callouts): no text under 4.5:1 (lowest 4.77), so no CSS change; new sweep `scratchpad/ui-sweeps/wbmmcontrast1018.js`. Pale palette branch ribbons stay under 3:1 by palette decision (found, not changed).
 - Answers: a label that only opened a sentence is prose now: the notebook overview ("Most of your notes are filed under ...", "Your busiest month was ...", "You also have ..."), "who is" days ("On 2 September, ...") and the other open items ("The Camping tent is also still open."); list rows keep their bold label (INBOX 1301 D5 follow-up).
 
 ## [0.6.0] - 2026-10-18
