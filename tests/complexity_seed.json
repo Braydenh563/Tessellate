@@ -52,7 +52,7 @@
  "src/tessellate/ai/help_chat.py::_matching_topics": 26,
  "src/tessellate/ai/inbox.py::merge_candidates": 46,
  "src/tessellate/ai/inbox.py::type_candidates": 21,
- "src/tessellate/ai/insights.py::drift": 19,
+ "src/tessellate/ai/insights.py::drift": 18,
  "src/tessellate/ai/janitor.py::_knn_match": 20,
  "src/tessellate/ai/learning.py::boosts": 19,
  "src/tessellate/ai/lexical_filing.py::_Corpus.nearest": 20,

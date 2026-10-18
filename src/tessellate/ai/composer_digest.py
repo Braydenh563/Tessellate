@@ -1522,29 +1522,38 @@ def _parts_said(names: list[str], kind: str) -> str:
     return PHRASES["has_parts"].format(count=count, names=said)
 
 
-def _sections(view: composer.NoteView, own: list[Fact]) -> tuple[list[Fact], str]:
-    """A note's sections, as the facts that name them and its shape said
-    ("it's in four phases: the Opener, ..."), or ([], "") when it has none.
-    Numbered heads ("Phase 1: The Opener") or markdown headings, two or more."""
-    numbered = [(f, _NUMBERED.match(f.label)) for f in own if f.heading and f.label]
-    numbered = [(f, m) for f, m in numbered if m]
-    #: Two or more numbers of one kind: "Psych lecture 1: ..." said twice
-    #: is one lecture's note, not a note in sections.
+def _numbered_sections(own: list[Fact]) -> tuple[list[Fact], str]:
+    """"Phase 1: The Opener", "Phase 2: ...": the heads and the shape, when
+    two or more numbers of one kind head the note's sentences. "Psych
+    lecture 1: ..." said twice is one lecture's note, not a note in sections."""
+    numbered = [(f, m) for f in own if f.heading and f.label and (m := _NUMBERED.match(f.label))]
     kinds = Counter(m.group(1).lower() for m in {m.group(0).lower(): m for _, m in numbered}.values())
-    if kinds and kinds.most_common(1)[0][1] >= 2:
-        kind = kinds.most_common(1)[0][0]
-        heads = [f for f, m in numbered if m.group(1).lower() == kind]
-        return heads, _parts_said([_part_name(f.body) for f in heads], kind)
+    if not kinds or kinds.most_common(1)[0][1] < 2:
+        return [], ""
+    kind = kinds.most_common(1)[0][0]
+    heads = [f for f, m in numbered if m.group(1).lower() == kind]
+    return heads, _parts_said([_part_name(f.body) for f in heads], kind)
+
+
+def _heading_sections(view: composer.NoteView) -> str:
+    """The shape of a note in markdown sections, two or more, or ""."""
     content = str(view.note.get("content") or "")
-    title, start = composer._title(content)
+    _, start = composer._title(content)
     heads = [m.group(1).strip() for line in content[start:].splitlines() if (m := composer._HEADING.match(line))]
     if len(heads) < 2:
-        return [], ""
+        return ""
     labelled = [_split_label(h) for h in heads]
     named = [_NUMBERED.match(x.label) for x in labelled if x.own]
     if len(named) == len(heads) and all(named) and len({m.group(1).lower() for m in named}) == 1:
-        return [], _parts_said([_part_name(x.body) for x in labelled], named[0].group(1))
-    return [], _parts_said([_part_name(h) for h in heads], "")
+        return _parts_said([_part_name(x.body) for x in labelled], named[0].group(1))
+    return _parts_said([_part_name(h) for h in heads], "")
+
+
+def _sections(view: composer.NoteView, own: list[Fact]) -> tuple[list[Fact], str]:
+    """A note's sections, as the facts that name them and its shape said
+    ("it's in four phases: the Opener, ..."), or ([], "") when it has none."""
+    heads, shape = _numbered_sections(own)
+    return (heads, shape) if shape else ([], _heading_sections(view))
 
 
 def _sub_head(body: str) -> bool:
@@ -1571,60 +1580,91 @@ def _listed(facts: list[Fact]) -> str:
     return realise.join_items(items)
 
 
+@dataclass
+class _Sorted:
+    """A note's facts by what they are, for its gist."""
+
+    plain: list[Fact] = field(default_factory=list)
+    tasks: list[Fact] = field(default_factory=list)
+    items: list[Fact] = field(default_factory=list)
+    labelled: int = 0
+
+
+def _sorted(own: list[Fact], heads: list[Fact]) -> _Sorted:
+    out = _Sorted()
+    for f in own:
+        if f in heads or _QUOTED.match(f.body) or _sub_head(f.body):
+            continue
+        if f.sentence.kind == "task":
+            if not f.sentence.done:
+                out.tasks.append(f)
+        elif f.sentence.kind == "item":
+            out.items.append(f)
+        elif f.label:
+            out.labelled += 1
+        else:
+            out.plain.append(f)
+    return out
+
+
+def _first_said(view: composer.NoteView, body: str, guide: bool) -> str:
+    """The first sentence: what the note is, or the person's own plan."""
+    named = _named_as(view, body)
+    if named is body and not guide and _ADVICE.match(named):
+        return f"{_pick('meant', view.id)} {_lower_first(named, _NAMES.get())}"
+    return named
+
+
+def _second_said(view: composer.NoteView, chosen: list[Fact], said: dict[int, str], keep: set[int], guide: bool) -> None:
+    """The second sentence against the first: advice to themselves after
+    "you ..." ("you interrupt when you're nervous" then "Count to two")
+    rides on it; a leading "We" after "you met Daniel" is "You"."""
+    a, b = id(chosen[0]), id(chosen[1])
+    if not guide and _ADVICE.match(said[b]) and re.match(r"you\b", said[a]):
+        said[a] += f", and {_pick('told_self', view.id)} {_lower_first(said[b], _NAMES.get())}"
+        keep.discard(b)
+    elif re.match(r"we\s", said[b], re.I):
+        said[b] = "you" + said[b][2:]
+
+
+def _gist_tail(view: composer.NoteView, own: list[Fact], heads: list[Fact], shape: str, sort: _Sorted, chosen: list[Fact], material: bool) -> list[Fact]:
+    """The note's closing sentence: its shape, its open tasks, or its list."""
+    if not own:
+        return []
+    if shape:
+        return [Fact(view, (heads or sort.tasks or sort.items or own)[0].sentence, "", shape)]
+    if sort.tasks:
+        return [Fact(view, sort.tasks[0].sentence, "", PHRASES["still_list"].format(items=_listed(sort.tasks)), sort.tasks[0].action)]
+    if sort.items and not chosen and not sort.labelled and not material:
+        return [Fact(view, sort.items[0].sentence, "", PHRASES["a_list"].format(items=_listed(sort.items)))]
+    return []
+
+
+def _gist_kept(own: list[Fact], heads: list[Fact], said: dict[int, str], keep: set[int]) -> list[Fact]:
+    """The facts said, in the note's order, each in its new words."""
+    return [
+        Fact(f.view, f.sentence, f.label, said.get(id(f), f.body), f.action, f.heading)
+        for f in own
+        if id(f) in keep or (f.label and f.sentence.kind == "prose" and f not in heads and not _QUOTED.match(f.body))
+    ]
+
+
 def _gist(view: composer.NoteView, own: list[Fact]) -> list[Fact]:
     """One note's facts cut to its gist (see `_QUOTED`), in the note's order:
     labelled facts (its own headings, a to-do, a picture) as they were; the
     rest at most two sentences, its sections or its open tasks the second."""
     heads, shape = _sections(view, own)
     material = any(_QUOTED.match(f.body) for f in own)
-    plain: list[Fact] = []
-    tasks: list[Fact] = []
-    items: list[Fact] = []
-    labelled = 0
-    for f in own:
-        if f in heads or _QUOTED.match(f.body) or _sub_head(f.body):
-            continue
-        if f.sentence.kind == "task":
-            if not f.sentence.done:
-                tasks.append(f)
-        elif f.sentence.kind == "item":
-            items.append(f)
-        elif f.label:
-            labelled += 1
-        else:
-            plain.append(f)
+    sort = _sorted(own, heads)
     guide = bool(shape) or material
-    room = 1 if (shape or tasks) else 2
-    keep = {id(f) for f in plain[:room]}
-    said: dict[int, str] = {id(f): f.body.rstrip(":").strip() for f in plain[:room]}
-    chosen = plain[:room]
-    if chosen and not labelled:
-        first = chosen[0]
-        named = _named_as(view, said[id(first)])
-        if named is said[id(first)] and not guide and _ADVICE.match(named):
-            named = f"{_pick('meant', view.id)} {_lower_first(named, _NAMES.get())}"
-        said[id(first)] = named
-    if len(chosen) == 2 and not guide and _ADVICE.match(said[id(chosen[1])]) and re.match(r"you\b", said[id(chosen[0])]):
-        #: "you interrupt when you're nervous" then "Count to two before
-        #: answering": the second is the person's advice to themselves.
-        said[id(chosen[0])] += f", and {_pick('told_self', view.id)} {_lower_first(said[id(chosen[1])], _NAMES.get())}"
-        keep.discard(id(chosen[1]))
-    elif len(chosen) == 2 and re.match(r"we\s", said[id(chosen[1])], re.I):
-        said[id(chosen[1])] = "you" + said[id(chosen[1])][2:]
-    out = [
-        f if not f.label and id(f) not in said else f
-        for f in own
-        if (f.label and f.sentence.kind == "prose" and f not in heads and not _QUOTED.match(f.body)) or id(f) in keep
-    ]
-    out = [Fact(f.view, f.sentence, f.label, said.get(id(f), f.body), f.action, f.heading) for f in out]
-    anchor = (heads or tasks or items or own)[0].sentence if own else None
-    if shape and anchor is not None:
-        out.append(Fact(view, anchor, "", shape))
-    elif tasks:
-        out.append(Fact(view, tasks[0].sentence, "", PHRASES["still_list"].format(items=_listed(tasks)), tasks[0].action))
-    elif items and not chosen and not labelled and not material:
-        out.append(Fact(view, items[0].sentence, "", PHRASES["a_list"].format(items=_listed(items))))
-    return out
+    chosen = sort.plain[: 1 if (shape or sort.tasks) else 2]
+    keep = {id(f) for f in chosen}
+    said = {id(f): f.body.rstrip(":").strip() for f in chosen}
+    if chosen and not sort.labelled:
+        said[id(chosen[0])] = _first_said(view, said[id(chosen[0])], guide)
+    if len(chosen) == 2:
+        _second_said(view, chosen, said, keep, guide)
+    return _gist_kept(own, heads, said, keep) + _gist_tail(view, own, heads, shape, sort, chosen, material)
 
 
 def _gists(members: list, facts: list[Fact]) -> list[Fact]:  # noqa: ANN001
@@ -1637,7 +1677,9 @@ def _gists(members: list, facts: list[Fact]) -> list[Fact]:  # noqa: ANN001
     return out
 
 
-def _overview(out: _Out, question: str, members, facts, today: date, kind: str) -> None:  # noqa: ANN001
+def _overview_opening(out: _Out, question: str, members, facts, today: date, kind: str) -> tuple[str, list[Fact]]:  # noqa: ANN001
+    """The overview's first line (the change, the "likes" count or the
+    opening), and the facts left to say, each note cut to its gist."""
     topic = _topic(question, members)
     moved = _progress(members, today) if _GOING.search(question) else ""
     if moved:
@@ -1645,14 +1687,18 @@ def _overview(out: _Out, question: str, members, facts, today: date, kind: str) 
         quiet = _gone_quiet(members)
         if quiet:
             out.closing.append(quiet)
-    elif kind == "likes":
+        return moved, facts
+    if kind == "likes":
         times = {1: "once", 2: "twice"}.get(len(members)) or f"{realise.count_word(len(members))} times"
         out.lines.append(PHRASES["likes"].format(topic=topic, times=times, span=_span(members, today)))
     else:
         opening, facts = _opening_line(members, facts, today, topic)
         out.lines.append(opening)
-    if not moved:
-        facts = _gists(members, facts)
+    return moved, _gists(members, facts)
+
+
+def _overview(out: _Out, question: str, members, facts, today: date, kind: str) -> None:  # noqa: ANN001
+    moved, facts = _overview_opening(out, question, members, facts, today, kind)
     shown_notes = {f.view.id for f in facts}
     told: set = set()
     if not moved:
