@@ -2395,7 +2395,10 @@ async function sendChatMessage(preset, opts = {}) {
   }
   const answerEls = bubble.querySelectorAll(".bubble-answer");
   placeAnswerFigures(answerEls, meta, question);
-  finishReply(answerEls, { composed: meta?.composed, bubble, unsupported: toolsUnsupportedEvent });
+  //: Who wrote it (INBOX 1300 C14), as a badge beside the name in the head.
+  const head = bubble.querySelector(".msg-role");
+  const model = stats?.model || meta?.answered_by;
+  finishReply(answerEls, { composed: meta?.composed, head, model, engine: Boolean(meta), bubble, unsupported: toolsUnsupportedEvent });
   //: An answer's one acting offer, the Ask box's (`digestOffer`): a place's link.
   if (chatOffer) ensureModule("askCompose").then(() => digestOffer([...bubble.querySelectorAll(".bubble-answer")].pop(), chatOffer)).catch(() => {});
   const answerRaw = timeline.text();
@@ -2426,16 +2429,9 @@ async function sendChatMessage(preset, opts = {}) {
   // A turn that only ran tools still cost time and tokens, so it gets a meta
   // line too: previously an agent turn with no prose showed nothing at all.
   //: **Who wrote it, in the head** (the owner, 2026-10-10: "should say if the
-  //: composer or a specific ai model generated it"): "Atlas, from your notes"
-  //: or "Atlas, <model>", where a chip under the answer used to say only the
-  //: first. A composed answer's arrival is `replyReveal` (reply-kit.js),
-  //: through `finishReply` above.
-  //: No model wrote it and it is not quoted from the notes (a greeting, a
-  //: time, a count, a capability answer): the engine answered, and says so
-  //: ("hey :D" got an unlabelled "Atlas", the owner, 2026-10-12).
-  const by = meta?.composed ? "from your notes" : stats?.model || meta?.answered_by || (meta ? "composer" : "");
-  const who = bubble.querySelector(".msg-role > span:last-child");
-  if (answerRaw && by && who) who.textContent = `${bubble.dataset.persona}, ${by}`;
+  //: composer or a specific ai model generated it"; INBOX 1300 C14: "a badge
+  //: or smnth similar"): the `replyByline` chip through `finishReply` above,
+  //: From your notes, the model, or Composer when the app answered itself.
   if (answerRaw || toolEvents.length) {
     bubble.appendChild(
       messageMetaLine({

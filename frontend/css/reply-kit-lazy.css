@@ -313,3 +313,11 @@
   margin: 0;
   padding: 0 var(--space-3) var(--space-3);
 }
+
+/* **Who wrote it, as a badge in the head** (INBOX 1300 C14): `replyByline`'s
+   `chip item-label answer-model`. In a head a long model id stops at a
+   measure and ends in an ellipsis; its title holds it in full. */
+.msg-role > .reply-by {
+  max-width: min(16rem, 50%);
+  margin-inline-start: var(--space-1);
+}

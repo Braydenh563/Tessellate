@@ -136,7 +136,7 @@ def test_a_note_a_reply_gives_is_previewed_on_every_surface():
     calls = {
         "chat-attach.js": "finishReply(answerEls, { composed: meta?.composed",
         "capture-ask.js": "finishReply(answerBox, { composed: answerMeta?.composed });",
-        "palette.js": "finishReply(answerBox, { composed: meta?.composed });",
+        "palette.js": "finishReply(answerBox, { composed: meta?.composed, head: agentLabel",
         "help-chat.js": 'finishReply(answerRow.querySelector(".help-chat-prose")',
     }
     for name, call in calls.items():
@@ -186,3 +186,22 @@ def test_a_composed_reply_takes_one_reveal_on_every_surface(ai_client, fake_olla
     assert html.index('id="ui-motion-toggle"') < html.index('id="reply-motion-toggle"')
     rows = (JS / "settings-rows.js").read_text(encoding="utf-8")
     assert '{ key: "reply-motion", id: "reply-motion-toggle", on: "on", off: "off", base: "on" }' in rows
+
+
+def test_who_wrote_a_reply_is_one_badge_on_every_surface():
+    """INBOX 1300 C14: "Should 'composer' and the model should be a badge or
+    smnth similar". One `chip item-label` beside the name on Chat, the popup
+    agent and the Guide; Ask's `#answered-by` is the same chip."""
+    kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
+    assert 'chip.className = "chip item-label answer-model reply-by";' in kit
+    assert "if (opts.head && list.some((answer) => answer.textContent.trim())) replyByline(opts.head, opts);" in kit
+    facts = kit[kit.index("function replyBylineFacts(") :].split("\n}\n", 1)[0]
+    assert '"From your notes"' in facts and '"Composer"' in facts and '"From the help"' in facts
+    chat = (JS / "chat-attach.js").read_text(encoding="utf-8")
+    assert 'const head = bubble.querySelector(".msg-role");' in chat and "who.textContent" not in chat
+    palette = (JS / "palette.js").read_text(encoding="utf-8")
+    assert "head: agentLabel, model: stats?.model || meta?.answered_by, engine: Boolean(meta)" in palette
+    guide = (JS / "help-chat.js").read_text(encoding="utf-8")
+    assert 'head: answerRow.querySelector(".msg-role"), help: true' in guide
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert 'id="answered-by" class="chip item-label answer-model"' in html

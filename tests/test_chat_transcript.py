@@ -266,8 +266,9 @@ def test_a_reply_says_who_wrote_it_and_a_composed_one_arrives():
     notes" (it read "Atlas"); a two-block composed answer's blocks rise with
     delays 0 and 60 ms; reduced motion skips it."""
     attach = frontend_text("chat-attach.js")
-    assert 'const by = meta?.composed ? "from your notes" : stats?.model || meta?.answered_by || (meta ? "composer" : "");' in attach
-    assert "who.textContent = `${bubble.dataset.persona}, ${by}`;" in attach
+    #: Who wrote it is a badge in the head now (INBOX 1300 C14, `replyByline`
+    #: in reply-kit.js, tests/test_reply_cards.py), not words after the name.
+    assert "const model = stats?.model || meta?.answered_by;" in attach and "head, model, engine: Boolean(meta)" in attach
     #: The arrival is the one reveal every surface shares now (INBOX 1300
     #: C28, `replyReveal` in reply-kit.js, tests/test_reply_cards.py).
     assert "finishReply(answerEls, { composed: meta?.composed" in attach

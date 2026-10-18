@@ -12,4 +12,6 @@ Items: C06 (stats panel, link cards and reader, calculator), C07, C08, C28, C14,
 - done: C08 long-block fold (`replyFoldLong` reply-kit.js)
 - done: C08 aeb9488
 - done: C28 one reveal (`replyReveal` reply-kit.js, Settings Reveal replies, Guide `composed`)
-- next: C14 byline badge chip: `chip item-label` for who wrote it, chat head (chat-attach.js ~2438), Ask `#answered-by`, popup head (palette.js ~970), Guide head
+- done: C28 fe178a1
+- done: C14 byline badge (`replyByline` reply-kit.js through `finishReply` `head`; Ask `#answered-by` the same chip)
+- next: none; all five items done

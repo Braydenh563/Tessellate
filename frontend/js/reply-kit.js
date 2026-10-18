@@ -635,6 +635,7 @@ function replyFinish(answers, opts = {}) {
   if (!list.length) return;
   for (const answer of list) replyFoldLong(answer);
   replyNotePreviews(list);
+  if (opts.head && list.some((answer) => answer.textContent.trim())) replyByline(opts.head, opts);
   if (opts.composed) replyReveal(list);
   if (opts.unsupported) renderToolsUnsupportedNotice(opts.bubble, opts.unsupported);
 }
@@ -662,6 +663,38 @@ function renderToolsUnsupportedNotice(container, event) {
   //: Above the turn's facts line, where it was drawn before it moved here.
   container.insertBefore(row, container.querySelector(":scope > .msg-meta"));
   row.before(line);
+}
+
+// --- who wrote it ----------------------------------------------------------------------
+
+//: **Who wrote a reply, as a badge** (INBOX 1300 C14, the owner: "Should
+//: 'composer' and the model should be a badge or smnth similar"). The head
+//: keeps the assistant's name; beside it one `chip item-label` (DESIGN.md,
+//: "A word saying where an item came from") says what wrote the words: From
+//: your notes (composed, no model), the model's name, or Composer (the app
+//: answered itself: a greeting, a count, a time). Its title says it in full.
+//: The same chip on Chat, the popup agent and the Guide; Ask's
+//: `#answered-by` is the same chip in its own head (`.answer-model`, the
+//: shrinking one: a long model id ends in an ellipsis).
+function replyBylineFacts({ composed, model, engine, help }) {
+  if (composed) {
+    return help
+      ? ["From the help", "No model answered: this is the app's own help for what you asked"]
+      : ["From your notes", "Answered from your notes with no model: every sentence comes from a note"];
+  }
+  if (model) return [model, `Answered by ${model}`];
+  if (engine) return ["Composer", "The app answered this itself, with no model"];
+  return null;
+}
+
+function replyByline(head, facts) {
+  const said = head && replyBylineFacts(facts);
+  if (!said) return;
+  const chip = head.querySelector(":scope > .reply-by") || document.createElement("span");
+  chip.className = "chip item-label answer-model reply-by";
+  chipWords(chip, said[0]);
+  chip.title = said[1];
+  head.appendChild(chip);
 }
 
 // --- a composed reply arrives ----------------------------------------------------

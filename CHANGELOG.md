@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Chat, Ask, the popup agent and the Guide: who wrote a reply is one badge beside the name (From your notes, the model's name, Composer, or From the help), the same label chip on every surface, where Chat's head used to say it in words (INBOX 1300 C14).
 - Chat, Ask, the popup agent and the Guide: a reply written with no model rises into place a block at a time, the same on every surface (Chat's own animation replaced, the Guide no longer types it out); Reduce motion makes it a quick fade, and Settings, Appearance, Reveal replies turns it off (INBOX 1300 C28).
 - Chat, Ask, the popup agent and the Guide: a long block in a reply (over 600 characters, such as text read from a picture) folds to one line with its first sentence and word count, and opens in place in a scrolling panel (INBOX 1300 C08).
 - Chat, Ask, the popup agent and the Guide: a note a reply links to previews on hover or focus (the source peek), and a reply that gives one to three notes shows each as a card under it with its title, facts and first words; a press opens the note (INBOX 1300 C07).
