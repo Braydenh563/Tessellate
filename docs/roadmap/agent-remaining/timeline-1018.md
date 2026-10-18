@@ -11,8 +11,8 @@ Port 8788, data `/tmp/mm-tl1018` (48 back-dated notes, 12 reminders). Measured 2
 | 9 Phase 5 gates 1 to 4 (grid, week and day, agenda, drag and undo, ICS) | built | HISTORY.md:924 and the "Moved from the plans, 2026-10-11 (TIMELINE Brief 55)" block |
 | 10 row 1, 3, 4, 7, 8 | built | HISTORY "Brief 85" and "Brief 55" blocks (pointers in the plan table) |
 | 10 row 2, day head button beside its date, targets 24/44 | built (measured now) | `timeline1018.js`: head overlaps 0 at 1440 and 390 over 59 heads; day-head buttons 32 px high at 1440, 44 px at 390 (coarse); the only sub-24 control is `#timeline-search` 408x20, the app-wide `.search-field` recipe whose wrapper is the 32 px target |
-| 10 row 5, typed entries land on the day they name | built, unpinned | `entry/timewords.py` + `routes_timeline.py` (`placed_by: mentioned`); 17 of 20 phrases land on the named day over HTTP (`tests/test_timeline_typed_day.py` pins them); 3 need a decision (see questions) |
-| 10 row 6, scrubber and month ticks from D3's time scale | open | `drawTimelineScrubber` (`timeline.js:1849`) draws a density path only: no labels, no tick lines (so none to delete); strip hidden below 600 px (`06-timeline-dialogs.css:342`); `timeline.js` calls no `d3.*` |
+| 10 row 5, typed entries land on the day they name | built, unpinned | `entry/timewords.py` + `routes_timeline.py` (`placed_by: mentioned`); 20 of 20 phrases in `tests/test_timeline_typed_day.py` land on the named day over HTTP against a fixed Sunday (the test fails at another "now", so the clock is honoured); 3 other phrases found wrong need a decision (see questions) |
+| 10 row 6, scrubber and month ticks from D3's time scale | built this run | before: `drawTimelineScrubber` (`timeline.js:1849`) drew a density path only, no labels or tick lines; now `frontend/js/timeline-ticks.js` (lazy), tests/test_timeline_ticks.py, `timelineticks1018.js` |
 | 11 row 7, live chips in the quick-add row and the row at 390 | built (measured now) | `remindersqa1018.js`: "dentist friday at 9am" chip in 65 ms at 1440, 129 ms at 390 (inside the 150 ms line); at 390 the row is in the FAB sheet (`#reminders-new`), 304 px wide, inside the viewport; Brief 66 / F2 in HISTORY |
 | 11 rows 1 to 6, 8, 9 | built | HISTORY "Brief 85", "Brief 86", "Brief 55" blocks |
 | 12 rows 1 to 6 | built | HISTORY "Brief 55" and "B72" blocks |
@@ -22,9 +22,11 @@ Port 8788, data `/tmp/mm-tl1018` (48 back-dated notes, 12 reminders). Measured 2
 
 ## Done / next
 
-- done: audit table (this file).
-- next: row 6, D3 time labels on the density strip, a lazy file `frontend/js/timeline-ticks.js` (boot hook only), node test first.
+- done: 9a6c59f audit table, typed-day test, plan rows 2, 5, 7 pointed at HISTORY.
+- done: row 6, D3 labels on the density strip (this commit).
+- next: Phase 5 not-verified measures (1,000-note month dot density, week grid at 1024 coarse), then OPEN.md timeline rows 330, 341, 850 if time; final sweeps.
 
 ## Questions for the owner
 
-- (none yet)
+- Should a bare weekday read with a past verb ("called mum on friday", "on monday we shipped", written on a Sunday) resolve to the last such day? Today it resolves to the coming one (`entry/timewords.py` `_weekday`, "on" and "this"), so both land a few days ahead of what happened. Recommendation: yes for a note, with the past-verb list in `timewords.py`; no change for reminders. Needs your call because a wrong guess moves a row.
+- "book club on the 12th" (a day number with no month) stays on its written day, unplaced. Recommendation: place it on the nearest 12th to the note's day, as "3 March" is (`_written_date`).

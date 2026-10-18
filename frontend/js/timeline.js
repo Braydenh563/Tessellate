@@ -1884,6 +1884,7 @@ function drawTimelineScrubber() {
   });
   parts.push(`L 40 ${TIMELINE_SCRUBBER_HEIGHT}`, "Z");
   $("timeline-density-path").setAttribute("d", parts.join(" "));
+  lazyScript("/js/timeline-ticks.js").then((ok) => ok && timelineTicks());
   drawTimelineWindow();
 }
 
@@ -1899,7 +1900,6 @@ function drawTimelineScrubber() {
 const timelineOnScreen = new Set();
 let timelineRowObserver = null;
 function timelineWatchRow(el) {
-  if (typeof IntersectionObserver !== "function") return;
   timelineRowObserver ||= new IntersectionObserver((entries) => {
     for (const entry of entries) {
       if (entry.isIntersecting && entry.target.isConnected) timelineOnScreen.add(entry.target);

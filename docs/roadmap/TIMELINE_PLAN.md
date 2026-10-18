@@ -311,7 +311,7 @@ has none on a phone, where the calendar is the agenda), a week grid at
 
 The owner: "make sure all the vendored repositories are made full use of. I want maximum utility." Ranked by the utility to the surface; `scratchpad/vendor_use.py` prints the counts ("available N, called M") and `tests/test_vendor_utilisation.py` ratchets them, so a row that lands raises its floor in the same commit. Each is a lead from a lower-bound count: grep the call site before building (CLAUDE.md section 1).
 
-- **VC2, D3's time scale and axis for the timeline and the calendar** (M, rank 2). `timeline.js` builds its date ticks by hand (51 lines with `Date(` in 2,441); D3's time module is 75 exports with 0 called (`scaleTime`, `timeMonth`, `timeWeek`, `timeDay`, `axisBottom`, `timeFormat`). Measure: tick labels at year, month, week and day zoom match `d3.timeFormat` output for 12 fixed dates (a node test); the hand-rolled tick lines deleted; no label overlap at 390 px (`scratchpad/ui-sweeps` measure).
+- **VC2, D3's time scale and axis for the timeline and the calendar**: the timeline strip's labels are built (section 10 row 6, pointer there); the calendar's own header and hour labels still use `Intl.DateTimeFormat` and stay (a locale's own words, not a scale).
 
 ## 10. Deepened 2026-10-10: the timeline (Brief 72b, decision 71)
 
@@ -344,12 +344,11 @@ never collide).
 | 3 | fix | `undo.js` drives the selection bar from the timeline (move, tag, favourite, archive, delete) | Built 2026-10-10 (Brief 85): HISTORY.md, "Moved from the plans, 2026-10-10 (TIMELINE Brief 85)" | |
 | 4 | expansion | The calendar as the third view (section 9) | Built 2026-10-11 (Brief 55): HISTORY.md, "Moved from the plans, 2026-10-11 (TIMELINE Brief 55)" | |
 | 5 | expansion | Typed entries land on the day they name ("yesterday lunch with Sam") through the one quick-add grammar (CHAT_PLAN decision 50) | Built 2026-10-18 (timeline-1018): HISTORY.md, "Moved from the plans, 2026-10-18 (TIMELINE timeline-1018)" | |
-| 6 | redesign | Scrubber and month ticks from D3's time scale (VC2 above) | no label overlap at 390; the hand-rolled tick lines deleted | 7, 11 |
+| 6 | redesign | Scrubber and month ticks from D3's time scale (VC2 above) | Built 2026-10-18 (timeline-1018): HISTORY.md, "Moved from the plans, 2026-10-18 (TIMELINE timeline-1018)" | |
 | 7 | expansion | "On this day" and a year strip on the timeline, not only the dashboard | Built 2026-10-10 (Brief 85): HISTORY.md, "Moved from the plans, 2026-10-10 (TIMELINE Brief 85)" | |
 | 8 | optimisation | Click to rows 479 to 767 ms with 96 notes: under 300 ms, and under 800 ms on the 5,000-note scale fixture (`scale_test.py`) | Built 2026-10-10 (Brief 85): HISTORY.md, "Moved from the plans, 2026-10-10 (TIMELINE Brief 85)" | |
 
-**Briefs.** 75 (row 6); 41's row 2, 66's row 5, 55's row 4 and 85's rows 1,
-3, 7 and 8 are built.
+**Briefs.** Rows 1 to 8 are built (41's row 2, 66's row 5, 75's row 6, 55's row 4, 85's rows 1, 3, 7 and 8).
 
 ## 11. Deepened 2026-10-10: reminders and notifications (Brief 72b, decisions 69 and 71)
 
