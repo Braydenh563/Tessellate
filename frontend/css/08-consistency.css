@@ -3551,6 +3551,16 @@ body .chip.item-label,
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
+  position: relative;
+}
+/* The take target is the tag's words, 14px tall; an invisible band lifts the
+   press area to --target-min without growing the chip (audit: 68x14). */
+.entry-meta > .chip.suggested-tag > .suggested-tag-take::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: calc(50% - var(--target-min) / 2);
+  block-size: var(--target-min);
 }
 .entry-meta > .chip.filing-sure {
   gap: var(--space-1);
