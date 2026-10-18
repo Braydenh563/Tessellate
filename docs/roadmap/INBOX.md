@@ -34,6 +34,114 @@ with its owner named in the entry.
 
 ## Open items
 
+1300. **The owner, 2026-10-18, verbatim** (a Word document of 36 items; 29 screenshots, described in `agent-remaining/bugs-1018b.md`, attached to the item they follow). Triage and per-item status: `docs/roadmap/agent-remaining/bugs-1018b.md`.
+
+     C01. If I throw the companion or atlas across the screen and it lands on a ui element but
+          then it decides to fall through to peep over the bottom bar, it does the peak
+          animation first so it gets cut in half and then falls like that to the bottom bar. It
+          should instead, step off, jump off, teleport, portal, walk off screen at one point and
+          back on screen at another etc to get there then do the animation.
+     C02. On the splash if I hav the details section open, the completed tasks push it further
+          and further down until it is awkwardly touching thr bottom of my screen [screenshots:
+          image1]
+     C03. It's hard to move around the whiteboard with a mouse, can you copy draw.io and have
+          right click hold down drag panning??
+     C04. I want more templates and elements in the whiteboard like for wireframing and
+          uml/class/erd diagrams etc.
+     C05. I need / chat commands to be more findable, like when I do / I wouldn’t know the
+          other's are there unless I scroll down quite far [screenshots: image2]
+     C06. I want the composer and ai's responses ot be more visually impressiv and interactive
+          helped by the app, so like if I ask for stats I want a panel with cards and icons and
+          visualised statistics and a link to open the statistics panel. Maybe a websearch shows
+          the link as a clickable card not just a url, and also if it does a url fetch, it has a
+          dropdown that opens a semi large panel with the extracted and formatetd contents
+          inside as well as a link and data inside etc. can we integrate an interactive
+          calculator popup that is accessible and also link it to the /calc command as well as
+          other unit conversions etc??
+     C07. Also if it is going to give me a note, can it at least preview it for me as well??
+          Simple things like these for all the responses: [screenshots: image3]
+     C08. And if it outputs a mass block of text like from the ocr of one of my note's images,
+          maybe it could be in a collapsible subtle panel or smth or abrieviated/summarised by
+          the composer somehow?? [screenshots: image4]
+     C09. When I click on the attach button in the bottom chat dock, if I use my arrow keys to
+          navigate down the list, if I press enter on one of  them it doesn’t select that item
+          and attach it. [screenshots: image5]
+     C10. I cant add viewing the statistics panel to the quick access [screenshots: image6]
+     C11. I wanna be able to hover over and click graph nodes and see their values and dates etc
+          [screenshots: image7, image8]
+     C12. Make the top row with the title and x close button on the panels like the statistics
+          panel sticky to the top regardless of scroll [screenshots: image9]
+     C13. The '+' icons in the circle buttons on the corners of tables on the documents editor
+          arent centred [screenshots: image10]
+     C14. Should 'composer' and the model should be a badge or smnth similar… [screenshots:
+          image11]
+     C15. Also id didn’t answer the question properly when I used spelling mistakes also I think
+          the md rendering and styling of those outputs could use a bit of improvement.
+          [screenshots: image12, image13]
+     C16. Also that response seems preprogrammed, can you make more variations and make it
+          compose the message like an ai and not just write out the same things every time??
+     C17. On the whiteboard template panels, when I double click to edit the subtext under the
+          header, it changes to the header's text, and then it doesn’t go back if I deselect or
+          click off and I cant undo it either [screenshots: image14, image15, image16]
+     C18. Can you condense the colour options into like a dropdown panel ro smth like with the
+          mindmaps for the whiteboard?? [screenshots: image17]
+     C19. Atlas and the companion can perch on objects on the whiteboard even when they are
+          behind the panel, if it is perched on them then it should be on the same leayer or
+          x-index as them as well [screenshots: image18]
+     C20. Also the companion jumping arounf my whiteboard a lot was a little annoying and it
+          took up quit a bit of the screen when I zoomed out. I think if it is anchored to an
+          object within the whiteboard, then it's size should be in proportion to the zoom and
+          size of the whiteboard welements, if it is on an element not part of the actual canvas
+          like the panels or outer part of the app like the bottom or top bar then it can be its
+          regular size. [screenshots: image19]
+     C21. Also in the appearances section, if the eye preview buttons are there on the themes
+          then the hover preview doesn’t need to be a thing, but as they are a preview, make
+          sure that the preview like times out or maybe undoes if the user switches tabs or
+          maybe there is like a glowing border around the screen that the user can press cancel
+          or apply on buttons in the corner ot top centre or smth idk.
+     C22. It's hard to figure out that you need to press the shortcut command itself to change
+          it in the settings page [screenshots: image20]
+     C23. Is it possible to change 'm' for the quick nav to a letter better representing
+          "tessellate"?? I had it 'm' because of 'MemoryMap' but now the 'm' doesn’t fit
+          [screenshots: image21]
+     C24. Can you try to get the logs panel to fit to the panel and not cause a slight vertical
+          scroll?? [screenshots: image22]
+     C25. Scrolling on the help settings page is laggy
+     C26. Can there be more improvements and expansions to the composer?? Variations to its
+          response, more life it it, better conversation and social ability, better
+          understanding, maybe multilingual?? Better at understanding typos, more libraries to
+          vendor to improve it maybe?? Make its outputs better and more refined and natural,
+          better grammar and more?? Also have the composer improve other things when the ai isnt
+          available like the dashboard greetings, not just preprogrammed responses but an
+          enormous variety and also composed. Maybe the sub text below the greeting can rotate
+          or change around a bit?? [screenshots: image23]
+     C27. The ui structure and formatting and placement of this properties button in the graph
+          node popup needs to be fixed, redesigned and improved [screenshots: image24]
+     C28. Also composer responses in the chat, ask tab, and popup agent and guide just instantly
+          appear and it is quite visually jarring, I want a smooth and maybe togglable
+          impressive yet subtle and still sticking to the app's theme and style reveal
+          animation. Reduce motion can just have loke a cheap fade in or smth.
+     C29. In the popup agent it is also hard to tell from the ui of the sources box and dropdown
+          list of sources below if the sources are actually part of that button's dropdown and
+          if the button is open or not [screenshots: image25]
+     C30. Can the lightbox controls and elements have a new redesign and upgrade in ui and ux
+          usability?? [screenshots: image26]
+     C31. I ckicled on a link meatball button in a note, clicked kind and properties, then
+          clicked "has example of" but then I tried to go back on and click it to unselect it
+          and I couldnt [screenshots: image27]
+     C32. Also if I undo smth there is no indication or popup or smth like the zoom popup or a
+          notification to show Ive undone something. (I do have notifications turned off/muted
+          on the app).
+     C33. Also stacking notifications need to be cleaned up and not as intrusive and obscuring.
+     C34. All the audio record popup panels need a redesign as they are ugly, need a much better
+          and modern/professional ui/ux upgrade, a functionality upgrade, and also there are
+          weird ugly hard corner rectangle border boxes [screenshots: image28]
+     C35. Also if a thing isnt available as I don’t have the packages installed and it is said
+          in a notification, that notification should have a link to the packages list and
+          scroll me to where it is.
+     C36. These dates should be hidable or showable on the timeline side graph. [screenshots:
+          image29]
+
 725. **The owner, 2026-10-06, verbatim**: "can you like maximise the application
      responses and sentence concatenation and responses?? I want it soooo good it is
      almost like a chat bot. make them something the world hasnt seen before like
