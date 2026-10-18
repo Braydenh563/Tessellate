@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Sweeps: `THEME=dark` now sets the theme through the app once unlocked (the saved preference used to win, so every dark sweep measured light); a mismatch prints BOOT-WARN (UX audit 1).
 - Companion: a throw has chances on the way. It may catch the top bar and hang from it, catch a panel's top edge and climb on, splat against a side and slide down to the panel below, or go off one side and come back on the other; once down it settles by sitting with its legs dangling or kicking, lying down, stretching or swinging. It always ends over no control; Reduce motion keeps the plain crossfade (INBOX 1301 D6).
 - Atlas: no face rests its eyelids half down any more (the owner: "creepy and like fnaf"). Drowsy, just woken, a pout, grumpy, night, reading, sad and shy keep the upper lid under 30% of the eye and squint softly from below instead, a yawn closes the eyes, and drowsy and just-woken blink slowly; the half-lid was 44 to 80% of the eye before (INBOX 1301 D4).
 - Windows launch splash: one size from the first frame (520 by 440, centred in the work area), with "Step N of M" beside the status line and the steps in a fixed panel; Details swaps the log into that panel, so a finished step or the log no longer grows the window down the screen (it reached 586 px from a top centred for 252).
