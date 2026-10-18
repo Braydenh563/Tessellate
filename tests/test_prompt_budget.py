@@ -19,6 +19,10 @@ import pytest
 
 from tessellate.ai import agent, context, librarian, tools
 
+# The settings reads (`runtime_options`, the context budget, which tools are on)
+# build the app state, in the repo's own `data/` folder without this.
+pytestmark = pytest.mark.usefixtures("app_state")
+
 # Ollama defaults to a 4096-token window unless the model declares otherwise,
 # and ~4 characters per token is close enough to reason with.
 CHARS_PER_TOKEN = 4

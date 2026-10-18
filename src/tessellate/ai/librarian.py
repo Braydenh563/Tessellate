@@ -574,7 +574,9 @@ def clock_hint() -> str:
     from tessellate.core import deps
     from tessellate.core.config import user_now
 
-    local = user_now(deps.get_config())
+    #: `peek_config`, not `get_config`: building a prompt must not conjure a
+    #: data folder (a test that never started the app wrote the repo's).
+    local = user_now(deps.peek_config())
     week = ", ".join(f"{day:%a} {day.day} {day:%b}" for day in (local + timedelta(days=n) for n in range(1, 8)))
     return (
         f" Today is {local.strftime('%A')}, and the next seven days are {week}."

@@ -464,7 +464,7 @@ def week_first_day(config: "ConfigManager") -> int:
     return reported if 0 <= reported <= 6 else 0
 
 
-def user_now(config: "ConfigManager") -> datetime:
+def user_now(config: "ConfigManager | None") -> datetime:
     """Right now, on the user's own clock.
 
     Everything is *stored* in UTC, that part is not negotiable, since a
@@ -474,9 +474,10 @@ def user_now(config: "ConfigManager") -> datetime:
     it silently lands hours out.
 
     Falls back to the server's local zone when no timezone has been reported,
-    which is right for the ordinary case of app and browser on one machine.
+    which is right for the ordinary case of app and browser on one machine,
+    and when there are no settings yet (a prompt built before the app starts).
     """
-    name = str(config.get_preference("timezone", "") or "").strip()
+    name = str(config.get_preference("timezone", "") or "").strip() if config else ""
     if name:
         try:
             return datetime.now(ZoneInfo(name))

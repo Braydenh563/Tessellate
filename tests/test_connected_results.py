@@ -152,3 +152,13 @@ def test_an_attached_note_keeps_its_own_marker():
     prompt = librarian.build_messages("beans", notes)[-1]["content"]
     assert "attached by me" in prompt
     assert "not a match" not in prompt
+
+
+def test_building_a_prompt_does_not_start_the_app():
+    """The prompt's clock reads the settings only if the app has them: without
+    them it used the server's zone and built a data folder in the repo."""
+    from tessellate.core import deps
+
+    deps.reset_app_state()
+    librarian.build_messages("beans", [{"id": 1, "category": "Garden", "content": "beans"}])
+    assert deps.peek_config() is None

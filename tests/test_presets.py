@@ -27,6 +27,10 @@ from tessellate.ai.ollama_client import OllamaClient
 
 from fakes_http import FakeResponse
 
+# The settings reads (`runtime_options`, the context budget, which tools are on)
+# build the app state, in the repo's own `data/` folder without this.
+pytestmark = pytest.mark.usefixtures("app_state")
+
 
 @pytest.fixture
 def ollama():

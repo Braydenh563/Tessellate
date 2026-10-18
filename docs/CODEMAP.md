@@ -2,7 +2,7 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 5961, frontend ids 2510, CSS sections 495, backend routes 607, backend modules 5767, test files 1237, tests 11209, plan headings 957.
+Counts: frontend functions 5961, frontend ids 2510, CSS sections 495, backend routes 607, backend modules 5767, test files 1237, tests 11210, plan headings 957.
 
 ## Frontend functions (5961)
 
@@ -11775,39 +11775,39 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_app_help` | src/tessellate/ai/librarian.py:613 |
+| `_app_help` | src/tessellate/ai/librarian.py:615 |
 | `_dates_hint` | src/tessellate/ai/librarian.py:486 |
 | `_match_info_hint` | src/tessellate/ai/librarian.py:515 |
 | `_pictures_hint` | src/tessellate/ai/librarian.py:474 |
 | `_tags_files_hint` | src/tessellate/ai/librarian.py:453 |
 | `_written_hint` | src/tessellate/ai/librarian.py:436 |
-| `answer` | src/tessellate/ai/librarian.py:740 |
+| `answer` | src/tessellate/ai/librarian.py:742 |
 | `build_conversational_messages` | src/tessellate/ai/librarian.py:392 |
-| `build_messages` | src/tessellate/ai/librarian.py:622 |
+| `build_messages` | src/tessellate/ai/librarian.py:624 |
 | `clock_hint` | src/tessellate/ai/librarian.py:566 |
-| `converse` | src/tessellate/ai/librarian.py:840 |
-| `corrections_note` | src/tessellate/ai/librarian.py:1371 |
-| `draft_template` | src/tessellate/ai/librarian.py:1100 |
-| `evidence_note` | src/tessellate/ai/librarian.py:1420 |
-| `filing_corrections` | src/tessellate/ai/librarian.py:1330 |
-| `filing_prompt` | src/tessellate/ai/librarian.py:1452 |
-| `filing_style_note` | src/tessellate/ai/librarian.py:1408 |
+| `converse` | src/tessellate/ai/librarian.py:842 |
+| `corrections_note` | src/tessellate/ai/librarian.py:1373 |
+| `draft_template` | src/tessellate/ai/librarian.py:1102 |
+| `evidence_note` | src/tessellate/ai/librarian.py:1422 |
+| `filing_corrections` | src/tessellate/ai/librarian.py:1332 |
+| `filing_prompt` | src/tessellate/ai/librarian.py:1454 |
+| `filing_style_note` | src/tessellate/ai/librarian.py:1410 |
 | `fill_ai_name` | src/tessellate/ai/librarian.py:194 |
-| `generate_link_reason` | src/tessellate/ai/librarian.py:980 |
-| `generate_title` | src/tessellate/ai/librarian.py:953 |
+| `generate_link_reason` | src/tessellate/ai/librarian.py:982 |
+| `generate_title` | src/tessellate/ai/librarian.py:955 |
 | `history_messages` | src/tessellate/ai/librarian.py:295 |
-| `improve_writing` | src/tessellate/ai/librarian.py:906 |
+| `improve_writing` | src/tessellate/ai/librarian.py:908 |
 | `length_hint` | src/tessellate/ai/librarian.py:265 |
 | `model_error_message` | src/tessellate/ai/librarian.py:30 |
 | `note_for_prompt` | src/tessellate/ai/librarian.py:355 |
-| `plan_budget` | src/tessellate/ai/librarian.py:586 |
+| `plan_budget` | src/tessellate/ai/librarian.py:588 |
 | `profile_context` | src/tessellate/ai/librarian.py:229 |
 | `profile_from_config` | src/tessellate/ai/librarian.py:250 |
-| `propose_map_outline` | src/tessellate/ai/librarian.py:1247 |
+| `propose_map_outline` | src/tessellate/ai/librarian.py:1249 |
 | `resolve_persona_prompt` | src/tessellate/ai/librarian.py:164 |
-| `suggest_tags` | src/tessellate/ai/librarian.py:1037 |
-| `suggest_thinking_words` | src/tessellate/ai/librarian.py:1144 |
-| `summarize_meeting` | src/tessellate/ai/librarian.py:1199 |
+| `suggest_tags` | src/tessellate/ai/librarian.py:1039 |
+| `suggest_thinking_words` | src/tessellate/ai/librarian.py:1146 |
+| `summarize_meeting` | src/tessellate/ai/librarian.py:1201 |
 | `system_content` | src/tessellate/ai/librarian.py:539 |
 
 ### src/tessellate/ai/links.py (3)
@@ -17742,7 +17742,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11209)
+## Tests (11210)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -17957,7 +17957,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_compress_chat_tool.py | 17 |
 | tests/test_compress_context.py | 9 |
 | tests/test_compression.py | 8 |
-| tests/test_connected_results.py | 8 |
+| tests/test_connected_results.py | 9 |
 | tests/test_connection_row_cues.py | 7 |
 | tests/test_connections_block.py | 9 |
 | tests/test_consistency_contract.py | 8 |
@@ -19686,7 +19686,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1265 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1294 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:293 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:286 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4173 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
