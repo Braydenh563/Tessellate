@@ -73,5 +73,5 @@ def test_a_blinks_in_between_frames_pass_quickly():
             body = re.search(rf"@keyframes {name}-{f} \{{(.*?)\}} \}}", CSS).group(1)
             on = re.search(r"([\d.]+)%, ([\d.]+)% \{ opacity: 1", body)
             stops.append((float(on.group(1)), float(on.group(2))))
-        (a1, b1), (a2, b2), (a3, b3) = stops
+        (a1, b1), _, (a3, b3) = stops
         assert (a3 - a1) * ms / 100 <= 350 and (b1 - b3) * ms / 100 <= 350, (name, stops)
