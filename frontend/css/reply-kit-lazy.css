@@ -264,3 +264,52 @@
 .citation-peek-number:empty {
   display: none;
 }
+
+/* **A long block, folded** (`replyFoldLong`, INBOX 1300 C08): the web
+   fold's look, shut, its summary the block's gist and its length; open, the
+   block reads in the same inset panel, capped and scrolling. */
+.long-fold {
+  margin: var(--space-2) 0 0;
+}
+
+.long-fold[open] {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.long-fold[open] > .fold-summary:not(.icon-only):not(.icon-button) {
+  width: auto;
+  border: 0;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  padding: var(--space-2) var(--space-3);
+}
+
+.long-fold[open] > .fold-summary:not(.icon-only):not(.icon-button):not(:hover, :focus-visible) {
+  background: transparent;
+}
+
+/* The disclosure sizes to its words; a gist longer than the bubble is cut
+   with an ellipsis rather than running past it. */
+.long-fold > .fold-summary {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.long-fold-gist {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.long-fold-size {
+  flex: none;
+}
+
+.long-fold > .long-fold-body {
+  max-block-size: min(24rem, 50dvh);
+  overflow-y: auto;
+  margin: 0;
+  padding: 0 var(--space-3) var(--space-3);
+}

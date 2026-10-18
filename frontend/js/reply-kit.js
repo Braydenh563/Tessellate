@@ -633,6 +633,7 @@ function replyCalcConvertPane() {
 function replyFinish(answers, opts = {}) {
   const list = (answers instanceof Element ? [answers] : [...(answers || [])]).filter((el) => el?.isConnected);
   if (!list.length) return;
+  for (const answer of list) replyFoldLong(answer);
   replyNotePreviews(list);
   if (opts.unsupported) renderToolsUnsupportedNotice(opts.bubble, opts.unsupported);
 }
@@ -660,6 +661,49 @@ function renderToolsUnsupportedNotice(container, event) {
   //: Above the turn's facts line, where it was drawn before it moved here.
   container.insertBefore(row, container.querySelector(":scope > .msg-meta"));
   row.before(line);
+}
+
+// --- a long block, folded ------------------------------------------------------------
+
+//: **A wall of text folds** (INBOX 1300 C08, the owner: "if it outputs a mass
+//: block of text like from the ocr of one of my note's images, maybe it could
+//: be in a collapsible subtle panel or smth or abrieviated/summarised"). A
+//: paragraph, quote or code block of a reply longer than `REPLY_FOLD_CHARS`
+//: becomes the Thinking fold's disclosure (`details.agent-step.long-fold`),
+//: shut, whose summary is its gist: the first sentence cut to a line, and how
+//: long the whole is. Open, it reads in an inset panel capped and scrolling,
+//: as the web reader does. The words are all still there, for copy and for
+//: find; nothing is rewritten.
+const REPLY_FOLD_CHARS = 600;
+
+function replyGist(text) {
+  const first = text.split(/(?<=[.!?])\s+/)[0] || text;
+  return clipText(first.replace(/\s+/g, " "), 90);
+}
+
+function replyFoldLong(answer) {
+  for (const block of [...answer.children]) {
+    if (!block.matches("p, pre, blockquote")) continue;
+    const text = block.textContent.trim();
+    if (text.length < REPLY_FOLD_CHARS) continue;
+    const words = text.split(/\s+/).length;
+    const fold = document.createElement("details");
+    fold.className = "agent-step long-fold";
+    const summary = document.createElement("summary");
+    summary.className = "fold-summary";
+    const gist = document.createElement("span");
+    gist.className = "long-fold-gist";
+    gist.textContent = replyGist(text);
+    const size = document.createElement("span");
+    size.className = "muted long-fold-size";
+    size.textContent = `${words.toLocaleString()} words`;
+    setLabel(summary, "ph:text-align-left");
+    summary.append(gist, size);
+    summary.title = "Show the whole text";
+    block.replaceWith(fold);
+    fold.append(summary, block);
+    block.classList.add("long-fold-body");
+  }
 }
 
 // --- the notes a reply gives -----------------------------------------------------

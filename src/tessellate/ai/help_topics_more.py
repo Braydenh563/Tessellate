@@ -292,6 +292,7 @@ MORE_TOPICS: list[dict] = [
             "natural wording", "wording when no model", "composer voice",
             "voice", "playful", "plain answers", "neutral", "how atlas sounds",
             "insight", "patterns in answers", "what atlas adds",
+            "long text in an answer", "wall of text", "folded text",
         ),
         "body": (
             "Settings, Personas, Answer style: how Atlas words its answers, "
@@ -302,7 +303,10 @@ MORE_TOPICS: list[dict] = [
             "The facts and the sources are the same in every voice. What "
             "Atlas adds of its own sets whether an answer about a topic ends "
             "with a pattern from your notes: Nothing, One line (the default) "
-            "or Everything it finds; each Not right raises the bar."
+            "or Everything it finds; each Not right raises the bar. A long "
+            "block in any reply (the text read from a picture, say) is folded "
+            "to one line, its first sentence and its length; press it to read "
+            "the whole."
         ),
         "badge": {"label": "Answer style", "section": "personas", "target": "pref-style"},
     },

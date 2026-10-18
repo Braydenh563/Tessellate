@@ -8,4 +8,6 @@ Items: C06 (stats panel, link cards and reader, calculator), C07, C08, C28, C14,
 - moved for the boot budget (588,400 cap, 66 bytes left after C06): `renderRelatedElsewhere` to reply-kit.js; Ask, popup and Chat draw panels through one `drawAnswerPanels` -> `replyDrawAll`
 - done: C06 cb3e871
 - done: C07 note previews (`replyFinish`, `replyNotePreviews` reply-kit.js; `finishReply` capture-ask.js, called by Chat, Ask, popup, Guide); `renderToolsUnsupportedNotice` moved to reply-kit.js for the boot budget
-- next: C08 long-block fold, `replyFoldLong` in reply-kit.js (draft in the session scratchpad d3/fold-part.js), called first in `replyFinish`
+- done: C07 6bc004b
+- done: C08 long-block fold (`replyFoldLong` reply-kit.js)
+- next: C28 one reveal: `replyReveal` in `replyFinish` for composed replies (chat-attach.js ~2441 inline animate goes), Settings "Reveal replies" under Interface animations (index.html ~11351, wired in settings-rows.js), reduced motion a fade; Guide composed flag (help_chat.py offline done)

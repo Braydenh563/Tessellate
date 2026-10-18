@@ -148,3 +148,16 @@ def test_a_note_a_reply_gives_is_previewed_on_every_surface():
     assert 'card.className = "embed-card reply-note-card";' in kit and "openNoteAtPassage(id" in kit
     css = (ROOT / "frontend" / "css" / "reply-kit-lazy.css").read_text(encoding="utf-8")
     assert ".citation-peek-number:empty" in css
+
+
+def test_a_wall_of_text_in_a_reply_folds_to_its_gist():
+    """INBOX 1300 C08: "if it outputs a mass block of text like from the ocr
+    of one of my note's images, maybe it could be in a collapsible subtle
+    panel or smth or abrieviated/summarised by the composer somehow??"."""
+    kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
+    assert "for (const answer of list) replyFoldLong(answer);" in kit
+    #: The Thinking fold's disclosure, shut, its summary the gist and length.
+    assert 'fold.className = "agent-step long-fold";' in kit and 'summary.className = "fold-summary";' in kit
+    assert "const REPLY_FOLD_CHARS = 600;" in kit and 'block.matches("p, pre, blockquote")' in kit
+    css = (ROOT / "frontend" / "css" / "reply-kit-lazy.css").read_text(encoding="utf-8")
+    assert "max-block-size: min(24rem, 50dvh);" in css
