@@ -4552,7 +4552,7 @@ let wbCopiedStyle = null; // { kind: "sketch" | "object", style: {...} }
 // thing it lands on.
 const WB_SKETCH_STYLE_KEYS = [
   "color", "width", "dash", "fill", "fillOpacity", "noStroke", "startCap", "endCap", "startCapSize", "endCapSize",
-  "dashPattern", "round", "flow",
+  "dashPattern", "round", "flow", "gradient", "fillStyle",
 ];
 const WB_OBJECT_STYLE_KEYS = ["color", "bg", "border_color", "font_size"];
 
@@ -4640,7 +4640,7 @@ async function wbPasteCopiedStyle() {
 //: sticky goes back to the first paper; a map topic back to following its
 //: map and level (`wbMapResetToBranch`'s keys). One undo step for the lot.
 const WB_SKETCH_RESET_KEYS = [
-  "color", "width", "dash", "fill", "fillOpacity", "noStroke", "alpha", "shadow", "rough", "jumps", "round", "dashPattern", "flow",
+  "color", "width", "dash", "fill", "fillOpacity", "noStroke", "alpha", "shadow", "rough", "jumps", "round", "dashPattern", "flow", "gradient", "fillStyle",
   "startCapSize", "endCapSize", "label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign",
 ];
 const WB_OBJECT_RESET_KEYS = ["color", "bg", "border_color", "font_size", "bold", "italic", "underline", "strike", "font_family", "align", "valign", "alpha", "shadow", "fold"];
@@ -17115,7 +17115,104 @@ function wbNudgeShapeLabel(groupEl, dx, dy) {
 //: opacity is mostly board, so it keeps the theme's ink.
 function wbShapeLabelInk(parsed) {
   if (!parsed?.fill || (parsed.fillOpacity != null && parsed.fillOpacity < 0.5)) return null;
+  // A hatch or dots is mostly board, and a gradient has two ends: the ink is
+  // only forced when both ends agree on it.
+  if (parsed.fillStyle) return null;
+  const to = wbHexColour(parsed.gradient?.to);
+  if (to) return wbCoreInkFor(parsed.fill) === wbCoreInkFor(to) ? wbCoreInkFor(parsed.fill) : null;
   return wbCoreInkFor(parsed.fill);
+}
+
+//: A shape's gradient (`gradient: {to, dir}`) and fill style (`fillStyle`),
+//: draw.io's Fill section. Both are paint servers, so they live in a `<defs>`
+//: kept inside the shape's own group: the export clones each group, and the
+//: picture then carries what the board shows without a second pass.
+const WB_FILL_STYLES = Object.freeze(["hatch", "cross", "dots", "dashed", "zigzag"]);
+
+//: A plain hex colour or nothing: what a stored colour must be before it is
+//: set on a paint server, so a hand-edited row cannot put anything else there.
+function wbHexColour(value) {
+  return typeof value === "string" && /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(value) ? value : null;
+}
+
+//: The linear gradient's line across the shape's box (0 to 1 each way), from
+//: the fill colour at the start to the second colour at the end. Radial and
+//: anything unknown have no vector.
+function wbGradientVector(dir) {
+  const vectors = {
+    s: { x1: 0, y1: 0, x2: 0, y2: 1 },
+    n: { x1: 0, y1: 1, x2: 0, y2: 0 },
+    e: { x1: 0, y1: 0, x2: 1, y2: 0 },
+    w: { x1: 1, y1: 0, x2: 0, y2: 0 },
+  };
+  return vectors[dir] || null;
+}
+
+//: One tile of a fill style as plain data (a tag and attributes per element),
+//: so the DOM is built with `createElementNS` and the shape is testable.
+//: A faint tint of the colour under every tile keeps a hatch reading as a fill.
+function wbFillPatternSpec(style, colour) {
+  if (!WB_FILL_STYLES.includes(style)) return null;
+  const line = (x1, y1, x2, y2) => ({ tag: "line", attrs: { x1, y1, x2, y2, stroke: colour, "stroke-width": 1.5 } });
+  const tint = (size) => ({ tag: "rect", attrs: { x: 0, y: 0, width: size, height: size, fill: colour, "fill-opacity": 0.1 } });
+  const specs = {
+    hatch: { size: 8, rotate: 45, els: [tint(8), line(0, 0, 0, 8)] },
+    cross: { size: 8, rotate: 45, els: [tint(8), line(0, 0, 0, 8), line(0, 0, 8, 0)] },
+    dots: { size: 8, rotate: 0, els: [tint(8), { tag: "circle", attrs: { cx: 4, cy: 4, r: 1.6, fill: colour } }] },
+    dashed: { size: 10, rotate: 0, els: [tint(10), line(0, 5, 6, 5)] },
+    zigzag: { size: 10, rotate: 0, els: [tint(10), { tag: "path", attrs: { d: "M0 7 L2.5 3 L5 7 L7.5 3 L10 7", fill: "none", stroke: colour, "stroke-width": 1.5 } }] },
+  };
+  return specs[style];
+}
+
+//: Keeps the group's `<defs>` in step with its data and returns the paint to
+//: fill the path with, or null when the fill is plain. Rebuilt only when the
+//: inputs change (a key on the element), so a render that changes nothing
+//: touches nothing.
+function wbSyncFillDefs(groupEl, id, parsed) {
+  const NS = "http://www.w3.org/2000/svg";
+  let defs = groupEl.querySelector(":scope > defs.wb-fill-defs");
+  const colour = wbHexColour(parsed?.fill);
+  const to = wbHexColour(parsed?.gradient?.to);
+  const dir = parsed?.gradient?.dir;
+  const gradient = colour && to && (dir === "radial" || wbGradientVector(dir)) ? dir : null;
+  const style = colour && !gradient && WB_FILL_STYLES.includes(parsed?.fillStyle) ? parsed.fillStyle : null;
+  if (!gradient && !style) {
+    defs?.remove();
+    return null;
+  }
+  const paintId = `wbg-${id}`;
+  const key = JSON.stringify([colour, to, gradient, style]);
+  if (!defs) {
+    defs = document.createElementNS(NS, "defs");
+    defs.setAttribute("class", "wb-fill-defs");
+    groupEl.prepend(defs);
+  }
+  if (defs.dataset.key === key) return `url(#${paintId})`;
+  defs.dataset.key = key;
+  defs.replaceChildren();
+  const make = (tag, attrs, parent) => {
+    const el = document.createElementNS(NS, tag);
+    for (const [name, value] of Object.entries(attrs)) el.setAttribute(name, String(value));
+    parent.appendChild(el);
+    return el;
+  };
+  if (gradient) {
+    const vec = wbGradientVector(gradient);
+    const server = vec
+      ? make("linearGradient", { id: paintId, ...vec }, defs)
+      : make("radialGradient", { id: paintId, cx: 0.5, cy: 0.5, r: 0.5 }, defs);
+    make("stop", { offset: 0, "stop-color": colour }, server);
+    make("stop", { offset: 1, "stop-color": to }, server);
+  } else {
+    const spec = wbFillPatternSpec(style, colour);
+    const pattern = make("pattern", {
+      id: paintId, width: spec.size, height: spec.size, patternUnits: "userSpaceOnUse",
+      ...(spec.rotate ? { patternTransform: `rotate(${spec.rotate})` } : {}),
+    }, defs);
+    for (const el of spec.els) make(el.tag, el.attrs, pattern);
+  }
+  return `url(#${paintId})`;
 }
 
 //: The faces a shape's words and a text box can be set in (the Format panel's
@@ -19146,6 +19243,10 @@ function renderWhiteboard() {
     if (flowing && !dashArray) dashArray = wbDashArray("dashed", Number(strokeWidth) || 3);
     const flowPeriod = flowing && dashArray ? dashArray.split(" ").map(Number).reduce((a, b) => a + b, 0) * (dashArray.split(" ").length % 2 ? 2 : 1) : 0;
     if (wbDrawsRough(shapeData || linkData, !plainLine)) pathData = wbRoughD(pathData, d.id);
+    // A gradient or a fill style swaps the plain colour for a paint server in
+    // this group's own defs (null when there is none, which also drops a stale one).
+    const fillPaint = wbSyncFillDefs(this, d.id, shapeData);
+    if (fillPaint) fill = fillPaint;
     d3.select(this).select(".sketch-path")
       .classed("wb-flow", flowing)
       // The highlighter's multiply, re-applied every render and cleared on

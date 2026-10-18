@@ -967,8 +967,8 @@ the same three tabs (Style, Text, Arrange); fields per kind in
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | Fill colour, on or off | yes (`wb-fmt-fill-on`, `wb-fmt-fill`) | `addFill` (Format.js 6861), `createCellColorOption` `fillColor` | done | none |
-| Gradient: second colour plus direction (north, east, south, west, radial) | no | `addFill`: `gradientColor`, `gradientDirection` (Format.js 6925) | `data.gradient {to, dir}`, drawn as an SVG `linearGradient` or `radialGradient` in the board's `<defs>`; export clones defs so SVG and PNG keep it | M |
-| Fill style: hatch, cross-hatch, dots, dashed, zigzag line, solid | no | `Editor.fillStyles` (Editor.js 250), `fillStyle` select in `addFill` (Format.js 7009) | `data.fillStyle` picks one of six SVG `<pattern>` fills clipped to the shape | M |
+| Gradient: second colour plus direction (north, east, south, west, radial) | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `addFill`: `gradientColor`, `gradientDirection` (Format.js 6925) | `data.gradient {to, dir}`, drawn as an SVG `linearGradient` or `radialGradient` in the board's `<defs>`; export clones defs so SVG and PNG keep it | M |
+| Fill style: hatch, cross-hatch, dots, dashed, zigzag line, solid | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `Editor.fillStyles` (Editor.js 250), `fillStyle` select in `addFill` (Format.js 7009) | `data.fillStyle` picks one of six SVG `<pattern>` fills clipped to the shape | M |
 | Swatches and preset colours (24 presets, 40 defaults, custom row) | partly: saved palettes (`save-palette`), no swatch grid in the picker | `ColorDialog.presetColors`, `defaultColors` (Dialogs.js 1805, 1815), `getCustomColors` (Format.js 7119) | one swatch popover behind every colour input, seeded with draw.io's 24 and 40, plus the board's saved palettes | S |
 | Line colour | yes (`wb-fmt-stroke`) | `addStroke` (Format.js 7193) `strokeColor` | done | none |
 | Line width | yes (`wb-fmt-width`) | `strokeWidth`, up to 999 | done | none |

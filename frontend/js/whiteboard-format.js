@@ -62,7 +62,7 @@ function wbFmtKind(entry) {
 
 //: The fields each kind takes, by the `data-fmt` names in index.html.
 const WB_FMT_FIELDS = {
-  shape: ["stroke", "width", "dash", "fill", "alpha", "shadow", "rough", "text", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow"],
+  shape: ["stroke", "width", "dash", "fill", "alpha", "shadow", "rough", "text", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "fillstyle", "gradient"],
   line: ["stroke", "width", "dash", "alpha", "shadow", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow"],
   //: A straight line or arrow: a line that takes ends.
   arrow: ["stroke", "width", "dash", "caps", "alpha", "shadow", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow"],
@@ -101,6 +101,9 @@ function wbFmtValue(entry, field) {
     case "pattern": return s?.dashPattern || "";
     case "round": return Number(s?.round) || 0;
     case "flow": return Boolean(s?.flow);
+    case "fillstyle": return WB_FILL_STYLES.includes(s?.fillStyle) ? s.fillStyle : "solid";
+    case "gradient": return wbHexColour(s?.gradient?.to) || "#ffffff";
+    case "gradient-dir": return s?.gradient && wbHexColour(s.gradient.to) && (s.gradient.dir === "radial" || wbGradientVector(s.gradient.dir)) ? s.gradient.dir : "none";
     case "fill-on": return s ? Boolean(s.fill) : Boolean(o.bg && o.bg !== "transparent");
     case "fill": return s ? s.fill || "#3355ff" : (o.bg && o.bg !== "transparent" ? o.bg : "#ffffff");
     case "alpha": return Math.round(((s ? s.alpha : o?.alpha) ?? 1) * 100);
@@ -454,6 +457,7 @@ function wbFormatSync() {
   for (const [id, field, row] of [
     ["wb-fmt-stroke", "stroke", "stroke"], ["wb-fmt-width", "width", "width"], ["wb-fmt-dash", "dash", "dash"],
     ["wb-fmt-fill", "fill", "fill"], ["wb-fmt-route", "route", "route"], ["wb-fmt-jumps", "jumps", "jumps"], ["wb-fmt-startcap", "startcap", "caps"],
+    ["wb-fmt-fillstyle", "fillstyle", "fillstyle"], ["wb-fmt-gradient-dir", "gradient-dir", "gradient"], ["wb-fmt-gradient", "gradient", "gradient"],
     ["wb-fmt-pattern", "pattern", "pattern"], ["wb-fmt-round", "round", "round"], ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-size", "size", "text"],
     ["wb-fmt-ink", "ink", "text"], ["wb-fmt-alpha", "alpha", "alpha"],
   ]) {
@@ -471,6 +475,8 @@ function wbFormatSync() {
     }
     if (fillField) fillField.classList.toggle("wb-colour-off", !mixed("fill-on") && !wbFmtValue(first, "fill-on"));
   }
+  // The second colour is dimmed while there is no gradient for it to belong to.
+  document.getElementById("wb-fmt-gradient")?.classList.toggle("wb-colour-off", !mixed("gradient-dir") && wbFmtValue(first, "gradient-dir") === "none");
   for (const [id, field] of [["wb-fmt-shadow", "shadow"], ["wb-fmt-rough", "rough"], ["wb-fmt-flow", "flow"]]) {
     const box = document.getElementById(id);
     if (!takes.has(field) || !box || document.activeElement === box) continue;
@@ -736,8 +742,36 @@ onDomReady(() => {
   on("wb-fmt-fill-on", "change", (e) => {
     const colour = document.getElementById("wb-fmt-fill")?.value || "#3355ff";
     wbFmtApply("fill", (entry) => (entry.kind === "sketch"
-      ? { fill: e.target.checked ? colour : undefined, fillOpacity: e.target.checked ? 1 : undefined }
+      ? { fill: e.target.checked ? colour : undefined, fillOpacity: e.target.checked ? 1 : undefined, ...(e.target.checked ? {} : { gradient: undefined, fillStyle: undefined }) }
       : { bg: e.target.checked ? colour : "transparent" }), e.target.checked ? "Filled." : "Fill taken off.");
+  });
+  //: A gradient or a fill style needs a colour to start from, so choosing one
+  //: on an unfilled shape fills it first. The two are alternatives: one choice
+  //: clears the other.
+  const fillBase = (entry) => {
+    const s = wbFmtSketch(entry);
+    return { fill: s.fill || document.getElementById("wb-fmt-fill")?.value || "#3355ff", fillOpacity: s.fillOpacity ?? 1 };
+  };
+  on("wb-fmt-fillstyle", "change", (e) => {
+    const style = WB_FILL_STYLES.includes(e.target.value) ? e.target.value : "solid";
+    wbFmtApply("fillstyle", (entry) => (entry.kind === "sketch"
+      ? (style === "solid" ? { fillStyle: undefined } : { ...fillBase(entry), fillStyle: style, gradient: undefined })
+      : null), style === "solid" ? "Plain fill." : `Fill style: ${e.target.selectedOptions[0]?.textContent || style}.`);
+  });
+  on("wb-fmt-gradient-dir", "change", (e) => {
+    const dir = e.target.value;
+    const to = wbHexColour(document.getElementById("wb-fmt-gradient")?.value) || "#ffffff";
+    wbFmtApply("gradient", (entry) => (entry.kind === "sketch"
+      ? (dir === "none" ? { gradient: undefined } : { ...fillBase(entry), gradient: { to, dir }, fillStyle: undefined })
+      : null), dir === "none" ? "Gradient off." : `Gradient: ${e.target.selectedOptions[0]?.textContent || dir}.`);
+  });
+  on("wb-fmt-gradient", "change", (e) => {
+    const to = wbHexColour(e.target.value) || "#ffffff";
+    wbFmtApply("gradient", (entry) => {
+      if (entry.kind !== "sketch") return null;
+      const dir = wbFmtValue(entry, "gradient-dir");
+      return { ...fillBase(entry), gradient: { to, dir: dir === "none" ? "s" : dir }, fillStyle: undefined };
+    }, "Gradient colour changed.");
   });
   on("wb-fmt-fill", "change", (e) => wbFmtApply("fill", (entry) => (entry.kind === "sketch" ? { fill: e.target.value, fillOpacity: 1 } : { bg: e.target.value }), "Fill colour changed."));
   on("wb-fmt-alpha", "input", (e) => {

@@ -1498,14 +1498,14 @@ HELP_TOPICS.extend(
                 "text size in a shape", "align text",
                 "line shape", "line end", "line ends", "arrowhead", "arrow end", "diamond end", "label position",
                 "arrow size", "end size", "bigger arrowhead", "stealth arrow", "memorymap arrow", "signature arrow",
-                "reset style", "default style", "reset an object", "back to default", "underline", "strikethrough", "font family", "clear formatting", "rounded corners", "round corners", "dash pattern", "custom dashes", "flow animation", "marching ants",
+                "reset style", "default style", "reset an object", "back to default", "underline", "strikethrough", "font family", "clear formatting", "rounded corners", "round corners", "dash pattern", "custom dashes", "flow animation", "marching ants", "gradient", "hatch", "fill style", "pattern fill",
                 "line jumps", "line jump", "crossing lines", "lines cross", "hop over",
             ),
             "body": (
                 "Ctrl+Shift+P on a board (or Format panel in the selection's More menu, or View) opens "
                 "the Format panel on the right, with three tabs. Style: line colour, width and pattern, "
                 "your own dashes (a dash and a gap in line widths, like 8 4), rounded corners, flow (dashes that move), "
-                "fill, opacity, shadow, and for a connector its line shape (curved, straight or elbow), "
+                "fill (a gradient or hatch, dots or zigzag instead of solid), opacity, shadow, and for a connector its line shape (curved, straight or elbow), "
                 "its line jumps (it hops over a line under it with an arc, a gap or a "
                 "sharp peak), its two ends (twenty-one marks, from the Tessellate end through open, "
                 "filled, stealth, half and double arrows, circles and diamonds to a cross, a bar and a crow's foot, "

@@ -7943,6 +7943,26 @@ Link to another note with [[its first few words]]."></textarea>
           <div class="wb-fmt-row" data-fmt="fill"><span class="wb-fmt-label">Fill</span>
             <span class="wb-fmt-buttons"><label class="wb-snap-label" title="Filled"><input type="checkbox" id="wb-fmt-fill-on" aria-label="Filled"></label><input type="color" id="wb-fmt-fill" class="wb-color-picker" aria-label="Fill colour" title="Fill colour"></span>
           </div>
+          <label class="wb-fmt-row" data-fmt="fillstyle"><span class="wb-fmt-label">Fill style</span>
+            <select id="wb-fmt-fillstyle" aria-label="Fill style" title="Fill the shape with lines or dots in its colour instead of a solid">
+              <option value="solid">Solid</option>
+              <option value="hatch">Hatch</option>
+              <option value="cross">Cross-hatch</option>
+              <option value="dots">Dots</option>
+              <option value="dashed">Dashes</option>
+              <option value="zigzag">Zigzag</option>
+            </select>
+          </label>
+          <div class="wb-fmt-row" data-fmt="gradient"><span class="wb-fmt-label">Gradient</span>
+            <span class="wb-fmt-buttons"><input type="color" id="wb-fmt-gradient" class="wb-color-picker" aria-label="Gradient second colour" title="The colour the fill fades to"><select id="wb-fmt-gradient-dir" aria-label="Gradient direction" title="Fade the fill into a second colour">
+              <option value="none">None</option>
+              <option value="s">Down</option>
+              <option value="n">Up</option>
+              <option value="e">Right</option>
+              <option value="w">Left</option>
+              <option value="radial">Radial</option>
+            </select></span>
+          </div>
           <label class="wb-fmt-row" data-fmt="stroke"><span class="wb-fmt-label" id="wb-fmt-stroke-word">Line</span><input type="color" id="wb-fmt-stroke" class="wb-color-picker" aria-label="Line colour" title="Line colour"></label>
           <label class="wb-fmt-row" data-fmt="width"><span class="wb-fmt-label">Width</span><input type="number" id="wb-fmt-width" min="1" max="40" step="1" aria-label="Line width" title="Line width"></label>
           <label class="wb-fmt-row" data-fmt="dash"><span class="wb-fmt-label">Pattern</span>
