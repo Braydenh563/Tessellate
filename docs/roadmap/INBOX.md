@@ -37,7 +37,9 @@ with its owner named in the entry.
 1301. **The owner, 2026-10-18 evening, verbatim** (screenshots: the hero sub line running long; the dashboard dock's Get started button; Atlas with half-lidded eyes; Ask's answer to "What have I saved about social connections?" as one run-on paragraph of joined fragments, then "Your first Phase note has the Opener (Ice Breakers)" lines).
     - D1: "be areful that the subtext in the hero doesnt get too long." Fixed dc59d5c (one sentence; the untitled-note date said once).
     - D2: "I feel like the splash needs a better, more vunctional, better positioned, sized etc modern and professional redesign as it is still pushing down to the bottom of the screen every step completed."
+      **Fixed 1c2f2ff, e18cca3.** Launch splash (`splash.ps1`): one size, 520 by 440, centred in the work area, Step N of M, steps and log in one fixed panel (it grew from 252 to 586 px down the screen); static tests only, not run on Windows. Dashboard Get started card (`getstarted1301.js`): 350 to 114 px at 1440, 658 to 275 px at 390, the same height at 0, 1 and 2 steps done.
     - D3: "the user should be able to hide or mark as complete the getting started button."
+      **Fixed e18cca3.** Mark all as done and Hide Get started in the card's menu and the dock's; persisted (reload: card and button stay gone); Customise, Show Get started brings both back (`getstarted1301.js` D3=1).
     - D4: "the half lidded eyes on atlas look creepy and like fnaf"
     - D5: "please tell me the composer improvements havent been done yet as the responses for how they are written, how they sound, how they are formatted and everything are very poor and might have even gotten worse"
       **Fixed cbabbe3.** Gold 22 (`tests/test_composer_form_1301.py`): longest sentence 134 to 35 words, ";" joins 27 to 1, broken answers 1 to 0, gold score 57 to 81.
