@@ -2,7 +2,7 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6035, frontend ids 2527, CSS sections 495, backend routes 609, backend modules 5832, test files 1259, tests 11360, plan headings 959.
+Counts: frontend functions 6035, frontend ids 2527, CSS sections 495, backend routes 609, backend modules 5832, test files 1259, tests 11361, plan headings 959.
 
 ## Frontend functions (6035)
 
@@ -9412,17 +9412,17 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | 7. Meta looks like meta | frontend/css/08-consistency.css:1048 |
 | 8. A panel head is identity, one fact, then the actions, and it does not | frontend/css/08-consistency.css:2395 |
 | A CALMER TOP, NOTHING TAKEN AWAY (Full view) | frontend/css/03-dashboard-widgets.css:4712 |
-| A card's date is in the same corner on every card (INBOX 719) | frontend/css/08-consistency.css:10432 |
+| A card's date is in the same corner on every card (INBOX 719) | frontend/css/08-consistency.css:10449 |
 | A chip's x: a round target inset evenly (INBOX 403) | frontend/css/08-consistency.css:4703 |
 | A dialog's head: title, its '?', icon-only actions, Close last | frontend/css/08-consistency.css:9012 |
 | A diff of two versions of the same text (DOCUMENTS_PLAN Phase 5 items 2, 3) | frontend/css/09-editor.css:556 |
 | A member of a group selection shows that it is selected, not how to | frontend/css/library-lazy.css:5026 |
-| A note card's text leads; its metadata steps back (INBOX 505) | frontend/css/08-consistency.css:9893 |
-| A note's buttons stay while its own menu is open (INBOX 679) | frontend/css/08-consistency.css:10303 |
+| A note card's text leads; its metadata steps back (INBOX 505) | frontend/css/08-consistency.css:9910 |
+| A note's buttons stay while its own menu is open (INBOX 679) | frontend/css/08-consistency.css:10320 |
 | A note's time: the same corner on every card | frontend/css/08-consistency.css:8391 |
 | A notification's two controls are a column of their own (INBOX 874) | frontend/css/06-timeline-dialogs.css:3458 |
-| A rail row's ⋮ overlays the row; it never reserves a column (INBOX 722) | frontend/css/08-consistency.css:10501 |
-| A row is a pointer target (INBOX 719) | frontend/css/08-consistency.css:10416 |
+| A rail row's ⋮ overlays the row; it never reserves a column (INBOX 722) | frontend/css/08-consistency.css:10518 |
+| A row is a pointer target (INBOX 719) | frontend/css/08-consistency.css:10433 |
 | Ask history: the personal-notes-browser panel (§ROADMAP item 6) | frontend/css/01-forms-settings.css:2860 |
 | Atlas's life: loops while the mark is on screen and motion is on | frontend/css/08-consistency.css:7987 |
 | Atlas, the app's guide (INBOX 224) | frontend/css/08-consistency.css:1803 |
@@ -9463,8 +9463,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Ocean: cool teal and deep blue. Crisp rather than cosy. | frontend/css/05-sidebars-themes.css:3301 |
 | On paper (DOCUMENTS_PLAN Phase 5 item 4, the print stylesheet) | frontend/css/09-editor.css:916 |
 | On this day | frontend/css/03-dashboard-widgets.css:4489 |
-| One sidebar row recipe for every rail (INBOX 702) | frontend/css/08-consistency.css:10385 |
-| One ⋯ opener, styled once (INBOX 722) | frontend/css/08-consistency.css:10461 |
+| One sidebar row recipe for every rail (INBOX 702) | frontend/css/08-consistency.css:10402 |
+| One ⋯ opener, styled once (INBOX 722) | frontend/css/08-consistency.css:10478 |
 | PLAN.md D1: the documents dock's formatting strip hides entirely | frontend/css/07-whiteboard-misc.css:7846 |
 | Parchment: paper, ink and a little gold. Made for long writing. | frontend/css/05-sidebars-themes.css:3228 |
 | Phase 10, INBOX 100: the scroll edge effect | frontend/css/10-responsive.css:159 |
@@ -9495,7 +9495,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | RESPONSIVE, CONTINUED, AND THE LIQUID GLASS ADOPTIONS | frontend/css/10-responsive.css:1 |
 | Reading and focus (DOCUMENTS_PLAN Phase 5 item 4, PLAN D9) | frontend/css/library-lazy.css:527 |
 | Reminders: the time at the row's end, actions over it on hover | frontend/css/08-consistency.css:4410 |
-| Ring room (INBOX 685, "a lot of borders get cut off on an edge") | frontend/css/08-consistency.css:10082 |
+| Ring room (INBOX 685, "a lot of borders get cut off on an edge") | frontend/css/08-consistency.css:10099 |
 | Rosewood: dusty rose and wine. Warm without being orange. | frontend/css/05-sidebars-themes.css:3531 |
 | Rows: the default way a list of notes is shown | frontend/css/01-forms-settings.css:1472 |
 | Rules that used to be inline style="" attributes. | frontend/css/06-timeline-dialogs.css:636 |
@@ -9520,11 +9520,11 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Technical mono: a cool graphite ground, monospace for the numbers and | frontend/css/05-sidebars-themes.css:3654 |
 | Templates (INBOX 715) | frontend/css/library-lazy.css:3341 |
 | Text on accent-coloured surfaces (roadmap §7: colour contrast was listed as | frontend/css/05-sidebars-themes.css:4082 |
-| The Ask tab's records speak in the Notes list's voice (INBOX 510) | frontend/css/08-consistency.css:9944 |
+| The Ask tab's records speak in the Notes list's voice (INBOX 510) | frontend/css/08-consistency.css:9961 |
 | The Library's hover tick says what it is (INBOX 722) | frontend/css/library-lazy.css:4169 |
 | The OCR workspace tool row (INBOX 717). Here rather than in the boot | frontend/css/library-lazy.css:3674 |
 | The chat header stays one line (INBOX 91) | frontend/css/08-consistency.css:2261 |
-| The compact row: one line, one anchor, one chevron (INBOX 676) | frontend/css/08-consistency.css:10219 |
+| The compact row: one line, one anchor, one chevron (INBOX 676) | frontend/css/08-consistency.css:10236 |
 | The connection pill's menu button, concentric with the pill | frontend/css/08-consistency.css:8371 |
 | The documents editor: layout around the engine (DOCUMENTS_PLAN Phase 2) | frontend/css/09-editor.css:1 |
 | The five whiteboard menus (Insert, Edit, Arrange, View, Board) | frontend/css/08-consistency.css:1271 |
@@ -9577,7 +9577,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | a callout that folds (REDESIGN.md §R7.3 item 3) | frontend/css/05-sidebars-themes.css:1304 |
 | a card that opens does not inflate the six beside it | frontend/css/08-consistency.css:2517 |
 | a chip lane scrolls without drawing a scrollbar | frontend/css/07-whiteboard-misc.css:3808 |
-| a chosen radio option is outlined, not only tinted (INBOX 464) | frontend/css/08-consistency.css:9427 |
+| a chosen radio option is outlined, not only tinted (INBOX 464) | frontend/css/08-consistency.css:9444 |
 | a disclosure arrow that matches the app's own carets | frontend/css/07-whiteboard-misc.css:3827 |
 | a disclosure is a control, so it answers the pointer | frontend/css/07-whiteboard-misc.css:3417 |
 | a face drawn once (avatars.js, `nameMarkCompose`) | frontend/css/08-consistency.css:5073 |
@@ -9682,15 +9682,15 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | meeting notes (§17) | frontend/css/02-chat-graph.css:1940 |
 | model cards: the Models screen's suggested downloads (INBOX 444) | frontend/css/01-forms-settings.css:5890 |
 | more than one route between the same two notes | frontend/css/02-chat-graph.css:1188 |
-| motion: a heavy page's first visit (INBOX 580) | frontend/css/08-consistency.css:9708 |
-| motion: a hover eases (2026-10-05) | frontend/css/08-consistency.css:9596 |
-| motion: a list settles in where its skeleton was (2026-10-05) | frontend/css/08-consistency.css:9576 |
+| motion: a heavy page's first visit (INBOX 580) | frontend/css/08-consistency.css:9725 |
+| motion: a hover eases (2026-10-05) | frontend/css/08-consistency.css:9613 |
+| motion: a list settles in where its skeleton was (2026-10-05) | frontend/css/08-consistency.css:9593 |
 | motion: a menu or popover grows from what opened it (INBOX 103, 2026-10-05) | frontend/css/10-responsive.css:230 |
-| motion: a page arrives (INBOX 459 (2), 580) | frontend/css/08-consistency.css:9681 |
-| motion: a popup arrives, and leaves the way it came (INBOX 580, 2026-10-05) | frontend/css/08-consistency.css:9787 |
-| motion: a sidebar's contents arrive from its edge (INBOX 459 (2)) | frontend/css/08-consistency.css:9606 |
-| motion: one sliding indicator for every strip (INBOX 459 (2), 2026-10-05) | frontend/css/08-consistency.css:9464 |
-| motion: the opening curtain lifts (INBOX 577) | frontend/css/08-consistency.css:9827 |
+| motion: a page arrives (INBOX 459 (2), 580) | frontend/css/08-consistency.css:9698 |
+| motion: a popup arrives, and leaves the way it came (INBOX 580, 2026-10-05) | frontend/css/08-consistency.css:9804 |
+| motion: a sidebar's contents arrive from its edge (INBOX 459 (2)) | frontend/css/08-consistency.css:9623 |
+| motion: one sliding indicator for every strip (INBOX 459 (2), 2026-10-05) | frontend/css/08-consistency.css:9481 |
+| motion: the opening curtain lifts (INBOX 577) | frontend/css/08-consistency.css:9844 |
 | moved from 07-whiteboard-misc.css (boot CSS cap, 2026-10-17): the OCR workspace's own rules, whose selectors name only ocr-* classes and ids that no boot rule | frontend/css/library-lazy.css:6129 |
 | moved from 07-whiteboard-misc.css (canvasui, the boot CSS budget): board-only rules whose class names no boot file draws and no later boot rule competes with, in their old order | frontend/css/library-lazy.css:4850 |
 | moved from the boot sheets (Brief 101a, room under the boot CSS cap): rules whose selectors name only the Library | frontend/css/library-lazy.css:16 |
@@ -9704,7 +9704,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | one control height per Library header row | frontend/css/07-whiteboard-misc.css:5252 |
 | one gap under every card heading | frontend/css/01-forms-settings.css:4870 |
 | one line of facts: a note's meta row | frontend/css/08-consistency.css:2693 |
-| one popup, three tiers (INBOX 456, DESIGN.md "A popup window or panel") | frontend/css/08-consistency.css:9179 |
+| one popup, three tiers (INBOX 456, DESIGN.md "A popup window or panel") | frontend/css/08-consistency.css:9196 |
 | one size for every dropdown | frontend/css/01-forms-settings.css:4833 |
 | one switch, everywhere a checkbox means "on or off" | frontend/css/06-timeline-dialogs.css:2112 |
 | one ⋯ button, everywhere (INBOX 722) | frontend/css/00-tokens-shell.css:4269 |
@@ -9740,8 +9740,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | text inputs (§36B) | frontend/css/01-forms-settings.css:225 |
 | the "/" menu and block frames | frontend/css/05-sidebars-themes.css:827 |
 | the "?" head row and its help body | frontend/css/01-forms-settings.css:5398 |
-| the 464 round: Settings groups, switch rows, the phone's chrome | frontend/css/08-consistency.css:9837 |
-| the AI skills dock: one row where it fits (INBOX 450, 599) | frontend/css/08-consistency.css:9386 |
+| the 464 round: Settings groups, switch rows, the phone's chrome | frontend/css/08-consistency.css:9854 |
+| the AI skills dock: one row where it fits (INBOX 450, 599) | frontend/css/08-consistency.css:9403 |
 | the AI status dot | frontend/css/00-tokens-shell.css:1525 |
 | the Ask box explaining itself (§35A) | frontend/css/06-timeline-dialogs.css:1244 |
 | the Ask box reads as one composer | frontend/css/07-whiteboard-misc.css:2999 |
@@ -9842,7 +9842,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the primary action floats, where a dock has one | frontend/css/07-whiteboard-misc.css:10156 |
 | the quick-nav chord's guide | frontend/css/10-responsive.css:421 |
 | the reader: one scroller, the page set as prose | frontend/css/03-dashboard-widgets.css:1453 |
-| the reply head on Ask's answer, the draft and the guide (INBOX 471) | frontend/css/08-consistency.css:9444 |
+| the reply head on Ask's answer, the draft and the guide (INBOX 471) | frontend/css/08-consistency.css:9461 |
 | the rich picker (rich-picker.js; DESIGN.md's recipe index) | frontend/css/05-sidebars-themes.css:864 |
 | the run list (AGENT_SKILLS_REFORM.md, Phase C) | frontend/css/07-whiteboard-misc.css:1411 |
 | the scroll container (§36A) | frontend/css/00-tokens-shell.css:1092 |
@@ -9881,7 +9881,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | top bar polish | frontend/css/05-sidebars-themes.css:4363 |
 | transcluded notes (![[note]]) | frontend/css/05-sidebars-themes.css:1559 |
 | two-up cards in tablet portrait | frontend/css/07-whiteboard-misc.css:9862 |
-| type to filter a long list (row 1643, `listFilter` in sheets-selects.js) | frontend/css/08-consistency.css:10555 |
+| type to filter a long list (row 1643, `listFilter` in sheets-selects.js) | frontend/css/08-consistency.css:10572 |
 | user-tunable corner rounding | frontend/css/04-chat-dock-appearance.css:1931 |
 | web panel (search + reader) | frontend/css/03-dashboard-widgets.css:1043 |
 | what a wide screen is for | frontend/css/00-tokens-shell.css:3610 |
@@ -9904,9 +9904,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/03-dashboard-widgets.css | 5029 |
 | frontend/css/04-chat-dock-appearance.css | 6476 |
 | frontend/css/05-sidebars-themes.css | 6233 |
-| frontend/css/06-timeline-dialogs.css | 3718 |
+| frontend/css/06-timeline-dialogs.css | 3709 |
 | frontend/css/07-whiteboard-misc.css | 11824 |
-| frontend/css/08-consistency.css | 10589 |
+| frontend/css/08-consistency.css | 10606 |
 | frontend/css/09-editor.css | 1116 |
 | frontend/css/10-responsive.css | 2661 |
 | frontend/css/ask-compose-lazy.css | 139 |
@@ -17920,7 +17920,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11360)
+## Tests (11361)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19056,7 +19056,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_typo_routing.py | 4 |
 | tests/test_ui_1017b.py | 7 |
 | tests/test_ui_batch_726.py | 13 |
-| tests/test_ui_recipes.py | 204 |
+| tests/test_ui_recipes.py | 205 |
 | tests/test_ui_signatures.py | 2 |
 | tests/test_ui_state.py | 6 |
 | tests/test_undo_bin.py | 24 |

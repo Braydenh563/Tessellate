@@ -5822,3 +5822,13 @@ def test_the_drop_veil_takes_no_press_and_has_no_blur() -> None:
 def _css_block_in(css: str, selector: str) -> str:
     start = css.index(selector + " {")
     return css[start : css.index("}", start)]
+
+
+def test_a_modal_cards_dialog_head_is_sticky_on_an_opaque_surface() -> None:
+    """C12: the head stays at the top of a scrolling modal card. Browser half:
+    scratchpad/ui-sweeps/dialogheadsticky.js."""
+    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    start = css.index(".modal-card > .dialog-head {")
+    block = css[start : css.index("}", start)]
+    assert "position: sticky;" in block and "top: 0;" in block
+    assert "background: var(--modal-bg-opaque);" in block
