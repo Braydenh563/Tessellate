@@ -6,6 +6,7 @@ audits reproduced each bug in the app (ports 8791, 8792). A row is **open**,
 
 | Item | Rung, agent | Status | Evidence |
 | --- | --- | --- | --- |
+| C42 composer reply text lost after restart (first, data) | S, next free Sonnet | open | screenshot: reload shows the reply bubble with only its "Next:" chips; check what the chat store saves for a composer (no model) reply to small talk, and the reload render path |
 | C10 statistics in quick access | S, fixes1 | open | `settings-panes.js:1499` row has no `quick` key |
 | C09 attach list Enter | S, fixes1 | open | `chat-attach.js:1224` `notePickerKeydown` |
 | C13 table plus off centre | S, fixes1 | open | glyph 0.6 to 0.75 px low, `library-lazy.css:6293` |
