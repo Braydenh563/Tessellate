@@ -2714,105 +2714,9 @@ function nameMarkSay(anchor, text) {
   setTimeout(() => bubble.remove(), 2600);
 }
 
-//: **The companion, visiting its large view.** Its element moves from its
-//: perch into `host` and back on `home()`; nothing about it is copied, so
-//: nothing about it is lost. While it visits (`nmb.visit`) nothing moves it
-//: (`nameMarkBuddyMoveTo`, the checks, its rides, errands and wanders all
-//: stand down), it cannot be carried off or have its menu opened, and its
-//: beat is the view's. A walk under way is finished first: the view shows
-//: where it was going, not the path.
 //: How long after it arrives in the view a pointer it landed under is not
 //: yet a hover (the view's fit runs over its first two frames).
 const NMB_VISIT_SETTLE_MS = 700;
-function nameMarkBuddyVisit(host) {
-  const buddy = document.getElementById("nm-buddy");
-  if (!buddy || nmb.visit || buddy.classList.contains("nm-buddy-dragging")) return null;
-  for (const anim of [nmb.anim, nmb.glideAnim]) if (anim && anim.playState === "running") anim.finish();
-  clearTimeout(nmb.placeTimer);
-  nmb.placeTimer = 0;
-  //: The ledge under it shows for a sit; the CSS reads the host's
-  //: own `data-pose`, a copy kept here (a `:has()` on the companion's made
-  //: every pose change restyle 968 elements of the page).
-  const mirror = () => { host.dataset.pose = buddy.dataset.pose || ""; };
-  //: **A face visiting its large view keeps moving between its beats**
-  //: (INBOX 600, the owner: "it might sway or do something for a couple
-  //: seconds but will then snap still"). Its acts come every 2.5 to 6
-  //: seconds and its breath is under a pixel, so between them it stood still
-  //: for over a second (atlas600-still.js: 1,083ms with no part moving
-  //: 0.75px). Its weight now shifts about its feet and it bobs, on two clocks
-  //: that never line up (6.7s, 4.3s), so one is under way while the other
-  //: turns; `rotate` and `translate` on the face's own box, which nothing
-  //: else moves, so an act plays over them. Each starts half a swing in, at
-  //: rest. Atlas too (INBOX 619): its layers' own loops are under a pixel
-  //: for over a second at a time (atlas619-viewer.js: still 1,051 to
-  //: 1,787ms in the view), so it floats on the same two clocks. Script, not
-  //: the stylesheet (the boot CSS is at its budget); gone with the visit,
-  //: and never under reduced motion or with the companion's actions off.
-  const face = buddy.querySelector(":scope > .nm-buddy-face");
-  const sway = [];
-  if (face && typeof face.animate === "function" && !nameMarkIdleQuiet()) {
-    const loop = (frames, ms) => face.animate(frames, { duration: ms, delay: -ms / 2, iterations: Infinity, direction: "alternate", easing: "ease-in-out" });
-    sway.push(loop([{ rotate: "-2deg" }, { rotate: "2deg" }], 6700), loop([{ translate: "0 1.2px" }, { translate: "0 -1.4px" }], 4300));
-  }
-  const watch = new MutationObserver(mirror);
-  nmb.visit = { home: buddy.parentNode, next: buddy.nextSibling, watch, sway, pose: nmb.pose, legs: nmb.legs, at: Date.now() };
-  buddy.classList.remove("nmb-dodge");
-  //: **Free of its perch in there** (INBOX 619, the owner: "in the enlarged
-  //: preview atlas is still hanging, it should be slightly separate from the
-  //: companion but still have the same life"). It came in holding the pose
-  //: of its perch: hanging by its hands from the card's top edge, sitting on
-  //: a drawn ledge, leaning on nothing. In the view it floats, clear of the
-  //: card's edges, with its float's own loops and the view's beat; the
-  //: perch's pose and legs go back with it (`nameMarkBuddyHome`). Asleep
-  //: lying or curled, it stays so, and gets up into the float.
-  if (nmb.pose !== "stand") {
-    nmb.pose = "float";
-    buddy.dataset.legs = nmb.legs = "";
-    if (!/^(lie|curl)/.test(buddy.dataset.pose || "")) buddy.dataset.pose = "float";
-  }
-  host.appendChild(buddy);
-  mirror();
-  //: **In the view at rest** (the owner, 2026-10-11: "if it is hanging,
-  //: the expanded companion kinda looks awkward with both it's arms up").
-  //: The view is a cut, not a move: its limbs take the float's resting
-  //: places at once (their transitions finished, Atlas's rig set in one
-  //: frame) rather than lowering from the hang's raised arms while you look.
-  if (nmb.visit.pose !== nmb.pose) {
-    for (const el of buddy.querySelectorAll(".nmb-arm, .nmb-hold, .nmb-leg")) {
-      getComputedStyle(el).transform;
-      for (const anim of el.getAnimations?.() || []) if (anim instanceof CSSTransition) anim.finish();
-    }
-    const box = buddy.querySelector(".atl-figure-box");
-    if (box?.atlasRig) {
-      box.atlasRig.fresh = true;
-      atlasRigWake(box);
-    }
-  }
-  watch.observe(buddy, { attributes: true, attributeFilter: ["data-pose"] });
-  //: Its own act keeps its own end; with none under way, the view's beat.
-  if (!nmb.act) nameMarkBuddySchedule();
-  return nameMarkBuddyHome;
-}
-function nameMarkBuddyHome() {
-  const visit = nmb.visit;
-  if (!visit) return;
-  nmb.visit = null;
-  visit.watch?.disconnect();
-  for (const anim of visit.sway || []) anim.cancel();
-  const buddy = document.getElementById("nm-buddy");
-  if (!buddy) return;
-  //: Back to its perch's pose (the view floated it, `nameMarkBuddyVisit`).
-  if (visit.pose && nmb.pose !== visit.pose) {
-    nmb.pose = visit.pose;
-    buddy.dataset.legs = nmb.legs = visit.legs || "";
-    if (!/^(lie|curl)/.test(buddy.dataset.pose || "")) buddy.dataset.pose = visit.pose;
-  }
-  buddy.querySelector(":scope > .nm-say")?.remove();
-  if (visit.home?.isConnected) visit.home.insertBefore(buddy, visit.next?.parentNode === visit.home ? visit.next : null);
-  nameMarkBuddyRelease();
-  if (!nmb.act) nameMarkBuddySchedule();
-  queueNameMarkBuddyCheck();
-}
 
 //: **The larger faces have a life of their own too** (the owner: "my popup
 //: character doesnt really have much expression, same with when it is a
@@ -5375,6 +5279,12 @@ for (const type of ["pointerdown", "pointerup", "keydown", "transitionrun", "ani
 //: `translate` animated on the compositor from where it was, with a jump
 //: arc on the character when it changes level, and legs that step. Reduce
 //: motion and Avatar animation Off skip straight to the end.
+//: A peek tucks in on arrival, never on the way (INBOX 1300 C01).
+function nameMarkBuddyLegsNow(spot, travels) {
+  const legs = spot?.legs || "";
+  return travels && legs === "peek" ? "" : legs;
+}
+
 function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
   //: Visiting its large view (`nameMarkBuddyVisit`): it is where you are
   //: looking at it, and goes nowhere until it is sent home.
@@ -5436,7 +5346,11 @@ function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
   nameMarkBuddyGait(buddy);
   const poseChanged = buddy.dataset.pose !== spot.pose;
   buddy.dataset.pose = spot.pose;
-  buddy.dataset.legs = spot.legs || "";
+  const dx = was.x - x;
+  const dy = was.y - y;
+  const travels = !instant && typeof buddy.animate === "function" && Number.isFinite(dx) && Number.isFinite(dy) && (Math.abs(dx) >= 1 || Math.abs(dy) >= 1);
+  clearTimeout(nmb.legsTimer);
+  buddy.dataset.legs = nameMarkBuddyLegsNow(spot, travels);
   buddy.dataset.side = spot.side || "";
   nmb.pose = spot.pose;
   nmb.legs = spot.legs || "";
@@ -5446,8 +5360,6 @@ function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
   //: was measured with the hang's pivot and a standing figure lost its
   //: rings to it). Once more, now they are this spot's.
   if (nmb.ride && poseChanged) nameMarkBuddyRideBox(x, y, true);
-  const dx = was.x - x;
-  const dy = was.y - y;
   if (!Number.isFinite(dx) || !Number.isFinite(dy) || (Math.abs(dx) < 1 && Math.abs(dy) < 1)) return;
   nmb.anim?.cancel();
   nmb.hopAnim?.cancel();
@@ -5461,6 +5373,12 @@ function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
   }
   nameMarkBuddyBlend(buddy, stop);
   nameMarkBuddyGo(buddy, dx, dy, spot, poseChanged, was, underway);
+  if (buddy.dataset.legs !== (spot.legs || "")) {
+    const end = Number(nmb.anim?.effect?.getComputedTiming?.().endTime);
+    nmb.legsTimer = setTimeout(() => {
+      if (nmb.spot === spot) buddy.dataset.legs = spot.legs || "";
+    }, Number.isFinite(end) && end > 0 ? end : 900);
+  }
   //: Cut off in mid-air (a hop's arc, a float's lift), the figure comes
   //: down from where it was drawn, added to the new way, not snapped to it.
   const turn = leaning === null ? 0 : leaning - (Number.parseFloat(getComputedStyle(char).rotate) || 0);
