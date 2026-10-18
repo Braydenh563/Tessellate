@@ -523,10 +523,9 @@ the numbers. Decisions 30 to 45 stay above: later briefs build on them.
 
 - The blind panel (decision 40): the owner's rating against the 1 to 3B model on the owner's notebook.
 - Probe P15 (`agent-remaining/engine-probe-1010.md`): the lead-in chosen after the parts. P10 to P13 and P16 are built: HISTORY.md "Moved from the plans, 2026-10-18 (chat-1018".
-- Captions in keyword search: the composer reads them, the FTS index does not.
 - The currency table's Settings editor (decision 43); the rates are dated and fixed.
 - The model choosing among the engine's numbered readings (decision 45): the readings are listed; with a model running it does not yet pick.
-- Day and month order by locale in `when.py` (the 3/4 reading is day first).
+- The chat routes carry no locale yet: `query.understand(..., locale)` orders "3/4" but only the reading route (quick add) passes one; Ask reads it day first. The currency table has no preference at all (`utilities.RATES` is a constant), so decision 43's editor has nothing to edit until the table is a preference.
 
 #### Not verified until built
 Polarity in the fact layer was dropped (decision 30's condition: no feature

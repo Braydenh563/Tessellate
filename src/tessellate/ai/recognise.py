@@ -1581,14 +1581,15 @@ def question_range(text: str, today: date) -> tuple[date, date, str, int, int, b
     return None
 
 
-def question_day(text: str, today: date) -> tuple[date, date, str, int, int] | None:
+def question_day(text: str, today: date, locale: str | None = None) -> tuple[date, date, str, int, int] | None:
     """(since, until, phrase, start, end) for the first day or span a search
     question names that is not a stretch ending now ("on tuesday", "in
     March", "two weeks ago"), read in the past tense. A day said in weeks or
     months is widened around it: nobody remembers which day they wrote
-    something two weeks ago."""
+    something two weeks ago. `locale` orders a numeric date ("3/4" is 3 April
+    unless the locale writes the month first); none means day first."""
     anchor = datetime.combine(today, time(12))
-    for found in recognise(text, now=anchor, tense="past"):
+    for found in recognise(text, now=anchor, tense="past", locale=locale):
         if found.rank or found.kind not in ("date", "datetime", "range"):
             continue
         if text[max(0, found.start - 1):found.start] == ":":

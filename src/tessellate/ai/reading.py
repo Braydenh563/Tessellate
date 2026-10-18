@@ -296,7 +296,7 @@ def read(text: str, *, now: datetime, context: dict | None = None) -> Reading:
 
     from tessellate.search import query
 
-    understood = query.understand(raw, now)
+    understood = query.understand(raw, now, locale)
     slots = {
         "subject": understood.subject,
         "since": understood.since,

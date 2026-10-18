@@ -9333,6 +9333,13 @@ Link to another note with [[its first few words]]."></textarea>
       </span>
     </label>
     <label class="setting-check">
+      <input type="checkbox" id="doc-link-offers" checked>
+      <span>
+        Offer links to my notes
+        <small class="muted">When a document names another note or document, offer to turn it into a link.</small>
+      </span>
+    </label>
+    <label class="setting-check">
       <input type="checkbox" id="doc-smart-punctuation">
       <span>
         Smart quotes and dashes
@@ -12093,6 +12100,15 @@ Link to another note with [[its first few words]]."></textarea>
                 <span>Smart quotes and dashes in documents</span>
               </label>
               <p class="muted">Curly quotes as you type, and two hyphens become a dash; never inside code.</p>
+              <label class="check-row">
+                <input type="checkbox" id="pref-link-offers" checked>
+                <span>Offer links to my notes in documents</span>
+              </label>
+              <p class="muted">When a document names another note or document, offer to turn it into a link. Never applied by Fix all.</p>
+              <p class="muted hidden" id="pref-link-ignored-row">
+                <span id="pref-link-ignored-count"></span>
+                <button type="button" class="ghost small" id="pref-link-ignored-reset">Offer them again</button>
+              </p>
               <label class="check-row">
                 <input type="checkbox" id="pref-autocorrect" checked>
                 <span>Autocorrect as I type</span>

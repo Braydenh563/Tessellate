@@ -352,12 +352,13 @@ def _parse_operators(text: str) -> tuple[str, dict[str, list[str]], list[str], l
     return remainder, filters, phrases, excluded, since, until
 
 
-def understand(question: str, now: datetime | date | None = None) -> Understood:
+def understand(question: str, now: datetime | date | None = None, locale: str | None = None) -> Understood:
     """Read a question for a time range and a subject.
 
     Never raises and never returns nothing: a question it cannot read comes
     back as its own subject with no range, which is exactly what searching did
-    before this existed.
+    before this existed. `locale` (a browser tag such as "en-US") orders a
+    numeric date: "3/4" is 3 April, or 4 March where the month is written first.
     """
     text = (question or "").strip()
     if not text:
@@ -381,7 +382,7 @@ def understand(question: str, now: datetime | date | None = None) -> Understood:
         since, until, phrase, start, end, soft = found
         remainder = (remainder[:start] + " " + remainder[end:]).strip()
     elif not operator_dates:
-        day = recognise.question_day(remainder, today)
+        day = recognise.question_day(remainder, today, locale)
         if day is not None:
             since, until, phrase, start, end = day
             remainder = (remainder[:start] + " " + remainder[end:]).strip()

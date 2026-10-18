@@ -33,6 +33,7 @@ const SETTING_ROWS = [
   { key: "week_start", id: "pref-week-start" },
   { key: "insight_level", id: "pref-insight" },
   { key: "smart_punctuation", id: "pref-smart-punctuation" },
+  { key: "link_offers", id: "pref-link-offers" },
   { key: "autocorrect", id: "pref-autocorrect" },
   { key: "profile_enabled", id: "pref-profile-enabled" },
   { key: "notifications_muted_except_reminders", id: "pref-notif-mute-except-reminders" },
@@ -302,7 +303,30 @@ function settingRowsIn(pane) {
   });
 }
 
+//: The names "Never offer a link to this name" put away (documents-prose.js):
+//: how many, and the way to have them all offered again. Shown only with some.
+function renderLinkIgnoredRow() {
+  const kept = Array.isArray(prefsCache?.link_offer_ignored) ? prefsCache.link_offer_ignored : [];
+  $("pref-link-ignored-row").classList.toggle("hidden", !kept.length);
+  $("pref-link-ignored-count").textContent =
+    kept.length === 1 ? "1 name is not offered as a link." : `${kept.length} names are not offered as links.`;
+}
+
+$("pref-link-ignored-reset").addEventListener("click", async () => {
+  const before = Array.isArray(prefsCache?.link_offer_ignored) ? [...prefsCache.link_offer_ignored] : [];
+  const put = async (names) => {
+    prefsCache = await apiJson("/preferences", {
+      method: "PUT",
+      body: JSON.stringify({ link_offer_ignored: names }),
+    }).catch(() => prefsCache);
+    renderLinkIgnoredRow();
+  };
+  await put([]);
+  offerUndo("Link offers back on for every name", "Every name is offered as a link again.", () => put(before), () => put([]));
+});
+
 function paintSettingRows(name) {
+  renderLinkIgnoredRow();
   const pane = $(`settings-${name}`);
   if (!pane) return;
   const changed = settingRowsIn(pane).filter((row) => paintSettingRow(row, pane));
