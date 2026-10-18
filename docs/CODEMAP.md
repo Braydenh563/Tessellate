@@ -2,9 +2,9 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6127, frontend ids 2534, CSS sections 495, backend routes 613, backend modules 5864, test files 1283, tests 11500, plan headings 958.
+Counts: frontend functions 6128, frontend ids 2534, CSS sections 495, backend routes 613, backend modules 5864, test files 1283, tests 11501, plan headings 958.
 
-## Frontend functions (6127)
+## Frontend functions (6128)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -787,42 +787,42 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addReminder` | frontend/js/shell-reminders.js:1517 |
-| `buildSelect` | frontend/js/shell-reminders.js:1706 |
-| `clearDoneReminders` | frontend/js/shell-reminders.js:974 |
+| `addReminder` | frontend/js/shell-reminders.js:1518 |
+| `buildSelect` | frontend/js/shell-reminders.js:1707 |
+| `clearDoneReminders` | frontend/js/shell-reminders.js:975 |
 | `clipText` | frontend/js/shell-reminders.js:757 |
-| `curtainShell` | frontend/js/shell-reminders.js:1668 |
-| `defaultDueValue` | frontend/js/shell-reminders.js:1579 |
+| `curtainShell` | frontend/js/shell-reminders.js:1669 |
+| `defaultDueValue` | frontend/js/shell-reminders.js:1580 |
 | `glideStrip` | frontend/js/shell-reminders.js:296 |
-| `liftLockScreen` | frontend/js/shell-reminders.js:1689 |
+| `liftLockScreen` | frontend/js/shell-reminders.js:1690 |
 | `loadReminders` | frontend/js/shell-reminders.js:828 |
 | `markScrollEdge` | frontend/js/shell-reminders.js:438 |
 | `markTabBarRecede` | frontend/js/shell-reminders.js:513 |
 | `notePreviewText` | frontend/js/shell-reminders.js:779 |
-| `nudgeDue` | frontend/js/shell-reminders.js:1355 |
+| `nudgeDue` | frontend/js/shell-reminders.js:1356 |
 | `onScrollEdge` | frontend/js/shell-reminders.js:545 |
 | `paginateDoneReminders` | frontend/js/shell-reminders.js:924 |
-| `presetDate` | frontend/js/shell-reminders.js:1244 |
-| `refreshMediaSession` | frontend/js/shell-reminders.js:1632 |
-| `refreshReminderDefaults` | frontend/js/shell-reminders.js:1376 |
-| `relativeWhen` | frontend/js/shell-reminders.js:1211 |
-| `reminderComposeIsPristine` | frontend/js/shell-reminders.js:1364 |
-| `reminderEditForm` | frontend/js/shell-reminders.js:1408 |
-| `reminderItem` | frontend/js/shell-reminders.js:1014 |
-| `reminderMadeUndo` | frontend/js/shell-reminders.js:1508 |
-| `reminderPutUndoably` | frontend/js/shell-reminders.js:1496 |
-| `reminderTarget` | frontend/js/shell-reminders.js:1192 |
+| `presetDate` | frontend/js/shell-reminders.js:1245 |
+| `refreshMediaSession` | frontend/js/shell-reminders.js:1633 |
+| `refreshReminderDefaults` | frontend/js/shell-reminders.js:1377 |
+| `relativeWhen` | frontend/js/shell-reminders.js:1212 |
+| `reminderComposeIsPristine` | frontend/js/shell-reminders.js:1365 |
+| `reminderEditForm` | frontend/js/shell-reminders.js:1409 |
+| `reminderItem` | frontend/js/shell-reminders.js:1015 |
+| `reminderMadeUndo` | frontend/js/shell-reminders.js:1509 |
+| `reminderPutUndoably` | frontend/js/shell-reminders.js:1497 |
+| `reminderTarget` | frontend/js/shell-reminders.js:1193 |
 | `revealActiveTab` | frontend/js/shell-reminders.js:256 |
 | `safeMdSlice` | frontend/js/shell-reminders.js:671 |
-| `setDue` | frontend/js/shell-reminders.js:1293 |
-| `snoozeReminderTo` | frontend/js/shell-reminders.js:1385 |
+| `setDue` | frontend/js/shell-reminders.js:1294 |
+| `snoozeReminderTo` | frontend/js/shell-reminders.js:1386 |
 | `startClockTicker` | frontend/js/shell-reminders.js:59 |
 | `startMinuteTicker` | frontend/js/shell-reminders.js:34 |
 | `stopClockTicker` | frontend/js/shell-reminders.js:63 |
 | `stripFrontmatter` | frontend/js/shell-reminders.js:767 |
-| `syncDueFromParts` | frontend/js/shell-reminders.js:1307 |
+| `syncDueFromParts` | frontend/js/shell-reminders.js:1308 |
 | `syncEdgeFade` | frontend/js/shell-reminders.js:369 |
-| `syncPartsFromDue` | frontend/js/shell-reminders.js:1299 |
+| `syncPartsFromDue` | frontend/js/shell-reminders.js:1300 |
 | `syncScrollEdges` | frontend/js/shell-reminders.js:596 |
 | `syncTabOverflowFade` | frontend/js/shell-reminders.js:214 |
 | `tabBarMode` | frontend/js/shell-reminders.js:208 |
@@ -830,8 +830,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `tabContentWidth` | frontend/js/shell-reminders.js:185 |
 | `tabRowSpace` | frontend/js/shell-reminders.js:120 |
 | `tickClocks` | frontend/js/shell-reminders.js:12 |
-| `toLocalInputValue` | frontend/js/shell-reminders.js:1237 |
-| `updateDueReadout` | frontend/js/shell-reminders.js:1319 |
+| `toLocalInputValue` | frontend/js/shell-reminders.js:1238 |
+| `updateDueReadout` | frontend/js/shell-reminders.js:1320 |
 | `updateReminderBadge` | frontend/js/shell-reminders.js:943 |
 | `wikiLinkLabel` | frontend/js/shell-reminders.js:718 |
 | `wikiLinkShown` | frontend/js/shell-reminders.js:744 |
@@ -1187,67 +1187,68 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wireFeatureModelSelects` | frontend/js/ai-tools.js:741 |
 | `wireReindexButton` | frontend/js/ai-tools.js:934 |
 
-### frontend/js/phone-shell.js (58)
+### frontend/js/phone-shell.js (59)
 
 | Name | File:line |
 |---|---|
-| `buildSettingsJumpList` | frontend/js/phone-shell.js:1716 |
-| `clearAppCache` | frontend/js/phone-shell.js:2122 |
+| `buildSettingsJumpList` | frontend/js/phone-shell.js:1737 |
+| `clearAppCache` | frontend/js/phone-shell.js:2143 |
 | `closeNotePageIfGone` | frontend/js/phone-shell.js:1006 |
-| `dockArrangeLabel` | frontend/js/phone-shell.js:1878 |
-| `dockArrangeSlot` | frontend/js/phone-shell.js:1867 |
+| `dockArrangeLabel` | frontend/js/phone-shell.js:1899 |
+| `dockArrangeSlot` | frontend/js/phone-shell.js:1888 |
 | `dockChatAttachments` | frontend/js/phone-shell.js:1138 |
 | `dockChatTools` | frontend/js/phone-shell.js:1196 |
-| `dockItemCount` | frontend/js/phone-shell.js:1949 |
+| `dockItemCount` | frontend/js/phone-shell.js:1970 |
 | `dockPhoneStatus` | frontend/js/phone-shell.js:721 |
-| `dockShown` | frontend/js/phone-shell.js:1943 |
+| `dockShown` | frontend/js/phone-shell.js:1964 |
 | `dockTabBar` | frontend/js/phone-shell.js:577 |
 | `emblemArt` | frontend/js/phone-shell.js:117 |
 | `emblemHsl` | frontend/js/phone-shell.js:67 |
 | `emblemPalette` | frontend/js/phone-shell.js:88 |
 | `emblemSetBusy` | frontend/js/phone-shell.js:165 |
 | `ensureP5` | frontend/js/phone-shell.js:34 |
-| `floatPrimaryActions` | frontend/js/phone-shell.js:1804 |
+| `floatPrimaryActions` | frontend/js/phone-shell.js:1825 |
 | `focusTabPage` | frontend/js/phone-shell.js:386 |
-| `foldDockActions` | frontend/js/phone-shell.js:2004 |
-| `foldDockArrange` | frontend/js/phone-shell.js:1959 |
-| `foldSiblingsIntoMenu` | frontend/js/phone-shell.js:1909 |
-| `foldZoneIntoMenu` | frontend/js/phone-shell.js:1890 |
-| `forceReloadApp` | frontend/js/phone-shell.js:2137 |
+| `foldDockActions` | frontend/js/phone-shell.js:2025 |
+| `foldDockArrange` | frontend/js/phone-shell.js:1980 |
+| `foldSiblingsIntoMenu` | frontend/js/phone-shell.js:1930 |
+| `foldZoneIntoMenu` | frontend/js/phone-shell.js:1911 |
+| `forceReloadApp` | frontend/js/phone-shell.js:2158 |
 | `initBottomTabBar` | frontend/js/phone-shell.js:608 |
-| `initDockActionFolding` | frontend/js/phone-shell.js:2050 |
-| `initDockFolding` | frontend/js/phone-shell.js:1978 |
+| `initDockActionFolding` | frontend/js/phone-shell.js:2071 |
+| `initDockFolding` | frontend/js/phone-shell.js:1999 |
 | `initHeaderHeightToken` | frontend/js/phone-shell.js:510 |
-| `initKeyboardInset` | frontend/js/phone-shell.js:1648 |
+| `initKeyboardInset` | frontend/js/phone-shell.js:1669 |
 | `initNotePage` | frontend/js/phone-shell.js:1011 |
 | `initNotesSubtabHeightToken` | frontend/js/phone-shell.js:533 |
 | `initOcrPhonePage` | frontend/js/phone-shell.js:1098 |
 | `initPhoneChatRow` | frontend/js/phone-shell.js:1251 |
 | `initPhoneHeaderMore` | frontend/js/phone-shell.js:651 |
 | `initPhoneStatus` | frontend/js/phone-shell.js:757 |
-| `initPrimaryFab` | frontend/js/phone-shell.js:1830 |
+| `initPrimaryFab` | frontend/js/phone-shell.js:1851 |
 | `initRowSwipe` | frontend/js/phone-shell.js:852 |
 | `mountPhoneSidebarOpeners` | frontend/js/phone-shell.js:791 |
 | `ocrPhonePage` | frontend/js/phone-shell.js:1062 |
 | `openNotePage` | frontend/js/phone-shell.js:950 |
 | `openPhoneMoreSheet` | frontend/js/phone-shell.js:1497 |
 | `openSheet` | frontend/js/phone-shell.js:1291 |
-| `phoneMoreRunCount` | frontend/js/phone-shell.js:1578 |
+| `phoneMoreDueCount` | frontend/js/phone-shell.js:1622 |
+| `phoneMoreRunCount` | frontend/js/phone-shell.js:1586 |
 | `phoneSheetDialogs` | frontend/js/phone-shell.js:1117 |
-| `quitApp` | frontend/js/phone-shell.js:2089 |
+| `quitApp` | frontend/js/phone-shell.js:2110 |
 | `refreshNotePage` | frontend/js/phone-shell.js:995 |
 | `releaseDetachedEmblems` | frontend/js/phone-shell.js:201 |
 | `releaseEmblem` | frontend/js/phone-shell.js:184 |
-| `renderAutonomousReview` | frontend/js/phone-shell.js:2209 |
+| `renderAutonomousReview` | frontend/js/phone-shell.js:2230 |
 | `renderBrandLogo` | frontend/js/phone-shell.js:245 |
 | `renderEmblem` | frontend/js/phone-shell.js:207 |
 | `renderEmblemWhenShown` | frontend/js/phone-shell.js:263 |
-| `renderExportsList` | frontend/js/phone-shell.js:2148 |
+| `renderExportsList` | frontend/js/phone-shell.js:2169 |
 | `sheetRow` | frontend/js/phone-shell.js:1471 |
 | `syncEmblemBusy` | frontend/js/phone-shell.js:153 |
-| `syncPhoneMoreButton` | frontend/js/phone-shell.js:1610 |
-| `syncPhoneMoreRuns` | frontend/js/phone-shell.js:1587 |
-| `toggleAutonomousPanel` | frontend/js/phone-shell.js:2184 |
+| `syncPhoneMoreButton` | frontend/js/phone-shell.js:1631 |
+| `syncPhoneMoreRuns` | frontend/js/phone-shell.js:1595 |
+| `toggleAutonomousPanel` | frontend/js/phone-shell.js:2205 |
 | `watchEmblemVisibility` | frontend/js/phone-shell.js:16 |
 
 ### frontend/js/wiring.js (34)
@@ -18078,7 +18079,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11500)
+## Tests (11501)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19259,7 +19260,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_user_profile_context.py | 8 |
 | tests/test_utilities_zones.py | 4 |
 | tests/test_ux1005_copy.py | 6 |
-| tests/test_uxfix2_1018.py | 5 |
+| tests/test_uxfix2_1018.py | 6 |
 | tests/test_validate.py | 11 |
 | tests/test_validation_error_shape.py | 2 |
 | tests/test_vault_import.py | 7 |

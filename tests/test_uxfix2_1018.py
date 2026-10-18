@@ -42,3 +42,12 @@ def test_system_log_lines_do_not_count_as_unread():
     body = status.split("function isNotificationUnread")[1].split("}\n")[0]
     # A hand-set unread flag still wins; the log kinds only skip the watermark.
     assert body.index("forced.has") < body.index("NOTIFICATION_LOG_KINDS")
+
+
+def test_more_carries_the_reminders_due_count():
+    shell = (ROOT / "frontend/js/phone-shell.js").read_text()
+    rem = (ROOT / "frontend/js/shell-reminders.js").read_text()
+    assert "const shown = due || runs;" in shell
+    assert "function phoneMoreDueCount" in shell
+    # The reminders fetch repaints More, or the badge would wait for a run.
+    assert 'typeof syncPhoneMoreRuns === "function"' in rem

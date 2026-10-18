@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Phone: the tab bar's More shows the reminders due count (and the Reminders row inside the sheet), since Reminders sits behind it at 390; the agent run count shows when none are due.
 - Notifications: the bell badge no longer counts the app's own job lines (backup, housekeeping, reading dates); a first run showed 5, now 1. A failed job still counts and every line is still listed.
 - Ctrl+K: typing a note's name offers its top three matching notes under the commands (Enter opens it), and the palette takes focus before it draws the catalogue: focus 41 ms to 4 ms and rows 81 ms to 26 ms (median of 5 at 1440).
 - Boards: the picker no longer keeps a "Default board" row while the list says No boards yet and the chips read All 0, Maps 0, Boards 0.

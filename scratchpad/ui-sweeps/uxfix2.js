@@ -83,10 +83,18 @@ const median = (a) => [...a].sort((x, y) => x - y)[Math.floor(a.length / 2)];
       return { count: btn.dataset.count, label: btn.getAttribute("aria-label"), rows: storedNotifications().map((n) => `${n.kind}: ${n.title}`) };
     })));
   } else if (mode === "more") {
-    await page.waitForTimeout(1500);
+    await page.evaluate(async () => {
+      const have = (await apiJson("/reminders").catch(() => [])).some((r) => !r.done && new Date(r.due_at) <= new Date());
+      if (!have) await apiJson("/reminders", { method: "POST", body: JSON.stringify({ text: "overdue probe", due_at: new Date(Date.now() + 2000).toISOString() }) });
+    });
+    await page.waitForTimeout(3000);
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(3500);
     console.log("more", JSON.stringify(await page.evaluate(() => {
-      const more = document.querySelector('[data-tab="more"], #tab-more, .tab-more');
-      return { more: more ? more.innerText.replace(/\s+/g, " ") : null, badge: more?.querySelector(".badge, .tab-badge, [class*=badge]")?.textContent ?? null };
+      const more = document.getElementById("phone-more-btn");
+      const badge = more?.querySelector(".tab-badge");
+      const r = badge?.getBoundingClientRect();
+      return { label: more?.getAttribute("aria-label"), badge: badge?.textContent ?? null, title: badge?.title, box: r ? `${Math.round(r.width)}x${Math.round(r.height)}` : null };
     })));
   }
   await browser.close();
