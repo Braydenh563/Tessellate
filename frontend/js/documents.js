@@ -15970,7 +15970,7 @@ function docProseFindings(text) {
     if (variant) {
       found.push({
         rule: "variant",
-        message: `${docSpellingVariant() === "uk" ? "UK" : "US"} spelling: “${variant}”`,
+        message: `${DOC_VARIANT_LABEL[docSpellingVariant()] || "US"} spelling: “${variant}”`,
         start: hit.index,
         end: hit.index + hit[0].length,
         text: hit[0],
@@ -17977,6 +17977,16 @@ const DOC_SPELLING_PAIRS = [
   ["marvellous", "marvelous"], ["towards", "toward"],
 ];
 
+//: The setting's five values (VC6) read the one table: Australian and Indian
+//: spell as the British column does for every pair here; Canadian is the
+//: mixed one (`DOC_CA_KEEPS_UK`). The label is what a finding says.
+const DOC_VARIANT_FAMILY = { us: "us", uk: "uk", au: "uk", in: "uk", ca: "ca" };
+const DOC_VARIANT_LABEL = { us: "US", uk: "UK", au: "Australian", ca: "Canadian", in: "Indian" };
+//: Canada spells -our, -re, -ce, grey, cheque and the doubled l the British
+//: way and -ize and the rest the American way ("tyre" is "tire" there).
+const DOC_CA_KEEPS_UK =
+  /^(?!tyre$)([a-z]*(our(s|ed|ite|ites)?|re|res|ce|ces|ll(ed|ing|er))|grey|cheque|jewellery|marvellous|catalogue)$/;
+
 //: Built once from the pairs above, in whichever direction the setting names.
 //: A map rather than a scan, because this runs per word of the document.
 let docVariantMap = null;
@@ -17991,10 +18001,14 @@ function docVariantLookup() {
   if (docVariantFor === variant && docVariantMap) return docVariantMap;
   docVariantFor = variant;
   docVariantMap = new Map();
-  if (variant === "uk") {
-    for (const [uk, us] of DOC_SPELLING_PAIRS) docVariantMap.set(us, uk);
-  } else if (variant === "us") {
-    for (const [uk, us] of DOC_SPELLING_PAIRS) docVariantMap.set(uk, us);
+  const family = DOC_VARIANT_FAMILY[variant];
+  if (!family) return docVariantMap;
+  for (const [uk, us] of DOC_SPELLING_PAIRS) {
+    //: Canada keeps some of each side: -our, -re, -ce and the doubled l from
+    //: the left, -ize and the rest from the right.
+    const british = family === "uk" || (family === "ca" && DOC_CA_KEEPS_UK.test(uk));
+    if (british) docVariantMap.set(us, uk);
+    else docVariantMap.set(uk, us);
   }
   return docVariantMap;
 }

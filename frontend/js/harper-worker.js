@@ -20,7 +20,8 @@
 // naming the policy.
 //
 // Protocol:
-//   in  {id, text, dialect}          dialect: "us" | "uk" | "off" (off is us)
+//   in  {id, text, dialect}          dialect: "us" | "uk" | "au" | "ca" | "in"
+//                                    ("off" is us)
 //   out {id, ok: true, ms, lints: [{start, end, kind, message, problem,
 //                                    suggestions: [{kind, text}]}]}
 //   out {id, ok: false, error}       the binary did not load; the caller
@@ -44,12 +45,21 @@ const linters = new Map();
 //: `tests/test_prose_tools.py` runs this worker in node and holds it.
 const HARPER_RULES_OFF = ["UseTitleCase"];
 
-function dialectOf(name) {
-  return name === "uk" ? Dialect.British : Dialect.American;
+//: The five dialects Harper ships (VC6): the setting's value to its name.
+const DIALECTS = {
+  us: Dialect.American,
+  uk: Dialect.British,
+  au: Dialect.Australian,
+  ca: Dialect.Canadian,
+  in: Dialect.Indian,
+};
+
+function dialectOf(key) {
+  return DIALECTS[key];
 }
 
 async function linterFor(name) {
-  const key = name === "uk" ? "uk" : "us";
+  const key = Object.hasOwn(DIALECTS, name) ? name : "us";
   let linter = linters.get(key);
   if (!linter) {
     linter = slimBinary.createLinter(dialectOf(key)).then((made) => {

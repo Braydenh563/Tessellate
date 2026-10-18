@@ -849,7 +849,7 @@ HELP_TOPICS: list[dict] = [
             "mechanical fix, an awkward sentence, \"Ask the AI for wordings\" "
             "has the local model offer two or three alternatives to pick from. "
             "Nothing is changed until you choose it. Manage the dictionary and "
-            "the British/American spelling preference from the editor's own "
+            "the spelling preference (American, British, Australian, Canadian or Indian) from the editor's own "
             "dictionary dialog."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
