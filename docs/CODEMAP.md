@@ -2,7 +2,7 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6129, frontend ids 2534, CSS sections 496, backend routes 613, backend modules 5864, test files 1284, tests 11509, plan headings 958.
+Counts: frontend functions 6129, frontend ids 2534, CSS sections 496, backend routes 613, backend modules 5864, test files 1284, tests 11510, plan headings 958.
 
 ## Frontend functions (6129)
 
@@ -11452,18 +11452,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_head_word` | src/tessellate/ai/composer_overview.py:130 |
+| `_head_word` | src/tessellate/ai/composer_overview.py:142 |
 | `_holding` | src/tessellate/ai/composer_overview.py:77 |
-| `_list_line` | src/tessellate/ai/composer_overview.py:232 |
+| `_list_line` | src/tessellate/ai/composer_overview.py:246 |
 | `_names` | src/tessellate/ai/composer_overview.py:126 |
-| `_phrase` | src/tessellate/ai/composer_overview.py:246 |
-| `_prose_line` | src/tessellate/ai/composer_overview.py:201 |
+| `_phrase` | src/tessellate/ai/composer_overview.py:260 |
+| `_prose_line` | src/tessellate/ai/composer_overview.py:215 |
 | `_wider` | src/tessellate/ai/composer_overview.py:105 |
-| `best_line` | src/tessellate/ai/composer_overview.py:218 |
+| `best_line` | src/tessellate/ai/composer_overview.py:232 |
 | `members` | src/tessellate/ai/composer_overview.py:87 |
-| `names_by_note` | src/tessellate/ai/composer_overview.py:136 |
-| `shared_names` | src/tessellate/ai/composer_overview.py:185 |
-| `themes` | src/tessellate/ai/composer_overview.py:163 |
+| `names_by_note` | src/tessellate/ai/composer_overview.py:150 |
+| `shared_names` | src/tessellate/ai/composer_overview.py:199 |
+| `themes` | src/tessellate/ai/composer_overview.py:177 |
 | `topic` | src/tessellate/ai/composer_overview.py:62 |
 
 ### src/tessellate/ai/composer_parts.py (2)
@@ -18081,7 +18081,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11509)
+## Tests (11510)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18289,7 +18289,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_commands.py | 14 |
 | tests/test_composer_eval_725.py | 6 |
 | tests/test_composer_eval_741.py | 6 |
-| tests/test_composer_form_1301.py | 10 |
+| tests/test_composer_form_1301.py | 11 |
 | tests/test_composer_grammar.py | 3 |
 | tests/test_composer_lists_1018.py | 22 |
 | tests/test_composer_long_question.py | 7 |

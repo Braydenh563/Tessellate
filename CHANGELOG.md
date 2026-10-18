@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer overview: a heading's first word is a thread only when it is a topic, so an ordinary word like "Ask" no longer reads as one ("Ask features in two of them") (INBOX 1301 D5).
 
 - Settings on a phone: the pane heading is hidden when the section list above it already shows the same name (Models over Models) (UX audit 9).
 - No-model notice: its action reads in ink on a phone, 4.5 or better in dark (was the accent at 3.96:1) (UX audit 2).

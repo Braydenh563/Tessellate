@@ -124,12 +124,26 @@ _PLAIN = frozenset(
 
 
 def _names(text: str) -> set[str]:
-    return {m for m in _NAMED.findall(text) if m.lower() not in _PLAIN} | set(_ANY_CASE_CODE.findall(text))
+    return {m for m in _NAMED.findall(text) if m.lower() not in _PLAIN and m.lower() not in _NOT_TOPICS} | set(_ANY_CASE_CODE.findall(text))
+
+
+#: Words that start a heading without being its topic: function words and
+#: the verbs a note opens with ("Ask one more question", "Buy snacks"). A
+#: thread named "Ask" reads as a sentence start, not a subject.
+_NOT_TOPICS = frozenset(
+    "ask tell call ring text email message book buy pay send check collect pick get see meet renew cancel finish start "
+    "fix write read try make take bring find keep let use go do have has had are was were will would should could can "
+    "may might must not remember note notes todo idea ideas plan plans list lists add put set give look want need "
+    "think try also then there here what when where which who why how but and for with from into over about after "
+    "before just still some any all each every more most one two three first next last new".split()
+)
 
 
 def _head_word(view) -> str:
     first = str(view.note.get("content") or "").lstrip("# ").split("\n", 1)[0].split()
     word = first[0].strip(":,.") if first else ""
+    if word.lower() in _NOT_TOPICS:
+        return ""
     return word if re.fullmatch(r"[A-Z][A-Za-z]{2,}", word) else ""
 
 

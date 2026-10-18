@@ -100,3 +100,16 @@ def test_ask_does_not_echo_the_question_above_its_answer():
     answer said it twice."""
     assert 'id="asked-question"' not in (ROOT / "frontend/index.html").read_text(encoding="utf-8")
     assert "You asked: " not in (ROOT / "frontend/js/capture-ask.js").read_text(encoding="utf-8")
+
+
+def test_the_overview_never_makes_a_theme_of_an_ordinary_word():
+    """The digest declined this notebook's question and `composer.compose`'s
+    overview said "Ask features in two of them": a heading's first word is a
+    thread only when it is a topic, not a verb or a function word."""
+    from tessellate.ai import composer
+
+    notes = _notebook(ITEM)
+    for q in ("what do I know about social", "summarise my social notes"):
+        text = composer._overview_answer(q, notes, today=TODAY, voice="", said="", prefer="")["text"]
+        assert not re.search(r"\bAsk (?:features|is) in", text)
+        assert "**Ask**" not in text
