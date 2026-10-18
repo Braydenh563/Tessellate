@@ -30,7 +30,7 @@ def test_a_save_with_the_server_gone_is_held_and_sent_later():
     held in the outbox, the box cleared, sent 174 ms after the server came
     back (captureaudit.js `offline`)."""
     code = app_js_text()
-    assert 'quickNote: ["/js/quick-note.js"]' in code
+    assert 'quickNote: ["/js/quick-note.js",' in code
     assert '"noteOutboxAdd", "flushNoteOutbox"' in code
     # Loaded on the boot timer with the Clear controls (INBOX 466).
     timer = re.search(r"setTimeout\(\(\) => \[([^\]]*)\]\.forEach\(\(name\) => ensureModule\(name\)\), 3000\);", code)
