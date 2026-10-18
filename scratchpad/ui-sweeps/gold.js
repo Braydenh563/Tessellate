@@ -24,7 +24,7 @@ const TAG = process.env.TAG || 'now';
 const FIXTURE = JSON.parse(fs.readFileSync(path.join(ROOT, 'tests', 'fixtures', 'gold_answers.json'), 'utf8'));
 
 function backdate(ids) {
-  const db = path.join(process.env.DATA || '', 'memorymap.db');
+  const db = path.join(process.env.DATA || '', fs.existsSync(path.join(process.env.DATA || '', 'tessellate.db')) ? 'tessellate.db' : 'memorymap.db');
   if (!process.env.DATA || !fs.existsSync(db)) return 'no DATA: notes keep today';
   const rows = FIXTURE.notes.map((n) => [ids[n.key], `${n.date} 10:00:00.000000`]).filter((r) => r[0]);
   execFileSync(PY, ['-c', [

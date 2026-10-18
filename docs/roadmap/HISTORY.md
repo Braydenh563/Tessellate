@@ -50629,6 +50629,27 @@ Decision 62 built: the search model already loaded on first use (or at launch wi
      Decision (away run, 2026-10-18, standing order 2.3: the recommendation is taken): keep. Fixed.
      Placed: WORLD_CLASS_PLAN 23 step 6.
 
+812. **The owner, 2026-10-11, verbatim.** "also the composer in the ask tab
+     and structuring of sentences and outputs needs to be cleaned up a lot. it
+     still looks messy. and the response feels, plain, boring, lifeless, and
+     doesnt give me anything more. I may as well just read the notes I made on
+     the right. the composer needs to be better but I dont know how and you
+     keep saying youve improved it but i still cant see much. I feel like Im
+     going in a loop 😞 also the first time I use the ask subtab search after
+     loading up the app, the badges next to the sub headers on each column are
+     visibly empty" (screenshots: Ask, "What have I saved about courses &
+     study?": quoted fragments with a bar, a superscript and "[your note, 27
+     July]" each, then "Grounded in" chips and "4 of 4 from your notes" that
+     repeat the right column; the corner Atlas drawn over "You asked"; empty
+     badges beside "Atlas" and "Matching records" while loading). Read: the
+     answer quotes, it does not answer; three citation marks per line; the
+     sources shown three times. Placed: CHAT_PLAN decision 70 (the answer is
+     judged against written gold answers, not rule counts), first in the
+     assistant brief; the empty badges and Atlas over the answer to ownerfix.
+     **Fixed 7976f0e, b9b13b7 (chat-1018).** The answer answers (gold 1 scores
+     99 live; one mark a paragraph, no chips, no "4 of 4"), reads a topic whole
+     and works out a day, a count and a list; live gold mean 76 to 87; the empty
+     badges and the Atlas overlap: 0 of 40 frames at 1440, 1024 and 390.
 
 ## Moved from the plans, 2026-10-18 (graph-1018)
 
@@ -50640,3 +50661,17 @@ Built by the graph-1018 agent (GRAPH_PLAN open work; the audit table is `agent-r
 - **Topic plates seated** (B71, INBOX 904): `gcSeatTopicPlates`; plates overlapping 1 to 0, plates on a dot 10 to 0 (`graphtopics1018.js`, 200 notes).
 - **A dragged note's neighbours follow it** (graph100-1011's open item): `carryForce` and `FOLLOW_PULL`, graph-worker.js; in the app neighbours moved 0.28 of the drag distance before and 0.48 after, 0.28 and 0.40 once settled (`graphdrag1018.js`).
 - **Hover at 2,000 notes.** `scratchpad/ui-sweeps/graphhover1018.js` (40 hovers over the fitted map, 161 draws): `gcDraw` median 4.4 ms, p95 8.9, max 16.8. The 22 to 24 ms recorded in graph100-1011.md was a wall frame with the browser's own raster in it; the app's draw is inside the 16 ms budget.
+
+## Moved from the plans, 2026-10-18 (chat-1018: CHAT_PLAN open from Phase 6, probes P10 to P13)
+
+From CHAT_PLAN, "Open from Phase 6", as it stood:
+
+> - Probe P10, P11, P13, P15, P16 (`agent-remaining/engine-probe-1010.md`): days until a note's date, mention counts, every date and what is due, lead-ins chosen after the parts, a note's open checklist items.
+> - Probe P12: a list filtered by category or tag ("list my work notes").
+
+Built, judged against the decision-70 shape and measured:
+
+- **Computed answers** (`ai/composer_lists.py`, called from `composer_digest._early`): "how many days until the dentist" (one sentence from the note's own day, cited), "is the dentist before the boiler service" (both days, both cited), "how many times did I mention Porto" (count, notes, span, four lines), "list my work notes" or "everything tagged launch" (every note filed there, newest first), "what is due this week" and "what are all the dates in my notes" (the days in the notes, soonest first; an empty window says so and names the next day, none ahead says so). A day or word no note holds is never invented: the shape returns nothing and the engine's own not-found answer stands.
+- **The pool** (`ai/list_pool.py`, `routes_chat._prepare`): the notes filed under the name (up to 300), every note that holds the word, the newest 300 with a digit; a word no note says now answers with no near-miss quote. Ask reads a list or a count as the question it is (`routes_chat._forced_notes`): it used to answer "That is something to do (find a note)" for "list my work notes". The digest answers "all the dates" although Ask searches it newest first (`_may_digest`).
+- **Measured**: `tests/test_composer_lists_1018.py` (20 tests, four through the route); live gold mean 87 before and after (the shapes touch no gold question), live "how many times did I mention Lisbon": "You mentioned Lisbon twice, in 2 notes, 30 August to 20 September." with two marked lines; "what are all the dates in my notes" on a notebook with no day ahead: "I found no day ahead in your notes." Not verified: a real model with these (decision 75 keeps it answering), the dentist, Porto and boiler notes in the live notebook (the demo notebook has none; they are the in-process fixtures).
+- Still open, kept in the plan: P15 (the lead-in chosen after the parts).
