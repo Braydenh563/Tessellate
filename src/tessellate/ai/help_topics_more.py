@@ -1525,6 +1525,32 @@ MORE_TOPICS.extend(
             "badge": {"label": "Chat", "tab": "chat"},
         },
         {
+            #: INBOX 1300 C30: the viewer's two bars, filmstrip, keys and gestures.
+            "id": "image-viewer",
+            "keywords": (
+                "image viewer", "lightbox", "view a picture", "zoom a picture",
+                "rotate a picture", "actual size", "filmstrip", "next picture",
+                "pinch to zoom", "swipe pictures", "download a picture",
+                "open in a new tab", "picture details",
+            ),
+            "body": (
+                "A picture or file opens in the viewer. The bar at the top names "
+                "it and says where you are (2 of 5), with Copy text when it has "
+                "a reading, Download, Open in a new tab, Details (the size, the "
+                "caption and the text read off it, shown or hidden), the '?' "
+                "and the ⋯ (rename, delete, see the text on the page). The bar at "
+                "the foot zooms: out, in, back to fit, 1:1 for actual size, and "
+                "Rotate; a PDF adds its page stepper. With more than one file a "
+                "filmstrip above it jumps to any of them. Scroll zooms where the "
+                "pointer is, drag moves a zoomed picture, double-click switches "
+                "between fit and actual size. Keys: Left and Right, plus and "
+                "minus, 0, 1, R, I, Escape. On a phone, swipe and pinch. The bars "
+                "fade while the mouse rests on the picture and come back when it "
+                "moves; never for the keyboard or reduced motion."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
             #: INBOX 688, 714: the Ask box's Use AI switch.
             "id": "answers-from-notes",
             "keywords": (

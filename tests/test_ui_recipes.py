@@ -5898,3 +5898,33 @@ def test_the_library_peek_is_the_help_popover_shell_and_closes_on_drag() -> None
     assert "tile.title =" not in script[script.index("function wbLibTile(") :][:1500], "a native title would stack on the peek"
     css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
     assert re.search(r"\.help-popover\.wb-lib-peek \{[^}]*pointer-events: none", css), "the peek takes no pointer"
+
+
+def test_the_file_viewer_is_two_docks_and_a_filmstrip() -> None:
+    """DESIGN.md, "A full-screen viewer of a file" (INBOX 1300 C30): the name
+    and the file's actions in a top `.dock`, the view in a foot `.dock`, a
+    filmstrip for more than one file, the '?' on the `data-help-for` recipe,
+    the overflow a `kebabMenu`; the bars rest only for an idle mouse, and the
+    chrome's CSS is the lazy sheet's, never the boot CSS."""
+    view = frontend_text("lightbox-view.js")
+    for needle in (
+        'topbar.className = "dock lightbox-topbar"',
+        'dock.className = "dock lightbox-dock"',
+        'film.className = "lightbox-filmstrip"',
+        'helpBtn.setAttribute("data-help-for", "lightbox-help")',
+        "const menu = kebabMenu(",
+        'document.addEventListener("keydown", onKey, true)',
+    ):
+        assert needle in view, needle
+    rest = view[view.index("const canRest = () =>") :][:400]
+    for guard in ("!keysSeen", "!reducedMotion()", ":focus-visible"):
+        assert guard in rest, f"the bars must not rest: {guard}"
+    assert 'e.pointerType === "mouse"' in view[view.index("const wake = (e) =>") :][:400]
+    lazy = (ROOT / "frontend" / "css" / "lightbox-lazy.css").read_text(encoding="utf-8")
+    for rule in (".lightbox .lightbox-topbar {", ".lightbox-bottom {", ".lightbox .lightbox-filmstrip {", ".lightbox.lightbox-idle .lightbox-topbar,"):
+        assert rule in lazy, rule
+    assert re.search(r"prefers-reduced-motion: reduce\)\s*\{\s*\.lightbox \.lightbox-glide \{\s*transition: none", lazy)
+    for boot in ("00-tokens-shell", "02-chat-graph", "07-whiteboard-misc", "08-consistency"):
+        text = (ROOT / "frontend" / "css" / f"{boot}.css").read_text(encoding="utf-8")
+        for name in ("lightbox-topbar", "lightbox-dock", "lightbox-filmstrip", "lightbox-thumb"):
+            assert name not in text, f"{name} in {boot}.css: the viewer's chrome is lazy"
