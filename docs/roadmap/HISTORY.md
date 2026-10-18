@@ -50784,3 +50784,10 @@ From WHITEBOARD_PLAN "The draw.io programme", section 2 (Text tab), built by the
 
 - Captions in keyword search: a picture's caption was already in the index (`readings.text_of`, probed: "zebrafinch" finds the upload, `scratchpad/ui-sweeps/capsearch-1018.js`); a recording's transcript too. The one thing on a recording a search could not find was the comment on a mark; `_recording_row` now includes them (`tests/test_search_recordings.py`).
 - Day and month order by locale: the open row named `when._date_phrase`, but that pattern reads no numeric dates; the numeric reading is `recognise._numeric_dates`, which already took a locale. A question's "3/4" went through `question_day` with none. `query.understand` and `question_day` take `locale` (reading.py passes it), `tests/test_when_windows.py`.
+
+## Moved from the plans, 2026-10-18 (fixes7-1018)
+
+- Ask and Chat read "3/4" by locale (CHAT_PLAN, "Not built"): `ChatRequest.locale` (the browser's `navigator.language`, sent by `capture-ask.js`) goes `_prepare` to `retrieve_detailed` to `query.understand`; en-US reads "what's on 3/4" as 4 March, en-GB as 3 April (`tests/test_ask_locale.py`).
+- Chat's Make a mind map (MINDMAP_PLAN 12.3 item 3, the text-outline half): `POST /whiteboard/maps/from-text` outlines an answer or a whole chat like a note (headings and lists as branches, prose one topic per paragraph; no model); an answer's Mind map this and the chat menu's Make a mind map of this chat call `chatKeep("map", ...)` in the lazy quick-note bundle, which now also holds Save this chat as a document.
+- Whiteboard placeholders `%date%` and `%page%` (WHITEBOARD_PLAN section 3): `wbExpandPlaceholders` takes a built-in resolver; an item's own property of the same name wins; `%page%` is the smallest frame holding the item's centre (decision 22). Painted per render, so a retitled frame shows on the next repaint of the item.
+- Whiteboard Copy as SVG (WHITEBOARD_PLAN section 14): `wbCopyAsSvg`, a Ctrl+K row beside Copy as an image, writes the export SVG as text.

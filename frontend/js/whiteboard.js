@@ -12172,6 +12172,21 @@ async function wbCopyAsImage() {
   }
 }
 
+//: **Copy as SVG** (draw.io's, the other half of Copy as an image): the same
+//: picture as the SVG export, as text on the clipboard, so it pastes into a
+//: code editor or a vector tool. Plain text, so any browser allows it.
+async function wbCopyAsSvg() {
+  const scope = wbMultiSelection.size > 0 || wbSelectedItem ? "selection" : "visible";
+  try {
+    if (!navigator.clipboard?.writeText) throw new Error("This browser cannot copy text. Export an SVG instead.");
+    const { svg } = wbBuildExportSvg(scope, { transparent: wbExportPngPrefs().transparent });
+    await navigator.clipboard.writeText(svg);
+    toast("Copied the SVG. Paste it into an editor.");
+  } catch (err) {
+    toast(err.message || voiceLine("failed", { what: "copy the SVG" }), true);
+  }
+}
+
 async function wbExportPdf(scope) {
   const { svg, width, height } = wbBuildExportSvg(scope);
   const blob = await wbRasterizeSvg(svg, width, height, "image/png");
@@ -17538,11 +17553,37 @@ const WB_ITEM_FONTS = Object.freeze({
 //: Pure (node-tested): `%name%` in a label shows the item's own value of
 //: that name (draw.io's placeholders, from its Edit data). An unknown name
 //: stays as typed, so "100% of %x%" is not mangled. The stored label keeps the
-//: marks; only what is drawn, and so exported, is expanded.
-function wbExpandPlaceholders(text, props) {
+//: marks; only what is drawn, and so exported, is expanded. `builtin(name)`
+//: answers `date` and `page` (WHITEBOARD_PLAN.md section 3): an item's own
+//: property of that name wins, then the built-in, then the text as typed.
+function wbExpandPlaceholders(text, props, builtin) {
   const source = String(text ?? "");
-  if (!props || typeof props !== "object" || !source.includes("%")) return source;
-  return source.replace(/%([A-Za-z][\w .-]{0,39})%/g, (mark, name) => (Object.prototype.hasOwnProperty.call(props, name) ? String(props[name]) : mark));
+  if (!source.includes("%")) return source;
+  const own = props && typeof props === "object" ? props : null;
+  if (!own && !builtin) return source;
+  return source.replace(/%([A-Za-z][\w .-]{0,39})%/g, (mark, name) => {
+    if (own && Object.prototype.hasOwnProperty.call(own, name)) return String(own[name]);
+    const value = builtin && (name === "date" || name === "page") ? builtin(name) : "";
+    return value ? String(value) : mark;
+  });
+}
+
+//: `%date%` is today in the reader's own locale; `%page%` is the title of the
+//: smallest frame holding the item's centre (decision 22: frames are the
+//: pages), none when it sits in no frame.
+function wbPlaceholderBuiltins(kind, item) {
+  return (name) => {
+    if (name === "date") return new Date().toLocaleDateString(undefined, { dateStyle: "medium" });
+    const box = wbItemBBox(kind, item);
+    if (!box) return "";
+    const cx = (box.minX + box.maxX) / 2, cy = (box.minY + box.maxY) / 2;
+    let best = null;
+    for (const f of wbState.objects || []) {
+      if (f.kind !== "frame" || cx < f.x || cy < f.y || cx > f.x + f.width || cy > f.y + f.height) continue;
+      if (!best || f.width * f.height < best.width * best.height) best = f;
+    }
+    return best ? wbFrameTitle(best) : "";
+  };
 }
 
 //: A shape's or connector's hover text (`data.tip`): a native SVG `<title>`,
@@ -17563,9 +17604,9 @@ function wbSyncSketchTip(groupEl, parsed) {
 }
 
 //: Adds, updates or removes a shape's label for one render.
-function wbPaintShapeLabel(groupEl, parsed) {
+function wbPaintShapeLabel(groupEl, parsed, sketch) {
   const kind = wbShapeLabelKind(parsed);
-  const text = kind && typeof parsed.label === "string" ? wbExpandPlaceholders(parsed.label, parsed.props) : "";
+  const text = kind && typeof parsed.label === "string" ? wbExpandPlaceholders(parsed.label, parsed.props, sketch && wbPlaceholderBuiltins("sketch", sketch)) : "";
   let label = groupEl.querySelector(":scope > .sketch-label");
   if (!text) {
     label?.remove();
@@ -17732,7 +17773,7 @@ function wbLayoutLinkLabel(groupEl) {
 }
 
 function wbPaintLinkLabel(groupEl, sketch, parsed) {
-  const text = wbLinkTakesLabel(sketch, parsed) && typeof parsed.label === "string" ? wbExpandPlaceholders(parsed.label, parsed.props) : "";
+  const text = wbLinkTakesLabel(sketch, parsed) && typeof parsed.label === "string" ? wbExpandPlaceholders(parsed.label, parsed.props, wbPlaceholderBuiltins("sketch", sketch)) : "";
   let label = groupEl.querySelector(":scope > .wb-link-label");
   if (!text) {
     label?.remove();
@@ -19623,7 +19664,7 @@ function renderWhiteboard() {
       .style("filter", look?.shadow ? WB_ITEM_SHADOW : null);
     wbSyncSketchTip(this, look);
     // After the path, which the label is laid out from (decision 12).
-    wbPaintShapeLabel(this, shapeData);
+    wbPaintShapeLabel(this, shapeData, d);
     wbPaintLinkLabel(this, d, linkData);
   });
 

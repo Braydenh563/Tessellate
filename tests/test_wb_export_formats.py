@@ -73,3 +73,10 @@ def test_a_command_copies_the_picture_and_its_errors_are_said():
     assert 'group: "Board"' in row and 'surface: "both"' in row and "wbCopyAsImage" in row
     handler = _function("wbCopyAsImage", "async ")
     assert "wbExportCopyImage(" in handler and "toast(" in handler
+
+
+def test_a_command_copies_the_svg_as_text():
+    row = re.search(r'\{ id: "copy-svg".*', CMD).group(0)
+    assert 'group: "Board"' in row and "wbCopyAsSvg" in row
+    handler = _function("wbCopyAsSvg", "async ")
+    assert "clipboard.writeText(" in handler and "wbBuildExportSvg(" in handler and "toast(" in handler
