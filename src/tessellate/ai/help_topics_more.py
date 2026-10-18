@@ -892,19 +892,21 @@ MORE_TOPICS: list[dict] = [
         "keywords": (
             "first steps", "start in three steps", "sample notebook", "sample notes", "example notes",
             "remove the sample notes", "demo notes", "try it out", "hide these steps", "get started", "setup popup", "closed the welcome", "checklist",
+            "hide get started", "mark all as done", "show get started", "fold the first steps",
         ),
         "body": (
-            "A new notebook's Dashboard shows Start in three steps: 1. Your name, "
-            "2. Write a note, 3. Ask your notebook. Each is ticked when it is done, "
-            "and none of them needs an AI model: Ask answers from your notes' own "
+            "A new notebook's Dashboard shows Get started, a checklist of three steps: 1. Your name, "
+            "2. Write a note, 3. Ask your notebook, with a bar showing how many are done. Each is ticked "
+            "when it is done, and none of them needs an AI model: Ask answers from your notes' own "
             "words, and saving your first note offers Ask about it beside "
-            "Saved. Try a sample notebook adds eight example notes, tagged "
+            "Saved. The caret folds the steps to one line. The card's ... menu holds Try a sample notebook, which adds eight example notes, tagged "
             "sample-notebook, to explore (ask \"where is the spare key?\", see two "
             "linked notes in the Graph); it is offered until you write your own "
             "first note. Remove the sample notes moves them all to the bin, where "
             "Restore brings one back, and takes away the categories they made. The steps leave once all three are done and "
-            "the sample notes are gone, or with Hide these steps. They are never lost: the "
-            "dashboard's Get started menu (beside Customise) lists the same three, ticked as "
+            "the sample notes are gone. Mark all as done ticks every step and puts the card away; Hide Get started "
+            "hides the card and the dock's Get started button. Customise, Show Get started brings them back. "
+            "Until then the dashboard's Get started menu (beside Customise) lists the same three, ticked as "
             "they are done, with Take the tour and Replay the welcome, and the same checklist "
             "is the first row of the notifications bell until all three are done."
         ),
@@ -2009,7 +2011,7 @@ TOPIC_META: dict[str, dict] = {
     "timer": {"title": "Timer and stopwatch", "path": "Command palette, timer"},
     "calculator": {"title": "The calculator", "path": "Command palette, Calculator"},
     "manual": {"title": "The manual", "path": "Settings, Help, Open the manual"},
-    "first-steps": {"title": "First steps and the sample notebook", "path": "Dashboard, Start in three steps"},
+    "first-steps": {"title": "First steps and the sample notebook", "path": "Dashboard, Get started"},
     "live-captions": {"title": "How do I get live captions", "path": "Library, Recordings, Captions"},
     "count-words": {"title": "Count words", "path": "Command palette, Count words"},
     "translate-offline": {"title": "Translate this, offline", "path": "Command palette, Translate this"},

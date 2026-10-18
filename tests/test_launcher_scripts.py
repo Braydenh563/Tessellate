@@ -820,17 +820,31 @@ class TestTheWindowsSplash:
             assert depth >= 0, raw
         assert depth == 0
 
-    def test_the_window_height_is_capped_at_the_rows_it_paints(self):
-        """C02: with details open, finished tasks pushed the window down until it
-        touched the bottom of the screen. Layout and painting use one cap, and
-        the rows painted are the most recent, so the running step stays shown.
-        Not verified on Windows."""
+    def test_the_window_keeps_one_size_however_many_steps_finish(self):
+        """C02, then INBOX 1301 D2 (the owner: the splash "is still pushing
+        down to the bottom of the screen every step completed"). It was
+        centred at 252px and grew downwards, a row per step and the log under
+        them. Now nothing assigns its height after creation: the rows are a
+        fixed panel and Details swaps the log into it. Not verified on
+        Windows."""
         t = self.text
+        assert "$form.Size            = New-Object System.Drawing.Size($WIDTH, $HEIGHT)" in t
+        assert "$form.Height =" not in t and "$form.Height=" not in t
+        assert t.count("New-RoundRegion $WIDTH") == 1, "the region is cut once, at the one size"
         layout = t[t.index("  function Set-Layout {") : t.index("  Set-Layout\n")]
-        assert layout.count("[Math]::Min($MAX_ROWS, [Math]::Max(1, @($st.rows).Count))") == 2
+        assert "Size" not in layout.replace("SuspendLayout", "").replace("ResumeLayout", "")
+        assert "$on = -not $details.Visible" in layout, "the log replaces the rows, in place"
+        assert "$list.Controls.Add($details)" in t
         rows = t[t.index("  function Update-Rows($steps) {") : t.index("  function Update-Hint($steps) {")]
         assert "$first = [Math]::Max(0, $all.Count - $MAX_ROWS)" in rows
         assert "$all[$first + $i]" in rows
+        shown = t[t.index("  $form.Add_Shown({") :].split("})")[0]
+        assert "WorkingArea" in shown and "[Math]::Max(0, ($area.Height - $form.Height) / 2)" in shown
+
+    def test_it_says_which_step_of_how_many(self):
+        t = self.text
+        assert '$counted = "Step $([Math]::Min($total, $done + 1)) of $total"' in t
+        assert '$count.Text = "Stopped at step $($step.Step) of $($step.Total)"' in t
 
     def test_it_does_not_repaint_what_did_not_change(self):
         """C38: "the splash popup flickers quite a bit". The form is double
@@ -888,10 +902,12 @@ class TestTheWindowsSplash:
         assert '$form.FormBorderStyle = "None"' in t
         assert "New-RoundRegion" in t
 
-    def test_the_links_show_at_once_and_the_list_after_a_second(self):
+    def test_the_links_and_the_list_show_at_once(self):
+        """The list waited a second and then grew the window; since INBOX
+        1301 D2 it is the fixed panel, there from the first frame."""
         t = self.text
         assert "$SHOW_LINKS_AFTER = 0" in t
-        assert "$SHOW_LIST_AFTER  = 1" in t
+        assert "SHOW_LIST_AFTER" not in t and "showList" not in t
         assert "$st.failed" in t
 
     def test_the_active_step_shows_its_elapsed_seconds(self):
@@ -1010,7 +1026,8 @@ class TestTheSplashLayoutDoesNotOverlap:
     Every control in splash.ps1 is absolutely positioned, so a band that
     starts before the one above it ends is a control drawn on top of
     another. It happened once already: the status label was 34px tall at
-    y=306 and ran under the footer buttons at y=336.
+    y=306 and ran under the footer buttons at y=336. Since INBOX 1301 D2 the
+    window has one height, so every band also has to end inside it.
     """
 
     HEIGHTS = {  # control -> its own height, from the Size line beside it
@@ -1035,36 +1052,31 @@ class TestTheSplashLayoutDoesNotOverlap:
         assert m, pattern
         return int(m.group(1))
 
-    def test_the_bands_are_in_order_and_do_not_touch(self):
+    def test_the_bands_are_in_order_and_fit_the_one_height(self):
         rows = self._int(r"\$MAX_ROWS\s*=\s*(\d+)")
-        top = self._int(r"\$ROW_TOP\s*=\s*(\d+)")
+        row_top = self._int(r"\$ROW_TOP\s*=\s*(\d+)")
         step = self._int(r"\$ROW_STEP\s*=\s*(\d+)")
+        panel_top = self._int(r"\$PANEL_TOP\s*=\s*(\d+)")
+        panel_h = self._int(r"\$PANEL_H\s*=\s*(\d+)")
+        height = self._int(r"\$HEIGHT\s*=\s*(\d+)")
+        bar = self._int(r"\$barTrack\.Location = New-Object System\.Drawing\.Point\(\$BAR_X, (\d+)\)")
         links = self._int(
             r"\$b\.Location\s*=\s*New-Object System\.Drawing\.Point\(\$x, (\d+)\)"
         )
-        collapsed = self._int(r"\$COLLAPSED_HEIGHT\s*=\s*(\d+)")
-        links_h = self._int(r"\$LINKS_HEIGHT\s*=\s*(\d+)")
-        expanded = self._int(r"\$EXPANDED_HEIGHT\s*=\s*(\d+)")
-
-        bands = []
-        for name in ("status", "tip"):
-            y = self._y(name)
-            bands.append((name, y, y + self.HEIGHTS[name]))
-        bands.append(("links", links, links + 20))
-        bands.append(("hint", self._y("hint"), self._y("hint") + self.HEIGHTS["hint"]))
-        bands.append(("steps", top, top + rows * step))
+        bands = [
+            ("status", self._y("status"), self._y("status") + self.HEIGHTS["status"]),
+            ("bar", bar, bar + 4),
+            ("steps", panel_top, panel_top + panel_h),
+            ("hint", self._y("hint"), self._y("hint") + self.HEIGHTS["hint"]),
+            ("tip", self._y("tip"), self._y("tip") + self.HEIGHTS["tip"]),
+            ("links", links, links + 20),
+        ]
         for (name_a, _, end_a), (name_b, start_b, _) in zip(bands, bands[1:]):
             assert end_a <= start_b, name_a + " runs into " + name_b
-
-        # Collapsed holds the tip; the links row fits in the next height.
-        assert bands[1][2] <= collapsed
-        assert links + 20 <= links_h
-        details_y = self._y("details")
-        details_h = self._int(
-            r"\$details\.Size\s*=\s*New-Object System\.Drawing\.Size\(\d+, (\d+)\)"
-        )
-        assert details_y >= top + rows * step
-        assert details_y + details_h <= expanded
+        assert bands[-1][2] <= height, "the links row ends inside the window"
+        # Every row, and the log that takes their place, inside the panel.
+        assert row_top + rows * step <= panel_h
+        assert "$details.Size         = New-Object System.Drawing.Size(($BAR_W - 20), ($PANEL_H - 16))" in self._ps1()
 
     def test_the_retry_link_shares_the_links_row(self):
         assert "$btnRetry   = New-FooterLink" in self._ps1()
