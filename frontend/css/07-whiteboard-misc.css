@@ -2646,9 +2646,7 @@ dialog::backdrop {
    Three presets over the shell tokens above. The sliders write --page-* on the
    root element directly from JS, which is why "custom" declares no values of
    its own: a rule here would out-specify the inline style and the sliders
-   would appear to do nothing.
-   --page-left/--page-right exist so a custom setting can break the left/right
-   symmetry; they default to --page-gutter so every other mode is unaffected. */
+   would appear to do nothing. */
 :root[data-margins="uniform"] {
   --page-gutter: var(--page-top);
   --page-bottom: var(--page-top);
@@ -4247,7 +4245,7 @@ summary:not(.icon-only):not(.icon-button) {
   background: var(--modal-bg-opaque);
   box-shadow:
     inset 0 1px 2px var(--field-inset),
-    0 1px 2px rgba(0, 0, 0, 0.25);
+    var(--shadow-hair-lg);
   cursor: pointer;
   transition:
     background var(--ui-fast) var(--ease-out),
@@ -9767,7 +9765,6 @@ header#top-bar {
        button off the left edge at 768 (audit 2026-10-05, FE-19, measured
        x = -5). The rail and the content's clearance below both take the
        wider of the two. */
-    --sheet-rail: calc(max(var(--sidebar-toggle-size), var(--target-min)) + 2 * var(--sidebar-toggle-inset));
     position: fixed;
     top: var(--header-h);
     bottom: var(--status-bar-h);
@@ -9782,7 +9779,7 @@ header#top-bar {
     z-index: 35;
     overflow-y: auto;
     border-radius: 0 var(--radius) var(--radius) 0;
-    transform: translateX(calc(var(--sheet-rail) - 100%));
+    transform: translateX(calc(max(var(--sidebar-toggle-size), var(--target-min)) + 2 * var(--sidebar-toggle-inset) - 100%));
     transition: transform var(--ui-slow) var(--ease-out);
     box-shadow: none;
   }

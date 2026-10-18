@@ -1501,20 +1501,21 @@ body.printing-doc #doc-preview p,
    separate it from a dark one. Ticked, it goes back to the accent like every
    other tick in the app, which is the state that has to match across surfaces;
    only the resting ground differs, and only where the backdrop does. */
+.library-image-tile:has(> .library-image-frame) {
+  --shadow-photo-tick:
+    0 0 0 1px rgba(255, 255, 255, 0.5),
+    0 1px 3px rgba(0, 0, 0, 0.45);
+}
 .library-image-tile:has(> .library-image-frame) .library-tile-tick:not(:checked) {
   background: rgba(252, 253, 255, 0.96);
   border-color: rgba(0, 0, 0, 0.45);
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.5),
-    0 1px 3px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--shadow-photo-tick);
 }
 
 .library-image-tile:has(> .library-image-frame) .library-tile-tick:checked {
   /* The same outer ring on the ticked state: the accent fill is dark enough to
      vanish into a dark photograph on its own. */
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.5),
-    0 1px 3px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--shadow-photo-tick);
 }
 
 /* **At rest a picture card is a picture** (INBOX 174, the owner's third

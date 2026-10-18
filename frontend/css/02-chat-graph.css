@@ -201,7 +201,7 @@
   /* A hairline, not `--shadow-sm`: this row hangs two pixels under a bubble
      that has a shadow of its own, and the two stacked into the "excessive
      shadow" the owner reported (03-dashboard-widgets.css, `.msg`). */
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--shadow-hair-md);
   opacity: 0;
   /* Not clickable while invisible, an unhovered bubble must not swallow a
      click aimed at the text under this. */

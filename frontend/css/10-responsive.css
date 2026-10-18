@@ -459,7 +459,7 @@ header#top-bar[data-scrolled="1"],
 /* --- band 4 (under 600): the editor's own targets (DOCUMENTS_PLAN Phase 6) ---
    The phase ends "Touch targets 44px", and most of that band was already built
    by Phase 9's sheets: measured at 390x820 (`scratchpad/ui-sweeps/docnarrow.js`)
-   the sidebar is out of the flow at `translateX(calc(var(--sheet-rail) - 100%))`
+   the sidebar is out of the flow at `translateX(calc(<the toggle's width plus its insets> - 100%))`
    with only its rail on screen, the layout is one column, nothing leaves the
    window sideways and the first line of the document is at y=318. What was left
    under 44px were eighteen controls, and they are not one problem:

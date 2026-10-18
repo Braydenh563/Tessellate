@@ -835,15 +835,14 @@ COLOUR_HOMES = {"00-tokens-shell.css", "05-sidebars-themes.css"}
 #: The literals still outside them, per file, as Brief 57 left them: a ratchet
 #: that only goes down. A file not named here may hold none.
 COLOUR_LITERALS_LEFT = {
-    "02-chat-graph.css": 46,
-    "08-consistency.css": 64,
-    "library-lazy.css": 33,
+    "02-chat-graph.css": 45,
+    "08-consistency.css": 63,
+    "library-lazy.css": 31,
     "06-timeline-dialogs.css": 23,
-    "03-dashboard-widgets.css": 9,
+    "03-dashboard-widgets.css": 6,
     "10-responsive.css": 9,
     "09-editor.css": 6,
-    "04-chat-dock-appearance.css": 5,
-    "07-whiteboard-misc.css": 1,
+    "04-chat-dock-appearance.css": 4,
     #: Moved from 07-whiteboard-misc.css with the lightbox CSS (4668f1456): the
     #: HTML preview's white page ground, on purpose.
     "lightbox-lazy.css": 1,
@@ -882,7 +881,7 @@ def test_colour_literals_live_in_the_two_colour_files():
 #: 423 on Brief 57's base; the merge set it at the merged tree's count, 429:
 #: the calendar's six own sizes (timeline-calendar-lazy.css, decision 14) landed
 #: beside it, and inlining them would grow the literal-heights ratchet instead.
-TOKEN_BUDGET = 429
+TOKEN_BUDGET = 428
 
 
 def test_the_token_count_only_falls():
@@ -940,8 +939,9 @@ def test_no_new_literal_layer():
 
 #: Outer, blurred shadows written by hand instead of `--shadow-sm`, `--shadow-md`
 #: (`--glass-shadow`) or `--shadow-lg`. Inset edges and spread-only rings are
-#: not elevation and are not counted. 19 when Brief 57 measured; may only fall.
-DROP_SHADOWS_LEFT = 19
+#: not elevation and are not counted. 19 when Brief 57 measured, 7 after the
+#: 13a shadow pass (the hairline and accent-glow tokens); may only fall.
+DROP_SHADOWS_LEFT = 7
 _SHADOW_LEN = r"(?:-?\d*\.?\d+(?:px|rem|em)?|var\(--[\w-]+\)|calc\((?:[^()]|\([^()]*\))*\))"
 
 
