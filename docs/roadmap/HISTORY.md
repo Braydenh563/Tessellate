@@ -50679,6 +50679,196 @@ Decision 62 built: the search model already loaded on first use (or at launch wi
     - D8: "can there also be a way to hover over and have a panel popup next to the sidebar to show a larger preview of the thing being hovered over in the elements library in the whiteboard?? is would dissappear once not hovered or dragging to place it on the whiteboard." **Fixed (fixes9).** The tile peek: opens 300 ms after hover (150 ms none, 500 ms shown), left 354 = sidebar edge 346 + 8, level with the tile centre (262), fully on screen, hidden on leave, drag, Escape; focus shows it at once.
     Triage: D5 Opus (CHAT_PLAN composer, first); D7 Sonnet bug (reproduce wheel on board and map); D8 Sonnet with D7 (whiteboard library peek, the note-peek recipe); D2, D3, D4 one Opus design batch after D5; D6 Opus companion batch (B87/B88 lineage) after that.
 
+1300. **The owner, 2026-10-18, verbatim** (a Word document of 36 items; 29 screenshots, described in `agent-remaining/bugs-1018b.md`, attached to the item they follow). Triage and per-item status: `docs/roadmap/agent-remaining/bugs-1018b.md`.
+
+     C01. If I throw the companion or atlas across the screen and it lands on a ui element but
+          then it decides to fall through to peep over the bottom bar, it does the peak
+          animation first so it gets cut in half and then falls like that to the bottom bar. It
+          should instead, step off, jump off, teleport, portal, walk off screen at one point and
+          back on screen at another etc to get there then do the animation.
+     C02. On the splash if I hav the details section open, the completed tasks push it further
+          and further down until it is awkwardly touching thr bottom of my screen [screenshots:
+          image1]
+     C03. It's hard to move around the whiteboard with a mouse, can you copy draw.io and have
+          right click hold down drag panning??
+     C04. I want more templates and elements in the whiteboard like for wireframing and
+          uml/class/erd diagrams etc.
+     C05. I need / chat commands to be more findable, like when I do / I wouldn’t know the
+          other's are there unless I scroll down quite far [screenshots: image2]
+     C06. I want the composer and ai's responses ot be more visually impressiv and interactive
+          helped by the app, so like if I ask for stats I want a panel with cards and icons and
+          visualised statistics and a link to open the statistics panel. Maybe a websearch shows
+          the link as a clickable card not just a url, and also if it does a url fetch, it has a
+          dropdown that opens a semi large panel with the extracted and formatetd contents
+          inside as well as a link and data inside etc. can we integrate an interactive
+          calculator popup that is accessible and also link it to the /calc command as well as
+          other unit conversions etc??
+     C07. Also if it is going to give me a note, can it at least preview it for me as well??
+          Simple things like these for all the responses: [screenshots: image3]
+     C08. And if it outputs a mass block of text like from the ocr of one of my note's images,
+          maybe it could be in a collapsible subtle panel or smth or abrieviated/summarised by
+          the composer somehow?? [screenshots: image4]
+     C09. When I click on the attach button in the bottom chat dock, if I use my arrow keys to
+          navigate down the list, if I press enter on one of  them it doesn’t select that item
+          and attach it. [screenshots: image5]
+     C10. I cant add viewing the statistics panel to the quick access [screenshots: image6]
+     C11. I wanna be able to hover over and click graph nodes and see their values and dates etc
+          [screenshots: image7, image8]
+     C12. Make the top row with the title and x close button on the panels like the statistics
+          panel sticky to the top regardless of scroll [screenshots: image9]
+     C13. The '+' icons in the circle buttons on the corners of tables on the documents editor
+          arent centred [screenshots: image10]
+     C14. Should 'composer' and the model should be a badge or smnth similar… [screenshots:
+          image11]
+     C15. Also id didn’t answer the question properly when I used spelling mistakes also I think
+          the md rendering and styling of those outputs could use a bit of improvement.
+          [screenshots: image12, image13]
+     C16. Also that response seems preprogrammed, can you make more variations and make it
+          compose the message like an ai and not just write out the same things every time??
+     C17. On the whiteboard template panels, when I double click to edit the subtext under the
+          header, it changes to the header's text, and then it doesn’t go back if I deselect or
+          click off and I cant undo it either [screenshots: image14, image15, image16]
+     C18. Can you condense the colour options into like a dropdown panel ro smth like with the
+          mindmaps for the whiteboard?? [screenshots: image17]
+     C19. Atlas and the companion can perch on objects on the whiteboard even when they are
+          behind the panel, if it is perched on them then it should be on the same leayer or
+          x-index as them as well [screenshots: image18]
+     C20. Also the companion jumping arounf my whiteboard a lot was a little annoying and it
+          took up quit a bit of the screen when I zoomed out. I think if it is anchored to an
+          object within the whiteboard, then it's size should be in proportion to the zoom and
+          size of the whiteboard welements, if it is on an element not part of the actual canvas
+          like the panels or outer part of the app like the bottom or top bar then it can be its
+          regular size. [screenshots: image19]
+     C21. Also in the appearances section, if the eye preview buttons are there on the themes
+          then the hover preview doesn’t need to be a thing, but as they are a preview, make
+          sure that the preview like times out or maybe undoes if the user switches tabs or
+          maybe there is like a glowing border around the screen that the user can press cancel
+          or apply on buttons in the corner ot top centre or smth idk.
+     C22. It's hard to figure out that you need to press the shortcut command itself to change
+          it in the settings page [screenshots: image20]
+     C23. Is it possible to change 'm' for the quick nav to a letter better representing
+          "tessellate"?? I had it 'm' because of 'MemoryMap' but now the 'm' doesn’t fit <!-- brand: keep -->
+          [screenshots: image21]
+     C24. Can you try to get the logs panel to fit to the panel and not cause a slight vertical
+          scroll?? [screenshots: image22]
+     C25. Scrolling on the help settings page is laggy
+     C26. Can there be more improvements and expansions to the composer?? Variations to its
+          response, more life it it, better conversation and social ability, better
+          understanding, maybe multilingual?? Better at understanding typos, more libraries to
+          vendor to improve it maybe?? Make its outputs better and more refined and natural,
+          better grammar and more?? Also have the composer improve other things when the ai isnt
+          available like the dashboard greetings, not just preprogrammed responses but an
+          enormous variety and also composed. Maybe the sub text below the greeting can rotate
+          or change around a bit?? [screenshots: image23]
+     C27. The ui structure and formatting and placement of this properties button in the graph
+          node popup needs to be fixed, redesigned and improved [screenshots: image24]
+     C28. Also composer responses in the chat, ask tab, and popup agent and guide just instantly
+          appear and it is quite visually jarring, I want a smooth and maybe togglable
+          impressive yet subtle and still sticking to the app's theme and style reveal
+          animation. Reduce motion can just have loke a cheap fade in or smth.
+     C29. In the popup agent it is also hard to tell from the ui of the sources box and dropdown
+          list of sources below if the sources are actually part of that button's dropdown and
+          if the button is open or not [screenshots: image25]
+     C30. Can the lightbox controls and elements have a new redesign and upgrade in ui and ux
+          usability?? [screenshots: image26]
+          **Fixed f4bcef8.** Top bar and view dock with a filmstrip (DESIGN.md "A full-screen
+          viewer of a file"); lightbox1300.js: min contrast 3.38 to 4.87, picture at 390 233 to
+          359px, + 0 keys, swipe, pinch none to working, idle fade 1 to 0 (1 after keys, reduced).
+     C31. I ckicled on a link meatball button in a note, clicked kind and properties, then
+          clicked "has example of" but then I tried to go back on and click it to unselect it
+          and I couldnt [screenshots: image27]
+     C32. Also if I undo smth there is no indication or popup or smth like the zoom popup or a
+          notification to show Ive undone something. (I do have notifications turned off/muted
+          on the app).
+     C33. Also stacking notifications need to be cleaned up and not as intrusive and obscuring.
+     C34. All the audio record popup panels need a redesign as they are ugly, need a much better
+          and modern/professional ui/ux upgrade, a functionality upgrade, and also there are
+          weird ugly hard corner rectangle border boxes [screenshots: image28]
+     C35. Also if a thing isnt available as I don’t have the packages installed and it is said
+          in a notification, that notification should have a link to the packages list and
+          scroll me to where it is.
+     C36. These dates should be hidable or showable on the timeline side graph. [screenshots:
+          image29]
+
+     C37. (mid-run, 2026-10-18) also on the newest graph version, sometimes the text at the
+          top of the boxes gets cut off  with no ellipse and the nodes are all the same size,
+          should they be different??
+     C38. (mid-run, 2026-10-18) and the splash popup flickers quite a bit as well
+     C39. (mid-run, 2026-10-18, screenshot: Timeline opens on empty future rows Sun 25 Oct to
+          Mon 19 Oct, each with "+ Add", Today at the bottom of the view) and the future dates
+          should only show if the user scrolls up on the timeline main view
+     C40. (mid-run, 2026-10-18, screenshot: a Library recording card, waveform, "Transcript"
+          open with one row "0:03 All right, um, this is a test and this is the meeting test.
+          Yay") on the recordings ther eis no way to copy individual or multiple lines of the
+          transcript
+     C41. (mid-run, 2026-10-18, screenshot: force graph, labels overlap nodes and each other
+          ("had design class today..." on "Ice Breakers:", "Follow- Up Questions:" on "Here are
+          some refined..."), edges cross through clusters, two "Ice Breakers:" labels) and the
+          force graph still gets a little messy and hard to look at
+     C42. (mid-run, 2026-10-18, screenshot: chat history, "yo wassup :)" at 4:53 pm, the Atlas
+          reply below it shows only "Next:" chips and a time, no text) the composer response
+          dissappeared?? it was a response from a previous session I did earlier and Ive
+          restarted the app since then
+     C43. (mid-run, 2026-10-18, two screenshots: Notes "Categories" sidebar with two nested
+          scrollbars, in the second a wide blue bar down the outer scrollbar; the list cut
+          mid-row above "Most used"; near-duplicate categories "Courses & Study" 10 and
+          "Courses | Study" 0; "AI" 0; "Tags" with no count) the categories sidebar is a little
+          messy and ther eis a lot happening and I want to be able to collapse sections like
+          with the most used section
+     C44. (mid-run, 2026-10-18, screenshot: documents live view, a rendered section break
+          on line 1 with "..." dots; gutter numbers 1 and 2 overlap, 3 sits lower) a live view
+          rendered section break clashes line numbers
+     **Triage 2026-10-18** (two Haiku audits, each bug reproduced in the app unless noted;
+     rungs: H Haiku, S Sonnet, O Opus; "now" = this run's batches, "plan" = placed).
+     Batch 1, bugs, Sonnet or Haiku, now: C10 H (`settings-panes.js:1499` lacks `quick:
+     "statistics"`), C09 S (`chat-attach.js:1224` Enter ticks nothing), C13 S (plus glyph
+     0.6 to 0.75 px low, `library-lazy.css:6293`), C17 S (`wbBeginTextEdit`
+     `whiteboard.js:9132` resets a frame hint to the header), C31 S (`link-types.js:109`
+     re-click on the current kind should clear), C32 S (undo toast missing on the surface
+     branch, `status.js:1517`), C35 S (`captions.js:84` toast needs an Open action to
+     Settings, Packages), C03 S (right-drag pan, `whiteboard.js:91`), C12 S (sticky
+     `.dialog-head`, glass-off list), C25 S (Help scroll: 4x CPU only, 33 to 50 ms a frame;
+     try `content-visibility`), C15 S (screenshot: "Wat cna u do??" was read as "what can you
+     do" and then answered from notes, not the capability reply: add the owner typo fixture
+     and fix), C02 S (splash rows uncapped, `scripts/splash.ps1:394`, Windows only, not
+     verifiable here).
+     Batch 2, design, Opus one at a time: C01 (fall route picks the peek pose before a
+     walk-off or poof, `avatars.js:5706`), C19 + C20 (companion band z 44 above the Format
+     panel z 25; perch takes its object's layer; size follows board zoom on canvas perches:
+     the WHITEBOARD layer-order step 8), C05 (slash menu: first command at 444 px in a 386 px
+     menu, none visible), C06 + C07 + C08 (reply cards, note preview, folded long text, an
+     accessible calculator popup tied to `/calc`), C11 (graph node hover card with dates
+     and values, `graph-canvas.js:3753`), C27 (graph popup props button), C28 (reply reveal
+     animation), C29 (Sources box has no disclosure state, `chat-agent.js:2220`), C30
+     (lightbox controls), C33 (notification stack, 186x205 px), C34 (audio recorder panels,
+     `.meeting-stage` radius 0), C21 (theme preview: revert on close or section switch plus
+     an apply or cancel bar), C22 (shortcut chip needs a visible Change), C36 (timeline
+     tick labels switch), C14 (composer and model byline as a badge), C18 (paper swatch row
+     as the colour dropdown).
+     Placed in plans: C04 WHITEBOARD_PLAN (UML class, ERD, wireframe sets; check the draw.io
+     licence in ANALYSIS.md), C16 + C26 CHAT_PLAN (larger composed pools, greeting sub line
+     rotation: wire the unused `composer_voice.today_line`, `dashboard.js:463`).
+     Decision taken (recommendation, standing order 3): C23 the go-key prefix becomes `t`
+     (for Tessellate) and Timeline's second key moves to `i`; the old `m` prefix stays an
+     alias for one release. Not reproduced: C24 (Logs section: scrollHeight equals
+     clientHeight at five sizes; found instead: the Settings nav column overflows 265 to
+     423 px on every pane, placed in WORLD_CLASS row 32).
+     Screenshots read by a scout (what they show): image1 install dialog "step 3 of 5"; image2
+     attach menu cut off at the right edge ("No model con..."); image3 mascot overlaps the
+     /random reply bubble corner; image4 Ask answer copies the note wording and ends
+     mid-sentence; image5 attach Notes tab with a Japanese-only row; image6 Quick access
+     search "stat" gives "No command matches that."; image7 and image8 Statistics charts
+     (a raw `tab:documen...` key label); image10 table corner "+" crop; image11 header
+     "Atlas, composer"; image12 and image13 composer replies ("I'm Atlas's assistant...",
+     "I read that as ..." then citations); image14 to image16 board card subtitle
+     "Tuesday" repeating the title after an edit; image17 to image19 board text toolbar,
+     empty Format panel with the mascot inside, zoomed-out board with the mascot over a
+     group; image20 and image21 shortcuts and go keys ("m d Dashboard"); image22 console
+     log panel; image23 note count 37 here, 38 on image3 and image7 (check); image24 note
+     title "Follow- Up Questions:"; image25 Sources panel; image26 PDF viewer; image27
+     "Kind of link" dialog, taskbar against its bottom edge; image28 Voice note dialog;
+     image29 narrow timeline strip with date labels.
+
 ## Moved from the plans, 2026-10-18 (graph-1018)
 
 Built by the graph-1018 agent (GRAPH_PLAN open work; the audit table is `agent-remaining/graph-1018.md`).
