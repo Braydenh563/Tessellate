@@ -228,7 +228,7 @@ MORE_TOPICS: list[dict] = [
     {
         "id": "general-settings",
         "keywords": (
-            "smart quotes", "auto clear",
+            "smart quotes", "link offers", "offer links", "auto clear",
             "empty the bin", "delete old chats", "chat history", "mute notifications",
             "general settings",
         ),
@@ -237,7 +237,9 @@ MORE_TOPICS: list[dict] = [
             "number of days. Chat history: delete saved chats after a number "
             "of days (0 keeps every chat; pinned chats are never deleted). "
             "Notifications: mute everything except reminders. Writing: smart "
-            "quotes and dashes in documents. Answer style moved to Settings, "
+            "quotes and dashes in documents, and offers to turn a named note or document into a link "
+            "(switch them off there, or press Never offer a link to this name on one offer; Offer them "
+            "again brings every kept name back). Answer style moved to Settings, "
             "Personas, and Search relevance to Settings, Search and index."
         ),
         "badge": {"label": "General", "section": "general"},

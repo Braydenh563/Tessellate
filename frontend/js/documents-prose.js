@@ -256,10 +256,48 @@ const DOC_LINK_OFFER_MAX_CHARS = 400000;
 //: pending ask; a newer keystroke replaces it.
 const DOC_LINK_OFFERS = { doc: null, text: null, findings: [], asking: null, timer: 0 };
 
+//: The switch (Settings, Writing; the dictionary dialog) and the names the
+//: writer put away for good. On unless turned off, like the grammar check.
+function docLinkOfferEnabled() {
+  return !(typeof prefsCache === "object" && prefsCache && prefsCache.link_offers === false);
+}
+
+function docLinkOfferIgnoredNames() {
+  const kept = typeof prefsCache === "object" && prefsCache ? prefsCache.link_offer_ignored : null;
+  return new Set((Array.isArray(kept) ? kept : []).map((name) => String(name).toLowerCase()));
+}
+
+//: "Not this name, ever": kept on the notebook, because an offer to link a
+//: common word is wrong in every document, not only this one. Settings, Writing
+//: lists how many are kept and lets them all come back. Undo puts it back.
+async function docLinkOfferIgnore(name) {
+  const clean = String(name || "").trim();
+  if (!clean) return;
+  const save = async (names) => {
+    prefsCache = await apiJson("/preferences", {
+      method: "PUT",
+      body: JSON.stringify({ link_offer_ignored: names }),
+    }).catch(() => prefsCache);
+    renderDocProse();
+    if (typeof renderDocProsePanel === "function") renderDocProsePanel();
+  };
+  const before = [...docLinkOfferIgnoredNames()];
+  const lower = clean.toLowerCase();
+  if (before.includes(lower)) return;
+  await save([...before, lower]);
+  offerUndo(
+    `No more link offers for “${clean}”`,
+    `Link offers for “${clean}” are off.`,
+    () => save(before),
+    () => save([...before, lower])
+  );
+}
+
 function docLinkOfferFindings(offers) {
   return offers.map((offer) => ({
     rule: "link-offer",
     source: "notes",
+    name: offer.name,
     message: `This names the ${offer.kind} “${offer.name}”. Turn it into a link`,
     start: offer.start,
     end: offer.end,
@@ -297,6 +335,7 @@ async function docLinkOfferAsk(text, docId) {
 function docLinkOfferRequest(text) {
   const state = DOC_LINK_OFFERS;
   const docId = currentDoc && currentDoc.id ? currentDoc.id : null;
+  if (!docLinkOfferEnabled()) return;
   if (!text || !text.trim() || text.length > DOC_LINK_OFFER_MAX_CHARS) return;
   if (state.asking === text || (state.text === text && state.doc === docId)) return;
   clearTimeout(state.timer);
@@ -308,8 +347,11 @@ function docLinkOfferRequest(text) {
 function docLinkOfferCurrent(text) {
   const state = DOC_LINK_OFFERS;
   const docId = currentDoc && currentDoc.id ? currentDoc.id : null;
-  if (state.text === null || state.doc !== docId) return [];
-  return docProseRemap(state.findings, state.text, text);
+  if (!docLinkOfferEnabled() || state.text === null || state.doc !== docId) return [];
+  const ignored = docLinkOfferIgnoredNames();
+  return docProseRemap(state.findings, state.text, text).filter(
+    (finding) => !ignored.has(String(finding.name || "").toLowerCase())
+  );
 }
 
 //: The findings the prose tools add, merged into the rules' own list. A span

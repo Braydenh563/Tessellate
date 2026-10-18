@@ -7,6 +7,8 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Search: a mark's comment on a recording is found by keyword search (pictures' captions already were); a question's "3/4" follows the locale where one is passed (the reading route), day first otherwise.
+- Documents: link offers have a switch (Settings, Writing, and the dictionary dialog) and Ignore on an offer keeps that name out of every document until Settings, Writing offers them again; tag offers stay dropped, a document has no tags.
 - Escape: in the reminders sentence box it clears the text, and on an empty box leaves it; measured with the lightbox (Escape and Back with it open), the notes edit form and the graph popup, which already closed (row 32 closed).
 - Whiteboard library: UML, Entity relationship and Wireframe sets (14, 10 and 12 elements) and three templates, a class diagram, an entity relationship diagram and a wireframe page; the Guide describes them (INBOX 1300 C04).
 - Whiteboard: a sticky note's seven paper chips are one Paper dropdown button that opens the shared colour popover, arrow keys and Escape included; the bar is 122 px narrower (INBOX 1300 C18).

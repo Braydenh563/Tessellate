@@ -17224,8 +17224,20 @@ function docProseRowAnswers(row, control, finding, opts = {}) {
   if (first) first.focus();
 }
 
+//: What Ignore says: a link offer is put away by name everywhere, anything else
+//: for this document until a restart.
+function docIgnoreLabel(finding) {
+  return finding.rule === "link-offer" ? "Never offer a link to this name" : "Ignore in this document";
+}
+
 //: Stop flagging this wording in this document (until a restart).
 function docProseIgnore(finding) {
+  //: A link offer is put away by its name, for every document (the switch and
+  //: the list of kept names are in Settings, Writing).
+  if (finding.rule === "link-offer" && finding.name) {
+    docLinkOfferIgnore(finding.name);
+    return;
+  }
   docProseIgnored.add(docProseKey(finding));
   renderDocProse();
   renderDocProsePanel();
@@ -17287,7 +17299,7 @@ function docProseGroupList(findings) {
     }
     acts.appendChild(finding.rule === "ai"
       ? act("ph:x", "Dismiss this finding", () => docAiDismiss(finding), "doc-prose-fix doc-prose-dismiss")
-      : act("ph:eye-slash", "Ignore in this document", () => docProseIgnore(finding), "doc-prose-ignore"));
+      : act("ph:eye-slash", docIgnoreLabel(finding), () => docProseIgnore(finding), "doc-prose-ignore"));
     head.appendChild(acts);
     li.appendChild(head);
     const answers = document.createElement("div");
@@ -18514,6 +18526,15 @@ $("doc-spelling-variant")?.addEventListener("change", async (event) => {
   docGrammarCache = { text: null, findings: [] };
   renderDocProse();
 });
+$("doc-link-offers")?.addEventListener("change", async (event) => {
+  prefsCache = await apiJson("/preferences", {
+    method: "PUT",
+    body: JSON.stringify({ link_offers: event.currentTarget.checked }),
+  }).catch(() => prefsCache);
+  DOC_LINK_OFFERS.text = null;
+  DOC_LINK_OFFERS.findings = [];
+  renderDocProse();
+});
 $("doc-grammar-check")?.addEventListener("change", async (event) => {
   prefsCache = await apiJson("/preferences", {
     method: "PUT",
@@ -19240,8 +19261,10 @@ function docFindingAnswerRows(finding) {
   rows.push({
     kind: "action",
     id: "ignore",
-    label: "ph:eye-slash Ignore in this document",
-    title: "Stop flagging this wording in this document until Tessellate is restarted",
+    label: `ph:eye-slash ${docIgnoreLabel(finding)}`,
+    title: finding.rule === "link-offer"
+      ? "Never offer a link to this name, in any document"
+      : "Stop flagging this wording in this document until Tessellate is restarted",
     run: (close = () => {}) => {
       close();
       docProseIgnore(finding);
@@ -19919,6 +19942,8 @@ async function openDocDictionary() {
   }
   const smart = $("doc-smart-punctuation");
   if (smart) smart.checked = !!(prefsCache && prefsCache.smart_punctuation === true);
+  const linkOffers = $("doc-link-offers");
+  if (linkOffers) linkOffers.checked = docLinkOfferEnabled();
   if (!dialog.open) dialog.showModal();
   search?.focus();
 }

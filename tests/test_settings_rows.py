@@ -102,6 +102,7 @@ NO_ROW = {
     "week_start_locale": "reported by the browser at startup; the First day of the week row overrides it",
     # Edited as lists or documents in their own panes, not one control.
     "writing_dictionary": "the dictionary editor (Documents)",
+    "link_offer_ignored": "the Ignore answer on a link offer, with its count and reset in Settings, Writing",
     "model_context_windows": "one box per model in Models",
     "custom_templates": "the Templates pane's list",
     "personas": "the Personas pane's list",

@@ -357,6 +357,11 @@ class PreferencesBody(BaseModel):
     #: changes what was typed without being asked is the thing people turn off
     #: first, so this one asks.
     smart_punctuation: bool | None = None
+    #: Documents offer to turn a named note or document into a link (VC5), and
+    #: the names the writer put away with "Never offer a link to this name".
+    #: The list is bounded because a client writes to it freely.
+    link_offers: bool | None = None
+    link_offer_ignored: list[Annotated[str, Field(max_length=200)]] | None = Field(default=None, max_length=500)
     #: Autocorrect in the note boxes, the chat and Ask composers and the
     #: titles (Brief 94, autocorrect.js). On by default, unlike the line above:
     #: it changes only strings that are not words, says so, and puts each back
@@ -788,6 +793,8 @@ def _preferences_from(config) -> dict:
         "spelling_variant": config.get_preference("spelling_variant", "off"),
         "grammar_check": config.get_preference("grammar_check", True),
         "smart_punctuation": config.get_preference("smart_punctuation", False),
+        "link_offers": config.get_preference("link_offers", True),
+        "link_offer_ignored": config.get_preference("link_offer_ignored", []),
         "autocorrect": config.get_preference("autocorrect", True),
         "display_name": config.get_preference("display_name", ""),
         #: Echoed so Settings can draw the boxes with what is in them rather
@@ -970,7 +977,7 @@ def _preference_detail(key: str, value: object) -> str:
         isinstance(value, list)
         and len(value) <= 12
         and all(isinstance(v, str) and len(v) <= 40 for v in value)
-        and key not in {"writing_dictionary", "skills", "personas"}
+        and key not in {"writing_dictionary", "link_offer_ignored", "skills", "personas"}
     )
     plain = short_list or isinstance(value, (bool, int, float)) or (isinstance(value, str) and len(value) <= 80)
     if key in _PERSONAL_PREFERENCE_KEYS or not plain:
