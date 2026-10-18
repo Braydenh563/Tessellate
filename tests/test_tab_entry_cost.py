@@ -195,3 +195,23 @@ def test_the_peek_and_first_line_and_blink_rules_keep_their_new_shape():
     assert "> .entry-title ~ .entry-content::first-line" in cons
     blink = [ln for ln in cons.splitlines() if "&.atl-layer :is(" in ln]
     assert blink and all(".atl-blink.nm-blinks > *" not in ln for ln in blink)
+
+
+LIBRARY_CSS = (JS.parent / "css" / "library-lazy.css").read_text(encoding="utf-8")
+
+
+def test_a_library_card_off_screen_is_not_styled():
+    """Showing the Library restyled its 60 cards in one recalc: 1,335 elements,
+    median 183 to 225 ms at 4x CPU on 500 notes (scratchpad/ui-sweeps/
+    tabtrace.js TABS=library), 18 of the cards on screen. The cards take the
+    Notes rows' recipe (`content-visibility: auto`, the measured median height
+    8.25rem), in the lazy sheet so the boot CSS cap is untouched, and never
+    while a card holds focus (containment clips what a card paints). After: the
+    reveal's recalc is 209 elements and 86 to 108 ms. A smaller first paint of
+    the same list (25 cards, topped up on frames) was tried on top and gained
+    nothing the reveal could see: the Library keeps its 60 cards between
+    visits, so the reveal restyles whatever was left, not what is rendered."""
+    rule = re.search(r"\.library-grid \.library-card:not\(:focus-within\) \{([^}]*)\}", LIBRARY_CSS)
+    assert rule, "the Library card rule is gone"
+    assert "content-visibility: auto" in rule.group(1)
+    assert "contain-intrinsic-size: auto 8.25rem" in rule.group(1)
