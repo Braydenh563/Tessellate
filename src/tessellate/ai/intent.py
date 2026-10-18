@@ -137,7 +137,28 @@ def _about_app_first(message: str, text: str) -> bool:
 
 
 def classify(message: str) -> str:
-    """Route one chat message. Falls back to ``notes`` whenever unsure."""
+    """Route one chat message. Falls back to ``notes`` whenever unsure.
+
+    A message that falls through to ``notes`` is read once more as the typo
+    repair reads it, and a question about the app or small talk in that
+    reading wins (C15, the owner: "Wat cna u do??" was understood as "what can
+    you do" and then answered with note citations). Only those two routes are
+    taken from the repaired text, so a misspelt name never leaves the notes.
+    """
+    routed = _classify(message)
+    if routed != NOTES:
+        return routed
+    from tessellate.ai import question_noise
+
+    fixed = question_noise.repair(question_noise.tidy(message))
+    if fixed != message:
+        again = _classify(fixed)
+        if again in (ABOUT_APP, SMALLTALK):
+            return again
+    return routed
+
+
+def _classify(message: str) -> str:
     text = _normalise(message)
     if not text:
         return SMALLTALK

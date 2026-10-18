@@ -2,7 +2,7 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6035, frontend ids 2527, CSS sections 495, backend routes 609, backend modules 5832, test files 1259, tests 11362, plan headings 959.
+Counts: frontend functions 6035, frontend ids 2527, CSS sections 495, backend routes 609, backend modules 5833, test files 1259, tests 11363, plan headings 959.
 
 ## Frontend functions (6035)
 
@@ -10559,7 +10559,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (5832)
+## Backend modules (5833)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -10806,11 +10806,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `Capability` | src/tessellate/ai/capability.py:47 |
 | `_clean` | src/tessellate/ai/capability.py:217 |
-| `_private` | src/tessellate/ai/capability.py:258 |
-| `answer` | src/tessellate/ai/capability.py:275 |
-| `asks` | src/tessellate/ai/capability.py:244 |
+| `_private` | src/tessellate/ai/capability.py:263 |
+| `answer` | src/tessellate/ai/capability.py:280 |
+| `asks` | src/tessellate/ai/capability.py:249 |
 | `overview` | src/tessellate/ai/capability.py:184 |
-| `privacy_line` | src/tessellate/ai/capability.py:267 |
+| `privacy_line` | src/tessellate/ai/capability.py:272 |
 
 ### src/tessellate/ai/captioning.py (7)
 
@@ -11793,19 +11793,20 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `short` | src/tessellate/ai/insights.py:237 |
 | `streak` | src/tessellate/ai/insights.py:121 |
 
-### src/tessellate/ai/intent.py (9)
+### src/tessellate/ai/intent.py (10)
 
 | Name | File:line |
 |---|---|
 | `_about_app_first` | src/tessellate/ai/intent.py:133 |
-| `_laughs` | src/tessellate/ai/intent.py:201 |
-| `_mash_word` | src/tessellate/ai/intent.py:218 |
+| `_classify` | src/tessellate/ai/intent.py:161 |
+| `_laughs` | src/tessellate/ai/intent.py:222 |
+| `_mash_word` | src/tessellate/ai/intent.py:239 |
 | `_matches_any` | src/tessellate/ai/intent.py:111 |
 | `_normalise` | src/tessellate/ai/intent.py:102 |
 | `classify` | src/tessellate/ai/intent.py:139 |
-| `is_mash` | src/tessellate/ai/intent.py:235 |
-| `is_test` | src/tessellate/ai/intent.py:255 |
-| `needs_retrieval` | src/tessellate/ai/intent.py:260 |
+| `is_mash` | src/tessellate/ai/intent.py:256 |
+| `is_test` | src/tessellate/ai/intent.py:276 |
+| `needs_retrieval` | src/tessellate/ai/intent.py:281 |
 
 ### src/tessellate/ai/janitor.py (27)
 
@@ -17920,7 +17921,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11362)
+## Tests (11363)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18124,7 +18125,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_lists_1018.py | 20 |
 | tests/test_composer_long_question.py | 7 |
 | tests/test_composer_overview_787.py | 18 |
-| tests/test_composer_owner_1017.py | 14 |
+| tests/test_composer_owner_1017.py | 15 |
 | tests/test_composer_parts.py | 4 |
 | tests/test_composer_polish.py | 8 |
 | tests/test_composer_route_688.py | 20 |
