@@ -27,14 +27,17 @@ test("Ctrl+K, Take the guided tour walks to its second step and closes", async (
   await expect(page.locator("#tour-next")).toBeHidden();
 });
 
-test("Ctrl+K lists no notes: its last row hands the words to Find anything", async ({ page }) => {
+test("Ctrl+K offers the matching note, and its last row hands the words to Find anything", async ({ page }) => {
   await openApp(page);
   await captureNote(page, "A note about zephyrquartz and sourdough.");
   await palette(page, "zephyrquartz");
-  // Commands and places only: the one row is the handoff, and it is lit.
-  await expect(page.locator("#palette-list .rich-picker-row")).toHaveCount(1);
-  await expect(page.locator("#palette-list .rich-picker-row").first()).toContainText("Search everything for");
-  await page.keyboard.press("Enter");
+  // Audit 1018 item 10: the top notes that match come under the commands; the
+  // handoff to Find anything stays the last row.
+  const rows = page.locator("#palette-list .rich-picker-row");
+  await expect(rows).toHaveCount(2);
+  await expect(rows.first()).toContainText("zephyrquartz");
+  await expect(rows.last()).toContainText("Search everything for");
+  await rows.last().click();
   await expect(page.locator("#finder-input")).toHaveValue("zephyrquartz");
   await expect(page.locator("#finder-results .finder-row").first()).toContainText("zephyrquartz");
 });
