@@ -481,7 +481,7 @@ function replyCalcWorkPane(input) {
   copy.addEventListener("click", () => {
     const text = out.querySelector(".calc-figure").textContent;
     if (!text) return;
-    navigator.clipboard?.writeText(text).then(() => toast("Result copied."), () => toast("Couldn't copy the result.", true));
+    navigator.clipboard?.writeText(text).then(() => toast("Result copied."), () => toast("Couldn't copy the result.", "info"));
   });
   foot.append(out, copy);
   pane.append(box, foot, keys, history);
