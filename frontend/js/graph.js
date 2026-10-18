@@ -4422,8 +4422,27 @@ function renderGraphPopupProps(entry) {
     if (!dd.firstChild) dd.textContent = "–";
     table.append(dt, dd);
   }
-  const edit = smallButton("ph:list-bullets Properties", "Add or change this note's properties (status, due, a type's fields), kept in its text", () => openNotePropertiesSheet(entry));
-  box.replaceChildren(...(table.firstChild ? [table] : []), edit);
+  //: **A section, not a stray button** (INBOX 1300 C27, the owner: "the ui
+  //: structure and formatting and placement of this properties button ...
+  //: needs to be fixed"). It was a lone ghost "Properties" between the topic
+  //: chip and the text field, 0px off the field and its icon past the text
+  //: edge, so it read as the text's heading. Now a small-caps head with the
+  //: count, its one action at the row's end (Add when there are none, Edit
+  //: when there are), then the table.
+  const count = table.childElementCount / 2;
+  const head = document.createElement("div");
+  head.className = "graph-popup-props-head";
+  const label = document.createElement("span");
+  label.className = "graph-popup-props-label";
+  label.textContent = count ? `Properties · ${count}` : "Properties";
+  const edit = smallButton(
+    count ? "ph:pencil-simple Edit" : "ph:plus Add",
+    "Add or change this note's properties (status, due, a type's fields), kept in its text",
+    () => openNotePropertiesSheet(entry)
+  );
+  edit.setAttribute("aria-label", count ? "Edit this note's properties" : "Add properties to this note");
+  head.append(label, edit);
+  box.replaceChildren(head, ...(count ? [table] : []));
 }
 
 function renderGraphPopupInfo(entry) {

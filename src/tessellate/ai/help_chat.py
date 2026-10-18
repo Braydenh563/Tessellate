@@ -1865,7 +1865,7 @@ HELP_TOPICS.extend(
                 "export carries them. They show as a small table under the "
                 "note's title, where pressing a value finds every note with it; "
                 "a note's panel on the graph shows them too, a value lighting "
-                "those notes on the map, with a Properties button. A note's ⋯ has Properties: add, change or remove "
+                "those notes on the map, with Add or Edit beside its Properties heading. A note's ⋯ has Properties: add, change or remove "
                 "one, or pick a Type, and Save rewrites only those lines. Note "
                 "types in the command palette makes a kind of note (Meeting: "
                 "attendees, date) with fields that are text, a number, a date, a "
