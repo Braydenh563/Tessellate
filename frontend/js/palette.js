@@ -1109,12 +1109,9 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
   //: prose is the digit on its row. Re-placed after every paint, which
   //: rebuilds the answer.
   let cites = null;
-  const cite = () =>
-    cites?.length &&
-    addInlineCitations(answerBox, cites, found, chatSourcesFrom({ meta, touched: [...touched.values()] }));
-  const onCites = (event) => {
-    cites = event.sentences || [];
-    cite();
+  const cite = (event) => {
+    if (event) cites = event.sentences || [];
+    if (cites?.length) addInlineCitations(answerBox, cites, found, chatSourcesFrom({ meta, touched: [...touched.values()] }));
   };
   //: The box the reasoning is written into while it is being produced, made
   //: on the first delta rather than up front so a turn that never thinks out
@@ -1258,8 +1255,8 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
       },
       onUnsupported: (e) => (why = e?.message || why),
       onHint: (e) => (why = why || e?.text || ""),
-      onGrounding: onCites,
-      onGroundingLive: onCites,
+      onGrounding: cite,
+      onGroundingLive: cite,
       onAnswerFinal: (e) => {
         if (!e?.text) return;
         answered = true;

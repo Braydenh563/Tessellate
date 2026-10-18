@@ -150,5 +150,6 @@ def test_the_landing_reads_the_page_before_the_landing_frame_writes() -> None:
     frame = throw[throw.index("const frame = (now) =>") : throw.index("const next = () =>")]
     assert frame.index("nameMarkBuddyThrowSpot(") < frame.index("nameMarkBuddyPut(")
     assert "nameMarkBuddyThrowLand(buddy, s, tab, landing)" in frame
-    assert "nameMarkBuddyThrowSpot(" in _fn("nameMarkBuddyThrowLand")
+    land = _fn("nameMarkBuddyThrowLand")
+    assert "(buddy, s, tab, spot)" in land and "nameMarkBuddyDrop(" not in land, "the landing is handed its spot, never reads it after the writes"
     assert "nameMarkBuddyDrop(" in _fn("nameMarkBuddyThrowSpot")

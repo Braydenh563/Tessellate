@@ -903,10 +903,6 @@ function logTerminalParts(record) {
   return [`${when} ${level}`, body];
 }
 
-function logTerminalLineText(record) {
-  return logTerminalParts(record).join("");
-}
-
 function logTerminalRow(record) {
   const line = document.createElement("div");
   line.className = "log-term-line";

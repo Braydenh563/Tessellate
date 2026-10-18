@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Boot JS back under its cap after the companion and popup-citation merges (588,399 of 588,400 gzipped): the dead `logTerminalLineText`, same-file `typeof fn === "function"` guards in `avatars.js` and `atlas.js`, and a folded release and landing path in the companion; ten one-off probe scripts left `scratchpad/` for the file cap.
 - A chat named from a question no longer keeps a trailing backslash ("what is there about a gaming mouse?\\", INBOX 808): the first-turn name, the rename fallback and a model's title all drop it, and a name is one line (`routes_conversations._question_title`, `tests/test_conversations_api.py`).
 - CI: the Performance workflow's frame spec no longer waits out its 180 s timeout on a tab that does not exist. It opened `#tab-btn-documents` (Documents became Library), so the click hung and every later scenario was skipped; the spec opens Library, `openTab` fails in 15 s, an idle screen that redraws names the loop (`tests/test_e2e_tab_ids.py` checks every tab the e2e specs open). The dashboard's 62 rAF/s idle on the CI runner did not reproduce locally (0 rAF/s on a seeded notebook).
 - Tests: six `test_mcp_server` tests and one `test_conversations_api` test built the app config without `app_state` and wrote an untracked `data/` folder into the repo; they take the fixture, and an autouse guard in `conftest.py` clears the folder and, in a serial run, fails the test that made it.
