@@ -212,6 +212,10 @@ _TURN: ContextVar[int] = ContextVar("digest_turn", default=0)
 _SEED: ContextVar[int] = ContextVar("digest_seed", default=0)
 
 
+#: The gap leads already said in this answer, in order (reset per answer).
+_GAPS: ContextVar[tuple[str, ...]] = ContextVar("digest_gaps", default=())
+
+
 def _vary(key: str) -> _Capitals:
     said = VOICES.get(_VOICE.get(), {}).get(key) or _BASE[key]
     if isinstance(said, tuple):
@@ -1006,10 +1010,28 @@ def _lines(out: _Out, facts: list[Fact], limit: int, skip: set[tuple] | None = N
     return shown
 
 
+def _next_gap(days: int) -> str:
+    """The gap lead for this line: the next wording round, never the one the
+    line before used, and never the same words twice in an answer."""
+    said = VOICES.get(_VOICE.get(), {}).get("gap") or _BASE["gap"]
+    options = said if isinstance(said, tuple) else (said,)
+    used = _GAPS.get()
+    start = _SEED.get() + _TURN.get() + len(used)
+    leads = [_Capitals(options[(start + k) % len(options)]).format(gap=_gap(days)) for k in range(len(options))]
+    lead = next((x for x in leads if x not in used and not (used and _shape(x) == _shape(used[-1]))), leads[0])
+    _GAPS.set(used + (lead,))
+    return lead
+
+
+def _shape(lead: str) -> str:
+    """How a gap lead is worded, whatever the gap ("after X," / "X later,")."""
+    return "after" if lead.lower().startswith("after ") else lead.rstrip(", ").rsplit(" ", 1)[-1]
+
+
 def _gap_on(days: int, day: str) -> str:
     """"A week later, on 4 August, "; "three weeks on" takes "by", not a
     second "on"."""
-    lead = _vary("gap").format(gap=_gap(days))
+    lead = _next_gap(days)
     return lead + ("by " if lead.endswith(" on, ") else "on ") + f"{day}, "
 
 
@@ -2202,6 +2224,7 @@ def _begin(question: str, asked: str, notes: list[dict], today: date, voice: str
     _VOICE.set(voice if voice in VOICES else "natural")
     _TURN.set(turn)
     _SEED.set(zlib.crc32(asked.lower().encode()))
+    _GAPS.set(())
     _VIEWS.set(views)
     _KNOWN.set(known)
     _ASKS_WORDS.set(bool(re.search(r"\b(?:says?|said|reads?|written|text|words?|wording)\b", question, re.I)))
