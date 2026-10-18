@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Graph: a note's Edited date (hover card and popup) is when a person last edited it (`edited_at`, now in the `/graph` payload), not `updated_at`, which filing and view counts also move; a never-edited note shows no Edited (INBOX 1300 C11); `tests/test_graph_hover_card.py`, `tests/test_graph_api.py`.
 - Graph: a note's properties in its popup are a section, a small-caps Properties head with the count and Add or Edit at the row's end, the table under it, 9px off the text field (was a lone 117px Properties button flush against the field) (INBOX 1300 C27); `tests/test_graph_popup_props.py`.
 - Graph: hovering a note (or reaching it with the arrow keys) shows a card beside it with its created and edited dates, links, views, words, properties and tags, in place of the browser's one-line tooltip; the click popup's info line adds the edit date (INBOX 1300 C11); `tests/test_graph_hover_card.py`, DESIGN.md "A card about one dot on a canvas".
 - Graph: a name is never placed nearer another note's dot than its own (6 of 16 at the fit on a 57-note map, now 0), names stay out from under the dock, legend, minimap and zoom strip (6 at 1.8x, now 0), a line between two categories is quiet in every Force shape (opacity 0.40 to 0.20) with its key in the legend, and two notes with one title say where each is filed (INBOX 1300 C41); `tests/test_graph_label_clarity.py`.

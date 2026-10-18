@@ -12,7 +12,9 @@ Seed: `<session scratchpad>/d2/seed.js` (57 notes, 6 categories, 80 links, two "
 ## Decisions taken (recommendations, reversible)
 - C11 "click pins it": the click keeps opening the note's popup (GRAPH_PLAN Phase 6, decided), which is the pinned form; its info line gains the edit date. The hover card is for reading without opening.
 
-- C27: `renderGraphPopupProps` (graph.js) head row `.graph-popup-props-head` (graph-lazy.css). Probe `d2/probe-popup.js`: button 117x32 at the left, icon at x28, 1px off the text field, to a 420px head with Add/Edit right-aligned (right edge 434 of 448), label "Properties · 3", 9px off the field.
+- C27 (9db2c27): `renderGraphPopupProps` (graph.js) head row `.graph-popup-props-head` (graph-lazy.css). Probe `d2/probe-popup.js`: button 117x32 at the left, icon at x28, 1px off the text field, to a 420px head with Add/Edit right-aligned (right edge 434 of 448), label "Properties · 3", 9px off the field.
+
+- C11 follow-up: Edited reads `edited_at` (in `_GRAPH_COLUMNS`, the node dict, `_NOTE_DEFAULTS`, `graphFill`); the probe's seeded notes, never edited, show no Edited (before: shown from filing writes).
 
 ## Next
-- C11 follow-up: "Edited" reads `edited_at` (a person's edit), not `updated_at`: routes_graph.py node payload ~929, `gcHoverCardFacts`, `renderGraphPopupInfo`.
+- None from this brief. Not verified: dark theme (the probe's theme switch left light tokens), touch and phone hover-card path, label-pass cost at 2,000 notes.

@@ -4352,10 +4352,9 @@ function gcHoverCardFacts(node, entry, day, ago) {
     return card;
   }
   if (node.created_at) card.facts.push(["Created", day(node.created_at)]);
-  const made = Date.parse(node.created_at || "");
-  const edited = Date.parse(node.updated_at || "");
-  //: An edit within a minute of writing is the writing.
-  if (Number.isFinite(edited) && (!Number.isFinite(made) || edited - made > 60000)) card.facts.push(["Edited", ago(node.updated_at)]);
+  //: A person's last edit (`edited_at`), never `updated_at`, which the
+  //: app's own writes (filing, a view count) also move.
+  if (node.edited_at) card.facts.push(["Edited", ago(node.edited_at)]);
   const links = node._links || 0;
   card.facts.push(["Links", links ? String(links) : "None"]);
   card.facts.push(["Views", node.access_count ? String(node.access_count) : "Not opened yet"]);

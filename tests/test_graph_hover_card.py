@@ -48,7 +48,7 @@ FACTS = (
 def test_a_notes_card_has_its_dates_links_views_length_values_and_tags() -> None:
     script = FACTS + """
 const node = { id: 7, preview: "Gym Routine Overview", category: "Health", created_at: "2026-10-01T09:00:00+00:00",
-  updated_at: "2026-10-17T09:00:00+00:00", access_count: 3, words: 120, tags: ["gym", "plan"], _links: 4 };
+  updated_at: "2026-10-18T09:00:00+00:00", edited_at: "2026-10-17T09:00:00+00:00", access_count: 3, words: 120, tags: ["gym", "plan"], _links: 4 };
 const entry = { properties: { status: ["done"], due: ["2026-10-20"], who: ["[[Sam]]", "[[Alex]]"] } };
 const day = (iso) => "D" + iso.slice(5, 10);
 const ago = (iso) => "A" + iso.slice(5, 10);
@@ -67,11 +67,11 @@ console.log(JSON.stringify(gcHoverCardFacts(node, entry, day, ago)));
 def test_a_card_says_never_edited_and_never_opened_plainly() -> None:
     script = FACTS + """
 const node = { id: 1, preview: "Sleep log", category: "Health", created_at: "2026-10-01T09:00:00+00:00",
-  updated_at: "2026-10-01T09:00:20+00:00", access_count: 0, words: 0, tags: [], _links: 0 };
+  updated_at: "2026-10-09T09:00:00+00:00", edited_at: null, access_count: 0, words: 0, tags: [], _links: 0 };
 console.log(JSON.stringify(gcHoverCardFacts(node, null, (i) => "d", (i) => "a")));
 """
     facts = dict(_run(script)["facts"])
-    assert "Edited" not in facts, "an edit within a minute of writing is the writing"
+    assert "Edited" not in facts, "never edited by a person: the app's own writes are not an edit"
     assert facts["Views"] == "Not opened yet" and facts["Links"] == "None"
 
 
@@ -97,7 +97,7 @@ def test_the_card_follows_the_pointer_and_the_keyboard_and_the_title_is_gone() -
 
 def test_the_popup_info_line_carries_the_edit_date() -> None:
     info = _function(GRAPH, "renderGraphPopupInfo")
-    assert "updated_at" in info and "Edited" in info
+    assert "edited_at" in info and "updated_at" not in info and "Edited" in info
 
 
 def test_the_card_is_on_the_recipe_and_styled_with_tokens() -> None:
