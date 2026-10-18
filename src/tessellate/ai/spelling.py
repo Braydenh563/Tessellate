@@ -125,11 +125,8 @@ def set_topic_source(source: Callable[[], list]) -> None:
     _dictionary.cache_clear()
 
 
-@lru_cache(maxsize=1)
-def _app_counts() -> Counter:
-    """Word counts over the app's own help text: its vocabulary, and what
-    breaks a tie between two readings. Empty when the help is not loadable
-    (the speller then runs on the word list alone)."""
+def _help_text() -> str | None:
+    """The app's help topics as one string, or None when they cannot be read."""
     if _topic_source is None:
         #: The topics register themselves when `help_chat` loads; a process
         #: that has not met the Guide yet (the first question after launch,
@@ -141,12 +138,22 @@ def _app_counts() -> Counter:
         except Exception:  # noqa: BLE001 - a missing help must not stop a question being read
             pass
     try:
-        text = " ".join(
+        return " ".join(
             " ".join([str(t.get("title", "")), str(t.get("body", "")), " ".join(t.get("keywords") or [])])
             for t in (_topic_source() if _topic_source else [])
             if isinstance(t, dict)
         )
     except Exception:  # noqa: BLE001 - a missing help must not stop a question being read
+        return None
+
+
+@lru_cache(maxsize=1)
+def _app_counts() -> Counter:
+    """Word counts over the app's own help text: its vocabulary, and what
+    breaks a tie between two readings. Empty when the help is not loadable
+    (the speller then runs on the word list alone)."""
+    text = _help_text()
+    if text is None:
         return Counter()
     text = text.lower()
     counts = Counter(w for w in re.findall(r"[a-z]+", text) if len(w) >= 3)
@@ -283,11 +290,11 @@ def _is_word(word: str) -> bool:
 
 
 def _y_then_ending(stem: str, ending: str, how: str) -> bool:
-    """A long stem in a consonant and "y" with a comparative or past ending put
-    straight on ("shortyer", "happyer", "babyed"): the "y" becomes "i" ("happier")
-    or goes, so this is a slip, not "shorty" and "er". A short stem keeps it
-    ("flyer", "dryer", "shyer")."""
-    return not how and ending in ("er", "ers", "est", "ed", "es") and len(stem) >= 5 and stem.endswith("y") and stem[-2] not in "aeiou"
+    """A stem of four letters or more in a consonant and "y" with a comparative
+    or past ending put straight on ("shortyer", "happyer", "busyer", "babyed"):
+    the "y" becomes "i" ("happier") or goes, so this is a slip, not "shorty" and
+    "er". A three-letter stem keeps it ("flyer", "dryer", "shyer")."""
+    return not how and ending in ("er", "ers", "est", "ed", "es") and len(stem) >= 4 and stem.endswith("y") and stem[-2] not in "aeiou"
 
 
 def _rebuild(prefix: str, base: str, ending: str, how: str) -> str:
@@ -394,6 +401,29 @@ def _ending_fits(base: str, ending: str, how: str) -> bool:
     return not (ending == "s" and base.endswith(("s", "x", "z", "ch", "sh")))
 
 
+#: A plural determiner agrees with the noun after it ("those notes", not
+#: "those cursor"): the reading is cheaper before a plural-looking word and
+#: dearer before a singular one.
+PLURAL_DETERMINERS = frozenset(("those", "these"))
+_AGREEMENT = 0.5
+#: The first letter is the one a typist hits deliberately, so a reading that
+#: only swaps it ("those" for "ghose", a neighbouring key, or "whose") costs
+#: more than one that keeps the word's start ("ghost").
+_FIRST_KEY_SLIP = 0.7
+
+
+def _slip_penalty(word: str, rebuilt: str, after: str) -> float:
+    """What a reading costs beyond its edit distance for how it sits: a
+    changed first letter and nothing else, and a plural determiner before a
+    noun that is not plural."""
+    cost = 0.0
+    if len(word) == len(rebuilt) and word[1:] == rebuilt[1:]:
+        cost += _FIRST_KEY_SLIP
+    if rebuilt in PLURAL_DETERMINERS and after.isalpha():
+        cost += -_AGREEMENT if after.endswith("s") and not after.endswith("ss") else _AGREEMENT
+    return cost
+
+
 def _reading_row(word: str, before: str, after: str, prefix: str, ending: str, how: str, d: float, negw: float, base: str, distance):  # noqa: ANN001, ANN202
     """One scored reading `(score, rebuilt word, weight)` of `word` as the list
     word `base` with its ending put back, or None when the stem and ending do
@@ -420,15 +450,26 @@ def _reading_row(word: str, before: str, after: str, prefix: str, ending: str, h
     if rebuilt in OWN_WORDS:
         penalty -= 0.3
     penalty -= CONTEXT_READINGS.get((before, rebuilt, after), 0.0)
+    penalty += _slip_penalty(word, rebuilt, after)
     return whole + penalty - 0.8 * FUNCTION_PRIOR.get(rebuilt, 0.0), rebuilt, -negw
 
 
-def _fix(word: str, after: str, before: str, distance, known=()):  # noqa: ANN001
-    """The chosen reading of a misspelt word and the other reading it was near,
-    as (chosen, alternative) or None. `known` are the person's own words (their
-    notes'), which a misspelling is read towards before any list word."""
-    if len(word) < 4:
-        return _fix_short(word, after, before, distance)
+_Y_ENDING = re.compile(r"^([a-z]{2,}[^aeiouy])y(er|ers|est|ed)$")
+
+
+def _y_to_i(word: str) -> str | None:
+    """A long stem in a consonant and "y" with an ending put straight on is
+    the "y" turned to "i": "happyer" is "happier", "busyer" is "busier",
+    "babyed" is "babied". Only when that is a listed word, so "shortyer"
+    ("shorty" and "er", "shortier" is no word) is read by the nearer-word rule."""
+    m = _Y_ENDING.match(word)
+    rebuilt = f"{m.group(1)}i{m.group(2)}" if m else ""
+    return rebuilt if rebuilt in _recognised() else None
+
+
+def _scored_readings(word: str, after: str, before: str, distance, known) -> list[tuple[float, str, float]]:  # noqa: ANN001
+    """Every reading of a misspelt word as a list word (with its ending put
+    back), scored; the lowest score is the nearest."""
     scored: list[tuple[float, str, float]] = []
     for prefix, stem, ending, how in _readings(word):
         if len(stem) < 4:
@@ -440,6 +481,18 @@ def _fix(word: str, after: str, before: str, distance, known=()):  # noqa: ANN00
             row = _reading_row(word, before, after, prefix, ending, how, d, negw, base, distance)
             if row:
                 scored.append(row)
+    return scored
+
+
+def _fix(word: str, after: str, before: str, distance, known=()):  # noqa: ANN001
+    """The chosen reading of a misspelt word and the other reading it was near,
+    as (chosen, alternative) or None. `known` are the person's own words (their
+    notes'), which a misspelling is read towards before any list word."""
+    if len(word) < 4:
+        return _fix_short(word, after, before, distance)
+    if slipped := _y_to_i(word):
+        return slipped, None
+    scored = _scored_readings(word, after, before, distance, known)
     if not scored:
         return _one_off(word) or _hidden_small(word, after)
     scored.sort(key=lambda row: (round(row[0] / 0.2), -row[2], row[0]))

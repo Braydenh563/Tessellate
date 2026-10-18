@@ -77,6 +77,8 @@ LEFT_ALONE = [
     "which notes mention the beta and the deposit that was paid",
     "advise the kindly neighbour about the hallway light",
     "it was a really nice weekend at the lake house",
+    "a shyer person with a flyer and the dryer",
+    "the ghost cursor and a happier, busier week",
 ]
 
 

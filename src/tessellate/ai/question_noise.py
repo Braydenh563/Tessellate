@@ -2246,6 +2246,21 @@ def _repair_misspelt(token: str, word: str, tail: str, nxt: str, text: str, out:
 _SMALL_LEADS = frozenset("or an of to in on at by if so do is it as".split())
 
 
+def _run_on_reading(word: str, known) -> tuple[str, str] | None:  # noqa: ANN001
+    """A lower-case word that is two words run together, one of them small
+    ("thenthe"), tried only when no list word is near."""
+    if not word.islower():
+        return None
+    run_on = spelling.split_run_on(word, known)
+    #: A small word run into a slang word ("orsmth" is "or smth"): the slang
+    #: is not a list word, so `split_run_on` cannot see it; it is read as its
+    #: own reading so the text is stable under a second repair.
+    return run_on or next(
+        ((word[:cut], SLANG[word[cut:]]) for cut in (2, 3) if word[:cut] in _SMALL_LEADS and len(word) > cut + 3 and word[cut:] in SLANG),
+        None,
+    )
+
+
 def _repair_by_speller(word: str, tail: str, after: str, out: list[str], report, known, fixed) -> bool:  # noqa: ANN001
     """Reads a misspelt word as the word it is near (`spelling.fix`), or as two
     words run together, one of them small ("thenthe"), tried only when no list
@@ -2267,15 +2282,7 @@ def _repair_by_speller(word: str, tail: str, after: str, out: list[str], report,
         if fixed is not None:
             fixed.append((word, chosen))
         return True
-    run_on = spelling.split_run_on(low, known) if word.islower() else None
-    #: A small word run into a slang word ("orsmth" is "or smth"): the slang
-    #: is not a list word, so `split_run_on` cannot see it; it is read as its
-    #: own reading so the text is stable under a second repair.
-    if not run_on and word.islower():
-        run_on = next(
-            ((low[:cut], SLANG[low[cut:]]) for cut in (2, 3) if low[:cut] in _SMALL_LEADS and len(low) > cut + 3 and low[cut:] in SLANG),
-            None,
-        )
+    run_on = _run_on_reading(word, known)
     if not run_on:
         return False
     out.append(" ".join(run_on) + tail)
