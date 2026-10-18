@@ -62,6 +62,27 @@ MORE_TOPICS: list[dict] = [
         "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
     },
     {
+        "id": "companion-throw",
+        "keywords": (
+            "throw the companion", "flick the companion", "throwing the companion",
+            "companion splat", "companion climbs", "companion hangs from the top bar",
+            "companion went off the screen", "companion lies down",
+        ),
+        "body": (
+            "Throw the corner companion by letting go of it while it is still "
+            "moving fast. It flies, bounces off the window's edges and stays "
+            "where it lands, and now and then something else happens: it "
+            "catches the top bar and hangs from it, grabs a panel's top edge "
+            "and climbs on, splats against a side of the window and slides "
+            "down to the panel below, or goes off one side and comes back on "
+            "the other. Once down it settles in its own way: sitting with its "
+            "legs dangling or kicking, lying down, stretching, or swinging "
+            "from the bar. Wherever it ends, it never covers a button. With "
+            "Reduce motion on, it simply appears where it lands."
+        ),
+        "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
+    },
+    {
         "id": "atlas-look",
         "keywords": (
             "atlas look", "atlas style", "classic globe", "globe", "atlas character",

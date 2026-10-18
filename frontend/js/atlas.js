@@ -1587,14 +1587,12 @@ function atlasEye(parent, id, [cx, cy, side], tiny, lashes) {
     //: The upper lid is the head's own skin sliding down over the white,
     //: with a lash line on its edge; the lower lid rises for a squint.
     const lid = atlasGroup(inner, "atl-lid", [cx, cy]);
-    atlasMake("path", { class: "atl-skin atl-lid-flat", d: `M${cx - 7} ${cy - 16}H${cx + 7}V${cy - 4.6}Q${cx} ${cy - 3.6} ${cx - 7} ${cy - 4.6}Z` }, lid);
-    atlasMake("path", { class: "atl-lash atl-lid-flat", d: `M${cx - 7} ${cy - 4.6}Q${cx} ${cy - 3.6} ${cx + 7} ${cy - 4.6}` }, lid);
-    //: **The drowsy lid** (round 9, the owner: "the half lidded eyes look a
-    //: little creepy"): a lid whose edge droops in a soft arc over the eye,
-    //: so a half-closed eye reads as heavy and sleepy, never as a flat line
-    //: across a stare. Shown by `--atl-softlid` instead of the flat edge.
-    atlasMake("path", { class: "atl-skin atl-lid-soft", d: `M${cx - 7} ${cy - 16}H${cx + 7}V${cy - 5.2}Q${cx} ${cy - 0.2} ${cx - 7} ${cy - 5.2}Z` }, lid);
-    atlasMake("path", { class: "atl-lash atl-lid-soft", d: `M${cx - 6.2} ${cy - 4.4}Q${cx} ${cy - 0.2} ${cx + 6.2} ${cy - 4.4}` }, lid);
+    atlasMake("path", { class: "atl-skin", d: `M${cx - 7} ${cy - 16}H${cx + 7}V${cy - 4.6}Q${cx} ${cy - 3.6} ${cx - 7} ${cy - 4.6}Z` }, lid);
+    atlasMake("path", { class: "atl-lash", d: `M${cx - 7} ${cy - 4.6}Q${cx} ${cy - 3.6} ${cx + 7} ${cy - 4.6}` }, lid);
+    //: No pose rests the lid half down (INBOX 1301 D4, the owner: "the half
+    //: lidded eyes on atlas look creepy and like fnaf"): a mood or a state
+    //: keeps it under 30% of the eye (the CSS, `--atl-lid`) and squints
+    //: from below (`--atl-low`); only a blink passes through the middle.
     const low = atlasGroup(inner, "atl-lid-low", [cx, cy]);
     atlasMake("path", { class: "atl-skin", d: `M${cx - 7} ${cy + 12}H${cx + 7}V${cy + 3.8}Q${cx} ${cy + 2.8} ${cx - 7} ${cy + 3.8}Z` }, low);
     atlasMake("path", { class: "atl-liner", d: shape.upper }, blink);

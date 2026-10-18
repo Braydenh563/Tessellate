@@ -6088,7 +6088,7 @@ body .chip.item-label,
   transition: translate var(--motion-slow) var(--ease-spring), rotate var(--motion-slow) var(--ease-spring);
 }
 /* Just woken: heavy lids for a few seconds. */
-#nm-buddy.nmb-groggy .name-mark .nm-blinks { transform: scaleY(0.6); }
+#nm-buddy.nmb-groggy .name-mark .nm-blinks:not(.atl-blink) { transform: scaleY(0.6); }
 /* Asleep, it breathes slower. */
 #nm-buddy:is(.nmb-sleep, .nmb-act-nap) .name-mark .nm-body { animation-duration: 6.4s; }
 #nm-buddy.nmb-think .nm-buddy-head { rotate: 8deg; }
@@ -6654,7 +6654,7 @@ body .chip.item-label,
   --atl-br-y: 0px;
   --atl-bl-r: 0deg;
   --atl-br-r: 0deg;
-  --atl-lid: 0.12;
+  --atl-lid: 0.1;
   --atl-lid-r: 0deg;
   --atl-low: 0;
   --atl-eye-s: 1;
@@ -6671,7 +6671,6 @@ body .chip.item-label,
   --atl-happy: 0;
   --atl-shut: 0;
   --atl-doze: 0;
-  --atl-softlid: 0;
   --atl-squeeze: 0;
   --atl-hearteye: 0;
   --atl-m-smile: 1;
@@ -7412,8 +7411,6 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .nm-atlas[data-atlas-look="masculine"] .atl-lid { translate: 0 0.8px; }
 .nm-atlas .atl-pupil { transform: translate(calc(var(--atl-px) + var(--atl-lean-dir) * 0.8px), var(--atl-py)) scale(var(--atl-ps)); }
 .nm-atlas .atl-lid { transform: rotate(calc(var(--atl-lid-r) * var(--atl-side))) translateY(calc(var(--atl-lid) * 11px)); }
-.nm-atlas .atl-lid-flat { opacity: calc(1 - var(--atl-softlid)); }
-.nm-atlas .atl-lid-soft { opacity: var(--atl-softlid); }
 .nm-atlas .atl-lid-low { transform: translateY(calc(var(--atl-low) * -10px)); }
 /* The ears and the hair perk and droop together: the hair and the right
    ear one way, the left ear mirrored. */
@@ -7825,7 +7822,7 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .nm-atlas[data-atlas-mood="sad"] {
   --atl-tail: 22deg; --atl-star: 0.5;
   --atl-crest: 12deg;
-  --atl-brow-y: 0.6px; --atl-knit: -12deg; --atl-lid: 0.28; --atl-lid-r: -10deg;
+  --atl-brow-y: 0.6px; --atl-knit: -12deg; --atl-lid: 0.04; --atl-lid-r: -8deg;
   --atl-py: 1.3px; --atl-ps: 1.1;
   --atl-m-smile: 0; --atl-m-frown: 1; --atl-cheek: 0.15;
   --atl-tilt: 5deg; --atl-head-y: 1px; --atl-sx: 1.03; --atl-sy: 0.96;
@@ -7842,14 +7839,14 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .nm-atlas[data-atlas-mood="shy"] {
   --atl-tail: 16deg; --atl-star: 0.9;
   --atl-crest: 3deg;
-  --atl-brow-y: -0.6px; --atl-knit: -8deg; --atl-lid: 0.2; --atl-px: -1.8px; --atl-py: 1.5px;
+  --atl-brow-y: -0.6px; --atl-knit: -8deg; --atl-lid: 0.06; --atl-low: 0.12; --atl-px: -1.8px; --atl-py: 1.5px;
   --atl-m-smile: 0; --atl-m-cat: 1; --atl-cheek: 1;
   --atl-tilt: 10deg; --atl-sx: 0.97; --atl-sy: 1.01;
 }
 .nm-atlas[data-atlas-mood="determined"] {
   --atl-tail: -6deg; --atl-star: 1.25;
   --atl-crest: -4deg;
-  --atl-brow-y: 0.8px; --atl-knit: 14deg; --atl-lid: 0.1; --atl-lid-r: 18deg; --atl-low: 0.18; --atl-eye-s: 0.98;
+  --atl-brow-y: 0.8px; --atl-knit: 14deg; --atl-lid: 0.02; --atl-lid-r: 12deg; --atl-low: 0.18; --atl-eye-s: 0.98;
   --atl-m-smile: 0; --atl-m-set: 1; --atl-cheek: 0.2;
   --atl-sx: 1.03; --atl-sy: 0.99; --atl-glow: 1.2;
 }
@@ -7887,20 +7884,22 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
   --atl-m-wavy: 0; --atl-m-frown: 0; --atl-m-smug: 0; --atl-m-cat: 0; --atl-m-set: 0; --atl-m-o: 1;
 }
 #nm-buddy.nmb-act-startle .nm-atlas { --atl-brow-y: -3.4px; --atl-lid: 0; --atl-eye-s: 1.12; --atl-ps: 0.7; }
-#nm-buddy.nmb-act-yawn .nm-atlas { --atl-lid: 0.6; --atl-brow-y: 0.6px; }
-/* Just woken (avatars.js, `nmb-groggy`, 5s): heavy lids that lift as it
-   comes round. Poked again while waking (`nmb-pout`): sleepy-annoyed, lids
-   half down, brows knit, a small pout. Poked a third time (`nmb-grumpy`,
+#nm-buddy.nmb-act-yawn .nm-atlas { --atl-open: 0; --atl-happy: 0; --atl-squeeze: 0; --atl-shut: 0; --atl-doze: 1; --atl-brow-y: 0.6px; }
+/* Just woken (avatars.js, `nmb-groggy`, 5s): eyes open with a soft
+   squint from below and slow blinks as it comes round, never a half-shut
+   stare (INBOX 1301 D4; `tests/test_atlas_lids_1301.py` holds every lid
+   under 30% closed). Poked again while waking (`nmb-pout`): sleepy-annoyed,
+   a squint, brows knit, a small pout. Poked a third time (`nmb-grumpy`,
    30s, then a pout on the way back): unimpressed, a set mouth. */
-#nm-buddy.nmb-groggy .nm-atlas { --atl-lid: 0.45; --atl-brow-y: 0.4px; }
+#nm-buddy.nmb-groggy .nm-atlas { --atl-lid: 0.08; --atl-low: 0.1; --atl-ps: 0.86; --atl-py: 1px; --atl-brow-y: 0.4px; }
 #nm-buddy:is(.nmb-pout, .nmb-grumpy) .nm-atlas {
   --atl-open: 1; --atl-happy: 0; --atl-squeeze: 0; --atl-shut: 0; --atl-doze: 0; --atl-hearteye: 0;
   --atl-m-smile: 0; --atl-m-grin: 0; --atl-m-big: 0; --atl-m-laugh: 0; --atl-m-o: 0; --atl-m-tinyo: 0; --atl-m-rest: 0;
   --atl-m-hmm: 0; --atl-m-wavy: 0; --atl-m-smug: 0; --atl-m-cat: 0; --atl-m-set: 0; --atl-m-frown: 0;
   --atl-cheek: 0.35;
 }
-#nm-buddy.nmb-pout .nm-atlas { --atl-lid: 0.42; --atl-knit: 9deg; --atl-brow-y: 0.6px; --atl-m-frown: 1; --atl-tilt: 5deg; }
-#nm-buddy.nmb-grumpy .nm-atlas { --atl-lid: 0.34; --atl-lid-r: 12deg; --atl-knit: 14deg; --atl-brow-y: 0.9px; --atl-m-set: 1; --atl-cheek: 0.1; }
+#nm-buddy.nmb-pout .nm-atlas { --atl-lid: 0.08; --atl-low: 0.14; --atl-knit: 9deg; --atl-brow-y: 0.6px; --atl-m-frown: 1; --atl-tilt: 5deg; }
+#nm-buddy.nmb-grumpy .nm-atlas { --atl-lid: 0.02; --atl-lid-r: 10deg; --atl-low: 0.12; --atl-knit: 14deg; --atl-brow-y: 0.9px; --atl-m-set: 1; --atl-cheek: 0.1; }
 #nm-buddy:is(.nmb-act-cheer, .nm-buddy-dragging) .nm-atlas {
   --atl-open: 0; --atl-happy: 1;
   --atl-m-smile: 0; --atl-m-grin: 0; --atl-m-laugh: 0; --atl-m-o: 0; --atl-m-tinyo: 0; --atl-m-hmm: 0;
@@ -7955,24 +7954,25 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
    `nameMarkBuddyShapeAt1`) gives it 6. */
 #nm-buddy[data-pose="stand"].nmb-reading .nm-atlas { --atl-tail: 0deg; }
 #nm-buddy.nm-buddy-dragging .nm-atlas { --atl-tail: -30deg; }
-/* Drowsy (round 9, the owner: "the half lidded eyes look a little
-   creepy"): the lids droop in soft arcs (`--atl-softlid`), the pupils are
-   small and look down and away, the brows soften with their inner ends a
+/* Drowsy (INBOX 1301 D4, the owner: "the half lidded eyes on atlas look
+   creepy and like fnaf"): no lid rests between open and shut. The upper
+   lid stays up (under 30% of the eye), a soft lower lid rises in a
+   content squint, the pupils are small and look down and away, the brows soften with their inner ends a
    little raised, the mouth relaxes whatever the mood was, and a blink is
    slow and lingers closed (atlas.js, `atlasBlinkTick`). Its occasional yawn is the
    companion's own `yawn` act. */
 #nm-buddy.nmb-drowsy .nm-atlas {
   --atl-halo-o: 0.75; --atl-glow: 0.85; --atl-crest: 5deg;
   --atl-open: 1; --atl-happy: 0; --atl-squeeze: 0; --atl-hearteye: 0;
-  --atl-lid: 0.3; --atl-lid-r: 0deg; --atl-softlid: 1; --atl-low: 0.08;
+  --atl-lid: 0.08; --atl-lid-r: 0deg; --atl-low: 0.14;
   --atl-px: -0.6px; --atl-py: 1.6px; --atl-ps: 0.8;
   --atl-brow-y: -0.3px; --atl-knit: -7deg; --atl-bl-y: 0px; --atl-br-y: 0px; --atl-bl-r: 0deg; --atl-br-r: 0deg;
   --atl-m-smile: 0; --atl-m-grin: 0; --atl-m-big: 0; --atl-m-laugh: 0; --atl-m-o: 0; --atl-m-hmm: 0;
   --atl-m-wavy: 0; --atl-m-frown: 0; --atl-m-smug: 0; --atl-m-cat: 0; --atl-m-set: 0; --atl-m-tinyo: 0; --atl-m-rest: 1;
   --atl-cheek: 0.3;
 }
-#nm-buddy.nmb-night .nm-atlas { --atl-crest: 8deg; --atl-lid: 0.28; }
-#nm-buddy.nmb-reading .nm-atlas { --atl-py: 1.4px; --atl-lid: 0.18; --atl-brow-y: -0.6px; }
+#nm-buddy.nmb-night .nm-atlas { --atl-crest: 8deg; --atl-lid: 0.1; --atl-low: 0.08; }
+#nm-buddy.nmb-reading .nm-atlas { --atl-py: 1.4px; --atl-lid: 0.1; --atl-brow-y: -0.6px; }
 #nm-buddy.nmb-offline .nm-atlas { --atl-knit: -11deg; --atl-brow-y: -1px; --atl-ps: 0.86; }
 #nm-buddy.nmb-act-bell .nm-atlas { --atl-eye-s: 1.08; --atl-brow-y: -2px; --atl-crest: -8deg; }
 /* The classic globe as the companion (atlas.js, `atlasClassicFigure`): a

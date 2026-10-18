@@ -1881,6 +1881,8 @@ const LAZY_MODULES = {
   atlasLife: ["/js/atlas-life.js"],
   //: The companion's menu and a face's enlarged view (companion-menu.js's header).
   companionMenu: ["/js/companion-menu.js"],
+  //: A throw and what can happen on the way (companion-throw.js's header).
+  companionThrow: ["/css/companion-throw-lazy.css", "/js/companion-throw.js"],
   //: A held drag-selection scrolling a list at its edge (drag-edge.js), preloaded below.
   dragEdge: ["/js/drag-edge.js"],
   //: The back/forward list's rows (INBOX 654): see nav-history.js.
