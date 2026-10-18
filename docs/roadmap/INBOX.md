@@ -167,6 +167,9 @@ with its owner named in the entry.
           "Courses | Study" 0; "AI" 0; "Tags" with no count) the categories sidebar is a little
           messy and ther eis a lot happening and I want to be able to collapse sections like
           with the most used section
+     C44. (mid-run, 2026-10-18, screenshot: documents live view, a rendered section break
+          on line 1 with "..." dots; gutter numbers 1 and 2 overlap, 3 sits lower) a live view
+          rendered section break clashes line numbers
      **Triage 2026-10-18** (two Haiku audits, each bug reproduced in the app unless noted;
      rungs: H Haiku, S Sonnet, O Opus; "now" = this run's batches, "plan" = placed).
      Batch 1, bugs, Sonnet or Haiku, now: C10 H (`settings-panes.js:1499` lacks `quick:
