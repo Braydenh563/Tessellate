@@ -2084,6 +2084,7 @@ TOPIC_META: dict[str, dict] = {
     "notifications": {"title": "Notifications", "path": "The bell in the top bar"},
     "companion": {"title": "The corner companion", "path": "Settings, Appearance, Atlas and faces, Corner companion", "steps": (
         "Open Settings, Appearance, Atlas and faces.", "Pick who it is under Corner companion.", "Right-click it on the page for its menu; Ctrl+Shift+Y shows or hides it.")},
+    "image-viewer": {"title": "The picture and PDF viewer", "path": "Library, open a picture or PDF"},
     "companion-throw": {"title": "Throwing the companion", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
     "atlas-look": {"title": "How Atlas looks", "path": "Settings, Appearance, Atlas and faces, Atlas style and Atlas look"},
     "faces": {"title": "Generated faces", "path": "Settings, Appearance, Atlas and faces"},
@@ -2234,7 +2235,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     )),
     ("Library and files", (
         "library", "library-controls", "bookmarks", "web-clipper-bookmark", "contents", "library-skills",
-        "files-images", "ocr-workspace", "ocr-engine", "archive", "undo-bin",
+        "files-images", "image-viewer", "ocr-workspace", "ocr-engine", "archive", "undo-bin",
     )),
     ("Graph, Timeline, Reminders and Dashboard", (
         "graph", "graph-controls", "graph-display", "entities", "properties", "timeline", "timeline-controls", "reminders",
