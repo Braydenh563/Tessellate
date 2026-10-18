@@ -1261,7 +1261,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `applyPlanMode` | frontend/js/wiring.js:1450 |
 | `askAtlasAbout` | frontend/js/wiring.js:200 |
 | `chatRecallStep` | frontend/js/wiring.js:801 |
-| `clearDueNudges` | frontend/js/wiring.js:1713 |
+| `clearDueNudges` | frontend/js/wiring.js:1728 |
 | `closeGlobalFind` | frontend/js/wiring.js:627 |
 | `dashboardGreetingPersona` | frontend/js/wiring.js:906 |
 | `escapeForFind` | frontend/js/wiring.js:405 |
@@ -1273,9 +1273,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `initGraphOptionFolds` | frontend/js/wiring.js:1023 |
 | `initHelpToggles` | frontend/js/wiring.js:220 |
 | `noteSourceOn` | frontend/js/wiring.js:872 |
-| `nudgeDueShown` | frontend/js/wiring.js:1717 |
+| `nudgeDueShown` | frontend/js/wiring.js:1732 |
 | `openGlobalFind` | frontend/js/wiring.js:565 |
-| `openReminderCompose` | frontend/js/wiring.js:1613 |
+| `openReminderCompose` | frontend/js/wiring.js:1628 |
 | `paintDashboardPersonaMark` | frontend/js/wiring.js:912 |
 | `reflectOnlineState` | frontend/js/wiring.js:16 |
 | `renameCurrentConversation` | frontend/js/wiring.js:714 |

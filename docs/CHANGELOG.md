@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Escape: in the reminders sentence box it clears the text, and on an empty box leaves it; measured with the lightbox (Escape and Back with it open), the notes edit form and the graph popup, which already closed (row 32 closed).
 - Whiteboard library: UML, Entity relationship and Wireframe sets (14, 10 and 12 elements) and three templates, a class diagram, an entity relationship diagram and a wireframe page; the Guide describes them (INBOX 1300 C04).
 - Whiteboard: a sticky note's seven paper chips are one Paper dropdown button that opens the shared colour popover, arrow keys and Escape included; the bar is 122 px narrower (INBOX 1300 C18).
 - Dashboard: the line under the greeting is composed from your notes (what you wrote today or last, the week's count, a note from this day) and rotates its wording each visit and every few minutes, with no animation (INBOX 1300 C26).
