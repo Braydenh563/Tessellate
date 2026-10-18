@@ -35,6 +35,7 @@ audits reproduced each bug in the app (ports 8791, 8792). A row is **open**,
 | C36 timeline tick labels switch | O, design | open | `timeline-ticks.js` |
 | C14 composer and model badge | O, design | open | `chat-attach.js:2430` byline |
 | C18 paper swatches as dropdown | O, design | open | `index.html:7506` |
+| C37 graph box titles clipped, no ellipsis; nodes all one size | O, design batch 2 | open | a question is a bug report: size by weight (links or uses) and a label line-clamp with ellipsis |
 | C04 UML, ERD, wireframe sets | plan | placed | WHITEBOARD_PLAN |
 | C16, C26 composer variety, greeting sub line | plan | placed | CHAT_PLAN; `composer_voice.today_line` unused |
 | C24 Logs panel scroll | none | not reproduced | equal heights at five sizes; Settings nav overflow placed in WORLD_CLASS row 32 |
