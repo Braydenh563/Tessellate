@@ -3721,6 +3721,17 @@ def test_the_attach_panel_rows_are_one_renderer_with_keys() -> None:
     assert 'data-help-for="note-picker-help"' in html and 'id="note-picker-help"' in html
 
 
+def test_enter_on_an_attach_row_ticks_it_and_keeps_focus() -> None:
+    """INBOX 1300 C09: arrows down the list then Enter did nothing the owner
+    expected (it closed the panel as Done with the row unticked). Enter on a
+    row ticks it like Space; Enter in the search field is still Done."""
+    js = (ROOT / "frontend" / "js" / "chat-attach.js").read_text(encoding="utf-8")
+    keys = _function_body(js, "notePickerKeydown")
+    enter = keys[keys.index('event.key === "Enter"', keys.index("if (at < 0) return;")) :]
+    enter = enter[: enter.index("} else if")]
+    assert "target.click()" in enter and "note-picker-done" not in enter
+
+
 def test_the_attach_picker_rows_show_what_they_hold() -> None:
     """UI_MODERNISATION_PLAN, "the picker's other four sources have no
     thumbnail" (op4-1005): a map's row draws the map (`mapPreview` at its row

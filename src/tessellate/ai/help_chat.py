@@ -1930,7 +1930,7 @@ HELP_TOPICS.extend(
                 "and Agent or Ask mode. The note button beside the box opens Attach: "
                 "a tab each for notes, documents, files, images and mind maps, with "
                 "a search; the arrows move, Space "
-                "ticks, Enter is Done. Each message's menu can copy it, edit your "
+                "or Enter ticks, Enter in the search box is Done. Each message's menu can copy it, edit your "
                 "question, regenerate from here, save it as a note or read it "
                 "aloud. The header can fork the conversation, compress the earlier "
                 "messages (Undo goes back), show how full the model's context is "

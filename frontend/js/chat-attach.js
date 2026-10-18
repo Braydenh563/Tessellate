@@ -1217,7 +1217,7 @@ function notePickerColumns(list) {
 }
 
 //: **The keys** (INBOX 485): ↑ ↓ walk the rows (← → as well in the image
-//: grid, and between the source tabs), Space ticks the row, Enter is Done,
+//: grid, and between the source tabs), Space or Enter ticks the row, Enter in the search field is Done,
 //: Escape closes, Home and End jump, and a letter typed on a row goes to the
 //: search field. ↓ from the field enters the list; ↑ from its first row
 //: returns.
@@ -1259,8 +1259,10 @@ function notePickerKeydown(event) {
   else if (event.key === "Home") to = 0;
   else if (event.key === "End") to = boxes.length - 1;
   else if (event.key === "Enter") {
+    //: Ticks the focused row like Space and leaves focus on it (C09); Done is
+    //: Enter in the search field or the Done button.
     event.preventDefault();
-    $("note-picker-done").click();
+    target.click();
     return;
   } else if (event.key.length === 1 && event.key !== " ") {
     search.focus();

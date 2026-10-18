@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Attach: Enter on a focused row ticks it and keeps focus, like Space; Enter in the search field is still Done (INBOX 1300 C09); the panel help and the Guide say so.
 - Statistics can be added to Dashboard Quick access: its palette row now carries a quick id (INBOX 1300 C10); `tests/test_quick_access.py`.
 - "What is due this week" in Ask and Chat with no model answers from the days the notes name when Reminders has nothing waiting, instead of "You have no reminders waiting"; the computed days (until, before or after, what is due) also work through the route, whose notes had no day to read. The map's topic strip no longer covers a line handle at 820 wide, and the fold chevron is above the resize grip at phone width.
 - Every part of the Documents tab has its own ? popover naming its controls (OPEN 1054): the list, the outline tab, the dock with its menu, the find bar and the AI panel; `tests/test_documents_help.py` fails when a dock menu row has no word in the help.

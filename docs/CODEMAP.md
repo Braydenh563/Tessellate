@@ -2,7 +2,7 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6035, frontend ids 2527, CSS sections 495, backend routes 609, backend modules 5832, test files 1259, tests 11359, plan headings 958.
+Counts: frontend functions 6035, frontend ids 2527, CSS sections 495, backend routes 609, backend modules 5832, test files 1259, tests 11360, plan headings 959.
 
 ## Frontend functions (6035)
 
@@ -588,7 +588,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `appendRunResumeControls` | frontend/js/chat-attach.js:1422 |
+| `appendRunResumeControls` | frontend/js/chat-attach.js:1424 |
 | `attachBoardToChat` | frontend/js/chat-attach.js:587 |
 | `attachChatFiles` | frontend/js/chat-attach.js:394 |
 | `attachDocumentToChat` | frontend/js/chat-attach.js:640 |
@@ -596,71 +596,71 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `attachLibraryFile` | frontend/js/chat-attach.js:532 |
 | `attachSelectionContext` | frontend/js/chat-attach.js:695 |
 | `attachedNotes` | frontend/js/chat-attach.js:842 |
-| `buildFollowupStrip` | frontend/js/chat-attach.js:2776 |
-| `chatDeleteUndo` | frontend/js/chat-attach.js:3107 |
-| `chatDockMoreOpen` | frontend/js/chat-attach.js:1361 |
-| `chatTidyTyped` | frontend/js/chat-attach.js:1531 |
+| `buildFollowupStrip` | frontend/js/chat-attach.js:2778 |
+| `chatDeleteUndo` | frontend/js/chat-attach.js:3109 |
+| `chatDockMoreOpen` | frontend/js/chat-attach.js:1363 |
+| `chatTidyTyped` | frontend/js/chat-attach.js:1533 |
 | `chatTurnObjects` | frontend/js/chat-attach.js:850 |
-| `chatWriteRecord` | frontend/js/chat-attach.js:3125 |
+| `chatWriteRecord` | frontend/js/chat-attach.js:3127 |
 | `clearSelectionAttachment` | frontend/js/chat-attach.js:719 |
-| `closeChatDockMore` | frontend/js/chat-attach.js:1398 |
+| `closeChatDockMore` | frontend/js/chat-attach.js:1400 |
 | `closeExtractPreview` | frontend/js/chat-attach.js:164 |
-| `closeNotePicker` | frontend/js/chat-attach.js:1346 |
+| `closeNotePicker` | frontend/js/chat-attach.js:1348 |
 | `commitExtractPreview` | frontend/js/chat-attach.js:169 |
 | `commitStagedImages` | frontend/js/chat-attach.js:346 |
-| `deleteChatTurn` | frontend/js/chat-attach.js:2882 |
-| `deleteCurrentChat` | frontend/js/chat-attach.js:3081 |
-| `exportChatMarkdown` | frontend/js/chat-attach.js:3130 |
+| `deleteChatTurn` | frontend/js/chat-attach.js:2884 |
+| `deleteCurrentChat` | frontend/js/chat-attach.js:3083 |
+| `exportChatMarkdown` | frontend/js/chat-attach.js:3132 |
 | `extractRefLabel` | frontend/js/chat-attach.js:53 |
 | `flattenNoteMarkdown` | frontend/js/chat-attach.js:879 |
-| `followupChain` | frontend/js/chat-attach.js:2805 |
-| `followupMatches` | frontend/js/chat-attach.js:2803 |
-| `followupParent` | frontend/js/chat-attach.js:2796 |
-| `followupTrail` | frontend/js/chat-attach.js:2822 |
+| `followupChain` | frontend/js/chat-attach.js:2807 |
+| `followupMatches` | frontend/js/chat-attach.js:2805 |
+| `followupParent` | frontend/js/chat-attach.js:2798 |
+| `followupTrail` | frontend/js/chat-attach.js:2824 |
 | `importChatDocuments` | frontend/js/chat-attach.js:436 |
 | `isImageFile` | frontend/js/chat-attach.js:387 |
-| `isStreamingConversation` | frontend/js/chat-attach.js:3009 |
+| `isStreamingConversation` | frontend/js/chat-attach.js:3011 |
 | `keepUnreadableChatFile` | frontend/js/chat-attach.js:407 |
-| `markFollowup` | frontend/js/chat-attach.js:2846 |
-| `mountChatTimer` | frontend/js/chat-attach.js:2935 |
-| `newChatConversation` | frontend/js/chat-attach.js:3029 |
+| `markFollowup` | frontend/js/chat-attach.js:2848 |
+| `mountChatTimer` | frontend/js/chat-attach.js:2937 |
+| `newChatConversation` | frontend/js/chat-attach.js:3031 |
 | `noteLabel` | frontend/js/chat-attach.js:856 |
 | `noteNamePlain` | frontend/js/chat-attach.js:915 |
 | `notePickerColumns` | frontend/js/chat-attach.js:1210 |
 | `notePickerEmpty` | frontend/js/chat-attach.js:1174 |
 | `notePickerFacts` | frontend/js/chat-attach.js:1020 |
 | `notePickerKeydown` | frontend/js/chat-attach.js:1224 |
-| `notePickerOpen` | frontend/js/chat-attach.js:1355 |
+| `notePickerOpen` | frontend/js/chat-attach.js:1357 |
 | `notePickerPage` | frontend/js/chat-attach.js:1191 |
 | `notePickerRoving` | frontend/js/chat-attach.js:1200 |
 | `notePickerShape` | frontend/js/chat-attach.js:1030 |
 | `notePickerUsedIn` | frontend/js/chat-attach.js:1012 |
-| `offerFollowups` | frontend/js/chat-attach.js:2707 |
-| `openChatDockMore` | frontend/js/chat-attach.js:1374 |
+| `offerFollowups` | frontend/js/chat-attach.js:2709 |
+| `openChatDockMore` | frontend/js/chat-attach.js:1376 |
 | `openExtractPreview` | frontend/js/chat-attach.js:22 |
-| `openNotePicker` | frontend/js/chat-attach.js:1311 |
-| `paintChatTimer` | frontend/js/chat-attach.js:2948 |
+| `openNotePicker` | frontend/js/chat-attach.js:1313 |
+| `paintChatTimer` | frontend/js/chat-attach.js:2950 |
 | `plainText` | frontend/js/chat-attach.js:893 |
-| `reattachStreamingTurn` | frontend/js/chat-attach.js:3020 |
-| `refreshFollowupVisibility` | frontend/js/chat-attach.js:2756 |
-| `releaseChatComposer` | frontend/js/chat-attach.js:2979 |
+| `reattachStreamingTurn` | frontend/js/chat-attach.js:3022 |
+| `refreshFollowupVisibility` | frontend/js/chat-attach.js:2758 |
+| `releaseChatComposer` | frontend/js/chat-attach.js:2981 |
 | `renderAttachments` | frontend/js/chat-attach.js:968 |
 | `renderBoardAttachments` | frontend/js/chat-attach.js:600 |
 | `renderDocumentAttachments` | frontend/js/chat-attach.js:653 |
 | `renderExtractPreview` | frontend/js/chat-attach.js:59 |
 | `renderFileAttachments` | frontend/js/chat-attach.js:541 |
-| `renderFollowups` | frontend/js/chat-attach.js:2742 |
+| `renderFollowups` | frontend/js/chat-attach.js:2744 |
 | `renderImageAttachments` | frontend/js/chat-attach.js:262 |
 | `renderSelectionAttachment` | frontend/js/chat-attach.js:724 |
 | `revalidateSelection` | frontend/js/chat-attach.js:771 |
-| `saveFollowups` | frontend/js/chat-attach.js:2865 |
+| `saveFollowups` | frontend/js/chat-attach.js:2867 |
 | `selectionContextBlock` | frontend/js/chat-attach.js:822 |
-| `sendChatMessage` | frontend/js/chat-attach.js:1536 |
+| `sendChatMessage` | frontend/js/chat-attach.js:1538 |
 | `setActiveChoice` | frontend/js/chat-attach.js:901 |
 | `setNoteLabel` | frontend/js/chat-attach.js:925 |
-| `setNotePickerSource` | frontend/js/chat-attach.js:1284 |
-| `startChatTimer` | frontend/js/chat-attach.js:2960 |
-| `stopChatTimer` | frontend/js/chat-attach.js:2969 |
+| `setNotePickerSource` | frontend/js/chat-attach.js:1286 |
+| `startChatTimer` | frontend/js/chat-attach.js:2962 |
+| `stopChatTimer` | frontend/js/chat-attach.js:2971 |
 
 ### frontend/js/sheets-selects.js (53)
 
@@ -17920,7 +17920,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11359)
+## Tests (11360)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19056,7 +19056,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_typo_routing.py | 4 |
 | tests/test_ui_1017b.py | 7 |
 | tests/test_ui_batch_726.py | 13 |
-| tests/test_ui_recipes.py | 204 |
+| tests/test_ui_recipes.py | 205 |
 | tests/test_ui_signatures.py | 2 |
 | tests/test_ui_state.py | 6 |
 | tests/test_undo_bin.py | 24 |
@@ -19186,7 +19186,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_xmind_import.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |
 
-## Plan headings (958)
+## Plan headings (959)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -19887,7 +19887,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1265 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1295 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:268 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:427 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4173 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
@@ -19970,6 +19970,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-11 (the topic's tools) | docs/roadmap/MINDMAP_PLAN.md:1844 |
 | Placed from INBOX, 2026-10-11 (voice notes, live captions, the focus timer; voiceup) | docs/roadmap/UI_MODERNISATION_PLAN.md:1565 |
 | Placed from INBOX, 2026-10-12 (grammar in digest answers) | docs/roadmap/BACKLOG.md:4294 |
+| Placed from INBOX, 2026-10-18 (1300) | docs/roadmap/WHITEBOARD_PLAN.md:1629 |
 | Placed from INBOX: 107d, the segmented mini bars | docs/roadmap/DOCUMENTS_PLAN.md:480 |
 | Placed from INBOX: the composer everywhere (the owner, 2026-10-06) | docs/roadmap/CHAT_PLAN.md:715 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/BACKLOG.md:4159 |
