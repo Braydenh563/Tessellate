@@ -139,7 +139,7 @@ def test_the_palette_does_not_search_content():
     listed."""
     text = _read("app-palette.js")
     code = re.sub(r"//.*", "", text)
-    assert code.count("/search") == 1 and "kind=note&limit=${PALETTE_NOTE_ROWS}" in code
+    assert code.count("/search") == 1 and "kind=note&limit=${PALETTE_NOTE_ASK}" in code
     assert "paletteAskEngine" not in text and "paletteEngine" not in text
     matches = _function(text, "paletteMatches")
     for group in ("Notes", "Documents", "Reminders", "Conversations", "Files", "Boards & maps"):
@@ -158,7 +158,7 @@ def test_the_palette_ends_with_a_row_that_opens_find_anything():
     assert "openFinder(" in matches
     assert "handoff" in matches
     ret = matches[matches.rindex("return ["):]
-    assert ret.index("...commands") < ret.index("handoff")
+    assert ret.index("...shownCommands") < ret.index("handoff")
     # Not counted as a feature in the usage ledger.
     assert "handoff" in _function(text, "paletteRun")
     # openFinder takes the text and runs the search.

@@ -30,6 +30,9 @@ let paletteIndex = 0;
 //: so a stale answer is never drawn under other words. Commands stay first.
 const paletteNoteHits = { query: "", hits: [], timer: null, run: 0 };
 const PALETTE_NOTE_ROWS = 3;
+//: Asked for more than shown: the route also returns neighbours by meaning,
+//: and only the lexical matches are kept (every typed word in title or snippet).
+const PALETTE_NOTE_ASK = 10;
 
 //: The snippet without the heading the title already says.
 function paletteNoteAbout(hit) {
@@ -65,9 +68,13 @@ function paletteAskNotes(query) {
   if (state.query === typed) return;
   const run = ++state.run;
   state.timer = setTimeout(async () => {
-    const body = await apiJson(`/search?q=${encodeURIComponent(typed)}&kind=note&limit=${PALETTE_NOTE_ROWS}`, { silent: true }).catch(() => null);
+    const body = await apiJson(`/search?q=${encodeURIComponent(typed)}&kind=note&limit=${PALETTE_NOTE_ASK}`, { silent: true }).catch(() => null);
     if (run !== state.run || !body) return;
-    const hits = (body.hits || []).filter((hit) => hit.kind === "note");
+    const words = typed.toLowerCase().split(/\s+/).filter(Boolean);
+    const hits = (body.hits || []).filter((hit) => {
+      const text = `${hit.title || ""} ${hit.snippet || ""}`.toLowerCase();
+      return hit.kind === "note" && words.every((w) => text.includes(w));
+    });
     if ($("palette-overlay").classList.contains("hidden") || $("palette-input").value.trim() !== typed) return;
     state.query = typed;
     state.hits = hits;
@@ -126,17 +133,12 @@ async function openPalette() {
   $("palette-input").value = typed;
   paletteIndex = 0;
   //: The box takes focus before the catalogue is built (108 rows at rest):
-  //: typing starts at once and the list lands on the next frame.
+  //: typing starts at once (the list is drawn right after, in the same turn).
   $("palette-input").focus();
   const first = early?.enter && paletteMatches(typed)[0];
   if (first) return paletteRun(first);
-  const draw = () => {
-    if ($("palette-overlay").classList.contains("hidden")) return;
-    renderPalette($("palette-input").value);
-    quickAddAttach($("palette-input"), "palette");
-  };
-  if (typed) draw();
-  else requestAnimationFrame(draw);
+  renderPalette($("palette-input").value);
+  quickAddAttach($("palette-input"), "palette");
 
   apiJson("/usage/summary", { method: "POST", body: JSON.stringify({ known: [] }), silent: true })
     .then((res) => {
@@ -150,7 +152,7 @@ async function openPalette() {
 function closePalette() {
   $("palette-overlay").classList.add("hidden");
   //: Emptied on close: the next open unhides an empty list (about 8 ms) and
-  //: the catalogue is drawn on the following frame, instead of laying out the
+  //: the catalogue is drawn into an empty list, instead of laying out the
   //: old 108 rows inside the opening keystroke (about 40 ms measured).
   $("palette-list").replaceChildren();
   clearTimeout(paletteNoteHits.timer);
@@ -264,7 +266,11 @@ function paletteMatches(query) {
   //: Over a board, a sentence that arranges it (whiteboard-commands.js).
   const act = (typeof quickAddPaletteRow === "function" ? quickAddPaletteRow(query) : null)
     || (typeof wbPaletteActRow === "function" ? wbPaletteActRow(query) : null);
-  return [...(act ? [act] : []), ...utilityPaletteRows(lowered), ...commands, ...paletteNoteRows(typed), handoff];
+  //: A note that matches the words is the answer: the "Close in meaning"
+  //: commands (guesses by the search model) would only sit above it.
+  const noteRows = paletteNoteRows(typed);
+  const shownCommands = noteRows.length ? commands.filter((row) => row.group !== "Close in meaning") : commands;
+  return [...(act ? [act] : []), ...utilityPaletteRows(lowered), ...shownCommands, ...noteRows, handoff];
 }
 
 //: "timer 10 minutes", "25 min timer", "countdown 90s": a length read from

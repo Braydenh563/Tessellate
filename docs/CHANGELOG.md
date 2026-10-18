@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Undo and Redo run one at a time: Ctrl+Shift+Z pressed while Ctrl+Z was still settling found nothing to redo and left the note deleted. Ctrl+K lists only notes that contain every word typed, and drops the guessed Close in meaning commands when one matches.
 - Settings on a phone: the pane heading is hidden when the section list above it already shows the same name (Models over Models) (UX audit 9).
 - No-model notice: its action reads in ink on a phone, 4.5 or better in dark (was the accent at 3.96:1) (UX audit 2).
 - Suggested tags: the take target has a 28px press area (a band behind the 14px words), without growing the chip (UX audit 6).

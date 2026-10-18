@@ -25,13 +25,14 @@ PALETTE = (ROOT / "frontend/js/app-palette.js").read_text()
 def test_palette_offers_three_matching_notes_after_commands():
     assert "PALETTE_NOTE_ROWS = 3" in PALETTE
     # Commands first, then the notes, then the hand-off row.
-    assert "...commands, ...paletteNoteRows(typed), handoff" in PALETTE
-    assert "kind=note&limit=${PALETTE_NOTE_ROWS}" in PALETTE
+    assert "...shownCommands, ...noteRows, handoff" in PALETTE
+    assert "kind=note&limit=${PALETTE_NOTE_ASK}" in PALETTE
 
 
 def test_palette_focuses_before_it_draws_the_catalogue():
     body = PALETTE.split("async function openPalette()")[1].split("function closePalette")[0]
-    assert body.index('$("palette-input").focus()') < body.index("requestAnimationFrame(draw)")
+    assert body.index('$("palette-input").focus()') < body.index("renderPalette($(\"palette-input\").value)")
+    assert "requestAnimationFrame" not in body
     # A late usage answer must not draw 108 rows into a closed palette.
     assert 'classList.contains("hidden")) renderPalette("")' in body
 
@@ -50,4 +51,14 @@ def test_more_carries_the_reminders_due_count():
     assert "const shown = due || runs;" in shell
     assert "function phoneMoreDueCount" in shell
     # The reminders fetch repaints More, or the badge would wait for a run.
-    assert 'typeof syncPhoneMoreRuns === "function"' in rem
+    assert "  syncPhoneMoreRuns();" in rem
+
+
+def test_palette_note_rows_are_lexical_only():
+    assert "words.every((w) => text.includes(w))" in PALETTE
+
+
+def test_redo_waits_for_an_undo_still_settling():
+    status = (ROOT / "frontend/js/status.js").read_text()
+    assert "historyQueue.step.then(performUndoNow" in status
+    assert "historyQueue.step.then(performRedoNow" in status

@@ -1523,7 +1523,25 @@ function appStackIsNewer(dir) {
   return Boolean(top) && top.at >= (window.docUndoAt?.() || 0);
 }
 
-async function performUndo() {
+//: The undo or redo still running. A second chord pressed while the first's
+//: server call is settling (the note is already gone, the action not yet on
+//: the other stack) used to find that stack empty and do nothing: Ctrl+Z then
+//: Ctrl+Shift+Z sometimes left the note deleted. It waits its turn instead.
+const historyQueue = { step: Promise.resolve() };
+
+function performUndo() {
+  const run = historyQueue.step.then(performUndoNow, performUndoNow);
+  historyQueue.step = run.catch(() => {});
+  return run;
+}
+
+function performRedo() {
+  const run = historyQueue.step.then(performRedoNow, performRedoNow);
+  historyQueue.step = run.catch(() => {});
+  return run;
+}
+
+async function performUndoNow() {
   const surface = surfaceHistory();
   if (surface) {
     await surface.undo();
@@ -1546,7 +1564,7 @@ async function performUndo() {
   renderUndoBar();
 }
 
-async function performRedo() {
+async function performRedoNow() {
   const surface = surfaceHistory("redo");
   if (surface) {
     await surface.redo();
