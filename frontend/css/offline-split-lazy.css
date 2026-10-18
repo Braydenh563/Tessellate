@@ -57,6 +57,7 @@
   .ai-offline-split > .split-button-main {
     font-size: var(--text-sm);
     font-weight: 600;
-    color: var(--accent-text);
+    /* Ink, not the accent: the accent was 3.96:1 on the quiet fill in dark at 390. */
+    color: var(--ink);
   }
 }

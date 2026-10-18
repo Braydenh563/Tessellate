@@ -547,8 +547,15 @@ def _today_opening(v: _Voice, dated: list, today: date, k: int) -> None:
     yesterdays = [w for w in dated if (today - w.written).days == 1]
     if len(todays) > 1:
         v.t(("v_today_wrote", "v_today_wrote_b", "v_today_wrote_c", "v_today_wrote_d", "v_today_wrote_e", "v_today_wrote_f")[k])
-        v.m(_count_word(len(todays))).t(("v_today_notes", "v_today_notes_b", "v_today_notes_c", "v_today_notes_d", "v_today_notes_e", "v_today_notes_f")[k])
-        v.name(todays[0]).t("stop")
+        v.m(_count_word(len(todays)))
+        #: An untitled note names itself "your note from today", which cannot
+        #: follow "the latest": the count then ends the sentence on its own.
+        if todays[0].titled:
+            v.t(("v_today_notes", "v_today_notes_b", "v_today_notes_c", "v_today_notes_d", "v_today_notes_e", "v_today_notes_f")[k])
+            v.name(todays[0])
+        else:
+            v.word(" notes")
+        v.t("stop")
     elif todays:
         v.t(("v_today_one", "v_today_one_b", "v_today_one_c", "v_today_one_d", "v_today_one_e", "v_today_one_f")[k]).name(todays[0]).t("stop")
     elif yesterdays:
