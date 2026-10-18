@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Welcome card: Atlas's swirl no longer paints past its holder (4 px at 390 before, 0 to 1 px after); the "Companion hidden" notice was measured against the toast-with-action recipe and already meets it (INBOX 743 tail).
+- Settings, Backups: each row now shows badges for what made it ("Made by you", "Automatic daily backup", "Before an update", "Before a restore") and "Verified" or "Not verified", beside the Latest mark, date in words, size and file name (INBOX 805; measured 10 rows at 1440 and 390, no overflow).
 - Whiteboard and mind map contrast measured in dark and light at 1440 and 390 on a seeded board and nine maps (every sticky paper, tinted frames, shapes, a connector, every branch palette, filled topics, markers, callouts): no text under 4.5:1 (lowest 4.77), so no CSS change; new sweep `scratchpad/ui-sweeps/wbmmcontrast1018.js`. Pale palette branch ribbons stay under 3:1 by palette decision (found, not changed).
 - Answers: a label that only opened a sentence is prose now: the notebook overview ("Most of your notes are filed under ...", "Your busiest month was ...", "You also have ..."), "who is" days ("On 2 September, ...") and the other open items ("The Camping tent is also still open."); list rows keep their bold label (INBOX 1301 D5 follow-up).
 

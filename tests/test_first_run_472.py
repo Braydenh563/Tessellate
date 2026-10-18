@@ -213,3 +213,10 @@ def test_first_run_surfaces_go_in_a_fixed_order():
     assert "a.rank - b.rank" in pump
     hint = frontend_text("avatars.js").split("function nameMarkBuddyHint(")[1].split("\n}\n")[0]
     assert '"tour-card", "onboarding-overlay"' in hint
+
+
+def test_the_welcome_atlas_keeps_its_painted_parts_inside_its_box():
+    """INBOX 743 tail ("atlas goes out of the border"): the figure's swirl
+    reaches 4 px past its svg at 390, so its holder pads it by a token."""
+    js = frontend_text("onboarding.js")
+    assert 'face.style.padding = "var(--space-1)"' in js

@@ -110,6 +110,7 @@ with its owner named in the entry.
      that offers to show the companion (first run, after hiding it, or a
      notification with a Show companion action), measure its button against
      the toast-with-action recipe in DESIGN.md, and fix what is off.
+     Tail done 2026-10-18 (uxfix5-1018): welcome Atlas spill 4 px to 0 to 1 px by holder padding; no oval frame exists on that card; every other framed Atlas (persona, profile, atlas-mark) already clips; the Show companion notice meets the toast recipe (actions row, accent text 600, close alone in its corner at 1440 and 390). Gestures remain.
      Owner: Brief 34 (companion), second part, and OPEN.md Atlas rows (INBOX 752): gestures, the enlarged view mirroring the corner, the framed Atlas clipped to its oval, the Show companion notice measured against the toast recipe.
 
 805. **The owner, 2026-10-11, verbatim.** "it is unclear which backup is the

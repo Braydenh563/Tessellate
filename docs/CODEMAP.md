@@ -2,7 +2,7 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6131, frontend ids 2534, CSS sections 496, backend routes 613, backend modules 5867, test files 1285, tests 11516, plan headings 958.
+Counts: frontend functions 6131, frontend ids 2534, CSS sections 496, backend routes 613, backend modules 5867, test files 1285, tests 11518, plan headings 958.
 
 ## Frontend functions (6131)
 
@@ -4810,22 +4810,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `closeOnboarding` | frontend/js/onboarding.js:438 |
-| `firstRunPump` | frontend/js/onboarding.js:375 |
-| `firstRunSurfaceOpen` | frontend/js/onboarding.js:326 |
-| `firstRunToastsGone` | frontend/js/onboarding.js:346 |
-| `firstRunTurn` | frontend/js/onboarding.js:360 |
-| `firstRunWelcomeDue` | frontend/js/onboarding.js:367 |
+| `closeOnboarding` | frontend/js/onboarding.js:441 |
+| `firstRunPump` | frontend/js/onboarding.js:378 |
+| `firstRunSurfaceOpen` | frontend/js/onboarding.js:329 |
+| `firstRunToastsGone` | frontend/js/onboarding.js:349 |
+| `firstRunTurn` | frontend/js/onboarding.js:363 |
+| `firstRunWelcomeDue` | frontend/js/onboarding.js:370 |
 | `loadOnboardingDiagnostics` | frontend/js/onboarding.js:68 |
-| `maybeShowConsoleViewIntro` | frontend/js/onboarding.js:492 |
-| `onboardingBack` | frontend/js/onboarding.js:474 |
-| `onboardingNext` | frontend/js/onboarding.js:455 |
-| `openOnboarding` | frontend/js/onboarding.js:425 |
+| `maybeShowConsoleViewIntro` | frontend/js/onboarding.js:495 |
+| `onboardingBack` | frontend/js/onboarding.js:477 |
+| `onboardingNext` | frontend/js/onboarding.js:458 |
+| `openOnboarding` | frontend/js/onboarding.js:428 |
 | `renderOnboardingActions` | frontend/js/onboarding.js:129 |
 | `renderOnboardingSlide` | frontend/js/onboarding.js:240 |
-| `showOnboarding` | frontend/js/onboarding.js:430 |
-| `showOnboardingTurn` | frontend/js/onboarding.js:408 |
-| `whenFirstRunClear` | frontend/js/onboarding.js:339 |
+| `showOnboarding` | frontend/js/onboarding.js:433 |
+| `showOnboardingTurn` | frontend/js/onboarding.js:411 |
+| `whenFirstRunClear` | frontend/js/onboarding.js:342 |
 
 ### frontend/js/personas-pane.js (2)
 
@@ -5204,55 +5204,55 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `backupNow` | frontend/js/settings-data.js:473 |
+| `backupNow` | frontend/js/settings-data.js:483 |
 | `backupScheduleWords` | frontend/js/settings-data.js:256 |
-| `clearPreviews` | frontend/js/settings-data.js:671 |
-| `dismissedWords` | frontend/js/settings-data.js:737 |
-| `guideTurns` | frontend/js/settings-data.js:677 |
-| `humanBytes` | frontend/js/settings-data.js:408 |
-| `importDirectory` | frontend/js/settings-data.js:484 |
-| `importDocument` | frontend/js/settings-data.js:591 |
-| `importMarkdown` | frontend/js/settings-data.js:536 |
-| `noteSettingChange` | frontend/js/settings-data.js:894 |
-| `paintClearRow` | frontend/js/settings-data.js:682 |
-| `previewCaches` | frontend/js/settings-data.js:657 |
-| `previewCount` | frontend/js/settings-data.js:666 |
+| `clearPreviews` | frontend/js/settings-data.js:681 |
+| `dismissedWords` | frontend/js/settings-data.js:747 |
+| `guideTurns` | frontend/js/settings-data.js:687 |
+| `humanBytes` | frontend/js/settings-data.js:418 |
+| `importDirectory` | frontend/js/settings-data.js:494 |
+| `importDocument` | frontend/js/settings-data.js:601 |
+| `importMarkdown` | frontend/js/settings-data.js:546 |
+| `noteSettingChange` | frontend/js/settings-data.js:904 |
+| `paintClearRow` | frontend/js/settings-data.js:692 |
+| `previewCaches` | frontend/js/settings-data.js:667 |
+| `previewCount` | frontend/js/settings-data.js:676 |
 | `privacyAddressLine` | frontend/js/settings-data.js:39 |
 | `privacyDestinationRow` | frontend/js/settings-data.js:47 |
 | `privacyGroups` | frontend/js/settings-data.js:23 |
 | `privacyWhen` | frontend/js/settings-data.js:10 |
 | `renderBackupCopyRow` | frontend/js/settings-data.js:287 |
-| `renderBackupRetention` | frontend/js/settings-data.js:460 |
+| `renderBackupRetention` | frontend/js/settings-data.js:470 |
 | `renderBackupSchedule` | frontend/js/settings-data.js:275 |
 | `renderBackups` | frontend/js/settings-data.js:319 |
-| `renderIntegrityNotice` | frontend/js/settings-data.js:448 |
+| `renderIntegrityNotice` | frontend/js/settings-data.js:458 |
 | `renderPrivacyRange` | frontend/js/settings-data.js:93 |
 | `renderPrivacyReceipt` | frontend/js/settings-data.js:141 |
-| `renderSettingsClear` | frontend/js/settings-data.js:689 |
-| `renderSettingsHistory` | frontend/js/settings-data.js:1120 |
+| `renderSettingsClear` | frontend/js/settings-data.js:699 |
+| `renderSettingsHistory` | frontend/js/settings-data.js:1130 |
 | `renderStorageBreakdown` | frontend/js/settings-data.js:212 |
-| `renderStorageSpaceNotice` | frontend/js/settings-data.js:427 |
-| `restoreGuideTurns` | frontend/js/settings-data.js:799 |
+| `renderStorageSpaceNotice` | frontend/js/settings-data.js:437 |
+| `restoreGuideTurns` | frontend/js/settings-data.js:809 |
 | `saveBackupCopyDir` | frontend/js/settings-data.js:297 |
-| `searchRecentAll` | frontend/js/settings-data.js:923 |
-| `searchRecentClearAll` | frontend/js/settings-data.js:935 |
-| `searchRecentRestore` | frontend/js/settings-data.js:941 |
-| `settingChangeWords` | frontend/js/settings-data.js:861 |
-| `settingName` | frontend/js/settings-data.js:856 |
-| `settingShown` | frontend/js/settings-data.js:845 |
-| `settingsClearCount` | frontend/js/settings-data.js:651 |
-| `settingsClearDone` | frontend/js/settings-data.js:751 |
-| `settingsHistoryAdd` | frontend/js/settings-data.js:982 |
-| `settingsHistoryApply` | frontend/js/settings-data.js:998 |
-| `settingsHistoryEntry` | frontend/js/settings-data.js:963 |
-| `settingsHistoryFind` | frontend/js/settings-data.js:993 |
-| `settingsHistoryLoad` | frontend/js/settings-data.js:952 |
-| `settingsHistoryRedo` | frontend/js/settings-data.js:1073 |
-| `settingsHistoryRow` | frontend/js/settings-data.js:1086 |
-| `settingsHistorySave` | frontend/js/settings-data.js:956 |
-| `settingsHistoryUndo` | frontend/js/settings-data.js:1059 |
-| `settingsPrefsSeen` | frontend/js/settings-data.js:873 |
-| `undoImport` | frontend/js/settings-data.js:507 |
+| `searchRecentAll` | frontend/js/settings-data.js:933 |
+| `searchRecentClearAll` | frontend/js/settings-data.js:945 |
+| `searchRecentRestore` | frontend/js/settings-data.js:951 |
+| `settingChangeWords` | frontend/js/settings-data.js:871 |
+| `settingName` | frontend/js/settings-data.js:866 |
+| `settingShown` | frontend/js/settings-data.js:855 |
+| `settingsClearCount` | frontend/js/settings-data.js:661 |
+| `settingsClearDone` | frontend/js/settings-data.js:761 |
+| `settingsHistoryAdd` | frontend/js/settings-data.js:992 |
+| `settingsHistoryApply` | frontend/js/settings-data.js:1008 |
+| `settingsHistoryEntry` | frontend/js/settings-data.js:973 |
+| `settingsHistoryFind` | frontend/js/settings-data.js:1003 |
+| `settingsHistoryLoad` | frontend/js/settings-data.js:962 |
+| `settingsHistoryRedo` | frontend/js/settings-data.js:1083 |
+| `settingsHistoryRow` | frontend/js/settings-data.js:1096 |
+| `settingsHistorySave` | frontend/js/settings-data.js:966 |
+| `settingsHistoryUndo` | frontend/js/settings-data.js:1069 |
+| `settingsPrefsSeen` | frontend/js/settings-data.js:883 |
+| `undoImport` | frontend/js/settings-data.js:517 |
 
 ### frontend/js/settings-find.js (34)
 
@@ -18086,7 +18086,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11516)
+## Tests (11518)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18176,7 +18176,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_backlog_status_rows.py | 6 |
 | tests/test_backup_bundle.py | 8 |
 | tests/test_backup_copy.py | 8 |
-| tests/test_backup_details.py | 6 |
+| tests/test_backup_details.py | 7 |
 | tests/test_backup_roundtrip_full.py | 2 |
 | tests/test_backup_secrets.py | 3 |
 | tests/test_backups_api.py | 13 |
@@ -18521,7 +18521,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_final_pass_bugs.py | 5 |
 | tests/test_find_it.py | 8 |
 | tests/test_finder_star_790.py | 3 |
-| tests/test_first_run_472.py | 13 |
+| tests/test_first_run_472.py | 14 |
 | tests/test_flaw_class_lints.py | 2 |
 | tests/test_focus_timer.py | 5 |
 | tests/test_folder_roundtrip.py | 8 |
@@ -20079,7 +20079,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1265 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:268 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:269 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4173 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
