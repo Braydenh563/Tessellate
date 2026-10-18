@@ -44,5 +44,5 @@ audits reproduced each bug in the app (ports 8791, 8792). A row is **open**,
 | C43 categories sidebar messy, sections not collapsible | O, design batch 2 | open | screenshots: nested scrollbars plus a blue bar on the outer one, list clipped mid-row, near-duplicate "Courses & Study" / "Courses \| Study", empty categories; collapsible sections with remembered state, one scroll container, merge offer for near-duplicates, hide empty |
 | C44 live view section break overlaps gutter numbers | S, next free Sonnet | fixed 216ac23 | the c44 sweep measures the gutter row height against the rule line; test_live_rule_line_height.py |
 | C04 UML, ERD, wireframe sets | plan | placed | WHITEBOARD_PLAN |
-| C16, C26 composer variety, greeting sub line | plan | placed | CHAT_PLAN; `composer_voice.today_line` unused |
+| C26 greeting sub line composed and rotating | S, fixes5 | fixed HASH26 | `/insights/today-line` wired to `renderDashSubmessage`; 13 distinct lines in 20 seeded draws (test_composer_voice.py); C16 stays in CHAT_PLAN B41 |
 | C24 Logs panel scroll | none | not reproduced | equal heights at five sizes; Settings nav overflow placed in WORLD_CLASS row 32 |

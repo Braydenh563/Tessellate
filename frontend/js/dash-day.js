@@ -123,3 +123,11 @@ function dashPatternBit(bit, pattern) {
     )
   );
 }
+
+//: The composed line under the greeting (`/insights/today-line`,
+//: `composer_voice.today_line`; INBOX 1300): `seed` is the draw the caller
+//: is in, so the same draw is the same words. Empty when the notebook is.
+async function dashTodayLine(seed) {
+  const got = await apiJson(`/insights/today-line?seed=${encodeURIComponent(seed)}`, { silent: true });
+  return got?.text || "";
+}

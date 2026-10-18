@@ -232,8 +232,9 @@ HELP_TOPICS: list[dict] = [
         "id": "dashboard",
         "keywords": ("dashboard", "widget", "streak", "digest", "my day", "what changed today", "quiet topics"),
         "body": (
-            "The Dashboard is the at-a-glance home: a greeting with your note "
-            "count, what is due and a pattern your notes show (a subject you "
+            "The Dashboard is the at-a-glance home: a greeting with a line "
+            "composed from your notes (what you wrote today or last, worded a "
+            "little differently each visit and every few minutes), what is due and a pattern your notes show (a subject you "
             "keep writing about, a busy week; Tidy lists them), a search box, the Quick access tiles, "
             "and widgets such as reminders, recent notes, the Digest (your day "
             "with no AI: what is due, open questions, what changed since "

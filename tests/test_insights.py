@@ -132,3 +132,16 @@ def test_the_patterns_route(client, session):
     body = client.get("/insights/patterns").json()
     #: Three notes written today are one week: no recurrence, and silence.
     assert body == {"patterns": []}
+
+
+def test_the_today_line_route_composes_and_rotates(client, session):
+    from tessellate.entry import manager
+
+    assert client.get("/insights/today-line").json()["text"] == ""
+    for content in ("# Boiler\n\nRing the landlord about the boiler.", "# Spice drawer\n\nSort the spice drawer."):
+        manager.create_entry(session, content)
+    session.commit()
+    lines = {client.get(f"/insights/today-line?seed={s}").json()["text"] for s in range(20)}
+    assert len(lines) >= 4
+    assert all("**" not in line and ("Spice drawer" in line or "Boiler" in line) for line in lines)
+    assert client.get("/insights/today-line?seed=2").json() == client.get("/insights/today-line?seed=2").json()

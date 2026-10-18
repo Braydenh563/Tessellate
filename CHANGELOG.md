@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Dashboard: the line under the greeting is composed from your notes (what you wrote today or last, the week's count, a note from this day) and rotates its wording each visit and every few minutes, with no animation (INBOX 1300 C26).
 - Guide and help: the Open Packages button on package notices is documented (standing order 13).
 - Recordings: each transcript line has a copy button, Shift-click picks a run, and the more menu copies picked or all lines with or without times (INBOX 1300 C40).
 - Timeline: Options has a remembered switch for the dates beside the density strip (INBOX 1300 C36).
