@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Tests: `test_ocr_engine` starts the app state its language reads need (a data/ writer CI's 3.13 job named); the graph agent's five one-off sweeps leave `scratchpad/` (findings stay in HISTORY).
 - The prompt clocks (`librarian.clock_hint`, the agent's `build_agent_messages`) read the settings with `peek_config` and `user_now` takes none, so building a prompt before the app starts no longer creates a `data/` folder in the repo (two `test_connected_results` tests failed on CI when a neighbour's cleanup removed it); `test_presets` and `test_prompt_budget` start the app state they read.
 - Complexity (INBOX 1298): `mcp_server.handle_request` dispatches through a method table and `_generate_diagram` is split into its node, shape, position, entry, card and link steps; both seed rows are gone.
 - Tests: the extras installer's process-global install record is reset around every `app_state` test, so a queued or still-running install or removal (the 'needle' one) no longer shows in the next test's `/tasks`.
