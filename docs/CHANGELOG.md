@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Recorder: the panel holding Record, the clock and the wave is the second surface tier (a tone, the card's corner, `--space-4` padding) instead of a square same-coloured box; its corner was 0px at the default setting (INBOX 1300 C34).
 - Notes sidebar: Categories, Most used and Saved searches each fold with an arrow and stay folded; categories with no notes sit behind Show empty; the list's inner scroller is gone, so the sidebar is the one scroll container with its head kept in view (INBOX 1300 C43).
 - Search: a mark's comment on a recording is found by keyword search (pictures' captions already were); a question's "3/4" follows the locale where one is passed (the reading route), day first otherwise.
 - Documents: link offers have a switch (Settings, Writing, and the dictionary dialog) and Ignore on an offer keeps that name out of every document until Settings, Writing offers them again; tag offers stay dropped, a document has no tags.
