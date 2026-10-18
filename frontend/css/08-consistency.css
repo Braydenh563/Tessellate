@@ -5259,6 +5259,12 @@ body .chip.item-label,
 #nm-buddy-band.nmb-riding {
   overflow: clip;
 }
+/* Put over a board's canvas (INBOX 1300 C19): in the board's layer (the
+   raised step, 2), over its items and under its tool rail (10), top bar
+   (20) and Format panel (25). */
+#nm-buddy-band.nmb-canvas {
+  z-index: 2;
+}
 /* **Gone while anything fills the window** (INBOX 726, the owner: "I can see
    atlas on the edges when on the full screen graph", then "the same full
    screen companion issue with other full screens probably too", then "not

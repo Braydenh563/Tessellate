@@ -20,7 +20,7 @@ audits reproduced each bug in the app (ports 8791, 8792). A row is **open**,
 | C02 splash rows grow | S, fixes2 | open | `scripts/splash.ps1:394` uncapped; Windows only |
 | C23 go-key prefix | S, fixes2 | open | decision: prefix `t`, Timeline second key `i`, `m` alias one release |
 | C01 throw lands, peek then fall | O, design | fixed | tucked frames during the fall 43 of 43 to 1 of 44, sink 38 to 0 px (`peektravel.js`) |
-| C19, C20 companion layer and size on boards | O, design | open | band z 44 over Format z 25; WHITEBOARD step 8 |
+| C19, C20 companion layer and size on boards | O, design | fixed | over the Format panel: the companion drew on top (band z 44) to the panel on top (z 9 on the canvas); scale at zoom 0.5: 1 to 0.5; wander chance on a board 0.35 to 0.1 (`canvas1300.js`). WHITEBOARD step 8 (layer order) not a dependency, left |
 | C05 slash commands below fold | O, design | open | first command at 444 px in a 386 px menu |
 | C29 popup Sources disclosure | O, design | open | `chat-agent.js:2220`, no marker |
 | C33 notification stack | O, design | open | four toasts 186x205 px |

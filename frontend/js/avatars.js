@@ -3676,7 +3676,7 @@ function nameMarkBuddyObstacles(tab) {
 //: missed (the owner, 2026-10-11, over Notes' Reload / Manage tags menu:
 //: "the companion still covers some parts of the ui and doesnt move out of
 //: the way"); any open details menu and any shown menu or listbox counts.
-const NMB_POPUPS = "#notif-panel:not(.hidden), .action-menu:not(.hidden), .select-menu:not(.hidden), .help-popover:not(.hidden), #tour-spot:not(.hidden), #tour-card:not(.hidden), details[open][class*=\"menu\"] > :not(summary), [role=\"menu\"]:not(.hidden), [role=\"listbox\"]:not(.hidden)";
+const NMB_POPUPS = "#notif-panel:not(.hidden), .action-menu:not(.hidden), .select-menu:not(.hidden), .help-popover:not(.hidden), #tour-spot:not(.hidden), #tour-card:not(.hidden), details[open][class*=\"menu\"] > :not(summary), [role=\"menu\"]:not(.hidden), [role=\"listbox\"]:not(.hidden), #wb-format:not(.hidden), #wb-sidebar-panel:not(.hidden)";
 function nameMarkBuddyPopups() {
   const boxes = [];
   for (const el of document.querySelectorAll(NMB_POPUPS)) {
@@ -3741,7 +3741,7 @@ function nameMarkBuddyScaleSaved() {
   return Math.min(1.6, Math.max(0.7, v));
 }
 function nameMarkBuddySetSize(scale, keep = true) {
-  const size = Math.round(Math.min(1.6, Math.max(0.7, Number(scale) || 1)) * 100) / 100;
+  const size = Math.round(Math.min(1.6, Math.max(keep ? 0.7 : 0.4, Number(scale) || 1)) * 100) / 100;
   nmb.scale = size;
   document.getElementById("nm-buddy")?.style.setProperty("--nmb-scale", String(size));
   if (!keep) return;
@@ -5279,6 +5279,31 @@ for (const type of ["pointerdown", "pointerup", "keydown", "transitionrun", "ani
 //: `translate` animated on the compositor from where it was, with a jump
 //: arc on the character when it changes level, and legs that step. Reduce
 //: motion and Avatar animation Off skip straight to the end.
+//: **Over a board, in the board** (INBOX 1300 C19, C20, the owner: "if it
+//: is perched on them then it should be on the same layer"; "its size
+//: should be in proportion to the zoom"). Put over the canvas itself, not
+//: on a panel or the chrome, it is drawn under the board's panels (the
+//: band's `nmb-canvas`) and sized to the board's zoom, never above its own.
+function nameMarkBuddyCanvasAt(spot, x, y) {
+  const board = document.getElementById("whiteboard-container");
+  if (spot.edge?.el && !board?.contains(spot.edge.el)) return null;
+  const r = nameMarkBuddyShown(board);
+  const cx = x + NMB_W / 2;
+  const cy = y + NMB_H / 2;
+  return r && board.checkVisibility?.() !== false && cx > r.left && cx < r.right && cy > r.top && cy < r.bottom ? board : null;
+}
+const NMB_BOARD_WANDER = 0.1;
+function nameMarkBuddyOnBoard() {
+  return !!document.getElementById("wb-canvas-view")?.checkVisibility?.();
+}
+function nameMarkBuddyCanvasScale(k) {
+  return Math.min(1, Math.max(0.4, Number(k) || 1));
+}
+//: From the board's zoom (whiteboard.js, `wbZoomFrameWork`).
+function nameMarkBuddyCanvasZoom(k) {
+  if (nmb.canvas) nameMarkBuddySetSize(nameMarkBuddyScaleSaved() * nameMarkBuddyCanvasScale(k), false);
+}
+
 //: A peek tucks in on arrival, never on the way (INBOX 1300 C01).
 function nameMarkBuddyLegsNow(spot, travels) {
   const legs = spot?.legs || "";
@@ -5318,7 +5343,10 @@ function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
   nameMarkBuddyPut(buddy, x, y);
   //: Its size for this perch: smaller where it had to fit, its own
   //: elsewhere, eased either way (`nmb-fitting`).
-  const size = spot.fit || nameMarkBuddyScaleSaved();
+  const board = nameMarkBuddyCanvasAt(spot, x, y);
+  nmb.canvas = !!board;
+  document.getElementById("nm-buddy-band")?.classList.toggle("nmb-canvas", nmb.canvas);
+  const size = board ? nameMarkBuddyScaleSaved() * nameMarkBuddyCanvasScale(board.__zoom?.k) : spot.fit || nameMarkBuddyScaleSaved();
   if (Math.abs(size - (nmb.scale || 1)) > 0.01) {
     buddy.classList.add("nmb-fitting");
     clearTimeout(nmb.fitTimer);
@@ -7452,6 +7480,7 @@ function nameMarkBuddyDecide(now = Date.now(), hour = new Date().getHours()) {
     //: attention with a wave.
     if (act === "wave" && now - nmb.lastPoke > 20 * 60 * 1000 && idle < 30000) w *= 4;
     if (night && ["hop", "wave", "kick"].includes(act)) w *= 0.5;
+    if (act === "hop" && nmb.onBoard) w *= NMB_BOARD_WANDER / 0.35;
     if (now - nmb.lastCheer < 60000 && ["hop", "wave", "kick", "dangle"].includes(act)) w *= 2;
     if (now - nmb.lastPoke < 20000 && ["glance", "wave", "look"].includes(act)) w *= 2;
     //: A stance is Atlas's, in the look it was drawn for.
@@ -7503,6 +7532,7 @@ function nameMarkBuddyTick() {
   nameMarkBuddyCheck();
   const idle = Date.now() - nmb.lastInput;
   nameMarkBuddyContext(buddy);
+  nmb.onBoard = nameMarkBuddyOnBoard();
   const awake = Date.now() < (nmb.awakeUntil || 0);
   if (idle > NMB_SLEEP_MS && !awake) {
     //: An act under way ends as it drops off (the owner, 2026-10-11, the
@@ -8257,7 +8287,9 @@ function nameMarkBuddyWander(now) {
   //: Off somewhere is a large move: within the calm budget.
   if (!nameMarkBuddyCalmAllows(now, nmb.loudAt || 0, nmb.loudGap || NMB_LOUD_GAP_MS, nmb.keyAt || 0, nameMarkBuddyScrollAgo())) return false;
   const { energy, sociability } = nmb.mood;
-  if (nameMarkBuddyBoredom(now - (nmb.perchAt || now), energy, sociability, nmb.reading?.mood || "") < 1 || Math.random() > 0.35) return false;
+  //: Rarer on an open board (INBOX 1300 C20, the owner: "the companion
+  //: jumping around my whiteboard a lot was a little annoying").
+  if (nameMarkBuddyBoredom(now - (nmb.perchAt || now), energy, sociability, nmb.reading?.mood || "") < 1 || Math.random() > (nmb.onBoard ? NMB_BOARD_WANDER : 0.35)) return false;
   const tab = nameMarkBuddyTab();
   nameMarkBuddyIndexReset();
   const obstacles = nameMarkBuddyObstacles(tab);
