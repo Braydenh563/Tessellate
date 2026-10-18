@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Documents: Alt+Up and Alt+Down move the block at the caret in a text document (a paragraph, list item with its children, table, fenced block or a heading's whole section) instead of welding paragraphs; numbered items keep their numbers; a code file keeps the line move; two palette commands list it (INBOX 904 B20).
 - Documents: a library of text sections for ordinary documents. The Snippets panel opens beside a text document as Sections: 24 curated blocks (meeting notes, decision record, risk table, callouts, reading notes and more) that go in at the caret or where a row is dropped, on their own lines with a blank line round them, today's date filled in and prompts Tab walks; Save keeps the selected text as a section of your own (INBOX 904 B18).
 - Documents: a Live table has grips on its edges while the caret is in it: a bar above each column and beside each row (click selects, drag moves, right-click or hold opens the table menu), a plus at the end of the header and under the last row; a move is one undo step and the moved row or column stays selected (INBOX 904 B23, part 2).
 - Documents: a Live table has a right-click menu (a hold on touch) with move row, move column, sort by column, and select row, column or table, each one undo step; the alignment marker travels with a moved column (INBOX 904 B23, part 1).

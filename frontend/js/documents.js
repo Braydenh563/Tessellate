@@ -2742,6 +2742,10 @@ const DOC_COMMANDS = [
   { id: "indent", icon: "ph:text-indent", label: "Indent the line or list item", keys: "Tab", run: null },
   { id: "outdent", icon: "ph:text-outdent", label: "Outdent the line or list item", keys: "Shift+Tab", run: null },
   { id: "move-section", icon: "ph:arrows-down-up", label: "Move the section, from the outline", keys: "Alt+↑ / Alt+↓", run: null },
+  { id: "move-block-up", icon: "ph:arrow-up", label: "Move the block at the caret up: a paragraph, list item, table or section", keys: "Alt+↑",
+    run: () => docBlockMoveCommand(-1) },
+  { id: "move-block-down", icon: "ph:arrow-down", label: "Move the block at the caret down: a paragraph, list item, table or section", keys: "Alt+↓",
+    run: () => docBlockMoveCommand(1) },
   { id: "ul", icon: "ph:list-bullets", label: "Bulleted list", keys: "Ctrl+Shift+8", run: () => applyMarkdown("ul") },
   { id: "ol", icon: "ph:list-numbers", label: "Numbered list", keys: "Ctrl+Shift+7", run: () => applyMarkdown("ol") },
   { id: "task", icon: "ph:check-square", label: "Task list", keys: "Ctrl+Shift+9", run: () => applyMarkdown("task") },
@@ -3027,6 +3031,210 @@ function docOutlineNudge(index, direction) {
   //: at the end of `renderDocOutline`).
   docOutlineFocusKey = docOutlineFoldKey(headings[index]);
   return docOutlineMoveSection(index, to, direction > 0);
+}
+
+//: **Alt+Up and Alt+Down in a markdown document move a block** (INBOX 904 B20,
+//: the owner's "manage mode for lined documents", taken as the keyboard half
+//: the owner's recommendation names). The editor's own line move is right for
+//: code and wrong for prose: it swaps a line with the *blank line* beside it,
+//: so `beta` moved up from under `alpha` lands between them and the next press
+//: welds the two paragraphs. The unit here is what a reader sees as one thing:
+//: a paragraph or quote or table (a run of lines), a fenced block (its blank
+//: lines included), a list item with everything nested under it, a heading's
+//: whole section. It swaps with the neighbour of the same kind and leaves the
+//: blank lines between them where they were, so a move is one edit and moving
+//: back is byte-exact.
+//:
+//: Pure: the text, the caret offset and a direction in; `{from, to, insert,
+//: caret}` out, `{noop: true}` for "there is nothing to swap with" (swallowed,
+//: so the default move cannot weld what this one refused), or null for "not
+//: mine" (a blank line, the frontmatter), which leaves the key to the default.
+//: Numbered items swap their *text* and keep their numbers.
+function docBlockMoveEdit(text, offset, delta) {
+  const source = String(text == null ? "" : text);
+  const lines = source.split("\n");
+  const starts = [];
+  let total = 0;
+  for (const line of lines) {
+    starts.push(total);
+    total += line.length + 1;
+  }
+  let row = 0;
+  while (row + 1 < lines.length && starts[row + 1] <= offset) row += 1;
+  //: A `---` frontmatter block is metadata, not a block of the document:
+  //: nothing moves into it or out of it, and the lines in it are the default's.
+  let first = 0;
+  if (lines[0] === "---") {
+    const close = lines.indexOf("---", 1);
+    if (close > 0) first = close + 1;
+  }
+  if (row < first) return null;
+  const fence = /^\s{0,3}(```|~~~)/;
+  const atx = /^#{1,6}\s/;
+  const blocks = [];
+  for (let i = first; i < lines.length; ) {
+    const line = lines[i];
+    if (!line.trim()) {
+      i += 1;
+    } else if (fence.test(line)) {
+      const mark = line.trim().slice(0, 3);
+      let end = i + 1;
+      while (end < lines.length && !lines[end].trim().startsWith(mark)) end += 1;
+      end = Math.min(end + 1, lines.length);
+      blocks.push({ from: i, to: end, kind: "code" });
+      i = end;
+    } else if (atx.test(line)) {
+      blocks.push({ from: i, to: i + 1, kind: "heading" });
+      i += 1;
+    } else {
+      let end = i + 1;
+      while (end < lines.length && lines[end].trim() && !atx.test(lines[end]) && !fence.test(lines[end])) end += 1;
+      blocks.push({ from: i, to: end, kind: "text" });
+      i = end;
+    }
+  }
+  const at = blocks.findIndex((block) => row >= block.from && row < block.to);
+  if (at < 0) return null;
+  const noop = { noop: true };
+  const ordered = /^(\s*)(\d+)([.)])(\s+)/;
+  // `a` is the earlier run, `b` the later; the caret's run is `b` for Up.
+  const swap = (a, b, pad, keepNumbers) => {
+    const aLines = lines.slice(a.from, a.to);
+    const bLines = lines.slice(b.from, b.to);
+    const gap = lines.slice(a.to, b.from);
+    //: Two sections that touch have no blank line between them, and the last
+    //: one of a document often has none after it: moved up it would weld its
+    //: last paragraph to the next heading. One blank line, and the one the
+    //: other side no longer needs comes off the end.
+    if (pad && !gap.length && bLines.length && bLines[bLines.length - 1].trim()) {
+      bLines.push("");
+      if (b.to === lines.length && aLines.length && !aLines[aLines.length - 1].trim()) aLines.pop();
+    }
+    const moverIsB = row >= b.from;
+    let shift = 0;
+    const pa = keepNumbers ? ordered.exec(aLines[0]) : null;
+    const pb = keepNumbers ? ordered.exec(bLines[0]) : null;
+    if (pa && pb) {
+      aLines[0] = pb[0] + aLines[0].slice(pa[0].length);
+      bLines[0] = pa[0] + bLines[0].slice(pb[0].length);
+      const mover = moverIsB ? b : a;
+      if (row === mover.from) {
+        const was = moverIsB ? pb[0].length : pa[0].length;
+        const now = moverIsB ? pa[0].length : pb[0].length;
+        const col = offset - starts[row];
+        shift = col >= was ? now - was : Math.min(col, now) - col;
+      }
+    }
+    const head = [...bLines, ...gap];
+    const base = starts[a.from];
+    const caret = moverIsB
+      ? base + (offset - starts[b.from]) + shift
+      : base + head.join("\n").length + (head.length ? 1 : 0) + (offset - starts[a.from]) + shift;
+    const more = b.to < lines.length;
+    return {
+      from: base,
+      to: more ? starts[b.to] : source.length,
+      insert: [...head, ...aLines].join("\n") + (more ? "\n" : ""),
+      caret,
+    };
+  };
+  const swapItems = (one, two) => swap(one, two, false, true);
+
+  //: A heading moves with its section, among the headings of its own level
+  //: and inside its own parent: past a shallower heading it would change what
+  //: it belongs to, which a move should never do silently.
+  if (blocks[at].kind === "heading") {
+    const headings = docScanHeadings(source).filter((h) => h.line >= first);
+    const index = headings.findIndex((h) => h.line === row);
+    if (index >= 0) {
+      const level = headings[index].level;
+      const own = docSectionRange(headings, index, lines.length);
+      let target = -1;
+      if (delta < 0) {
+        for (let k = index - 1; k >= 0 && headings[k].level >= level; k -= 1) {
+          if (headings[k].level === level) {
+            target = k;
+            break;
+          }
+        }
+      } else {
+        const next = headings.findIndex((h) => h.line === own.to);
+        if (next >= 0 && headings[next].level === level) target = next;
+      }
+      if (target < 0) return noop;
+      const other = docSectionRange(headings, target, lines.length);
+      return delta < 0 ? swap(other, own, true, false) : swap(own, other, true, false);
+    }
+  }
+
+  //: A list item is its line plus every line indented under it (a blank line
+  //: counts when something indented follows it), and swaps with the item of
+  //: the same indent beside it; the end of the list is the end of the move.
+  const marker = /^(\s*)([-*+]|\d+[.)])\s+/;
+  const indentOf = (line) => /^\s*/.exec(line)[0].length;
+  if (marker.test(lines[row])) {
+    const itemAt = (start) => {
+      const depth = indentOf(lines[start]);
+      let end = start + 1;
+      while (end < lines.length) {
+        let next = end;
+        while (next < lines.length && !lines[next].trim()) next += 1;
+        if (next >= lines.length || indentOf(lines[next]) <= depth) break;
+        end = next + 1;
+      }
+      return { from: start, to: end };
+    };
+    const depth = indentOf(lines[row]);
+    const own = itemAt(row);
+    if (delta > 0) {
+      let next = own.to;
+      while (next < lines.length && !lines[next].trim()) next += 1;
+      if (next >= lines.length || indentOf(lines[next]) !== depth || !marker.test(lines[next])) return noop;
+      return swapItems(own, itemAt(next));
+    }
+    let k = row - 1;
+    while (k >= first && !lines[k].trim()) k -= 1;
+    for (; k >= first; k -= 1) {
+      const line = lines[k];
+      if (!line.trim()) continue;
+      const here = indentOf(line);
+      if (here === depth && marker.test(line)) return swapItems(itemAt(k), own);
+      if (here <= depth) break;
+    }
+    return noop;
+  }
+
+  const other = blocks[at + delta];
+  if (!other) return noop;
+  return delta < 0 ? swap(other, blocks[at], false, false) : swap(blocks[at], other, false, false);
+}
+
+//: The key's half: only a markdown document (a code file keeps the editor's
+//: own line move, which is what code wants), only a caret rather than a
+//: selection (a selection of lines moves as lines, as it always did), and a
+//: decline hands the key back so the default still answers it.
+function docBlockMoveRun(view, delta) {
+  if (!docFileType().previewable) return false;
+  const selection = view.state.selection;
+  if (selection.ranges.length !== 1 || !selection.main.empty) return false;
+  const edit = docBlockMoveEdit(view.state.doc.toString(), selection.main.head, delta);
+  if (!edit) return false;
+  if (edit.noop) return true;
+  view.dispatch({
+    changes: { from: edit.from, to: edit.to, insert: edit.insert },
+    selection: { anchor: edit.caret },
+    scrollIntoView: true,
+    userEvent: "move.line",
+  });
+  return true;
+}
+
+//: The palette's door to the same move: focus is in the palette, so it aims at
+//: the editor and says what to do when the caret is not in a block.
+function docBlockMoveCommand(delta) {
+  if (!docCmView) return;
+  docCmView.focus();
+  if (!docBlockMoveRun(docCmView, delta)) announce("Put the caret in a paragraph, list item, table or section of a text document first.");
 }
 
 function renderDocOutline() {
@@ -21239,6 +21447,10 @@ function docCmKeymap(CM) {
     { key: "Enter", run: (view) => docTableKeyMove(view, "Enter") },
     { key: "ArrowDown", run: (view) => docTableKeyMove(view, "ArrowDown") },
     { key: "ArrowUp", run: (view) => docTableKeyMove(view, "ArrowUp") },
+    //: A markdown document moves a block, not a line (`docBlockMoveEdit`); a
+    //: code file declines and the default line move answers.
+    { key: "Alt-ArrowUp", run: (view) => docBlockMoveRun(view, -1) },
+    { key: "Alt-ArrowDown", run: (view) => docBlockMoveRun(view, 1) },
     {
       key: "Escape",
       run: () => {
