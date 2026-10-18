@@ -979,10 +979,12 @@ def test_a_drop_shadow_is_an_elevation_token():
 
 # --- !important (UI_MODERNISATION Phase 13 decision 16) ------------------------------
 
-#: 171 at the design review, 128 when Brief 57 measured. Most left are the
-#: motion switches overriding every element's own animation, print, and the
-#: companion's states; each goes by specificity, and the count only falls.
-IMPORTANT_LEFT = 128
+#: 171 at the design review, 128 when Brief 57 measured, 117 after the 13a
+#: full-screen pass (graph card, board, document focus now win by id and
+#: class). Most left are the motion switches overriding every element's own
+#: animation, print, the companion's states and inline styles set by script;
+#: each goes by specificity, and the count only falls.
+IMPORTANT_LEFT = 117
 
 
 def test_important_only_falls():

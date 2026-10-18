@@ -970,20 +970,20 @@ details.tool-chip[open] > .tool-chip-body {
    happens to be showing a graph. `#graph-card`'s own `overflow` (set with it
    and kept by the `overflow-y` rule below) is what clips the map to the
    rounded corner, so nothing inside has to know about the radius. */
-.graph-fullscreen {
-  position: fixed !important;
+#graph-card.graph-fullscreen {
+  position: fixed;
   inset: var(--space-3);
-  width: auto !important;
-  height: auto !important;
+  width: auto;
+  height: auto;
   z-index: 1000;
-  margin: 0 !important;
+  margin: 0;
   /* **No radius of its own.** This used to force `--radius-lg`, which is the
      0.8 step *below* the card's own `--radius`, so entering full screen
      changed the corner as well as the size: the card was 14px and its full
      screen 11.2px. `.card` already sets the user's corner setting and that is
      the one to keep (00-tokens-shell.css says why the two sizes exist), so
      this rule now sets no radius at all. */
-  background: var(--bg) !important;
+  background: var(--bg);
   display: flex;
   flex-direction: column;
   /* **Measured, and the reason full screen was not full screen.** `.card`
@@ -1024,8 +1024,8 @@ details.tool-chip[open] > .tool-chip-body {
    produce the same pixels. `.graph-fullscreen` is on the glass-off list in
    03-dashboard-widgets.css for Performance mode, so this cannot bring the
    blur back on a machine that asked for none. */
-:root[data-bg-art="on"]:not([data-glass="off"]) .graph-fullscreen {
-  background: var(--card) !important;
+:root[data-bg-art="on"]:not([data-glass="off"]) #graph-card.graph-fullscreen {
+  background: var(--card);
   backdrop-filter: var(--glass-filter);
   -webkit-backdrop-filter: var(--glass-filter);
 }
