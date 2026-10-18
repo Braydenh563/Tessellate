@@ -300,6 +300,8 @@ The levers, in order:
 - Less context: start a fresh session at each milestone (the HANDOVER "Now"
   line carries the state); grep, then read line ranges; no screenshots
   where a number will do (an image stays in context every turn after).
+  An orchestrator past 200k per turn writes the "Now" line and compacts
+  at the next step boundary; it does not wait for the auto-compact.
 - No cold rewrites: a gap over the cache lifetime (about an hour) rewrites
   the whole context at the higher write rate; avoid idle check-ins.
 - Cheapest capable rung, escalated on evidence, never by task length.
