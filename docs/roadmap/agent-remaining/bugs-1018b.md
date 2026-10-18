@@ -18,6 +18,7 @@ audits reproduced each bug in the app (ports 8791, 8792). A row is **open**,
 | C25 Help scroll lag | S, fixes2 | open | 4x CPU: median 33 to 50 ms a frame, 1954 nodes |
 | C15 typo question answered from notes | S, fixes2 | open | "Wat cna u do??" read right, then note citations |
 | C02 splash rows grow | S, fixes2 | open | `scripts/splash.ps1:394` uncapped; Windows only |
+| C38 splash flickers | S, fixes2 | open | `scripts/splash.ps1`: redraw per update; double-buffer, suspend layout, update only changed rows |
 | C23 go-key prefix | S, fixes2 | open | decision: prefix `t`, Timeline second key `i`, `m` alias one release |
 | C01 throw lands, peek then fall | O, design | open | `avatars.js:5706`, `:6098` |
 | C19, C20 companion layer and size on boards | O, design | open | band z 44 over Format z 25; WHITEBOARD step 8 |

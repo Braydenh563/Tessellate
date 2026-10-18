@@ -145,6 +145,7 @@ with its owner named in the entry.
      C37. (mid-run, 2026-10-18) also on the newest graph version, sometimes the text at the
           top of the boxes gets cut off  with no ellipse and the nodes are all the same size,
           should they be different??
+     C38. (mid-run, 2026-10-18) and the splash popup flickers quite a bit as well
      **Triage 2026-10-18** (two Haiku audits, each bug reproduced in the app unless noted;
      rungs: H Haiku, S Sonnet, O Opus; "now" = this run's batches, "plan" = placed).
      Batch 1, bugs, Sonnet or Haiku, now: C10 H (`settings-panes.js:1499` lacks `quick:
