@@ -2,9 +2,9 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 5958, frontend ids 2510, CSS sections 495, backend routes 607, backend modules 5755, test files 1235, tests 11208, plan headings 957.
+Counts: frontend functions 5960, frontend ids 2510, CSS sections 495, backend routes 607, backend modules 5755, test files 1236, tests 11210, plan headings 957.
 
-## Frontend functions (5958)
+## Frontend functions (5960)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3866,63 +3866,65 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderGraphCanvas` | frontend/js/graph-canvas.js:4848 |
 | `renderGraphPane` | frontend/js/graph-canvas.js:5701 |
 
-### frontend/js/graph-worker.js (53)
+### frontend/js/graph-worker.js (55)
 
 | Name | File:line |
 |---|---|
-| `KIND_LENGTH` | frontend/js/graph-worker.js:325 |
+| `KIND_LENGTH` | frontend/js/graph-worker.js:367 |
 | `alphaDecayFor` | frontend/js/graph-worker.js:136 |
-| `applyForces` | frontend/js/graph-worker.js:1395 |
-| `applyGrouping` | frontend/js/graph-worker.js:1339 |
-| `bridgeGroup` | frontend/js/graph-worker.js:585 |
-| `centreScale` | frontend/js/graph-worker.js:384 |
-| `clampToWorld` | frontend/js/graph-worker.js:1467 |
-| `clearCurve` | frontend/js/graph-worker.js:1027 |
-| `clearNearest` | frontend/js/graph-worker.js:1054 |
-| `clearPush` | frontend/js/graph-worker.js:1075 |
-| `clearanceForce` | frontend/js/graph-worker.js:1106 |
-| `clustered` | frontend/js/graph-worker.js:573 |
-| `collidePadFor` | frontend/js/graph-worker.js:282 |
-| `crossStrength` | frontend/js/graph-worker.js:350 |
-| `densityScale` | frontend/js/graph-worker.js:360 |
-| `dragHeat` | frontend/js/graph-worker.js:157 |
-| `ellipseWalk` | frontend/js/graph-worker.js:672 |
-| `groupAnchors` | frontend/js/graph-worker.js:732 |
-| `groupAnchorsOrganic` | frontend/js/graph-worker.js:716 |
-| `groupCohesion` | frontend/js/graph-worker.js:479 |
-| `groupDiscs` | frontend/js/graph-worker.js:661 |
-| `groupGather` | frontend/js/graph-worker.js:490 |
-| `groupOrder` | frontend/js/graph-worker.js:510 |
-| `groupingOn` | frontend/js/graph-worker.js:1333 |
-| `hubForce` | frontend/js/graph-worker.js:1165 |
-| `introCancel` | frontend/js/graph-worker.js:260 |
-| `introPick` | frontend/js/graph-worker.js:204 |
-| `introSnapshot` | frontend/js/graph-worker.js:211 |
-| `introStep` | frontend/js/graph-worker.js:252 |
-| `leafForce` | frontend/js/graph-worker.js:1295 |
-| `linkStrength` | frontend/js/graph-worker.js:353 |
-| `loop` | frontend/js/graph-worker.js:1516 |
-| `median` | frontend/js/graph-worker.js:1202 |
-| `orbitForce` | frontend/js/graph-worker.js:990 |
-| `orbitRadiusAt` | frontend/js/graph-worker.js:859 |
-| `orbitReach` | frontend/js/graph-worker.js:826 |
-| `orbitUpdate` | frontend/js/graph-worker.js:932 |
-| `orbitUpdateGrouped` | frontend/js/graph-worker.js:878 |
-| `portraitPull` | frontend/js/graph-worker.js:441 |
-| `post` | frontend/js/graph-worker.js:1476 |
-| `reshuffle` | frontend/js/graph-worker.js:1425 |
-| `rimOffset` | frontend/js/graph-worker.js:1247 |
-| `ringFor` | frontend/js/graph-worker.js:698 |
-| `run` | frontend/js/graph-worker.js:1585 |
-| `seededRandom` | frontend/js/graph-worker.js:608 |
-| `setRingSeed` | frontend/js/graph-worker.js:619 |
-| `shapeForce` | frontend/js/graph-worker.js:1269 |
-| `shuffleStep` | frontend/js/graph-worker.js:1451 |
-| `smallSpread` | frontend/js/graph-worker.js:374 |
-| `stopLoop` | frontend/js/graph-worker.js:1505 |
-| `tetherForce` | frontend/js/graph-worker.js:1206 |
-| `tuning` | frontend/js/graph-worker.js:394 |
-| `warmLayout` | frontend/js/graph-worker.js:222 |
+| `applyForces` | frontend/js/graph-worker.js:1437 |
+| `applyGrouping` | frontend/js/graph-worker.js:1381 |
+| `bridgeGroup` | frontend/js/graph-worker.js:627 |
+| `carryForce` | frontend/js/graph-worker.js:186 |
+| `centreScale` | frontend/js/graph-worker.js:426 |
+| `clampToWorld` | frontend/js/graph-worker.js:1509 |
+| `clearCurve` | frontend/js/graph-worker.js:1069 |
+| `clearNearest` | frontend/js/graph-worker.js:1096 |
+| `clearPush` | frontend/js/graph-worker.js:1117 |
+| `clearanceForce` | frontend/js/graph-worker.js:1148 |
+| `clustered` | frontend/js/graph-worker.js:615 |
+| `collidePadFor` | frontend/js/graph-worker.js:324 |
+| `crossStrength` | frontend/js/graph-worker.js:392 |
+| `densityScale` | frontend/js/graph-worker.js:402 |
+| `dragHeat` | frontend/js/graph-worker.js:199 |
+| `ellipseWalk` | frontend/js/graph-worker.js:714 |
+| `groupAnchors` | frontend/js/graph-worker.js:774 |
+| `groupAnchorsOrganic` | frontend/js/graph-worker.js:758 |
+| `groupCohesion` | frontend/js/graph-worker.js:521 |
+| `groupDiscs` | frontend/js/graph-worker.js:703 |
+| `groupGather` | frontend/js/graph-worker.js:532 |
+| `groupOrder` | frontend/js/graph-worker.js:552 |
+| `groupingOn` | frontend/js/graph-worker.js:1375 |
+| `hubForce` | frontend/js/graph-worker.js:1207 |
+| `introCancel` | frontend/js/graph-worker.js:302 |
+| `introPick` | frontend/js/graph-worker.js:246 |
+| `introSnapshot` | frontend/js/graph-worker.js:253 |
+| `introStep` | frontend/js/graph-worker.js:294 |
+| `leafForce` | frontend/js/graph-worker.js:1337 |
+| `linkStrength` | frontend/js/graph-worker.js:395 |
+| `loop` | frontend/js/graph-worker.js:1558 |
+| `markFollowers` | frontend/js/graph-worker.js:171 |
+| `median` | frontend/js/graph-worker.js:1244 |
+| `orbitForce` | frontend/js/graph-worker.js:1032 |
+| `orbitRadiusAt` | frontend/js/graph-worker.js:901 |
+| `orbitReach` | frontend/js/graph-worker.js:868 |
+| `orbitUpdate` | frontend/js/graph-worker.js:974 |
+| `orbitUpdateGrouped` | frontend/js/graph-worker.js:920 |
+| `portraitPull` | frontend/js/graph-worker.js:483 |
+| `post` | frontend/js/graph-worker.js:1518 |
+| `reshuffle` | frontend/js/graph-worker.js:1467 |
+| `rimOffset` | frontend/js/graph-worker.js:1289 |
+| `ringFor` | frontend/js/graph-worker.js:740 |
+| `run` | frontend/js/graph-worker.js:1627 |
+| `seededRandom` | frontend/js/graph-worker.js:650 |
+| `setRingSeed` | frontend/js/graph-worker.js:661 |
+| `shapeForce` | frontend/js/graph-worker.js:1311 |
+| `shuffleStep` | frontend/js/graph-worker.js:1493 |
+| `smallSpread` | frontend/js/graph-worker.js:416 |
+| `stopLoop` | frontend/js/graph-worker.js:1547 |
+| `tetherForce` | frontend/js/graph-worker.js:1248 |
+| `tuning` | frontend/js/graph-worker.js:436 |
+| `warmLayout` | frontend/js/graph-worker.js:264 |
 
 ### frontend/js/graph.js (123)
 
@@ -17721,7 +17723,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11208)
+## Tests (11210)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18192,6 +18194,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_graph_local_scaling.py | 4 |
 | tests/test_graph_look.py | 10 |
 | tests/test_graph_middle_pan.py | 2 |
+| tests/test_graph_neighbours_follow.py | 2 |
 | tests/test_graph_options_scroll.py | 1 |
 | tests/test_graph_pane_collapse.py | 3 |
 | tests/test_graph_parity_514.py | 9 |
