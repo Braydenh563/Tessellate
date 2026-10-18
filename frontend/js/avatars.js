@@ -4478,7 +4478,7 @@ function nameMarkBuddyYoursObstacles(obstacles, spot) {
   return obstacles.filter((b) => b.right - b.left < wide
     && !(floor && Math.abs(b.left - floor.left) < 2 && Math.abs(b.top - floor.top) < 2 && Math.abs(b.right - floor.right) < 2));
 }
-function nameMarkBuddyDrop(x, y) {
+function nameMarkBuddyDrop(x, y, reach = 48) {
   //: Put somewhere by you: no wander to come back from.
   nmb.home = null;
   const tab = nameMarkBuddyTab();
@@ -4492,7 +4492,7 @@ function nameMarkBuddyDrop(x, y) {
   const consider = (spot, d) => {
     if (d > 80 || (best && d >= best.d)) return;
     const free = fits(spot) ? spot : nameMarkBuddyStepAside({ ...spot }, nameMarkBuddyYoursObstacles(obstacles, spot));
-    if (fits(free) && Math.abs(free.x - spot.x) <= 48) best = { ...free, d: d + Math.abs(free.x - spot.x) / 4 };
+    if (fits(free) && Math.abs(free.x - spot.x) <= reach) best = { ...free, d: d + Math.abs(free.x - spot.x) / 4 };
   };
   for (const edge of edges) {
     if (edge.type === "side") {
@@ -5969,7 +5969,14 @@ function nameMarkBuddyWorld(tab) {
 //: left from x 1168, both came down on one dock perch at x 763 (throw.js).
 function nameMarkBuddyThrowSpot(s) {
   nameMarkBuddyIndexReset();
-  const spot = nameMarkBuddyDrop(s.x, s.y);
+  let spot = nameMarkBuddyDrop(s.x, s.y);
+  //: Slid down a wall onto a ledge it cannot stand on at the wall (a control
+  //: there): it steps along that ledge, not up to the top bar (seed 2, 800ms
+  //: after the slide ended, 235px up). The step-aside reach opens only then.
+  if (s.on && s.fate?.kind === "splat" && spot.y < s.y - 40) {
+    const along = nameMarkBuddyDrop(s.x, s.y, 400);
+    if (Math.abs(along.y - s.y) <= 40) spot = along;
+  }
   if (spot.y >= s.y + 2) spot.falls = true;
   return spot;
 }

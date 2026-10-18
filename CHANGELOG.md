@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Companion: a throw that splats on a side and slides onto a ledge now stands on that ledge (stepping along it past a control) instead of jumping 235px up to hang from the top bar (UX fix 2; the cause was the landing search's 48px reach, not an idle timer).
 - Dashboard hero on a phone: the greeting holds two lines, so saving a name no longer grows the hero 82 to 118px and pushes the page down 36px (UX fix 1).
 - Settings on a phone: the pane heading is hidden when the section list above it already shows the same name (Models over Models) (UX audit 9).
 - No-model notice: its action reads in ink on a phone, 4.5 or better in dark (was the accent at 3.96:1) (UX audit 2).
