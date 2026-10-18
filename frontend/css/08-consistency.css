@@ -398,7 +398,8 @@
 .settings-group > summary:not(.icon-only):not(.icon-button)::before,
 .settings-fold > summary:not(.icon-only):not(.icon-button)::before,
 .advanced-css > summary:not(.icon-only):not(.icon-button)::before,
-.task-log > summary:not(.icon-only):not(.icon-button)::before {
+.task-log > summary:not(.icon-only):not(.icon-button)::before,
+.chat-sources > .chat-sources-summary::before {
   content: "\e136"; /* ph-caret-down, as `.contents-caret` */
   display: inline-block;
   flex: none;
@@ -425,7 +426,8 @@ details[open] > .about-whats-new::before,
 .settings-group[open] > summary:not(.icon-only):not(.icon-button)::before,
 .settings-fold[open] > summary:not(.icon-only):not(.icon-button)::before,
 .advanced-css[open] > summary:not(.icon-only):not(.icon-button)::before,
-.task-log[open] > summary:not(.icon-only):not(.icon-button)::before {
+.task-log[open] > summary:not(.icon-only):not(.icon-button)::before,
+.chat-sources[open] > .chat-sources-summary::before {
   transform: none;
 }
 /* Hover is the only state that fills. Restated because the flat rule above
@@ -5258,6 +5260,12 @@ body .chip.item-label,
 }
 #nm-buddy-band.nmb-riding {
   overflow: clip;
+}
+/* Put over a board's canvas (INBOX 1300 C19): in the board's layer (the
+   raised step, 2), over its items and under its tool rail (10), top bar
+   (20) and Format panel (25). */
+#nm-buddy-band.nmb-canvas {
+  z-index: 2;
 }
 /* **Gone while anything fills the window** (INBOX 726, the owner: "I can see
    atlas on the edges when on the full screen graph", then "the same full

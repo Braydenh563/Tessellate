@@ -3143,6 +3143,16 @@ li.link-source {
   padding: var(--space-1);
   border-left-width: 1px;
 }
+/* One card at rest (`toastLayout`, INBOX 1300 C33): the others wait behind
+   the "+N more" card until a pointer or the keyboard is on the stack, which
+   opens it to three and the count to what is still folded. */
+:is(#toast-box, .toast-host):not(:hover, :focus-within) > .toast.is-behind {
+  display: none;
+}
+:is(#toast-box, .toast-host):not(:hover, :focus-within) .toast-more-folded,
+:is(#toast-box, .toast-host):is(:hover, :focus-within) .toast-more-rest {
+  display: none;
+}
 .toast-more > .toast-more-open {
   flex: 1;
   justify-content: flex-start;

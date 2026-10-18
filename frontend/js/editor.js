@@ -1585,6 +1585,15 @@ function editorOpenMenu(textarea, trigger) {
 
 // Recompute what the menu should show for whatever is currently before the
 // caret. Called on every keystroke while open.
+//: **In the chat box, the commands first** (INBOX 1300 C05, the owner: "I
+//: wouldn't know the other's are there unless I scroll down quite far"):
+//: they are what only this menu has; every other row is a button on the
+//: dock as well. The first command sat at 443 px in a 384 px menu.
+function editorBareSlashRows(context, recent, grouped) {
+  const lead = context === "chat" ? grouped.filter((row) => row.group === "Commands") : [];
+  return [...lead, ...recent, ...grouped.filter((row) => !lead.includes(row))];
+}
+
 function editorRefreshMenu() {
   const { textarea, trigger } = editorMenuState;
   if (!textarea || !trigger) return editorCloseMenu();
@@ -1620,7 +1629,7 @@ function editorRefreshMenu() {
         .map((row, i) => ({ row, i }))
         .sort((a, b) => order(a.row) - order(b.row) || a.i - b.i)
         .map((entry) => entry.row);
-      items = [...recent, ...grouped];
+      items = editorBareSlashRows(context, recent, grouped);
     }
   } else if (trigger === "```") {
     items = editorRankCommands(editorCodeLanguageRows(), token.fragment);

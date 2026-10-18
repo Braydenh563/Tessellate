@@ -765,13 +765,19 @@ function toastLayout(box) {
   const live = toastLive(box);
   const folded = live.slice(TOAST_VISIBLE);
   for (const t of live) t.classList.toggle("is-folded", folded.includes(t));
+  //: **One card at rest** (INBOX 1300 C33, the owner: "stacking
+  //: notifications need to be cleaned up and not as intrusive and
+  //: obscuring"): the newest shows, the rest are counted on the "+N more"
+  //: card, and a pointer or the keyboard on the stack opens it to three.
+  const behind = live.slice(1, TOAST_VISIBLE);
+  for (const t of live) t.classList.toggle("is-behind", behind.includes(t));
   for (const t of folded) {
     if (t.toastKept || t.toastFiled) continue;
     t.toastFiled = true;
     recordNotification({ kind: t.classList.contains("error") ? "error" : "done", title: t.toastText || t.textContent.trim() });
   }
   let more = box.querySelector(":scope > .toast-more");
-  if (!folded.length) {
+  if (!folded.length && !behind.length) {
     more?.remove();
     return;
   }
@@ -785,9 +791,13 @@ function toastLayout(box) {
     more.append(open);
   }
   const open = more.firstElementChild;
-  open.textContent = `+${folded.length} more`;
+  const rest = folded.length + behind.length;
+  //: Open, it counts what is still folded, or names the panel (a card that
+  //: went away under the pointer would close the stack again).
+  const count = (cls, text) => Object.assign(document.createElement("span"), { className: cls, textContent: text });
+  open.replaceChildren(count("toast-more-rest", `+${rest} more`), count("toast-more-folded", folded.length ? `+${folded.length} more` : "All notifications"));
   open.title = "Open the notifications";
-  open.setAttribute("aria-label", `${folded.length} more notifications. Open the notifications`);
+  open.setAttribute("aria-label", `${rest} more notifications. Open the notifications`);
   if (toastAtTop(box)) box.append(more);
   else box.prepend(more);
 }

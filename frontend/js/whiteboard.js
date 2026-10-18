@@ -577,6 +577,7 @@ function wbZoomFrameWork() {
     ? { width: drag.width, height: drag.height }
     : container ? { width: container.clientWidth, height: container.clientHeight } : null;
   wbSyncGridToTransform(t);
+  if (typeof nameMarkBuddyCanvasZoom === "function") nameMarkBuddyCanvasZoom(t.k);
   //: In the same frame as the transform it answers, so a topic panned into
   //: view is drawn on the frame it arrives in rather than one later.
   wbCullNow(t, size);

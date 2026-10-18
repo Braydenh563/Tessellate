@@ -62,7 +62,7 @@ def test_the_large_view_opens_on_its_resting_limbs() -> None:
     # The owner: "if it is hanging, the expanded companion kinda looks
     # awkward with both it's arms up". Measured (viewerpose.js): the arms
     # were still at 150 degrees 300 ms in; now at their float's places.
-    visit = _fn(AV, "nameMarkBuddyVisit")
+    visit = _fn((ROOT / "frontend" / "js" / "companion-menu.js").read_text(encoding="utf-8"), "nameMarkBuddyVisit")
     cut = visit[visit.index("if (nmb.visit.pose !== nmb.pose) {") :]
     assert visit.index("host.appendChild(buddy);") < visit.index("if (nmb.visit.pose !== nmb.pose) {")
     assert "anim instanceof CSSTransition) anim.finish();" in cut

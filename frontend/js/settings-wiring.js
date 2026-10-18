@@ -1386,7 +1386,7 @@ function renderShortcutList() {
 //: **The key chip is the button** (INBOX 810, Row actions): a column of
 //: thirty-one bordered "Change" buttons was the heaviest thing in the pane,
 //: louder than the keys it changes. Pressing the keys starts the rebind and
-//: pressing them again cancels it; its words say which ("Change" or
+//: pressing them again cancels it; its title says which ("Change" or
 //: "Cancel"), and the back-to-default is a quiet icon after the words.
 function buildShortcutList(list) {
   list.replaceChildren();
@@ -1399,7 +1399,11 @@ function buildShortcutList(list) {
     const combo = document.createElement("kbd");
     combo.textContent = capturing ? "Press keys…" : def.keys;
     if (capturing) combo.classList.add("capturing");
-    change.append(combo);
+    //: A pencil says the keys are the way to change them (INBOX 1300 C22).
+    const pen = document.createElement("i");
+    pen.className = `ph ${capturing ? "ph-x" : "ph-pencil-simple"} shortcut-edit`;
+    pen.setAttribute("aria-hidden", "true");
+    change.append(combo, pen);
     change.title = capturing ? "Cancel" : "Change";
     change.setAttribute(
       "aria-label",

@@ -16,6 +16,8 @@ ROOT = Path(__file__).resolve().parent.parent
 ATLAS = "\n".join((ROOT / "frontend" / "js" / name).read_text(encoding="utf-8") for name in ("atlas.js", "atlas-motion.js", "atlas-life.js"))
 CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
 AVATARS = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+#: The large view's visit and home moved to companion-menu.js (boot budget).
+MENU = (ROOT / "frontend" / "js" / "companion-menu.js").read_text(encoding="utf-8")
 
 
 def _look(name: str) -> str:
@@ -448,10 +450,10 @@ def test_the_poses_four_numbers_pass_down_by_inherit_along_the_readers_path():
     # top of the companion expanded popup"): the bar sat at a fixed 24px, behind
     # the head, while the hands' height changes with each character and act.
     assert '.nm-viewer-figure[data-pose="hang"] .nm-viewer-ledge' not in CSS
-    visit = AVATARS[AVATARS.index("function nameMarkBuddyVisit"):]
+    visit = MENU[MENU.index("function nameMarkBuddyVisit"):]
     visit = visit[:visit.index("function nameMarkBuddyHome")]
     assert 'host.dataset.pose = buddy.dataset.pose || ""' in visit and 'attributeFilter: ["data-pose"]' in visit
-    home = AVATARS[AVATARS.index("function nameMarkBuddyHome"):][:400]
+    home = MENU[MENU.index("function nameMarkBuddyHome"):][:400]
     assert "visit.watch?.disconnect();" in home
 
 
@@ -1280,8 +1282,8 @@ def test_in_its_large_view_the_companion_floats_free_of_its_perch():
     # it should be slightly separate from the companion but still have the
     # same life"): visiting the view it floats, with the view's sway, and its
     # perch's pose and legs go back with it.
-    visit = AVATARS[AVATARS.index("function nameMarkBuddyVisit("):AVATARS.index("function nameMarkBuddyHome(")]
-    home = AVATARS[AVATARS.index("function nameMarkBuddyHome("):AVATARS.index("//: **The larger faces have a life")]
+    visit = MENU[MENU.index("function nameMarkBuddyVisit("):MENU.index("function nameMarkBuddyHome(")]
+    home = MENU[MENU.index("function nameMarkBuddyHome("):]
     assert "pose: nmb.pose, legs: nmb.legs" in visit
     assert 'nmb.pose = "float";' in visit and 'buddy.dataset.pose = "float";' in visit
     assert "atl-figure-box" not in visit.split("const sway = [];", 1)[1].split("sway.push", 1)[0]

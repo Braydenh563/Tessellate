@@ -730,6 +730,16 @@ mark.text-highlight-grey { background: rgba(148, 163, 184, 0.25); }
    The keys wrap inside their own span rather than being allowed to hold the
    row open: letting them keep one line instead (no shrink) puts the seven-key
    row at 102.1px at 1440 and 190.4px at 390, which is the shape this replaces. */
+/* The pencil after the keys says they are the way to change them (INBOX
+   1300 C22, the owner: "hard to figure out that you need to press the
+   shortcut command itself"); an x while it waits for keys. */
+.shortcut-list .shortcut-edit {
+  margin-left: var(--space-1);
+  color: var(--muted);
+}
+.shortcut-list .shortcut-key:is(:hover, :focus-visible) .shortcut-edit {
+  color: var(--accent);
+}
 .shortcut-list li>span.shortcut-keys {
   flex: 0 1 auto;
   display: flex;

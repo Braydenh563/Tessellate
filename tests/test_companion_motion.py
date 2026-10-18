@@ -1174,7 +1174,7 @@ def test_it_takes_a_smaller_size_to_fit_a_small_perch() -> None:
     assert "nmb.scale = NMB_FIT_SCALE;" in choose and "return { ...small, fit: NMB_FIT_SCALE };" in choose
     assert choose.index("fit: NMB_FIT_SCALE") < choose.index('legs: "peek"')
     move = _fn("nameMarkBuddyMoveTo")
-    assert "const size = spot.fit || nameMarkBuddyScaleSaved();" in move and "nameMarkBuddySetSize(size, false);" in move
+    assert ": spot.fit || nameMarkBuddyScaleSaved();" in move and "nameMarkBuddySetSize(size, false);" in move
     assert "#nm-buddy.nmb-fitting .nm-buddy-face { transition: scale" in CSS08
 
 
