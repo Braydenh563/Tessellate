@@ -3,7 +3,10 @@
 //
 //   BASE=http://127.0.0.1:8781 PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node wbrightpan.js
 //
-// **The gesture is not built. This is its acceptance test, written first.**
+// **Built (C03, 2026-10-18)** as the decision below: the native menu on bare
+// canvas is swallowed and the app's own menu opens on release when the press
+// stayed inside 4px. Menus are counted as visible `.pointer-menu-host` menus.
+// Original header follows.
 //
 // It has been built and taken back out twice now, 2026-09-19 and 2026-09-20,
 // and the second attempt found why. The pan half is four lines in
@@ -96,11 +99,14 @@ const { boot } = require('./lib.js');
   await page.waitForTimeout(300);
   const dragged = await page.evaluate(() => ({
     x: d3.zoomTransform(document.getElementById('whiteboard-container')).x,
-    menus: window.__menus,
+    menus: document.querySelectorAll('.pointer-menu-anchor[aria-expanded="true"]').length,
   }));
   const moved = dragged.x - box.before;
   console.log(`258 right drag   container ${box.w}px wide, transform.x ${box.before} to ${dragged.x} (${moved.toFixed(0)}px), menus opened ${dragged.menus}`);
 
+  // The app's own menu (opened on release) is what is counted; a drag leaves it closed.
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(200);
   // 2. Right-click with no drag: the menu still opens.
   await page.evaluate(() => { window.__menus = 0; });
   await page.mouse.move(box.x, box.y);
@@ -109,7 +115,7 @@ const { boot } = require('./lib.js');
   await page.waitForTimeout(300);
   const clicked = await page.evaluate(() => ({
     x: d3.zoomTransform(document.getElementById('whiteboard-container')).x,
-    menus: window.__menus,
+    menus: document.querySelectorAll('.pointer-menu-anchor[aria-expanded="true"]').length,
   }));
   console.log(`258 right click  transform.x unchanged ${clicked.x === dragged.x}, menus opened ${clicked.menus}`);
 

@@ -89,6 +89,11 @@ function wbZoomFilter(event) {
   // mousemove reports the held set, and the drag half of the gesture needs to
   // pass the filter too.
   if (event.button === 1 || (event.buttons & 4) === 4) return true;
+  //: Right button pans from bare canvas only (draw.io's convention: a card or
+  //: a drawn shape keeps its right-click menu). The press that does not move
+  //: past the slop is a click, see the right-press bookkeeping in
+  //: initWhiteboard.
+  if (event.type === "mousedown" && event.button === 2) return wbIsBareCanvas(event.target);
   //: **Two fingers always navigate; one finger belongs to the tool.**
   //: (UI_MODERNISATION_PLAN Phase 11 item 7, "view and light edit only on a
   //: phone: pan, zoom, select, move".) One finger stays as it was, for the
@@ -15621,11 +15626,50 @@ async function initWhiteboard() {
     ? openMapCanvasMenu(clientX, clientY)
     : openBoardCanvasMenu(clientX, clientY));
 
+  //: **Right-drag pans, a plain right-click opens the menu** (C03, the owner:
+  //: "hard to move around the whiteboard with a mouse, copy draw.io and have
+  //: right click hold down drag panning"). The browser sends `contextmenu`
+  //: on the press (Linux) or the release (Windows), so "suppress it only
+  //: when the drag moved" cannot be written (wbrightpan.js header). Instead
+  //: the native event on bare canvas is always swallowed while a right press
+  //: is in flight or just ended, and the app's own menu opens on the
+  //: release when the pointer stayed inside the slop. A `contextmenu` with
+  //: no press behind it (the menu key) still opens the menu.
+  const WB_RIGHT_SLOP = 4;
+  let wbRightPress = null;
+  const wbRightOwns = () => wbRightPress && (!wbRightPress.up || Date.now() - wbRightPress.upAt < 400);
+  window.addEventListener("mousedown", (e) => {
+    if (e.button !== 2) return;
+    wbRightPress = containerEl.contains(e.target) && wbCanvasMenuWanted(e.target)
+      ? { x: e.clientX, y: e.clientY, moved: false, up: false, upAt: 0 } : null;
+  }, true);
+  window.addEventListener("mousemove", (e) => {
+    if (!wbRightPress || wbRightPress.up) return;
+    if ((e.buttons & 2) !== 2) { wbRightPress = null; return; }
+    if (wbRightPress.moved) return;
+    if (Math.hypot(e.clientX - wbRightPress.x, e.clientY - wbRightPress.y) < WB_RIGHT_SLOP) {
+      //: Hold the zoom's own move listener (capture, on the window, added
+      //: after this one) until the press is a drag.
+      e.stopImmediatePropagation();
+    } else {
+      wbRightPress.moved = true;
+    }
+  }, true);
+  window.addEventListener("mouseup", (e) => {
+    if (e.button !== 2 || !wbRightPress || wbRightPress.up) return;
+    wbRightPress.up = true;
+    wbRightPress.upAt = Date.now();
+    if (!wbRightPress.moved) {
+      const { clientX, clientY } = e;
+      setTimeout(() => openCanvasMenu(clientX, clientY), 0);
+    }
+  }, true);
   containerEl.addEventListener("contextmenu", (e) => {
     //: A topic and a line have rings of their own, and both stop the event
     //: before it reaches here; this is the canvas itself, which had nothing.
     if (!wbCanvasMenuWanted(e.target)) return;
     e.preventDefault();
+    if (wbRightOwns()) return;
     openCanvasMenu(e.clientX, e.clientY);
   });
 

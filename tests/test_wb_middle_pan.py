@@ -83,3 +83,13 @@ def test_every_item_drag_takes_the_primary_button_only() -> None:
             line = SOURCE.count("\n", 0, match.start()) + 1
             offenders.append(line)
     assert offenders == [], f"d3.drag() filters without a button check at whiteboard.js lines {offenders}"
+
+
+def test_the_right_button_pans_from_bare_canvas_and_a_drag_eats_its_menu() -> None:
+    """C03: draw.io's right-drag pan. Browser half: `wbrightpan.js` (150px, menu closed;
+    a plain right-click opens the app menu; a card press does not pan)."""
+    body = _function("wbZoomFilter")
+    assert 'event.button === 2) return wbIsBareCanvas(event.target)' in body
+    assert "const WB_RIGHT_SLOP = 4;" in SOURCE
+    handler = SOURCE[SOURCE.index('containerEl.addEventListener("contextmenu", (e) => {\n    //: A topic'):][:600]
+    assert "wbRightOwns()" in handler, "the native menu must stand aside while a right press owns the gesture"

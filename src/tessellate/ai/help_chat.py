@@ -1348,7 +1348,7 @@ HELP_TOPICS.extend(
                 "rectangle, ellipse, hexagon, parallelogram, star, cylinder, cloud, speech "
                 "bubble and block arrow. Moving around: the wheel or two "
                 "fingers pan, Shift+wheel pans sideways, Ctrl+wheel or a pinch "
-                "zooms, Space and drag pans, a drag to an edge pans, Ctrl+= and Ctrl+- zoom, "
+                "zooms, Space and drag pans, so does the middle or right mouse button held down (a plain right-click still opens the board menu), a drag to an edge pans, Ctrl+= and Ctrl+- zoom, "
                 "Ctrl+0 is 100%, Shift+1 fits all, Shift+N shows the "
                 "overview, / or Ctrl+F finds (with Whole word and Pattern buttons), Ctrl+H replaces, and Tab walks the board's "
                 "items. Ctrl+K also finds select all shapes or connectors, turn 90 degrees, remove from "

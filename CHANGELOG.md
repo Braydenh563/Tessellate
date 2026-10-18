@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- On the whiteboard a right-button drag on bare canvas pans (past 4 px), like draw.io; a plain right-click still opens the board menu and a card keeps its own menu (C03; `scratchpad/ui-sweeps/wbrightpan.js`: 150 px pan, 0 menus after a drag, 1 after a click).
 - "What is due this week" in Ask and Chat with no model answers from the days the notes name when Reminders has nothing waiting, instead of "You have no reminders waiting"; the computed days (until, before or after, what is due) also work through the route, whose notes had no day to read. The map's topic strip no longer covers a line handle at 820 wide, and the fold chevron is above the resize grip at phone width.
 - Every part of the Documents tab has its own ? popover naming its controls (OPEN 1054): the list, the outline tab, the dock with its menu, the find bar and the AI panel; `tests/test_documents_help.py` fails when a dock menu row has no word in the help.
 - The document editor offers links to your notes (DOCUMENTS_PLAN VC5): where the text names another note or document, the first mention is underlined and its row under "Links to your notes" writes the `[[link]]` (`POST /documents/link-offers`, `entry/link_offers.py`, the vendored FlashText; Fix never applies it; code, existing links and a one-word name without its capital are skipped).
