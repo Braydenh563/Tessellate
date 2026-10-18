@@ -121,7 +121,7 @@ def test_it_comes_down_on_a_ledge_under_its_path_and_never_through_one() -> None
 def test_the_flight_is_one_frame_loop_on_transforms_and_lands_as_a_drop() -> None:
     build = AV[AV.index("function nameMarkBuddyBuild(") :]
     assert "nameMarkBuddyReleaseVelocity(drag.samples || [], event?.timeStamp ?? performance.now())" in build
-    assert "nameMarkBuddyThrow(buddy, v[0], v[1]);" in build
+    assert "nameMarkBuddyThrow(buddy, v[0], v[1], world);" in build
     throw = _fn("nameMarkBuddyThrow")
     # One requestAnimationFrame, its step capped so a hidden tab resumes in
     # place, drawn by `nameMarkBuddyPut` (a transform) and a rotate.
@@ -135,8 +135,10 @@ def test_the_flight_is_one_frame_loop_on_transforms_and_lands_as_a_drop() -> Non
     assert "nmb.flight?.stop();" in _fn("nameMarkBuddyMoveTo")
     land = _fn("nameMarkBuddyThrowLand")
     # The nearest place to where it stopped, searched round that point, not
-    # round the old spot, and kept as the tab's spot.
-    assert "nameMarkBuddyDrop(s.x, s.y)" in land and "nameMarkBuddyChoose" not in land
+    # round the old spot (`nameMarkBuddyThrowSpot`, worked out before the last
+    # frame's writes), and kept as the tab's spot.
+    spot = _fn("nameMarkBuddyThrowSpot")
+    assert "nameMarkBuddyDrop(s.x, s.y)" in spot and "nameMarkBuddyChoose" not in land + spot
     assert "spots[tab] = nameMarkBuddySpotFor(spot);" in land
     assert "nameMarkBuddyToss" not in AV
 

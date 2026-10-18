@@ -6018,12 +6018,14 @@ function nameMarkBuddyWorld(tab) {
 //: Let go at `vx`, `vy` (px per ms): the flight, one frame at a time on
 //: transforms only, then its place. Reduce motion: the same flight worked
 //: out at once and a crossfade to where it comes down.
-function nameMarkBuddyThrow(buddy, vx, vy) {
+function nameMarkBuddyThrow(buddy, vx, vy, room = null) {
   nmb.flight?.stop();
   nmb.home = null;
   const tab = nameMarkBuddyTab();
-  nameMarkBuddyIndexReset();
-  const world = nameMarkBuddyWorld(tab);
+  //: The release reads the room before it writes (`release`); any other
+  //: caller lets this read it.
+  if (!room) nameMarkBuddyIndexReset();
+  const world = room || nameMarkBuddyWorld(tab);
   const feel = nameMarkBuddyThrowFeel([Math.random(), Math.random(), Math.random()], Math.hypot(vx, vy));
   let s = { x: nmb.x, y: nmb.y, vx, vy, rot: 0, t: 0, on: null, rest: false };
   nmb.thrown = { v: [+vx.toFixed(2), +vy.toFixed(2)], from: [Math.round(nmb.x), Math.round(nmb.y)] };
@@ -6064,6 +6066,9 @@ function nameMarkBuddyThrow(buddy, vx, vy) {
       hit = Math.max(hit, s.hit);
       dt -= 16;
     }
+    //: The landing's spot is worked out here, before this frame's writes: the
+    //: obstacle reads after them restyled the whole drawing (100 ms at 4x).
+    const landing = s.rest ? nameMarkBuddyThrowSpot(s) : null;
     nameMarkBuddyPut(buddy, Math.round(s.x), Math.round(s.y));
     if (char) char.style.rotate = `${s.rot.toFixed(1)}deg`;
     nameMarkBuddySway(buddy, Math.max(-28, Math.min(28, -s.vx * 10)));
@@ -6074,7 +6079,7 @@ function nameMarkBuddyThrow(buddy, vx, vy) {
     }
     if (s.rest) {
       flight.stop();
-      nameMarkBuddyThrowLand(buddy, s, tab);
+      nameMarkBuddyThrowLand(buddy, s, tab, landing);
       return;
     }
     next();
@@ -6092,10 +6097,14 @@ function nameMarkBuddyThrow(buddy, vx, vy) {
 //: as your spot on `tab`, the tab it was thrown on. Never the tab's own
 //: choice near there: on Notes with 24 notes, thrown right from x 44 and
 //: left from x 1168, both came down on one dock perch at x 763 (throw.js).
-function nameMarkBuddyThrowLand(buddy, s, tab) {
+function nameMarkBuddyThrowSpot(s) {
   nameMarkBuddyIndexReset();
   const spot = nameMarkBuddyDrop(s.x, s.y);
   if (spot.y >= s.y + 2) spot.falls = true;
+  return spot;
+}
+function nameMarkBuddyThrowLand(buddy, s, tab, landing = null) {
+  const spot = landing || nameMarkBuddyThrowSpot(s);
   nmb.thrown = { ...nmb.thrown, to: [Math.round(s.x), Math.round(s.y)] };
   nmb.placedAt = Date.now();
   nmb.afterLand = true;
@@ -9203,6 +9212,22 @@ function nameMarkBuddyBuild() {
       dragFrame = 0;
       follow();
       const box = buddy.getBoundingClientRect();
+      //: **Reads first, then writes** (companion-1018, Atlas at 4x: the release
+      //: task was 245 ms, three restyles of 400 to 625 elements at 55 to 67 ms
+      //: each, one after every write). What the drop or the throw needs from the
+      //: page (obstacles, edges, ledges) is read here, in the restyle the box
+      //: read already paid for; the writes follow. None of it depends on the
+      //: companion: its own boxes are left out of those reads.
+      const v = nameMarkBuddyReleaseVelocity(drag.samples || [], event?.timeStamp ?? performance.now());
+      const thrown = !!v && Math.hypot(v[0], v[1]) > NMB_TOSS_SPEED;
+      let world = null;
+      let landed = null;
+      if (thrown) {
+        nameMarkBuddyIndexReset();
+        world = nameMarkBuddyWorld(nameMarkBuddyTab());
+      } else {
+        landed = nameMarkBuddyDrop(Math.round(box.left), Math.round(box.top));
+      }
       buddy.style.translate = "";
       buddy.classList.remove("nm-buddy-dragging");
       clearTimeout(drag.settle);
@@ -9211,14 +9236,12 @@ function nameMarkBuddyBuild() {
       nameMarkBuddyPut(buddy, Math.round(box.left), Math.round(box.top));
       //: **Thrown** (INBOX 882): let go while still moving fast, it flies
       //: (`nameMarkBuddyThrow`).
-      const v = nameMarkBuddyReleaseVelocity(drag.samples || [], event?.timeStamp ?? performance.now());
-      if (v && Math.hypot(v[0], v[1]) > NMB_TOSS_SPEED) {
-        nameMarkBuddyThrow(buddy, v[0], v[1]);
+      if (thrown) {
+        nameMarkBuddyThrow(buddy, v[0], v[1], world);
         face.dataset.dragged = "1";
         drag = null;
         return;
       }
-      const landed = nameMarkBuddyDrop(nmb.x, nmb.y);
       //: **Settling** (the owner: "how it acts and settles down when I move
       //: it"): it drops onto the surface under gravity's curve, lands with
       //: a squash and a small overshoot, looks around once, and then stays:

@@ -422,7 +422,7 @@ def test_it_can_be_petted_tossed_and_watches_a_near_pointer() -> None:
     # let-go is a drop; its eyes stay on a near pointer, and with Faces
     # follow the pointer off a pointer passing is not followed.
     build = _fn("nameMarkBuddyBuild")
-    assert "}, NMB_PET_MS);" in build and "nameMarkBuddyThrow(buddy, v[0], v[1]);" in build
+    assert "}, NMB_PET_MS);" in build and "nameMarkBuddyThrow(buddy, v[0], v[1], world);" in build
     assert "Math.hypot(v[0], v[1]) > NMB_TOSS_SPEED" in build
     pet = _fn("nameMarkBuddyPet")
     assert "nameMarkBuddyStill()" in pet and "15000" in pet
