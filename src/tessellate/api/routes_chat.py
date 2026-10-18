@@ -33,7 +33,7 @@ from sqlalchemy import or_, select
 from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
-from tessellate.ai import budget as run_budget, capability, composer, composer_digest, find_it, glossary, personal, phrasing, verdicts, toolwords, vocative, why
+from tessellate.ai import budget as run_budget, capability, composer, composer_digest, find_it, glossary, neighbours, personal, phrasing, verdicts, toolwords, vocative, why
 from tessellate.ai import (
     acts,
     agent,
@@ -1332,6 +1332,55 @@ def _widened(session: Session, question: str, entries: list, scope: str = "") ->
     return out[: max(len(entries), OVERVIEW_LIMIT)]
 
 
+#: Notes read for "the topic whole" come from the first of the retrieved
+#: ones that rank at the top, never from every graph neighbour.
+NEIGHBOUR_SEEDS = 3
+#: Past this many retrieved notes the topic is already read whole.
+NEIGHBOUR_ROOM = 6
+
+
+def _with_neighbours(session: Session, question: str, entries: list, scope: str = "") -> list:
+    """The retrieved notes plus, for a question about a topic as a whole, the
+    notes sharing a rare tag with the best of them (`ai/neighbours.py`: the
+    keyword search wants every word, so "how's the gym going?" never read the
+    second gym note)."""
+    if neighbours.asks_left(question) and not scope:
+        return _with_open(session, question, entries)
+    if not entries or scope or len(entries) > NEIGHBOUR_ROOM or not neighbours.reads_whole(question):
+        return entries
+    rows = session.execute(
+        select(Entry.id, Entry.tags)
+        .where(Entry.is_deleted == False, Entry.is_private == False, Entry.is_board == False, Entry.tags != "[]")  # noqa: E712
+        .order_by(Entry.created_at.desc())
+        .limit(2000)
+    ).all()
+    chosen = neighbours.pick([e.id for e in entries[:NEIGHBOUR_SEEDS]], [(i, manager.tags_from_json(t)) for i, t in rows])
+    have = {e.id for e in entries}
+    extra = [session.get(Entry, i) for i in chosen if i not in have]
+    return entries + [e for e in extra if e is not None]
+
+
+def _with_open(session: Session, question: str, entries: list) -> list:
+    """For "what do I need to buy" and "what's left", the notes that hold
+    something still open: an unticked box, "still to" or "need to", and, for
+    buying, the shopping notes by tag or category. Search by the words of the
+    question ("buy") finds none of them."""
+    clauses = [Entry.content.like("%- [ ]%"), Entry.content.like("%still to %"), Entry.content.like("%need to %")]
+    if re.search(r"\b(buy|shop|get)\b", question, re.I):
+        shops = ("grocer", "shopping", "shop list")
+        clauses += [func.lower(Entry.tags).like(f"%{like_escape(w)}%", escape=LIKE_ESCAPE) for w in shops]
+        named = select(Category.id).where(or_(*(func.lower(Category.name).like(f"%{like_escape(w)}%", escape=LIKE_ESCAPE) for w in shops)))
+        clauses.append(Entry.category_id.in_(named))
+    found = session.scalars(
+        select(Entry)
+        .where(Entry.is_deleted == False, Entry.is_private == False, Entry.is_board == False, or_(*clauses))  # noqa: E712
+        .order_by(Entry.created_at.desc())
+        .limit(NEIGHBOUR_ROOM)
+    )
+    have = {e.id for e in entries}
+    return entries + [e for e in found if e.id not in have]
+
+
 def _filed_under(session: Session, terms: list[str]) -> list:
     """Notes tagged with, or filed in a category named for, a word of the
     topic ("games" finds the notes tagged games that never say the word)."""
@@ -1468,7 +1517,7 @@ def _prepare(
             session, glossary.expand(question, _glossary(session)), deps.get_embeddings(), limit=5
         )
         entries, mode = found.entries, found.mode
-        entries = _widened(session, question, entries, scope=found.category)
+        entries = _with_neighbours(session, question, _widened(session, question, entries, scope=found.category), scope=found.category)
         # Which of these are here because they are *connected* to a match
         # rather than because they matched. The user asked about one thing and
         # is being shown notes about another; without saying why, the panel

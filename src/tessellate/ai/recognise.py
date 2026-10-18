@@ -1599,8 +1599,16 @@ _PAST = re.compile(
 )
 
 
+#: A question about how something has gone is about the run of notes, not the
+#: latest one: "how's the gym going" reads 80 kg and then 90 kg (INBOX 812).
+_PROGRESS = re.compile(
+    r"\bprogress\b|\bhow(?:'s|s| is| are| has| have|'ve)\b[^?.!]{0,40}?\b(?:going|been|coming along|progressing)\b",
+    re.I,
+)
+
+
 def says_past(text: str) -> bool:
-    return bool(_PAST.search(text or ""))
+    return bool(_PAST.search(text or "") or _PROGRESS.search(text or ""))
 
 
 #: Day and month names that are always names. "march" and "may" are left out:
