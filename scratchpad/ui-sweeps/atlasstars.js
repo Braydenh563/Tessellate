@@ -50,7 +50,7 @@ const RATE = Number(process.env.RATE || 1);
     const box = document.querySelector('#nm-buddy .atl-figure-box');
     const stars = [...box.querySelectorAll('.atl-layer .nmp-stars > .atl-juggle')];
     const root = box.querySelector('.atl-layer .nmp-stars');
-    nameMarkBuddyThrow(document.getElementById('nm-buddy'), 1.6, -0.9);
+    nameMarkBuddyThrow(document.getElementById('nm-buddy'), 1.6, -0.9, nameMarkBuddyWorld(nameMarkBuddyTab()));
     const seen = [];
     const t0 = performance.now();
     const step = () => {

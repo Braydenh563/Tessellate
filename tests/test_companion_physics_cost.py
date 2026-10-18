@@ -35,7 +35,8 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-AV = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+#: The companion's code: the throw itself moved to the lazy companion-throw.js (INBOX 1301 D6).
+AV = "\n".join((ROOT / "frontend" / "js" / n).read_text(encoding="utf-8") for n in ("avatars.js", "companion-throw.js"))
 CSS_DIR = ROOT / "frontend" / "css"
 
 
@@ -79,7 +80,8 @@ def test_the_flight_frame_is_time_based_capped_and_writes_no_layout_properties()
     src = AV[AV.index("function nameMarkBuddyThrow(") :][:4200]
     frame = src[src.index("const frame = (now) =>") : src.index("const next = () =>")]
     assert "Math.min(32, Math.max(0, now - then))" in frame
-    assert re.search(r"nameMarkBuddyFlightStep\(s, Math\.min\(16, dt\)", frame)
+    # The flight's own step, wrapped by the throw's fates (INBOX 1301 D6), at a fixed 16ms.
+    assert re.search(r"companionThrowStep\(s, Math\.min\(16, dt\), room, feel, nameMarkBuddyFlightStep", frame)
     for forbidden in ("getBoundingClientRect", "offsetWidth", "offsetHeight", "style.left", "style.top", "setInterval", "setTimeout"):
         assert forbidden not in frame
     assert src.count("requestAnimationFrame(") == 1

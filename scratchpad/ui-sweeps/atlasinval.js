@@ -31,10 +31,11 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     // A flick's release speed depends on the pointer's timing, and a slow one is a drop, not a
     // throw: the flight is started directly, the same throw every run, with its random feel fixed.
     await start();
-    await page.evaluate(() => {
+    await page.evaluate(async () => {
+      await ensureModule('companionThrow');
       const r = Math.random;
       Math.random = () => 0.5;
-      nameMarkBuddyThrow(document.getElementById('nm-buddy'), 1.6, -0.9);
+      nameMarkBuddyThrow(document.getElementById('nm-buddy'), 1.6, -0.9, nameMarkBuddyWorld(nameMarkBuddyTab()));
       Math.random = r;
     });
     await sleep(1300);

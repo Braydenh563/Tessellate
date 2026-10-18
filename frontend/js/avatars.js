@@ -5961,79 +5961,8 @@ function nameMarkBuddyWorld(tab) {
   return { left: 0, right: innerWidth - NMB_W, top: roof, floor: base - NMB_FEET + 1, ledges };
 }
 
-//: Let go at `vx`, `vy` (px per ms): the flight, one frame at a time on
-//: transforms only, then its place. Reduce motion: the same flight worked
-//: out at once and a crossfade to where it comes down.
-function nameMarkBuddyThrow(buddy, vx, vy, world) {
-  nmb.flight?.stop();
-  nmb.home = null;
-  const tab = nameMarkBuddyTab();
-  const feel = nameMarkBuddyThrowFeel([Math.random(), Math.random(), Math.random()], Math.hypot(vx, vy));
-  let s = { x: nmb.x, y: nmb.y, vx, vy, rot: 0, t: 0, on: null, rest: false };
-  nmb.thrown = { v: [+vx.toFixed(2), +vy.toFixed(2)], from: [Math.round(nmb.x), Math.round(nmb.y)] };
-  if (nameMarkBuddyNoTravel()) {
-    while (!s.rest) s = nameMarkBuddyFlightStep(s, 16, world, feel);
-    nameMarkBuddyThrowLand(buddy, s, tab, nameMarkBuddyThrowSpot(s));
-    return;
-  }
-  const char = buddy.querySelector(".nm-buddy-char");
-  buddy.classList.add("nm-buddy-dragging");
-  let then = performance.now();
-  const flight = {
-    raf: 0,
-    stop() {
-      cancelAnimationFrame(flight.raf);
-      if (nmb.flight !== flight) return;
-      nmb.flight = null;
-      buddy.classList.remove("nm-buddy-dragging");
-      nameMarkBuddySway(buddy, 0);
-      if (!char) return;
-      //: Stopped while still turned (the cap, a grab): eased upright, the
-      //: short way, never snapped.
-      const r = ((((Number.parseFloat(char.style.rotate) || 0) + 180) % 360) + 360) % 360 - 180;
-      char.style.rotate = "";
-      if (Math.abs(r) > 1 && typeof char.animate === "function") char.animate([{ rotate: `${r}deg` }, { rotate: "0deg" }], { duration: 260, easing: "ease-out" });
-    },
-  };
-  const frame = (now) => {
-    if (nmb.flight !== flight) return;
-    if (!buddy.isConnected) return flight.stop();
-    //: Hidden, frames stop and it waits in the air; back, it flies on from
-    //: there rather than jumping a long step.
-    let dt = Math.min(32, Math.max(0, now - then));
-    then = now;
-    let hit = 0;
-    while (dt > 0 && !s.rest) {
-      s = nameMarkBuddyFlightStep(s, Math.min(16, dt), world, feel);
-      hit = Math.max(hit, s.hit);
-      dt -= 16;
-    }
-    //: The landing spot is read before this frame's writes (read after, it restyled the drawing).
-    const landing = s.rest ? nameMarkBuddyThrowSpot(s) : null;
-    nameMarkBuddyPut(buddy, Math.round(s.x), Math.round(s.y));
-    if (char) char.style.rotate = `${s.rot.toFixed(1)}deg`;
-    nameMarkBuddySway(buddy, Math.max(-28, Math.min(28, -s.vx * 10)));
-    if (hit > 0.5 && char && typeof char.animate === "function") {
-      //: Squashed by how hard it came down.
-      const a = Math.min(0.22, hit * 0.09);
-      char.animate([{ scale: "1 1" }, { scale: `${1 + a} ${1 - a}` }, { scale: "1 1" }], { duration: 220, easing: "ease-out" });
-    }
-    if (s.rest) {
-      flight.stop();
-      nameMarkBuddyThrowLand(buddy, s, tab, landing);
-      return;
-    }
-    next();
-  };
-  //: Its one frame loop, running only while it flies (the wake-source seed's
-  //: tenth in this file).
-  const next = () => {
-    flight.raf = requestAnimationFrame(frame);
-  };
-  nmb.flight = flight;
-  next();
-}
-
+//: The throw itself, and what can happen on the way: companion-throw.js
+//: (lazy, fetched on the first carry; INBOX 1301 D6).
 //: Come down at `s`: the nearest place to there, as if dropped there, kept
 //: as your spot on `tab`, the tab it was thrown on. Never the tab's own
 //: choice near there: on Notes with 24 notes, thrown right from x 44 and
@@ -9119,6 +9048,7 @@ function nameMarkBuddyBuild() {
     if (!drag.moved && Math.hypot(drag.x - drag.sx, drag.y - drag.sy) < 4) return;
     if (!drag.moved) {
       drag.moved = true;
+      ensureModule("companionThrow");
       nmb.flight?.stop();
       const box = buddy.getBoundingClientRect();
       nmb.anim?.cancel();
@@ -9158,7 +9088,7 @@ function nameMarkBuddyBuild() {
       const box = buddy.getBoundingClientRect();
       //: Reads first, then writes: one restyle of the rig, not three (Atlas at 4x).
       const v = nameMarkBuddyReleaseVelocity(drag.samples || [], event?.timeStamp ?? performance.now());
-      const thrown = !!v && Math.hypot(v[0], v[1]) > NMB_TOSS_SPEED;
+      const thrown = !!v && Math.hypot(v[0], v[1]) > NMB_TOSS_SPEED && typeof nameMarkBuddyThrow === "function";
       if (thrown) nameMarkBuddyIndexReset();
       const world = thrown && nameMarkBuddyWorld(nameMarkBuddyTab());
       const landed = !thrown && nameMarkBuddyDrop(Math.round(box.left), Math.round(box.top));
