@@ -251,3 +251,16 @@
   margin: 0;
   font-size: var(--text-sm);
 }
+
+/* **The notes a reply gives** (`replyNotePreviews`, INBOX 1300 C07): the
+   document embed's cards, one under another; a note link's peek is the
+   citation peek, whose number slot a link has nothing for. */
+.reply-notes {
+  gap: var(--space-2);
+  padding: 0;
+  border: 0;
+}
+
+.citation-peek-number:empty {
+  display: none;
+}

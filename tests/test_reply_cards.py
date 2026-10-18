@@ -125,3 +125,26 @@ def test_the_calculator_is_one_sheet_reached_three_ways():
     panes = (JS / "settings-panes.js").read_text(encoding="utf-8")
     row = next(line for line in panes.splitlines() if 'label: "ph:calculator Calculator"' in line)
     assert "about:" in row and 'ensureModule("replyKit").then(() => openCalculator())' in row
+
+
+def test_a_note_a_reply_gives_is_previewed_on_every_surface():
+    """INBOX 1300 C07: "if it is going to give me a note, can it at least
+    preview it for me as well??"."""
+    ask = (JS / "capture-ask.js").read_text(encoding="utf-8")
+    assert "function finishReply(answers, opts)" in ask and "replyFinish(answers, opts)" in ask
+    #: Chat, Ask, the popup agent and the Guide each finish a reply through it.
+    calls = {
+        "chat-attach.js": "finishReply(answerEls, { composed: meta?.composed",
+        "capture-ask.js": "finishReply(answerBox, { composed: answerMeta?.composed });",
+        "palette.js": "finishReply(answerBox, { composed: meta?.composed });",
+        "help-chat.js": 'finishReply(answerRow.querySelector(".help-chat-prose")',
+    }
+    for name, call in calls.items():
+        assert call in (JS / name).read_text(encoding="utf-8"), name
+    kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
+    #: The citation peek for every note link, and up to three cards in the
+    #: document embed's recipe; a longer list keeps the peek only.
+    assert "openCitationPeek(link, { noteId: id" in kit and "const REPLY_NOTE_CARDS = 3;" in kit
+    assert 'card.className = "embed-card reply-note-card";' in kit and "openNoteAtPassage(id" in kit
+    css = (ROOT / "frontend" / "css" / "reply-kit-lazy.css").read_text(encoding="utf-8")
+    assert ".citation-peek-number:empty" in css

@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Chat, Ask, the popup agent and the Guide: a note a reply links to previews on hover or focus (the source peek), and a reply that gives one to three notes shows each as a card under it with its title, facts and first words; a press opens the note (INBOX 1300 C07).
 - Calculator: a sheet from the palette's Calculator row, /calc alone, or Open the calculator under an answer that worked out a sum or a conversion; it works out as you type (the /calc reader, `GET /utilities/work`), has a keypad that is one Tab stop walked by the arrow keys, copies the result, keeps the last five, and converts units and currencies by kind with a swap (`GET /utilities/units`) (INBOX 1300 C06).
 - Web results under an answer are cards (a globe tile, title, site, two lines; a press anywhere reads the page in place), the reader shows the page formatted with a facts line (site, words, minutes, when read) in a panel up to 60% of the window, and a page the model read opens the same reader from a fold under its step; Ask and the popup agent now draw the web results too (INBOX 1300 C06).
 - Chat, Ask and the popup agent: a question about the notebook as a whole ("notebook stats", /stats) carries a panel of six cards with icons, a spark line, meters and this-week bars, and Open Statistics in its head, whoever writes the words (INBOX 1300 C06); `tests/test_reply_cards.py`.

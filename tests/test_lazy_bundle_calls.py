@@ -124,6 +124,7 @@ REACHED_AFTER_LOAD = {
     #: Decision 70: the digest answer's one offer, in the .then of
     #: ensureModule('askCompose') in renderAnswerGrounding.
     "renderRelatedElsewhere": "replyKit, called in the .then of ensureModule('replyKit') by the Ask foot and Chat's onRelated",
+    "replyFinish": "replyKit, called in the .then of ensureModule('replyKit') by finishReply, every answer surface's last step (INBOX 1300 C07)",
     "replyDrawAll": "replyKit, called in the .then of ensureModule('replyKit') by drawAnswerPanels, every answer surface's panel drawer (INBOX 1300 C06)",
     "digestOffer": "askCompose, called in the .then of ensureModule('askCompose') in renderAnswerGrounding",
     "digestShape": "askCompose, called in the .then of ensureModule('askCompose') in renderAnswerGrounding",

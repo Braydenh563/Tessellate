@@ -2,9 +2,9 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6067, frontend ids 2528, CSS sections 495, backend routes 611, backend modules 5837, test files 1271, tests 11404, plan headings 959.
+Counts: frontend functions 6074, frontend ids 2528, CSS sections 495, backend routes 611, backend modules 5837, test files 1271, tests 11405, plan headings 959.
 
-## Frontend functions (6067)
+## Frontend functions (6074)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -327,14 +327,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `addInlineCitations` | frontend/js/capture-ask.js:1168 |
 | `announce` | frontend/js/capture-ask.js:823 |
-| `answerFigure` | frontend/js/capture-ask.js:2018 |
-| `answerObject` | frontend/js/capture-ask.js:2111 |
-| `askAsOf` | frontend/js/capture-ask.js:3397 |
-| `askNotesOnTheRight` | frontend/js/capture-ask.js:2235 |
+| `answerFigure` | frontend/js/capture-ask.js:1996 |
+| `answerObject` | frontend/js/capture-ask.js:2089 |
+| `askAsOf` | frontend/js/capture-ask.js:3381 |
+| `askNotesOnTheRight` | frontend/js/capture-ask.js:2213 |
 | `askOpenContext` | frontend/js/capture-ask.js:876 |
-| `askQuestion` | frontend/js/capture-ask.js:2970 |
-| `askStatusBusy` | frontend/js/capture-ask.js:2940 |
-| `askStatusText` | frontend/js/capture-ask.js:2925 |
+| `askQuestion` | frontend/js/capture-ask.js:2953 |
+| `askStatusBusy` | frontend/js/capture-ask.js:2923 |
+| `askStatusText` | frontend/js/capture-ask.js:2908 |
 | `captureCategoryChip` | frontend/js/capture-ask.js:500 |
 | `citationInsertionPoint` | frontend/js/capture-ask.js:1140 |
 | `citationKey` | frontend/js/capture-ask.js:1093 |
@@ -342,41 +342,42 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `citationNumbers` | frontend/js/capture-ask.js:1060 |
 | `citationPeekText` | frontend/js/capture-ask.js:1431 |
 | `citationTextIndex` | frontend/js/capture-ask.js:1107 |
-| `clearAskAnswerFoot` | frontend/js/capture-ask.js:2162 |
+| `clearAskAnswerFoot` | frontend/js/capture-ask.js:2140 |
 | `clearCaptureStatusOnInput` | frontend/js/capture-ask.js:570 |
 | `clearCaptureTagSuggestions` | frontend/js/capture-ask.js:487 |
 | `clearCitedPassage` | frontend/js/capture-ask.js:1641 |
 | `clickableResult` | frontend/js/capture-ask.js:1019 |
 | `closeCitationPeek` | frontend/js/capture-ask.js:1542 |
 | `collapseCitationRuns` | frontend/js/capture-ask.js:1235 |
-| `copyAnswer` | frontend/js/capture-ask.js:3329 |
+| `copyAnswer` | frontend/js/capture-ask.js:3313 |
 | `createDocumentNamed` | frontend/js/capture-ask.js:287 |
-| `drawAnswerPanels` | frontend/js/capture-ask.js:2287 |
-| `everyRowScored` | frontend/js/capture-ask.js:2442 |
+| `drawAnswerPanels` | frontend/js/capture-ask.js:2265 |
+| `everyRowScored` | frontend/js/capture-ask.js:2425 |
 | `evidenceBlock` | frontend/js/capture-ask.js:1399 |
-| `evidenceChecksOn` | frontend/js/capture-ask.js:1890 |
-| `evidenceRows` | frontend/js/capture-ask.js:1942 |
+| `evidenceChecksOn` | frontend/js/capture-ask.js:1868 |
+| `evidenceRows` | frontend/js/capture-ask.js:1920 |
 | `evidenceSignals` | frontend/js/capture-ask.js:1377 |
 | `evidenceSpan` | frontend/js/capture-ask.js:1370 |
-| `evidenceSwitchReset` | frontend/js/capture-ask.js:1902 |
-| `evidenceToggle` | frontend/js/capture-ask.js:1909 |
+| `evidenceSwitchReset` | frontend/js/capture-ask.js:1880 |
+| `evidenceToggle` | frontend/js/capture-ask.js:1887 |
 | `filedByText` | frontend/js/capture-ask.js:220 |
 | `filingOutcomeText` | frontend/js/capture-ask.js:181 |
+| `finishReply` | frontend/js/capture-ask.js:2272 |
 | `flashCategory` | frontend/js/capture-ask.js:989 |
 | `flashEntry` | frontend/js/capture-ask.js:885 |
 | `flashReminder` | frontend/js/capture-ask.js:963 |
 | `focusCaptureBox` | frontend/js/capture-ask.js:450 |
-| `groundingThumbs` | frontend/js/capture-ask.js:1754 |
+| `groundingThumbs` | frontend/js/capture-ask.js:1732 |
 | `heldOffline` | frontend/js/capture-ask.js:584 |
-| `holdPictureTokens` | frontend/js/capture-ask.js:2012 |
-| `liveMarkdownRenderer` | frontend/js/capture-ask.js:2802 |
-| `loadAskHistoryBadge` | frontend/js/capture-ask.js:3361 |
+| `holdPictureTokens` | frontend/js/capture-ask.js:1990 |
+| `liveMarkdownRenderer` | frontend/js/capture-ask.js:2785 |
+| `loadAskHistoryBadge` | frontend/js/capture-ask.js:3345 |
 | `loadCaptureDocuments` | frontend/js/capture-ask.js:276 |
-| `loadSuggestions` | frontend/js/capture-ask.js:3335 |
-| `loadTemplates` | frontend/js/capture-ask.js:3430 |
-| `matchReasonBadge` | frontend/js/capture-ask.js:2446 |
-| `newChat` | frontend/js/capture-ask.js:2883 |
-| `notePictures` | frontend/js/capture-ask.js:1739 |
+| `loadSuggestions` | frontend/js/capture-ask.js:3319 |
+| `loadTemplates` | frontend/js/capture-ask.js:3414 |
+| `matchReasonBadge` | frontend/js/capture-ask.js:2429 |
+| `newChat` | frontend/js/capture-ask.js:2866 |
+| `notePictures` | frontend/js/capture-ask.js:1717 |
 | `noteSurfaceIfAny` | frontend/js/capture-ask.js:415 |
 | `noteTemplateForUse` | frontend/js/capture-ask.js:397 |
 | `noteTemplateText` | frontend/js/capture-ask.js:386 |
@@ -385,37 +386,36 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openCitationPeek` | frontend/js/capture-ask.js:1454 |
 | `openDocumentFromNote` | frontend/js/capture-ask.js:419 |
 | `openNoteAtPassage` | frontend/js/capture-ask.js:958 |
-| `pictureItems` | frontend/js/capture-ask.js:1751 |
-| `placeAnswerFigures` | frontend/js/capture-ask.js:2053 |
+| `pictureItems` | frontend/js/capture-ask.js:1729 |
+| `placeAnswerFigures` | frontend/js/capture-ask.js:2031 |
 | `placeResultBadge` | frontend/js/capture-ask.js:1014 |
-| `renderAnswerGrounding` | frontend/js/capture-ask.js:1789 |
+| `renderAnswerGrounding` | frontend/js/capture-ask.js:1767 |
 | `renderAnswerSupport` | frontend/js/capture-ask.js:1687 |
-| `renderAskAnswerFoot` | frontend/js/capture-ask.js:2181 |
-| `renderAskHint` | frontend/js/capture-ask.js:2262 |
-| `renderAskTrail` | frontend/js/capture-ask.js:2857 |
-| `renderAskedQuestion` | frontend/js/capture-ask.js:2901 |
+| `renderAskAnswerFoot` | frontend/js/capture-ask.js:2159 |
+| `renderAskHint` | frontend/js/capture-ask.js:2240 |
+| `renderAskTrail` | frontend/js/capture-ask.js:2840 |
+| `renderAskedQuestion` | frontend/js/capture-ask.js:2884 |
 | `renderCaptureDocumentAdder` | frontend/js/capture-ask.js:346 |
 | `renderCaptureDocuments` | frontend/js/capture-ask.js:308 |
 | `renderCaptureTagSuggestions` | frontend/js/capture-ask.js:516 |
-| `renderChatMeta` | frontend/js/capture-ask.js:2310 |
-| `renderEvidenceView` | frontend/js/capture-ask.js:1964 |
-| `renderToolsUnsupportedNotice` | frontend/js/capture-ask.js:1719 |
+| `renderChatMeta` | frontend/js/capture-ask.js:2293 |
+| `renderEvidenceView` | frontend/js/capture-ask.js:1942 |
 | `resetCaptureForm` | frontend/js/capture-ask.js:457 |
-| `retryAnswer` | frontend/js/capture-ask.js:3325 |
+| `retryAnswer` | frontend/js/capture-ask.js:3309 |
 | `saveEntry` | frontend/js/capture-ask.js:598 |
 | `saveEntryAsDraft` | frontend/js/capture-ask.js:723 |
 | `scheduleCaptureTagSuggestions` | frontend/js/capture-ask.js:544 |
 | `scheduleCitationPeek` | frontend/js/capture-ask.js:1412 |
 | `scheduleCitationPeekClose` | frontend/js/capture-ask.js:1423 |
 | `scrollEditingEntryIntoView` | frontend/js/capture-ask.js:847 |
-| `setAnsweredBy` | frontend/js/capture-ask.js:2301 |
-| `setAsking` | frontend/js/capture-ask.js:2843 |
+| `setAnsweredBy` | frontend/js/capture-ask.js:2284 |
+| `setAsking` | frontend/js/capture-ask.js:2826 |
 | `settleCaptureStatus` | frontend/js/capture-ask.js:125 |
-| `showAskAsOf` | frontend/js/capture-ask.js:3403 |
+| `showAskAsOf` | frontend/js/capture-ask.js:3387 |
 | `showCitedPassage` | frontend/js/capture-ask.js:1610 |
-| `stopAnswer` | frontend/js/capture-ask.js:2849 |
-| `streamChat` | frontend/js/capture-ask.js:2477 |
-| `streamChatEvents` | frontend/js/capture-ask.js:2520 |
+| `stopAnswer` | frontend/js/capture-ask.js:2832 |
+| `streamChat` | frontend/js/capture-ask.js:2460 |
+| `streamChatEvents` | frontend/js/capture-ask.js:2503 |
 | `watchFiling` | frontend/js/capture-ask.js:48 |
 | `withTitle` | frontend/js/capture-ask.js:435 |
 
@@ -2066,12 +2066,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `agentActStarters` | frontend/js/palette.js:184 |
 | `agentCurrentTab` | frontend/js/palette.js:119 |
-| `agentFocusStarter` | frontend/js/palette.js:1402 |
+| `agentFocusStarter` | frontend/js/palette.js:1403 |
 | `agentOpenSubject` | frontend/js/palette.js:260 |
 | `agentPaletteShut` | frontend/js/palette.js:449 |
 | `agentPhoneSheet` | frontend/js/palette.js:417 |
 | `agentScopeForRun` | frontend/js/palette.js:313 |
-| `agentStarterButtons` | frontend/js/palette.js:1398 |
+| `agentStarterButtons` | frontend/js/palette.js:1399 |
 | `agentStarterRecents` | frontend/js/palette.js:147 |
 | `agentTabLabel` | frontend/js/palette.js:134 |
 | `cmdNoteLink` | frontend/js/palette.js:819 |
@@ -2080,13 +2080,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `cmdPaletteBusy` | frontend/js/palette.js:594 |
 | `cmdPaletteFacts` | frontend/js/palette.js:628 |
 | `cmdPaletteGoToNote` | frontend/js/palette.js:666 |
-| `cmdPaletteGrow` | frontend/js/palette.js:1380 |
+| `cmdPaletteGrow` | frontend/js/palette.js:1381 |
 | `cmdPaletteLinkNotes` | frontend/js/palette.js:854 |
 | `cmdPaletteReset` | frontend/js/palette.js:493 |
 | `cmdPaletteSaveAsChat` | frontend/js/palette.js:512 |
 | `cmdPaletteSources` | frontend/js/palette.js:681 |
 | `cmdSourceRow` | frontend/js/palette.js:720 |
-| `paletteLater` | frontend/js/palette.js:1480 |
+| `paletteLater` | frontend/js/palette.js:1481 |
 | `rememberAgentStarter` | frontend/js/palette.js:164 |
 | `renderAgentStarters` | frontend/js/palette.js:197 |
 | `renderCmdPaletteMenu` | frontend/js/palette.js:567 |
@@ -4102,29 +4102,29 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `askAtlas` | frontend/js/help-chat.js:756 |
-| `assistantHeadRow` | frontend/js/help-chat.js:905 |
-| `atlasStartersFor` | frontend/js/help-chat.js:890 |
-| `fillAskBox` | frontend/js/help-chat.js:734 |
+| `askAtlas` | frontend/js/help-chat.js:757 |
+| `assistantHeadRow` | frontend/js/help-chat.js:906 |
+| `atlasStartersFor` | frontend/js/help-chat.js:891 |
+| `fillAskBox` | frontend/js/help-chat.js:735 |
 | `guideFirstControl` | frontend/js/help-chat.js:134 |
 | `guideLand` | frontend/js/help-chat.js:139 |
 | `guideOnScreen` | frontend/js/help-chat.js:129 |
 | `guideShown` | frontend/js/help-chat.js:116 |
 | `helpChatAppendRow` | frontend/js/help-chat.js:69 |
-| `helpChatChips` | frontend/js/help-chat.js:713 |
+| `helpChatChips` | frontend/js/help-chat.js:714 |
 | `helpChatIsNearBottom` | frontend/js/help-chat.js:63 |
-| `helpChatNewChat` | frontend/js/help-chat.js:620 |
+| `helpChatNewChat` | frontend/js/help-chat.js:621 |
 | `helpChatOnScreenHelp` | frontend/js/help-chat.js:287 |
 | `helpChatOpenButton` | frontend/js/help-chat.js:88 |
-| `helpChatReveal` | frontend/js/help-chat.js:576 |
+| `helpChatReveal` | frontend/js/help-chat.js:577 |
 | `helpChatSetBusy` | frontend/js/help-chat.js:325 |
 | `helpChatStop` | frontend/js/help-chat.js:346 |
-| `helpChatStreamTurn` | frontend/js/help-chat.js:460 |
-| `openHelpChat` | frontend/js/help-chat.js:787 |
-| `renderAtlasStarters` | frontend/js/help-chat.js:676 |
-| `renderHelpChatAsks` | frontend/js/help-chat.js:730 |
-| `renderHelpChatGreeting` | frontend/js/help-chat.js:709 |
-| `renderHelpChatMenu` | frontend/js/help-chat.js:637 |
+| `helpChatStreamTurn` | frontend/js/help-chat.js:461 |
+| `openHelpChat` | frontend/js/help-chat.js:788 |
+| `renderAtlasStarters` | frontend/js/help-chat.js:677 |
+| `renderHelpChatAsks` | frontend/js/help-chat.js:731 |
+| `renderHelpChatGreeting` | frontend/js/help-chat.js:710 |
+| `renderHelpChatMenu` | frontend/js/help-chat.js:638 |
 | `renderHelpChatMessage` | frontend/js/help-chat.js:166 |
 | `submitHelpChatQuestion` | frontend/js/help-chat.js:351 |
 
@@ -4909,13 +4909,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `listenToReminderWorker` | frontend/js/reminder-notify.js:25 |
 | `showReminderNotification` | frontend/js/reminder-notify.js:35 |
 
-### frontend/js/reply-kit.js (22)
+### frontend/js/reply-kit.js (29)
 
 | Name | File:line |
 |---|---|
 | `openCalculator` | frontend/js/reply-kit.js:339 |
 | `renderRelatedElsewhere` | frontend/js/reply-kit.js:65 |
 | `renderReplyPanel` | frontend/js/reply-kit.js:20 |
+| `renderToolsUnsupportedNotice` | frontend/js/reply-kit.js:647 |
 | `replyCalcBuild` | frontend/js/reply-kit.js:358 |
 | `replyCalcConvertPane` | frontend/js/reply-kit.js:558 |
 | `replyCalcHistory` | frontend/js/reply-kit.js:538 |
@@ -4928,9 +4929,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `replyCompare` | frontend/js/reply-kit.js:170 |
 | `replyDrawAll` | frontend/js/reply-kit.js:31 |
 | `replyFillMeters` | frontend/js/reply-kit.js:190 |
+| `replyFinish` | frontend/js/reply-kit.js:633 |
 | `replyMeter` | frontend/js/reply-kit.js:157 |
 | `replyMonthName` | frontend/js/reply-kit.js:198 |
+| `replyNoteCard` | frontend/js/reply-kit.js:733 |
+| `replyNoteEntry` | frontend/js/reply-kit.js:682 |
+| `replyNoteId` | frontend/js/reply-kit.js:677 |
+| `replyNotePreviews` | frontend/js/reply-kit.js:686 |
 | `replyPanelShell` | frontend/js/reply-kit.js:41 |
+| `replyPeekLink` | frontend/js/reply-kit.js:705 |
 | `replySpark` | frontend/js/reply-kit.js:133 |
 | `replyStatCard` | frontend/js/reply-kit.js:101 |
 | `replyStatCards` | frontend/js/reply-kit.js:203 |
@@ -9971,7 +9978,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/quick-access-lazy.css | 105 |
 | frontend/css/quickadd-lazy.css | 35 |
 | frontend/css/recovery-lazy.css | 115 |
-| frontend/css/reply-kit-lazy.css | 253 |
+| frontend/css/reply-kit-lazy.css | 266 |
 | frontend/css/reveal-lazy.css | 10 |
 | frontend/css/search-lazy.css | 153 |
 | frontend/css/settings-controls-lazy.css | 94 |
@@ -17971,7 +17978,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11404)
+## Tests (11405)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18907,7 +18914,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_reminders_ics.py | 10 |
 | tests/test_reminders_reschedule.py | 5 |
 | tests/test_reminders_with_model.py | 2 |
-| tests/test_reply_cards.py | 7 |
+| tests/test_reply_cards.py | 8 |
 | tests/test_reply_variety.py | 11 |
 | tests/test_repo_files_helper.py | 6 |
 | tests/test_restart_everywhere.py | 7 |

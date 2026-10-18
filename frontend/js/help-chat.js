@@ -419,6 +419,7 @@ async function submitHelpChatQuestion(question) {
       signal.aborted ? [] : result?.sources || [],
       signal.aborted ? null : result?.system || null
     );
+    if (answerRow && !signal.aborted) finishReply(answerRow.querySelector(".help-chat-prose"), { composed: result?.composed });
     if (answerRow && result?.greeting && !signal.aborted) renderHelpChatGreeting(answerRow);
     if (answerRow && result?.asks?.length && !signal.aborted) renderHelpChatAsks(answerRow, result.asks, result.asks_to);
     helpChatHistory.push({ role: "user", content: question });

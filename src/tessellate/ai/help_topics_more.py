@@ -2599,7 +2599,10 @@ def _slash_commands_topic() -> dict:
             "Type a command in the chat box for an exact answer from your notes, with no AI. "
             f"{listed} Typing / opens a menu with a row for each command; one that takes words "
             "fills the box with its name and waits for them. Asking in plain words "
-            "(\"which notes have no tags\") runs the same command."
+            "(\"which notes have no tags\") runs the same command. A note named "
+            "in any reply (Chat, Ask, the popup agent, the Guide) previews on hover "
+            "or focus, and a reply that gives one to three notes shows each as a "
+            "card under it; press a card to open the note."
         ),
         "badge": {"label": "Chat", "tab": "chat"},
     }

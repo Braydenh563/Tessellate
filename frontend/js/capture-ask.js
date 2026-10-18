@@ -1710,28 +1710,6 @@ function renderAnswerSupport(answerEl, support) {
   first.parentElement.insertBefore(line, first);
 }
 
-//: INBOX 272 part 1, "every failure names its way out": the same
-//: `.notice.notice-warn` recipe as `renderAnswerSupport` above, plus the one
-//: control that fixes it, right under the turn that hit it rather than a
-//: sentence pointing at a different screen. Only the Chat tab's Agent mode
-//: can produce this event (the Ask box always sends `useTools: false`), so
-//: this has one caller.
-function renderToolsUnsupportedNotice(container, event) {
-  if (!container || !event) return;
-  const line = document.createElement("p");
-  line.className = "notice notice-warn tools-unsupported-notice";
-  line.setAttribute("role", "note");
-  setLabel(line, `ph:warning ${event.message || "This model can't call tools."}`);
-  const row = document.createElement("div");
-  row.className = "row tools-unsupported-fix-row";
-  row.appendChild(
-    smallButton("ph:gear Change the model", "Open Settings, Models", () => {
-      openSettingsModal("models", "chat-model-select");
-    })
-  );
-  container.append(line, row);
-}
-
 //: **A cited note's pictures beside its citation** (INBOX 502): up to three
 //: lazy thumbnails after the chip; one opens the note's pictures in the
 //: lightbox. Alt: the caption or reading (`picture_alts`), else the Markdown's.
@@ -2288,6 +2266,11 @@ function drawAnswerPanels(holder, panels, before = null) {
   return ensureModule("replyKit")
     .then(() => replyDrawAll(holder, panels, before))
     .catch(() => {});
+}
+
+//: A reply whose words are final (INBOX 1300 C07): reply-kit.js `replyFinish`.
+function finishReply(answers, opts) {
+  ensureModule("replyKit").then(() => replyFinish(answers, opts)).catch(() => {});
 }
 
 //: **The badge in the answer head, and the sentence behind it.**
@@ -3278,6 +3261,7 @@ async function askQuestion(preset) {
       ensureModule("askCompose").then(() => renderAskWhy(answerWhy)).catch(() => {});
       if (answerOffer) ensureModule("askCompose").then(() => digestOffer(answerBox, answerOffer)).catch(() => {});
       if (answerPanels.length) drawAnswerPanels(answerBox, answerPanels);
+      finishReply(answerBox, { composed: answerMeta?.composed });
       //: Not awaited: it is a second model call, and the answer is already on
       //: screen. The same contract `offerFollowups` has in the Chat tab. An
       //: answer composed from the notes brings its own (INBOX 725), built

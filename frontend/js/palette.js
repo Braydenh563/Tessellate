@@ -1295,6 +1295,7 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
       ]);
       cmdPaletteTurns.push({ question: text, answer: answerRaw });
       if (panels.length) drawAnswerPanels(answerBox, panels);
+      finishReply(answerBox, { composed: meta?.composed });
       //: The first turn is what turns "Save as chat" from a dead row into a
       //: live one, so the menu is rebuilt here rather than only on reset.
       renderCmdPaletteMenu();

@@ -624,3 +624,154 @@ function replyCalcConvertPane() {
     .catch((error) => replyCalcShow(out, { error: error.message }, { final: true }));
   return pane;
 }
+
+// --- finishing a reply -------------------------------------------------------------
+
+//: What every answer surface (Chat, Ask, the popup agent, the Guide) does to
+//: a reply once its words are final, whoever wrote them: `finishReply`
+//: (capture-ask.js) hands it the answer's element, or a turn's several.
+function replyFinish(answers, opts = {}) {
+  const list = (answers instanceof Element ? [answers] : [...(answers || [])]).filter((el) => el?.isConnected);
+  if (!list.length) return;
+  replyNotePreviews(list);
+  if (opts.unsupported) renderToolsUnsupportedNotice(opts.bubble, opts.unsupported);
+}
+
+//: INBOX 272 part 1, "every failure names its way out": the same
+//: `.notice.notice-warn` recipe as `renderAnswerSupport` above, plus the one
+//: control that fixes it, right under the turn that hit it rather than a
+//: sentence pointing at a different screen. Only the Chat tab's Agent mode
+//: can produce this event (the Ask box always sends `useTools: false`), so
+//: this has one caller (Chat, through `replyFinish`; moved here from
+//: capture-ask.js for the boot budget).
+function renderToolsUnsupportedNotice(container, event) {
+  if (!container || !event) return;
+  const line = document.createElement("p");
+  line.className = "notice notice-warn tools-unsupported-notice";
+  line.setAttribute("role", "note");
+  setLabel(line, `ph:warning ${event.message || "This model can't call tools."}`);
+  const row = document.createElement("div");
+  row.className = "row tools-unsupported-fix-row";
+  row.appendChild(
+    smallButton("ph:gear Change the model", "Open Settings, Models", () => {
+      openSettingsModal("models", "chat-model-select");
+    })
+  );
+  //: Above the turn's facts line, where it was drawn before it moved here.
+  container.insertBefore(row, container.querySelector(":scope > .msg-meta"));
+  row.before(line);
+}
+
+// --- the notes a reply gives -----------------------------------------------------
+
+//: **A note a reply names is previewed where it is named** (INBOX 1300 C07,
+//: the owner: "if it is going to give me a note, can it at least preview it
+//: for me as well??"). Every link to a note (`#/notes/N`, how tool_say and the
+//: slash commands write one) shows the citation peek on hover or focus, the
+//: one a source number shows; a reply that gives one to three notes also
+//: carries them as cards under its words, the document embed's card
+//: (`.embed-card`), so a phone, with no hover, sees them too. More than three
+//: is a list (/recent, /tags), and the peek is enough there.
+const REPLY_NOTE_CARDS = 3;
+
+function replyNoteId(link) {
+  const id = Number(/^#\/notes\/(\d+)$/.exec(link.getAttribute("href") || "")?.[1]);
+  return Number.isInteger(id) && id > 0 ? id : 0;
+}
+
+function replyNoteEntry(id) {
+  return allEntries.find((entry) => entry.id === id) || null;
+}
+
+function replyNotePreviews(answers) {
+  const ids = [];
+  const names = new Map();
+  for (const answer of answers) {
+    for (const link of answer.querySelectorAll('a[href^="#/notes/"]')) {
+      const id = replyNoteId(link);
+      if (!id || link.closest(".reply-panel")) continue;
+      if (!ids.includes(id)) ids.push(id);
+      if (!names.has(id)) names.set(id, link.textContent.trim());
+      replyPeekLink(link, id);
+    }
+  }
+  const last = answers[answers.length - 1];
+  if (!ids.length || ids.length > REPLY_NOTE_CARDS || last.querySelector(":scope > .reply-notes")) return;
+  const { panel } = replyPanelShell("reply-notes", ids.length === 1 ? "The note" : `${ids.length} notes`, "ph:note");
+  for (const id of ids) panel.appendChild(replyNoteCard(id, names.get(id)));
+  last.appendChild(panel);
+}
+
+function replyPeekLink(link, id) {
+  if (link.dataset.peek) return;
+  link.dataset.peek = "note";
+  link.setAttribute("aria-haspopup", "dialog");
+  //: The peek of a source with no number: named for its note, its number
+  //: slot left empty (and so not drawn, reply-kit-lazy.css).
+  const open = () => {
+    openCitationPeek(link, { noteId: id, number: "", entry: replyNoteEntry(id), label: link.textContent }, { pinned: false });
+    if (citationPeekState.link === link) citationPeekState.panel?.setAttribute("aria-label", `Preview of ${link.textContent.trim() || "the note"}`);
+  };
+  //: `scheduleCitationPeek`'s wait, through its own timer so its close cancels it.
+  link.addEventListener("mouseenter", () => {
+    clearTimeout(citationPeekState.closeTimer);
+    clearTimeout(citationPeekState.openTimer);
+    if (citationPeekState.link !== link) citationPeekState.openTimer = setTimeout(open, citationPeekState.panel ? 0 : 140);
+  });
+  link.addEventListener("mouseleave", () => scheduleCitationPeekClose());
+  link.addEventListener("focus", () => {
+    if (!citationPeekState.restoring) open();
+  });
+  link.addEventListener("blur", (event) => {
+    if (!citationPeekState.panel?.contains(event.relatedTarget)) scheduleCitationPeekClose();
+  });
+}
+
+//: The note as the document embed's card: a tile, its title, one facts line
+//: (where it is filed, when, how long) and its first words; the whole card
+//: is the one button that opens it.
+function replyNoteCard(id, name) {
+  const entry = replyNoteEntry(id);
+  const content = entry?.content || "";
+  const card = document.createElement("button");
+  card.type = "button";
+  card.className = "embed-card reply-note-card";
+  card.title = "Open this note";
+  const tile = document.createElement("span");
+  tile.className = "embed-card-tile";
+  tile.setAttribute("aria-hidden", "true");
+  const glyph = document.createElement("i");
+  glyph.className = "ph ph-note";
+  tile.appendChild(glyph);
+  const text = document.createElement("span");
+  text.className = "embed-card-text";
+  const title = document.createElement("span");
+  title.className = "embed-card-title";
+  //: The title is the note's first line, the preview what follows it.
+  const [head, ...rest] = content.trim().split("\n");
+  title.textContent = content ? noteLabel({ content: head }, 60) : name || "A note";
+  const facts = document.createElement("span");
+  facts.className = "embed-card-meta";
+  const words = content ? plainText(content).split(/\s+/).filter(Boolean).length : 0;
+  facts.textContent = [
+    "Note",
+    entry?.category,
+    entry?.created_at ? relativeTime(entry.created_at) : "",
+    words ? `${words.toLocaleString()} ${words === 1 ? "word" : "words"}` : "",
+  ].filter(Boolean).join(" · ");
+  text.append(title, facts);
+  //: A one-line note cut short in the title is read in full under it.
+  const opening = (rest.length ? plainText(rest.join("\n")) : title.textContent.endsWith("…") ? plainText(content) : "").trim();
+  if (opening) {
+    const preview = document.createElement("span");
+    preview.className = "embed-card-preview";
+    preview.textContent = clipText(opening, 180);
+    text.appendChild(preview);
+  }
+  const go = document.createElement("i");
+  go.className = "ph ph-arrow-square-out embed-card-go";
+  go.setAttribute("aria-hidden", "true");
+  card.append(tile, text, go);
+  card.addEventListener("click", () => openNoteAtPassage(id, ""));
+  return card;
+}

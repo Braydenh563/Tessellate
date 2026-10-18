@@ -2393,7 +2393,9 @@ async function sendChatMessage(preset, opts = {}) {
       turnSources
     );
   }
-  placeAnswerFigures(bubble.querySelectorAll(".bubble-answer"), meta, question);
+  const answerEls = bubble.querySelectorAll(".bubble-answer");
+  placeAnswerFigures(answerEls, meta, question);
+  finishReply(answerEls, { composed: meta?.composed, bubble, unsupported: toolsUnsupportedEvent });
   //: An answer's one acting offer, the Ask box's (`digestOffer`): a place's link.
   if (chatOffer) ensureModule("askCompose").then(() => digestOffer([...bubble.querySelectorAll(".bubble-answer")].pop(), chatOffer)).catch(() => {});
   const answerRaw = timeline.text();
@@ -2413,9 +2415,7 @@ async function sendChatMessage(preset, opts = {}) {
   // INBOX 272 part 1: drawn once the stream is over, same reason
   // `groundingSentences` waits (a notice inserted mid-stream is inside a
   // bubble the live renderer is about to rebuild from raw markdown).
-  if (toolsUnsupportedEvent) {
-    renderToolsUnsupportedNotice(bubble, toolsUnsupportedEvent);
-  }
+  //: Drawn by `replyFinish` (`finishReply` above), above the facts line.
   // What this answer cost: model, wall-clock time, tokens, speed.
   const elapsedMs = Math.round(performance.now() - startedAt);
   //: For the status bar's AI dot (Placed 2026-09-09 item 99 (c)).
