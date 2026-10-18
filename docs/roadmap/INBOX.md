@@ -102,7 +102,7 @@ with its owner named in the entry.
      C22. It's hard to figure out that you need to press the shortcut command itself to change
           it in the settings page [screenshots: image20]
      C23. Is it possible to change 'm' for the quick nav to a letter better representing
-          "tessellate"?? I had it 'm' because of 'MemoryMap' but now the 'm' doesn’t fit
+          "tessellate"?? I had it 'm' because of 'MemoryMap' but now the 'm' doesn’t fit <!-- brand: keep -->
           [screenshots: image21]
      C24. Can you try to get the logs panel to fit to the panel and not cause a slight vertical
           scroll?? [screenshots: image22]
