@@ -2045,7 +2045,8 @@ def _who(out: _Out, name: str, views, names: set[str], today: date) -> bool:
         out.lines.append(PHRASES["who_many"].format(name=name[:1].upper() + name[1:], count=_count(len(notes)), span=_span([v for v, _ in found], today)))
         for v, s2 in found[:LINES["overview"]]:
             body = _tidy(_second_person(s2.text.strip()), v.written)
-            out.lines.append(f"**{_day(v.written, today)}:** {body}.")
+            body = re.sub(r"^(You|Your)\b", lambda m: m.group().lower(), body)
+            out.lines.append(f"On {_day(v.written, today)}, {body}.")
     out.rows.append({"sentence": fact, "note_id": view.note.get("source_id", view.id), "source": s.text, "score": 1.0, "digest": True})
     return True
 
@@ -2671,7 +2672,9 @@ def _still_open(views, listed) -> list[str]:  # noqa: ANN001
             still = _STILL_TO.search(t.text)
             if still and w is not listed:
                 topic = next((str(x) for x in (w.note.get("tags") or []) if str(x).lower() not in still.group(1).lower()), "")
-                open_bits.append(f"the {topic[:1].upper() + topic[1:] + ' ' if topic else ''}{still.group(1).lower()}")
+                #: "the Camping the tent" doubled the article.
+                what = re.sub(r"^(the|a|an) ", "", still.group(1).lower()) if topic else still.group(1).lower()
+                open_bits.append(f"the {topic[:1].upper() + topic[1:] + ' ' if topic else ''}{what}")
     return open_bits
 
 
@@ -2692,7 +2695,8 @@ def _left(out: _Out, question: str, members, views, names: set[str], today: date
                      "start": s.start, "end": s.end, "score": 1.0, "digest": True})
     open_bits = _still_open(views, v)
     if open_bits:
-        out.lines.append(f"**Also still open:** {realise.join_items(open_bits[:2])}.")
+        left = open_bits[:2]
+        out.lines.append(f"{realise.join_items(left)[:1].upper()}{realise.join_items(left)[1:]} {'is' if len(left) == 1 else 'are'} also still open.")
     out.offer = {"kind": "checklist", "label": PHRASES["checklist"], "text": head.group(1).strip(), "items": items}
     return True
 

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Answers: a label that only opened a sentence is prose now: the notebook overview ("Most of your notes are filed under ...", "Your busiest month was ...", "You also have ..."), "who is" days ("On 2 September, ...") and the other open items ("The Camping tent is also still open."); list rows keep their bold label (INBOX 1301 D5 follow-up).
 
 ## [0.6.0] - 2026-10-18
 - Answers: dated lines no longer open the same way twice: the gap lead ("after three weeks", "three weeks later") turns line by line and never repeats within an answer (INBOX 1301 D5).
