@@ -126,6 +126,9 @@ with its owner named in the entry.
           if the button is open or not [screenshots: image25]
      C30. Can the lightbox controls and elements have a new redesign and upgrade in ui and ux
           usability?? [screenshots: image26]
+          **Fixed f4bcef8.** Top bar and view dock with a filmstrip (DESIGN.md "A full-screen
+          viewer of a file"); lightbox1300.js: min contrast 3.38 to 4.87, picture at 390 233 to
+          359px, + 0 keys, swipe, pinch none to working, idle fade 1 to 0 (1 after keys, reduced).
      C31. I ckicled on a link meatball button in a note, clicked kind and properties, then
           clicked "has example of" but then I tried to go back on and click it to unselect it
           and I couldnt [screenshots: image27]
