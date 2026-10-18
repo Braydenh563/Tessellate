@@ -202,15 +202,19 @@ const show = (o) => console.log("    " + JSON.stringify(o));
     const bold = document.getElementById("wb-map-bold");
     return {
       shape: el ? el.value : null,
+      drawn: document.querySelector(`.wb-object[data-id="${node.id}"]`)?.dataset.shape || "",
       blankLabel: el ? el.querySelector('option[value=""]').textContent : null,
       boldPressed: bold ? bold.getAttribute("aria-pressed") : null,
       stored: node.data?.shape ?? null,
     };
   });
   show(strip);
+  //: A topic never told follows the map and says so the same way for every
+  //: field (OPEN row 1370): the select shows the blank row, which draws the
+  //: map's own look, and the node itself draws the themed shape.
   check("the topic strip shows what the topic draws, not what it stores",
-    strip.shape === "pill" && strip.boldPressed === "true" && strip.stored === null,
-    `select "${strip.shape}", bold ${strip.boldPressed}, stored ${strip.stored}`);
+    strip.shape === "" && strip.drawn === "pill" && strip.boldPressed === "true" && strip.stored === null,
+    `select "${strip.shape}", drawn "${strip.drawn}", bold ${strip.boldPressed}, stored ${strip.stored}`);
   check("and its blank option says it means the map, not the app's own default",
     /^As the map draws/.test(strip.blankLabel || ""), `blank option "${strip.blankLabel}"`);
 
@@ -294,6 +298,7 @@ const show = (o) => console.log("    " + JSON.stringify(o));
       card: true,
       cardClasses: card.className,
       selects: body.querySelectorAll("select").length,
+      labels: [...body.querySelectorAll("select")].map((x) => x.getAttribute("aria-label") || x.id),
       checks: body.querySelectorAll("label.setting-check").length,
       heads: [...body.querySelectorAll("h4.setting-subhead")].map((h) => h.textContent.trim()),
       inlineStyles: body.querySelectorAll("[style]").length,
@@ -308,9 +313,11 @@ const show = (o) => console.log("    " + JSON.stringify(o));
     dialog.card && /modal-card/.test(dialog.cardClasses || ""), dialog.cardClasses);
   //: Ten topic fields in three groups, and since §13e's remainder the map's
   //: own two (branch colours and font) in a fourth, first; since §14 the
-  //: hierarchy select above them (decision 39), a tenth select.
-  check("thirteen fields in four named groups, from the recipe index's own rows",
-    dialog.selects === 10 && dialog.checks === 3 && dialog.heads.length === 4,
+  //: hierarchy select above them (decision 39), a tenth select; and since
+  //: then the scope select ("whose look the rows set") and spacing: twelve
+  //: selects (listed in `labels`) and three switches.
+  check("fifteen fields in four named groups, from the recipe index's own rows",
+    dialog.selects === 12 && dialog.checks === 3 && dialog.heads.length === 4,
     `${dialog.selects} selects, ${dialog.checks} switches, ${(dialog.heads || []).join(" | ")}`);
   check("and it fits without scrolling at this size",
     !dialog.overflows && dialog.viewMenuClosed,

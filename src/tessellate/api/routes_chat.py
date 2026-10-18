@@ -2266,7 +2266,18 @@ def _stats_chart(stats: dict) -> dict | None:
     return realise.chart(f"Notes per {by}", by, rows)
 
 
-def _tool_read_events(req: _StreamRequest) -> list[dict]:
+def _notes_answer_due(req: _StreamRequest, tool: str, result: object, notes: list | None) -> bool:
+    """A "what is due" question with nothing waiting in Reminders and a day
+    ahead in the notes: the notes' computed answer wins over "You have no
+    reminders waiting" (CHAT_PLAN Phase 6 P13; measured 2026-10-18)."""
+    if tool != "list_reminders" or composer_lists.kind(req.question or "") != "dates" or not isinstance(result, dict):
+        return False
+    if any(not r.get("done") for r in result.get("reminders") or []):
+        return False
+    return composer_lists.holds_days(notes or [], user_now(deps.get_config()).date())
+
+
+def _tool_read_events(req: _StreamRequest, notes: list | None = None) -> list[dict]:
     """A read tool run with no model (decision 59, steps 1 and 2): the reading
     names the tool (`reading.tool_of`), Chat runs it with no arguments, and
     the realiser says it in one line and draws it in its form. Empty when the
@@ -2292,6 +2303,8 @@ def _tool_read_events(req: _StreamRequest) -> list[dict]:
     if got.tool not in act_registry.NO_MODEL_READS or got.intent in act_registry.ACTS:
         return []
     result = agent_tools.execute_tool(req.session, got.tool, {})
+    if _notes_answer_due(req, got.tool, result, notes):
+        return []
     drawn = realise.tool_answer(got.tool, result, now.date())
     #: Said with its links to what it lists and the place to open
     #: (`tool_say`); a chart, when the counts make one, stands for the table.
@@ -2457,7 +2470,7 @@ def _exact_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> 
     if prepared["stats"] is not None:
         return _stats_events(prepared["stats"])
     if not ollama_running or prepared.get("tool_read"):
-        shown = prepared["tool_read"] if "tool_read" in prepared else _tool_read_events(req)
+        shown = prepared["tool_read"] if "tool_read" in prepared else _tool_read_events(req, prepared["notes"])
         if shown:
             return list(shown)
     return None
@@ -3075,7 +3088,7 @@ def _note_tool_read(req: _StreamRequest, prepared: dict, ollama_running: bool) -
     """A read tool answered with no model (decision 59) is the whole
     notebook's, so the notes retrieval found are not its sources."""
     if prepared["stats"] is None and prepared["intent"] != intent.ACT and (not ollama_running or _lists_reminders(req)):
-        prepared["tool_read"] = _tool_read_events(req)
+        prepared["tool_read"] = _tool_read_events(req, prepared["notes"])
         if prepared["tool_read"]:
             #: Not composed from them either: the Ask box's "Composed from
             #: your notes" label is for a quoted answer (INBOX 801).

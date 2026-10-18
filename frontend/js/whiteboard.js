@@ -5886,9 +5886,12 @@ function wbMapStripClearOfHandle(node, { left, y, w, h, hostRect, gapBelow, bott
     [hx0 - w, y],
     [hx1, y],
     [left, under],
+    //: Below the handle itself: a line that comes in under the topic's own row
+    //: (a short label at 820 wide, where the sides have no room for 412px).
+    [left, hy1],
   ];
   for (const [x, top] of candidates) {
-    if (x < 8 || x > maxX) continue;
+    if (x < 8 || x > maxX || top > maxY) continue;
     if (!covers(x, top)) return [x, top];
   }
   return [left, y];

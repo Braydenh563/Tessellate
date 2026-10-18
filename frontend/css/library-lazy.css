@@ -2142,7 +2142,11 @@ body.printing-doc #doc-preview p,
   right: calc(var(--space-6) * -1);
   top: 50%;
   transform: translateY(-50%);
-  z-index: 4;
+  /* Above the corner grip (5): at phone width the map is zoomed out until a
+     topic is 28px tall, and the grip's 24px corner button reached the
+     chevron's middle (measured 390x844, mapnarrow.js: a press on the chevron
+     started a resize). */
+  z-index: 6;
 }
 
 /* How much a collapsed branch is holding. On the node, in the branch's own

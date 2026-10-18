@@ -21,22 +21,22 @@ function check(label, ok, detail) {
   console.log(`${ok ? "PASS" : "FAIL"}  ${label}${detail ? "  " + detail : ""}`);
 }
 
-async function newMap(page, name) {
+async function newMap(page) {
   await page.click('[data-tab="library"]');
   await page.waitForTimeout(600);
   await page.click('[data-target="library-view-whiteboard"]');
   await page.waitForTimeout(900);
-  await page.evaluate(() => document.getElementById("wb-boards-new").click());
-  await page.waitForTimeout(700);
-  await page.fill("#wb-template-name", name);
-  await page.click('#wb-template-kind button[data-value="map"]');
-  await page.click("#wb-template-create");
+  //: The New map button on the boards list makes the map at once (the
+  //: template-name dialog this sweep once filled in is gone).
+  await page.evaluate(() => document.getElementById("wb-boards-new-map").click());
   await page.waitForTimeout(2500);
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(300);
 }
 
 (async () => {
   const { browser, page } = await boot({ viewport: VIEWPORT });
-  await newMap(page, `Narrow ${Date.now()}`);
+  await newMap(page);
 
   // --- the templates card over a new map's only topic -----------------------
   const templates = await page.evaluate(() => {
@@ -93,7 +93,7 @@ async function newMap(page, name) {
       actionsBox: ar ? [Math.round(ar.left), Math.round(ar.top), Math.round(ar.width), Math.round(ar.height)] : null,
       actionsShown: acts ? getComputedStyle(acts).opacity !== "0" : false,
       overlap: Math.round(overlap),
-      hit: at ? (at.closest(".wb-map-collapse") ? "the chevron" : at.closest(".wb-map-actions") ? "the action row" : at.tagName) : "nothing",
+      hit: at ? (at.closest(".wb-map-collapse") ? "the chevron" : at.closest(".wb-map-actions") ? "the action row" : (at.className || at.tagName).toString().slice(0, 50)) : "nothing",
     };
   }, kidId);
   console.log("  chevron:", JSON.stringify(chev));

@@ -352,3 +352,11 @@ def answer(out, which: str, asked: str, views: list, today: date) -> bool:  # no
     """Say `which` into `out` from `views`; False, with `out` untouched, when
     the notes do not hold what it needs (no such day, no such filing)."""
     return _SHAPES[which](out, asked, views, today)
+
+
+def holds_days(notes: list[dict], today: date) -> bool:
+    """Whether any of `notes` names a day still ahead: when a "what is due"
+    question has nothing waiting in Reminders, this says the notes can answer
+    it where "You have no reminders waiting" would not."""
+    views = [v for v in (composer.read_note(n, i) for i, n in enumerate(notes or [])) if v]
+    return bool(_upcoming(views, today))
