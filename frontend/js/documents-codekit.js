@@ -18,7 +18,8 @@
 // is already defined. Its top level declares and wires its own controls.
 
 //: Which tab the panel last showed, or "" when it is closed: per device.
-const DOC_CODE_SIDE_KEY = "docCodeSide";
+//: Per kind of document (see syncDocFileType): the code file's panel and the prose document's sections are remembered apart.
+const docCodeSideKey = () => (docFileType().previewable ? "docSectionsSide" : "docCodeSide");
 
 //: Open the panel on a tab. Above 600 it is a column the editor makes room
 //: for (a flex row); on a phone the same element is moved into a bottom
@@ -26,6 +27,11 @@ const DOC_CODE_SIDE_KEY = "docCodeSide";
 //: as a ⋯ menu is. `auto` is a code file reopening it: a phone never has a
 //: sheet arrive unasked.
 function docCodeSideOpen(tab = "snippets", { auto = false } = {}) {
+  //: The Assistant is a code file's (it explains and refactors code): prose
+  //: has the sections tab only.
+  if (docFileType().previewable) tab = "snippets";
+  //: Before the panel shows, so the Assistant tab is never seen for a frame in prose.
+  docKitSyncLabels();
   const side = $("doc-code-side");
   const phone = window.matchMedia(PHONE_TABS).matches;
   if (phone && auto) return;
@@ -43,7 +49,7 @@ function docCodeSideOpen(tab = "snippets", { auto = false } = {}) {
   else {
     side.classList.remove("hidden");
     $("doc-source-wrap").classList.add("has-code-side");
-    prefs.set(DOC_CODE_SIDE_KEY, tab);
+    prefs.set(docCodeSideKey(), tab);
   }
   docKit.tab = tab;
   if (tab === "snippets") docSnippetsShow();
@@ -78,7 +84,7 @@ function docCodeSideClose() {
   $("doc-code-side").classList.add("hidden");
   $("doc-source-wrap").classList.remove("has-code-side");
   for (const opener of document.querySelectorAll('[aria-controls="doc-code-side"]')) opener.setAttribute("aria-expanded", "false");
-  prefs.set(DOC_CODE_SIDE_KEY, "");
+  prefs.set(docCodeSideKey(), "");
   docKit.tab = "";
   docCmView?.focus();
 }
@@ -141,6 +147,106 @@ const DOC_KIT_LIBRARY = {
 };
 DOC_KIT_LIBRARY.ts = DOC_KIT_LIBRARY.js;
 
+//: **Text sections for ordinary documents** (INBOX 904 B18: "a library of
+//: prefilled templates and curated text sections and stuff like the code
+//: snippets but for general documents as well"). The whole-page templates are
+//: `DOC_TEMPLATES`; these are the blocks people retype inside a page: as
+//: `[keyword, name, tags, template]` like the code rows, in the engine's snippet
+//: syntax (`${prompt}` a stop Tab walks to, one `${}` the last). A stop's name
+//: is used once in a template, since a repeat would mirror itself; `{{date}}`
+//: is today, filled when the section goes in (`docSectionFill`).
+const DOC_SECTIONS = [
+  ["meeting", "Meeting notes", ["meetings"], [
+    "## ${Meeting title}", "", "**Date:** {{date}}", "**Attendees:** ${Names}", "",
+    "### Agenda", "", "1. ${First topic}", "",
+    "### Notes", "", "${What was said}", "",
+    "### Decisions", "", "- ${What was decided}", "",
+    "### Actions", "", "- [ ] ${Who, what, by when}",
+  ].join("\n")],
+  ["agenda", "Agenda", ["meetings"], [
+    "### Agenda", "", "1. ${First topic}", "2. ${Second topic}", "3. ${Third topic}",
+  ].join("\n")],
+  ["actions", "Action items", ["meetings", "tasks"], [
+    "### Actions", "", "- [ ] ${Who, what, by when}", "- [ ] ${Next action}", "- [ ] ${Another action}",
+  ].join("\n")],
+  ["decision", "Decision record", ["planning"], [
+    "## ${Decision title}", "", "**Date:** {{date}}", "**Status:** ${proposed}", "",
+    "### Context", "", "${Why this came up}", "",
+    "### Options considered", "", "1. ${First option}", "2. ${Second option}", "",
+    "### Decision", "", "${What we chose, and why}", "",
+    "### Consequences", "", "- ${What changes because of it}",
+  ].join("\n")],
+  ["status", "Status update", ["planning", "reviews"], [
+    "### Status, {{date}}", "", "**Done**", "", "- ${What shipped}", "",
+    "**Next**", "", "- ${What is next}", "",
+    "**Blocked**", "", "- ${What is in the way, or nothing}",
+  ].join("\n")],
+  ["brief", "Project brief", ["planning"], [
+    "## ${Project name}", "", "**Goal:** ${One sentence}", "",
+    "### Scope", "", "- ${In scope}", "",
+    "### Out of scope", "", "- ${Not now}", "",
+    "### Milestones", "", "| When | What |", "| --- | --- |", "| ${Date} | ${Milestone} |", "",
+    "### Risks", "", "- ${What could go wrong}",
+  ].join("\n")],
+  ["risks", "Risk table", ["planning"], [
+    "| Risk | Likelihood | Impact | What we do |", "| --- | --- | --- | --- |",
+    "| ${A risk} | ${Low} | ${High} | ${The plan} |", "|  |  |  |  |",
+  ].join("\n")],
+  ["milestones", "Milestones", ["planning"], [
+    "| When | What | Who |", "| --- | --- | --- |", "| ${Date} | ${First milestone} | ${Name} |", "|  |  |  |",
+  ].join("\n")],
+  ["timeline", "Timeline", ["planning", "reference"], [
+    "| When | What happened |", "| --- | --- |", "| ${Date} | ${Event} |", "|  |  |",
+  ].join("\n")],
+  ["proscons", "Pros and cons", ["writing"], [
+    "| Pros | Cons |", "| --- | --- |", "| ${A strength} | ${A weakness} |", "|  |  |",
+  ].join("\n")],
+  ["compare", "Comparison table", ["writing", "reference"], [
+    "| Option | ${First measure} | ${Second measure} |", "| --- | --- | --- |",
+    "| ${Option A} |  |  |", "| ${Option B} |  |  |",
+  ].join("\n")],
+  ["faq", "Questions and answers", ["reference"], [
+    "### Frequently asked questions", "", "**${First question}**", "", "${Its answer}", "",
+    "**${Second question}**", "", "${Its answer, too}",
+  ].join("\n")],
+  ["glossary", "Glossary", ["reference"], [
+    "| Term | Meaning |", "| --- | --- |", "| ${A term} | ${What it means} |", "|  |  |",
+  ].join("\n")],
+  ["summary", "Summary callout", ["writing", "callouts"], [
+    "> [!summary] ${The short version}", "> ${Two or three sentences.}",
+  ].join("\n")],
+  ["note", "Note callout", ["callouts"], ["> [!note] ${A point worth setting apart}", "> ${The detail.}"].join("\n")],
+  ["tip", "Tip callout", ["callouts"], ["> [!tip] ${A better way}", "> ${How to do it.}"].join("\n")],
+  ["warning", "Warning callout", ["callouts"], ["> [!warning] ${What can go wrong}", "> ${How to avoid it.}"].join("\n")],
+  ["questions", "Open questions", ["writing", "tasks"], [
+    "### Open questions", "", "- [ ] ${A question to answer}", "- [ ] ${Another question}",
+  ].join("\n")],
+  ["retro", "Retrospective", ["reviews"], [
+    "### Went well", "", "- ${A win}", "",
+    "### Did not go well", "", "- ${A problem}", "",
+    "### Try next", "", "- [ ] ${One change}",
+  ].join("\n")],
+  ["daylog", "Day log", ["reviews"], [
+    "### {{date}}", "", "**Today**", "", "- ${What happened}", "",
+    "**Tomorrow**", "", "- [ ] ${What is next}",
+  ].join("\n")],
+  ["reading", "Reading notes", ["study"], [
+    "## ${Title}", "", "**Author:** ${Name}", "**Read:** {{date}}", "",
+    "### Key ideas", "", "- ${An idea}", "",
+    "### Quotes", "", "> ${A line worth keeping}", "",
+    "### My take", "", "${What I think}",
+  ].join("\n")],
+  ["outline", "Essay outline", ["study", "writing"], [
+    "## ${Working title}", "", "**Thesis:** ${The claim in one sentence}", "",
+    "1. ${First argument}", "2. ${Second argument}", "3. ${Counter-argument and reply}", "",
+    "**Conclusion:** ${What follows}",
+  ].join("\n")],
+  ["checklist", "Checklist", ["tasks"], [
+    "- [ ] ${First item}", "- [ ] ${Second item}", "- [ ] ${Third item}",
+  ].join("\n")],
+  ["quote", "Quote", ["writing"], ["> ${The quote}", ">", "> ${Who said it, and where}"].join("\n")],
+];
+
 //: A language's name for a group head: the server's own type table.
 function docKitLanguageName(ext) {
   return (docFileTypes.find((t) => t.ext === ext) || {}).label || ext.toUpperCase();
@@ -166,7 +272,59 @@ function docKitBuiltins(current) {
       out.push({ key: `builtin:${ext}:${label}`, name: detail, keyword: label, language: ext, tags: [], template, builtin: true });
     }
   }
+  //: The text sections are Markdown's: listed first for a prose document,
+  //: under "Show every language" in a code file like any other language.
+  for (const [label, name, tags, template] of DOC_SECTIONS) {
+    out.push({ key: `builtin:md:${label}`, name, keyword: label, language: "md", tags, template, builtin: true });
+  }
   return out;
+}
+
+//: Which list the panel shows first: a prose document's is the text sections
+//: (`md`), a code file's its own language.
+function docKitCurrent() {
+  const type = docFileType();
+  return type.previewable ? "md" : type.ext;
+}
+
+const docKitNoun = () => (docFileType().previewable ? "section" : "snippet");
+
+//: The words follow the document: the same panel is "Snippets" beside code and
+//: "Sections" beside prose, and what it saves and searches says so.
+function docKitSyncLabels() {
+  const prose = docFileType().previewable;
+  $("doc-snippet-search").placeholder = prose ? "Search sections…" : "Search snippets…";
+  $("doc-snippet-search").setAttribute("aria-label", prose ? "Search sections" : "Search snippets");
+  const save = $("doc-snippet-save");
+  const saveTitle = prose ? "Save the selected text as a section" : "Save the selected code as a snippet";
+  save.title = saveTitle;
+  save.setAttribute("aria-label", saveTitle);
+  const sections = $("doc-code-snippets");
+  sections.setAttribute("aria-label", prose ? "Sections" : "Snippets");
+  $("doc-snippet-list").setAttribute("aria-label", prose ? "Sections" : "Snippets");
+  const tab = document.querySelector('#doc-code-side-tabs [data-side="snippets"]');
+  if (tab) tab.textContent = prose ? "Sections" : "Snippets";
+  const side = $("doc-code-side");
+  side.classList.toggle("is-prose", prose);
+  side.setAttribute("aria-label", prose ? "Sections panel" : "Code panel");
+  $("doc-code-side-close").title = prose ? "Close the sections panel" : "Close the code panel";
+  $("doc-code-side-close").setAttribute("aria-label", $("doc-code-side-close").title);
+}
+
+//: The blank lines a section needs round it, from the line it lands on: a
+//: block starts on its own line with a blank line above and ends with one
+//: below, whether the caret is at the end of a paragraph, on an empty line or
+//: in the middle of a sentence. `prev` and `next` are the neighbouring lines'
+//: text, or null at either end of the document.
+function docSectionPad(before, after, prev, next) {
+  const lead = before.trim() ? "\n\n" : prev !== null && prev.trim() ? "\n" : "";
+  const trail = after.trim() ? "\n\n" : next !== null && next.trim() ? "\n" : "";
+  return { lead, trail };
+}
+
+//: `{{date}}` in a section, as in a page template: today, in the person's words.
+function docSectionFill(text) {
+  return docTemplateFill({ id: "section", title: "", content: text }).content;
 }
 
 function docKitEntries(current) {
@@ -205,10 +363,16 @@ function docSnippetsRender() {
   const list = $("doc-snippet-list");
   const empty = $("doc-snippet-empty");
   if (!list || !empty) return;
-  const current = docFileType().ext;
+  const current = docKitCurrent();
+  const prose = docFileType().previewable;
+  docKitSyncLabels();
   const words = ($("doc-snippet-search").value || "").toLowerCase().split(/\s+/).filter(Boolean);
   const wide = docKit.all || words.length > 0;
-  const shown = docKitEntries(current).filter((e) => (wide || e.language === current) && docKitMatches(e, words));
+  //: A prose document is offered sections only, never the code rows a search
+  //: word would otherwise pull in from every language.
+  const shown = docKitEntries(current).filter(
+    (e) => (prose ? e.language === "md" : wide || e.language === current) && docKitMatches(e, words)
+  );
   const groups = new Map();
   for (const entry of shown) {
     if (!groups.has(entry.language)) groups.set(entry.language, []);
@@ -222,14 +386,16 @@ function docSnippetsRender() {
     const head = document.createElement("li");
     head.className = "doc-snippet-group muted text-xs";
     head.setAttribute("role", "presentation");
-    head.textContent = ext === current ? `${docKitLanguageName(ext)}, this file` : docKitLanguageName(ext);
+    head.textContent = ext === "md" ? "Text sections" : ext === current ? `${docKitLanguageName(ext)}, this file` : docKitLanguageName(ext);
     list.appendChild(head);
     for (const entry of groups.get(ext)) list.appendChild(docSnippetRow(entry));
   }
-  if (!wide) list.appendChild(docSnippetMoreRow());
+  //: Every language is a code file's question; a prose document's list is the
+  //: sections, with nothing more to show.
+  if (!wide && !prose) list.appendChild(docSnippetMoreRow());
   empty.classList.toggle("hidden", shown.length > 0);
   empty.textContent = words.length
-    ? "No snippet matches that. Try a language, a name or a #tag."
+    ? prose ? "No section matches that. Try a word or a #tag." : "No snippet matches that. Try a language, a name or a #tag."
     : `No snippets for ${docKitLanguageName(current)} yet. Select some code and press Save.`;
 }
 
@@ -291,15 +457,35 @@ function docSnippetRow(entry) {
 function docSnippetInsert(entry, { at = null } = {}) {
   const view = docCmView;
   const CM = window.CM6;
-  if (!view || !CM || !currentDoc) return toast("Open a code document first.", "info");
+  const prose = docFileType().previewable;
+  if (!view || !CM || !currentDoc) return toast(prose ? "Open a document first." : "Open a code document first.", "info");
   //: `at` is where a drag was dropped; a click or Enter uses the caret.
   const { from, to } = at == null ? view.state.selection.main : { from: at, to: at };
+  //: A section is a block: it gets its own lines and a blank line either side
+  //: wherever it lands (`docSectionPad`), and today's date where it asks.
+  let lead = "";
+  let trail = "";
+  if (prose) {
+    const doc = view.state.doc;
+    const head = doc.lineAt(from);
+    const tail = doc.lineAt(to);
+    ({ lead, trail } = docSectionPad(
+      doc.sliceString(head.from, from),
+      doc.sliceString(to, tail.to),
+      head.number > 1 ? doc.line(head.number - 1).text : null,
+      tail.number < doc.lines ? doc.line(tail.number + 1).text : null
+    ));
+  }
   if (entry.template) {
-    CM.autocomplete.snippet(entry.template)(view, null, from, to);
+    const template = prose ? lead + docSectionFill(entry.template) + trail : entry.template;
+    CM.autocomplete.snippet(template)(view, null, from, to);
   } else {
+    //: Saved text goes in as it was written: a `{{date}}` in it is the
+    //: person's own words, not the built-in sections' placeholder.
+    const insert = lead + entry.code + trail;
     view.dispatch({
-      changes: { from, to, insert: entry.code },
-      selection: { anchor: from + entry.code.length },
+      changes: { from, to, insert },
+      selection: { anchor: from + insert.length - trail.length },
       scrollIntoView: true,
       userEvent: "input.paste",
     });
@@ -435,25 +621,27 @@ function docKitSplitName(text) {
 
 async function docSnippetSave() {
   const view = docCmView;
-  if (!view || !currentDoc) return toast("Open a code document first.", "info");
+  const prose = docFileType().previewable;
+  const noun = prose ? "section" : "snippet";
+  if (!view || !currentDoc) return toast(prose ? "Open a document first." : "Open a code document first.", "info");
   const { from, to } = view.state.selection.main;
   const code = view.state.sliceDoc(from, to);
-  if (!code.trim()) return toast("Select some code first, then save it as a snippet.", "info");
+  if (!code.trim()) return toast(prose ? "Select some text first, then save it as a section." : "Select some code first, then save it as a snippet.", "info");
   const suggested = code.trim().split("\n")[0].slice(0, 60);
-  const answer = await promptDialog("Name the snippet (#words become tags)", suggested, { confirmLabel: "Save snippet" });
+  const answer = await promptDialog(`Name the ${noun} (#words become tags)`, suggested, { confirmLabel: `Save ${noun}` });
   if (answer === null || answer === undefined) return;
   const { name, tags } = docKitSplitName(answer);
-  if (!name) return toast("A snippet needs a name.", "info");
+  if (!name) return toast(`A ${noun} needs a name.`, "info");
   const made = await apiJson("/code-snippets", {
     method: "POST",
-    body: JSON.stringify({ name, tags, language: docFileType().ext, code }),
+    body: JSON.stringify({ name, tags, language: docKitCurrent(), code }),
   }).catch((error) => toast(error.message, true));
   if (!made) return;
   await docKitFetch(true);
   docSnippetsRender();
   offerUndo(
-    `Save snippet "${name}"`,
-    `Saved "${name}" to your snippets.`,
+    `Save ${noun} "${name}"`,
+    `Saved "${name}" to your ${noun}s.`,
     () => docKitBin(made.id, true),
     () => docKitBin(made.id, false)
   );
@@ -470,7 +658,7 @@ async function docKitBin(id, binned) {
 async function docSnippetDelete(entry) {
   await docKitBin(entry.id, true).catch((error) => toast(error.message, true));
   offerUndo(
-    `Delete snippet "${entry.name}"`,
+    `Delete ${docKitNoun()} "${entry.name}"`,
     `Deleted "${entry.name}".`,
     () => docKitBin(entry.id, false),
     () => docKitBin(entry.id, true)
@@ -479,17 +667,17 @@ async function docSnippetDelete(entry) {
 
 async function docSnippetRename(entry) {
   const shown = [entry.name, ...entry.tags.map((t) => `#${t}`)].join(" ");
-  const answer = await promptDialog("Rename the snippet (#words become tags)", shown, { confirmLabel: "Rename" });
+  const answer = await promptDialog(`Rename the ${docKitNoun()} (#words become tags)`, shown, { confirmLabel: "Rename" });
   if (answer === null || answer === undefined || answer.trim() === shown) return;
   const { name, tags } = docKitSplitName(answer);
-  if (!name) return toast("A snippet needs a name.", "info");
+  if (!name) return toast(`A ${docKitNoun()} needs a name.`, "info");
   const put = async (body) => {
     await apiJson(`/code-snippets/${entry.id}`, { method: "PUT", body: JSON.stringify(body) });
     await docKitFetch(true);
     docSnippetsRender();
   };
   await put({ name, tags }).catch((error) => toast(error.message, true));
-  offerUndo(`Rename snippet "${name}"`, `Renamed to "${name}".`, () => put({ name: entry.name, tags: entry.tags }), () => put({ name, tags }));
+  offerUndo(`Rename ${docKitNoun()} "${name}"`, `Renamed to "${name}".`, () => put({ name: entry.name, tags: entry.tags }), () => put({ name, tags }));
 }
 
 //: The arrows walk the rows, from the search field down and back up.

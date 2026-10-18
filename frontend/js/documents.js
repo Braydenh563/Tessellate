@@ -160,8 +160,21 @@ function syncDocFileType({ prose = true } = {}) {
   const code = !type.previewable;
   docBoxEl()?.classList.toggle("doc-content-code", code);
   $("tab-documents")?.classList.toggle("doc-is-code", code);
-  //: The code panel (INBOX 788) comes back with a code file if it was open.
-  if (code && prefs.get("docCodeSide", "")) docCodeSideFrom(prefs.get("docCodeSide", ""), true);
+  //: The code panel (INBOX 788) comes back with a code file if it was open,
+  //: and the sections tab with a prose document (INBOX 904 B18); its words
+  //: and way in follow the type either way.
+  const opener = $("doc-code-snippets-open");
+  if (opener) {
+    opener.title = code
+      ? "Snippets: insert one at the caret, or save the selection as one"
+      : "Sections: insert a ready-made block at the caret, or save the selection as one";
+    opener.setAttribute("aria-label", code ? "Snippets" : "Sections");
+  }
+  //: Two prefs, because a code file left with its panel open must not open
+  //: a column beside every prose document the person opens next.
+  const sidePref = prefs.get(code ? "docCodeSide" : "docSectionsSide", "");
+  if (sidePref) docCodeSideFrom(sidePref, true);
+  else if (typeof docKit !== "undefined" && docKit.tab) docCodeSideClose();
   applyDocGutter();
 
   // A menu row, so it can say the whole thing rather than "⬇ .py".
@@ -2808,8 +2821,9 @@ const DOC_COMMANDS = [
   //: The code panel (INBOX 788, documents-codekit.js).
   { id: "assistant", icon: "ph:sparkle", label: "Assistant: explain, fix, write tests or refactor", keys: "none",
     code: true, run: () => docCodeSideFrom("assist") },
-  { id: "snippets", icon: "ph:puzzle-piece", label: "Snippets: insert one, or save the selection as one", keys: "none",
-    code: true, run: () => docCodeSideFrom("snippets") },
+  //: For prose too (INBOX 904 B18): there it lists the text sections.
+  { id: "snippets", icon: "ph:puzzle-piece", label: "Snippets and sections: insert one, or save the selection as one", keys: "none",
+    run: () => docCodeSideFrom("snippets") },
   { id: "run-cell", icon: "ph:rows", label: "Run the cell at the caret (between # %% markers)", keys: "none",
     code: true, run: () => docRunCell() },
   //: Brief 70 (DOCUMENTS_PLAN 23, I2): Debug on VS Code's own keys, bound in

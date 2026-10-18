@@ -5462,10 +5462,22 @@ button.ghost.doc-template-choice.wb-template-choice {
 }
 
 /* **Code as documents** (INBOX 788, documents-codekit.js). A control for a
-   code file only (the dock's Snippets and Assistant) is gone while the open
-   document is prose, and so is the code panel; `.doc-is-code` is
+   code file only (the dock's Assistant, the panel's Assistant tab) is gone
+   while the open document is prose, and `.doc-prose-only` is its twin the
+   other way (Sections beside prose, Snippets beside code). The panel itself
+   serves both: text sections for prose (INBOX 904 B18). `.doc-is-code` is
    `syncDocFileType`'s. */
-#tab-documents:not(.doc-is-code) :is(.doc-code-only, .doc-code-side) {
+#tab-documents:not(.doc-is-code) .doc-code-only {
+  display: none;
+}
+
+#tab-documents.doc-is-code .doc-prose-only {
+  display: none;
+}
+
+/* On a phone the panel is moved into a sheet, outside `#tab-documents`, so
+   its own Assistant tab follows the panel's class (`docKitSyncLabels`). */
+.doc-code-side.is-prose .doc-code-only {
   display: none;
 }
 

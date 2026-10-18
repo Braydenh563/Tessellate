@@ -1902,6 +1902,8 @@ MORE_TOPICS.extend(
                 "snippet", "snippets", "code snippet", "code library", "code modules",
                 "save snippet", "insert snippet", "code panel", "coding assistant",
                 "explain code", "explain this code", "refactor", "write tests for",
+                "sections", "text sections", "section library", "ready-made blocks",
+                "meeting notes block", "insert a section", "save a section",
             ),
             "body": (
                 "Assistant and Snippets (beside Run, on a code document) open the "
@@ -1927,7 +1929,13 @@ MORE_TOPICS.extend(
                 "code: #words in the name you give become its tags. Each of your "
                 "own rows has a menu to insert, rename or retag, and delete; "
                 "saving, renaming and deleting each undo. Snippets belong to the "
-                "notebook, not to one document."
+                "notebook, not to one document. In a text document the same "
+                "panel is Sections (the dock's Sections button, or Ctrl+K): "
+                "ready-made blocks such as a meeting block, a risk table or a "
+                "callout, with today's date filled in and prompts Tab walks. A "
+                "row goes in at the caret or where you drop it, on its own lines "
+                "with a blank line round it, and one Ctrl+Z takes it out; Save "
+                "keeps the selected text as a section of your own."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -2042,7 +2050,7 @@ TOPIC_META: dict[str, dict] = {
         "Press Run, or Ctrl+Shift+Enter.",
         "Read the Output panel under the editor; Line N goes to the line.",
         "Ctrl+Shift+Y opens the Console tab: type a line and press Enter.")},
-    "code-panel": {"title": "The code panel: assistant and snippets", "path": "A code document, Assistant or Snippets (beside Run)"},
+    "code-panel": {"title": "The code panel: assistant, snippets and text sections", "path": "A code document, Assistant or Snippets (beside Run); a text document, Sections"},
     "debugger": {"title": "Debugging code", "path": "A code document, the gutter beside a line number, F5", "steps": (
         "Open a JavaScript, TypeScript or Python document.",
         "Click beside a line number, or press F9 on it, for a breakpoint.",
