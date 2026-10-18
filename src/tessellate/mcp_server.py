@@ -354,7 +354,7 @@ def handle_request(message: dict) -> dict | None:
     is_notification = "id" not in message
     handler = _METHODS.get(method)
     if handler is None:
-        if is_notification:
+        if is_notification or str(method).startswith("notifications/"):
             return None
         return {
             "jsonrpc": "2.0",

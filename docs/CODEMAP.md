@@ -2,7 +2,7 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6031, frontend ids 2523, CSS sections 495, backend routes 608, backend modules 5813, test files 1256, tests 11330, plan headings 957.
+Counts: frontend functions 6031, frontend ids 2523, CSS sections 495, backend routes 608, backend modules 5813, test files 1256, tests 11334, plan headings 957.
 
 ## Frontend functions (6031)
 
@@ -11265,34 +11265,34 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_Helpers` | src/tessellate/ai/composer_lists.py:61 |
-| `_block` | src/tessellate/ai/composer_lists.py:236 |
-| `_cite` | src/tessellate/ai/composer_lists.py:127 |
-| `_dated` | src/tessellate/ai/composer_lists.py:135 |
-| `_dates` | src/tessellate/ai/composer_lists.py:314 |
-| `_day` | src/tessellate/ai/composer_lists.py:119 |
-| `_filed` | src/tessellate/ai/composer_lists.py:262 |
-| `_find` | src/tessellate/ai/composer_lists.py:139 |
-| `_listed` | src/tessellate/ai/composer_lists.py:276 |
-| `_mentions` | src/tessellate/ai/composer_lists.py:217 |
-| `_order` | src/tessellate/ai/composer_lists.py:185 |
-| `_plural` | src/tessellate/ai/composer_lists.py:123 |
-| `_plural_words` | src/tessellate/ai/composer_lists.py:291 |
-| `_q` | src/tessellate/ai/composer_lists.py:57 |
-| `_sentence_at` | src/tessellate/ai/composer_lists.py:131 |
-| `_the` | src/tessellate/ai/composer_lists.py:158 |
-| `_title` | src/tessellate/ai/composer_lists.py:251 |
-| `_trim` | src/tessellate/ai/composer_lists.py:244 |
-| `_until` | src/tessellate/ai/composer_lists.py:163 |
-| `_until_day` | src/tessellate/ai/composer_lists.py:306 |
-| `_upcoming` | src/tessellate/ai/composer_lists.py:295 |
-| `answer` | src/tessellate/ai/composer_lists.py:345 |
-| `bind` | src/tessellate/ai/composer_lists.py:71 |
-| `clean` | src/tessellate/ai/composer_lists.py:49 |
-| `kind` | src/tessellate/ai/composer_lists.py:101 |
-| `list_target` | src/tessellate/ai/composer_lists.py:75 |
-| `mention_subject` | src/tessellate/ai/composer_lists.py:211 |
-| `window_of` | src/tessellate/ai/composer_lists.py:93 |
+| `_Helpers` | src/tessellate/ai/composer_lists.py:65 |
+| `_block` | src/tessellate/ai/composer_lists.py:242 |
+| `_cite` | src/tessellate/ai/composer_lists.py:131 |
+| `_dated` | src/tessellate/ai/composer_lists.py:139 |
+| `_dates` | src/tessellate/ai/composer_lists.py:320 |
+| `_day` | src/tessellate/ai/composer_lists.py:123 |
+| `_filed` | src/tessellate/ai/composer_lists.py:268 |
+| `_find` | src/tessellate/ai/composer_lists.py:143 |
+| `_listed` | src/tessellate/ai/composer_lists.py:282 |
+| `_mentions` | src/tessellate/ai/composer_lists.py:221 |
+| `_order` | src/tessellate/ai/composer_lists.py:189 |
+| `_plural` | src/tessellate/ai/composer_lists.py:127 |
+| `_plural_words` | src/tessellate/ai/composer_lists.py:297 |
+| `_q` | src/tessellate/ai/composer_lists.py:61 |
+| `_sentence_at` | src/tessellate/ai/composer_lists.py:135 |
+| `_the` | src/tessellate/ai/composer_lists.py:162 |
+| `_title` | src/tessellate/ai/composer_lists.py:257 |
+| `_trim` | src/tessellate/ai/composer_lists.py:250 |
+| `_until` | src/tessellate/ai/composer_lists.py:167 |
+| `_until_day` | src/tessellate/ai/composer_lists.py:312 |
+| `_upcoming` | src/tessellate/ai/composer_lists.py:301 |
+| `answer` | src/tessellate/ai/composer_lists.py:351 |
+| `bind` | src/tessellate/ai/composer_lists.py:75 |
+| `clean` | src/tessellate/ai/composer_lists.py:53 |
+| `kind` | src/tessellate/ai/composer_lists.py:105 |
+| `list_target` | src/tessellate/ai/composer_lists.py:79 |
+| `mention_subject` | src/tessellate/ai/composer_lists.py:215 |
+| `window_of` | src/tessellate/ai/composer_lists.py:97 |
 
 ### src/tessellate/ai/composer_overview.py (13)
 
@@ -11938,11 +11938,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_dated` | src/tessellate/ai/list_pool.py:53 |
-| `_filed` | src/tessellate/ai/list_pool.py:28 |
-| `_live` | src/tessellate/ai/list_pool.py:24 |
-| `_mentioning` | src/tessellate/ai/list_pool.py:39 |
-| `pool` | src/tessellate/ai/list_pool.py:57 |
+| `_dated` | src/tessellate/ai/list_pool.py:56 |
+| `_filed` | src/tessellate/ai/list_pool.py:30 |
+| `_live` | src/tessellate/ai/list_pool.py:26 |
+| `_mentioning` | src/tessellate/ai/list_pool.py:42 |
+| `pool` | src/tessellate/ai/list_pool.py:60 |
 
 ### src/tessellate/ai/margin.py (8)
 
@@ -17887,7 +17887,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11330)
+## Tests (11334)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18088,7 +18088,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_eval_725.py | 6 |
 | tests/test_composer_eval_741.py | 6 |
 | tests/test_composer_grammar.py | 3 |
-| tests/test_composer_lists_1018.py | 16 |
+| tests/test_composer_lists_1018.py | 19 |
 | tests/test_composer_long_question.py | 7 |
 | tests/test_composer_overview_787.py | 18 |
 | tests/test_composer_owner_1017.py | 14 |
@@ -18568,7 +18568,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_markdown_export_import.py | 11 |
 | tests/test_markdown_link_schemes.py | 3 |
 | tests/test_marquee_cost.py | 4 |
-| tests/test_mcp_server.py | 27 |
+| tests/test_mcp_server.py | 28 |
 | tests/test_mcp_tool_parity.py | 2 |
 | tests/test_md_blocks.py | 12 |
 | tests/test_md_footnotes.py | 7 |

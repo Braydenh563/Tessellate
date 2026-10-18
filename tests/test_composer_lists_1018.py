@@ -192,3 +192,31 @@ def test_through_the_route_all_the_dates_is_not_read_as_a_newest_first_overview(
         manager.create_entry(session, f"Gym session {i}: squats and rows.", "Fitness", ["gym"])
     text, _ = _ask(client, "what are all the dates in my notes")
     assert text.startswith("I found no day ahead in your notes."), text
+
+
+def test_a_name_with_a_capital_outside_ascii_is_still_found(session):
+    """SQLite folds only ASCII case, so a LIKE on "ünal" never matched "Ünal"."""
+    from tessellate.ai import list_pool
+
+    manager.create_entry(session, "Dinner with Ünal on Friday.", "Social", ["friends"])
+    session.commit()
+    found = list_pool.pool(session, "how many times did I mention Ünal", [])
+    assert [e.content for e in found] == ["Dinner with Ünal on Friday."]
+
+
+def test_a_count_that_reaches_the_pool_is_said_to_be_a_floor():
+    many = [
+        {"id": i + 1, "content": f"Note {i} about lisbon.", "created_at": "2026-10-01T10:00:00", "category": "Travel", "tags": []}
+        for i in range(composer_lists.POOL_LIMIT)
+    ]
+    result = _say("how many times did I mention lisbon", many)
+    assert result["text"].startswith(f"You mentioned lisbon at least {composer_lists.POOL_LIMIT} times"), result["text"]
+    assert _say("how many times did I mention lisbon", many[:5])["text"].startswith("You mentioned lisbon 5 times")
+
+
+def test_a_long_what_is_question_is_classified_in_linear_time():
+    import time
+
+    started = time.perf_counter()
+    assert composer_lists.kind("what is " * 5000) is None
+    assert time.perf_counter() - started < 0.5

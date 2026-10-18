@@ -5021,6 +5021,7 @@ def execute_tool(
     spec = TOOLS.get(name)
     if spec is None:
         return {"error": f"Unknown tool '{name}'"}
+    deps.get_config()  # a call runs inside the app: the user's settings, never the defaults
     if not tool_enabled(name):
         return {"error": f"The '{name}' tool is turned off in Settings → Tools it can use"}
     #: Stop landed while the model call that chose this write was in flight:

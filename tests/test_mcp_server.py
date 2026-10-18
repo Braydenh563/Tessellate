@@ -263,3 +263,10 @@ def test_startup_does_not_load_the_embedding_model(app_state):
 
     serve(stdin=io.StringIO(""), stdout=io.StringIO())
     assert deps.get_embeddings()._st_model is None
+
+
+def test_a_notification_that_carries_an_id_still_gets_no_reply():
+    from tessellate.mcp_server import handle_request
+
+    for method in ("notifications/initialized", "notifications/cancelled"):
+        assert handle_request({"jsonrpc": "2.0", "id": 9, "method": method}) is None

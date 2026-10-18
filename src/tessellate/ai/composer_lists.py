@@ -21,6 +21,10 @@ from tessellate.ai import composer, realise, recognise, utilities
 #: At most this many lines under the opening; the rest are on the right.
 SHOWN = 8
 
+#: How many notes the pool reads (`ai/list_pool.py`): a count that reaches it
+#: is a floor, and is said so.
+POOL_LIMIT = 300
+
 _ORDER = re.compile(
     r"^(?:is|was|does|will)\s+(?:the\s+|my\s+)?(?P<a>[\w' -]{2,40}?)\s+(?P<rel>before|after|earlier than|later than|sooner than)\s+(?:the\s+|my\s+)?(?P<b>[\w' -]{2,40})$",
     re.I,
@@ -40,7 +44,7 @@ _BY_WORD = re.compile(
 _NAME_NOTES = re.compile(r"^(?P<name>[\w&' -]{1,40}?)\s+(?:notes?|entries)$", re.I)
 _NOT_A_NAME = frozenset({"notes", "note", "entries", "all", "the", "my", "everything", "me", "it", "them", "these", "those", "ones"})
 _DATES = re.compile(
-    r"\bwhat(?:'s| is| are)\b.*\b(?:due|coming up|upcoming|deadlines?|overdue)\b|"
+    r"\bwhat(?:'s| is| are)\b.{0,120}?\b(?:due|coming up|upcoming|deadlines?|overdue)\b|"
     r"\b(?:all|every|any) (?:the |my )?(?:dates?|deadlines?)\b|\bwhat do i have coming up\b",
     re.I,
 )
@@ -223,6 +227,8 @@ def _mentions(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN00
         return False
     total = sum(n for _, n in hits)
     times = {1: "once", 2: "twice"}.get(total) or f"{total} times"
+    if len(views) >= POOL_LIMIT:
+        times = f"at least {times}"
     notes = "one note" if len(hits) == 1 else f"{len(hits)} notes"
     lines = []
     for view, _ in hits[:4]:
