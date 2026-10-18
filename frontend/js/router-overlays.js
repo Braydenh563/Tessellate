@@ -96,7 +96,9 @@ function routerSettle() {
   if (!/^#\/settings/.test(location.hash)) return;
   const tab = prefs.get("activeTab", null) || "dashboard";
   const before = tabHistory.stack[tabHistory.index - 1];
-  if (tabHistory.index > 0 && before && before.tab === tab && routerGo(-1)) return;
+  //: Only onto an entry this page wrote: a Settings opened straight from its
+  //: address has the browser's blank page under it (CI e2e, d04186d).
+  if (tabHistory.index > 0 && before && before.tab === tab && history.state?.depth > 0 && routerGo(-1)) return;
   const entry = { tab, section: null };
   try {
     history.replaceState(history.state, "", `${location.pathname}${location.search}${routeHash(entry)}`);

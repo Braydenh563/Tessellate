@@ -179,11 +179,13 @@ function routerOnVisit(entry, pushed) {
   if (!entry) return;
   if (!entry.navId) entry.navId = routerNextId++;
   const hash = routeHash(entry);
-  const state = { navId: entry.navId };
+  //: `depth`: how many of this app's entries sit under this one in the
+  //: browser's history, so a step back never leaves the app (router-overlays.js).
+  const depth = (history.state && history.state.depth) || 0;
   const url = `${location.pathname}${location.search}${hash}`;
   try {
-    if (pushed && !routerReplacing && history.state && history.state.navId) history.pushState(state, "", url);
-    else history.replaceState(state, "", url);
+    if (pushed && !routerReplacing && history.state && history.state.navId) history.pushState({ navId: entry.navId, depth: depth + 1 }, "", url);
+    else history.replaceState({ navId: entry.navId, depth }, "", url);
   } catch {
     // A sandboxed or file: page can refuse; the in-app stack still works.
   }

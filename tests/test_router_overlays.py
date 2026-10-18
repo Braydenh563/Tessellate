@@ -48,3 +48,15 @@ def test_the_agent_palette_records_its_opener():
 def test_hidden_sheets_do_not_count_as_open():
     """At 390 eight hidden `.sheet-overlay` elements sit in the page."""
     assert ".sheet-overlay:not(.sheet-leaving):not(.hidden)" in LAZY
+
+
+def test_settings_escape_never_steps_off_the_app():
+    """CI e2e on d04186d: Settings opened from its address has the browser's
+    blank page under it; Escape stepped back onto it. Each entry the router
+    writes carries how many of its own sit under it, and Escape steps back only
+    onto one of those."""
+    router = (JS / "router.js").read_text(encoding="utf-8")
+    assert "history.pushState({ navId: entry.navId, depth: depth + 1 }" in router
+    assert "history.replaceState({ navId: entry.navId, depth }" in router
+    settle = LAZY[LAZY.index("function routerSettle"):]
+    assert "history.state?.depth > 0 && routerGo(-1)" in settle.split("\n}\n")[0]

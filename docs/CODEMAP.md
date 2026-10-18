@@ -2,7 +2,7 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6065, frontend ids 2533, CSS sections 495, backend routes 610, backend modules 5835, test files 1276, tests 11441, plan headings 958.
+Counts: frontend functions 6065, frontend ids 2533, CSS sections 495, backend routes 610, backend modules 5835, test files 1276, tests 11442, plan headings 958.
 
 ## Frontend functions (6065)
 
@@ -946,11 +946,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `routeEntry` | frontend/js/router.js:114 |
 | `routeHash` | frontend/js/router.js:37 |
 | `routeHashFor` | frontend/js/router.js:64 |
-| `routerGo` | frontend/js/router.js:198 |
+| `routerGo` | frontend/js/router.js:200 |
 | `routerOnVisit` | frontend/js/router.js:178 |
-| `routerOpen` | frontend/js/router.js:210 |
+| `routerOpen` | frontend/js/router.js:212 |
 | `routerPaintTitle` | frontend/js/router.js:161 |
-| `routerRestore` | frontend/js/router.js:238 |
+| `routerRestore` | frontend/js/router.js:240 |
 
 ### frontend/js/settings-panes.js (40)
 
@@ -17965,7 +17965,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11441)
+## Tests (11442)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18915,7 +18915,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_ring_room.py | 6 |
 | tests/test_round2_sweep_fixes.py | 3 |
 | tests/test_router.py | 13 |
-| tests/test_router_overlays.py | 5 |
+| tests/test_router_overlays.py | 6 |
 | tests/test_routes_batch.py | 25 |
 | tests/test_routes_named.py | 2 |
 | tests/test_row_enter.py | 3 |
