@@ -87,6 +87,9 @@ disagree, the most recent dated entry wins.
    - A brief names the files, selectors, line areas, the plan's measured
      numbers and the sweep script to run, so the agent starts at the change
      rather than re-reading the codebase.
+   - After an agent merge, run its touched tests serially (no `-n`): the
+     repo-`data/` guard and some ratchets fail only in serial runs, which
+     cost two CI rounds on the 10-17 and 10-18 runs.
    - Agents that land close together are merged and gated in one pass
      (sweeps, push once). Skipping the sweeps is what caused the "fixed
      again" rounds.
