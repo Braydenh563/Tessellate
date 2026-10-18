@@ -9,3 +9,5 @@ date | item | type | rung | rework | note
 2026-10-18 | GRAPH_PLAN open items (graph-1018) | feature | sonnet | 0 | 
 2026-10-18 | DOCUMENTS_PLAN open items (documents-1018) | feature | sonnet | 0 | 
 2026-10-18 | Complexity splits: _generate_diagram, mcp_server.handle_request | refactor | sonnet | 0 | 
+2026-10-18 | CHAT_PLAN open items (chat-1018) | feature | sonnet | 1 | 
+2026-10-18 | UI 13a shadows and important (ui13a-1018) | refactor | sonnet | 0 | 
