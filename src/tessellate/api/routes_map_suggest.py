@@ -217,7 +217,8 @@ def _note_behind(db: Session, node: WhiteboardObject) -> Entry | None:
         ref = json.loads(node.data or "{}").get("ref_id")
     except (TypeError, ValueError):
         ref = None
-    entry = db.get(Entry, ref) if ref else None
+    # A document topic's ref_id is a Document id, not an Entry id.
+    entry = db.get(Entry, ref) if ref and node.kind == "note" else None
     if entry is None or entry.is_deleted or entry.is_private or entry.is_board:
         return None
     return entry

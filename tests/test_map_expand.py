@@ -98,6 +98,17 @@ def test_a_plain_topic_or_another_maps_topic_is_refused(client):
     assert elsewhere.status_code == 404
 
 
+def test_a_document_topic_is_refused_not_read_as_the_note_with_that_id(client):
+    _note(client, NOTE)
+    doc = client.post("/documents", json={"title": "Plan", "content": "# Plan\n\n## Step one"}).json()
+    board = client.post("/whiteboard/boards", json={"name": "Docs map", "type": "map"}).json()
+    node = client.post(
+        f"/whiteboard/boards/{board['id']}/nodes", json={"kind": "document", "ref_id": doc["id"]}
+    ).json()
+    out = client.post(f"/whiteboard/boards/{board['id']}/nodes/{node['id']}/expand")
+    assert out.status_code == 422
+
+
 def test_the_ticked_ones_are_added_through_the_branches_route(client):
     note = _note(client, NOTE)
     bid, nid = _map_with_note_topic(client, note)

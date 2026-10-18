@@ -368,13 +368,14 @@ _UTILITY_WORDS: list[frozenset[str]] = []
 def kind_of(question: str) -> str | None:
     """Which utility `question` is, or None: the router's question, answered
     without working anything out."""
-    return _kind_of_cached(question, web_on())
+    return _kind_of_cached(question, web_on(), now_day())
 
 
+#: The day is part of the key too (a date question reads it).
 #: The web setting is part of the key: "search the web for ..." reads as a
 #: question about the app only while it is off, and the person can flip it.
 @functools.lru_cache(maxsize=128)
-def _kind_of_cached(question: str, web: bool) -> str | None:
+def _kind_of_cached(question: str, web: bool, today: date) -> str | None:
     return _kind_of(_heard(question))
 
 

@@ -1094,6 +1094,15 @@ def ahead_window(question: str) -> tuple[str, int] | None:
     return next(((said, days) for pattern, said, days in _AHEAD_WORDS if pattern.search(low)), None)
 
 
+def without_ahead_words(text: str) -> str:
+    """`text` with the time words `ahead_window` reads taken out: what is left
+    of "what is due this week" past "this week" is the subject, if any."""
+    low = str(text or "").lower()
+    for pattern, _said, _days in _AHEAD_WORDS:
+        low = pattern.sub(" ", low)
+    return " ".join(low.split())
+
+
 def span(phrase: str, anchor: date, tense: str | None = None) -> tuple[date, date, str] | None:
     """(first day, last day, grain) the phrase names, read against `anchor`,
     or None. `tense` ("past", "future" or None) picks between the Friday

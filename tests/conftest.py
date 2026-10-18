@@ -7,6 +7,7 @@ real database, and singletons are rebuilt between tests.
 from __future__ import annotations
 
 import os
+import importlib
 import shutil
 from pathlib import Path
 
@@ -15,6 +16,11 @@ from fastapi.testclient import TestClient
 
 from tessellate.ai import model_manager, spelling
 from tessellate.core import background, deps, extras, jobs, taskhistory, vault
+
+#: Loaded for what they register (the typed reader, the help topics), which a
+#: test that classifies a question without the chat route would otherwise miss.
+for _loaded in ("tessellate.ai.commands", "tessellate.ai.help_chat"):
+    importlib.import_module(_loaded)
 
 
 # --- one copy of each source file, however many test modules read it ----------

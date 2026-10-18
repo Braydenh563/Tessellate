@@ -10037,10 +10037,10 @@ async function wbMapSuggestBranches(node) {
   await wbMapAddChosenBranches(node, boardId, chosen);
 }
 
-//: Whether a topic is one of the person's notes (or documents) rather than
+//: Whether a topic is one of the person's notes rather than
 //: words typed on the map: the only kind Expand from my notes reads.
 function wbMapIsNoteTopic(node) {
-  return Boolean(node && (node.kind === "note" || node.kind === "document") && node.data?.ref_id);
+  return Boolean(node && node.kind === "note" && node.data?.ref_id);
 }
 
 //: **Expand from my notes** (MINDMAP_PLAN 12.3 item 2). For a topic that is a

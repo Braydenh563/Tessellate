@@ -110,6 +110,20 @@ def test_what_is_due_reads_the_days_in_the_notes():
     assert "1 November" not in month["text"] and "3 November" not in month["text"]
 
 
+@pytest.mark.parametrize(
+    "question",
+    [
+        "what are the deadlines for the tax return",
+        "what is due in Work",
+        "what is due for the boiler",
+        "what is coming up in my Health notes",
+        "what is the upcoming iPhone release",
+    ],
+)
+def test_a_due_question_that_names_a_subject_is_not_the_dates_list(question):
+    assert composer_lists.kind(question) is None
+
+
 def test_an_empty_window_says_so_and_names_the_next_day():
     far = _say("what is due tomorrow")
     assert far["text"].startswith("Nothing in your notes falls tomorrow."), far["text"]

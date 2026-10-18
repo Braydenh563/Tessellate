@@ -44,7 +44,11 @@ _BY_WORD = re.compile(
 _NAME_NOTES = re.compile(r"^(?P<name>[\w&' -]{1,40}?)\s+(?:notes?|entries)$", re.I)
 _NOT_A_NAME = frozenset({"notes", "note", "entries", "all", "the", "my", "everything", "me", "it", "them", "these", "those", "ones"})
 _DATES = re.compile(
-    r"\bwhat(?:'s| is| are)\b.{0,120}?\b(?:due|coming up|upcoming|deadlines?|overdue)\b|"
+    #: Only a time window may follow the due word: "what are the deadlines for
+    #: the tax return" names a subject, so the digest answers it from that note
+    #: (`_only_a_window` reads `rest`).
+    r"\bwhat(?:'s| is| are)\s+(?:(?:all|every|any)\s+)?(?:the\s+|my\s+)?(?:due|coming up|upcoming|deadlines?|overdue)"
+    r"(?:\s+(?:items?|things?|tasks?))?(?P<rest>.*)$|"
     r"\b(?:all|every|any) (?:the |my )?(?:dates?|deadlines?)\b|\bwhat do i have coming up\b",
     re.I,
 )
@@ -102,6 +106,14 @@ def window_of(question: str) -> tuple[str, int]:
     return recognise.ahead_window(question) or ("in the next two weeks", 14)
 
 
+def _only_a_window(rest: str | None) -> bool:
+    """Whether what follows "what is due" is nothing, or only a time word."""
+    if rest is None:  # the "all the dates" and "coming up" shapes name no subject
+        return True
+    left = re.sub(r"\b(?:in|for|the|my|notes|now|please)\b|[?.!,]", " ", rest.lower())
+    return not recognise.without_ahead_words(left).strip()
+
+
 def kind(question: str) -> str | None:
     """Which computed shape `question` is, or None."""
     q = _q(question)
@@ -113,7 +125,8 @@ def kind(question: str) -> str | None:
         return "order"
     if _MENTION.match(q):
         return "mentions"
-    if _DATES.search(q):
+    found = _DATES.search(q)
+    if found and _only_a_window(found.group("rest")):
         return "dates"
     if list_target(q):
         return "listed"
