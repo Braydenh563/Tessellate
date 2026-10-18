@@ -5444,12 +5444,40 @@ function selectWbItem(kind, id) {
 //: Select everything on the board (Edit → Select all, Ctrl+A on the
 //: canvas). Links are left out: they follow what they join.
 function wbSelectAllItems() {
+  wbSelectExactly(wbSelectableItems());
+}
+
+//: The selection becomes exactly these `[kind, item]` pairs.
+function wbSelectExactly(pairs) {
   wbSelectedItem = null;
   wbMultiSelection.clear();
-  for (const [kind, item] of wbSelectableItems()) wbMultiSelection.add(wbMultiKey(kind, item.id));
+  for (const [kind, item] of pairs) wbMultiSelection.add(wbMultiKey(kind, item.id));
   wbApplySelectionHighlight();
   wbUpdateContextBar();
   wbUpdateSelectionBar();
+}
+
+//: draw.io's "Select vertices" and "Select edges": every closed shape, text
+//: box, note and picture (never a line, a pen stroke or a connector), or
+//: every connector. A locked or hidden item is out of reach, as in Select all.
+function wbSelectAllOfKind(which) {
+  // `wbSketchParsedData` is for a drawn path and answers null for a link.
+  const connector = (sk) => {
+    try {
+      return String(JSON.parse(sk.data)?.type || "").startsWith("link-");
+    } catch {
+      return false;
+    }
+  };
+  const pairs = which === "connectors"
+    ? (wbState.sketches || []).filter((sk) => connector(sk) && !wbIsLocked("sketch", sk) && !wbSketchHiddenOnBoard(sk)).map((sk) => ["sketch", sk])
+    : wbSelectableItems().filter(([kind, item]) => kind !== "sketch" || wbFmtKind({ kind, item }) === "shape");
+  if (!pairs.length) {
+    toast(which === "connectors" ? "No connectors on this board." : "No shapes on this board.");
+    return;
+  }
+  wbSelectExactly(pairs);
+  wbAnnounce(`${pairs.length} ${which === "connectors" ? "connectors" : "shapes"} selected.`);
 }
 
 //: Everything a selection can hold: what a link can join, plus pictures.
@@ -17049,6 +17077,20 @@ function wbWrapShapeLabel(textEl, text, width, fontSize) {
   return lines;
 }
 
+//: The drawn shape's box and the area its words may use, read off the live
+//: path; null when there is no path to read.
+function wbShapeLabelPlace(groupEl, label) {
+  const bbox = wbPathBBox(groupEl.querySelector(".sketch-path")?.getAttribute("d") || "");
+  if (!bbox) return null;
+  let labelArea = null;
+  try {
+    labelArea = label.dataset.area ? JSON.parse(label.dataset.area) : null;
+  } catch {
+    labelArea = null;
+  }
+  return { bbox, area: wbShapeLabelArea(label.dataset.kind, bbox, labelArea) };
+}
+
 //: Lays the label out from the path the group is drawing *now*, so a resize
 //: or a turn in flight re-wraps it, and clears the translation a move puts on
 //: it (`wbNudgeShapeLabel`). The wrap is kept on the element against the text
@@ -17060,15 +17102,9 @@ function wbLayoutShapeLabel(groupEl) {
   const label = groupEl?.querySelector?.(":scope > .sketch-label");
   if (!label) return;
   label.removeAttribute("transform");
-  const bbox = wbPathBBox(groupEl.querySelector(".sketch-path")?.getAttribute("d") || "");
-  if (!bbox) return;
-  let labelArea = null;
-  try {
-    labelArea = label.dataset.area ? JSON.parse(label.dataset.area) : null;
-  } catch {
-    labelArea = null;
-  }
-  const area = wbShapeLabelArea(label.dataset.kind, bbox, labelArea);
+  const placed = wbShapeLabelPlace(groupEl, label);
+  if (!placed) return;
+  const { bbox, area } = placed;
   const fontSize = parseFloat(getComputedStyle(label).fontSize) || 16;
   const lineHeight = fontSize * 1.25;
   //: The face and weight change the widths the wrap measures, so they key it.

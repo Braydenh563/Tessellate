@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Whiteboard: eight board commands from draw.io, found by Ctrl+K and the menus: select all shapes, select all connectors, turn 90 degrees, remove from the group, copy the size, paste the size, grow to fit the words and reverse a connector; a selection of many now keeps its connectors in the Format panel (whiteboard-1018).
 - Whiteboard: the Format panel's Style tab gains a Gradient (a second colour, down, up, right, left or radial) and a Fill style (hatch, cross-hatch, dots, dashes, zigzag) for a closed shape, kept in the export (draw.io's Fill section, whiteboard-1018).
 - Whiteboard: the Format panel's Style tab gains Dashes (your own pattern, like 8 4), Corners (rounded shapes and elbow connectors) and Flow (dashes that move along a line) (draw.io's Style tab, whiteboard-1018).
 - Whiteboard: the Format panel's Text tab gains a Font list (serif, monospace, wide sans, handwritten) and underline and strikethrough, for a shape's words and a text box; Clear text formatting and larger or smaller text are board commands (draw.io's Text tab, whiteboard-1018).

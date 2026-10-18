@@ -1334,6 +1334,7 @@ HELP_TOPICS.extend(
                 "lasso", "highlighter", "eraser", "connector", "snap to grid",
                 "snap", "grid", "pan", "zoom", "zoom to fit",
                 "board overview", "find a card", "find and replace", "replace all", "tool",
+                "select all shapes", "select all connectors", "turn 90 degrees", "remove from group", "copy size", "paste size", "reverse a connector", "auto size",
             ),
             "body": (
                 "Whiteboard keys (Library, Boards & maps; Ctrl+Shift+B opens it). "
@@ -1347,7 +1348,9 @@ HELP_TOPICS.extend(
                 "zooms, Space and drag pans, a drag to an edge pans, Ctrl+= and Ctrl+- zoom, "
                 "Ctrl+0 is 100%, Shift+1 fits all, Shift+N shows the "
                 "overview, / or Ctrl+F finds, Ctrl+H replaces, and Tab walks the board's "
-                "items. Selection, menus and presenting are in Whiteboard selection and menus."
+                "items. Ctrl+K also finds select all shapes or connectors, turn 90 degrees, remove from "
+                "the group, copy and paste the size, grow to fit the words and reverse a connector. "
+                "Selection, menus and presenting are in Whiteboard selection and menus."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

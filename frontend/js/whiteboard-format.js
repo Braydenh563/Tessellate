@@ -32,7 +32,17 @@ const WB_FMT_TABS = ["style", "text", "arrange", "data"];
 const wbFmtState = { fmtTab: "style", fmtSyncQueued: false, fmtLiveQueued: false, fmtFrameQueued: false };
 
 function wbFmtEntries() {
-  if (wbMultiSelection.size) return wbSelectionEntries();
+  //: A selection of many keeps its connectors (which have no box: "Select all
+  //: connectors" then a colour has to reach them), where the arrange maths in
+  //: `wbSelectionEntries` leaves them out.
+  if (wbMultiSelection.size) {
+    return [...wbMultiSelection].map((key) => {
+      const sep = key.indexOf(":");
+      const kind = key.slice(0, sep), id = Number(key.slice(sep + 1));
+      const item = wbFindItem(kind, id);
+      return item ? { kind, id, item, bbox: wbItemBBox(kind, item) } : null;
+    }).filter(Boolean);
+  }
   if (!wbSelectedItem) return [];
   const item = wbFindItem(wbSelectedItem.kind, wbSelectedItem.id);
   //: A connector has no box of its own (its path is worked out from its
@@ -203,6 +213,7 @@ async function wbFmtGeometry(axis, value) {
       return;
     }
     const [e] = entries;
+    if (!e.bbox) return;
     const dim = axis === "w" ? "width" : "height";
     const size = axis === "w" ? e.bbox.maxX - e.bbox.minX : e.bbox.maxY - e.bbox.minY;
     if (size > 0 && Math.abs(size - target) >= 0.5) await wbSizeItemTo(e, dim, target, target / size);
@@ -890,6 +901,189 @@ function wbStepFontSize(delta) {
     const size = Math.max(8, Math.min(200, Math.round(Number(wbFmtValue(entry, "size")) + delta)));
     return kind === "shape" ? { label_size: size } : { font_size: size };
   }, delta > 0 ? "Text larger." : "Text smaller.");
+}
+
+//: --- draw.io's arrange and edit commands (whiteboard-1018) ---
+//:
+//: Each is one `wbRecordGesture`, so a selection of many is one undo step.
+
+//: Turn 90 degrees: a card, text box or picture takes 90 more on its
+//: `rotation`; a drawn shape has its turn baked into its path, so the path is
+//: turned about its own centre. Each item turns about its own centre, and a
+//: connector follows its ends.
+function wbTurnSelection(degrees = 90) {
+  return wbRecordGesture(async () => {
+    const entries = wbFmtEntries().filter((e) => !wbIsLocked(e.kind, e.item) && e.bbox);
+    let turned = 0;
+    for (const e of entries) {
+      if (e.kind === "sketch") {
+        const parsed = wbSketchParsedData(e.item);
+        if (typeof parsed?.d !== "string") continue;
+        await wbSaveSketchD(e.item, wbTransformPathD(parsed.d, {
+          rotate: degrees, anchorX: (e.bbox.minX + e.bbox.maxX) / 2, anchorY: (e.bbox.minY + e.bbox.maxY) / 2,
+        }));
+      } else {
+        if (wbFmtKind(e) === "topic") continue;
+        e.item.rotation = ((Math.round((e.item.rotation || 0) + degrees) % 360) + 360) % 360 || null;
+        if (e.kind === "node") await wbSaveNode(e.item);
+        else await wbSaveObject(e.item);
+      }
+      turned += 1;
+    }
+    if (turned) wbAnnounce(`Turned ${degrees} degrees.`);
+    else toast("Select a shape, note or picture to turn it.");
+  }).then(() => wbScheduleRender());
+}
+
+//: Remove from group: the selected members leave their group, and a group
+//: left with one member is no group (a lone member would still pull a click
+//: onto itself alone).
+function wbRemoveFromGroup() {
+  return wbRecordGesture(async () => {
+    const save = (kind, item) => (kind === "sketch" ? wbSaveSketchProps(item, {}) : kind === "node" ? wbSaveNode(item) : wbSaveObject(item));
+    const leaving = wbFmtEntries().filter((e) => e.item.group_id);
+    if (!leaving.length) return;
+    for (const e of leaving) {
+      e.item.group_id = null;
+      await save(e.kind, e.item);
+    }
+    const members = new Map();
+    for (const kind of ["sketch", "node", "object"]) {
+      for (const item of wbState[WB_LIST_BY_KIND[kind]] || []) {
+        if (!item.group_id) continue;
+        if (!members.has(item.group_id)) members.set(item.group_id, []);
+        members.get(item.group_id).push([kind, item]);
+      }
+    }
+    for (const list of members.values()) {
+      if (list.length !== 1) continue;
+      list[0][1].group_id = null;
+      await save(list[0][0], list[0][1]);
+    }
+    wbAnnounce("Removed from the group.");
+    wbUpdateContextBar();
+  });
+}
+
+//: Copy size and Paste size (draw.io's Alt+Shift+F and V): the width and height
+//: of one item, put on every selected one. A connector has no box.
+let wbSizeClip = null;
+
+function wbCopySize() {
+  const [entry] = wbFmtEntries();
+  if (!entry?.bbox) {
+    toast("Select a shape, note or picture to copy its size.");
+    return;
+  }
+  wbSizeClip = { w: Math.round(entry.bbox.maxX - entry.bbox.minX), h: Math.round(entry.bbox.maxY - entry.bbox.minY) };
+  wbAnnounce(`Size ${wbSizeClip.w} by ${wbSizeClip.h} copied.`);
+}
+
+function wbPasteSize() {
+  if (!wbSizeClip) {
+    toast("Copy a size first.");
+    return Promise.resolve();
+  }
+  const clip = wbSizeClip;
+  return wbRecordGesture(async () => {
+    const entries = wbFmtEntries().filter((e) => !wbIsLocked(e.kind, e.item) && e.bbox && wbFmtKind(e) !== "topic");
+    for (const e of entries) {
+      for (const [dim, target, size] of [["width", Math.max(8, clip.w), e.bbox.maxX - e.bbox.minX], ["height", Math.max(8, clip.h), e.bbox.maxY - e.bbox.minY]]) {
+        if (size > 0 && Math.abs(size - target) >= 0.5) await wbSizeItemTo(e, dim, target, target / size);
+      }
+    }
+    wbAnnounce(`Size ${clip.w} by ${clip.h} pasted.`);
+  }).then(() => wbScheduleRender());
+}
+
+//: How much a shape must grow for its words to fit: the factor on each axis,
+//: 1 when they already fit. The words' area scales with the shape, so the
+//: factor is the words' size over the area they have.
+function wbAutoSizeFactors(text, area) {
+  const grow = (need, have) => (have > 0 && need > have + 0.5 ? need / have : 1);
+  return { sx: grow(text.w, area.w), sy: grow(text.h, area.h) };
+}
+
+//: Grow to fit: a shape taller (or wider, for one long word) until its words
+//: fit; a text box or a note card taller until its text does. Never shrinks.
+function wbAutoSizeSelection() {
+  return wbRecordGesture(async () => {
+    let grown = 0;
+    for (const e of wbFmtEntries().filter((x) => !wbIsLocked(x.kind, x.item) && x.bbox)) {
+      const kind = wbFmtKind(e);
+      if (kind === "shape") {
+        const group = document.querySelector(`.sketch-group[data-id="${e.id}"]`);
+        const label = group?.querySelector(":scope > .sketch-label");
+        const placed = label ? wbShapeLabelPlace(group, label) : null;
+        if (!placed) continue;
+        const words = label.getBBox();
+        const { sx, sy } = wbAutoSizeFactors({ w: words.width, h: words.height }, placed.area);
+        const parsed = wbSketchParsedData(e.item);
+        if (sx === 1 && sy === 1) continue;
+        await wbSaveSketchD(e.item, wbTransformPathD(parsed.d, { sx, sy, anchorX: e.bbox.minX, anchorY: e.bbox.minY }));
+        grown += 1;
+      } else if (kind === "text" || kind === "note") {
+        const el = wbItemElement(e.kind, e.id);
+        if (!el) continue;
+        const current = e.item.height || el.offsetHeight;
+        //: A text box's words are clipped inside their own element, so the
+        //: element's height is the box's, not the words': the words' own
+        //: scroll height plus the box's chrome. (`wbCardFitHeight` opens a
+        //: note card up the same way; at phone width its answer for a text
+        //: box was the clipped height.)
+        const words = el.querySelector(".wb-text-content");
+        const fit = words ? Math.ceil(words.scrollHeight) + Math.max(0, el.offsetHeight - words.offsetHeight) : wbCardFitHeight(el);
+        if (!(fit > current + 1)) continue;
+        e.item.height = Math.round(fit);
+        if (e.kind === "node") await wbSaveNode(e.item);
+        else await wbSaveObject(e.item);
+        grown += 1;
+      }
+    }
+    wbAnnounce(grown ? "Grown to fit the words." : "Everything already fits.");
+  }).then(() => wbScheduleRender());
+}
+
+//: Reverse: a connector points the other way, a drawn arrow's heads swap ends.
+//: The patch for a connector, pure: both ends, their anchors and free points,
+//: the two cap marks and their sizes, the bends in the other order, a curve's
+//: bow to the other side and the label's place along the line mirrored.
+function wbReversedLinkFields(parsed) {
+  const caps = wbLinkCaps(parsed);
+  const bend = Number(parsed.bend);
+  return {
+    sourceId: parsed.targetId, targetId: parsed.sourceId,
+    sourceKind: parsed.targetKind, targetKind: parsed.sourceKind,
+    sourceAnchor: parsed.targetAnchor, targetAnchor: parsed.sourceAnchor,
+    sourcePoint: parsed.targetPoint, targetPoint: parsed.sourcePoint,
+    startCap: caps.endCap, endCap: caps.startCap, endStyle: undefined,
+    startCapSize: caps.endSize || undefined, endCapSize: caps.startSize || undefined,
+    points: parsed.points ? [...parsed.points].reverse() : undefined,
+    bend: Number.isFinite(bend) && bend ? -bend : parsed.bend,
+    label_t: parsed.label_t != null ? Math.round((1 - wbLinkLabelT(parsed)) * 100) / 100 : undefined,
+  };
+}
+
+function wbReverseSelection() {
+  return wbRecordGesture(async () => {
+    let turned = 0;
+    for (const e of wbFmtEntries().filter((x) => x.kind === "sketch" && !wbIsLocked(x.kind, x.item))) {
+      const kind = wbFmtKind(e);
+      const parsed = wbFmtSketch(e);
+      if (kind === "link") {
+        await wbSaveSketchProps(e.item, wbReversedLinkFields(parsed));
+      } else if (kind === "arrow") {
+        const caps = wbSketchCaps(parsed);
+        const swapped = { startCap: caps.endCap, endCap: caps.startCap, startSize: caps.endSize, endSize: caps.startSize };
+        await wbSaveSketchProps(e.item, wbFmtCapFields("arrow", parsed, swapped));
+      } else {
+        continue;
+      }
+      turned += 1;
+    }
+    if (turned) wbAnnounce("Reversed.");
+    else toast("Select a connector or an arrow to reverse it.");
+  }).then(() => wbScheduleRender());
 }
 
 //: --- The hand-drawn look (Excalidraw's; canvasdepth2) ---------------------

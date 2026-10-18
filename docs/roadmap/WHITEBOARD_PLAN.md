@@ -1013,24 +1013,24 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Word wrap, label width, padding | partly (shapes wrap inside `label_area`) | `whiteSpace=wrap`, `labelWidth`, `labelPadding` | `label_width`, `label_pad` on top of `label_area` | S |
 | Spacing: top, right, bottom, left, global | no | `spacing`, `spacingTop..Left` | `label_pad {t,r,b,l}` shares the row above | S |
 | Line height | no | `lineheight` in the text panel | `label_lh` | S |
-| Auto-size to text, fit text to shape | no | `autosize` action (Actions.js 1001), `autosizeText`, `fitTextToShape` | one command `autosize` in `WB_COMMANDS`: measure the label with `getBBox`, resize the shape's box; grows only | S |
+| Auto-size to text, fit text to shape | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `autosize` action (Actions.js 1001), `autosizeText`, `fitTextToShape` | one command `autosize` in `WB_COMMANDS`: measure the label with `getBBox`, resize the shape's box; grows only | S |
 | Formatted (HTML) text, lists, indent, links, horizontal rule | partly: text boxes are markdown with a slash menu; shapes plain | `formattedText` (Actions.js 1086), `html=1`, list and indent buttons | shapes keep plain text; markdown stays for text boxes; the Format panel shows the markdown toolbar for them | none |
 | Clear formatting | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `removeFormat` (Actions.js 1564) | one command: drop all `label_*` | S |
 | Increase and decrease font size | yes, 2026-10-18 (whiteboard-1018; HISTORY, palette rows) | Ctrl+Shift+Plus, Ctrl+Shift+Minus (Actions.js 1956, 1960) | two `WB_COMMANDS` rows, 1pt steps | S |
 | Layer order: front, back, forward, backward | yes (four `order-*` commands) | `toFront`, `toBack`, `bringForward`, `sendBackward` (Actions.js 569 to 585) | done | none |
 | Group, ungroup, lock | yes (`group`, `ungroup`, `lock`) | `group`, `ungroup`, `lockUnlock` (Actions.js 644, 665, 521) | done | none |
-| Remove from group | no | `removeFromGroup` (Actions.js 705) | one command: clear `group_id` on the selected member, keeping the group | S |
-| Copy size, paste size, swap | no | `copySize`, `pasteSize`, `swap` (Actions.js 223, 238, 213) | `same-width`, `same-height` cover the multi-select case; copy size is two commands that remember w and h | S |
+| Remove from group | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `removeFromGroup` (Actions.js 705) | one command: clear `group_id` on the selected member, keeping the group | S |
+| Copy size, paste size, swap | copy and paste size yes, 2026-10-18 (whiteboard-1018; HISTORY); swap no | `copySize`, `pasteSize`, `swap` (Actions.js 223, 238, 213) | `same-width`, `same-height` cover the multi-select case; copy size is two commands that remember w and h | S |
 | X, Y, width, height | yes (`wb-fmt-x/y/w/h`) | `addGeometry` (Format.js 3082) | done; resize from the centre is the one gap (matrix) | S |
 | Constrain proportions | no | `constrainProportions` checkbox (Format.js 3082) | `data.aspect` lock; shift-drag already keeps it | S |
 | Rotation angle, flip horizontal and vertical | yes (`wb-fmt-angle`, `wb-fmt-flip-h/v`) | `addAngle` (Format.js 2913), `addFlip` (2612) | done | none |
-| Turn 90 degrees | no | `turn` action (Ctrl+R) | a command that adds 90 to `rotation` | S |
+| Turn 90 degrees | yes, 2026-10-18 (whiteboard-1018; HISTORY), no Ctrl+R (the browser's reload) | `turn` action (Ctrl+R) | a command that adds 90 to `rotation` | S |
 | Align (six), distribute (two) | yes (eight commands) | `addAlign` (Format.js 2575), `addDistribute` (2856) | done | none |
 | Snap to grid after align | partly (`wb-snap-toggle`) | `snapToGrid` in the align block | none worth building | none |
 | Group padding | no | `addGroupPadding` (Format.js 3663) | frame padding row (`tint` and `hint` exist on frames) | S |
 | Table: rows, columns, merge, stripes | no | `addTable` (Format.js 2162), section 12 below | section 12 | M |
 | Arrow shape geometry (width of a block arrow connector) | no | `addArrowGeometry` (Format.js 3972) | needs the `flexArrow` connector shape, section 4 | M |
-| Connector direction: reverse, loop side | no | `addEdgeTurn` (Format.js 2811), `addLoopDirection` (2650) | a `reverse` command swaps ends and caps; self-loops are not drawn today | S |
+| Connector direction: reverse, loop side | reverse yes, 2026-10-18 (whiteboard-1018; HISTORY); loop side no | `addEdgeTurn` (Format.js 2811), `addLoopDirection` (2650) | a `reverse` command swaps ends and caps; self-loops are not drawn today | S |
 | Edit data, copy and paste data, edit tooltip, note, link, open link | no (links on items exist) | `editData` (Actions.js 742), `editTooltip` (748), `editNote` (786), `editLink` (812) | section 3 | M |
 
 ### 3. Edit style, Edit data, placeholders, tooltips
@@ -1063,7 +1063,7 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Perimeter spacing (gap between line end and shape) | no | `sourcePerimeterSpacing`, `targetPerimeterSpacing`, `perimeterSpacing` (Format.js `addStroke`) | `gap_start`, `gap_end` subtracted along the end tangent | S |
 | Source and target connect to a shape, an edge, or float | partly: links join cards and shapes; a free end floats | `mxConnectionHandler`, `Graph.connectVertex` (Graph.js 14940) | done for items; edge-to-edge is drop | none |
 | Hover connection arrows to create a connected shape | yes (`wb-clone-grips`, `wbCloneConnect`) | `HoverIcons` (Graph.js 17581), `connectVertex` | done; add a shape picker after a drag from a grip to empty space (section 17) | S |
-| Reverse direction, self-loop side | no | `addEdgeTurn`, `addLoopDirection` (Format.js 2811, 2650) | `reverse` command; self-loop as a drawn arc | S |
+| Reverse direction, self-loop side | reverse yes, 2026-10-18 (whiteboard-1018; HISTORY); self-loop no | `addEdgeTurn`, `addLoopDirection` (Format.js 2811, 2650) | `reverse` command; self-loop as a drawn arc | S |
 | Rounded and curved polylines | rounded: yes, 2026-10-18 (an elbow connector; whiteboard-1018, HISTORY); curved: no | `rounded`, `curved` styles | `data.round` on link polylines | M |
 | Edge shadow and opacity | yes | `shadow`, `opacity` | done | none |
 
@@ -1224,8 +1224,8 @@ clash is listed so the choice is made once.
 | Shift+Delete | delete labels only | none | S |
 | Ctrl+D | duplicate | Ctrl+D | same |
 | Ctrl+A | select all | same | |
-| Ctrl+Shift+I | select vertices | none | one command, "Select all shapes" |
-| Ctrl+Shift+E | select edges | none | one command, "Select all connectors" |
+| Ctrl+Shift+I | select vertices | none, 2026-10-18: a command without the key (whiteboard-1018) | one command, "Select all shapes" |
+| Ctrl+Shift+E | select edges | none, 2026-10-18: a command without the key (whiteboard-1018) | one command, "Select all connectors" |
 | Ctrl+Shift+A | select none | none | Esc deselects |
 | Ctrl+G, Ctrl+Shift+U | group, ungroup | Ctrl+G, Ctrl+Shift+G | differs on ungroup; keep ours, accept both |
 | Ctrl+L | lock | Ctrl+Shift+L | differs (ours is the lint-held key) |
@@ -1239,8 +1239,8 @@ clash is listed so the choice is made once.
 | Ctrl+Shift+O | outline | Shift+N | differs |
 | Ctrl+Shift+D | set as default style | none | section 1 |
 | Ctrl+Shift+R | clear default style | none | S |
-| Ctrl+R | turn 90 degrees | none | S |
-| Ctrl+Shift+Y | autosize | none | S |
+| Ctrl+R | turn 90 degrees | none, 2026-10-18: a command without the key (whiteboard-1018) | S |
+| Ctrl+Shift+Y | autosize | none, 2026-10-18: a command without the key (whiteboard-1018) | S |
 | Ctrl+Shift+G | grid on and off | ungroup (clash) | grid stays on the View menu |
 | Ctrl+F | find and replace | find only | section 9 |
 | Ctrl+K | tags | none | |
@@ -1258,7 +1258,7 @@ clash is listed so the choice is made once.
 | Arrow keys, Shift+arrow, Ctrl+arrow | move 1 px, move by the grid size, resize (`nudge`, EditorUi.js 8249) | arrows 1 px, Shift 10 px | add Ctrl+arrow resize |
 | Alt+Shift+arrow | clone and connect (`connectVertex`) | Alt+Shift+Arrow | same |
 | Alt+Shift+R, L, T, N | clear waypoints, edit link, edit tooltip, edit note (`altShiftActions`, EditorUi.js 8129) | none | with sections 3 and 4 |
-| Alt+Shift+F, V, B, E | copy size, paste size, copy data, paste data | none | S each |
+| Alt+Shift+F, V, B, E | copy size, paste size, copy data, paste data | none; copy and paste size are commands without the key, 2026-10-18 (whiteboard-1018) | S each |
 | Alt+Shift+A, O, Q | connection arrows, connection points, edit connection points | none | with section 5 |
 | Ctrl+Alt+Shift+F, B | bring forward, send backward | ] and [ | differs |
 | Ctrl+Alt+X, Ctrl+Alt+Shift+X | copy as image, as SVG | none | section 14 |
@@ -1273,7 +1273,7 @@ clash is listed so the choice is made once.
 
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
-| Rubber-band, lasso, shift-add, select all of a kind | yes (select, lasso K; Ctrl+A); no select-by-kind | `mxRubberband`, `selectVertices`, `selectEdges` (Actions.js 517, 518) | two commands | S |
+| Rubber-band, lasso, shift-add, select all of a kind | yes (select, lasso K; Ctrl+A); select all shapes and select all connectors, 2026-10-18 (whiteboard-1018; HISTORY) | `mxRubberband`, `selectVertices`, `selectEdges` (Actions.js 517, 518) | two commands | S |
 | Groups with nesting | partly: `group_id` (18 hits in whiteboard.js); nested depth not checked | `group`, `ungroup`, `removeFromGroup` (Actions.js 644 to 705); `Graph.updateGroupBounds` (Graph.js 16483) | check the depth, add remove from group | S |
 | Containers (a shape that holds children, drop target highlight, children move with it, auto-resize) | partly: frames hold items (`frames.json`); no drop highlight, no resize with children | `container=1`, `isContainer` (Graph.js 11233), `getDropTarget` (26334), `dropTarget`, `recursiveResize`, `collapsible`, `foldCells` (15610) | frames gain "fit to children", a drop highlight, and collapse; the frame-as-container rule is an existing decision | M |
 | Swimlanes and pools (header strip, lanes in a stack) | no (matrix: partly) | `swimlane;startSize=...`, `childLayout=stackLayout`, `horizontalStack`, `resizeParent`, `resizeLast` | a "Lane" frame preset (frames.json already has "Timeline lane") with a header strip and a stack layout in `wbFrameLayout`: new lane appended in line, children keep their offsets | M |
