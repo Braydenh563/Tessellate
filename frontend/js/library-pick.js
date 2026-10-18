@@ -1,5 +1,21 @@
 // library-pick.js: the Library item picker dialog (bookmark, board, note or document), moved out of selection.js on 2026-10-12 for the boot gzip budget. Every caller awaits it: `lazy-entries.js` stands in until this loads. Its source table and remembered-tab helper stay in selection.js.
 
+//: And its second line: what tells two rows with one name apart.
+function libraryPickAbout(kind, row) {
+  const when = relativeTime(row.updated_at || row.created_at);
+  if (kind === "note") return pickerNoteAbout(row);
+  if (kind === "document") return notePickerFacts(when && `Edited ${when}`, row.words ? `${row.words} word${row.words === 1 ? "" : "s"}` : "");
+  if (kind === "file") return notePickerFacts(row.size_bytes ? formatFileSize(row.size_bytes) : "", notePickerUsedIn(row) || when);
+  if (kind === "board") return notePickerFacts(row.type === "board" ? "Whiteboard" : "Mind map", when);
+  let host = "";
+  try {
+    host = new URL(row.url).hostname.replace(/^www\./, "");
+  } catch {
+    host = row.url || "";
+  }
+  return notePickerFacts(host, row.group || "");
+}
+
 //: Fetched once per dialog and per source, not per keystroke. The shown
 //: source first; the others after it, one at a time, so each tab carries its
 //: count (what matches the words typed, or everything) and opens at once. A

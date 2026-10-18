@@ -2720,6 +2720,9 @@ async function offerFollowups(bubble, question, answer, given = null) {
       return; // no honest error state for a suggestion, see the module note
     }
   }
+  //: A call's asks arrive mid-stream and are only drawn then (ask-compose.js);
+  //: saved here, after the turn, so they cannot race its save (INBOX 1300 C42).
+  if (!picks?.length) picks = JSON.parse(bubble.dataset.followups || "[]");
   if (!Array.isArray(picks) || !picks.length) return;
   // `isConnected` is the check that matters: a deleted turn, a cleared chat or
   // a switched conversation all detach the bubble, and appending to a detached

@@ -213,3 +213,16 @@ def test_the_manual_is_the_guides_topics_with_a_door_from_help_and_the_guide():
     assert '"ph:book-open-text Open the manual"' in guide
     css = (FRONTEND / "css" / "manual-lazy.css").read_text(encoding="utf-8")
     assert "@media print" in css and "body.manual-print > :not(.manual-overlay)" in css
+
+
+def test_the_open_packages_button_and_the_transcript_and_strip_controls_are_in_the_help():
+    """Standing order 13: the Open Packages button on package notices (fixes1),
+    the transcript's copy controls (C40) and the strip's dates switch (C36) are
+    named in the Guide and in Settings or the Timeline's own help."""
+    from tessellate.ai import help_chat, help_topics_more
+
+    text = Path(help_chat.__file__).read_text(encoding="utf-8") + Path(help_topics_more.__file__).read_text(encoding="utf-8")
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    assert "Open Packages button" in text and "Open Packages button" in html
+    assert "Shift-click picks a run of" in text
+    assert "Dates beside the strip" in text and "Dates beside the strip" in html

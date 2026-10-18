@@ -6,7 +6,7 @@ audits reproduced each bug in the app (ports 8791, 8792). A row is **open**,
 
 | Item | Rung, agent | Status | Evidence |
 | --- | --- | --- | --- |
-| C42 composer reply text lost after restart (first, data) | S, next free Sonnet | open | screenshot: reload shows the reply bubble with only its "Next:" chips; check what the chat store saves for a composer (no model) reply to small talk, and the reload render path |
+| C42 composer reply text lost after restart (first, data) | S, next free Sonnet | fixed 873f8fd | fresh data dir, 'yo wassup :)' as first message: stored content empty in 1 of 2 runs before, 0 of 4 after (scratchpad/ui-sweeps/c42.js) |
 | C10 statistics in quick access | S, fixes1 | fixed 8430914 | `quickCatalogue()` now returns `act:statistics` beside `act:captions` |
 | C09 attach list Enter | S, fixes1 | fixed 1ce15c0 | two ArrowDowns then Enter: row 1 checked, focus on it, panel open; Enter in search is Done |
 | C13 table plus off centre | S, fixes1 | fixed 300e718 | plus drawn in CSS; ink centre 0.875 css px low at 4x before, 0.25 (one device pixel) after |
@@ -34,15 +34,15 @@ audits reproduced each bug in the app (ports 8791, 8792). A row is **open**,
 | C28 reply reveal animation | O, design | open | chat 0.2 s fade only; guide streams words |
 | C30 lightbox controls | O, design | open | `lightbox-view.js` |
 | C34 recorder panels | O, design | open | `.meeting-stage` radius 0, `meetings.js:922` |
-| C36 timeline tick labels switch | O, design | open | `timeline-ticks.js` |
+| C36 timeline tick labels switch | O, design | fixed ae7fb1c | the c36 sweep toggles the switch and counts the tick labels; test_timeline_ticks_switch.py |
 | C14 composer and model badge | O, design | open | `chat-attach.js:2430` byline |
 | C18 paper swatches as dropdown | O, design | open | `index.html:7506` |
 | C37 graph box titles clipped, no ellipsis; nodes all one size | O, design batch 2 | open | a question is a bug report: size by weight (links or uses) and a label line-clamp with ellipsis |
-| C39 timeline opens on empty future days | S, next free Sonnet | open | screenshot: seven empty future rows above Today; open scrolled so Today is the first row, future reachable by scrolling up |
-| C40 recording transcript lines cannot be copied | S, with C34 | open | per-line copy on hover or focus, shift-click range select, "Copy selected" and "Copy all" (with or without times) |
+| C39 timeline opens on empty future days | S, next free Sonnet | fixed 5049124 | the c39 sweep measures Today's row top against the feed top on open and after the Today button |
+| C40 recording transcript lines cannot be copied | S, with C34 | fixed f749f62 | the c40 sweep copies a line, a Shift range and all lines; test_transcript_copy.py |
 | C41 force graph messy | O, graph batch with C11, C27, C37 | open | screenshot: labels collide, edges cross clusters, duplicate titles unexplained; label collision avoidance, cluster separation, edge bundling or fade, measured overlap count before and after |
 | C43 categories sidebar messy, sections not collapsible | O, design batch 2 | open | screenshots: nested scrollbars plus a blue bar on the outer one, list clipped mid-row, near-duplicate "Courses & Study" / "Courses \| Study", empty categories; collapsible sections with remembered state, one scroll container, merge offer for near-duplicates, hide empty |
-| C44 live view section break overlaps gutter numbers | S, next free Sonnet | open | screenshot: rule line 1 shorter than its number, numbers 1 and 2 overlap; the gutter line height must follow the rendered block height |
+| C44 live view section break overlaps gutter numbers | S, next free Sonnet | fixed 216ac23 | the c44 sweep measures the gutter row height against the rule line; test_live_rule_line_height.py |
 | C04 UML, ERD, wireframe sets | plan | placed | WHITEBOARD_PLAN |
 | C16, C26 composer variety, greeting sub line | plan | placed | CHAT_PLAN; `composer_voice.today_line` unused |
 | C24 Logs panel scroll | none | not reproduced | equal heights at five sizes; Settings nav overflow placed in WORLD_CLASS row 32 |

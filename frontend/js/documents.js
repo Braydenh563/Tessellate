@@ -21012,8 +21012,11 @@ function docCmTheme(CM) {
       //: A quote's attribution line, set small and muted like the rendered
       //: figure's caption.
       ".cm-md-quote-cite": { fontSize: "0.88em", fontStyle: "normal" },
-      ".cm-md-rule-thick": { borderBottomWidth: "3px", borderBottomColor: "color-mix(in srgb, var(--muted) 55%, transparent)" },
-      ".cm-md-rule-dots": { borderBottom: "0", textAlign: "center" },
+      ".cm-md-rule-thick": {
+        backgroundImage: "linear-gradient(color-mix(in srgb, var(--muted) 55%, transparent), color-mix(in srgb, var(--muted) 55%, transparent))",
+        backgroundSize: "100% 3px",
+      },
+      ".cm-md-rule-dots": { backgroundImage: "none", textAlign: "center" },
       ".cm-md-rule-dots::after": {
         content: "'\\2022\\2003\\2022\\2003\\2022'",
         color: "var(--muted)",
@@ -21092,10 +21095,17 @@ function docCmTheme(CM) {
       //: with a bottom border is a hairline sitting on the baseline of nothing.
       //: The height is what makes it read as a divider between two blocks
       //: rather than as an underline belonging to the paragraph above.
+      //: **A full line tall, the rule drawn in its middle** (INBOX 1300 C44).
+      //: It was a 0.6em box with a bottom border and 0.4em of margin, so the
+      //: line-number gutter, which gives each number the line's own height,
+      //: had an 8.8px element holding a 14px figure: numbers 1 and 2 overlapped
+      //: (4 overlaps in 8 lines measured, `scratchpad/ui-sweeps/c44.js`). The
+      //: gutter follows the line's height, so the line is given a line's height.
       ".cm-md-rule": {
-        borderBottom: "1px solid var(--border)",
-        height: "0.6em",
-        margin: "0.4em 0",
+        backgroundImage: "linear-gradient(var(--border), var(--border))",
+        backgroundSize: "100% 1px",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
       },
       //: The gaps between blocks (17b), one token each; the note beside the
       //: decoration in `docLivePlugin` says why this is `line-height` and not

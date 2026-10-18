@@ -3534,6 +3534,13 @@ Link to another note with [[its first few words]]."></textarea>
                   <option value="">Everything</option>
                 </select>
               </div>
+              <!-- The dates beside the density strip (INBOX 1300 C36): a
+                   remembered switch, wired in timeline-ticks.js, which draws
+                   them. -->
+              <label class="dock-menu-check" title="Show the month and year labels beside the thin strip at the feed's right edge. Your choice is remembered.">
+                <input type="checkbox" id="timeline-ticks-toggle" checked>
+                <i class="ph ph-calendar-dots ph-lead" aria-hidden="true"></i> Dates beside the strip
+              </label>
               <!-- Selecting several rows is a mode, and a mode lives in the
                    menu once a dock is at its seven-control ceiling: the same
                    move `#select-btn` and `#graph-trace-toggle` made. It only
@@ -3589,7 +3596,7 @@ Link to another note with [[its first few words]]."></textarea>
         month walk a week, and the month opens a calendar to jump to any earlier day.
         In the feed, Ctrl and the mouse wheel, or a pinch, makes the date
         groups finer or coarser, as do + and - on a row. The thin strip at the feed's right edge shows how much you wrote
-        over the whole range, labelled by month or year; click or drag it to jump. The chips under the strip show what you
+        over the whole range, labelled by month or year (Options, Dates beside the strip, hides the labels); click or drag it to jump. The chips under the strip show what you
         wrote on today's date in earlier years, and the year menu beside the month narrows the list to one year;
         Options, Time range, On this day does the same.
   </p>
@@ -11732,7 +11739,9 @@ Link to another note with [[its first few words]]."></textarea>
                   after another, each says how it went, and one that fails
                   does not stop the rest. An installed package's ... menu has
                   Reinstall, for a feature that is switched on but not
-                  working, and Remove.
+                  working, and Remove. A notice that says a feature needs a
+                  package has an Open Packages button that brings you to
+                  that package's row.
                 </p>
               </div>
               <h4 class="setting-subhead">Bundles</h4>

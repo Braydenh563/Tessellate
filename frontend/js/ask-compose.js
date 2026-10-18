@@ -430,8 +430,9 @@ function digestOffer(answerEl, offer) {
   if (offer?.kind === "ask") {
     const bubble = answerEl?.closest(".msg.assistant");
     if (bubble) {
+      //: Drawn now, saved by `offerFollowups` once the turn is saved: a write
+      //: here raced the turn's save and emptied the reply (INBOX 1300 C42).
       renderFollowups(bubble, offer.asks);
-      saveFollowups(bubble, offer.asks);
     } else askOfferAsks = offer.asks;
     return;
   }
