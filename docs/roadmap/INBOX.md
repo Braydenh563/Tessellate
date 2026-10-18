@@ -149,6 +149,10 @@ with its owner named in the entry.
      C39. (mid-run, 2026-10-18, screenshot: Timeline opens on empty future rows Sun 25 Oct to
           Mon 19 Oct, each with "+ Add", Today at the bottom of the view) and the future dates
           should only show if the user scrolls up on the timeline main view
+     C40. (mid-run, 2026-10-18, screenshot: a Library recording card, waveform, "Transcript"
+          open with one row "0:03 All right, um, this is a test and this is the meeting test.
+          Yay") on the recordings ther eis no way to copy individual or multiple lines of the
+          transcript
      **Triage 2026-10-18** (two Haiku audits, each bug reproduced in the app unless noted;
      rungs: H Haiku, S Sonnet, O Opus; "now" = this run's batches, "plan" = placed).
      Batch 1, bugs, Sonnet or Haiku, now: C10 H (`settings-panes.js:1499` lacks `quick:
