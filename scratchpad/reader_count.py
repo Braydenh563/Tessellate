@@ -49,6 +49,8 @@ VERDICT = {
     # 2026-10-12 (the week-start setting): the three first days a week can start on.
     "src/tessellate/api/routes_settings.py": "not a reader: the week_start choices (monday, saturday, sunday) of a setting",
     "src/tessellate/core/config.py": "not a reader: _WEEK_CHOICES, the week_start setting's first-day names to weekday numbers",
+    # 2026-10-18 (C06): the answer panel's calculator.
+    "frontend/js/reply-kit.js": "not a reader: REPLY_CALC_PAIRS, the unit pair each converter kind opens on; the sum is read by the server",
     "src/tessellate/ai/commands.py": "not a reader: _TIME_FIRST, the words that open a reminder's time part (weekday words included), to split it from the task; the date is read by when, which delegates to recognise",
 }
 

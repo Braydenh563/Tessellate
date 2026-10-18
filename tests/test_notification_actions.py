@@ -126,7 +126,9 @@ def test_already_recorded_notices_do_not_record_twice():
 #: Openers that name a target the app can find again after a reload. Each
 #: caller passes `go`, plain data for localStorage.
 OPENERS = {
-    "chat.js": ['go: { open: "conversation", id: fork.id }', 'go: { open: "doc", id: doc.id }'],
+    "chat.js": ['go: { open: "conversation", id: fork.id }'],
+    #: Save an answer (ask-compose.js) or a chat (quick-note.js, e4b220e) as a document.
+    "ask-compose.js": ['go: { open: "doc", id: doc.id }'],
     "wiring.js": ['go: { open: "conversation", id: fork.id }'],
     "palette.js": ['go: { open: "conversation", id: conversation.id }'],
     "library.js": ['go: { open: "doc", id: made[0].id }'],
@@ -135,7 +137,7 @@ OPENERS = {
     "attach-to.js": ['go: { open: "board", id }', 'go: { open: "doc", id: Number(id) }'],
     "capture-ask.js": ['go: { open: "entry", id: entry.id }', 'go: { open: "entry", id: status.similar.id }'],
     #: With the reminder from a chat answer, moved here from chat.js (boot budget).
-    "quick-note.js": ['go: { open: "entry", id: saved.id }', 'go: { open: "entry", id: note.id }', 'go: { open: "capture" }', 'go: { open: "reminder", id: reminder.id }'],
+    "quick-note.js": ['go: { open: "entry", id: saved.id }', 'go: { open: "entry", id: note.id }', 'go: { open: "capture" }', 'go: { open: "reminder", id: reminder.id }', 'go: { open: "doc", id: doc.id }'],
     "selection.js": ['go: { open: "entry", id: created.id }', 'go: { open: "entry", id: entry.id }'],
     "graph-canvas.js": ['go: { open: "entry", id: created.id }'],
     "settings.js": ['go: { settings: "appearance", focus: "perf-mode" }'],

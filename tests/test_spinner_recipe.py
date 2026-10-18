@@ -322,7 +322,8 @@ def test_in_progress_copy_uses_a_real_ellipsis_never_three_dots() -> None:
 #: Containers (a list, a pane, the tour card) mark themselves busy for a
 #: screen reader; that is not a button. A button goes through `setBusy`.
 #: statistics.js: the Statistics dialog's body (a div) while it counts.
-CONTAINER_BUSY_FILES = {"app.js", "chat.js", "notes-list.js", "tour.js", "statistics.js"}
+#: reply-kit.js: the answer panel's statistics grid while it loads (C06), a region, not a button.
+CONTAINER_BUSY_FILES = {"app.js", "chat.js", "notes-list.js", "tour.js", "statistics.js", "reply-kit.js"}
 
 
 def test_a_button_is_marked_busy_only_through_setbusy() -> None:

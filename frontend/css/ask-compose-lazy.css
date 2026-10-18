@@ -80,7 +80,7 @@
 }
 /* Hover and focus are one state (DESIGN.md decision 15): the row veil. */
 .web-result-card:hover,
-.web-result-card:has(.card-open:focus-visible) {
+.web-result-card:is(:focus-visible, :has(:focus-visible)) {
   background-image: linear-gradient(var(--hover-veil), var(--hover-veil));
 }
 .web-result-tile {

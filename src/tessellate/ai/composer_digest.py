@@ -1321,7 +1321,8 @@ def _task_of(f: Fact) -> str:
     if not f.action:
         return ""
     rest = f.action.split(" ", 1)[1] if " " in f.action else ""
-    specific = re.search(r"\b(?:the|my|your|our|this|next|tomorrow|tonight)\b|\d|\b(?:mon|tues|wednes|thurs|fri|satur|sun)day\b", rest, re.I)
+    #: A day is the recogniser's to read (tests/test_one_reader.py).
+    specific = re.search(r"\b(?:the|my|your|our|this|next)\b|\d", rest, re.I) or recogniser.looks_dated(rest)
     return f.action if specific or _SPECIFIC_CASED.search(" " + rest) else ""
 
 
