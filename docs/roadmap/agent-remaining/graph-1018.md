@@ -28,8 +28,10 @@
 
 - Hover at 2,000 notes: gcDraw median 4.4 ms, p95 8.9, max 16.8 (graphhover1018.js); closed by measurement.
 
+- Final sweeps on 8791: errors.js 1440 and 390, light and dark, 0 errors and 0 layout findings; docks.js graph dock one row (6 controls, 20/28 px); contrast.js 1440 light and dark, graph ok (14 text elements); touch.js 390 graph, 0 findings.
+
 ## Next
-- Final sweeps (errors, docks, contrast, touch; light and dark) and the report.
+- Nothing open inside the plan except the owner questions below and local-model entity extraction (954, 929), which needs a real model.
 
 ## Owner questions
 - B70: which note, tags and links does "Gym Routine Overview" have (it sat far from its cluster)? Not reproduced on synthetic data: worst-over-median nearest same-category distance 1.94 on the 200-note seed.
