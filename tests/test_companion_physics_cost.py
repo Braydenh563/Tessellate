@@ -123,3 +123,32 @@ def test_the_atlas_rig_reads_style_once_before_it_writes_any() -> None:
     for read in ("atlasRigRead(", "getAnimations()", "getComputedStyle("):
         assert body.count(read) == 1, f"{read} is read once"
         assert body.index(read) < first_write, f"{read} comes after a write"
+
+
+def test_the_release_reads_the_page_before_it_writes_the_companion() -> None:
+    # companion-1018 (measured, scratchpad/ui-sweeps/releasetrace.js, Atlas at 4x):
+    # the release task was 245 ms because each read after a write restyled the
+    # whole drawing again (UpdateLayoutTree over 400 to 625 elements, 55 to 67 ms,
+    # three times). The obstacle and ledge reads (a drop's `nameMarkBuddyDrop`, a
+    # throw's `nameMarkBuddyWorld`) are of the page, not of the companion, so
+    # they come first, in the one restyle the box read already pays for.
+    build = AV[AV.index("function nameMarkBuddyBuild(") :]
+    release = build[build.index("const release = (event) =>") : build.index('face.addEventListener("pointerup", release)')]
+    first_write = release.index('buddy.style.translate = ""')
+    assert release.index("const box = buddy.getBoundingClientRect()") < release.index("nameMarkBuddyDrop(") < first_write
+    assert release.index("nameMarkBuddyWorld(") < first_write
+    assert "nameMarkBuddyThrow(buddy, v[0], v[1], world);" in release
+    assert release.count("nameMarkBuddyDrop(") == 1, "the drop's spot is worked out once, up front"
+    assert "nameMarkBuddyMoveTo(buddy, landed)" in release
+
+
+def test_the_landing_reads_the_page_before_the_landing_frame_writes() -> None:
+    # The same for a flight's last frame: the landing's spot is worked out from
+    # the step that came to rest, before the frame's own transform, rotate and
+    # lean writes, so the obstacle reads do not restyle the drawing they just wrote.
+    throw = _fn("nameMarkBuddyThrow")
+    frame = throw[throw.index("const frame = (now) =>") : throw.index("const next = () =>")]
+    assert frame.index("nameMarkBuddyThrowSpot(") < frame.index("nameMarkBuddyPut(")
+    assert "nameMarkBuddyThrowLand(buddy, s, tab, landing)" in frame
+    assert "nameMarkBuddyThrowSpot(" in _fn("nameMarkBuddyThrowLand")
+    assert "nameMarkBuddyDrop(" in _fn("nameMarkBuddyThrowSpot")
