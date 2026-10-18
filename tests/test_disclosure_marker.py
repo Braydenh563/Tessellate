@@ -79,7 +79,7 @@ def test_the_sources_fold_shows_its_state_and_starts_shut():
     # INBOX 1300 C29, the owner: "hard to tell from the ui of the sources box
     # and dropdown list of sources below if the sources are actually part of
     # that button's dropdown and if the button is open or not". The caret
-    # turns upright open (`sources1300.js`: -90deg shut, none open, on the
+    # turns upright open (`sources1300.js`, in git at d4dbd2f: -90deg shut, none open, on the
     # popup's panel and the Chat card panel alike), the list hangs from a
     # rail under it, and no surface opens it for you.
     assert ".chat-sources[open] > .chat-sources-summary::before" in CSS["08-consistency.css"]

@@ -6,7 +6,7 @@ peep over the bottom bar, it does the peak animation first so it gets cut
 in half and then falls like that to the bottom bar."
 
 `nameMarkBuddyLegsNow` runs here in node as written; the move in a browser
-is `scratchpad/ui-sweeps/peektravel.js`.
+is `scratchpad/ui-sweeps/peektravel.js` (in git at d4dbd2f).
 """
 
 from __future__ import annotations

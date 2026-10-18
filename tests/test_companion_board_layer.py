@@ -8,7 +8,7 @@ took up quit a bit of the screen when I zoomed out ... if it is on an
 element not part of the actual canvas like the panels or outer part of the
 app like the bottom or top bar then it can be its regular size."
 
-Measured in a browser by `scratchpad/ui-sweeps/canvas1300.js` (an
+Measured in a browser by `scratchpad/ui-sweeps/canvas1300.js` (in git at d4dbd2f) (an
 elementFromPoint pair per case: over the Format panel the panel wins, over an
 object the companion does, on the top bar it is z 44 at its own size).
 """

@@ -2,7 +2,7 @@
 
 INBOX 1300 C05, the owner: "I need / chat commands to be more findable,
 like when I do / I wouldn't know the other's are there unless I scroll down
-quite far". Measured by `scratchpad/ui-sweeps/slash1300.js`: the first
+quite far". Measured by `scratchpad/ui-sweeps/slash1300.js` (in git at d4dbd2f): the first
 command row from 443 px down a 384 px menu (out of sight) to 27 px, active,
 with ArrowDown moving to the next command.
 """

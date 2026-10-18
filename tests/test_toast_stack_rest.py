@@ -4,7 +4,7 @@ The owner: "stacking notifications need to be cleaned up and not as intrusive
 and obscuring". Four toasts stood 186x205 px. Now the newest shows, the ones
 behind it hide until a pointer or the keyboard is on the stack, and the
 "+N more" card counts everything not shown. Measured by
-`scratchpad/ui-sweeps/toast1300.js`.
+`scratchpad/ui-sweeps/toast1300.js` (in git at d4dbd2f).
 """
 
 from __future__ import annotations

@@ -4,7 +4,7 @@ INBOX 1300 C22, the owner: "It's hard to figure out that you need to press the
 shortcut command itself to change it in the settings page". The chip keeps
 being the button (INBOX 810, `test_a_shortcuts_keys_are_its_rebind_button`);
 a pencil after the keys says so, an x while it waits for keys, and the help
-lines name it. Measured by `scratchpad/ui-sweeps/shortcut1300.js`.
+lines name it. Measured by `scratchpad/ui-sweeps/shortcut1300.js` (in git at d4dbd2f).
 """
 
 from __future__ import annotations
