@@ -4492,9 +4492,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `codeFamilyFor` | frontend/js/lightbox-view.js:2411 |
-| `codeScanner` | frontend/js/lightbox-view.js:2392 |
-| `highlightCodeInto` | frontend/js/lightbox-view.js:2365 |
+| `codeFamilyFor` | frontend/js/lightbox-view.js:2406 |
+| `codeScanner` | frontend/js/lightbox-view.js:2387 |
+| `highlightCodeInto` | frontend/js/lightbox-view.js:2360 |
 | `openLightbox` | frontend/js/lightbox-view.js:33 |
 
 ### frontend/js/link-types.js (8)
