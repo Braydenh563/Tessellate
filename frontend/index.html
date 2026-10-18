@@ -7993,10 +7993,21 @@ Link to another note with [[its first few words]]."></textarea>
         <section class="wb-fmt-section" data-format-panel="text" aria-label="Text" hidden>
           <label class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Size</span><input type="number" id="wb-fmt-size" min="8" max="200" step="1" aria-label="Text size" title="Text size"></label>
           <label class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Colour</span><input type="color" id="wb-fmt-ink" class="wb-color-picker" aria-label="Text colour" title="Text colour"></label>
-          <div class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Weight</span>
+          <label class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Font</span>
+            <select id="wb-fmt-font" aria-label="Font" title="The face the text is set in">
+              <option value="default">Default</option>
+              <option value="serif">Serif</option>
+              <option value="mono">Monospace</option>
+              <option value="wide">Wide sans</option>
+              <option value="hand">Handwritten</option>
+            </select>
+          </label>
+          <div class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Style</span>
             <span class="wb-fmt-buttons">
               <button type="button" id="wb-fmt-bold" class="ghost small icon-only" aria-pressed="false" title="Bold, the whole text" aria-label="Bold"><i class="ph ph-text-b" aria-hidden="true"></i></button>
               <button type="button" id="wb-fmt-italic" class="ghost small icon-only" aria-pressed="false" title="Italic, the whole text" aria-label="Italic"><i class="ph ph-text-italic" aria-hidden="true"></i></button>
+              <button type="button" id="wb-fmt-underline" class="ghost small icon-only" aria-pressed="false" title="Underline, the whole text" aria-label="Underline"><i class="ph ph-text-underline" aria-hidden="true"></i></button>
+              <button type="button" id="wb-fmt-strike" class="ghost small icon-only" aria-pressed="false" title="Strikethrough, the whole text" aria-label="Strikethrough"><i class="ph ph-text-strikethrough" aria-hidden="true"></i></button>
             </span>
           </div>
           <div class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Align</span>

@@ -107,6 +107,9 @@ const WB_COMMANDS = [
   { id: "copy-style", group: "Edit", icon: "ph:eyedropper", label: "Copy style", keys: "Ctrl+Alt+C", surface: "board", needs: "one", run: () => wbCopySelectedStyle() },
   { id: "paste-style", group: "Edit", icon: "ph:paint-bucket", label: "Paste style", keys: "Ctrl+Alt+V", surface: "board", needs: "selection", run: () => wbPasteCopiedStyle() },
   { id: "reset-style", group: "Edit", icon: "ph:arrow-counter-clockwise", label: "Reset style", keys: "", surface: "both", needs: "selection", run: () => wbResetSelectedStyle() },
+  { id: "clear-format", group: "Edit", icon: "ph:text-t-slash", label: "Clear text formatting", keys: "", surface: "board", needs: "selection", run: () => wbClearTextFormat() },
+  { id: "font-bigger", group: "Edit", icon: "ph:text-aa", label: "Make the text larger", keys: "", surface: "board", needs: "selection", run: () => wbStepFontSize(1) },
+  { id: "font-smaller", group: "Edit", icon: "ph:text-aa", label: "Make the text smaller", keys: "", surface: "board", needs: "selection", run: () => wbStepFontSize(-1) },
   { id: "find", group: "Edit", icon: "ph:magnifying-glass", label: "Find on this board", menu: "Find on this board", keys: "Ctrl+F", surface: "both", run: () => wbOpenBoardSearch() },
   { id: "replace", group: "Edit", icon: "ph:swap", label: "Find and replace on this board", menu: "Find and replace", keys: "Ctrl+H", surface: "board", run: () => wbOpenBoardSearch({ replace: true }) },
   // The item

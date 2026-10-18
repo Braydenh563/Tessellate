@@ -430,6 +430,13 @@ class WhiteboardObjectData(BaseModel):
     #: units, rather than adding a second way to say the same thing.
     bold: bool | None = None
     italic: bool | None = None
+    #: The Format panel's Text tab, draw.io's other font styles (whiteboard-1018):
+    #: underline and strikethrough, and a face by name. The names are the map
+    #: fonts' (`WB_MAP_FONTS`) and a hand-written one; the stacks live in the
+    #: frontend, so no CSS ever arrives from a client.
+    underline: bool | None = None
+    strike: bool | None = None
+    font_family: str | None = Field(default=None, pattern="^(serif|mono|wide|hand)$")
     #: A Phosphor icon name without the `ph-` prefix, or one emoji
     #: (MINDMAP_PLAN.md decision 45). `_icon_name_or_emoji` is the whole
     #: guard: a name is written straight into a class attribute on the node,

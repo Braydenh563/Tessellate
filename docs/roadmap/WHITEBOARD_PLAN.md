@@ -997,13 +997,13 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
-| Font family | no (size only) | `fontFamily` menu (Menus.js 137), `STYLE_FONTFAMILY` | `label_font` from a short list of the app's loaded faces plus system stacks | S |
+| Font family | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `fontFamily` menu (Menus.js 137), `STYLE_FONTFAMILY` | `label_font` from a short list of the app's loaded faces plus system stacks | S |
 | Font size | yes (`wb-fmt-size`) | `fontSize` menu (Menus.js 227) | done | none |
 | Bold, italic | yes | `fontStyle` bits, Ctrl+B, Ctrl+I | done | none |
-| Underline, strikethrough | no | `fontStyle` bits 4 and 8, Ctrl+U | `label_underline`, `label_strike`, drawn as `text-decoration` on the SVG text | S |
+| Underline, strikethrough | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `fontStyle` bits 4 and 8, Ctrl+U | `label_underline`, `label_strike`, drawn as `text-decoration` on the SVG text | S |
 | Subscript, superscript | no | `subscript`, `superscript` (Actions.js 1911, 1918) | needs rich text inside shapes; text boxes already hold markdown | M |
 | Horizontal align (left, centre, right) | yes (`wb-fmt-align`) | `STYLE_ALIGN` | done | none |
-| Vertical align (top, middle, bottom) | no (the owner's bug, "no way to vertically centre text", INBOX 2026-10-10) | `STYLE_VERTICAL_ALIGN` | `label_valign`; the SVG label block is positioned by it; Brief 36 carries it | S |
+| Vertical align (top, middle, bottom) | yes, 2026-10-10 (HISTORY) | `STYLE_VERTICAL_ALIGN` | `label_valign`; the SVG label block is positioned by it; Brief 36 carries it | S |
 | Font colour | yes (`wb-fmt-ink`) | `fontColor...` (Actions.js 1525) | done | none |
 | Label background and border colour | no | `labelBackgroundColor`, `labelBorderColor` (Format.js, Text tab) | `label_bg`, `label_border`: a rounded rect behind the label, which a connector label needs to stay readable over crossing lines | S |
 | Text opacity | no | `textOpacity` | `label_alpha` | S |
@@ -1015,8 +1015,8 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Line height | no | `lineheight` in the text panel | `label_lh` | S |
 | Auto-size to text, fit text to shape | no | `autosize` action (Actions.js 1001), `autosizeText`, `fitTextToShape` | one command `autosize` in `WB_COMMANDS`: measure the label with `getBBox`, resize the shape's box; grows only | S |
 | Formatted (HTML) text, lists, indent, links, horizontal rule | partly: text boxes are markdown with a slash menu; shapes plain | `formattedText` (Actions.js 1086), `html=1`, list and indent buttons | shapes keep plain text; markdown stays for text boxes; the Format panel shows the markdown toolbar for them | none |
-| Clear formatting | no | `removeFormat` (Actions.js 1564) | one command: drop all `label_*` | S |
-| Increase and decrease font size | no | Ctrl+Shift+Plus, Ctrl+Shift+Minus (Actions.js 1956, 1960) | two `WB_COMMANDS` rows, 1pt steps | S |
+| Clear formatting | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `removeFormat` (Actions.js 1564) | one command: drop all `label_*` | S |
+| Increase and decrease font size | yes, 2026-10-18 (whiteboard-1018; HISTORY, palette rows) | Ctrl+Shift+Plus, Ctrl+Shift+Minus (Actions.js 1956, 1960) | two `WB_COMMANDS` rows, 1pt steps | S |
 | Layer order: front, back, forward, backward | yes (four `order-*` commands) | `toFront`, `toBack`, `bringForward`, `sendBackward` (Actions.js 569 to 585) | done | none |
 | Group, ungroup, lock | yes (`group`, `ungroup`, `lock`) | `group`, `ungroup`, `lockUnlock` (Actions.js 644, 665, 521) | done | none |
 | Remove from group | no | `removeFromGroup` (Actions.js 705) | one command: clear `group_id` on the selected member, keeping the group | S |

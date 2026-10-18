@@ -106,6 +106,9 @@ function wbFmtValue(entry, field) {
     case "size": return kind === "shape" ? s.label_size || 16 : o.font_size || 16;
     case "bold": return Boolean(kind === "shape" ? s.label_bold : o.bold);
     case "italic": return Boolean(kind === "shape" ? s.label_italic : o.italic);
+    case "underline": return Boolean(kind === "shape" ? s.label_underline : o.underline);
+    case "strike": return Boolean(kind === "shape" ? s.label_strike : o.strike);
+    case "font": return (kind === "shape" ? s.label_font : o.font_family) || "default";
     case "align": return (kind === "shape" ? s.label_align : o.align) || (kind === "shape" ? "center" : "left");
     //: Words in a shape sit in its middle and a text box's at its top unless
     //: told otherwise (the owner, 2026-10-10: "there's no way to vertically
@@ -475,6 +478,10 @@ function wbFormatSync() {
     for (const button of panel.querySelectorAll("#wb-fmt-valign [data-valign]")) button.setAttribute("aria-pressed", pressed("valign", button.dataset.valign));
     document.getElementById("wb-fmt-bold")?.setAttribute("aria-pressed", pressed("bold", true));
     document.getElementById("wb-fmt-italic")?.setAttribute("aria-pressed", pressed("italic", true));
+    document.getElementById("wb-fmt-underline")?.setAttribute("aria-pressed", pressed("underline", true));
+    document.getElementById("wb-fmt-strike")?.setAttribute("aria-pressed", pressed("strike", true));
+    const fontField = document.getElementById("wb-fmt-font");
+    if (fontField && document.activeElement !== fontField) wbFmtShowMixed(fontField, mixed("font"), wbFmtValue(first, "font"));
   }
   const box = wbFmtBox(entries);
   if (!box) return;
@@ -751,7 +758,14 @@ onDomReady(() => {
     wbFmtApply("text", textPatch("label_size", "font_size", size), `Text size ${size}.`);
   });
   on("wb-fmt-ink", "change", (e) => wbFmtApply("text", textPatch("label_color", "color", e.target.value), "Text colour changed."));
-  for (const [id, shapeKey, objectKey, word] of [["wb-fmt-bold", "label_bold", "bold", "Bold"], ["wb-fmt-italic", "label_italic", "italic", "Italic"]]) {
+  on("wb-fmt-font", "change", (e) => {
+    const face = e.target.value && e.target.value !== "default" ? e.target.value : undefined;
+    wbFmtApply("text", textPatch("label_font", "font_family", face), face ? `Font: ${e.target.selectedOptions[0]?.textContent}.` : "Font back to the default.");
+  });
+  for (const [id, shapeKey, objectKey, word] of [
+    ["wb-fmt-bold", "label_bold", "bold", "Bold"], ["wb-fmt-italic", "label_italic", "italic", "Italic"],
+    ["wb-fmt-underline", "label_underline", "underline", "Underline"], ["wb-fmt-strike", "label_strike", "strike", "Strikethrough"],
+  ]) {
     on(id, "click", (e) => {
       const next = e.currentTarget.getAttribute("aria-pressed") !== "true";
       e.currentTarget.setAttribute("aria-pressed", String(next));
@@ -790,6 +804,30 @@ onDomReady(() => {
   on("wb-fmt-copy-style", "click", () => document.getElementById("wb-copy-style")?.click());
   on("wb-fmt-paste-style", "click", () => document.getElementById("wb-paste-style")?.click());
 });
+
+//: --- Text commands (draw.io's "Clear formatting", and its font size steps) ---
+//:
+//: Both go through `wbFmtApply("text", ...)`, so a selection of a shape and a
+//: text box is one step on the stack and an item with no text of its own is
+//: skipped.
+const WB_TEXT_LOOK_KEYS = {
+  shape: ["label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign"],
+  text: ["font_size", "color", "bold", "italic", "underline", "strike", "font_family", "align", "valign"],
+};
+
+function wbClearTextFormat() {
+  return wbFmtApply("text", (entry, kind) => {
+    const keys = WB_TEXT_LOOK_KEYS[kind];
+    return keys ? Object.fromEntries(keys.map((key) => [key, undefined])) : null;
+  }, "Text formatting cleared.");
+}
+
+function wbStepFontSize(delta) {
+  return wbFmtApply("text", (entry, kind) => {
+    const size = Math.max(8, Math.min(200, Math.round(Number(wbFmtValue(entry, "size")) + delta)));
+    return kind === "shape" ? { label_size: size } : { font_size: size };
+  }, delta > 0 ? "Text larger." : "Text smaller.");
+}
 
 //: --- The hand-drawn look (Excalidraw's; canvasdepth2) ---------------------
 //:

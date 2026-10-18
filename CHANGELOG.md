@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Whiteboard: the Format panel's Text tab gains a Font list (serif, monospace, wide sans, handwritten) and underline and strikethrough, for a shape's words and a text box; Clear text formatting and larger or smaller text are board commands (draw.io's Text tab, whiteboard-1018).
 - Docs: the whiteboard plan's built 2026-10-07 and 2026-10-11 Placed blocks (740, 746, 747, 821 to 825) move to HISTORY, and the open draw.io rows are audited in `agent-remaining/whiteboard-1018.md`.
 - Tests: `test_ocr_engine` starts the app state its language reads need (a data/ writer CI's 3.13 job named); the graph agent's five one-off sweeps leave `scratchpad/` (findings stay in HISTORY).
 - The prompt clocks (`librarian.clock_hint`, the agent's `build_agent_messages`) read the settings with `peek_config` and `user_now` takes none, so building a prompt before the app starts no longer creates a `data/` folder in the repo (two `test_connected_results` tests failed on CI when a neighbour's cleanup removed it); `test_presets` and `test_prompt_budget` start the app state they read.

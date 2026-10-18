@@ -4522,9 +4522,9 @@ async function wbPasteCopiedStyle() {
 //: map and level (`wbMapResetToBranch`'s keys). One undo step for the lot.
 const WB_SKETCH_RESET_KEYS = [
   "color", "width", "dash", "fill", "fillOpacity", "noStroke", "alpha", "shadow", "rough", "jumps",
-  "startCapSize", "endCapSize", "label_size", "label_color", "label_bold", "label_italic", "label_align", "label_valign",
+  "startCapSize", "endCapSize", "label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign",
 ];
-const WB_OBJECT_RESET_KEYS = ["color", "bg", "border_color", "font_size", "bold", "italic", "align", "valign", "alpha", "shadow", "fold"];
+const WB_OBJECT_RESET_KEYS = ["color", "bg", "border_color", "font_size", "bold", "italic", "underline", "strike", "font_family", "align", "valign", "alpha", "shadow", "fold"];
 
 //: The reset fields for one sketch, or null for a drawing with nothing to
 //: reset (a highlighter's look is its tool). A line whose ends are drawn in
@@ -16952,7 +16952,8 @@ function wbLayoutShapeLabel(groupEl) {
   const area = wbShapeLabelArea(label.dataset.kind, bbox, labelArea);
   const fontSize = parseFloat(getComputedStyle(label).fontSize) || 16;
   const lineHeight = fontSize * 1.25;
-  const key = `${label.__wbText}|${Math.round(area.w / 4)}|${fontSize}`;
+  //: The face and weight change the widths the wrap measures, so they key it.
+  const key = `${label.__wbText}|${Math.round(area.w / 4)}|${fontSize}|${label.style.fontFamily}|${label.style.fontWeight}`;
   if (label.__wbKey !== key) {
     label.__wbLines = wbWrapShapeLabel(label, label.__wbText, area.w, fontSize);
     label.__wbKey = key;
@@ -16998,6 +16999,14 @@ function wbShapeLabelInk(parsed) {
   return wbCoreInkFor(parsed.fill);
 }
 
+//: The faces a shape's words and a text box can be set in (the Format panel's
+//: Font row): the map's three stacks and a handwritten one, all faces the
+//: systems this app runs on already ship, by name so no CSS is ever stored.
+const WB_ITEM_FONTS = Object.freeze({
+  ...WB_MAP_FONTS,
+  hand: '"Segoe Print", "Bradley Hand", "Chalkboard SE", "Comic Sans MS", cursive',
+});
+
 //: Adds, updates or removes a shape's label for one render.
 function wbPaintShapeLabel(groupEl, parsed) {
   const kind = wbShapeLabelKind(parsed);
@@ -17026,6 +17035,10 @@ function wbPaintShapeLabel(groupEl, parsed) {
   label.style.fontSize = parsed.label_size ? `${parsed.label_size}px` : "";
   label.style.fontWeight = parsed.label_bold ? "700" : "";
   label.style.fontStyle = parsed.label_italic ? "italic" : "";
+  //: Underline and strikethrough, and a face by name (draw.io's Text tab;
+  //: whiteboard-1018). Inline style, so the export's cloned SVG keeps them.
+  label.style.textDecoration = [parsed.label_underline && "underline", parsed.label_strike && "line-through"].filter(Boolean).join(" ");
+  label.style.fontFamily = WB_ITEM_FONTS[parsed.label_font] || "";
   const align = ["left", "right"].includes(parsed.label_align) ? parsed.label_align : "center";
   label.dataset.align = align;
   if (parsed.label_valign === "top" || parsed.label_valign === "bottom") label.dataset.valign = parsed.label_valign;
@@ -20543,7 +20556,9 @@ function renderWbObjects(canvas) {
         .style("font-size", sticker ? `${wbStickerSize(d)}px` : d.data.font_size ? `${d.data.font_size}px` : "")
         .style("text-align", d.data.align || "")
         .style("font-weight", d.data.bold ? "700" : "")
-        .style("font-style", d.data.italic ? "italic" : "");
+        .style("font-style", d.data.italic ? "italic" : "")
+        .style("text-decoration", [d.data.underline && "underline", d.data.strike && "line-through"].filter(Boolean).join(" "))
+        .style("font-family", WB_ITEM_FONTS[d.data.font_family] || "");
       if (document.activeElement !== textEl.node()) wbPaintTextContent(textEl.node(), d);
     }
   });

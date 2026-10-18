@@ -1498,7 +1498,7 @@ HELP_TOPICS.extend(
                 "text size in a shape", "align text",
                 "line shape", "line end", "line ends", "arrowhead", "arrow end", "diamond end", "label position",
                 "arrow size", "end size", "bigger arrowhead", "stealth arrow", "memorymap arrow", "signature arrow",
-                "reset style", "default style", "reset an object", "back to default",
+                "reset style", "default style", "reset an object", "back to default", "underline", "strikethrough", "font family", "clear formatting",
                 "line jumps", "line jump", "crossing lines", "lines cross", "hop over",
             ),
             "body": (
@@ -1508,8 +1508,8 @@ HELP_TOPICS.extend(
                 "its line jumps (where it crosses a line under it, it hops over with an arc, a gap or a "
                 "sharp peak), its two ends (twenty-one marks, from the Tessellate end, the mark's node dot ahead of a chevron, through open, "
                 "filled, stealth, half and double arrows, circles and diamonds to a cross, a bar and a crow's foot, each drawn in its "
-                "list, each small, medium or large in the menu beside it; a plain line takes them too) and where its label sits along it. Text: the size, colour, weight, "
-                "alignment and vertical place (top, middle, bottom) of a text box or a shape's words. Arrange: X, Y, width, height and "
+                "list, each small, medium or large in the menu beside it; a plain line takes them too) and where its label sits along it. Text: the font (default, serif, monospace, wide sans, handwritten), size, colour, bold, italic, underline, strikethrough, "
+                "alignment and vertical place (top, middle, bottom) of a text box or a shape's words; Clear text formatting, Make the text larger and Make the text smaller are in the command palette. Arrange: X, Y, width, height and "
                 "angle as numbers, flip, and the order, align, spacing, group and lock buttons. With "
                 "several items selected it shows what they all share, and a value they differ on reads Mixed. Every "
                 "change is one undo step, across the whole selection. Reset style (the item's right-click menu, its ... menu "
