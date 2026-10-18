@@ -1894,10 +1894,7 @@ more"; volunteered insight "should be togglable and also dynamic".
 | B31 | "Wrong fact" on any line, feeding the audit (decision 68) | Suppressed next turn |
 | B32 | "Pin as true": the person's word beats any inference | Quoted as theirs |
 | B40 | A rating on each answer adds it to the gold set; a weekly answer gallery is published for the owner | The gallery link in the PR |
+| B41 | INBOX 1300 C16, C26: "make more variations and make it compose the message like an ai"; greeting sub line rotates, composed (wire unused `composer_voice.today_line` into `dashboard.js:463`), pools grown by composition | No repeat in 20 asks |
 
 Owner: the Atlas agent (brief-assistant, running) builds 70, then B1 to B12
 and B30 to B32; later rows join its remaining list and the queue.
-
-## Placed from INBOX, 2026-10-18 (1300)
-
-- C16 and C26, the owner: "make more variations and make it compose the message like an ai", "have the composer improve other things when the ai isnt available like the dashboard greetings ... Maybe the sub text below the greeting can rotate". Today: 13 greeting phrases (`dashboard.js:226`), a count-driven sub line (`dashboard.js:463`), `composer_voice.today_line` with no caller, small `VOICE_VARIANTS` pools. Next: wire `today_line` into the sub line with rotation, grow the pools by composition rather than lists.
