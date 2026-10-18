@@ -2490,7 +2490,7 @@ MORE_TOPICS.append({
     ),
     "body": (
         "Autocorrect fixes a clear typo, such as teh, as you finish the "
-        "word, in the note boxes, the chat and Ask composers and the titles. "
+        "word, in the note boxes, the chat and Ask composers, the reminder boxes and the titles. "
         "The corrected word is underlined for five seconds: rest the pointer on "
         "it or click it for a small menu to keep it, put back what you typed, "
         "or edit the word (a document gets the same underline), "

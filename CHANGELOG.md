@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Autocorrect reaches the reminder boxes. The Magic add box and the Reminder text box carry `data-autocorrect`, so a clear typo (teh) is corrected as the word ends, underlined, with the same Keep, Put back and Edit the word menu; Harper's grammar suggestions are not applied here (`frontend/index.html`, `scratchpad/ui-sweeps/autocorrectreminder.js`, `tests/test_autocorrect.py`).
 - The popup agent numbers its answers in the text. It listed Sources and drew no marks; it now takes the `grounding` events and places Chat's own numbered marks (`addInlineCitations`) after every paint, over the same list its Sources rows draw, and each row shows its number (`palette.js`, `scratchpad/ui-sweeps/popupcite.js`, `tests/test_inline_citations.py`).
 - "in 2 weeks at 3pm" keeps its clock. `when.resolve` read a day-sized offset (days, weeks, months) as `now` plus the offset and dropped the "at 3pm"; the offset's day now takes the clock or part of day beside it, and hours offsets are unchanged (`recognise._with_clock`, `tests/test_when.py`).
 - A 20,000-character question answers in 0.7 s of route time, down from 4.1 s. `utilities.kind_of` ran seven times a turn and each run read all 364 words of the first 2,000 characters against the utility vocabulary; it is now cached and skips the per-word slip search past 40 words, since a utility is a short ask (`tests/test_composer_long_question.py`).
