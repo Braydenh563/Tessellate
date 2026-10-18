@@ -4308,14 +4308,14 @@ Passed with a number, no row needed: the frontend lint set, three serial runs of
 ## Start of the next PR (the owner, 2026-10-12, "log everything I've mentioned")
 
 First, in order:
-- Split the 17 seeded `composer_digest.py` rows plus `_prose` (18, seeded 2026-10-12 after the "Your the ... note" branch) back to 15 or below, and the 18 seeded functions that grew (INBOX 1298 says which; `python scripts/complexity.py`).
+- The 17 seeded `composer_digest.py` rows are split and deleted (composer-1018b). Left of INBOX 1298: the 18 seeded functions that grew (`_stream_lines` 93 to 106, `_generate_diagram` 27 to 47, `mcp_server.handle_request` 17 to 30 and 15 more whose first seed values were not recorded; `python scripts/complexity.py`).
 - Settings: the '?' help button in a section header sits mid-row; it belongs right-aligned with a token gap, left of "Reset N changes". No gap between a select ("5 minutes") and its per-row reset button.
 - Activity card: the Logs button wraps to its own row; pin it top-right (absolute) so the title never moves it.
 - OCR workspace through the "m o" chord opens with nothing selected and a blank viewer: select the first file, and when the page renderer package is missing say so with a link to Settings, Packages.
 - Packages: Live captions (whisper.cpp) has no install control; if it is not wired yet, show it disabled like llama.cpp.
 - Ask without the needle package: say so in a notice naming what it adds, never a quietly poorer answer; answer the owner's question of whether the composer needs it to call tools or only to retrieve.
 - Navigation chord: "m" (the old name's initial) to "t" (Tessellate), keeping "m" working. Not small: "t" is already the second key for Timeline (`TAB_JUMP_KEYS.t`, settings-wiring.js) and a repeated first key hides the guide, so "t t" would close it instead of jumping; Timeline needs another letter or the toggle rule changes. The whiteboard owns "m" (`wbOwnsChord`) and the key is named in help (`ai/help_chat.py`), the manual and `tests/test_manual_parity.py`. Owner asked for it, 2026-10-12.
-- Composer: past-tense reported speech after "A week on, by 9 August," ("you mentioned that you had just begun playing ..."); run the vendored Harper grammar rules over composer output (test-time lint first, then a post-pass for lead capitals such as "tuesday" and missing articles such as "go to gym").
+- Composer: past-tense reported speech and the Harper test-time lint are built (`tests/test_composer_grammar.py`); the post-pass for lead capitals and missing articles is `composer_digest.polish` (closed lists). Left: a Harper suggestion UI in plain boxes (cite-1018 "Left from step 2").
 - The agent cap: the owner cannot fund two Opus agents at once right now; run one at a time, Sonnet for named fixes.
 - Companion physics: when the companion falls it is glitchy and choppy, about 4 frames a second (owner, 2026-10-12). Measure the fall loop's frame times first (`companion-motion` tests, `avatars.js`), then fix the step rate. Owner again 2026-10-17 (bugs-1017 B87a): throwing a companion is "insanely framey and laggy and not clean"; still never measured.
 - Chord key: "s" is Settings (`CHORD_ACTIONS.s`), so "View the Stack" on "s" collides; pick a free letter.

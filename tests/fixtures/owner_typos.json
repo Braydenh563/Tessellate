@@ -641,5 +641,21 @@
  {
   "typed": "what are ghose notes",
   "repaired": "what are those notes"
+ },
+ {
+  "typed": "can you turn on ghose mode for me",
+  "repaired": "can you turn on ghost mode for me"
+ },
+ {
+  "typed": "turn on ghose mode",
+  "repaired": "turn on ghost mode"
+ },
+ {
+  "typed": "it is happyer now",
+  "repaired": "it is happier now"
+ },
+ {
+  "typed": "busyer days and happyer weeks",
+  "repaired": "busier days and happier weeks"
  }
 ]

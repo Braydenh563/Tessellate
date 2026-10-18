@@ -186,11 +186,8 @@ with its owner named in the entry.
      Placed: WORLD_CLASS_PLAN 23 step 6.
 
 1298. **The owner, 2026-10-12, verbatim.** "Make the exceptions for the
-     complexity but mark them to be fixed start of next pr". First work of the
-     next PR: split the 16 `composer_digest.py` rows seeded into
-     `tests/complexity_seed.json` (`_single` 79, `_facts` 75, `_lines` 62,
-     `answer` 57 and 12 more) to 15 or below, deleting each row, with the
-     composer tests as the net. Also 18 seeded functions that grew this PR
+     complexity but mark them to be fixed start of next pr". The 17 `composer_digest.py` rows are split and deleted
+     (composer-1018b, the composer tests as the net). Left: 18 seeded functions that grew this PR
      (`_stream_lines` 93 to 106, `_generate_diagram` 27 to 47, `mcp_server.handle_request`
      17 to 30 and 15 more; `python scripts/complexity.py` lists them): bring each
      back to its seed.
