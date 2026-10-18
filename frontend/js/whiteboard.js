@@ -3113,7 +3113,7 @@ function wbEnsureSearchOptions(bar) {
     return button;
   };
   const word = make("wb-search-word", "ph:text-a-underline", "Whole word", "word");
-  const pattern = make("wb-search-regex", "ph:asterisk", "Pattern (a regular expression)", "regex");
+  const pattern = make("wb-search-regex", "ph:brackets-curly", "Pattern (a regular expression)", "regex");
   input?.after(word, pattern);
 }
 

@@ -446,12 +446,15 @@ def uncovered() -> dict[str, list[int]]:
 
 
 EXEMPT: dict[str, str] = {
+    "documents-prose.js:docLinkOfferAsk": "read: asks which note names the text mentions; applying an offer is an editor change, undone by the editor's own history",
     "lan-watch.js:lanAnswerDevice": "auth: a sign-in decision for a device; Other devices lists it again to remove",
     "lan-watch.js:lanDismissSwitchedOff": "settings: dismisses a notice; nothing of the person's is changed",
     "meaning.js:meaningNear": "read: asks which words are near the typed ones, shown as a filter",
     "meetings.js:enhanceRecording": "send: part of finishing a recording; the cleaned copy becomes the take and the save is the step",
     "meetings.js:startRecordingTranscription": "job: starts or stops work or a model; deletes no user data",
     "meetings.js:stopRecordingTranscription": "job: starts or stops work or a model; deletes no user data",
+    "whiteboard-map.js:wbMapExpandFromNote": "read: asks which headings and links to offer; the add is wbMapAddChosenBranches, one Undo step",
+    "whiteboard-map.js:wbMapSuggestBranches": "read: asks which notes to offer as branches; the add is wbMapAddChosenBranches, one Undo step",
     "settings-controls.js:(anonymous /auth/pin)": "auth: sign-in, recovery or lock; no user data",
     "settings-controls.js:(anonymous /auth/pin/forget)": "auth: sign-in, recovery or lock; no user data",
     "settings-controls.js:makeMaintenanceShortcut": "job: starts or stops work or a model; deletes no user data",
