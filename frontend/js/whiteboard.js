@@ -16668,7 +16668,11 @@ async function refreshBoardList(justCreated = null) {
   //: board"); the Library's gallery and counts already hid it while empty
   //: (`libraryListsBoard`), and this picker was the one place that offered
   //: an empty board nobody made. Kept while it is the board on screen.
-  const boards = listed.filter((b) => libraryListsBoard(b) || (b.id == null && window.currentBoardId == null));
+  //: Not at the landing, where nothing is open: its empty row sat in the
+  //: picker while the gallery above counted 0 boards and 0 maps.
+  const landing = $("wb-boards-landing");
+  const onCanvas = !landing || landing.classList.contains("hidden");
+  const boards = listed.filter((b) => libraryListsBoard(b) || (b.id == null && window.currentBoardId == null && onCanvas));
   if (justCreated && !boards.some((b) => b.id === justCreated.id)) {
     boards.push({ ...justCreated, node_count: 0, sketch_count: 0, object_count: 0 });
   }
@@ -21981,6 +21985,11 @@ function drawLibraryBoardsGallery(listed) {
   const counts = { all: boards.length, map: 0, board: 0 };
   for (const b of boards) counts[b.type === "map" ? "map" : "board"] += 1;
   renderBoardTypeFilter(counts);
+  //: The picker's static "Default board" row is not a board while the gallery
+  //: counts none: count and list say the same thing (audit 1018, item 11).
+  if (!boards.length && window.currentBoardId == null) {
+    for (const opt of $("wb-board-select")?.querySelectorAll('option[value=""]') || []) opt.remove();
+  }
   const inScope = window.wbBoardsOfTypeFilter(boards);
   const needle = ($("library-boards-search")?.value || "").trim().toLowerCase();
   const shown = window.wbVisibleBoards(inScope, needle);
