@@ -76,3 +76,24 @@ def test_today_line_names_an_untitled_note():
     for seed in range(6):
         line = composer_voice.today_line(notes, today=today, seed=seed)
         assert line and "your note" in line["text"].lower()
+
+
+def test_today_line_with_untitled_notes_never_says_the_latest_your_note():
+    """UX audit 2026-10-18: "Already today, twelve notes, the latest your note
+    from today." The count ends the sentence when the newest note has no title."""
+    today = date(2026, 10, 18)
+    notes = [
+        {"id": i, "content": f"ring the landlord {i}", "category": "Home", "tags": [], "created_at": "2026-10-18"}
+        for i in range(1, 13)
+    ]
+    for seed in range(6):
+        text = composer_voice.today_line(notes, today=today, seed=seed)["text"]
+        assert "the latest your" not in text and "the newest your" not in text
+        assert "twelve" in text.lower()
+
+
+def test_headline_does_not_repeat_the_sub_line_count():
+    from tessellate.ai import greeting_compose as g
+
+    phrases = [p for p, _ in g._context_phrases(g.NotebookFacts(total=40, today=12), "morning")]
+    assert not any("12" in p and "today" in p for p in phrases)
