@@ -34,6 +34,7 @@ import re
 import sys
 import zlib
 from collections import Counter
+from collections.abc import Iterable
 from contextvars import ContextVar
 from dataclasses import dataclass, field
 from datetime import date, datetime, time, timedelta
@@ -2102,7 +2103,86 @@ def _lead_figure(line: str) -> str | None:
     return found.text if found and found.start <= len("You've spent ") else None
 
 
+#: The composer's grammar pass (INBOX 1299): closed lists, no model. Words
+#: the person wrote are never touched: quoted spans, links, addresses, file
+#: names and a joke's or quote's own sentences are set aside first.
+_WEEKDAYS = "monday|tuesday|wednesday|thursday|friday|saturday|sunday"
+#: "may" and "march" are also words: they are months only beside a day number.
+_MONTH_NAMES = "january|february|april|june|july|august|september|october|november|december"
+_DAY_NAME = re.compile(rf"\b(?:{_WEEKDAYS}|{_MONTH_NAMES})\b", re.I)
+_DAY_OF_MONTH = re.compile(r"\b(?:(\d{1,2}(?:st|nd|rd|th)?) (may|march)|(may|march) (\d{1,2})(?:st|nd|rd|th)?)\b(?!:\d)", re.I)
+_SET_ASIDE = re.compile(
+    r"“[^”]*”|\"[^\"\n]*\"|`[^`]*`|\[[^\]]*\]\([^)]*\)|https?://\S+|\S+@\S+|"
+    r"[\w-]+\.(?:txt|md|pdf|docx?|pptx?|xlsx?|csv|json|png|jpe?g|gif|zip|py|js|html?)\b|^>.*$",
+    re.M,
+)
+#: A sentence opens at a line start or after a full stop; "e.g." and "5 p.m."
+#: do not end one.
+_SENTENCE_START = re.compile(r"(?:^|(?<=[.!?] ))(\*\*)?([a-z][a-z']*)(?!\w)", re.M)
+_NOT_AN_END = re.compile(r"(?:\b(?:e\.g|i\.e|etc|vs|approx|dr|mr|mrs|ms|st|no|cf)|\b[ap]\.m)\. $", re.I)
+_VERB_TO = r"(?:go|goes|going|went|gone|head|heads|heading|headed|walk|walks|walking|walked|drive|drives|driving|drove|run|runs|running|ran|come|comes|coming|came|nip|nipped|pop|popped|back)"
+#: Places said with "the". Not school, work, bed, church, hospital, uni,
+#: college or town, which are said bare.
+_PLACES = (
+    "gym|shop|shops|supermarket|store|bank|library|pharmacy|chemist|chemists|dentist|doctor|cinema|beach|park|airport|station|"
+    "market|mall|barber|barbers|hairdresser|hairdressers|salon|bakery|butcher|butchers|pool|post office|optician|opticians|vet|office"
+)
+#: What may follow the place: the phrase must end there, so "gym class" and
+#: "bank holiday" (a noun on it) are left alone.
+_AFTER_PLACE = rf"(?=\s*(?:$|[.,;:!?)]|(?i:and|or|but|then|on|at|in|after|before|every|today|tonight|tomorrow|yesterday|this|next|last|again|for|with|so|when|if|as|by|from|until|once|twice|daily|weekly|early|late|now|soon|later|instead|still|too|to|{_WEEKDAYS})\b))"
+_NEEDS_THE = re.compile(rf"\b((?i:{_VERB_TO}(?: back)?)) to ({_PLACES}){_AFTER_PLACE}")
+
+
+def _capital(m: re.Match) -> str:
+    word = m.group(2)
+    if _NOT_AN_END.search(m.string[max(0, m.start() - 12):m.start()]):
+        return m.group(0)
+    known = _dictionary()
+    if word in ("a", "i") or word in _WEEKDAYS or (known and len(word) > 1 and word in known):
+        return f"{m.group(1) or ''}{word[0].upper()}{word[1:]}"
+    return m.group(0)
+
+
+def polish(text: str, keep: Iterable[str] = ()) -> str:
+    """`text`, composed by the app, with its lead capitals, day and month
+    names and "to gym" (to the gym) fixed. `keep` holds sentences that are the
+    person's own words (a joke, a quote), left exactly as they are."""
+    held: list[str] = []
+
+    def hold(m: re.Match) -> str:
+        held.append(m.group(0))
+        return f"{len(held) - 1}"
+
+    for phrase in sorted({k.strip() for k in keep if k and k.strip()}, key=len, reverse=True):
+        text = re.sub(re.escape(phrase), hold, text, flags=re.I)
+    text = _SET_ASIDE.sub(hold, text)
+    text = _NEEDS_THE.sub(r"\1 to the \2", text)
+    text = _DAY_NAME.sub(lambda m: m.group(0).capitalize(), text)
+    text = _DAY_OF_MONTH.sub(lambda m: m.group(0).title() if m.group(1) or m.group(3) else m.group(0), text)
+    text = _SENTENCE_START.sub(_capital, text)
+    return re.sub("(\\d+)", lambda m: held[int(m.group(1))], text)
+
+
+def _polish_out(out: _Out, kind: str) -> None:
+    """The composed lines, said with the grammar pass. A web answer is the
+    pages' own words under a one-line lead, so it is not touched."""
+    if kind == "web":
+        return
+    keep = []
+    for v in _VIEWS.get():
+        for s in v.sentences if _context_note(v) else ():
+            text = s.text.strip().rstrip(".!")
+            #: Said without its "Joke:" label, so the words alone are kept too.
+            head = _PREFIX.match(text)
+            keep += [text, head.group(2)] if head else [text]
+    for lines in (out.lines, out.more, out.closing, out.next):
+        lines[:] = [polish(line, keep) for line in lines]
+    if out.offer and out.offer.get("label"):
+        out.offer = {**out.offer, "label": polish(str(out.offer["label"]), keep)}
+
+
 def _result(out: _Out, kind: str, question: str) -> dict:
+    _polish_out(out, kind)
     #: One paragraph a line: a single newline inside a paragraph is a space
     #: to every markdown reader, so the labelled lines ran together.
     paragraphs = list(out.lines) + out.more + out.closing[: 2 + len(out.insights)]
