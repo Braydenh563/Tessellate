@@ -153,6 +153,10 @@ with its owner named in the entry.
           open with one row "0:03 All right, um, this is a test and this is the meeting test.
           Yay") on the recordings ther eis no way to copy individual or multiple lines of the
           transcript
+     C41. (mid-run, 2026-10-18, screenshot: force graph, labels overlap nodes and each other
+          ("had design class today..." on "Ice Breakers:", "Follow- Up Questions:" on "Here are
+          some refined..."), edges cross through clusters, two "Ice Breakers:" labels) and the
+          force graph still gets a little messy and hard to look at
      **Triage 2026-10-18** (two Haiku audits, each bug reproduced in the app unless noted;
      rungs: H Haiku, S Sonnet, O Opus; "now" = this run's batches, "plan" = placed).
      Batch 1, bugs, Sonnet or Haiku, now: C10 H (`settings-panes.js:1499` lacks `quick:

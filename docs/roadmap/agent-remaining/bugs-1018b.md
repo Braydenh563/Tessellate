@@ -39,6 +39,7 @@ audits reproduced each bug in the app (ports 8791, 8792). A row is **open**,
 | C37 graph box titles clipped, no ellipsis; nodes all one size | O, design batch 2 | open | a question is a bug report: size by weight (links or uses) and a label line-clamp with ellipsis |
 | C39 timeline opens on empty future days | S, next free Sonnet | open | screenshot: seven empty future rows above Today; open scrolled so Today is the first row, future reachable by scrolling up |
 | C40 recording transcript lines cannot be copied | S, with C34 | open | per-line copy on hover or focus, shift-click range select, "Copy selected" and "Copy all" (with or without times) |
+| C41 force graph messy | O, graph batch with C11, C27, C37 | open | screenshot: labels collide, edges cross clusters, duplicate titles unexplained; label collision avoidance, cluster separation, edge bundling or fade, measured overlap count before and after |
 | C04 UML, ERD, wireframe sets | plan | placed | WHITEBOARD_PLAN |
 | C16, C26 composer variety, greeting sub line | plan | placed | CHAT_PLAN; `composer_voice.today_line` unused |
 | C24 Logs panel scroll | none | not reproduced | equal heights at five sizes; Settings nav overflow placed in WORLD_CLASS row 32 |
