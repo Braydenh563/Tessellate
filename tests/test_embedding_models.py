@@ -152,7 +152,7 @@ def test_a_repo_id_can_never_name_a_directory_outside_the_cache(tmp_path, monkey
     assert path.name == "models--..--..--..--etc--passwd"
 
 
-def test_a_directory_outside_the_cache_root_is_never_deleted(tmp_path, monkeypatch):
+def test_a_directory_outside_the_cache_root_is_never_deleted(tmp_path, monkeypatch, app_state):
     """Belt and braces behind the two rules above. If a future change ever lets
     a path out of the cache, this is what stops `rmtree` following it."""
     monkeypatch.setattr(embedmodels, "cache_root", lambda: tmp_path / "hub")

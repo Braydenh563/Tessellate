@@ -16,7 +16,7 @@ from __future__ import annotations
 import re
 from datetime import date, timedelta
 
-from tessellate.ai import composer, composer_digest as digest, realise, utilities
+from tessellate.ai import composer, realise, recognise, utilities
 
 #: At most this many lines under the opening; the rest are on the right.
 SHOWN = 8
@@ -44,18 +44,32 @@ _DATES = re.compile(
     r"\b(?:all|every|any) (?:the |my )?(?:dates?|deadlines?)\b|\bwhat do i have coming up\b",
     re.I,
 )
-_TIME_WORDS = (
-    (re.compile(r"\btoday\b", re.I), "today", 0),
-    (re.compile(r"\btomorrow\b", re.I), "tomorrow", 1),
-    (re.compile(r"\bnext week\b", re.I), "next week", 14),
-    (re.compile(r"\bthis week\b", re.I), "in the next seven days", 7),
-    (re.compile(r"\bthis month\b", re.I), "this month", -1),
-    (re.compile(r"\bsoon\b", re.I), "in the next two weeks", 14),
-)
+
+
+def clean(question: str) -> str:
+    """The question without the stray marks a hurried hand leaves (INBOX 808:
+    "'what is there about a gaming mouse?\\\\'" searched with the backslash
+    kept): slashes and quotes at its ends, doubled spaces."""
+    text = " ".join((question or "").split())
+    return text.lstrip("\\/'\"` ").rstrip("\\/'\"` ")
 
 
 def _q(question: str) -> str:
-    return digest.clean(question).rstrip("?.! ")
+    return clean(question).rstrip("?.! ")
+
+
+class _Helpers:
+    """The digest's day, row, fact and span makers. The digest binds them when
+    it loads (`bind`), so this module never imports it back (a cycle)."""
+
+    day = row = fact = span = None
+
+
+_h = _Helpers()
+
+
+def bind(day, row, fact, span) -> None:  # noqa: ANN001
+    _h.day, _h.row, _h.fact, _h.span = day, row, fact, span
 
 
 def list_target(question: str) -> tuple[str, str] | None:
@@ -81,10 +95,7 @@ def window_of(question: str) -> tuple[str, int]:
     to the month's end, 99999 every date ahead."""
     if re.search(r"\b(?:all|every) (?:the |my )?dates?\b", question, re.I):
         return "ahead in your notes", 99999
-    for pattern, said, days in _TIME_WORDS:
-        if pattern.search(question):
-            return said, days
-    return "in the next two weeks", 14
+    return recognise.ahead_window(question) or ("in the next two weeks", 14)
 
 
 def kind(question: str) -> str | None:
@@ -106,7 +117,7 @@ def kind(question: str) -> str | None:
 
 
 def _day(d: date, today: date) -> str:
-    return digest._day(d, today)
+    return _h.day(d, today)
 
 
 def _plural(n: int, word: str) -> str:
@@ -114,7 +125,7 @@ def _plural(n: int, word: str) -> str:
 
 
 def _cite(out, view, sentence, said: str) -> None:  # noqa: ANN001
-    out.rows.append(digest._row(said, digest.Fact(view, sentence, "", sentence.text)))
+    out.rows.append(_h.row(said, _h.fact(view, sentence, "", sentence.text)))
 
 
 def _sentence_at(view, at: int):  # noqa: ANN001
@@ -218,7 +229,7 @@ def _mentions(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN00
         sentence = next((s for s in view.sentences if pattern.search(s.text)), view.sentences[0])
         said = f"{_day(view.written, today)}: {_trim(sentence.text)}" if view.written else _trim(sentence.text)
         lines.append((said, view, sentence))
-    _block(out, f"You mentioned {what} {times}, in {notes}, {digest._span([v for v, _ in hits], today)}.", lines)
+    _block(out, f"You mentioned {what} {times}, in {notes}, {_h.span([v for v, _ in hits], today)}.", lines)
     return True
 
 
@@ -268,7 +279,7 @@ def _listed(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     if not members:
         return False
     members.sort(key=lambda v: (v.written or date.min, -v.rank), reverse=True)
-    span = digest._span(members, today).removeprefix("on ")
+    span = _h.span(members, today).removeprefix("on ")
     shown = [view for view in members[:SHOWN] if view.sentences]
     lines = [(f"{_title(view)}, {_day(view.written, today)}" if view.written else _title(view), view, view.sentences[0]) for view in shown]
     _block(out, f"You have {_plural_words(len(members), 'note')} {where}, {span}:", lines)

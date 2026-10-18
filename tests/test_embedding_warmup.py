@@ -32,8 +32,11 @@ class _Service:
 
 
 @pytest.fixture
-def fresh_warmup(monkeypatch):
-    """Each test starts from a process that has not warmed yet, with no pause."""
+def fresh_warmup(monkeypatch, app_state):
+    """Each test starts from a process that has not warmed yet, with no pause.
+
+    `app_state` because the warm-up thread reads the settings: without it the
+    thread starts the app in the repo's data folder."""
     monkeypatch.setattr(embeddings, "_warmup", {"running": False, "started": False, "error": False})
     monkeypatch.setattr(embeddings, "WARMUP_DELAY_SECONDS", 0)
     monkeypatch.setattr(embeddings, "_pulse", {"at": 0.0})

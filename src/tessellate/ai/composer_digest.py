@@ -43,7 +43,8 @@ from datetime import date, datetime, time, timedelta
 from functools import lru_cache
 from pathlib import Path
 
-from tessellate.ai import composer, composer_tables, glossary, realise, verdicts
+from tessellate.ai import composer, composer_lists, composer_tables, glossary, realise, verdicts
+from tessellate.ai.composer_lists import clean
 from tessellate.ai import recognise as recogniser
 from tessellate.ai import when as when_words
 
@@ -352,14 +353,6 @@ _ASKS = {
         re.I,
     ),
 }
-
-
-def clean(question: str) -> str:
-    """The question without the stray marks a hurried hand leaves (INBOX 808:
-    "'what is there about a gaming mouse?\\\\'" searched with the backslash
-    kept): slashes and quotes at its ends, doubled spaces."""
-    text = " ".join((question or "").split())
-    return text.lstrip("\\/'\"` ").rstrip("\\/'\"` ")
 
 
 #: A question that opens with none of these is a topic ("games notes"):
@@ -1966,8 +1959,6 @@ def _early(out: _Out, kind: str, asked: str, question: str, views: list, today: 
     abbr = glossary.asked(question)
     if abbr and _stands_for(out, abbr, views, today):
         return _result(out, "fact", asked)
-    from tessellate.ai import composer_lists  # lazily: it reads this module's helpers
-
     computed = composer_lists.kind(asked)
     if computed and composer_lists.answer(out, computed, asked, views, today):
         #: A day, a count or a filing worked out from the notes (probes P10
@@ -2606,3 +2597,6 @@ def web(question: str, pages: list[dict], composed: dict | None = None) -> dict 
     n = len(out.lines)
     out.lines.insert(0, f"I searched the web for “{asked}” and read {realise.count_word(n)} {'page' if n == 1 else 'pages'}; each is under the answer to read here.")
     return _result(out, "web", question)
+
+
+composer_lists.bind(_day, _row, Fact, _span)

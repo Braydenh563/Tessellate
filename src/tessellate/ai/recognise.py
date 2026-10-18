@@ -1075,6 +1075,25 @@ def _nth_in_month(found: re.Match, anchor: date, tense: str | None) -> date | No
     return max(gone, default=None) if tense == "past" else min((d for d in days if d >= anchor), default=None)
 
 
+#: Time words that bound "what is coming up": (pattern, how it is said, days ahead).
+#: -1 runs to the month's end.
+_AHEAD_WORDS = (
+    (re.compile(r"\btoday\b"), "today", 0),
+    (re.compile(r"\btomorrow\b"), "tomorrow", 1),
+    (re.compile(r"\bnext week\b"), "next week", 14),
+    (re.compile(r"\bthis week\b"), "in the next seven days", 7),
+    (re.compile(r"\bthis month\b"), "this month", -1),
+    (re.compile(r"\bsoon\b"), "in the next two weeks", 14),
+)
+
+
+def ahead_window(question: str) -> tuple[str, int] | None:
+    """`(how it is said, days ahead)` for the time word in a question about
+    what is due or coming up, or None when it names none."""
+    low = str(question or "").lower()
+    return next(((said, days) for pattern, said, days in _AHEAD_WORDS if pattern.search(low)), None)
+
+
 def span(phrase: str, anchor: date, tense: str | None = None) -> tuple[date, date, str] | None:
     """(first day, last day, grain) the phrase names, read against `anchor`,
     or None. `tense` ("past", "future" or None) picks between the Friday
