@@ -76,6 +76,7 @@ import re
 from collections import Counter
 from dataclasses import dataclass, field
 from datetime import date, datetime
+from typing import Any
 
 from tessellate.ai import act_registry, composer_ack, composer_overview, composer_parts, composer_replies, composer_tables, grounding, phrasing, question_noise, realise, spelling, utilities, variants
 from tessellate.ai import recognise as rec
@@ -2809,116 +2810,174 @@ def _standing(turns: list[dict]) -> list[dict]:
     return out
 
 
-def _follow_one(question: str, turns: list[dict]) -> FollowOn | None:
-    last = turns[-1]
-    previous, said = str(last.get("question") or "").strip(), str(last.get("answer") or "")
-    text = (question or "").strip()
-    if _MORE.match(text):
-        #: A "more" after a "more" still means the question before both.
-        for turn in reversed(turns):
-            if not _MORE.match(str(turn.get("question") or "")):
-                previous = str(turn.get("question") or "").strip()
-                break
-        said = "\n".join(str(t.get("answer") or "") for t in turns[-3:])
-        return FollowOn(previous, previous, said, "more")
+#: A reader that does not recognise the turn returns this, so the next one is
+#: tried; None means "recognised, and nothing to lean on", which ends the read.
+_NOT_THIS: Any = object()
+
+
+def _follow_more(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
+    if not _MORE.match(text):
+        return _NOT_THIS
+    #: A "more" after a "more" still means the question before both.
+    for turn in reversed(turns):
+        if not _MORE.match(str(turn.get("question") or "")):
+            previous = str(turn.get("question") or "").strip()
+            break
+    said = "\n".join(str(t.get("answer") or "") for t in turns[-3:])
+    return FollowOn(previous, previous, said, "more")
+
+
+def _follow_ordinal(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
     ordinal = _ORDINAL.search(text)
-    if ordinal:
-        names = _named_notes(said)
-        index = _ORDINALS[ordinal.group(1).lower()]
-        if names and (index == -1 or index < len(names)):
-            name = names[index]
-            resolved = text[: ordinal.start()] + f"“{name}”" + text[ordinal.end():]
-            return FollowOn(resolved, previous, "", "ordinal")
-        return None
+    if not ordinal:
+        return _NOT_THIS
+    names = _named_notes(str(last.get("answer") or ""))
+    index = _ORDINALS[ordinal.group(1).lower()]
+    if names and (index == -1 or index < len(names)):
+        resolved = text[: ordinal.start()] + f"“{names[index]}”" + text[ordinal.end():]
+        return FollowOn(resolved, previous, "", "ordinal")
+    return None
+
+
+def _follow_correction(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
     correction = _CORRECTION.match(text)
-    if correction:
-        #: The second alternative ("I meant the dentist note") fills x2, not x.
-        said = (correction.group("x") or correction.group("x2") or "").rstrip(" \t.?!")
-        prefer = re.sub(r"^(?:the|my|that|this)\s+", "", said.strip(), flags=re.I)
-        prefer = re.sub(r"\s(?:one|note|entry)$", "", prefer, flags=re.I).strip()
-        if prefer:
-            return FollowOn(previous, previous, "", "correction", prefer)
-    length = _LENGTH.match(text)
-    if length:
-        shorter = text.lstrip().lower().startswith(("shorter", "briefer", "in short", "tl;dr", "tldr", "summarise that", "summarize that", "less"))
-        base = _without_length(previous)
-        return FollowOn(f"briefly, {base}" if shorter else f"{base.rstrip('?.!')} in detail?", previous, "", "length", str(last.get("prefer") or ""))
+    if not correction:
+        return _NOT_THIS
+    #: The second alternative ("I meant the dentist note") fills x2, not x.
+    said = (correction.group("x") or correction.group("x2") or "").rstrip(" \t.?!")
+    prefer = re.sub(r"^(?:the|my|that|this)\s+", "", said.strip(), flags=re.I)
+    prefer = re.sub(r"\s(?:one|note|entry)$", "", prefer, flags=re.I).strip()
+    return FollowOn(previous, previous, "", "correction", prefer) if prefer else _NOT_THIS
+
+
+def _follow_length(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
+    if not _LENGTH.match(text):
+        return _NOT_THIS
+    shorter = text.lstrip().lower().startswith(("shorter", "briefer", "in short", "tl;dr", "tldr", "summarise that", "summarize that", "less"))
+    base = _without_length(previous)
+    return FollowOn(f"briefly, {base}" if shorter else f"{base.rstrip('?.!')} in detail?", previous, "", "length", str(last.get("prefer") or ""))
+
+
+def _follow_window(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
     window = _WINDOW_ONLY.match(text)
     window_text = window.group("w").rstrip(" \t?.!") if window else ""
     found_time = when_words.find(window_text) if window else []
     #: Only a turn that is nothing but a time ("and last week?"): "what did
     #: I write yesterday" is a question of its own.
-    if found_time and not window_text.replace(found_time[0][2], "").strip(" ,"):
-        phrase = found_time[0][2]
-        base = previous
-        for _s, _e, old_phrase in when_words.find(previous):
-            base = base.replace(old_phrase, "")
-        base = " ".join(base.split()).rstrip(" ?.!")
-        return FollowOn(f"{base} {phrase}?", previous, "", "window")
+    if not (found_time and not window_text.replace(found_time[0][2], "").strip(" ,")):
+        return _NOT_THIS
+    base = previous
+    for _s, _e, old_phrase in when_words.find(previous):
+        base = base.replace(old_phrase, "")
+    base = " ".join(base.split()).rstrip(" ?.!")
+    return FollowOn(f"{base} {found_time[0][2]}?", previous, "", "window")
+
+
+def _follow_meant(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
     meant = _MEANT.match(text)
-    if meant:
-        word = meant.group(1).rstrip(" \t?").rstrip("”\"'").strip(" \t?")
-        tokens = re.findall(r"[\w']+", previous)
-        candidates = [t for t in tokens if t.lower() != word.lower() and len(t) >= 2]
-        if not candidates:
-            return None
-        typed = min(candidates, key=lambda t: question_noise.distance(t, word))
-        if question_noise.distance(typed, word) > max(1.0, question_noise.allowance(word) + 0.5):
-            return None
-        resolved = re.sub(rf"\b{re.escape(typed)}\b", word, previous, count=1)
-        return FollowOn(resolved, previous, "", "did_you_mean")
-    bare = _BARE.match(text) or _BARE.match(rephrase(text))
-    if bare:
-        subject = _asked_span(previous, subject_terms(previous))
-        if subject:
-            start = previous.lower().find(subject.lower())
-            article = re.search(r"\b(?:the|my|our|a|an)\s+$", previous[:start], re.I)
-            subject = previous[article.start():start] + subject if article else subject
-            word = bare.group(1).lower()
-            word = "why" if word == "how come" else word
-            verb = {"why": "", "how": "do I", "how many": "", "how much": "is", "since when": ""}.get(word, "is")
-            resolved = " ".join(w for w in (word.capitalize(), verb, subject) if w) + "?"
-            return FollowOn(resolved, previous, "", word)
+    if not meant:
+        return _NOT_THIS
+    word = meant.group(1).rstrip(" \t?").rstrip("”\"'").strip(" \t?")
+    tokens = re.findall(r"[\w']+", previous)
+    candidates = [t for t in tokens if t.lower() != word.lower() and len(t) >= 2]
+    if not candidates:
         return None
+    typed = min(candidates, key=lambda t: question_noise.distance(t, word))
+    if question_noise.distance(typed, word) > max(1.0, question_noise.allowance(word) + 0.5):
+        return None
+    resolved = re.sub(rf"\b{re.escape(typed)}\b", word, previous, count=1)
+    return FollowOn(resolved, previous, "", "did_you_mean")
+
+
+def _follow_bare(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
+    bare = _BARE.match(text) or _BARE.match(rephrase(text))
+    if not bare:
+        return _NOT_THIS
+    subject = _asked_span(previous, subject_terms(previous))
+    if not subject:
+        return None
+    start = previous.lower().find(subject.lower())
+    article = re.search(r"\b(?:the|my|our|a|an)\s+$", previous[:start], re.I)
+    subject = previous[article.start():start] + subject if article else subject
+    word = bare.group(1).lower()
+    word = "why" if word == "how come" else word
+    verb = {"why": "", "how": "do I", "how many": "", "how much": "is", "since when": ""}.get(word, "is")
+    resolved = " ".join(w for w in (word.capitalize(), verb, subject) if w) + "?"
+    return FollowOn(resolved, previous, "", word)
+
+
+def _swap_in_shape(previous: str, other: str, subject: str, entity: bool) -> FollowOn:
+    """The previous question with its subject swapped for `other`, when the
+    question has a shape of its own."""
+    start = previous.lower().find(subject.lower())
+    before = previous[:start]
+    if re.search(r"\b(the|my|a|an)\s+$", before, re.I):
+        other = re.sub(r"^(the|my|a|an)\s+", "", other, flags=re.I)
+    resolved = before + other + previous[start + len(subject):]
+    return FollowOn(resolved, previous, "", "entity" if entity else "subject")
+
+
+def _swap_plain_what(previous: str, other: str, subject: str, entity: bool) -> FollowOn:
+    #: A plain "what" asked again of something else ("what did I do
+    #: at the gym", then "what about running?"): the subject's phrase
+    #: (its preposition and article too) gives way to the new one.
+    start = previous.lower().find(subject.lower())
+    lead_in = re.search(r"(?:\b(?:at|in|on|for|about|with|of|to)\s+)?(?:\b(?:the|my|a|an)\s+)?$", previous[:start], re.I)
+    head = previous[: lead_in.start() if lead_in else start].rstrip()
+    tail = previous[start + len(subject):]
+    kind = "entity" if entity else "subject"
+    if re.search(r"\b(?:is|are|was|were|'s)$", head, re.I):
+        #: "What is the launch plan?" then "what about the boiler?":
+        #: not "what is the boiler", which asks something else.
+        return FollowOn(f"What do my notes say about {other}?", previous, "", kind)
+    bare_other = re.sub(r"^(the|my|a|an)\s+", "", other, flags=re.I)
+    joined = f"with {other}" if entity else f"about {bare_other}"
+    return FollowOn(f"{head} {joined}{tail}", previous, "", kind)
+
+
+def _follow_swap(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
     swap = _SWAP.match(text) or _SWAP.match(rephrase(text))
     if swap and swap.group("y") is not None and not text.rstrip().endswith("?"):
         swap = None
-    if swap:
-        other = (swap.group("x") or swap.group("y") or "").rstrip(" \t?.!").strip()
-        terms = subject_terms(previous)
-        subject = _asked_span(previous, terms)
-        #: Only a question with a shape of its own is asked again of the
-        #: new subject; "what about X" after a plain "what" is its own
-        #: question, and stands as typed.
-        entity = bool(re.fullmatch(r"(?:[A-Z][\w'-]*)(?: [A-Z][\w'-]*)*", other))
-        if other and subject and classify(previous) not in ("what", "recent") and subject_terms(other):
-            start = previous.lower().find(subject.lower())
-            before = previous[:start]
-            if re.search(r"\b(the|my|a|an)\s+$", before, re.I):
-                other = re.sub(r"^(the|my|a|an)\s+", "", other, flags=re.I)
-            resolved = before + other + previous[start + len(subject):]
-            return FollowOn(resolved, previous, "", "entity" if entity else "subject")
-        if other and subject and subject_terms(other):
-            #: A plain "what" asked again of something else ("what did I do
-            #: at the gym", then "what about running?"): the subject's phrase
-            #: (its preposition and article too) gives way to the new one.
-            start = previous.lower().find(subject.lower())
-            lead_in = re.search(r"(?:\b(?:at|in|on|for|about|with|of|to)\s+)?(?:\b(?:the|my|a|an)\s+)?$", previous[:start], re.I)
-            head = previous[: lead_in.start() if lead_in else start].rstrip()
-            tail = previous[start + len(subject):]
-            if re.search(r"\b(?:is|are|was|were|'s)$", head, re.I):
-                #: "What is the launch plan?" then "what about the boiler?":
-                #: not "what is the boiler", which asks something else.
-                return FollowOn(f"What do my notes say about {other}?", previous, "", "entity" if entity else "subject")
-            bare_other = re.sub(r"^(the|my|a|an)\s+", "", other, flags=re.I)
-            joined = f"with {other}" if entity else f"about {bare_other}"
-            return FollowOn(f"{head} {joined}{tail}", previous, "", "entity" if entity else "subject")
+    if not swap:
+        return _NOT_THIS
+    other = (swap.group("x") or swap.group("y") or "").rstrip(" \t?.!").strip()
+    subject = _asked_span(previous, subject_terms(previous))
+    #: Only a question with a shape of its own is asked again of the
+    #: new subject; "what about X" after a plain "what" is its own
+    #: question, and stands as typed.
+    entity = bool(re.fullmatch(r"(?:[A-Z][\w'-]*)(?: [A-Z][\w'-]*)*", other))
+    if other and subject and classify(previous) not in ("what", "recent") and subject_terms(other):
+        return _swap_in_shape(previous, other, subject, entity)
+    if other and subject and subject_terms(other):
+        return _swap_plain_what(previous, other, subject, entity)
+    return None
+
+
+def _follow_pronoun(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
+    if not (_PRONOUN.search(text) and not [t for t in subject_terms(text) if not _PRONOUN.fullmatch(t)]):
         return None
-    if _PRONOUN.search(text) and not [t for t in subject_terms(text) if not _PRONOUN.fullmatch(t)]:
-        subject = _asked_span(previous, subject_terms(previous))
-        if subject:
-            resolved = _PRONOUN.sub(lambda _match: subject, text, count=1)
-            return FollowOn(resolved, previous, "", "pronoun")
+    subject = _asked_span(previous, subject_terms(previous))
+    if not subject:
+        return None
+    return FollowOn(_PRONOUN.sub(lambda _match: subject, text, count=1), previous, "", "pronoun")
+
+
+#: Tried in this order: a "more" is not a correction, and a correction is not a swap.
+_FOLLOW_READERS = (
+    _follow_more, _follow_ordinal, _follow_correction, _follow_length, _follow_window, _follow_meant,
+    _follow_bare, _follow_swap, _follow_pronoun,
+)
+
+
+def _follow_one(question: str, turns: list[dict]) -> FollowOn | None:
+    last = turns[-1]
+    previous = str(last.get("question") or "").strip()
+    text = (question or "").strip()
+    for reader in _FOLLOW_READERS:
+        got = reader(text, previous, last, turns)
+        if got is not _NOT_THIS:
+            return got
     return None
 
 
@@ -4324,146 +4383,120 @@ def _checklist_or_until(out: "_Answer", said: object, question: str, views: list
     return None
 
 
-def _compose(
-    question: str,
-    notes: list[dict],
-    *,
-    today: date | None,
-    recent: bool,
-    embed,  # noqa: ANN001
-    said: str,
-    previous: str,
-    voice: str,
-    now: datetime | None,
-    salt: str,
-    turn: int | None,
-    dialogue: Dialogue | None,
-    prefer: str,
-) -> dict:
-    """`compose`'s body, inside the conversation's salt."""
-    voice = composer_tables.voice_of(voice)
-    today = today or date.today()
+def _early_answer(question: str, notes: list[dict], *, said: str, recent: bool, today: date, embed, voice: str, salt: str, turn: int | None, now: datetime | None) -> dict | None:  # noqa: ANN001
+    """The answers that need no notes read: a worked sum, or a question of
+    several parts answered part by part."""
     #: A sum is answered whatever retrieval did: the route hands "what is
     #: 12 * 7" the newest notes when nothing matches, and those used to be
     #: listed instead of the 84 (engine probe P3).
-    if not said:
-        worked = _utility(question, now or datetime.combine(today, datetime.now().time()), salt)
-        if worked:
-            return worked
-    #: The newest notes answer a question with a time and no subject. When
-    #: retrieval fell back to them for a question with a subject ("summarise
-    #: my gym notes" with no gym note), the subject is answered, or said to
-    #: be in no note found (engine probe P7).
-    #: Unless retrieval read it as a recency ask outright ("What have I saved
-    #: recently?": "saved" is a verb there, not a subject; owner, 2026-10-17).
-    recent = recent and _still_recent(question)
-    if not recent and not said:
-        parts = split_parts(question)
-        if len(parts) > 1:
-            multi = _multi(question, parts, notes, today=today, embed=embed, voice=voice, salt=salt, turn=turn)
-            if multi:
-                return multi
-    if prefer:
-        #: A correction ("no, the gym one"): the notes it names first, the
-        #: ones the answer before quoted last (decision 35).
-        wanted = {_stem(w) for w in _words(prefer)}
-        quoted = dialogue.quoted_ids if dialogue is not None else set()
-        notes = sorted(
-            notes or [],
-            key=lambda n: (not (wanted & set(_words(str(n.get("content") or "")))), n.get("id") in quoted),
-        )
-    views_list = [v for v in (read_note(n, i) for i, n in enumerate(_distinct_ids(notes or []))) if v]
-    p = plan(question, today, recent=recent, embed=embed)
+    if said:
+        return None
+    worked = _utility(question, now or datetime.combine(today, datetime.now().time()), salt)
+    if worked:
+        return worked
+    parts = split_parts(question) if not recent else []
+    if len(parts) > 1:
+        return _multi(question, parts, notes, today=today, embed=embed, voice=voice, salt=salt, turn=turn) or None
+    return None
+
+
+def _note_views(notes: list[dict]) -> list:
+    return [v for v in (read_note(n, i) for i, n in enumerate(_distinct_ids(notes or []))) if v]
+
+
+def _correction_order(notes: list[dict], prefer: str, dialogue: Dialogue | None) -> list[dict]:
+    """A correction ("no, the gym one"): the notes it names first, the ones the
+    answer before quoted last (decision 35)."""
+    wanted = {_stem(w) for w in _words(prefer)}
+    quoted = dialogue.quoted_ids if dialogue is not None else set()
+    return sorted(
+        notes or [],
+        key=lambda n: (not (wanted & set(_words(str(n.get("content") or "")))), n.get("id") in quoted),
+    )
+
+
+def _steer_to_correction(p, prefer: str, notes: list[dict]) -> None:  # noqa: ANN001
     #: A note the correction names that is not among these notes (a later
     #: turn's search found others) orders nothing and asks for nothing: its
     #: words would only make the answer "Nothing I found mentions" them.
     if prefer and any({_stem(w) for w in _words(prefer)} & set(_words(str(n.get("content") or ""))) for n in notes or []):
         p.window, p.kind = None, (p.kind if p.kind != "recall" else "fact")
         p.terms = list(dict.fromkeys([*p.terms, *_words(prefer)]))
-    views_list, refused = _filtered(views_list, p)
-    if refused:
-        key, word = refused
-        return _result([("template", PHRASES[key]), ("template", PHRASES["open_quote"]), ("asked", _as_typed(word, question)),
-                        ("template", PHRASES["close_quote"]), ("template", PHRASES["stop"])], p.shape)
-    out = _Answer({v.id: v for v in views_list}, today)
-    _from_dialogue(out, dialogue)
-    out.said = said
-    out.subject = {_stem(t) for t in subject_terms(question)}
-    out.previous = (previous or "").lstrip()
-    out.voice = voice
-    out.question = question
-    shape = "recent" if recent else classify(question, embed)
-    typed = p.terms if shape != "recent" else []
-    unsure: list[dict] = []
-    question_noise.repair(" ".join((question or "").split()), unsure)
-    terms = _fit_terms(typed, views_list, unsure)
-    out.question = question
 
+
+def _meaning_maker(shape: str, views_list: list, embed):  # noqa: ANN001, ANN202
     def meaning_for(side_terms: list[str]) -> _Meaning:
         pool = sorted(_score(shape, side_terms, views_list), key=lambda s: (-s.score, s.rank, s.order))[:MEANING_POOL]
         return _Meaning(pool, embed, {_stem(t) for t in side_terms})
 
-    counted = _checklist_or_until(out, said, question, views_list, today)
-    if counted is not None:
-        return counted
+    return meaning_for
+
+
+def _window_gate(out: "_Answer", p, said: str, question: str, shape: str, views_list: list) -> tuple:  # noqa: ANN001
+    """A result when the question's window decides the answer, else the views
+    narrowed to the window."""
     if p.kind == "recall" and p.window and not said:
-        shape = "recall"
         _recall(out, p, views_list, question)
-        return _result(out.parts, shape, out.rows, _recall_next(p.window, views_list))
+        return _result(out.parts, "recall", out.rows, _recall_next(p.window, views_list)), views_list
     if p.window and not said and views_list and not any(_in_window(v, p.window) for v in views_list):
         #: A window no note found falls in: said, never answered from notes
         #: written at another time.
         out.t("recall_none").asked(_as_typed(p.window_phrase, question)).t("stop")
-        return _result(out.parts, shape)
+        return _result(out.parts, shape), views_list
     if p.window and not said:
         views_list = [v for v in views_list if _in_window(v, p.window)]
         out.views = {v.id: v for v in views_list}
-    if shape == "recent":
-        _newest(out, views_list)
-    else:
-        sides = compare_sides(question) if shape == "compare" else None
-        if not (sides and _compare(out, sides, views_list, meaning_for)):
-            shape = "what" if shape == "compare" else shape
-            #: Read on the question as asked too: `rephrase` takes "what do my
-            #: notes say about" off, which is the frame that says it is broad
-            #: (INBOX 729: "what do my notes say about running" was answered
-            #: as one fact with the other notes tacked on by "Elsewhere").
-            broad = shape == "what" and bool(_BROAD.match(question) or _BROAD.match(rephrase(question)))
-            meaning = meaning_for(terms)
-            wish = length_wish(question)
-            chosen = select(
-                shape, terms, views_list,
-                limit=BROAD_NOTES if broad else FULL_POINTS if wish == "full" else MAX_POINTS,
-                meaning=meaning,
-                per_note=1 if broad else MAX_PER_NOTE,
-                said=said,
-            )
-            if not chosen:
-                bare = _bare_title(out, terms, views_list)
-                if bare is not None:
-                    return _result(out.parts, shape, out.rows)
-                return _nothing(shape, unsure, voice, [_as_typed(w, question) for w in _absent(typed, views_list)], out)
-            if wish == "brief":
-                chosen = [s for s in chosen if s.note_id == chosen[0].note_id]
-                broad = False
-                out.brief = True
-            pair = _disagreement(chosen)
-            if _confirmed_lead(out, question, terms):
-                pass
-            elif p.kind == "insight" and _insight_lead(out, question, terms, views_list):
-                broad = True
-            out.broad = broad
-            lead = _body(out, shape, chosen, terms, question, meaning, broad, {s.key for s in pair} if pair else set())
-            if pair:
-                _disagreements(out, pair, lead, terms)
-            elif not broad:
-                _clarify(out, shape, terms, lead, meaning, views_list)
-            _readings(out, question, terms, views_list)
-            if broad and p.kind != "insight":
-                _insight_close(out, question, terms, views_list)
-            _missing(out, terms, views_list)
-    if not out.rows:
-        return _nothing(shape, unsure, voice, out=out)
+    return None, views_list
+
+
+def _write_body(out: "_Answer", p, shape: str, chosen: list, terms: list, question: str, meaning, broad: bool, views_list: list) -> None:  # noqa: ANN001
+    pair = _disagreement(chosen)
+    if _confirmed_lead(out, question, terms):
+        pass
+    elif p.kind == "insight" and _insight_lead(out, question, terms, views_list):
+        broad = True
+    out.broad = broad
+    lead = _body(out, shape, chosen, terms, question, meaning, broad, {s.key for s in pair} if pair else set())
+    if pair:
+        _disagreements(out, pair, lead, terms)
+    elif not broad:
+        _clarify(out, shape, terms, lead, meaning, views_list)
+    _readings(out, question, terms, views_list)
+    if broad and p.kind != "insight":
+        _insight_close(out, question, terms, views_list)
+    _missing(out, terms, views_list)
+
+
+def _fill_selected(out: "_Answer", p, shape: str, question: str, terms: list, typed: list, unsure: list, views_list: list, said: str, embed, voice: str) -> dict | None:  # noqa: ANN001
+    """Choose the sentences and write the answer; a result only when there is
+    nothing to say."""
+    #: Read on the question as asked too: `rephrase` takes "what do my
+    #: notes say about" off, which is the frame that says it is broad
+    #: (INBOX 729: "what do my notes say about running" was answered
+    #: as one fact with the other notes tacked on by "Elsewhere").
+    broad = shape == "what" and bool(_BROAD.match(question) or _BROAD.match(rephrase(question)))
+    meaning = _meaning_maker(shape, views_list, embed)(terms)
+    wish = length_wish(question)
+    chosen = select(
+        shape, terms, views_list,
+        limit=BROAD_NOTES if broad else FULL_POINTS if wish == "full" else MAX_POINTS,
+        meaning=meaning,
+        per_note=1 if broad else MAX_PER_NOTE,
+        said=said,
+    )
+    if not chosen:
+        if _bare_title(out, terms, views_list) is not None:
+            return _result(out.parts, shape, out.rows)
+        return _nothing(shape, unsure, voice, [_as_typed(w, question) for w in _absent(typed, views_list)], out)
+    if wish == "brief":
+        chosen = [s for s in chosen if s.note_id == chosen[0].note_id]
+        broad = False
+        out.brief = True
+    _write_body(out, p, shape, chosen, terms, question, meaning, broad, views_list)
+    return None
+
+
+def _answer_dict(out: "_Answer", shape: str, question: str, terms: list, views_list: list, unsure: list) -> dict:
     quotes = "\n\n".join(row["sentence"] for row in out.rows)
     cited = {row["note_id"] for row in out.rows}
     next_parts = (_did_you_mean(unsure) + _next_questions(question, shape, terms, views_list, cited))[:3]
@@ -4489,6 +4522,88 @@ def _compose(
         #: the topic and the count when it quotes several notes (INBOX 729).
         "broad": bool(getattr(out, "broad", False)),
     }
+
+
+def _fresh_answer(views_list: list, today: date, dialogue: Dialogue | None, said: str, previous: str, voice: str, question: str) -> "_Answer":
+    out = _Answer({v.id: v for v in views_list}, today)
+    _from_dialogue(out, dialogue)
+    out.said = said
+    out.subject = {_stem(t) for t in subject_terms(question)}
+    out.previous = (previous or "").lstrip()
+    out.voice = voice
+    out.question = question
+    return out
+
+
+def _fill_by_shape(out: "_Answer", p, shape: str, question: str, terms: list, typed: list, unsure: list, views_list: list, said: str, embed, voice: str) -> tuple:  # noqa: ANN001
+    """Write the answer the shape asks for; the (possibly changed) shape and a
+    result only when there is nothing to say."""
+    if shape == "recent":
+        _newest(out, views_list)
+        return shape, None
+    sides = compare_sides(question) if shape == "compare" else None
+    if sides and _compare(out, sides, views_list, _meaning_maker(shape, views_list, embed)):
+        return shape, None
+    shape = "what" if shape == "compare" else shape
+    return shape, _fill_selected(out, p, shape, question, terms, typed, unsure, views_list, said, embed, voice)
+
+
+def _compose(
+    question: str,
+    notes: list[dict],
+    *,
+    today: date | None,
+    recent: bool,
+    embed,  # noqa: ANN001
+    said: str,
+    previous: str,
+    voice: str,
+    now: datetime | None,
+    salt: str,
+    turn: int | None,
+    dialogue: Dialogue | None,
+    prefer: str,
+) -> dict:
+    """`compose`'s body, inside the conversation's salt."""
+    voice = composer_tables.voice_of(voice)
+    today = today or date.today()
+    #: The newest notes answer a question with a time and no subject. When
+    #: retrieval fell back to them for a question with a subject ("summarise
+    #: my gym notes" with no gym note), the subject is answered, or said to
+    #: be in no note found (engine probe P7).
+    #: Unless retrieval read it as a recency ask outright ("What have I saved
+    #: recently?": "saved" is a verb there, not a subject; owner, 2026-10-17).
+    recent = recent and _still_recent(question)
+    early = _early_answer(question, notes, said=said, recent=recent, today=today, embed=embed, voice=voice, salt=salt, turn=turn, now=now)
+    if early:
+        return early
+    notes = _correction_order(notes, prefer, dialogue) if prefer else notes
+    views_list = _note_views(notes)
+    p = plan(question, today, recent=recent, embed=embed)
+    _steer_to_correction(p, prefer, notes)
+    views_list, refused = _filtered(views_list, p)
+    if refused:
+        key, word = refused
+        return _result([("template", PHRASES[key]), ("template", PHRASES["open_quote"]), ("asked", _as_typed(word, question)),
+                        ("template", PHRASES["close_quote"]), ("template", PHRASES["stop"])], p.shape)
+    out = _fresh_answer(views_list, today, dialogue, said, previous, voice, question)
+    shape = "recent" if recent else classify(question, embed)
+    typed = p.terms if shape != "recent" else []
+    unsure: list[dict] = []
+    question_noise.repair(" ".join((question or "").split()), unsure)
+    terms = _fit_terms(typed, views_list, unsure)
+    counted = _checklist_or_until(out, said, question, views_list, today)
+    if counted is not None:
+        return counted
+    decided, views_list = _window_gate(out, p, said, question, shape, views_list)
+    if decided is not None:
+        return decided
+    shape, nothing = _fill_by_shape(out, p, shape, question, terms, typed, unsure, views_list, said, embed, voice)
+    if nothing is not None:
+        return nothing
+    if not out.rows:
+        return _nothing(shape, unsure, voice, out=out)
+    return _answer_dict(out, shape, question, terms, views_list, unsure)
 
 
 # --- the brief a running model reads ------------------------------------------------
