@@ -510,3 +510,18 @@ def _deps_backend_id_patch(monkeypatch):
     service = deps.get_embeddings()
     monkeypatch.setattr(service, "backend_id", lambda: "some-other-model")
     return "some-other-model"
+
+
+def test_a_node_says_when_a_person_last_edited_it(client):
+    """INBOX 1300 C11: the hover card's Edited is a person's edit
+    (`edited_at`), not `updated_at`, which the app's own writes also move.
+    Null until edited, and left out of the slim payload while null."""
+    a = _save(client, "first words")
+    nodes = {n["id"]: n for n in client.get("/graph").json()["nodes"]}
+    assert nodes[a["id"]]["edited_at"] is None
+    slim = {n["id"]: n for n in client.get("/graph?slim=1").json()["nodes"]}
+    assert "edited_at" not in slim[a["id"]]
+    edit = client.put(f"/entries/{a['id']}", json={"content": "first words, changed"})
+    assert edit.status_code == 200
+    node = {n["id"]: n for n in client.get("/graph?slim=1").json()["nodes"]}[a["id"]]
+    assert datetime.fromisoformat(node["edited_at"]).tzinfo is not None

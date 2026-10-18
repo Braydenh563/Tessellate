@@ -29,18 +29,18 @@ audits reproduced each bug in the app (ports 8791, 8792). A row is **open**,
 | C21 theme preview revert and bar | O, design | fixed | hover 900 ms on card or eye: no preview; eye: notice 254x81 "Previewing the X theme." Apply/Cancel; undone on Cancel, eye again, section switch, close, hidden tab, Escape; Apply keeps it (`theme1300.js`) |
 | C22 shortcut chip Change | O, design | fixed | 32 of 32 rows carry a 16 px pencil 10 px after the keys, muted at rest, accent aimed at, x while capturing; no row or chip overflows at 1440 or 390 (`shortcut1300.js`) |
 | C06, C07, C08 reply cards, preview, fold, calculator | O, design | open | `/calc` `slash_more.py:200`; peek `capture-ask.js:1412` |
-| C11 graph node hover card | O, design | open | `graph-canvas.js:3753` title tooltip only |
-| C27 graph popup props button | O, design | open | `index.html:4448` |
+| C11 graph node hover card | O, design | fixed (design2) | `graph-canvas.js:3753` title tooltip only |
+| C27 graph popup props button | O, design | fixed (design2) | `index.html:4448` |
 | C28 reply reveal animation | O, design | open | chat 0.2 s fade only; guide streams words |
 | C30 lightbox controls | O, design | open | `lightbox-view.js` |
 | C34 recorder panels | O, design | open | `.meeting-stage` radius 0, `meetings.js:922` |
 | C36 timeline tick labels switch | O, design | fixed ae7fb1c | the c36 sweep toggles the switch and counts the tick labels; test_timeline_ticks_switch.py |
 | C14 composer and model badge | O, design | open | `chat-attach.js:2430` byline |
 | C18 paper swatches as dropdown | O, design | open | `index.html:7506` |
-| C37 graph box titles clipped, no ellipsis; nodes all one size | O, design batch 2 | open | a question is a bug report: size by weight (links or uses) and a label line-clamp with ellipsis |
+| C37 graph box titles clipped, no ellipsis; nodes all one size | O, design batch 2 | fixed (design2) | a question is a bug report: size by weight (links or uses) and a label line-clamp with ellipsis |
 | C39 timeline opens on empty future days | S, next free Sonnet | fixed 5049124 | the c39 sweep measures Today's row top against the feed top on open and after the Today button |
 | C40 recording transcript lines cannot be copied | S, with C34 | fixed f749f62 | the c40 sweep copies a line, a Shift range and all lines; test_transcript_copy.py |
-| C41 force graph messy | O, graph batch with C11, C27, C37 | open | screenshot: labels collide, edges cross clusters, duplicate titles unexplained; label collision avoidance, cluster separation, edge bundling or fade, measured overlap count before and after |
+| C41 force graph messy | O, graph batch with C11, C27, C37 | fixed (design2) | screenshot: labels collide, edges cross clusters, duplicate titles unexplained; label collision avoidance, cluster separation, edge bundling or fade, measured overlap count before and after |
 | C43 categories sidebar messy, sections not collapsible | O, design batch 2 | open | screenshots: nested scrollbars plus a blue bar on the outer one, list clipped mid-row, near-duplicate "Courses & Study" / "Courses \| Study", empty categories; collapsible sections with remembered state, one scroll container, merge offer for near-duplicates, hide empty |
 | C44 live view section break overlaps gutter numbers | S, next free Sonnet | fixed 216ac23 | the c44 sweep measures the gutter row height against the rule line; test_live_rule_line_height.py |
 | C04 UML, ERD, wireframe sets | plan | placed | WHITEBOARD_PLAN |
