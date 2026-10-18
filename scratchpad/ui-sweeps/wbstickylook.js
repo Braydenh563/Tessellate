@@ -56,13 +56,15 @@ const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p);
   const pick = async (id) => {
     await page.evaluate((id) => { clearWbSelection(); wbHandleItemClick("object", id, new MouseEvent("click")); }, id);
     await page.waitForTimeout(400);
-    return page.evaluate(() => { const g = document.querySelector('#wb-context [data-wb-ctx="paper"]'); return { shown: Boolean(g && !g.classList.contains("hidden") && g.offsetParent), n: g?.children.length || 0, pressed: g?.querySelector('[aria-pressed="true"]')?.dataset.paper }; });
+    return page.evaluate(() => { const g = document.querySelector('#wb-context [data-wb-ctx="paper"]'); return { shown: Boolean(g && !g.classList.contains("hidden") && g.offsetParent), n: g?.children.length || 0, pressed: g?.querySelector('.wb-paper-trigger')?.dataset.paper }; });
   };
   let bar = await pick(ids.sticky);
-  check(bar.shown && bar.n >= 6 && bar.pressed === "#fff4a3", `a sticky's bar offers its papers, the yellow pressed (${JSON.stringify(bar)})`);
+  check(bar.shown && bar.n === 1 && bar.pressed === "#fff4a3", `a sticky's bar offers one Paper dropdown, the yellow current (${JSON.stringify(bar)})`);
   const papers = await page.evaluate(() => WB_STICKY_PAPERS.map((p) => p.value));
   for (const paper of papers) {
-    await page.evaluate((v) => document.querySelector(`#wb-context .wb-paper-swatch[data-paper="${v}"]`).click(), paper);
+    await page.click("#wb-context .wb-paper-trigger"); await page.waitForTimeout(200);
+    const label = await page.evaluate((v) => WB_STICKY_PAPERS.find((p) => p.value === v).label, paper);
+    await page.click(`#wb-colour-menu [role="radio"][aria-label="${label}"]`);
     await page.waitForTimeout(350);
     const now = await page.evaluate((id) => { const el = document.querySelector(`.wb-object[data-id="${id}"]`); return { bg: getComputedStyle(el).backgroundColor, ink: getComputedStyle(el.querySelector(".wb-text-content")).color, saved: wbState.objects.find((o) => o.id === id).data.bg }; }, ids.sticky);
     const r = ratio(rgb(now.ink), rgb(now.bg));

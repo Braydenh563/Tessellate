@@ -36,7 +36,7 @@ audits reproduced each bug in the app (ports 8791, 8792). A row is **open**,
 | C34 recorder panels | O, design | open | `.meeting-stage` radius 0, `meetings.js:922` |
 | C36 timeline tick labels switch | O, design | fixed ae7fb1c | the c36 sweep toggles the switch and counts the tick labels; test_timeline_ticks_switch.py |
 | C14 composer and model badge | O, design | open | `chat-attach.js:2430` byline |
-| C18 paper swatches as dropdown | O, design | open | `index.html:7506` |
+| C18 paper swatches as dropdown | O, design | fixed HASH18 | sticky bar 749 to 627 px wide at 1440 (paper group 227 to 106), height 38 unchanged; at 560 the bar stays 150 tall (other controls wrap); Enter opens, Arrow+Enter picks, focus returns (probes/c18.js); wbstickylook.js 17/17 |
 | C37 graph box titles clipped, no ellipsis; nodes all one size | O, design batch 2 | open | a question is a bug report: size by weight (links or uses) and a label line-clamp with ellipsis |
 | C39 timeline opens on empty future days | S, next free Sonnet | fixed 5049124 | the c39 sweep measures Today's row top against the feed top on open and after the Today button |
 | C40 recording transcript lines cannot be copied | S, with C34 | fixed f749f62 | the c40 sweep copies a line, a Shift range and all lines; test_transcript_copy.py |
@@ -44,5 +44,5 @@ audits reproduced each bug in the app (ports 8791, 8792). A row is **open**,
 | C43 categories sidebar messy, sections not collapsible | O, design batch 2 | open | screenshots: nested scrollbars plus a blue bar on the outer one, list clipped mid-row, near-duplicate "Courses & Study" / "Courses \| Study", empty categories; collapsible sections with remembered state, one scroll container, merge offer for near-duplicates, hide empty |
 | C44 live view section break overlaps gutter numbers | S, next free Sonnet | fixed 216ac23 | the c44 sweep measures the gutter row height against the rule line; test_live_rule_line_height.py |
 | C04 UML, ERD, wireframe sets | plan | placed | WHITEBOARD_PLAN |
-| C26 greeting sub line composed and rotating | S, fixes5 | fixed HASH26 | `/insights/today-line` wired to `renderDashSubmessage`; 13 distinct lines in 20 seeded draws (test_composer_voice.py); C16 stays in CHAT_PLAN B41 |
+| C26 greeting sub line composed and rotating | S, fixes5 | fixed 0aff961 | `/insights/today-line` wired to `renderDashSubmessage`; 13 distinct lines in 20 seeded draws (test_composer_voice.py); C16 stays in CHAT_PLAN B41 |
 | C24 Logs panel scroll | none | not reproduced | equal heights at five sizes; Settings nav overflow placed in WORLD_CLASS row 32 |

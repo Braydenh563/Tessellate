@@ -5093,7 +5093,7 @@ function wbFillContextBar() {
     if (paper) {
       const sticky = wbIsSticky(item);
       paper.classList.toggle("hidden", !sticky);
-      if (sticky) wbFillPaperSwatches(paper, item);
+      if (sticky) wbFillPaperPicker(paper, item);
     }
     for (const button of document.querySelectorAll("#wb-prop-align button")) {
       button.classList.toggle("active", button.dataset.align === (item.data.align || "left"));
@@ -9809,25 +9809,38 @@ async function wbCreateSticky(x, y, box = null) {
   });
 }
 
-//: The swatches, made once from `WB_STICKY_PAPERS` (the colours are the
-//: buttons' own CSS custom property, set by script: the CSP refuses an
-//: inline `style=`), then pressed to match the selected note.
-function wbFillPaperSwatches(group, item) {
-  if (!group.children.length) {
-    for (const paper of WB_STICKY_PAPERS) {
-      const swatch = document.createElement("button");
-      swatch.type = "button";
-      swatch.className = "wb-paper-swatch";
-      swatch.dataset.paper = paper.value;
-      swatch.style.setProperty("--swatch", paper.value);
-      swatch.title = `${paper.label} paper`;
-      swatch.setAttribute("aria-label", `${paper.label} paper`);
-      swatch.addEventListener("click", () => wbSetStickyPaper(paper.value));
-      group.appendChild(swatch);
-    }
+//: **The paper is one dropdown button, not a row of seven chips** (the owner,
+//: INBOX 1300 C18: "condense the colour options into like a dropdown panel
+//: ... for the whiteboard"). It shows the current paper and opens the same
+//: popover the colour wells use (`wbOpenPaperMenu`, whiteboard-format.js);
+//: the colours are `WB_STICKY_PAPERS`, set through the CSSOM (the CSP refuses
+//: an inline `style=`).
+function wbFillPaperPicker(group, item) {
+  let button = group.querySelector(".wb-paper-trigger");
+  if (!button) {
+    button = document.createElement("button");
+    button.type = "button";
+    button.className = "ghost small wb-paper-trigger";
+    button.setAttribute("aria-haspopup", "dialog");
+    button.setAttribute("aria-expanded", "false");
+    button.title = "Note colour";
+    const dot = document.createElement("span");
+    dot.className = "wb-swatch-dot";
+    dot.setAttribute("aria-hidden", "true");
+    const words = document.createElement("span");
+    words.textContent = "Paper";
+    const caret = document.createElement("i");
+    caret.className = "ph ph-caret-down";
+    caret.setAttribute("aria-hidden", "true");
+    button.append(dot, words, caret);
+    button.addEventListener("click", () => wbOpenPaperMenu(button));
+    group.appendChild(button);
   }
-  const now = String(item.data.bg || "").toLowerCase();
-  for (const swatch of group.children) swatch.setAttribute("aria-pressed", swatch.dataset.paper === now ? "true" : "false");
+  const now = String(item.data.bg || WB_STICKY_PAPERS[0].value).toLowerCase();
+  const paper = WB_STICKY_PAPERS.find((p) => p.value === now);
+  button.dataset.paper = now;
+  button.firstElementChild.style.setProperty("--swatch", now);
+  button.setAttribute("aria-label", `Note colour: ${paper ? paper.label : "custom"}`);
 }
 
 //: Every selected sticky takes the paper, one undo step each, as the
@@ -9847,7 +9860,7 @@ async function wbSetStickyPaper(value) {
   }
   wbScheduleRender();
   const group = document.querySelector('#wb-context [data-wb-ctx="paper"]');
-  if (group && stickies[0]) wbFillPaperSwatches(group, stickies[0]);
+  if (group && stickies[0]) wbFillPaperPicker(group, stickies[0]);
 }
 
 async function wbCreateTextBox(x, y, box = null) {
