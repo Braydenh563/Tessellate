@@ -2714,105 +2714,9 @@ function nameMarkSay(anchor, text) {
   setTimeout(() => bubble.remove(), 2600);
 }
 
-//: **The companion, visiting its large view.** Its element moves from its
-//: perch into `host` and back on `home()`; nothing about it is copied, so
-//: nothing about it is lost. While it visits (`nmb.visit`) nothing moves it
-//: (`nameMarkBuddyMoveTo`, the checks, its rides, errands and wanders all
-//: stand down), it cannot be carried off or have its menu opened, and its
-//: beat is the view's. A walk under way is finished first: the view shows
-//: where it was going, not the path.
 //: How long after it arrives in the view a pointer it landed under is not
 //: yet a hover (the view's fit runs over its first two frames).
 const NMB_VISIT_SETTLE_MS = 700;
-function nameMarkBuddyVisit(host) {
-  const buddy = document.getElementById("nm-buddy");
-  if (!buddy || nmb.visit || buddy.classList.contains("nm-buddy-dragging")) return null;
-  for (const anim of [nmb.anim, nmb.glideAnim]) if (anim && anim.playState === "running") anim.finish();
-  clearTimeout(nmb.placeTimer);
-  nmb.placeTimer = 0;
-  //: The ledge under it shows for a sit; the CSS reads the host's
-  //: own `data-pose`, a copy kept here (a `:has()` on the companion's made
-  //: every pose change restyle 968 elements of the page).
-  const mirror = () => { host.dataset.pose = buddy.dataset.pose || ""; };
-  //: **A face visiting its large view keeps moving between its beats**
-  //: (INBOX 600, the owner: "it might sway or do something for a couple
-  //: seconds but will then snap still"). Its acts come every 2.5 to 6
-  //: seconds and its breath is under a pixel, so between them it stood still
-  //: for over a second (atlas600-still.js: 1,083ms with no part moving
-  //: 0.75px). Its weight now shifts about its feet and it bobs, on two clocks
-  //: that never line up (6.7s, 4.3s), so one is under way while the other
-  //: turns; `rotate` and `translate` on the face's own box, which nothing
-  //: else moves, so an act plays over them. Each starts half a swing in, at
-  //: rest. Atlas too (INBOX 619): its layers' own loops are under a pixel
-  //: for over a second at a time (atlas619-viewer.js: still 1,051 to
-  //: 1,787ms in the view), so it floats on the same two clocks. Script, not
-  //: the stylesheet (the boot CSS is at its budget); gone with the visit,
-  //: and never under reduced motion or with the companion's actions off.
-  const face = buddy.querySelector(":scope > .nm-buddy-face");
-  const sway = [];
-  if (face && typeof face.animate === "function" && !nameMarkIdleQuiet()) {
-    const loop = (frames, ms) => face.animate(frames, { duration: ms, delay: -ms / 2, iterations: Infinity, direction: "alternate", easing: "ease-in-out" });
-    sway.push(loop([{ rotate: "-2deg" }, { rotate: "2deg" }], 6700), loop([{ translate: "0 1.2px" }, { translate: "0 -1.4px" }], 4300));
-  }
-  const watch = new MutationObserver(mirror);
-  nmb.visit = { home: buddy.parentNode, next: buddy.nextSibling, watch, sway, pose: nmb.pose, legs: nmb.legs, at: Date.now() };
-  buddy.classList.remove("nmb-dodge");
-  //: **Free of its perch in there** (INBOX 619, the owner: "in the enlarged
-  //: preview atlas is still hanging, it should be slightly separate from the
-  //: companion but still have the same life"). It came in holding the pose
-  //: of its perch: hanging by its hands from the card's top edge, sitting on
-  //: a drawn ledge, leaning on nothing. In the view it floats, clear of the
-  //: card's edges, with its float's own loops and the view's beat; the
-  //: perch's pose and legs go back with it (`nameMarkBuddyHome`). Asleep
-  //: lying or curled, it stays so, and gets up into the float.
-  if (nmb.pose !== "stand") {
-    nmb.pose = "float";
-    buddy.dataset.legs = nmb.legs = "";
-    if (!/^(lie|curl)/.test(buddy.dataset.pose || "")) buddy.dataset.pose = "float";
-  }
-  host.appendChild(buddy);
-  mirror();
-  //: **In the view at rest** (the owner, 2026-10-11: "if it is hanging,
-  //: the expanded companion kinda looks awkward with both it's arms up").
-  //: The view is a cut, not a move: its limbs take the float's resting
-  //: places at once (their transitions finished, Atlas's rig set in one
-  //: frame) rather than lowering from the hang's raised arms while you look.
-  if (nmb.visit.pose !== nmb.pose) {
-    for (const el of buddy.querySelectorAll(".nmb-arm, .nmb-hold, .nmb-leg")) {
-      getComputedStyle(el).transform;
-      for (const anim of el.getAnimations?.() || []) if (anim instanceof CSSTransition) anim.finish();
-    }
-    const box = buddy.querySelector(".atl-figure-box");
-    if (box?.atlasRig) {
-      box.atlasRig.fresh = true;
-      atlasRigWake(box);
-    }
-  }
-  watch.observe(buddy, { attributes: true, attributeFilter: ["data-pose"] });
-  //: Its own act keeps its own end; with none under way, the view's beat.
-  if (!nmb.act) nameMarkBuddySchedule();
-  return nameMarkBuddyHome;
-}
-function nameMarkBuddyHome() {
-  const visit = nmb.visit;
-  if (!visit) return;
-  nmb.visit = null;
-  visit.watch?.disconnect();
-  for (const anim of visit.sway || []) anim.cancel();
-  const buddy = document.getElementById("nm-buddy");
-  if (!buddy) return;
-  //: Back to its perch's pose (the view floated it, `nameMarkBuddyVisit`).
-  if (visit.pose && nmb.pose !== visit.pose) {
-    nmb.pose = visit.pose;
-    buddy.dataset.legs = nmb.legs = visit.legs || "";
-    if (!/^(lie|curl)/.test(buddy.dataset.pose || "")) buddy.dataset.pose = visit.pose;
-  }
-  buddy.querySelector(":scope > .nm-say")?.remove();
-  if (visit.home?.isConnected) visit.home.insertBefore(buddy, visit.next?.parentNode === visit.home ? visit.next : null);
-  nameMarkBuddyRelease();
-  if (!nmb.act) nameMarkBuddySchedule();
-  queueNameMarkBuddyCheck();
-}
 
 //: **The larger faces have a life of their own too** (the owner: "my popup
 //: character doesnt really have much expression, same with when it is a
@@ -3772,7 +3676,7 @@ function nameMarkBuddyObstacles(tab) {
 //: missed (the owner, 2026-10-11, over Notes' Reload / Manage tags menu:
 //: "the companion still covers some parts of the ui and doesnt move out of
 //: the way"); any open details menu and any shown menu or listbox counts.
-const NMB_POPUPS = "#notif-panel:not(.hidden), .action-menu:not(.hidden), .select-menu:not(.hidden), .help-popover:not(.hidden), #tour-spot:not(.hidden), #tour-card:not(.hidden), details[open][class*=\"menu\"] > :not(summary), [role=\"menu\"]:not(.hidden), [role=\"listbox\"]:not(.hidden)";
+const NMB_POPUPS = "#notif-panel:not(.hidden), .action-menu:not(.hidden), .select-menu:not(.hidden), .help-popover:not(.hidden), #tour-spot:not(.hidden), #tour-card:not(.hidden), details[open][class*=\"menu\"] > :not(summary), [role=\"menu\"]:not(.hidden), [role=\"listbox\"]:not(.hidden), #wb-format:not(.hidden), #wb-sidebar-panel:not(.hidden)";
 function nameMarkBuddyPopups() {
   const boxes = [];
   for (const el of document.querySelectorAll(NMB_POPUPS)) {
@@ -3837,7 +3741,7 @@ function nameMarkBuddyScaleSaved() {
   return Math.min(1.6, Math.max(0.7, v));
 }
 function nameMarkBuddySetSize(scale, keep = true) {
-  const size = Math.round(Math.min(1.6, Math.max(0.7, Number(scale) || 1)) * 100) / 100;
+  const size = Math.round(Math.min(1.6, Math.max(keep ? 0.7 : 0.4, Number(scale) || 1)) * 100) / 100;
   nmb.scale = size;
   document.getElementById("nm-buddy")?.style.setProperty("--nmb-scale", String(size));
   if (!keep) return;
@@ -4574,7 +4478,7 @@ function nameMarkBuddyYoursObstacles(obstacles, spot) {
   return obstacles.filter((b) => b.right - b.left < wide
     && !(floor && Math.abs(b.left - floor.left) < 2 && Math.abs(b.top - floor.top) < 2 && Math.abs(b.right - floor.right) < 2));
 }
-function nameMarkBuddyDrop(x, y) {
+function nameMarkBuddyDrop(x, y, reach = 48) {
   //: Put somewhere by you: no wander to come back from.
   nmb.home = null;
   const tab = nameMarkBuddyTab();
@@ -4588,7 +4492,7 @@ function nameMarkBuddyDrop(x, y) {
   const consider = (spot, d) => {
     if (d > 80 || (best && d >= best.d)) return;
     const free = fits(spot) ? spot : nameMarkBuddyStepAside({ ...spot }, nameMarkBuddyYoursObstacles(obstacles, spot));
-    if (fits(free) && Math.abs(free.x - spot.x) <= 48) best = { ...free, d: d + Math.abs(free.x - spot.x) / 4 };
+    if (fits(free) && Math.abs(free.x - spot.x) <= reach) best = { ...free, d: d + Math.abs(free.x - spot.x) / 4 };
   };
   for (const edge of edges) {
     if (edge.type === "side") {
@@ -5375,6 +5279,37 @@ for (const type of ["pointerdown", "pointerup", "keydown", "transitionrun", "ani
 //: `translate` animated on the compositor from where it was, with a jump
 //: arc on the character when it changes level, and legs that step. Reduce
 //: motion and Avatar animation Off skip straight to the end.
+//: **Over a board, in the board** (INBOX 1300 C19, C20, the owner: "if it
+//: is perched on them then it should be on the same layer"; "its size
+//: should be in proportion to the zoom"). Put over the canvas itself, not
+//: on a panel or the chrome, it is drawn under the board's panels (the
+//: band's `nmb-canvas`) and sized to the board's zoom, never above its own.
+function nameMarkBuddyCanvasAt(spot, x, y) {
+  const board = document.getElementById("whiteboard-container");
+  if (spot.edge?.el && !board?.contains(spot.edge.el)) return null;
+  const r = nameMarkBuddyShown(board);
+  const cx = x + NMB_W / 2;
+  const cy = y + NMB_H / 2;
+  return r && board.checkVisibility?.() !== false && cx > r.left && cx < r.right && cy > r.top && cy < r.bottom ? board : null;
+}
+const NMB_BOARD_WANDER = 0.1;
+function nameMarkBuddyOnBoard() {
+  return !!document.getElementById("wb-canvas-view")?.checkVisibility?.();
+}
+function nameMarkBuddyCanvasScale(k) {
+  return Math.min(1, Math.max(0.4, Number(k) || 1));
+}
+//: From the board's zoom (whiteboard.js, `wbZoomFrameWork`).
+function nameMarkBuddyCanvasZoom(k) {
+  if (nmb.canvas) nameMarkBuddySetSize(nameMarkBuddyScaleSaved() * nameMarkBuddyCanvasScale(k), false);
+}
+
+//: A peek tucks in on arrival, never on the way (INBOX 1300 C01).
+function nameMarkBuddyLegsNow(spot, travels) {
+  const legs = spot?.legs || "";
+  return travels && legs === "peek" ? "" : legs;
+}
+
 function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
   //: Visiting its large view (`nameMarkBuddyVisit`): it is where you are
   //: looking at it, and goes nowhere until it is sent home.
@@ -5408,7 +5343,10 @@ function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
   nameMarkBuddyPut(buddy, x, y);
   //: Its size for this perch: smaller where it had to fit, its own
   //: elsewhere, eased either way (`nmb-fitting`).
-  const size = spot.fit || nameMarkBuddyScaleSaved();
+  const board = nameMarkBuddyCanvasAt(spot, x, y);
+  nmb.canvas = !!board;
+  document.getElementById("nm-buddy-band")?.classList.toggle("nmb-canvas", nmb.canvas);
+  const size = board ? nameMarkBuddyScaleSaved() * nameMarkBuddyCanvasScale(board.__zoom?.k) : spot.fit || nameMarkBuddyScaleSaved();
   if (Math.abs(size - (nmb.scale || 1)) > 0.01) {
     buddy.classList.add("nmb-fitting");
     clearTimeout(nmb.fitTimer);
@@ -5436,7 +5374,11 @@ function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
   nameMarkBuddyGait(buddy);
   const poseChanged = buddy.dataset.pose !== spot.pose;
   buddy.dataset.pose = spot.pose;
-  buddy.dataset.legs = spot.legs || "";
+  const dx = was.x - x;
+  const dy = was.y - y;
+  const travels = !instant && typeof buddy.animate === "function" && Number.isFinite(dx) && Number.isFinite(dy) && (Math.abs(dx) >= 1 || Math.abs(dy) >= 1);
+  clearTimeout(nmb.legsTimer);
+  buddy.dataset.legs = nameMarkBuddyLegsNow(spot, travels);
   buddy.dataset.side = spot.side || "";
   nmb.pose = spot.pose;
   nmb.legs = spot.legs || "";
@@ -5446,8 +5388,6 @@ function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
   //: was measured with the hang's pivot and a standing figure lost its
   //: rings to it). Once more, now they are this spot's.
   if (nmb.ride && poseChanged) nameMarkBuddyRideBox(x, y, true);
-  const dx = was.x - x;
-  const dy = was.y - y;
   if (!Number.isFinite(dx) || !Number.isFinite(dy) || (Math.abs(dx) < 1 && Math.abs(dy) < 1)) return;
   nmb.anim?.cancel();
   nmb.hopAnim?.cancel();
@@ -5461,6 +5401,12 @@ function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
   }
   nameMarkBuddyBlend(buddy, stop);
   nameMarkBuddyGo(buddy, dx, dy, spot, poseChanged, was, underway);
+  if (buddy.dataset.legs !== (spot.legs || "")) {
+    const end = Number(nmb.anim?.effect?.getComputedTiming?.().endTime);
+    nmb.legsTimer = setTimeout(() => {
+      if (nmb.spot === spot) buddy.dataset.legs = spot.legs || "";
+    }, Number.isFinite(end) && end > 0 ? end : 900);
+  }
   //: Cut off in mid-air (a hop's arc, a float's lift), the figure comes
   //: down from where it was drawn, added to the new way, not snapped to it.
   const turn = leaning === null ? 0 : leaning - (Number.parseFloat(getComputedStyle(char).rotate) || 0);
@@ -6015,86 +5961,22 @@ function nameMarkBuddyWorld(tab) {
   return { left: 0, right: innerWidth - NMB_W, top: roof, floor: base - NMB_FEET + 1, ledges };
 }
 
-//: Let go at `vx`, `vy` (px per ms): the flight, one frame at a time on
-//: transforms only, then its place. Reduce motion: the same flight worked
-//: out at once and a crossfade to where it comes down.
-function nameMarkBuddyThrow(buddy, vx, vy, world) {
-  nmb.flight?.stop();
-  nmb.home = null;
-  const tab = nameMarkBuddyTab();
-  const feel = nameMarkBuddyThrowFeel([Math.random(), Math.random(), Math.random()], Math.hypot(vx, vy));
-  let s = { x: nmb.x, y: nmb.y, vx, vy, rot: 0, t: 0, on: null, rest: false };
-  nmb.thrown = { v: [+vx.toFixed(2), +vy.toFixed(2)], from: [Math.round(nmb.x), Math.round(nmb.y)] };
-  if (nameMarkBuddyNoTravel()) {
-    while (!s.rest) s = nameMarkBuddyFlightStep(s, 16, world, feel);
-    nameMarkBuddyThrowLand(buddy, s, tab, nameMarkBuddyThrowSpot(s));
-    return;
-  }
-  const char = buddy.querySelector(".nm-buddy-char");
-  buddy.classList.add("nm-buddy-dragging");
-  let then = performance.now();
-  const flight = {
-    raf: 0,
-    stop() {
-      cancelAnimationFrame(flight.raf);
-      if (nmb.flight !== flight) return;
-      nmb.flight = null;
-      buddy.classList.remove("nm-buddy-dragging");
-      nameMarkBuddySway(buddy, 0);
-      if (!char) return;
-      //: Stopped while still turned (the cap, a grab): eased upright, the
-      //: short way, never snapped.
-      const r = ((((Number.parseFloat(char.style.rotate) || 0) + 180) % 360) + 360) % 360 - 180;
-      char.style.rotate = "";
-      if (Math.abs(r) > 1 && typeof char.animate === "function") char.animate([{ rotate: `${r}deg` }, { rotate: "0deg" }], { duration: 260, easing: "ease-out" });
-    },
-  };
-  const frame = (now) => {
-    if (nmb.flight !== flight) return;
-    if (!buddy.isConnected) return flight.stop();
-    //: Hidden, frames stop and it waits in the air; back, it flies on from
-    //: there rather than jumping a long step.
-    let dt = Math.min(32, Math.max(0, now - then));
-    then = now;
-    let hit = 0;
-    while (dt > 0 && !s.rest) {
-      s = nameMarkBuddyFlightStep(s, Math.min(16, dt), world, feel);
-      hit = Math.max(hit, s.hit);
-      dt -= 16;
-    }
-    //: The landing spot is read before this frame's writes (read after, it restyled the drawing).
-    const landing = s.rest ? nameMarkBuddyThrowSpot(s) : null;
-    nameMarkBuddyPut(buddy, Math.round(s.x), Math.round(s.y));
-    if (char) char.style.rotate = `${s.rot.toFixed(1)}deg`;
-    nameMarkBuddySway(buddy, Math.max(-28, Math.min(28, -s.vx * 10)));
-    if (hit > 0.5 && char && typeof char.animate === "function") {
-      //: Squashed by how hard it came down.
-      const a = Math.min(0.22, hit * 0.09);
-      char.animate([{ scale: "1 1" }, { scale: `${1 + a} ${1 - a}` }, { scale: "1 1" }], { duration: 220, easing: "ease-out" });
-    }
-    if (s.rest) {
-      flight.stop();
-      nameMarkBuddyThrowLand(buddy, s, tab, landing);
-      return;
-    }
-    next();
-  };
-  //: Its one frame loop, running only while it flies (the wake-source seed's
-  //: tenth in this file).
-  const next = () => {
-    flight.raf = requestAnimationFrame(frame);
-  };
-  nmb.flight = flight;
-  next();
-}
-
+//: The throw itself, and what can happen on the way: companion-throw.js
+//: (lazy, fetched on the first carry; INBOX 1301 D6).
 //: Come down at `s`: the nearest place to there, as if dropped there, kept
 //: as your spot on `tab`, the tab it was thrown on. Never the tab's own
 //: choice near there: on Notes with 24 notes, thrown right from x 44 and
 //: left from x 1168, both came down on one dock perch at x 763 (throw.js).
 function nameMarkBuddyThrowSpot(s) {
   nameMarkBuddyIndexReset();
-  const spot = nameMarkBuddyDrop(s.x, s.y);
+  let spot = nameMarkBuddyDrop(s.x, s.y);
+  //: Slid down a wall onto a ledge it cannot stand on at the wall (a control
+  //: there): it steps along that ledge, not up to the top bar (seed 2, 800ms
+  //: after the slide ended, 235px up). The step-aside reach opens only then.
+  if (s.on && s.fate?.kind === "splat" && spot.y < s.y - 40) {
+    const along = nameMarkBuddyDrop(s.x, s.y, 400);
+    if (Math.abs(along.y - s.y) <= 40) spot = along;
+  }
   if (spot.y >= s.y + 2) spot.falls = true;
   return spot;
 }
@@ -7534,6 +7416,7 @@ function nameMarkBuddyDecide(now = Date.now(), hour = new Date().getHours()) {
     //: attention with a wave.
     if (act === "wave" && now - nmb.lastPoke > 20 * 60 * 1000 && idle < 30000) w *= 4;
     if (night && ["hop", "wave", "kick"].includes(act)) w *= 0.5;
+    if (act === "hop" && nmb.onBoard) w *= NMB_BOARD_WANDER / 0.35;
     if (now - nmb.lastCheer < 60000 && ["hop", "wave", "kick", "dangle"].includes(act)) w *= 2;
     if (now - nmb.lastPoke < 20000 && ["glance", "wave", "look"].includes(act)) w *= 2;
     //: A stance is Atlas's, in the look it was drawn for.
@@ -7585,6 +7468,7 @@ function nameMarkBuddyTick() {
   nameMarkBuddyCheck();
   const idle = Date.now() - nmb.lastInput;
   nameMarkBuddyContext(buddy);
+  nmb.onBoard = nameMarkBuddyOnBoard();
   const awake = Date.now() < (nmb.awakeUntil || 0);
   if (idle > NMB_SLEEP_MS && !awake) {
     //: An act under way ends as it drops off (the owner, 2026-10-11, the
@@ -8339,7 +8223,9 @@ function nameMarkBuddyWander(now) {
   //: Off somewhere is a large move: within the calm budget.
   if (!nameMarkBuddyCalmAllows(now, nmb.loudAt || 0, nmb.loudGap || NMB_LOUD_GAP_MS, nmb.keyAt || 0, nameMarkBuddyScrollAgo())) return false;
   const { energy, sociability } = nmb.mood;
-  if (nameMarkBuddyBoredom(now - (nmb.perchAt || now), energy, sociability, nmb.reading?.mood || "") < 1 || Math.random() > 0.35) return false;
+  //: Rarer on an open board (INBOX 1300 C20, the owner: "the companion
+  //: jumping around my whiteboard a lot was a little annoying").
+  if (nameMarkBuddyBoredom(now - (nmb.perchAt || now), energy, sociability, nmb.reading?.mood || "") < 1 || Math.random() > (nmb.onBoard ? NMB_BOARD_WANDER : 0.35)) return false;
   const tab = nameMarkBuddyTab();
   nameMarkBuddyIndexReset();
   const obstacles = nameMarkBuddyObstacles(tab);
@@ -9169,6 +9055,7 @@ function nameMarkBuddyBuild() {
     if (!drag.moved && Math.hypot(drag.x - drag.sx, drag.y - drag.sy) < 4) return;
     if (!drag.moved) {
       drag.moved = true;
+      ensureModule("companionThrow");
       nmb.flight?.stop();
       const box = buddy.getBoundingClientRect();
       nmb.anim?.cancel();
@@ -9208,7 +9095,7 @@ function nameMarkBuddyBuild() {
       const box = buddy.getBoundingClientRect();
       //: Reads first, then writes: one restyle of the rig, not three (Atlas at 4x).
       const v = nameMarkBuddyReleaseVelocity(drag.samples || [], event?.timeStamp ?? performance.now());
-      const thrown = !!v && Math.hypot(v[0], v[1]) > NMB_TOSS_SPEED;
+      const thrown = !!v && Math.hypot(v[0], v[1]) > NMB_TOSS_SPEED && typeof nameMarkBuddyThrow === "function";
       if (thrown) nameMarkBuddyIndexReset();
       const world = thrown && nameMarkBuddyWorld(nameMarkBuddyTab());
       const landed = !thrown && nameMarkBuddyDrop(Math.round(box.left), Math.round(box.top));

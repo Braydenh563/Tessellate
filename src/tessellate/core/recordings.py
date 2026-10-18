@@ -19,7 +19,7 @@ from pathlib import Path
 
 from sqlalchemy.orm import Session
 
-from tessellate.core import deps
+from tessellate.core import deps, transcript
 from tessellate.core.database import INCLUDE_BINNED, Recording, utcnow
 
 #: A meeting or a lecture, several hours of opus; the voice route's ceiling.
@@ -96,16 +96,6 @@ def clean_markers(values: object, duration_ms: int | None = None) -> str:
     return json.dumps([{"at": t, "note": notes[t]} if notes[t] else t for t in times])
 
 
-def marks_of(recording: Recording) -> list[dict]:
-    out = []
-    for value in json.loads(recording.markers or "[]"):
-        if isinstance(value, dict):
-            out.append({"at": int(value.get("at", 0)), "note": str(value.get("note", ""))})
-        elif isinstance(value, (int, float)):
-            out.append({"at": int(value), "note": ""})
-    return out
-
-
 # --- transcription in the background (UI_MODERNISATION V1, INBOX 828) ----------
 #
 # A run per recording, in memory and for this process: closing the dialog or
@@ -167,7 +157,7 @@ deps.register_cache_reset(_forget_runs)
 
 
 def as_dict(recording: Recording) -> dict:
-    marks = marks_of(recording)
+    marks = transcript.marks_of(recording)
     return {
         "id": recording.id,
         "title": recording.title,

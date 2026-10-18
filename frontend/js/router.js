@@ -179,11 +179,13 @@ function routerOnVisit(entry, pushed) {
   if (!entry) return;
   if (!entry.navId) entry.navId = routerNextId++;
   const hash = routeHash(entry);
-  const state = { navId: entry.navId };
+  //: `depth`: how many of this app's entries sit under this one in the
+  //: browser's history, so a step back never leaves the app (router-overlays.js).
+  const depth = (history.state && history.state.depth) || 0;
   const url = `${location.pathname}${location.search}${hash}`;
   try {
-    if (pushed && !routerReplacing && history.state && history.state.navId) history.pushState(state, "", url);
-    else history.replaceState(state, "", url);
+    if (pushed && !routerReplacing && history.state && history.state.navId) history.pushState({ navId: entry.navId, depth: depth + 1 }, "", url);
+    else history.replaceState({ navId: entry.navId, depth }, "", url);
   } catch {
     // A sandboxed or file: page can refuse; the in-app stack still works.
   }
@@ -219,6 +221,8 @@ async function routerOpen(entry) {
 }
 
 window.addEventListener("popstate", async (event) => {
+  //: router-overlays.js (lazy): Back with an overlay open closes the overlay.
+  if (typeof routerBackHook === "function" && routerBackHook(event)) return;
   const navId = event.state && event.state.navId;
   const index = navId ? tabHistory.stack.findIndex((entry) => entry.navId === navId) : -1;
   if (index >= 0) {
@@ -237,19 +241,4 @@ async function routerRestore() {
   const entry = routeEntry(routerBootHash);
   if (!entry || (entry.tab === "dashboard" && !entry.section)) return false;
   return routerOpen(entry);
-}
-
-//: Settings closed by its own X or Escape rather than by a step through
-//: history: the address and the title name the tab it was over again. The
-//: history entry is kept (Back from here still steps past it), only what it
-//: shows is corrected.
-function routerSettle() {
-  if (!/^#\/settings/.test(location.hash)) return;
-  const entry = { tab: prefs.get("activeTab", null) || "dashboard", section: null };
-  try {
-    history.replaceState(history.state, "", `${location.pathname}${location.search}${routeHash(entry)}`);
-  } catch {
-    // As in routerOnVisit.
-  }
-  routerPaintTitle(entry);
 }

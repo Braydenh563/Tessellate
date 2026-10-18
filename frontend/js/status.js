@@ -126,15 +126,6 @@ function settleNotification(id, { key, kind, title, detail = "" }) {
   return true;
 }
 
-//: The history's half of the same rule: a finished run whose "Started:" row
-//: is still stored (the page reloaded mid-run, so the poll never saw it end)
-//: is settled by its run id.
-function settleStartedNotification(item, key) {
-  if (storedNotifications().some((n) => n.id === key)) return true;
-  const started = item.run_id && storedNotifications().find((n) => n.runId === item.run_id);
-  return Boolean(started) && settleNotification(started.id, { key, ...taskEndingWords(item, item.label) });
-}
-
 //: "Finished: X, took 4 s", "Failed: X" with the reason, "Stopped: X".
 function taskEndingWords(ended, label) {
   const took = ended ? jobDurationWords(ended.duration_ms) : "";
@@ -211,9 +202,15 @@ function setForcedReadIds(ids) {
   }
 }
 
+//: **System-log lines never count as new** (audit 1018, item 12): a first
+//: run showed 5 on the bell, all of them "Backup", "Housekeeping" and the other
+//: jobs the app starts itself. They stay in the list; a failure is kind
+//: "error" and still counts. Marking one unread by hand still works.
+const NOTIFICATION_LOG_KINDS = new Set(["task", "job"]);
+
 function isNotificationUnread(item, readAt = notificationsReadAt(), forced = forcedUnreadIds(), read = forcedReadIds()) {
   if (forced.has(item.id)) return true;
-  if (read.has(item.id)) return false;
+  if (read.has(item.id) || NOTIFICATION_LOG_KINDS.has(item.kind)) return false;
   return item.at > readAt;
 }
 
@@ -774,13 +771,19 @@ function toastLayout(box) {
   const live = toastLive(box);
   const folded = live.slice(TOAST_VISIBLE);
   for (const t of live) t.classList.toggle("is-folded", folded.includes(t));
+  //: **One card at rest** (INBOX 1300 C33, the owner: "stacking
+  //: notifications need to be cleaned up and not as intrusive and
+  //: obscuring"): the newest shows, the rest are counted on the "+N more"
+  //: card, and a pointer or the keyboard on the stack opens it to three.
+  const behind = live.slice(1, TOAST_VISIBLE);
+  for (const t of live) t.classList.toggle("is-behind", behind.includes(t));
   for (const t of folded) {
     if (t.toastKept || t.toastFiled) continue;
     t.toastFiled = true;
     recordNotification({ kind: t.classList.contains("error") ? "error" : "done", title: t.toastText || t.textContent.trim() });
   }
   let more = box.querySelector(":scope > .toast-more");
-  if (!folded.length) {
+  if (!folded.length && !behind.length) {
     more?.remove();
     return;
   }
@@ -794,9 +797,13 @@ function toastLayout(box) {
     more.append(open);
   }
   const open = more.firstElementChild;
-  open.textContent = `+${folded.length} more`;
+  const rest = folded.length + behind.length;
+  //: Open, it counts what is still folded, or names the panel (a card that
+  //: went away under the pointer would close the stack again).
+  const count = (cls, text) => Object.assign(document.createElement("span"), { className: cls, textContent: text });
+  open.replaceChildren(count("toast-more-rest", `+${rest} more`), count("toast-more-folded", folded.length ? `+${folded.length} more` : "All notifications"));
   open.title = "Open the notifications";
-  open.setAttribute("aria-label", `${folded.length} more notifications. Open the notifications`);
+  open.setAttribute("aria-label", `${rest} more notifications. Open the notifications`);
   if (toastAtTop(box)) box.append(more);
   else box.prepend(more);
 }
@@ -1050,6 +1057,8 @@ function toast(message, isError = false, { exempt = false, action = null } = {})
     exempt = true;
   }
   if (!exempt && !isError && notificationsMuted()) return;
+  //: C35: a "Settings, Packages" notice gets an Open button.
+  if (!action && /[,→] Packages/.test(message)) return toastAction(message, "Open Packages", () => packagesNoticeOpen(message));
   const key = `${isError ? "1" : "0"}:${message}`;
   if (key === lastToastKey) return;
   lastToastKey = key;
@@ -1514,7 +1523,25 @@ function appStackIsNewer(dir) {
   return Boolean(top) && top.at >= (window.docUndoAt?.() || 0);
 }
 
-async function performUndo() {
+//: The undo or redo still running. A second chord pressed while the first's
+//: server call is settling (the note is already gone, the action not yet on
+//: the other stack) used to find that stack empty and do nothing: Ctrl+Z then
+//: Ctrl+Shift+Z sometimes left the note deleted. It waits its turn instead.
+const historyQueue = { step: Promise.resolve() };
+
+function performUndo() {
+  const run = historyQueue.step.then(performUndoNow, performUndoNow);
+  historyQueue.step = run.catch(() => {});
+  return run;
+}
+
+function performRedo() {
+  const run = historyQueue.step.then(performRedoNow, performRedoNow);
+  historyQueue.step = run.catch(() => {});
+  return run;
+}
+
+async function performUndoNow() {
   const surface = surfaceHistory();
   if (surface) {
     await surface.undo();
@@ -1537,7 +1564,7 @@ async function performUndo() {
   renderUndoBar();
 }
 
-async function performRedo() {
+async function performRedoNow() {
   const surface = surfaceHistory("redo");
   if (surface) {
     await surface.redo();

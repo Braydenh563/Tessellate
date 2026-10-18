@@ -108,3 +108,19 @@ def test_find_reads_the_phrases_in_a_sentence():
     text = "Ship it on the 14th of next month, and call Sam last Friday or 3 days ago."
     assert [p for _s, _e, p in when.find(text)] == ["on the 14th of next month", "last Friday", "3 days ago"]
     assert when.find("I may march on") == []
+
+
+def test_a_numeric_day_in_a_question_follows_the_locale():
+    """CHAT_PLAN open item: "3/4" is day first unless the locale writes the
+    month first (`recognise._MONTH_FIRST`); no locale means day first."""
+    from datetime import date
+
+    from tessellate.search import query
+
+    today = date(2026, 10, 18)
+    first = query.understand("what did I write on 3/4", today)
+    assert (first.since, first.until) == (date(2026, 4, 3), date(2026, 4, 3))
+    uk = query.understand("what did I write on 3/4", today, "en-GB")
+    assert uk.since == date(2026, 4, 3)
+    us = query.understand("what did I write on 3/4", today, "en-US")
+    assert (us.since, us.until) == (date(2026, 3, 4), date(2026, 3, 4))

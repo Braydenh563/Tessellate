@@ -117,6 +117,11 @@ function showSettingsSection(name) {
   const scroller = settingsScroller(name);
   if (scroller) scroller.scrollTop = 0;
   currentSettingsSection = name;
+  //: After the jump list has followed the nav (phone-shell.js), say the pane's name once.
+  setTimeout(() => {
+    const jump = document.getElementById("settings-jump");
+    if (jump) echoSettingsPaneTitle(jump);
+  }, 0);
   // Part of the same back/forward stack every tab and sub-tab already lives
   // in (app.js's tabHistory): asked for directly. Safe to call on every
   // section switch, restores included: recordTabVisit no-ops both when
@@ -621,7 +626,7 @@ function filterSettings(term) {
 
 function closeSettingsModal() {
   //: The address and the title go back to the tab under it (router.js).
-  routerSettle();
+  ensureModule("quickNote").then(() => routerSettle());
   const search = $("settings-search");
   if (search) {
     search.value = "";
@@ -2836,7 +2841,7 @@ function renderPaletteGrid() {
 
 function resetAppearance() {
   for (const key of [
-    "fontsize", "font", "density", "glass", "perf", "motion", "ui-motion", "progress-motion", "avatar-motion", "avatar-follow", "avatar-buddy", "avatar-buddy-size", "avatar-buddy-actions", "atlas-style", "assistant-avatar", "atlas-look", "face-look", "dash-mark", "bg-intensity", "accent",
+    "fontsize", "font", "density", "glass", "perf", "motion", "ui-motion", "reply-motion", "progress-motion", "avatar-motion", "avatar-follow", "avatar-buddy", "avatar-buddy-size", "avatar-buddy-actions", "atlas-style", "assistant-avatar", "atlas-look", "face-look", "dash-mark", "bg-intensity", "accent",
     "contrast", "bgArt", "theme", "radius", "glass-blur", "glass-opacity",
     "glass-sheen", "glass-sheen-strength", "page-wash", "bg-style", "bg-motion", "palette", "themePreset",
     "accent-custom", "page-bg", "custom-css", "zoom",

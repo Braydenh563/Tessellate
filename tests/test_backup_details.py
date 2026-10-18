@@ -14,7 +14,7 @@ def test_each_backup_records_what_made_it_and_that_it_was_checked(app_state):
     config.db_path.touch()
     path = backup.backup_now(config.db_path, config.data_dir, origin="manual")
     row = next(b for b in backup.list_backups(config.data_dir) if b["name"] == path.name)
-    assert row["origin"] == "manual" and row["origin_words"] == "Back up now"
+    assert row["origin"] == "manual" and row["origin_words"] == "Made by you"
     assert row["checked"] is True and row["latest"] is True
 
 
@@ -72,3 +72,13 @@ def test_the_backups_group_shows_its_schedule_with_the_last_success():
     assert "function backupScheduleWords" in script and "/jobs/last-runs" in script
     assert "The last try failed" in script and "Next due" in script
     assert "the line above the list says when the last one" in page  # the ? popover names it
+
+
+def test_the_backup_row_shows_origin_and_verified_as_badges():
+    """The facts are badges (origin, verified), not one grey sentence, so the
+    latest backup and a checked one read at a glance."""
+    from pathlib import Path
+
+    text = (Path(__file__).resolve().parents[1] / "frontend/js/settings-data.js").read_text(encoding="utf-8")
+    assert "Verified" in text and "Not verified" in text
+    assert "checked: it opens and reads back" not in text

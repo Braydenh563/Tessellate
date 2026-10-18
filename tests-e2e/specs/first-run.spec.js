@@ -19,7 +19,9 @@ test("a new notebook starts in three steps, and the sample notebook comes and go
   await page.locator(".confirm-overlay button", { hasText: "Don't check" }).click({ timeout: 10_000 }).catch(() => {});
   await openTab(page, "dashboard");
   const steps = page.locator(".first-steps");
-  await expect(steps.getByText("Start in three steps")).toBeVisible();
+  // The one-row head since INBOX 1301 D2: "Get started", "0 of 3 done".
+  await expect(steps.locator("#first-steps-title")).toHaveText("Get started");
+  await expect(steps.locator(".first-steps-count")).toHaveText("0 of 3 done");
   await expect(steps.locator(".start-step.is-done")).toHaveCount(0);
 
   // Step one is typed where it is asked.
@@ -27,7 +29,13 @@ test("a new notebook starts in three steps, and the sample notebook comes and go
   await page.press("#first-steps-name", "Enter");
   await expect(steps.locator(".start-step.is-done")).toHaveCount(1);
 
-  await steps.getByRole("button", { name: "Try a sample notebook" }).click();
+  // The sample's door is in the card's menu since D2 (it was a row of buttons
+  // that changed the card's height).
+  const firstStepsMenu = async (name) => {
+    await steps.locator('button[aria-label="More about the first steps"]').click();
+    return page.locator(".action-menu:not(.hidden) [role=menuitem]", { hasText: name });
+  };
+  await (await firstStepsMenu("Try a sample notebook")).click();
   // Eight saves, the first loading the search model: allowed a minute.
   await expect.poll(async () => (await api(page, "/help/sample-notebook")).live, { timeout: 60_000 }).toBe(8);
 
@@ -40,10 +48,11 @@ test("a new notebook starts in three steps, and the sample notebook comes and go
   await openTab(page, "dashboard");
   // Your name and an answer; the sample notes are not your first note.
   await expect(steps.locator(".start-step.is-done")).toHaveCount(2);
-  await steps.getByRole("button", { name: "Remove the sample notes" }).click();
+  await (await firstStepsMenu("Remove the sample notes")).click();
   await expect.poll(async () => (await api(page, "/help/sample-notebook")).live).toBe(0);
   // Offered once: not again on this notebook.
-  await expect(steps.getByRole("button", { name: "Try a sample notebook" })).toHaveCount(0);
+  await expect(await firstStepsMenu("Try a sample notebook")).toHaveCount(0);
+  await page.keyboard.press("Escape");
   const categories = (await api(page, "/categories")).map((c) => c.name);
   expect(categories, "the sample's categories went with it").not.toContain("Recipes");
   expect(errors).toEqual([]);

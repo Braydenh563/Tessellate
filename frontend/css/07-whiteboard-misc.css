@@ -6286,7 +6286,9 @@ button.connection-row:is(:hover, :focus-visible) {
   top: 3.75rem;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 23;
+  /* Over the Format panel's 25, measured with elementFromPoint: at 1000px the
+     panel covered the bar's right 40px, at 700px 280px (the Replace row). */
+  z-index: 26;
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -10327,6 +10329,11 @@ header#top-bar {
     width: var(--control-h-lg);
     height: var(--control-h-lg);
   }
+  /* Two lines held for the greeting: saving a name made it wrap, 82 to 118px
+     at 390, and moved everything below. */
+  .dash-greeting {
+    min-height: 2lh;
+  }
 }
 /* --- the settings jump list ----------------------------------------------
    `buildSettingsJumpList` (phone-shell.js) writes a native `<select>` of all
@@ -10353,6 +10360,9 @@ header#top-bar {
     flex: 1 1 9rem;
     min-width: 0;
     min-height: var(--target-min);
+  }
+  #settings-modal h3.jump-echo {
+    display: none;
   }
   .modal-nav input[type="search"] {
     flex: 1 1 8rem;

@@ -308,7 +308,8 @@ def test_stats_gives_the_four_counts_in_one_line(client):
         assert result is not None and result.kind == "overview"
         #: Decision 70's gold Q3: count and span first, bold labels, one offer.
         assert result.text.startswith("You have 2 notes, all from ")
-        assert "**Also:** 0 documents and 2 distinct tags." in result.text
+        assert not [ln for ln in result.text.splitlines() if ln.startswith("**")], result.text
+        assert "You also have 0 documents and 2 distinct tags." in result.text
         assert result.text.endswith("Open Statistics for the full picture?")
         assert result.offer == {"kind": "open", "label": "Open Statistics for the full picture?", "surface": "statistics"}
 

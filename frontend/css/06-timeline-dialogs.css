@@ -2350,9 +2350,8 @@
    have to learn the other. See `toggleWhiteboardFullscreen` in
    whiteboard.js for why the class lands on this element and not on
    `#wb-canvas-view`.
-   `!important` on the sizing for the same reason the graph's rule needs it:
-   `#library-view-whiteboard` above sets its own width/height from an id
-   selector, which a single class cannot outrank. */
+   The sizing needs no `!important`: id plus class outranks the id-only rule
+   above that sets the width and height. */
 #library-view-whiteboard.wb-fullscreen {
   position: fixed;
   inset: 0;
@@ -3707,12 +3706,3 @@ aside[data-resizable="1"] {
   opacity: 0.35;
 }
 
-/* The shortcuts dialog's head stays put while its rows scroll (owner,
-   2026-10-12). The card is the scroll box, so the head pins to its top and
-   takes the card's own surface so rows never show through. */
-#shortcuts-card > .dialog-head {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: var(--card);
-}

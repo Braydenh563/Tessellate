@@ -737,12 +737,12 @@ def _general_stats(session: Session) -> StatAnswer:
     lines = [f"You have {_plural(note_total, 'note')}{in_cats}{_span_words(made)}."]
     labelled = []
     if top:
-        labelled.append(f"**Most filed:** {top[0]}, with {top[1]}.")
+        labelled.append(f"Most of your notes are filed under {top[0]}, with {top[1]}.")
     months = Counter((value.year, value.month) for value in made)
     if len(months) > 1:
         (year, month), n = months.most_common(1)[0]
-        labelled.append(f"**Busiest month:** {_MONTHS[month - 1]}{'' if year == made[-1].year else f' {year}'}, with {_plural(n, 'note')}.")
-    labelled.append(f"**Also:** {_plural(doc_total, 'document')} and {_plural(distinct_tags, 'distinct tag')}.")
+        labelled.append(f"Your busiest month was {_MONTHS[month - 1]}{'' if year == made[-1].year else f' {year}'}, with {_plural(n, 'note')}.")
+    labelled.append(f"You also have {_plural(doc_total, 'document')} and {_plural(distinct_tags, 'distinct tag')}.")
     offer = {"kind": "open", "label": "Open Statistics for the full picture?", "surface": "statistics"}
     return StatAnswer(
         "overview",

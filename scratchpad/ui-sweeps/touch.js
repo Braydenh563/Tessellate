@@ -174,6 +174,10 @@ const SURFACES = [
       await page.waitForTimeout(700);
     }
 
+    // A tab's first visit loads its lazy module: 750 to 1470ms measured on a
+    // loaded machine against the 600ms above, which read "did not open" for
+    // the Graph and Library rows in dark, then light, at random (uxfix3 item 3).
+    await page.waitForSelector(surface.sel, { state: 'visible', timeout: 6000 }).catch(() => {});
     const result = await page.evaluate(({ sel, MIN, extra }) => {
       const root = document.querySelector(sel);
       if (!root) return { missing: true };
@@ -318,6 +322,7 @@ const SURFACES = [
     // Dashboard, Timeline, Reminders and Settings sat at "0 controls" green.
     if (result.count === 0) {
       console.log(`${surface.label.padEnd(16)} 0 controls MEASURED (the surface did not open or is hidden)`);
+      if (process.env.DEBUG_OPEN) console.log(JSON.stringify(await page.evaluate((sel) => { const e = document.querySelector(sel); const cs = e && getComputedStyle(e); return { active: document.querySelector('.tab-page:not(.hidden)')?.id, hash: location.hash, el: !!e, display: cs && cs.display, vis: cs && cs.visibility, op: cs && cs.opacity, hidden: e && e.closest('.hidden,[hidden]')?.id, overlays: [...document.querySelectorAll('.modal-overlay:not(.hidden)')].map((o) => o.id) }; }, surface.sel)));
       failures += 1;
       continue;
     }

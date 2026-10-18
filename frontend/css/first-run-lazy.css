@@ -1,7 +1,7 @@
 /* first-run-lazy.css: the dashboard's first steps (first-run.js, WORLD_CLASS_PLAN
-   25c), fetched with them. The card is the empty notebook's own
-   (`.dash-getting-started`, 05-sidebars-themes.css); this adds the space
-   under it, a done step, and the row of further doors. */
+   25c), fetched with them. The tiles are 05-sidebars-themes.css's
+   `.start-step`; this adds the space under the card, its head row (count,
+   bar, fold, menu) and a done step. */
 
 .dash-first-steps:not(:empty) {
   margin-bottom: var(--space-4);
@@ -15,10 +15,64 @@
 .start-step.is-done .start-step-icon {
   color: var(--ok);
 }
-.first-steps-more {
-  justify-content: center;
-  gap: var(--space-2);
-  margin-top: var(--space-2);
+/* The head row (INBOX 1301 D2): the name, "1 of 3 done", the bar, the fold
+   and the menu on one line; on a phone the bar takes its own line under the
+   name, so the row never squeezes the words. */
+.first-steps {
+  padding: var(--space-3) var(--space-4);
+}
+.first-steps-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+.first-steps-head h2 {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+.first-steps-count {
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+.first-steps-progress {
+  flex: 1 1 8rem;
+  max-width: 16rem;
+  height: var(--space-1);
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: var(--surface-3);
+}
+.first-steps-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transform-origin: left center;
+  transition: transform var(--ui-base) var(--ease-out);
+}
+.first-steps-fold {
+  margin-left: auto;
+}
+/* The caret recipe (DESIGN.md, "A disclosure marker"): upright open, turned
+   while folded. */
+.first-steps-fold .ph {
+  transition: transform var(--ui-base) var(--ease-out);
+}
+.first-steps.is-folded .first-steps-fold .ph {
+  transform: rotate(-90deg);
+}
+@media (max-width: 599.98px) {
+  .first-steps-progress {
+    order: 5;
+    flex-basis: 100%;
+    max-width: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .first-steps-fill,
+  .first-steps-fold .ph {
+    transition: none;
+  }
 }
 /* Step one is a name field in the tile: the tile, not a button. */
 .start-step-form {
@@ -30,14 +84,23 @@
 .start-step-form:is(:focus-visible, :has(:focus-visible)) {
   background: var(--surface-2);
 }
-.start-step-form input {
-  display: block;
-  width: 100%;
-  margin-top: var(--space-1);
-}
+/* The name and its field on one line: stacked, the tile was 16px taller
+   than the other two and the card shrank when it ticked (INBOX 1301 D2). */
 .start-step-form > span:last-child {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   flex: 1 1 auto;
   min-width: 0;
+}
+.start-step-form strong {
+  flex: none;
+}
+/* No form-field bottom margin: it was the 10px that made this tile taller. */
+.start-step-form input {
+  flex: 1 1 6rem;
+  min-width: 0;
+  margin: 0;
 }
 /* The bell's copy of the steps (INBOX 904 B01): a list of quiet rows under
    the row's title; a done step steps back, its tick in the ok colour. */

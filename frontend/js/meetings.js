@@ -1882,12 +1882,56 @@ async function recordingTranscriptFill(rec, audio, list) {
     list.replaceChildren(line);
     return;
   }
-  const lines = body.segments.map((seg) => {
+  //: **Copying lines** (INBOX 1300 C40, the owner: "no way to copy
+  //: individual or multiple lines of the transcript"). A line's own copy
+  //: button shows on hover and focus; Shift-click on a line picks the run
+  //: from the last one clicked (Ctrl or Cmd-click adds one) and a plain click
+  //: still plays; the row's ⋯ copies the picked lines or all of them, with
+  //: the times or without. The keys work as the clicks do: Shift+Enter on a
+  //: focused line is a Shift-click.
+  const segs = body.segments;
+  const picked = new Set();
+  let anchor = -1;
+  const lineText = (seg, times) =>
+    `${times ? `[${meetingClockText(seg.start)}] ` : ""}${seg.speaker ? `${seg.speaker}: ` : ""}${seg.text}`;
+  const copyLines = (indexes, times, button) => copyToClipboard(indexes.map((i) => lineText(segs[i], times)).join("\n"), button);
+  const tools = document.createElement("li");
+  tools.className = "recording-transcript-tools";
+  const note = document.createElement("span");
+  note.className = "muted";
+  const buttons = [];
+  const sync = () => {
+    note.textContent = picked.size
+      ? `${picked.size} line${picked.size === 1 ? "" : "s"} picked`
+      : "Shift-click picks a run of lines to copy";
+    buttons.forEach((button, i) => {
+      const on = picked.has(i);
+      button.classList.toggle("is-picked", on);
+      button.setAttribute("aria-pressed", String(on));
+    });
+  };
+  const chosen = () => [...picked].sort((a, b) => a - b);
+  const copyPicked = (times) => (picked.size ? copyLines(chosen(), times) : toast("Pick lines first: Shift-click a line, then another."));
+  const all = segs.map((_, i) => i);
+  const menu = kebabMenu(
+    [
+      makeMenuItem("ph:copy Copy picked lines", "Copy the lines you picked, text only", () => copyPicked(false)),
+      makeMenuItem("ph:clock Copy picked lines with times", "Copy the lines you picked, each starting with its time", () => copyPicked(true)),
+      makeMenuItem("ph:copy Copy all", "Copy the whole transcript, text only", () => copyLines(all, false)),
+      makeMenuItem("ph:clock Copy all with times", "Copy the whole transcript, each line starting with its time", () => copyLines(all, true)),
+      makeMenuItem("ph:x Clear the picked lines", "Let go of the lines you picked", () => (picked.clear(), sync())),
+    ],
+    "Copy the transcript"
+  );
+  tools.append(note, menu);
+  const lines = segs.map((seg, i) => {
     const li = document.createElement("li");
+    li.className = "recording-line-row";
     const button = document.createElement("button");
     button.type = "button";
     button.className = "recording-line";
     button.dataset.start = String(seg.start);
+    button.setAttribute("aria-pressed", "false");
     const at = document.createElement("span");
     at.className = "muted recording-line-at";
     at.textContent = meetingClockText(seg.start);
@@ -1900,15 +1944,29 @@ async function recordingTranscriptFill(rec, audio, list) {
       who.textContent = seg.speaker;
       button.append(at, who, said);
     } else button.append(at, said);
-    button.addEventListener("click", async () => {
+    button.addEventListener("click", async (event) => {
+      if (event.shiftKey || event.ctrlKey || event.metaKey) {
+        if (event.shiftKey && anchor >= 0) {
+          for (let n = Math.min(anchor, i); n <= Math.max(anchor, i); n += 1) picked.add(n);
+        } else if (picked.has(i)) picked.delete(i);
+        else picked.add(i);
+        anchor = i;
+        return sync();
+      }
+      anchor = i;
       await recordingReady(audio);
       audio.currentTime = seg.start / 1000;
       audio.play();
     });
-    li.appendChild(button);
+    buttons.push(button);
+    const copy = smallButton("ph:copy", "Copy this line", () => copyLines([i], false, copy));
+    copy.classList.add("recording-line-copy");
+    copy.setAttribute("aria-label", `Copy the line at ${meetingClockText(seg.start)}`);
+    li.append(button, copy);
     return li;
   });
-  list.replaceChildren(...lines);
+  list.replaceChildren(tools, ...lines);
+  sync();
   audio.addEventListener("timeupdate", () => recordingTranscriptNow(list, body.segments, audio.currentTime * 1000));
 }
 

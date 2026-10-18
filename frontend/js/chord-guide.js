@@ -50,7 +50,7 @@ function chordGuideGroup(title, entries) {
   list.className = "chord-guide-list rich-picker-list";
   for (const [key, label, run, icon, here] of entries) {
     const row = richPickerRow({ tag: "button", role: null, icon, label, keys: key, className: "chord-guide-row" });
-    row.title = `${label} (m then ${key})`;
+    row.title = `${label} (t then ${key})`;
     //: The tab you are on is marked, so "Go to" also says where you are.
     if (here) {
       row.classList.add("is-here");
@@ -93,7 +93,7 @@ function showTabJumpHint() {
   title.className = "chord-guide-lead";
   const words = document.createElement("span");
   words.textContent = "then a key";
-  title.append(chordGuideKey("m"), words);
+  title.append(chordGuideKey("t"), words);
   //: Asked for directly: "press m again to close it or an x close button".
   //: In the head now rather than the window's corner, beside what it closes.
   const close = document.createElement("button");
@@ -110,7 +110,7 @@ function showTabJumpHint() {
   //: The hint line: the three ways out of the mode, said once at the foot.
   const hint = document.createElement("p");
   hint.className = "chord-guide-hint";
-  hint.append("Press a key or pick a row. ", chordGuideKey("m"), " or ", chordGuideKey("Esc"), " closes.");
+  hint.append("Press a key or pick a row. ", chordGuideKey("t"), " or ", chordGuideKey("Esc"), " closes.");
   //: **One panel on the popover shell** (the owner's screenshot, 2026-09-23:
   //: pills drawn straight over the dashboard's text read through it). The
   //: tab's icon is read off its own button in the tab bar, so the two cannot
@@ -124,7 +124,7 @@ function showTabJumpHint() {
   const panel = document.createElement("div");
   panel.className = "chord-guide-panel";
   panel.setAttribute("role", "group");
-  panel.setAttribute("aria-label", "m, then a key");
+  panel.setAttribute("aria-label", "t, then a key");
   const body = document.createElement("div");
   body.className = "chord-guide-body";
   body.append(

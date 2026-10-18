@@ -498,6 +498,33 @@ function gcPlaceLabels(items, discs, lineCount = null, blocked = [], bounds = nu
     }
     return false;
   };
+  //: **A name is nearer its own dot than any other** (INBOX 1300 C41, the
+  //: owner: "labels overlap nodes"; measured at the fit on the 57-note seed,
+  //: 6 of 16 names stood nearer another note's dot, and so read as its
+  //: name). A place where some other dot is closer than its own is no place.
+  const own = new Map(discs.map((disc) => [disc.id, disc]));
+  const edgeGap = (box, disc) => {
+    const nx = Math.max(box.left, Math.min(disc.x, box.right));
+    const ny = Math.max(box.top, Math.min(disc.y, box.bottom));
+    return Math.max(0, Math.hypot(nx - disc.x, ny - disc.y) - disc.r);
+  };
+  const nearerOther = (box) => {
+    const mine = own.get(box.id);
+    if (!mine) return false;
+    const reach = edgeGap(box, mine);
+    const x0 = Math.floor((box.left - reach) / cell) - 1;
+    const x1 = Math.floor((box.right + reach) / cell) + 1;
+    const y0 = Math.floor((box.top - reach) / cell) - 1;
+    const y1 = Math.floor((box.bottom + reach) / cell) + 1;
+    for (let cx = x0; cx <= x1; cx++) {
+      for (let cy = y0; cy <= y1; cy++) {
+        for (const disc of grid.get(`${cx},${cy}`) || []) {
+          if (disc.id !== box.id && edgeGap(box, disc) < reach) return true;
+        }
+      }
+    }
+    return false;
+  };
   //: A place past the edge of the canvas is no place (INBOX 693: names "cut
   //: by the viewport"); `bounds` is the canvas in world units.
   const outside = (box) =>
@@ -573,15 +600,20 @@ function gcPlaceLabels(items, discs, lineCount = null, blocked = [], bounds = nu
     if (box.force) {
       //: Asked for by name: drawn whatever it lands on, at the clearest
       //: place that covers no label and no dot if there is one.
-      placed.push(best(spots, (spot) => !clashes(spot) && !coversDisc(spot)) || gcClampBox(box, bounds));
+      placed.push(
+        best(spots, (spot) => !clashes(spot) && !coversDisc(spot) && !nearerOther(spot)) ||
+          best(spots, (spot) => !clashes(spot) && !coversDisc(spot)) ||
+          gcClampBox(box, bounds)
+      );
       continue;
     }
+    const clear = (spot) => !clashes(spot) && !coversDisc(spot) && !nearerOther(spot);
     if (box.landmark) {
-      const pick = best(spots, (spot) => !clashes(spot) && !coversDisc(spot));
+      const pick = best(spots, clear);
       if (pick) placed.push(pick);
       continue;
     }
-    const pick = best(spots, (spot) => !clashes(spot) && !coversDisc(spot));
+    const pick = best(spots, clear);
     if (pick && fewest === 0) placed.push(pick);
   }
   return placed;
@@ -863,7 +895,13 @@ function gcEdgeLook(edge, a, b, simLo, simHi, epoch) {
   }
   edge._tint = tint;
   edge._style = style;
-  edge._cross = a._cluster != null && a._cluster !== b._cluster && edge.link_type !== "contradicts";
+  //: Quiet between two categories in every Force shape (INBOX 1300 C41:
+  //: bridges drew at 0.40 beside 0.55 inside a category, and a long one
+  //: through a cluster read as part of it); Clusters' own rule is the same.
+  edge._cross =
+    edge.link_type !== "contradicts" &&
+    ((a._cluster != null && a._cluster !== b._cluster) ||
+      (a._bridgeCat != null && b._bridgeCat != null && a._bridgeCat !== b._bridgeCat));
   edge._quietStyle = edge._cross
     ? { ...style, width: style.width * GC_CROSS_WIDTH, alpha: style.alpha * GC_CROSS_ALPHA }
     : style;
@@ -1156,6 +1194,7 @@ function gcDrawTreemap(ctx, s, k) {
   ctx.textBaseline = "middle";
   ctx.font = `600 ${12 / k}px ${gcTokens.font}`;
   const inset = 1.5;
+  const heads = (s.treemapHeads = {});
   for (const rect of rects) {
     const x = rect.x0 + inset;
     const y = rect.y0 + inset;
@@ -1170,17 +1209,32 @@ function gcDrawTreemap(ctx, s, k) {
     ctx.strokeStyle = colour;
     ctx.lineWidth = 1.5 / k;
     ctx.strokeRect(x, y, w, h);
-    if (w * k < 44) continue;
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(x, y, w, h);
-    ctx.clip();
+    //: INBOX 1300 C37 ("the text at the top of the boxes gets cut off with
+    //: no ellipse"): a name wider than its box ends in an ellipsis and keeps
+    //: its count; it was clipped mid-letter. The legend names it whole.
+    const text = gcEllipsize(rect.category || "Unfiled", ` (${rect.count})`, w - 12 / k, (t) => ctx.measureText(t).width);
+    heads[rect.category] = text;
+    if (!text) continue;
     ctx.globalAlpha = 1;
     ctx.fillStyle = gcTokens.ink;
-    ctx.fillText(`${rect.category || "Unfiled"} (${rect.count})`, x + 6 / k, y + 9 / k);
-    ctx.restore();
+    ctx.fillText(text, x + 6 / k, y + 9 / k);
   }
   ctx.restore();
+}
+
+//: `name` plus `suffix`, the name cut to end in an ellipsis where the two are
+//: wider than `max`; empty when not even one letter, the ellipsis and the
+//: suffix fit. `measure` gives a string's width in the units of `max`.
+function gcEllipsize(name, suffix, max, measure) {
+  if (measure(name + suffix) <= max) return name + suffix;
+  let lo = 0;
+  let hi = name.length - 1;
+  while (lo < hi) {
+    const mid = Math.ceil((lo + hi) / 2);
+    if (measure(name.slice(0, mid).trimEnd() + "…" + suffix) <= max) lo = mid;
+    else hi = mid - 1;
+  }
+  return lo ? name.slice(0, lo).trimEnd() + "…" + suffix : "";
 }
 
 //: B71 (INBOX 904, "so messy and stuck together I couldn't read it"): each
@@ -1735,6 +1789,34 @@ const GC_FIT_OVERLAYS = [
 //: refit the map: a menu over the map moves nothing on it (graphmenustill.js).
 const GC_FIT_MENUS = "#graph-options, #graph-help-panel, #graph-card > .graph-overlay > .dock";
 const GC_FIT_GAP = 4;
+//: **The overlays a name is kept out from under**, in world units for this
+//: frame (INBOX 1300 C41: at 1.8x on the 57-note seed, 6 names were drawn
+//: under the dock, the legend, the minimap or the zoom strip, half read).
+//: The fit's overlays plus the corner furniture the fit leaves alone. Read
+//: from the DOM at most every 300ms (a layout read per frame is not free),
+//: then mapped through this frame's transform.
+function gcOverlayBoxes(s, t) {
+  if (s.size !== "full" || !s.canvas) return [];
+  const now = performance.now();
+  if (!s._overlayRects || now - s._overlayAt > 300) {
+    s._overlayAt = now;
+    const c = s.canvas.getBoundingClientRect();
+    s._overlayRects = [];
+    for (const selector of [...GC_FIT_OVERLAYS, "#graph-minimap", "#graph-zoom"]) {
+      const el = document.querySelector(selector);
+      if (!el || el.hidden || !el.getClientRects().length) continue;
+      const b = el.getBoundingClientRect();
+      if (!b.width || !b.height || b.right <= c.left || b.left >= c.right || b.bottom <= c.top || b.top >= c.bottom) continue;
+      s._overlayRects.push({ left: b.left - c.left, right: b.right - c.left, top: b.top - c.top, bottom: b.bottom - c.top });
+    }
+  }
+  return s._overlayRects.map((r) => ({
+    left: (r.left - t.x) / t.k,
+    right: (r.right - t.x) / t.k,
+    top: (r.top - t.y) / t.k,
+    bottom: (r.bottom - t.y) / t.k,
+  }));
+}
 function gcFitInsets(s = gcTab) {
   const insets = { top: 0, right: 0, bottom: 0, left: 0 };
   if (s.size !== "full" || !s.canvas || !s.dims.w || !s.dims.h) return insets;
@@ -2388,7 +2470,7 @@ function gcDraw(s = gcTab) {
   // pinned, held, hub or on a path get their own stroke.
   const haloByColour = new Map();
   const labelZoom = s.size === "full" ? gcLabelZoom() : GC_LABEL_ZOOM;
-  const ringed = [];
+  const ringed = (s.ringed = []);
   const hubs = { path: new Path2D(), any: false };
   const labelled = [];
   const drawn = [];
@@ -2443,7 +2525,10 @@ function gcDraw(s = gcTab) {
       matched ||
       onPath ||
       node.pinned ||
-      node.fx != null ||
+      //: Held only means something in Force: a computed layout holds every
+      //: note, and the test without the layout gave every treemap dot the
+      //: fallback accent ring below (INBOX 1300 C37, "all the same").
+      (node.fx != null && s.layoutKind === "force") ||
       !gcIsNote(node) ||
       node === s.dropTarget;
     if (special) {
@@ -2839,7 +2924,8 @@ function gcDraw(s = gcTab) {
       right: (s.dims.w - t.x) / k - inset,
       bottom: (s.dims.h - t.y) / k - inset,
     };
-    const placed = gcPlaceLabels(items, discs, lines ? (box, limit) => gcBoxLineCount(lines, box, limit) : null, s.topicPlates || [], frame);
+    const blocked = [...(s.topicPlates || []), ...gcOverlayBoxes(s, t)];
+    const placed = gcPlaceLabels(items, discs, lines ? (box, limit) => gcBoxLineCount(lines, box, limit) : null, blocked, frame);
     placedLabels = placed;
     s.labelBoxes = placed;
     s.labelsDrawn = placed.length;
@@ -2912,6 +2998,7 @@ function gcDraw(s = gcTab) {
   }
 
   ctx.restore();
+  gcHoverCardFrame(s);
   s.timing.lastFrame = performance.now() - started;
   s.timing.frames += 1;
   // **Only a frame with something in it stops the clock.** A frame drawn
@@ -3240,7 +3327,14 @@ function gcLabelText(node, s = gcTab) {
   const limit = s.tree ? (s.tree.arc ? 12 : s.tree.radial ? 16 : 30) : hub ? 36 : 26;
   const text = node.preview || "";
   const pointed = !s.tree && (node.id === s.hoveredId || node.id === gcKeyboardId(s));
-  return gcLabelCut(text, pointed ? GC_LABEL_FULL : limit);
+  const cut = gcLabelCut(text, pointed ? GC_LABEL_FULL : limit);
+  //: A title another note shares says where this one is filed, or, filed
+  //: together, when it was written (INBOX 1300 C41).
+  if (!s.dupTitles || !s.dupTitles.has(text)) return cut;
+  const twin = (s.nodes || []).some((n) => n !== node && n.preview === text && (n.category || "") === (node.category || ""));
+  const at = Date.parse(node.created_at || "");
+  const where = twin && Number.isFinite(at) ? new Date(at).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : node.category || "Unfiled";
+  return `${cut} (${where})`;
 }
 
 //: The trace overlay. Drawn from the same `graphTrace`/`graphTraceRoutes`
@@ -3750,7 +3844,9 @@ function gcWireInteraction(s = gcTab) {
       // The native tooltip the SVG renderer got from a `<title>` child. A
       // canvas has no children, so the canvas itself carries whichever one
       // applies.
-      s.canvas.title = node ? gcTooltip(node, s) : edge ? "Click to see this connection" : gcPlateTitle(plate, s);
+      //: On the tab a note answers with its hover card (`gcHoverCardFrame`),
+      //: so the native tooltip is only the pane's.
+      s.canvas.title = node ? (s.size === "full" ? "" : gcTooltip(node, s)) : edge ? "Click to see this connection" : gcPlateTitle(plate, s);
       gcRequestDraw(s);
     }
   });
@@ -4232,6 +4328,154 @@ const GC_ENTITY_CATEGORY = "Entity";
 const GC_ENTITY_HELP =
   "An entity is a person, place or thing Atlas found named across your notes, " +
   "joined to every note that mentions it. Click it for its page";
+
+//: **A note's hover card** (INBOX 1300 C11, the owner: "I wanna be able to
+//: hover over and click graph nodes and see their values and dates etc").
+//: What the card says, worked out apart from the DOM so it is tested in
+//: node: the title, the category, the facts (dates, links, views, length),
+//: the note's properties and its tags. `day` and `ago` format a date, so a
+//: test passes its own clock. A node that is not a note says what it is.
+function gcHoverCardFacts(node, entry, day, ago) {
+  const card = { title: node.preview || "Untitled", sub: node.category || "", facts: [], props: [], tags: "", note: "" };
+  const kinds = {
+    entity: GC_ENTITY_HELP,
+    document: "A document your notes are attached to",
+    map: "A mind map, joined to the notes on it",
+    tag: "A tag, joined to the notes that carry it",
+    attachment: "A file on the note it is joined to",
+    unresolved: "No note has this name yet. Click to write it",
+    board: "A whiteboard, joined to the notes on it",
+    whiteboard: "A whiteboard, joined to the notes on it",
+  };
+  if (kinds[node.type]) {
+    card.note = kinds[node.type];
+    return card;
+  }
+  if (node.created_at) card.facts.push(["Created", day(node.created_at)]);
+  //: A person's last edit (`edited_at`), never `updated_at`, which the
+  //: app's own writes (filing, a view count) also move.
+  if (node.edited_at) card.facts.push(["Edited", ago(node.edited_at)]);
+  const links = node._links || 0;
+  card.facts.push(["Links", links ? String(links) : "None"]);
+  card.facts.push(["Views", node.access_count ? String(node.access_count) : "Not opened yet"]);
+  if (node.words) card.facts.push(["Words", String(node.words)]);
+  for (const [key, values] of Object.entries((entry && entry.properties) || {}).slice(0, 5)) {
+    const shown = (values || []).filter(Boolean).map((v) => String(v).replace(/^\[\[|\]\]$/g, ""));
+    if (shown.length) card.props.push([key, shown.join(", ")]);
+  }
+  card.tags = (node.tags || []).slice(0, 6).map((t) => `#${t}`).join(" ");
+  return card;
+}
+
+//: The card's element, built once into the map's box: `role="tooltip"`, the
+//: canvas `aria-describedby` it while it shows, never focusable (the arrow
+//: keys move the note it describes, Enter opens the note).
+function gcHoverCardEl(s) {
+  if (s._hoverCard && s._hoverCard.isConnected) return s._hoverCard;
+  const box = s.canvas && s.canvas.parentElement;
+  if (!box) return null;
+  const card = document.createElement("div");
+  card.id = "graph-hovercard";
+  card.className = "graph-hovercard";
+  card.setAttribute("role", "tooltip");
+  card.hidden = true;
+  box.appendChild(card);
+  s._hoverCard = card;
+  return card;
+}
+
+function gcHoverCardFill(card, node, s) {
+  const entry = typeof allEntries !== "undefined" ? allEntries.find((e) => e.id === node.id) : null;
+  const facts = gcHoverCardFacts(
+    node,
+    entry,
+    (iso) => {
+      const at = parseServerTime(iso);
+      return at ? at.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "";
+    },
+    relativeTime
+  );
+  const head = document.createElement("div");
+  head.className = "graph-hovercard-head";
+  const dot = document.createElement("span");
+  dot.className = "legend-dot";
+  dot.style.background = node.colour || gcTokens.muted;
+  dot.setAttribute("aria-hidden", "true");
+  const title = document.createElement("strong");
+  title.textContent = facts.title;
+  head.append(dot, title);
+  const parts = [head];
+  const line = (text, cls) => {
+    const p = document.createElement("p");
+    p.className = cls;
+    p.textContent = text;
+    parts.push(p);
+  };
+  if (facts.sub) line(facts.sub, "graph-hovercard-sub");
+  if (facts.note) line(facts.note, "graph-hovercard-sub");
+  const grid = (rows, cls) => {
+    if (!rows.length) return;
+    const dl = document.createElement("dl");
+    dl.className = cls;
+    for (const [key, value] of rows) {
+      const dt = document.createElement("dt");
+      dt.textContent = key;
+      const dd = document.createElement("dd");
+      dd.textContent = value;
+      dl.append(dt, dd);
+    }
+    parts.push(dl);
+  };
+  grid(facts.facts, "graph-hovercard-facts");
+  grid(facts.props, "graph-hovercard-facts graph-hovercard-props");
+  if (facts.tags) line(facts.tags, "graph-hovercard-sub");
+  const matches = gcTooltipMatches(node, s);
+  if (matches) line(matches.trim().split("\n").slice(0, 4).join("\n"), "graph-hovercard-sub graph-hovercard-matches");
+  if (gcIsNote(node)) line("Click to open, double-click to pin", "graph-hovercard-hint");
+  card.replaceChildren(...parts);
+}
+
+//: Once a frame (`gcDraw`): which note the card is about, the pointer's or
+//: else the keyboard's, and where it stands, beside the dot and inside the
+//: map. Hidden while a drag or a pan moves the map, while the note's popup
+//: is open, and on a pane (which keeps the native tooltip).
+function gcHoverCardFrame(s) {
+  if (s.size !== "full") return;
+  const id = s.hoveredId != null ? s.hoveredId : gcKeyboardId(s);
+  const node = id != null && s.byId ? s.byId.get(id) : null;
+  const popup = document.getElementById("graph-popup");
+  const show = node && !node.isGroup && !s.dragNode && !s.panning && !s.intro && (!popup || popup.classList.contains("hidden"));
+  const card = show ? gcHoverCardEl(s) : s._hoverCard;
+  if (!card) return;
+  if (!show) {
+    if (!card.hidden) {
+      card.hidden = true;
+      s.canvas.removeAttribute("aria-describedby");
+    }
+    card._for = null;
+    return;
+  }
+  if (card._for !== node.id || card._epoch !== s.epoch) {
+    gcHoverCardFill(card, node, s);
+    card._for = node.id;
+    card._epoch = s.epoch;
+  }
+  card.hidden = false;
+  s.canvas.setAttribute("aria-describedby", card.id);
+  const t = s.transform;
+  const sx = node.x * t.k + t.x;
+  const sy = node.y * t.k + t.y;
+  const r = (node.r + (node._grow || 0)) * t.k;
+  const w = card.offsetWidth;
+  const h = card.offsetHeight;
+  const gap = 12;
+  let left = sx + r + gap;
+  if (left + w > s.dims.w - gap) left = sx - r - gap - w;
+  left = Math.max(gap, Math.min(left, s.dims.w - w - gap));
+  const top = Math.max(gap, Math.min(sy - h / 2, s.dims.h - h - gap));
+  card.style.left = `${Math.round(left)}px`;
+  card.style.top = `${Math.round(top)}px`;
+}
 
 function gcTooltip(node, s = gcTab) {
   const links = (s.adj && s.adj.get(node.id) ? s.adj.get(node.id).size : 0) || 0;
@@ -4985,6 +5229,7 @@ async function renderGraphCanvas(s = gcTab) {
   };
   graphRenderLegend(data, colourMode, colour, clusterColour, ruleColour, groups, s);
   gcLegendEdgeKey(data);
+  gcLegendSizeKey();
   gcSelectionChanged(s);
 
   const ruleHides = !["category", "cluster", "topic"].includes(colourMode);
@@ -5112,7 +5357,23 @@ async function renderGraphCanvas(s = gcTab) {
     edge.target = s.byId.get(to) || edge.target;
     edge._path2d = null;
   }
-  const maxDegree = gcMaxDegree(s, nodes);
+  //: **A dot's size counts the notebook's links, not the lines drawn**
+  //: (INBOX 1300 C37, the owner on the treemap: "the nodes are all the same
+  //: size, should they be different??"). A treemap draws no lines, so every
+  //: note counted 0 and drew at 5px. The other layouts draw their links (a
+  //: tree also draws its filing), so they keep the drawn count.
+  const linkDegree = new Map();
+  if (s.tree && s.tree.treemap) {
+    for (const edge of visibleEdges) {
+      for (const end of [edge.source, edge.target]) {
+        const id = end && end.id != null ? end.id : end;
+        linkDegree.set(id, (linkDegree.get(id) || 0) + 1);
+      }
+    }
+  }
+  const degreeOf = (node) => (linkDegree.size ? linkDegree.get(node.id) || 0 : (s.adj.get(node.id) || { size: 0 }).size);
+  let maxDegree = 0;
+  for (const node of nodes) if (!node.isGroup) maxDegree = Math.max(maxDegree, degreeOf(node));
   //: Which category's cluster a note stands in, in the Clusters shape; null
   //: otherwise. Read by `gcBowPoint` and the line pass: a line between
   //: clusters is straight and quiet. `_straight`: every line is drawn
@@ -5120,13 +5381,22 @@ async function renderGraphCanvas(s = gcTab) {
   //: crossing "through the middle of the hub"; the worker's `clearCurve`).
   const shape = s.tree ? null : gcShape(s);
   for (const node of nodes) {
-    node.r = gcRadius(node, (s.adj.get(node.id) || { size: 0 }).size, maxDegree);
+    node._links = degreeOf(node);
+    node.r = gcRadius(node, node._links, maxDegree);
     //: A treemap cell is only so big: the dot stays inside it.
     if (node.cell) node.r = Math.min(node.r, Math.max(2.5, Math.min(node.cell.w, node.cell.h) * 0.36));
     node.colour = s.colourOf(node);
     node._cluster = shape === "clusters" ? node.category || "" : null;
+    //: Which category a note stands in for the quiet bridge (`gcEdgeLook`),
+    //: in every Force shape, not only Clusters (INBOX 1300 C41).
+    node._bridgeCat = !s.tree && gcIsNote(node) ? node.category || "" : null;
     node._straight = Boolean(shape) && shape !== "organic";
   }
+  //: Titles two notes or more share (INBOX 1300 C41, two "Ice Breakers:"
+  //: with nothing to tell them apart): `gcLabelText` adds where each is.
+  const titleCount = new Map();
+  for (const node of nodes) if (gcIsNote(node) && node.preview) titleCount.set(node.preview, (titleCount.get(node.preview) || 0) + 1);
+  s.dupTitles = new Set([...titleCount].filter(([, n]) => n > 1).map(([title]) => title));
   //: **A note with no position yet is placed here, not in the worker.**
   //: d3-force assigns its phyllotaxis spiral inside `forceSimulation`, which
   //: means the main thread has no positions at all until the first tick comes
@@ -5452,7 +5722,7 @@ function gcLegendEdgeKey(data, s = gcTab) {
   const category = new Map((data?.nodes || []).map((n) => [n.id, n.category || ""]));
   const id = (end) => (end && typeof end === "object" ? end.id : end);
   const cross =
-    gcShape(s) === "clusters" &&
+    !graphLayoutIsComputed() &&
     (data?.edges || []).some((e) => e.kind !== "similar" && category.get(id(e.source)) !== category.get(id(e.target)));
   if (!legend || !data || !(similar || cross)) return;
   const key = document.createElement("span");
@@ -5474,6 +5744,36 @@ function gcLegendEdgeKey(data, s = gcTab) {
   swatch(reasoned * 2 > links.length ? "reasoned" : "link", "Link");
   if (similar) swatch("similar", "Similar");
   if (cross) swatch("cross", "Between categories");
+  legend.appendChild(key);
+}
+
+//: **What a dot's size means, said on the map** (INBOX 1300 C37, the owner:
+//: "the nodes are all the same size, should they be different??"; a question
+//: is a report that the map did not say). A fact, not a toggle, like the line
+//: key above: two dots and the Size rule's meaning. None says nothing.
+const GC_SIZE_KEY = {
+  connections: "Bigger dot, more links",
+  length: "Bigger dot, longer note",
+  recency: "Bigger dot, edited more recently",
+};
+function gcLegendSizeKey() {
+  const legend = document.getElementById("graph-legend");
+  const words = GC_SIZE_KEY[graphSizeMode()];
+  if (!legend || !words) return;
+  const key = document.createElement("span");
+  key.className = "legend-item legend-edge-key legend-size-key";
+  key.title = "Change what size means under Size, in the graph's options";
+  //: Styled here, not in boot CSS (at its byte cap): the muted ink, the
+  //: first dot at six tenths of the second.
+  for (const scale of [0.6, 1]) {
+    const dot = document.createElement("span");
+    dot.className = "legend-dot";
+    dot.style.background = gcTokens.muted;
+    dot.style.transform = `scale(${scale})`;
+    dot.setAttribute("aria-hidden", "true");
+    key.appendChild(dot);
+  }
+  key.append(document.createTextNode(words));
   legend.appendChild(key);
 }
 

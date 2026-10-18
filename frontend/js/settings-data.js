@@ -383,15 +383,25 @@ async function renderBackups() {
     if (item.latest) row.append(chip("Latest", "item-label is-yours"));
     row.append(name, size, actions);
     li.appendChild(row);
-    const facts = document.createElement("p");
-    facts.className = "muted task-detail";
-    facts.textContent = [
-      item.origin_words || "Made before backups recorded why",
+    //: The facts as badges (INBOX 805): what made it, and whether it was
+    //: read back after writing, then the size, any second copy and the file.
+    const facts = document.createElement("div");
+    facts.className = "entry-meta";
+    facts.append(chip(item.origin_words || "Made before backups recorded why", "item-label"));
+    facts.append(
+      item.checked
+        ? chip("ph:check-circle Verified", "item-label is-ok")
+        : chip("Not verified", "item-label is-warn")
+    );
+    const detail = document.createElement("span");
+    detail.className = "muted";
+    detail.textContent = [
       humanBytes(item.size),
-      item.checked ? "checked: it opens and reads back" : "not checked",
       item.copied_to ? `also copied to ${item.copied_to}` : item.copy_error ? `not copied: ${item.copy_error}` : "",
       item.name,
     ].filter(Boolean).join(" · ");
+    facts.append(detail);
+    facts.title = item.checked ? "Opened and read back after it was written" : "Not opened and read back";
     li.appendChild(facts);
     list.appendChild(li);
   }

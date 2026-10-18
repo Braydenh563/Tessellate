@@ -5982,10 +5982,8 @@ function docTableGripsPlugin(CM) {
         });
         const addCol = put("doc-table-add doc-table-add-col", "add-col", 0,
           { x: lastCol.x + lastCol.w - band, y: geo.box.top - band, w: band, h: band }, "Add a column at the end");
-        addCol.textContent = "+";
         const addRow = put("doc-table-add doc-table-add-row", "add-row", 0,
           { x: geo.box.left, y: geo.box.bottom, w: band, h: band }, "Add a row at the end");
-        addRow.textContent = "+";
         this.layer.appendChild(this.line);
       }
 
@@ -17226,8 +17224,20 @@ function docProseRowAnswers(row, control, finding, opts = {}) {
   if (first) first.focus();
 }
 
+//: What Ignore says: a link offer is put away by name everywhere, anything else
+//: for this document until a restart.
+function docIgnoreLabel(finding) {
+  return finding.rule === "link-offer" ? "Never offer a link to this name" : "Ignore in this document";
+}
+
 //: Stop flagging this wording in this document (until a restart).
 function docProseIgnore(finding) {
+  //: A link offer is put away by its name, for every document (the switch and
+  //: the list of kept names are in Settings, Writing).
+  if (finding.rule === "link-offer" && finding.name) {
+    docLinkOfferIgnore(finding.name);
+    return;
+  }
   docProseIgnored.add(docProseKey(finding));
   renderDocProse();
   renderDocProsePanel();
@@ -17289,7 +17299,7 @@ function docProseGroupList(findings) {
     }
     acts.appendChild(finding.rule === "ai"
       ? act("ph:x", "Dismiss this finding", () => docAiDismiss(finding), "doc-prose-fix doc-prose-dismiss")
-      : act("ph:eye-slash", "Ignore in this document", () => docProseIgnore(finding), "doc-prose-ignore"));
+      : act("ph:eye-slash", docIgnoreLabel(finding), () => docProseIgnore(finding), "doc-prose-ignore"));
     head.appendChild(acts);
     li.appendChild(head);
     const answers = document.createElement("div");
@@ -18318,8 +18328,57 @@ function docTableMenuAtPoint(target, x, y) {
   }
   const context = docTableContext(surface);
   if (!context) return false;
-  openMenuAtPoint(docTableMenuItems(context), "Table row and column actions", x, y);
+  //: The browser's own menu is replaced by this one, so it carries the three
+  //: rows people reach for first (review note on PR 191: no Copy or Paste).
+  openMenuAtPoint([...docClipboardMenuItems(view), ...docTableMenuItems(context)], "Table row and column actions", x, y);
   return true;
+}
+
+//: Copy, Cut and Paste for the right-click menu over a Live table. Plain text
+//: only, which is all a cell holds. Paste reads the clipboard API, which a
+//: webview may refuse; then it says so rather than doing nothing.
+function docClipboardMenuItems(view) {
+  const ranges = () => view.state.selection.ranges.filter((range) => !range.empty);
+  const selected = () => ranges().map((range) => view.state.sliceDoc(range.from, range.to)).join("\n");
+  const none = !ranges().length;
+  return [
+    {
+      label: "Copy",
+      group: "Clipboard",
+      disabled: none,
+      run: async () => {
+        await copyToClipboard(selected());
+        view.focus();
+      },
+    },
+    {
+      label: "Cut",
+      group: "Clipboard",
+      disabled: none,
+      run: async () => {
+        const text = selected();
+        await copyToClipboard(text);
+        view.dispatch(view.state.replaceSelection(""));
+        view.focus();
+      },
+    },
+    {
+      label: "Paste",
+      group: "Clipboard",
+      run: async () => {
+        let text = "";
+        try {
+          text = await navigator.clipboard.readText();
+        } catch (error) {
+          toast("Paste is blocked here. Press Ctrl+V in the cell.", "info");
+          view.focus();
+          return;
+        }
+        if (text) view.dispatch(view.state.replaceSelection(text.replace(/\r?\n/g, " ")));
+        view.focus();
+      },
+    },
+  ];
 }
 
 //: The same menu from an edge grip: the caret goes into the grip's own row or
@@ -18465,6 +18524,15 @@ $("doc-spelling-variant")?.addEventListener("change", async (event) => {
   docVariantFor = null;
   //: And the grammar checker's dialect with it (British or American rules).
   docGrammarCache = { text: null, findings: [] };
+  renderDocProse();
+});
+$("doc-link-offers")?.addEventListener("change", async (event) => {
+  prefsCache = await apiJson("/preferences", {
+    method: "PUT",
+    body: JSON.stringify({ link_offers: event.currentTarget.checked }),
+  }).catch(() => prefsCache);
+  DOC_LINK_OFFERS.text = null;
+  DOC_LINK_OFFERS.findings = [];
   renderDocProse();
 });
 $("doc-grammar-check")?.addEventListener("change", async (event) => {
@@ -19193,8 +19261,10 @@ function docFindingAnswerRows(finding) {
   rows.push({
     kind: "action",
     id: "ignore",
-    label: "ph:eye-slash Ignore in this document",
-    title: "Stop flagging this wording in this document until Tessellate is restarted",
+    label: `ph:eye-slash ${docIgnoreLabel(finding)}`,
+    title: finding.rule === "link-offer"
+      ? "Never offer a link to this name, in any document"
+      : "Stop flagging this wording in this document until Tessellate is restarted",
     run: (close = () => {}) => {
       close();
       docProseIgnore(finding);
@@ -19872,6 +19942,8 @@ async function openDocDictionary() {
   }
   const smart = $("doc-smart-punctuation");
   if (smart) smart.checked = !!(prefsCache && prefsCache.smart_punctuation === true);
+  const linkOffers = $("doc-link-offers");
+  if (linkOffers) linkOffers.checked = docLinkOfferEnabled();
   if (!dialog.open) dialog.showModal();
   search?.focus();
 }
@@ -20046,7 +20118,8 @@ function docCmIsolate() {
 
 function docUndo() {
   const CM = window.CM6;
-  if (docCmView && CM) return CM.commands.undo(docCmView);
+  //: C32: these histories hold no labels, so the notice names the place; "info" shows even when muted.
+  if (docCmView && CM) return CM.commands.undo(docCmView) && (toast("Undone: last change on this document", "info"), true);
   //: The fallback is one textarea, so the browser's own history is the right
   //: one and a second would only disagree with Ctrl+Z: which is what
   //: `applyMarkdown`'s own comment said before Live ever existed.
@@ -20093,7 +20166,7 @@ window.docCanRedo = () => (docCmView && window.CM6 ? window.CM6.commands.redoDep
 
 function docRedo() {
   const CM = window.CM6;
-  if (docCmView && CM) return CM.commands.redo(docCmView);
+  if (docCmView && CM) return CM.commands.redo(docCmView) && (toast("Redone: last change on this document", "info"), true);
   docSurface()?.focus();
   return document.execCommand("redo");
 }
@@ -21013,8 +21086,11 @@ function docCmTheme(CM) {
       //: A quote's attribution line, set small and muted like the rendered
       //: figure's caption.
       ".cm-md-quote-cite": { fontSize: "0.88em", fontStyle: "normal" },
-      ".cm-md-rule-thick": { borderBottomWidth: "3px", borderBottomColor: "color-mix(in srgb, var(--muted) 55%, transparent)" },
-      ".cm-md-rule-dots": { borderBottom: "0", textAlign: "center" },
+      ".cm-md-rule-thick": {
+        backgroundImage: "linear-gradient(color-mix(in srgb, var(--muted) 55%, transparent), color-mix(in srgb, var(--muted) 55%, transparent))",
+        backgroundSize: "100% 3px",
+      },
+      ".cm-md-rule-dots": { backgroundImage: "none", textAlign: "center" },
       ".cm-md-rule-dots::after": {
         content: "'\\2022\\2003\\2022\\2003\\2022'",
         color: "var(--muted)",
@@ -21093,10 +21169,17 @@ function docCmTheme(CM) {
       //: with a bottom border is a hairline sitting on the baseline of nothing.
       //: The height is what makes it read as a divider between two blocks
       //: rather than as an underline belonging to the paragraph above.
+      //: **A full line tall, the rule drawn in its middle** (INBOX 1300 C44).
+      //: It was a 0.6em box with a bottom border and 0.4em of margin, so the
+      //: line-number gutter, which gives each number the line's own height,
+      //: had an 8.8px element holding a 14px figure: numbers 1 and 2 overlapped
+      //: (4 overlaps in 8 lines measured, `scratchpad/ui-sweeps/c44.js`). The
+      //: gutter follows the line's height, so the line is given a line's height.
       ".cm-md-rule": {
-        borderBottom: "1px solid var(--border)",
-        height: "0.6em",
-        margin: "0.4em 0",
+        backgroundImage: "linear-gradient(var(--border), var(--border))",
+        backgroundSize: "100% 1px",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
       },
       //: The gaps between blocks (17b), one token each; the note beside the
       //: decoration in `docLivePlugin` says why this is `line-height` and not

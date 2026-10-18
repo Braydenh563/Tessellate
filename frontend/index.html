@@ -31,28 +31,28 @@
        every later file's var() calls depend on. See
        tests/test_style_scale.py's STYLE_FILES for the list the design-token
        lint reads instead of a single style.css path. -->
-  <link rel="stylesheet" href="/css/00-tokens-shell.css?v=0.5.0">
-  <link rel="stylesheet" href="/css/01-forms-settings.css?v=0.5.0">
-  <link rel="stylesheet" href="/css/02-chat-graph.css?v=0.5.0">
+  <link rel="stylesheet" href="/css/00-tokens-shell.css?v=0.6.0">
+  <link rel="stylesheet" href="/css/01-forms-settings.css?v=0.6.0">
+  <link rel="stylesheet" href="/css/02-chat-graph.css?v=0.6.0">
   <!-- The reduced-motion blankets (the OS hint's, the manual switch's, Interface
        animations off): matched against no element unless the OS asks for calm
        or theme-boot.js / applyAppearance turn the media on (motion-still.css). -->
-  <link rel="stylesheet" href="/css/motion-still.css?v=0.5.0" media="(prefers-reduced-motion: reduce)" id="motion-still-sheet">
-  <link rel="stylesheet" href="/css/03-dashboard-widgets.css?v=0.5.0">
-  <link rel="stylesheet" href="/css/04-chat-dock-appearance.css?v=0.5.0">
-  <link rel="stylesheet" href="/css/05-sidebars-themes.css?v=0.5.0">
-  <link rel="stylesheet" href="/css/06-timeline-dialogs.css?v=0.5.0">
-  <link rel="stylesheet" href="/css/07-whiteboard-misc.css?v=0.5.0">
-  <link rel="stylesheet" href="/css/08-consistency.css?v=0.5.0">
+  <link rel="stylesheet" href="/css/motion-still.css?v=0.6.0" media="(prefers-reduced-motion: reduce)" id="motion-still-sheet">
+  <link rel="stylesheet" href="/css/03-dashboard-widgets.css?v=0.6.0">
+  <link rel="stylesheet" href="/css/04-chat-dock-appearance.css?v=0.6.0">
+  <link rel="stylesheet" href="/css/05-sidebars-themes.css?v=0.6.0">
+  <link rel="stylesheet" href="/css/06-timeline-dialogs.css?v=0.6.0">
+  <link rel="stylesheet" href="/css/07-whiteboard-misc.css?v=0.6.0">
+  <link rel="stylesheet" href="/css/08-consistency.css?v=0.6.0">
   <!-- The documents editor's own layout, last so it is the final word on the
        panes it lays out. CodeMirror's *internals* are styled from the theme
        object in documents.js instead: adopted stylesheets sort after document
        stylesheets, so a rule here could not override one of its own. -->
-  <link rel="stylesheet" href="/css/09-editor.css?v=0.5.0">
+  <link rel="stylesheet" href="/css/09-editor.css?v=0.6.0">
   <!-- Phases 9 and 10 of UI_MODERNISATION_PLAN: the tablet bands and the
        Liquid Glass adoptions. Last, so it wins ties on source order, and its
        own file so three agents can edit the stylesheets at once. -->
-  <link rel="stylesheet" href="/css/10-responsive.css?v=0.5.0">
+  <link rel="stylesheet" href="/css/10-responsive.css?v=0.6.0">
   <!-- **Its own file, not an inline block, and that is the point.** The CSP
        allows inline scripts only by sha256 hash, and `create_app` computes
        those hashes from index.html **once at startup**. A server still
@@ -62,7 +62,7 @@
        the loading screen". A guard that exists to report a broken boot must
        not itself be the thing that breaks, and `script-src 'self'` covers a
        same-origin file unconditionally. -->
-  <script src="/js/boot-guard.js?v=0.5.0"></script>
+  <script src="/js/boot-guard.js?v=0.6.0"></script>
   <!-- **Its own file for the same reason boot-guard.js is**, and this one
        was reported: "[browser/csp] blocked script-src-elem: inline". The
        policy has no `'unsafe-inline'`, so an inline block has to be named by
@@ -78,7 +78,7 @@
        class rather than one more of its causes. It stays a plain synchronous
        script element in the head, so it still runs before first paint and the
        anti-flash guarantee is unchanged. -->
-  <script src="/js/theme-boot.js?v=0.5.0"></script>
+  <script src="/js/theme-boot.js?v=0.6.0"></script>
 </head>
 <body>
   <!-- The very first thing in <body>, on purpose: painted before any data
@@ -1375,7 +1375,7 @@
           data-help-for="dash-help" aria-controls="dash-help" aria-expanded="false"
           title="About the dashboard" aria-label="About the dashboard"><i class="ph ph-question" aria-hidden="true"></i></button>
         <div class="help-body hidden" id="dash-help" role="dialog" aria-label="About the dashboard">
-          <p>Today at a glance: your recent notes, reminders and widgets. Search finds notes, documents, files and app actions, and Ctrl+K opens the command palette for commands and places. Get started lists the first steps, ticked as you finish them. Customise, then Edit layout, lets you add, move, resize and remove widgets. In the Focused view the greeting card shows what is due today, your meetings, the notes to file and the note you were last in.</p>
+          <p>Today at a glance: your recent notes, reminders and widgets. Search finds notes, documents, files and app actions, and Ctrl+K opens the command palette for commands and places. Get started lists the first steps, ticked as you finish them; its menu can mark them all done or hide it, and Customise, Show Get started brings it back. Customise, then Edit layout, lets you add, move, resize and remove widgets. In the Focused view the greeting card shows what is due today, your meetings, the notes to file and the note you were last in.</p>
         </div>
         <span id="dash-more" class="dock-more dash-more"></span>
       </div>
@@ -2244,7 +2244,7 @@ Link to another note with [[its first few words]]."></textarea>
                      into the tooltip: the words cost more width than the fact
                      they introduce, and a chip beside "AI answer" is already
                      read as what answered. -->
-                <span id="answered-by" class="chip answer-model"></span>
+                <span id="answered-by" class="chip item-label answer-model"></span>
                 <!-- **All icons, no words**, which is what makes one row fit a
                      356px column at 1024. DESIGN.md, from the HIG: a group is
                      all icons or all text and never mixed, and this group was
@@ -2261,11 +2261,9 @@ Link to another note with [[its first few words]]."></textarea>
                   <span id="ask-answer-more" class="hidden"></span>
                 </span>
               </h3>
-              <!-- What was asked, echoed above the answer it produced. -->
               <!-- The questions a follow-up chain came from (INBOX 490,
                    `renderAskTrail`). -->
               <div id="ask-trail" class="hidden"></div>
-              <p id="asked-question" class="asked-question hidden"></p>
               <!-- The app's one Thinking fold goes in here, built by
                    `thinkingFoldIn` (chat-agent.js; INBOX 457). -->
               <div id="thinking-box" class="hidden"></div>
@@ -3013,7 +3011,7 @@ Link to another note with [[its first few words]]."></textarea>
                   <p>Tick what the next message should read: notes, documents, files,
                     pictures or mind maps you already have. The paperclip beside this
                     button uploads something new instead.</p>
-                  <p>Keys: the arrows move, Space ticks, Enter is Done and Escape closes.
+                  <p>Keys: the arrows move, Space or Enter ticks, Enter in the search box is Done and Escape closes.
                     Each tab's count says how many of its kind are attached.</p>
                 </div>
                 <!-- Asked for directly: "I want to be able to attach not just
@@ -3534,6 +3532,13 @@ Link to another note with [[its first few words]]."></textarea>
                   <option value="">Everything</option>
                 </select>
               </div>
+              <!-- The dates beside the density strip (INBOX 1300 C36): a
+                   remembered switch, wired in timeline-ticks.js, which draws
+                   them. -->
+              <label class="dock-menu-check" title="Show the month and year labels beside the thin strip at the feed's right edge. Your choice is remembered.">
+                <input type="checkbox" id="timeline-ticks-toggle" checked>
+                <i class="ph ph-calendar-dots ph-lead" aria-hidden="true"></i> Dates beside the strip
+              </label>
               <!-- Selecting several rows is a mode, and a mode lives in the
                    menu once a dock is at its seven-control ceiling: the same
                    move `#select-btn` and `#graph-trace-toggle` made. It only
@@ -3589,7 +3594,7 @@ Link to another note with [[its first few words]]."></textarea>
         month walk a week, and the month opens a calendar to jump to any earlier day.
         In the feed, Ctrl and the mouse wheel, or a pinch, makes the date
         groups finer or coarser, as do + and - on a row. The thin strip at the feed's right edge shows how much you wrote
-        over the whole range, labelled by month or year; click or drag it to jump. The chips under the strip show what you
+        over the whole range, labelled by month or year (Options, Dates beside the strip, hides the labels); click or drag it to jump. The chips under the strip show what you
         wrote on today's date in earlier years, and the year menu beside the month narrows the list to one year;
         Options, Time range, On this day does the same.
   </p>
@@ -3916,13 +3921,15 @@ Link to another note with [[its first few words]]."></textarea>
           <p class="muted">
             Solid lines are links you made, dashed lines are trains of thought,
             dotted lines are notes that mean similar things. Hover a note to
-            spotlight its connections, scroll or use the buttons to zoom, click a
+            spotlight its connections and see its card (dates, links, views,
+            properties and tags; the arrow keys show it too), scroll or use the buttons to zoom, click a
             note to edit it right here, and click a legend colour to hide that
             category. Double-click empty space to add a note there. Gravity and
             Spread reshape whatever you have not placed yourself. A Tree,
             Radial, Arc or Treemap layout stays still and is named in the
             toolbar; click its name to change it. Treemap sizes each category
-            by how many notes it holds.
+            by how many notes it holds. A bigger dot has more links; Size in
+            the options changes what size means, and the legend says which.
             <strong>Drop one note onto another to link them</strong>, and use
             <strong>Trace</strong> to see how any two notes connect.
           </p>
@@ -6539,7 +6546,7 @@ Link to another note with [[its first few words]]."></textarea>
       <div id="wb-map-empty" class="wb-map-empty card glass empty-state" role="note" aria-label="This map is empty" hidden>
         <span class="empty-icon" aria-hidden="true"><i class="ph ph-tree-structure ph-lead" aria-hidden="true"></i></span>
         <p class="empty-title">This map has no topics</p>
-        <p class="muted">Start it again with one topic, then Tab for a branch off it.</p>
+        <p class="muted">Add one topic, then press Tab for a branch.</p>
         <button type="button" id="wb-map-empty-add" class="ghost small"><i class="ph ph-plus ph-lead" aria-hidden="true"></i> Add the first topic</button>
       </div>
     <!-- A stop on the keyboard path since INBOX 445: Tab walks the items once
@@ -6968,7 +6975,7 @@ Link to another note with [[its first few words]]."></textarea>
         <button class="ghost icon-button active" data-tool="select" title="Select (V): click a card or sketch, Delete to remove it" aria-label="Select (V)">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l7 17 2-7 7-2z"></path></svg>
         </button>
-        <button class="ghost icon-button" data-tool="pan" title="Hand (H): drag to pan the board. Holding space pans from any tool" aria-label="Hand (H)">
+        <button class="ghost icon-button" data-tool="pan" title="Hand (H): drag to pan the board. Holding space, or the middle or right mouse button, pans from any tool" aria-label="Hand (H)">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a1.5 1.5 0 0 0-3 0"></path><path d="M15 6V4.5a1.5 1.5 0 0 0-3 0V6"></path><path d="M12 6V5a1.5 1.5 0 0 0-3 0v7"></path><path d="M9 12V8.5a1.5 1.5 0 0 0-3 0V14a7 7 0 0 0 7 7h1a7 7 0 0 0 7-7v-3a1.5 1.5 0 0 0-3 0"></path></svg>
         </button>
         <button class="ghost icon-button" data-tool="lasso" title="Lasso select (K): draw a freeform loop around anything whose centre falls inside it" aria-label="Lasso select (K)">
@@ -7503,8 +7510,8 @@ Link to another note with [[its first few words]]."></textarea>
           <option value="dotted">Dotted</option>
         </select>
       </div>
-      <!-- A sticky note's paper: one swatch per colour, filled by
-           `wbFillPaperSwatches` (the owner, 2026-10-10: "note appearances
+      <!-- A sticky note's paper: one dropdown button, filled by
+           `wbFillPaperPicker` (the owner, 2026-10-10: "note appearances
            arent changable"). Any other colour is the "..." menu's Background. -->
       <div class="wb-context-group hidden wb-paper-group" data-wb-ctx="paper" role="group" aria-label="Note colour"></div>
       <div class="wb-context-group hidden" data-wb-ctx="text">
@@ -9324,6 +9331,13 @@ Link to another note with [[its first few words]]."></textarea>
       </span>
     </label>
     <label class="setting-check">
+      <input type="checkbox" id="doc-link-offers" checked>
+      <span>
+        Offer links to my notes
+        <small class="muted">When a document names another note or document, offer to turn it into a link.</small>
+      </span>
+    </label>
+    <label class="setting-check">
       <input type="checkbox" id="doc-smart-punctuation">
       <span>
         Smart quotes and dashes
@@ -10911,9 +10925,10 @@ Link to another note with [[its first few words]]."></textarea>
                 <p>
                   A theme sets everything below in one go. Anything you then
                   change by hand sits on top of it and wins, so you can pick
-                  a theme and still choose your own accent colour. Rest the
-                  pointer on a theme, or press the eye in its corner, to see it
-                  before you pick it, or press Surprise me for one at random.
+                  a theme and still choose your own accent colour. Press the eye
+                  in a theme's corner to see it on the whole app, then Apply or
+                  Cancel; leaving Appearance or Settings cancels it. Surprise me
+                  picks one at random.
                 </p>
               </div>
               <div id="theme-presets" class="theme-presets"></div>
@@ -11214,6 +11229,12 @@ Link to another note with [[its first few words]]."></textarea>
                   once, then breathes slowly, and its cells lift in turn while
                   Atlas works. Either switch off holds it still.
                 </p>
+                <p>
+                  Reveal replies is one of them: a reply written with no model
+                  (from your notes, or the Guide's own help) rises into place a
+                  block at a time in Chat, Ask, the popup agent and the Guide.
+                  Reduce motion makes it a quick fade; off, it simply appears.
+                </p>
               </div>
 
               <div class="setting-row" id="perf-mode-row">
@@ -11345,6 +11366,16 @@ Link to another note with [[its first few words]]."></textarea>
                 <span>
                   Interface animations
                   <small class="muted">Short fades and slides as menus, dialogs and tabs open, and a press on buttons.</small>
+                </span>
+              </label>
+
+              <!-- A reply no model wrote rises into place (INBOX 1300 C28,
+                   `replyReveal` in reply-kit.js); wired by settings-rows.js. -->
+              <label class="setting-check" id="reply-motion-row">
+                <input type="checkbox" id="reply-motion-toggle" checked>
+                <span>
+                  Reveal replies
+                  <small class="muted">A reply written with no model rises into place a block at a time.</small>
                 </span>
               </label>
 
@@ -11731,7 +11762,9 @@ Link to another note with [[its first few words]]."></textarea>
                   after another, each says how it went, and one that fails
                   does not stop the rest. An installed package's ... menu has
                   Reinstall, for a feature that is switched on but not
-                  working, and Remove.
+                  working, and Remove. A notice that says a feature needs a
+                  package has an Open Packages button that brings you to
+                  that package's row.
                 </p>
               </div>
               <h4 class="setting-subhead">Bundles</h4>
@@ -11819,7 +11852,7 @@ Link to another note with [[its first few words]]."></textarea>
             <details class="settings-group settings-fold" data-fold-key="shortcuts-yours" open>
               <summary><h3 class="inline-h3">Your shortcuts</h3></summary>
               <p class="muted">
-                Press a shortcut's keys and then the keys you want; a button
+                Press a shortcut's keys, marked with a pencil, and then the keys you want; a button
                 with a shortcut shows it when you hover it; type above the list
                 to find one. Press
                 <kbd>?</kbd> anywhere in the app for the same list as an overlay.
@@ -11828,7 +11861,7 @@ Link to another note with [[its first few words]]."></textarea>
               <p id="shortcut-status-settings" class="status" role="status"></p>
               <label class="check-row">
                 <input type="checkbox" id="pref-single-keys">
-                <span>Single-key shortcuts (<kbd>m</kbd>, <kbd>/</kbd>, <kbd>?</kbd> and the others with no Ctrl or Alt)</span>
+                <span>Single-key shortcuts (<kbd>t</kbd>, <kbd>/</kbd>, <kbd>?</kbd> and the others with no Ctrl or Alt)</span>
               </label>
               <div class="row">
                 <button id="shortcuts-reset-settings" class="ghost small" type="button">
@@ -11877,17 +11910,17 @@ Link to another note with [[its first few words]]."></textarea>
             <details class="settings-group settings-fold" data-fold-key="shortcuts-jump">
               <summary><h3 class="inline-h3">Jump to a tab</h3></summary>
               <p class="muted">
-                Press <kbd>m</kbd> and then a letter, the same way GitHub and
+                Press <kbd>t</kbd> (for Tessellate; <kbd>m</kbd> still works) and then a letter, the same way GitHub and
                 Gmail do it. Only when you aren't typing in a box.
               </p>
               <ul class="shortcut-list">
-                <li><kbd>m</kbd> <kbd>d</kbd><span>Dashboard</span></li>
-                <li><kbd>m</kbd> <kbd>n</kbd><span>Notes</span></li>
-                <li><kbd>m</kbd> <kbd>c</kbd><span>Chat</span></li>
-                <li><kbd>m</kbd> <kbd>g</kbd><span>Graph</span></li>
-                <li><kbd>m</kbd> <kbd>l</kbd><span>Library</span></li>
-                <li><kbd>m</kbd> <kbd>t</kbd><span>Timeline</span></li>
-                <li><kbd>m</kbd> <kbd>r</kbd><span>Reminders</span></li>
+                <li><kbd>t</kbd> <kbd>d</kbd><span>Dashboard</span></li>
+                <li><kbd>t</kbd> <kbd>n</kbd><span>Notes</span></li>
+                <li><kbd>t</kbd> <kbd>c</kbd><span>Chat</span></li>
+                <li><kbd>t</kbd> <kbd>g</kbd><span>Graph</span></li>
+                <li><kbd>t</kbd> <kbd>l</kbd><span>Library</span></li>
+                <li><kbd>t</kbd> <kbd>i</kbd><span>Timeline</span></li>
+                <li><kbd>t</kbd> <kbd>r</kbd><span>Reminders</span></li>
               </ul>
             </details>
             <!-- Quick capture from anywhere (WORLD_CLASS_PLAN H9, row 27): the
@@ -12081,6 +12114,15 @@ Link to another note with [[its first few words]]."></textarea>
                 <span>Smart quotes and dashes in documents</span>
               </label>
               <p class="muted">Curly quotes as you type, and two hyphens become a dash; never inside code.</p>
+              <label class="check-row">
+                <input type="checkbox" id="pref-link-offers" checked>
+                <span>Offer links to my notes in documents</span>
+              </label>
+              <p class="muted">When a document names another note or document, offer to turn it into a link. Never applied by Fix all.</p>
+              <p class="muted hidden" id="pref-link-ignored-row">
+                <span id="pref-link-ignored-count"></span>
+                <button type="button" class="ghost small" id="pref-link-ignored-reset">Offer them again</button>
+              </p>
               <label class="check-row">
                 <input type="checkbox" id="pref-autocorrect" checked>
                 <span>Autocorrect as I type</span>
@@ -14560,7 +14602,7 @@ Link to another note with [[its first few words]]."></textarea>
             title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
         </span>
       </div>
-      <p class="muted">Press a shortcut's keys, then the keys you want.</p>
+      <p class="muted">Press a shortcut's keys, marked with a pencil, then the keys you want.</p>
       <ul class="shortcut-list" id="shortcut-list"></ul>
       <p id="shortcut-status" class="status" role="status"></p>
       <div class="row">
@@ -14588,8 +14630,8 @@ Link to another note with [[its first few words]]."></textarea>
         <li><span class="shortcut-keys"><kbd>←</kbd> <kbd>→</kbd></span><span>Move between tabs (when a tab is focused)</span></li>
         <li><span class="shortcut-keys"><kbd>Enter</kbd></span><span>Send a chat message, or run the selected command</span></li>
         <li><span class="shortcut-keys"><kbd>Tab</kbd></span><span>Move focus; cycles inside an open dialog</span></li>
-        <li><span class="shortcut-keys"><kbd>m</kbd> then <kbd>d</kbd>/<kbd>n</kbd>/<kbd>c</kbd>/<kbd>g</kbd>/<kbd>l</kbd>/<kbd>t</kbd>/<kbd>r</kbd></span><span>Jump to Dashboard / Notes / Chat / Graph / Library / Timeline / Reminders</span></li>
-        <li><span class="shortcut-keys"><kbd>m</kbd> then <kbd>s</kbd>/<kbd>q</kbd>/<kbd>v</kbd></span><span>Open settings / a quick sketch / record a meeting</span></li>
+        <li><span class="shortcut-keys"><kbd>t</kbd> then <kbd>d</kbd>/<kbd>n</kbd>/<kbd>c</kbd>/<kbd>g</kbd>/<kbd>l</kbd>/<kbd>i</kbd>/<kbd>r</kbd></span><span>Jump to Dashboard / Notes / Chat / Graph / Library / Timeline / Reminders</span></li>
+        <li><span class="shortcut-keys"><kbd>t</kbd> then <kbd>s</kbd>/<kbd>q</kbd>/<kbd>v</kbd></span><span>Open settings / a quick sketch / record a meeting</span></li>
       </ul>
       <h3>In the documents editor</h3>
       <p class="muted">These work while you are writing in a document.</p>
@@ -15127,42 +15169,42 @@ Link to another note with [[its first few words]]."></textarea>
        kick-offs, initNotesSubtabs() and initAuth(), are the last lines of
        spaces-find.js for that reason. agent-activity.js (split first) runs
        after all of them. -->
-  <script src="/js/app.js?v=0.5.0"></script>
-  <script src="/js/prefs.js?v=0.5.0"></script>
-  <script src="/js/store.js?v=0.5.0"></script>
-  <script src="/js/lazy-entries.js?v=0.5.0"></script>
-  <script src="/js/note-cards.js?v=0.5.0"></script>
-  <script src="/js/menus.js?v=0.5.0"></script>
-  <script src="/js/lightbox.js?v=0.5.0"></script>
-  <script src="/js/selection.js?v=0.5.0"></script>
-  <script src="/js/notes-list.js?v=0.5.0"></script>
-  <script src="/js/capture-ask.js?v=0.5.0"></script>
-  <script src="/js/chat.js?v=0.5.0"></script>
-  <script src="/js/chat-agent.js?v=0.5.0"></script>
-  <script src="/js/chat-attach.js?v=0.5.0"></script>
-  <script src="/js/sheets-selects.js?v=0.5.0"></script>
-  <script src="/js/skills.js?v=0.5.0"></script>
-  <script src="/js/shell-reminders.js?v=0.5.0"></script>
-  <script src="/js/markdown.js?v=0.5.0"></script>
-  <script src="/js/navigation.js?v=0.5.0"></script>
-  <script src="/js/router.js?v=0.5.0"></script>
-  <script src="/js/settings-panes.js?v=0.5.0"></script>
-  <script src="/js/media.js?v=0.5.0"></script>
-  <script src="/js/status.js?v=0.5.0"></script>
-  <script src="/js/ai-tools.js?v=0.5.0"></script>
-  <script src="/js/phone-shell.js?v=0.5.0"></script>
-  <script src="/js/wiring.js?v=0.5.0"></script>
-  <script src="/js/settings-wiring.js?v=0.5.0"></script>
-  <script src="/js/spaces-find.js?v=0.5.0"></script>
-  <script src="/js/agent-activity.js?v=0.5.0"></script>
+  <script src="/js/app.js?v=0.6.0"></script>
+  <script src="/js/prefs.js?v=0.6.0"></script>
+  <script src="/js/store.js?v=0.6.0"></script>
+  <script src="/js/lazy-entries.js?v=0.6.0"></script>
+  <script src="/js/note-cards.js?v=0.6.0"></script>
+  <script src="/js/menus.js?v=0.6.0"></script>
+  <script src="/js/lightbox.js?v=0.6.0"></script>
+  <script src="/js/selection.js?v=0.6.0"></script>
+  <script src="/js/notes-list.js?v=0.6.0"></script>
+  <script src="/js/capture-ask.js?v=0.6.0"></script>
+  <script src="/js/chat.js?v=0.6.0"></script>
+  <script src="/js/chat-agent.js?v=0.6.0"></script>
+  <script src="/js/chat-attach.js?v=0.6.0"></script>
+  <script src="/js/sheets-selects.js?v=0.6.0"></script>
+  <script src="/js/skills.js?v=0.6.0"></script>
+  <script src="/js/shell-reminders.js?v=0.6.0"></script>
+  <script src="/js/markdown.js?v=0.6.0"></script>
+  <script src="/js/navigation.js?v=0.6.0"></script>
+  <script src="/js/router.js?v=0.6.0"></script>
+  <script src="/js/settings-panes.js?v=0.6.0"></script>
+  <script src="/js/media.js?v=0.6.0"></script>
+  <script src="/js/status.js?v=0.6.0"></script>
+  <script src="/js/ai-tools.js?v=0.6.0"></script>
+  <script src="/js/phone-shell.js?v=0.6.0"></script>
+  <script src="/js/wiring.js?v=0.6.0"></script>
+  <script src="/js/settings-wiring.js?v=0.6.0"></script>
+  <script src="/js/spaces-find.js?v=0.6.0"></script>
+  <script src="/js/agent-activity.js?v=0.6.0"></script>
   <!-- Generated faces (`nameMood`, `nameMark`): split out of app.js on
        2026-09-24 when they took the gzipped app.js over its size bound. Only
        declarations at top level, and it must load before any boot file that
        paints a face, so it sits straight after app.js. -->
-  <script src="/js/avatars.js?v=0.5.0"></script>
+  <script src="/js/avatars.js?v=0.6.0"></script>
   <!-- Atlas, the assistant's own character (`atlasDraw`, its moods): after
        avatars.js, whose `registerCharacter` it answers through. -->
-  <script src="/js/atlas.js?v=0.5.0"></script>
+  <script src="/js/atlas.js?v=0.6.0"></script>
   <!-- The editor layer: the "/" command menu, the block frames it inserts, and
        the caret-anchored popup the document editor's [[ autocomplete uses.
        Loaded after app.js, and it stays at boot: every cross-file call it
@@ -15173,8 +15215,8 @@ Link to another note with [[its first few words]]."></textarea>
        arrived, and the two that could run sooner (`applyMarkdown`,
        `docEventFromCm`) are on app.js's stand-in list and its typeof-guard
        list respectively. -->
-  <script src="/js/rich-picker.js?v=0.5.0"></script>
-  <script src="/js/editor.js?v=0.5.0"></script>
+  <script src="/js/rich-picker.js?v=0.6.0"></script>
+  <script src="/js/editor.js?v=0.6.0"></script>
   <!-- Dashboard: widgets, masonry packing, the generative-art widget (§88.3
        of the app.js-split plan). Loaded after app.js and shares its global
        scope; every cross-file call happens at runtime (inside a function or
@@ -15186,7 +15228,7 @@ Link to another note with [[its first few words]]."></textarea>
        closure) moved here along with the functions they call, the same fix
        documents.js made for `initDocSidebarTabs()`, see dashboard.js's own
        header for the full explanation. -->
-  <script src="/js/dashboard.js?v=0.5.0"></script>
+  <script src="/js/dashboard.js?v=0.6.0"></script>
   <!-- Timeline: the feed, the table view, the density scrubber, the kind
        chips and the daily page (split out of app.js on 2026-09-23, when the
        gzipped app.js crossed test_static_compression.py's bound a third
@@ -15199,13 +15241,13 @@ Link to another note with [[its first few words]]."></textarea>
        added, so this position is not load-bearing; it sits before
        settings.js because settings.js's tail is the one that must run last.
        See timeline.js's own header for what stayed in app.js and why. -->
-  <script src="/js/timeline.js?v=0.5.0"></script>
+  <script src="/js/timeline.js?v=0.6.0"></script>
   <!-- Popup agent (Ctrl+K): split out of app.js on 2026-09-24, when the
        gzipped app.js crossed test_static_compression.py's bound a fourth
        time. Same terms as timeline.js above: its top-level lines only read
        what the files before it define, and app.js calls into it only from
        functions and listeners. See palette.js's own header. -->
-  <script src="/js/palette.js?v=0.5.0"></script>
+  <script src="/js/palette.js?v=0.6.0"></script>
   <!-- Settings: the modal shell, the logs console, and appearance (theme,
        accent, curated palettes, saved looks, the generative background
        preview): §88.3 of the app.js-split plan, the fourth and LAST file.
@@ -15227,8 +15269,8 @@ Link to another note with [[its first few words]]."></textarea>
        hazards this ordering fixes. -->
   <!-- The background art's styles (BG_ART_BUILDERS). Before settings.js,
        whose own tail starts the art; this file only defines. -->
-  <script src="/js/bg-art.js?v=0.5.0"></script>
-  <script src="/js/settings.js?v=0.5.0"></script>
+  <script src="/js/bg-art.js?v=0.6.0"></script>
+  <script src="/js/settings.js?v=0.6.0"></script>
   <!-- The guided tour (tour.js) is a lazy bundle (`tour` in LAZY_MODULES,
        app.js): `openTour` and `renderTourReplay` are stand-ins that fetch it
        the first time a tour starts or Settings, Help is shown. -->

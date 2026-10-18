@@ -2710,6 +2710,7 @@ function renderSidebar() {
   for (const [category, count] of [...counts.entries()].sort((a, b) => compareCategoryNames(a[0], b[0]))) {
     addRow(category, count, category);
   }
+  foldSide();
 }
 
 function compareCategoryNames(a, b) {

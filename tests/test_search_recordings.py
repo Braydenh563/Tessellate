@@ -110,3 +110,9 @@ def test_the_finder_has_a_chip_and_opens_the_recordings_list():
     source = (ROOT / "frontend/js/search.js").read_text(encoding="utf-8")
     assert 'key: "recording"' in source
     assert re.search(r"\brecording: \(hit\) => .*openRecordings\(hit\.id\)", source)
+
+
+def test_a_mark_comment_finds_the_recording(client):
+    rid = _saved("Standup", ["nothing notable"], markers=json.dumps([{"at": 4000, "note": "ask about the pelican budget"}]))
+    found = [h for h in _hits(client, "pelican") if h["kind"] == "recording"]
+    assert [h["id"] for h in found] == [rid]

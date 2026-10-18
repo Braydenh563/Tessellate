@@ -956,6 +956,7 @@ function updateReminderBadge(reminders) {
     due,
   };
   renderStatusBar();
+  syncPhoneMoreRuns();
 
   let badge = button.querySelector(".tab-badge");
   if (!due) {

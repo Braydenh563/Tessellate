@@ -17,6 +17,7 @@ FAMILIES = (
     ".settings-fold > summary",
     ".advanced-css > summary",
     ".task-log > summary",
+    ".chat-sources > .chat-sources-summary",
 )
 
 
@@ -72,3 +73,19 @@ def test_every_open_caret_outranks_its_closed_twin():
     for selector in closed:
         chain = selector[selector.index(":not(") : selector.index("::before")]
         assert chain in open_head, f"no open twin carries {chain!r} for {selector!r}"
+
+
+def test_the_sources_fold_shows_its_state_and_starts_shut():
+    # INBOX 1300 C29, the owner: "hard to tell from the ui of the sources box
+    # and dropdown list of sources below if the sources are actually part of
+    # that button's dropdown and if the button is open or not". The caret
+    # turns upright open (`sources1300.js`, in git at d4dbd2f: -90deg shut, none open, on the
+    # popup's panel and the Chat card panel alike), the list hangs from a
+    # rail under it, and no surface opens it for you.
+    assert ".chat-sources[open] > .chat-sources-summary::before" in CSS["08-consistency.css"]
+    body = re.search(r"\.chat-sources-body \{([^}]*)\}", CSS["02-chat-graph.css"]).group(1)
+    assert "border-left: 1px solid var(--border)" in body
+    js = (CSS_DIR.parent / "js" / "chat-agent.js").read_text(encoding="utf-8")
+    panel = js[js.index("function chatSourcesPanel(") :]
+    panel = panel[: panel.index("\n}\n")]
+    assert "details.open" not in panel

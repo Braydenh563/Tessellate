@@ -165,6 +165,17 @@ async function boot(opts={}) {
   if (way === 'lock' && await page.$('#lock-password') && await page.isVisible('#lock-password')) {
     await page.fill('#lock-password', PW); await page.click('#lock-submit'); await page.waitForTimeout(3000);
   }
+  //: **The server preference wins over localStorage** (UX audit, 2026-10-18):
+  //: THEME=dark wrote the key before load, but the saved theme then won, so
+  //: every "dark" sweep measured light. Set it through the app's own
+  //: choice function once unlocked, and the data-theme is checked.
+  {
+    const want = process.env.THEME || 'light';
+    await page.evaluate((t) => { if (document.documentElement.dataset.theme !== t && typeof applyThemeChoice === 'function') applyThemeChoice(t); }, want).catch(() => {});
+    await page.waitForTimeout(400);
+    const got = await page.evaluate(() => document.documentElement.dataset.theme).catch(() => '');
+    if (got !== want) console.log('BOOT-WARN: data-theme is', JSON.stringify(got), 'not', want);
+  }
   await page.evaluate(()=>{ const o=document.getElementById('onboarding-overlay'); if(o) o.classList.add('hidden'); });
   await page.waitForTimeout(800);
   //: **Updates ask once** (the owner, 2026-10-05): a fresh data dir is asked

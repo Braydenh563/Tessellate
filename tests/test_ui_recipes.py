@@ -3721,6 +3721,17 @@ def test_the_attach_panel_rows_are_one_renderer_with_keys() -> None:
     assert 'data-help-for="note-picker-help"' in html and 'id="note-picker-help"' in html
 
 
+def test_enter_on_an_attach_row_ticks_it_and_keeps_focus() -> None:
+    """INBOX 1300 C09: arrows down the list then Enter did nothing the owner
+    expected (it closed the panel as Done with the row unticked). Enter on a
+    row ticks it like Space; Enter in the search field is still Done."""
+    js = (ROOT / "frontend" / "js" / "chat-attach.js").read_text(encoding="utf-8")
+    keys = _function_body(js, "notePickerKeydown")
+    enter = keys[keys.index('event.key === "Enter"', keys.index("if (at < 0) return;")) :]
+    enter = enter[: enter.index("} else if")]
+    assert "target.click()" in enter and "note-picker-done" not in enter
+
+
 def test_the_attach_picker_rows_show_what_they_hold() -> None:
     """UI_MODERNISATION_PLAN, "the picker's other four sources have no
     thumbnail" (op4-1005): a map's row draws the map (`mapPreview` at its row
@@ -4102,7 +4113,11 @@ def test_a_frame_is_one_kind_reached_three_ways() -> None:
     assert 'data-tool="frame"' in index and 'data-wb-insert="frame"' in index
     assert "Frame (F)" in index
     edit = wb[wb.index("function wbEditFrameTitle(") :][:2000]
-    assert "wbBeginTextEdit(titleEl)" in edit and "wbEndTextEdit(titleEl)" in edit
+    assert "wbBeginTextEdit(titleEl, before)" in edit and "wbEndTextEdit(titleEl)" in edit
+    # C17: the hint edits its own text, and an undo repaints what the edit wrote.
+    assert "wbBeginTextEdit(titleEl, before)" in edit and "_wbPaintKey = null" in edit
+    begin = wb[wb.index("function wbBeginTextEdit(") :][:900]
+    assert "ownText !== undefined" in begin
     assert "|| wbFrameDragOrigin(d, d._dragAlone)" in wb
     assert "wbCaptureBulkMoveOrigin(null, keys)" in wb[wb.index("function wbFrameDragOrigin(") :][:400]
     frame_rule = css[css.index(".wb-object-frame {") :][:600]
@@ -5536,7 +5551,7 @@ def test_a_rows_repeated_action_is_quiet_and_three_fold_into_its_menu() -> None:
 def test_a_shortcuts_keys_are_its_rebind_button() -> None:
     """The key chip is the button (title "Change"); no column of Change."""
     body = _function_body((ROOT / "frontend" / "js" / "settings-wiring.js").read_text(encoding="utf-8"), "buildShortcutList")
-    assert '"ghost small quiet shortcut-key"' in body and "change.append(combo)" in body
+    assert '"ghost small quiet shortcut-key"' in body and "change.append(combo, pen)" in body
     assert 'change.title = capturing ? "Cancel" : "Change"' in body
     assert "textContent = capturingShortcut === id ? \"Cancel\" : \"Change\"" not in body
     assert re.search(r"\.shortcut-list button\.shortcut-key \{[^}]*min-height: var\(--target-min\)", _css_all())
@@ -5822,3 +5837,94 @@ def test_the_drop_veil_takes_no_press_and_has_no_blur() -> None:
 def _css_block_in(css: str, selector: str) -> str:
     start = css.index(selector + " {")
     return css[start : css.index("}", start)]
+
+
+def test_a_modal_cards_dialog_head_is_sticky_on_an_opaque_surface() -> None:
+    """C12: the head stays at the top of a scrolling modal card. Browser half:
+    scratchpad/ui-sweeps/dialogheadsticky.js."""
+    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    start = css.index(".modal-card > .dialog-head {")
+    block = css[start : css.index("}", start)]
+    assert "position: sticky;" in block and "top: 0;" in block
+    assert "background: var(--modal-bg-opaque);" in block
+
+
+def test_help_rows_do_not_animate_hover() -> None:
+    """C25: scrolling Help at 4x CPU was 33.3ms a frame (median) because the wheel
+    starts a hover transition on a new row every frame; 16.7 without them
+    (scratchpad/ui-sweeps/helplag.js)."""
+    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    start = css.index("#settings-help summary,")
+    block = css[start : css.index("}", start)]
+    assert "#settings-help .linklike" in block and "transition: none;" in block
+
+
+def test_a_dot_on_the_graph_answers_with_its_hover_card():
+    """DESIGN.md, "A card about one dot on a canvas" (INBOX 1300 C11): the
+    hover card, never the native title, for a note on the Graph tab."""
+    canvas = (ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "graph-lazy.css").read_text(encoding="utf-8")
+    assert "s.canvas.title = node ? gcTooltip(node, s)" not in canvas
+    assert "gcHoverCardFrame(s);" in canvas
+    rule = css[css.index(".graph-hovercard {") :].split("}")[0]
+    assert "backdrop-filter" not in rule and "var(--modal-bg-opaque)" in rule
+
+
+def test_ghost_topics_are_one_lazy_layer_with_four_keys():
+    """DESIGN.md, "Suggestions offered under a map topic": the picker dialog is
+    gone; ghosts live in the lazy Library sheet, never the boot CSS."""
+    js = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    body = js[js.index("function wbMapBranchPicker(") :]
+    body = body[: body.index("\n}\n")]
+    assert "pickerDialog(" not in body
+    for needle in ('"Tab"', '"Enter"', '"Escape"', "is-taken", "wb-ghosts"):
+        assert needle in body, needle
+    lazy = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    assert ".wb-ghosts {" in lazy and ".wb-ghost.is-taken {" in lazy
+    for boot in ("00-tokens-shell", "07-whiteboard-misc", "08-consistency"):
+        assert "wb-ghost" not in (ROOT / "frontend" / "css" / f"{boot}.css").read_text(encoding="utf-8")
+    rule = lazy[lazy.index(".wb-ghosts {") :].split("}")[0]
+    assert "backdrop-filter" not in rule
+
+
+def test_the_library_peek_is_the_help_popover_shell_and_closes_on_drag() -> None:
+    script = (ROOT / "frontend" / "js" / "whiteboard-library.js").read_text(encoding="utf-8")
+    assert '"help-popover wb-lib-peek"' in script, "the peek is the help popover's shell"
+    assert "wbLibPeekSoon(tile);" in script and "wbLibPeekSoon(tile, 0)" in script, "hover waits, focus is at once"
+    assert 'e.pointerType === "touch"' in script, "no peek under a touch"
+    drag = script[script.index('list?.addEventListener("dragstart"') :][:300]
+    assert "wbLibPeekClose();" in drag, "a drag hides the peek"
+    assert 'e.key !== "Escape" || !wbLibPeek.panel' in script, "Escape hides it"
+    assert "tile.title =" not in script[script.index("function wbLibTile(") :][:1500], "a native title would stack on the peek"
+    css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    assert re.search(r"\.help-popover\.wb-lib-peek \{[^}]*pointer-events: none", css), "the peek takes no pointer"
+
+
+def test_the_file_viewer_is_two_docks_and_a_filmstrip() -> None:
+    """DESIGN.md, "A full-screen viewer of a file" (INBOX 1300 C30): the name
+    and the file's actions in a top `.dock`, the view in a foot `.dock`, a
+    filmstrip for more than one file, the '?' on the `data-help-for` recipe,
+    the overflow a `kebabMenu`; the bars rest only for an idle mouse, and the
+    chrome's CSS is the lazy sheet's, never the boot CSS."""
+    view = frontend_text("lightbox-view.js")
+    for needle in (
+        'topbar.className = "dock lightbox-topbar"',
+        'dock.className = "dock lightbox-dock"',
+        'film.className = "lightbox-filmstrip"',
+        'helpBtn.setAttribute("data-help-for", "lightbox-help")',
+        "const menu = kebabMenu(",
+        'document.addEventListener("keydown", onKey, true)',
+    ):
+        assert needle in view, needle
+    rest = view[view.index("const canRest = () =>") :][:400]
+    for guard in ("!keysSeen", "!reducedMotion()", ":focus-visible"):
+        assert guard in rest, f"the bars must not rest: {guard}"
+    assert 'e.pointerType === "mouse"' in view[view.index("const wake = (e) =>") :][:400]
+    lazy = (ROOT / "frontend" / "css" / "lightbox-lazy.css").read_text(encoding="utf-8")
+    for rule in (".lightbox .lightbox-topbar {", ".lightbox-bottom {", ".lightbox .lightbox-filmstrip {", ".lightbox.lightbox-idle .lightbox-topbar,"):
+        assert rule in lazy, rule
+    assert re.search(r"prefers-reduced-motion: reduce\)\s*\{\s*\.lightbox \.lightbox-glide \{\s*transition: none", lazy)
+    for boot in ("00-tokens-shell", "02-chat-graph", "07-whiteboard-misc", "08-consistency"):
+        text = (ROOT / "frontend" / "css" / f"{boot}.css").read_text(encoding="utf-8")
+        for name in ("lightbox-topbar", "lightbox-dock", "lightbox-filmstrip", "lightbox-thumb"):
+            assert name not in text, f"{name} in {boot}.css: the viewer's chrome is lazy"

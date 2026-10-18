@@ -232,8 +232,9 @@ HELP_TOPICS: list[dict] = [
         "id": "dashboard",
         "keywords": ("dashboard", "widget", "streak", "digest", "my day", "what changed today", "quiet topics"),
         "body": (
-            "The Dashboard is the at-a-glance home: a greeting with your note "
-            "count, what is due and a pattern your notes show (a subject you "
+            "The Dashboard is the at-a-glance home: a greeting with a line "
+            "composed from your notes (what you wrote today or last, worded a "
+            "little differently each visit and every few minutes), what is due and a pattern your notes show (a subject you "
             "keep writing about, a busy week; Tidy lists them), a search box, the Quick access tiles, "
             "and widgets such as reminders, recent notes, the Digest (your day "
             "with no AI: what is due, open questions, what changed since "
@@ -297,11 +298,11 @@ HELP_TOPICS: list[dict] = [
         "keywords": ("whiteboard", "sketch pad", "canvas", "freehand", "arrange as a grid", "grid of", "stack them", "sticky date", "date on a sticky", "export as jpg", "export as webp", "copy as an image", "copy the board as a picture"),
         "body": (
             "The whiteboard (Library, Boards & maps) is a pannable canvas for "
-            "freehand sketches and note cards together. Freehand sketches also "
+            "freehand sketches and note cards together. Hover a Library tile for a moment (or focus it with the keyboard) to see a larger preview beside the sidebar; Escape or starting a drag hides it. Freehand sketches also "
             "appear in the Library's Images sub-tab. A board's background colour "
             "and image are kept with the board. Board, Export saves a PNG (1x, 2x "
             "or 3x, with a transparent background if you like), JPG, WebP, SVG or PDF named "
-            "after the board, or Copy image puts the picture on the clipboard (also Copy as an image in Ctrl+K). Paste text from another app onto a board: a link "
+            "after the board, or Copy image puts the picture on the clipboard (also Copy as an image in Ctrl+K), or Copy as SVG in Ctrl+K puts the SVG on the clipboard as text. Paste text from another app onto a board: a link "
             "becomes a link box, one line a text box, a list a grid of stickies. "
             "In the command palette over a board, say what to do with the "
             "selection (or the whole board): \"arrange as a grid of 3\", "
@@ -345,7 +346,8 @@ HELP_TOPICS: list[dict] = [
             "shows today's date in earlier months and years. In the feed, Ctrl and "
             "the mouse wheel, or a pinch, makes the date groups finer or coarser, "
             "as do + and - on a row. The thin strip at the feed's right edge shows how "
-            "much you wrote over the whole range, labelled by month or year; click or "
+            "much you wrote over the whole range, labelled by month or year (Options, "
+            "Dates beside the strip, hides the labels and remembers it); click or "
             "drag it to jump. The strip under the bar walks your daily pages, and the "
             "chip under it offers On this day, and the year menu beside the month narrows the list to one year. A note that names a "
             "day (\"on Friday\") sits on that day and says All day; one that "
@@ -449,7 +451,7 @@ HELP_TOPICS: list[dict] = [
         #: months, and the guide was the one place still teaching the old key.
         "body": (
             "Press ? for the full list; Settings, Keyboard shortcuts rebinds any of "
-            "them (press a shortcut's keys, then the keys you want; type in the "
+            "them (press a shortcut's keys, marked with a pencil, then the keys you want; type in the "
             "field above the list to find one), and on a Mac "
             "Cmd works in place of Ctrl. A button with a "
             "shortcut shows it in its tooltip, in your own binding. Everywhere: Ctrl+K "
@@ -471,7 +473,7 @@ HELP_TOPICS: list[dict] = [
             "Ctrl+Shift+A the popup agent, Ctrl+Shift+H ask Atlas about the app, "
             "Ctrl+Shift+O a new chat, Ctrl+Shift+G agent mode on or off, Ctrl+. "
             "stop the answer, Ctrl+Shift+P clip a note to your next question. "
-            "Press m then a letter to jump to a tab; the panel that appears lists "
+            "Press t then a letter to jump to a tab (m works too); the panel that appears lists "
             "Go to and Do with each letter beside its name, marks the tab you are "
             "on, and takes a click as well."
         ),
@@ -609,7 +611,9 @@ HELP_TOPICS: list[dict] = [
             "at 0.5 to 2x with a playhead and the time; drag the waveform to "
             "seek, press M to mark a moment with a comment, and Trim; a "
             "transcribed one lists its lines with their times (press one to "
-            "play from it) and downloads them as SRT or VTT subtitles; with "
+            "play from it; a line's copy button copies it, Shift-click picks a run of "
+            "lines, and the transcript's more menu copies the picked lines or all of "
+            "them, with or without times) and downloads them as SRT or VTT subtitles; with "
             "the AI on, each turn is labelled with who spoke, and a recording's menu has Rename a speaker to correct a name everywhere. "
             "Read-aloud plays a note or answer back to you."
         ),
@@ -716,10 +720,11 @@ HELP_TOPICS: list[dict] = [
             "Ctrl/Cmd+K opens the command palette: jump to any tab or "
             "setting, or run a quick action (new note, new "
             "chat, back up now, toggle the theme, and more) without leaving "
-            "the keyboard. It does not list your notes or documents: type "
-            "what you are looking for and its last row, Search everything "
+            "the keyboard. Type a note's name and the top three matching "
+            "notes are listed under the commands (Enter opens one); its "
+            "last row, Search everything "
             "for, opens Find anything (Ctrl/Cmd+P) with the words already "
-            "searched. Typed words also find every feature in Tools and "
+            "searched, for documents, files and the rest. Typed words also find every feature in Tools and "
             "features, every act Chat does (it opens Chat with the words "
             "started) and the matching settings, by what the words mean too "
             "(\"trash\" finds the bin, \"keybord\" the shortcuts); a word a "
@@ -1165,7 +1170,9 @@ HELP_TOPICS.extend(
                 "choose a category yourself in Capture's Filing menu; while you type, "
                 "Capture offers File under a category (with the reason on hover) "
                 "beside the suggested tags, and pressing it sets the Filing menu. The categories "
-                "are the sidebar of Your notes. Settings, Skills has Reorganise my "
+                "are the sidebar of Your notes: the arrow beside Categories, Most used "
+                "or Saved searches folds that section (it stays folded), and "
+                "Show empty reveals categories with no notes. Settings, Skills has Reorganise my "
                 "categories and Clean up my tags for a bigger tidy."
             ),
             "badge": {"label": "Notes", "tab": "notes"},
@@ -1204,7 +1211,9 @@ HELP_TOPICS.extend(
             "body": (
                 "The bell in the top bar collects what happened while you were "
                 "busy: reminders coming due, background jobs that finished, and "
-                "Atlas's suggestions. The number on it is what you have not seen. "
+                "Atlas's suggestions. The number on it is what you have not seen; "
+                "the app's own jobs (a backup, housekeeping) are listed but never counted, "
+                "unless one fails. "
                 "A pop-up with a button (Undo, Open it, Show it) is kept here with "
                 "the same button: an opener still works after a restart, an Undo "
                 "only while it can still be undone, then its line says Undo expired. "
@@ -1289,7 +1298,9 @@ HELP_TOPICS.extend(
                 "map, opens Untitled map N with its central topic ready to type over "
                 "(what you type names the map too). A note's ⋮ menu, Make a mind map, "
                 "builds one from that note: its title in the centre, its headings and "
-                "lists as branches. Tab adds a child, Enter a sibling, and dragging a topic "
+                "lists as branches. In Chat, an answer's Mind map this and the chat menu's "
+                "Make a mind map of this chat do the same for the answer or the whole "
+                "conversation. Tab adds a child, Enter a sibling, and dragging a topic "
                 "onto another moves its whole branch (onto Drop here to delete, at "
                 "the foot, deletes the topic and its branch). Right-click a topic for the "
                 "ring of actions, where Cross-link joins any two topics. View, How this "
@@ -1346,9 +1357,9 @@ HELP_TOPICS.extend(
                 "triangle, D diamond, T text, N sticky note, F frame, C connector (Shift+C "
                 "curved), I image, X delete. The Shapes button's flyout also has a rounded "
                 "rectangle, ellipse, hexagon, parallelogram, star, cylinder, cloud, speech "
-                "bubble and block arrow. Moving around: the wheel or two "
-                "fingers pan, Shift+wheel pans sideways, Ctrl+wheel or a pinch "
-                "zooms, Space and drag pans, a drag to an edge pans, Ctrl+= and Ctrl+- zoom, "
+                "bubble and block arrow. Moving around: the wheel "
+                "zooms about the pointer, two fingers on a trackpad pan, Shift+wheel pans sideways, a pinch "
+                "zooms too, Space and drag pans, so does the middle or right mouse button held down (a plain right-click still opens the board menu), a drag to an edge pans, Ctrl+= and Ctrl+- zoom, "
                 "Ctrl+0 is 100%, Shift+1 fits all, Shift+N shows the "
                 "overview, / or Ctrl+F finds (with Whole word and Pattern buttons), Ctrl+H replaces, and Tab walks the board's "
                 "items. Ctrl+K also finds select all shapes or connectors, turn 90 degrees, remove from "
@@ -1431,9 +1442,10 @@ HELP_TOPICS.extend(
                 "strip under its title, the name, then the templates grouped by purpose (Plan and track, "
                 "Weigh and decide, Find the cause, Meet and review, Study and create, then your own), each "
                 "with its picture, and the chosen one drawn larger beside the list. A click chooses; Create, "
-                "Enter or a double click makes it. A board's seventeen: Kanban, Weekly planner, Roadmap, "
+                "Enter or a double click makes it. A board's twenty: Kanban, Weekly planner, Roadmap, "
                 "Project brief, OKRs, SWOT analysis, Eisenhower matrix, Pros and cons, Lean canvas, 5 whys, "
-                "Fishbone, Flowchart, Meeting notes, Retrospective, Study notes (Cornell), Mood board and User "
+                "Fishbone, Flowchart, Class diagram, Entity relationship diagram (tables with crow's foot lines), "
+                "Wireframe page, Meeting notes, Retrospective, Study notes (Cornell), Mood board and User "
                 "journey map. Each frame is a tinted panel with its title and a hint inside its top; drag the "
                 "title to move the frame and what is in it, double-click it to rename. A map's fifteen, "
                 "among them Brainstorm, Decision, Project plan, Cause and effect, Pros and cons, SWOT map, "
@@ -1466,7 +1478,7 @@ HELP_TOPICS.extend(
                 "holding the selection; its eye and lock act on all of it. Tinted rows are selected on the board "
                 "(the head counts them; Clear drops them), and a frame lists what it holds under its row. A locked item shows a lock when the pointer "
                 "is on it; right-click it to unlock it. The Library holds "
-                "built-in sets (General shapes, Flowchart, Arrows, Frames (a frame, a timeline lane and swimlanes in rows or columns) "
+                "built-in sets (General shapes, Flowchart, UML, Entity relationship, Wireframe, Arrows, Frames (a frame, a timeline lane and swimlanes in rows or columns) "
                 "and 1,530 icons drawn as shapes), five draw.io sets (196 shapes "
                 "with their own connection points), then Favourites, Recent and your own "
                 "libraries; the search field finds any of them by name or tag. Click a tile or press Enter "
@@ -1482,7 +1494,8 @@ HELP_TOPICS.extend(
                 "save to library", "save to the library", "my shapes", "custom shape", "saved style", "palette",
                 "saved branch", "import library", "export library", "save as template", "board template",
                 "templates in the library", "save my own shape", "save a shape to the library",
-                "save a board as a template", "board as a template",
+                "save a board as a template", "board as a template", "uml", "class diagram", "erd",
+                "entity relationship", "crow's foot", "wireframe",
             ),
             "body": (
                 "Saving to the library. To save your own: select things and press "
@@ -1492,7 +1505,10 @@ HELP_TOPICS.extend(
                 "beside the built-in ones. The library's ⋮ makes a new library, imports a library file and "
                 "exports one. A placed item is an ordinary copy: changing the library later never changes "
                 "a board. In Agent mode the assistant can search the library and place from it, draw "
-                "shapes and frames, and move, edit or delete what is on a board, asking first."
+                "shapes and frames, and move, edit or delete what is on a board, asking first. "
+                "For diagrams, the UML set has class, interface, enumeration and package boxes with the six "
+                "relations; Entity relationship has entities, attributes and crow's foot lines; Wireframe has "
+                "a window, button, input, checkbox, dropdown, image, navigation bar and card."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -1654,7 +1670,8 @@ HELP_TOPICS.extend(
                 "notes, each saying which note it came from; on a topic that is "
                 "one of your notes, Add, Expand from my notes… offers that note's "
                 "own headings and the notes it links to (no model needed); "
-                "you tick which to add, and Ctrl+Z takes them back; export it as "
+                "the suggestions appear faded under the topic: Tab takes one, Enter adds "
+                "the taken ones, Escape drops them, and Ctrl+Z takes them back; export it as "
                 "OPML, FreeMind, XMind, Markdown or text as well as a picture, or write it as "
                 "a document (the board menu's Write as a document: branches "
                 "become headings, deeper topics lists, notes paragraphs); a "
@@ -1779,8 +1796,8 @@ HELP_TOPICS.extend(
                     "to the next connected note, Enter or Space opens one, + and - zoom, 0 fits the whole "
                     "map, Shift and the arrows pan, Esc leaves. Drag a note to move it (it settles near the "
                     "drop); double-click it to pin it, again to free it. Drop one note onto another to link "
-                    "them, double-click empty space to add a note there, hover to spotlight a note's "
-                    "connections, point at a line to light it and click it to see what it is, its reason and "
+                    "them, double-click empty space to add a note there, hover a note for its dates, links "
+                    "and properties, point at a line to light it and click it to see what it is, its reason and "
                     "how sure, the two notes, and for a link Edit reason, Two-way (no arrow) and Remove, and "
                     "click a legend colour to hide that category. Shift and drag on empty map lassos notes, "
                     "and the selection bar can Tag, Link together, Unlink (both undoable with Ctrl+Z) or make"
@@ -1865,7 +1882,7 @@ HELP_TOPICS.extend(
                 "export carries them. They show as a small table under the "
                 "note's title, where pressing a value finds every note with it; "
                 "a note's panel on the graph shows them too, a value lighting "
-                "those notes on the map, with a Properties button. A note's ⋯ has Properties: add, change or remove "
+                "those notes on the map, with Add or Edit beside its Properties heading. A note's ⋯ has Properties: add, change or remove "
                 "one, or pick a Type, and Save rewrites only those lines. Note "
                 "types in the command palette makes a kind of note (Meeting: "
                 "attendees, date) with fields that are text, a number, a date, a "
@@ -1930,7 +1947,7 @@ HELP_TOPICS.extend(
                 "and Agent or Ask mode. The note button beside the box opens Attach: "
                 "a tab each for notes, documents, files, images and mind maps, with "
                 "a search; the arrows move, Space "
-                "ticks, Enter is Done. Each message's menu can copy it, edit your "
+                "or Enter ticks, Enter in the search box is Done. Each message's menu can copy it, edit your "
                 "question, regenerate from here, save it as a note or read it "
                 "aloud. The header can fork the conversation, compress the earlier "
                 "messages (Undo goes back), show how full the model's context is "
@@ -2058,7 +2075,7 @@ HELP_TOPICS.extend(
                 "calendar (.ics) in the More menu saves every upcoming one; Import a "
                 "calendar (.ics) there reads a calendar file as reminders and names "
                 "any event it skipped. Calendar beside List opens the Timeline's "
-                "calendar with only reminders, where one drags to another day. Press m "
+                "calendar with only reminders, where one drags to another day. Press t "
                 "then r to jump here from anywhere."
             ),
             "badge": {"label": "Reminders", "tab": "reminders"},
@@ -2092,7 +2109,7 @@ HELP_TOPICS.extend(
                 "defaults. Quick access "
                 "starts as New note, Ask AI, Sketch, Remind me and New "
                 "meeting. All of it is "
-                "remembered per user. Press m then d to come back here from "
+                "remembered per user. Press t then d to come back here from "
                 "anywhere."
             ),
             "badge": {"label": "Dashboard", "tab": "dashboard"},
@@ -2102,7 +2119,7 @@ HELP_TOPICS.extend(
             "keywords": (
                 "hidden feature", "hidden", "secret", "tips", "tricks", "tips and tricks",
                 "power user", "easter egg", "things i might not know", "didn't know",
-                "chord", "m then", "m chord", "every feature", "all the features",
+                "chord", "t then", "m then", "t chord", "m chord", "every feature", "all the features",
             ),
             #: The "m" chord's two tables (`TAB_JUMP_KEYS` and `CHORD_ACTIONS`,
             #: app.js) are written out letter by label, and checked against the
@@ -2111,10 +2128,10 @@ HELP_TOPICS.extend(
                 "Hidden features and power keys. Ctrl+K is the command palette "
                 "(jump anywhere, run an action), Ctrl+P is Find anything (notes, "
                 "files and actions), and ? lists every shortcut, which Settings, "
-                "Keyboard shortcuts rebinds. Press m then a letter to jump: d (Dashboard), n "
-                "(Notes), c (Chat), g (Graph), l (Library), t (Timeline), r "
+                "Keyboard shortcuts rebinds. Press t (or m) then a letter to jump: d (Dashboard), n "
+                "(Notes), c (Chat), g (Graph), l (Library), i (Timeline), r "
                 "(Reminders), o (OCR workspace); or to act: s (Settings), q (Quick sketch), v (Record "
-                "a meeting), a (Guide), p (Popup agent). A second m or Esc closes the panel. "
+                "a meeting), a (Guide), p (Popup agent). A second t, m or Esc closes the panel. "
                 "Ctrl+Shift+A opens the agent over any tab, Ctrl+Shift+H asks Atlas "
                 "about the app, Ctrl+J writes at the cursor, Ctrl+Shift+E acts on "
                 "selected text (so does a right-click on the selection), Ctrl+Shift+K opens the quick sketch pad, and "
@@ -3036,7 +3053,9 @@ def answer_stream(
         #: `offline_answer`.
         offline = offline_answer(question, tab, context)
         yield {"type": "delta", "text": offline["content"]}
-        yield {"type": "done", **offline}
+        #: `composed`: no model wrote it, so it arrives with the app's reveal
+        #: (INBOX 1300 C28, `replyReveal` in reply-kit.js).
+        yield {"type": "done", **offline, "composed": True}
         return
 
     messages, topics = _prompt_for(question, history, tab, context)
@@ -3085,7 +3104,7 @@ def answer(
     if not question:
         return {"content": "", "badges": [], "sources": []}
     if not ollama.is_running():
-        return offline_answer(question, tab, context)
+        return {**offline_answer(question, tab, context), "composed": True}
 
     messages, topics = _prompt_for(question, history, tab, context)
     #: Still `"quick"`, not `GUIDE_MODE`: this is the one-shot fallback, taken

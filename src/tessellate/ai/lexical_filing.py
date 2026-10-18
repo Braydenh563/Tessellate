@@ -496,6 +496,157 @@ def _auto_file_sensitive() -> bool:
         return False
 
 
+@dataclass
+class _NoteRead:
+    """What `decide` knows about the note and the notebook, handed to the
+    per-category scoring."""
+
+    wanted: list
+    hits: dict
+    note_topics: dict
+    strong: list
+    knn_votes: dict
+    query_vec: dict
+    query_norm: float
+    idf: dict
+    sums: dict
+    lengths: dict
+    profiles: dict
+    lexicon: dict
+
+
+def _take_out_excluded(corpus, scope, names: dict, exclude_entry_id: int | None, held: dict, profiles: dict) -> None:  # noqa: ANN001
+    excluded = corpus.docs.get(exclude_entry_id) if exclude_entry_id is not None else None
+    if excluded is None or excluded.board or not scope(excluded):
+        return
+    #: The note being refiled is taken out of its category exactly.
+    name = names.get(excluded.category_id, UNCATEGORISED)
+    if name in held:
+        held[name] -= 1
+        if not held[name]:
+            del held[name]
+        for topic, weight in excluded.topics.items():
+            profiles[name][topic] = profiles[name].get(topic, 0.0) - weight
+
+
+def _category_sums(corpus, scope, names: dict, exclude_entry_id: int | None, query_bag: dict) -> dict:  # noqa: ANN001
+    """The query's words summed per category through the inverted index: only
+    the notes that share a word are read."""
+    sums: dict[str, dict[str, float]] = {}
+    postings = corpus.postings["tagged"]
+    for word in query_bag:
+        for holder in postings.get(word, ()):
+            doc = corpus.docs.get(holder)
+            if doc is None or holder == exclude_entry_id or doc.board or not scope(doc):
+                continue
+            name = names.get(doc.category_id, UNCATEGORISED)
+            if name == UNCATEGORISED:
+                continue
+            bag = sums.setdefault(name, {})
+            bag[word] = bag.get(word, 0.0) + doc.tagged[word]
+    return sums
+
+
+def _corpus_view(session: Session, names: dict, exclude_entry_id: int | None, query_bag: dict) -> tuple:
+    """(category lengths, notes held per category, topic profiles, word sums,
+    idf), read under the corpus lock."""
+    with _corpus_lock:
+        corpus = _corpus_for(session)
+        scope = _scope(session)
+        lengths, kept_profiles, kept_held = _category_aggregates(corpus, names, scope, _scope_key(session))
+        held = dict(kept_held)
+        profiles = {name: dict(profile) for name, profile in kept_profiles.items()}
+        _take_out_excluded(corpus, scope, names, exclude_entry_id, held, profiles)
+        sums = _category_sums(corpus, scope, names, exclude_entry_id, query_bag)
+        idf = {word: corpus._idf("tagged", word) for word in query_bag}
+    return lengths, held, profiles, sums, idf
+
+
+def _taught_topics(name: str, profile: dict, read: _NoteRead) -> list:
+    """Add the person's own words for topics to the category's profile; the
+    topics that vote outright for it."""
+    taught = []
+    for topic, sent in read.lexicon.items():
+        if sent.get(name):
+            profile[topic] = profile.get(topic, 0.0) + LEXICON_WEIGHT * min(sent[name], LEXICON_MAX)
+            #: The outright vote only where the person's word for this
+            #: topic is this category more than any other, and the note
+            #: is really about it (a topic the pack accepts for it).
+            if topic in read.strong and sent[name] >= max(sent.values()):
+                taught.append(topic)
+    return taught
+
+
+def _candidate_for(name: str, count: int, read: _NoteRead) -> Candidate | None:
+    from tessellate.ai import taxonomy
+
+    profile = dict(read.profiles.get(name, {}))
+    for topic, weight in taxonomy.name_topics(name).items():
+        profile[topic] = profile.get(topic, 0.0) + NAME_TOPIC_WEIGHT * weight
+    taught = _taught_topics(name, profile, read)
+    topic_score = _cosine(read.note_topics, profile)
+    shared = read.sums.get(name, {})
+    contributions = {word: read.query_vec[word] * shared[word] * read.idf[word] for word in shared if word in read.query_vec}
+    centroid = sum(contributions.values()) / (read.query_norm * (read.lengths.get(name) or 1.0)) if contributions else 0.0
+    name_words = _name_words(name)
+    named = bool(name_words) and all(word in read.wanted for word in name_words)
+    #: The name's own vote (`NAME_VOTE`) is already in the neighbours'.
+    score = W_NEIGHBOURS * read.knn_votes.get(name, 0.0) + W_CENTROID * centroid + W_TOPICS * topic_score
+    if taught:
+        score += LEXICON_VOTE * sum(read.note_topics[t] for t in taught) / (sum(read.note_topics.values()) or 1.0)
+    if score <= 0:
+        return None
+    return Candidate(
+        name=name, score=score,
+        words=sorted(contributions, key=contributions.__getitem__, reverse=True),
+        #: Only the topics that are this category's own, not a stray
+        #: phrase one of its notes once said ("smoke alarm" in Cooking).
+        topics={
+            topic: read.hits[topic]
+            for topic in sorted(read.hits, key=lambda t: -profile.get(t, 0.0))
+            if profile.get(topic, 0.0) >= TOPIC_OWN_SHARE * max(profile.values(), default=0.0) > 0
+        },
+        notes=count, named=named, lexicon=taught,
+    )
+
+
+def _file_if_clear(decision: Decision, sensitive_set: set) -> None:
+    """File the note under the best category when it leads clearly enough, or
+    hold it when its topic is a sensitive one."""
+    ranked = decision.ranked
+    best = ranked[0]
+    runner_up = ranked[1].score if len(ranked) > 1 else 0.0
+    decision.margin = best.score - runner_up
+    if not (best.score >= FILE_SCORE and best.score >= FILE_LEAD * runner_up and (best.notes >= MIN_EXAMPLES or best.named)):
+        return
+    share = best.score / sum(c.score for c in ranked)
+    #: Kept between 50 and 85, as before: this is word overlap.
+    decision.confidence = max(50, min(85, round(40 + 50 * share)))
+    sensitive_here = decision.sensitive or next((t for t in best.topics if t in sensitive_set), None)
+    if sensitive_here and not _auto_file_sensitive():
+        decision.sensitive = sensitive_here
+        decision.held = True
+    else:
+        decision.filed = best
+
+
+def _word_counts(wanted: list) -> dict:
+    bag: dict[str, float] = {}
+    for word in wanted:
+        bag[word] = bag.get(word, 0.0) + 1.0
+    return bag
+
+
+def _note_read(session: Session, note: tuple, query_bag: dict, corpus_side: tuple) -> _NoteRead:
+    wanted, hits, note_topics, strong, knn_votes = note
+    idf, sums, lengths, profiles = corpus_side
+    query_vec = {word: (1.0 + math.log(n)) * idf[word] for word, n in query_bag.items() if idf[word]}
+    return _NoteRead(
+        wanted, hits, note_topics, strong, knn_votes, query_vec, math.sqrt(sum(v * v for v in query_vec.values())) or 1.0,
+        idf, sums, lengths, profiles, personal_lexicon(session),
+    )
+
+
 def decide(session: Session, content: str, exclude_entry_id: int | None = None) -> Decision:
     """Where the notebook's own words, and the pack's topics, put `content`.
     Never a category the notebook lacks; a new one only as a `proposal`."""
@@ -515,99 +666,16 @@ def decide(session: Session, content: str, exclude_entry_id: int | None = None) 
     names = dict(session.execute(select(Category.id, Category.name)).all())
     tally = _tally(session, content, exclude_entry_id) if wanted else None
     knn_votes, _supporters = tally if tally is not None else ({}, {})
-    query_bag: dict[str, float] = {}
-    for word in wanted:
-        query_bag[word] = query_bag.get(word, 0.0) + 1.0
-    with _corpus_lock:
-        corpus = _corpus_for(session)
-        scope = _scope(session)
-        lengths, kept_profiles, kept_held = _category_aggregates(corpus, names, scope, _scope_key(session))
-        held = dict(kept_held)
-        profiles = {name: dict(profile) for name, profile in kept_profiles.items()}
-        excluded = corpus.docs.get(exclude_entry_id) if exclude_entry_id is not None else None
-        if excluded is not None and not excluded.board and scope(excluded):
-            #: The note being refiled is taken out of its category exactly.
-            name = names.get(excluded.category_id, UNCATEGORISED)
-            if name in held:
-                held[name] -= 1
-                if not held[name]:
-                    del held[name]
-                for topic, weight in excluded.topics.items():
-                    profiles[name][topic] = profiles[name].get(topic, 0.0) - weight
-        #: The query's words summed per category through the inverted index:
-        #: only the notes that share a word are read.
-        sums: dict[str, dict[str, float]] = {}
-        postings = corpus.postings["tagged"]
-        for word in query_bag:
-            for holder in postings.get(word, ()):
-                doc = corpus.docs.get(holder)
-                if doc is None or holder == exclude_entry_id or doc.board or not scope(doc):
-                    continue
-                name = names.get(doc.category_id, UNCATEGORISED)
-                if name == UNCATEGORISED:
-                    continue
-                bag = sums.setdefault(name, {})
-                bag[word] = bag.get(word, 0.0) + doc.tagged[word]
-        idf = {word: corpus._idf("tagged", word) for word in query_bag}
+    query_bag = _word_counts(wanted)
+    lengths, held, profiles, sums, idf = _corpus_view(session, names, exclude_entry_id, query_bag)
     if not held:
         return _with_proposal(Decision(ranked=[], filed=None, sensitive=sensitive), held, strong, hits, sensitive_set)
-    lexicon = personal_lexicon(session)
-    query_vec = {word: (1.0 + math.log(n)) * idf[word] for word, n in query_bag.items() if idf[word]}
-    query_norm = math.sqrt(sum(v * v for v in query_vec.values())) or 1.0
-    ranked: list[Candidate] = []
-    for name, count in held.items():
-        profile = dict(profiles.get(name, {}))
-        for topic, weight in taxonomy.name_topics(name).items():
-            profile[topic] = profile.get(topic, 0.0) + NAME_TOPIC_WEIGHT * weight
-        taught = []
-        for topic, sent in lexicon.items():
-            if sent.get(name):
-                profile[topic] = profile.get(topic, 0.0) + LEXICON_WEIGHT * min(sent[name], LEXICON_MAX)
-                #: The outright vote only where the person's word for this
-                #: topic is this category more than any other, and the note
-                #: is really about it (a topic the pack accepts for it).
-                if topic in strong and sent[name] >= max(sent.values()):
-                    taught.append(topic)
-        topic_score = _cosine(note_topics, profile)
-        shared = sums.get(name, {})
-        contributions = {word: query_vec[word] * shared[word] * idf[word] for word in shared if word in query_vec}
-        centroid = sum(contributions.values()) / (query_norm * (lengths.get(name) or 1.0)) if contributions else 0.0
-        name_words = _name_words(name)
-        named = bool(name_words) and all(word in wanted for word in name_words)
-        #: The name's own vote (`NAME_VOTE`) is already in the neighbours'.
-        score = W_NEIGHBOURS * knn_votes.get(name, 0.0) + W_CENTROID * centroid + W_TOPICS * topic_score
-        if taught:
-            score += LEXICON_VOTE * sum(note_topics[t] for t in taught) / (sum(note_topics.values()) or 1.0)
-        if score <= 0:
-            continue
-        ranked.append(Candidate(
-            name=name, score=score,
-            words=sorted(contributions, key=contributions.__getitem__, reverse=True),
-            #: Only the topics that are this category's own, not a stray
-            #: phrase one of its notes once said ("smoke alarm" in Cooking).
-            topics={
-                topic: hits[topic]
-                for topic in sorted(hits, key=lambda t: -profile.get(t, 0.0))
-                if profile.get(topic, 0.0) >= TOPIC_OWN_SHARE * max(profile.values(), default=0.0) > 0
-            },
-            notes=count, named=named, lexicon=taught,
-        ))
+    read = _note_read(session, (wanted, hits, note_topics, strong, knn_votes), query_bag, (idf, sums, lengths, profiles))
+    ranked = [c for c in (_candidate_for(name, count, read) for name, count in held.items()) if c is not None]
     ranked.sort(key=lambda c: c.score, reverse=True)
     decision = Decision(ranked=ranked, filed=None, sensitive=sensitive)
     if ranked:
-        best = ranked[0]
-        runner_up = ranked[1].score if len(ranked) > 1 else 0.0
-        decision.margin = best.score - runner_up
-        if best.score >= FILE_SCORE and best.score >= FILE_LEAD * runner_up and (best.notes >= MIN_EXAMPLES or best.named):
-            share = best.score / sum(c.score for c in ranked)
-            #: Kept between 50 and 85, as before: this is word overlap.
-            decision.confidence = max(50, min(85, round(40 + 50 * share)))
-            sensitive_here = sensitive or next((t for t in best.topics if t in sensitive_set), None)
-            if sensitive_here and not _auto_file_sensitive():
-                decision.sensitive = sensitive_here
-                decision.held = True
-            else:
-                decision.filed = best
+        _file_if_clear(decision, sensitive_set)
     return _with_proposal(decision, held, strong, hits, sensitive_set)
 
 

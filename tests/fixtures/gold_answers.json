@@ -230,7 +230,7 @@
    "kind": "stats",
    "from": "INBOX 801",
    "question": "NOTEBOOK STATS",
-   "gold": "You have {20} notes in {9} categories, 17 July to 9 October.\n\n**Most filed:** Courses & Study, with {5}.\n**Busiest month:** September, with {9} notes.\n\nOpen Statistics for the full picture?",
+   "gold": "You have {20} notes in {9} categories, 17 July to 9 October.\n\nMost of your notes are filed under Courses & Study, with {5}. Your busiest month was September, with {9} notes.\n\nOpen Statistics for the full picture?",
    "type": "stats"
   },
   {
@@ -405,7 +405,7 @@
    "cites": [
     "groceries"
    ],
-   "gold": "Five groceries, from your list of 5 October:\n- [ ] oat milk\n- [ ] eggs\n- [ ] spinach\n- [ ] rice\n- [ ] chicken thighs\n\n**Also still open:** the Lisbon flights, and the gaming mouse.\n\nSave it as a checklist note?",
+   "gold": "Five groceries, from your list of 5 October:\n- [ ] oat milk\n- [ ] eggs\n- [ ] spinach\n- [ ] rice\n- [ ] chicken thighs\n\nThe Lisbon flights and the gaming mouse are also still open.\n\nSave it as a checklist note?",
    "type": "left"
   },
   {
@@ -460,6 +460,81 @@
    ],
    "gold": "On 17 July you bought a gaming mouse, discounted from $150 to $68.",
    "type": "when"
+  },
+  {
+   "n": 22,
+   "surface": "ask",
+   "kind": "notes",
+   "from": "INBOX 1301 D5",
+   "question": "What have I saved about social connections?",
+   "notes": [
+    {
+     "key": "social1",
+     "date": "2026-07-22",
+     "category": "Social connections",
+     "tags": [
+      "social",
+      "friendship"
+     ],
+     "content": "# Complete Social Skills Guide\n\nA step by step way to go from a stranger to a friend.\n\nPhase 1: The Opener (Ice Breakers)\n\nStart light and keep it about the moment, not cheesy:\n\n- \"If you were a spice, which one would you be and why?\"\n- \"What's the most adventurous thing you've ever done?\"\n- \"How do you know the host?\"\n\nFollow-Up Questions:\n\n- \"What made you pick that?\"\n- \"Would you do it again?\"\n\nPhase 2: The Connection\n\nFind one thing you share and stay on it. Listen more than you talk, and remember a detail to bring up later.\n\nFollow- Up Questions:\n\n- \"How did you get into that?\"\n- \"What's the best part of it?\"\n\nPhase 3: The Ask\n\nSuggest something small and specific, like coffee on Saturday. People say yes to plans, not to \"we should hang out sometime\".\n\nPhase 4: The Follow-Up\n\nMessage within two days and mention the detail you remembered. Listen actively and ask follow-up questions that reflect genuine interest. Don't overthink that."
+    },
+    {
+     "key": "social2",
+     "date": "2026-08-09",
+     "category": "Social connections",
+     "tags": [
+      "social",
+      "ice breakers"
+     ],
+     "content": "# Ice breakers that worked\n\nAt Mia's barbecue the spice question got a laugh and a twenty minute chat. The host question is the safest opener at a party.\n\n- \"What's keeping you busy lately?\"\n- \"Best thing you've eaten this week?\""
+    },
+    {
+     "key": "social3",
+     "date": "2026-09-02",
+     "category": "Social connections",
+     "tags": [
+      "social",
+      "friends"
+     ],
+     "content": "# Coffee with Daniel\n\nMet Daniel at the climbing gym. We talked about bouldering grades and his trip to Spain. He wants to try the outdoor crag in November."
+    },
+    {
+     "key": "social4",
+     "date": "2026-09-20",
+     "category": "Social connections",
+     "tags": [
+      "social"
+     ],
+     "content": "# Listening better\n\nI interrupt when I'm nervous. Count to two before answering. Ask one more question before sharing my own story."
+    },
+    {
+     "key": "social5",
+     "date": "2026-10-04",
+     "category": "Social connections",
+     "tags": [
+      "social",
+      "plans"
+     ],
+     "content": "# Board game night\n\nInvite Daniel and Mia to board game night on the 25th.\n\n- [ ] Text Daniel about the 25th\n- [ ] Buy snacks"
+    }
+   ],
+   "cites": [
+    "social1",
+    "social2",
+    "social3",
+    "social4",
+    "social5"
+   ],
+   "never": [
+    "You asked",
+    "Phase note",
+    "cheesy:",
+    ":;",
+    "\";",
+    "Remind you to ask follow-up"
+   ],
+   "gold": "You have five notes about social connections, 22 July to 4 October.\n\nYour Complete Social Skills Guide is a step by step way to go from a stranger to a friend. It's in four phases: the Opener, the Connection, the Ask and the Follow-Up.\n\nOn 9 August you noted that at Mia's barbecue the spice question got a laugh and a twenty minute chat, and that the host question is the safest opener at a party.\n\nOn 2 September you met Daniel at the climbing gym and talked about bouldering grades and his trip to Spain.\n\nOn 20 September you noted that you interrupt when you're nervous, and set yourself to count to two before answering.\n\nOn 4 October you planned to invite Daniel and Mia to board game night on the 25th.\n\nRemind you to text Daniel about the 25th?",
+   "type": "overview"
   }
  ]
 }

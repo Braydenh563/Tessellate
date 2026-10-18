@@ -20,7 +20,7 @@ function atlasBlink(box, slow = false) {
 
 //: **When the figures blink.** One clock for every layered figure on the
 //: page: every 3.4 to 7.6 seconds each one that is on screen, has its eyes
-//: open and may move blinks once, now and then twice; a drowsy companion
+//: open and may move blinks once, now and then twice; a drowsy or groggy companion
 //: blinks slowly and stays shut a moment. Avatar animation Off, the app's
 //: Reduce motion or the system's (unless the companion is set to Always)
 //: and a hidden tab hold the eyes still: no idle loop runs there.
@@ -47,7 +47,7 @@ function atlasBlinkTick() {
   const boxes = [...document.querySelectorAll(".atl-figure-box")];
   for (const box of boxes) {
     if (!atlasBlinkMay(box)) continue;
-    if (box.closest(".nmb-drowsy")) atlasBlink(box, true);
+    if (box.closest(".nmb-drowsy, .nmb-groggy")) atlasBlink(box, true);
     else {
       atlasBlink(box);
       if (Math.random() < 0.15) setTimeout(() => atlasBlinkMay(box) && atlasBlink(box), 420);

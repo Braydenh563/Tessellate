@@ -1954,10 +1954,16 @@ button.recording.live-level {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-inner);
-  padding: var(--space-3) var(--space-4);
+  /* A group inside the dialog's pane, so the second surface tier like
+     `.settings-group` (DESIGN.md → Surface tiers): a tone, no visible edge, the
+     card's own corner. It was `--card` on `--border` at `--radius-inner`, which
+     is 0 at the default corner (the inset is wider than the corner), so a
+     square, same-coloured box (C34, measured: radius 0px, background equal to
+     the card's). */
+  background: var(--surface-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  padding: var(--space-4);
   margin-bottom: var(--space-4);
 }
 /* One height for both rows of this dialog, and it is the app's control height
@@ -3461,10 +3467,6 @@ mark.lightbox-hit {
   background: rgba(255, 255, 255, 0.14);
   border-color: rgba(255, 255, 255, 0.6);
 }
-.lightbox .lightbox-zoom-label,
-.lightbox .lightbox-page-label {
-  color: rgba(255, 255, 255, 0.85);
-}
 .lightbox img.zoomed {
   cursor: grab;
 }
@@ -3511,58 +3513,6 @@ mark.lightbox-hit {
 }
 .lightbox-broken.hidden {
   display: none;
-}
-/* Click-anywhere-to-close alone isn't discoverable, reported directly , 
-   so there's now an explicit close affordance too. Fixed to the viewport
-   corner, not the image, so it's in the same place regardless of image size
-   or aspect ratio. */
-/* **Nudged in from the corner.** Reported live: "move the x close button in
-   the corner a bit to the left, as the scrollbar puts it on the edge a bit."
-   The overlay scrolls, and on any platform that draws a classic (space-
-   taking) scrollbar rather than an overlay one, that bar lands between this
-   button and the edge and crowds it. `--space-8` clears a standard ~15px
-   bar and still reads as a corner button where there is no bar at all. */
-.lightbox-close {
-  position: fixed;
-  top: var(--space-6);
-  right: var(--space-8);
-  width: 2.5rem;
-  height: 2.5rem;
-  padding: 0;
-  border-radius: var(--radius-pill);
-  border: none;
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
-  font-size: var(--text-h2);
-  line-height: 1;
-  cursor: pointer;
-  /* Missing next to .lightbox-nav's own identical fixed-circle shape just
-     below, which already has this, the base `button` rule's
-     0.5rem 1rem padding (meant for a labelled button, not an icon-only
-     circle) pushed the × glyph off-centre inside the box instead of
-     letting the box's own size centre it. Reported live. */
-  display: grid;
-  place-items: center;
-  /* **Above everything else in the viewer, explicitly.** Reported: "the close
-     button doesnt work all the time." It is the overlay's *first* child and
-     `.lightbox-column` is the second, so with no z-index on either the column
-     paints over it wherever their boxes overlap, nowhere for a short
-     landscape photo, and the whole top-right corner for the document viewer's
-     tall split pane. "Sometimes" is what an overlap that depends on the
-     content's height looks like from the outside. */
-  z-index: 3;
-}
-.lightbox-close:hover,
-.lightbox-close:focus-visible {
-  background: rgba(255, 255, 255, 0.22);
-}
-.lightbox-meta {
-  color: rgba(255, 255, 255, 0.85);
-  font-size: var(--text-sm);
-  text-align: center;
-  margin-top: var(--space-4);
-  padding: 0 var(--space-8);
-  word-break: break-word;
 }
 /* What the app knows about the picture, under the picture: the caption a
    vision model wrote and the text it read off the page. Bounded and
@@ -4746,6 +4696,12 @@ mark.lightbox-hit {
   flex-direction: column;
   gap: var(--space-1);
   padding: var(--space-2) 0 var(--space-1);
+  /* Hung from its summary by a rail under the caret (INBOX 1300 C29, the
+     owner: "hard to tell ... if the sources are actually part of that
+     button's dropdown and if the button is open or not"). */
+  margin-left: calc(var(--space-2) + 0.5em);
+  padding-left: var(--space-2);
+  border-left: 1px solid var(--border);
 }
 /* **The compact list** (`cmdSourceRow`, palette.js; INBOX 458): the
    popup agent's sources, one quiet row each on `.timeline-row`'s shape. The

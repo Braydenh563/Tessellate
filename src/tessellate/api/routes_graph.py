@@ -654,6 +654,7 @@ _GRAPH_COLUMNS = (
     Entry.category_id,
     Entry.created_at,
     Entry.updated_at,
+    Entry.edited_at,
     Entry.access_count,
     Entry.pinned,
     Entry.graph_pin_x,
@@ -776,6 +777,10 @@ def graph(
     key = _payload_key(session, similarity, include_maps, include_tags)
     body = _cached(f"payload:{bool(similarity)}:{include_maps}:{include_tags}:{slim}", key, build)
     return Response(content=body, media_type="application/json")
+
+
+def _iso_or_none(value):  # noqa: ANN001
+    return value.isoformat() if value else None
 
 
 def _build_graph(
@@ -928,6 +933,9 @@ def _build_graph(
             # locked, and when it was last edited.
             "words": labels[e.id][1],
             "updated_at": (e.updated_at or e.created_at).isoformat(),
+            # When a person last changed it (the hover card's Edited, INBOX
+            # 1300 C11): `updated_at` also moves on the app's own writes.
+            "edited_at": _iso_or_none(e.edited_at),
         }
         for e in entries
     ]
@@ -1121,6 +1129,7 @@ _NOTE_DEFAULTS = {
     "map_ids": [],
     "tags": [],
     "access_count": 0,
+    "edited_at": None,
 }
 _LINK_DEFAULTS = ("reason", "reason_confidence", "link_type")
 
@@ -1132,7 +1141,7 @@ def _slim(nodes: list[dict], edges: list[dict]) -> None:
         for key, default in _NOTE_DEFAULTS.items():
             if key in node and node[key] == default and type(node[key]) is type(default):
                 del node[key]
-        for key in ("created_at", "updated_at"):
+        for key in ("created_at", "updated_at", "edited_at"):
             if isinstance(node.get(key), str) and "." in node[key]:
                 head, _, tail = node[key].partition(".")
                 node[key] = head + tail.lstrip("0123456789")

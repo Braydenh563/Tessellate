@@ -3,7 +3,7 @@
 //   PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers NODE_PATH=/opt/node22/lib/node_modules \
 //     BASE=http://127.0.0.1:8931 node scratchpad/ui-sweeps/graphoptfold.js
 //
-// `graphoptheights.js` says where the list's height goes; this says whether
+// The list's height was measured by a removed sweep; this says whether
 // it fits, and what the panel is capped against. The cap subtracts a fixed
 // band at the bottom for the zoom strip, so a panel that scrolls is either
 // too tall or capped against a band bigger than the strip it protects, and

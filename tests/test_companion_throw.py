@@ -22,7 +22,8 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-AV = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+#: The companion's code: the throw itself moved to the lazy companion-throw.js (INBOX 1301 D6).
+AV = "\n".join((ROOT / "frontend" / "js" / n).read_text(encoding="utf-8") for n in ("avatars.js", "companion-throw.js"))
 HELP = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
 
 
@@ -140,6 +141,9 @@ def test_the_flight_is_one_frame_loop_on_transforms_and_lands_as_a_drop() -> Non
     spot = _fn("nameMarkBuddyThrowSpot")
     assert "nameMarkBuddyDrop(s.x, s.y)" in spot and "nameMarkBuddyChoose" not in land + spot
     assert "spots[tab] = nameMarkBuddySpotFor(spot);" in land
+    # A splat that slid onto a ledge steps along it, never up to the top bar
+    # (seed 2 of scratchpad/ui-sweeps/throwfates.js: 274 to 39 after the slide).
+    assert 's.fate?.kind === "splat" && spot.y < s.y - 40' in spot and "nameMarkBuddyDrop(s.x, s.y, 400)" in spot
     assert "nameMarkBuddyToss" not in AV
 
 

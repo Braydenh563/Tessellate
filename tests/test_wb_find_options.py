@@ -101,11 +101,20 @@ def test_option_buttons_are_built_lazily_and_named():
     assert "wbEnsureSearchOptions(bar)" in _function("wbOpenBoardSearch")
 
 
+def test_date_and_page_are_built_ins_that_own_properties_beat():
+    """`%date%` and `%page%` come from the builtin; a property of the same name wins; no answer keeps the text."""
+    b = "(n) => ({date: '18 Oct 2026', page: 'Intro'})[n]"
+    assert _node(f'wbExpandPlaceholders("%date% on %page%", null, {b})') == "18 Oct 2026 on Intro"
+    assert _node(f'wbExpandPlaceholders("%page%", {{page: "Mine"}}, {b})') == "Mine"
+    assert _node('wbExpandPlaceholders("%page%", {}, () => "")') == "%page%"
+    assert _node(f'wbExpandPlaceholders("%owner%", {{}}, {b})') == "%owner%"
+
+
 def test_labels_paint_placeholders_and_a_tooltip():
     shape = _function("wbPaintShapeLabel")
-    assert "wbExpandPlaceholders(parsed.label, parsed.props)" in shape
+    assert "wbExpandPlaceholders(parsed.label, parsed.props, " in shape and "wbPlaceholderBuiltins" in shape
     link = _function("wbPaintLinkLabel")
-    assert "wbExpandPlaceholders(parsed.label, parsed.props)" in link
+    assert "wbExpandPlaceholders(parsed.label, parsed.props, " in link and "wbPlaceholderBuiltins" in link
     tip = _function("wbSyncSketchTip")
     assert "title" in tip and "createElementNS" in tip and "parsed?.tip" in tip
     #: Run once per sketch with the shape's or the connector's data. Run from

@@ -657,5 +657,15 @@
  {
   "typed": "busyer days and happyer weeks",
   "repaired": "busier days and happier weeks"
+ },
+ {
+  "typed": "Wat cna u do??",
+  "repaired": "what can you do??",
+  "intent": "about_app"
+ },
+ {
+  "typed": "wat can u do",
+  "repaired": "what can you do",
+  "intent": "about_app"
  }
 ]

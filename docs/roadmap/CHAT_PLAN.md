@@ -401,6 +401,7 @@ user to write better link reasons"): INBOX 691's concrete overlaps first,
 then the composer's quoted sentence pair, a model's checked line when one
 runs, feeding Tidy's "Add reasons" and "Add reasons to all". Open items and
 numbers: agent-remaining/composer725-1006.md.
+INBOX 1301 D5 (an overview note as its gist, sections said as its shape, no "You asked:" echo, a reminder only for a stated task): built, see HISTORY.md "Moved from the plans, 2026-10-18 (design4-1018: how a no-model answer reads)".
 
 ### Phase 6: the deterministic engine (the owner, 2026-10-10; Brief 39)
 
@@ -523,10 +524,9 @@ the numbers. Decisions 30 to 45 stay above: later briefs build on them.
 
 - The blind panel (decision 40): the owner's rating against the 1 to 3B model on the owner's notebook.
 - Probe P15 (`agent-remaining/engine-probe-1010.md`): the lead-in chosen after the parts. P10 to P13 and P16 are built: HISTORY.md "Moved from the plans, 2026-10-18 (chat-1018".
-- Captions in keyword search: the composer reads them, the FTS index does not.
 - The currency table's Settings editor (decision 43); the rates are dated and fixed.
 - The model choosing among the engine's numbered readings (decision 45): the readings are listed; with a model running it does not yet pick.
-- Day and month order by locale in `when.py` (the 3/4 reading is day first).
+- The currency table has no preference at all (`utilities.RATES` is a constant), so decision 43's editor has nothing to edit until the table is a preference.
 
 #### Not verified until built
 Polarity in the fact layer was dropped (decision 30's condition: no feature
@@ -1894,6 +1894,7 @@ more"; volunteered insight "should be togglable and also dynamic".
 | B31 | "Wrong fact" on any line, feeding the audit (decision 68) | Suppressed next turn |
 | B32 | "Pin as true": the person's word beats any inference | Quoted as theirs |
 | B40 | A rating on each answer adds it to the gold set; a weekly answer gallery is published for the owner | The gallery link in the PR |
+| B41 | INBOX 1300 C16, C26: "make more variations and make it compose the message like an ai"; greeting sub line rotates, composed (wire unused `composer_voice.today_line` into `dashboard.js:463`), pools grown by composition | No repeat in 20 asks |
 
 Owner: the Atlas agent (brief-assistant, running) builds 70, then B1 to B12
 and B30 to B32; later rows join its remaining list and the queue.

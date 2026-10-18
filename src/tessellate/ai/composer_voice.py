@@ -117,6 +117,39 @@ VOICE: dict[str, str] = {
     "v_and_more": " and ",
     "v_more": " more",
     "v_last_was": "Your last note was ",
+    # Variants of today's line (`today_line`'s seed picks among them).
+    "v_today_wrote_b": "Today has ",
+    "v_today_wrote_c": "So far today: ",
+    "v_today_wrote_d": "A busy page today, ",
+    "v_today_wrote_e": "Already today, ",
+    "v_today_wrote_f": "The page has filled a little: ",
+    "v_today_notes_e": " notes, the latest ",
+    "v_today_notes_f": " notes, the newest ",
+    "v_today_one_e": "Today so far there is one note, ",
+    "v_today_one_f": "A single note today, ",
+    "v_yesterday_e": "Yesterday you set down ",
+    "v_yesterday_f": "Your last page was yesterday: ",
+    "v_last_was_e": "It has been a little while. You last wrote ",
+    "v_last_was_f": "Picking up from ",
+    "v_today_notes_b": " notes so far, the latest ",
+    "v_today_notes_c": " notes, the latest ",
+    "v_today_notes_d": " notes, the latest of them ",
+    "v_today_one_b": "One note so far today, ",
+    "v_today_one_c": "Today's page has one note, ",
+    "v_today_one_d": "You started today with ",
+    "v_yesterday_b": "Yesterday's page held ",
+    "v_yesterday_c": "You were here yesterday with ",
+    "v_yesterday_d": "Last written yesterday, ",
+    "v_last_was_b": "The page is fresh. You last wrote ",
+    "v_last_was_c": "Last time you wrote ",
+    "v_last_was_d": "Nothing new since ",
+    "v_tail_week_a": " That makes ",
+    "v_tail_week_b": " in the last seven days.",
+    "v_tail_week_c": " That is ",
+    "v_tail_week_d": " this week so far.",
+    "v_tail_week_e": " ",
+    "v_tail_week_f": " notes in the past week.",
+    "v_tail_cat": " The week has gone mostly under ",
     "v_otd_short": " On this day in ",
     "v_otd_short_mid": " you wrote ",
     # The week in review.
@@ -182,8 +215,9 @@ class _Voice(_Answer):
     """`_Answer` with the voice's phrasebook and its own part kinds."""
 
     def t(self, *names: str) -> _Voice:
+        #: `_Answer.name` asks for the answer's own phrases ("your note from").
         for name in names:
-            self.parts.append(("template", VOICE[name]))
+            self.parts.append(("template", VOICE.get(name) or composer.PHRASES[name]))
         return self
 
     def word(self, text: str) -> _Voice:
@@ -487,33 +521,55 @@ def remarks(
 # --- the dashboard ----------------------------------------------------------------
 
 
-def today_line(notes: list[dict], *, today: date) -> dict | None:
-    """One or two sentences for under the dashboard's greeting: what was
-    written today or yesterday (or when the last note was), and a note from
-    this day in an earlier year when there is one."""
+def _draw(seed: int, slot: str, n: int) -> int:
+    """A stable index below `n` for this seed and slot: slots draw
+    independently, so the openings and the tails mix."""
+    return int.from_bytes(hashlib.sha1(f"{seed}:{slot}".encode()).digest()[:4], "big") % n
+
+
+def today_line(notes: list[dict], *, today: date, seed: int = 0) -> dict | None:
+    """One short sentence for under the dashboard's greeting: what was written
+    today or yesterday, or when the last note was. `seed` rotates the wording:
+    the same seed gives the same line, so a test with a fixed clock is exact.
+    One sentence only (the owner, 2026-10-18: the hero's sub line must not run
+    long). Every fact in it is traced like the rest of the voice."""
     views = _views(notes)
     dated = sorted((w for w in views if w.written), key=lambda w: (w.written, -w.rank), reverse=True)
     if not dated:
         return None
     v = _Voice({w.id: w for w in views}, today)
+    _today_opening(v, dated, today, _draw(seed, "open", 6))
+    return v.done("today")
+
+
+def _today_opening(v: _Voice, dated: list, today: date, k: int) -> None:
     todays = [w for w in dated if w.written == today]
     yesterdays = [w for w in dated if (today - w.written).days == 1]
     if len(todays) > 1:
-        v.t("v_today_wrote").m(_count_word(len(todays))).t("v_today_notes").name(todays[0]).t("stop")
+        v.t(("v_today_wrote", "v_today_wrote_b", "v_today_wrote_c", "v_today_wrote_d", "v_today_wrote_e", "v_today_wrote_f")[k])
+        v.m(_count_word(len(todays)))
+        #: An untitled note names itself "your note from today", which cannot
+        #: follow "the latest": the count then ends the sentence on its own.
+        if todays[0].titled:
+            v.t(("v_today_notes", "v_today_notes_b", "v_today_notes_c", "v_today_notes_d", "v_today_notes_e", "v_today_notes_f")[k])
+            v.name(todays[0])
+        else:
+            v.word(" notes")
+        v.t("stop")
     elif todays:
-        v.t("v_today_one").name(todays[0]).t("stop")
+        v.t(("v_today_one", "v_today_one_b", "v_today_one_c", "v_today_one_d", "v_today_one_e", "v_today_one_f")[k]).name(todays[0]).t("stop")
     elif yesterdays:
-        v.t("v_yesterday").name(yesterdays[0])
+        v.t(("v_yesterday", "v_yesterday_b", "v_yesterday_c", "v_yesterday_d", "v_yesterday_e", "v_yesterday_f")[k]).name(yesterdays[0])
         if len(yesterdays) > 1:
             v.t("v_and_more").m(_count_word(len(yesterdays) - 1)).t("v_more")
         v.t("stop")
     else:
-        v.t("v_last_was").name(dated[0]).t("on_day").m(v.day(dated[0].written)).t("stop")
-    for w in dated:
-        if w.written.day == today.day and w.written.month == today.month and w.written.year < today.year:
-            v.t("v_otd_short").m(str(w.written.year)).t("v_otd_short_mid").name(w).t("stop")
-            break
-    return v.done("today")
+        v.t(("v_last_was", "v_last_was_b", "v_last_was_c", "v_last_was_d", "v_last_was_e", "v_last_was_f")[k]).name(dated[0])
+        #: An untitled note is already named by its day ("your note from 16
+        #: October"); saying "on 16 October" again read twice (owner screenshot).
+        if dated[0].titled:
+            v.t("on_day").m(v.day(dated[0].written))
+        v.t("stop")
 
 
 def week_review(notes: list[dict], *, today: date, unlinked: set[int] | None = None) -> dict:

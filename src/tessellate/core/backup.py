@@ -33,8 +33,8 @@ BACKUP_EVERY_HOURS = 24
 #: before this stays readable and restorable: it just says nothing about
 #: where it came from.
 ORIGINS: dict[str, str] = {
-    "daily": "Daily backup at start",
-    "manual": "Back up now",
+    "daily": "Automatic daily backup",
+    "manual": "Made by you",
     "update": "Before an update",
     "restore": "Before a restore",
 }

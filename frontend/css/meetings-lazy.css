@@ -206,6 +206,48 @@
   background: var(--accent-soft);
 }
 
+/* Copying lines (INBOX 1300 C40): a row holds the line and its copy button,
+   shown on hover and focus; picked lines wear the accent edge. */
+.recording-transcript-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: 0 var(--space-2);
+}
+
+.recording-line-row {
+  position: relative;
+}
+
+.recording-line-row .recording-line {
+  padding-inline-end: calc(var(--target-min) + var(--space-2));
+}
+
+.recording-line-copy {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: var(--space-1);
+  transform: translateY(-50%);
+  opacity: 0;
+}
+
+.recording-line-row:is(:hover, :focus-within) .recording-line-copy,
+.recording-line-copy:focus-visible {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .recording-line-copy {
+    opacity: 1;
+  }
+}
+
+.recording-line.is-picked {
+  box-shadow: inset 2px 0 0 var(--accent);
+  background: var(--accent-soft);
+}
+
 .recording-line-at {
   flex: none;
   min-width: 5ch;

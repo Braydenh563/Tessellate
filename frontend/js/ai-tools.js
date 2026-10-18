@@ -1127,6 +1127,7 @@ const MIRRORED_UI_EXTRAS = [
   "themePreset",
   "motion",
   "ui-motion",
+  "reply-motion",
   "custom-css",
   "onboardingDone",
   //: Appearance that follows the person to a second browser (WORLD_CLASS 25f).

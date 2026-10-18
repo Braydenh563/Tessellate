@@ -205,7 +205,7 @@ def _app_overview(by_id: dict[str, dict]) -> str:
     counted = _COUNTS[len(tabs)] if len(tabs) < len(_COUNTS) else str(len(tabs))
     lines = [f"Tessellate has {counted} tabs along the top:", "\n".join(f"- **{name}**: {what}." for name, what in tabs)]
     lines.append(
-        "Settings (the gear, or Ctrl+,) holds the rest. A new notebook's Dashboard shows Start in three steps "
+        "Settings (the gear, or Ctrl+,) holds the rest. A new notebook's Dashboard shows a Get started checklist "
         "(your name, a first note, a first question), and Settings, Help starts the guided tour."
     )
     return "\n\n".join(lines)

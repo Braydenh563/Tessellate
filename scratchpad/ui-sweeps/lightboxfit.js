@@ -47,7 +47,7 @@ function measure() {
     seen, prev, next,
     hitPrev: Math.round(overlap(seen, prev)), hitNext: Math.round(overlap(seen, next)),
     info: info && !info.classList.contains("hidden") ? box(info) : null,
-    actions: box(lb.querySelector(".lightbox-actions")),
+    actions: lb.querySelector(".lightbox-actions")?.offsetParent ? box(lb.querySelector(".lightbox-actions")) : null,
     byline: [...lb.querySelectorAll(".lightbox-byline")].map((e) => e.textContent.trim()).filter(Boolean),
     natural: img ? [img.naturalWidth, img.naturalHeight] : null,
   };
@@ -100,12 +100,12 @@ function measure() {
           Math.abs(fit.info.l - fit.actions.l) <= 1 && Math.abs(fit.info.r - fit.actions.r) <= 1);
       }
       if (i === 0) {
-        check(`${w}: the app's own caption says who wrote it`, fit.byline.some((b) => /Written by MemoryMap/.test(b))
+        check(`${w}: the app's own caption says who wrote it`, fit.byline.some((b) => /Written by (MemoryMap|Tessellate)/.test(b))
           && !fit.byline.some((b) => /typed by hand/.test(b)), JSON.stringify(fit.byline));
       }
       // Zoomed in twice, then scrolled to each end of the picture.
       await page.evaluate(() => {
-        const zoomIn = [...document.querySelectorAll(".lightbox .lightbox-action")].find((b) => b.title === "Zoom in");
+        const zoomIn = [...document.querySelectorAll(".lightbox .lightbox-action")].find((b) => b.title.startsWith("Zoom in"));
         zoomIn.click(); zoomIn.click();
       });
       await page.waitForTimeout(300);
@@ -120,7 +120,7 @@ function measure() {
           `overlap prev ${z.hitPrev}px2 next ${z.hitNext}px2`);
       }
       await page.evaluate(() => {
-        [...document.querySelectorAll(".lightbox .lightbox-action")].find((b) => b.title === "Back to fit").click();
+        [...document.querySelectorAll(".lightbox .lightbox-action")].find((b) => b.title.startsWith("Back to fit")).click();
         document.querySelector(".lightbox-next").click();
       });
       await page.waitForTimeout(1200);

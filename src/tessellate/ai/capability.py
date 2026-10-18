@@ -215,6 +215,11 @@ _RUNDOWN = re.compile(
 
 
 def _clean(question: str) -> str:
+    #: Read as the typo repair reads it (C15): "Wat cna u do??" is the question
+    #: "what can you do", and gets its answer, not a search of the notes.
+    from tessellate.ai import question_noise
+
+    question = question_noise.repair(question_noise.tidy(question or ""))
     text = " ".join((question or "").split())
     #: str.strip, not a regex: an end-anchored character run is polynomial
     #: on a long run of the same mark (CodeQL).

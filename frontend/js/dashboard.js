@@ -372,6 +372,8 @@ function paintDashClock() {
     day: "numeric",
     month: "long",
   });
+  //: The sub line rotates (INBOX 1300): a new draw once its bucket has passed.
+  if (dashLine.bucket && dashLineDraw() !== dashLine.bucket) renderDashSubmessage().catch(() => {});
 }
 
 // A short line about the notebook, note count, plus whatever's most
@@ -460,10 +462,21 @@ async function dashEntries() {
   return notes || apiJson("/entries", { cacheMs: 4000 });
 }
 
+//: **The sub line is composed and rotates** (INBOX 1300, the owner: "Maybe the
+//: sub text below the greeting can rotate or change around a bit??"). The
+//: draw is the three-minute bucket the clock is in, so a repaint inside it
+//: keeps the words and the next bucket (a later visit, or the minute tick
+//: noticing) takes another; it swaps text with no animation, so reduced
+//: motion needs nothing. `dashTodayLine` is in dash-day.js (lazy).
+const DASH_LINE_MS = 180000;
+const dashLine = { bucket: 0 };
+const dashLineDraw = () => Math.floor(Date.now() / DASH_LINE_MS);
+
 async function renderDashSubmessage() {
   const el = $("dash-submessage");
   if (!el) return;
-  const [stats, reminders, patterns] = await Promise.all([
+  dashLine.bucket = dashLineDraw();
+  const [stats, reminders, patterns, composed] = await Promise.all([
     fetchDashStats().catch(() => null),
     // To the end: `/reminders` is `due_at` ascending, so a first page of
     // old, ticked-off rows would hide everything upcoming from this count
@@ -473,9 +486,11 @@ async function renderDashSubmessage() {
     //: The Patterns line (CHAT_PLAN decision 32), its short form here and
     //: the measured sentence on hover; Tidy shows it whole.
     apiJson("/insights/patterns", { silent: true }).catch(() => null),
+    dashTodayLine(dashLine.bucket).catch(() => ""),
   ]);
   const bits = [];
-  if (stats) {
+  if (composed) bits.push(["notes", composed]);
+  else if (stats) {
     const n = stats.total_entries;
     bits.push(["notes", n === 0 ? "No notes yet" : `You have ${n} note${n === 1 ? "" : "s"}`]);
   }
@@ -1452,6 +1467,19 @@ function dashCustomiseItems() {
     group: "page",
     run: () => $("dash-edit").click(),
   });
+  //: The way back from Get started's Hide or Mark all as done (INBOX 1301 D3).
+  if (prefs.get("getStartedHidden", null) === "1" || prefs.get("getStartedDone", null) === "1") {
+    items.push({
+      label: "ph:list-checks Show Get started",
+      title: "The first steps card and the Get started button, as they were",
+      group: "page",
+      run: () => {
+        ["getStartedHidden", "getStartedDone", "firstStepsHidden"].forEach((key) => prefs.remove(key));
+        renderFirstStepsLazy();
+        renderDashMore();
+      },
+    });
+  }
   items.push({ label: "ph:pencil-simple Edit quick access", title: "Add, remove and reorder the Quick access tiles", group: "quick", run: () => { quickEditing = true; renderQuickLinks(); } });
   //: The colours alone, keeping the tiles (INBOX 603, the owner: "reset the
   //: highlights on the quick access back to default or at least the first
@@ -1601,6 +1629,8 @@ function renderFeatures(query) {
 function renderFirstStepsLazy() {
   const host = $("dash-first-steps");
   if (!host || !entriesEverLoaded) return;
+  //: Hide Get started (INBOX 1301 D3) puts the menu away too: nothing to load.
+  if (prefs.get("getStartedHidden", null) === "1") return void host.replaceChildren();
   const skip = dashEditMode || (allEntries.length && prefs.get("firstStepsHidden", null) === "1");
   //: The Get started menu beside Customise is drawn whether or not the card is.
   lazyScript("/js/first-run.js").then((ok) => ok && renderFirstSteps(host, skip));

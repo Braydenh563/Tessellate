@@ -51,7 +51,10 @@ def test_the_middle_press_flag_is_set_by_the_autoscroll_guard() -> None:
     [
         ({"type": "wheel", "ctrlKey": True, "buttons": 0}, True),
         ({"type": "wheel", "ctrlKey": True, "buttons": 4}, False),
-        ({"type": "wheel", "ctrlKey": False, "buttons": 0}, False),
+        ({"type": "wheel", "ctrlKey": False, "buttons": 0, "deltaMode": 1, "deltaX": 0}, True),  # a plain wheel zooms
+        ({"type": "wheel", "ctrlKey": False, "buttons": 0, "deltaMode": 0, "deltaX": 3}, False),  # trackpad: pans
+        ({"type": "wheel", "ctrlKey": True, "buttons": 0, "deltaMode": 0, "deltaX": 3}, True),  # pinch zooms
+        ({"type": "wheel", "ctrlKey": False, "shiftKey": True, "buttons": 0}, False),  # shifted: the pan listener's
         ({"type": "mousedown", "button": 1, "buttons": 4}, True),
     ],
 )
@@ -63,6 +66,7 @@ def test_the_zoom_filter_never_zooms_mid_pan(event: dict, want: bool) -> None:
 
     script = (
         "let wbSpaceHeld = false; let wbMidPanHeld = false; globalThis.window = { currentTool: 'select' };\n"
+        + _function("wbTrackpadPan")
         + _function("wbZoomFilter")
         + f"\nconsole.log(JSON.stringify(Boolean(wbZoomFilter({json.dumps(event)}))));\n"
     )
@@ -83,3 +87,13 @@ def test_every_item_drag_takes_the_primary_button_only() -> None:
             line = SOURCE.count("\n", 0, match.start()) + 1
             offenders.append(line)
     assert offenders == [], f"d3.drag() filters without a button check at whiteboard.js lines {offenders}"
+
+
+def test_the_right_button_pans_from_bare_canvas_and_a_drag_eats_its_menu() -> None:
+    """C03: draw.io's right-drag pan. Browser half: `wbrightpan.js` (150px, menu closed;
+    a plain right-click opens the app menu; a card press does not pan)."""
+    body = _function("wbZoomFilter")
+    assert 'event.button === 2) return wbIsBareCanvas(event.target)' in body
+    assert "const WB_RIGHT_SLOP = 4;" in SOURCE
+    handler = SOURCE[SOURCE.index('containerEl.addEventListener("contextmenu", (e) => {\n    //: A topic'):][:600]
+    assert "wbRightOwns()" in handler, "the native menu must stand aside while a right press owns the gesture"

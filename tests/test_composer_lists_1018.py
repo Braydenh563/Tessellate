@@ -147,6 +147,20 @@ def test_other_questions_are_left_to_their_own_shapes(question):
     assert composer_lists.kind(question) is None
 
 
+@pytest.mark.parametrize(
+    "question",
+    ["show me from Paris", "what are your recent notes", "what are our latest notes", "show me from the top"],
+)
+def test_a_list_needs_notes_a_tag_or_a_filing_word(question):
+    """Review note: a bare "from X" or a possessive-led "notes" phrase is not a filing."""
+    assert composer_lists.list_target(question) is None
+    assert composer_lists.kind(question) is None
+
+
+def test_a_from_filing_still_reads_when_it_says_notes():
+    assert composer_lists.list_target("show me notes from Work") == ("Work", "category")
+
+
 def test_the_five_kinds_are_told_apart():
     assert composer_lists.kind("how many days until the dentist") == "until"
     assert composer_lists.kind("is the dentist before the boiler service") == "order"

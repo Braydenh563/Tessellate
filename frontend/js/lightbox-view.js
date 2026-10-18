@@ -22,6 +22,14 @@
 //: lightbox at the reading". On a tall document the info panel is below the
 //: fold, so a plain open lands the reader on a page and leaves them to find
 //: the text they asked for.
+//: The viewer's '?' popover: the gestures and keys no button shows.
+const LIGHTBOX_HELP = [
+  "Scroll to zoom where the pointer is, drag to move a zoomed picture, and double-click to switch between fit and actual size.",
+  "Keys: Left and Right move between files, plus and minus zoom, 0 fits, 1 shows actual size, R rotates, I shows or hides the details, Escape closes.",
+  "On a touch screen, swipe sideways to move between files and pinch to zoom.",
+  "The bars fade when the mouse rests on the picture and come back when it moves.",
+];
+
 function openLightbox(items, startIndex = 0, opts = {}) {
   let index = startIndex;
   const overlay = document.createElement("div");
@@ -35,10 +43,44 @@ function openLightbox(items, startIndex = 0, opts = {}) {
   overlay.setAttribute("role", "dialog");
   overlay.setAttribute("aria-label", "Image preview");
 
+  //: **The viewer's chrome** (INBOX 1300 C30, the owner: "Can the lightbox
+  //: controls and elements have a new redesign and upgrade in ui and ux
+  //: usability??"). Measured before (scratchpad/ui-sweeps/lightbox1300.js):
+  //: every control in one wrapping row under the picture, the name and
+  //: "N of M" in a line of grey text, a lone round X in the corner, no
+  //: keys but the arrows and Escape, no swipe or pinch, and a picture 7% of
+  //: a phone's screen. Now two `.dock`s on the panel ground, floating over
+  //: the scrim: the top bar says what this is and acts on the file (copy,
+  //: download, open, details, help, the ⋯, close), the foot holds the view
+  //: (zoom, fit, actual size, rotate, the page stepper) with a filmstrip
+  //: above it when there is more than one file. Both fade on an idle mouse
+  //: and come back on any movement, never for keys or reduced motion.
+  const topbar = document.createElement("div");
+  topbar.className = "dock lightbox-topbar";
+  topbar.setAttribute("role", "toolbar");
+  topbar.setAttribute("aria-label", "File");
+  const topIdentity = document.createElement("div");
+  topIdentity.className = "dock-identity";
+  const title = document.createElement("h2");
+  title.className = "lightbox-title";
+  const position = document.createElement("span");
+  position.className = "dock-chip lightbox-position";
+  topIdentity.append(title, position);
+  const topActions = document.createElement("div");
+  topActions.className = "dock-actions lightbox-top-actions";
+  topbar.append(topIdentity, topActions);
+  topbar.addEventListener("click", (e) => e.stopPropagation());
+  const syncTitle = (item) => {
+    title.textContent = item?.filename || "Untitled file";
+    title.title = item?.filename || "";
+    position.textContent = items.length > 1 ? `${index + 1} of ${items.length}` : "";
+  };
+
   const closeBtn = document.createElement("button");
   closeBtn.type = "button";
-  closeBtn.className = "lightbox-close";
+  closeBtn.className = "ghost small icon-only lightbox-close";
   closeBtn.setAttribute("aria-label", "Close");
+  closeBtn.title = "Close (Esc)";
   // A raw "×" character, not an icon-font glyph, reported live as still
   // off-centre even inside the `display:grid;place-items:center` box that
   // fixed every *padding*-driven case of this: `place-items` centres the
@@ -51,8 +93,6 @@ function openLightbox(items, startIndex = 0, opts = {}) {
   const img = document.createElement("img");
   const broken = document.createElement("p");
   broken.className = "lightbox-broken hidden";
-  const meta = document.createElement("div");
-  meta.className = "lightbox-meta";
 
   // What the app knows *about* the picture, shown with the picture. Asked for
   // directly: "if clicking on an image to view expand it in the lightbox…can
@@ -241,6 +281,105 @@ function openLightbox(items, startIndex = 0, opts = {}) {
   nextBtn.className = "lightbox-nav lightbox-next";
   nextBtn.setAttribute("aria-label", "Next image");
   setLabel(nextBtn, "ph:caret-right");
+  prevBtn.title = "Previous (Left arrow)";
+  nextBtn.title = "Next (Right arrow)";
+
+  //: The view's dock, at the foot. Its groups are the dock recipe's zones:
+  //: where you are (phone only: the side arrows leave a 390px screen's
+  //: picture 233px wide, so there they live here), how big, which page.
+  const dock = document.createElement("div");
+  dock.className = "dock lightbox-dock";
+  dock.setAttribute("role", "toolbar");
+  dock.setAttribute("aria-label", "View");
+  dock.addEventListener("click", (e) => e.stopPropagation());
+  const dockZone = (name) => {
+    const zone = document.createElement("div");
+    zone.className = `dock-group lightbox-dock-${name}`;
+    dock.appendChild(zone);
+    return zone;
+  };
+  const dockPrevZone = dockZone("prev");
+  const dockZoomZone = dockZone("zoom");
+  const dockViewZone = dockZone("view");
+  const dockPageZone = dockZone("page");
+  const dockNextZone = dockZone("next");
+  const bottom = document.createElement("div");
+  bottom.className = "lightbox-bottom";
+
+  //: **The filmstrip**: every file this view can page through, one press
+  //: away, the current one marked. A picture's thumbnail is fetched when its
+  //: tile scrolls into the strip, not before (`getUrl` may be a request, and
+  //: a gallery of two hundred should not make two hundred on open). One tab
+  //: stop: the current tile; the arrows move it.
+  const film = document.createElement("div");
+  film.className = "lightbox-filmstrip";
+  film.setAttribute("role", "group");
+  film.setAttribute("aria-label", "Files in this view");
+  film.addEventListener("click", (e) => e.stopPropagation());
+  let filmSeen = null;
+  const fileGlyph = (name) =>
+    /\.pdf$/i.test(name) ? "file-pdf" : /\.(docx?|odt|rtf)$/i.test(name) ? "file-doc" : /\.(md|txt|csv|json|html?)$/i.test(name) ? "file-text" : "file";
+  function renderFilmstrip() {
+    filmSeen?.disconnect();
+    film.replaceChildren();
+    overlay.classList.toggle("lightbox-has-film", items.length > 1);
+    if (items.length < 2) return;
+    filmSeen = new IntersectionObserver(
+      (seen) => {
+        for (const entry of seen) {
+          if (!entry.isIntersecting) continue;
+          filmSeen.unobserve(entry.target);
+          const it = items[Number(entry.target.dataset.index)];
+          const pic = entry.target.querySelector("img");
+          if (it && pic) Promise.resolve(it.getUrl()).then((src) => { if (src) pic.src = src; }).catch(() => {});
+        }
+      },
+      { root: film, rootMargin: "0px 160px" }
+    );
+    items.forEach((it, i) => {
+      const tile = document.createElement("button");
+      tile.type = "button";
+      tile.className = "lightbox-thumb";
+      tile.dataset.index = String(i);
+      tile.tabIndex = -1;
+      tile.title = it.filename || "";
+      tile.setAttribute("aria-label", `${it.filename || "File"}, ${i + 1} of ${items.length}`);
+      if (IMAGE_SUFFIXES.test(it.filename || "") && !it.kind) {
+        const pic = document.createElement("img");
+        pic.alt = "";
+        pic.decoding = "async";
+        tile.appendChild(pic);
+        if (filmSeen) filmSeen.observe(tile);
+        else Promise.resolve(it.getUrl()).then((src) => { if (src) pic.src = src; }).catch(() => {});
+      } else {
+        const glyph = document.createElement("i");
+        glyph.className = `ph ph-${fileGlyph(it.filename || "")}`;
+        glyph.setAttribute("aria-hidden", "true");
+        tile.appendChild(glyph);
+      }
+      tile.addEventListener("click", () => show(i));
+      film.appendChild(tile);
+    });
+  }
+  const syncFilmstrip = () => {
+    if (film.childElementCount !== (items.length > 1 ? items.length : 0)) renderFilmstrip();
+    const hadFocus = film.contains(document.activeElement);
+    for (const tile of film.children) {
+      const here = Number(tile.dataset.index) === index;
+      tile.classList.toggle("is-current", here);
+      tile.tabIndex = here ? 0 : -1;
+      if (here) tile.setAttribute("aria-current", "true");
+      else tile.removeAttribute("aria-current");
+    }
+    const current = film.children[index];
+    if (!current) return;
+    if (hadFocus) current.focus({ preventScroll: true });
+    //: Centred in the strip by its own scroll, never `scrollIntoView`, which
+    //: would also scroll the dialog behind it.
+    const strip = film.getBoundingClientRect();
+    const box = current.getBoundingClientRect();
+    film.scrollLeft += box.left + box.width / 2 - (strip.left + strip.width / 2);
+  };
 
   // **The arrows are centred by the layout now, not by a measurement.**
   //
@@ -282,10 +421,37 @@ function openLightbox(items, startIndex = 0, opts = {}) {
   let zoom = 1;
   let panX = 0;
   let panY = 0;
+  //: Quarter turns, kept cumulative (90, 180, 270, 360...) so the eased
+  //: transform always turns the same way rather than unwinding at 360.
+  let rotation = 0;
   const ZOOM_MIN = 1;
-  const ZOOM_MAX = 6;
   const zoomLabel = document.createElement("span");
-  zoomLabel.className = "muted lightbox-zoom-label";
+  zoomLabel.className = "lightbox-zoom-label";
+  const reducedMotion = () => reducedMotionWanted();
+  //: A turned picture is fitted again: a wide photo stood on its end is as
+  //: tall as it was wide, so it is scaled into the box it had.
+  const turnFit = () => {
+    if (!(rotation % 180)) return 1;
+    const w = img.offsetWidth;
+    const h = img.offsetHeight;
+    if (!w || !h) return 1;
+    const maxH = parseFloat(getComputedStyle(img).maxHeight) || h;
+    return Math.min(1, stage.clientWidth / h, maxH / w);
+  };
+  //: The zoom at which one picture pixel is one CSS pixel ("actual size").
+  const actualZoom = () =>
+    img.naturalWidth && img.offsetWidth ? img.naturalWidth / (img.offsetWidth * turnFit()) : 1;
+  const zoomMax = () => (zoomTarget() === img ? Math.min(32, Math.max(6, actualZoom() * 2)) : 6);
+  //: Eased only for a zoom asked for by a press (a button, a key, a double
+  //: click, a turn); a wheel, a pinch and a drag follow the hand directly.
+  let glideTimer = 0;
+  const glide = () => {
+    if (reducedMotion()) return;
+    const target = zoomTarget();
+    target.classList.add("lightbox-glide");
+    clearTimeout(glideTimer);
+    glideTimer = setTimeout(() => target.classList.remove("lightbox-glide"), 260);
+  };
   // A single image is the usual target; a PDF shown as pages (pdfPages,
   // below) is a second one, added when PDFs stopped being AI-text-only, 
   // "or zoom. a lot of controls are missing," reported live once pages
@@ -304,13 +470,31 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     const other = isImg ? pdfPages : img;
     if (other.style.transform) other.style.transform = "";
     other.classList.remove("zoomed");
-    target.style.transform = zoom === 1 ? "" : isImg ? `translate(${panX}px, ${panY}px) scale(${zoom})` : `scale(${zoom})`;
+    if (isImg) {
+      //: Scaled from the top left (see the CSS), turned about the middle of
+      //: the picture's own box, so `setZoom`'s anchor arithmetic is the same
+      //: at every turn.
+      const parts = [];
+      if (zoom !== 1) parts.push(`translate(${panX}px, ${panY}px) scale(${zoom})`);
+      if (rotation % 360) {
+        const cx = img.offsetWidth / 2;
+        const cy = img.offsetHeight / 2;
+        parts.push(`translate(${cx}px, ${cy}px) rotate(${rotation}deg) scale(${turnFit()}) translate(${-cx}px, ${-cy}px)`);
+      }
+      target.style.transform = parts.join(" ");
+    } else {
+      target.style.transform = zoom === 1 ? "" : `scale(${zoom})`;
+    }
     stage.classList.toggle("zoomed-img", isImg && zoom > 1);
     // Set on the stage too, a multi-page column has no single element
     // whose own hover state would otherwise flip the grab cursor.
     target.classList.toggle("zoomed", zoom > 1);
     stage.classList.toggle("zoomed", zoom > 1);
-    zoomLabel.textContent = `${Math.round(zoom * 100)}%`;
+    //: A picture's readout is against its own pixels, as every viewer's is:
+    //: "53%" at Fit for a picture twice the window, "100%" at actual size.
+    const pixels = isImg && img.naturalWidth && img.offsetWidth;
+    zoomLabel.textContent = `${Math.round((pixels ? zoom / actualZoom() : zoom) * 100)}%`;
+    fitBtn.setAttribute("aria-pressed", String(zoom === 1));
     // Only grab-able once there is something to pan to.
     //: **Only when it is not already there** (INBOX 424f). `show()` sets the
     //: zoom back to fit for every picture, so paging through a gallery called
@@ -365,10 +549,14 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     const fx = before.width ? (ax - before.left) / before.width : 0.5;
     const fy = before.height ? (ay - before.top) / before.height : 0.5;
     const from = zoom;
-    zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round(next * 100) / 100));
+    zoom = Math.min(zoomMax(), Math.max(ZOOM_MIN, Math.round(next * 1000) / 1000));
     if (target === img) {
-      panX += (ax - before.left) * (1 - zoom / from);
-      panY += (ay - before.top) * (1 - zoom / from);
+      //: The transform's origin on screen: the picture's layout corner plus
+      //: the pan. Not the bounding box's corner, which a turn moves.
+      const ox = box.left + img.offsetLeft - stage.scrollLeft + panX;
+      const oy = box.top + img.offsetTop - stage.scrollTop + panY;
+      panX += (ax - ox) * (1 - zoom / from);
+      panY += (ay - oy) * (1 - zoom / from);
       applyZoom();
       return;
     }
@@ -378,24 +566,57 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     scroller.scrollLeft += after.left + fx * after.width - ax;
     scroller.scrollTop += after.top + fy * after.height - ay;
   };
-  const actionBtn = (label, title, fn) => {
+  //: `where` is the bar a control lives in: the document's own row under the
+  //: page (the default), the top bar, or a zone of the view dock. An
+  //: icon-only control takes its title as its name.
+  const actionBtn = (label, title, fn, where = actions) => {
     const b = document.createElement("button");
     b.type = "button";
     b.className = "ghost small lightbox-action";
     b.title = title;
     setLabel(b, label);
+    if (!b.querySelector(".ph-text") && b.textContent.trim().length <= 1) {
+      b.classList.add("icon-only");
+      b.setAttribute("aria-label", title.replace(/ \([^)]*\)$/, ""));
+    }
     b.addEventListener("click", (e) => {
       e.stopPropagation();
       fn(b);
     });
-    actions.appendChild(b);
+    where.appendChild(b);
     return b;
   };
+  const zoomBy = (factor) => {
+    glide();
+    setZoom(zoom * factor);
+  };
+  const fitView = () => {
+    glide();
+    setZoom(1);
+  };
+  const actualSize = () => {
+    glide();
+    setZoom(zoomTarget() === img ? actualZoom() : 1);
+  };
+  const turn = () => {
+    if (zoomTarget() !== img) return;
+    glide();
+    rotation += 90;
+    setZoom(1);
+    applyZoom();
+  };
 
-  const zoomOutBtn = actionBtn("ph:magnifying-glass-minus", "Zoom out", () => setZoom(zoom - 0.5));
-  actions.appendChild(zoomLabel);
-  const zoomInBtn = actionBtn("ph:magnifying-glass-plus", "Zoom in", () => setZoom(zoom + 0.5));
-  const resetBtn = actionBtn("ph:arrows-in Fit", "Back to fit", () => setZoom(1));
+  const dockPrevBtn = actionBtn("ph:caret-left", "Previous (Left arrow)", () => show(index - 1), dockPrevZone);
+  const zoomOutBtn = actionBtn("ph:magnifying-glass-minus", "Zoom out (-)", () => zoomBy(1 / 1.5), dockZoomZone);
+  dockZoomZone.appendChild(zoomLabel);
+  const zoomInBtn = actionBtn("ph:magnifying-glass-plus", "Zoom in (+)", () => zoomBy(1.5), dockZoomZone);
+  const resetBtn = actionBtn("ph:arrows-in", "Back to fit (0)", fitView, dockViewZone);
+  const fitBtn = resetBtn;
+  const actualBtn = actionBtn("1:1", "Actual size (1)", actualSize, dockViewZone);
+  actualBtn.setAttribute("aria-label", "Actual size");
+  const rotateBtn = actionBtn("ph:arrow-clockwise", "Rotate (R)", turn, dockViewZone);
+  const dockNextBtn = actionBtn("ph:caret-right", "Next (Right arrow)", () => show(index + 1), dockNextZone);
+  for (const b of [dockPrevBtn, dockNextBtn]) b.classList.add("lightbox-dock-nav");
 
   //: **The page stepper**: Phase 7.1's "a way to say which page you are on".
   //:
@@ -419,14 +640,14 @@ function openLightbox(items, startIndex = 0, opts = {}) {
   //: pages, and the joined reading of every page is not what you are looking
   //: at when page 4 is on screen.
   const docPageRows = new Map();
-  const pagePrevBtn = actionBtn("ph:caret-left", "Previous page", () => setDocPage(docPage - 1));
+  const pagePrevBtn = actionBtn("ph:caret-up", "Previous page", () => setDocPage(docPage - 1), dockPageZone);
   const pageLabel = document.createElement("span");
-  pageLabel.className = "muted lightbox-page-label";
+  pageLabel.className = "lightbox-page-label";
   //: `role="status"`, matching the OCR workspace's own page label: the page
   //: changes without focus moving, so a screen reader is otherwise never told.
   pageLabel.setAttribute("role", "status");
-  actions.appendChild(pageLabel);
-  const pageNextBtn = actionBtn("ph:caret-right", "Next page", () => setDocPage(docPage + 1));
+  dockPageZone.appendChild(pageLabel);
+  const pageNextBtn = actionBtn("ph:caret-down", "Next page", () => setDocPage(docPage + 1), dockPageZone);
   const pageControls = [pagePrevBtn, pageLabel, pageNextBtn];
   const showPageControls = (on) =>
     pageControls.forEach((el) => el.classList.toggle("hidden", !on));
@@ -623,9 +844,15 @@ function openLightbox(items, startIndex = 0, opts = {}) {
   // showing a disabled-in-spirit 100% beside a page of text is three
   // controls that do nothing, the same "only show what this can do"
   // reasoning the whiteboard context menu already settled.
+  //: Actual size and Rotate are a picture's: a page column has no single
+  //: pixel size, and turning a document is not reading it.
   const zoomControls = [zoomOutBtn, zoomLabel, zoomInBtn, resetBtn];
-  const showZoomControls = (on) =>
+  const showZoomControls = (on) => {
     zoomControls.forEach((el) => el.classList.toggle("hidden", !on));
+    const picture = on && pdfPages.classList.contains("hidden");
+    actualBtn.classList.toggle("hidden", !picture);
+    rotateBtn.classList.toggle("hidden", !picture);
+  };
 
   // Wheel-to-zoom, because that is what every image viewer does and a person
   // who has zoomed once will try it. Non-passive so the page behind cannot
@@ -653,7 +880,11 @@ function openLightbox(items, startIndex = 0, opts = {}) {
       if (!doc.classList.contains("hidden") && !e.ctrlKey) return;
       if (!doc.classList.contains("hidden") && pdfPages.classList.contains("hidden")) return; // plain text: nothing to zoom
       e.preventDefault();
-      setZoom(zoom + (e.deltaY < 0 ? 0.25 : -0.25), [e.clientX, e.clientY]);
+      //: In proportion to the travel, so a trackpad's many small deltas and
+      //: a wheel's one notch of 100 both feel continuous (a notch: x1.22).
+      //: A line or a page of travel (`deltaMode` 1, 2) counts as 40px.
+      const travel = Math.max(-200, Math.min(200, e.deltaY * (e.deltaMode ? 40 : 1)));
+      setZoom(zoom * Math.exp(-travel * 0.002), [e.clientX, e.clientY]);
     },
     { passive: false }
   );
@@ -663,7 +894,11 @@ function openLightbox(items, startIndex = 0, opts = {}) {
   stage.addEventListener("dblclick", (e) => {
     if (!doc.classList.contains("hidden") && pdfPages.classList.contains("hidden")) return;
     e.preventDefault();
-    setZoom(zoom > 1 ? 1 : 2, [e.clientX, e.clientY]);
+    //: Fit and actual size, the two views a person flips between; a picture
+    //: already shown at its own size (or a page column) goes to twice.
+    const near = zoomTarget() === img ? actualZoom() : 2;
+    glide();
+    setZoom(zoom > 1 ? 1 : near > 1.05 ? near : 2, [e.clientX, e.clientY]);
   });
 
   // Drag to pan, once zoomed. The scrollbars already pan the stage, but a
@@ -682,6 +917,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
   const startPan = (el) => (e) => {
     if (zoom === 1) return;
     e.preventDefault();
+    el.classList.remove("lightbox-glide");
     const scroller = scrollTarget();
     panning = { x: e.clientX, y: e.clientY, left: scroller.scrollLeft, top: scroller.scrollTop, px: panX, py: panY };
     el.setPointerCapture(e.pointerId);
@@ -726,6 +962,51 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     el.addEventListener("click", (e) => e.stopPropagation());
   };
   bindPan(img);
+  //: **A finger's gestures on the picture**: two pinch about their midpoint,
+  //: one swiped sideways at Fit moves to the next or previous file. Measured
+  //: before at 390: a swipe and a pinch both left the view as it was. The
+  //: picture takes `touch-action: none` (lightbox-lazy.css), so the browser
+  //: hands these over instead of scrolling the dialog.
+  const fingers = new Map();
+  let pinch = null;
+  let swipe = null;
+  const spread = () => {
+    const [a, b] = [...fingers.values()];
+    return { d: Math.hypot(a[0] - b[0], a[1] - b[1]) || 1, mid: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2] };
+  };
+  img.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "mouse") return;
+    fingers.set(e.pointerId, [e.clientX, e.clientY]);
+    if (fingers.size === 2) {
+      panning = null;
+      swipe = null;
+      pinch = { d: spread().d, z: zoom };
+    } else if (fingers.size === 1 && zoom === 1) {
+      swipe = { x: e.clientX, y: e.clientY };
+    }
+  });
+  img.addEventListener("pointermove", (e) => {
+    if (!fingers.has(e.pointerId)) return;
+    fingers.set(e.pointerId, [e.clientX, e.clientY]);
+    if (pinch && fingers.size === 2) {
+      const now = spread();
+      setZoom(pinch.z * (now.d / pinch.d), now.mid);
+    }
+  });
+  const liftFinger = (e) => {
+    if (!fingers.has(e.pointerId)) return;
+    fingers.delete(e.pointerId);
+    if (fingers.size < 2) pinch = null;
+    if (!swipe || fingers.size || e.type === "pointercancel") return;
+    const dx = e.clientX - swipe.x;
+    const dy = e.clientY - swipe.y;
+    swipe = null;
+    if (items.length > 1 && zoom === 1 && Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      show(index + (dx < 0 ? 1 : -1));
+    }
+  };
+  img.addEventListener("pointerup", liftFinger);
+  img.addEventListener("pointercancel", liftFinger);
 
   // Copy the text the app read out of the picture. Hidden unless this item
   // actually has some: an enabled button that copies "" is a lie.
@@ -742,15 +1023,15 @@ function openLightbox(items, startIndex = 0, opts = {}) {
   //: Copy has to hand over what is on screen: copying every page while the
   //: panel shows page 4 is the app disagreeing with itself about "this text".
   let lightboxShownText = "";
-  const copyBtn = actionBtn("ph:copy Copy text", "Copy the text read from this image", async (b) => {
+  const copyBtn = actionBtn("ph:copy", "Copy the text read from this image", async (b) => {
     const value = (lightboxShownText || items[index].text || "").trim();
     if (!value) return;
     await copyToClipboard(value, b);
-  });
+  }, topActions);
 
   // Save the original file. `download` needs a same-origin href to name the
   // file, which `mediaSrc()` gives us: it is this app's own /media route.
-  actionBtn("ph:download-simple Save", "Save this file to your computer", async () => {
+  actionBtn("ph:download-simple", "Download this file", async () => {
     try {
       const current = items[index];
       const href = await current.getUrl();
@@ -773,7 +1054,46 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     } catch {
       toast("Couldn't save that file.", true);
     }
-  });
+  }, topActions);
+  //: "Open in": the browser's own viewer, in a tab of its own, for a file
+  //: with a url (a native document has none: its url is a download).
+  const openTabBtn = actionBtn("ph:arrow-square-out", "Open in a new tab", async () => {
+    const href = await Promise.resolve(items[index].getUrl()).catch(() => "");
+    if (href) window.open(href, "_blank", "noopener");
+  }, topActions);
+  openTabBtn.classList.add("lightbox-open-tab");
+  //: The details under the picture (facts, caption, reading) can be put
+  //: away for a clear view, and stay put away for the next picture.
+  let infoWanted = prefs.get("lightboxInfo", "on") !== "off";
+  const infoBtn = actionBtn("ph:info", "Details (I)", () => {
+    infoWanted = !infoWanted;
+    prefs.set("lightboxInfo", infoWanted ? "on" : "off");
+    syncInfoWanted();
+  }, topActions);
+  const syncInfoWanted = () => {
+    info.classList.toggle("lightbox-info-off", !infoWanted);
+    infoBtn.setAttribute("aria-pressed", String(infoWanted));
+    infoBtn.classList.toggle("hidden", info.classList.contains("hidden"));
+  };
+  //: The '?' (the `data-help-for` recipe): what the pointer, the keys and a
+  //: finger do here, none of which a button can show.
+  const helpBtn = actionBtn("ph:question", "About the viewer", () => {}, topActions);
+  helpBtn.setAttribute("data-help-for", "lightbox-help");
+  helpBtn.setAttribute("aria-controls", "lightbox-help");
+  helpBtn.setAttribute("aria-expanded", "false");
+  helpBtn.classList.add("lightbox-help-btn");
+  const helpBody = document.createElement("div");
+  helpBody.className = "help-body hidden";
+  helpBody.id = "lightbox-help";
+  helpBody.setAttribute("role", "dialog");
+  helpBody.setAttribute("aria-label", "About the viewer");
+  for (const line of LIGHTBOX_HELP) {
+    const p = document.createElement("p");
+    p.textContent = line;
+    helpBody.appendChild(p);
+  }
+  topActions.append(helpBody, closeBtn);
+  wireHelpPopover(helpBtn, helpBody);
 
   // Only shown while a PDF is displayed as pages (see showDocument): swaps
   // to the AI-extracted-text view on demand, rather than automatically. A
@@ -1181,7 +1501,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     // media row happens to share that number, or 404. This menu is media-
     // actions only; `item.kind` is how a document identifies itself.
     moreMenu = item.id && !item.kind ? buildMoreMenu(item) : null;
-    if (moreMenu) actions.appendChild(moreMenu);
+    if (moreMenu) topActions.insertBefore(moreMenu, closeBtn);
   };
 
 
@@ -1627,20 +1947,24 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     // itself a document skips the filename guess entirely.
     if (item.kind || attachmentId || (name && !looksLikeImage)) {
       overlay.setAttribute("aria-label", item.filename || "Document preview");
-      meta.textContent =
-        items.length > 1
-          ? `${item.filename || ""}, ${index + 1} of ${items.length}`
-          : item.filename || "";
+      syncChrome(item);
       actions.classList.remove("hidden");
+      rotation = 0;
       setZoom(1);
       showZoomControls(false);
       openDocBtn.classList.toggle("hidden", !item.documentId);
       syncMoreMenu(item);
       await showDocument(item, name, attachmentId);
+      syncDock();
       hydrate(index, item, true);
       return;
     }
     doc.classList.add("hidden");
+    //: The page column too: left showing inside the hidden document, it was
+    //: still `zoomTarget()`, so a picture paged to from a PDF zoomed the PDF.
+    pdfPages.classList.add("hidden");
+    rotation = 0;
+    syncChrome(item);
     //: A picture is never a document, so paging from a previewed document to
     //: an image must take this away with the rest of the text controls.
     openDocBtn.classList.add("hidden");
@@ -1678,10 +2002,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     broken.classList.toggle("hidden", ok);
     if (!ok) broken.textContent = `Couldn't load "${item.filename || "this image"}", the file may have been deleted.`;
     overlay.setAttribute("aria-label", item.filename || "Image preview");
-    meta.textContent =
-      items.length > 1
-        ? `${item.filename || ""}, ${index + 1} of ${items.length}`
-        : item.filename || "";
+    syncTitle(item);
     const caption = (item.caption || "").trim();
     const text = (item.text || "").trim();
     infoCaption.textContent = caption;
@@ -1717,6 +2038,8 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     // Nothing to act on when the file itself failed to load.
     actions.classList.toggle("hidden", !ok);
     syncMoreMenu(item);
+    syncInfoWanted();
+    syncDock();
 
     // **Fill in whatever the caller did not know.** Reported directly: the
     // caption, OCR text and facts appeared in the Image Gallery and nowhere
@@ -1843,10 +2166,8 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     renderAltReading(perPage ? "" : item.altText, item.altByline);
     syncReadingDeletes(item, { text, alt: perPage ? "" : (item.altText || "").trim(), perPage });
     info.classList.toggle("hidden", !caption && !text && !item.filename);
-    meta.textContent =
-      items.length > 1
-        ? `${item.filename || ""}, ${index + 1} of ${items.length}`
-        : item.filename || "";
+    syncTitle(item);
+    syncInfoWanted();
     const facts = [];
     //: A document's dimensions are its *pages*, and the picture's pixel size
     //: is meaningless for one, `docPageCount` is 0 for anything that is not a
@@ -1874,15 +2195,85 @@ function openLightbox(items, startIndex = 0, opts = {}) {
       : "Copy the text read from this image";
   }
 
+  //: Per file: the title and count, the filmstrip's current tile, what the
+  //: top bar can offer for this kind of file.
+  function syncChrome(item) {
+    syncTitle(item);
+    syncFilmstrip();
+    openTabBtn.classList.toggle("hidden", Boolean(item.kind));
+    for (const b of [dockPrevBtn, dockNextBtn]) b.classList.toggle("hidden", items.length < 2);
+  }
+  //: The dock goes when nothing in it applies (a text file has no zoom and
+  //: no pages, and the phone's arrows are only for more than one file).
+  function syncDock() {
+    const phone = window.matchMedia("(max-width: 599.98px)").matches;
+    const live = [...dock.querySelectorAll("button")].some(
+      (b) => !b.classList.contains("hidden") && (phone || !b.classList.contains("lightbox-dock-nav"))
+    );
+    dock.classList.toggle("hidden", !live);
+  }
+
+  //: **Quiet chrome** (the brief's "auto-hide controls on idle with pointer
+  //: reveal"). Only a mouse resting on the picture fades the bars: a key, a
+  //: visible focus ring, an open menu or popover, or reduced motion keeps
+  //: them, so nobody working from the keyboard ever loses a control.
+  const IDLE_MS = 2600;
+  let idleTimer = 0;
+  let keysSeen = false;
+  const canRest = () =>
+    !keysSeen &&
+    !reducedMotion() &&
+    overlay.isConnected &&
+    !overlay.querySelector(":focus-visible") &&
+    !document.querySelector(".action-menu:not(.hidden), .help-popover:not(.hidden)");
+  const wake = (e) => {
+    overlay.classList.remove("lightbox-idle");
+    clearTimeout(idleTimer);
+    if (e && e.pointerType === "mouse" && stageWrap.contains(e.target)) {
+      idleTimer = setTimeout(() => {
+        if (canRest()) overlay.classList.add("lightbox-idle");
+      }, IDLE_MS);
+    }
+  };
+  overlay.addEventListener("pointermove", wake);
+  overlay.addEventListener("pointerdown", wake);
+  overlay.addEventListener("wheel", wake, { passive: true });
+
   const close = () => {
+    clearTimeout(idleTimer);
+    filmSeen?.disconnect();
     overlay.remove();
     setFullscreenSurface("lightbox", false);
-    document.removeEventListener("keydown", onKey);
+    document.removeEventListener("keydown", onKey, true);
   };
+  //: Typing keeps its keys: the find box and the file editor are inside this
+  //: dialog, and an arrow there moves the caret, not the file.
+  const typing = (el) => el instanceof Element && el.matches("input, textarea, select, [contenteditable=''], [contenteditable='true']");
   const onKey = (e) => {
-    if (e.key === "Escape") close();
-    else if (e.key === "ArrowLeft" && items.length > 1) show(index - 1);
-    else if (e.key === "ArrowRight" && items.length > 1) show(index + 1);
+    keysSeen = true;
+    wake();
+    //: A menu, a popover or a confirm over the viewer has the keys first.
+    const above = document.querySelector(".action-menu:not(.hidden), .help-popover:not(.hidden), .confirm-overlay:not(.hidden)");
+    if (e.key === "Escape") {
+      if (!above) close();
+      return;
+    }
+    if (above || typing(e.target) || e.ctrlKey || e.metaKey || e.altKey) return;
+    const picture = !img.classList.contains("hidden") && doc.classList.contains("hidden");
+    const zoomable = picture || !pdfPages.classList.contains("hidden");
+    const key = e.key;
+    if (key === "ArrowLeft" && items.length > 1) show(index - 1);
+    else if (key === "ArrowRight" && items.length > 1) show(index + 1);
+    else if (key === "Home" && items.length > 1 && picture) show(0);
+    else if (key === "End" && items.length > 1 && picture) show(items.length - 1);
+    else if ((key === "+" || key === "=") && zoomable) zoomBy(1.5);
+    else if ((key === "-" || key === "_") && zoomable) zoomBy(1 / 1.5);
+    else if (key === "0" && zoomable) fitView();
+    else if (key === "1" && picture) actualSize();
+    else if ((key === "r" || key === "R") && picture) turn();
+    else if ((key === "i" || key === "I") && !infoBtn.classList.contains("hidden")) infoBtn.click();
+    else return;
+    e.preventDefault();
   };
   // Only empty space closes on click, the picture, the metadata and the
   // nav/close buttons all need to stay clickable without dismissing the
@@ -1900,7 +2291,10 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     e.stopPropagation();
     show(index + 1);
   });
-  document.addEventListener("keydown", onKey);
+  //: Capture: a menu or the help popover closes itself on its own Escape
+  //: listener, and by the bubble this one would see it already gone and
+  //: close the viewer under it too.
+  document.addEventListener("keydown", onKey, true);
 
   stage.append(img, broken);
   // **The arrows must not live inside the stage.** The stage scrolls now
@@ -1927,8 +2321,10 @@ function openLightbox(items, startIndex = 0, opts = {}) {
   }
   const column = document.createElement("div");
   column.className = "lightbox-column";
-  column.append(stageWrap, meta, actions, info);
-  overlay.append(closeBtn, column);
+  column.append(stageWrap, actions, info);
+  bottom.append(film, dock);
+  overlay.classList.add("lightbox-framed");
+  overlay.append(topbar, column, bottom);
   document.body.appendChild(overlay);
   setFullscreenSurface("lightbox", true);
   closeBtn.focus();

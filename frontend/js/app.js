@@ -1809,7 +1809,9 @@ const LAZY_MODULES = {
   //: Tesseract's status line (INBOX 443 (3)): see ocr-engine.js.
   ocrEngine: ["/js/ocr-engine.js"],
   //: Quick note and the note outbox (INBOX 434): see quick-note.js.
-  quickNote: ["/js/quick-note.js"],
+  //: router-overlays.js rides with the quick note: Back closes an open overlay first, and
+  //: Settings' close settles the address. Both preloaded below; boot code is at its cap.
+  quickNote: ["/js/quick-note.js", "/js/router-overlays.js"],
   fieldClear: ["/js/field-clear.js"],
   //: A date or time field's panel (Phase 12): see date-field.js.
   dateField: ["/js/date-field.js"],
@@ -1879,6 +1881,8 @@ const LAZY_MODULES = {
   atlasLife: ["/js/atlas-life.js"],
   //: The companion's menu and a face's enlarged view (companion-menu.js's header).
   companionMenu: ["/js/companion-menu.js"],
+  //: A throw and what can happen on the way (companion-throw.js's header).
+  companionThrow: ["/css/companion-throw-lazy.css", "/js/companion-throw.js"],
   //: A held drag-selection scrolling a list at its edge (drag-edge.js), preloaded below.
   dragEdge: ["/js/drag-edge.js"],
   //: The back/forward list's rows (INBOX 654): see nav-history.js.
@@ -2150,16 +2154,7 @@ const LAZY_ENTRY_POINTS = {
   iconPicker: ["openIconPicker"],
   //: Async, and reached from a Settings pane drawn before the window's own await.
   settingsControls: ["refreshSearxngHost", "renderStatusBarSettings", "renderMcpSnippet", "renderLanAccess", "renderMemorySettings"],
-  settingsData: [
-    "renderPrivacyRange",
-    "renderPrivacyReceipt",
-    "renderBackups",
-    "renderBackupRetention",
-    "backupNow",
-    "importDirectory",
-    "importMarkdown",
-    "importDocument",
-  ],
+  settingsData: ["renderPrivacyRange", "renderPrivacyReceipt", "renderBackups", "renderBackupRetention", "backupNow", "importDirectory", "importMarkdown", "importDocument"],
   tagSuggest: ["openTagSuggest", "renderReevaluateResult"],
   writingDesk: ["composeDraft", "suggestDraftTitle", "saveDraftAsNote", "draftSaveMenuInit"],
   //: Each called for its effect when a figure mounts or moves; nothing reads a result.
@@ -2175,7 +2170,7 @@ const LAZY_ENTRY_POINTS = {
   semanticNotice: ["semanticInstallNotice", "semanticOnboardingOffer"],
   questionsView: ["initQuestionsView", "loadQuestions"],
   //: 2026-10-05, the next six: async or unread, reached by a gesture.
-  reveal: ["revealFeature"],
+  reveal: ["revealFeature", "packagesNoticeOpen"],
   onboarding: ["openOnboarding", "maybeShowConsoleViewIntro"],
   tour: ["openTour", "renderTourReplay"],
   updates: ["checkForUpdate", "applyUpdateNow", "showSourceUpdatedDialog", "askUpdateChoiceOnce"],
@@ -2190,27 +2185,8 @@ const LAZY_ENTRY_POINTS = {
   search: ["openFinder"],
   statistics: ["openStatistics", "renderWeekWidget"],
   meetings: ["openNewMeeting", "openMeetingSheet", "openMeetingRecorder"],
-  askHistory: [
-    "toggleAskHistoryPanel",
-    "loadAskHistoryPage",
-    "clearAskHistory",
-    "viewAskHistoryTurn",
-    "toggleAskHistoryPin",
-    "deleteAskHistoryTurn",
-  ],
-  categories: [
-    "openManageCategories",
-    "mergeCategoryFromPanel",
-    "splitCategoryFromPanel",
-    "deleteCategoryFromPanel",
-    "renameCategory",
-    "deleteCategory",
-    "restoreCategoryMoves",
-    "chooseNoteCategory",
-    "showCategoryNotes",
-    "moveNotesToCategory",
-    "pickCategoryColour",
-  ],
+  askHistory: ["toggleAskHistoryPanel", "loadAskHistoryPage", "clearAskHistory", "viewAskHistoryTurn", "toggleAskHistoryPin", "deleteAskHistoryTurn"],
+  categories: ["openManageCategories", "mergeCategoryFromPanel", "splitCategoryFromPanel", "deleteCategoryFromPanel", "renameCategory", "deleteCategory", "restoreCategoryMoves", "chooseNoteCategory", "showCategoryNotes", "moveNotesToCategory", "pickCategoryColour", "foldSide"],
   tagManager: ["openTagsSheet", "openBulkTags", "renameTagEverywhere", "removeTagFromNote"],
   chipMenus: ["openCategoryChipMenu", "openTagChipMenu"],
   attachments: ["attachmentAction"],
@@ -2218,7 +2194,7 @@ const LAZY_ENTRY_POINTS = {
   quickAccess: ["quickAccessEdit"],
   inbox: ["openSuggestionsInbox", "openEntityPage", "openEntitiesSheet", "openLinkTypeSheet", "openRelationTypesSheet", "openNotePropertiesSheet", "openNoteTypesSheet", "openQueryTable", "showQueryOnGraph"],
   assistantAvatar: ["assistantEmblemInto"],
-  quickNote: ["openQuickNote", "pasteClipboardAsNote", "saveChatAnswerAsNote", "reminderFromChatAnswer", "createNoteSafely", "noteOutboxAdd", "flushNoteOutbox", "renderPendingNoteRows"],
+  quickNote: ["openQuickNote", "pasteClipboardAsNote", "saveChatAnswerAsNote", "chatKeep", "reminderFromChatAnswer", "createNoteSafely", "noteOutboxAdd", "flushNoteOutbox", "renderPendingNoteRows"],
   graph: [
     "clearTrace",
     "closeGraphNewNote",
@@ -2239,49 +2215,11 @@ const LAZY_ENTRY_POINTS = {
     "setTracePanelOpen",
     "syncGraphPopupSave",
   ],
-  library: [
-    "applyDocGutter",
-    "applyMarkdown",
-    "archiveDocumentWithUndo",
-    "closeDocAiPanel",
-    "createConceptMap",
-    "createDocument",
-    "createNewBoard",
-    "expandNoteIntoDocument",
-    "initDocSidebarTabs",
-    "loadDocuments",
-    "markDocDirty",
-    "mountDocToolbarControlsFor",
-    "mountGutterFor",
-    "openDocDictionary",
-    "openDocTemplateDialog",
-    "openDocument",
-    "renderDocStorage",
-    "saveDocument",
-    "showDocSidebarSection",
-    "toggleDocFindBar",
-    "wbOpenBoardSearch",
-    "wbShowBoardsLanding",
-    "wbShowCanvasView",
-    "wbToggleNavigator",
-    "wireMarkdownToolbar",
-    "wireMdFormatShortcuts",
-    "openWhiteboardBoard",
-    "deleteDocumentWithUndo",
-    "offerCreateUndo",
-    "offerCreatedDocsUndo",
-    "renameDocumentWithUndo",
-    "jumpToDocLine",
-    "renderLibraryBoardsGallery",
-  ],
+  library: ["applyDocGutter", "applyMarkdown", "archiveDocumentWithUndo", "closeDocAiPanel", "createConceptMap", "createDocument", "createNewBoard", "expandNoteIntoDocument", "initDocSidebarTabs", "loadDocuments", "markDocDirty", "mountDocToolbarControlsFor", "mountGutterFor", "openDocDictionary", "openDocTemplateDialog", "openDocument", "renderDocStorage", "saveDocument", "showDocSidebarSection", "toggleDocFindBar", "wbOpenBoardSearch", "wbShowBoardsLanding", "wbShowCanvasView", "wbToggleNavigator", "wireMarkdownToolbar", "wireMdFormatShortcuts", "openWhiteboardBoard", "deleteDocumentWithUndo", "offerCreateUndo", "offerCreatedDocsUndo", "renameDocumentWithUndo", "jumpToDocLine", "renderLibraryBoardsGallery"],
   //: The Library's own list (audit FE-03(c)): library.js alone. A call from
   //: it into a document or a board is one of `library`'s stand-ins above,
   //: which fetches the editors on first use.
-  libraryList: [
-    "closeBinnedReader",
-    "flashLibraryItem",
-    "focusLibraryFile",
-  ],
+  libraryList: ["closeBinnedReader", "flashLibraryItem", "focusLibraryFile"],
 };
 
 function installStandIns(table) {

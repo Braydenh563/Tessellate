@@ -766,6 +766,7 @@ async function renderPrefs() {
   );
   $("pref-smart-punctuation").checked = prefsCache.smart_punctuation === true;
   $("pref-autocorrect").checked = prefsCache.autocorrect !== false;
+  $("pref-link-offers").checked = prefsCache.link_offers !== false;
   $("prefs-status").textContent = "";
   //: The fields now hold what the server holds, so nothing is unsaved: this
   //: also covers the reopen, since `showSettingsSection` re-renders.
@@ -950,6 +951,7 @@ async function savePrefs(options = {}) {
         $("pref-notif-mute-except-reminders").checked,
       smart_punctuation: $("pref-smart-punctuation").checked,
       autocorrect: $("pref-autocorrect").checked,
+      link_offers: $("pref-link-offers").checked,
     };
     // INBOX 73: "'Mute notifications except reminders' toggle disables
     // itself when the settings close." Reproduced two ways with Playwright
@@ -1496,10 +1498,11 @@ function paletteCommands() {
     { label: "ph:globe-hemisphere-west Settings → Privacy", reveal: "settings:privacy", about: "The two things that can go online, both off by default." },
     { label: "ph:list-checks Settings → Background tasks", reveal: "settings:tasks", about: "What the app is working on while you write." },
     { label: "ph:heartbeat Health", reveal: "settings:about", keywords: "integrity check last backup last error data folder size status storage disk space files", about: "How the notebook is: last backup, last error, what is running, size, integrity." },
-    { label: "ph:chart-bar Statistics", keywords: "stats numbers counts usage week review growth", about: "Your notebook, reminders and usage, counted, with this week against last.", act: () => openStatistics() },
+    { label: "ph:chart-bar Statistics", quick: "statistics", keywords: "stats numbers counts usage week review growth", about: "Your notebook, reminders and usage, counted, with this week against last.", act: () => openStatistics() },
     //: The small tools (Brief 89, UI_MODERNISATION utilities rows 2 to 4):
     //: "timer 10 minutes" and "insert template ..." also build their own rows
     //: from the words (`utilityPaletteRows`, app-palette.js).
+    { label: "ph:calculator Calculator", keywords: "calculator calc sum maths math work out percent convert units currency keypad", about: "Sums, percentages and unit or currency conversions, worked out by the app; /calc does the same in a chat.", act: () => ensureModule("replyKit").then(() => openCalculator()) },
     { label: "ph:timer Start a timer", keywords: "timer countdown pomodoro minutes alarm", about: "25 minutes on the status bar, or type “timer 10 minutes”. Press it to stop.", act: () => ensureModule("utilities").then(() => startUtilityTimer(25)) },
     { label: "ph:timer Start a stopwatch", keywords: "stopwatch count up how long time it", about: "Counts up on the status bar. Press it to stop.", act: () => ensureModule("utilities").then(() => startStopwatch()) },
     { label: "ph:closed-captioning Live captions", quick: "captions", keywords: "live captions subtitles transcribe speech microphone listen real time stop", about: "Write what the microphone hears as you go, on this computer. Run it again to stop and save a note.", act: () => toggleLiveCaptions() },
@@ -1535,14 +1538,14 @@ function paletteCommands() {
 //: **A row's keycap: the way to run it without the palette.** A chord the
 //: row declares by its registry name (`chord`, read from the live
 //: `shortcuts` table, so a rebinding shows here as it is), the editor's own
-//: rows' `keys`, and for a tab the "m" then a letter jump. A palette that only
+//: rows' `keys`, and for a tab the "t" then a letter jump. A palette that only
 //: performs an action teaches nobody the key for it.
 function paletteKeys(match) {
   if (match.keys) return match.keys;
   if (match.chord && typeof shortcuts !== "undefined") return shortcuts[match.chord]?.keys || "";
   if (match.tab && typeof TAB_JUMP_KEYS !== "undefined") {
     const letter = Object.keys(TAB_JUMP_KEYS).find((key) => TAB_JUMP_KEYS[key] === match.tab);
-    if (letter) return `M ${letter.toUpperCase()}`;
+    if (letter) return `T ${letter.toUpperCase()}`;
   }
   return "";
 }

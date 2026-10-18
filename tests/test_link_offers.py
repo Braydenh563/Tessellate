@@ -145,3 +145,16 @@ def test_a_new_document_is_seen_at_once(client):
 
 def test_an_empty_text_answers_an_empty_list(client):
     assert _offers(client, "") == []
+
+
+def test_the_switch_and_the_kept_names_are_preferences(client):
+    prefs = client.get("/preferences").json()
+    assert prefs["link_offers"] is True
+    assert prefs["link_offer_ignored"] == []
+    put = client.put("/preferences", json={"link_offers": False, "link_offer_ignored": ["quarterly roadmap"]})
+    assert put.status_code == 200, put.text
+    again = client.get("/preferences").json()
+    assert again["link_offers"] is False
+    assert again["link_offer_ignored"] == ["quarterly roadmap"]
+    too_many = client.put("/preferences", json={"link_offer_ignored": ["x"] * 501})
+    assert too_many.status_code == 422

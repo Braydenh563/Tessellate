@@ -413,6 +413,38 @@ def patterns(session: Session = Depends(get_session)) -> dict:
     return {"patterns": [insights.as_row(i, known) for i in found]}
 
 
+@router.get("/today-line")
+def today_line(seed: int = 0, session: Session = Depends(get_session)) -> dict:
+    """The dashboard's line under the greeting, composed from the notebook
+    (`composer_voice.today_line`): the wording and tail rotate with `seed`,
+    the page draws a new one each visit and every few minutes. No model;
+    private and binned notes are never read. `text` is empty for an empty
+    notebook, so the page falls back to its counts."""
+    from tessellate.ai import composer_voice
+
+    cats = {c.id: c.name for c in session.scalars(select(Category)).all()}
+    rows = session.scalars(
+        select(Entry)
+        .where(Entry.is_deleted == False, Entry.is_private == False, Entry.is_draft == False, Entry.is_board == False)  # noqa: E712
+        .order_by(Entry.created_at.desc())
+        .limit(120)
+    ).all()
+    notes = [
+        {
+            "id": e.id,
+            "content": e.content or "",
+            "created_at": e.created_at.date().isoformat() if e.created_at else "",
+            "tags": manager.entry_tags(e),
+            "category": "" if cats.get(e.category_id, "").lower().startswith("uncategori") else cats.get(e.category_id, ""),
+        }
+        for e in rows
+    ]
+    line = composer_voice.today_line(notes, today=user_now(deps.get_config()).date(), seed=seed)
+    if not line:
+        return {"text": "", "kind": "none", "sources": []}
+    return {"text": line["text"].replace("**", ""), "kind": line["kind"], "sources": line["sources"]}
+
+
 class InsightVerdict(BaseModel):
     """An insight line as the page has it, with what the person said of it
     (CHAT_PLAN decision 60)."""

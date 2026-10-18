@@ -104,3 +104,14 @@ def turns(segments: list[dict]) -> list[list[int]]:
         groups[-1].append(index)
         last_end = seg["end"]
     return groups
+
+
+def marks_of(recording) -> list[dict]:  # noqa: ANN001
+    """A recording's marks as `{at, note}`; old takes stored bare seconds."""
+    out = []
+    for value in json.loads(recording.markers or "[]"):
+        if isinstance(value, dict):
+            out.append({"at": int(value.get("at", 0)), "note": str(value.get("note", ""))})
+        elif isinstance(value, (int, float)):
+            out.append({"at": int(value), "note": ""})
+    return out

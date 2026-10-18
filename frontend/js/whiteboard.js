@@ -76,19 +76,31 @@ let wbMidPanHeld = false;
 //: Paste and hover-lock bookkeeping, one name in the shared scope.
 const wbBoardState = { pasteArrived: false, lockHoverKey: null, lockHoverFrame: 0, lockHintSaid: false };
 
+//: A two-finger trackpad scroll still pans: it arrives in pixels with a
+//: sideways part, where a mouse wheel's notch has none.
+function wbTrackpadPan(event) {
+  return !event.ctrlKey && !event.metaKey && event.deltaMode === 0 && event.deltaX !== 0;
+}
+
 function wbZoomFilter(event) {
-  // Wheel: zoom only with Ctrl/⌘ held (which is also what a trackpad pinch
-  // arrives as). A plain wheel *pans*, see the native listener in
-  // initWhiteboard: because that is what Miro, FigJam, Figma and draw.io
-  // all do, and reported as "annoying to... pan, navigate the board": a
-  // wheel that zooms leaves no fast way to move around at a fixed zoom.
+  //: **A plain wheel zooms about the pointer** (the owner, 2026-10-18: "mouse
+  //: scroll on the whiteboard and mindmap still doesnt zoom"; this reverses the
+  //: earlier plain-wheel pan, recorded in WHITEBOARD_PLAN decision 24). Ctrl or
+  //: a trackpad pinch zooms too; Shift+wheel is left out so the native
+  //: listener in initWhiteboard can pan sideways. Panning is a drag, Space, or
+  //: the middle button.
   //: Never while the middle button is held: see the plain-wheel listener in
   //: initWhiteboard, the same stray tilt with Ctrl down would zoom mid-pan.
-  if (event.type === "wheel") return (event.ctrlKey || event.metaKey) && !wbMidPanHeld && (event.buttons & 4) !== 4;
+  if (event.type === "wheel") return (event.ctrlKey || event.metaKey || !event.shiftKey) && !wbTrackpadPan(event) && !wbMidPanHeld && (event.buttons & 4) !== 4;
   // Middle button pans from anywhere. `buttons` rather than `button` because
   // mousemove reports the held set, and the drag half of the gesture needs to
   // pass the filter too.
   if (event.button === 1 || (event.buttons & 4) === 4) return true;
+  //: Right button pans from bare canvas only (draw.io's convention: a card or
+  //: a drawn shape keeps its right-click menu). The press that does not move
+  //: past the slop is a click, see the right-press bookkeeping in
+  //: initWhiteboard.
+  if (event.type === "mousedown" && event.button === 2) return wbIsBareCanvas(event.target);
   //: **Two fingers always navigate; one finger belongs to the tool.**
   //: (UI_MODERNISATION_PLAN Phase 11 item 7, "view and light edit only on a
   //: phone: pan, zoom, select, move".) One finger stays as it was, for the
@@ -572,6 +584,7 @@ function wbZoomFrameWork() {
     ? { width: drag.width, height: drag.height }
     : container ? { width: container.clientWidth, height: container.clientHeight } : null;
   wbSyncGridToTransform(t);
+  if (typeof nameMarkBuddyCanvasZoom === "function") nameMarkBuddyCanvasZoom(t.k);
   //: In the same frame as the transform it answers, so a topic panned into
   //: view is drawn on the frame it arrives in rather than one later.
   wbCullNow(t, size);
@@ -2913,6 +2926,20 @@ function wbReplaceText(text, find, to, opts = {}) {
   return { text: out, count };
 }
 
+//: Pure (node-tested): the replacement applied to each data value of an
+//: item, names untouched (as `wbPropsText` reads only values).
+function wbReplaceInProps(props, find, to, opts = {}) {
+  if (!props || typeof props !== "object") return { props, count: 0 };
+  let count = 0;
+  const out = {};
+  for (const [name, value] of Object.entries(props)) {
+    const done = wbReplaceText(String(value), find, to, opts);
+    count += done.count;
+    out[name] = done.count ? done.text : value;
+  }
+  return { props: out, count };
+}
+
 //: **Replace all** (canvasdepth; WHITEBOARD_PLAN section 9): text boxes,
 //: shape labels and connector labels, one undo step. A card is a note and
 //: keeps its words; the announcement says how many cards hold the words.
@@ -2933,16 +2960,20 @@ async function wbBoardReplaceAll(find, to) {
         if (pattern.has(wbSearchTextFor("node", item, null))) cards += 1;
         continue;
       }
-      const field = kind === "object" ? item.data?.content : wbSketchData(item)?.label;
-      if (typeof field !== "string") continue;
-      const done = wbReplaceText(field, needle, to, wbBoardSearch);
+      const own = kind === "object" ? item.data : wbSketchData(item);
+      const field = kind === "object" ? own?.content : own?.label;
+      //: Find reads the data values too (`wbPropsText`), so Replace all must
+      //: rewrite them, or the count says 3 of 3 and the toast says 1.
+      const text = typeof field === "string" ? wbReplaceText(field, needle, to, wbBoardSearch) : { text: field, count: 0 };
+      const values = wbReplaceInProps(own?.props, needle, to, wbBoardSearch);
+      const done = { count: text.count + values.count };
       if (!done.count) continue;
       undo.push({ action: "move", kind, id: item.id, before: WB_KIND_INFO[kind].payload(item) });
       if (kind === "object") {
-        item.data = { ...item.data, content: done.text };
+        item.data = { ...item.data, content: text.text, ...(values.count ? { props: values.props } : {}) };
         await wbSaveObject(item);
       } else {
-        await wbSaveSketchProps(item, { label: done.text });
+        await wbSaveSketchProps(item, { label: text.text, ...(values.count ? { props: values.props } : {}) });
       }
       changes += done.count;
     }
@@ -4537,7 +4568,9 @@ function wbOwnsChord(e) {
   //: saved), and the next tool letter inside the chord's window was read as
   //: a destination: M then D, the diamond, left the board for the Dashboard.
   //: On a map the highlighter does not exist, so the chord keeps the key.
-  if (!e.ctrlKey && !e.metaKey && !e.altKey && e.key.toLowerCase() === "m") {
+  //: And bare T is the text tool, so the chord's new first key (C23) steps
+  //: aside the same way; "m" still arms it on a board's map and everywhere else.
+  if (!e.ctrlKey && !e.metaKey && !e.altKey && ["m", "t"].includes(e.key.toLowerCase())) {
     return !wbIsMap();
   }
   //: Ctrl+Shift+G is Ungroup here (agent mode in the app); Ctrl+Shift+P is
@@ -5085,7 +5118,7 @@ function wbFillContextBar() {
     if (paper) {
       const sticky = wbIsSticky(item);
       paper.classList.toggle("hidden", !sticky);
-      if (sticky) wbFillPaperSwatches(paper, item);
+      if (sticky) wbFillPaperPicker(paper, item);
     }
     for (const button of document.querySelectorAll("#wb-prop-align button")) {
       button.classList.toggle("active", button.dataset.align === (item.data.align || "left"));
@@ -9129,12 +9162,15 @@ function wbBulletTextLines() {
   wbScheduleRender();
 }
 
-function wbBeginTextEdit(contentEl) {
+function wbBeginTextEdit(contentEl, ownText) {
   if (!contentEl || contentEl.isContentEditable) return;
   //: Back to the source while editing, whatever the rendered view showed.
+  //: `ownText`: a frame's title or hint line is not the object's `content` (C17).
   const objectEl = contentEl.closest(".wb-object");
   const item = (wbState.objects || []).find((o) => String(o.id) === objectEl?.dataset.id);
-  if (item) {
+  if (ownText !== undefined) {
+    contentEl.textContent = ownText;
+  } else if (item) {
     contentEl.classList.remove("wb-text-md");
     contentEl.textContent = item.data.content || "";
   }
@@ -9694,6 +9730,8 @@ async function wbUndo() {
   try {
     if (!(await wbApplyHistoryEntry(wbUndoStack, wbRedoStack))) return;
     wbUpdateUndoRedoButtons();
+    //: C32: no labels on a board's history, so the notice names the place; "info" shows even when muted.
+    toast("Undone: last change on this board", "info");
     if (wbIsMap()) {
       const parentId = wbUndoParents.find((id) => (wbState.objects || []).some((o) => o.id === id));
       if (parentId != null) selectWbItem("object", parentId);
@@ -9714,6 +9752,7 @@ async function wbRedo() {
   try {
     if (!(await wbApplyHistoryEntry(wbRedoStack, wbUndoStack))) return;
     wbUpdateUndoRedoButtons();
+    toast("Redone: last change on this board", "info");
     wbScheduleRender();
   } catch {
     toast(voiceLine("failed", { what: "redo that" }), true);
@@ -9795,25 +9834,38 @@ async function wbCreateSticky(x, y, box = null) {
   });
 }
 
-//: The swatches, made once from `WB_STICKY_PAPERS` (the colours are the
-//: buttons' own CSS custom property, set by script: the CSP refuses an
-//: inline `style=`), then pressed to match the selected note.
-function wbFillPaperSwatches(group, item) {
-  if (!group.children.length) {
-    for (const paper of WB_STICKY_PAPERS) {
-      const swatch = document.createElement("button");
-      swatch.type = "button";
-      swatch.className = "wb-paper-swatch";
-      swatch.dataset.paper = paper.value;
-      swatch.style.setProperty("--swatch", paper.value);
-      swatch.title = `${paper.label} paper`;
-      swatch.setAttribute("aria-label", `${paper.label} paper`);
-      swatch.addEventListener("click", () => wbSetStickyPaper(paper.value));
-      group.appendChild(swatch);
-    }
+//: **The paper is one dropdown button, not a row of seven chips** (the owner,
+//: INBOX 1300 C18: "condense the colour options into like a dropdown panel
+//: ... for the whiteboard"). It shows the current paper and opens the same
+//: popover the colour wells use (`wbOpenPaperMenu`, whiteboard-format.js);
+//: the colours are `WB_STICKY_PAPERS`, set through the CSSOM (the CSP refuses
+//: an inline `style=`).
+function wbFillPaperPicker(group, item) {
+  let button = group.querySelector(".wb-paper-trigger");
+  if (!button) {
+    button = document.createElement("button");
+    button.type = "button";
+    button.className = "ghost small wb-paper-trigger";
+    button.setAttribute("aria-haspopup", "dialog");
+    button.setAttribute("aria-expanded", "false");
+    button.title = "Note colour";
+    const dot = document.createElement("span");
+    dot.className = "wb-swatch-dot";
+    dot.setAttribute("aria-hidden", "true");
+    const words = document.createElement("span");
+    words.textContent = "Paper";
+    const caret = document.createElement("i");
+    caret.className = "ph ph-caret-down";
+    caret.setAttribute("aria-hidden", "true");
+    button.append(dot, words, caret);
+    button.addEventListener("click", () => wbOpenPaperMenu(button));
+    group.appendChild(button);
   }
-  const now = String(item.data.bg || "").toLowerCase();
-  for (const swatch of group.children) swatch.setAttribute("aria-pressed", swatch.dataset.paper === now ? "true" : "false");
+  const now = String(item.data.bg || WB_STICKY_PAPERS[0].value).toLowerCase();
+  const paper = WB_STICKY_PAPERS.find((p) => p.value === now);
+  button.dataset.paper = now;
+  button.firstElementChild.style.setProperty("--swatch", now);
+  button.setAttribute("aria-label", `Note colour: ${paper ? paper.label : "custom"}`);
 }
 
 //: Every selected sticky takes the paper, one undo step each, as the
@@ -9833,7 +9885,7 @@ async function wbSetStickyPaper(value) {
   }
   wbScheduleRender();
   const group = document.querySelector('#wb-context [data-wb-ctx="paper"]');
-  if (group && stickies[0]) wbFillPaperSwatches(group, stickies[0]);
+  if (group && stickies[0]) wbFillPaperPicker(group, stickies[0]);
 }
 
 async function wbCreateTextBox(x, y, box = null) {
@@ -10789,7 +10841,7 @@ function wbEditFrameTitle(titleEl, frame, field = "content") {
   const isHint = field === "hint";
   const before = isHint ? frame.data?.hint || "" : wbFrameTitle(frame);
   //: The board's one way into an edit (DESIGN.md: `wbBeginTextEdit`).
-  wbBeginTextEdit(titleEl);
+  wbBeginTextEdit(titleEl, before);
   const range = document.createRange();
   range.selectNodeContents(titleEl);
   const sel = window.getSelection();
@@ -10815,6 +10867,10 @@ function wbEditFrameTitle(titleEl, frame, field = "content") {
     if (isHint && !name) delete frame.data.hint;
     titleEl.textContent = name;
     if (isHint) titleEl.hidden = !name;
+    //: C17: the text went straight into the element, so an undo matched the
+    //: old paint key and repainted nothing.
+    const objectEl = titleEl.closest(".wb-object");
+    if (objectEl) objectEl._wbPaintKey = null;
     wbSaveObject(frame);
   }, { once: true });
 }
@@ -12123,6 +12179,21 @@ async function wbCopyAsImage() {
   }
 }
 
+//: **Copy as SVG** (draw.io's, the other half of Copy as an image): the same
+//: picture as the SVG export, as text on the clipboard, so it pastes into a
+//: code editor or a vector tool. Plain text, so any browser allows it.
+async function wbCopyAsSvg() {
+  const scope = wbMultiSelection.size > 0 || wbSelectedItem ? "selection" : "visible";
+  try {
+    if (!navigator.clipboard?.writeText) throw new Error("This browser cannot copy text. Export an SVG instead.");
+    const { svg } = wbBuildExportSvg(scope, { transparent: wbExportPngPrefs().transparent });
+    await navigator.clipboard.writeText(svg);
+    toast("Copied the SVG. Paste it into an editor.");
+  } catch (err) {
+    toast(err.message || voiceLine("failed", { what: "copy the SVG" }), true);
+  }
+}
+
 async function wbExportPdf(scope) {
   const { svg, width, height } = wbBuildExportSvg(scope);
   const blob = await wbRasterizeSvg(svg, width, height, "image/png");
@@ -12579,9 +12650,9 @@ async function initWhiteboard() {
     if (event.button === 1 && event.target?.closest?.("#library-view-whiteboard")) event.preventDefault();
   }, true);
   container.call(wbZoom).on("dblclick.zoom", null);
-  // Plain wheel pans (Shift+wheel pans sideways); Ctrl/⌘+wheel is left to
-  // d3-zoom's own handler by `wbZoomFilter`. `passive: false` so the page
-  // behind the board does not scroll as well.
+  // Shift+wheel pans sideways; every other wheel is d3-zoom's, by
+  // `wbZoomFilter`, which prevents the page scrolling too. `passive: false`
+  // here so the page behind the board does not scroll on a shifted wheel.
   if (!container.node().dataset.wbWheelPan) {
     container.node().dataset.wbWheelPan = "1";
     container.node().addEventListener("wheel", (e) => {
@@ -12603,12 +12674,12 @@ async function initWhiteboard() {
         e.preventDefault();
         return;
       }
-      if (e.ctrlKey || e.metaKey) return;
+      if (e.ctrlKey || e.metaKey || !(e.shiftKey || wbTrackpadPan(e))) return;
       e.preventDefault();
       const k = d3.zoomTransform(container.node()).k || 1;
       const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1;
       let dx = e.deltaX * unit, dy = e.deltaY * unit;
-      if (e.shiftKey && !dx) { dx = dy; dy = 0; }
+      if (!dx) { dx = dy; dy = 0; }
       container.call(wbZoom.translateBy, -dx / k, -dy / k);
     }, { passive: false });
   }
@@ -15621,11 +15692,50 @@ async function initWhiteboard() {
     ? openMapCanvasMenu(clientX, clientY)
     : openBoardCanvasMenu(clientX, clientY));
 
+  //: **Right-drag pans, a plain right-click opens the menu** (C03, the owner:
+  //: "hard to move around the whiteboard with a mouse, copy draw.io and have
+  //: right click hold down drag panning"). The browser sends `contextmenu`
+  //: on the press (Linux) or the release (Windows), so "suppress it only
+  //: when the drag moved" cannot be written (wbrightpan.js header). Instead
+  //: the native event on bare canvas is always swallowed while a right press
+  //: is in flight or just ended, and the app's own menu opens on the
+  //: release when the pointer stayed inside the slop. A `contextmenu` with
+  //: no press behind it (the menu key) still opens the menu.
+  const WB_RIGHT_SLOP = 4;
+  let wbRightPress = null;
+  const wbRightOwns = () => wbRightPress && (!wbRightPress.up || Date.now() - wbRightPress.upAt < 400);
+  window.addEventListener("mousedown", (e) => {
+    if (e.button !== 2) return;
+    wbRightPress = containerEl.contains(e.target) && wbCanvasMenuWanted(e.target)
+      ? { x: e.clientX, y: e.clientY, moved: false, up: false, upAt: 0 } : null;
+  }, true);
+  window.addEventListener("mousemove", (e) => {
+    if (!wbRightPress || wbRightPress.up) return;
+    if ((e.buttons & 2) !== 2) { wbRightPress = null; return; }
+    if (wbRightPress.moved) return;
+    if (Math.hypot(e.clientX - wbRightPress.x, e.clientY - wbRightPress.y) < WB_RIGHT_SLOP) {
+      //: Hold the zoom's own move listener (capture, on the window, added
+      //: after this one) until the press is a drag.
+      e.stopImmediatePropagation();
+    } else {
+      wbRightPress.moved = true;
+    }
+  }, true);
+  window.addEventListener("mouseup", (e) => {
+    if (e.button !== 2 || !wbRightPress || wbRightPress.up) return;
+    wbRightPress.up = true;
+    wbRightPress.upAt = Date.now();
+    if (!wbRightPress.moved) {
+      const { clientX, clientY } = e;
+      setTimeout(() => openCanvasMenu(clientX, clientY), 0);
+    }
+  }, true);
   containerEl.addEventListener("contextmenu", (e) => {
     //: A topic and a line have rings of their own, and both stop the event
     //: before it reaches here; this is the canvas itself, which had nothing.
     if (!wbCanvasMenuWanted(e.target)) return;
     e.preventDefault();
+    if (wbRightOwns()) return;
     openCanvasMenu(e.clientX, e.clientY);
   });
 
@@ -16558,7 +16668,11 @@ async function refreshBoardList(justCreated = null) {
   //: board"); the Library's gallery and counts already hid it while empty
   //: (`libraryListsBoard`), and this picker was the one place that offered
   //: an empty board nobody made. Kept while it is the board on screen.
-  const boards = listed.filter((b) => libraryListsBoard(b) || (b.id == null && window.currentBoardId == null));
+  //: Not at the landing, where nothing is open: its empty row sat in the
+  //: picker while the gallery above counted 0 boards and 0 maps.
+  const landing = $("wb-boards-landing");
+  const onCanvas = !landing || landing.classList.contains("hidden");
+  const boards = listed.filter((b) => libraryListsBoard(b) || (b.id == null && window.currentBoardId == null && onCanvas));
   if (justCreated && !boards.some((b) => b.id === justCreated.id)) {
     boards.push({ ...justCreated, node_count: 0, sketch_count: 0, object_count: 0 });
   }
@@ -17450,11 +17564,37 @@ const WB_ITEM_FONTS = Object.freeze({
 //: Pure (node-tested): `%name%` in a label shows the item's own value of
 //: that name (draw.io's placeholders, from its Edit data). An unknown name
 //: stays as typed, so "100% of %x%" is not mangled. The stored label keeps the
-//: marks; only what is drawn, and so exported, is expanded.
-function wbExpandPlaceholders(text, props) {
+//: marks; only what is drawn, and so exported, is expanded. `builtin(name)`
+//: answers `date` and `page` (WHITEBOARD_PLAN.md section 3): an item's own
+//: property of that name wins, then the built-in, then the text as typed.
+function wbExpandPlaceholders(text, props, builtin) {
   const source = String(text ?? "");
-  if (!props || typeof props !== "object" || !source.includes("%")) return source;
-  return source.replace(/%([A-Za-z][\w .-]{0,39})%/g, (mark, name) => (Object.prototype.hasOwnProperty.call(props, name) ? String(props[name]) : mark));
+  if (!source.includes("%")) return source;
+  const own = props && typeof props === "object" ? props : null;
+  if (!own && !builtin) return source;
+  return source.replace(/%([A-Za-z][\w .-]{0,39})%/g, (mark, name) => {
+    if (own && Object.prototype.hasOwnProperty.call(own, name)) return String(own[name]);
+    const value = builtin && (name === "date" || name === "page") ? builtin(name) : "";
+    return value ? String(value) : mark;
+  });
+}
+
+//: `%date%` is today in the reader's own locale; `%page%` is the title of the
+//: smallest frame holding the item's centre (decision 22: frames are the
+//: pages), none when it sits in no frame.
+function wbPlaceholderBuiltins(kind, item) {
+  return (name) => {
+    if (name === "date") return new Date().toLocaleDateString(undefined, { dateStyle: "medium" });
+    const box = wbItemBBox(kind, item);
+    if (!box) return "";
+    const cx = (box.minX + box.maxX) / 2, cy = (box.minY + box.maxY) / 2;
+    let best = null;
+    for (const f of wbState.objects || []) {
+      if (f.kind !== "frame" || cx < f.x || cy < f.y || cx > f.x + f.width || cy > f.y + f.height) continue;
+      if (!best || f.width * f.height < best.width * best.height) best = f;
+    }
+    return best ? wbFrameTitle(best) : "";
+  };
 }
 
 //: A shape's or connector's hover text (`data.tip`): a native SVG `<title>`,
@@ -17475,9 +17615,9 @@ function wbSyncSketchTip(groupEl, parsed) {
 }
 
 //: Adds, updates or removes a shape's label for one render.
-function wbPaintShapeLabel(groupEl, parsed) {
+function wbPaintShapeLabel(groupEl, parsed, sketch) {
   const kind = wbShapeLabelKind(parsed);
-  const text = kind && typeof parsed.label === "string" ? wbExpandPlaceholders(parsed.label, parsed.props) : "";
+  const text = kind && typeof parsed.label === "string" ? wbExpandPlaceholders(parsed.label, parsed.props, sketch && wbPlaceholderBuiltins("sketch", sketch)) : "";
   let label = groupEl.querySelector(":scope > .sketch-label");
   if (!text) {
     label?.remove();
@@ -17644,7 +17784,7 @@ function wbLayoutLinkLabel(groupEl) {
 }
 
 function wbPaintLinkLabel(groupEl, sketch, parsed) {
-  const text = wbLinkTakesLabel(sketch, parsed) && typeof parsed.label === "string" ? wbExpandPlaceholders(parsed.label, parsed.props) : "";
+  const text = wbLinkTakesLabel(sketch, parsed) && typeof parsed.label === "string" ? wbExpandPlaceholders(parsed.label, parsed.props, wbPlaceholderBuiltins("sketch", sketch)) : "";
   let label = groupEl.querySelector(":scope > .wb-link-label");
   if (!text) {
     label?.remove();
@@ -19535,7 +19675,7 @@ function renderWhiteboard() {
       .style("filter", look?.shadow ? WB_ITEM_SHADOW : null);
     wbSyncSketchTip(this, look);
     // After the path, which the label is laid out from (decision 12).
-    wbPaintShapeLabel(this, shapeData);
+    wbPaintShapeLabel(this, shapeData, d);
     wbPaintLinkLabel(this, d, linkData);
   });
 
@@ -21845,6 +21985,11 @@ function drawLibraryBoardsGallery(listed) {
   const counts = { all: boards.length, map: 0, board: 0 };
   for (const b of boards) counts[b.type === "map" ? "map" : "board"] += 1;
   renderBoardTypeFilter(counts);
+  //: The picker's static "Default board" row is not a board while the gallery
+  //: counts none: count and list say the same thing (audit 1018, item 11).
+  if (!boards.length && window.currentBoardId == null) {
+    for (const opt of $("wb-board-select")?.querySelectorAll('option[value=""]') || []) opt.remove();
+  }
   const inScope = window.wbBoardsOfTypeFilter(boards);
   const needle = ($("library-boards-search")?.value || "").trim().toLowerCase();
   const shown = window.wbVisibleBoards(inScope, needle);

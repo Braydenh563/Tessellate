@@ -249,3 +249,20 @@ def test_the_lightbox_row_is_one_height():
     assert "min-height: max(2rem, var(--target-min));" in rule[: rule.index("\n}")]
     view = frontend_text("lightbox-view.js")
     assert 'opener.style.minHeight = opener.style.minWidth = "max(2rem, var(--target-min))";' in view
+
+
+def test_a_picture_after_a_pdf_zooms_the_picture():
+    """Found with the C30 redesign: the image path hid the document but left
+    its page column showing inside it, so `zoomTarget()` still answered the
+    page column and a picture paged to from a PDF zoomed the PDF."""
+    image_path = LIGHTBOX[LIGHTBOX.index('    doc.classList.add("hidden");\n    //: The page column too') :][:400]
+    assert 'pdfPages.classList.add("hidden");' in image_path
+
+
+def test_the_viewer_keys_leave_typing_alone():
+    """The find box and the file editor are inside the dialog: an arrow or a
+    plus typed there is text, not a page turn or a zoom."""
+    keys = LIGHTBOX[LIGHTBOX.index("const onKey = (e) =>") :][:1600]
+    assert "typing(e.target)" in keys
+    for key in ('"+"', '"-"', '"0"', '"1"', '"r"', '"i"', '"ArrowLeft"', '"Escape"'):
+        assert key in keys, key

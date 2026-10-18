@@ -1014,35 +1014,10 @@ body.printing-doc #doc-preview p,
   flex-wrap: wrap;
 }
 
-/* The papers on a sticky's bar: round chips of the colour, the current
-   one ringed. Target size from the bar's own small buttons. */
-.wb-paper-group {
+/* The paper on a sticky's bar: one dropdown button (a dot of the current
+   colour, "Paper", a caret) that opens the colour popover. */
+.wb-paper-trigger {
   gap: var(--space-1);
-}
-
-.wb-paper-swatch {
-  width: 1.5rem;
-  min-width: 1.5rem;
-  height: 1.5rem;
-  min-height: 1.5rem;
-  padding: 0;
-  border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
-  border-radius: var(--radius-pill);
-  background: var(--swatch);
-}
-
-.wb-paper-swatch[aria-pressed="true"] {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-@media (pointer: coarse) {
-  .wb-paper-swatch {
-    width: var(--target-min);
-    min-width: var(--target-min);
-    height: var(--target-min);
-    min-height: var(--target-min);
-  }
 }
 
 /* A sketch's own resize handles (ROADMAP.md Tier 2 §11), real SVG elements
@@ -6291,6 +6266,7 @@ input[type="color"].wb-mixed {
 }
 
 .doc-table-add {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -6302,6 +6278,30 @@ input[type="color"].wb-mixed {
   font-size: var(--text-sm);
   line-height: 1;
   cursor: pointer;
+}
+
+/* The plus is drawn, not typed: a "+" glyph sits on the font's baseline and
+   came out about 0.9px low in the circle (INBOX 1300 C13). Two bars centred
+   by the box cannot drift with the font. */
+.doc-table-add::before,
+.doc-table-add::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: var(--radius-sm);
+  background: currentColor;
+  transform: translate(-50%, -50%);
+}
+
+.doc-table-add::before {
+  width: var(--space-2);
+  height: calc(var(--space-1) / 2);
+}
+
+.doc-table-add::after {
+  width: calc(var(--space-1) / 2);
+  height: var(--space-2);
 }
 
 .doc-table-add:hover,
@@ -6325,4 +6325,82 @@ input[type="color"].wb-mixed {
 .doc-table-grip-line-row {
   height: var(--space-1);
   margin-top: calc(var(--space-1) / -2);
+}
+
+/* Ghost topics: the suggestions "Branches from my notes" and "Expand from my
+   notes" offer, faded under the topic they would hang from (whiteboard-map.js
+   `wbMapBranchPicker`). A fixed layer on <body> so the canvas never clips it, its
+   layer (22, the map strip's) set from the script: a literal here would add to
+   the z-index ratchet;
+   no blur (it is on the glass-off list's side: a few small chips). A taken
+   ghost firms up to the accent. */
+.wb-ghosts {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-width: min(22rem, calc(100vw - var(--space-4) * 2));
+}
+
+.wb-ghost {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  min-height: var(--target-min);
+  padding: var(--space-1) var(--space-3);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  text-align: left;
+  opacity: 0.6;
+}
+
+.wb-ghost:hover,
+.wb-ghost:focus-visible {
+  opacity: 0.9;
+}
+
+.wb-ghost.is-taken {
+  opacity: 1;
+  border-style: solid;
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.wb-ghost-from {
+  color: var(--muted);
+  font-size: var(--text-xs);
+}
+
+.wb-ghost-from:empty {
+  display: none;
+}
+
+/* The library peek (INBOX 1301 D8): a larger drawing of the tile under the
+   pointer, beside the sidebar. The help popover's shell without its caret,
+   which points at a trigger above or below; this one sits to the side. It
+   takes no pointer, so it can never sit between the pointer and a tile. */
+.help-popover.wb-lib-peek {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 14rem;
+  padding: var(--space-3);
+  pointer-events: none;
+}
+
+.wb-lib-peek::before,
+.wb-lib-peek::after {
+  display: none;
+}
+
+.wb-lib-peek .wb-lib-thumb {
+  height: 9rem;
+}
+
+.wb-lib-peek-name {
+  overflow-wrap: anywhere;
 }

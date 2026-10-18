@@ -127,6 +127,7 @@ UTILITIES = {
     "timer": ("utility-tools.js", "function startUtilityTimer(minutes = 25)", "the palette's Start a timer, or timer 10 minutes", "timer"),
     "stopwatch": ("utility-tools.js", "function startStopwatch()", "the palette's Start a stopwatch", "timer"),
     "stop the clock": ("utility-tools.js", '$("status-timer").addEventListener("click", stopUtilityClock);', "the status bar's timer chip", "timer"),
+    "calculator": ("reply-kit.js", 'function openCalculator(input = "")', "the palette's Calculator, or /calc", "calculator"),
     "count words": ("utility-tools.js", "function countSelection(caught)", "the palette's Count words", "count-words"),
     "live captions": ("captions.js", "async function startLiveCaptions(opts = {})", "the palette's Live captions", "live-captions"),
     "translate this": ("translate.js", "async function translateCaught(caught)", "the palette's Translate this", "translate-offline"),
@@ -153,7 +154,7 @@ def test_every_utility_has_its_way_in_and_a_guide_topic():
     #: in-place help; the Statistics page and Settings, Templates also have a
     #: '?' popover (`data-help-for`).
     panes = (FRONTEND / "js" / "settings-panes.js").read_text(encoding="utf-8")
-    for label in ("Statistics", "Start a timer", "Start a stopwatch", "Count words", "Live captions"):
+    for label in ("Statistics", "Calculator", "Start a timer", "Start a stopwatch", "Count words", "Live captions"):
         row = next((line for line in panes.splitlines() if 'label: "ph:' in line and f' {label}"' in line), "")
         assert "about:" in row, f"the palette's {label} row has no line of help"
     html = (FRONTEND / "index.html").read_text(encoding="utf-8")
@@ -213,3 +214,16 @@ def test_the_manual_is_the_guides_topics_with_a_door_from_help_and_the_guide():
     assert '"ph:book-open-text Open the manual"' in guide
     css = (FRONTEND / "css" / "manual-lazy.css").read_text(encoding="utf-8")
     assert "@media print" in css and "body.manual-print > :not(.manual-overlay)" in css
+
+
+def test_the_open_packages_button_and_the_transcript_and_strip_controls_are_in_the_help():
+    """Standing order 13: the Open Packages button on package notices (fixes1),
+    the transcript's copy controls (C40) and the strip's dates switch (C36) are
+    named in the Guide and in Settings or the Timeline's own help."""
+    from tessellate.ai import help_chat, help_topics_more
+
+    text = Path(help_chat.__file__).read_text(encoding="utf-8") + Path(help_topics_more.__file__).read_text(encoding="utf-8")
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    assert "Open Packages button" in text and "Open Packages button" in html
+    assert "Shift-click picks a run of" in text
+    assert "Dates beside the strip" in text and "Dates beside the strip" in html

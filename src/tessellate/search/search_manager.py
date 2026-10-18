@@ -923,11 +923,15 @@ def retrieve_detailed(
     embeddings: EmbeddingService,
     limit: int = 5,
     expand_graph: bool = True,
+    locale: str | None = None,
 ) -> Retrieval:
-    """`retrieve`, with the provenance kept. See `Retrieval`."""
+    """`retrieve`, with the provenance kept. See `Retrieval`.
+
+    `locale` is the asker's (the browser's), so "3/4" reads as 4 March in
+    en-US and 3 April elsewhere, the way the quick-add reading route does."""
     found: dict = {}
     entries, mode = _retrieve(
-        session, query, embeddings, limit, expand_graph, found
+        session, query, embeddings, limit, expand_graph, found, locale
     )
     return Retrieval(
         entries=entries,
@@ -1131,13 +1135,14 @@ def _retrieve(
     limit: int,
     expand_graph: bool,
     found: dict,
+    locale: str | None = None,
 ) -> tuple[list[Entry], str]:
     """The search itself. `found` is filled in with what happened, for
     `retrieve_detailed`; the plain caller passes a dict it throws away."""
     # What the question is actually asking. A time phrase becomes a filter
     # instead of search terms, and the question's scaffolding comes off before
     # anything is embedded: see `search/query.py` for why both matter.
-    asked = query_understanding.understand(query, _user_today(session))
+    asked = query_understanding.understand(query, _user_today(session), locale)
     found["since"] = asked.since
     found["until"] = asked.until
     found["when_phrase"] = asked.when_phrase

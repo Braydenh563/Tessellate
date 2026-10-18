@@ -1083,6 +1083,135 @@ def _row_has(row, want: str, carriers: dict[str, set[int]]) -> bool:  # noqa: AN
     return want in (row["flags"] or "").split()
 
 
+def _plan_terms(q: str, asked) -> tuple:  # noqa: ANN001
+    """The query's subject and the words to match on."""
+    # The raw query is the fallback only when the reader found nothing *and*
+    # there were no operators to find: with operators, falling back would feed
+    # `kind:document` to the index as the two words "kind" and "document",
+    # which match nothing and turn a filter into an empty page.
+    subject = asked.subject or ("" if (asked.has_operators or asked.has_range) else q)
+    terms = query_understanding.search_terms(subject)
+    for phrase in asked.phrases:
+        terms.extend(
+            word for word in query_understanding.search_terms(phrase) if word not in terms
+        )
+    return subject, terms
+
+
+def _search_space(session: Session, context: dict, asked) -> str | None:  # noqa: ANN001
+    space = context.get("space") or (asked.filters["space"][0] if asked.filters["space"] else None)
+    return space or _session_space(session)
+
+
+def _candidate_rows(session: Session, q: str, subject: str, terms: list, asked, wanted_kinds: list, space, hybrid: bool, limit: int, depth: int) -> tuple:  # noqa: ANN001
+    """The rows the words (or, with none, the filters) select, and the terms
+    after any typo fix."""
+    if not (terms or asked.phrases):
+        # Nothing to match on, but something to filter by: `kind:document`,
+        # `is:pinned`, `after:2026-01-01`. Answering those with an empty page
+        # would be the app refusing to do the one thing §5.1 promises works
+        # with no model running.
+        rows = _filter_only(
+            session, wanted_kinds, space, asked.since, asked.until, depth, tags=asked.filters["tag"]
+        )
+        if asked.excluded:
+            # There is no MATCH to hang a `NOT` on here, so the exclusion is
+            # applied to the rows the filters selected. Over a page of
+            # candidates rather than the notebook, the same place `has:file`
+            # is answered.
+            rows = [row for row in rows if not _mentions(row, asked.excluded)]
+        return rows, terms
+    rows = _keyword_pass(session, terms, asked, wanted_kinds, space, depth)
+    if not rows and terms:
+        # **A typo is still a question** (ARCH-07). The vocabulary fix the
+        # older path had (`search_manager._corrected_terms`: a word the
+        # notes never use, replaced by the closest one they do) was never
+        # reached from here, so "gardn" found nothing in the finder.
+        fixed = search_manager._corrected_terms(session, terms)
+        if fixed != terms:
+            rows = _keyword_pass(session, fixed, asked, wanted_kinds, space, depth)
+            terms = fixed
+    if hybrid and terms:
+        rows = _with_meaning(session, subject or q, rows, wanted_kinds, space, asked, limit)
+    return rows, terms
+
+
+def _having(session: Session, rows: list, wanted_has: list) -> list:
+    """The rows that carry everything `has:` asked for."""
+    note_ids = [row["ref_id"] for row in rows if row["kind"] in search_index.ENTRY_KINDS]
+    carriers = {want: _has_ids(session, want, note_ids) for want in HAS_WORDS if want in wanted_has}
+    return [row for row in rows if all(_row_has(row, want, carriers) for want in wanted_has)]
+
+
+def _filter_rows(session: Session, rows: list, asked) -> list:  # noqa: ANN001
+    """The rows that also carry the `is:`, `has:` and `tag:` the query named."""
+    wanted_is, wanted_has = _flag_filters(asked)
+    if wanted_is:
+        rows = [row for row in rows if all(flag in (row["flags"] or "").split() for flag in wanted_is)]
+    if wanted_has:
+        rows = _having(session, rows, wanted_has)
+    wanted_tags = [tag.lower() for tag in asked.filters["tag"]]
+    if wanted_tags:
+        # Substring rather than word equality: the tags column is a space-
+        # joined list, and `tag:garden` should find a note tagged "gardening"
+        # for the same reason the keyword stage tries prefixes.
+        rows = [
+            row for row in rows if all(tag in (row["tags"] or "").lower() for tag in wanted_tags)
+        ]
+    return rows
+
+
+def _hit_for(row, best_raw: float, filters_only: bool, cosines: dict, hops: dict, terms: list) -> Hit | None:  # noqa: ANN001
+    """One row as a ranked, explained hit, or None when it scores too low."""
+    is_entry = row["kind"] in search_index.ENTRY_KINDS
+    hop = hops.get(row["ref_id"]) if is_entry else None
+    scores = {
+        "bm25": _normalised_bm25(row["score"], best_raw),
+        "cosine": max(0.0, cosines.get(row["ref_id"], 0.0)) if is_entry else 0.0,
+        "graph": (1.0 / (1 + hop)) if hop else 0.0,
+    }
+    blended = sum(WEIGHTS[name] * value for name, value in scores.items())
+    if filters_only:
+        # A filter matched, nothing was ranked: every row is equally an
+        # answer, and MIN_SCORE would throw the whole list away.
+        blended = max(blended, MIN_SCORE)
+    # Three floats from three subsystems: a NaN here would sort
+    # unpredictably and do its damage nowhere near its cause, which is a
+    # shape this project has already paid an afternoon for once.
+    if not math.isfinite(blended) or blended < MIN_SCORE:
+        return None
+    return Hit(
+        kind=row["kind"],
+        ref_id=row["ref_id"],
+        source=row["source"],
+        title=row["title"] or _snippet(row["body"], terms, 60),
+        snippet=_snippet(row["body"], terms),
+        scores=scores,
+        score=blended,
+        explain=_explain(scores, row, terms, hop),
+        space=row["space"],
+        written=row["written"],
+        flags=row["flags"],
+    )
+
+
+def _rank_rows(session: Session, rows: list, subject: str, q: str, terms: list, context: dict, hybrid: bool) -> list[Hit]:
+    best_raw = min(row["score"] for row in rows)  # bm25: more negative is better
+    filters_only = best_raw == 0 and not any(row.get("by_meaning") for row in rows)
+    cosines: dict[int, float] = _cosine_scores(session, subject or q, rows) if hybrid else {}
+    # Settings' "last search" line reads one record for both search paths.
+    search_manager.note_search_mode("hybrid" if cosines else "keyword")
+    hops: dict[int, int] = {}
+    open_entry = context.get("entry_id")
+    if open_entry:
+        note_ids = {row["ref_id"] for row in rows if row["kind"] in search_index.ENTRY_KINDS}
+        if note_ids:
+            hops = _hops_from(session, int(open_entry), note_ids)
+    hits = [hit for hit in (_hit_for(row, best_raw, filters_only, cosines, hops, terms) for row in rows) if hit is not None]
+    hits.sort(key=lambda hit: (-hit.score, hit.kind, -hit.ref_id))
+    return hits
+
+
 def search(
     session: Session,
     q: str,
@@ -1105,21 +1234,9 @@ def search(
     no embedding backend is permanently in.
     """
     asked = query_understanding.understand(q)
-    # The words to match on. The raw query is the fallback only when the
-    # reader found nothing *and* there were no operators to find: with
-    # operators, falling back would feed `kind:document` to the index as the
-    # two words "kind" and "document", which match nothing and turn a filter
-    # into an empty page.
-    subject = asked.subject or ("" if (asked.has_operators or asked.has_range) else q)
-    terms = query_understanding.search_terms(subject)
-    for phrase in asked.phrases:
-        terms.extend(
-            word for word in query_understanding.search_terms(phrase) if word not in terms
-        )
+    subject, terms = _plan_terms(q, asked)
     context = ctx or {}
-    space = context.get("space") or (asked.filters["space"][0] if asked.filters["space"] else None)
-    if not space:
-        space = _session_space(session)
+    space = _search_space(session, context, asked)
     wanted_kinds = [kind for kind in (kinds or asked.filters["kind"]) if kind in search_index.KINDS]
 
     # Something has to be *asked for*. An empty box, or a query that is only
@@ -1127,109 +1244,13 @@ def search(
     # be the search box answering a question nobody put. The Notes list is
     # already showing every note when the box is empty; a search that also
     # returns every note is not an answer, it is noise with a scrollbar.
-    asks_for_something = bool(
-        terms or asked.phrases or any(asked.filters.values()) or asked.has_range
-    )
-    if not asks_for_something:
+    if not (terms or asked.phrases or any(asked.filters.values()) or asked.has_range):
         return []
-
-    if terms or asked.phrases:
-        rows = _keyword_pass(session, terms, asked, wanted_kinds, space, depth)
-        if not rows and terms:
-            # **A typo is still a question** (ARCH-07). The vocabulary fix the
-            # older path had (`search_manager._corrected_terms`: a word the
-            # notes never use, replaced by the closest one they do) was never
-            # reached from here, so "gardn" found nothing in the finder.
-            fixed = search_manager._corrected_terms(session, terms)
-            if fixed != terms:
-                rows = _keyword_pass(session, fixed, asked, wanted_kinds, space, depth)
-                terms = fixed
-        if hybrid and terms:
-            rows = _with_meaning(session, subject or q, rows, wanted_kinds, space, asked, limit)
-    else:
-        # Nothing to match on, but something to filter by: `kind:document`,
-        # `is:pinned`, `after:2026-01-01`. Answering those with an empty page
-        # would be the app refusing to do the one thing §5.1 promises works
-        # with no model running.
-        rows = _filter_only(
-            session, wanted_kinds, space, asked.since, asked.until, depth, tags=asked.filters["tag"]
-        )
-        if asked.excluded:
-            # There is no MATCH to hang a `NOT` on here, so the exclusion is
-            # applied to the rows the filters selected. Over a page of
-            # candidates rather than the notebook, the same place `has:file`
-            # is answered.
-            rows = [row for row in rows if not _mentions(row, asked.excluded)]
+    rows, terms = _candidate_rows(session, q, subject, terms, asked, wanted_kinds, space, hybrid, limit, depth)
+    rows = _filter_rows(session, rows, asked) if rows else rows
     if not rows:
         return []
-
-    wanted_is, wanted_has = _flag_filters(asked)
-    if wanted_is:
-        rows = [row for row in rows if all(flag in (row["flags"] or "").split() for flag in wanted_is)]
-    if wanted_has:
-        note_ids = [row["ref_id"] for row in rows if row["kind"] in search_index.ENTRY_KINDS]
-        carriers = {want: _has_ids(session, want, note_ids) for want in HAS_WORDS if want in wanted_has}
-        rows = [row for row in rows if all(_row_has(row, want, carriers) for want in wanted_has)]
-    wanted_tags = [tag.lower() for tag in asked.filters["tag"]]
-    if wanted_tags:
-        # Substring rather than word equality: the tags column is a space-
-        # joined list, and `tag:garden` should find a note tagged "gardening"
-        # for the same reason the keyword stage tries prefixes.
-        rows = [
-            row for row in rows if all(tag in (row["tags"] or "").lower() for tag in wanted_tags)
-        ]
-    if not rows:
-        return []
-
-    best_raw = min(row["score"] for row in rows)  # bm25: more negative is better
-    filters_only = best_raw == 0 and not any(row.get("by_meaning") for row in rows)
-    cosines: dict[int, float] = {}
-    if hybrid:
-        cosines = _cosine_scores(session, subject or q, rows)
-    # Settings' "last search" line reads one record for both search paths.
-    search_manager.note_search_mode("hybrid" if cosines else "keyword")
-    hops: dict[int, int] = {}
-    open_entry = context.get("entry_id")
-    if open_entry:
-        note_ids = {row["ref_id"] for row in rows if row["kind"] in search_index.ENTRY_KINDS}
-        if note_ids:
-            hops = _hops_from(session, int(open_entry), note_ids)
-
-    hits: list[Hit] = []
-    for row in rows:
-        hop = hops.get(row["ref_id"]) if row["kind"] in search_index.ENTRY_KINDS else None
-        scores = {
-            "bm25": _normalised_bm25(row["score"], best_raw),
-            "cosine": max(0.0, cosines.get(row["ref_id"], 0.0)) if row["kind"] in search_index.ENTRY_KINDS else 0.0,
-            "graph": (1.0 / (1 + hop)) if hop else 0.0,
-        }
-        blended = sum(WEIGHTS[name] * value for name, value in scores.items())
-        if filters_only:
-            # A filter matched, nothing was ranked: every row is equally an
-            # answer, and MIN_SCORE would throw the whole list away.
-            blended = max(blended, MIN_SCORE)
-        # Three floats from three subsystems: a NaN here would sort
-        # unpredictably and do its damage nowhere near its cause, which is a
-        # shape this project has already paid an afternoon for once.
-        if not math.isfinite(blended) or blended < MIN_SCORE:
-            continue
-        hits.append(
-            Hit(
-                kind=row["kind"],
-                ref_id=row["ref_id"],
-                source=row["source"],
-                title=row["title"] or _snippet(row["body"], terms, 60),
-                snippet=_snippet(row["body"], terms),
-                scores=scores,
-                score=blended,
-                explain=_explain(scores, row, terms, hop),
-                space=row["space"],
-                written=row["written"],
-                flags=row["flags"],
-            )
-        )
-    hits.sort(key=lambda hit: (-hit.score, hit.kind, -hit.ref_id))
-    return hits[:limit]
+    return _rank_rows(session, rows, subject, q, terms, context, hybrid)[:limit]
 
 
 #: Notes meaning alone may add to a search: a handful at the end of the

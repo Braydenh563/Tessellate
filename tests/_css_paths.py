@@ -70,6 +70,8 @@ CSS_FILES = [
     CSS_DIR / "atlas-lazy.css",
     #: The Statistics page and This week (statistics.js, Brief 89).
     CSS_DIR / "utilities-lazy.css",
+    #: What the app draws into a reply beside its words (reply-kit.js, INBOX 1300 C06).
+    CSS_DIR / "reply-kit-lazy.css",
     #: The live captions dock (captions.js, Brief 82).
     CSS_DIR / "captions-lazy.css",
     #: The Notes tab's Questions view (questions-view.js loads it).
@@ -104,6 +106,10 @@ CSS_FILES = [
     CSS_DIR / "settings-controls-lazy.css",
     #: The density strip's year and month labels (timeline-ticks.js loads it).
     CSS_DIR / "timeline-ticks-lazy.css",
+    #: The Notes sidebar's folds (C43).
+    CSS_DIR / "sidebar-folds-lazy.css",
+    #: The thrown companion's fates (companion-throw.js loads it, D6).
+    CSS_DIR / "companion-throw-lazy.css",
 ]
 
 

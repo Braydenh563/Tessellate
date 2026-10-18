@@ -593,6 +593,9 @@ def _fix_short(word: str, after: str, before: str, distance):  # noqa: ANN001
     return best[1], (other[1] if other else None)
 
 
+_CLOCK_SLIPS = {"thre": "three", "tree": "three", "fiev": "five", "fve": "five", "sevn": "seven", "eigth": "eight", "nien": "nine", "tewlve": "twelve", "twelv": "twelve", "elevn": "eleven"}
+
+
 def _fixed_phrase(word: str, after: str) -> tuple[str, None] | None:
     """The readings that need no scoring: the article run into a noun
     ("abutton"), "the" before a date, and a mistyped acronym before a word it leads."""
@@ -601,6 +604,10 @@ def _fixed_phrase(word: str, after: str) -> tuple[str, None] | None:
     #: "as ther 17th": no "there" is followed by a date, so it is "the".
     if word in ("ther", "thre", "teh", "hte") and after[:1].isdigit():
         return "the", None
+    #: "at thre oclock": a clock word follows only a number, whatever the
+    #: corpus counts of "there" say (CI be58a63: new help text tipped it).
+    if after in ("oclock", "o'clock", "am", "pm") and word in _CLOCK_SLIPS:
+        return _CLOCK_SLIPS[word], None
     for acronym, leads in ACRONYM_LEADS.items():
         if len(word) == 3 and word != acronym and sorted(word) == sorted(acronym) and after.lower() in leads:
             return acronym, None

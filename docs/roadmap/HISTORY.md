@@ -513,6 +513,10 @@ the gesture guard moved onto the surface first; see HISTORY.md ("From OPEN.md,
 2026-09-23 (askcite agent): Phase 8c, the board's note card").
 
 
+## Moved from the plans, 2026-10-18 (WHITEBOARD C04, fixes5)
+
+- C04, the owner: "I want more templates and elements in the whiteboard like for wireframing and uml/class/erd diagrams etc." Built: three own-drawn sets in `frontend/board-library/` (`uml.json` 14 elements: class, abstract class, interface, enumeration, package, note, actor, use case and six relations; `erd.json` 10: entity, weak entity, attribute, key attribute, relationship and five crow's foot lines; `wireframe.json` 12: window, button, input, checkbox, radio, dropdown, image, navigation bar, card, text block, avatar, tab bar) and three templates (Class diagram, Entity relationship diagram, Wireframe page; 17 to 20). Nothing is taken from draw.io. A shape with inner lines is two sketches, an outline and its details, because a link anchors where a ray from the centre meets the path and a divider caught it (measured: a link ended 52 px inside its box before the split).
+
 ## Moved from the plans, 2026-10-18 (Popup agent citations, BACKLOG)
 
 From BACKLOG, as it stood:
@@ -50659,6 +50663,212 @@ Decision 62 built: the search model already loaded on first use (or at launch wi
      and works out a day, a count and a list; live gold mean 76 to 87; the empty
      badges and the Atlas overlap: 0 of 40 frames at 1440, 1024 and 390.
 
+1301. **The owner, 2026-10-18 evening, verbatim** (screenshots: the hero sub line running long; the dashboard dock's Get started button; Atlas with half-lidded eyes; Ask's answer to "What have I saved about social connections?" as one run-on paragraph of joined fragments, then "Your first Phase note has the Opener (Ice Breakers)" lines).
+    - D1: "be areful that the subtext in the hero doesnt get too long." Fixed dc59d5c (one sentence; the untitled-note date said once).
+    - D2: "I feel like the splash needs a better, more vunctional, better positioned, sized etc modern and professional redesign as it is still pushing down to the bottom of the screen every step completed."
+      **Fixed 1c2f2ff, e18cca3.** Launch splash (`splash.ps1`): one size, 520 by 440, centred in the work area, Step N of M, steps and log in one fixed panel (it grew from 252 to 586 px down the screen); static tests only, not run on Windows. Dashboard Get started card (`getstarted1301.js`): 350 to 114 px at 1440, 658 to 275 px at 390, the same height at 0, 1 and 2 steps done.
+    - D3: "the user should be able to hide or mark as complete the getting started button."
+      **Fixed e18cca3.** Mark all as done and Hide Get started in the card's menu and the dock's; persisted (reload: card and button stay gone); Customise, Show Get started brings both back (`getstarted1301.js` D3=1).
+    - D4: "the half lidded eyes on atlas look creepy and like fnaf"
+      **Fixed 20711bb.** No resting pose leaves the upper lid between open and shut: drowsy, groggy, pout, grumpy, night, reading, sad and shy were 44 to 80% of the eye (masculine), now 27.8% at most as drawn (`atlaslids.js`, both looks, a turned lid's dip included: determined was 38%), with a squint from below instead; a yawn closes the eyes; drowsy and groggy blink slowly (`tests/test_atlas_lids_1301.py`, `scratchpad/ui-sweeps/atlaslids.js`).
+    - D5: "please tell me the composer improvements havent been done yet as the responses for how they are written, how they sound, how they are formatted and everything are very poor and might have even gotten worse"
+      **Fixed cbabbe3.** Gold 22 (`tests/test_composer_form_1301.py`): longest sentence 134 to 35 words, ";" joins 27 to 1, broken answers 1 to 0, gold score 57 to 81.
+    - D6: "If I flick the companion near the top bar or top screen elements, I want there to be the chance that the compainon an datlas will land up there or catch the rop elements and/or climb on to them, or maybe eve splat on the edge of the screen and slide down to land on a platform, maybe even the chance to go off one side and come back on the other. more transitions, more lifelife movement and behaviour, more depth and organic feel. betetr animations, more variety in body posture like sitting down, lying down, in different ways, leaning and more"
+      **Fixed c4475c4.** A throw (now the lazy `companion-throw.js`) may catch the top bar and hang, catch a panel's top edge and climb on, splat on a side and slide down to the platform below, or go off one side and come back on the other, then settle (dangle, kick, lie, stretch, swing). Node, 200 seeded throws each: hang 76, climb 81, splat and wrap seen in range, none below their speeds. Browser (`throwfates.js`, You and Atlas): all four seen, ends inside the window over no control, box 92px, flight stopped; Reduce motion: none of them. Boot JS 588,237 to 587,602 gzipped.
+    - D7: "mouse scroll on the whiteboard and mindmap still doesnt zoom and instead scrolls down like a page" **Fixed (fixes9).** Before: plain wheel panned (map y 200 to 100, k 1); after: k 1 to 1.149 about the pointer, out returns to 1, Ctrl 1.395, Shift pans x by 100, page scrollTop 0 throughout, at 1440 and 390.
+    - D8: "can there also be a way to hover over and have a panel popup next to the sidebar to show a larger preview of the thing being hovered over in the elements library in the whiteboard?? is would dissappear once not hovered or dragging to place it on the whiteboard." **Fixed (fixes9).** The tile peek: opens 300 ms after hover (150 ms none, 500 ms shown), left 354 = sidebar edge 346 + 8, level with the tile centre (262), fully on screen, hidden on leave, drag, Escape; focus shows it at once.
+    Triage: D5 Opus (CHAT_PLAN composer, first); D7 Sonnet bug (reproduce wheel on board and map); D8 Sonnet with D7 (whiteboard library peek, the note-peek recipe); D2, D3, D4 one Opus design batch after D5; D6 Opus companion batch (B87/B88 lineage) after that.
+
+1300. **The owner, 2026-10-18, verbatim** (a Word document of 36 items; 29 screenshots, described in `agent-remaining/bugs-1018b.md`, attached to the item they follow). Triage and per-item status: `docs/roadmap/agent-remaining/bugs-1018b.md`.
+
+     C01. If I throw the companion or atlas across the screen and it lands on a ui element but
+          then it decides to fall through to peep over the bottom bar, it does the peak
+          animation first so it gets cut in half and then falls like that to the bottom bar. It
+          should instead, step off, jump off, teleport, portal, walk off screen at one point and
+          back on screen at another etc to get there then do the animation.
+     C02. On the splash if I hav the details section open, the completed tasks push it further
+          and further down until it is awkwardly touching thr bottom of my screen [screenshots:
+          image1]
+     C03. It's hard to move around the whiteboard with a mouse, can you copy draw.io and have
+          right click hold down drag panning??
+     C04. I want more templates and elements in the whiteboard like for wireframing and
+          uml/class/erd diagrams etc.
+     C05. I need / chat commands to be more findable, like when I do / I wouldn’t know the
+          other's are there unless I scroll down quite far [screenshots: image2]
+     C06. I want the composer and ai's responses ot be more visually impressiv and interactive
+          helped by the app, so like if I ask for stats I want a panel with cards and icons and
+          visualised statistics and a link to open the statistics panel. Maybe a websearch shows
+          the link as a clickable card not just a url, and also if it does a url fetch, it has a
+          dropdown that opens a semi large panel with the extracted and formatetd contents
+          inside as well as a link and data inside etc. can we integrate an interactive
+          calculator popup that is accessible and also link it to the /calc command as well as
+          other unit conversions etc??
+     C07. Also if it is going to give me a note, can it at least preview it for me as well??
+          Simple things like these for all the responses: [screenshots: image3]
+     C08. And if it outputs a mass block of text like from the ocr of one of my note's images,
+          maybe it could be in a collapsible subtle panel or smth or abrieviated/summarised by
+          the composer somehow?? [screenshots: image4]
+     C09. When I click on the attach button in the bottom chat dock, if I use my arrow keys to
+          navigate down the list, if I press enter on one of  them it doesn’t select that item
+          and attach it. [screenshots: image5]
+     C10. I cant add viewing the statistics panel to the quick access [screenshots: image6]
+     C11. I wanna be able to hover over and click graph nodes and see their values and dates etc
+          [screenshots: image7, image8]
+     C12. Make the top row with the title and x close button on the panels like the statistics
+          panel sticky to the top regardless of scroll [screenshots: image9]
+     C13. The '+' icons in the circle buttons on the corners of tables on the documents editor
+          arent centred [screenshots: image10]
+     C14. Should 'composer' and the model should be a badge or smnth similar… [screenshots:
+          image11]
+     C15. Also id didn’t answer the question properly when I used spelling mistakes also I think
+          the md rendering and styling of those outputs could use a bit of improvement.
+          [screenshots: image12, image13]
+     C16. Also that response seems preprogrammed, can you make more variations and make it
+          compose the message like an ai and not just write out the same things every time??
+     C17. On the whiteboard template panels, when I double click to edit the subtext under the
+          header, it changes to the header's text, and then it doesn’t go back if I deselect or
+          click off and I cant undo it either [screenshots: image14, image15, image16]
+     C18. Can you condense the colour options into like a dropdown panel ro smth like with the
+          mindmaps for the whiteboard?? [screenshots: image17]
+     C19. Atlas and the companion can perch on objects on the whiteboard even when they are
+          behind the panel, if it is perched on them then it should be on the same leayer or
+          x-index as them as well [screenshots: image18]
+     C20. Also the companion jumping arounf my whiteboard a lot was a little annoying and it
+          took up quit a bit of the screen when I zoomed out. I think if it is anchored to an
+          object within the whiteboard, then it's size should be in proportion to the zoom and
+          size of the whiteboard welements, if it is on an element not part of the actual canvas
+          like the panels or outer part of the app like the bottom or top bar then it can be its
+          regular size. [screenshots: image19]
+     C21. Also in the appearances section, if the eye preview buttons are there on the themes
+          then the hover preview doesn’t need to be a thing, but as they are a preview, make
+          sure that the preview like times out or maybe undoes if the user switches tabs or
+          maybe there is like a glowing border around the screen that the user can press cancel
+          or apply on buttons in the corner ot top centre or smth idk.
+     C22. It's hard to figure out that you need to press the shortcut command itself to change
+          it in the settings page [screenshots: image20]
+     C23. Is it possible to change 'm' for the quick nav to a letter better representing
+          "tessellate"?? I had it 'm' because of 'MemoryMap' but now the 'm' doesn’t fit <!-- brand: keep -->
+          [screenshots: image21]
+     C24. Can you try to get the logs panel to fit to the panel and not cause a slight vertical
+          scroll?? [screenshots: image22]
+     C25. Scrolling on the help settings page is laggy
+     C26. Can there be more improvements and expansions to the composer?? Variations to its
+          response, more life it it, better conversation and social ability, better
+          understanding, maybe multilingual?? Better at understanding typos, more libraries to
+          vendor to improve it maybe?? Make its outputs better and more refined and natural,
+          better grammar and more?? Also have the composer improve other things when the ai isnt
+          available like the dashboard greetings, not just preprogrammed responses but an
+          enormous variety and also composed. Maybe the sub text below the greeting can rotate
+          or change around a bit?? [screenshots: image23]
+     C27. The ui structure and formatting and placement of this properties button in the graph
+          node popup needs to be fixed, redesigned and improved [screenshots: image24]
+     C28. Also composer responses in the chat, ask tab, and popup agent and guide just instantly
+          appear and it is quite visually jarring, I want a smooth and maybe togglable
+          impressive yet subtle and still sticking to the app's theme and style reveal
+          animation. Reduce motion can just have loke a cheap fade in or smth.
+     C29. In the popup agent it is also hard to tell from the ui of the sources box and dropdown
+          list of sources below if the sources are actually part of that button's dropdown and
+          if the button is open or not [screenshots: image25]
+     C30. Can the lightbox controls and elements have a new redesign and upgrade in ui and ux
+          usability?? [screenshots: image26]
+          **Fixed f4bcef8.** Top bar and view dock with a filmstrip (DESIGN.md "A full-screen
+          viewer of a file"); lightbox1300.js: min contrast 3.38 to 4.87, picture at 390 233 to
+          359px, + 0 keys, swipe, pinch none to working, idle fade 1 to 0 (1 after keys, reduced).
+     C31. I ckicled on a link meatball button in a note, clicked kind and properties, then
+          clicked "has example of" but then I tried to go back on and click it to unselect it
+          and I couldnt [screenshots: image27]
+     C32. Also if I undo smth there is no indication or popup or smth like the zoom popup or a
+          notification to show Ive undone something. (I do have notifications turned off/muted
+          on the app).
+     C33. Also stacking notifications need to be cleaned up and not as intrusive and obscuring.
+     C34. All the audio record popup panels need a redesign as they are ugly, need a much better
+          and modern/professional ui/ux upgrade, a functionality upgrade, and also there are
+          weird ugly hard corner rectangle border boxes [screenshots: image28]
+     C35. Also if a thing isnt available as I don’t have the packages installed and it is said
+          in a notification, that notification should have a link to the packages list and
+          scroll me to where it is.
+     C36. These dates should be hidable or showable on the timeline side graph. [screenshots:
+          image29]
+
+     C37. (mid-run, 2026-10-18) also on the newest graph version, sometimes the text at the
+          top of the boxes gets cut off  with no ellipse and the nodes are all the same size,
+          should they be different??
+     C38. (mid-run, 2026-10-18) and the splash popup flickers quite a bit as well
+     C39. (mid-run, 2026-10-18, screenshot: Timeline opens on empty future rows Sun 25 Oct to
+          Mon 19 Oct, each with "+ Add", Today at the bottom of the view) and the future dates
+          should only show if the user scrolls up on the timeline main view
+     C40. (mid-run, 2026-10-18, screenshot: a Library recording card, waveform, "Transcript"
+          open with one row "0:03 All right, um, this is a test and this is the meeting test.
+          Yay") on the recordings ther eis no way to copy individual or multiple lines of the
+          transcript
+     C41. (mid-run, 2026-10-18, screenshot: force graph, labels overlap nodes and each other
+          ("had design class today..." on "Ice Breakers:", "Follow- Up Questions:" on "Here are
+          some refined..."), edges cross through clusters, two "Ice Breakers:" labels) and the
+          force graph still gets a little messy and hard to look at
+     C42. (mid-run, 2026-10-18, screenshot: chat history, "yo wassup :)" at 4:53 pm, the Atlas
+          reply below it shows only "Next:" chips and a time, no text) the composer response
+          dissappeared?? it was a response from a previous session I did earlier and Ive
+          restarted the app since then
+     C43. (mid-run, 2026-10-18, two screenshots: Notes "Categories" sidebar with two nested
+          scrollbars, in the second a wide blue bar down the outer scrollbar; the list cut
+          mid-row above "Most used"; near-duplicate categories "Courses & Study" 10 and
+          "Courses | Study" 0; "AI" 0; "Tags" with no count) the categories sidebar is a little
+          messy and ther eis a lot happening and I want to be able to collapse sections like
+          with the most used section
+     C44. (mid-run, 2026-10-18, screenshot: documents live view, a rendered section break
+          on line 1 with "..." dots; gutter numbers 1 and 2 overlap, 3 sits lower) a live view
+          rendered section break clashes line numbers
+     **Triage 2026-10-18** (two Haiku audits, each bug reproduced in the app unless noted;
+     rungs: H Haiku, S Sonnet, O Opus; "now" = this run's batches, "plan" = placed).
+     Batch 1, bugs, Sonnet or Haiku, now: C10 H (`settings-panes.js:1499` lacks `quick:
+     "statistics"`), C09 S (`chat-attach.js:1224` Enter ticks nothing), C13 S (plus glyph
+     0.6 to 0.75 px low, `library-lazy.css:6293`), C17 S (`wbBeginTextEdit`
+     `whiteboard.js:9132` resets a frame hint to the header), C31 S (`link-types.js:109`
+     re-click on the current kind should clear), C32 S (undo toast missing on the surface
+     branch, `status.js:1517`), C35 S (`captions.js:84` toast needs an Open action to
+     Settings, Packages), C03 S (right-drag pan, `whiteboard.js:91`), C12 S (sticky
+     `.dialog-head`, glass-off list), C25 S (Help scroll: 4x CPU only, 33 to 50 ms a frame;
+     try `content-visibility`), C15 S (screenshot: "Wat cna u do??" was read as "what can you
+     do" and then answered from notes, not the capability reply: add the owner typo fixture
+     and fix), C02 S (splash rows uncapped, `scripts/splash.ps1:394`, Windows only, not
+     verifiable here).
+     Batch 2, design, Opus one at a time: C01 (fall route picks the peek pose before a
+     walk-off or poof, `avatars.js:5706`), C19 + C20 (companion band z 44 above the Format
+     panel z 25; perch takes its object's layer; size follows board zoom on canvas perches:
+     the WHITEBOARD layer-order step 8), C05 (slash menu: first command at 444 px in a 386 px
+     menu, none visible), C06 + C07 + C08 (reply cards, note preview, folded long text, an
+     accessible calculator popup tied to `/calc`), C11 (graph node hover card with dates
+     and values, `graph-canvas.js:3753`), C27 (graph popup props button), C28 (reply reveal
+     animation), C29 (Sources box has no disclosure state, `chat-agent.js:2220`), C30
+     (lightbox controls), C33 (notification stack, 186x205 px), C34 (audio recorder panels,
+     `.meeting-stage` radius 0), C21 (theme preview: revert on close or section switch plus
+     an apply or cancel bar), C22 (shortcut chip needs a visible Change), C36 (timeline
+     tick labels switch), C14 (composer and model byline as a badge), C18 (paper swatch row
+     as the colour dropdown).
+     Placed in plans: C04 WHITEBOARD_PLAN (UML class, ERD, wireframe sets; check the draw.io
+     licence in ANALYSIS.md), C16 + C26 CHAT_PLAN (larger composed pools, greeting sub line
+     rotation: wire the unused `composer_voice.today_line`, `dashboard.js:463`).
+     Decision taken (recommendation, standing order 3): C23 the go-key prefix becomes `t`
+     (for Tessellate) and Timeline's second key moves to `i`; the old `m` prefix stays an
+     alias for one release. Not reproduced: C24 (Logs section: scrollHeight equals
+     clientHeight at five sizes; found instead: the Settings nav column overflows 265 to
+     423 px on every pane, placed in WORLD_CLASS row 32).
+     Screenshots read by a scout (what they show): image1 install dialog "step 3 of 5"; image2
+     attach menu cut off at the right edge ("No model con..."); image3 mascot overlaps the
+     /random reply bubble corner; image4 Ask answer copies the note wording and ends
+     mid-sentence; image5 attach Notes tab with a Japanese-only row; image6 Quick access
+     search "stat" gives "No command matches that."; image7 and image8 Statistics charts
+     (a raw `tab:documen...` key label); image10 table corner "+" crop; image11 header
+     "Atlas, composer"; image12 and image13 composer replies ("I'm Atlas's assistant...",
+     "I read that as ..." then citations); image14 to image16 board card subtitle
+     "Tuesday" repeating the title after an edit; image17 to image19 board text toolbar,
+     empty Format panel with the mascot inside, zoomed-out board with the mascot over a
+     group; image20 and image21 shortcuts and go keys ("m d Dashboard"); image22 console
+     log panel; image23 note count 37 here, 38 on image3 and image7 (check); image24 note
+     title "Follow- Up Questions:"; image25 Sources panel; image26 PDF viewer; image27
+     "Kind of link" dialog, taskbar against its bottom edge; image28 Voice note dialog;
+     image29 narrow timeline strip with date labels.
+
 ## Moved from the plans, 2026-10-18 (graph-1018)
 
 Built by the graph-1018 agent (GRAPH_PLAN open work; the audit table is `agent-remaining/graph-1018.md`).
@@ -50775,3 +50985,25 @@ From WHITEBOARD_PLAN "The draw.io programme", section 2 (Text tab), built by the
 - **Three stale map sweeps refreshed, one real bug found by them** (`maptheme.js` 22/24 to 24/24, `mapnarrow.js` could not start to 3/3 at 390 and 1440, `mapstrip.js` 42/43 to 43/43). maptheme: a topic that follows the map shows the blank row and draws the themed shape (OPEN row 1370), and the dialog has twelve selects and three switches. mapnarrow opens a new map from `#wb-boards-new-map` (the template-name dialog is gone). mapstrip: a Plain topic keeps its fill (fill is its own choice and `.wb-map-filled` is drawn after `[data-shape="none"]`); the sweep now says so. Real: at 390x844 the fold chevron (z-index 4) sat under the corner grip (5) of a topic zoomed to 28 px tall, so a press on the chevron started a resize; the chevron is above the grip (6), and mapnarrow's "a press on the chevron reaches the chevron" passes.
 - **"What is due this week" in Ask answers from the notes' days when Reminders has nothing** (CHAT_PLAN Phase 6 P13). Measured on the running app, no model: it said "You have no reminders waiting." over three notes that name days, because the read-tool path (`_tool_read_events`) took the question before the computed answer. `_notes_answer_due` (routes_chat.py) lets the notes win when the question is a "dates" kind, no reminder is waiting, and `composer_lists.holds_days` finds a day ahead in the notes; a waiting reminder still wins and a notebook with no days still says there are no reminders. Underneath it: the route's notes carry `written` words and no ISO `created_at`, which the fact graph anchors on, so `composer._days_named` found no day in them at all (the computed "days until", "before or after" and "what is due" answers were empty through the route); it now hands the day the composer already read to the fact graph, as `_insights_for` does. `tests/test_due_in_ask_1018.py` 4 tests on a fixed clock.
 
+
+## Moved from the plans, 2026-10-18 (fixes6-1018: CHAT_PLAN open items)
+
+- Captions in keyword search: a picture's caption was already in the index (`readings.text_of`, probed: "zebrafinch" finds the upload, `scratchpad/ui-sweeps/capsearch-1018.js`); a recording's transcript too. The one thing on a recording a search could not find was the comment on a mark; `_recording_row` now includes them (`tests/test_search_recordings.py`).
+- Day and month order by locale: the open row named `when._date_phrase`, but that pattern reads no numeric dates; the numeric reading is `recognise._numeric_dates`, which already took a locale. A question's "3/4" went through `question_day` with none. `query.understand` and `question_day` take `locale` (reading.py passes it), `tests/test_when_windows.py`.
+
+## Moved from the plans, 2026-10-18 (fixes7-1018)
+
+- Ask and Chat read "3/4" by locale (CHAT_PLAN, "Not built"): `ChatRequest.locale` (the browser's `navigator.language`, sent by `capture-ask.js`) goes `_prepare` to `retrieve_detailed` to `query.understand`; en-US reads "what's on 3/4" as 4 March, en-GB as 3 April (`tests/test_ask_locale.py`).
+- Chat's Make a mind map (MINDMAP_PLAN 12.3 item 3, the text-outline half): `POST /whiteboard/maps/from-text` outlines an answer or a whole chat like a note (headings and lists as branches, prose one topic per paragraph; no model); an answer's Mind map this and the chat menu's Make a mind map of this chat call `chatKeep("map", ...)` in the lazy quick-note bundle, which now also holds Save this chat as a document.
+- Whiteboard placeholders `%date%` and `%page%` (WHITEBOARD_PLAN section 3): `wbExpandPlaceholders` takes a built-in resolver; an item's own property of the same name wins; `%page%` is the smallest frame holding the item's centre (decision 22). Painted per render, so a retitled frame shows on the next repaint of the item.
+- Whiteboard Copy as SVG (WHITEBOARD_PLAN section 14): `wbCopyAsSvg`, a Ctrl+K row beside Copy as an image, writes the export SVG as text.
+- Ghost topics on the canvas (MINDMAP_PLAN Phase G): `wbMapBranchPicker` now draws the suggestions of Branches from my notes and Expand from my notes as faded dashed chips (`.wb-ghosts`, lazy `library-lazy.css`) under the topic instead of a tick-list dialog. Tab takes one, Shift+Tab lets go, Enter adds the taken ones, Escape drops all; the handled keys stop at the layer (the map's own Enter would add a sibling). Measured on a 3-note map (no model): 3 ghosts, 8 px under the topic, Tab takes 1, Escape leaves 0 layers and adds nothing, Tab Tab Enter adds exactly 2 topics. Recipe row and `test_ghost_topics_are_one_lazy_layer_with_four_keys` in DESIGN.md / test_ui_recipes.py.
+
+## Moved from the plans, 2026-10-18 (design4-1018: how a no-model answer reads)
+
+- INBOX 1301 D5, the owner: "the responses for how they are written, how they sound, how they are formatted and everything are very poor and might have even gotten worse". Reproduced on gold item 22 (`tests/fixtures/gold_answers.json`, a "Complete Social Skills Guide" with Phase 1 to 4 lines, quoted ice breakers and "Follow- Up Questions:", plus four shorter notes), asked "What have I saved about social connections?" with no model: the guide was one 134-word line of 17 fragments glued with ";", then "Your first Phase note has the Opener (Ice Breakers)." four times.
+- `composer_digest._gist`: an overview says each note in at most two sentences, in its own order: what it is (a titled note opening "A ..." is "you saved your <title>, a ..."), then its shape ("It's in four phases: the Opener, the Connection, the Ask and the Follow-Up.", from numbered heads or markdown headings), its open checkboxes ("You still need to text Daniel about the 25th and buy snacks.") or a second sentence. Quoted examples and short list heads ending ":" are never said; labelled facts (a note's own heading, a to-do, a picture) keep their old path. `_join` in a woven line makes two sentences, or a comma for a subjectless fragment ("..., slicing everything but it was fun").
+- Grammar: a habit is reported in one tense ("you said that you interrupt when you're nervous", was "... when you were nervous"); an imperative after it is "and you told yourself to ..."; a leading "We" after "you met Daniel" is "You". The lead names a category as typed when its shared tag is one of its words ("social connections", was "social").
+- Offers: `_task_of` makes a reminder only from an open checkbox or an instruction that names what it is about ("ask the tutor on Thursday"); "ask follow-up questions that reflect genuine interest" is advice. `insights.drift` skips another person's plan ("He wants to try the crag" was "no later note picks up this plan: wants to try ...").
+- Ask: the "You asked:" line above the answer is gone (`renderAskedQuestion`, `#asked-question`); the question stays in the box it was typed in.
+- Measured over the 22 gold answers (`tests/_gold.py` `form`, `tests/test_composer_form_1301.py`): longest sentence 134 to 35 words, ";" joins 27 to 1, answers with a broken pattern 1 (15 hits) to 0, total characters 7,567 to 6,731 (item 22: 1,787 to 1,097); the note answers' gold score 88.9 to 90.9 (item 22: 57 to 81). The same text through Ask, Chat and the popup's `/chat/stream` bodies on a running app (`scratchpad/ui-sweeps/social-1301.js`); the Ask box keeps the question in its input and has no echo.

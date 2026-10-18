@@ -96,7 +96,7 @@ def test_no_list_query_sorts_the_whole_table(db, sql):
     assert "TEMP B-TREE" not in plan, plan
 
 
-def test_indexes_are_created_on_a_database_that_already_exists(tmp_path):
+def test_indexes_are_created_on_a_database_that_already_exists(tmp_path, app_state):
     """The trap this guards. `Base.metadata.create_all()` creates missing
     *tables* only, so an index declared on the model would appear on a fresh
     profile and never on anybody's real notebook. `_ensure_indexes` runs on
@@ -123,7 +123,7 @@ def test_indexes_are_created_on_a_database_that_already_exists(tmp_path):
         assert name in names, f"{name} missing after reopening an existing database"
 
 
-def test_entry_id_scope_still_honours_the_active_space(tmp_path):
+def test_entry_id_scope_still_honours_the_active_space(tmp_path, app_state):
     """`entry_id_scope` selects a column rather than an entity, and the
     workspace filter is a `with_loader_criteria` on the mapped class, so
     "does it still apply?" is a real question, not a rhetorical one. It does,
@@ -146,7 +146,7 @@ def test_entry_id_scope_still_honours_the_active_space(tmp_path):
     assert len(scope) == 1
 
 
-def test_all_tags_still_honours_the_active_space(tmp_path):
+def test_all_tags_still_honours_the_active_space(tmp_path, app_state):
     """Same invariant, for the other column-only select changed alongside it."""
     database = DatabaseManager(tmp_path / "tagscoped.db")
     with database.session() as session:

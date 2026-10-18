@@ -1174,7 +1174,7 @@ def test_it_takes_a_smaller_size_to_fit_a_small_perch() -> None:
     assert "nmb.scale = NMB_FIT_SCALE;" in choose and "return { ...small, fit: NMB_FIT_SCALE };" in choose
     assert choose.index("fit: NMB_FIT_SCALE") < choose.index('legs: "peek"')
     move = _fn("nameMarkBuddyMoveTo")
-    assert "const size = spot.fit || nameMarkBuddyScaleSaved();" in move and "nameMarkBuddySetSize(size, false);" in move
+    assert ": spot.fit || nameMarkBuddyScaleSaved();" in move and "nameMarkBuddySetSize(size, false);" in move
     assert "#nm-buddy.nmb-fitting .nm-buddy-face { transition: scale" in CSS08
 
 
@@ -1769,5 +1769,8 @@ def test_a_flight_frame_never_restyles_the_whole_figure():
     assert "var(--nmb-sway)" not in css
     sway = _fn("nameMarkBuddySway", avatars)
     assert "style.rotate" in sway and "querySelectorAll" in sway
-    # Every writer goes through it: the flight, the drag, and their stops.
-    assert avatars.count("nameMarkBuddySway(buddy,") >= 5
+    # Every writer goes through it: the flight, the drag, and their stops (the
+    # flight and its stop live in the lazy companion-throw.js, INBOX 1301 D6).
+    throw = frontend_text("companion-throw.js")
+    assert avatars.count("nameMarkBuddySway(buddy,") + throw.count("nameMarkBuddySway(buddy,") >= 5
+    assert 'setProperty("--nmb-sway"' not in throw

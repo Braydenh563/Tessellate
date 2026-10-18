@@ -1518,10 +1518,18 @@ function openPhoneMoreSheet() {
         const icon = button.querySelector(".tab-icon")?.className || "ph ph-circle tab-icon";
         const caption = button.querySelector(".tab-label")?.textContent?.trim()
           || button.getAttribute("aria-label") || tab;
-        list.appendChild(sheetRow(icon, caption, () => {
+        const row = sheetRow(icon, caption, () => {
           close();
           switchTab(tab);
-        }));
+        });
+        const due = tab === "reminders" ? phoneMoreDueCount() : 0;
+        if (due) {
+          const count = document.createElement("span");
+          count.className = "tab-badge";
+          count.textContent = String(due);
+          row.appendChild(count);
+        }
+        list.appendChild(row);
       }
       //: **The agent and the Guide, where the header cannot hold them.**
       //: Measured after they were added (INBOX 190): the header's first
@@ -1588,8 +1596,13 @@ function syncPhoneMoreRuns() {
   const more = document.getElementById("phone-more-btn");
   if (!more) return;
   const runs = phoneMoreRunCount();
+  //: Reminders due ride on More too (audit 1018, item 8): at 390 the
+  //: Reminders tab is behind it, so its own badge was out of sight. Due
+  //: reminders win the badge; the run count shows when none are due.
+  const due = phoneMoreDueCount();
+  const shown = due || runs;
   let badge = more.querySelector(".tab-badge");
-  if (!runs) {
+  if (!shown) {
     badge?.remove();
     return;
   }
@@ -1598,8 +1611,16 @@ function syncPhoneMoreRuns() {
     badge.className = "tab-badge";
     more.appendChild(badge);
   }
-  badge.textContent = String(runs);
-  badge.title = `${runs} agent run${runs === 1 ? "" : "s"}`;
+  badge.textContent = String(shown);
+  badge.title = due
+    ? `${due} reminder${due === 1 ? "" : "s"} due`
+    : `${runs} agent run${runs === 1 ? "" : "s"}`;
+  more.setAttribute("aria-label", due ? `More: ${due} reminder${due === 1 ? "" : "s"} due` : "More");
+}
+
+//: Due-or-overdue reminders, as `updateReminderBadge` last counted them.
+function phoneMoreDueCount() {
+  return typeof reminderCounts === "undefined" ? 0 : reminderCounts.due || 0;
 }
 
 // The bar has to say where you are on all seven tabs, not on the four it
@@ -1713,6 +1734,17 @@ initKeyboardInset();
 // reader accessible for free, and adds no custom popup to a dialog that is
 // already a popup. It is built from the nav rather than declared beside it,
 // so a section added to the markup appears here with nothing to remember.
+//: The jump list already says the pane's name, so the pane's own first heading
+//: saying it again one row below is dropped on a phone (`.jump-echo`, 07-whiteboard-misc.css;
+//: UX audit 2026-10-18). Only the h3: a dock holding actions keeps them.
+function echoSettingsPaneTitle(select) {
+  for (const h of document.querySelectorAll("#settings-modal h3.jump-echo")) h.classList.remove("jump-echo");
+  if (select.value.includes("#")) return;
+  const head = document.querySelector(`#settings-${CSS.escape(select.value)} h3`);
+  const shown = select.options[select.selectedIndex]?.textContent.trim().toLowerCase();
+  if (head && shown && head.textContent.trim().toLowerCase() === shown) head.classList.add("jump-echo");
+}
+
 function buildSettingsJumpList() {
   const nav = document.getElementById("settings-nav");
   if (!nav || document.getElementById("settings-jump")) return;
@@ -1757,7 +1789,9 @@ function buildSettingsJumpList() {
     if (active && select.value !== active.dataset.section) {
       select.value = active.dataset.section;
     }
+    echoSettingsPaneTitle(select);
   }).observe(nav, { subtree: true, attributes: true, attributeFilter: ["class"] });
+  select.addEventListener("change", () => echoSettingsPaneTitle(select));
 
   // After the search field, which stays: searching the sections' contents and
   // jumping to one by name are different questions (the search field's own

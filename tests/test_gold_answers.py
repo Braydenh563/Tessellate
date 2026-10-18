@@ -52,8 +52,9 @@ def _answer(item: dict) -> dict:
 
 def test_the_fixture_is_twenty_answers_across_the_kinds_decision_71_names():
     kinds = {a["type"] for a in FIXTURE["answers"]}
-    #: Twenty, and the owner's gaming mouse question (2026-10-11) as typed.
-    assert len(FIXTURE["answers"]) == 21
+    #: Twenty, the owner's gaming mouse question (2026-10-11) as typed, and
+    #: the owner's social connections notebook (INBOX 1301 D5).
+    assert len(FIXTURE["answers"]) == 22
     assert {"fact", "overview", "compare", "count", "who", "left"} <= kinds
 
 
@@ -265,7 +266,7 @@ def test_a_short_answer_has_no_more():
 def test_hashtags_and_today_are_tidied():
     text = composer_digest.answer("what have I saved about pottery?", _pottery(), today=TODAY)["text"]
     assert "#" not in text
-    assert "today" not in text and "**2 September:** trimmed your first bowl." in text
+    assert "today" not in text and "On 2 September, you trimmed your first bowl." in text
 
 
 @pytest.mark.parametrize(("question", "subject"), [

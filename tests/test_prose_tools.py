@@ -301,7 +301,10 @@ def test_the_change_menu_and_the_popover_take_their_answers_from_one_builder() -
     assert "docSuggestMenuItems(" in menu
     assert "docPointerMenuOpen()" in _body("docOpenSuggestFor")
     # The labels live in the builder alone: a second literal is a second copy.
-    assert DOCUMENTS.count('"ph:eye-slash Ignore in this document"') == 1
+    # (Ignore's words come from `docIgnoreLabel`, which says which of the two
+    # an Ignore is: this document for now, or a link offer's name for good.)
+    assert DOCUMENTS.count(': "Ignore in this document";') == 1
+    assert "docIgnoreLabel(finding)" in _body("docFindingAnswerRows")
     assert DOCUMENTS.count('"ph:book-open-text Add to dictionary"') == 1
 
 

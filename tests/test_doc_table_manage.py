@@ -118,3 +118,15 @@ def test_the_grips_are_wired_in_and_styled() -> None:
     # its alternative (WCAG 2.5.7): both commands exist.
     for command in ('id: "row-up"', 'id: "row-down"', 'id: "col-move-left"', 'id: "col-move-right"'):
         assert command in js, command
+
+
+def test_the_add_buttons_draw_their_plus_instead_of_typing_it() -> None:
+    """INBOX 1300 C13: a typed "+" sat 0.875 css px low in the circle (ink
+    centre measured at 4x). Two centred bars in CSS cannot drift."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    js = (root / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    css = (root / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    assert 'addCol.textContent = "+"' not in js and 'addRow.textContent = "+"' not in js
+    assert ".doc-table-add::before" in css and ".doc-table-add::after" in css

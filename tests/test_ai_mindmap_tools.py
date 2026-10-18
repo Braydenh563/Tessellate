@@ -331,3 +331,11 @@ def test_the_note_menu_makes_the_same_map_with_no_model(client, session):
     assert client.post(f"/whiteboard/maps/from-note/{private['id']}").status_code in (404, 422)
     empty = client.post("/entries", json={"content": "# Only a title"}).json()
     assert client.post(f"/whiteboard/maps/from-note/{empty['id']}").status_code == 422
+
+
+def test_chat_makes_a_map_from_an_answer_with_no_model(client):
+    """Chat's Make a mind map: an answer's headings and lists, no note behind the centre."""
+    made = client.post("/whiteboard/maps/from-text", json={"text": NOTE})
+    assert made.status_code == 201 and made.json()["type"] == "map" and made.json()["object_count"] >= 5
+    bare = client.post("/whiteboard/maps/from-text", json={"text": "# Only a title"})
+    assert bare.status_code == 422

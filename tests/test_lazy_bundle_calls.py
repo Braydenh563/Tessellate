@@ -99,6 +99,15 @@ def _declared_anywhere(path: Path) -> set[str]:
 #: been loaded, with the reason each one is safe. A name here is a promise that
 #: somebody checked the path, not a way to quiet the test.
 REACHED_AFTER_LOAD = {
+    #: INBOX 1301 D6: the release calls it only when `typeof nameMarkBuddyThrow
+    #: === "function"`; the carry's first move fetched the bundle, and a let-go
+    #: before it arrives is a drop.
+    "nameMarkBuddyThrow": "companionThrow, fetched on the carry's first move; the release checks typeof and drops otherwise",
+    #: Back closing an open overlay (router-overlays.js): preloaded three seconds
+    #: after boot; before that Back steps the tab history as it always did. A
+    #: stand-in would return a promise, which is truthy, and swallow every Back.
+    "routerSettle": "quickNote (carries router-overlays.js), called in the .then of ensureModule('quickNote') in closeSettingsModal",
+    "routerBackHook": "quickNote (carries router-overlays.js), preloaded 3 s after boot; until then Back is the tab history's, as before",
     #: Settings, About, Maintenance: settings.js's showSettingsSection calls it
     #: in the .then of ensureModule('settingsControls').
     "renderMaintenance": "settingsControls, called in the .then of ensureModule('settingsControls') in showSettingsSection",
@@ -123,6 +132,9 @@ REACHED_AFTER_LOAD = {
     "markNotePassage": "reveal, called in the .then of ensureModule('reveal') in openNoteAtPassage",
     #: Decision 70: the digest answer's one offer, in the .then of
     #: ensureModule('askCompose') in renderAnswerGrounding.
+    "renderRelatedElsewhere": "replyKit, called in the .then of ensureModule('replyKit') by the Ask foot and Chat's onRelated",
+    "replyFinish": "replyKit, called in the .then of ensureModule('replyKit') by finishReply, every answer surface's last step (INBOX 1300 C07)",
+    "replyDrawAll": "replyKit, called in the .then of ensureModule('replyKit') by drawAnswerPanels, every answer surface's panel drawer (INBOX 1300 C06)",
     "digestOffer": "askCompose, called in the .then of ensureModule('askCompose') in renderAnswerGrounding",
     "digestShape": "askCompose, called in the .then of ensureModule('askCompose') in renderAnswerGrounding",
     "digestMore": "askCompose, called in the .then of ensureModule('askCompose') in renderAnswerGrounding",
@@ -149,6 +161,7 @@ REACHED_AFTER_LOAD = {
     #: Brief 89: the palette's small tools, each called in the .then of
     #: ensureModule('utilities') on its own palette row (settings-panes.js).
     "startUtilityTimer": "utilities, called in the .then of ensureModule('utilities') on the palette's timer rows",
+    "openCalculator": "replyKit, called in the .then of ensureModule('replyKit') on the palette's Calculator row",
     "startStopwatch": "utilities, called in the .then of ensureModule('utilities') on the palette's stopwatch row",
     "countSelection": "utilities, called in the .then of ensureModule('utilities') on the palette's Count words row",
     #: Brief 47: the findAnything shortcut closes the box only while

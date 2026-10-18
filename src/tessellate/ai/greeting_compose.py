@@ -92,7 +92,8 @@ def _context_phrases(facts: NotebookFacts, slot: str) -> list[tuple[str, str]]:
         out.append((f"Day {facts.streak} of your writing streak", "."))
     if facts.today >= 3:
         out.append(("Busy day so far", "."))
-        out.append((f"Already {facts.today} notes today", "."))
+        #: The sub line under the greeting says how many; the headline must not.
+        out.append(("A full page today", "."))
     elif facts.today >= 1:
         out.append(("Back for more", "."))
     if facts.this_week >= 10:

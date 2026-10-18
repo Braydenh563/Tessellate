@@ -1,0 +1,23 @@
+/* companion-throw-lazy.css: the thrown companion's two moments of its own
+   (INBOX 1301 D6), loaded with companion-throw.js (app.js
+   `LAZY_MODULES.companionThrow`) on the first carry rather than at boot, for
+   the gzip budget (tests/test_boot_budget.py). Transforms only, on the
+   figure; the companion's box and the page's pointer events are untouched.
+   Neither class is set unless the companion moves in full
+   (`nameMarkBuddyNoTravel`: Reduce motion gets the throw's crossfade). */
+
+/* Splatted against a side of the window: squashed flat toward that side
+   and stretched along it while it holds and slides down. */
+#nm-buddy.nmb-splat .nm-buddy-char { scale: 0.84 1.08; }
+#nm-buddy.nmb-splat[data-splat="l"] .nm-buddy-char { transform-origin: 0 50%; }
+#nm-buddy.nmb-splat[data-splat="r"] .nm-buddy-char { transform-origin: 100% 50%; }
+
+/* Caught by its hands on a panel's top edge: it swings in, dips (the
+   anticipation), then pulls itself up, stretched, before it climbs on. */
+#nm-buddy.nmb-climb .nm-buddy-char { animation: nmb-climb-pull 520ms var(--ease-in-out) both; }
+@keyframes nmb-climb-pull {
+  0% { translate: 0 -6px; scale: 0.94 1.06; rotate: 6deg; }
+  30% { translate: 0 4px; scale: 1.05 0.95; rotate: -3deg; }
+  55% { translate: 0 6px; scale: 1.08 0.92; rotate: 0deg; }
+  100% { translate: 0 -14px; scale: 0.95 1.07; rotate: 0deg; }
+}

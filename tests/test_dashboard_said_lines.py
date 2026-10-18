@@ -34,7 +34,7 @@ def test_a_pattern_is_said_as_a_sentence_and_links_its_notes():
     assert 'if (kind === "patterns") dashPatternBit(bit, pattern);' in source
     lazy = (ROOT / "frontend" / "js" / "dash-day.js").read_text(encoding="utf-8")
     assert "showNotesFilter(subject)" in lazy[lazy.index("function dashPatternBit"):]
-    assert '"dashPatternBit"]' in (ROOT / "frontend" / "js" / "lazy-entries.js").read_text(encoding="utf-8")
+    assert '"dashPatternBit"' in (ROOT / "frontend" / "js" / "lazy-entries.js").read_text(encoding="utf-8")
 
 
 def test_the_guide_says_what_patterns_are_whether_they_change_and_how_to_see_them():

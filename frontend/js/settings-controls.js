@@ -2867,33 +2867,60 @@ $("maintenance-restart")?.addEventListener("click", () => restartMemoryMap());
 $("maintenance-logs")?.addEventListener("click", openMaintenanceFolder);
 $("maintenance-shortcut")?.addEventListener("click", makeMaintenanceShortcut);
 $("maintenance-uninstall")?.addEventListener("click", openUninstallSteps);
-//: Settings, Appearance, Themes (ledger 1451, 1452): a theme shows on the
-//: whole app while the pointer or focus rests on its card, and "Surprise me"
-//: applies one you are not using. The preview is `settingsLook.themePreview` (settings.js),
-//: read ahead of the manual layer and never stored.
-//: Hover waits this long before it repaints the whole app, so crossing the grid
-//: previews nothing (B58: "slightly longer"); the eye and the keyboard do not wait.
-const THEME_HOVER_PREVIEW_MS = 450;
-function previewTheme(name, delay = name ? THEME_HOVER_PREVIEW_MS : 0) {
-  clearTimeout(settingsControlState.themePreviewTimer);
-  if (!name && settingsControlState.themeHold) return;
-  settingsControlState.themePreviewTimer = setTimeout(() => {
-    if (settingsLook.themePreview === name) return;
-    settingsLook.themePreview = name;
-    applyAppearance();
-    applyThemeChoice(appearancePref("theme"), false);
-    applyPalette(appearancePref("palette"), false);
-  }, delay);
+//: Settings, Appearance, Themes (ledger 1451, 1452; INBOX 1300 C21, the
+//: owner: "if the eye preview buttons are there on the themes then the hover
+//: preview doesn't need to be a thing ... make sure that the preview ...
+//: undoes if the user switches tabs"). The eye in a card's corner shows its
+//: theme on the whole app and holds it under a notice with Apply and Cancel;
+//: closing Settings, another section, leaving the window, Escape or a card
+//: chosen ends it. No hover preview. The preview is `settingsLook.themePreview`
+//: (settings.js), read ahead of the manual layer and never stored.
+function previewTheme(name) {
+  if (settingsLook.themePreview === name) return;
+  settingsLook.themePreview = name;
+  applyAppearance();
+  applyThemeChoice(appearancePref("theme"), false);
+  applyPalette(appearancePref("palette"), false);
 }
-//: The eye in each card's corner (B58). Hover or focus previews at once; a click
-//: holds the preview (the touch path) until the next click anywhere.
 function releaseThemeHold() {
   settingsControlState.themeHold = "";
   for (const b of document.querySelectorAll("#theme-presets .theme-eye")) {
     b.setAttribute("aria-pressed", "false");
     b.classList.remove("is-on");
   }
-  previewTheme("", 0);
+  const note = settingsControlState.themeNotice;
+  settingsControlState.themeNotice = null;
+  if (note) dismissToast(note);
+  previewTheme("");
+}
+//: The held preview's notice: the toast recipe with two actions, kept up
+//: until one is pressed (unstamped, so the stack never folds it away).
+function themePreviewNotice(name, label) {
+  if (settingsControlState.themeNotice) dismissToast(settingsControlState.themeNotice);
+  const box = toastHost();
+  const note = document.createElement("div");
+  note.className = "toast theme-preview-notice";
+  note.setAttribute("role", "status");
+  const text = document.createElement("span");
+  text.className = "toast-msg";
+  text.textContent = `Previewing the ${label} theme.`;
+  const apply = document.createElement("button");
+  apply.type = "button";
+  apply.className = "small toast-action";
+  apply.textContent = "Apply";
+  apply.addEventListener("click", () => {
+    releaseThemeHold();
+    applyThemePreset(name, true);
+    renderAppearance();
+  });
+  const cancel = document.createElement("button");
+  cancel.type = "button";
+  cancel.className = "ghost small";
+  cancel.textContent = "Cancel";
+  cancel.addEventListener("click", releaseThemeHold);
+  note.append(text, toastActions(apply, cancel));
+  settingsControlState.themeNotice = note;
+  toastStack(box, () => box.appendChild(note));
 }
 function themeEyeButton(name, label) {
   const eye = document.createElement("button");
@@ -2909,10 +2936,6 @@ function themeEyeButton(name, label) {
   icon.className = "ph ph-eye";
   icon.setAttribute("aria-hidden", "true");
   eye.appendChild(icon);
-  eye.addEventListener("pointerenter", () => previewTheme(name, 0));
-  eye.addEventListener("pointerleave", () => previewTheme(""));
-  eye.addEventListener("focus", () => eye.matches(":focus-visible") && previewTheme(name, 0));
-  eye.addEventListener("blur", () => previewTheme(""));
   eye.addEventListener("click", (event) => {
     event.stopPropagation();
     const wasHeld = settingsControlState.themeHold === name;
@@ -2921,7 +2944,8 @@ function themeEyeButton(name, label) {
     settingsControlState.themeHold = name;
     eye.setAttribute("aria-pressed", "true");
     eye.classList.add("is-on");
-    previewTheme(name, 0);
+    previewTheme(name);
+    themePreviewNotice(name, label);
   });
   return eye;
 }
@@ -2941,29 +2965,23 @@ function decorateThemeCards() {
     decorateThemeCards();
   };
   decorateThemeCards();
-  document.addEventListener("click", (event) => {
+  //: The ways out that are not the notice's buttons.
+  const close = closeSettingsModal;
+  closeSettingsModal = function closeSettingsModalEndingPreview() {
+    if (settingsControlState.themeHold) releaseThemeHold();
+    return close();
+  };
+  const show = showSettingsSection;
+  showSettingsSection = function showSettingsSectionEndingPreview(name) {
+    if (settingsControlState.themeHold && name !== currentSettingsSection) releaseThemeHold();
+    return show(name);
+  };
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden && settingsControlState.themeHold) releaseThemeHold();
+  });
+  //: Capture: a card chosen ends the preview before its own click applies it.
+  $("theme-presets")?.addEventListener("click", (event) => {
     if (settingsControlState.themeHold && !event.target.closest?.(".theme-eye")) releaseThemeHold();
-  }, true);
-})();
-(() => {
-  const holder = $("theme-presets");
-  if (!holder) return;
-  const card = (event) => event.target.closest?.(".theme-card");
-  holder.addEventListener("pointerover", (event) => {
-    if (event.pointerType === "touch") return;
-    const c = card(event);
-    if (c) previewTheme(c.dataset.preset);
-  });
-  holder.addEventListener("pointerleave", () => previewTheme(""));
-  holder.addEventListener("focusin", (event) => {
-    const c = card(event);
-    if (c && c.matches(":focus-visible")) previewTheme(c.dataset.preset);
-  });
-  holder.addEventListener("focusout", () => previewTheme(""));
-  //: Capture: the preview is gone before the card's own click applies the theme.
-  holder.addEventListener("click", () => {
-    clearTimeout(settingsControlState.themePreviewTimer);
-    settingsLook.themePreview = "";
   }, true);
 })();
 $("theme-surprise")?.addEventListener("click", () => {

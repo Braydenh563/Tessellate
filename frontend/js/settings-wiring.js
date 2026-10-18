@@ -780,8 +780,12 @@ document.addEventListener("keydown", (e) => {
     //: handler, so the toggle opened, closed, opened and closed at the
     //: keyboard's repeat rate. Holding "m" now shows the guide once and
     //: holds it there, which is what holding a key should mean.
-    if (e.repeat && e.key === "m") return;
-    if (tabJumpArmedAt && e.key === "m" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    if (e.repeat && (e.key === "m" || e.key === "t")) return;
+    //: **"t" (Tessellate) is the first key, "m" its alias** (C23, the owner's
+    //: decision: the app is Tessellate now). Either one, pressed again while
+    //: the guide is up, closes it; Timeline's second key moved from t to i so
+    //: "t t" has nothing else to mean.
+    if (tabJumpArmedAt && (e.key === "m" || e.key === "t") && !e.ctrlKey && !e.metaKey && !e.altKey) {
       tabJumpArmedAt = 0;
       hideChordGuide();
       return;
@@ -811,8 +815,9 @@ document.addEventListener("keydown", (e) => {
       // Not a recognised second key, fall through and let this keypress do
       // whatever it would have done anyway.
     } else if (
-      singleKeys && e.key === "m" && !e.ctrlKey && !e.metaKey && !e.altKey
-      //: An open board's M is its highlighter (`wbOwnsChord`, whiteboard.js).
+      singleKeys && (e.key === "m" || e.key === "t") && !e.ctrlKey && !e.metaKey && !e.altKey
+      //: An open board's M is its highlighter and its T the text tool
+      //: (`wbOwnsChord`, whiteboard.js).
       && !boardOwns
     ) {
       tabJumpArmedAt = performance.now();
@@ -1116,7 +1121,7 @@ restampShortcutHints();
 // establishes the disabled state the HTML already carries, not a real render.
 renderUndoBar();
 
-// "m" then a letter jumps tabs (m for Tessellate), GitHub and Gmail's own "go to" chord, and
+// "t" (or "m") then a letter jumps tabs (t for Tessellate), GitHub and Gmail's own "go to" chord, and
 // the reason it isn't in DEFAULT_SHORTCUTS/rebindable above: a chord needs
 // somewhere to hold the first keypress while it waits for the second, and
 // that's state this file has to own regardless, so it lives beside the
@@ -1128,7 +1133,7 @@ const TAB_JUMP_KEYS = {
   c: "chat",
   g: "graph",
   l: "library",
-  t: "timeline",
+  i: "timeline",
   r: "reminders",
 };
 //: The other half of the same chord: three things you *do* rather than three
@@ -1381,7 +1386,7 @@ function renderShortcutList() {
 //: **The key chip is the button** (INBOX 810, Row actions): a column of
 //: thirty-one bordered "Change" buttons was the heaviest thing in the pane,
 //: louder than the keys it changes. Pressing the keys starts the rebind and
-//: pressing them again cancels it; its words say which ("Change" or
+//: pressing them again cancels it; its title says which ("Change" or
 //: "Cancel"), and the back-to-default is a quiet icon after the words.
 function buildShortcutList(list) {
   list.replaceChildren();
@@ -1394,7 +1399,11 @@ function buildShortcutList(list) {
     const combo = document.createElement("kbd");
     combo.textContent = capturing ? "Press keys…" : def.keys;
     if (capturing) combo.classList.add("capturing");
-    change.append(combo);
+    //: A pencil says the keys are the way to change them (INBOX 1300 C22).
+    const pen = document.createElement("i");
+    pen.className = `ph ${capturing ? "ph-x" : "ph-pencil-simple"} shortcut-edit`;
+    pen.setAttribute("aria-hidden", "true");
+    change.append(combo, pen);
     change.title = capturing ? "Cancel" : "Change";
     change.setAttribute(
       "aria-label",

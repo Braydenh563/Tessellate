@@ -144,7 +144,9 @@ def test_an_act_row_is_a_tile_only_when_it_opts_in_with_quick():
     panes = (ROOT / "frontend" / "js" / "settings-panes.js").read_text(encoding="utf-8")
     row = panes[panes.index('label: "ph:closed-captioning Live captions"') :].split("\n", 1)[0]
     assert 'quick: "captions"' in row and "act: () => toggleLiveCaptions()" in row
-    assert len(re.findall(r'\bquick: "', panes)) == 1
+    stats = panes[panes.index('label: "ph:chart-bar Statistics"') :].split("\n", 1)[0]
+    assert 'quick: "statistics"' in stats and "act: () => openStatistics()" in stats
+    assert len(re.findall(r'\bquick: "', panes)) == 2
 
 
 def test_the_row_draws_from_the_command_catalogue_not_a_list_of_its_own():

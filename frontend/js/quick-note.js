@@ -451,6 +451,54 @@ async function pasteClipboardAsNote() {
 // draft note" already reaches chat bubbles, but only for whatever's
 // highlighted: this needs no selection at all, so the whole answer is one
 // press away instead of a select-then-click.
+//: **A conversation, kept as a document.**
+//:
+//: The transcript already exports as a file (the menu's Export row); this keeps it
+//: *inside* the notebook, where it is searchable, linkable and editable like
+//: everything else. Titled after the conversation so the Documents list reads
+//: as a list of conversations rather than of dated blobs.
+async function saveChatAsDocument() {
+  const text = chatTranscriptText();
+  if (!text) return toast("There is nothing to save yet.");
+  const title = ($("chat-title")?.textContent || "Chat").trim();
+  try {
+    const doc = await apiJson("/documents", {
+      method: "POST",
+      body: JSON.stringify({
+        title: `${title}: chat`,
+        content: `# ${title}\n\n${text}\n`,
+      }),
+    });
+    chatWriteRecord("chatDocumentUndo", doc);
+    toastAction("Saved to your documents.", "Open it", () => {
+      switchTab("documents");
+      openDocument(doc.id);
+    }, { go: { open: "doc", id: doc.id } });
+  } catch (error) {
+    toast(error.message || "Couldn't save that document.", true);
+  }
+}
+
+//: **Chat's Make a mind map** (`chatKeep("map", text, name)`; "doc" is Save this chat as a document) (MINDMAP_PLAN.md §12.3 item 3): an answer, or
+//: the whole conversation, outlined as a map by the same build a note's
+//: Make a mind map uses (`/whiteboard/maps/from-text`), so no model is
+//: needed. Lives here, not in chat.js, to stay out of the boot budget.
+async function chatKeep(kind, text, name) {
+  if (kind === "doc") return saveChatAsDocument();
+  const body = (text || "").trim();
+  if (!body) return toast("There is nothing to map yet.");
+  try {
+    const board = await apiJson("/whiteboard/maps/from-text", {
+      method: "POST",
+      body: JSON.stringify({ name: name || "", text: body }),
+    });
+    pushBinPairUndo("Made a mind map from a chat", `/entries/${board.id}`, `/entries/${board.id}/restore`, true, () => refreshEntries([board.id]));
+    toastAction(`Mind map \u201c${board.title}\u201d made.`, "Open", () => openWhiteboardBoard(board.id), { go: { open: "board", id: board.id } });
+  } catch (error) {
+    toast(error.message || "Couldn't make a mind map from this chat.", true);
+  }
+}
+
 async function saveChatAnswerAsNote(question, answer) {
   try {
     const content = question ? `${question}\n\n${answer}` : answer;

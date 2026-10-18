@@ -140,6 +140,19 @@ def streak(subject: str, notes: list[dict], today: date) -> Insight | None:
     return Insight("streak", _fill("streak", slots), ids, slots)
 
 
+#: The subject just before a plan's words: a pronoun for someone else, or a
+#: name ("Daniel wants to ...").
+_OTHERS_PLAN = re.compile(r"(?:\b(?:[Hh]e|[Ss]he|[Tt]hey|[Ww]e)|\b(?!I\b)[A-Z][a-z]+)\s+$")
+
+
+def _own_plan(note: dict, fact) -> bool:  # noqa: ANN001
+    """A plan the writer stated. "He wants to try the crag" is another
+    person's, said as the writer's ("this plan: wants to try ...", INBOX 1301 D5)."""
+    if fact.kind != "plan" or fact.mode != "asserted":
+        return False
+    return not _OTHERS_PLAN.search(str(note.get("content") or "")[: fact.start])
+
+
 def drift(notes: list[dict], today: date) -> list[Insight]:
     """Plans at least `DRIFT_DAYS` old that no later note follows up: the
     plan's own words, quoted, and the day it was written."""
@@ -151,7 +164,7 @@ def drift(notes: list[dict], today: date) -> list[Insight]:
         if written is None or (today - written).days < DRIFT_DAYS:
             continue
         for fact in factgraph.facts(note):
-            if fact.kind != "plan" or fact.mode != "asserted":
+            if not _own_plan(note, fact):
                 continue
             words = [w for w in re.findall(r"[a-z]{4,}", fact.attrs.get("object", "").lower()) if w not in _PLAIN]
             if not words:

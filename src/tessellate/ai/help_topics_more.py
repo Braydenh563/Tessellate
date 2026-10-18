@@ -62,6 +62,27 @@ MORE_TOPICS: list[dict] = [
         "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
     },
     {
+        "id": "companion-throw",
+        "keywords": (
+            "throw the companion", "flick the companion", "throwing the companion",
+            "companion splat", "companion climbs", "companion hangs from the top bar",
+            "companion went off the screen", "companion lies down",
+        ),
+        "body": (
+            "Throw the corner companion by letting go of it while it is still "
+            "moving fast. It flies, bounces off the window's edges and stays "
+            "where it lands, and now and then something else happens: it "
+            "catches the top bar and hangs from it, grabs a panel's top edge "
+            "and climbs on, splats against a side of the window and slides "
+            "down to the panel below, or goes off one side and comes back on "
+            "the other. Once down it settles in its own way: sitting with its "
+            "legs dangling or kicking, lying down, stretching, or swinging "
+            "from the bar. Wherever it ends, it never covers a button. With "
+            "Reduce motion on, it simply appears where it lands."
+        ),
+        "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
+    },
+    {
         "id": "atlas-look",
         "keywords": (
             "atlas look", "atlas style", "classic globe", "globe", "atlas character",
@@ -135,7 +156,7 @@ MORE_TOPICS: list[dict] = [
             "tools it can use", "which tools", "turn off a tool", "disable a tool",
             "small model mode", "run budget", "tool list", "tokens per step",
             "tools offered", "using a tool", "use a tool", "stop atlas using",
-            "cut that reply short", "model size", "calculator", "does atlas do sums",
+            "cut that reply short", "model size", "does atlas do sums",
         ),
         "body": (
             "Settings, Tools it can use also has Use these tools from another "
@@ -228,7 +249,7 @@ MORE_TOPICS: list[dict] = [
     {
         "id": "general-settings",
         "keywords": (
-            "smart quotes", "auto clear",
+            "smart quotes", "link offers", "offer links", "auto clear",
             "empty the bin", "delete old chats", "chat history", "mute notifications",
             "general settings",
         ),
@@ -237,7 +258,9 @@ MORE_TOPICS: list[dict] = [
             "number of days. Chat history: delete saved chats after a number "
             "of days (0 keeps every chat; pinned chats are never deleted). "
             "Notifications: mute everything except reminders. Writing: smart "
-            "quotes and dashes in documents. Answer style moved to Settings, "
+            "quotes and dashes in documents, and offers to turn a named note or document into a link "
+            "(switch them off there, or press Never offer a link to this name on one offer; Offer them "
+            "again brings every kept name back). Answer style moved to Settings, "
             "Personas, and Search relevance to Settings, Search and index."
         ),
         "badge": {"label": "General", "section": "general"},
@@ -292,6 +315,7 @@ MORE_TOPICS: list[dict] = [
             "natural wording", "wording when no model", "composer voice",
             "voice", "playful", "plain answers", "neutral", "how atlas sounds",
             "insight", "patterns in answers", "what atlas adds",
+            "long text in an answer", "wall of text", "folded text",
         ),
         "body": (
             "Settings, Personas, Answer style: how Atlas words its answers, "
@@ -302,7 +326,10 @@ MORE_TOPICS: list[dict] = [
             "The facts and the sources are the same in every voice. What "
             "Atlas adds of its own sets whether an answer about a topic ends "
             "with a pattern from your notes: Nothing, One line (the default) "
-            "or Everything it finds; each Not right raises the bar."
+            "or Everything it finds; each Not right raises the bar. A long "
+            "block in any reply (the text read from a picture, say) is folded "
+            "to one line, its first sentence and its length; press it to read "
+            "the whole."
         ),
         "badge": {"label": "Answer style", "section": "personas", "target": "pref-style"},
     },
@@ -428,7 +455,9 @@ MORE_TOPICS: list[dict] = [
             "to install, reinstall or remove several at once from the bar "
             "above the list; they run one after another and one that fails "
             "does not stop the rest; a bundle's row shows each of its packages "
-            "as it goes, waiting, installing or done. An installed package's ⋮ has Reinstall "
+            "as it goes, waiting, installing or done. A notice that names Settings, Packages "
+            "(a feature that is not installed) has an Open Packages button that scrolls to "
+            "that package's row. An installed package's ⋮ has Reinstall "
             "(for a feature that is on but not working) and Remove (the "
             "packaged app keeps its Desktop window, so that row has Reinstall "
             "only), and its row shows its version and size on disk. What pip is "
@@ -567,7 +596,7 @@ MORE_TOPICS: list[dict] = [
             "build a scheme", "border style", "shadow", "interface animations",
         ),
         "body": (
-            "Settings, Appearance. Themes: hover a theme, or press the eye in its corner, to see it on the whole app, "
+            "Settings, Appearance. Themes: press the eye in a theme's corner to see it on the whole app, then Apply or Cancel, "
             "press Surprise me for a random one, save and switch your own. Theme & "
             "colour: Palette, Mode (light, dark or system), Accent colour or a "
             "custom one (a colour a button's words cannot be read on is "
@@ -582,7 +611,8 @@ MORE_TOPICS: list[dict] = [
             "indicators, Reduce motion (stills Atlas, the background art, the "
             "graph and the whiteboard) and Interface animations (on by default: "
             "a button's press, menus and dialogs opening, a tab's sliding marker, "
-            "even with Reduce motion on; off makes them instant). Advanced has "
+            "even with Reduce motion on; off makes them instant) with Reveal "
+            "replies under it (a reply no model wrote rises into place). Advanced has "
             "Custom CSS. Ctrl+Shift+L "
             "switches light and dark from anywhere."
         ),
@@ -603,7 +633,7 @@ MORE_TOPICS: list[dict] = [
             "everything else in one place. Timeline: everything by date. "
             "Reminders: what is due. Settings (the gear, or Ctrl+,) holds the "
             "rest, and Atlas the guide (this chat) answers how-to questions "
-            "from any tab. Press m then a letter to jump between tabs (o opens the OCR workspace), and "
+            "from any tab. Press t then a letter to jump between tabs (o opens the OCR workspace), and "
             "Settings, Help starts the guided tour."
         ),
         "badge": {"label": "Help", "section": "help"},
@@ -827,10 +857,33 @@ MORE_TOPICS: list[dict] = [
             "written and reminders done since Monday with the whole of last week. "
             "Open it from the Statistics button under the Dashboard's Activity "
             "heatmap (or a click on the heatmap), the This week card's All "
-            "statistics, or Statistics in the command palette (Ctrl+K). Private "
-            "and binned notes are not counted."
+            "statistics, or Statistics in the command palette (Ctrl+K). Ask "
+            "\"notebook stats\" or type /stats in Chat, Ask or the popup agent and "
+            "the answer carries the figures as cards with small charts, and Open "
+            "Statistics in their head. Private and binned notes are not counted."
         ),
         "badge": {"label": "Dashboard", "tab": "dashboard"},
+    },
+    {
+        "id": "calculator",
+        "keywords": (
+            "calculator", "open the calculator", "keypad", "unit converter",
+            "convert units", "currency converter", "work out a sum",
+        ),
+        "body": (
+            "The calculator works out sums, percentages and conversions with no "
+            "model, the same way /calc does. Open it from the command palette "
+            "(Ctrl+K, Calculator), by typing /calc with nothing after it, or "
+            "with Open the calculator under an answer that worked something "
+            "out. Work out takes a sum typed or keyed (12 * (3 + 4), 15% of 80, "
+            "5 km to miles), shows the result as you type and says how it read "
+            "it; Enter or = keeps it in the list of earlier results, and Copy "
+            "result copies it. The keypad is one Tab stop: the arrow keys move "
+            "around it. Convert units picks a kind (length, weight, currency "
+            "and more), an amount and two units, with a swap button; currency "
+            "rates are set by hand and dated, not today's rate."
+        ),
+        "badge": {"label": "Chat", "tab": "chat"},
     },
     {
         "id": "timer",
@@ -860,19 +913,21 @@ MORE_TOPICS: list[dict] = [
         "keywords": (
             "first steps", "start in three steps", "sample notebook", "sample notes", "example notes",
             "remove the sample notes", "demo notes", "try it out", "hide these steps", "get started", "setup popup", "closed the welcome", "checklist",
+            "hide get started", "mark all as done", "show get started", "fold the first steps",
         ),
         "body": (
-            "A new notebook's Dashboard shows Start in three steps: 1. Your name, "
-            "2. Write a note, 3. Ask your notebook. Each is ticked when it is done, "
-            "and none of them needs an AI model: Ask answers from your notes' own "
+            "A new notebook's Dashboard shows Get started, a checklist of three steps: 1. Your name, "
+            "2. Write a note, 3. Ask your notebook, with a bar showing how many are done. Each is ticked "
+            "when it is done, and none of them needs an AI model: Ask answers from your notes' own "
             "words, and saving your first note offers Ask about it beside "
-            "Saved. Try a sample notebook adds eight example notes, tagged "
+            "Saved. The caret folds the steps to one line. The card's ... menu holds Try a sample notebook, which adds eight example notes, tagged "
             "sample-notebook, to explore (ask \"where is the spare key?\", see two "
             "linked notes in the Graph); it is offered until you write your own "
             "first note. Remove the sample notes moves them all to the bin, where "
             "Restore brings one back, and takes away the categories they made. The steps leave once all three are done and "
-            "the sample notes are gone, or with Hide these steps. They are never lost: the "
-            "dashboard's Get started menu (beside Customise) lists the same three, ticked as "
+            "the sample notes are gone. Mark all as done ticks every step and puts the card away; Hide Get started "
+            "hides the card and the dock's Get started button. Customise, Show Get started brings them back. "
+            "Until then the dashboard's Get started menu (beside Customise) lists the same three, ticked as "
             "they are done, with Take the tour and Replay the welcome, and the same checklist "
             "is the first row of the notifications bell until all three are done."
         ),
@@ -1470,6 +1525,32 @@ MORE_TOPICS.extend(
             "badge": {"label": "Chat", "tab": "chat"},
         },
         {
+            #: INBOX 1300 C30: the viewer's two bars, filmstrip, keys and gestures.
+            "id": "image-viewer",
+            "keywords": (
+                "image viewer", "lightbox", "view a picture", "zoom a picture",
+                "rotate a picture", "actual size", "filmstrip", "next picture",
+                "pinch to zoom", "swipe pictures", "download a picture",
+                "open in a new tab", "picture details",
+            ),
+            "body": (
+                "A picture or file opens in the viewer. The bar at the top names "
+                "it and says where you are (2 of 5), with Copy text when it has "
+                "a reading, Download, Open in a new tab, Details (the size, the "
+                "caption and the text read off it, shown or hidden), the '?' "
+                "and the ⋯ (rename, delete, see the text on the page). The bar at "
+                "the foot zooms: out, in, back to fit, 1:1 for actual size, and "
+                "Rotate; a PDF adds its page stepper. With more than one file a "
+                "filmstrip above it jumps to any of them. Scroll zooms where the "
+                "pointer is, drag moves a zoomed picture, double-click switches "
+                "between fit and actual size. Keys: Left and Right, plus and "
+                "minus, 0, 1, R, I, Escape. On a phone, swipe and pinch. The bars "
+                "fade while the mouse rests on the picture and come back when it "
+                "moves; never for the keyboard or reduced motion."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
             #: INBOX 688, 714: the Ask box's Use AI switch.
             "id": "answers-from-notes",
             "keywords": (
@@ -1496,9 +1577,9 @@ MORE_TOPICS.extend(
                     "mode is greyed unless the Needle extra can run it (the app's own tools go first). Every "
                     "sentence is quoted from a note and cited like any answer; the app adds only the joining "
                     "words and the counts and dates it measured, names two notes that may disagree, and says "
-                    "which of your words none of the notes found mention. In Ask the chip over the answer "
-                    "reads From your notes; in Chat the reply's head reads Atlas, from your notes (Atlas and "
-                    "the model's name when a model wrote it). The No model connected line above the Chat box "
+                    "which of your words none of the notes found mention. Beside the name on every answer a "
+                    "badge says who wrote it: From your notes, the model's name, or Composer when the app "
+                    "answered itself. The No model connected line above the Chat box "
                     "and the Ask box has a close button (the small x at its end): it hides that line until "
                     "the next time you start the app, a new session, and connecting a model in Settings, "
                     "Models always brings the answers back. Hide it for good under Model backend."
@@ -1755,8 +1836,8 @@ MORE_TOPICS.extend(
                 "Sticky notes and text boxes on a board. A sticky (N, or the note "
                 "on the tool dock) is paper: its colour, a lift, and a folded "
                 "corner. A text box (T) is words on the board, with no fill and a "
-                "faint dashed edge. Select a sticky and its bar starts with seven "
-                "papers (yellow, orange, pink, purple, blue, green, grey); any other "
+                "faint dashed edge. Select a sticky and its bar starts with a Paper "
+                "button that drops down seven papers (yellow, orange, pink, purple, blue, green, grey); any other "
                 "colour, and a text box's own fill or edge, are under the bar's ... "
                 "menu, Box. The folded corner can be switched off for one note (Format "
                 "panel, Folded corner) or as the board's default (View, Folded sticky "
@@ -1949,12 +2030,12 @@ MORE_TOPICS.extend(
 TOPIC_META: dict[str, dict] = {
     "open-questions": {"title": "Open questions", "path": "Notes tab, Questions"},
     "capture": {"title": "Capturing a note", "path": "Notes tab", "steps": (
-        "Open the Notes tab (m then n).", "Type into Capture a thought.", "Press Save: a local AI files it and suggests tags.")},
+        "Open the Notes tab (t then n).", "Type into Capture a thought.", "Press Save: a local AI files it and suggests tags.")},
     "ask-chat": {"title": "Asking and chatting", "path": "Chat tab, or Ctrl+Shift+A over any tab"},
     "skills": {"title": "Skills", "path": "Settings, Skills"},
     "graph": {"title": "The graph", "path": "Graph tab"},
     "reminders": {"title": "Reminders", "path": "Reminders tab", "steps": (
-        "Open the Reminders tab (m then r).", "Type into Remind me to, with a time such as \"tomorrow at 5pm\".",
+        "Open the Reminders tab (t then r).", "Type into Remind me to, with a time such as \"tomorrow at 5pm\".",
         "Press Add; pick a priority or a repeat first if you like.")},
     "dashboard": {"title": "The dashboard", "path": "Dashboard tab"},
     "library": {"title": "The Library", "path": "Library tab"},
@@ -1975,8 +2056,9 @@ TOPIC_META: dict[str, dict] = {
     "usage-ledger": {"title": "What you use", "path": "Settings, General, What you use", "target": "usage-box"},
     "statistics": {"title": "Statistics", "path": "Dashboard, Activity heatmap, Statistics"},
     "timer": {"title": "Timer and stopwatch", "path": "Command palette, timer"},
+    "calculator": {"title": "The calculator", "path": "Command palette, Calculator"},
     "manual": {"title": "The manual", "path": "Settings, Help, Open the manual"},
-    "first-steps": {"title": "First steps and the sample notebook", "path": "Dashboard, Start in three steps"},
+    "first-steps": {"title": "First steps and the sample notebook", "path": "Dashboard, Get started"},
     "live-captions": {"title": "How do I get live captions", "path": "Library, Recordings, Captions"},
     "count-words": {"title": "Count words", "path": "Command palette, Count words"},
     "translate-offline": {"title": "Translate this, offline", "path": "Command palette, Translate this"},
@@ -2002,6 +2084,8 @@ TOPIC_META: dict[str, dict] = {
     "notifications": {"title": "Notifications", "path": "The bell in the top bar"},
     "companion": {"title": "The corner companion", "path": "Settings, Appearance, Atlas and faces, Corner companion", "steps": (
         "Open Settings, Appearance, Atlas and faces.", "Pick who it is under Corner companion.", "Right-click it on the page for its menu; Ctrl+Shift+Y shows or hides it.")},
+    "image-viewer": {"title": "The picture and PDF viewer", "path": "Library, open a picture or PDF"},
+    "companion-throw": {"title": "Throwing the companion", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
     "atlas-look": {"title": "How Atlas looks", "path": "Settings, Appearance, Atlas and faces, Atlas style and Atlas look"},
     "faces": {"title": "Generated faces", "path": "Settings, Appearance, Atlas and faces"},
     "profile": {"title": "Your profile", "path": "Settings, Profile"},
@@ -2151,18 +2235,18 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     )),
     ("Library and files", (
         "library", "library-controls", "bookmarks", "web-clipper-bookmark", "contents", "library-skills",
-        "files-images", "ocr-workspace", "ocr-engine", "archive", "undo-bin",
+        "files-images", "image-viewer", "ocr-workspace", "ocr-engine", "archive", "undo-bin",
     )),
     ("Graph, Timeline, Reminders and Dashboard", (
         "graph", "graph-controls", "graph-display", "entities", "properties", "timeline", "timeline-controls", "reminders",
         "reminders-controls", "dashboard", "dashboard-controls", "patterns", "notifications", "spaces", "statistics",
     )),
     ("Small tools", (
-        "timer", "count-words", "insert-template",
+        "timer", "calculator", "count-words", "insert-template",
     )),
     ("Look and feel", (
         "appearance", "themes", "simple-mode", "accessibility", "performance", "background-art",
-        "statusbar", "companion", "atlas-look", "faces",
+        "statusbar", "companion", "companion-throw", "atlas-look", "faces",
     )),
     ("Models and the AI", (
         "models", "model-downloads", "model-bench", "tools-setting", "autonomous", "websearch",
@@ -2420,7 +2504,8 @@ MORE_TOPICS.extend([
             "value; a name starts with a letter. Changes save as you leave a field, "
             "each one Undo step, and the values stay with the item. Type %name% in a "
             "shape's or connector's words to show that value there (a name it does not "
-            "have stays as typed), and a shape or connector can take a Tooltip, shown "
+            "have stays as typed). %date% shows today's date and %page% the title of the "
+            "frame the item sits in, unless the item has a value of that name. A shape or connector can take a Tooltip, shown "
             "when the pointer rests on it. Find on the board reads the values too."
         ),
         "badge": {"label": "Library", "tab": "library"},
@@ -2573,7 +2658,10 @@ def _slash_commands_topic() -> dict:
             "Type a command in the chat box for an exact answer from your notes, with no AI. "
             f"{listed} Typing / opens a menu with a row for each command; one that takes words "
             "fills the box with its name and waits for them. Asking in plain words "
-            "(\"which notes have no tags\") runs the same command."
+            "(\"which notes have no tags\") runs the same command. A note named "
+            "in any reply (Chat, Ask, the popup agent, the Guide) previews on hover "
+            "or focus, and a reply that gives one to three notes shows each as a "
+            "card under it; press a card to open the note."
         ),
         "badge": {"label": "Chat", "tab": "chat"},
     }

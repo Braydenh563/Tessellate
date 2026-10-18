@@ -81,6 +81,8 @@ SCRIPTS = (
     #: The palette's timer, stopwatch, counts and templates (Brief 89),
     #: lazy behind `LAZY_MODULES.utilities`.
     "utility-tools.js",
+    #: The calculator (INBOX 1300 C06), lazy behind `LAZY_MODULES.replyKit`.
+    "reply-kit.js",
 )
 
 #: Names a row may call that are the platform rather than the app. Kept short

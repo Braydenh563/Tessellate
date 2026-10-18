@@ -1574,7 +1574,22 @@ $("web-reader-find").addEventListener("click", () => openGlobalFind({ scope: "we
 //: Enter adds it, the way a one-line "add" field works everywhere; a
 //: reminder had to be clicked in with the mouse after typing it. Skipped
 //: while an input method is composing, where Enter picks a candidate.
+//: Escape in the sentence box clears what was typed, and on an empty box leaves
+//: it, the way a search field behaves (WORLD_CLASS row 32: it did nothing). On a
+//: phone the form is a sheet whose own Escape closes it, so a press the sheet
+//: has taken is left alone.
 $("reminder-text")?.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !event.defaultPrevented && !event.isComposing) {
+    const box = event.currentTarget;
+    if (box.value) {
+      event.preventDefault();
+      event.stopPropagation();
+      box.value = "";
+    } else if (!document.querySelector(".sheet-overlay:not(.hidden)")) {
+      box.blur();
+    }
+    return;
+  }
   if (event.key !== "Enter" || event.shiftKey || event.isComposing) return;
   event.preventDefault();
   $("reminder-add").click();
