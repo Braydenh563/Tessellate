@@ -365,10 +365,16 @@ def _utility_words() -> frozenset[str]:
 _UTILITY_WORDS: list[frozenset[str]] = []
 
 
-@functools.lru_cache(maxsize=128)
 def kind_of(question: str) -> str | None:
     """Which utility `question` is, or None: the router's question, answered
     without working anything out."""
+    return _kind_of_cached(question, web_on())
+
+
+#: The web setting is part of the key: "search the web for ..." reads as a
+#: question about the app only while it is off, and the person can flip it.
+@functools.lru_cache(maxsize=128)
+def _kind_of_cached(question: str, web: bool) -> str | None:
     return _kind_of(_heard(question))
 
 
@@ -661,9 +667,10 @@ def web_on() -> bool:
     deps = sys.modules.get("tessellate.core.deps")
     if deps is None:
         return False
+    config = deps.peek_config()
     try:
-        return bool(deps.get_config().get_preference("web_search_enabled", False))
-    except Exception:  # noqa: BLE001  # no app state yet: off
+        return bool(config and config.get_preference("web_search_enabled", False))
+    except Exception:  # noqa: BLE001  # no readable setting yet: off
         return False
 
 

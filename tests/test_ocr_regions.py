@@ -18,8 +18,13 @@ import sys
 import types
 from pathlib import Path
 
+import pytest
 
 from tessellate.core import ocr
+
+#: `extract_regions` reads the saved OCR language, which builds app state; without the
+#: fixture that falls back to the repo's own `./data` (CI's serial PDF job caught it).
+pytestmark = pytest.mark.usefixtures("app_state")
 
 
 class _FakeImage:

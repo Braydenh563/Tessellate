@@ -32,6 +32,18 @@ def test_a_long_question_is_not_read_for_a_utility_word_by_word():
     assert time.perf_counter() - started < 0.05
 
 
+def test_the_utility_reading_follows_the_web_search_setting(app_state):
+    """`kind_of` is cached, and "search the web for sandwiches" reads as a
+    question about the app only while web search is off."""
+    from tessellate.ai import utilities
+
+    question = "search the web for sandwiches"
+    app_state.set_preference("web_search_enabled", False)
+    off = utilities.kind_of(question)
+    app_state.set_preference("web_search_enabled", True)
+    assert utilities.kind_of(question) != off
+
+
 def test_a_short_question_is_planned_over_all_of_it():
     assert composer.plan("what did I write about golf") == composer.plan("what did I write about golf"[: composer.PLAN_CHARS])
 

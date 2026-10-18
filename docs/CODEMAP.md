@@ -2,7 +2,7 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 5957, frontend ids 2510, CSS sections 495, backend routes 607, backend modules 5677, test files 1233, tests 11194, plan headings 957.
+Counts: frontend functions 5957, frontend ids 2510, CSS sections 495, backend routes 607, backend modules 5679, test files 1233, tests 11195, plan headings 957.
 
 ## Frontend functions (5957)
 
@@ -10456,7 +10456,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (5677)
+## Backend modules (5679)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -13182,61 +13182,62 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `server_unreachable` | src/tessellate/ai/unreachable.py:10 |
 
-### src/tessellate/ai/utilities.py (51)
+### src/tessellate/ai/utilities.py (52)
 
 | Name | File:line |
 |---|---|
-| `_calculation_kind` | src/tessellate/ai/utilities.py:382 |
+| `_calculation_kind` | src/tessellate/ai/utilities.py:388 |
 | `_clean` | src/tessellate/ai/utilities.py:100 |
-| `_clock` | src/tessellate/ai/utilities.py:618 |
+| `_clock` | src/tessellate/ai/utilities.py:624 |
 | `_clock_swap` | src/tessellate/ai/utilities.py:312 |
 | `_compile_convert` | src/tessellate/ai/utilities.py:42 |
 | `_compile_money` | src/tessellate/ai/utilities.py:62 |
 | `_convert` | src/tessellate/ai/utilities.py:150 |
 | `_currency` | src/tessellate/ai/utilities.py:171 |
-| `_date_kind` | src/tessellate/ai/utilities.py:406 |
+| `_date_kind` | src/tessellate/ai/utilities.py:412 |
 | `_dates` | src/tessellate/ai/utilities.py:198 |
 | `_day_words` | src/tessellate/ai/utilities.py:120 |
-| `_edits` | src/tessellate/ai/utilities.py:541 |
-| `_heading_at` | src/tessellate/ai/utilities.py:845 |
+| `_edits` | src/tessellate/ai/utilities.py:547 |
+| `_heading_at` | src/tessellate/ai/utilities.py:852 |
 | `_heard` | src/tessellate/ai/utilities.py:323 |
-| `_hm` | src/tessellate/ai/utilities.py:577 |
+| `_hm` | src/tessellate/ai/utilities.py:583 |
 | `_in_symbols` | src/tessellate/ai/utilities.py:261 |
-| `_is_clock` | src/tessellate/ai/utilities.py:581 |
-| `_kind_of` | src/tessellate/ai/utilities.py:375 |
-| `_list_answer` | src/tessellate/ai/utilities.py:755 |
+| `_is_clock` | src/tessellate/ai/utilities.py:587 |
+| `_kind_of` | src/tessellate/ai/utilities.py:381 |
+| `_kind_of_cached` | src/tessellate/ai/utilities.py:377 |
+| `_list_answer` | src/tessellate/ai/utilities.py:762 |
 | `_list_of` | src/tessellate/ai/utilities.py:303 |
-| `_month_days` | src/tessellate/ai/utilities.py:768 |
-| `_nearest_place` | src/tessellate/ai/utilities.py:528 |
+| `_month_days` | src/tessellate/ai/utilities.py:775 |
+| `_nearest_place` | src/tessellate/ai/utilities.py:534 |
 | `_number` | src/tessellate/ai/utilities.py:107 |
 | `_numbers` | src/tessellate/ai/utilities.py:294 |
 | `_one` | src/tessellate/ai/utilities.py:131 |
-| `_other_day` | src/tessellate/ai/utilities.py:613 |
-| `_other_kind` | src/tessellate/ai/utilities.py:417 |
+| `_other_day` | src/tessellate/ai/utilities.py:619 |
+| `_other_kind` | src/tessellate/ai/utilities.py:423 |
 | `_patterns` | src/tessellate/ai/utilities.py:73 |
-| `_place_said` | src/tessellate/ai/utilities.py:589 |
+| `_place_said` | src/tessellate/ai/utilities.py:595 |
 | `_plural` | src/tessellate/ai/utilities.py:124 |
 | `_said` | src/tessellate/ai/utilities.py:111 |
 | `_salted` | src/tessellate/ai/utilities.py:193 |
 | `_sum_of` | src/tessellate/ai/utilities.py:269 |
-| `_swap_answer` | src/tessellate/ai/utilities.py:777 |
+| `_swap_answer` | src/tessellate/ai/utilities.py:784 |
 | `_temperature` | src/tessellate/ai/utilities.py:145 |
-| `_twelve` | src/tessellate/ai/utilities.py:568 |
+| `_twelve` | src/tessellate/ai/utilities.py:574 |
 | `_utility_words` | src/tessellate/ai/utilities.py:351 |
-| `_web_capability` | src/tessellate/ai/utilities.py:670 |
-| `_where` | src/tessellate/ai/utilities.py:605 |
-| `_zone_cities` | src/tessellate/ai/utilities.py:498 |
-| `_zone_said` | src/tessellate/ai/utilities.py:595 |
-| `answer` | src/tessellate/ai/utilities.py:685 |
-| `counts` | src/tessellate/ai/utilities.py:818 |
-| `kind_of` | src/tessellate/ai/utilities.py:369 |
+| `_web_capability` | src/tessellate/ai/utilities.py:677 |
+| `_where` | src/tessellate/ai/utilities.py:611 |
+| `_zone_cities` | src/tessellate/ai/utilities.py:504 |
+| `_zone_said` | src/tessellate/ai/utilities.py:601 |
+| `answer` | src/tessellate/ai/utilities.py:692 |
+| `counts` | src/tessellate/ai/utilities.py:825 |
+| `kind_of` | src/tessellate/ai/utilities.py:368 |
 | `now_day` | src/tessellate/ai/utilities.py:238 |
-| `outline` | src/tessellate/ai/utilities.py:861 |
-| `place_name_for` | src/tessellate/ai/utilities.py:510 |
-| `reading_time` | src/tessellate/ai/utilities.py:833 |
+| `outline` | src/tessellate/ai/utilities.py:868 |
+| `place_name_for` | src/tessellate/ai/utilities.py:516 |
+| `reading_time` | src/tessellate/ai/utilities.py:840 |
 | `until_subject` | src/tessellate/ai/utilities.py:242 |
-| `web_on` | src/tessellate/ai/utilities.py:657 |
-| `zone_for` | src/tessellate/ai/utilities.py:554 |
+| `web_on` | src/tessellate/ai/utilities.py:663 |
+| `zone_for` | src/tessellate/ai/utilities.py:560 |
 
 ### src/tessellate/ai/validate.py (12)
 
@@ -15383,11 +15384,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `atomic_write_json` | src/tessellate/core/atomic_io.py:79 |
 | `atomic_write_text` | src/tessellate/core/atomic_io.py:53 |
 
-### src/tessellate/core/background.py (4)
+### src/tessellate/core/background.py (5)
 
 | Name | File:line |
 |---|---|
 | `Entry` | src/tessellate/core/background.py:26 |
+| `join_all` | src/tessellate/core/background.py:82 |
 | `running` | src/tessellate/core/background.py:57 |
 | `start` | src/tessellate/core/background.py:37 |
 | `stop_all` | src/tessellate/core/background.py:68 |
@@ -17642,7 +17644,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11194)
+## Tests (11195)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -17843,7 +17845,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_eval_725.py | 6 |
 | tests/test_composer_eval_741.py | 6 |
 | tests/test_composer_grammar.py | 3 |
-| tests/test_composer_long_question.py | 6 |
+| tests/test_composer_long_question.py | 7 |
 | tests/test_composer_overview_787.py | 18 |
 | tests/test_composer_owner_1017.py | 14 |
 | tests/test_composer_parts.py | 4 |
@@ -19582,7 +19584,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1265 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1294 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:364 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:296 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4173 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
