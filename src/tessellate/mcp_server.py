@@ -279,6 +279,70 @@ def _call_tool(name: str, arguments: dict) -> dict:
     return {"content": [{"type": "text", "text": json.dumps(result)}], "isError": is_error}
 
 
+class _Refused(Exception):
+    """A method that answers with a JSON-RPC error rather than a result."""
+
+    def __init__(self, code: int, why: str) -> None:
+        super().__init__(why)
+        self.code = code
+        self.why = why
+
+
+def _initialize(message: dict) -> dict:
+    params = message.get("params") or {}
+    info = params.get("clientInfo") or {}
+    _client["name"] = str(info.get("name") or "") if isinstance(info, dict) else ""
+    asked = params.get("protocolVersion")
+    if asked in SUPPORTED_PROTOCOLS:
+        version = asked
+    elif asked:
+        version = SUPPORTED_PROTOCOLS[0]
+    else:
+        version = PROTOCOL_VERSION
+    capabilities: dict = {"tools": {}, "prompts": {}}
+    if _resources_offered():
+        capabilities["resources"] = {}
+    return {
+        "protocolVersion": version,
+        "capabilities": capabilities,
+        "serverInfo": {"name": SERVER_NAME, "version": SERVER_VERSION},
+    }
+
+
+def _tools_call(message: dict) -> dict:
+    params = message.get("params") or {}
+    return _call_tool(params.get("name", ""), params.get("arguments") or {})
+
+
+def _resources_read_method(message: dict) -> dict:
+    result, why = _resources_read(message.get("params") or {})
+    if result is None:
+        raise _Refused(RESOURCE_NOT_FOUND, why)
+    return result
+
+
+def _prompts_get_method(message: dict) -> dict:
+    result, why = _prompts_get(message.get("params") or {})
+    if result is None:
+        raise _Refused(INVALID_PARAMS, why)
+    return result
+
+
+#: Each method's answer. Notifications that get no reply are not here: they
+#: fall to the same `None` an unknown notification does.
+_METHODS = {
+    "initialize": _initialize,
+    "ping": lambda message: {},
+    "tools/list": lambda message: {"tools": _tool_list_payload()},
+    "tools/call": _tools_call,
+    "resources/list": lambda message: _resources_list(message.get("params") or {}),
+    "resources/templates/list": lambda message: _resource_templates(),
+    "resources/read": _resources_read_method,
+    "prompts/list": lambda message: _prompts_list(),
+    "prompts/get": _prompts_get_method,
+}
+
+
 def handle_request(message: dict) -> dict | None:
     """One JSON-RPC message in, one response out, or `None` for a
     notification, which gets no reply at all (a bare `id`-less message, per
@@ -288,57 +352,19 @@ def handle_request(message: dict) -> dict | None:
     method = message.get("method")
     msg_id = message.get("id")
     is_notification = "id" not in message
-
-    if method == "initialize":
-        info = (message.get("params") or {}).get("clientInfo") or {}
-        _client["name"] = str(info.get("name") or "") if isinstance(info, dict) else ""
-        asked = (message.get("params") or {}).get("protocolVersion")
-        if asked in SUPPORTED_PROTOCOLS:
-            version = asked
-        elif asked:
-            version = SUPPORTED_PROTOCOLS[0]
-        else:
-            version = PROTOCOL_VERSION
-        capabilities: dict = {"tools": {}, "prompts": {}}
-        if _resources_offered():
-            capabilities["resources"] = {}
-        result = {
-            "protocolVersion": version,
-            "capabilities": capabilities,
-            "serverInfo": {"name": SERVER_NAME, "version": SERVER_VERSION},
-        }
-    elif method in ("notifications/initialized", "notifications/cancelled"):
-        return None
-    elif method == "ping":
-        result = {}
-    elif method == "tools/list":
-        result = {"tools": _tool_list_payload()}
-    elif method == "tools/call":
-        params = message.get("params") or {}
-        result = _call_tool(params.get("name", ""), params.get("arguments") or {})
-    elif method == "resources/list":
-        result = _resources_list(message.get("params") or {})
-    elif method == "resources/templates/list":
-        result = _resource_templates()
-    elif method == "resources/read":
-        result, why = _resources_read(message.get("params") or {})
-        if result is None:
-            return None if is_notification else _error(msg_id, RESOURCE_NOT_FOUND, why)
-    elif method == "prompts/list":
-        result = _prompts_list()
-    elif method == "prompts/get":
-        result, why = _prompts_get(message.get("params") or {})
-        if result is None:
-            return None if is_notification else _error(msg_id, INVALID_PARAMS, why)
-    else:
-        if is_notification:
+    handler = _METHODS.get(method)
+    if handler is None:
+        if is_notification or str(method).startswith("notifications/"):
             return None
         return {
             "jsonrpc": "2.0",
             "id": msg_id,
             "error": {"code": -32601, "message": f"Unknown method '{method}'"},
         }
-
+    try:
+        result = handler(message)
+    except _Refused as refused:
+        return None if is_notification else _error(msg_id, refused.code, refused.why)
     if is_notification:
         return None
     return {"jsonrpc": "2.0", "id": msg_id, "result": result}

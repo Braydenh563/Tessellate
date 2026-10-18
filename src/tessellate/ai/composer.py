@@ -2578,7 +2578,12 @@ def _days_named(view: NoteView, today: date, tense: str) -> list[tuple[date, int
 
     ahead = tense == "future"
     dated = []
-    for fact in factgraph.facts(view.note):
+    #: The route's notes carry their day as `written` words and no ISO
+    #: `created_at`, which the fact graph anchors "Friday" and a bare day and
+    #: month on: handed over, as `_insights_for` does (measured 2026-10-18:
+    #: "what is due this week" found no day in notes that name three).
+    note = {**view.note, "created_at": view.written.isoformat()} if view.written and not view.note.get("created_at") else view.note
+    for fact in factgraph.facts(note):
         if fact.kind != "date" or not fact.when or fact.when[2] != "day":
             continue
         day = fact.when[0]

@@ -1370,7 +1370,7 @@ function atlasRetune(next) {
   for (const host of document.querySelectorAll("svg.atl-defs")) {
     for (const key of ATLAS_TUNE_COLOURS) host.style.setProperty(`--atl-${key}`, tune.colours[key] || "");
   }
-  if (typeof atlasRepaint === "function") atlasRepaint();
+  atlasRepaint();
   return tune;
 }
 
@@ -3516,7 +3516,7 @@ function atlasRepaint() {
     //: figure is redrawn once, whole (INBOX 430).
     if (svg.classList.contains("atl-layer")) {
       const box = svg.closest(".atl-figure-box");
-      if (box && box.isConnected && typeof atlasFigure === "function") box.replaceWith(atlasFigure());
+      if (box && box.isConnected) box.replaceWith(atlasFigure());
       continue;
     }
     const size = Number(svg.getAttribute("height")) || 20;

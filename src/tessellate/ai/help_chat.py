@@ -156,7 +156,7 @@ HELP_TOPICS: list[dict] = [
             "does every change and web request. "
             "Conversations save and rename in the sidebar; the same agent pops "
             "open over any tab with Ctrl/Cmd+Shift+A (from More on a phone), "
-            "runs with no model, and Ctrl+Z takes back its last write. "
+            "runs with no model, numbers its answers like Chat's, and Ctrl+Z takes back its last write. "
             "While an answer is coming, "
             "the line under it says what is happening: Reaching Atlas, Reading "
             "your notes, Waking the model, Atlas is thinking, Atlas is writing, "
@@ -294,14 +294,14 @@ HELP_TOPICS: list[dict] = [
     },
     {
         "id": "whiteboard",
-        "keywords": ("whiteboard", "sketch pad", "canvas", "freehand", "arrange as a grid", "grid of", "stack them", "sticky date", "date on a sticky"),
+        "keywords": ("whiteboard", "sketch pad", "canvas", "freehand", "arrange as a grid", "grid of", "stack them", "sticky date", "date on a sticky", "export as jpg", "export as webp", "copy as an image", "copy the board as a picture"),
         "body": (
             "The whiteboard (Library, Boards & maps) is a pannable canvas for "
             "freehand sketches and note cards together. Freehand sketches also "
             "appear in the Library's Images sub-tab. A board's background colour "
             "and image are kept with the board. Board, Export saves a PNG (1x, 2x "
-            "or 3x, with a transparent background if you like), SVG or PDF named "
-            "after the board. Paste text from another app onto a board: a link "
+            "or 3x, with a transparent background if you like), JPG, WebP, SVG or PDF named "
+            "after the board, or Copy image puts the picture on the clipboard (also Copy as an image in Ctrl+K). Paste text from another app onto a board: a link "
             "becomes a link box, one line a text box, a list a grid of stickies. "
             "In the command palette over a board, say what to do with the "
             "selection (or the whole board): \"arrange as a grid of 3\", "
@@ -344,7 +344,9 @@ HELP_TOPICS: list[dict] = [
             "or thread) and Show group, and the Time range, where On this day "
             "shows today's date in earlier months and years. In the feed, Ctrl and "
             "the mouse wheel, or a pinch, makes the date groups finer or coarser, "
-            "as do + and - on a row. The strip under the bar walks your daily pages, and the "
+            "as do + and - on a row. The thin strip at the feed's right edge shows how "
+            "much you wrote over the whole range, labelled by month or year; click or "
+            "drag it to jump. The strip under the bar walks your daily pages, and the "
             "chip under it offers On this day, and the year menu beside the month narrows the list to one year. A note that names a "
             "day (\"on Friday\") sits on that day and says All day; one that "
             "names a time too (\"on Friday at 3pm\") shows that time."
@@ -835,7 +837,10 @@ HELP_TOPICS: list[dict] = [
             "a grammar checker that runs on this computer; note boxes get the "
             "grammar check too, and the dictionary dialog turns it off. It also "
             "checks accessibility: a skipped heading level, an image with no "
-            "description, link text like \"click here\". In Live "
+            "description, link text like \"click here\". Where the text names "
+            "another note or document, a thin underline offers to turn the first "
+            "mention into a [[link]] (under \"Links to your notes\"; Fix never "
+            "applies these). In Live "
             "view a flagged word is underlined: click or "
             "right-click it for corrections, \"Add to dictionary\" or \"Ignore "
             "this for now\". The Suggestions panel lists every finding; clicking "
@@ -847,7 +852,7 @@ HELP_TOPICS: list[dict] = [
             "mechanical fix, an awkward sentence, \"Ask the AI for wordings\" "
             "has the local model offer two or three alternatives to pick from. "
             "Nothing is changed until you choose it. Manage the dictionary and "
-            "the British/American spelling preference from the editor's own "
+            "the spelling preference (American, British, Australian, Canadian or Indian) from the editor's own "
             "dictionary dialog."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
@@ -1331,7 +1336,8 @@ HELP_TOPICS.extend(
             "keywords": (
                 "lasso", "highlighter", "eraser", "connector", "snap to grid",
                 "snap", "grid", "pan", "zoom", "zoom to fit",
-                "board overview", "find a card", "find and replace", "replace all", "tool",
+                "board overview", "find a card", "find and replace", "replace all", "whole word", "regular expression", "pattern", "tool",
+                "select all shapes", "select all connectors", "turn 90 degrees", "remove from group", "copy size", "paste size", "reverse a connector", "auto size",
             ),
             "body": (
                 "Whiteboard keys (Library, Boards & maps; Ctrl+Shift+B opens it). "
@@ -1344,8 +1350,10 @@ HELP_TOPICS.extend(
                 "fingers pan, Shift+wheel pans sideways, Ctrl+wheel or a pinch "
                 "zooms, Space and drag pans, a drag to an edge pans, Ctrl+= and Ctrl+- zoom, "
                 "Ctrl+0 is 100%, Shift+1 fits all, Shift+N shows the "
-                "overview, / or Ctrl+F finds, Ctrl+H replaces, and Tab walks the board's "
-                "items. Selection, menus and presenting are in Whiteboard selection and menus."
+                "overview, / or Ctrl+F finds (with Whole word and Pattern buttons), Ctrl+H replaces, and Tab walks the board's "
+                "items. Ctrl+K also finds select all shapes or connectors, turn 90 degrees, remove from "
+                "the group, copy and paste the size, grow to fit the words, reverse a connector and clear its bends. "
+                "Selection, menus and presenting are in Whiteboard selection and menus."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -1496,21 +1504,22 @@ HELP_TOPICS.extend(
                 "text size in a shape", "align text",
                 "line shape", "line end", "line ends", "arrowhead", "arrow end", "diamond end", "label position",
                 "arrow size", "end size", "bigger arrowhead", "stealth arrow", "memorymap arrow", "signature arrow",
-                "reset style", "default style", "reset an object", "back to default",
+                "reset style", "default style", "reset an object", "back to default", "underline", "strikethrough", "font family", "clear formatting", "rounded corners", "round corners", "dash pattern", "custom dashes", "flow animation", "marching ants", "jump size", "connector gap", "clear waypoints", "clear bends", "gradient", "hatch", "fill style", "pattern fill",
                 "line jumps", "line jump", "crossing lines", "lines cross", "hop over",
             ),
             "body": (
                 "Ctrl+Shift+P on a board (or Format panel in the selection's More menu, or View) opens "
                 "the Format panel on the right, with three tabs. Style: line colour, width and pattern, "
-                "fill, opacity, shadow, and for a connector its line shape (curved, straight or elbow), "
-                "its line jumps (where it crosses a line under it, it hops over with an arc, a gap or a "
-                "sharp peak), its two ends (twenty-one marks, from the Tessellate end, the mark's node dot ahead of a chevron, through open, "
-                "filled, stealth, half and double arrows, circles and diamonds to a cross, a bar and a crow's foot, each drawn in its "
-                "list, each small, medium or large in the menu beside it; a plain line takes them too) and where its label sits along it. Text: the size, colour, weight, "
-                "alignment and vertical place (top, middle, bottom) of a text box or a shape's words. Arrange: X, Y, width, height and "
+                "your own dashes (a dash and a gap in line widths, like 8 4), rounded corners, flow (dashes that move), "
+                "fill (a gradient or hatch, dots or zigzag instead of solid), opacity, shadow, and for a connector its line shape (curved, straight or elbow), "
+                "its line jumps (it hops over a line under it with an arc, a gap or a "
+                "sharp peak, of a size you set), a gap to stop short of the shape at each end, its two ends (twenty-one marks, from the Tessellate end through open, "
+                "filled, stealth, half and double arrows, circles and diamonds to a cross, a bar and a crow's foot, "
+                "each small, medium or large; a plain line takes them too) and where its label sits. Text: font (default, serif, monospace, wide sans, handwritten), size, colour, bold, italic, underline, strikethrough, "
+                "alignment and vertical place of a text box or a shape's words; Clear text formatting and larger or smaller text are in the command palette. Arrange: X, Y, width, height and "
                 "angle as numbers, flip, and the order, align, spacing, group and lock buttons. With "
-                "several items selected it shows what they all share, and a value they differ on reads Mixed. Every "
-                "change is one undo step, across the whole selection. Reset style (the item's right-click menu, its ... menu "
+                "several items selected it shows what they share, and a value they differ on reads Mixed. Every "
+                "change is one undo step. Reset style (right-click menu, ... menu "
                 "or Ctrl+K) puts colour, fill, line and text back to the defaults, its words, place and ends kept. "
                 "Colours are in Fill, border and recent colours. Bends, connection points and imports are in Connector bends and importing."
             ),
@@ -1642,7 +1651,10 @@ HELP_TOPICS.extend(
                 "list onto a topic to add it as that topic's branch, let the "
                 "local AI propose a map from notes you pick, or on a topic choose "
                 "Add, Branches from my notes… for up to five children found in your "
-                "notes, each saying which note it came from; export it as "
+                "notes, each saying which note it came from; on a topic that is "
+                "one of your notes, Add, Expand from my notes… offers that note's "
+                "own headings and the notes it links to (no model needed); "
+                "you tick which to add, and Ctrl+Z takes them back; export it as "
                 "OPML, FreeMind, XMind, Markdown or text as well as a picture, or write it as "
                 "a document (the board menu's Write as a document: branches "
                 "become headings, deeper topics lists, notes paragraphs); a "
@@ -1672,7 +1684,7 @@ HELP_TOPICS.extend(
                 "Ctrl+Shift+7 and Ctrl+Shift+9 a bulleted, numbered and task list, "
                 "Tab and Shift+Tab "
                 "indent and outdent, Ctrl+/ comments the selection, Alt+Up / "
-                "Alt+Down moves a section from the outline, and typing / opens "
+                "Alt+Down moves the block at the caret (a paragraph, item or section), and typing / opens "
                 "the blocks menu. Ctrl+F finds and replaces (Enter next, "
                 "Shift+Enter previous, Esc closes), Ctrl+Shift+F finds in every "
                 "document, and Replace in every document (the ⋯ menu or Ctrl+K) replaces across "
@@ -1687,7 +1699,10 @@ HELP_TOPICS.extend(
                 "button in the document's bar, Ctrl+Shift+X or the bar's More "
                 "menu, Show formatting toolbar, brings it back. In a Live table "
                 "the arrows keep the column, Enter goes to the cell below, and "
-                "rows pasted from a spreadsheet fill the cells. Pasting from a "
+                "rows pasted from a spreadsheet fill the cells. Right-click a "
+                "cell for the table's menu (move, sort, select); the grips on its "
+                "edges select, drag and add rows and columns. "
+                "Pasting from a "
                 "web page, Word or Google Docs keeps headings, bold, italics, "
                 "lists and links; Ctrl+Shift+V pastes plain text. With nothing "
                 "selected, Ctrl+C and Ctrl+X copy and cut the whole line, and "
@@ -1771,7 +1786,7 @@ HELP_TOPICS.extend(
                     "and the selection bar can Tag, Link together, Unlink (both undoable with Ctrl+Z) or make"
                     " a Mind map of them, built from their links round the picked or most connected note, "
                     "with Open on the notice that follows. Display options, the gear, opens with View: Layout"
-                    " (Force, Tree, Radial or Arc; the dock names a fixed one), "
+                    " (Force, Tree, Radial, Arc or Treemap; the dock names a fixed one), "
                     "Shape (Organic, Clusters or Galaxy; the Force layout's own, dimmed under the others), Colour, Size, Trace, which "
                     "finds how two notes connect, and Legend, which hides the key. Then Physics (Unpin all, "
                     "Reshuffle layout, Gravity, Spread, Link force, Length by similarity, Group by category),"

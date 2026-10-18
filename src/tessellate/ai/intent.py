@@ -164,6 +164,9 @@ def classify(message: str) -> str:
 
     from tessellate.ai import act_registry
 
+    # `commands` registers the typed reader when it loads, and the chat route
+    # loads it (through the agent) before any question is classified. Naming it
+    # here would make intent, agent and commands one import cycle.
     act = act_registry.typed_reader(message, datetime.now())
     if act and act["intent"] != "summarise":
         return ACT

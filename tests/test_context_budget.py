@@ -142,7 +142,7 @@ def test_no_history_budget_means_no_history_rather_than_a_crash():
 # --- what the model is actually asked for -----------------------------------
 
 
-def test_the_window_budgeted_for_is_the_window_asked_for():
+def test_the_window_budgeted_for_is_the_window_asked_for(app_state):
     """The subtle half of this. Ollama runs a model at `num_ctx`, its OWN
     default (commonly 4,096), regardless of what the model was trained for, 
     so reading 32k from /api/show and budgeting against it, without also
@@ -152,7 +152,7 @@ def test_the_window_budgeted_for_is_the_window_asked_for():
     assert client.runtime_options("m")["num_ctx"] == client.usable_context("m")
 
 
-def test_a_huge_declared_window_is_not_requested_by_default():
+def test_a_huge_declared_window_is_not_requested_by_default(app_state):
     """The KV cache scales with the window: a 7B at 128k wants gigabytes a
     laptop may not have, and that failure is an out-of-memory rather than a
     slow answer."""
@@ -177,7 +177,7 @@ def test_a_bad_ceiling_preference_cannot_break_a_chat(app_state, bad):
     assert client.usable_context("m") >= OllamaClient.DEFAULT_CONTEXT_TOKENS
 
 
-def test_the_reply_length_is_capped():
+def test_the_reply_length_is_capped(app_state):
     """Output tokens are generated one at a time, so they cost far more
     wall-clock each than prompt tokens, an unbounded reply is the commonest
     reason an answer "takes ages"."""

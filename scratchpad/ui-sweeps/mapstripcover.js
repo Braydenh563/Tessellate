@@ -78,6 +78,7 @@ const LAYOUTS = (process.env.LAYOUTS || "tree-right,tree-down,radial,tree-both")
             covered: Boolean(hit && hit.closest("#wb-map-strip")),
             hit: hit ? (hit.getAttribute("class") || hit.tagName).split(" ")[0] : null,
             strip: `${Math.round(sb.width)}x${Math.round(sb.height)}`,
+            rects: { strip: [sb.left, sb.top, sb.right, sb.bottom].map(Math.round), topic: [tb.left, tb.top, tb.right, tb.bottom].map(Math.round), handle: [hb.left, hb.top, hb.right, hb.bottom].map(Math.round) },
           });
         }
         return results;
@@ -85,6 +86,7 @@ const LAYOUTS = (process.env.LAYOUTS || "tree-right,tree-down,radial,tree-both")
       const bad = out.filter((r) => r.covered || r.onTopic);
       checked += out.length;
       covered += bad.length;
+      for (const r of bad) console.log("   ", r.label, JSON.stringify(r.rects));
       console.log(`== ${width} ${layout}: ${out.length} handles, ${bad.length} under the strip or the strip on its topic`
         + (bad.length ? `  ${bad.map((r) => r.label).join(", ")}` : "")
         + (out[0] ? `  strip ${out[0].strip}` : ""));

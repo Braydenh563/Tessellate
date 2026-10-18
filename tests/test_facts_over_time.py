@@ -60,6 +60,20 @@ def test_a_question_about_the_change_keeps_both(client, notebook):
     assert len(kept) == len(NOTES) and not replaced
 
 
+def test_a_question_about_progress_reads_the_whole_run_of_notes():
+    """"How's the gym going?" is about the trajectory (80 kg, then 90 kg): the
+    newer note does not replace the older, which is half the answer."""
+    notes = [
+        {"content": "Gym: squats 80 kg for 5.", "created_at": "2026-09-08"},
+        {"content": "Gym: squats up to 90 kg for 5.", "created_at": "2026-10-02"},
+    ]
+    for question in ("how's the gym going?", "how is my gym progress", "how have the squats been going", "gym progress"):
+        kept, replaced = supersede.current(question, notes)
+        assert len(kept) == 2 and not replaced, question
+    kept, replaced = supersede.current("what is my gym squat", notes)
+    assert len(kept) == 1 and replaced
+
+
 def test_only_the_subject_asked_about_is_set_aside():
     notes = [{"content": t, "created_at": d} for t, d in NOTES] + [{"content": "Golf is hard.", "created_at": "2026-06-01"}]
     kept, replaced = supersede.current("what are my uni days", notes)

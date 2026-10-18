@@ -557,5 +557,105 @@
   "typed": "concert 5 miles to km",
   "repaired": "concert 5 miles to km",
   "intent": "utility"
+ },
+ {
+  "typed": "the guide should alo consider that some queries",
+  "repaired": "the guide should also consider that some queries"
+ },
+ {
+  "typed": "can the comoposer do these ai actions",
+  "repaired": "can the composer do these ai actions"
+ },
+ {
+  "typed": "if the comoser does them when the ai isnt available",
+  "repaired": "if the composer does them when the ai is not available"
+ },
+ {
+  "typed": "drag and rearrange coumns and rows",
+  "repaired": "drag and rearrange columns and rows"
+ },
+ {
+  "typed": "there is no idication for which ones are installed",
+  "repaired": "there is no indication for which ones are installed"
+ },
+ {
+  "typed": "it doesnt need the lisence if you use the other version",
+  "repaired": "it does not need the licence if you use the other version"
+ },
+ {
+  "typed": "the whole luve view for md as well",
+  "repaired": "the whole live view for md as well"
+ },
+ {
+  "typed": "does the app check which modesl are stored",
+  "repaired": "does the app check which models are stored"
+ },
+ {
+  "typed": "a library of prefileld templates",
+  "repaired": "a library of prefilled templates"
+ },
+ {
+  "typed": "it should probablu show a little undo icon",
+  "repaired": "it should probably show a little undo icon"
+ },
+ {
+  "typed": "where I select somehwere in the document",
+  "repaired": "where I select somewhere in the document"
+ },
+ {
+  "typed": "paste it whwere I drag it to",
+  "repaired": "paste it where I drag it to"
+ },
+ {
+  "typed": "be at the bototom of the notification",
+  "repaired": "be at the bottom of the notification"
+ },
+ {
+  "typed": "act like a calendar on the timelone",
+  "repaired": "act like a calendar on the timeline"
+ },
+ {
+  "typed": "when I clicked the word that was underlinedd",
+  "repaired": "when I clicked the word that was underlined"
+ },
+ {
+  "typed": "the date select arent the custom style",
+  "repaired": "the date select are not the custom style"
+ },
+ {
+  "typed": "it still hasnt loaded",
+  "repaired": "it still has not loaded"
+ },
+ {
+  "typed": "both high five and pray orsmth yk",
+  "repaired": "both high five and pray or something you know"
+ },
+ {
+  "typed": "keeps getting shorter and shortyer until it goes to a new line",
+  "repaired": "keeps getting shorter and shorter until it goes to a new line"
+ },
+ {
+  "typed": "a ghose cursor",
+  "repaired": "a ghost cursor"
+ },
+ {
+  "typed": "what are ghose notes",
+  "repaired": "what are those notes"
+ },
+ {
+  "typed": "can you turn on ghose mode for me",
+  "repaired": "can you turn on ghost mode for me"
+ },
+ {
+  "typed": "turn on ghose mode",
+  "repaired": "turn on ghost mode"
+ },
+ {
+  "typed": "it is happyer now",
+  "repaired": "it is happier now"
+ },
+ {
+  "typed": "busyer days and happyer weeks",
+  "repaired": "busier days and happier weeks"
  }
 ]

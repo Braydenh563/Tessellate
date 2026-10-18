@@ -449,10 +449,10 @@ def resolve(phrase: str, now: datetime, *, locale: str | None = None) -> datetim
         return shifted
     relative = relative_delta(text)
     if relative is not None:
-        return now + relative[0]
+        return _with_clock(now + relative[0], relative[1], text, now, relative[0] >= timedelta(days=1))
     months = relative_months(text, now)
     if months is not None:
-        return months[0]
+        return _with_clock(months[0], months[1], text, now, True)
     if text == "later today":
         #: Three hours on, never past eight in the evening (engine probe: it
         #: was nine this morning, already gone).
@@ -508,6 +508,16 @@ def resolve(phrase: str, now: datetime, *, locale: str | None = None) -> datetim
     elif at <= now and day == now.date() and _WEEKDAY.search(text):
         at += timedelta(days=7)  # "Monday 9am", said on a Monday afternoon
     return at
+
+
+def _with_clock(target: datetime, said: str, text: str, now: datetime, day_sized: bool) -> datetime:
+    """An offset of a day or more with a clock beside it ("in 2 weeks at 3pm"):
+    the day the offset lands on, at that clock. An offset of hours keeps the
+    instant, and a day-sized one with no clock keeps `now`'s time of day."""
+    rest = " ".join(text.replace(said, " ", 1).split())
+    if not day_sized or not rest or not (_clock(rest) or any(re.search(rf"\b{p}\b", rest) for p in _PARTS)):
+        return target
+    return resolve(f"{target.date().isoformat()} {rest}", now) or target
 
 
 def _midnight(day: date, text: str, now: datetime) -> datetime:
@@ -1065,6 +1075,34 @@ def _nth_in_month(found: re.Match, anchor: date, tense: str | None) -> date | No
     return max(gone, default=None) if tense == "past" else min((d for d in days if d >= anchor), default=None)
 
 
+#: Time words that bound "what is coming up": (pattern, how it is said, days ahead).
+#: -1 runs to the month's end.
+_AHEAD_WORDS = (
+    (re.compile(r"\btoday\b"), "today", 0),
+    (re.compile(r"\btomorrow\b"), "tomorrow", 1),
+    (re.compile(r"\bnext week\b"), "next week", 14),
+    (re.compile(r"\bthis week\b"), "in the next seven days", 7),
+    (re.compile(r"\bthis month\b"), "this month", -1),
+    (re.compile(r"\bsoon\b"), "in the next two weeks", 14),
+)
+
+
+def ahead_window(question: str) -> tuple[str, int] | None:
+    """`(how it is said, days ahead)` for the time word in a question about
+    what is due or coming up, or None when it names none."""
+    low = str(question or "").lower()
+    return next(((said, days) for pattern, said, days in _AHEAD_WORDS if pattern.search(low)), None)
+
+
+def without_ahead_words(text: str) -> str:
+    """`text` with the time words `ahead_window` reads taken out: what is left
+    of "what is due this week" past "this week" is the subject, if any."""
+    low = str(text or "").lower()
+    for pattern, _said, _days in _AHEAD_WORDS:
+        low = pattern.sub(" ", low)
+    return " ".join(low.split())
+
+
 def span(phrase: str, anchor: date, tense: str | None = None) -> tuple[date, date, str] | None:
     """(first day, last day, grain) the phrase names, read against `anchor`,
     or None. `tense` ("past", "future" or None) picks between the Friday
@@ -1589,8 +1627,16 @@ _PAST = re.compile(
 )
 
 
+#: A question about how something has gone is about the run of notes, not the
+#: latest one: "how's the gym going" reads 80 kg and then 90 kg (INBOX 812).
+_PROGRESS = re.compile(
+    r"\bprogress\b|\bhow(?:'s|s| is| are| has| have|'ve)\b[^?.!]{0,40}?\b(?:going|been|coming along|progressing)\b",
+    re.I,
+)
+
+
 def says_past(text: str) -> bool:
-    return bool(_PAST.search(text or ""))
+    return bool(_PAST.search(text or "") or _PROGRESS.search(text or ""))
 
 
 #: Day and month names that are always names. "march" and "may" are left out:

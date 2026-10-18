@@ -205,7 +205,7 @@ def test_a_computed_layout_glides_from_where_the_notes_were_and_new_ones_fade_in
 
 def test_topic_hulls_belong_to_the_force_layout_and_a_tree_fits_at_0_4():
     assert '|| s.tree || graphColourMode() !== "topic"' in CANVAS
-    assert "const fit = radial || arc || both >= 0.4 ? both : (width - 20) / spanX;" in GRAPH
+    assert "const fit = radial || arc || whole || both >= 0.4 ? both : (width - 20) / spanX;" in GRAPH
     assert "gcTweenFromPrior(s, nodes, prior);" in CANVAS
 
 

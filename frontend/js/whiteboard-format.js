@@ -29,10 +29,20 @@ const WB_FMT_TABS = ["style", "text", "arrange", "data"];
 //: What is selected, as `{kind, id, item, bbox}` rows: the multi-selection
 //: when there is one, else the one selected item.
 //: The Format panel's open tab and its queued sync.
-const wbFmtState = { fmtTab: "style", fmtSyncQueued: false, fmtLiveQueued: false, fmtFrameQueued: false };
+const wbFmtState = { sizeClip: null, fmtTab: "style", fmtSyncQueued: false, fmtLiveQueued: false, fmtFrameQueued: false };
 
 function wbFmtEntries() {
-  if (wbMultiSelection.size) return wbSelectionEntries();
+  //: A selection of many keeps its connectors (which have no box: "Select all
+  //: connectors" then a colour has to reach them), where the arrange maths in
+  //: `wbSelectionEntries` leaves them out.
+  if (wbMultiSelection.size) {
+    return [...wbMultiSelection].map((key) => {
+      const sep = key.indexOf(":");
+      const kind = key.slice(0, sep), id = Number(key.slice(sep + 1));
+      const item = wbFindItem(kind, id);
+      return item ? { kind, id, item, bbox: wbItemBBox(kind, item) } : null;
+    }).filter(Boolean);
+  }
   if (!wbSelectedItem) return [];
   const item = wbFindItem(wbSelectedItem.kind, wbSelectedItem.id);
   //: A connector has no box of its own (its path is worked out from its
@@ -62,17 +72,24 @@ function wbFmtKind(entry) {
 
 //: The fields each kind takes, by the `data-fmt` names in index.html.
 const WB_FMT_FIELDS = {
-  shape: ["stroke", "width", "dash", "fill", "alpha", "shadow", "rough", "text", "geometry", "flip", "style-lib", "props"],
-  line: ["stroke", "width", "dash", "alpha", "shadow", "rough", "geometry", "flip", "style-lib", "props"],
+  shape: ["stroke", "width", "dash", "fill", "alpha", "shadow", "rough", "text", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "fillstyle", "gradient", "tip"],
+  line: ["stroke", "width", "dash", "alpha", "shadow", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
   //: A straight line or arrow: a line that takes ends.
-  arrow: ["stroke", "width", "dash", "caps", "alpha", "shadow", "rough", "geometry", "flip", "style-lib", "props"],
-  link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "props"],
+  arrow: ["stroke", "width", "dash", "caps", "alpha", "shadow", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
+  link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "props", "pattern", "round", "flow", "jumpsize", "gapstart", "gapend", "tip"],
   text: ["stroke", "fill", "alpha", "shadow", "fold", "text", "geometry", "angle", "style-lib", "props"],
   image: ["alpha", "shadow", "geometry", "angle", "props"],
   frame: ["geometry", "props"],
   table: ["alpha", "shadow", "geometry", "props"],
   note: ["geometry", "angle"],
 };
+
+function wbFmtCanRound(entry) {
+  if (entry.kind !== "sketch") return false;
+  const parsed = wbFmtSketch(entry);
+  if (typeof parsed.d === "string") return wbRoundedPathD(parsed.d, 1) !== parsed.d;
+  return String(parsed.type || "").startsWith("link-") && wbLinkRouteName(parsed) === "elbow";
+}
 
 function wbFmtSketch(entry) {
   try {
@@ -91,6 +108,12 @@ function wbFmtValue(entry, field) {
     case "stroke": return s ? s.color || "#888888" : (o.border_color && o.border_color !== "transparent" ? o.border_color : "#8888aa");
     case "width": return s?.width || 3;
     case "dash": return s?.dash || "solid";
+    case "pattern": return s?.dashPattern || "";
+    case "round": return Number(s?.round) || 0;
+    case "flow": return Boolean(s?.flow);
+    case "fillstyle": return WB_FILL_STYLES.includes(s?.fillStyle) ? s.fillStyle : "solid";
+    case "gradient": return wbHexColour(s?.gradient?.to) || "#ffffff";
+    case "gradient-dir": return s?.gradient && wbHexColour(s.gradient.to) && (s.gradient.dir === "radial" || wbGradientVector(s.gradient.dir)) ? s.gradient.dir : "none";
     case "fill-on": return s ? Boolean(s.fill) : Boolean(o.bg && o.bg !== "transparent");
     case "fill": return s ? s.fill || "#3355ff" : (o.bg && o.bg !== "transparent" ? o.bg : "#ffffff");
     case "alpha": return Math.round(((s ? s.alpha : o?.alpha) ?? 1) * 100);
@@ -98,6 +121,11 @@ function wbFmtValue(entry, field) {
     case "rough": return wbDrawsRough(s, false);
     case "route": return wbLinkRouteName(s);
     case "jumps": return WB_JUMP_STYLES.includes(s?.jumps) ? s.jumps : "none";
+    //: Empty for "automatic", so the field shows its placeholder.
+    case "jumpsize": return s?.jumpSize != null && s.jumpSize !== "" ? wbJumpSize(s) : "";
+    case "tip": return typeof s?.tip === "string" ? s.tip : "";
+    case "gapstart": return wbLinkGap(s)?.start || 0;
+    case "gapend": return wbLinkGap(s)?.end || 0;
     case "startcap": return (kind === "arrow" ? wbSketchCaps(s) : wbLinkCaps(s)).startCap;
     case "endcap": return (kind === "arrow" ? wbSketchCaps(s) : wbLinkCaps(s)).endCap;
     case "startsize": return (kind === "arrow" ? wbSketchCaps(s) : wbLinkCaps(s)).startSize || "m";
@@ -106,6 +134,9 @@ function wbFmtValue(entry, field) {
     case "size": return kind === "shape" ? s.label_size || 16 : o.font_size || 16;
     case "bold": return Boolean(kind === "shape" ? s.label_bold : o.bold);
     case "italic": return Boolean(kind === "shape" ? s.label_italic : o.italic);
+    case "underline": return Boolean(kind === "shape" ? s.label_underline : o.underline);
+    case "strike": return Boolean(kind === "shape" ? s.label_strike : o.strike);
+    case "font": return (kind === "shape" ? s.label_font : o.font_family) || "default";
     case "align": return (kind === "shape" ? s.label_align : o.align) || (kind === "shape" ? "center" : "left");
     //: Words in a shape sit in its middle and a text box's at its top unless
     //: told otherwise (the owner, 2026-10-10: "there's no way to vertically
@@ -187,6 +218,7 @@ async function wbFmtGeometry(axis, value) {
       return;
     }
     const [e] = entries;
+    if (!e.bbox) return;
     const dim = axis === "w" ? "width" : "height";
     const size = axis === "w" ? e.bbox.maxX - e.bbox.minX : e.bbox.maxY - e.bbox.minY;
     if (size > 0 && Math.abs(size - target) >= 0.5) await wbSizeItemTo(e, dim, target, target / size);
@@ -364,9 +396,12 @@ function wbFmtShowMixed(el, isMixed, value) {
       el.append(option);
     }
     el.value = isMixed ? "" : value;
-  } else if (el.type === "number") {
+  } else if (el.type === "number" || el.type === "text") {
+    //: The field's own hint (Jump size's "Auto", the tooltip's words) comes
+    //: back when the selection stops being mixed.
+    el.dataset.hint ??= el.placeholder;
     el.value = isMixed ? "" : value;
-    el.placeholder = isMixed ? "Mixed" : "";
+    el.placeholder = isMixed ? "Mixed" : el.dataset.hint;
   } else {
     el.value = value;
   }
@@ -395,6 +430,8 @@ function wbFormatSync() {
   if (fieldSets.some((s) => s.has("geometry"))) fields.add("geometry");
   //: The folded corner is a sticky note's, not a plain text box's.
   if (!entries.some((e) => e.kind === "object" && wbIsSticky(e.item))) fields.delete("fold");
+  //: The Corners row is for a path of straight sides; an ellipse has none.
+  if (fields.has("round") && !entries.some(wbFmtCanRound)) fields.delete("round");
   const empty = document.getElementById("wb-format-empty");
   const map = kinds.has("topic");
   if (empty) {
@@ -439,7 +476,9 @@ function wbFormatSync() {
   for (const [id, field, row] of [
     ["wb-fmt-stroke", "stroke", "stroke"], ["wb-fmt-width", "width", "width"], ["wb-fmt-dash", "dash", "dash"],
     ["wb-fmt-fill", "fill", "fill"], ["wb-fmt-route", "route", "route"], ["wb-fmt-jumps", "jumps", "jumps"], ["wb-fmt-startcap", "startcap", "caps"],
-    ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-size", "size", "text"],
+    ["wb-fmt-fillstyle", "fillstyle", "fillstyle"], ["wb-fmt-gradient-dir", "gradient-dir", "gradient"], ["wb-fmt-gradient", "gradient", "gradient"],
+    ["wb-fmt-jumpsize", "jumpsize", "jumpsize"], ["wb-fmt-gapstart", "gapstart", "gapstart"], ["wb-fmt-gapend", "gapend", "gapend"], ["wb-fmt-tip", "tip", "tip"],
+    ["wb-fmt-pattern", "pattern", "pattern"], ["wb-fmt-round", "round", "round"], ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-size", "size", "text"],
     ["wb-fmt-ink", "ink", "text"], ["wb-fmt-alpha", "alpha", "alpha"],
   ]) {
     if (!takes.has(row)) continue;
@@ -456,7 +495,9 @@ function wbFormatSync() {
     }
     if (fillField) fillField.classList.toggle("wb-colour-off", !mixed("fill-on") && !wbFmtValue(first, "fill-on"));
   }
-  for (const [id, field] of [["wb-fmt-shadow", "shadow"], ["wb-fmt-rough", "rough"]]) {
+  // The second colour is dimmed while there is no gradient for it to belong to.
+  document.getElementById("wb-fmt-gradient")?.classList.toggle("wb-colour-off", !mixed("gradient-dir") && wbFmtValue(first, "gradient-dir") === "none");
+  for (const [id, field] of [["wb-fmt-shadow", "shadow"], ["wb-fmt-rough", "rough"], ["wb-fmt-flow", "flow"]]) {
     const box = document.getElementById(id);
     if (!takes.has(field) || !box || document.activeElement === box) continue;
     box.checked = wbFmtValue(first, field);
@@ -475,6 +516,10 @@ function wbFormatSync() {
     for (const button of panel.querySelectorAll("#wb-fmt-valign [data-valign]")) button.setAttribute("aria-pressed", pressed("valign", button.dataset.valign));
     document.getElementById("wb-fmt-bold")?.setAttribute("aria-pressed", pressed("bold", true));
     document.getElementById("wb-fmt-italic")?.setAttribute("aria-pressed", pressed("italic", true));
+    document.getElementById("wb-fmt-underline")?.setAttribute("aria-pressed", pressed("underline", true));
+    document.getElementById("wb-fmt-strike")?.setAttribute("aria-pressed", pressed("strike", true));
+    const fontField = document.getElementById("wb-fmt-font");
+    if (fontField && document.activeElement !== fontField) wbFmtShowMixed(fontField, mixed("font"), wbFmtValue(first, "font"));
   }
   const box = wbFmtBox(entries);
   if (!box) return;
@@ -696,12 +741,57 @@ onDomReady(() => {
     const width = Math.max(1, Math.min(40, Number(e.target.value) || 3));
     wbFmtApply("width", () => ({ width }), `Line width ${width}.`);
   });
+  on("wb-fmt-pattern", "change", (e) => {
+    const typed = e.target.value.trim();
+    const numbers = typed ? wbDashPatternOf(typed) : null;
+    if (typed && !numbers) {
+      toast("Dashes are numbers like 8 4, up to six, each at most 200.");
+      //: The sync leaves a focused field alone, so put the saved pattern back here.
+      const first = wbFmtEntries().find((entry) => wbFmtKind(entry));
+      e.target.value = first ? wbFmtValue(first, "pattern") : "";
+      return;
+    }
+    wbFmtApply("pattern", () => ({ dashPattern: numbers ? numbers.join(" ") : undefined }), numbers ? "Custom dashes set." : "Custom dashes cleared.");
+  });
+  on("wb-fmt-round", "change", (e) => {
+    const radius = Math.max(0, Math.min(80, Math.round(Number(e.target.value) || 0)));
+    wbFmtApply("round", () => ({ round: radius || undefined }), radius ? `Corners rounded by ${radius}.` : "Corners sharp.");
+  });
+  on("wb-fmt-flow", "change", (e) => wbFmtApply("flow", () => ({ flow: e.target.checked || undefined }), e.target.checked ? "Flow on." : "Flow off."));
   on("wb-fmt-dash", "change", (e) => wbFmtApply("dash", () => ({ dash: e.target.value === "solid" ? undefined : e.target.value }), `Line ${e.target.value}.`));
   on("wb-fmt-fill-on", "change", (e) => {
     const colour = document.getElementById("wb-fmt-fill")?.value || "#3355ff";
     wbFmtApply("fill", (entry) => (entry.kind === "sketch"
-      ? { fill: e.target.checked ? colour : undefined, fillOpacity: e.target.checked ? 1 : undefined }
+      ? { fill: e.target.checked ? colour : undefined, fillOpacity: e.target.checked ? 1 : undefined, ...(e.target.checked ? {} : { gradient: undefined, fillStyle: undefined }) }
       : { bg: e.target.checked ? colour : "transparent" }), e.target.checked ? "Filled." : "Fill taken off.");
+  });
+  //: A gradient or a fill style needs a colour to start from, so choosing one
+  //: on an unfilled shape fills it first. The two are alternatives: one choice
+  //: clears the other.
+  const fillBase = (entry) => {
+    const s = wbFmtSketch(entry);
+    return { fill: s.fill || document.getElementById("wb-fmt-fill")?.value || "#3355ff", fillOpacity: s.fillOpacity ?? 1 };
+  };
+  on("wb-fmt-fillstyle", "change", (e) => {
+    const style = WB_FILL_STYLES.includes(e.target.value) ? e.target.value : "solid";
+    wbFmtApply("fillstyle", (entry) => (entry.kind === "sketch"
+      ? (style === "solid" ? { fillStyle: undefined } : { ...fillBase(entry), fillStyle: style, gradient: undefined })
+      : null), style === "solid" ? "Plain fill." : `Fill style: ${e.target.selectedOptions[0]?.textContent || style}.`);
+  });
+  on("wb-fmt-gradient-dir", "change", (e) => {
+    const dir = e.target.value;
+    const to = wbHexColour(document.getElementById("wb-fmt-gradient")?.value) || "#ffffff";
+    wbFmtApply("gradient", (entry) => (entry.kind === "sketch"
+      ? (dir === "none" ? { gradient: undefined } : { ...fillBase(entry), gradient: { to, dir }, fillStyle: undefined })
+      : null), dir === "none" ? "Gradient off." : `Gradient: ${e.target.selectedOptions[0]?.textContent || dir}.`);
+  });
+  on("wb-fmt-gradient", "change", (e) => {
+    const to = wbHexColour(e.target.value) || "#ffffff";
+    wbFmtApply("gradient", (entry) => {
+      if (entry.kind !== "sketch") return null;
+      const dir = wbFmtValue(entry, "gradient-dir");
+      return { ...fillBase(entry), gradient: { to, dir: dir === "none" ? "s" : dir }, fillStyle: undefined };
+    }, "Gradient colour changed.");
   });
   on("wb-fmt-fill", "change", (e) => wbFmtApply("fill", (entry) => (entry.kind === "sketch" ? { fill: e.target.value, fillOpacity: 1 } : { bg: e.target.value }), "Fill colour changed."));
   on("wb-fmt-alpha", "input", (e) => {
@@ -724,6 +814,23 @@ onDomReady(() => {
   on("wb-fmt-jumps", "change", (e) => {
     const style = WB_JUMP_STYLES.includes(e.target.value) ? e.target.value : "none";
     wbFmtApply("jumps", () => ({ jumps: style === "none" ? undefined : style }), `Line jumps: ${e.target.selectedOptions[0]?.textContent || style}.`);
+  });
+  //: Empty is automatic, so it stores nothing.
+  on("wb-fmt-jumpsize", "change", (e) => {
+    const size = e.target.value === "" ? null : Math.max(2, Math.min(40, Math.round(Number(e.target.value) || 0)));
+    wbFmtApply("jumpsize", () => ({ jumpSize: size || undefined }), size ? `Jump size ${size}.` : "Jump size automatic.");
+  });
+  on("wb-fmt-gapstart", "change", (e) => {
+    const gap = Math.max(0, Math.min(60, Math.round(Number(e.target.value) || 0)));
+    wbFmtApply("gapstart", () => ({ gapStart: gap || undefined }), gap ? `Start gap ${gap}.` : "Start touches the shape.");
+  });
+  on("wb-fmt-tip", "change", (e) => {
+    const tip = e.target.value.trim().slice(0, 200);
+    wbFmtApply("tip", () => ({ tip: tip || undefined }), tip ? "Tooltip set." : "Tooltip removed.");
+  });
+  on("wb-fmt-gapend", "change", (e) => {
+    const gap = Math.max(0, Math.min(60, Math.round(Number(e.target.value) || 0)));
+    wbFmtApply("gapend", () => ({ gapEnd: gap || undefined }), gap ? `End gap ${gap}.` : "End touches the shape.");
   });
   for (const which of ["start", "end"]) {
     on(`wb-fmt-${which}cap`, "change", (e) => wbFmtApply("caps", (entry, kind) => {
@@ -751,7 +858,14 @@ onDomReady(() => {
     wbFmtApply("text", textPatch("label_size", "font_size", size), `Text size ${size}.`);
   });
   on("wb-fmt-ink", "change", (e) => wbFmtApply("text", textPatch("label_color", "color", e.target.value), "Text colour changed."));
-  for (const [id, shapeKey, objectKey, word] of [["wb-fmt-bold", "label_bold", "bold", "Bold"], ["wb-fmt-italic", "label_italic", "italic", "Italic"]]) {
+  on("wb-fmt-font", "change", (e) => {
+    const face = e.target.value && e.target.value !== "default" ? e.target.value : undefined;
+    wbFmtApply("text", textPatch("label_font", "font_family", face), face ? `Font: ${e.target.selectedOptions[0]?.textContent}.` : "Font back to the default.");
+  });
+  for (const [id, shapeKey, objectKey, word] of [
+    ["wb-fmt-bold", "label_bold", "bold", "Bold"], ["wb-fmt-italic", "label_italic", "italic", "Italic"],
+    ["wb-fmt-underline", "label_underline", "underline", "Underline"], ["wb-fmt-strike", "label_strike", "strike", "Strikethrough"],
+  ]) {
     on(id, "click", (e) => {
       const next = e.currentTarget.getAttribute("aria-pressed") !== "true";
       e.currentTarget.setAttribute("aria-pressed", String(next));
@@ -790,6 +904,221 @@ onDomReady(() => {
   on("wb-fmt-copy-style", "click", () => document.getElementById("wb-copy-style")?.click());
   on("wb-fmt-paste-style", "click", () => document.getElementById("wb-paste-style")?.click());
 });
+
+//: --- Text commands (draw.io's "Clear formatting", and its font size steps) ---
+//:
+//: Both go through `wbFmtApply("text", ...)`, so a selection of a shape and a
+//: text box is one step on the stack and an item with no text of its own is
+//: skipped.
+const WB_TEXT_LOOK_KEYS = {
+  shape: ["label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign"],
+  text: ["font_size", "color", "bold", "italic", "underline", "strike", "font_family", "align", "valign"],
+};
+
+function wbClearTextFormat() {
+  return wbFmtApply("text", (entry, kind) => {
+    const keys = WB_TEXT_LOOK_KEYS[kind];
+    return keys ? Object.fromEntries(keys.map((key) => [key, undefined])) : null;
+  }, "Text formatting cleared.");
+}
+
+function wbStepFontSize(delta) {
+  return wbFmtApply("text", (entry, kind) => {
+    const size = Math.max(8, Math.min(200, Math.round(Number(wbFmtValue(entry, "size")) + delta)));
+    return kind === "shape" ? { label_size: size } : { font_size: size };
+  }, delta > 0 ? "Text larger." : "Text smaller.");
+}
+
+//: --- draw.io's arrange and edit commands (whiteboard-1018) ---
+//:
+//: Each is one `wbRecordGesture`, so a selection of many is one undo step.
+
+//: Turn 90 degrees: a card, text box or picture takes 90 more on its
+//: `rotation`; a drawn shape has its turn baked into its path, so the path is
+//: turned about its own centre. Each item turns about its own centre, and a
+//: connector follows its ends.
+function wbTurnSelection(degrees = 90) {
+  return wbRecordGesture(async () => {
+    const entries = wbFmtEntries().filter((e) => !wbIsLocked(e.kind, e.item) && e.bbox);
+    let turned = 0;
+    for (const e of entries) {
+      if (e.kind === "sketch") {
+        const parsed = wbSketchParsedData(e.item);
+        if (typeof parsed?.d !== "string") continue;
+        await wbSaveSketchD(e.item, wbTransformPathD(parsed.d, {
+          rotate: degrees, anchorX: (e.bbox.minX + e.bbox.maxX) / 2, anchorY: (e.bbox.minY + e.bbox.maxY) / 2,
+        }));
+      } else {
+        if (wbFmtKind(e) === "topic") continue;
+        e.item.rotation = ((Math.round((e.item.rotation || 0) + degrees) % 360) + 360) % 360 || null;
+        if (e.kind === "node") await wbSaveNode(e.item);
+        else await wbSaveObject(e.item);
+      }
+      turned += 1;
+    }
+    if (turned) wbAnnounce(`Turned ${degrees} degrees.`);
+    else toast("Select a shape, note or picture to turn it.");
+  }).then(() => wbScheduleRender());
+}
+
+//: Remove from group: the selected members leave their group, and a group
+//: left with one member is no group (a lone member would still pull a click
+//: onto itself alone).
+function wbRemoveFromGroup() {
+  return wbRecordGesture(async () => {
+    const save = (kind, item) => (kind === "sketch" ? wbSaveSketchProps(item, {}) : kind === "node" ? wbSaveNode(item) : wbSaveObject(item));
+    const leaving = wbFmtEntries().filter((e) => e.item.group_id);
+    if (!leaving.length) return;
+    for (const e of leaving) {
+      e.item.group_id = null;
+      await save(e.kind, e.item);
+    }
+    const members = new Map();
+    for (const kind of ["sketch", "node", "object"]) {
+      for (const item of wbState[WB_LIST_BY_KIND[kind]] || []) {
+        if (!item.group_id) continue;
+        if (!members.has(item.group_id)) members.set(item.group_id, []);
+        members.get(item.group_id).push([kind, item]);
+      }
+    }
+    for (const list of members.values()) {
+      if (list.length !== 1) continue;
+      list[0][1].group_id = null;
+      await save(list[0][0], list[0][1]);
+    }
+    wbAnnounce("Removed from the group.");
+    wbUpdateContextBar();
+  });
+}
+
+//: Copy size and Paste size (draw.io's Alt+Shift+F and V): the width and height
+//: of one item, put on every selected one. A connector has no box.
+
+function wbCopySize() {
+  const [entry] = wbFmtEntries();
+  if (!entry?.bbox) {
+    toast("Select a shape, note or picture to copy its size.");
+    return;
+  }
+  wbFmtState.sizeClip = { w: Math.round(entry.bbox.maxX - entry.bbox.minX), h: Math.round(entry.bbox.maxY - entry.bbox.minY) };
+  wbAnnounce(`Size ${wbFmtState.sizeClip.w} by ${wbFmtState.sizeClip.h} copied.`);
+}
+
+function wbPasteSize() {
+  if (!wbFmtState.sizeClip) {
+    toast("Copy a size first.");
+    return Promise.resolve();
+  }
+  const clip = wbFmtState.sizeClip;
+  return wbRecordGesture(async () => {
+    const entries = wbFmtEntries().filter((e) => !wbIsLocked(e.kind, e.item) && e.bbox && wbFmtKind(e) !== "topic");
+    for (const e of entries) {
+      for (const [dim, target, size] of [["width", Math.max(8, clip.w), e.bbox.maxX - e.bbox.minX], ["height", Math.max(8, clip.h), e.bbox.maxY - e.bbox.minY]]) {
+        if (size > 0 && Math.abs(size - target) >= 0.5) await wbSizeItemTo(e, dim, target, target / size);
+      }
+    }
+    wbAnnounce(`Size ${clip.w} by ${clip.h} pasted.`);
+  }).then(() => wbScheduleRender());
+}
+
+//: How much a shape must grow for its words to fit: the factor on each axis,
+//: 1 when they already fit. The words' area scales with the shape, so the
+//: factor is the words' size over the area they have.
+function wbAutoSizeFactors(text, area) {
+  const grow = (need, have) => (have > 0 && need > have + 0.5 ? need / have : 1);
+  return { sx: grow(text.w, area.w), sy: grow(text.h, area.h) };
+}
+
+//: Grow to fit: a shape taller (or wider, for one long word) until its words
+//: fit; a text box or a note card taller until its text does. Never shrinks.
+function wbAutoSizeSelection() {
+  return wbRecordGesture(async () => {
+    let grown = 0;
+    for (const e of wbFmtEntries().filter((x) => !wbIsLocked(x.kind, x.item) && x.bbox)) {
+      const kind = wbFmtKind(e);
+      if (kind === "shape") {
+        const group = document.querySelector(`.sketch-group[data-id="${e.id}"]`);
+        const label = group?.querySelector(":scope > .sketch-label");
+        const placed = label ? wbShapeLabelPlace(group, label) : null;
+        if (!placed) continue;
+        const words = label.getBBox();
+        const { sx, sy } = wbAutoSizeFactors({ w: words.width, h: words.height }, placed.area);
+        const parsed = wbSketchParsedData(e.item);
+        if (sx === 1 && sy === 1) continue;
+        await wbSaveSketchD(e.item, wbTransformPathD(parsed.d, { sx, sy, anchorX: e.bbox.minX, anchorY: e.bbox.minY }));
+        grown += 1;
+      } else if (kind === "text" || kind === "note") {
+        const el = wbItemElement(e.kind, e.id);
+        if (!el) continue;
+        const current = e.item.height || el.offsetHeight;
+        //: A text box's words are clipped inside their own element, so the
+        //: element's height is the box's, not the words': the words' own
+        //: scroll height plus the box's chrome. (`wbCardFitHeight` opens a
+        //: note card up the same way; at phone width its answer for a text
+        //: box was the clipped height.)
+        const words = el.querySelector(".wb-text-content");
+        const fit = words ? Math.ceil(words.scrollHeight) + Math.max(0, el.offsetHeight - words.offsetHeight) : wbCardFitHeight(el);
+        if (!(fit > current + 1)) continue;
+        e.item.height = Math.round(fit);
+        if (e.kind === "node") await wbSaveNode(e.item);
+        else await wbSaveObject(e.item);
+        grown += 1;
+      }
+    }
+    wbAnnounce(grown ? "Grown to fit the words." : "Everything already fits.");
+  }).then(() => wbScheduleRender());
+}
+
+//: Clear waypoints: a connector's bends (`points`, and the old single `bend`)
+//: go, and it runs the way its shape would on its own.
+function wbClearWaypoints() {
+  return wbFmtApply("route", (entry) => {
+    const parsed = wbFmtSketch(entry);
+    return parsed?.points?.length || parsed?.bend ? { points: undefined, bend: undefined } : null;
+  }, "Bends cleared.");
+}
+
+//: Reverse: a connector points the other way, a drawn arrow's heads swap ends.
+//: The patch for a connector, pure: both ends, their anchors and free points,
+//: the two cap marks and their sizes, the bends in the other order, a curve's
+//: bow to the other side and the label's place along the line mirrored.
+function wbReversedLinkFields(parsed) {
+  const caps = wbLinkCaps(parsed);
+  const bend = Number(parsed.bend);
+  return {
+    sourceId: parsed.targetId, targetId: parsed.sourceId,
+    sourceKind: parsed.targetKind, targetKind: parsed.sourceKind,
+    sourceAnchor: parsed.targetAnchor, targetAnchor: parsed.sourceAnchor,
+    sourcePoint: parsed.targetPoint, targetPoint: parsed.sourcePoint,
+    startCap: caps.endCap, endCap: caps.startCap, endStyle: undefined,
+    startCapSize: caps.endSize || undefined, endCapSize: caps.startSize || undefined,
+    points: parsed.points ? [...parsed.points].reverse() : undefined,
+    bend: Number.isFinite(bend) && bend ? -bend : parsed.bend,
+    label_t: parsed.label_t != null ? Math.round((1 - wbLinkLabelT(parsed)) * 100) / 100 : undefined,
+  };
+}
+
+function wbReverseSelection() {
+  return wbRecordGesture(async () => {
+    let turned = 0;
+    for (const e of wbFmtEntries().filter((x) => x.kind === "sketch" && !wbIsLocked(x.kind, x.item))) {
+      const kind = wbFmtKind(e);
+      const parsed = wbFmtSketch(e);
+      if (kind === "link") {
+        await wbSaveSketchProps(e.item, wbReversedLinkFields(parsed));
+      } else if (kind === "arrow") {
+        const caps = wbSketchCaps(parsed);
+        const swapped = { startCap: caps.endCap, endCap: caps.startCap, startSize: caps.endSize, endSize: caps.startSize };
+        await wbSaveSketchProps(e.item, wbFmtCapFields("arrow", parsed, swapped));
+      } else {
+        continue;
+      }
+      turned += 1;
+    }
+    if (turned) wbAnnounce("Reversed.");
+    else toast("Select a connector or an arrow to reverse it.");
+  }).then(() => wbScheduleRender());
+}
 
 //: --- The hand-drawn look (Excalidraw's; canvasdepth2) ---------------------
 //:

@@ -530,3 +530,21 @@ def test_the_owners_typos_around_midnight_and_the_new_year_are_put_right_first()
 
     got = when.parse_reminder_text(reminder_parser.heard("remnd me at midnite to see the new yaer"), NOW)
     assert got is not None and got["due_at"].strftime("%Y-%m-%d %H:%M") == "2027-01-01 00:00", got
+
+
+@pytest.mark.parametrize(
+    ("phrase", "expected"),
+    [
+        ("in 2 weeks at 3pm", "2026-10-05 15:00"),
+        ("in 3 days at 9am", "2026-09-24 09:00"),
+        ("in 3 days at 3", "2026-09-24 15:00"),
+        ("in a fortnight at noon", "2026-10-05 12:00"),
+        ("in 2 months at 9am", "2026-11-21 09:00"),
+        ("in 2 days evening", "2026-09-23 18:00"),
+        ("in 2 days", "2026-09-23 15:55"),
+        ("in 2 hours", "2026-09-21 17:55"),
+    ],
+)
+def test_a_day_sized_offset_keeps_the_clock_said_beside_it(phrase, expected):
+    got = when.resolve(phrase, NOW)
+    assert got is not None and got.strftime("%Y-%m-%d %H:%M") == expected

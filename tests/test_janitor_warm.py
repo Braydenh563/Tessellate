@@ -4,7 +4,13 @@ log said "Chat with 'llama3.2' failed")."""
 
 from __future__ import annotations
 
+import pytest
+
 from tessellate.ai import janitor
+
+# The warm-up reads the config (`choose_chat_model_if_missing`), which without
+# an app state builds one in the repo's own `data/` folder.
+pytestmark = pytest.mark.usefixtures("app_state")
 
 
 class _Models:

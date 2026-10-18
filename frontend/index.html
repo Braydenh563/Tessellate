@@ -3588,7 +3588,8 @@ Link to another note with [[its first few words]]."></textarea>
         and pressing a day opens its page or starts it. The arrows beside the
         month walk a week, and the month opens a calendar to jump to any earlier day.
         In the feed, Ctrl and the mouse wheel, or a pinch, makes the date
-        groups finer or coarser, as do + and - on a row. The chips under the strip show what you
+        groups finer or coarser, as do + and - on a row. The thin strip at the feed's right edge shows how much you wrote
+        over the whole range, labelled by month or year; click or drag it to jump. The chips under the strip show what you
         wrote on today's date in earlier years, and the year menu beside the month narrows the list to one year;
         Options, Time range, On this day does the same.
   </p>
@@ -3919,8 +3920,9 @@ Link to another note with [[its first few words]]."></textarea>
             note to edit it right here, and click a legend colour to hide that
             category. Double-click empty space to add a note there. Gravity and
             Spread reshape whatever you have not placed yourself. A Tree,
-            Radial or Arc layout stays still and is named in the toolbar; click
-            its name to change it.
+            Radial, Arc or Treemap layout stays still and is named in the
+            toolbar; click its name to change it. Treemap sizes each category
+            by how many notes it holds.
             <strong>Drop one note onto another to link them</strong>, and use
             <strong>Trace</strong> to see how any two notes connect.
           </p>
@@ -3967,6 +3969,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <option value="tree">Tree</option>
                 <option value="radial">Radial</option>
                 <option value="arc">Arc</option>
+                <option value="treemap">Treemap</option>
               </select>
             </div>
             <!-- INBOX 693 (the owner: "different preferred shapes or ways of
@@ -4590,6 +4593,9 @@ Link to another note with [[its first few words]]."></textarea>
           <div class="row space-between sidebar-head">
             <h2>Recent</h2>
             <span class="row">
+              <button type="button" class="icon-only ghost small graph-help-toggle"
+                data-help-for="doc-list-help" aria-controls="doc-list-help" aria-expanded="false"
+                title="About this list" aria-label="About this list"><i class="ph ph-question" aria-hidden="true"></i></button>
               <button id="doc-new" class="small" type="button" title="Start a new document"
                 aria-label="Start a new document"><i class="ph ph-plus ph-lead" aria-hidden="true"></i>New</button>
               <!-- New from a template, asked for as part of "the documents
@@ -4605,6 +4611,14 @@ Link to another note with [[its first few words]]."></textarea>
                 aria-haspopup="dialog" aria-controls="doc-template-dialog"><i class="ph ph-layout" aria-hidden="true"></i></button>
             </span>
           </div>
+          <div class="help-body hidden" id="doc-list-help" role="dialog" aria-label="About the documents list">
+            <p>Recent lists the latest eight documents you changed. Press one to
+              open it; its ⋯ menu renames, archives or deletes it.</p>
+            <p>New starts an empty document. The layout button beside it starts one
+              from a template (a meeting, a plan, a lecture and more, or a code
+              file). All in Library opens every document, where you can search,
+              sort and manage them.</p>
+          </div>
           <ul id="doc-list" class="doc-list"></ul>
           <p id="doc-empty" class="muted empty-line hidden">No documents yet: start typing on the right, or press ＋ New.</p>
           <button id="doc-browse-all" class="ghost small conv-browse-all" type="button"
@@ -4612,6 +4626,25 @@ Link to another note with [[its first few words]]."></textarea>
         </div>
 
         <div id="doc-sidebar-outline" class="doc-sidebar-section hidden">
+          <!-- The tab's own '?': its sections come and go with the document, so
+               the one place that is always there carries what they all do. -->
+          <div class="row space-between sidebar-head">
+            <h2>This document</h2>
+            <button type="button" class="icon-only ghost small graph-help-toggle"
+              data-help-for="doc-outline-help" aria-controls="doc-outline-help" aria-expanded="false"
+              title="About this tab" aria-label="About this tab"><i class="ph ph-question" aria-hidden="true"></i></button>
+          </div>
+          <div class="help-body hidden" id="doc-outline-help" role="dialog" aria-label="About the outline tab">
+            <p>Outline lists this document's headings; press one to jump to it. Past
+              a screen of headings a filter box appears. Comments lists every
+              highlight that carries a remark.</p>
+            <p>Linked from shows the notes and documents that link here, with the
+              sentence each says it in, and the ones that only name this document;
+              Link turns those words into a [[link]]. Notes it draws on lists the
+              notes added to it. References holds saved links, and Attach a bookmark
+              adds one. Where are my documents kept? says where the files live.</p>
+            <p>A section with nothing in it is left out.</p>
+          </div>
           <!-- Built from the document's own headings: past two screens of text
                the scrollbar stops being a way to navigate. -->
           <div id="doc-outline-wrap" class="doc-outline-wrap hidden">
@@ -4861,12 +4894,14 @@ Link to another note with [[its first few words]]."></textarea>
                  (DOCUMENTS_PLAN 25 row 2, docRunSyncAvailability). -->
             <button id="doc-code-run-why" class="linklike small hidden" type="button"
               title="Open Settings, Packages, at Run Python files">Install Python in Settings, Packages</button>
-            <!-- The code panel's way in (INBOX 788): a code file only
-                 (`.doc-code-only`, hidden for prose by library-lazy.css). -->
+            <!-- The code panel's ways in (INBOX 788): the Assistant is a code
+                 file's (`.doc-code-only`, hidden for prose by library-lazy.css);
+                 Snippets is for every document, and reads Sections beside
+                 prose (INBOX 904 B18, `.doc-prose-only`). -->
             <button id="doc-code-assist-open" class="ghost small doc-code-only" type="button" aria-controls="doc-code-side" data-side="assist" aria-expanded="false"
               title="Assistant: explain, fix, write tests or refactor the selection or the file" aria-label="Assistant"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> <span class="doc-ai-label">Assistant</span></button>
-            <button id="doc-code-snippets-open" class="ghost small doc-code-only" type="button" aria-controls="doc-code-side" data-side="snippets" aria-expanded="false"
-              title="Snippets: insert one at the caret, or save the selection as one" aria-label="Snippets"><i class="ph ph-puzzle-piece ph-lead" aria-hidden="true"></i> <span class="doc-ai-label">Snippets</span></button>
+            <button id="doc-code-snippets-open" class="ghost small" type="button" aria-controls="doc-code-side" data-side="snippets" aria-expanded="false"
+              title="Snippets: insert one at the caret, or save the selection as one" aria-label="Snippets"><i class="ph ph-puzzle-piece ph-lead" aria-hidden="true"></i> <span class="doc-ai-label doc-code-only">Snippets</span><span class="doc-ai-label doc-prose-only">Sections</span></button>
             <!-- Export and delete, folded away. Same `<details>` disclosure
                  the Library's image tiles use, for the same reason: the
                  browser gives the open/close, the keyboard handling and the
@@ -4881,6 +4916,28 @@ Link to another note with [[its first few words]]."></textarea>
                  visible way in at all. It sits here now, beside the kebab,
                  with its key in the tooltip; `toggleDocFocus` carries the
                  rest of the reasoning. -->
+            <button type="button" class="icon-only ghost small graph-help-toggle"
+              data-help-for="doc-dock-help" aria-controls="doc-dock-help" aria-expanded="false"
+              title="About these controls" aria-label="About these controls"><i class="ph ph-question" aria-hidden="true"></i></button>
+            <div class="help-body hidden" id="doc-dock-help" role="dialog" aria-label="About the document controls">
+              <p>View: Edit shows the markdown as it will look (Live), the markdown
+                itself (Source), a preview beside it (Split) or just the text
+                (Plain), and Read shows the finished page. Formatting shows the
+                formatting toolbar (Ctrl+Shift+X). AI edit asks Atlas to rewrite the
+                document or the selection.</p>
+              <p>A code file adds Format (Shift+Alt+F), Run (Ctrl+Shift+Enter),
+                Assistant and Snippets. Beside prose, Snippets reads Sections.
+                Focus hides everything but the page (F11).</p>
+              <p>The ⋯ menu holds the file type, Connections, History, Replace in
+                every document, Copy app link, Model for this feature, Extract
+                notes and Map the headings; the downloads (.md, .html, with images,
+                .docx, PDF); the page width, toolbar row and code switches (wrap,
+                whitespace, minimap); Dim all but this paragraph, Keep this line
+                centred, Margin reader and Serif for reading; Autocorrect, Suggest
+                words and Suggest changes (with Review the next change, Accept all
+                changes and Reject all changes once there are some); Read aloud;
+                and Delete document.</p>
+            </div>
             <button type="button" id="doc-focus-toggle" class="ghost small icon-only doc-focus-toggle"
               title="Focus mode: hide everything but the page (F11)" aria-pressed="false"
               aria-label="Focus mode: hide everything but the page (F11)"><i class="ph ph-corners-out" aria-hidden="true"></i></button>
@@ -5198,7 +5255,19 @@ Link to another note with [[its first few words]]."></textarea>
           <input type="text" id="doc-replace-input" placeholder="Replace with" aria-label="Replace with">
           <button type="button" id="doc-replace-one" class="ghost small">Replace</button>
           <button type="button" id="doc-replace-all" class="ghost small">Replace all</button>
+          <button type="button" class="icon-only ghost small graph-help-toggle"
+            data-help-for="doc-find-help" aria-controls="doc-find-help" aria-expanded="false"
+            title="About find and replace" aria-label="About find and replace"><i class="ph ph-question" aria-hidden="true"></i></button>
           <button type="button" id="doc-find-close" class="ghost small icon-only" title="Close (Esc)" aria-label="Close find and replace"><i class="ph ph-x" aria-hidden="true"></i></button>
+        </div>
+        <div class="help-body hidden" id="doc-find-help" role="dialog" aria-label="About find and replace">
+          <p>Type in Find and the first match is selected, with a count of them all;
+            Enter goes to the next match and Shift+Enter to the previous, or use
+            the arrows. Replace changes the selected match and moves to the next
+            one, and Replace all changes every match in this document as one undo
+            step.</p>
+          <p>To change a word across every document, use Replace in every document
+            in the ⋯ menu. Esc closes the bar.</p>
         </div>
         <!-- Where the caret is, in the document's own structure. Filled by
              `renderDocCrumbs` (documents.js) from the outline's heading list and
@@ -5244,7 +5313,7 @@ Link to another note with [[its first few words]]."></textarea>
             <aside id="doc-code-side" class="doc-code-side hidden" aria-label="Code panel">
               <div class="doc-code-side-head">
                 <div class="tabs-line" id="doc-code-side-tabs" role="tablist" aria-label="Code panel sections">
-                  <button role="tab" data-side="assist" aria-selected="false" tabindex="-1"
+                  <button role="tab" data-side="assist" class="doc-code-only" aria-selected="false" tabindex="-1"
                     aria-controls="doc-code-assist">Assistant</button>
                   <button role="tab" data-side="snippets" aria-selected="true"
                     aria-controls="doc-code-snippets">Snippets</button>
@@ -5266,17 +5335,24 @@ Link to another note with [[its first few words]]."></textarea>
                   runs the tool; any other goes to the needle extra when it is installed.
                   Explain, Write tests and Refactor stay on screen, disabled, and say why.</p>
                 <p>Snippets: pick a row, or press Enter on it, to insert it at the
-                  caret; Ctrl+Z takes it out. Built-in rows have stops that Tab walks.</p>
+                  caret, or drag it into the text: a bar shows where it will land and
+                  the text scrolls at its top and bottom edge. Ctrl+Z takes it out.
+                  Built-in rows have stops that Tab walks.</p>
                 <p>Select some code and press Save to keep it; words with
                   a # in its name become tags ("Read a file #io"). The search matches
                   names, tags and languages, and this file's language is listed first.
                   Snippets belong to the notebook, not to one document.</p>
+                <p>In a text document the same panel is Sections: ready-made blocks
+                  (a meeting block, a risk table, a callout) that go in at the caret or
+                  where you drop them, each on its own lines with a blank line round it.
+                  Tab walks the prompts. Select some text and press Save to keep your
+                  own, tagged with # words.</p>
               </div>
               <!-- **The coding assistant** (INBOX 788, the owner: "a way to better
                    interact with the ai as a coding asistant like in vs code??").
                    Asks go to `/documents/{id}/code-assist` (ai/code_assist.py),
                    the documents feature's model: one provider path. -->
-              <section id="doc-code-assist" class="doc-code-side-section hidden" role="tabpanel" aria-label="Assistant">
+              <section id="doc-code-assist" class="doc-code-side-section doc-code-only hidden" role="tabpanel" aria-label="Assistant">
                 <p id="doc-assist-scope" class="muted text-sm doc-assist-scope"></p>
                 <div class="doc-assist-asks" role="group" aria-label="Ask the model">
                   <button type="button" class="ghost small" data-assist="explain"
@@ -5430,8 +5506,8 @@ Link to another note with [[its first few words]]."></textarea>
                text field is a wall. -->
           <button type="button" class="icon-only ghost small dialog-head-btn"
             data-help-for="doc-ai-verb-help" aria-controls="doc-ai-verb-help"
-            aria-expanded="false" title="About the three verbs"
-            aria-label="About the three verbs">
+            aria-expanded="false" title="About this panel"
+            aria-label="About this panel">
             <i class="ph ph-question" aria-hidden="true"></i>
           </button>
           <span class="dialog-head-actions">
@@ -5459,13 +5535,19 @@ Link to another note with [[its first few words]]."></textarea>
           <label><input type="radio" name="doc-ai-verb" value="remove"><i class="ph ph-eraser ph-lead" aria-hidden="true"></i> Remove</label>
         </div>
         <div class="help-body hidden" id="doc-ai-verb-help" role="dialog"
-          aria-label="About the three verbs">
+          aria-label="About the Atlas edit panel">
           <p>Edit rewrites what is selected, or the whole document when
             nothing is.</p>
           <p>Write adds new text at the caret, or at the end of the document.</p>
           <p>Remove takes out what you name, and shows you what it took.</p>
-          <p>All three arrive as a suggestion you accept or discard; nothing is
-            written into the file until you accept it.</p>
+          <p>Type what you want and press Suggest an edit; Stop ends a run and
+            leaves the document untouched. The answer arrives as a suggestion
+            you accept or discard; nothing is written into the file until you
+            do.</p>
+          <p>The changed lines are listed so you can skip any of them, and
+            Atlas's version is a box you can edit before pressing Replace with
+            this. Cancel throws it away. History, at the top, lists every past AI
+            edit to this document and undoes one.</p>
         </div>
         <p class="muted doc-ai-scope" id="doc-ai-scope"></p>
         <!-- The instruction and the button that acts on it are one row, the
@@ -5539,7 +5621,7 @@ Link to another note with [[its first few words]]."></textarea>
              a single-line box hides all but the last few words of it. Grows
              with the text, and Enter still submits (Shift+Enter for a line
              break) so the quick path stays quick. -->
-        <textarea id="reminder-magic" maxlength="1000" rows="1" class="autogrow" aria-label="New reminder in plain words"
+        <textarea id="reminder-magic" data-autocorrect maxlength="1000" rows="1" class="autogrow" aria-label="New reminder in plain words"
           placeholder="Magic add: “Call mum tomorrow evening”"></textarea>
         <!-- The wand alone (WORLD_CLASS_PLAN 507): the form below has the
              card's one worded "Add", so this reads as "add from the sentence"
@@ -5548,7 +5630,7 @@ Link to another note with [[its first few words]]."></textarea>
       </div>
       <p id="reminder-magic-status" class="status" role="status"></p>
       <div class="reminder-form">
-        <input id="reminder-text" type="text" maxlength="500"
+        <input id="reminder-text" data-autocorrect type="text" maxlength="500"
           placeholder="Remind me to…" aria-label="Reminder text">
         <!-- Split deliberately. One datetime-local field means tabbing through
              six segments in a fixed order to change a time, and its picker is
@@ -7931,6 +8013,26 @@ Link to another note with [[its first few words]]."></textarea>
           <div class="wb-fmt-row" data-fmt="fill"><span class="wb-fmt-label">Fill</span>
             <span class="wb-fmt-buttons"><label class="wb-snap-label" title="Filled"><input type="checkbox" id="wb-fmt-fill-on" aria-label="Filled"></label><input type="color" id="wb-fmt-fill" class="wb-color-picker" aria-label="Fill colour" title="Fill colour"></span>
           </div>
+          <label class="wb-fmt-row" data-fmt="fillstyle"><span class="wb-fmt-label">Fill style</span>
+            <select id="wb-fmt-fillstyle" aria-label="Fill style" title="Fill the shape with lines or dots in its colour instead of a solid">
+              <option value="solid">Solid</option>
+              <option value="hatch">Hatch</option>
+              <option value="cross">Cross-hatch</option>
+              <option value="dots">Dots</option>
+              <option value="dashed">Dashes</option>
+              <option value="zigzag">Zigzag</option>
+            </select>
+          </label>
+          <div class="wb-fmt-row" data-fmt="gradient"><span class="wb-fmt-label">Gradient</span>
+            <span class="wb-fmt-buttons"><input type="color" id="wb-fmt-gradient" class="wb-color-picker" aria-label="Gradient second colour" title="The colour the fill fades to"><select id="wb-fmt-gradient-dir" aria-label="Gradient direction" title="Fade the fill into a second colour">
+              <option value="none">None</option>
+              <option value="s">Down</option>
+              <option value="n">Up</option>
+              <option value="e">Right</option>
+              <option value="w">Left</option>
+              <option value="radial">Radial</option>
+            </select></span>
+          </div>
           <label class="wb-fmt-row" data-fmt="stroke"><span class="wb-fmt-label" id="wb-fmt-stroke-word">Line</span><input type="color" id="wb-fmt-stroke" class="wb-color-picker" aria-label="Line colour" title="Line colour"></label>
           <label class="wb-fmt-row" data-fmt="width"><span class="wb-fmt-label">Width</span><input type="number" id="wb-fmt-width" min="1" max="40" step="1" aria-label="Line width" title="Line width"></label>
           <label class="wb-fmt-row" data-fmt="dash"><span class="wb-fmt-label">Pattern</span>
@@ -7940,6 +8042,9 @@ Link to another note with [[its first few words]]."></textarea>
               <option value="dotted">Dotted</option>
             </select>
           </label>
+          <label class="wb-fmt-row" data-fmt="pattern"><span class="wb-fmt-label">Dashes</span><input type="text" id="wb-fmt-pattern" inputmode="decimal" maxlength="40" placeholder="8 4" autocomplete="off" aria-label="Custom dash pattern" title="Your own dashes, in line widths: a dash, a gap, and so on, like 8 4. Empty uses the pattern above."></label>
+          <label class="wb-fmt-row" data-fmt="round"><span class="wb-fmt-label">Corners</span><input type="number" id="wb-fmt-round" min="0" max="80" step="1" aria-label="Corner rounding" title="Round the corners by this much; 0 keeps them sharp"></label>
+          <div class="wb-fmt-row" data-fmt="flow"><span class="wb-fmt-label">Flow</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="Dashes that move along the line, for a flow or a direction. Exports draw them still."><input type="checkbox" id="wb-fmt-flow" aria-label="Flow animation"></label></span></div>
           <label class="wb-fmt-row" data-fmt="alpha"><span class="wb-fmt-label">Opacity</span>
             <span class="wb-fmt-buttons"><input type="range" id="wb-fmt-alpha" min="10" max="100" step="5" aria-label="Opacity" title="Opacity"><output id="wb-fmt-alpha-out" for="wb-fmt-alpha" class="wb-fmt-out">100%</output></span>
           </label>
@@ -7961,6 +8066,9 @@ Link to another note with [[its first few words]]."></textarea>
               <option value="sharp">Sharp</option>
             </select>
           </label>
+          <label class="wb-fmt-row" data-fmt="jumpsize"><span class="wb-fmt-label">Jump size</span><input type="number" id="wb-fmt-jumpsize" min="2" max="40" step="1" placeholder="Auto" aria-label="Line jump size" title="How wide a hop is where this line crosses another; empty sizes it from the line width"></label>
+          <label class="wb-fmt-row" data-fmt="gapstart"><span class="wb-fmt-label">Start gap</span><input type="number" id="wb-fmt-gapstart" min="0" max="60" step="1" aria-label="Gap at the start" title="Stop this far short of the shape at the start; 0 touches it"></label>
+          <label class="wb-fmt-row" data-fmt="gapend"><span class="wb-fmt-label">End gap</span><input type="number" id="wb-fmt-gapend" min="0" max="60" step="1" aria-label="Gap at the end" title="Stop this far short of the shape at the end; 0 touches it"></label>
           <label class="wb-fmt-row" data-fmt="caps"><span class="wb-fmt-label">Start</span>
             <span class="wb-fmt-buttons"><select id="wb-fmt-startcap" aria-label="Line start" title="Line start"></select><select id="wb-fmt-startsize" class="wb-cap-size" aria-label="Start size" title="Size of the start mark"><option value="s">Small</option><option value="m" selected>Medium</option><option value="l">Large</option></select></span>
           </label>
@@ -7981,10 +8089,21 @@ Link to another note with [[its first few words]]."></textarea>
         <section class="wb-fmt-section" data-format-panel="text" aria-label="Text" hidden>
           <label class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Size</span><input type="number" id="wb-fmt-size" min="8" max="200" step="1" aria-label="Text size" title="Text size"></label>
           <label class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Colour</span><input type="color" id="wb-fmt-ink" class="wb-color-picker" aria-label="Text colour" title="Text colour"></label>
-          <div class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Weight</span>
+          <label class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Font</span>
+            <select id="wb-fmt-font" aria-label="Font" title="The face the text is set in">
+              <option value="default">Default</option>
+              <option value="serif">Serif</option>
+              <option value="mono">Monospace</option>
+              <option value="wide">Wide sans</option>
+              <option value="hand">Handwritten</option>
+            </select>
+          </label>
+          <div class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Style</span>
             <span class="wb-fmt-buttons">
               <button type="button" id="wb-fmt-bold" class="ghost small icon-only" aria-pressed="false" title="Bold, the whole text" aria-label="Bold"><i class="ph ph-text-b" aria-hidden="true"></i></button>
               <button type="button" id="wb-fmt-italic" class="ghost small icon-only" aria-pressed="false" title="Italic, the whole text" aria-label="Italic"><i class="ph ph-text-italic" aria-hidden="true"></i></button>
+              <button type="button" id="wb-fmt-underline" class="ghost small icon-only" aria-pressed="false" title="Underline, the whole text" aria-label="Underline"><i class="ph ph-text-underline" aria-hidden="true"></i></button>
+              <button type="button" id="wb-fmt-strike" class="ghost small icon-only" aria-pressed="false" title="Strikethrough, the whole text" aria-label="Strikethrough"><i class="ph ph-text-strikethrough" aria-hidden="true"></i></button>
             </span>
           </div>
           <div class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Align</span>
@@ -8020,8 +8139,9 @@ Link to another note with [[its first few words]]."></textarea>
         </section>
         <!-- Edit data (draw.io's; canvasdepth2): an item's own named values. -->
         <section class="wb-fmt-section" data-format-panel="data" aria-label="Data" hidden>
+          <label class="wb-fmt-row" data-fmt="tip"><span class="wb-fmt-label">Tooltip</span><input type="text" id="wb-fmt-tip" maxlength="200" placeholder="Shown on hover" aria-label="Tooltip" title="Words shown when the pointer rests on this item"></label>
           <div class="wb-fmt-props" data-fmt="props">
-            <p class="muted wb-lib-keys">Named values on this item, kept with it and in its exports.</p>
+            <p class="muted wb-lib-keys">Named values on this item, kept with it and in its exports. Type %name% in its text to show one.</p>
             <ul id="wb-fmt-props" class="wb-fmt-prop-list" aria-label="Custom properties"></ul>
             <button type="button" id="wb-fmt-prop-add" class="ghost small" aria-label="Add a property"><i class="ph ph-plus ph-lead" aria-hidden="true"></i>Add a property</button>
           </div>
@@ -9191,6 +9311,9 @@ Link to another note with [[its first few words]]."></textarea>
         <option value="off">No preference</option>
         <option value="uk">British (colour, organise)</option>
         <option value="us">American (color, organize)</option>
+        <option value="au">Australian (colour, organise)</option>
+        <option value="ca">Canadian (colour, organize)</option>
+        <option value="in">Indian (colour, organise)</option>
       </select>
     </div>
     <label class="setting-check doc-grammar-row">
@@ -11962,7 +12085,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <input type="checkbox" id="pref-autocorrect" checked>
                 <span>Autocorrect as I type</span>
               </label>
-              <p class="muted">Fixes clear typos in notes, chat and titles; Backspace puts it back. Never in code, links, tags or search.</p>
+              <p class="muted">Fixes clear typos in notes, chat, reminders and titles; Backspace puts it back. Never in code, links, tags or search.</p>
             </div>
             <!-- Search (Brief 86, CHAT_PLAN decision 69): the one switch for
                  every box's suggestions; kept on this device like simple mode. -->

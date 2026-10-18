@@ -234,3 +234,29 @@ def test_a_reopened_chat_numbers_its_marks_by_the_panel_it_shows():
     call = rest[rest.index("renderAnswerGrounding(") :]
     call = call[: call.index(");")]
     assert "savedOrder" in call, call
+
+
+def test_the_popup_agent_numbers_its_answer_like_chat():
+    """BACKLOG (the owner, 2026-10-12): the popup agent's answers carried a
+    Sources list and no in-text marks. It now takes both `grounding` events,
+    re-places the marks after every paint (`renderMarkdown` rebuilds the
+    answer), numbers them over the list `cmdPaletteSources` draws, and the
+    rows carry that number."""
+    palette = frontend_text("palette.js")
+    start = palette.index("async function cmdPaletteAsk(")
+    ask = palette[start:]
+    assert "onGrounding: cite" in ask
+    assert "onGroundingLive: cite" in ask
+    call = ask[ask.index("addInlineCitations(") :]
+    call = call[: call.index(");")]
+    assert "answerBox" in call and "found" in call
+    assert "chatSourcesFrom({ meta, touched: [...touched.values()] })" in call
+    #: Every paint that rebuilds the answer puts the marks back.
+    paints = [m.start() for m in re.finditer(r"renderMarkdown\(answerBox, ", ask)]
+    assert paints, "the popup agent paints its answer with renderMarkdown"
+    for at in paints:
+        assert "cite();" in ask[at : at + 160], ask[at : at + 160]
+    #: The row shows the number the mark carries.
+    row = palette[palette.index("function cmdSourceRow(") :]
+    assert "chat-source-index" in row[: row.index("\n}\n")]
+    assert "numbering.indexOf(source) + 1" in frontend_text("chat-agent.js")

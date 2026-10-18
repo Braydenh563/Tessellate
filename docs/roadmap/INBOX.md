@@ -53,16 +53,6 @@ with its owner named in the entry.
      letting the composer explain each filing in one line.
      Owner: Brief 39b (filing and the taxonomy), WORLD_CLASS_PLAN 23; the held-out accuracy measure and the one-line explanation of each filing are its rows.
 
-735. **The owner, 2026-10-06, verbatim**: "also since p5.js is vendored, can it be a
-     document option in the text editor?? also when on a code document, I get auto
-     fill for redular sentences, not code specific autofill" "I was on js document".
-     Two items for DOCUMENTS_PLAN: a p5.js sketch document kind (code beside a
-     sandboxed live canvas, the vendored p5 only, no network); and on a code
-     document (.js here) the prose autocomplete must switch off and code-aware
-     completion (words from the file, the language's keywords, bracket pairs) take
-     its place.
-     Owner: DOCUMENTS_PLAN 23 and Brief 42 (the p5 kind, code completion on code documents); Briefs 69 to 71 for the IDE.
-
 737. **The owner, 2026-10-06, verbatim**: "can the debugging run for other languages
      as well?? also error messages, syntax errors, code suggestions and more". Then:
      "are there any more repos we can vendor??" Today: JS runs (sandboxed), syntax
@@ -97,13 +87,6 @@ with its owner named in the entry.
      Lisbon for May; the hotel is booked") with the citation as a marker.
      Owner: composer-voice-1006.md (merged: no "your note starting with ... says", casual phrasings, typos, 847 slang entries, voices) and CHAT_PLAN Phase 6, Brief 39 (the realiser). Open: speak the content directly with the citation as a marker (measured today: Ask now answers "Also, the hobbies I want to try: ..." with no "says"); the remaining eval numbers are in that file.
 
-742. **The owner, 2026-10-07, verbatim**: "atlas doesnt seem to change emotions alot
-     if at all?? maybe log that for next pr". Next PR: measure how often Atlas's
-     mood changes in a session (the mood triggers in atlas-life.js and
-     companion code) and widen what drives it (answers found, nothing found,
-     reminders done, idle, time of day), each visible within a few seconds.
-     Owner: Brief 34 (companion), the second part; the mood-change count per session is its first number.
-
 743. **The owner, 2026-10-07, verbatim**: "and I want more mouse interaction with the
      companion like rubbing its head. flipping it upside down?? doing things or
      event triggers that get it to change emotion ro behavior. \"ro\" is an or
@@ -129,33 +112,6 @@ with its owner named in the entry.
      the toast-with-action recipe in DESIGN.md, and fix what is off.
      Owner: Brief 34 (companion), second part, and OPEN.md Atlas rows (INBOX 752): gestures, the enlarged view mirroring the corner, the framed Atlas clipped to its oval, the Show companion notice measured against the toast recipe.
 
-771. **The owner, 2026-10-10, 16:02Z, verbatim.** "I am sleeping so continue
-     autonomously. Impress me a lot. I want to fall off my chair lol with how
-     good the changes, fixes, improvements, additions, and nire are when I
-     wake up in the morning lol." Read: no cap on the night's work beyond the
-     agent cap (four Opus, Sonnet extra); every open brief in SESSION_BRIEFS
-     order; the PR stays green and the docs current at each merge. Owner:
-     HANDOVER "Now" (the night's queue).
-
-772. **Decision needed, found by the companion agent (Brief 34), 2026-10-10.**
-     Under the system's reduce-motion hint Atlas keeps its calm CSS loops (an
-     earlier decision, `08-consistency.css:5056`): 1,579 style recalcs a
-     minute. Decision 7 says reduced motion keeps poses without loops.
-     Recommendation, taken: decision 7 wins; the system hint and the app's
-     own Reduce setting both stop every loop and keep the pose. Owner: Brief
-     34 continues (companion2).
-
-804. **The owner, 2026-10-11, verbatim.** "there are more backups than my max
-     set number of 3, this console line's border clashes with the line above,
-     also these buttons and ui in the documents editor need to be fixed in
-     their design and height and stlying etc." (screenshots: four backups
-     under "Keep this many backups 3"; the Python console's `>>>` input with a
-     focus border meeting the rule above; the document assistant's
-     suggestion buttons over an "Ask about this code..." field and a send
-     button of another height). Backups fixed in b928a7d9c (every start
-     prunes to the number). Owner: grammar57 (the console line and the
-     assistant's field, send and suggestions, in the button grammar).
-
 805. **The owner, 2026-10-11, verbatim.** "it is unclear which backup is the
      latest, and also the backups need more file info and details I feel. all
      information and processes across the app need to be 100% transparent. so
@@ -168,22 +124,6 @@ with its owner named in the entry.
      run in the background processes panel, a running indicator in the
      shell, and the backup rows (latest marked, date in words, what made it,
      size, checked).
-
-807. **The owner, 2026-10-11, verbatim.** "it isnt really clear exactly what
-     these were for" (screenshot: Where your data went, rows such as
-     "huggingface.co (2600:...:443) The internet, Optional downloads,
-     connected 4 times"). Owner: the transparency agent: each destination
-     says what it fetched or sent (the model or file name, the search
-     words) and why, the address behind a disclosure.
-
-808. **The owner, 2026-10-11, verbatim** (a log): Agent mode calls
-     `ask_user` with one option three times ("ask_user needs at least 2
-     different options"), calls `search_notes` with no query on "NOTEBOOK
-     STATS", searches `'what is there about a gaming mouse?\\'` with the
-     backslash kept, "can you search the web?" finds 0 notes via none, and
-     "Grammar check off for this session: the grammar worker did not start".
-     Owner: noagent (the agent's calls and the query clean-up); the grammar
-     worker to grammar57.
 
 810. **The owner, 2026-10-11, verbatim** (screenshots: the personas' quiet
      Edit and Delete text buttons; Keyboard shortcuts with a bordered tinted
@@ -220,45 +160,9 @@ with its owner named in the entry.
      Atlas as the app's assistant)", decisions 65 to 69; the row actions to
      grammar57 (DESIGN.md "Row actions").
 
-812. **The owner, 2026-10-11, verbatim.** "also the composer in the ask tab
-     and structuring of sentences and outputs needs to be cleaned up a lot. it
-     still looks messy. and the response feels, plain, boring, lifeless, and
-     doesnt give me anything more. I may as well just read the notes I made on
-     the right. the composer needs to be better but I dont know how and you
-     keep saying youve improved it but i still cant see much. I feel like Im
-     going in a loop 😞 also the first time I use the ask subtab search after
-     loading up the app, the badges next to the sub headers on each column are
-     visibly empty" (screenshots: Ask, "What have I saved about courses &
-     study?": quoted fragments with a bar, a superscript and "[your note, 27
-     July]" each, then "Grounded in" chips and "4 of 4 from your notes" that
-     repeat the right column; the corner Atlas drawn over "You asked"; empty
-     badges beside "Atlas" and "Matching records" while loading). Read: the
-     answer quotes, it does not answer; three citation marks per line; the
-     sources shown three times. Placed: CHAT_PLAN decision 70 (the answer is
-     judged against written gold answers, not rule counts), first in the
-     assistant brief; the empty badges and Atlas over the answer to ownerfix.
-
-903. **The owner, 2026-10-11, verbatim.** "alright lets rename and
-     retrademark to Tessellate update absolutely everything including all
-     the documentation and the pages site. make sure to still note the
-     former name though." Placed: the rebrand agent (agent/rebrand-1011):
-     step 1 the brand (`scripts/rebrand.py`, re-run after every merge;
-     `tests/test_brand_name.py`), step 2 the internal identifiers with
-     fallbacks for existing installs, as its own last commit.
-
-1297. **Owner review, from the ledger (tagsearch-1011).** Read
-     `src/tessellate/ai/data/taxonomy/memorymap_everyday.json` (about 630 general
-     words added to 23 pack topics; the pack file is untouched) and say keep,
-     trim or drop. Recommendation: keep; no model it files 0.417 to 0.617 on the
-     120 notes and 0.458 to 0.667 on 48 held-out ones (`tests/test_everyday_vocabulary.py`).
-     Placed: WORLD_CLASS_PLAN 23 step 6.
-
 1298. **The owner, 2026-10-12, verbatim.** "Make the exceptions for the
-     complexity but mark them to be fixed start of next pr". First work of the
-     next PR: split the 16 `composer_digest.py` rows seeded into
-     `tests/complexity_seed.json` (`_single` 79, `_facts` 75, `_lines` 62,
-     `answer` 57 and 12 more) to 15 or below, deleting each row, with the
-     composer tests as the net. Also 18 seeded functions that grew this PR
+     complexity but mark them to be fixed start of next pr". The 17 `composer_digest.py` rows are split and deleted
+     (composer-1018b, the composer tests as the net). Left: 18 seeded functions that grew this PR
      (`_stream_lines` 93 to 106, `_generate_diagram` 27 to 47, `mcp_server.handle_request`
      17 to 30 and 15 more; `python scripts/complexity.py` lists them): bring each
      back to its seed.

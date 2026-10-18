@@ -389,7 +389,7 @@ function nameMarkRepaintAll() {
   const faces = [...document.querySelectorAll(".name-mark[data-nm-seed]:not(.nm-atlas)")].filter((el) => !el.closest("#nm-buddy"));
   const sizes = faces.map((el) => Math.round(el.getBoundingClientRect().width) || 20);
   faces.forEach((el, i) => el.replaceWith(nameMark(el.dataset.nmSeed, sizes[i])));
-  if (typeof repaintOwnFace === "function") repaintOwnFace();
+  repaintOwnFace();
 }
 
 function nameMood(name) {
@@ -2982,7 +2982,7 @@ function nameMarkBuddySeed() {
 
 //: The companion follows the chat's picker when it is showing the persona.
 document.addEventListener("change", (event) => {
-  if (event.target?.id === "persona-select" && typeof syncNameMarkBuddy === "function") syncNameMarkBuddy();
+  if (event.target?.id === "persona-select") syncNameMarkBuddy();
 });
 
 //: The dashboard's mark, when Appearance swaps the logo for a face: yours,
@@ -5513,7 +5513,7 @@ function nameMarkBuddyGait(buddy) {
 }
 function nameMarkBuddyFlies(buddy) {
   const seed = buddy.dataset.seed || "";
-  return (typeof isAtlasSeed === "function" && isAtlasSeed(seed)) || NMB_FLYERS.includes(nmb.reading?.animal) || nmb.pose === "float";
+  return isAtlasSeed(seed) || NMB_FLYERS.includes(nmb.reading?.animal) || nmb.pose === "float";
 }
 //: **A crossfade, never a blink out and back** (INBOX 443, the owner: "I
 //: also want companion transitions to be better even with reduced motion
@@ -6018,18 +6018,16 @@ function nameMarkBuddyWorld(tab) {
 //: Let go at `vx`, `vy` (px per ms): the flight, one frame at a time on
 //: transforms only, then its place. Reduce motion: the same flight worked
 //: out at once and a crossfade to where it comes down.
-function nameMarkBuddyThrow(buddy, vx, vy) {
+function nameMarkBuddyThrow(buddy, vx, vy, world) {
   nmb.flight?.stop();
   nmb.home = null;
   const tab = nameMarkBuddyTab();
-  nameMarkBuddyIndexReset();
-  const world = nameMarkBuddyWorld(tab);
   const feel = nameMarkBuddyThrowFeel([Math.random(), Math.random(), Math.random()], Math.hypot(vx, vy));
   let s = { x: nmb.x, y: nmb.y, vx, vy, rot: 0, t: 0, on: null, rest: false };
   nmb.thrown = { v: [+vx.toFixed(2), +vy.toFixed(2)], from: [Math.round(nmb.x), Math.round(nmb.y)] };
   if (nameMarkBuddyNoTravel()) {
     while (!s.rest) s = nameMarkBuddyFlightStep(s, 16, world, feel);
-    nameMarkBuddyThrowLand(buddy, s, tab);
+    nameMarkBuddyThrowLand(buddy, s, tab, nameMarkBuddyThrowSpot(s));
     return;
   }
   const char = buddy.querySelector(".nm-buddy-char");
@@ -6064,6 +6062,8 @@ function nameMarkBuddyThrow(buddy, vx, vy) {
       hit = Math.max(hit, s.hit);
       dt -= 16;
     }
+    //: The landing spot is read before this frame's writes (read after, it restyled the drawing).
+    const landing = s.rest ? nameMarkBuddyThrowSpot(s) : null;
     nameMarkBuddyPut(buddy, Math.round(s.x), Math.round(s.y));
     if (char) char.style.rotate = `${s.rot.toFixed(1)}deg`;
     nameMarkBuddySway(buddy, Math.max(-28, Math.min(28, -s.vx * 10)));
@@ -6074,7 +6074,7 @@ function nameMarkBuddyThrow(buddy, vx, vy) {
     }
     if (s.rest) {
       flight.stop();
-      nameMarkBuddyThrowLand(buddy, s, tab);
+      nameMarkBuddyThrowLand(buddy, s, tab, landing);
       return;
     }
     next();
@@ -6092,10 +6092,13 @@ function nameMarkBuddyThrow(buddy, vx, vy) {
 //: as your spot on `tab`, the tab it was thrown on. Never the tab's own
 //: choice near there: on Notes with 24 notes, thrown right from x 44 and
 //: left from x 1168, both came down on one dock perch at x 763 (throw.js).
-function nameMarkBuddyThrowLand(buddy, s, tab) {
+function nameMarkBuddyThrowSpot(s) {
   nameMarkBuddyIndexReset();
   const spot = nameMarkBuddyDrop(s.x, s.y);
   if (spot.y >= s.y + 2) spot.falls = true;
+  return spot;
+}
+function nameMarkBuddyThrowLand(buddy, s, tab, spot) {
   nmb.thrown = { ...nmb.thrown, to: [Math.round(s.x), Math.round(s.y)] };
   nmb.placedAt = Date.now();
   nmb.afterLand = true;
@@ -7665,7 +7668,7 @@ function nameMarkBuddyExpress(expr, ms = 0, { drift = false } = {}) {
     if (drift && typeof setAtlasMood === "function" && typeof atlasMoodNow !== "undefined" && atlasMoodNow === "calm") setAtlasMood(expr, ms, { quiet: true });
     return;
   }
-  if (typeof characterRendererFor === "function" && characterRendererFor(seed)) return;
+  if (characterRendererFor(seed)) return;
   clearTimeout(nmb.exprTimer);
   const want = NAME_MARK_FACES[expr] ? expr : "";
   //: **Back down gradually** (the owner: it "will change expressions for a
@@ -7728,7 +7731,7 @@ const NMB_EXPR_SOFTEN = { laughing: "happy", excited: "happy", starstruck: "happ
 const NMB_EXPR_EMOTE = { confused: "q", happy: "spark", excited: "spark", laughing: "spark", love: "spark", starstruck: "spark", nervous: "sweat" };
 const NMB_EXPR_EVENTS = ["happy", "laughing", "excited", "surprised", "serious", "sleepy", "unimpressed", "love", "dizzy"];
 function nameMarkBuddyPrewarm(seed) {
-  if (!seed || isAtlasSeed(seed) || (typeof characterRendererFor === "function" && characterRendererFor(seed))) return;
+  if (!seed || isAtlasSeed(seed) || characterRendererFor(seed)) return;
   const near = NMB_EXPR_NEAR[nameMood(seed).mood || ""] || NMB_EXPR_NEAR[""];
   const queue = [...new Set([...NMB_EXPR_EVENTS, ...near])];
   const idle = typeof requestIdleCallback === "function" ? (fn) => requestIdleCallback(fn, { timeout: 4000 }) : (fn) => setTimeout(fn, 200);
@@ -9203,6 +9206,12 @@ function nameMarkBuddyBuild() {
       dragFrame = 0;
       follow();
       const box = buddy.getBoundingClientRect();
+      //: Reads first, then writes: one restyle of the rig, not three (Atlas at 4x).
+      const v = nameMarkBuddyReleaseVelocity(drag.samples || [], event?.timeStamp ?? performance.now());
+      const thrown = !!v && Math.hypot(v[0], v[1]) > NMB_TOSS_SPEED;
+      if (thrown) nameMarkBuddyIndexReset();
+      const world = thrown && nameMarkBuddyWorld(nameMarkBuddyTab());
+      const landed = !thrown && nameMarkBuddyDrop(Math.round(box.left), Math.round(box.top));
       buddy.style.translate = "";
       buddy.classList.remove("nm-buddy-dragging");
       clearTimeout(drag.settle);
@@ -9211,14 +9220,12 @@ function nameMarkBuddyBuild() {
       nameMarkBuddyPut(buddy, Math.round(box.left), Math.round(box.top));
       //: **Thrown** (INBOX 882): let go while still moving fast, it flies
       //: (`nameMarkBuddyThrow`).
-      const v = nameMarkBuddyReleaseVelocity(drag.samples || [], event?.timeStamp ?? performance.now());
-      if (v && Math.hypot(v[0], v[1]) > NMB_TOSS_SPEED) {
-        nameMarkBuddyThrow(buddy, v[0], v[1]);
+      if (thrown) {
+        nameMarkBuddyThrow(buddy, v[0], v[1], world);
         face.dataset.dragged = "1";
         drag = null;
         return;
       }
-      const landed = nameMarkBuddyDrop(nmb.x, nmb.y);
       //: **Settling** (the owner: "how it acts and settles down when I move
       //: it"): it drops onto the surface under gravity's curve, lands with
       //: a squash and a small overshoot, looks around once, and then stays:

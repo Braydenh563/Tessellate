@@ -126,7 +126,7 @@ def test_a_note_moved_by_hand_keeps_its_place(client):
     assert _category_of(client, created["id"]) == "Mine"
 
 
-def test_an_answer_before_the_stand_in_is_used_instead():
+def test_an_answer_before_the_stand_in_is_used_instead(app_state):
     late = routes_entries._LateFiling(1, "default")
     late.arrived("Recipes", 90)
     assert late.stand_in("Stand in", 40, "semantic-match") == ("Recipes", 90, "llm")
@@ -230,7 +230,7 @@ def test_a_stopped_note_stays_open_to_re_evaluation(client, monkeypatch):
         assert s.get(Entry, created["id"]).user_filed is False
 
 
-def test_a_cold_embedding_model_does_not_hold_the_stand_in(monkeypatch):
+def test_a_cold_embedding_model_does_not_hold_the_stand_in(monkeypatch, app_state):
     from tessellate.ai import janitor
 
     class _Late:

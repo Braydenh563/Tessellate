@@ -1715,8 +1715,9 @@ MORE_TOPICS.extend(
                 "Study the map. On a mind map, the board menu's Study the map "
                 "goes full screen and asks one branch at a time: what is under "
                 "it is hidden until you press Show (or Enter), then Knew it or "
-                "Not yet marks it and moves on. Only branches with topics under "
-                "them are asked. Nothing on the map changes. Your marks are kept "
+                "Not yet marks it and moves on. Branches with topics under "
+                "them are asked, and then each topic that has a note: its note is the "
+                "answer, read out in the bar when you press Show. Nothing on the map changes. Your marks are kept "
                 "for that map on this device, a branch you missed says so next "
                 "time, and the end says how many you recalled. Esc stops."
             ),
@@ -1902,6 +1903,8 @@ MORE_TOPICS.extend(
                 "snippet", "snippets", "code snippet", "code library", "code modules",
                 "save snippet", "insert snippet", "code panel", "coding assistant",
                 "explain code", "explain this code", "refactor", "write tests for",
+                "sections", "text sections", "section library", "ready-made blocks",
+                "meeting notes block", "insert a section", "save a section",
             ),
             "body": (
                 "Assistant and Snippets (beside Run, on a code document) open the "
@@ -1921,12 +1924,19 @@ MORE_TOPICS.extend(
                 "built-in library and your own snippets, this file's language "
                 "first (Show every language for the rest); the search matches "
                 "names, tags and languages, and #io matches the tag io. A row "
-                "inserts at the caret and one Ctrl+Z takes it out; built-in rows "
+                "inserts at the caret, or drag a row into the text and it lands where a "
+                "bar shows (the text scrolls at its top and bottom edge); one Ctrl+Z takes it out; built-in rows "
                 "have stops that Tab walks. The panel's Save keeps the selected "
                 "code: #words in the name you give become its tags. Each of your "
                 "own rows has a menu to insert, rename or retag, and delete; "
                 "saving, renaming and deleting each undo. Snippets belong to the "
-                "notebook, not to one document."
+                "notebook, not to one document. In a text document the same "
+                "panel is Sections (the dock's Sections button, or Ctrl+K): "
+                "ready-made blocks such as a meeting block, a risk table or a "
+                "callout, with today's date filled in and prompts Tab walks. A "
+                "row goes in at the caret or where you drop it, on its own lines "
+                "with a blank line round it, and one Ctrl+Z takes it out; Save "
+                "keeps the selected text as a section of your own."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -2041,7 +2051,7 @@ TOPIC_META: dict[str, dict] = {
         "Press Run, or Ctrl+Shift+Enter.",
         "Read the Output panel under the editor; Line N goes to the line.",
         "Ctrl+Shift+Y opens the Console tab: type a line and press Enter.")},
-    "code-panel": {"title": "The code panel: assistant and snippets", "path": "A code document, Assistant or Snippets (beside Run)"},
+    "code-panel": {"title": "The code panel: assistant, snippets and text sections", "path": "A code document, Assistant or Snippets (beside Run); a text document, Sections"},
     "debugger": {"title": "Debugging code", "path": "A code document, the gutter beside a line number, F5", "steps": (
         "Open a JavaScript, TypeScript or Python document.",
         "Click beside a line number, or press F9 on it, for a breakpoint.",
@@ -2401,13 +2411,17 @@ MORE_TOPICS.extend([
         "keywords": (
             "edit data", "custom properties", "properties on a shape", "data on a shape",
             "named values", "metadata on a shape", "shape data", "add a property",
+            "placeholder", "placeholders", "%name%", "tooltip", "hover text", "show a value in a label",
         ),
         "body": (
             "Edit data, as in draw.io: select one shape, line, connector, text box, "
             "picture, frame or table and open the Format panel's Data tab (or Edit "
             "data in the command palette). Add a property gives a name and a "
             "value; a name starts with a letter. Changes save as you leave a field, "
-            "each one Undo step, and the values stay with the item."
+            "each one Undo step, and the values stay with the item. Type %name% in a "
+            "shape's or connector's words to show that value there (a name it does not "
+            "have stays as typed), and a shape or connector can take a Tooltip, shown "
+            "when the pointer rests on it. Find on the board reads the values too."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },
@@ -2490,7 +2504,7 @@ MORE_TOPICS.append({
     ),
     "body": (
         "Autocorrect fixes a clear typo, such as teh, as you finish the "
-        "word, in the note boxes, the chat and Ask composers and the titles. "
+        "word, in the note boxes, the chat and Ask composers, the reminder boxes and the titles. "
         "The corrected word is underlined for five seconds: rest the pointer on "
         "it or click it for a small menu to keep it, put back what you typed, "
         "or edit the word (a document gets the same underline), "

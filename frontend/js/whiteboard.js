@@ -1558,10 +1558,128 @@ const WB_EXPORT_SHADOW_DEF =
 //: SVG `stroke-dasharray` for each style, scaled to the actual stroke width
 //: so a thick dashed line doesn't look like a row of dots. `null` (solid)
 //: means "don't set the attribute at all", not "set it to empty".
-function wbDashArray(style, width) {
+//: A custom `pattern` (draw.io's "8 4": dash, gap, dash... in line widths,
+//: `wbDashPatternOf`) wins over the named style.
+function wbDashArray(style, width, pattern = null) {
+  if (pattern) return pattern.map((n) => Math.round(n * width * 100) / 100).join(" ");
   if (style === "dashed") return `${width * 3} ${width * 2}`;
   if (style === "dotted") return `${width} ${width * 1.6}`;
   return null;
+}
+
+//: **Flow** (draw.io's flowAnimation, `data.flow`): the dashes march along
+//: the line, one loop per dash pattern so it never jumps. A Web Animation on
+//: the path, not a stylesheet rule, because the loop's length is the
+//: element's own and the sheets declare no per-element token for it. Kept on
+//: the element and replaced only when the period changes, so a render does not
+//: restart it; held still under the OS hint and both of the app's switches.
+//: The export clones the attributes, so it draws the dashes still.
+function wbSetFlowAnimation(path, period) {
+  if (!path) return;
+  const root = document.documentElement;
+  const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches || root.dataset.motion === "reduced" || root.dataset.uiMotion === "off";
+  const want = period > 0 && !still && typeof path.animate === "function" ? period : 0;
+  if (path.__wbFlowPeriod === want) return;
+  path.__wbFlowAnim?.cancel();
+  path.__wbFlowAnim = null;
+  path.__wbFlowPeriod = want;
+  if (want) {
+    path.__wbFlowAnim = path.animate(
+      [{ strokeDashoffset: "0px" }, { strokeDashoffset: `${-want}px` }],
+      { duration: 800, iterations: Infinity, easing: "linear" },
+    );
+  }
+}
+
+//: A typed dash pattern as numbers, or null when it is not one: one to six
+//: positive numbers of at most 200, split by spaces or commas.
+function wbDashPatternOf(text) {
+  const parts = String(text ?? "").split(/[\s,]+/).filter(Boolean);
+  if (!parts.length || parts.length > 6) return null;
+  const numbers = parts.map(Number);
+  return numbers.every((n) => Number.isFinite(n) && n > 0 && n <= 200) ? numbers : null;
+}
+
+//: **Rounded corners** (draw.io's "rounded", `data.round`): every corner of a
+//: path made only of M, L and Z becomes a quadratic curve that starts and
+//: ends a radius from it, held to half of each side so two corners never
+//: cross. A path with any other command is returned as it came.
+//: `shaftOnly` rounds the first subpath and leaves the rest as it came: a
+//: connector's arrowheads are the subpaths after its line, and a rounded tip
+//: would be a different head.
+function wbRoundedPathD(d, radius, shaftOnly = false) {
+  const r = Number(radius);
+  if (!(r > 0) || typeof d !== "string") return d;
+  if (shaftOnly) {
+    const cut = d.indexOf("M", 1);
+    return cut < 0 ? wbRoundedPathD(d, r) : `${wbRoundedPathD(d.slice(0, cut).trim(), r)} ${d.slice(cut)}`;
+  }
+  const tokens = d.match(/[A-Za-z]|-?\d*\.?\d+(?:e[-+]?\d+)?/g) || [];
+  const subpaths = [];
+  let current = null;
+  for (let i = 0; i < tokens.length; i += 1) {
+    const cmd = tokens[i];
+    if (cmd !== "M" && cmd !== "L" && cmd !== "Z") return d;
+    if (cmd === "Z") {
+      if (current) current.closed = true;
+      continue;
+    }
+    const x = Number(tokens[i + 1]);
+    const y = Number(tokens[i + 2]);
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return d;
+    i += 2;
+    if (cmd === "M") {
+      current = { pts: [[x, y]], closed: false };
+      subpaths.push(current);
+    } else if (current) {
+      const last = current.pts[current.pts.length - 1];
+      if (last[0] !== x || last[1] !== y) current.pts.push([x, y]);
+    }
+  }
+  const f = (n) => String(Math.round(n * 100) / 100);
+  const at = (p, q, dist) => {
+    const len = Math.hypot(q[0] - p[0], q[1] - p[1]) || 1;
+    return [p[0] + ((q[0] - p[0]) / len) * dist, p[1] + ((q[1] - p[1]) / len) * dist];
+  };
+  const out = [];
+  for (const { pts, closed } of subpaths) {
+    if (closed && pts.length > 1) {
+      const [first] = pts;
+      const [lastPt] = pts.slice(-1);
+      if (first[0] === lastPt[0] && first[1] === lastPt[1]) pts.pop();
+    }
+    const n = pts.length;
+    if (n < 3 && !closed) {
+      out.push(`M${f(pts[0][0])} ${f(pts[0][1])}${n > 1 ? ` L${f(pts[1][0])} ${f(pts[1][1])}` : ""}`);
+      continue;
+    }
+    const corner = (i) => {
+      const prev = pts[(i - 1 + n) % n];
+      const next = pts[(i + 1) % n];
+      const here = pts[i];
+      const rr = Math.min(r, Math.hypot(prev[0] - here[0], prev[1] - here[1]) / 2, Math.hypot(next[0] - here[0], next[1] - here[1]) / 2);
+      return { a: at(here, prev, rr), b: at(here, next, rr), here };
+    };
+    if (closed) {
+      const c0 = corner(0);
+      let text = `M${f(c0.b[0])} ${f(c0.b[1])}`;
+      for (let i = 1; i < n; i += 1) {
+        const c = corner(i);
+        text += ` L${f(c.a[0])} ${f(c.a[1])} Q${f(c.here[0])} ${f(c.here[1])} ${f(c.b[0])} ${f(c.b[1])}`;
+      }
+      text += ` L${f(c0.a[0])} ${f(c0.a[1])} Q${f(c0.here[0])} ${f(c0.here[1])} ${f(c0.b[0])} ${f(c0.b[1])} Z`;
+      out.push(text);
+    } else {
+      let text = `M${f(pts[0][0])} ${f(pts[0][1])}`;
+      for (let i = 1; i < n - 1; i += 1) {
+        const c = corner(i);
+        text += ` L${f(c.a[0])} ${f(c.a[1])} Q${f(c.here[0])} ${f(c.here[1])} ${f(c.b[0])} ${f(c.b[1])}`;
+      }
+      text += ` L${f(pts[n - 1][0])} ${f(pts[n - 1][1])}`;
+      out.push(text);
+    }
+  }
+  return out.join(" ");
 }
 
 //: Two head-stroke subpaths meeting at `(tipX, tipY)`, angled back from
@@ -2690,7 +2808,8 @@ function wbToggleNavigator(force) {
 
 // --- Find a card on this board ---------------------------------------------
 
-const wbBoardSearch = { query: "", matches: [], index: -1 };
+//: `word` and `regex` are the find bar's two options; they outlive a close.
+const wbBoardSearch = { query: "", matches: [], index: -1, word: false, regex: false, error: "" };
 
 /**
  * Every searchable string an item carries, lowercased.
@@ -2726,31 +2845,72 @@ function wbSearchTextFor(kind, item, byId) {
     //: box was ever found (measured, canvasdepth: "SHIP" in a text box, 0).
     try {
       const data = typeof item.data === "string" ? JSON.parse(item.data || "{}") : item.data || {};
-      return String(data.content || "").toLowerCase();
+      return `${data.content || ""}${wbPropsText(data.props)}`.toLowerCase();
     } catch {
       return "";
     }
   }
   //: A shape's or a connector's label (canvasdepth): what draw.io's find
   //: reads first, and what this one missed.
-  if (kind === "sketch") return String(wbSketchData(item)?.label || "").toLowerCase();
+  if (kind === "sketch") {
+    const data = wbSketchData(item);
+    return `${data?.label || ""}${wbPropsText(data?.props)}`.toLowerCase();
+  }
   return "";
 }
 
-//: Pure (node-tested): every case-insensitive occurrence of `find` in
-//: `text` swapped for `to`, both taken literally (no pattern, no `$&`).
-function wbReplaceText(text, find, to) {
-  const source = String(text ?? "");
-  const needle = String(find || "");
-  if (!needle) return { text: source, count: 0 };
-  const lower = source.toLowerCase(), low = needle.toLowerCase();
-  let out = "", from = 0, count = 0;
-  for (let at = lower.indexOf(low); at >= 0; at = lower.indexOf(low, from)) {
-    out += source.slice(from, at) + to;
-    from = at + needle.length;
-    count += 1;
+//: Find reads an item's data values too (draw.io's find reads its metadata).
+//: Names are not searched, only what a person typed as a value.
+function wbPropsText(props) {
+  if (!props || typeof props !== "object") return "";
+  return Object.values(props).map((v) => `\n${v}`).join("");
+}
+
+//: Pure (node-tested): the one pattern find and replace share. Literal text
+//: is escaped, so "a.b" is three characters; `regex` takes the query as a
+//: pattern; `word` demands a non-word character (or an edge) on each side,
+//: which is a lookaround rather than `\b` so "c++" can still be a word.
+//: Case never matters and `^`/`$` work per line. A pattern that can match
+//: empty text would match everywhere, so it is refused with the others.
+function wbSearchPattern(query, { word = false, regex = false } = {}) {
+  const q = String(query ?? "");
+  if (!q.trim()) return { re: null, has: () => false, error: "" };
+  let source = regex ? q : q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  if (word) source = `(?<!\\w)(?:${source})(?!\\w)`;
+  let re = null;
+  try {
+    re = new RegExp(source, "gim");
+  } catch {
+    return { re: null, has: () => false, error: "Not a valid pattern" };
   }
-  return { text: out + source.slice(from), count };
+  if (re.test("")) return { re: null, has: () => false, error: "This pattern matches empty text" };
+  return {
+    re,
+    // A global pattern remembers where it stopped; every test starts over.
+    has: (text) => {
+      re.lastIndex = 0;
+      return re.test(text);
+    },
+    error: "",
+  };
+}
+
+//: Pure (node-tested): every match of `find` in `text` swapped for `to`.
+//: Literal mode takes `to` as typed; a pattern takes `$1`, `$&` and `$$`.
+function wbReplaceText(text, find, to, opts = {}) {
+  const source = String(text ?? "");
+  const { re } = wbSearchPattern(find, opts);
+  if (!re) return { text: source, count: 0 };
+  let count = 0;
+  const out = source.replace(re, (...args) => {
+    const hit = args[0];
+    if (!hit) return hit;
+    count += 1;
+    if (!opts.regex) return to;
+    const caught = args.slice(1, args.findIndex((a, i) => i > 0 && typeof a === "number"));
+    return String(to).replace(/\$(\d{1,2}|&|\$)/g, (_, k) => (k === "$" ? "$" : k === "&" ? hit : caught[Number(k) - 1] ?? ""));
+  });
+  return { text: out, count };
 }
 
 //: **Replace all** (canvasdepth; WHITEBOARD_PLAN section 9): text boxes,
@@ -2759,18 +2919,23 @@ function wbReplaceText(text, find, to) {
 async function wbBoardReplaceAll(find, to) {
   const needle = String(find || "").trim() ? String(find) : "";
   if (!needle) return 0;
+  const pattern = wbSearchPattern(needle, wbBoardSearch);
+  if (!pattern.re) {
+    toast(pattern.error, "info");
+    return 0;
+  }
   const undo = [];
   let changes = 0, cards = 0;
   for (const kind of ["object", "sketch", "node"]) {
     for (const item of wbState[WB_LIST_BY_KIND[kind]] || []) {
       if (wbItemHidden(kind, item) || wbIsLocked(kind, item)) continue;
       if (kind === "node") {
-        if (wbSearchTextFor("node", item, null).includes(needle.toLowerCase())) cards += 1;
+        if (pattern.has(wbSearchTextFor("node", item, null))) cards += 1;
         continue;
       }
       const field = kind === "object" ? item.data?.content : wbSketchData(item)?.label;
       if (typeof field !== "string") continue;
-      const done = wbReplaceText(field, needle, to);
+      const done = wbReplaceText(field, needle, to, wbBoardSearch);
       if (!done.count) continue;
       undo.push({ action: "move", kind, id: item.id, before: WB_KIND_INFO[kind].payload(item) });
       if (kind === "object") {
@@ -2796,8 +2961,9 @@ function wbBoardSearchRun(query) {
   wbBoardSearch.query = query;
   wbBoardSearch.matches = [];
   wbBoardSearch.index = -1;
-  const needle = query.trim().toLowerCase();
-  if (needle) {
+  const pattern = wbSearchPattern(wbBoardSearch.regex ? query : query.trim(), wbBoardSearch);
+  wbBoardSearch.error = pattern.error;
+  if (pattern.re) {
     const byId = new Map(
       (typeof allEntries !== "undefined" && Array.isArray(allEntries) ? allEntries : []).map((e) => [
         String(e.id),
@@ -2806,7 +2972,7 @@ function wbBoardSearchRun(query) {
     );
     for (const kind of ["node", "object", "sketch"]) {
       for (const item of wbState[WB_LIST_BY_KIND[kind]] || []) {
-        if (!wbItemHidden(kind, item) && wbSearchTextFor(kind, item, byId).includes(needle)) {
+        if (!wbItemHidden(kind, item) && pattern.has(wbSearchTextFor(kind, item, byId))) {
           wbBoardSearch.matches.push({ kind, id: item.id });
         }
       }
@@ -2856,7 +3022,7 @@ function wbUpdateSearchCount() {
   }
   // "3 of 12", not a bare number, a screen reader reading this aria-live
   // region needs to know which of how many, and so does everyone else.
-  el.textContent = total ? `${wbBoardSearch.index + 1} of ${total}` : "No matches";
+  el.textContent = total ? `${wbBoardSearch.index + 1} of ${total}` : wbBoardSearch.error || "No matches";
 }
 
 /** Step through the matches, wrapping at both ends. */
@@ -2931,6 +3097,26 @@ function wbEnsureReplaceRow(bar) {
   bar.append(row);
 }
 
+//: Whole word and Pattern, two pressed-state toggles after the find field,
+//: built on first use like the Replace row. Changing one searches again.
+function wbEnsureSearchOptions(bar) {
+  if (document.getElementById("wb-search-word")) return;
+  const input = document.getElementById("wb-search-input");
+  const make = (id, icon, title, option) => {
+    const button = smallButton(icon, title, () => {
+      wbBoardSearch[option] = !wbBoardSearch[option];
+      button.setAttribute("aria-pressed", String(wbBoardSearch[option]));
+      wbBoardSearchRun(input?.value || "");
+    });
+    button.id = id;
+    button.setAttribute("aria-pressed", String(wbBoardSearch[option]));
+    return button;
+  };
+  const word = make("wb-search-word", "ph:text-a-underline", "Whole word", "word");
+  const pattern = make("wb-search-regex", "ph:brackets-curly", "Pattern (a regular expression)", "regex");
+  input?.after(word, pattern);
+}
+
 function wbToggleReplace(on = null) {
   const row = document.getElementById("wb-replace-row");
   if (!row) return;
@@ -2946,6 +3132,7 @@ function wbOpenBoardSearch({ replace = false } = {}) {
   const input = document.getElementById("wb-search-input");
   if (!bar || !input) return;
   wbEnsureReplaceRow(bar);
+  wbEnsureSearchOptions(bar);
   bar.classList.remove("hidden");
   input.focus();
   input.select();
@@ -3518,8 +3705,17 @@ function wbLinkCaps(parsed) {
 //: (`wbLinkShape`): an elbow, routed round its two boxes through its bends.
 function wbLinkPathD(type, sPt, tPt, caps, width, bend, shape = null) {
   if (shape?.route === "elbow") {
+    //: The gap is taken after a floating end has settled on its side, and
+    //: along the way the route leaves it.
     const ends = wbElbowEnds(sPt, tPt, shape.points);
-    return wbElbowPathD(wbElbowRoute(ends.source, ends.target, sPt.box, tPt.box, shape.points), caps, width);
+    const held = wbGapEnds(ends.source, ends.target, shape.gap);
+    return wbElbowPathD(wbElbowRoute(held.source, held.target, sPt.box, tPt.box, shape.points), caps, width);
+  }
+  if (shape?.gap) {
+    const way = shape.points || [];
+    ({ source: sPt, target: tPt } = wbGapEnds(sPt, tPt, shape.gap, {
+      chord: type === "link-straight", via: way.length ? [way[0], way[way.length - 1]] : null,
+    }));
   }
   //: A straight or curved connector with waypoints (draw.io's bends on any
   //: edge): straight runs through each in turn, curved is one smooth curve
@@ -3911,7 +4107,7 @@ function wbApplyLineJumps(groups) {
     if (straight && parsed.jumps && parsed.jumps !== "none" && under.length && pts.length > 1) {
       const path = el.querySelector(".sketch-path");
       const caps = String(path?.getAttribute("d") || "").split(/\s(?=M)/).slice(1).join(" ");
-      const shaft = wbLineJumpsD(pts, under, parsed.jumps, 4 + (Number(parsed.width) || 3));
+      const shaft = wbLineJumpsD(pts, under, parsed.jumps, wbJumpSize(parsed));
       path?.setAttribute("d", caps ? `${shaft} ${caps}` : shaft);
     }
     under.push(pts);
@@ -3978,9 +4174,46 @@ function wbLinkRouteName(parsed) {
 //: (or the legacy single `bend`), drawn as it always was.
 function wbLinkShape(parsed) {
   const points = Array.isArray(parsed?.points) ? parsed.points : [];
-  if (parsed?.route === "elbow") return { route: "elbow", points };
-  if (!points.length) return null;
-  return { route: parsed.type === "link-straight" ? "straight" : "curved", points };
+  const gap = wbLinkGap(parsed);
+  if (parsed?.route === "elbow") return { route: "elbow", points, gap };
+  if (!points.length && !gap) return null;
+  return { route: parsed.type === "link-straight" ? "straight" : "curved", points, gap };
+}
+
+//: A line jump's half-width: the connector's own (`jumpSize`, 2 to 40) or,
+//: when it has none, four more than its width.
+function wbJumpSize(parsed) {
+  const size = Number(parsed?.jumpSize);
+  if (Number.isFinite(size) && parsed?.jumpSize !== null && parsed?.jumpSize !== "") return Math.max(2, Math.min(40, Math.round(size)));
+  return 4 + (Number(parsed?.width) || 3);
+}
+
+//: draw.io's perimeter spacing: how far a connector stops short of the shape
+//: at each end (`gapStart`, `gapEnd`, 0 to 60), or null when it touches both.
+function wbLinkGap(parsed) {
+  const clamp = (n) => (Number.isFinite(Number(n)) ? Math.max(0, Math.min(60, Number(n))) : 0);
+  const start = clamp(parsed?.gapStart), end = clamp(parsed?.gapEnd);
+  return start || end ? { start, end } : null;
+}
+
+//: One end held off its shape by `gap`, along the line itself (`chord`, a
+//: straight run) or the way the end leaves its shape (a curve, an elbow).
+//: A free point has no shape to keep off, so it stays put.
+function wbGapEnd(pt, gap, toward, chord) {
+  if (!gap || !pt?.box) return pt;
+  const len = Math.hypot(toward.x - pt.x, toward.y - pt.y);
+  const v = !chord && pt.dir ? pt.dir : (len ? { x: (toward.x - pt.x) / len, y: (toward.y - pt.y) / len } : null);
+  return v ? { ...pt, x: pt.x + v.x * gap, y: pt.y + v.y * gap } : pt;
+}
+
+function wbGapEnds(sPt, tPt, gap, { chord = false, via = null } = {}) {
+  if (!gap) return { source: sPt, target: tPt };
+  //: Two gaps on a short line never run past each other.
+  const room = Math.hypot(tPt.x - sPt.x, tPt.y - sPt.y) * 0.45;
+  return {
+    source: wbGapEnd(sPt, Math.min(gap.start, room), via?.[0] || tPt, chord),
+    target: wbGapEnd(tPt, Math.min(gap.end, room), via?.[1] || sPt, chord),
+  };
 }
 
 //: A small SVG dot at each of a shape's connection points, shown while a link
@@ -4434,6 +4667,7 @@ let wbCopiedStyle = null; // { kind: "sketch" | "object", style: {...} }
 // thing it lands on.
 const WB_SKETCH_STYLE_KEYS = [
   "color", "width", "dash", "fill", "fillOpacity", "noStroke", "startCap", "endCap", "startCapSize", "endCapSize",
+  "dashPattern", "round", "flow", "gradient", "fillStyle", "jumpSize", "gapStart", "gapEnd",
 ];
 const WB_OBJECT_STYLE_KEYS = ["color", "bg", "border_color", "font_size"];
 
@@ -4521,10 +4755,10 @@ async function wbPasteCopiedStyle() {
 //: sticky goes back to the first paper; a map topic back to following its
 //: map and level (`wbMapResetToBranch`'s keys). One undo step for the lot.
 const WB_SKETCH_RESET_KEYS = [
-  "color", "width", "dash", "fill", "fillOpacity", "noStroke", "alpha", "shadow", "rough", "jumps",
-  "startCapSize", "endCapSize", "label_size", "label_color", "label_bold", "label_italic", "label_align", "label_valign",
+  "color", "width", "dash", "fill", "fillOpacity", "noStroke", "alpha", "shadow", "rough", "jumps", "round", "dashPattern", "flow", "gradient", "fillStyle", "jumpSize", "gapStart", "gapEnd",
+  "startCapSize", "endCapSize", "label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign",
 ];
-const WB_OBJECT_RESET_KEYS = ["color", "bg", "border_color", "font_size", "bold", "italic", "align", "valign", "alpha", "shadow", "fold"];
+const WB_OBJECT_RESET_KEYS = ["color", "bg", "border_color", "font_size", "bold", "italic", "underline", "strike", "font_family", "align", "valign", "alpha", "shadow", "fold"];
 
 //: The reset fields for one sketch, or null for a drawing with nothing to
 //: reset (a highlighter's look is its tool). A line whose ends are drawn in
@@ -5325,12 +5559,40 @@ function selectWbItem(kind, id) {
 //: Select everything on the board (Edit → Select all, Ctrl+A on the
 //: canvas). Links are left out: they follow what they join.
 function wbSelectAllItems() {
+  wbSelectExactly(wbSelectableItems());
+}
+
+//: The selection becomes exactly these `[kind, item]` pairs.
+function wbSelectExactly(pairs) {
   wbSelectedItem = null;
   wbMultiSelection.clear();
-  for (const [kind, item] of wbSelectableItems()) wbMultiSelection.add(wbMultiKey(kind, item.id));
+  for (const [kind, item] of pairs) wbMultiSelection.add(wbMultiKey(kind, item.id));
   wbApplySelectionHighlight();
   wbUpdateContextBar();
   wbUpdateSelectionBar();
+}
+
+//: draw.io's "Select vertices" and "Select edges": every closed shape, text
+//: box, note and picture (never a line, a pen stroke or a connector), or
+//: every connector. A locked or hidden item is out of reach, as in Select all.
+function wbSelectAllOfKind(which) {
+  // `wbSketchParsedData` is for a drawn path and answers null for a link.
+  const connector = (sk) => {
+    try {
+      return String(JSON.parse(sk.data)?.type || "").startsWith("link-");
+    } catch {
+      return false;
+    }
+  };
+  const pairs = which === "connectors"
+    ? (wbState.sketches || []).filter((sk) => connector(sk) && !wbIsLocked("sketch", sk) && !wbSketchHiddenOnBoard(sk)).map((sk) => ["sketch", sk])
+    : wbSelectableItems().filter(([kind, item]) => kind !== "sketch" || wbFmtKind({ kind, item }) === "shape");
+  if (!pairs.length) {
+    toast(which === "connectors" ? "No connectors on this board." : "No shapes on this board.");
+    return;
+  }
+  wbSelectExactly(pairs);
+  wbAnnounce(`${pairs.length} ${which === "connectors" ? "connectors" : "shapes"} selected.`);
 }
 
 //: Everything a selection can hold: what a link can join, plus pictures.
@@ -5624,9 +5886,12 @@ function wbMapStripClearOfHandle(node, { left, y, w, h, hostRect, gapBelow, bott
     [hx0 - w, y],
     [hx1, y],
     [left, under],
+    //: Below the handle itself: a line that comes in under the topic's own row
+    //: (a short label at 820 wide, where the sides have no room for 412px).
+    [left, hy1],
   ];
   for (const [x, top] of candidates) {
-    if (x < 8 || x > maxX) continue;
+    if (x < 8 || x > maxX || top > maxY) continue;
     if (!covers(x, top)) return [x, top];
   }
   return [left, y];
@@ -7709,6 +7974,12 @@ function wbBuildContextMenu(kind) {
       sub("Branches from my notes…", "Up to five, each from one of your notes; you tick which", () =>
         wbMapSuggestBranches(mapNode)
       );
+      //: Phase G: a topic that is a note, grown from the note's own headings and links.
+      if (wbMapIsNoteTopic(mapNode)) {
+        sub("Expand from my notes…", "Its headings and the notes it links to; you tick which", () =>
+          wbMapExpandFromNote(mapNode)
+        );
+      }
     });
 
     subItem("Content", sub => {
@@ -11324,7 +11595,8 @@ async function wbInlineSvgImages(svg) {
   return out;
 }
 
-async function wbRasterizeSvg(svgInput, width, height, mime) {
+//: `quality` (0 to 1) only means something to the lossy types; PNG ignores it.
+async function wbRasterizeSvg(svgInput, width, height, mime, quality) {
   //: The root's own size set to the canvas's, so a 2x or 3x export
   //: (FEAT-14) is drawn at that size from the vectors rather than drawn at
   //: 1x and stretched.
@@ -11345,7 +11617,8 @@ async function wbRasterizeSvg(svgInput, width, height, mime) {
       URL.revokeObjectURL(url);
       canvas.toBlob(
         (result) => (result ? resolve(result) : reject(new Error("Couldn't rasterize the board."))),
-        mime
+        mime,
+        quality
       );
     };
     img.onerror = () => {
@@ -11805,6 +12078,51 @@ async function wbSaveToLibrary(scope) {
   toast("Added to your image library.");
 }
 
+//: The raster types beyond PNG (draw.io's export formats). JPEG has no alpha,
+//: so it always draws the board's ground; WebP keeps a transparent one.
+const WB_EXPORT_PICTURES = Object.freeze({
+  jpg: Object.freeze({ mime: "image/jpeg", extension: "jpg", quality: 0.92, alpha: false }),
+  webp: Object.freeze({ mime: "image/webp", extension: "webp", quality: 0.92, alpha: true }),
+});
+
+async function wbExportPicture(scope, kind) {
+  const spec = WB_EXPORT_PICTURES[kind];
+  const { scale, transparent } = wbExportPngPrefs();
+  const { svg, width, height } = wbBuildExportSvg(scope, { transparent: transparent && spec.alpha });
+  const blob = await wbRasterizeSvg(svg, width * scale, height * scale, spec.mime, spec.quality);
+  //: A browser that cannot encode a type hands back a PNG; a ".webp" that is
+  //: really a PNG would open nowhere, so say so instead.
+  if (blob.type !== spec.mime) throw new Error(`This browser cannot write ${kind.toUpperCase()} files. Export a PNG instead.`);
+  await saveFile(wbExportFileName(scope, spec.extension), blob);
+  toast(`Board exported as ${kind.toUpperCase()}.`);
+}
+
+//: **Copy as an image** (draw.io's): the same picture as the PNG, put on the
+//: clipboard to paste into a chat, a document or another app. The blob is
+//: handed over as a promise so the browser's click permission is spent at the
+//: write, not lost while the board is drawn.
+async function wbExportCopyImage(scope) {
+  const { scale, transparent } = wbExportPngPrefs();
+  if (!navigator.clipboard?.write || typeof ClipboardItem === "undefined") {
+    throw new Error("This browser cannot copy a picture. Export a PNG instead.");
+  }
+  const { svg, width, height } = wbBuildExportSvg(scope, { transparent });
+  const picture = wbRasterizeSvg(svg, width * scale, height * scale, "image/png");
+  await navigator.clipboard.write([new ClipboardItem({ "image/png": picture })]);
+  toast("Copied the picture. Paste it into another app.");
+}
+
+//: The command row's entry: the selection if there is one, else what the
+//: canvas shows, and any refusal said rather than thrown into the console.
+async function wbCopyAsImage() {
+  const scope = wbMultiSelection.size > 0 || wbSelectedItem ? "selection" : "visible";
+  try {
+    await wbExportCopyImage(scope);
+  } catch (err) {
+    toast(err.message || voiceLine("failed", { what: "copy the picture" }), true);
+  }
+}
+
 async function wbExportPdf(scope) {
   const { svg, width, height } = wbBuildExportSvg(scope);
   const blob = await wbRasterizeSvg(svg, width, height, "image/png");
@@ -11853,12 +12171,28 @@ const WB_EXPORT_SCOPES = [
 //: gave in the same words: an outline of a whiteboard is not a thing.
 const WB_EXPORT_FORMATS = [
   {
-    value: "png", label: "PNG", scopes: ["selection", "visible", "whole"],
+    //: `picture: true` rows share the dialog's Size and ground rows.
+    value: "png", label: "PNG", scopes: ["selection", "visible", "whole"], picture: true,
     note: "An image file, and a copy in your image library.",
     run: (scope) => wbExportPng(scope),
   },
   {
-    value: "library", label: "Image library", scopes: ["selection", "visible", "whole"],
+    value: "jpg", label: "JPG", scopes: ["selection", "visible", "whole"], picture: true, noAlpha: true,
+    note: "A smaller image file, on the board's colour (it cannot be transparent).",
+    run: (scope) => wbExportPicture(scope, "jpg"),
+  },
+  {
+    value: "webp", label: "WebP", scopes: ["selection", "visible", "whole"], picture: true,
+    note: "A small image file for the web; it can be transparent.",
+    run: (scope) => wbExportPicture(scope, "webp"),
+  },
+  {
+    value: "copy", label: "Copy image", scopes: ["selection", "visible", "whole"], picture: true,
+    note: "Puts the picture on the clipboard, to paste into another app.",
+    run: (scope) => wbExportCopyImage(scope),
+  },
+  {
+    value: "library", label: "Image library", scopes: ["selection", "visible", "whole"], picture: true,
     note: "Straight into the gallery, with no file saved to disk.",
     run: (scope) => wbSaveToLibrary(scope),
   },
@@ -12058,10 +12392,11 @@ function wbExportBoard() {
     if (!allowed.has(scope)) scope = [...allowed][0];
     wbSyncExportSeg(formatSeg, format.value, null);
     wbSyncExportSeg(scopeSeg, scope, allowed);
-    const picture = format.value === "png" || format.value === "library";
+    const picture = Boolean(format.picture);
     sizeLabel.hidden = !picture;
     sizeSeg.hidden = !picture;
-    clearRow.hidden = !picture;
+    //: A JPEG has no alpha, so the ground choice is not offered for it.
+    clearRow.hidden = !picture || Boolean(format.noAlpha);
     if (picture) wbSyncExportSeg(sizeSeg, String(pngPrefs.scale), null);
     const chosenScope = WB_EXPORT_SCOPES.find((s) => s.value === scope);
     // Two sentences, the format's and the scope's, so the line reads the same
@@ -16930,6 +17265,20 @@ function wbWrapShapeLabel(textEl, text, width, fontSize) {
   return lines;
 }
 
+//: The drawn shape's box and the area its words may use, read off the live
+//: path; null when there is no path to read.
+function wbShapeLabelPlace(groupEl, label) {
+  const bbox = wbPathBBox(groupEl.querySelector(".sketch-path")?.getAttribute("d") || "");
+  if (!bbox) return null;
+  let labelArea = null;
+  try {
+    labelArea = label.dataset.area ? JSON.parse(label.dataset.area) : null;
+  } catch {
+    labelArea = null;
+  }
+  return { bbox, area: wbShapeLabelArea(label.dataset.kind, bbox, labelArea) };
+}
+
 //: Lays the label out from the path the group is drawing *now*, so a resize
 //: or a turn in flight re-wraps it, and clears the translation a move puts on
 //: it (`wbNudgeShapeLabel`). The wrap is kept on the element against the text
@@ -16941,18 +17290,13 @@ function wbLayoutShapeLabel(groupEl) {
   const label = groupEl?.querySelector?.(":scope > .sketch-label");
   if (!label) return;
   label.removeAttribute("transform");
-  const bbox = wbPathBBox(groupEl.querySelector(".sketch-path")?.getAttribute("d") || "");
-  if (!bbox) return;
-  let labelArea = null;
-  try {
-    labelArea = label.dataset.area ? JSON.parse(label.dataset.area) : null;
-  } catch {
-    labelArea = null;
-  }
-  const area = wbShapeLabelArea(label.dataset.kind, bbox, labelArea);
+  const placed = wbShapeLabelPlace(groupEl, label);
+  if (!placed) return;
+  const { bbox, area } = placed;
   const fontSize = parseFloat(getComputedStyle(label).fontSize) || 16;
   const lineHeight = fontSize * 1.25;
-  const key = `${label.__wbText}|${Math.round(area.w / 4)}|${fontSize}`;
+  //: The face and weight change the widths the wrap measures, so they key it.
+  const key = `${label.__wbText}|${Math.round(area.w / 4)}|${fontSize}|${label.style.fontFamily}|${label.style.fontWeight}`;
   if (label.__wbKey !== key) {
     label.__wbLines = wbWrapShapeLabel(label, label.__wbText, area.w, fontSize);
     label.__wbKey = key;
@@ -16995,13 +17339,145 @@ function wbNudgeShapeLabel(groupEl, dx, dy) {
 //: opacity is mostly board, so it keeps the theme's ink.
 function wbShapeLabelInk(parsed) {
   if (!parsed?.fill || (parsed.fillOpacity != null && parsed.fillOpacity < 0.5)) return null;
+  // A hatch or dots is mostly board, and a gradient has two ends: the ink is
+  // only forced when both ends agree on it.
+  if (parsed.fillStyle) return null;
+  const to = wbHexColour(parsed.gradient?.to);
+  if (to) return wbCoreInkFor(parsed.fill) === wbCoreInkFor(to) ? wbCoreInkFor(parsed.fill) : null;
   return wbCoreInkFor(parsed.fill);
+}
+
+//: A shape's gradient (`gradient: {to, dir}`) and fill style (`fillStyle`),
+//: draw.io's Fill section. Both are paint servers, so they live in a `<defs>`
+//: kept inside the shape's own group: the export clones each group, and the
+//: picture then carries what the board shows without a second pass.
+const WB_FILL_STYLES = Object.freeze(["hatch", "cross", "dots", "dashed", "zigzag"]);
+
+//: A plain hex colour or nothing: what a stored colour must be before it is
+//: set on a paint server, so a hand-edited row cannot put anything else there.
+function wbHexColour(value) {
+  return typeof value === "string" && /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(value) ? value : null;
+}
+
+//: The linear gradient's line across the shape's box (0 to 1 each way), from
+//: the fill colour at the start to the second colour at the end. Radial and
+//: anything unknown have no vector.
+function wbGradientVector(dir) {
+  const vectors = {
+    s: { x1: 0, y1: 0, x2: 0, y2: 1 },
+    n: { x1: 0, y1: 1, x2: 0, y2: 0 },
+    e: { x1: 0, y1: 0, x2: 1, y2: 0 },
+    w: { x1: 1, y1: 0, x2: 0, y2: 0 },
+  };
+  return vectors[dir] || null;
+}
+
+//: One tile of a fill style as plain data (a tag and attributes per element),
+//: so the DOM is built with `createElementNS` and the shape is testable.
+//: A faint tint of the colour under every tile keeps a hatch reading as a fill.
+function wbFillPatternSpec(style, colour) {
+  if (!WB_FILL_STYLES.includes(style)) return null;
+  const line = (x1, y1, x2, y2) => ({ tag: "line", attrs: { x1, y1, x2, y2, stroke: colour, "stroke-width": 1.5 } });
+  const tint = (size) => ({ tag: "rect", attrs: { x: 0, y: 0, width: size, height: size, fill: colour, "fill-opacity": 0.1 } });
+  const specs = {
+    hatch: { size: 8, rotate: 45, els: [tint(8), line(0, 0, 0, 8)] },
+    cross: { size: 8, rotate: 45, els: [tint(8), line(0, 0, 0, 8), line(0, 0, 8, 0)] },
+    dots: { size: 8, rotate: 0, els: [tint(8), { tag: "circle", attrs: { cx: 4, cy: 4, r: 1.6, fill: colour } }] },
+    dashed: { size: 10, rotate: 0, els: [tint(10), line(0, 5, 6, 5)] },
+    zigzag: { size: 10, rotate: 0, els: [tint(10), { tag: "path", attrs: { d: "M0 7 L2.5 3 L5 7 L7.5 3 L10 7", fill: "none", stroke: colour, "stroke-width": 1.5 } }] },
+  };
+  return specs[style];
+}
+
+//: Keeps the group's `<defs>` in step with its data and returns the paint to
+//: fill the path with, or null when the fill is plain. Rebuilt only when the
+//: inputs change (a key on the element), so a render that changes nothing
+//: touches nothing.
+function wbSyncFillDefs(groupEl, id, parsed) {
+  const NS = "http://www.w3.org/2000/svg";
+  let defs = groupEl.querySelector(":scope > defs.wb-fill-defs");
+  const colour = wbHexColour(parsed?.fill);
+  const to = wbHexColour(parsed?.gradient?.to);
+  const dir = parsed?.gradient?.dir;
+  const gradient = colour && to && (dir === "radial" || wbGradientVector(dir)) ? dir : null;
+  const style = colour && !gradient && WB_FILL_STYLES.includes(parsed?.fillStyle) ? parsed.fillStyle : null;
+  if (!gradient && !style) {
+    defs?.remove();
+    return null;
+  }
+  const paintId = `wbg-${id}`;
+  const key = JSON.stringify([colour, to, gradient, style]);
+  if (!defs) {
+    defs = document.createElementNS(NS, "defs");
+    defs.setAttribute("class", "wb-fill-defs");
+    groupEl.prepend(defs);
+  }
+  if (defs.dataset.key === key) return `url(#${paintId})`;
+  defs.dataset.key = key;
+  defs.replaceChildren();
+  const make = (tag, attrs, parent) => {
+    const el = document.createElementNS(NS, tag);
+    for (const [name, value] of Object.entries(attrs)) el.setAttribute(name, String(value));
+    parent.appendChild(el);
+    return el;
+  };
+  if (gradient) {
+    const vec = wbGradientVector(gradient);
+    const server = vec
+      ? make("linearGradient", { id: paintId, ...vec }, defs)
+      : make("radialGradient", { id: paintId, cx: 0.5, cy: 0.5, r: 0.5 }, defs);
+    make("stop", { offset: 0, "stop-color": colour }, server);
+    make("stop", { offset: 1, "stop-color": to }, server);
+  } else {
+    const spec = wbFillPatternSpec(style, colour);
+    const pattern = make("pattern", {
+      id: paintId, width: spec.size, height: spec.size, patternUnits: "userSpaceOnUse",
+      ...(spec.rotate ? { patternTransform: `rotate(${spec.rotate})` } : {}),
+    }, defs);
+    for (const el of spec.els) make(el.tag, el.attrs, pattern);
+  }
+  return `url(#${paintId})`;
+}
+
+//: The faces a shape's words and a text box can be set in (the Format panel's
+//: Font row): the map's three stacks and a handwritten one, all faces the
+//: systems this app runs on already ship, by name so no CSS is ever stored.
+const WB_ITEM_FONTS = Object.freeze({
+  ...WB_MAP_FONTS,
+  hand: '"Segoe Print", "Bradley Hand", "Chalkboard SE", "Comic Sans MS", cursive',
+});
+
+//: Pure (node-tested): `%name%` in a label shows the item's own value of
+//: that name (draw.io's placeholders, from its Edit data). An unknown name
+//: stays as typed, so "100% of %x%" is not mangled. The stored label keeps the
+//: marks; only what is drawn, and so exported, is expanded.
+function wbExpandPlaceholders(text, props) {
+  const source = String(text ?? "");
+  if (!props || typeof props !== "object" || !source.includes("%")) return source;
+  return source.replace(/%([A-Za-z][\w .-]{0,39})%/g, (mark, name) => (Object.prototype.hasOwnProperty.call(props, name) ? String(props[name]) : mark));
+}
+
+//: A shape's or connector's hover text (`data.tip`): a native SVG `<title>`,
+//: so a pointer, a screen reader and the exported SVG all carry it.
+function wbSyncSketchTip(groupEl, parsed) {
+  const tip = typeof parsed?.tip === "string" ? parsed.tip.trim() : "";
+  let el = groupEl.querySelector(":scope > title.wb-sketch-tip");
+  if (!tip) {
+    el?.remove();
+    return;
+  }
+  if (!el) {
+    el = document.createElementNS("http://www.w3.org/2000/svg", "title");
+    el.setAttribute("class", "wb-sketch-tip");
+    groupEl.prepend(el);
+  }
+  if (el.textContent !== tip) el.textContent = tip;
 }
 
 //: Adds, updates or removes a shape's label for one render.
 function wbPaintShapeLabel(groupEl, parsed) {
   const kind = wbShapeLabelKind(parsed);
-  const text = kind && typeof parsed.label === "string" ? parsed.label : "";
+  const text = kind && typeof parsed.label === "string" ? wbExpandPlaceholders(parsed.label, parsed.props) : "";
   let label = groupEl.querySelector(":scope > .sketch-label");
   if (!text) {
     label?.remove();
@@ -17026,6 +17502,10 @@ function wbPaintShapeLabel(groupEl, parsed) {
   label.style.fontSize = parsed.label_size ? `${parsed.label_size}px` : "";
   label.style.fontWeight = parsed.label_bold ? "700" : "";
   label.style.fontStyle = parsed.label_italic ? "italic" : "";
+  //: Underline and strikethrough, and a face by name (draw.io's Text tab;
+  //: whiteboard-1018). Inline style, so the export's cloned SVG keeps them.
+  label.style.textDecoration = [parsed.label_underline && "underline", parsed.label_strike && "line-through"].filter(Boolean).join(" ");
+  label.style.fontFamily = WB_ITEM_FONTS[parsed.label_font] || "";
   const align = ["left", "right"].includes(parsed.label_align) ? parsed.label_align : "center";
   label.dataset.align = align;
   if (parsed.label_valign === "top" || parsed.label_valign === "bottom") label.dataset.valign = parsed.label_valign;
@@ -17164,7 +17644,7 @@ function wbLayoutLinkLabel(groupEl) {
 }
 
 function wbPaintLinkLabel(groupEl, sketch, parsed) {
-  const text = wbLinkTakesLabel(sketch, parsed) && typeof parsed.label === "string" ? parsed.label : "";
+  const text = wbLinkTakesLabel(sketch, parsed) && typeof parsed.label === "string" ? wbExpandPlaceholders(parsed.label, parsed.props) : "";
   let label = groupEl.querySelector(":scope > .wb-link-label");
   if (!text) {
     label?.remove();
@@ -18973,12 +19453,12 @@ function renderWhiteboard() {
           fill = parsed.fill;
           fillOpacity = parsed.fillOpacity != null ? parsed.fillOpacity : 1;
         }
-        dashArray = wbDashArray(parsed.dash || "solid", parsed.width || 3);
+        dashArray = wbDashArray(parsed.dash || "solid", parsed.width || 3, wbDashPatternOf(parsed.dashPattern));
       } else if (parsed.type && parsed.type.startsWith("link-")) {
         linkData = parsed;
         stroke = parsed.color || stroke;
         strokeWidth = String(parsed.width || 3);
-        dashArray = wbDashArray(parsed.dash || "solid", parsed.width || 3);
+        dashArray = wbDashArray(parsed.dash || "solid", parsed.width || 3, wbDashPatternOf(parsed.dashPattern));
         const look = wbMapCrossLinkLook(parsed);
         if (look) {
           //: The branch's own drawing (see `wbMapCrossLinkLook`): a ribbon is
@@ -19003,8 +19483,23 @@ function renderWhiteboard() {
     d3.select(this).select(".sketch-hitbox").attr("d", hitboxData ?? pathData);
     //: The hand-drawn look (canvasdepth2): only the drawn line is roughened,
     //: so the hit band, the ports and the label keep the true shape.
-    if (wbDrawsRough(shapeData || linkData, Boolean(linkData && wbMapCrossLinkLook(linkData)))) pathData = wbRoughD(pathData, d.id);
+    //: Rounded corners (draw.io's, `data.round`) and flow (`data.flow`): the
+    //: drawn line only, like the rough look, so the hit band keeps the true
+    //: shape. A flowing line with no dashes of its own gets the dashed look,
+    //: since the marching is the dashes moving.
+    const styled = shapeData || linkData;
+    const plainLine = !(linkData && wbMapCrossLinkLook(linkData));
+    if (styled?.round && plainLine) pathData = wbRoundedPathD(pathData, styled.round, Boolean(linkData));
+    const flowing = Boolean(styled?.flow) && plainLine;
+    if (flowing && !dashArray) dashArray = wbDashArray("dashed", Number(strokeWidth) || 3);
+    const flowPeriod = flowing && dashArray ? dashArray.split(" ").map(Number).reduce((a, b) => a + b, 0) * (dashArray.split(" ").length % 2 ? 2 : 1) : 0;
+    if (wbDrawsRough(shapeData || linkData, !plainLine)) pathData = wbRoughD(pathData, d.id);
+    // A gradient or a fill style swaps the plain colour for a paint server in
+    // this group's own defs (null when there is none, which also drops a stale one).
+    const fillPaint = wbSyncFillDefs(this, d.id, shapeData);
+    if (fillPaint) fill = fillPaint;
     d3.select(this).select(".sketch-path")
+      .classed("wb-flow", flowing)
       // The highlighter's multiply, re-applied every render and cleared on
       // every other kind so a reused element cannot keep it: the same reason
       // the width and opacity above are set explicitly rather than only when
@@ -19030,6 +19525,7 @@ function renderWhiteboard() {
       // "zero-length dashes" instead of "solid", a reused element from a
       // dashed sketch must not leave a stale dasharray on a solid one.
       .attr("stroke-dasharray", dashArray);
+    wbSetFlowAnimation(d3.select(this).select(".sketch-path").node(), flowing ? flowPeriod : 0);
     //: The Format panel's opacity and shadow (decision 19), on the group so
     //: the label goes with the shape; an attribute and an inline style, both
     //: of which the export's clone keeps.
@@ -19037,6 +19533,7 @@ function renderWhiteboard() {
     d3.select(this)
       .attr("opacity", look?.alpha != null && look.alpha < 1 ? look.alpha : null)
       .style("filter", look?.shadow ? WB_ITEM_SHADOW : null);
+    wbSyncSketchTip(this, look);
     // After the path, which the label is laid out from (decision 12).
     wbPaintShapeLabel(this, shapeData);
     wbPaintLinkLabel(this, d, linkData);
@@ -20543,7 +21040,9 @@ function renderWbObjects(canvas) {
         .style("font-size", sticker ? `${wbStickerSize(d)}px` : d.data.font_size ? `${d.data.font_size}px` : "")
         .style("text-align", d.data.align || "")
         .style("font-weight", d.data.bold ? "700" : "")
-        .style("font-style", d.data.italic ? "italic" : "");
+        .style("font-style", d.data.italic ? "italic" : "")
+        .style("text-decoration", [d.data.underline && "underline", d.data.strike && "line-through"].filter(Boolean).join(" "))
+        .style("font-family", WB_ITEM_FONTS[d.data.font_family] || "");
       if (document.activeElement !== textEl.node()) wbPaintTextContent(textEl.node(), d);
     }
   });
@@ -21883,6 +22382,7 @@ function wbPresentShow(index) {
   wbPresent.steps = steps;
   const at = Math.max(0, Math.min(steps.length - 1, index));
   wbPresent.at = at;
+  wbPresentCaption(at, steps);
   const box = steps[at].box();
   const container = document.getElementById("whiteboard-container");
   const rect = container.getBoundingClientRect();
@@ -21898,12 +22398,32 @@ function wbPresentShow(index) {
   const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
   const sel = d3.select(container);
   (reduce ? sel : sel.transition().duration(320)).call(wbZoom.transform, target);
+}
+
+//: The bar's caption for a step, set before the frame is fitted because a
+//: caption that wraps makes the bar taller and the frame keeps clear of it.
+//: A caption the bar's width would cut (a study question on a phone, a
+//: study note's answer) takes a line of its own above the buttons instead,
+//: whole on hover as well.
+function wbPresentCaption(at, steps) {
   const count = document.getElementById("wb-present-count");
-  if (count) count.textContent = `${at + 1} of ${steps.length}: ${steps[at].title()}`;
+  const bar = document.getElementById("wb-present-bar");
   const prev = document.getElementById("wb-present-prev");
   const next = document.getElementById("wb-present-next");
   if (prev) prev.disabled = at === 0;
-  if (next) next.disabled = at === steps.length - 1;  if (wbStudy.on) wbMapStudySyncBar();
+  if (next) next.disabled = at === steps.length - 1;
+  if (wbStudy.on) wbMapStudySyncBar();
+  if (!count) return;
+  count.textContent = `${at + 1} of ${steps.length}: ${steps[at].title()}`;
+  count.title = count.textContent;
+  Object.assign(count.style, { flex: "", order: "", whiteSpace: "", textAlign: "", maxHeight: "", overflowY: "" });
+  if (bar) bar.style.flexWrap = "";
+  if (!bar || count.scrollWidth <= count.clientWidth) return;
+  //: Up to about six lines, then it scrolls: a long note never takes the screen.
+  Object.assign(count.style, {
+    flex: "1 0 100%", order: "-1", whiteSpace: "normal", textAlign: "center", maxHeight: "9em", overflowY: "auto",
+  });
+  bar.style.flexWrap = "wrap";
 }
 
 //: **A laser pointer while presenting** (canvasdepth; Excalidraw's and

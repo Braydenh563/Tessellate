@@ -242,6 +242,76 @@ function docGrammarRequest(text) {
   });
 }
 
+// --- link offers (DOCUMENTS_PLAN VC5) ---------------------------------------
+//
+// Where the text names another note or document, the server (`link_offers.py`,
+// the vendored FlashText) answers the first mention of each; the offer is a
+// finding like any other, with the `[[link]]` as its one answer. It is never
+// applied by "Fix all": a link is the writer's choice, not a correction.
+//: The quiet before the text is sent: one ask per pause, not one per key.
+const DOC_LINK_OFFER_QUIET_MS = 700;
+//: The server's own cap on the text it will scan.
+const DOC_LINK_OFFER_MAX_CHARS = 400000;
+//: The last answer, for the document and text it was for. `timer` is the
+//: pending ask; a newer keystroke replaces it.
+const DOC_LINK_OFFERS = { doc: null, text: null, findings: [], asking: null, timer: 0 };
+
+function docLinkOfferFindings(offers) {
+  return offers.map((offer) => ({
+    rule: "link-offer",
+    source: "notes",
+    message: `This names the ${offer.kind} “${offer.name}”. Turn it into a link`,
+    start: offer.start,
+    end: offer.end,
+    text: offer.text,
+    replacement: offer.link,
+    alternatives: [],
+  }));
+}
+
+async function docLinkOfferAsk(text, docId) {
+  const state = DOC_LINK_OFFERS;
+  state.asking = text;
+  let body = null;
+  try {
+    const response = await api("/documents/link-offers", {
+      method: "POST",
+      body: JSON.stringify({ text, document_id: docId }),
+      silent: true,
+      readOnly: true,
+    });
+    body = await response.json();
+  } catch (error) {
+    body = null;
+  }
+  state.asking = null;
+  if (!body || !Array.isArray(body.offers)) return;
+  state.doc = docId;
+  state.text = text;
+  state.findings = docLinkOfferFindings(body.offers);
+  renderDocProse();
+}
+
+//: Ask once the writer pauses, unless this text is already answered or on its
+//: way. Nothing to scan is no reason to ask.
+function docLinkOfferRequest(text) {
+  const state = DOC_LINK_OFFERS;
+  const docId = currentDoc && currentDoc.id ? currentDoc.id : null;
+  if (!text || !text.trim() || text.length > DOC_LINK_OFFER_MAX_CHARS) return;
+  if (state.asking === text || (state.text === text && state.doc === docId)) return;
+  clearTimeout(state.timer);
+  state.timer = setTimeout(() => docLinkOfferAsk(text, docId), DOC_LINK_OFFER_QUIET_MS);
+}
+
+//: The last answer moved with the edits since, and only for the document it
+//: was asked about.
+function docLinkOfferCurrent(text) {
+  const state = DOC_LINK_OFFERS;
+  const docId = currentDoc && currentDoc.id ? currentDoc.id : null;
+  if (state.text === null || state.doc !== docId) return [];
+  return docProseRemap(state.findings, state.text, text);
+}
+
 //: The findings the prose tools add, merged into the rules' own list. A span
 //: a rule already holds keeps the rule's finding: the rule is the one with a
 //: dictionary and an "always correct" behind it.
@@ -257,10 +327,21 @@ function docProseExtras(text, found) {
   //: so it neither yields to a rule's finding on the same span nor is
   //: skipped where a link's address or a tag starts: that is where it looks.
   const access = docAccessFindings(text).filter((finding) => !docProseIgnored.has(docProseKey(finding)));
-  if (!extra.length && !access.length) return found;
+  docLinkOfferRequest(text);
+  const offered = docLinkOfferCurrent(text);
+  if (!extra.length && !access.length && !offered.length) return found;
   const skip = docProseSkipMask(text);
+  const offers = offered.filter(
+    (finding) =>
+      skip[finding.start] !== 1 &&
+      text.slice(finding.start, finding.end) === finding.text &&
+      !docProseIgnored.has(docProseKey(finding))
+  );
   const taken = found.filter((finding) => !DOC_FINDING_SKIP.has(finding.rule));
-  const merged = found.concat(access);
+  //: A note's name is often a proper noun the dictionary has never seen: the
+  //: offer to link it replaces the "likely typo" on the same span.
+  const named = (finding) => offers.some((offer) => offer.start <= finding.start && finding.end <= offer.end);
+  const merged = found.filter((finding) => finding.rule !== "spelling" || !named(finding)).concat(access, offers);
   for (const finding of extra) {
     if (skip[finding.start] === 1) continue;
     if (text.slice(finding.start, finding.end) !== finding.text) continue;

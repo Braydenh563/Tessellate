@@ -717,7 +717,7 @@ function cmdPaletteSources({ meta, touched }) {
 //: `.timeline-row`'s quiet-row shape (no border at rest, the ground arriving
 //: with the pointer). Drawn by `chatSourcesPanel`'s `row` hook, so the
 //: summary, the counts and the sheet on a phone stay the Sources panel's own.
-function cmdSourceRow(source, icons) {
+function cmdSourceRow(source, icons, number) {
   const row = document.createElement(source.url ? "a" : source.open ? "button" : "div");
   if (source.url) {
     row.href = safeHref(source.url);
@@ -748,6 +748,14 @@ function cmdSourceRow(source, icons) {
   date.textContent = source.url ? sourceHost(source.url) : when ? relativeTime(when) : "";
   row.append(mark, title, date);
   row.title = [title.textContent, entry?.category, date.textContent].filter(Boolean).join(" · ");
+  //: The number the answer's in-text mark carries, inside the title's cell so
+  //: the row keeps its three columns.
+  if (source.kind === "note") {
+    const index = document.createElement("span");
+    index.className = "chat-source-index";
+    index.textContent = number;
+    title.prepend(index, " ");
+  }
   return row;
 }
 
@@ -1094,6 +1102,17 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
   let meta = null;
   let stats = null;
   let thinkingRaw = "";
+  //: In-text numbers, Chat's own call (`addInlineCitations`) on the `grounding`
+  //: rows (BACKLOG, the owner 2026-10-12: popup answers had a Sources list and
+  //: no marks). The numbering is `chatSourcesFrom` over this turn's meta and
+  //: touched items, the list `cmdPaletteSources` draws, so a digit in the
+  //: prose is the digit on its row. Re-placed after every paint, which
+  //: rebuilds the answer.
+  let cites = null;
+  const cite = (event) => {
+    if (event) cites = event.sentences || [];
+    if (cites?.length) addInlineCitations(answerBox, cites, found, chatSourcesFrom({ meta, touched: [...touched.values()] }));
+  };
   //: The box the reasoning is written into while it is being produced, made
   //: on the first delta rather than up front so a turn that never thinks out
   //: loud does not grow an empty one.
@@ -1236,10 +1255,13 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
       },
       onUnsupported: (e) => (why = e?.message || why),
       onHint: (e) => (why = why || e?.text || ""),
+      onGrounding: cite,
+      onGroundingLive: cite,
       onAnswerFinal: (e) => {
         if (!e?.text) return;
         answered = true;
         renderMarkdown(answerBox, (answerRaw = e.text));
+        cite();
       },
       onAnswer: (delta) => {
         answered = true;
@@ -1249,6 +1271,7 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
         answerBox.classList.add("is-streaming");
         if (thinkingBox) thinkingBox.open = false;
         renderMarkdown(answerBox, answerRaw);
+        cite();
         keepAtBottom(cmdPaletteResults);
       },
     });

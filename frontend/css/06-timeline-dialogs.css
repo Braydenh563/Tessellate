@@ -2357,8 +2357,8 @@
   position: fixed;
   inset: 0;
   z-index: 1000;
-  width: 100vw !important;
-  height: 100vh !important;
+  width: 100vw;
+  height: 100vh;
   margin: 0;
   border-radius: 0;
   background: var(--bg);

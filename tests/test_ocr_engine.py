@@ -19,7 +19,9 @@ from tessellate.core import deps, ocr
 
 
 @pytest.fixture(autouse=True)
-def _fresh_language_cache():
+def _fresh_language_cache(app_state):
+    # `saved_language` reads the settings, which without an app state are built
+    # in the repo's own `data/` folder.
     ocr.clear_language_cache()
     yield
     ocr.clear_language_cache()

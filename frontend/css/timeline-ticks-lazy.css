@@ -1,0 +1,42 @@
+/* timeline-ticks-lazy.css: the labels beside the density strip
+   (timeline-ticks.js, TIMELINE_PLAN 10 row 6), loaded with that file rather
+   than at boot. The strip grows a label gutter on its left once there is
+   something to put in it; the density shape keeps its own 2.5rem. */
+.timeline-scrubber.has-ticks {
+  position: relative;
+  box-sizing: border-box;
+  width: 5.75rem;
+  padding-inline-start: 3.25rem;
+}
+.timeline-ticks {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 3.25rem;
+  pointer-events: none;
+}
+.timeline-tick {
+  position: absolute;
+  inset-inline-end: 0.5rem;
+  transform: translateY(-50%);
+  font-size: var(--text-xs);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--muted);
+}
+.timeline-tick.is-major {
+  font-weight: 600;
+  color: var(--text);
+}
+/* A short mark between the label and the shape, so a label points at a time
+   rather than floating beside the profile. */
+.timeline-tick::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: calc(100% + 0.125rem);
+  top: 50%;
+  width: 0.25rem;
+  border-block-start: 1px solid currentColor;
+  opacity: 0.6;
+}

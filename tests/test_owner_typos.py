@@ -77,6 +77,8 @@ LEFT_ALONE = [
     "which notes mention the beta and the deposit that was paid",
     "advise the kindly neighbour about the hallway light",
     "it was a really nice weekend at the lake house",
+    "a shyer person with a flyer and the dryer",
+    "the ghost cursor and a happier, busier week",
 ]
 
 
@@ -231,3 +233,22 @@ def test_a_sentence_heading_is_not_wrapped_in_your_note():
     held = [SimpleNamespace(view=SimpleNamespace(written=date(2026, 7, 27)))]
     line = d._prose("The split follows this structure", held, ["has Pull, Push and Legs"], 0, date(2026, 10, 12))
     assert "Your the" not in line and "structure note" not in line, line
+
+
+def test_a_cold_process_that_loads_the_chat_route_routes_an_act():
+    """"pin the dentist noe" is an act in a fresh interpreter that has loaded
+    the chat route: the typed reader is registered by `commands`, which the
+    route brings in. (`intent` cannot name `commands` itself: that made the
+    two and the agent one import cycle, `test_import_module_cycles.py`.)"""
+    import subprocess
+    import sys
+
+    src = Path(__file__).resolve().parents[1] / "src"
+    code = (
+        "import tessellate.api.routes_chat;from tessellate.ai import intent;"
+        "print(intent.classify('pin the dentist noe'), intent.classify('unlnk the gym note from the running note'))"
+    )
+    out = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True, check=True, env={"PYTHONPATH": str(src), "PATH": ""}
+    ).stdout.split()
+    assert out == ["act", "act"]

@@ -280,9 +280,12 @@ def tesseract_version() -> str:
 def saved_language() -> str:
     """The language the person chose, or "" for Tesseract's own default."""
     deps = importlib.import_module("tessellate.core.deps")
+    config = deps.peek_config()  # never starts the app (and its data folder) to ask
+    if config is None:
+        return ""
     try:
-        value = str(deps.get_config().get_preference(LANGUAGE_PREFERENCE, "") or "")
-    except Exception:  # noqa: BLE001  # no app state (a bare import): the default
+        value = str(config.get_preference(LANGUAGE_PREFERENCE, "") or "")
+    except Exception:  # noqa: BLE001  # settings not readable: the default
         return ""
     return value if _LANGUAGE_PATTERN.match(value) else ""
 

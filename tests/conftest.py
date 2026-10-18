@@ -7,13 +7,20 @@ real database, and singletons are rebuilt between tests.
 from __future__ import annotations
 
 import os
+import importlib
+import shutil
 from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
 
-from tessellate.ai import model_manager
-from tessellate.core import deps, taskhistory, vault
+from tessellate.ai import model_manager, spelling
+from tessellate.core import background, deps, extras, jobs, taskhistory, vault
+
+#: Loaded for what they register (the typed reader, the help topics), which a
+#: test that classifies a question without the chat route would otherwise miss.
+for _loaded in ("tessellate.ai.commands", "tessellate.ai.help_chat"):
+    importlib.import_module(_loaded)
 
 
 # --- one copy of each source file, however many test modules read it ----------
@@ -66,6 +73,24 @@ def repo_tree():
     return repo_files
 
 
+@pytest.fixture(autouse=True)
+def _no_repo_data_folder():
+    """A test that builds the app's config without `app_state` falls back to
+    `./data`, which is the repo's own folder when pytest runs from the root
+    (four `test_mcp_server` tests did, seen as an untracked `data/` after CI).
+    It clears the folder, and in a serial run fails the test that made it. Under
+    xdist the workers share the folder, so a leak in one would fail whichever
+    test in another worker was running beside it: there it only cleans up, and
+    `pytest -p no:xdist <file>` names the offender."""
+    folder = Path(__file__).resolve().parents[1] / "data"
+    existed = folder.exists()
+    yield
+    if not existed and folder.exists():
+        shutil.rmtree(folder, ignore_errors=True)
+        if not os.environ.get("PYTEST_XDIST_WORKER"):
+            pytest.fail("this test wrote the repo's data/ folder: use the app_state fixture (or TESSELLATE_DATA_DIR)")
+
+
 @pytest.fixture()
 def app_state(tmp_path, monkeypatch):
     """Fresh singletons pointed at a temp dir. Yields the ConfigManager."""
@@ -82,8 +107,24 @@ def app_state(tmp_path, monkeypatch):
     # way the job registry does, and a test asserting "no jobs have finished"
     # would otherwise pass or fail on what ran before it.
     taskhistory.clear()
+    # The app's start enqueues the speller's one-per-process warm-up on the job
+    # pool; whichever test first started an app saw it in `/tasks` ("Warm: warm
+    # the spelling lists"), so test_tasks passed or failed on the order a worker
+    # ran its files in. No test wants the job, and the lists load on first use.
+    spelling._WARMED["started"] = True
+    # The extras installer's one-at-a-time record is process-global too: an
+    # install a test queued and the pool then dropped (or a removal still
+    # running at teardown) stayed "running" for the next test, which saw
+    # "Installing ... (needle)" in `/tasks`.
+    extras.reset_for_tests()
     deps.init_app_state(data_dir=tmp_path / "data")
     yield deps.get_config()
+    # A worker the test started (the embedding warm-up after a capture, a
+    # caption job after an attach) would otherwise rebuild the app state from
+    # the repo's `data/` once it is reset.
+    jobs.shutdown(2.0)
+    background.join_all()
+    extras.reset_for_tests()
     vault.close()
     deps.reset_app_state()
     model_manager.reset_jobs()

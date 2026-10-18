@@ -31,7 +31,7 @@ def test_every_key_the_frontend_sends_is_in_the_body():
     assert not missing, f"sent to /preferences and silently dropped: {missing}"
 
 
-def test_every_key_the_frontend_reads_comes_back():
+def test_every_key_the_frontend_reads_comes_back(app_state):
     reads = set(re.findall(r"prefsCache\??\.([a-z_]+)", app_js_text()))
     from tessellate.api.routes_settings import get_preferences
 

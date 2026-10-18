@@ -75,7 +75,8 @@ async function waitForApp(page) {
 }
 
 async function openTab(page, tab) {
-  await page.click(`#tab-btn-${tab}`);
+  // A tab that no longer exists fails in 15 s, not after the whole test's timeout.
+  await page.click(`#tab-btn-${tab}`, { timeout: 15_000 });
   await expect(page.locator(`#tab-${tab}`)).toBeVisible();
 }
 

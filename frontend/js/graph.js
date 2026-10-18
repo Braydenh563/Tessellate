@@ -175,7 +175,7 @@ function graphNodeRadius(node) {
 
 function graphLayout() {
   const saved = prefs.get("graph-layout", null);
-  return ["force", "tree", "radial", "arc"].includes(saved) ? saved : "force";
+  return ["force", "tree", "radial", "arc", "treemap"].includes(saved) ? saved : "force";
 }
 
 //: **Tree, Radial and Arc compute every position, so nothing in them moves.**
@@ -346,7 +346,55 @@ function replyLoops(node, byId) {
   return false;
 }
 
+//: GRAPH_PLAN VC11 (D3's hierarchy layouts as a category overview): the
+//: notebook as a treemap, one rectangle a category with its area in proportion
+//: to how many notes it holds, each note a dot in a cell of its category's
+//: rectangle. Replies are cells of their category like any note: the shape is
+//: about where the notes are filed, not about what answers what, so it draws
+//: no lines (`links` is empty) and a category's rectangles tile the whole
+//: width and height with no padding between them, so the areas stay exact; the
+//: gap between two categories is drawn, not laid out (`gcDrawTreemap`). Each
+//: note keeps its cell's size so its dot never outgrows it.
+function layoutTreemap(nodes, width, height) {
+  const byCategory = new Map();
+  for (const node of nodes) {
+    if (!byCategory.has(node.category)) byCategory.set(node.category, []);
+    byCategory.get(node.category).push(node);
+  }
+  const done = { nodes: [], links: [], radial: false, arc: false, vertical: false, treemap: [] };
+  if (!nodes.length) return done;
+  const root = d3
+    .hierarchy({
+      children: [...byCategory].map(([category, notes]) => ({ category, children: notes.map((note) => ({ note })) })),
+    })
+    .sum((d) => (d.note ? 1 : 0))
+    .sort((a, b) => b.value - a.value);
+  d3
+    .treemap()
+    .size([width, height])
+    .tile(d3.treemapSquarify)
+    .paddingInner((d) => (d.depth === 0 ? 0 : 2))
+    .paddingTop((d) => (d.depth === 1 ? 18 : 0))(root);
+  for (const group of root.children) {
+    done.treemap.push({ category: group.data.category, count: group.value, x0: group.x0, y0: group.y0, x1: group.x1, y1: group.y1 });
+    for (const leaf of group.children) {
+      const node = leaf.data.note;
+      node.x = (leaf.x0 + leaf.x1) / 2;
+      node.y = (leaf.y0 + leaf.y1) / 2;
+      node.fx = node.x;
+      node.fy = node.y;
+      node.cell = { w: leaf.x1 - leaf.x0, h: leaf.y1 - leaf.y0 };
+      node.depth = 2;
+      node.isLeaf = true;
+      node.shared = false;
+      done.nodes.push(node);
+    }
+  }
+  return done;
+}
+
 function layoutHierarchy(nodes, kind, width, height) {
+  if (kind === "treemap") return layoutTreemap(nodes, width, height);
   // Build parent → children from the notes themselves.
   const byId = new Map(nodes.map((node) => [node.id, node]));
   const groups = new Map();
@@ -565,6 +613,18 @@ function frameTree(svg, zoomBehavior, canvas, nodes, width, height, radial, arc 
       height: Math.max(...ys) - Math.min(...ys) + 60,
     };
   }
+  //: **A treemap is framed by its rectangles** (the caller passes their
+  //: corners, `corner: true`): the headers sit above and beside the dots, so
+  //: the dots' own box would crop them and let the minimap sit on a name.
+  const whole = nodes.length > 0 && nodes.every((n) => n.corner);
+  if (whole) {
+    box = {
+      x: Math.min(...xs),
+      y: Math.min(...ys),
+      width: Math.max(...xs) - Math.min(...xs),
+      height: Math.max(...ys) - Math.min(...ys),
+    };
+  }
   if (arc && !drawn.width) {
     const spanXs = Math.max(...xs) - Math.min(...xs);
     const spanYs = Math.max(...ys) - Math.min(...ys);
@@ -595,10 +655,10 @@ function frameTree(svg, zoomBehavior, canvas, nodes, width, height, radial, arc 
   //: "Nearly" was 0.8; at 0.55 a 34-note tree ran a column off the top and
   //: bottom of the map (the owner, round 2, and INBOX 792: fit "should be
   //: based on ... the screen resolution/size"), so it is 0.4 now.
-  const fit = radial || arc || both >= 0.4 ? both : (width - 20) / spanX;
+  const fit = radial || arc || whole || both >= 0.4 ? both : (width - 20) / spanX;
   //: A radial the same (measured before: 1,051px across a 362px phone map
   //: and a 997px tablet one at the 0.35 floor).
-  const scale = arc || radial ? Math.min(1, fit) : Math.max(0.35, Math.min(1, fit));
+  const scale = arc || radial || whole ? Math.min(1, fit) : Math.max(0.35, Math.min(1, fit));
   //: Where it does not fit, **the root is centred** (INBOX 430, the owner:
   //: "the Tree view sits at the top instead of centred"). A tree's root is
   //: the middle of its column, not its top, so anchoring the top edge put
@@ -2889,7 +2949,9 @@ async function renderGraphSvg() {
           ? ", categories around the centre; replies branch off the note they answer."
           : layoutKind === "arc"
             ? ", one line, filed left to right; arcs below show what answers what."
-            : "";
+            : layoutKind === "treemap"
+              ? ", each category's area in proportion to its notes."
+              : "";
   // The shape sentence is an *explanation*, and it was costing a full row
   // above the canvas on every layout, reported as the graph "feeling
   // squashed on my screen due to the top dock". Counts stay on the line

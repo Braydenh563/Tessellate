@@ -281,9 +281,15 @@ def test_the_running_model_manager_is_never_its_module():
     """The Chromium after-run, 2026-10-11: deps imported the model manager
     module as `_model_manager`, the running manager's own name, so a real
     server answered every chat and /models/status with a 500."""
+    import os
     import subprocess
     import sys
+    from pathlib import Path
 
     code = "import types; from tessellate.core import deps; print(isinstance(deps._model_manager, types.ModuleType))"
-    ran = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, check=True, timeout=120)
+    #: pytest.ini's `pythonpath = src` reaches this process, not a child's
+    #: environment: under `gate.sh` (no PYTHONPATH exported) the child could not
+    #: import `tessellate` and the test failed there only.
+    env = {**os.environ, "PYTHONPATH": str(Path(__file__).resolve().parents[1] / "src")}
+    ran = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, check=True, timeout=120, env=env)
     assert ran.stdout.strip() == "False", ran.stdout + ran.stderr

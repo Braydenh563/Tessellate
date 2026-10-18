@@ -39,6 +39,7 @@ from tessellate.core.database import (
     like_escape,
 )
 from tessellate.core.deps import get_session
+from tessellate.entry import link_offers
 from tessellate.entry.mentions import (
     BACKLINK_ROWS_MAX,
     BACKLINK_SOURCES_MAX,
@@ -322,6 +323,24 @@ def check_syntax(body: SyntaxCheckBody) -> list[dict]:
         return syntaxcheck.check(body.language, body.text)
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
+
+
+class LinkOffersBody(BaseModel):
+    text: str = Field(default="", max_length=link_offers.TEXT_MAX)
+    #: The document being written: its own title is not a name to link to.
+    document_id: int | None = None
+
+
+@router.post("/link-offers")
+def document_link_offers(body: LinkOffersBody, session: Session = Depends(get_session)) -> dict:
+    """Where the text names another note or document (VC5): `{offers: [{start,
+    end, text, kind, name, link}]}`, the first mention of each, in text order.
+
+    Stateless like `/check-syntax`: it takes the text on screen rather than a
+    saved document, and writes nothing. Declared above `/{document_id}`.
+    """
+    own = session.get(Document, body.document_id) if body.document_id else None
+    return {"offers": link_offers.offers(session, body.text, exclude_title=own.title if own else None)}
 
 
 #: A page of the document list, not a ceiling on how many documents a

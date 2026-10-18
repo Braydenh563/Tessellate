@@ -95,7 +95,8 @@ const NAMES = ['UpdateLayoutTree', 'Layout', 'PrePaint', 'Paint', 'Layerize', 'C
       console.log('   :has() nodes', JSON.stringify([...cnt.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8)));
     }
     console.log('   invalidations:', [...inval.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v]) => `${v}x ${k}`).join(' | '));
-    const ult = mine.filter((e) => e.name === 'UpdateLayoutTree' && e.dur > 15000).map((e) => `${(e.dur / 1000).toFixed(0)}ms/${(e.args && e.args.elementCount) || '?'}el`);
+    // ULT_MS=n lowers the 15 ms floor; ULT_TS=1 prefixes each with its start (ms from the first task).
+    const ult = mine.filter((e) => e.name === 'UpdateLayoutTree' && e.dur > Number(process.env.ULT_MS || 15) * 1000).map((e) => `${process.env.ULT_TS ? `@${((e.ts - t0) / 1000).toFixed(0)} ` : ''}${(e.dur / 1000).toFixed(0)}ms/${(e.args && e.args.elementCount) || '?'}el`);
     console.log('   long style recalcs:', ult.join(' '));
     const long = mt.filter((e) => e.dur > 50000).sort((a, b) => b.dur - a.dur).slice(0, 4);
     for (const t of long) {

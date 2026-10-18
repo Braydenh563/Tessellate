@@ -180,9 +180,12 @@ def test_the_code_panel_is_lazy_and_its_ways_in_load_it():
     assert 'src="/js/documents-codekit.js' not in index, "lazy: never a boot script"
     assert 'lazyScript("/js/documents-codekit.js")' in docs
     assert 'id="doc-code-snippets-open"' in index and 'data-side="snippets"' in index
-    #: A code file only: the button and the panel go for prose.
+    #: The Assistant is a code file's: its button and tab go for prose. The
+    #: panel itself no longer does: prose gets the text sections in it
+    #: (INBOX 904 B18, tests/test_doc_sections.py), so its intent moved.
     css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
-    assert "#tab-documents:not(.doc-is-code) :is(.doc-code-only, .doc-code-side)" in css
+    assert "#tab-documents:not(.doc-is-code) .doc-code-only" in css
+    assert ".doc-code-side)" not in css.split("#tab-documents:not(.doc-is-code)")[1].split("{")[0]
     #: On a phone the panel is the recipe's sheet, never a hand-built one.
     kit = (JS / "documents-codekit.js").read_text(encoding="utf-8")
     assert "openSheet({" in kit and "sidebar-sheet-open" not in kit

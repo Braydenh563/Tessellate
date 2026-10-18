@@ -15,7 +15,7 @@ def test_the_worker_gathers_a_category_and_its_loose_notes():
     assert 'force("groupX"' in worker and 'force("groupY"' in worker
     assert "function applyGrouping(params)" in worker
     # Loose notes firmly, linked ones gently.
-    assert "? node.degree === 0" in worker
+    assert "node.degree === 0" in worker[worker.index("const pull = (node)"):]
     # Re-tuned with the sliders, not only at a rebuild.
     apply = worker[worker.index("function applyForces(params)"):]
     assert "applyGrouping(params)" in apply[:200]

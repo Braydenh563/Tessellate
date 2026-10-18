@@ -50,7 +50,7 @@ def test_tiny_responses_are_left_alone(client):
     assert "content-encoding" not in response.headers
 
 
-def test_both_streaming_media_types_are_excluded():
+def test_both_streaming_media_types_are_excluded(app_state):
     """The invariant, asserted against the configured app rather than against
     a constant we could drift from.
 

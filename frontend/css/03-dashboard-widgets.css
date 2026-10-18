@@ -3426,7 +3426,7 @@ button.answer-figure-open {
   height: 18px;
   line-height: 0;
   border-radius: var(--radius-pill);
-  box-shadow: 0 1px 2px rgb(0 0 0 / 18%);
+  box-shadow: var(--shadow-hair-md);
   pointer-events: none;
 }
 
@@ -3480,7 +3480,7 @@ button.answer-figure-open {
    translucent panel by one pixel, which is the amount a card in this app
    lifts (`--shadow-xs` where it exists, the same figure written out here). */
 .msg {
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.14);
+  box-shadow: var(--shadow-hair);
   line-height: 1.55;
   animation: msg-in var(--ui-slow) ease-out;
 }
@@ -3500,7 +3500,7 @@ button.answer-figure-open {
    rather than one voice and one advert. */
 .msg.user {
   border-radius: var(--radius) var(--radius) var(--radius-sm) var(--radius);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.14);
+  box-shadow: var(--shadow-hair);
 }
 
 .msg.user .msg-body {

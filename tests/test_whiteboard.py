@@ -397,6 +397,10 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         "align": None,
         "valign": None,
         "md": None,
+        # Added with the text tab (font, underline, strike); None until set.
+        "font_family": None,
+        "underline": None,
+        "strike": None,
         # Added with mindmaps (MINDMAP_PLAN.md Phase 1). A text box is not a
         # map node, so all three stay None, asserted rather than omitted
         # because this test's whole job is to catch a field that silently

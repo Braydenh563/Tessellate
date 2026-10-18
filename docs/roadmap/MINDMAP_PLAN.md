@@ -513,7 +513,8 @@ export that claims it.
    "Summarise this branch" writes the parent's note. (Suggest branches is in:
    WHITEBOARD_PLAN decision 36, HISTORY "wb-phase2"; a picker, not yet
    ghosts on the canvas. Summarise this branch is built, HISTORY.md, "Moved
-   from the plans, 2026-10-05 (op3-1005)". Expand from my notes is open.)
+   from the plans, 2026-10-05 (op3-1005)". Expand from my notes is built,
+   HISTORY.md, "Moved from the plans, 2026-10-18 (mindmap-1018)".)
 3. **From a question**: "Make a map of..." in chat proposes a map
    (exists, Phase 4) and now opens it in the map editor with the
    proposal as floating topics to accept or discard.
@@ -524,7 +525,7 @@ export that claims it.
    selection action makes one.
 5. **Study mode**: built (decision 36; HISTORY.md, "Moved from the plans,
    2026-10-05 (study the map, op5)"). The note behind a topic as the answer
-   is open.
+   is built (HISTORY.md, "Moved from the plans, 2026-10-18 (mindmap-1018)").
 Gate: each AI action grounded (its sources listed) and faked in tests;
 the study mode measured on a 40-node map.
 
@@ -1430,13 +1431,13 @@ topic: a control that wide has nowhere to go.
 - ~~**The owner's own map size is unknown**~~ Moot: 13a is built and met its
   gate at 500 topics (HISTORY.md, "Moved from the plans, 2026-10-05 (docs
   hygiene before 0.4.0: MINDMAP_PLAN)").
-- **Every figure above is light mode.** Dark is unmeasured in this read.
+- **Dark and 820 wide are read, and what they found is fixed** (HISTORY.md, "Moved from the plans, 2026-10-18 (left-1018)").
 - The timings are one machine, one Chromium, one run each except the 500-node
   row, which was run twice (1,583.3ms and 1,616.5ms worst drag frame). They
   are a shape, not a benchmark.
-- **The strip is measured at 1440, 1024 and 390 only.** `boot()` defaults to
+- **The strip is measured at 1440, 1024, 820 and 390.** `boot()` defaults to
   1440 but takes `opts.viewport`, so other widths were reached by passing it;
-  820 (the tablet band) is not read here.
+  820 is read in the bullets above.
 - The free link was created through `/whiteboard/sketches` with the fields the
   connect drag writes, not by driving the drag itself. The row is the same
   shape; the drag's own hit-testing is not exercised.
@@ -1637,8 +1638,8 @@ transport for its tests and the no-model fallback measured in a sweep:
 - **Ghost topics on the canvas**: the suggestions drawn faded under the topic,
   Tab to take one, Escape to drop them all. Waits on boot CSS room (the cap
   is full; the picker dialog is the shape until then).
-- **Expand from my notes**: a topic grown a level from the note it is
-  grounded in (its headings and links), not from search.
+- ~~**Expand from my notes**~~ built 2026-10-18 (HISTORY.md, "Moved from the
+  plans, 2026-10-18 (mindmap-1018)").
 - **The affinity sort** (a board, WHITEBOARD_PLAN's territory): thirty
   stickies grouped into named frames by theme, each placement shown with the
   notes that back it, accepted per frame, one Undo step.

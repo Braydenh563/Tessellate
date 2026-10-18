@@ -4342,12 +4342,14 @@ def focus_detail(question: str, recent: str = "") -> toolwords.Focus:
 def tool_enabled(name: str) -> bool:
     """A tool is offered unless the user turned it off in Settings → Tools.
     web_search additionally requires the online opt-in."""
-    config = deps.get_config()
-    if name in ("web_search", "read_url") and not config.get_preference(
-        "web_search_enabled", False
-    ):
+    # Listing the tools must not start the app: without settings the defaults
+    # hold (web off, nothing disabled), which is what a fresh notebook has.
+    config = deps.peek_config()
+    web_on = config.get_preference("web_search_enabled", False) if config else False
+    if name in ("web_search", "read_url") and not web_on:
         return False
-    return name not in set(config.get_preference("disabled_tools", []))
+    disabled = config.get_preference("disabled_tools", []) if config else []
+    return name not in set(disabled)
 
 
 #: Stand-in values for a worked example, by JSON-schema type. Chosen to look
@@ -5019,6 +5021,7 @@ def execute_tool(
     spec = TOOLS.get(name)
     if spec is None:
         return {"error": f"Unknown tool '{name}'"}
+    deps.get_config()  # a call runs inside the app: the user's settings, never the defaults
     if not tool_enabled(name):
         return {"error": f"The '{name}' tool is turned off in Settings → Tools it can use"}
     #: Stop landed while the model call that chose this write was in flight:

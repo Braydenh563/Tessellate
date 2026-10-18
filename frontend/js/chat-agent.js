@@ -2239,7 +2239,7 @@ function chatSourcesPanel(input) {
   grid.className = row ? "chat-sources-list" : "chat-sources-grid";
   const icons = Object.fromEntries(CHAT_SOURCE_GROUPS.map((g) => [g.key, g.icon]));
   sources.forEach((source, index) => {
-    if (row) return grid.appendChild(row(source, icons));
+    if (row) return grid.appendChild(row(source, icons, numbering.indexOf(source) + 1));
     //: Three shapes, one card. A web source is an anchor, a local one that
     //: can be opened is a button, and one that can be neither is a plain
     //: block: because a control that does nothing when pressed is worse

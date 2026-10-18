@@ -29,7 +29,7 @@ def _run(expr: str, tree: dict) -> object:
     script = (
         region
         + "\nconst t = " + json.dumps(tree) + ";\n"
-        + "const node = (id) => ({ id });\n"
+        + "const node = (id) => ({ id, data: { note: (t.notes || {})[id] } });\n"
         + "const index = { roots: t.roots.map(node), childrenOf: new Map(Object.entries(t.children).map(([k, v]) => [Number(k), v.map(node)])) };\n"
         + f"console.log(JSON.stringify({expr}));"
     )
@@ -65,3 +65,35 @@ def test_the_tally_counts_the_last_mark_only():
         " return [t.knew, t.of, [...t.missed]]; })()"
     )
     assert _run(expr, TREE) == [1, 2, [3]]
+
+
+def test_a_topic_with_a_note_asks_for_its_note_after_the_branches():
+    tree = {**TREE, "notes": {"4": "The answer to four", "5": "  ", "8": "Eight's note"}}
+    got = _run("wbMapStudyQuestions(index).map((q) => [q.id, q.hides.length, q.answer || null])", tree)
+    #: 2 and 3 are branch questions; 4 (a bare branch) asks for its note; 8 sits
+    #: under question 3, so it is hidden until 3 is shown and is not asked; 5's
+    #: blank note is none.
+    assert got == [[2, 3, None], [3, 1, None], [4, 0, "The answer to four"]]
+
+
+def test_a_branch_question_with_a_note_stays_one_question():
+    tree = {**TREE, "notes": {"2": "note on a branch"}}
+    got = _run("wbMapStudyQuestions(index).map((q) => [q.id, q.answer || null])", tree)
+    assert got == [[2, None], [3, None]]
+
+
+def test_a_map_of_bare_topics_with_one_note_has_one_question():
+    tree = {"roots": [1], "children": {"1": [2, 3]}, "notes": {"3": "why"}}
+    assert _run("wbMapStudyQuestions(index).map((q) => q.id)", tree) == [3]
+
+
+def test_the_study_bar_and_the_guide_know_the_note_answer():
+    mapjs = MAP_JS.read_text(encoding="utf-8")
+    assert "function wbMapStudyShown(q)" in mapjs and "wbStudy.revealed.add(step.id)" in mapjs
+    guide = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    assert "its note is the" in guide
+    #: The caption is set before the frame is fitted, and takes its own line when cut.
+    board = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    show = board[board.index("function wbPresentShow(index)") :]
+    assert show.index("wbPresentCaption(at, steps)") < show.index("const foot")
+    assert "function wbPresentCaption(at, steps)" in board and 'flex: "1 0 100%"' in board

@@ -7,6 +7,14 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## OPEN.md rows closed, 2026-10-18 (open-1018: Library, Notes, App wide, Timeline and Documents leftovers)
+
+Audit table in `docs/roadmap/agent-remaining/open-1018.md`.
+
+- **VC5, link offers in the document editor** (DOCUMENTS_PLAN Brief 75, OPEN 1171). `POST /documents/link-offers` (`routes_documents.py`, `entry/link_offers.py`): the vendored FlashText holds every name a `[[link]]` resolves to (a previewable document's title, a note's opening line without its heading mark) and one scan answers the first mention of each, in text order, at most 12. A one-word name needs its own capital, a name under four characters or with a bracket is not a name, code, existing links, markdown links, addresses and a name the text already links are never offered, and a private note, a binned or archived document and the document itself are not names. The trie is rebuilt only when a count, newest edit or newest id moves. The editor (`documents-prose.js`: `docLinkOfferRequest`, one ask per 700 ms pause, `docLinkOfferCurrent` remaps the last answer through the edits) draws each as a finding of its own kind, `link`: a 1px accent underline, the group "Links to your notes", the check on its row writes `[[Title]]` or `[[Title|as written]]`, Fix never applies it (`DOC_FIX_ALL_NEVER`), and it replaces a "likely typo" on the same span. Tag offers were not built: a document has no tags. Measured: `tests/test_link_offers.py` 15 tests; 5,000 titles cold index 31 ms, warm request 14 ms for 7,634 characters; in the app `linkoffers1018.js` found the 3 names in a probe document (a fenced mention and a second mention not offered), the underline computed `underline solid 1px`, Fix all left the text without a `[[`, the row's check wrote `[[Quarterly roadmap|quarterly roadmap]]`, and a 7,800-character POST took 25 ms.
+
+- **One '?' per Documents section** (DOCUMENTS_PLAN 24 row 11, OPEN 1054). Four new `data-help-for` popovers in `frontend/index.html`: the list (`doc-list-help`, in the Recent head), the outline tab (`doc-outline-help`, under a new "This document" head), the dock (`doc-dock-help`, beside Focus) and the find bar (`doc-find-help`); the AI panel's existing '?' is now "About this panel" and names Suggest an edit, Stop, Replace with this, Cancel and History. `tests/test_documents_help.py` (4 tests) reads the dock's ⋯ menu rows from the page, so a row added without a word in the help fails. Measured (`dochelp1018.js`, removed): the list and outline popovers open inside the viewport at 1440 (416 wide); the dock popover opens at 390 (366x512, scrolls inside); the new buttons add no height or sideways scroll to the dock (32 to 32 at 1440, 142 to 142 at 390) or the list head (32, 44), and the page has no horizontal scroll. Not verified: the find and dock popovers at 1440 and the list, outline and find popovers at 390 (the sweep's click timed out; the markup is the shared recipe), 1024, dark theme.
+
 ## OPEN.md rows closed, 2026-10-17 (the open-rows agent: resurface and the time reader)
 
 Each found by probing the head, test first, one commit per item.
@@ -505,6 +513,14 @@ the gesture guard moved onto the surface first; see HISTORY.md ("From OPEN.md,
 2026-09-23 (askcite agent): Phase 8c, the board's note card").
 
 
+## Moved from the plans, 2026-10-18 (Popup agent citations, BACKLOG)
+
+From BACKLOG, as it stood:
+
+> Popup agent: its answers carry no in-text citation numbers (owner, 2026-10-12, four screenshots: "notes about uni" answers in paragraphs with a Sources chip and note list but no superscript marks, as Ask and Chat have). Chat wires them through `addInlineCitations(bubble.querySelectorAll(".bubble-answer"), groundingSentences, meta.raw_results, turnSources)` from the `grounding` stream event (chat-attach.js ~2000, 2365); the popup agent (palette.js `cmdPaletteLinkNotes`, agent-activity.js) only links "note id N" text. Give the popup agent's answer element the same call and the same `grounding` event handling, then a test like Ask's.
+
+Built 2026-10-18 (cite-1018): `cmdPaletteAsk` takes `onGrounding` and `onGroundingLive` and calls `addInlineCitations(answerBox, rows, found, chatSourcesFrom({meta, touched}))` after every paint (`cite`), so the marks are numbered over the list `cmdPaletteSources` draws; `chatSourcesPanel` hands its row hook the card's number (`numbering.indexOf(source) + 1`) and `cmdSourceRow` shows it in `.chat-source-index` inside the title cell (three columns kept). Driven in Chromium with `scratchpad/fake_answer_server.py` (`scratchpad/ui-sweeps/popupcite.js`): two marks, 1 and 2, matching the two rows' numbers, no page errors. The stand-in model quotes each note with its `[General] (written ...)` header, so both sentences ran together and the two marks sit side by side at the end (Ask's sweep, same fixture, puts one per sentence); a real model's prose was not run. `tests/test_inline_citations.py` pins the wiring.
+
 ## Moved from the plans, 2026-10-17 (New chat page, BACKLOG)
 
 From BACKLOG, as it stood:
@@ -900,6 +916,16 @@ The filing agent's Built block (standing order 10); WORLD_CLASS_PLAN's "Placed f
 - Measured and not shipped: tags from the note's own words for a notebook with no tags (a title word said twice): 4 of 12 right on the set, below the bar.
 - Learning from turn-downs: a tag discarded on three notes or more is offered at 0.3 of its vote everywhere (`tagging.turned_down`, `_damp`); Manage tags lists them under Turned down with Offer again (`GET /tags/turned-down`, `POST /tags/turned-down/offer-again`, preference `tags_offered_again`). Driven at 1440 and 390 on port 8851: the row shows, its button 122x32 (44 tall at 390), no overflow, and Offer again hides it. Capture: title "Biology revision" and a body without the word gave the chip "biology", titled "It says “biology”.", focus left in the editor.
 - Help moved with it: the Guide topic `suggested-tags`, the tag manager's '?' popover.
+## Moved from the plans, 2026-10-18 (TIMELINE timeline-1018)
+
+The timeline-1018 agent's Built block (standing order 10); TIMELINE_PLAN section 10 rows 2, 5 and 6 (and VC2) and section 11 row 7 carry the pointer. Audit first: each open row was grepped and measured, and three were found already built.
+
+- Audit, measured with `scratchpad/ui-sweeps/timeline1018.js` on 48 back-dated notes: day-head overlaps 1 to 0 at 1440 and at 390 over 59 heads; day-head buttons 32 px high at 1440 and 44 px at 390 (coarse); the owner's rail circle (Placed from the owner's list, Bugs) 0 px off the first line's centre for 12 rows at both widths. The one control under 24 px is `#timeline-search`'s input (20 px inside its 32 px `.search-field`, the app-wide recipe).
+- Row 7, live chips: `scratchpad/ui-sweeps/remindersqa1018.js`, "dentist friday at 9am" shows its chip in 65 ms at 1440 and 129 ms at 390 (Brief 66 built it); at 390 the row is the FAB's sheet, 304 px wide, inside the viewport.
+- Row 6, the strip's labels (VC2): `frontend/js/timeline-ticks.js` and `timeline-ticks-lazy.css`, lazy (d3 is the graph's copy, fetched on the first strip; the boot carries one `lazyScript` line). `timelineTickPlan` picks the finest of day, week, month and year whose ticks sit 28 px apart on this strip's height and places them with `d3.scaleTime` and `timeMonth`, `timeYear` and the rest; `timeFormat` writes them ("Oct", "2026" on a January, "Oct 5" for a week or a day). There were no hand-rolled tick lines to delete: the strip drew a density path and no labels. `tests/test_timeline_ticks.py`: twelve fixed dates get d3's labels at each step, and 27 span-and-height pairs (1 day to 41 years, 240 to 900 px) never put two labels closer than 12 px or outside the strip. Measured in the app (`timelineticks1018.js`, 48 notes over six months): 7 month labels at 1440 and 1024, 0 overlaps, 0 outside the strip, closest 78 to 88 px; synthetic spans of 6, 30, 60, 700 and 4,000 days 0 overlaps and 0 outside; a click on the strip still scrolls the feed (1,570 px at 1440); the strip is 92 px wide (84 before it grew a 52 px gutter beside its 40) and the feed 1,268 of 1,276; hidden at 390 as before. Boot JS 588,399 to 588,393 gzipped: the hook line cost 16 bytes and the unneeded `IntersectionObserver` feature check in `timelineWatchRow` (the Notes list builds one unguarded) paid for it. d3's called count 19 to 25 (`test_vendor_utilisation.py`).
+- Phase 5's two unmeasured gates, measured (`calstress1018.js`, `seed-timeline-bulk.py` 1,000 notes in one month, port 8789): the month at 1440 draws 31 cells, 0 overflow (scrollHeight against clientHeight), 168 dots, 28 "+n", 672 chips, no horizontal scroll, 1,247 ms from the tab to cells (911 ms at 1024); the week at 1024 under a coarse pointer draws 168 hour cells, none under 56 px high (the 44 px line), 0 overflow, 413 ms. Found by it: the dock's count read "1000 items · October 2026", then "192 notes · 7 days", because `timelineLoadMore` appended a feed page into the hidden feed in calendar mode and the feed's painter writes the count. Now only the feed appends and only the table repaints (`tests/test_timeline_calendar_loadmore.py`, 3 views; `calcount1018.js`: the chip stays "1000 items · October 2026" over 5.6 s, 8 samples, and the cells hold 1,000 of the API's 1,000). Boot JS 588,399 to 588,390.
+- Row 5, typed entries: `tests/test_timeline_typed_day.py` holds twenty phrases against a fixed Sunday, save to `/timeline` row, 20 of 20 on the named day, placed "mentioned" with the phrase. Three phrases the audit found wrong or unresolved are owner questions in `agent-remaining/timeline-1018.md`, not in the set.
+
 ## Moved from the plans, 2026-10-17 (TIMELINE B72)
 
 The calendar-b72-1017 agent's Built block (standing order 10); TIMELINE_PLAN section 12 row 6 and the INBOX 561 placement carry the pointer. The owner, INBOX 904 B72: "I wanna be able to double click on a date and be able to add an event and set a reminder ... scroll above today's date to see future dates ... recognise future date and time mentions and suggest to use magic add". Decisions taken are in `agent-remaining/calendar-b72-1017.md` (archived with it).
@@ -50540,4 +50566,212 @@ Built 2026-10-11 (briefs-1011): the route modules keep the routes and nothing el
 ### Brief 63 part 1, the embedder (briefs-1011)
 
 Decision 62 built: the search model already loaded on first use (or at launch with notes, `warm_search_model_at_launch`); now an hour with no embed lets it go and the next embed loads it again. `embedding_idle_unload` (default on; Settings, Background tasks, "Let the search model go after an idle hour"). The request middleware looks once a minute and only queues the unload on the pool (`warm` lane, deduped), so the event loop never pays for the garbage collection; `malloc_trim` hands the pages back on Linux. A rested model still counts as ready, so search keeps its meaning half and the next embed reloads; `search_manager.warm` reads the new `is_loaded`, so focus in Ask starts the reload. Measured with `BAAI/bge-small-en-v1.5` and torch 2.14 CPU, load average 33: 77 MB after startup, 497 MB after the first embed (112 s cold, torch's import included), 491 MB after 20 embeds, 398 MB at the unload and 376 MB two seconds later, reload 3.2 s to 455 MB. The 300 MB left is torch's libraries, which stay mapped once imported; only a process restart drops them. `tests/test_embedder_idle_unload.py` (10).
+## INBOX resolved, 2026-10-18
+
+735. **The owner, 2026-10-06, verbatim**: "also since p5.js is vendored, can it be a
+     document option in the text editor?? also when on a code document, I get auto
+     fill for redular sentences, not code specific autofill" "I was on js document".
+     Two items for DOCUMENTS_PLAN: a p5.js sketch document kind (code beside a
+     sandboxed live canvas, the vendored p5 only, no network); and on a code
+     document (.js here) the prose autocomplete must switch off and code-aware
+     completion (words from the file, the language's keywords, bracket pairs) take
+     its place.
+     Owner: DOCUMENTS_PLAN 23 and Brief 42 (the p5 kind, code completion on code documents); Briefs 69 to 71 for the IDE.
+742. **The owner, 2026-10-07, verbatim**: "atlas doesnt seem to change emotions alot
+     if at all?? maybe log that for next pr". Next PR: measure how often Atlas's
+     mood changes in a session (the mood triggers in atlas-life.js and
+     companion code) and widen what drives it (answers found, nothing found,
+     reminders done, idle, time of day), each visible within a few seconds.
+     Owner: Brief 34 (companion), the second part; the mood-change count per session is its first number.
+771. **The owner, 2026-10-10, 16:02Z, verbatim.** "I am sleeping so continue
+     autonomously. Impress me a lot. I want to fall off my chair lol with how
+     good the changes, fixes, improvements, additions, and nire are when I
+     wake up in the morning lol." Read: no cap on the night's work beyond the
+     agent cap (four Opus, Sonnet extra); every open brief in SESSION_BRIEFS
+     order; the PR stays green and the docs current at each merge. Owner:
+     HANDOVER "Now" (the night's queue).
+772. **Decision needed, found by the companion agent (Brief 34), 2026-10-10.**
+     Under the system's reduce-motion hint Atlas keeps its calm CSS loops (an
+     earlier decision, `08-consistency.css:5056`): 1,579 style recalcs a
+     minute. Decision 7 says reduced motion keeps poses without loops.
+     Recommendation, taken: decision 7 wins; the system hint and the app's
+     own Reduce setting both stop every loop and keep the pose. Owner: Brief
+     34 continues (companion2).
+804. **The owner, 2026-10-11, verbatim.** "there are more backups than my max
+     set number of 3, this console line's border clashes with the line above,
+     also these buttons and ui in the documents editor need to be fixed in
+     their design and height and stlying etc." (screenshots: four backups
+     under "Keep this many backups 3"; the Python console's `>>>` input with a
+     focus border meeting the rule above; the document assistant's
+     suggestion buttons over an "Ask about this code..." field and a send
+     button of another height). Backups fixed in b928a7d9c (every start
+     prunes to the number). Owner: grammar57 (the console line and the
+     assistant's field, send and suggestions, in the button grammar).
+807. **The owner, 2026-10-11, verbatim.** "it isnt really clear exactly what
+     these were for" (screenshot: Where your data went, rows such as
+     "huggingface.co (2600:...:443) The internet, Optional downloads,
+     connected 4 times"). Owner: the transparency agent: each destination
+     says what it fetched or sent (the model or file name, the search
+     words) and why, the address behind a disclosure.
+808. **The owner, 2026-10-11, verbatim** (a log): Agent mode calls
+     `ask_user` with one option three times ("ask_user needs at least 2
+     different options"), calls `search_notes` with no query on "NOTEBOOK
+     STATS", searches `'what is there about a gaming mouse?\\'` with the
+     backslash kept, "can you search the web?" finds 0 notes via none, and
+     "Grammar check off for this session: the grammar worker did not start".
+     Owner: noagent (the agent's calls and the query clean-up); the grammar
+     worker to grammar57.
+903. **The owner, 2026-10-11, verbatim.** "alright lets rename and
+     retrademark to Tessellate update absolutely everything including all
+     the documentation and the pages site. make sure to still note the
+     former name though." Placed: the rebrand agent (agent/rebrand-1011):
+     step 1 the brand (`scripts/rebrand.py`, re-run after every merge;
+     `tests/test_brand_name.py`), step 2 the internal identifiers with
+     fallbacks for existing installs, as its own last commit.
+
+1297. **Owner review, from the ledger (tagsearch-1011).** Read
+     `src/tessellate/ai/data/taxonomy/memorymap_everyday.json` (about 630 general
+     words added to 23 pack topics; the pack file is untouched) and say keep,
+     trim or drop. Recommendation: keep; no model it files 0.417 to 0.617 on the
+     120 notes and 0.458 to 0.667 on 48 held-out ones (`tests/test_everyday_vocabulary.py`).
+     Decision (away run, 2026-10-18, standing order 2.3: the recommendation is taken): keep. Fixed.
+     Placed: WORLD_CLASS_PLAN 23 step 6.
+
+812. **The owner, 2026-10-11, verbatim.** "also the composer in the ask tab
+     and structuring of sentences and outputs needs to be cleaned up a lot. it
+     still looks messy. and the response feels, plain, boring, lifeless, and
+     doesnt give me anything more. I may as well just read the notes I made on
+     the right. the composer needs to be better but I dont know how and you
+     keep saying youve improved it but i still cant see much. I feel like Im
+     going in a loop 😞 also the first time I use the ask subtab search after
+     loading up the app, the badges next to the sub headers on each column are
+     visibly empty" (screenshots: Ask, "What have I saved about courses &
+     study?": quoted fragments with a bar, a superscript and "[your note, 27
+     July]" each, then "Grounded in" chips and "4 of 4 from your notes" that
+     repeat the right column; the corner Atlas drawn over "You asked"; empty
+     badges beside "Atlas" and "Matching records" while loading). Read: the
+     answer quotes, it does not answer; three citation marks per line; the
+     sources shown three times. Placed: CHAT_PLAN decision 70 (the answer is
+     judged against written gold answers, not rule counts), first in the
+     assistant brief; the empty badges and Atlas over the answer to ownerfix.
+     **Fixed 7976f0e, b9b13b7 (chat-1018).** The answer answers (gold 1 scores
+     99 live; one mark a paragraph, no chips, no "4 of 4"), reads a topic whole
+     and works out a day, a count and a list; live gold mean 76 to 87; the empty
+     badges and the Atlas overlap: 0 of 40 frames at 1440, 1024 and 390.
+
+## Moved from the plans, 2026-10-18 (graph-1018)
+
+Built by the graph-1018 agent (GRAPH_PLAN open work; the audit table is `agent-remaining/graph-1018.md`).
+
+- **VC11, D3 hierarchy layouts as a category overview.** The Layout picker's Treemap (`layoutTreemap`, graph.js; `gcDrawTreemap`, graph-canvas.js): one rectangle per category with its area in proportion to its notes, each note a dot in a cell of it, no lines (the rectangles are the filing), the fit framed by the rectangles (`gcTreeFrameNodes`), the dot kept inside its cell. Measured: `tests/test_graph_treemap.py` at 1,000 notes in six categories, worst area error under 1% and layout under 100 ms; in the app (`scratchpad/ui-sweeps/graphtreemap1018.js`, 200 notes, 8 categories, 1440x900): worst area error 0, 200 of 200 dots inside their rectangle, 0 overlapping dots, 0 dots larger than their cell, 0 category headers under the minimap, panel or zoom strip, 1,000 notes laid out in 1 to 4 ms, 0 console errors. `tests/test_vendor_utilisation.py` d3 floor 19 to 20. Help: the Layout list, the map's help panel and the Guide's graph topic name it.
+- **The graph is idle at rest.** `scratchpad/ui-sweeps/graphrest1018.js`: draws 31 to 60 a second for the first 6 s after the tab opens (the by-design settle), then 0 draws, 0 layouts, 0 script ms and 0 long tasks for as long as it is left.
+- **`/graph` at 5,000 notes.** `scratchpad/kg1005_graph_bench.py`: cold 1,133 ms, warm 113 ms, 3,299 KB (slim 1,920 KB, warm 86 ms); a warm call is a cache hit whose cost is `_payload_key` (136 of 186 ms profiled: ORM column loads 75, sqlite fetch 29, repr 22). Nothing built: a cheaper key would read through Core, which skips the space filter.
+- **Topic plates seated** (B71, INBOX 904): `gcSeatTopicPlates`; plates overlapping 1 to 0, plates on a dot 10 to 0 (`graphtopics1018.js`, 200 notes).
+- **A dragged note's neighbours follow it** (graph100-1011's open item): `carryForce` and `FOLLOW_PULL`, graph-worker.js; in the app neighbours moved 0.28 of the drag distance before and 0.48 after, 0.28 and 0.40 once settled (`graphdrag1018.js`).
+- **Hover at 2,000 notes.** `scratchpad/ui-sweeps/graphhover1018.js` (40 hovers over the fitted map, 161 draws): `gcDraw` median 4.4 ms, p95 8.9, max 16.8. The 22 to 24 ms recorded in graph100-1011.md was a wall frame with the browser's own raster in it; the app's draw is inside the 16 ms budget.
+
+## Moved from the plans, 2026-10-18 (chat-1018: CHAT_PLAN open from Phase 6, probes P10 to P13)
+
+From CHAT_PLAN, "Open from Phase 6", as it stood:
+
+> - Probe P10, P11, P13, P15, P16 (`agent-remaining/engine-probe-1010.md`): days until a note's date, mention counts, every date and what is due, lead-ins chosen after the parts, a note's open checklist items.
+> - Probe P12: a list filtered by category or tag ("list my work notes").
+
+Built, judged against the decision-70 shape and measured:
+
+- **Computed answers** (`ai/composer_lists.py`, called from `composer_digest._early`): "how many days until the dentist" (one sentence from the note's own day, cited), "is the dentist before the boiler service" (both days, both cited), "how many times did I mention Porto" (count, notes, span, four lines), "list my work notes" or "everything tagged launch" (every note filed there, newest first), "what is due this week" and "what are all the dates in my notes" (the days in the notes, soonest first; an empty window says so and names the next day, none ahead says so). A day or word no note holds is never invented: the shape returns nothing and the engine's own not-found answer stands.
+- **The pool** (`ai/list_pool.py`, `routes_chat._prepare`): the notes filed under the name (up to 300), every note that holds the word, the newest 300 with a digit; a word no note says now answers with no near-miss quote. Ask reads a list or a count as the question it is (`routes_chat._forced_notes`): it used to answer "That is something to do (find a note)" for "list my work notes". The digest answers "all the dates" although Ask searches it newest first (`_may_digest`).
+- **Measured**: `tests/test_composer_lists_1018.py` (20 tests, four through the route); live gold mean 87 before and after (the shapes touch no gold question), live "how many times did I mention Lisbon": "You mentioned Lisbon twice, in 2 notes, 30 August to 20 September." with two marked lines; "what are all the dates in my notes" on a notebook with no day ahead: "I found no day ahead in your notes." Not verified: a real model with these (decision 75 keeps it answering), the dentist, Porto and boiler notes in the live notebook (the demo notebook has none; they are the in-process fixtures).
+- Still open, kept in the plan: P15 (the lead-in chosen after the parts).
+## Moved from the plans, 2026-10-18 (whiteboard-1018, built Placed blocks)
+
+From WHITEBOARD_PLAN "Placed from INBOX, 2026-10-07 (next PR)" and "Placed from INBOX, 2026-10-11 (fit a frame to its contents)". Both were found built by the audit in `agent-remaining/whiteboard-1018.md` (each item's code comment cites its INBOX number; tests `test_wb_rotate_links.py`, `test_wb_clone_grips_follow.py`, `test_wb_guides.py`, `test_wb_pages.py`, `test_wb_line_ends.py`). Text kept verbatim.
+
+## Placed from INBOX, 2026-10-07 (next PR)
+
+740. **The owner, 2026-10-06, verbatim**, with an OKR board from the new templates
+     (frame titles "Objective one", hints "A goal worth the quarter") and a rotated
+     sticky note: "I cant edit the text under the titles in these objects?I rotated
+     an object int he whiteboard (a sticky note) and the arrows jsut off the middle
+     of each edge didnt rotate with it". Two bugs: the template frames' hint line
+     (INBOX 715's `hint` field) has no edit path, double-click should edit it like
+     the title; the quick-connect arrows beside each edge stay axis-aligned on a
+     rotated object, they must sit off its rotated edges.
+     Then, verbatim: "also the arrow head styles in the whiteboard have no
+     variations, not different arrow heads". Connector ends need a set of heads
+     (none, arrow, open arrow, triangle, circle, diamond, bar), per end, in the
+     connector toolbar.
+
+746. **The owner, 2026-10-07, verbatim**, with a board made from the flowchart
+     template (Start, Do the first step, Did it work?, Try again, End) after
+     dragging its shapes apart: "while dragging shapes, the arrows and lines dont
+     move with". The template's connectors (frontend/board-library/templates.json;
+     shapes carry a `key`) stayed where they were drawn: either they are created
+     as free arrows with fixed ends instead of connectors bound to the shapes'
+     keys, or the binding is lost when the template lands
+     (`/board-library/new-board`). Next PR: every template connector is bound
+     at both ends, a drag of a bound shape moves its connectors live, and a
+     test drags each built-in template's shapes and checks every connector
+     still meets its shapes. With 740 (arrows on rotated shapes).
+
+747. **The owner, 2026-10-07, verbatim**: "also in the whiteboard and mindmap,
+     there's no way to reset a object back to default style". No such action
+     exists (grep "Reset style" in whiteboard*.js finds nothing; a map topic's
+     Text, Shape and Branch panels each have their own reset arrow, INBOX 670,
+     but nothing resets the whole object). Next PR: "Reset style" on every
+     object's floating bar menu and right-click menu, and for a multi-selection:
+     colour, fill, stroke, text size and weight, shape and line style back to
+     the kind's defaults (a map topic back to following the map), content and
+     position kept, one undo step, in the command palette as a board command,
+     help text updated.
+
+- **The edge arrows also ignore resize and drag** (the owner, 2026-10-07,
+  verbatim: "can you fix the edge arrows and line arrows not moving or
+  rotating with the objects??", "the arrows dont resize either", with a
+  resized text box whose side triangles stayed at its old size). With 740:
+  the triangles outside each side of a selected object sit just outside the
+  midpoint of each edge of its current box, rotated with it, updated live
+  during drag, resize and rotate; bound connectors follow the same way (746).
+  Measure with getBoundingClientRect after each of the three.
+
+
+## Placed from INBOX, 2026-10-11 (fit a frame to its contents)
+
+INBOX 821, the owner, verbatim: "can you add the ability to double tap a resize anchor to resize that edge or the whole frame to snugly fit all the content in it with a comfortable margin??" (screenshot: "Frame 1" far larger than its cards, sticky, sketch and links). Not built (no fit in `whiteboard*.js`). Target: double-click or double-tap an edge handle and that edge moves to the contents' bound plus a 32-unit margin; a corner handle fits its two edges; "Fit to contents" on the frame's menu fits all four. The contents are the items the frame holds (`wbFrameContents`), links' curves included. A frame holding nothing does not move. One Undo step; the move animates in 150 ms (instant under reduced motion). Gate: after fitting each edge, the gap is 32 ± 1 units at 1440 and 390, and nothing the frame held falls outside it. Help moves with it. Owner: the mapfix agent.
+
+INBOX 822, the owner, verbatim: "I cant rename frames in the pages sidebar" (screenshot: Pages, row "1 Frame 1" with only a present icon). Target: double-click or F2 on a page row renames the frame inline (the same one-line editor as a frame's title on the canvas, Enter to keep, Esc to cancel, one Undo step); the row's kebab (row actions recipe) holds Rename, Fit to contents, Present from here and Delete; the canvas title updates live. Owner: the mapfix agent.
+
+INBOX 823, the owner, verbatim: "these popups overlap" (screenshot: the line tool's kind popover, line or arrow, drawn under its own options bar, Size, Plain, Solid, which crosses it). Target: one tool's options are one surface: the kind choice joins the options bar as its first segment, or the popover opens above the bar with no intersection (measured, 0 px at 1440 and 390).
+
+INBOX 824, the owner, verbatim: "why are some elements highlighted blue in the sidebar but not others?? is it because they are in the frame??" (screenshot: Layers, five rows tinted, three Drawing rows plain). Read: the tint is the canvas selection (`aria-selected`, `wbRenderLayers`), and nothing on the panel says so. Target: the panel's head says "4 selected" with Clear; a selected row wears the list recipe's selected state (accent bar and tint), distinct from hover; items a frame holds nest under the frame's row (indented, collapsible), so "in the frame" is shown by place, never by colour. Owner: the mapfix agent.
+
+INBOX 825, the owner, verbatim: "also idk why that show less button is there, all the text is showing. but also I think notes and their content should be dynamic in sizing with the show more or less hyperlink showing or not based off how the note is sized, same with the size of images and files in a note and also the note should be freely sizable and shouldn snap to a size, maybe could have guided snaps?? idk this is all in the mindmap and whiteboard" (screenshot: a note card "Current Commitments" with all its text shown and "Show less" under it). Target, boards and maps alike:
+1. "Show more" shows only when the card's content overflows its size, measured by `scrollHeight > clientHeight` after layout and re-measured on resize. "Show less" shows only after a person expanded a card that overflowed. A card that fits shows neither.
+2. Cards resize freely, to any width and height: no snap to preset sizes. Guided snaps instead, while dragging: to a neighbour's width or height, to the grid when the grid is on, and to "fit content". A guide line shows each one. Alt holds them off.
+3. Images and files in a card scale with the card's width: images keep their ratio up to the card's width, and a file chip is one line that truncates its name.
+4. A double-click on a card's resize handle fits the card to its content (the same gesture as a frame's fit, INBOX 821).
+Gate: 0 cards with a stray Show more or Show less on the owner-shaped fixture at 1440 and 390; any width from 120 to 1200 units is reachable by drag. Owner: the cards agent (Sonnet, queued after mapfix).
+
+## Moved from the plans, 2026-10-18 (whiteboard-1018)
+
+From WHITEBOARD_PLAN "The draw.io programme", section 2 (Text tab), built by the whiteboard-1018 agent.
+
+- **Text tab: Font, underline, strikethrough.** The Format panel's Text tab gains a Font list (default, serif, monospace, wide sans, handwritten: `WB_ITEM_FONTS`, the map's three stacks and one more, stored by name so no CSS arrives from a client) and underline and strikethrough beside bold and italic (the row's label is now Style). A text box keeps `underline`, `strike`, `font_family` on its object data (named in `WhiteboardObjectData`, face pattern `^(serif|mono|wide|hand)$`); a shape keeps `label_underline`, `label_strike`, `label_font` in its sketch data, drawn as inline `text-decoration` and `font-family` on the label so the export's cloned SVG keeps them, and the label's wrap key now includes the face and weight (a mono face re-wrapped the words). Reset style takes the three off. "Clear text formatting", "Make the text larger" and "Make the text smaller" are board commands (palette rows, one undo step across the selection, `wbClearTextFormat`, `wbStepFontSize`). Measured (a scratch sweep, 1440 and 390): 11/11 each; text box `underline line-through` and a monospace face, stored on the row and on the server, one Ctrl+Z puts the face back; a shape label underlined, mono, re-wrapped; larger steps 16 to 18; clear drops underline, face and size and keeps the words; the four controls inside the panel at both widths. Tests: `tests/test_wb_text_tab.py`. Not verified: a real draw.io file's font family on import, the PNG export of an underlined text box (the SVG path keeps the inline style).
+- **Style tab: Dashes, Corners, Flow.** Three rows on a shape, a line, an arrow and a connector (sketch data, which the server keeps opaque): `dashPattern` (a typed "8 4", one to six numbers of at most 200 in line widths as draw.io reads them, so width 3 draws "24 12"; a bad one is refused with a toast and the field returns; it wins over the Pattern list), `round` (0 to 80, `wbRoundedPathD`: every corner of an M, L, Z path becomes a quadratic curve held to half of each side; the drawn line only, as the hand-drawn look is, so the hit band, ports and label keep the true shape; a path with a curve is left alone, and a connector rounds only its line, never its arrowhead subpaths; the Corners row hides for an ellipse) and `flow` (`wbSetFlowAnimation`: a Web Animation of the dash offset, one loop per dash pattern, kept on the path and replaced only when the period changes; a flowing line with no dashes of its own takes the dashed look; still under the OS hint and both of the app's motion switches; the export clones attributes, so it draws the dashes still). Copy style and Reset style know all three. Measured (a scratch sweep, 1440 and 390): 16/16 each; a 200 x 120 rectangle rounded by 14 has 4 curves, the same 200 x 120 box and a hit band still square; "8 4" draws "24 12"; flow runs one animation of period 36 and the offset moves in 300 ms; with the OS hint and a render it holds still; one Ctrl+Z turns the flow off; an elbow connector with an arrow end rounds its line and keeps its head subpath. Tests: `tests/test_wb_style_tab.py` (the pure functions run in node). Not verified: a real draw.io file's `rounded` and `dashPattern` on import, the export's PNG of a rounded shape (the SVG path keeps the rounded `d`), a board of hundreds of flowing lines (each is a running animation).
+- **Style tab: Gradient and Fill style.** Two rows on a closed shape (sketch data, opaque to the server): `gradient {to, dir}` (a second colour and Down, Up, Right, Left or Radial, drawn as a `linearGradient` or `radialGradient`) and `fillStyle` (hatch, cross-hatch, dots, dashes, zigzag: a `pattern` of lines or dots in the fill colour over a faint tint). Both are painted through `wbSyncFillDefs`, a `<defs class="wb-fill-defs">` kept inside the shape's own group (id `wbg-<sketch id>`, rebuilt only when its key changes, built with `createElementNS` from `wbFillPatternSpec` so nothing is interpolated into HTML), so the export, which clones each group, carries the paint server with the path and the picture keeps what the board shows. The two are alternatives (one choice clears the other); choosing either on an unfilled shape fills it first, and taking the fill off clears both. A patterned fill or a gradient whose ends disagree keeps the theme ink for the label (`wbShapeLabelInk`). Copy style and Reset style know both. Measured (a scratch sweep, 1440 and 390): 21/21 at 1440 (all five patterns paint; Down renders red at the top and blue at the bottom, Right red left and blue right, Radial red centre and bluer edge, read off screenshots; the export SVG carries the gradient and its `url(#wbg-)`; one Ctrl+Z steps Right back to Radial; None, fill off and Reset style drop the defs) and 18/21 at 390 where the three failures are the pixel reads, which land on the open Format sheet (the same gradient read 245,0,9 at the top and 11,0,243 at the bottom with the sheet closed). Tests: `tests/test_wb_fill_styles.py` (the pure functions run in node). Not verified: a real draw.io file's `gradientColor` and `fillStyle` on import, the PNG export of a patterned fill (the SVG path keeps the defs), the pattern's look at a very high zoom.
+- **Commands: select, turn, group, size, grow, reverse.** Eight rows in `WB_COMMANDS` (so the palette, the menus and the shortcut sheet all offer them; none takes a key, since draw.io's Ctrl+R is the browser's reload): Select all shapes and Select all connectors (`wbSelectAllOfKind`; shapes are closed shapes, text boxes, notes and pictures, never a line, a pen stroke or a connector; locked and hidden items stay out of reach), Turn 90 degrees (`wbTurnSelection`: a card, text box or picture takes 90 more on `rotation`, a drawn shape has its path turned about its own centre, a connector follows its ends), Remove from the group (`wbRemoveFromGroup`: the selected members leave, and a group left with one member is dissolved), Copy the size and Paste the size (`wbCopySize`, `wbPasteSize`: one item's width and height onto every selected item), Grow to fit the words (`wbAutoSizeSelection`: a shape taller, or wider for one long word, until its label fits its label area, by `wbAutoSizeFactors`; a text box or note taller until its words are not clipped; never shrinks) and Reverse the connector or arrow (`wbReverseSelection`, `wbReversedLinkFields`: both ends, their anchors and free points, the two cap marks and sizes, the bends in the other order, a curve's bow and the label's place along the line; a drawn arrow regenerates its heads swapped). Each is one undo step (`wbRecordGesture`). The Format panel's selection (`wbFmtEntries`) now keeps the connectors of a selection of many, which the arrange maths still leaves out, so Select all connectors and then a line colour reaches every connector. Measured (a scratch sweep, 1440 and 390): 25/25 at both widths; the shapes selection is the two shapes and the text box, the connectors selection exactly the two connectors, and one line colour recolours both; a 200 x 120 rectangle turns to 120 x 200 about its centre and a text box takes rotation 90, one Ctrl+Z turns both back; paste size puts 200 x 120 on a shape and a text box and one Ctrl+Z puts them back; a 120 x 40 shape with a long label grows taller until its words sit inside it and a second run changes nothing; a text box of seven lines grows from 40 to 176 until nothing is clipped (at phone width `wbCardFitHeight` read the clipped 38, so a text box is measured from its words' own scroll height); reverse swaps ends, caps, sizes and puts a label at 0.25 on 0.75, and a curved connector keeps its curve; removing one of three members leaves two grouped, removing a second dissolves the group, Ctrl+Z restores it. Tests: `tests/test_wb_draw_commands.py` (the connector swap and the grow factors run in node). Not verified: a map cross-link through Reverse (the map has its own `wbMapReverseCrossLink`; the new row only swaps what a connector row holds), a rotated or flipped path through Grow to fit (the factor is read off the unrotated label area), a self-loop side (none is drawn).
+- **Connectors: jump size, gaps, clear bends.** Three rows on a connector (its data, which the server keeps opaque): `jumpSize` (2 to 40, empty is automatic, four more than the width as before it had a size; `wbJumpSize` feeds `wbLineJumpsD`), `gapStart` and `gapEnd` (0 to 60, draw.io's perimeter spacing: `wbLinkGap` rides on `wbLinkShape`, and `wbGapEnds` holds each end off its shape along the line for a straight run and along the way the end leaves its shape for a curve or an elbow, after a floating elbow end has settled on its side; a free point has no shape and stays; two gaps on a short line are capped at 45 percent of its length each so they never cross), and a "Clear the connector's bends" command (`wbClearWaypoints`, on only while a selected connector has `points` or a `bend`). The hit band and the line jumps read the gapped line, since both come from the drawn path; the end grips stay on the shape's edge. Copy style and Reset style know all three. Measured (a scratch sweep, 1440 and 390): 17/17 at both; gaps of 12 and 20 shorten a straight run by exactly 12 and 20 along itself, an elbow's start moves 15 along the way it leaves, a curve's end is held off by 10; the hop reads radius 7 by default (4 plus width 3), 14 at jump size 14 and 7 again when emptied; clear bends removes the bend and one Ctrl+Z puts it back; Reset style clears the gap. Tests: `tests/test_wb_connector_spacing.py` (the pure functions run in node). Not verified: a gap on a connector with a self-attached end, the export's PNG of a gapped connector (the SVG path keeps the drawn `d`), a gap with a flowing or rounded line on one connector together.
+- **Find: Whole word, Pattern, data values; placeholders; tooltip.** The board's find bar gains two pressed-state toggles built on first use (`wbEnsureSearchOptions`, after the field): Whole word and Pattern (a regular expression). `wbSearchPattern` is the one pure builder find and replace now share (literal text is escaped; whole word is a lookaround, not `\b`, so "c++" can still be a word; case never matters; `^` and `$` work per line; a bad pattern reads "Not a valid pattern" in the count and a pattern that matches empty text is refused, neither throws); `wbReplaceText` takes the options and a pattern takes `$1`, `$&` and `$$` while literal replace keeps `$` literal; Replace all with a bad pattern changes nothing. Find also reads an item's data values (`wbPropsText`: shape, connector and text box `props` values, not names). `%name%` in a shape's or connector's words draws that item's own value of `name` (`wbExpandPlaceholders`; an unknown name stays as typed; the stored label keeps the marks so editing shows them and the export carries the drawn text; `%date%` and `%page%` are not built). A shape or connector takes a Tooltip (Data tab, `data.tip`, 200 characters), drawn as a native SVG `<title>` (`wbSyncSketchTip`, run once per sketch so neither painter strips the other's). Also: `wbFmtShowMixed` now returns a text field's own hint after a mixed selection (Jump size's "Auto" was wiped by the number branch), and at 819px and under the find bar wraps to two rows and rises over the selection bar (a match on a shape raised that bar across the find bar's buttons: measured, the Whole word button was covered at 390). Measured by Playwright at 1440 and 390 (27 of 27 each): find counts 3 for "cat", 2 with Whole word (drops "concatenate"), 1 for a value ("sam", "ops"), 1 for `v\d+`; "(" in Pattern reads "Not a valid pattern", off it is "No matches"; `v(\d+)` to `build $1` rewrites "v12 and v7" to "build 12 and build 7" and one Ctrl+Z restores it; a label with `%owner%` draws the value and changing the value in the Data tab redraws it; the tooltip title appears, survives a re-render and one Ctrl+Z removes it; at 390 the bar sits inside the window (16 to 374) with a 166px field and 44px toggles. Tests: `tests/test_wb_find_options.py` (the pure functions run in node), `tests/test_wb_find_replace.py` (extraction updated for the shared builder). Not verified: Replace on a card (still a note), "all frames" scope, a tooltip in the exported SVG opened in another viewer, a very large board's find with a heavy pattern (no timeout guard), the native tooltip's delay on a touch screen (none).
+- **Export: JPG, WebP, Copy image.** Three rows in the export dialog's format list (`WB_EXPORT_FORMATS`, each with `picture: true` so the dialog reads Size and ground from the row rather than from a name list). `wbExportPicture(scope, kind)` draws the PNG's picture through `wbRasterizeSvg` (now taking a `quality`) as `image/jpeg` or `image/webp` at 0.92 (`WB_EXPORT_PICTURES`), named after the board with `.jpg` or `.webp`; JPG always draws the board's ground and the dialog hides the transparent-ground box for it (`noAlpha`); a browser that returns another type (WebP in Safari's canvas) gets a refusal that says to export a PNG rather than a PNG named `.webp`. `wbExportCopyImage` writes the PNG to the clipboard (`ClipboardItem` given the rasterise promise so the click's permission is not spent while the board is drawn) and says "Export a PNG instead" where the API is missing; Ctrl+K "Copy as an image" (`wbCopyAsImage`: the selection if there is one, else what the canvas shows, errors said in a toast). Measured by Playwright at 1440 and 390 (13 of 13 each): the format row shows JPG, WebP and Copy image inside the dialog (no overflow at 390); JPG hides the ground box, WebP and Copy image keep it; the files' first bytes are FFD8FF and RIFF....WEBP, named `.jpg` and `.webp`; PNG still exports; the JPEG's corner pixel is within 8 of the PNG's and the sizes match; Copy image and the command each leave `image/png` of more than 200 bytes on the clipboard. Tests: `tests/test_wb_export_formats.py`. Not verified: WebP on Safari or Firefox (Chromium only), the clipboard write on a non-secure origin or with the permission denied (the refusal text is code-read), a very large board's JPG (the canvas limit), JPG quality 0.92 against the PNG's size on a photo-heavy board, copy as SVG and GIF (open).
+## Moved from the plans, 2026-10-18 (mindmap-1018)
+
+- **Expand from my notes** (MINDMAP_PLAN 12.3 item 2, the features audit Phase G). `POST /whiteboard/boards/{b}/nodes/{n}/expand` (`expand_from_note`, routes_map_suggest.py): for a topic that is a note or document, its headings (`utilities.outline`, levels 1 to 4, the title heading and fenced code skipped, at most 8) then the notes it links to (outgoing first, then incoming; not deleted, private, a board, already on the map or already a child), at most 12, each with `note_id`, `note_title` and `kind` heading or link; writes nothing and needs no model. A plain topic is refused with 422 naming Branches from my notes. The client reuses the Branches picker (`wbMapBranchPicker`, now shared) and its add (`wbMapAddChosenBranches`, one Undo step); rows: node menu Add group (only on a note topic, `wbMapIsNoteTopic`), command `expand-from-note` (needs `notetopic`), Guide topic `mind-map-import-export`. `tests/test_map_expand.py` 8 tests. Measured on port 8795 (a sweep, removed): 12/12 at 1440 and at 390: Add group has the row on a note topic and not on a plain one, picker 3 rows (2 headings, 1 link) with "A heading in" and "A note it links to", dialog 536x548 at 1440 and 340x607 at 390 inside the window, preview wrote 0 topics, Add made 2, one Ctrl+Z took both back.
+- **Study: the note behind a topic as the answer** (MINDMAP_PLAN 12.3 item 5). `wbMapStudyQuestions` appends, after the branch questions and in map order, every topic with a non-blank note that is not a branch question and not under one (such a topic is hidden until its branch is shown, so it has no box to walk to); `{id, hides: [], answer}`. `wbMapStudyShown(q)` and `wbStudy.revealed` say whether a note answer is on screen; Show reads it out in the bar. The bar caption moved into `wbPresentCaption`, run before the frame is fitted: a caption the width would cut takes its own line above the buttons (`flex: 1 0 100%`, up to 9em then scrolls), whole on hover. `tests/test_map_study.py` 12 tests. Measured on port 8795 (a sweep, removed): 12/12 at 1440 and at 390; at 390 the question caption was cut to 90 px before and a 130-character answer is whole in a 264 px bar (6 buttons on two rows) with the asked topic bottom 313 above the bar top 567; at 1440 one line, 715 px wide.
+- **The resize grip no longer shrinks the text while it drags** (OPEN 814, two of mapstrip.js's five base failures). `wbMapStartResizeDrag` started from `WB_MAP_TEXT_DEFAULT` (14) instead of the drawn size, so on the first pixel it cleared the inline `font-size` of a topic whose 17px came from its level or the map theme: 17px, 13.6px while dragging, 17px on release (a 17 px topic, measured live). It starts from `data.font_size`, else the inline size, else the computed size, and an unscaled drag hands the inline size back. `tests/test_map_resize_font.py`; `mapstrip.js` 40/43 to 42/43 (the grip and Shift checks pass; "each of the four shapes" is the base's: a filled topic keeps its fill when it is made plain, `.wb-map-filled` after `[data-shape="none"]` at equal specificity, not decided here).
+
+## Moved from the plans, 2026-10-18 (left-1018: the 820 strip, the stale map sweeps, "what is due" in Ask)
+
+- **The map strip no longer covers a line handle at 820 wide** (MINDMAP_PLAN 13, "Not verified"). `wbMapStripClearOfHandle` tried the handle's left, its right and under the topic; at 820x1100 `tree-right` a short topic left 5 px too little room on the right and the strip stayed on "Branch 1"'s handle (strip 217 to 628 by 203 to 245, handle 385 to 399 by 199 to 213). A fourth candidate, straight under the handle (`[left, hy1]`), and a check that no candidate falls below the canvas. `mapstripcover.js` at 1440, 1024, 820 and 390 over four layouts: 1 of 192 handles covered to 0 of 192 (it now prints the three rects of a failure).
+- **Three stale map sweeps refreshed, one real bug found by them** (`maptheme.js` 22/24 to 24/24, `mapnarrow.js` could not start to 3/3 at 390 and 1440, `mapstrip.js` 42/43 to 43/43). maptheme: a topic that follows the map shows the blank row and draws the themed shape (OPEN row 1370), and the dialog has twelve selects and three switches. mapnarrow opens a new map from `#wb-boards-new-map` (the template-name dialog is gone). mapstrip: a Plain topic keeps its fill (fill is its own choice and `.wb-map-filled` is drawn after `[data-shape="none"]`); the sweep now says so. Real: at 390x844 the fold chevron (z-index 4) sat under the corner grip (5) of a topic zoomed to 28 px tall, so a press on the chevron started a resize; the chevron is above the grip (6), and mapnarrow's "a press on the chevron reaches the chevron" passes.
+- **"What is due this week" in Ask answers from the notes' days when Reminders has nothing** (CHAT_PLAN Phase 6 P13). Measured on the running app, no model: it said "You have no reminders waiting." over three notes that name days, because the read-tool path (`_tool_read_events`) took the question before the computed answer. `_notes_answer_due` (routes_chat.py) lets the notes win when the question is a "dates" kind, no reminder is waiting, and `composer_lists.holds_days` finds a day ahead in the notes; a waiting reminder still wins and a notebook with no days still says there are no reminders. Underneath it: the route's notes carry `written` words and no ISO `created_at`, which the fact graph anchors on, so `composer._days_named` found no day in them at all (the computed "days until", "before or after" and "what is due" answers were empty through the route); it now hands the day the composer already read to the fact graph, as `_insights_for` does. `tests/test_due_in_ask_1018.py` 4 tests on a fixed clock.
 

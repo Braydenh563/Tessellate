@@ -23,7 +23,7 @@ FUNCTIONS = (
     "wbArrowHeadPath", "wbHollowInset", "wbShaftEnd", "wbCapPath", "wbElbowSide", "wbElbowCrosses", "wbElbowLeg", "wbElbowDetour",
     "wbElbowRoute", "wbElbowFloat", "wbElbowEnds", "wbElbowPathD", "wbPolylineAt", "wbLinkPathD",
     "wbLinkShape", "wbCurveThroughSegs", "wbCubicAt", "wbCurvePathD", "wbWaypointInsert",
-    "wbLinkWaypoints", "wbLinkDrawnLine", "wbSegmentCross", "wbLineJumpsD", "wbShaftPoints",
+    "wbLinkWaypoints", "wbLinkGap", "wbLinkDrawnLine", "wbSegmentCross", "wbLineJumpsD", "wbShaftPoints",
 )
 
 
@@ -95,7 +95,7 @@ def test_caps_follow_the_last_run_of_a_bent_line() -> None:
 def test_a_line_without_waypoints_draws_as_it_always_did() -> None:
     assert _node('wbLinkShape({type: "link-curved"})') is None
     assert _node('wbLinkShape({type: "link-straight", points: []})') is None
-    assert _node('wbLinkShape({type: "link-straight", route: "elbow"})') == {"route": "elbow", "points": []}
+    assert _node('wbLinkShape({type: "link-straight", route: "elbow"})') == {"route": "elbow", "points": [], "gap": None}
     assert _path("link-straight", []) == "M 0 0 L 300 0"
 
 

@@ -38,7 +38,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.core import deps, events
-from tessellate.core.database import Entry, WhiteboardObject
+from tessellate.core.database import Entry, EntryLink, WhiteboardObject
 from tessellate.core.deps import get_session
 
 router = APIRouter(prefix="/whiteboard", tags=["whiteboard"])
@@ -183,6 +183,115 @@ def suggest_branches(board_id: int, node_id: int, db: Session = Depends(get_sess
         if len(out) >= SUGGESTIONS:
             break
     return {"topic": topic, "suggestions": out, "source": source, "reason": reason}
+
+
+#: **Expand from my notes** (MINDMAP_PLAN 12.3 item 2, Phase G). A topic that is
+#: a note, grown one level from that note itself rather than from a search: its
+#: headings, then the notes it is linked to. Nothing to rank and nothing for a
+#: model to invent, so it is the same with no model running. Headings first, at
+#: most `EXPAND_HEADINGS`, so a long note does not crowd its links out.
+EXPAND_HEADINGS = 8
+EXPAND_MAX = 12
+
+
+def _title_of(text: str) -> str:
+    from tessellate.entry import manager
+
+    return (manager.extract_title(text) or text.strip().split("\n")[0] or "Untitled").strip()[:100]
+
+
+def _refs_on_map(db: Session, board_id: int) -> set[int]:
+    out: set[int] = set()
+    for obj in db.scalars(select(WhiteboardObject).where(WhiteboardObject.board_id == board_id)):
+        try:
+            ref = json.loads(obj.data or "{}").get("ref_id")
+        except (TypeError, ValueError):
+            ref = None
+        if ref:
+            out.add(ref)
+    return out
+
+
+def _note_behind(db: Session, node: WhiteboardObject) -> Entry | None:
+    try:
+        ref = json.loads(node.data or "{}").get("ref_id")
+    except (TypeError, ValueError):
+        ref = None
+    # A document topic's ref_id is a Document id, not an Entry id.
+    entry = db.get(Entry, ref) if ref and node.kind == "note" else None
+    if entry is None or entry.is_deleted or entry.is_private or entry.is_board:
+        return None
+    return entry
+
+
+def _heading_suggestions(entry: Entry, title: str, have: set[str]) -> list[dict]:
+    from tessellate.ai.utilities import outline
+    from tessellate.entry import manager
+
+    seen, out = set(have) | {title.casefold()}, []
+    for heading in outline(manager.readable_content(entry), max_level=4):
+        words = heading["text"].strip()
+        if not words or words.casefold() in seen:
+            continue
+        seen.add(words.casefold())
+        out.append({"text": words, "note_id": entry.id, "note_title": title, "kind": "heading"})
+        if len(out) >= EXPAND_HEADINGS:
+            break
+    return out
+
+
+def _link_suggestions(db: Session, entry: Entry, board_id: int, have: set[str]) -> list[dict]:
+    """Linked notes, ones this note points at before ones that point at it."""
+    from sqlalchemy import or_
+
+    from tessellate.entry import manager
+
+    links = db.scalars(
+        select(EntryLink)
+        .where(or_(EntryLink.source_entry_id == entry.id, EntryLink.target_entry_id == entry.id))
+        .order_by(EntryLink.id)
+    ).all()
+    ids = [link.target_entry_id for link in links if link.source_entry_id == entry.id]
+    ids += [link.source_entry_id for link in links if link.target_entry_id == entry.id]
+    on_map, seen, out = _refs_on_map(db, board_id), set(have), []
+    for other_id in dict.fromkeys(ids):
+        other = db.get(Entry, other_id)
+        if other is None or other.id == entry.id or other.id in on_map:
+            continue
+        if other.is_deleted or other.is_private or other.is_board:
+            continue
+        title = _title_of(manager.readable_content(other))
+        if title.casefold() in seen:
+            continue
+        seen.add(title.casefold())
+        out.append({"text": title, "note_id": other.id, "note_title": title, "kind": "link"})
+    return out
+
+
+@router.post("/boards/{board_id}/nodes/{node_id}/expand")
+def expand_from_note(board_id: int, node_id: int, db: Session = Depends(get_session)) -> dict:
+    """What the note behind this topic holds that is not on the map yet: its
+    headings and its linked notes, and nothing written."""
+    node = _node_or_404(db, board_id, node_id)
+    entry = _note_behind(db, node)
+    if entry is None:
+        raise HTTPException(
+            status_code=422,
+            detail="Only a topic that is one of your notes can be expanded from it. Use Branches from my notes for any other topic.",
+        )
+    from tessellate.entry import manager
+
+    title = _title_of(manager.readable_content(entry))
+    children = db.scalars(select(WhiteboardObject).where(WhiteboardObject.parent_id == node.id)).all()
+    have = {_topic_text(db, child).casefold() for child in children}
+    found = _heading_suggestions(entry, title, have)
+    found += _link_suggestions(db, entry, board_id, have | {s["text"].casefold() for s in found})
+    return {
+        "topic": title,
+        "suggestions": found[:EXPAND_MAX],
+        "source": "note",
+        "reason": "note" if found else "nothing",
+    }
 
 
 class BranchItem(BaseModel):

@@ -710,8 +710,10 @@ async function timelineLoadMore(limit = TIMELINE_PAGE) {
     // page is what turns paging into a stutter, and the rows already on screen
     // have not changed. The table repaints, because its order is whatever
     // column it is sorted by and an append cannot know where a row belongs.
+    //: The calendar draws neither: its own read fills it, and the feed's
+    //: painter would write its count over the calendar's.
     if (timelineViewMode() === "table") paintTimeline();
-    else appendTimelineRows(fresh);
+    else if (timelineViewMode() === "feed") appendTimelineRows(fresh);
     drawTimelineScrubber();
   } finally {
     if (timelineRenders.pagingFor === render) timelineRenders.pagingFor = 0;
@@ -1884,6 +1886,7 @@ function drawTimelineScrubber() {
   });
   parts.push(`L 40 ${TIMELINE_SCRUBBER_HEIGHT}`, "Z");
   $("timeline-density-path").setAttribute("d", parts.join(" "));
+  lazyScript("/js/timeline-ticks.js").then((ok) => ok && timelineTicks());
   drawTimelineWindow();
 }
 
@@ -1899,7 +1902,6 @@ function drawTimelineScrubber() {
 const timelineOnScreen = new Set();
 let timelineRowObserver = null;
 function timelineWatchRow(el) {
-  if (typeof IntersectionObserver !== "function") return;
   timelineRowObserver ||= new IntersectionObserver((entries) => {
     for (const entry of entries) {
       if (entry.isIntersecting && entry.target.isConnected) timelineOnScreen.add(entry.target);

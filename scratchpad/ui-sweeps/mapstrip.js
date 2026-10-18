@@ -261,7 +261,10 @@ async function newBoard(page, name, type) {
   check("each of the four shapes is stored and drawn",
     shaped.pill.stored === "pill" && shaped.pill.radius > shaped.rounded.radius
       && shaped.rect.stored === "rect" && shaped.rect.radius === 0
-      && shaped.none.stored === "none" && shaped.none.fill === "rgba(0, 0, 0, 0)"
+      //: Plain takes the box and its edge away, not the fill: a fill is its own
+      //: choice (or the level's, decision 39) and `.wb-map-filled` is drawn
+      //: after `[data-shape="none"]`, so the tint the rounded one had stays.
+      && shaped.none.stored === "none" && shaped.none.fill === shaped.rounded.fill
       && shaped.none.spine === "rgba(0, 0, 0, 0)"
       && shaped.back.stored === null && shaped.back.shown === null
       && shaped.back.radius === shaped.rounded.radius,

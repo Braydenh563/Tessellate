@@ -153,6 +153,48 @@ const DRAG_ALPHA = 0.3;
 //: and the alpha only ever rises to it, so a release still decays.
 const DRAG_ALPHA_MIN = 0.04;
 const DRAG_FULL_DISTANCE = 90;
+//: **A dragged note's own neighbours follow it** (graph100-1011, "neighbours
+//: barely follow a drag": 20 to 50 of the 340 units the note in hand moved,
+//: because each neighbour's pull toward its category outweighed one link). For
+//: the length of a drag the notes it links to keep this share of their pull
+//: home and are off the tether, and a soft elastic (`carryForce`) draws each
+//: toward where it stood relative to the held note; on release both are gone
+//: and the layout settles them as before. Measured on the real worker (200
+//: notes in 7 categories, six notes of 4 to 6 links dragged 340 units and held
+//: 90 ticks): neighbours moved 102 of 340 before, 208 after; 156 against 81
+//: once settled after the drop. In the app (graphdrag1018.js, 200 notes, a
+//: 308 unit drag held 1.5 s): 0.28 of the distance before, 0.48 after; 0.28
+//: against 0.40 once settled (tests/test_graph_neighbours_follow.py).
+const FOLLOW_PULL = 0.25;
+const CARRY = 0.2;
+const carry = { node: null, followers: [] };
+function markFollowers(node, on) {
+  carry.node = on ? node : null;
+  carry.followers = [];
+  const links = simulation && simulation.force("link") ? simulation.force("link").links() : [];
+  for (const link of links) {
+    const other = link.source === node ? link.target : link.target === node ? link.source : null;
+    if (!other || typeof other !== "object") continue;
+    other.following = on;
+    if (on && other.fx == null) carry.followers.push({ node: other, dx: other.x - node.x, dy: other.y - node.y });
+  }
+}
+//: The links alone leave a neighbour behind (40% of the carry at 90 ticks), so
+//: while a note is held each follower is also drawn toward where it stood
+//: relative to it, a soft elastic, not a rigid carry: the links and the charge
+//: still shape the neighbourhood around it.
+function carryForce(alpha) {
+  const held = carry.node;
+  if (!held) return;
+  const hx = held.fx != null ? held.fx : held.x;
+  const hy = held.fy != null ? held.fy : held.y;
+  for (const f of carry.followers) {
+    if (f.node.fx != null) continue;
+    f.node.vx += (hx + f.dx - f.node.x) * CARRY * alpha;
+    f.node.vy += (hy + f.dy - f.node.y) * CARRY * alpha;
+  }
+}
+carryForce.initialize = () => {};
 let dragOrigin = null;
 function dragHeat(x, y) {
   if (!dragOrigin) return DRAG_ALPHA;
@@ -1222,7 +1264,7 @@ function tetherForce() {
     const typical = median(list.map((n) => Math.hypot(n.x - cx, n.y - cy)));
     const limit = Math.max(TETHER_FLOOR, typical * TETHER_SLACK);
     for (const node of list) {
-      if (!node.degree || node.fx != null || node.placed) continue;
+      if (!node.degree || node.fx != null || node.placed || node.following) continue;
       const dx = cx - node.x;
       const dy = cy - node.y;
       const d = Math.hypot(dx, dy);
@@ -1374,13 +1416,13 @@ function applyGrouping(params) {
   //: it was put, and a reheat's other forces still move it.
   const pull = (node) =>
     at(node) && !node.placed
-      ? node.degree === 0
+      ? (node.following ? FOLLOW_PULL : 1) * (node.degree === 0
         ? orbit.on
           ? 0.02
           : 0.12
         : clustered()
           ? gather.pull * (1 + HUB_PULL * node.hub * node.hub) * (1 + HOME_PULL * node.away)
-          : gather.pull * (1 + HOME_PULL * node.away)
+          : gather.pull * (1 + HOME_PULL * node.away))
       : 0;
   simulation
     .force("groupX")
@@ -1598,6 +1640,8 @@ self.onmessage = (event) => {
     case "init": {
       stopLoop();
       dragging = false;
+      carry.node = null;
+      carry.followers = [];
       perf = message.perf === true;
       epoch = message.epoch || 0;
       ticks = 0;
@@ -1750,6 +1794,7 @@ self.onmessage = (event) => {
         .force("clear", clearanceForce)
         .force("hub", hubForce)
         .force("tether", tetherForce)
+        .force("carry", carryForce)
         .force("shape", shapeForce)
         .force("leaf", leafForce)
         .force(
@@ -1787,6 +1832,8 @@ self.onmessage = (event) => {
       if (message.phase === "start") {
         dragging = true;
         dragOrigin = { x: node.x, y: node.y };
+        markFollowers(node, true);
+        if (ring.params) applyGrouping(ring.params);
         const heat = dragHeat(message.x, message.y);
         simulation.alphaTarget(heat).alpha(Math.max(simulation.alpha(), heat));
         node.fx = message.x;
@@ -1799,6 +1846,8 @@ self.onmessage = (event) => {
       } else {
         dragging = false;
         dragOrigin = null;
+        markFollowers(node, false);
+        if (message.keep && ring.params) applyGrouping(ring.params);
         // alphaTarget(0) rather than a stop: the release is meant to *decay*,
         // which is what makes the neighbourhood settle after you let go
         // instead of freezing mid-rearrangement.
@@ -1877,6 +1926,8 @@ self.onmessage = (event) => {
     case "stop":
       stopLoop();
       dragging = false;
+      carry.node = null;
+      carry.followers = [];
       break;
     case "recycle":
       inFlight = Math.max(0, inFlight - 1);

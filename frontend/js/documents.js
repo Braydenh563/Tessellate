@@ -160,8 +160,21 @@ function syncDocFileType({ prose = true } = {}) {
   const code = !type.previewable;
   docBoxEl()?.classList.toggle("doc-content-code", code);
   $("tab-documents")?.classList.toggle("doc-is-code", code);
-  //: The code panel (INBOX 788) comes back with a code file if it was open.
-  if (code && prefs.get("docCodeSide", "")) docCodeSideFrom(prefs.get("docCodeSide", ""), true);
+  //: The code panel (INBOX 788) comes back with a code file if it was open,
+  //: and the sections tab with a prose document (INBOX 904 B18); its words
+  //: and way in follow the type either way.
+  const opener = $("doc-code-snippets-open");
+  if (opener) {
+    opener.title = code
+      ? "Snippets: insert one at the caret, or save the selection as one"
+      : "Sections: insert a ready-made block at the caret, or save the selection as one";
+    opener.setAttribute("aria-label", code ? "Snippets" : "Sections");
+  }
+  //: Two prefs, because a code file left with its panel open must not open
+  //: a column beside every prose document the person opens next.
+  const sidePref = prefs.get(code ? "docCodeSide" : "docSectionsSide", "");
+  if (sidePref) docCodeSideFrom(sidePref, true);
+  else if (typeof docKit !== "undefined" && docKit.tab) docCodeSideClose();
   applyDocGutter();
 
   // A menu row, so it can say the whole thing rather than "⬇ .py".
@@ -327,7 +340,7 @@ let docView = "source";
 //: switched back from `.py` to `.md` stayed there). Nothing stored, nothing
 //: remembered as the last editing view; the file type coming back to a
 //: markdown one restores the view the person actually chose.
-const docViewState = { held: false };
+const docViewState = { held: false, tableGrips: null };
 
 //: The view a markdown document opens in when it is not holding one: the
 //: stored choice, else Live (Rendered on a phone, Phase 11 item 6).
@@ -2729,6 +2742,10 @@ const DOC_COMMANDS = [
   { id: "indent", icon: "ph:text-indent", label: "Indent the line or list item", keys: "Tab", run: null },
   { id: "outdent", icon: "ph:text-outdent", label: "Outdent the line or list item", keys: "Shift+Tab", run: null },
   { id: "move-section", icon: "ph:arrows-down-up", label: "Move the section, from the outline", keys: "Alt+↑ / Alt+↓", run: null },
+  { id: "move-block-up", icon: "ph:arrow-up", label: "Move the block at the caret up: a paragraph, list item, table or section", keys: "Alt+↑",
+    run: () => docBlockMoveCommand(-1) },
+  { id: "move-block-down", icon: "ph:arrow-down", label: "Move the block at the caret down: a paragraph, list item, table or section", keys: "Alt+↓",
+    run: () => docBlockMoveCommand(1) },
   { id: "ul", icon: "ph:list-bullets", label: "Bulleted list", keys: "Ctrl+Shift+8", run: () => applyMarkdown("ul") },
   { id: "ol", icon: "ph:list-numbers", label: "Numbered list", keys: "Ctrl+Shift+7", run: () => applyMarkdown("ol") },
   { id: "task", icon: "ph:check-square", label: "Task list", keys: "Ctrl+Shift+9", run: () => applyMarkdown("task") },
@@ -2808,8 +2825,9 @@ const DOC_COMMANDS = [
   //: The code panel (INBOX 788, documents-codekit.js).
   { id: "assistant", icon: "ph:sparkle", label: "Assistant: explain, fix, write tests or refactor", keys: "none",
     code: true, run: () => docCodeSideFrom("assist") },
-  { id: "snippets", icon: "ph:puzzle-piece", label: "Snippets: insert one, or save the selection as one", keys: "none",
-    code: true, run: () => docCodeSideFrom("snippets") },
+  //: For prose too (INBOX 904 B18): there it lists the text sections.
+  { id: "snippets", icon: "ph:puzzle-piece", label: "Snippets and sections: insert one, or save the selection as one", keys: "none",
+    run: () => docCodeSideFrom("snippets") },
   { id: "run-cell", icon: "ph:rows", label: "Run the cell at the caret (between # %% markers)", keys: "none",
     code: true, run: () => docRunCell() },
   //: Brief 70 (DOCUMENTS_PLAN 23, I2): Debug on VS Code's own keys, bound in
@@ -3013,6 +3031,210 @@ function docOutlineNudge(index, direction) {
   //: at the end of `renderDocOutline`).
   docOutlineFocusKey = docOutlineFoldKey(headings[index]);
   return docOutlineMoveSection(index, to, direction > 0);
+}
+
+//: **Alt+Up and Alt+Down in a markdown document move a block** (INBOX 904 B20,
+//: the owner's "manage mode for lined documents", taken as the keyboard half
+//: the owner's recommendation names). The editor's own line move is right for
+//: code and wrong for prose: it swaps a line with the *blank line* beside it,
+//: so `beta` moved up from under `alpha` lands between them and the next press
+//: welds the two paragraphs. The unit here is what a reader sees as one thing:
+//: a paragraph or quote or table (a run of lines), a fenced block (its blank
+//: lines included), a list item with everything nested under it, a heading's
+//: whole section. It swaps with the neighbour of the same kind and leaves the
+//: blank lines between them where they were, so a move is one edit and moving
+//: back is byte-exact.
+//:
+//: Pure: the text, the caret offset and a direction in; `{from, to, insert,
+//: caret}` out, `{noop: true}` for "there is nothing to swap with" (swallowed,
+//: so the default move cannot weld what this one refused), or null for "not
+//: mine" (a blank line, the frontmatter), which leaves the key to the default.
+//: Numbered items swap their *text* and keep their numbers.
+function docBlockMoveEdit(text, offset, delta) {
+  const source = String(text == null ? "" : text);
+  const lines = source.split("\n");
+  const starts = [];
+  let total = 0;
+  for (const line of lines) {
+    starts.push(total);
+    total += line.length + 1;
+  }
+  let row = 0;
+  while (row + 1 < lines.length && starts[row + 1] <= offset) row += 1;
+  //: A `---` frontmatter block is metadata, not a block of the document:
+  //: nothing moves into it or out of it, and the lines in it are the default's.
+  let first = 0;
+  if (lines[0] === "---") {
+    const close = lines.indexOf("---", 1);
+    if (close > 0) first = close + 1;
+  }
+  if (row < first) return null;
+  const fence = /^\s{0,3}(```|~~~)/;
+  const atx = /^#{1,6}\s/;
+  const blocks = [];
+  for (let i = first; i < lines.length; ) {
+    const line = lines[i];
+    if (!line.trim()) {
+      i += 1;
+    } else if (fence.test(line)) {
+      const mark = line.trim().slice(0, 3);
+      let end = i + 1;
+      while (end < lines.length && !lines[end].trim().startsWith(mark)) end += 1;
+      end = Math.min(end + 1, lines.length);
+      blocks.push({ from: i, to: end, kind: "code" });
+      i = end;
+    } else if (atx.test(line)) {
+      blocks.push({ from: i, to: i + 1, kind: "heading" });
+      i += 1;
+    } else {
+      let end = i + 1;
+      while (end < lines.length && lines[end].trim() && !atx.test(lines[end]) && !fence.test(lines[end])) end += 1;
+      blocks.push({ from: i, to: end, kind: "text" });
+      i = end;
+    }
+  }
+  const at = blocks.findIndex((block) => row >= block.from && row < block.to);
+  if (at < 0) return null;
+  const noop = { noop: true };
+  const ordered = /^(\s*)(\d+)([.)])(\s+)/;
+  // `a` is the earlier run, `b` the later; the caret's run is `b` for Up.
+  const swap = (a, b, pad, keepNumbers) => {
+    const aLines = lines.slice(a.from, a.to);
+    const bLines = lines.slice(b.from, b.to);
+    const gap = lines.slice(a.to, b.from);
+    //: Two sections that touch have no blank line between them, and the last
+    //: one of a document often has none after it: moved up it would weld its
+    //: last paragraph to the next heading. One blank line, and the one the
+    //: other side no longer needs comes off the end.
+    if (pad && !gap.length && bLines.length && bLines[bLines.length - 1].trim()) {
+      bLines.push("");
+      if (b.to === lines.length && aLines.length && !aLines[aLines.length - 1].trim()) aLines.pop();
+    }
+    const moverIsB = row >= b.from;
+    let shift = 0;
+    const pa = keepNumbers ? ordered.exec(aLines[0]) : null;
+    const pb = keepNumbers ? ordered.exec(bLines[0]) : null;
+    if (pa && pb) {
+      aLines[0] = pb[0] + aLines[0].slice(pa[0].length);
+      bLines[0] = pa[0] + bLines[0].slice(pb[0].length);
+      const mover = moverIsB ? b : a;
+      if (row === mover.from) {
+        const was = moverIsB ? pb[0].length : pa[0].length;
+        const now = moverIsB ? pa[0].length : pb[0].length;
+        const col = offset - starts[row];
+        shift = col >= was ? now - was : Math.min(col, now) - col;
+      }
+    }
+    const head = [...bLines, ...gap];
+    const base = starts[a.from];
+    const caret = moverIsB
+      ? base + (offset - starts[b.from]) + shift
+      : base + head.join("\n").length + (head.length ? 1 : 0) + (offset - starts[a.from]) + shift;
+    const more = b.to < lines.length;
+    return {
+      from: base,
+      to: more ? starts[b.to] : source.length,
+      insert: [...head, ...aLines].join("\n") + (more ? "\n" : ""),
+      caret,
+    };
+  };
+  const swapItems = (one, two) => swap(one, two, false, true);
+
+  //: A heading moves with its section, among the headings of its own level
+  //: and inside its own parent: past a shallower heading it would change what
+  //: it belongs to, which a move should never do silently.
+  if (blocks[at].kind === "heading") {
+    const headings = docScanHeadings(source).filter((h) => h.line >= first);
+    const index = headings.findIndex((h) => h.line === row);
+    if (index >= 0) {
+      const level = headings[index].level;
+      const own = docSectionRange(headings, index, lines.length);
+      let target = -1;
+      if (delta < 0) {
+        for (let k = index - 1; k >= 0 && headings[k].level >= level; k -= 1) {
+          if (headings[k].level === level) {
+            target = k;
+            break;
+          }
+        }
+      } else {
+        const next = headings.findIndex((h) => h.line === own.to);
+        if (next >= 0 && headings[next].level === level) target = next;
+      }
+      if (target < 0) return noop;
+      const other = docSectionRange(headings, target, lines.length);
+      return delta < 0 ? swap(other, own, true, false) : swap(own, other, true, false);
+    }
+  }
+
+  //: A list item is its line plus every line indented under it (a blank line
+  //: counts when something indented follows it), and swaps with the item of
+  //: the same indent beside it; the end of the list is the end of the move.
+  const marker = /^(\s*)([-*+]|\d+[.)])\s+/;
+  const indentOf = (line) => /^\s*/.exec(line)[0].length;
+  if (marker.test(lines[row])) {
+    const itemAt = (start) => {
+      const depth = indentOf(lines[start]);
+      let end = start + 1;
+      while (end < lines.length) {
+        let next = end;
+        while (next < lines.length && !lines[next].trim()) next += 1;
+        if (next >= lines.length || indentOf(lines[next]) <= depth) break;
+        end = next + 1;
+      }
+      return { from: start, to: end };
+    };
+    const depth = indentOf(lines[row]);
+    const own = itemAt(row);
+    if (delta > 0) {
+      let next = own.to;
+      while (next < lines.length && !lines[next].trim()) next += 1;
+      if (next >= lines.length || indentOf(lines[next]) !== depth || !marker.test(lines[next])) return noop;
+      return swapItems(own, itemAt(next));
+    }
+    let k = row - 1;
+    while (k >= first && !lines[k].trim()) k -= 1;
+    for (; k >= first; k -= 1) {
+      const line = lines[k];
+      if (!line.trim()) continue;
+      const here = indentOf(line);
+      if (here === depth && marker.test(line)) return swapItems(itemAt(k), own);
+      if (here <= depth) break;
+    }
+    return noop;
+  }
+
+  const other = blocks[at + delta];
+  if (!other) return noop;
+  return delta < 0 ? swap(other, blocks[at], false, false) : swap(blocks[at], other, false, false);
+}
+
+//: The key's half: only a markdown document (a code file keeps the editor's
+//: own line move, which is what code wants), only a caret rather than a
+//: selection (a selection of lines moves as lines, as it always did), and a
+//: decline hands the key back so the default still answers it.
+function docBlockMoveRun(view, delta) {
+  if (!docFileType().previewable) return false;
+  const selection = view.state.selection;
+  if (selection.ranges.length !== 1 || !selection.main.empty) return false;
+  const edit = docBlockMoveEdit(view.state.doc.toString(), selection.main.head, delta);
+  if (!edit) return false;
+  if (edit.noop) return true;
+  view.dispatch({
+    changes: { from: edit.from, to: edit.to, insert: edit.insert },
+    selection: { anchor: edit.caret },
+    scrollIntoView: true,
+    userEvent: "move.line",
+  });
+  return true;
+}
+
+//: The palette's door to the same move: focus is in the palette, so it aims at
+//: the editor and says what to do when the caret is not in a block.
+function docBlockMoveCommand(delta) {
+  if (!docCmView) return;
+  docCmView.focus();
+  if (!docBlockMoveRun(docCmView, delta)) announce("Put the caret in a paragraph, list item, table or section of a text document first.");
 }
 
 function renderDocOutline() {
@@ -4698,6 +4920,97 @@ function docTableAlignEdits(table, col, align) {
   return [{ from: span.from, to: span.to, insert }];
 }
 
+//: **Managing a table by its rows and columns** (INBOX 904 B23): move a row
+//: or a column one place, sort the body by a column, and the ranges a row, a
+//: column or the whole table is, for selecting. Edits like every operation
+//: here: a row moves by re-writing the lines between its two places with
+//: their own bytes in the new order, a column by moving each row's cell (the
+//: alignment marker goes with its column). `delta` is any distance: the menu
+//: moves one place, the edge grips drag to any place (B23).
+function docTableMoveRowEdits(table, row, delta) {
+  const to = row + delta;
+  const first = table.delim + 1;
+  if (row < first || to < first || row >= table.rows.length || to >= table.rows.length || !delta) return [];
+  const body = table.rows.slice(first);
+  const moved = body.slice();
+  moved.splice(to - first, 0, moved.splice(row - first, 1)[0]);
+  const edits = [];
+  body.forEach((place, i) => {
+    if (moved[i] !== place) edits.push({ from: place.from, to: place.to, insert: docTableJoinRow(moved[i]) });
+  });
+  return edits;
+}
+
+function docTableMoveColumnEdits(table, col, delta) {
+  const to = col + delta;
+  if (!delta || col < 0 || to < 0 || col >= table.columns || to >= table.columns) return [];
+  const edits = [];
+  for (const row of table.rows) {
+    const cells = row.cells.slice();
+    //: A short row gains the cell it lacks, with its closing pipe: a blank
+    //: cell at the end of a row with no trailing pipe is not a cell.
+    const padded = cells.length < table.columns;
+    while (cells.length < table.columns) cells.push("  ");
+    cells.splice(to, 0, cells.splice(col, 1)[0]);
+    const next = { ...row, cells, trail: row.trail || padded, tail: row.trail ? row.tail : "" };
+    edits.push({ from: row.from, to: row.to, insert: docTableJoinRow(next) });
+  }
+  return edits;
+}
+
+//: Numbers as numbers, words in natural order, blanks last in either
+//: direction, equal rows in the order they had.
+function docTableSortEdits(table, col, descending) {
+  const first = table.delim + 1;
+  const body = table.rows.slice(first);
+  if (body.length < 2 || col < 0 || col >= table.columns) return [];
+  const key = (row) => (row.cells[col] || "").trim();
+  const number = (text) => {
+    const value = Number(text.replace(/[,\s]/g, ""));
+    return text !== "" && Number.isFinite(value) ? value : null;
+  };
+  const order = (a, b) => {
+    const ka = key(a);
+    const kb = key(b);
+    if (ka === "" || kb === "") return ka === kb ? 0 : ka === "" ? 1 : -1;
+    const na = number(ka);
+    const nb = number(kb);
+    const way = na != null && nb != null ? na - nb : ka.localeCompare(kb, undefined, { numeric: true, sensitivity: "base" });
+    return descending ? -way : way;
+  };
+  const sorted = body.map((row, i) => ({ row, i })).sort((x, y) => order(x.row, y.row) || x.i - y.i);
+  const edits = [];
+  body.forEach((place, i) => {
+    if (sorted[i].row !== place) edits.push({ from: place.from, to: place.to, insert: docTableJoinRow(sorted[i].row) });
+  });
+  return edits;
+}
+
+//: What selecting a row, a column or the table selects: a row is its cells
+//: end to end, a column is each body cell's words (one range per row, the
+//: delimiter skipped), the table is its whole text.
+function docTableSelectRanges(table, kind, index) {
+  if (kind === "table") return [{ from: table.from, to: table.to }];
+  if (kind === "row") {
+    const row = table.rows[index];
+    if (!row || index === table.delim) return [];
+    return [{ from: docTableCellSpan(table, index, 0).from, to: docTableCellSpan(table, index, row.cells.length - 1).to }];
+  }
+  if (kind !== "column" || index < 0 || index >= table.columns) return [];
+  const ranges = [];
+  for (let r = 0; r < table.rows.length; r += 1) {
+    if (r === table.delim) continue;
+    const span = docTableCellSpan(table, r, index);
+    if (!span) continue;
+    const raw = table.rows[r].cells[index];
+    const lead = (/^[ \t]*/.exec(raw) || [""])[0].length;
+    const tail = (/[ \t]*$/.exec(raw) || [""])[0].length;
+    const from = span.from + (raw.trim() ? lead : Math.min(1, raw.length));
+    ranges.push({ from, to: raw.trim() ? span.to - tail : from });
+  }
+  return ranges;
+}
+
 //: The edits applied to a plain string, which is what the fallback surface
 //: and the test both need. Back to front so an earlier edit cannot move a
 //: later one's offsets.
@@ -5278,6 +5591,27 @@ function docTableRemoveEdits(context) {
   return [{ from: table.from, to, insert: "" }];
 }
 
+//: Select a row, a column (one range per cell, so Delete clears them and
+//: copy reads them) or the table. A textarea has one range only: the first
+//: to the last.
+function docTableSelect(context, kind) {
+  const index = kind === "row" ? context.cell.row : kind === "column" ? context.cell.col : 0;
+  const ranges = docTableSelectRanges(context.table, kind, index);
+  if (!ranges.length) return false;
+  const view = context.surface.view;
+  const CM = window.CM6;
+  if (view && CM) {
+    const { EditorSelection } = CM.state;
+    view.dispatch({
+      selection: EditorSelection.create(ranges.map((range) => EditorSelection.range(range.from, range.to))),
+      scrollIntoView: true,
+    });
+  } else {
+    context.surface.setSelectionRange(ranges[0].from, ranges[ranges.length - 1].to);
+  }
+  return true;
+}
+
 //: The commands, as data, because three things read them: the cell menu, the
 //: "/" menu's table entry and the tests. `run` takes the live context rather
 //: than closing over one, so a menu built for the cell you opened it on still
@@ -5344,6 +5678,89 @@ const DOC_TABLE_COMMANDS = [
         context.cell.row, Math.max(0, context.cell.col - 1)),
   },
   {
+    id: "row-up",
+    group: "arrange",
+    label: "Move row up",
+    title: "Swap this row with the one above",
+    enabled: (context) => context.cell.row > context.table.delim + 1,
+    run: (context) =>
+      docTableGo(context, docTableMoveRowEdits(context.table, context.cell.row, -1),
+        context.cell.row - 1, context.cell.col),
+  },
+  {
+    id: "row-down",
+    group: "arrange",
+    label: "Move row down",
+    title: "Swap this row with the one below",
+    enabled: (context) =>
+      context.cell.row > context.table.delim && context.cell.row < context.table.rows.length - 1,
+    run: (context) =>
+      docTableGo(context, docTableMoveRowEdits(context.table, context.cell.row, 1),
+        context.cell.row + 1, context.cell.col),
+  },
+  {
+    id: "col-move-left",
+    group: "arrange",
+    label: "Move column left",
+    title: "Swap this column with the one before it",
+    enabled: (context) => context.cell.col > 0,
+    run: (context) =>
+      docTableGo(context, docTableMoveColumnEdits(context.table, context.cell.col, -1),
+        context.cell.row, context.cell.col - 1),
+  },
+  {
+    id: "col-move-right",
+    group: "arrange",
+    label: "Move column right",
+    title: "Swap this column with the one after it",
+    enabled: (context) => context.cell.col < context.table.columns - 1,
+    run: (context) =>
+      docTableGo(context, docTableMoveColumnEdits(context.table, context.cell.col, 1),
+        context.cell.row, context.cell.col + 1),
+  },
+  {
+    id: "sort-up",
+    group: "arrange",
+    label: "Sort A to Z",
+    title: "Order the rows by this column, numbers as numbers",
+    enabled: (context) => context.table.rows.length > context.table.delim + 2,
+    run: (context) =>
+      docTableGo(context, docTableSortEdits(context.table, context.cell.col, false),
+        context.cell.row, context.cell.col),
+  },
+  {
+    id: "sort-down",
+    group: "arrange",
+    label: "Sort Z to A",
+    title: "Order the rows by this column, the other way",
+    enabled: (context) => context.table.rows.length > context.table.delim + 2,
+    run: (context) =>
+      docTableGo(context, docTableSortEdits(context.table, context.cell.col, true),
+        context.cell.row, context.cell.col),
+  },
+  {
+    id: "select-row",
+    group: "select",
+    label: "Select row",
+    title: "Select every cell of this row",
+    enabled: (context) => context.cell.row !== context.table.delim,
+    run: (context) => docTableSelect(context, "row"),
+  },
+  {
+    id: "select-column",
+    group: "select",
+    label: "Select column",
+    title: "Select this column's cells, to copy or clear them",
+    run: (context) => docTableSelect(context, "column"),
+  },
+  {
+    id: "select-table",
+    group: "select",
+    label: "Select table",
+    title: "Select the whole table",
+    run: (context) => docTableSelect(context, "table"),
+  },
+  {
     id: "align-left",
     group: "alignment",
     label: "Align left",
@@ -5396,9 +5813,8 @@ function docTableCommand(id) {
 //: from scratch: DESIGN.md's index says a menu is `kebabMenu`, and a
 //: hand-built one here would be the eleventh thing in this app that opens a
 //: list of actions and the first that does it differently.
-function docTableMenu(context) {
-  if (typeof kebabMenu !== "function") return document.createElement("span");
-  const items = DOC_TABLE_COMMANDS.map((command) => ({
+function docTableMenuItems(context) {
+  return DOC_TABLE_COMMANDS.map((command) => ({
     label: command.label,
     title: command.title,
     danger: command.danger,
@@ -5410,7 +5826,11 @@ function docTableMenu(context) {
     disabled: command.enabled ? !command.enabled(context) : false,
     run: () => docTableCommand(command.id),
   }));
-  const wrap = kebabMenu(items, "Table row and column actions");
+}
+
+function docTableMenu(context) {
+  if (typeof kebabMenu !== "function") return document.createElement("span");
+  const wrap = kebabMenu(docTableMenuItems(context), "Table row and column actions");
   //: **Pressing it must not move the caret out of the table** (the owner: the
   //: kebab "does nothing and just deselects the row when I try to press that
   //: meatball button"). The menu only exists while the selection is inside the
@@ -5425,6 +5845,294 @@ function docTableMenu(context) {
   //: also what makes "Insert row above" mean a row.
   wrap.addEventListener("mousedown", (event) => event.preventDefault());
   return wrap;
+}
+
+//: **Grips on a Live table's edges** (INBOX 904 B23: "lines on the edges and
+//: rows and columns on the outside etc to select whole rows or columns, or to
+//: add new rows or columns or even dragging icons to drag and rearrange
+//: columns and rows"). While the caret is in a table: a bar above each column
+//: and one beside each row (a click selects it, a drag moves it, a right-click
+//: or a hold opens the table's menu there), and a plus at the end of the
+//: header (a column) and under the last row (a row). Every drag has the menu's
+//: Move row and Move column as its keyboard and touch alternative (WCAG 2.5.7).
+//:
+//: A layer inside the editor's scroller, so it scrolls with the text; the
+//: geometry is read from the rendered cells (`requestMeasure`), never guessed
+//: from the grid's template. Rebuilt only when that geometry changes, and never
+//: mid-press, because a press that loses its element loses its release.
+const DOC_GRIP_DRAG_PX = 4;
+
+function docTableGripsPlugin(CM) {
+  if (docViewState.tableGrips) return docViewState.tableGrips;
+  const { ViewPlugin } = CM.view;
+  docViewState.tableGrips = ViewPlugin.fromClass(
+    class {
+      constructor(view) {
+        this.view = view;
+        this.geo = null;
+        this.sig = "";
+        this.press = null;
+        this.layer = document.createElement("div");
+        this.layer.className = "doc-table-grips";
+        this.line = document.createElement("div");
+        this.line.className = "doc-table-grip-line hidden";
+        view.scrollDOM.appendChild(this.layer);
+        this.measure = {
+          key: this,
+          read: (v) => this.read(v),
+          write: (geo) => this.write(geo),
+        };
+        for (const type of ["pointerdown", "pointermove", "pointerup", "pointercancel"]) {
+          this.layer.addEventListener(type, (event) => this[type](event));
+        }
+        view.requestMeasure(this.measure);
+      }
+      update(update) {
+        if (update.docChanged || update.selectionSet || update.viewportChanged || update.geometryChanged
+            || update.focusChanged || update.heightChanged) {
+          update.view.requestMeasure(this.measure);
+        }
+      }
+      destroy() {
+        this.layer.remove();
+      }
+
+      read(view) {
+        const doc = view.state.doc;
+        const head = view.state.selection.main.head;
+        //: Cheap exit for the common case: a caret on a line with no pipe is not
+        //: in a table, and reading the document to say so on every keystroke of a
+        //: long page would be the cost of a feature most lines never use.
+        if (!doc.lineAt(head).text.includes("|") && !doc.lineAt(view.state.selection.main.anchor).text.includes("|")) return null;
+        const table = docTableParse(doc.toString(), head);
+        if (!table) return null;
+        const scroller = view.scrollDOM;
+        const sr = scroller.getBoundingClientRect();
+        const rect = (el) => {
+          const b = el.getBoundingClientRect();
+          return {
+            x: Math.round(b.left - sr.left - scroller.clientLeft + scroller.scrollLeft),
+            y: Math.round(b.top - sr.top - scroller.clientTop + scroller.scrollTop),
+            w: Math.round(b.width),
+            h: Math.round(b.height),
+          };
+        };
+        const rows = [];
+        let cols = [];
+        for (const el of view.contentDOM.querySelectorAll(".cm-line.cm-md-table")) {
+          const pos = view.posAtDOM(el);
+          const index = table.rows.findIndex((row) => pos >= row.from && pos <= row.to);
+          if (index < 0) continue;
+          rows.push({ row: index, ...rect(el) });
+          if (index === 0) cols = [...el.querySelectorAll(".cm-md-td")].map((cell, col) => ({ col, ...rect(cell) }));
+        }
+        if (!rows.length || !cols.length) return null;
+        rows.sort((a, b) => a.row - b.row);
+        const left = Math.min(...rows.map((r) => r.x));
+        const right = Math.max(...rows.map((r) => r.x + r.w));
+        const last = rows[rows.length - 1];
+        return {
+          from: table.from,
+          delim: table.delim,
+          columns: table.columns,
+          rows,
+          cols,
+          box: { left, top: rows[0].y, right, bottom: last.y + last.h },
+          limit: scroller.clientWidth + scroller.scrollLeft,
+        };
+      }
+
+      write(geo) {
+        const signature = geo ? JSON.stringify([geo.from, geo.rows, geo.cols, geo.limit]) : "";
+        if (this.press && this.press.drag) return;
+        if (signature === this.sig) return;
+        this.sig = signature;
+        this.geo = geo;
+        this.layer.replaceChildren();
+        if (!geo) return;
+        const put = (cls, kind, index, box, label) => {
+          const el = document.createElement("div");
+          el.className = cls;
+          el.dataset.kind = kind;
+          el.dataset.index = String(index);
+          el.title = label;
+          el.setAttribute("aria-hidden", "true");
+          el.style.left = `${box.x}px`;
+          el.style.top = `${box.y}px`;
+          el.style.width = `${box.w}px`;
+          el.style.height = `${box.h}px`;
+          this.layer.appendChild(el);
+          return el;
+        };
+        //: The hit areas are as high and as wide as the band the table's own
+        //: spacing leaves (16px above the header, what the content's left
+        //: padding allows beside the rows); the visible bar is drawn inside
+        //: them by the stylesheet.
+        const band = 16;
+        const side = Math.max(8, Math.min(band, geo.box.left));
+        const lastCol = geo.cols[geo.cols.length - 1];
+        geo.cols.forEach((c) => {
+          const shorten = c === lastCol ? band + 2 : 0;
+          put("doc-table-grip doc-table-grip-col", "col", c.col, { x: c.x, y: geo.box.top - band, w: Math.max(8, c.w - shorten), h: band },
+            `Column ${c.col + 1}: click to select, drag to move, right-click for more`);
+        });
+        geo.rows.forEach((r) => {
+          put("doc-table-grip doc-table-grip-row", "row", r.row, { x: geo.box.left - side, y: r.y, w: side, h: r.h },
+            `${r.row === 0 ? "Header row" : `Row ${r.row - geo.delim}`}: click to select, drag to move, right-click for more`);
+        });
+        const addCol = put("doc-table-add doc-table-add-col", "add-col", 0,
+          { x: lastCol.x + lastCol.w - band, y: geo.box.top - band, w: band, h: band }, "Add a column at the end");
+        addCol.textContent = "+";
+        const addRow = put("doc-table-add doc-table-add-row", "add-row", 0,
+          { x: geo.box.left, y: geo.box.bottom, w: band, h: band }, "Add a row at the end");
+        addRow.textContent = "+";
+        this.layer.appendChild(this.line);
+      }
+
+      pointerdown(event) {
+        const grip = event.target instanceof Element ? event.target.closest(".doc-table-grip, .doc-table-add") : null;
+        if (!grip || event.button !== 0 || !this.geo) return;
+        //: Not a text press: the caret stays in the table, and the editor keeps
+        //: its focus, which is what the commands read.
+        event.preventDefault();
+        this.press = { el: grip, kind: grip.dataset.kind, index: Number(grip.dataset.index), x: event.clientX, y: event.clientY, id: event.pointerId, drag: false, target: null };
+        try {
+          grip.setPointerCapture(event.pointerId);
+        } catch {
+          /* a pointer that is already gone: the release will not come, and the press is dropped below */
+        }
+      }
+
+      pointermove(event) {
+        const press = this.press;
+        if (!press || event.pointerId !== press.id) return;
+        //: The header is the table's shape, not a row that moves.
+        const movable = press.kind === "col" || (press.kind === "row" && press.index > this.geo.delim);
+        if (!press.drag && movable && Math.hypot(event.clientX - press.x, event.clientY - press.y) >= DOC_GRIP_DRAG_PX) {
+          press.drag = true;
+          this.layer.classList.add("is-dragging");
+          press.el.classList.add("is-source");
+        }
+        if (!press.drag) return;
+        const scroller = this.view.scrollDOM;
+        const sr = scroller.getBoundingClientRect();
+        const px = event.clientX - sr.left - scroller.clientLeft + scroller.scrollLeft;
+        const py = event.clientY - sr.top - scroller.clientTop + scroller.scrollTop;
+        const geo = this.geo;
+        const line = this.line;
+        line.classList.remove("hidden");
+        if (press.kind === "col") {
+          const slot = geo.cols.filter((c) => c.x + c.w / 2 < px).length;
+          press.target = slot > press.index ? slot - 1 : slot;
+          const edge = slot < geo.cols.length ? geo.cols[slot].x : geo.cols[geo.cols.length - 1].x + geo.cols[geo.cols.length - 1].w;
+          line.className = "doc-table-grip-line doc-table-grip-line-col";
+          line.style.left = `${edge}px`;
+          line.style.top = `${geo.box.top}px`;
+          line.style.height = `${geo.box.bottom - geo.box.top}px`;
+          line.style.width = "";
+        } else {
+          const body = geo.rows.filter((r) => r.row > geo.delim);
+          const slot = body.filter((r) => r.y + r.h / 2 < py).length;
+          const slotRow = geo.delim + 1 + slot;
+          press.target = slotRow > press.index ? slotRow - 1 : slotRow;
+          const edge = slot < body.length ? body[slot].y : body[body.length - 1].y + body[body.length - 1].h;
+          line.className = "doc-table-grip-line doc-table-grip-line-row";
+          line.style.top = `${edge}px`;
+          line.style.left = `${geo.box.left}px`;
+          line.style.width = `${geo.box.right - geo.box.left}px`;
+          line.style.height = "";
+        }
+      }
+
+      pointerup(event) {
+        const press = this.press;
+        if (!press || event.pointerId !== press.id) return;
+        this.finish();
+        if (press.drag) {
+          if (press.target != null && press.target !== press.index) this.commitMove(press);
+          else this.view.requestMeasure(this.measure);
+          return;
+        }
+        const grip = document.elementFromPoint(event.clientX, event.clientY);
+        //: A release off the grip it began on is a cancelled press, as it is on
+        //: every button.
+        if (!(grip instanceof Element) || grip.closest(".doc-table-grip, .doc-table-add") !== press.el) return;
+        this.click(press);
+      }
+
+      pointercancel() {
+        if (this.press) this.finish();
+        this.view.requestMeasure(this.measure);
+      }
+
+      finish() {
+        const press = this.press;
+        this.press = null;
+        this.layer.classList.remove("is-dragging");
+        this.line.classList.add("hidden");
+        if (press && press.el) {
+          press.el.classList.remove("is-source");
+          try {
+            press.el.releasePointerCapture(press.id);
+          } catch {
+            /* released already */
+          }
+        }
+      }
+
+      //: The live table the grips were drawn for, or null if the document moved
+      //: under them.
+      context() {
+        const surface = asSurface(this.view.contentDOM) || docSurface();
+        const context = surface && docTableContext(surface);
+        return context && this.geo && context.table.from === this.geo.from ? context : null;
+      }
+
+      click(press) {
+        const context = this.context();
+        if (!context) return;
+        const table = context.table;
+        if (press.kind === "col" || press.kind === "row") {
+          context.cell = press.kind === "row" ? { row: press.index, col: context.cell.col } : { row: context.cell.row, col: press.index };
+          docTableSelect(context, press.kind === "col" ? "column" : "row");
+        } else if (press.kind === "add-col") {
+          context.cell = { row: context.cell.row === table.delim ? 0 : context.cell.row, col: table.columns - 1 };
+          docTableCommandRun("col-right", context);
+        } else if (press.kind === "add-row") {
+          context.cell = { row: table.rows.length - 1, col: context.cell.col };
+          docTableCommandRun("row-below", context);
+        }
+        this.view.focus();
+      }
+
+      commitMove(press) {
+        const context = this.context();
+        if (!context) return;
+        const delta = press.target - press.index;
+        const edits = press.kind === "col"
+          ? docTableMoveColumnEdits(context.table, press.index, delta)
+          : docTableMoveRowEdits(context.table, press.index, delta);
+        docTableDispatch(context, edits);
+        //: The moved row or column stays selected, so the person sees where it
+        //: went and the next press acts on it.
+        const table = docTableParse(context.surface.text, context.table.from);
+        if (table) {
+          const cell = press.kind === "col" ? { row: 0, col: press.target } : { row: press.target, col: 0 };
+          docTableSelect({ surface: context.surface, table, cell }, press.kind === "col" ? "column" : "row");
+        }
+        this.view.focus();
+      }
+    }
+  );
+  return docViewState.tableGrips;
+}
+
+//: One command, by id, against a context the caller already holds. The named
+//: `docTableCommand` reads the caret itself; a grip has just moved it.
+function docTableCommandRun(id, context) {
+  const command = DOC_TABLE_COMMANDS.find((item) => item.id === id);
+  if (!command || (command.enabled && !command.enabled(context))) return false;
+  return command.run(context) !== false;
 }
 
 
@@ -8961,7 +9669,7 @@ function docColumnsField(CM) {
 //: widget and the arrow keys that step into it belong to Live exactly as the
 //: markdown decorations do.
 function docLiveExtensions(CM) {
-  return [docLivePlugin(CM), docColumnsField(CM), docColumnsArrowKeymap(CM), docMermaidField(CM)];
+  return [docLivePlugin(CM), docTableGripsPlugin(CM), docColumnsField(CM), docColumnsArrowKeymap(CM), docMermaidField(CM)];
 }
 
 //: Arrow into a rendered block rather than over it. CodeMirror moves the caret
@@ -15970,7 +16678,7 @@ function docProseFindings(text) {
     if (variant) {
       found.push({
         rule: "variant",
-        message: `${docSpellingVariant() === "uk" ? "UK" : "US"} spelling: “${variant}”`,
+        message: `${DOC_VARIANT_LABEL[docSpellingVariant()] || "US"} spelling: “${variant}”`,
         start: hit.index,
         end: hit.index + hit[0].length,
         text: hit[0],
@@ -16202,6 +16910,10 @@ function renderDocProse() {
 //: here is wrong", which is the opposite of what that finding means.
 const DOC_FINDING_SKIP = new Set(["long-sentence"]);
 
+//: Findings "Fix all" never applies: a model's reading and an offer to link a
+//: note are judgements for the writer, whatever replacement they carry.
+const DOC_FIX_ALL_NEVER = new Set(["ai", "link-offer"]);
+
 //: Three kinds, because three is what a reader can decode at a glance from
 //: the shape of a line. The rules are more numerous than that (there are
 //: eight), but "a spacing slip" and "a UK/US spelling" are the same *kind* of
@@ -16212,6 +16924,7 @@ function docFindingKind(finding) {
   if (finding.rule === "ai") return "ai";
   if (DOC_ACCESS_RULES.has(finding.rule)) return "access";
   if (finding.rule === "repeat") return "repeat";
+  if (finding.rule === "link-offer") return "link";
   return "style";
 }
 
@@ -16250,8 +16963,9 @@ function docProseHeader() {
     return button;
   };
   //: A model's fix is a judgement to read, never one of "every suggestion that
-  //: has one clear answer", so Fix all leaves the `ai` kind alone.
-  const fixable = docProseFound.filter((f) => f.replacement !== null && f.rule !== "ai");
+  //: has one clear answer", so Fix all leaves the `ai` kind alone, and an
+  //: offer to link a note (`DOC_FIX_ALL_NEVER`).
+  const fixable = docProseFound.filter((f) => f.replacement !== null && !DOC_FIX_ALL_NEVER.has(f.rule));
   if (fixable.length) {
     const all = tool(`ph:magic-wand Fix ${fixable.length}`, `Fix ${fixable.length}: apply every suggestion that has one clear answer`, () => docProseFixAll(), "doc-prose-fix-all");
     tools.appendChild(all);
@@ -16390,6 +17104,7 @@ const DOC_FINDING_GROUPS = [
   ["repeat", "Repeated words"],
   ["style", "Style and spacing"],
   ["access", "Accessibility"],
+  ["link", "Links to your notes"],
   //: Last: a model's reading is the weakest claim in the panel, and it says
   //: so by where it sits.
   ["ai", "Checked with AI"],
@@ -16680,7 +17395,7 @@ function docProseFixAll() {
   //: Back to front, so each replacement cannot move the offsets of the ones
   //: still to be applied.
   const fixable = docProseFound
-    .filter((f) => f.replacement !== null && f.rule !== "ai")
+    .filter((f) => f.replacement !== null && !DOC_FIX_ALL_NEVER.has(f.rule))
     .sort((a, b) => b.start - a.start);
   let text = box.value;
   let applied = 0;
@@ -17543,16 +18258,91 @@ function docOpenSuggestAtPoint(target, point) {
   return Boolean(docOpenSuggestAtCaret(box, point));
 }
 
+//: The table's menu goes first (`docTableMenuAtPoint`, below), and takes the
+//: press from the caret-level suggestion: the one this listener opens on any
+//: press in a box with something to say. A misspelt word keeps its own. One
+//: listener, because the long-press twin below is one call (a lint counts both).
 document.addEventListener("contextmenu", (event) => {
-  if (docOpenSuggestAtPoint(event.target, { x: event.clientX, y: event.clientY })) {
+  const point = { x: event.clientX, y: event.clientY };
+  if (docTableMenuAtPoint(event.target, point.x, point.y) || docOpenSuggestAtPoint(event.target, point)) {
     event.preventDefault();
   }
 });
 if (typeof wireLongPress === "function") {
-  wireLongPress(document, (event, point) => docOpenSuggestAtPoint(event.target, point), {
-    selector: ".doc-flag, .cm-finding, .cm-content, textarea",
-  });
+  wireLongPress(
+    document,
+    (event, point) =>
+      docTableMenuAtPoint(event.target, point.x, point.y) || docOpenSuggestAtPoint(event.target, point),
+    { selector: ".doc-flag, .cm-finding, .cm-content, .doc-table-grip, textarea" }
+  );
 }
+
+//: **A right-click or a hold on a Live table cell opens the table's menu at
+//: the pointer** (INBOX 904 B23: "I'm not given a popup menu for tables when I
+//: right click them"). The same list as the ⋯ at the header's end
+//: (`docTableMenuItems`). The caret goes to the pressed cell first, unless the
+//: press is inside what is already selected (a column the person just
+//: selected keeps its ranges); a misspelt word in the cell keeps its own menu,
+//: which is the listener above. Anywhere else the browser's menu stays.
+function docTableMenuAtPoint(target, x, y) {
+  if (target instanceof Element && target.closest(".doc-flag, .cm-finding")) return false;
+  const grip = target instanceof Element ? target.closest(".doc-table-grip") : null;
+  if (grip) return docTableGripMenu(grip, x, y);
+  //: By the element under the pointer when the event's own target is not a
+  //: cell: with a selection drawn, the press can land on the selection layer.
+  let cell = target instanceof Element ? target.closest(".cm-md-td") : null;
+  if (!cell && target instanceof Element && target.closest(".cm-editor")) {
+    cell = document.elementsFromPoint(x, y).map((el) => el.closest(".cm-md-td")).find(Boolean) || null;
+  }
+  const surface = cell && asSurface(cell);
+  const view = surface && surface.view;
+  if (!view) return false;
+  //: The pressed cell comes from the element, not from the pixel: the empty
+  //: part of a short cell maps to the start of the next one (the hidden pipe
+  //: is between them), which put the caret a column to the right. The press
+  //: point is only used inside the cell's own span.
+  const from = view.posAtDOM(cell);
+  const to = from + cell.textContent.length;
+  //: A column's ranges, or a row's, press through; one range across several
+  //: rows (the whole table) does not, since a menu acting on its first cell
+  //: would not be acting on the cell that was pressed.
+  const { doc, selection } = view.state;
+  const touched = selection.ranges.some(
+    (range) =>
+      range.from <= to && range.to >= from && range.to > range.from &&
+      (selection.ranges.length > 1 || doc.lineAt(range.from).number === doc.lineAt(range.to).number)
+  );
+  if (!touched) {
+    const at = view.posAtCoords({ x, y });
+    view.dispatch({ selection: { anchor: at == null ? from : Math.max(from, Math.min(at, to)) } });
+  }
+  const context = docTableContext(surface);
+  if (!context) return false;
+  openMenuAtPoint(docTableMenuItems(context), "Table row and column actions", x, y);
+  return true;
+}
+
+//: The same menu from an edge grip: the caret goes into the grip's own row or
+//: column first (the column's header cell, or the row's first cell), so the
+//: menu's "this row" and "this column" are the ones the grip stands for.
+function docTableGripMenu(grip, x, y) {
+  const surface = asSurface(grip);
+  const view = surface && surface.view;
+  const context = view && docTableContext(surface);
+  if (!context) return false;
+  const kind = grip.dataset.kind;
+  const index = Number(grip.dataset.index);
+  const cell = kind === "row"
+    ? { row: index, col: Math.min(context.cell.col, context.table.columns - 1) }
+    : { row: context.cell.row === context.table.delim ? 0 : context.cell.row, col: index };
+  const span = docTableCellSpan(context.table, cell.row, cell.col);
+  if (span) view.dispatch({ selection: { anchor: span.from } });
+  const next = docTableContext(surface);
+  if (!next) return false;
+  openMenuAtPoint(docTableMenuItems(next), "Table row and column actions", x, y);
+  return true;
+}
+
 
 //: **Hover opens it too, in a code file** (the owner, 2026-10-11): a squiggle
 //: under a comment's or a string's word answers a pause of the pointer as it
@@ -17977,6 +18767,16 @@ const DOC_SPELLING_PAIRS = [
   ["marvellous", "marvelous"], ["towards", "toward"],
 ];
 
+//: The setting's five values (VC6) read the one table: Australian and Indian
+//: spell as the British column does for every pair here; Canadian is the
+//: mixed one (`DOC_CA_KEEPS_UK`). The label is what a finding says.
+const DOC_VARIANT_FAMILY = { us: "us", uk: "uk", au: "uk", in: "uk", ca: "ca" };
+const DOC_VARIANT_LABEL = { us: "US", uk: "UK", au: "Australian", ca: "Canadian", in: "Indian" };
+//: Canada spells -our, -re, -ce, grey, cheque and the doubled l the British
+//: way and -ize and the rest the American way ("tyre" is "tire" there).
+const DOC_CA_KEEPS_UK =
+  /^(?!tyre$)([a-z]*(our(s|ed|ite|ites)?|re|res|ce|ces|ll(ed|ing|er))|grey|cheque|jewellery|marvellous|catalogue)$/;
+
 //: Built once from the pairs above, in whichever direction the setting names.
 //: A map rather than a scan, because this runs per word of the document.
 let docVariantMap = null;
@@ -17991,10 +18791,14 @@ function docVariantLookup() {
   if (docVariantFor === variant && docVariantMap) return docVariantMap;
   docVariantFor = variant;
   docVariantMap = new Map();
-  if (variant === "uk") {
-    for (const [uk, us] of DOC_SPELLING_PAIRS) docVariantMap.set(us, uk);
-  } else if (variant === "us") {
-    for (const [uk, us] of DOC_SPELLING_PAIRS) docVariantMap.set(uk, us);
+  const family = DOC_VARIANT_FAMILY[variant];
+  if (!family) return docVariantMap;
+  for (const [uk, us] of DOC_SPELLING_PAIRS) {
+    //: Canada keeps some of each side: -our, -re, -ce and the doubled l from
+    //: the left, -ize and the rest from the right.
+    const british = family === "uk" || (family === "ca" && DOC_CA_KEEPS_UK.test(uk));
+    if (british) docVariantMap.set(us, uk);
+    else docVariantMap.set(uk, us);
   }
   return docVariantMap;
 }
@@ -18345,7 +19149,9 @@ function docFindingLine(finding, variant = "row") {
 //: common menu nine rows deep. Whitespace-only findings (a double space) are
 //: not passages either: there is nothing in them to rephrase.
 function docFindingIsPassage(finding) {
-  return /\s/.test(String(finding.text || "").trim());
+  //: A link offer's answer is the link; asking a model to reword a title
+  //: would be a different question.
+  return finding.rule !== "link-offer" && /\s/.test(String(finding.text || "").trim());
 }
 
 //: **The answers to a finding as data** (INBOX 689): the candidates that
@@ -20517,6 +21323,10 @@ function docCmTheme(CM) {
         backgroundColor: "color-mix(in srgb, var(--accent) 12%, transparent)",
         borderRadius: "3px",
       },
+      ".cm-finding-link:hover": {
+        backgroundColor: "color-mix(in srgb, var(--accent) 12%, transparent)",
+        borderRadius: "3px",
+      },
       ".cm-finding-spelling": {
         textDecoration: "underline wavy",
         textDecorationColor: "color-mix(in srgb, var(--error) 80%, transparent)",
@@ -20550,6 +21360,14 @@ function docCmTheme(CM) {
       ".cm-finding-access": {
         textDecoration: "underline dashed",
         textDecorationThickness: "2px",
+        textDecorationColor: "color-mix(in srgb, var(--accent) 80%, transparent)",
+      },
+      //: A link offer (VC5): a plain thin underline in the accent, the line a
+      //: link wears, because this is where one could be, not a mistake.
+      ".cm-finding-link": {
+        textDecoration: "underline solid",
+        textDecorationThickness: "1px",
+        textUnderlineOffset: "3px",
         textDecorationColor: "color-mix(in srgb, var(--accent) 80%, transparent)",
       },
     },
@@ -20649,6 +21467,10 @@ function docCmKeymap(CM) {
     { key: "Enter", run: (view) => docTableKeyMove(view, "Enter") },
     { key: "ArrowDown", run: (view) => docTableKeyMove(view, "ArrowDown") },
     { key: "ArrowUp", run: (view) => docTableKeyMove(view, "ArrowUp") },
+    //: A markdown document moves a block, not a line (`docBlockMoveEdit`); a
+    //: code file declines and the default line move answers.
+    { key: "Alt-ArrowUp", run: (view) => docBlockMoveRun(view, -1) },
+    { key: "Alt-ArrowDown", run: (view) => docBlockMoveRun(view, 1) },
     {
       key: "Escape",
       run: () => {

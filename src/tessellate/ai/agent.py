@@ -1373,7 +1373,7 @@ def build_agent_messages(
     # puts every relative time out by the offset between them.
     from datetime import timedelta
 
-    local = user_now(deps.get_config())
+    local = user_now(deps.peek_config())
     # To the minute, not the microsecond. This string sits near the top of a
     # prompt that is resent on every round of every turn, and Ollama's prefix
     # cache keeps only the tokens *before* the first difference, so a clock

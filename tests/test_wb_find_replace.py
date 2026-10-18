@@ -25,7 +25,8 @@ def _replace(text, find, to):
     node = shutil.which("node")
     if not node:
         pytest.skip("node is not installed")
-    script = _function("wbReplaceText") + f"console.log(JSON.stringify(wbReplaceText({json.dumps(text)}, {json.dumps(find)}, {json.dumps(to)})));"
+    #: `wbReplaceText` builds its pattern with `wbSearchPattern`, so both are cut out.
+    script = _function("wbSearchPattern") + _function("wbReplaceText") + f"console.log(JSON.stringify(wbReplaceText({json.dumps(text)}, {json.dumps(find)}, {json.dumps(to)})));"
     return json.loads(subprocess.run([node, "-e", script], capture_output=True, text=True, check=True).stdout)
 
 
