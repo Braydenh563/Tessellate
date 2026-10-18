@@ -106,6 +106,8 @@ CSS_FILES = [
     CSS_DIR / "settings-controls-lazy.css",
     #: The density strip's year and month labels (timeline-ticks.js loads it).
     CSS_DIR / "timeline-ticks-lazy.css",
+    #: The Notes sidebar's folds (C43).
+    CSS_DIR / "sidebar-folds-lazy.css",
 ]
 
 
