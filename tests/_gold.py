@@ -97,6 +97,35 @@ def score(text: str, item: dict) -> dict:
     }
 
 
+#: How an answer reads, beside what it says (INBOX 1301 D5, the owner: "the
+#: responses for how they are written, how they sound, how they are formatted
+#: ... are very poor"). The screenshot's faults, each a pattern: fragments
+#: glued with ";" (a list's colon, a quote's close), a note's section
+#: headings said as notes ("Your first Phase note has"), the question echoed,
+#: and a person's "we" inside a sentence told to "you".
+BROKEN = (
+    re.compile(r":;"),
+    re.compile(r"[\"”?];"),
+    re.compile(r"\bYour (?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth) [A-Z]\w* note\b"),
+    re.compile(r"^You asked:", re.M),
+    re.compile(r"\byou\b[^.\n]*;\s*we\b", re.I),
+)
+_SENTENCE = re.compile(r"(?<=[.?!])[\"”]?\s+|\n+")
+
+
+def form(text: str) -> dict:
+    """The numbers D5 is measured by: the longest sentence in words, the
+    ";" joins, the broken patterns found and the length in characters."""
+    body = re.sub(r"\*\*", "", text or "")
+    sentences = [s for s in _SENTENCE.split(body) if s.strip()]
+    return {
+        "max_words": max((len(s.split()) for s in sentences), default=0),
+        "semicolons": body.count(";"),
+        "broken": sum(len(p.findall(body)) for p in BROKEN),
+        "chars": len(text or ""),
+    }
+
+
 if __name__ == "__main__":
     #: stdin: {"<n>": "<answer text>", ...}; stdout: one score per answer.
     given = json.load(sys.stdin)

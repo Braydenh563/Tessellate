@@ -401,6 +401,7 @@ user to write better link reasons"): INBOX 691's concrete overlaps first,
 then the composer's quoted sentence pair, a model's checked line when one
 runs, feeding Tidy's "Add reasons" and "Add reasons to all". Open items and
 numbers: agent-remaining/composer725-1006.md.
+INBOX 1301 D5 (an overview note as its gist, sections said as its shape, no "You asked:" echo, a reminder only for a stated task): built, see HISTORY.md "Moved from the plans, 2026-10-18 (design4-1018: how a no-model answer reads)".
 
 ### Phase 6: the deterministic engine (the owner, 2026-10-10; Brief 39)
 

@@ -2880,27 +2880,6 @@ function newChat() {
   loadSuggestions();
 }
 
-// Echo the question above its answer. Without it, an answer that has been on
-// screen a while, or one you scrolled back to, is a paragraph with no
-// subject.
-function renderAskedQuestion(question) {
-  const holder = $("asked-question");
-  if (!holder) return;
-  holder.replaceChildren();
-  if (!question) {
-    holder.classList.add("hidden");
-    return;
-  }
-  const label = document.createElement("span");
-  label.className = "asked-label";
-  label.textContent = "You asked: ";
-  const text = document.createElement("span");
-  text.className = "asked-text";
-  text.textContent = question;
-  holder.append(label, text);
-  holder.classList.remove("hidden");
-}
-
 //: **What the Ask tab shows while the model works** (INBOX 298: 250 of 250
 //: streaming frames had nothing moving). The Chat tab's two components, not
 //: a new control: `.is-generating` from before the request to its `finally`,
@@ -2985,7 +2964,6 @@ async function askQuestion(preset) {
   const thinkingHost = $("thinking-box");
   const thinkingBox = thinkingFoldIn(thinkingHost);
   const thinkingText = thinkingBox.querySelector(".thinking");
-  renderAskedQuestion(question);
   answerBox.textContent = "";
   //: A counting or trend question gets its chart beside the answer
   //: (WORLD_CLASS_PLAN section 17 row 4): asked in parallel, from the
