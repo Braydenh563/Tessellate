@@ -1101,6 +1101,7 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
   const touched = new Map();
   let meta = null;
   let stats = null;
+  const panels = []; // the app's panels under the answer (INBOX 1300 C06)
   let thinkingRaw = "";
   //: In-text numbers, Chat's own call (`addInlineCitations`) on the `grounding`
   //: rows (BACKLOG, the owner 2026-10-12: popup answers had a Sources list and
@@ -1212,6 +1213,8 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
         //: same move Chat's timeline makes (`foldEarlierThinking`).
         if (thinkingBox) thinkingBox.open = false;
         addStep(event);
+        //: A page the model read opens in place above the answer (INBOX 1300 C06).
+        if (event.ok && event.tool === "read_url") drawAnswerPanels(stepsHolder, [{ web: event.sources, read: true }], answerBox);
         keepAtBottom(cmdPaletteResults);
         // Something visible while a tool runs, so a long silence reads as
         // work rather than as nothing happening.
@@ -1254,6 +1257,8 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
         renderToolConfirm(stepsHolder, event);
       },
       onUnsupported: (e) => (why = e?.message || why),
+      onPanel: (event) => panels.push(event),
+      onWebSources: (event) => panels.push({ web: event.sources }),
       onHint: (e) => (why = why || e?.text || ""),
       onGrounding: cite,
       onGroundingLive: cite,
@@ -1289,6 +1294,7 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
         ...[...touched.values()].filter((item) => item.kind === "note"),
       ]);
       cmdPaletteTurns.push({ question: text, answer: answerRaw });
+      if (panels.length) drawAnswerPanels(answerBox, panels);
       //: The first turn is what turns "Save as chat" from a dead row into a
       //: live one, so the menu is rebuilt here rather than only on reset.
       renderCmdPaletteMenu();

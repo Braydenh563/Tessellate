@@ -70,6 +70,8 @@ CSS_FILES = [
     CSS_DIR / "atlas-lazy.css",
     #: The Statistics page and This week (statistics.js, Brief 89).
     CSS_DIR / "utilities-lazy.css",
+    #: What the app draws into a reply beside its words (reply-kit.js, INBOX 1300 C06).
+    CSS_DIR / "reply-kit-lazy.css",
     #: The live captions dock (captions.js, Brief 82).
     CSS_DIR / "captions-lazy.css",
     #: The Notes tab's Questions view (questions-view.js loads it).

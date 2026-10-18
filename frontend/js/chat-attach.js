@@ -2001,7 +2001,7 @@ async function sendChatMessage(preset, opts = {}) {
         status.textContent = m && m.composed ? "Composing from your notes, no AI…" : "The model is writing…";
       },
       onRelated: (event) => {
-        renderRelatedElsewhere(groundingHolder, event.items);
+        ensureModule("replyKit").then(() => renderRelatedElsewhere(groundingHolder, event.items)).catch(() => {});
       },
       onUnsupported: (event) => {
         toolsUnsupportedEvent = event;
@@ -2140,6 +2140,10 @@ async function sendChatMessage(preset, opts = {}) {
           timeline.tool(card.firstElementChild || card);
         }
         if (event.ok) toolsActed = true;
+        //: A page the model read opens in place under its step (INBOX 1300
+        //: C06): the web fold's reader, the same one a composed answer's
+        //: results use. Its search results are the Sources panel's cards.
+        if (event.ok && event.tool === "read_url") drawAnswerPanels(timeline.holder, [{ web: event.sources, read: true }]);
         status.textContent = "The model is making changes…";
         chatScrollToEnd();
       },
@@ -2154,6 +2158,9 @@ async function sendChatMessage(preset, opts = {}) {
         drawAskChart(host, event.chart);
         chatScrollToEnd();
       }),
+      //: The notebook's cards or the calculator (INBOX 1300 C06), drawn by
+      //: the one reply renderer every answer surface shares.
+      onPanel: (event) => drawAnswerPanels(timeline.holder, [event]).then(chatScrollToEnd),
       onConfirm: (event) => {
         clearPending();
         const card = document.createElement("div");

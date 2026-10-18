@@ -1,0 +1,253 @@
+/* reply-kit-lazy.css: what the app draws into a reply beside its words
+   (reply-kit.js, INBOX 1300 C06), loaded with it (`LAZY_MODULES.replyKit`)
+   rather than at boot, for the boot budget.
+
+   **A reply panel**: the Ask chart's card (an edge, `--radius-lg`, padded
+   `--space-3`), a head of the panel's icon and name with its one way on at
+   the right, then its content. Every colour is a theme token. */
+.reply-panel {
+  margin-block: var(--space-3) 0;
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.reply-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.reply-panel-title {
+  font-weight: 600;
+  font-size: var(--text-sm);
+  color: var(--ink);
+}
+
+.reply-panel-empty {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+/* The notebook in cards: the Statistics tiles' ground, three to a row at
+   most, two in a phone's bubble (each at least 5.5rem). */
+.reply-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(max(5.5rem, calc((100% - 2 * var(--space-2)) / 3)), 1fr));
+  gap: var(--space-2);
+}
+
+.reply-stat-grid[aria-busy="true"] {
+  min-height: calc(3 * var(--space-9));
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+}
+
+.reply-stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  min-width: 0;
+}
+
+.reply-stat-top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.reply-stat-icon {
+  color: var(--accent-text);
+  font-size: var(--text-md);
+}
+
+.reply-stat-value {
+  font-size: var(--text-lg);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.reply-stat-label {
+  font-size: var(--text-sm);
+  color: var(--ink);
+}
+
+.reply-stat-line {
+  font-size: var(--text-xs);
+  overflow-wrap: anywhere;
+}
+
+/* The small charts: a spark line, a meter, two bars. Each fills by a
+   transform from the left once the panel is drawn (`is-drawn`), so nothing
+   lays out (`replyFillMeters` sets each one's scale); `--ui-slow` is 0 with
+   Interface animations off. */
+.reply-spark {
+  width: 100%;
+  height: var(--space-7);
+  margin-top: var(--space-1);
+  overflow: visible;
+}
+
+.reply-spark-line {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.reply-spark-area {
+  fill: var(--accent-soft);
+  stroke: none;
+}
+
+.reply-meter,
+.reply-compare-bar {
+  display: block;
+  height: var(--space-1);
+  border-radius: var(--radius-pill);
+  background: var(--border);
+  overflow: hidden;
+}
+
+.reply-meter {
+  margin-top: var(--space-2);
+}
+
+.reply-meter-fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform var(--ui-slow) var(--ease-out);
+}
+
+.reply-compare {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+
+.reply-compare-bar.is-before .reply-meter-fill {
+  background: var(--muted);
+}
+
+/* The answer's own "Open Statistics" line steps aside for the panel's head,
+   which says the same with the figures beside it. */
+:is(.msg, #ai-answer):has(.reply-stats) p:has(> .digest-offer[data-surface="statistics"]) {
+  display: none;
+}
+
+/* **The calculator** (`openCalculator`): the sheet recipe's card, a `.seg`
+   for its two modes, the box, the result as a live region (the figure large,
+   how it was read muted under it), a four-column keypad of square-ish keys
+   as ghost buttons (operators in the accent's text colour, = the filled one),
+   then the last results as ghost buttons. */
+.calc-pane {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.calc-input {
+  font-size: var(--text-lg);
+  font-variant-numeric: tabular-nums;
+}
+
+.calc-result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-height: var(--space-9);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  overflow-wrap: anywhere;
+}
+
+.calc-result-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.calc-result-row .calc-result {
+  flex: 1;
+  min-width: 0;
+}
+
+.calc-figure {
+  font-size: var(--text-lg);
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.calc-result.is-preview .calc-figure {
+  color: var(--muted);
+}
+
+.calc-result.is-error .calc-read {
+  color: var(--error);
+}
+
+.calc-read {
+  font-size: var(--text-sm);
+}
+
+.calc-keys {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+}
+
+.calc-key {
+  min-height: var(--space-9);
+  font-size: var(--text-md);
+  font-variant-numeric: tabular-nums;
+}
+
+.calc-key.is-op {
+  color: var(--accent-text);
+}
+
+.calc-history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.calc-again {
+  font-variant-numeric: tabular-nums;
+}
+
+.calc-convert-row {
+  display: grid;
+  grid-template-columns: minmax(4rem, 1fr) minmax(0, 1.4fr) auto minmax(0, 1.4fr);
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.calc-convert-row .small-select,
+.calc-kind {
+  max-width: none;
+  min-width: 0;
+}
+
+.calc-note {
+  margin: 0;
+  font-size: var(--text-sm);
+}

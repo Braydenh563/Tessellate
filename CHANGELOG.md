@@ -7,6 +7,9 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Calculator: a sheet from the palette's Calculator row, /calc alone, or Open the calculator under an answer that worked out a sum or a conversion; it works out as you type (the /calc reader, `GET /utilities/work`), has a keypad that is one Tab stop walked by the arrow keys, copies the result, keeps the last five, and converts units and currencies by kind with a swap (`GET /utilities/units`) (INBOX 1300 C06).
+- Web results under an answer are cards (a globe tile, title, site, two lines; a press anywhere reads the page in place), the reader shows the page formatted with a facts line (site, words, minutes, when read) in a panel up to 60% of the window, and a page the model read opens the same reader from a fold under its step; Ask and the popup agent now draw the web results too (INBOX 1300 C06).
+- Chat, Ask and the popup agent: a question about the notebook as a whole ("notebook stats", /stats) carries a panel of six cards with icons, a spark line, meters and this-week bars, and Open Statistics in its head, whoever writes the words (INBOX 1300 C06); `tests/test_reply_cards.py`.
 - Guide and help: the Open Packages button on package notices is documented (standing order 13).
 - Recordings: each transcript line has a copy button, Shift-click picks a run, and the more menu copies picked or all lines with or without times (INBOX 1300 C40).
 - Timeline: Options has a remembered switch for the dates beside the density strip (INBOX 1300 C36).

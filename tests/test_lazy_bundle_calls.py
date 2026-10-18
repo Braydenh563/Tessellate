@@ -123,6 +123,8 @@ REACHED_AFTER_LOAD = {
     "markNotePassage": "reveal, called in the .then of ensureModule('reveal') in openNoteAtPassage",
     #: Decision 70: the digest answer's one offer, in the .then of
     #: ensureModule('askCompose') in renderAnswerGrounding.
+    "renderRelatedElsewhere": "replyKit, called in the .then of ensureModule('replyKit') by the Ask foot and Chat's onRelated",
+    "replyDrawAll": "replyKit, called in the .then of ensureModule('replyKit') by drawAnswerPanels, every answer surface's panel drawer (INBOX 1300 C06)",
     "digestOffer": "askCompose, called in the .then of ensureModule('askCompose') in renderAnswerGrounding",
     "digestShape": "askCompose, called in the .then of ensureModule('askCompose') in renderAnswerGrounding",
     "digestMore": "askCompose, called in the .then of ensureModule('askCompose') in renderAnswerGrounding",
@@ -149,6 +151,7 @@ REACHED_AFTER_LOAD = {
     #: Brief 89: the palette's small tools, each called in the .then of
     #: ensureModule('utilities') on its own palette row (settings-panes.js).
     "startUtilityTimer": "utilities, called in the .then of ensureModule('utilities') on the palette's timer rows",
+    "openCalculator": "replyKit, called in the .then of ensureModule('replyKit') on the palette's Calculator row",
     "startStopwatch": "utilities, called in the .then of ensureModule('utilities') on the palette's stopwatch row",
     "countSelection": "utilities, called in the .then of ensureModule('utilities') on the palette's Count words row",
     #: Brief 47: the findAnything shortcut closes the box only while

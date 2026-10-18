@@ -135,7 +135,7 @@ MORE_TOPICS: list[dict] = [
             "tools it can use", "which tools", "turn off a tool", "disable a tool",
             "small model mode", "run budget", "tool list", "tokens per step",
             "tools offered", "using a tool", "use a tool", "stop atlas using",
-            "cut that reply short", "model size", "calculator", "does atlas do sums",
+            "cut that reply short", "model size", "does atlas do sums",
         ),
         "body": (
             "Settings, Tools it can use also has Use these tools from another "
@@ -829,10 +829,33 @@ MORE_TOPICS: list[dict] = [
             "written and reminders done since Monday with the whole of last week. "
             "Open it from the Statistics button under the Dashboard's Activity "
             "heatmap (or a click on the heatmap), the This week card's All "
-            "statistics, or Statistics in the command palette (Ctrl+K). Private "
-            "and binned notes are not counted."
+            "statistics, or Statistics in the command palette (Ctrl+K). Ask "
+            "\"notebook stats\" or type /stats in Chat, Ask or the popup agent and "
+            "the answer carries the figures as cards with small charts, and Open "
+            "Statistics in their head. Private and binned notes are not counted."
         ),
         "badge": {"label": "Dashboard", "tab": "dashboard"},
+    },
+    {
+        "id": "calculator",
+        "keywords": (
+            "calculator", "open the calculator", "keypad", "unit converter",
+            "convert units", "currency converter", "work out a sum",
+        ),
+        "body": (
+            "The calculator works out sums, percentages and conversions with no "
+            "model, the same way /calc does. Open it from the command palette "
+            "(Ctrl+K, Calculator), by typing /calc with nothing after it, or "
+            "with Open the calculator under an answer that worked something "
+            "out. Work out takes a sum typed or keyed (12 * (3 + 4), 15% of 80, "
+            "5 km to miles), shows the result as you type and says how it read "
+            "it; Enter or = keeps it in the list of earlier results, and Copy "
+            "result copies it. The keypad is one Tab stop: the arrow keys move "
+            "around it. Convert units picks a kind (length, weight, currency "
+            "and more), an amount and two units, with a swap button; currency "
+            "rates are set by hand and dated, not today's rate."
+        ),
+        "badge": {"label": "Chat", "tab": "chat"},
     },
     {
         "id": "timer",
@@ -1977,6 +2000,7 @@ TOPIC_META: dict[str, dict] = {
     "usage-ledger": {"title": "What you use", "path": "Settings, General, What you use", "target": "usage-box"},
     "statistics": {"title": "Statistics", "path": "Dashboard, Activity heatmap, Statistics"},
     "timer": {"title": "Timer and stopwatch", "path": "Command palette, timer"},
+    "calculator": {"title": "The calculator", "path": "Command palette, Calculator"},
     "manual": {"title": "The manual", "path": "Settings, Help, Open the manual"},
     "first-steps": {"title": "First steps and the sample notebook", "path": "Dashboard, Start in three steps"},
     "live-captions": {"title": "How do I get live captions", "path": "Library, Recordings, Captions"},
@@ -2160,7 +2184,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "reminders-controls", "dashboard", "dashboard-controls", "patterns", "notifications", "spaces", "statistics",
     )),
     ("Small tools", (
-        "timer", "count-words", "insert-template",
+        "timer", "calculator", "count-words", "insert-template",
     )),
     ("Look and feel", (
         "appearance", "themes", "simple-mode", "accessibility", "performance", "background-art",

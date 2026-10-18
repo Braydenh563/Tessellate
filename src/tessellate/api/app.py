@@ -68,6 +68,7 @@ from tessellate.api import (
     routes_questions,
     routes_read,
     routes_statistics,
+    routes_utilities,
     routes_privacy,
     routes_vision,
     routes_resurface,
@@ -1378,6 +1379,7 @@ def _include_routers(app: FastAPI, locked: list) -> None:
     app.include_router(routes_capabilities.router, dependencies=locked)
     app.include_router(routes_read.router, dependencies=locked)
     app.include_router(routes_statistics.router, dependencies=locked)
+    app.include_router(routes_utilities.router, dependencies=locked)
     #: WORLD_CLASS_PLAN section 17: the review queue, most opened, tidy proposals, charts.
     app.include_router(routes_vision.router, dependencies=locked)
 
