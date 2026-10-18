@@ -230,7 +230,7 @@
    "kind": "stats",
    "from": "INBOX 801",
    "question": "NOTEBOOK STATS",
-   "gold": "You have {20} notes in {9} categories, 17 July to 9 October.\n\n**Most filed:** Courses & Study, with {5}.\n**Busiest month:** September, with {9} notes.\n\nOpen Statistics for the full picture?",
+   "gold": "You have {20} notes in {9} categories, 17 July to 9 October.\n\nMost of your notes are filed under Courses & Study, with {5}. Your busiest month was September, with {9} notes.\n\nOpen Statistics for the full picture?",
    "type": "stats"
   },
   {
@@ -405,7 +405,7 @@
    "cites": [
     "groceries"
    ],
-   "gold": "Five groceries, from your list of 5 October:\n- [ ] oat milk\n- [ ] eggs\n- [ ] spinach\n- [ ] rice\n- [ ] chicken thighs\n\n**Also still open:** the Lisbon flights, and the gaming mouse.\n\nSave it as a checklist note?",
+   "gold": "Five groceries, from your list of 5 October:\n- [ ] oat milk\n- [ ] eggs\n- [ ] spinach\n- [ ] rice\n- [ ] chicken thighs\n\nThe Lisbon flights and the gaming mouse are also still open.\n\nSave it as a checklist note?",
    "type": "left"
   },
   {
