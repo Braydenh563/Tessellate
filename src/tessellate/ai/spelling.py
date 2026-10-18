@@ -24,6 +24,7 @@ composer offers "Did you mean" instead of guessing silently.
 
 from __future__ import annotations
 
+import importlib
 import re
 from collections import Counter
 from collections.abc import Callable
@@ -128,6 +129,16 @@ def _app_counts() -> Counter:
     """Word counts over the app's own help text: its vocabulary, and what
     breaks a tie between two readings. Empty when the help is not loadable
     (the speller then runs on the word list alone)."""
+    if _topic_source is None:
+        #: The topics register themselves when `help_chat` loads; a process
+        #: that has not met the Guide yet (the first question after launch,
+        #: a test file run alone) read every question without the app's own
+        #: words ("dayz" stayed "dayz"). `importlib`, not an `import`
+        #: statement: help_chat imports this module (an import cycle).
+        try:
+            importlib.import_module("tessellate.ai.help_chat")
+        except Exception:  # noqa: BLE001 - a missing help must not stop a question being read
+            pass
     try:
         text = " ".join(
             " ".join([str(t.get("title", "")), str(t.get("body", "")), " ".join(t.get("keywords") or [])])
