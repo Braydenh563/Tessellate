@@ -33,7 +33,7 @@ from sqlalchemy import or_, select
 from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
-from tessellate.ai import budget as run_budget, capability, composer, composer_digest, find_it, glossary, neighbours, personal, phrasing, verdicts, toolwords, vocative, why
+from tessellate.ai import budget as run_budget, capability, composer, composer_digest, composer_lists, find_it, glossary, list_pool, neighbours, personal, phrasing, verdicts, toolwords, vocative, why
 from tessellate.ai import (
     acts,
     agent,
@@ -1518,6 +1518,7 @@ def _prepare(
         )
         entries, mode = found.entries, found.mode
         entries = _with_neighbours(session, question, _widened(session, question, entries, scope=found.category), scope=found.category)
+        entries = list_pool.pool(session, question, entries)
         # Which of these are here because they are *connected* to a match
         # rather than because they matched. The user asked about one thing and
         # is being shown notes about another; without saying why, the panel
@@ -2653,7 +2654,7 @@ def _plain_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> 
         digest = None if follow else personal.answer(req.question, lambda: personal.notes_of(req.session), today)
         #: O11: a newer note on the same thing is the current one.
         current, older = _current_notes(req, prepared["notes"])
-        if digest is None and (not follow or restated) and not str(prepared.get("search_mode") or "").endswith("recent"):
+        if digest is None and (not follow or restated) and _may_digest(prepared, req.question):
             try:
                 digest = composer_digest.answer(
                 follow.question if restated else req.question, current, today=user_now(deps.get_config()).date(),
@@ -2878,6 +2879,21 @@ def _act_events(req: _StreamRequest, prepared: dict) -> Iterator[dict]:
         yield card
     elif planned.get("navigate"):
         yield {"type": "navigate", "surface": planned["navigate"]}
+
+
+def _may_digest(prepared: dict, question: str) -> bool:
+    """The digest answers unless this is a "newest notes" turn, which keeps
+    the composer's: but "all the dates in my notes" reads as newest-first
+    and is a computed answer (`ai/composer_lists.py`)."""
+    return not str(prepared.get("search_mode") or "").endswith("recent") or composer_lists.kind(question) is not None
+
+
+def _forced_notes(req: _StreamRequest, follow: object) -> bool:
+    """A turn that is about the notebook whatever its words read as: a reply
+    to the agent's question, a follow-up, and, in Ask, "list my work notes"
+    (an act in Chat, the question it is here: the listing is the answer,
+    CHAT_PLAN Phase 6 P12)."""
+    return bool(req.body.answering_agent or follow is not None or (req.body.notes_only and composer_lists.kind(req.question) is not None))
 
 
 def _first_events(req: _StreamRequest, prepared: dict, ollama_running: bool, tools_only: bool) -> Iterator[dict]:
@@ -3152,7 +3168,7 @@ def _stream_lines(req: _StreamRequest) -> Iterator[str]:
         req.session,
         _searched_question(req, follow),
         req.body.note_ids,
-        force_notes_intent=req.body.answering_agent or follow is not None,
+        force_notes_intent=_forced_notes(req, follow),
         attached_notes_only=req.body.attached_notes_only,
         document_ids=req.body.document_ids,
         file_ids=req.body.file_ids,

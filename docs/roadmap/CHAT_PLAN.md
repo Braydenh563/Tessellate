@@ -522,8 +522,7 @@ the numbers. Decisions 30 to 45 stay above: later briefs build on them.
 #### Open from Phase 6 (one line each; the agent's ledger is `agent-remaining/engine-1010.md`)
 
 - The blind panel (decision 40): the owner's rating against the 1 to 3B model on the owner's notebook.
-- Probe P10, P11, P13, P15, P16 (`agent-remaining/engine-probe-1010.md`): days until a note's date, mention counts, every date and what is due, lead-ins chosen after the parts, a note's open checklist items.
-- Probe P12: a list filtered by category or tag ("list my work notes").
+- Probe P15 (`agent-remaining/engine-probe-1010.md`): the lead-in chosen after the parts. P10 to P13 and P16 are built: HISTORY.md "Moved from the plans, 2026-10-18 (chat-1018".
 - Captions in keyword search: the composer reads them, the FTS index does not.
 - The currency table's Settings editor (decision 43); the rates are dated and fixed.
 - The model choosing among the engine's numbered readings (decision 45): the readings are listed; with a model running it does not yet pick.

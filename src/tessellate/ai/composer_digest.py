@@ -1966,6 +1966,14 @@ def _early(out: _Out, kind: str, asked: str, question: str, views: list, today: 
     abbr = glossary.asked(question)
     if abbr and _stands_for(out, abbr, views, today):
         return _result(out, "fact", asked)
+    from tessellate.ai import composer_lists  # lazily: it reads this module's helpers
+
+    computed = composer_lists.kind(asked)
+    if computed and composer_lists.answer(out, computed, asked, views, today):
+        #: A day, a count or a filing worked out from the notes (probes P10
+        #: to P13); when the notes do not hold what it needs the ordinary
+        #: shapes below still answer.
+        return _result(out, "fact", asked)
     if kind == "who":
         name = _ASKS["who"].search(asked).group("name").strip()
         return _result(out, kind, asked) if _who(out, name, views, names, today) else None
