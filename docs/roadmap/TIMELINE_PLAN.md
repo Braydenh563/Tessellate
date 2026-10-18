@@ -301,17 +301,16 @@ disagree.
 | --- | --- | --- |
 | 1 to 4 | the month grid, the week and day grids and the phone agenda, reminders and day pages on the grid with drag and undo, ICS export and import | Built 2026-10-11 (Brief 55): HISTORY.md, "Moved from the plans, 2026-10-11 (TIMELINE Brief 55)" |
 
-Not verified (Brief 55): the dot density at 5,000 notes in one month (the
-sweep's fixture is 48 over six months; a 1,000-note month is the stress
-case, read as at most ten pages of 1,000), touch drag (HTML drag and drop
-has none on a phone, where the calendar is the agenda), a week grid at
-1024 under a coarse pointer with hour rows full.
+Not verified (Brief 55, still): the dot density at 5,000 notes in one month
+(1,000 in a month is measured, HISTORY "TIMELINE timeline-1018"), and touch
+drag (HTML drag and drop has none on a phone, where the calendar is the
+agenda; a coarse pointer at 1024 keeps it).
 
 ### Vendored capabilities to use, 2026-10-10 (Brief 75)
 
 The owner: "make sure all the vendored repositories are made full use of. I want maximum utility." Ranked by the utility to the surface; `scratchpad/vendor_use.py` prints the counts ("available N, called M") and `tests/test_vendor_utilisation.py` ratchets them, so a row that lands raises its floor in the same commit. Each is a lead from a lower-bound count: grep the call site before building (CLAUDE.md section 1).
 
-- **VC2, D3's time scale and axis for the timeline and the calendar** (M, rank 2). `timeline.js` builds its date ticks by hand (51 lines with `Date(` in 2,441); D3's time module is 75 exports with 0 called (`scaleTime`, `timeMonth`, `timeWeek`, `timeDay`, `axisBottom`, `timeFormat`). Measure: tick labels at year, month, week and day zoom match `d3.timeFormat` output for 12 fixed dates (a node test); the hand-rolled tick lines deleted; no label overlap at 390 px (`scratchpad/ui-sweeps` measure).
+- **VC2, D3's time scale and axis for the timeline and the calendar**: the timeline strip's labels are built (section 10 row 6, pointer there); the calendar's own header and hour labels still use `Intl.DateTimeFormat` and stay (a locale's own words, not a scale).
 
 ## 10. Deepened 2026-10-10: the timeline (Brief 72b, decision 71)
 
@@ -340,16 +339,15 @@ never collide).
 | # | Kind | Row | Measure | Rules |
 | --- | --- | --- | --- | --- |
 | 1 | fix | The dock at 390 and 320: the view segment, search and month controls wrap into one row or move into the dock's menu | Built 2026-10-10 (Brief 85): HISTORY.md, "Moved from the plans, 2026-10-10 (TIMELINE Brief 85)" | |
-| 2 | fix | The day head's button beside its date, not over it; the five small targets at 24 px, 44 px on a coarse pointer | overlap 1 to 0 at 1440; small targets 5 to 0 | 7, 9, 11 |
+| 2 | fix | The day head's button beside its date, not over it; the five small targets at 24 px, 44 px on a coarse pointer | Built 2026-10-18 (timeline-1018): HISTORY.md, "Moved from the plans, 2026-10-18 (TIMELINE timeline-1018)" | |
 | 3 | fix | `undo.js` drives the selection bar from the timeline (move, tag, favourite, archive, delete) | Built 2026-10-10 (Brief 85): HISTORY.md, "Moved from the plans, 2026-10-10 (TIMELINE Brief 85)" | |
 | 4 | expansion | The calendar as the third view (section 9) | Built 2026-10-11 (Brief 55): HISTORY.md, "Moved from the plans, 2026-10-11 (TIMELINE Brief 55)" | |
-| 5 | expansion | Typed entries land on the day they name ("yesterday lunch with Sam") through the one quick-add grammar (CHAT_PLAN decision 50) | the parsed day equals the row's day on a 20-phrase set | 12, 10 |
-| 6 | redesign | Scrubber and month ticks from D3's time scale (VC2 above) | no label overlap at 390; the hand-rolled tick lines deleted | 7, 11 |
+| 5 | expansion | Typed entries land on the day they name ("yesterday lunch with Sam") through the one quick-add grammar (CHAT_PLAN decision 50) | Built 2026-10-18 (timeline-1018): HISTORY.md, "Moved from the plans, 2026-10-18 (TIMELINE timeline-1018)" | |
+| 6 | redesign | Scrubber and month ticks from D3's time scale (VC2 above) | Built 2026-10-18 (timeline-1018): HISTORY.md, "Moved from the plans, 2026-10-18 (TIMELINE timeline-1018)" | |
 | 7 | expansion | "On this day" and a year strip on the timeline, not only the dashboard | Built 2026-10-10 (Brief 85): HISTORY.md, "Moved from the plans, 2026-10-10 (TIMELINE Brief 85)" | |
 | 8 | optimisation | Click to rows 479 to 767 ms with 96 notes: under 300 ms, and under 800 ms on the 5,000-note scale fixture (`scale_test.py`) | Built 2026-10-10 (Brief 85): HISTORY.md, "Moved from the plans, 2026-10-10 (TIMELINE Brief 85)" | |
 
-**Briefs.** 41 (row 2), 66 (row 5), 75 (row 6); 55's row 4 and 85's rows 1,
-3, 7 and 8 are built.
+**Briefs.** Rows 1 to 8 are built (41's row 2, 66's row 5, 75's row 6, 55's row 4, 85's rows 1, 3, 7 and 8).
 
 ## 11. Deepened 2026-10-10: reminders and notifications (Brief 72b, decisions 69 and 71)
 
@@ -385,11 +383,11 @@ other Tuesday", "last Friday of the month").
 | 4 | expansion | Decision 69, browser and PWA: the service worker shows the notification, Done and Snooze 10 minutes as its actions | Built 2026-10-11 (Brief 86): HISTORY.md, "Moved from the plans, 2026-10-11 (TIMELINE Brief 86)" | |
 | 5 | fix | Fire on time: a timer set to the next due time, the 60 s poll kept as the backstop | Built 2026-10-10 (Brief 85): HISTORY.md, "Moved from the plans, 2026-10-10 (TIMELINE Brief 85)" | |
 | 6 | fix | A blocked permission says so once, in the reminders head and in Settings, with how to allow it per browser; the chime and the bell stay | Built 2026-10-10 (Brief 85): HISTORY.md, "Moved from the plans, 2026-10-10 (TIMELINE Brief 85)" | |
-| 7 | expansion | Live chips in the quick-add row (CHAT_PLAN decision 50) and the same row at 390 | chips within 150 ms; the saved value equals the chips; the row present at 390 | 12, 8 |
+| 7 | expansion | Live chips in the quick-add row (CHAT_PLAN decision 50) and the same row at 390 | Built 2026-10-18 (timeline-1018): HISTORY.md, "Moved from the plans, 2026-10-18 (TIMELINE timeline-1018)" | |
 | 8 | expansion | Recurrence beyond four (every weekday, every 2 weeks, last Friday) and early alerts ("1 day before") | Built 2026-10-10 (Brief 85): HISTORY.md, "Moved from the plans, 2026-10-10 (TIMELINE Brief 85)" | |
 | 9 | expansion | ICS import (section 9 decision 17) | Built 2026-10-11 (Brief 55): HISTORY.md, "Moved from the plans, 2026-10-11 (TIMELINE Brief 55)" | |
 
-**Briefs.** 66 (row 7); 55's row 9, 85's rows 1, 2, 5, 6 and 8 and 86's
+**Briefs.** 55's row 9, 66's row 7, 85's rows 1, 2, 5, 6 and 8 and 86's
 rows 3 and 4 are built.
 
 ## 12. Deepened 2026-10-10: the calendar (Brief 72b, decision 71)
