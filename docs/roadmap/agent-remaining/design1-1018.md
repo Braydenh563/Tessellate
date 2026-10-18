@@ -21,3 +21,5 @@ Items: C01, C19+C20, C05, C29, C33, C21, C22, in that order.
 - next: C22 shortcut chip
 - done: C21 b5101b1
 - done: C22 (pencil on the key chip)
+- done: C22 8238d9f
+- all seven items done. Open: the owner floated a glowing screen edge for the C21 preview (the notice sits in the toast corner instead); C20 over-hopping did not reproduce (1 move in 60 s), reduced by construction; WHITEBOARD step 8 not done.
