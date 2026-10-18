@@ -582,10 +582,10 @@ const WB_HELP_SECTIONS = [
     { cmd: "insert-image" }, { cmd: "tool-connector" }, { cmd: "tool-connector-curved" }, { cmd: "tool-delete" },
   ] },
   { title: "Move around", surface: "both", rows: [
-    { icon: "ph:hand", label: "Pan", keys: ["wheel", "two fingers", "middle drag"] },
+    { icon: "ph:hand", label: "Pan", keys: ["H then drag", "middle drag"] },
     { icon: "ph:arrows-horizontal", label: "Pan sideways", keys: ["Shift+wheel"] },
     { icon: "ph:hand-grabbing", label: "Pan with any tool", keys: ["Space+drag"] },
-    { icon: "ph:magnifying-glass-plus", label: "Zoom", keys: ["Ctrl+wheel", "pinch"] },
+    { icon: "ph:magnifying-glass-plus", label: "Zoom", keys: ["wheel", "pinch"] },
     { cmd: "zoom-in" }, { cmd: "zoom-out" }, { cmd: "zoom-100" }, { cmd: "zoom-fit" },
     { cmd: "overview" }, { cmd: "find" },
     { icon: "ph:keyboard", label: "Walk the board's items", keys: ["Tab", "Shift+Tab"] },
