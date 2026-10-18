@@ -1136,6 +1136,65 @@ function gcDrawNebulae(ctx, s, inView) {
   ctx.globalCompositeOperation = previous;
 }
 
+//: B71 (INBOX 904, "so messy and stuck together I couldn't read it"): each
+//: topic's name wants the spot straight above its outline's highest point,
+//: and two topics with near tops wanted the same one, or a plate covered
+//: another topic's dots. Seats the plates in the order given (the larger
+//: topics first): the plate's own spot, then slid along the outline's top
+//: edge, then lifted a row at a time, and the first seat clear of every seated
+//: plate and every dot wins; a crowd with no clear seat takes the one with
+//: the fewest hits. `entries` are {topic, cx, top, minX, maxX, w} in world
+//: units (`top` the outline's highest y, `w` the plate's full width), `dots`
+//: {x, y, r}. Returns {topic, x, left, right, top, bottom} in the same order.
+function gcSeatTopicPlates(entries, dots, k) {
+  const h = 17 / k;
+  const gap = 10 / k;
+  const cell = 48 / k;
+  const grid = new Map();
+  for (const d of dots) {
+    const key = Math.floor(d.x / cell) + "," + Math.floor(d.y / cell);
+    if (!grid.has(key)) grid.set(key, []);
+    grid.get(key).push(d);
+  }
+  const dotHits = (box) => {
+    let n = 0;
+    for (let gx = Math.floor((box.left - 12 / k) / cell); gx <= Math.floor((box.right + 12 / k) / cell); gx++) {
+      for (let gy = Math.floor((box.top - 12 / k) / cell); gy <= Math.floor((box.bottom + 12 / k) / cell); gy++) {
+        for (const d of grid.get(gx + "," + gy) || []) {
+          const r = d.r + 2 / k;
+          if (d.x + r > box.left && d.x - r < box.right && d.y + r > box.top && d.y - r < box.bottom) n++;
+        }
+      }
+    }
+    return n;
+  };
+  const seated = [];
+  for (const e of entries) {
+    const lo = e.minX + e.w / 2;
+    const hi = e.maxX - e.w / 2;
+    const own = Math.min(Math.max(e.cx, Math.min(lo, hi)), Math.max(lo, hi));
+    const slides = [0, -0.6, 0.6, -1.2, 1.2].map((m) => Math.min(Math.max(own + m * e.w, Math.min(lo, hi)), Math.max(lo, hi)));
+    let best = null;
+    for (let lift = 0; lift < 8 && !(best && best.cost === 0); lift++) {
+      for (const x of slides) {
+        const bottom = e.top - gap - lift * (h + 3 / k);
+        const box = { topic: e.topic, x, left: x - e.w / 2, right: x + e.w / 2, top: bottom - h, bottom };
+        let cost = dotHits(box);
+        for (const p of seated) if (box.left < p.right + 3 / k && p.left < box.right + 3 / k && box.top < p.bottom + 2 / k && p.top < box.bottom + 2 / k) cost += 100;
+        // Own spot wins a tie; each step off it costs a little, so a plate
+        // is not lifted for nothing.
+        cost += (lift * 0.02) + (Math.abs(x - own) > 0 ? 0.01 : 0);
+        if (!best || cost < best.cost) best = { ...box, cost };
+        if (cost < 0.5) break;
+      }
+      if (best && best.cost < 0.5) break;
+    }
+    const { cost, ...seat } = best;
+    seated.push(seat);
+  }
+  return seated;
+}
+
 //: GRAPH_PLAN KG6: under the Topic colour rule, each topic of three or more
 //: drawn notes gets its outline (a convex hull padded past its dots) and its
 //: name on a plate above it, in the topic's colour. Full tab only.
@@ -1159,13 +1218,33 @@ function gcDrawTopicHulls(ctx, s, k) {
   const names = new Map(graphStructure.topics.map((t) => [t.id, t.name]));
   ctx.save();
   ctx.lineJoin = "round";
+  ctx.font = `600 ${12 / k}px ${gcTokens.font}`;
+  const shapes = [];
   for (const [topic, points] of byTopic) {
     if (points.length < 24) continue;
     const hull = d3.polygonHull(points);
     if (!hull) continue;
+    const top = hull.reduce((a, b) => (b[1] < a[1] ? b : a));
+    const text = names.get(topic) || "";
+    shapes.push({
+      topic, hull, text, size: points.length,
+      entry: {
+        topic, cx: top[0], top: top[1], w: ctx.measureText(text).width + 10 / k,
+        minX: hull.reduce((a, b) => Math.min(a, b[0]), Infinity), maxX: hull.reduce((a, b) => Math.max(a, b[0]), -Infinity),
+      },
+    });
+  }
+  //: The larger topic keeps the spot nearest its outline; a smaller one yields.
+  shapes.sort((a, b) => b.size - a.size);
+  const dots = [];
+  for (const node of s.nodes) if (!node.isGroup && Number.isFinite(node.x) && gcVisibleAtTime(node, s)) dots.push({ x: node.x, y: node.y, r: node.r || 6 });
+  const seats = gcSeatTopicPlates(shapes.map((p) => p.entry), dots, k);
+  shapes.forEach((shape, i) => {
+    const { topic, hull, text } = shape;
+    const seat = seats[i];
     const colour = s.topicColour ? s.topicColour(String(topic)) : gcTokens.muted;
     ctx.beginPath();
-    hull.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+    hull.forEach(([x, y], j) => (j ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
     ctx.closePath();
     ctx.globalAlpha = 0.06;
     ctx.fillStyle = colour;
@@ -1175,27 +1254,21 @@ function gcDrawTopicHulls(ctx, s, k) {
     ctx.lineWidth = 1.5 / k;
     ctx.setLineDash([6 / k, 4 / k]);
     ctx.stroke();
-    const top = hull.reduce((a, b) => (b[1] < a[1] ? b : a));
-    const text = names.get(topic) || "";
     ctx.setLineDash([]);
-    ctx.globalAlpha = 1;
-    ctx.font = `600 ${12 / k}px ${gcTokens.font}`;
-    const w = ctx.measureText(text).width;
-    const x = Math.min(Math.max(top[0], hull.reduce((a, b) => Math.min(a, b[0]), Infinity) + w / 2), hull.reduce((a, b) => Math.max(a, b[0]), -Infinity) - w / 2);
-    ctx.fillStyle = gcTokens.card;
     ctx.globalAlpha = 0.88;
-    ctx.fillRect(x - w / 2 - 5 / k, top[1] - 27 / k, w + 10 / k, 17 / k);
-    s.topicPlates.push({ left: x - w / 2 - 5 / k, right: x + w / 2 + 5 / k, top: top[1] - 27 / k, bottom: top[1] - 10 / k, topic });
+    ctx.fillStyle = gcTokens.card;
+    ctx.fillRect(seat.left, seat.top, seat.right - seat.left, seat.bottom - seat.top);
+    s.topicPlates.push({ left: seat.left, right: seat.right, top: seat.top, bottom: seat.bottom, topic });
     //: The name in ink (a light topic colour is under 3:1 on the plate); the
     //: plate's edge carries the colour.
     ctx.globalAlpha = 1;
     ctx.lineWidth = 1.5 / k;
-    ctx.strokeRect(x - w / 2 - 5 / k, top[1] - 27 / k, w + 10 / k, 17 / k);
+    ctx.strokeRect(seat.left, seat.top, seat.right - seat.left, seat.bottom - seat.top);
     ctx.fillStyle = gcTokens.ink;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(text, x, top[1] - 18.5 / k);
-  }
+    ctx.fillText(text, seat.x, (seat.top + seat.bottom) / 2);
+  });
   ctx.restore();
 }
 
