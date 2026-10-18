@@ -231,3 +231,21 @@ def test_a_sentence_heading_is_not_wrapped_in_your_note():
     held = [SimpleNamespace(view=SimpleNamespace(written=date(2026, 7, 27)))]
     line = d._prose("The split follows this structure", held, ["has Pull, Push and Legs"], 0, date(2026, 10, 12))
     assert "Your the" not in line and "structure note" not in line, line
+
+
+def test_a_cold_process_routes_an_act_without_anything_else_imported():
+    """`intent.classify` alone in a fresh interpreter reads "pin the dentist
+    noe" as an act: the typed reader is registered by `commands`, which the
+    classifier itself must bring in (it used to depend on what ran before)."""
+    import subprocess
+    import sys
+
+    src = Path(__file__).resolve().parents[1] / "src"
+    code = (
+        "from tessellate.ai import intent;"
+        "print(intent.classify('pin the dentist noe'), intent.classify('unlnk the gym note from the running note'))"
+    )
+    out = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True, check=True, env={"PYTHONPATH": str(src), "PATH": ""}
+    ).stdout.split()
+    assert out == ["act", "act"]

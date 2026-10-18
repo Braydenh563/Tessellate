@@ -2,7 +2,7 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 5957, frontend ids 2510, CSS sections 495, backend routes 607, backend modules 5675, test files 1233, tests 11192, plan headings 957.
+Counts: frontend functions 5957, frontend ids 2510, CSS sections 495, backend routes 607, backend modules 5677, test files 1233, tests 11194, plan headings 957.
 
 ## Frontend functions (5957)
 
@@ -10456,7 +10456,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (5675)
+## Backend modules (5677)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -11590,14 +11590,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `_about_app_first` | src/tessellate/ai/intent.py:133 |
-| `_laughs` | src/tessellate/ai/intent.py:198 |
-| `_mash_word` | src/tessellate/ai/intent.py:215 |
+| `_laughs` | src/tessellate/ai/intent.py:204 |
+| `_mash_word` | src/tessellate/ai/intent.py:221 |
 | `_matches_any` | src/tessellate/ai/intent.py:111 |
 | `_normalise` | src/tessellate/ai/intent.py:102 |
 | `classify` | src/tessellate/ai/intent.py:139 |
-| `is_mash` | src/tessellate/ai/intent.py:232 |
-| `is_test` | src/tessellate/ai/intent.py:252 |
-| `needs_retrieval` | src/tessellate/ai/intent.py:257 |
+| `is_mash` | src/tessellate/ai/intent.py:238 |
+| `is_test` | src/tessellate/ai/intent.py:258 |
+| `needs_retrieval` | src/tessellate/ai/intent.py:263 |
 
 ### src/tessellate/ai/janitor.py (27)
 
@@ -12078,10 +12078,10 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `_at_asking_place` | src/tessellate/ai/question_noise.py:2287 |
-| `_cosine` | src/tessellate/ai/question_noise.py:2402 |
+| `_cosine` | src/tessellate/ai/question_noise.py:2403 |
 | `_is_spelt` | src/tessellate/ai/question_noise.py:2219 |
 | `_join_asking` | src/tessellate/ai/question_noise.py:2133 |
-| `_one_slip_from` | src/tessellate/ai/question_noise.py:2350 |
+| `_one_slip_from` | src/tessellate/ai/question_noise.py:2351 |
 | `_real_word_slips` | src/tessellate/ai/question_noise.py:2115 |
 | `_repair_by_speller` | src/tessellate/ai/question_noise.py:2249 |
 | `_repair_late_space` | src/tessellate/ai/question_noise.py:2168 |
@@ -12092,16 +12092,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_speller_may_read` | src/tessellate/ai/question_noise.py:2213 |
 | `_split` | src/tessellate/ai/question_noise.py:2068 |
 | `_strip_stray_tail` | src/tessellate/ai/question_noise.py:422 |
-| `_trigrams` | src/tessellate/ai/question_noise.py:2397 |
-| `_vector_cosine` | src/tessellate/ai/question_noise.py:2413 |
+| `_trigrams` | src/tessellate/ai/question_noise.py:2398 |
+| `_vector_cosine` | src/tessellate/ai/question_noise.py:2414 |
 | `_word_core` | src/tessellate/ai/question_noise.py:2206 |
 | `allowance` | src/tessellate/ai/question_noise.py:2006 |
 | `alternative` | src/tessellate/ai/question_noise.py:2053 |
-| `guess_kind` | src/tessellate/ai/question_noise.py:2420 |
-| `guided` | src/tessellate/ai/question_noise.py:2330 |
+| `guess_kind` | src/tessellate/ai/question_noise.py:2421 |
+| `guided` | src/tessellate/ai/question_noise.py:2331 |
 | `nearest` | src/tessellate/ai/question_noise.py:2024 |
 | `repair` | src/tessellate/ai/question_noise.py:2085 |
-| `router_words` | src/tessellate/ai/question_noise.py:2314 |
+| `router_words` | src/tessellate/ai/question_noise.py:2315 |
 | `social_kind` | src/tessellate/ai/question_noise.py:1922 |
 | `strip_strays` | src/tessellate/ai/question_noise.py:443 |
 | `strip_symbols` | src/tessellate/ai/question_noise.py:464 |
@@ -12547,52 +12547,54 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `label` | src/tessellate/ai/speakers.py:66 |
 | `parse_names` | src/tessellate/ai/speakers.py:51 |
 
-### src/tessellate/ai/spelling.py (42)
+### src/tessellate/ai/spelling.py (44)
 
 | Name | File:line |
 |---|---|
-| `_accept` | src/tessellate/ai/spelling.py:291 |
-| `_app_counts` | src/tessellate/ai/spelling.py:127 |
-| `_candidates` | src/tessellate/ai/spelling.py:313 |
-| `_common` | src/tessellate/ai/spelling.py:539 |
-| `_dictionary` | src/tessellate/ai/spelling.py:168 |
-| `_ending_fits` | src/tessellate/ai/spelling.py:344 |
-| `_fix` | src/tessellate/ai/spelling.py:382 |
-| `_fix_short` | src/tessellate/ai/spelling.py:480 |
-| `_fixed_phrase` | src/tessellate/ai/spelling.py:499 |
-| `_gap_cost` | src/tessellate/ai/spelling.py:721 |
-| `_hidden_small` | src/tessellate/ai/spelling.py:423 |
-| `_index` | src/tessellate/ai/spelling.py:207 |
-| `_is_word` | src/tessellate/ai/spelling.py:261 |
-| `_joined_or_cut` | src/tessellate/ai/spelling.py:619 |
-| `_limit` | src/tessellate/ai/spelling.py:95 |
-| `_mask` | src/tessellate/ai/spelling.py:199 |
-| `_one_off` | src/tessellate/ai/spelling.py:407 |
-| `_own` | src/tessellate/ai/spelling.py:330 |
-| `_rare_real` | src/tessellate/ai/spelling.py:546 |
-| `_reading_row` | src/tessellate/ai/spelling.py:356 |
-| `_readings` | src/tessellate/ai/spelling.py:239 |
-| `_rebuild` | src/tessellate/ai/spelling.py:270 |
-| `_recognised` | src/tessellate/ai/spelling.py:191 |
-| `_resegment` | src/tessellate/ai/spelling.py:589 |
-| `_respelt` | src/tessellate/ai/spelling.py:568 |
-| `_respelt_uncached` | src/tessellate/ai/spelling.py:574 |
-| `_same_shape` | src/tessellate/ai/spelling.py:438 |
-| `_short_candidates` | src/tessellate/ai/spelling.py:463 |
-| `_stems` | src/tessellate/ai/spelling.py:216 |
-| `_sub_cost` | src/tessellate/ai/spelling.py:712 |
-| `_swapped_small` | src/tessellate/ai/spelling.py:608 |
-| `_two_letter_reading` | src/tessellate/ai/spelling.py:444 |
-| `_vowel_slip` | src/tessellate/ai/spelling.py:283 |
-| `_warm` | src/tessellate/ai/spelling.py:766 |
-| `distance` | src/tessellate/ai/spelling.py:726 |
-| `drop_stray` | src/tessellate/ai/spelling.py:665 |
-| `fix` | src/tessellate/ai/spelling.py:513 |
-| `is_word` | src/tessellate/ai/spelling.py:249 |
-| `rejoin` | src/tessellate/ai/spelling.py:636 |
-| `set_topic_source` | src/tessellate/ai/spelling.py:117 |
-| `split_run_on` | src/tessellate/ai/spelling.py:680 |
-| `warm_in_background` | src/tessellate/ai/spelling.py:753 |
+| `_accept` | src/tessellate/ai/spelling.py:314 |
+| `_app_counts` | src/tessellate/ai/spelling.py:129 |
+| `_candidates` | src/tessellate/ai/spelling.py:336 |
+| `_common` | src/tessellate/ai/spelling.py:586 |
+| `_dictionary` | src/tessellate/ai/spelling.py:180 |
+| `_ending_fits` | src/tessellate/ai/spelling.py:385 |
+| `_fix` | src/tessellate/ai/spelling.py:426 |
+| `_fix_short` | src/tessellate/ai/spelling.py:527 |
+| `_fixed_phrase` | src/tessellate/ai/spelling.py:546 |
+| `_gap_cost` | src/tessellate/ai/spelling.py:768 |
+| `_hidden_small` | src/tessellate/ai/spelling.py:470 |
+| `_index` | src/tessellate/ai/spelling.py:219 |
+| `_is_word` | src/tessellate/ai/spelling.py:273 |
+| `_joined_or_cut` | src/tessellate/ai/spelling.py:666 |
+| `_limit` | src/tessellate/ai/spelling.py:97 |
+| `_mask` | src/tessellate/ai/spelling.py:211 |
+| `_one_off` | src/tessellate/ai/spelling.py:454 |
+| `_own` | src/tessellate/ai/spelling.py:371 |
+| `_prefix_kept` | src/tessellate/ai/spelling.py:353 |
+| `_rare_real` | src/tessellate/ai/spelling.py:593 |
+| `_reading_row` | src/tessellate/ai/spelling.py:397 |
+| `_readings` | src/tessellate/ai/spelling.py:251 |
+| `_rebuild` | src/tessellate/ai/spelling.py:293 |
+| `_recognised` | src/tessellate/ai/spelling.py:203 |
+| `_resegment` | src/tessellate/ai/spelling.py:636 |
+| `_respelt` | src/tessellate/ai/spelling.py:615 |
+| `_respelt_uncached` | src/tessellate/ai/spelling.py:621 |
+| `_same_shape` | src/tessellate/ai/spelling.py:485 |
+| `_short_candidates` | src/tessellate/ai/spelling.py:510 |
+| `_stems` | src/tessellate/ai/spelling.py:228 |
+| `_sub_cost` | src/tessellate/ai/spelling.py:759 |
+| `_swapped_small` | src/tessellate/ai/spelling.py:655 |
+| `_two_letter_reading` | src/tessellate/ai/spelling.py:491 |
+| `_vowel_slip` | src/tessellate/ai/spelling.py:306 |
+| `_warm` | src/tessellate/ai/spelling.py:813 |
+| `_y_then_ending` | src/tessellate/ai/spelling.py:285 |
+| `distance` | src/tessellate/ai/spelling.py:773 |
+| `drop_stray` | src/tessellate/ai/spelling.py:712 |
+| `fix` | src/tessellate/ai/spelling.py:560 |
+| `is_word` | src/tessellate/ai/spelling.py:261 |
+| `rejoin` | src/tessellate/ai/spelling.py:683 |
+| `set_topic_source` | src/tessellate/ai/spelling.py:119 |
+| `split_run_on` | src/tessellate/ai/spelling.py:727 |
+| `warm_in_background` | src/tessellate/ai/spelling.py:800 |
 
 ### src/tessellate/ai/starter_acts.py (26)
 
@@ -17640,7 +17642,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11192)
+## Tests (11194)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18444,7 +18446,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_outbound_fetch_guard.py | 5 |
 | tests/test_outbound_inventory.py | 4 |
 | tests/test_output_forms.py | 7 |
-| tests/test_owner_typos.py | 20 |
+| tests/test_owner_typos.py | 21 |
 | tests/test_package_check_steps.py | 6 |
 | tests/test_packaging_launchers.py | 3 |
 | tests/test_packaging_spec.py | 13 |
@@ -18513,7 +18515,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_query_plans.py | 2 |
 | tests/test_query_rollups_kg7.py | 4 |
 | tests/test_query_understanding.py | 20 |
-| tests/test_question_noise.py | 31 |
+| tests/test_question_noise.py | 32 |
 | tests/test_questions_own.py | 8 |
 | tests/test_questions_spec.py | 9 |
 | tests/test_quick_access.py | 28 |

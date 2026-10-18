@@ -338,3 +338,23 @@ def test_a_real_word_no_note_holds_is_not_put_right_to_one_that_does():
     said = composer.compose("what do I know about rust", notes, today=date(2026, 10, 1))
     assert not said["grounding"], said["text"]
     assert "rust" in said["text"]
+
+
+def test_a_cold_speller_reads_the_apps_own_words_without_the_guide_imported():
+    """The speller's app vocabulary came from the help topics, registered only
+    when `help_chat` was imported: a fresh process that had not met the Guide
+    left "dayz" as typed (and `test_composer_725` passed or failed with the
+    order it ran in). It now loads the topics itself, on first use."""
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    src = Path(__file__).resolve().parents[1] / "src"
+    code = (
+        "from tessellate.ai import question_noise;"
+        "print(question_noise.repair('how many dayz until mums bday'))"
+    )
+    out = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True, check=True, env={"PYTHONPATH": str(src), "PATH": ""}
+    ).stdout.strip()
+    assert out == "how many days until mums birthday"
