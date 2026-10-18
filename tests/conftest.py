@@ -14,7 +14,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from tessellate.ai import model_manager
-from tessellate.core import background, deps, taskhistory, vault
+from tessellate.core import background, deps, jobs, taskhistory, vault
 
 
 # --- one copy of each source file, however many test modules read it ----------
@@ -103,8 +103,10 @@ def app_state(tmp_path, monkeypatch):
     taskhistory.clear()
     deps.init_app_state(data_dir=tmp_path / "data")
     yield deps.get_config()
-    # A thread the test started (the embedding warm-up after a capture) would
-    # otherwise rebuild the app state from the repo's `data/` once it is reset.
+    # A worker the test started (the embedding warm-up after a capture, a
+    # caption job after an attach) would otherwise rebuild the app state from
+    # the repo's `data/` once it is reset.
+    jobs.shutdown(2.0)
     background.join_all()
     vault.close()
     deps.reset_app_state()
