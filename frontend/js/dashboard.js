@@ -1467,6 +1467,19 @@ function dashCustomiseItems() {
     group: "page",
     run: () => $("dash-edit").click(),
   });
+  //: The way back from Get started's Hide or Mark all as done (INBOX 1301 D3).
+  if (prefs.get("getStartedHidden", null) === "1" || prefs.get("getStartedDone", null) === "1") {
+    items.push({
+      label: "ph:list-checks Show Get started",
+      title: "The first steps card and the Get started button, as they were",
+      group: "page",
+      run: () => {
+        ["getStartedHidden", "getStartedDone", "firstStepsHidden"].forEach((key) => prefs.remove(key));
+        renderFirstStepsLazy();
+        renderDashMore();
+      },
+    });
+  }
   items.push({ label: "ph:pencil-simple Edit quick access", title: "Add, remove and reorder the Quick access tiles", group: "quick", run: () => { quickEditing = true; renderQuickLinks(); } });
   //: The colours alone, keeping the tiles (INBOX 603, the owner: "reset the
   //: highlights on the quick access back to default or at least the first
@@ -1616,6 +1629,8 @@ function renderFeatures(query) {
 function renderFirstStepsLazy() {
   const host = $("dash-first-steps");
   if (!host || !entriesEverLoaded) return;
+  //: Hide Get started (INBOX 1301 D3) puts the menu away too: nothing to load.
+  if (prefs.get("getStartedHidden", null) === "1") return void host.replaceChildren();
   const skip = dashEditMode || (allEntries.length && prefs.get("firstStepsHidden", null) === "1");
   //: The Get started menu beside Customise is drawn whether or not the card is.
   lazyScript("/js/first-run.js").then((ok) => ok && renderFirstSteps(host, skip));

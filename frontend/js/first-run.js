@@ -4,7 +4,8 @@
 // your notes (which needs no model). Beside them, once, the sample notebook:
 // a handful of example notes to explore, taken away again in one press
 // (`POST` and `DELETE /help/sample-notebook`). The card stays on the dashboard
-// until the three are done and the sample notes are gone, or until Hide; it
+// until the three are done and the sample notes are gone, or until its menu's
+// Mark all as done or Hide Get started (INBOX 1301 D3); it
 // was the empty notebook's card only, so it went with the first note, before
 // the step that shows what the notes are for. Lazy: dashboard.js's
 // `renderFirstStepsLazy` fetches it while the steps may still be shown.
@@ -21,7 +22,9 @@ async function firstStepsState() {
   const samples = sample.live || 0;
   const noted = allEntries.length > samples;
   const asked = (asks.total || 0) > 0 || (Array.isArray(chats) && chats.length > 0);
-  return { named, noted, asked, samples, offered: Boolean(sample.added) };
+  //: Mark all as done (INBOX 1301 D3) ticks every step, whatever was done.
+  const marked = prefs.get("getStartedDone", "") === "1";
+  return { named: named || marked, noted: noted || marked, asked: asked || marked, samples, offered: Boolean(sample.added) };
 }
 
 function firstStepButton({ number, done, icon, label, note, doneNote, run }) {
@@ -114,34 +117,93 @@ async function firstStepsSample(host, add, event) {
   renderFirstSteps(host);
 }
 
-//: A worded button named by its words (WCAG 2.5.3): `smallButton` names every
-//: button by its title, which suits an icon and hides a label.
-function firstStepsDoor(label, title, run) {
-  const button = smallButton(label, title, run);
-  button.removeAttribute("aria-label");
-  return button;
-}
-
-function firstStepsHide(host) {
+//: **Hide and Mark all as done** (INBOX 1301 D3, the owner: "the user should
+//: be able to hide or mark as complete the getting started button"). Both
+//: are this browser's preferences, as `firstStepsHidden` always was; Show Get
+//: started in the Customise menu (`dashCustomiseItems`) clears all three.
+function getStartedHide() {
+  prefs.set("getStartedHidden", "1");
   prefs.set("firstStepsHidden", "1");
-  host.replaceChildren();
+  $("dash-first-steps")?.replaceChildren();
+  $("dash-start")?.replaceChildren();
+  renderDashMore();
+  toast("Get started is hidden. Customise, Show Get started brings it back.");
 }
 
+function getStartedMarkDone() {
+  prefs.set("getStartedDone", "1");
+  prefs.set("firstStepsHidden", "1");
+  $("dash-first-steps")?.replaceChildren();
+  renderGetStarted();
+  renderDashMore();
+  toast("All the first steps are marked done.");
+}
+
+//: The card's own menu: the doors that were a row of buttons under the steps
+//: (a row that came and went as the sample notes did, so the card changed
+//: height), then the two ways to put the card away.
+function firstStepsMenuItems(host, state) {
+  const items = [];
+  if (state.samples) {
+    items.push({ label: "ph:trash Remove the sample notes", title: "Move the sample notes to the bin", group: "notes", run: () => firstStepsSample(host, false) });
+  } else if (!state.noted && !state.offered) {
+    items.push({ label: "ph:books Try a sample notebook", title: "Add eight example notes to explore; remove them in one press", group: "notes", run: () => firstStepsSample(host, true) });
+  }
+  items.push(
+    { label: "ph:backpack Bring notes in", title: "Import from a file or another app", group: "notes", run: () => openSettingsModal("data") },
+    { label: "ph:compass Take the tour", title: "Two minutes through what is here", group: "help", run: () => openTour("basics") },
+    { label: "ph:book-open-text Read the manual", title: "Every help topic on one page", group: "help", run: () => lazyScript("/js/manual.js").then((ok) => ok && openManual()) },
+    { label: "ph:checks Mark all as done", title: "Tick every step and put this card away", group: "away", run: getStartedMarkDone },
+    { label: "ph:eye-slash Hide Get started", title: "Hide this card and the Get started button; Customise shows them again", group: "away", run: getStartedHide }
+  );
+  return items;
+}
+
+//: **One compact checklist** (INBOX 1301 D2): a head row (the name, "1 of 3
+//: done", a progress bar, fold and menu) over three tiles of one fixed height,
+//: so ticking a step changes a tile's words, never the card's size. It was a
+//: centred 350px panel (658px on a phone) with a paragraph and a row of doors.
 function firstStepsCard(host, state) {
   const card = document.createElement("section");
-  card.className = "card dash-widget dash-getting-started first-steps";
+  card.className = "card first-steps";
   card.setAttribute("aria-labelledby", "first-steps-title");
+  const done = [state.named, state.noted, state.asked].filter(Boolean).length;
+  const open = prefs.get("firstStepsCollapsed", "") !== "1";
+  const head = document.createElement("div");
+  head.className = "first-steps-head";
   const title = document.createElement("h2");
   title.id = "first-steps-title";
-  //: Not "Your notebook is empty" again: the hero says so (INBOX 472).
-  title.textContent = "Start in three steps";
-  const blurb = document.createElement("p");
-  blurb.className = "muted";
-  blurb.textContent =
-    "Type a thought and it is filed for you; ask a question and the answer comes from your notes. " +
-    "Everything stays on this machine, and none of it needs an AI model.";
+  //: Not "Your notebook is empty" again: the hero says so (INBOX 472). The
+  //: dock button's own words, so the card and the button read as one thing.
+  title.textContent = "Get started";
+  const count = document.createElement("span");
+  count.className = "first-steps-count muted";
+  count.textContent = `${done} of 3 done`;
+  const bar = document.createElement("span");
+  bar.className = "first-steps-progress";
+  bar.setAttribute("role", "progressbar");
+  bar.setAttribute("aria-label", "First steps done");
+  bar.setAttribute("aria-valuemin", "0");
+  bar.setAttribute("aria-valuemax", "3");
+  bar.setAttribute("aria-valuenow", String(done));
+  const fill = document.createElement("span");
+  fill.className = "first-steps-fill";
+  //: CSSOM, not a style attribute (the CSP); a transform, not a width.
+  fill.style.transform = `scaleX(${done / 3})`;
+  bar.appendChild(fill);
+  const fold = smallButton("ph:caret-down", open ? "Fold the first steps" : "Show the first steps", () => {
+    prefs.set("firstStepsCollapsed", open ? "1" : "0");
+    renderFirstSteps(host);
+  });
+  fold.classList.add("ghost", "first-steps-fold");
+  fold.setAttribute("aria-expanded", String(open));
+  fold.setAttribute("aria-controls", "first-steps-body");
+  const menu = kebabMenu(firstStepsMenuItems(host, state), "More about the first steps");
+  head.append(title, count, bar, fold, menu);
   const steps = document.createElement("div");
   steps.className = "start-steps";
+  steps.id = "first-steps-body";
+  steps.hidden = !open;
   steps.append(
     state.named
       ? firstStepButton({
@@ -161,26 +223,8 @@ function firstStepsCard(host, state) {
       run: () => openAskFromDashboard(),
     })
   );
-  const more = document.createElement("div");
-  more.className = "row wrap first-steps-more";
-  //: Offered once: on a notebook with no notes of its own, until it is taken.
-  if (state.samples) {
-    more.appendChild(
-      firstStepsDoor("ph:trash Remove the sample notes", "Move the sample notes to the bin", (event) => firstStepsSample(host, false, event))
-    );
-  } else if (!state.noted && !state.offered) {
-    more.appendChild(
-      firstStepsDoor("ph:books Try a sample notebook", "Add eight example notes to explore; remove them in one press", (event) => firstStepsSample(host, true, event))
-    );
-  }
-  more.append(
-    firstStepsDoor("ph:backpack Bring notes in", "Import from a file or another app", () => openSettingsModal("data")),
-    firstStepsDoor("ph:compass Take the tour", "Two minutes through what is here", () => openTour("basics")),
-    firstStepsDoor("ph:book-open-text Read the manual", "Every help topic on one page", () => lazyScript("/js/manual.js").then((ok) => ok && openManual()))
-  );
-  //: Hide is offered once there is a notebook to show instead.
-  if (state.noted || state.samples) more.appendChild(firstStepsDoor("ph:eye-slash Hide these steps", "Hide the first steps for good", () => firstStepsHide(host)));
-  card.append(title, blurb, steps, more);
+  card.classList.toggle("is-folded", !open);
+  card.append(head, steps);
   return card;
 }
 
@@ -239,12 +283,21 @@ function getStartedItems(state) {
     { label: "ph:hand-waving Replay the welcome", title: "The first screen a new notebook shows", group: "more", run: () => openOnboarding() },
     { label: "ph:book-open-text Read the manual", title: "Every help topic on one page", group: "more", run: () => lazyScript("/js/manual.js").then((ok) => ok && openManual()) }
   );
+  if (state.samples) {
+    const host = $("dash-first-steps");
+    items.push({ label: "ph:trash Remove the sample notes", title: "Move the sample notes to the bin", group: "more", run: () => firstStepsSample(host, false) });
+  }
+  if (!(state.named && state.noted && state.asked)) {
+    items.push({ label: "ph:checks Mark all as done", title: "Tick every step and put the card away", group: "away", run: getStartedMarkDone });
+  }
+  items.push({ label: "ph:eye-slash Hide Get started", title: "Hide this button and the card; Customise shows them again", group: "away", run: getStartedHide });
   return items;
 }
 
 //: A row for the notifications panel while a step is left; none once all three
 //: are done (the dashboard's menu still lists them, ticked).
 async function firstStepsBellRow() {
+  if (prefs.get("getStartedHidden", "") === "1") return null;
   lazyScript("/css/first-run-lazy.css");
   const steps = getStartedSteps(await firstStepsState());
   const left = steps.filter((step) => !step.done).length;
@@ -285,6 +338,7 @@ async function firstStepsBellRow() {
 async function renderGetStarted() {
   const slot = $("dash-start");
   if (!slot) return;
+  if (prefs.get("getStartedHidden", "") === "1") return void slot.replaceChildren();
   const state = await firstStepsState().catch(() => null);
   if (!state) return;
   const menu = kebabMenu(getStartedItems(state), "Get started: the first steps");

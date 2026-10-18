@@ -3871,45 +3871,31 @@ button.is-on {
   color: var(--muted);
   line-height: 1.35;
 }
-/* --- the day-one dashboard ------------------------------------------------------
-   A dozen widgets each saying "nothing here yet" made a working app look
-   broken on the day someone starts using it. One card, a few real actions,
-   and the widgets appear on their own as soon as they have something to hold. */
-.dash-widget.dash-getting-started {
-  /* The full width of the grid. Two classes deliberately, to out-specify
-     `.dash-widget.wide`'s `span 2`: at one column the inner grid of steps
-     spilled straight past the card's right edge. */
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 2rem 1.5rem;
-}
-/* A panel-level heading, deliberately one step up from a card's h2: it
-   titles the whole first-run panel rather than a card within it. */
-.dash-getting-started h2 {
-  margin: var(--space-4) 0 var(--space-2);
-  font-size: var(--text-h3);
-}
-.dash-getting-started>p.muted {
-  max-width: 46rem;
-  margin: 0 auto;
-}
+/* --- the first steps (first-run.js; the head row, the fold and the bar are
+   first-run-lazy.css) ------------------------------------------------------
+   Three tiles of one height in a row, one column on a phone: ticking a step
+   changes its words and its tone, never the card's size (INBOX 1301 D2). */
 .start-steps {
   display: grid;
   /* min(13rem, 100%) rather than a bare 13rem: a fixed track minimum cannot
      shrink, so on a container narrower than one column the grid overflowed
      its card and took the page with it. */
   grid-template-columns: repeat(auto-fit, minmax(min(13rem, 100%), 1fr));
-  gap: 0.6rem;
-  margin: 1.5rem auto 0.8rem;
-  max-width: 58rem;
+  /* One row height for every tile, on the grid rather than the tile (a
+     touch rule floors a button at the target size and outranks a tile's own
+     min-height): the name field's tile is the tallest, so a step that ticks
+     moves nothing (INBOX 1301 D2). */
+  grid-auto-rows: minmax(3.75rem, auto);
+  gap: var(--space-2);
+  margin-top: var(--space-3);
   text-align: left;
   min-width: 0;
 }
 .start-step {
   display: flex;
-  align-items: flex-start;
-  gap: 0.6rem;
-  padding: 0.8rem 0.8rem;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
   /* A grid item's automatic minimum is its content, so a long step label
      widened its track past the 1fr it was given, the same cause as the
      chat-bubble overflow, in a different grid. */
@@ -3930,7 +3916,7 @@ button.is-on {
   background: var(--surface-3);
 }
 .start-step-icon {
-  font-size: var(--text-h2);
+  font-size: var(--text-h3);
   line-height: 1.2;
 }
 /* The Quick access tile's two lines, exactly (INBOX 472): the button's 600
