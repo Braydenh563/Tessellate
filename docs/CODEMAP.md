@@ -2,9 +2,9 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6129, frontend ids 2534, CSS sections 496, backend routes 613, backend modules 5867, test files 1284, tests 11512, plan headings 958.
+Counts: frontend functions 6131, frontend ids 2534, CSS sections 496, backend routes 613, backend modules 5867, test files 1284, tests 11514, plan headings 958.
 
-## Frontend functions (6129)
+## Frontend functions (6131)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -1019,28 +1019,28 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `syncSketchSizeReadout` | frontend/js/media.js:260 |
 | `toggleDictation` | frontend/js/media.js:538 |
 
-### frontend/js/status.js (117)
+### frontend/js/status.js (119)
 
 | Name | File:line |
 |---|---|
 | `agentActivityNotice` | frontend/js/status.js:650 |
 | `agentActivityQuiet` | frontend/js/status.js:642 |
-| `agentModeAvailable` | frontend/js/status.js:2677 |
-| `aiIsOff` | frontend/js/status.js:1949 |
-| `aiOffGlyph` | frontend/js/status.js:2347 |
-| `aiOfflineDismissed` | frontend/js/status.js:2149 |
-| `aiOfflineNoticeHidden` | frontend/js/status.js:2145 |
-| `aiStatusState` | frontend/js/status.js:2234 |
+| `agentModeAvailable` | frontend/js/status.js:2695 |
+| `aiIsOff` | frontend/js/status.js:1967 |
+| `aiOffGlyph` | frontend/js/status.js:2365 |
+| `aiOfflineDismissed` | frontend/js/status.js:2167 |
+| `aiOfflineNoticeHidden` | frontend/js/status.js:2163 |
+| `aiStatusState` | frontend/js/status.js:2252 |
 | `announcedReminders` | frontend/js/status.js:42 |
 | `appStackIsNewer` | frontend/js/status.js:1517 |
 | `armReminderTimer` | frontend/js/status.js:507 |
 | `askNotificationPermission` | frontend/js/status.js:378 |
-| `backendLabel` | frontend/js/status.js:2740 |
+| `backendLabel` | frontend/js/status.js:2758 |
 | `boardHistoryActive` | frontend/js/status.js:1482 |
 | `checkDueReminders` | frontend/js/status.js:523 |
-| `closeModelGate` | frontend/js/status.js:1968 |
+| `closeModelGate` | frontend/js/status.js:1986 |
 | `closeNotifications` | frontend/js/status.js:358 |
-| `dismissAiOffline` | frontend/js/status.js:2157 |
+| `dismissAiOffline` | frontend/js/status.js:2175 |
 | `dismissToast` | frontend/js/status.js:892 |
 | `dismissedNotificationIds` | frontend/js/status.js:232 |
 | `forcedReadIds` | frontend/js/status.js:187 |
@@ -1050,30 +1050,32 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `insightVerdicts` | frontend/js/status.js:1386 |
 | `integrityWords` | frontend/js/status.js:1219 |
 | `isNotificationUnread` | frontend/js/status.js:211 |
-| `jobsRunning` | frontend/js/status.js:1802 |
+| `jobsRunning` | frontend/js/status.js:1820 |
 | `keepToastAction` | frontend/js/status.js:337 |
-| `lastAnswerLine` | frontend/js/status.js:2369 |
-| `loadMostUsed` | frontend/js/status.js:1672 |
-| `loadRecentQuestions` | frontend/js/status.js:1645 |
+| `lastAnswerLine` | frontend/js/status.js:2387 |
+| `loadMostUsed` | frontend/js/status.js:1690 |
+| `loadRecentQuestions` | frontend/js/status.js:1663 |
 | `noteDamagedNotebook` | frontend/js/status.js:1223 |
 | `noteServerDown` | frontend/js/status.js:1279 |
 | `noteServerUp` | frontend/js/status.js:1288 |
-| `noticeTaskTransitions` | frontend/js/status.js:2967 |
+| `noticeTaskTransitions` | frontend/js/status.js:2985 |
 | `noticeUnwatchedAnswer` | frontend/js/status.js:685 |
 | `notificationsMuted` | frontend/js/status.js:627 |
 | `notificationsReadAt` | frontend/js/status.js:138 |
 | `notify` | frontend/js/status.js:451 |
-| `nudgeEmbeddingProblem` | frontend/js/status.js:2412 |
+| `nudgeEmbeddingProblem` | frontend/js/status.js:2430 |
 | `offerUndo` | frontend/js/status.js:1424 |
 | `openLanPanel` | frontend/js/status.js:587 |
-| `openModelGate` | frontend/js/status.js:1978 |
-| `openModelOffer` | frontend/js/status.js:1985 |
-| `paintPrivacyChip` | frontend/js/status.js:3063 |
-| `paintStatusItem` | frontend/js/status.js:2466 |
+| `openModelGate` | frontend/js/status.js:1996 |
+| `openModelOffer` | frontend/js/status.js:2003 |
+| `paintPrivacyChip` | frontend/js/status.js:3081 |
+| `paintStatusItem` | frontend/js/status.js:2484 |
 | `paintTitle` | frontend/js/status.js:484 |
-| `paintUndoDoor` | frontend/js/status.js:1595 |
-| `performRedo` | frontend/js/status.js:1549 |
-| `performUndo` | frontend/js/status.js:1526 |
+| `paintUndoDoor` | frontend/js/status.js:1613 |
+| `performRedo` | frontend/js/status.js:1538 |
+| `performRedoNow` | frontend/js/status.js:1567 |
+| `performUndo` | frontend/js/status.js:1532 |
+| `performUndoNow` | frontend/js/status.js:1544 |
 | `plainHttpError` | frontend/js/status.js:978 |
 | `playReminderChime` | frontend/js/status.js:417 |
 | `pollServerHealth` | frontend/js/status.js:1316 |
@@ -1081,45 +1083,45 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `pushEntryPutUndo` | frontend/js/status.js:1457 |
 | `pushUndo` | frontend/js/status.js:1353 |
 | `recordNotification` | frontend/js/status.js:97 |
-| `refreshBackgroundTasks` | frontend/js/status.js:2893 |
-| `refreshModelStatus` | frontend/js/status.js:1830 |
-| `refreshPrivacyChip` | frontend/js/status.js:3077 |
+| `refreshBackgroundTasks` | frontend/js/status.js:2911 |
+| `refreshModelStatus` | frontend/js/status.js:1848 |
+| `refreshPrivacyChip` | frontend/js/status.js:3095 |
 | `rememberAnnounced` | frontend/js/status.js:50 |
 | `reminderNoticeKey` | frontend/js/status.js:228 |
 | `renderAgentActivityMode` | frontend/js/status.js:721 |
-| `renderAiOfflineNotice` | frontend/js/status.js:2172 |
-| `renderAiPill` | frontend/js/status.js:2377 |
-| `renderChatModeSeg` | frontend/js/status.js:2681 |
+| `renderAiOfflineNotice` | frontend/js/status.js:2190 |
+| `renderAiPill` | frontend/js/status.js:2395 |
+| `renderChatModeSeg` | frontend/js/status.js:2699 |
 | `renderNotifMuteToggle` | frontend/js/status.js:267 |
 | `renderNotificationBadge` | frontend/js/status.js:247 |
-| `renderSettings` | frontend/js/status.js:2751 |
-| `renderStatusBar` | frontend/js/status.js:2509 |
-| `renderUndoBar` | frontend/js/status.js:1580 |
+| `renderSettings` | frontend/js/status.js:2769 |
+| `renderStatusBar` | frontend/js/status.js:2527 |
+| `renderUndoBar` | frontend/js/status.js:1598 |
 | `reopenAnswerPanel` | frontend/js/status.js:700 |
-| `resetStatusCadence` | frontend/js/status.js:1752 |
+| `resetStatusCadence` | frontend/js/status.js:1770 |
 | `retryServerNow` | frontend/js/status.js:1329 |
-| `sayChatModelChosen` | frontend/js/status.js:1715 |
+| `sayChatModelChosen` | frontend/js/status.js:1733 |
 | `scheduleServerDownRetry` | frontend/js/status.js:1303 |
-| `scheduleUndoBar` | frontend/js/status.js:1572 |
-| `setChatMode` | frontend/js/status.js:2724 |
+| `scheduleUndoBar` | frontend/js/status.js:1590 |
+| `setChatMode` | frontend/js/status.js:2742 |
 | `setForcedReadIds` | frontend/js/status.js:196 |
 | `setForcedUnreadIds` | frontend/js/status.js:165 |
 | `setTitleCount` | frontend/js/status.js:489 |
 | `setTitleView` | frontend/js/status.js:494 |
-| `settingsOpen` | frontend/js/status.js:1769 |
+| `settingsOpen` | frontend/js/status.js:1787 |
 | `settleNotification` | frontend/js/status.js:116 |
 | `settleUndoFromToast` | frontend/js/status.js:1445 |
-| `showAgentNoModelHint` | frontend/js/status.js:2719 |
+| `showAgentNoModelHint` | frontend/js/status.js:2737 |
 | `showServerDownBanner` | frontend/js/status.js:1262 |
-| `startPrivacyChip` | frontend/js/status.js:3087 |
+| `startPrivacyChip` | frontend/js/status.js:3105 |
 | `startReminderWatch` | frontend/js/status.js:594 |
 | `storedNotifications` | frontend/js/status.js:84 |
 | `surfaceHistory` | frontend/js/status.js:1499 |
-| `syncAgentPaletteAvailability` | frontend/js/status.js:2216 |
-| `syncModelGatedControls` | frontend/js/status.js:2032 |
+| `syncAgentPaletteAvailability` | frontend/js/status.js:2234 |
+| `syncModelGatedControls` | frontend/js/status.js:2050 |
 | `syncNotifBlocked` | frontend/js/status.js:373 |
 | `taskEndingWords` | frontend/js/status.js:130 |
-| `taskKey` | frontend/js/status.js:2948 |
+| `taskKey` | frontend/js/status.js:2966 |
 | `toast` | frontend/js/status.js:1054 |
 | `toastAction` | frontend/js/status.js:1195 |
 | `toastActionButton` | frontend/js/status.js:1175 |
@@ -1135,7 +1137,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `toastProgress` | frontend/js/status.js:1130 |
 | `toastReduced` | frontend/js/status.js:851 |
 | `toastStack` | frontend/js/status.js:856 |
-| `toggleAiStatusPopup` | frontend/js/status.js:2651 |
+| `toggleAiStatusPopup` | frontend/js/status.js:2669 |
 | `toggleNotificationMute` | frontend/js/status.js:283 |
 | `unreadNotifications` | frontend/js/status.js:241 |
 | `voiceLine` | frontend/js/status.js:1048 |
@@ -2328,47 +2330,47 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `closePalette` | frontend/js/app-palette.js:150 |
-| `notesPaletteCommands` | frontend/js/app-palette.js:772 |
-| `openPalette` | frontend/js/app-palette.js:107 |
-| `paletteActRows` | frontend/js/app-palette.js:415 |
-| `paletteAskNotes` | frontend/js/app-palette.js:57 |
-| `paletteBase` | frontend/js/app-palette.js:370 |
-| `paletteDistance` | frontend/js/app-palette.js:602 |
-| `paletteEditorMatches` | frontend/js/app-palette.js:195 |
-| `paletteFeature` | frontend/js/app-palette.js:89 |
-| `paletteFeatureRows` | frontend/js/app-palette.js:398 |
-| `paletteFind` | frontend/js/app-palette.js:648 |
-| `paletteFuzzyScore` | frontend/js/app-palette.js:175 |
-| `paletteGoToCategory` | frontend/js/app-palette.js:858 |
-| `paletteKeydown` | frontend/js/app-palette.js:729 |
-| `paletteLight` | frontend/js/app-palette.js:711 |
-| `paletteMatches` | frontend/js/app-palette.js:205 |
-| `paletteNearRows` | frontend/js/app-palette.js:628 |
-| `paletteNearest` | frontend/js/app-palette.js:582 |
-| `paletteNearestCommand` | frontend/js/app-palette.js:653 |
-| `paletteNearestRows` | frontend/js/app-palette.js:617 |
-| `paletteNoteAbout` | frontend/js/app-palette.js:35 |
-| `paletteNoteRows` | frontend/js/app-palette.js:42 |
-| `paletteNotesInHand` | frontend/js/app-palette.js:848 |
-| `palettePick` | frontend/js/app-palette.js:557 |
-| `palettePicks` | frontend/js/app-palette.js:538 |
-| `palettePool` | frontend/js/app-palette.js:376 |
-| `palettePrefixPicks` | frontend/js/app-palette.js:546 |
-| `paletteRanked` | frontend/js/app-palette.js:514 |
-| `paletteRefresh` | frontend/js/app-palette.js:390 |
-| `paletteRun` | frontend/js/app-palette.js:96 |
-| `paletteScore` | frontend/js/app-palette.js:486 |
-| `paletteSettingRows` | frontend/js/app-palette.js:450 |
-| `paletteStartAct` | frontend/js/app-palette.js:437 |
-| `paletteTarget` | frontend/js/app-palette.js:381 |
-| `paletteText` | frontend/js/app-palette.js:166 |
-| `paletteVocab` | frontend/js/app-palette.js:502 |
-| `paletteWhy` | frontend/js/app-palette.js:571 |
-| `paletteWords` | frontend/js/app-palette.js:473 |
-| `renderPalette` | frontend/js/app-palette.js:664 |
-| `scrollPaletteToActive` | frontend/js/app-palette.js:756 |
-| `utilityPaletteRows` | frontend/js/app-palette.js:278 |
+| `closePalette` | frontend/js/app-palette.js:152 |
+| `notesPaletteCommands` | frontend/js/app-palette.js:778 |
+| `openPalette` | frontend/js/app-palette.js:114 |
+| `paletteActRows` | frontend/js/app-palette.js:421 |
+| `paletteAskNotes` | frontend/js/app-palette.js:60 |
+| `paletteBase` | frontend/js/app-palette.js:376 |
+| `paletteDistance` | frontend/js/app-palette.js:608 |
+| `paletteEditorMatches` | frontend/js/app-palette.js:197 |
+| `paletteFeature` | frontend/js/app-palette.js:96 |
+| `paletteFeatureRows` | frontend/js/app-palette.js:404 |
+| `paletteFind` | frontend/js/app-palette.js:654 |
+| `paletteFuzzyScore` | frontend/js/app-palette.js:177 |
+| `paletteGoToCategory` | frontend/js/app-palette.js:864 |
+| `paletteKeydown` | frontend/js/app-palette.js:735 |
+| `paletteLight` | frontend/js/app-palette.js:717 |
+| `paletteMatches` | frontend/js/app-palette.js:207 |
+| `paletteNearRows` | frontend/js/app-palette.js:634 |
+| `paletteNearest` | frontend/js/app-palette.js:588 |
+| `paletteNearestCommand` | frontend/js/app-palette.js:659 |
+| `paletteNearestRows` | frontend/js/app-palette.js:623 |
+| `paletteNoteAbout` | frontend/js/app-palette.js:38 |
+| `paletteNoteRows` | frontend/js/app-palette.js:45 |
+| `paletteNotesInHand` | frontend/js/app-palette.js:854 |
+| `palettePick` | frontend/js/app-palette.js:563 |
+| `palettePicks` | frontend/js/app-palette.js:544 |
+| `palettePool` | frontend/js/app-palette.js:382 |
+| `palettePrefixPicks` | frontend/js/app-palette.js:552 |
+| `paletteRanked` | frontend/js/app-palette.js:520 |
+| `paletteRefresh` | frontend/js/app-palette.js:396 |
+| `paletteRun` | frontend/js/app-palette.js:103 |
+| `paletteScore` | frontend/js/app-palette.js:492 |
+| `paletteSettingRows` | frontend/js/app-palette.js:456 |
+| `paletteStartAct` | frontend/js/app-palette.js:443 |
+| `paletteTarget` | frontend/js/app-palette.js:387 |
+| `paletteText` | frontend/js/app-palette.js:168 |
+| `paletteVocab` | frontend/js/app-palette.js:508 |
+| `paletteWhy` | frontend/js/app-palette.js:577 |
+| `paletteWords` | frontend/js/app-palette.js:479 |
+| `renderPalette` | frontend/js/app-palette.js:670 |
+| `scrollPaletteToActive` | frontend/js/app-palette.js:762 |
+| `utilityPaletteRows` | frontend/js/app-palette.js:284 |
 
 ### frontend/js/ask-chart.js (9)
 
@@ -18084,7 +18086,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11512)
+## Tests (11514)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19266,7 +19268,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_utilities_zones.py | 4 |
 | tests/test_ux1005_copy.py | 6 |
 | tests/test_ux_audit_1018.py | 3 |
-| tests/test_uxfix2_1018.py | 6 |
+| tests/test_uxfix2_1018.py | 8 |
 | tests/test_validate.py | 11 |
 | tests/test_validation_error_shape.py | 2 |
 | tests/test_vault_import.py | 7 |
