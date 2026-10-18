@@ -1325,7 +1325,7 @@ function wbSyncMapTemplates(passed = null) {
   // Not while focus is on: they share the strip under the top bar, and a map
   // being read one branch at a time is not a map anyone wants a starting shape
   // for.
-  panel.hidden = !index || dismissed || Boolean(wbMapFocusState) || index.nodes.length > 1;
+  panel.hidden = !index || dismissed || Boolean(wbMapFocusState) || index.nodes.length !== 1;
   wbSyncMapFirstHint(index);
 }
 

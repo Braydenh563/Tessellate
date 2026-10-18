@@ -132,10 +132,14 @@ def test_the_library_semantic_toggle_asks_the_engine():
 
 def test_the_palette_does_not_search_content():
     """INBOX 666: the palette is commands and places; content search is Find
-    anything's. It makes no `/search` ask, holds no engine state, and lists
-    no notes, documents, reminders, conversations, files or boards."""
+    anything's. Audit 1018 (item 10) moved one thing: the top three notes
+    whose title matches are offered under the commands, from one `/search`
+    ask limited to `kind=note`. Nothing else is searched, no engine state is
+    held, and no documents, reminders, conversations, files or boards are
+    listed."""
     text = _read("app-palette.js")
-    assert "/search" not in re.sub(r"//.*", "", text)
+    code = re.sub(r"//.*", "", text)
+    assert code.count("/search") == 1 and "kind=note&limit=${PALETTE_NOTE_ROWS}" in code
     assert "paletteAskEngine" not in text and "paletteEngine" not in text
     matches = _function(text, "paletteMatches")
     for group in ("Notes", "Documents", "Reminders", "Conversations", "Files", "Boards & maps"):

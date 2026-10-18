@@ -202,9 +202,15 @@ function setForcedReadIds(ids) {
   }
 }
 
+//: **System-log lines never count as new** (audit 1018, item 12): a first
+//: run showed 5 on the bell, all of them "Backup", "Housekeeping" and the other
+//: jobs the app starts itself. They stay in the list; a failure is kind
+//: "error" and still counts. Marking one unread by hand still works.
+const NOTIFICATION_LOG_KINDS = new Set(["task", "job"]);
+
 function isNotificationUnread(item, readAt = notificationsReadAt(), forced = forcedUnreadIds(), read = forcedReadIds()) {
   if (forced.has(item.id)) return true;
-  if (read.has(item.id)) return false;
+  if (read.has(item.id) || NOTIFICATION_LOG_KINDS.has(item.kind)) return false;
   return item.at > readAt;
 }
 
