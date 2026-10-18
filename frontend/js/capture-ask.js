@@ -2598,7 +2598,7 @@ async function streamChatEvents({
   onOffer,
   attempt,
 }) {
-  const body = { question, history: history || [] };
+  const body = { question, history: history || [], locale: navigator.language };
   //: "Try again" (CHAT_PLAN decision 34): an answer from the notes reworded.
   if (attempt) body.attempt = attempt;
   if (persona) body.persona = persona;

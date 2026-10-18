@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Ask and Chat: a bare "3/4" in a question follows the browser's locale (the chat request carries it), so in en-US "what's on 3/4" reads as 4 March.
 - Search: a mark's comment on a recording is found by keyword search (pictures' captions already were); a question's "3/4" follows the locale where one is passed (the reading route), day first otherwise.
 - Documents: link offers have a switch (Settings, Writing, and the dictionary dialog) and Ignore on an offer keeps that name out of every document until Settings, Writing offers them again; tag offers stay dropped, a document has no tags.
 - Escape: in the reminders sentence box it clears the text, and on an empty box leaves it; measured with the lightbox (Escape and Back with it open), the notes edit form and the graph popup, which already closed (row 32 closed).
