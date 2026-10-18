@@ -37,7 +37,8 @@ const COMPANION_THROW_SLIDE = 0.32;
 //: Hanging from the edge it caught before it pulls itself up.
 const COMPANION_THROW_CLIMB_MS = 520;
 //: A seed for the rolls (0: `Math.random`); the sweep sets it.
-let companionThrowSeed = 0;
+//: The sweep sets `.seed`; 0 is Math.random.
+const companionThrowSeed = { seed: 0 };
 
 //: Mulberry32: the same rolls for the same seed, in node and the browser.
 function companionThrowRng(seed) {
@@ -184,7 +185,7 @@ function nameMarkBuddyThrow(buddy, vx, vy, world) {
   nmb.flight?.stop();
   nmb.home = null;
   const tab = nameMarkBuddyTab();
-  const rand = companionThrowSeed ? companionThrowRng(companionThrowSeed) : Math.random;
+  const rand = companionThrowSeed.seed ? companionThrowRng(companionThrowSeed.seed) : Math.random;
   const feel = nameMarkBuddyThrowFeel([rand(), rand(), rand()], Math.hypot(vx, vy));
   const room = { ...world, w: NMB_W, hang: world.top > 0 ? world.top - NMB_GRIP : null, climb: NMB_FEET - 1 - NMB_GRIP };
   let s = { x: nmb.x, y: nmb.y, vx, vy, rot: 0, t: 0, on: null, rest: false, tried: {} };

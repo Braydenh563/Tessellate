@@ -100,3 +100,53 @@ def test_ask_does_not_echo_the_question_above_its_answer():
     answer said it twice."""
     assert 'id="asked-question"' not in (ROOT / "frontend/index.html").read_text(encoding="utf-8")
     assert "You asked: " not in (ROOT / "frontend/js/capture-ask.js").read_text(encoding="utf-8")
+
+
+def test_the_overview_never_makes_a_theme_of_an_ordinary_word():
+    """The digest declined this notebook's question and `composer.compose`'s
+    overview said "Ask features in two of them": a heading's first word is a
+    thread only when it is a topic, not a verb or a function word."""
+    from tessellate.ai import composer
+
+    notes = _notebook(ITEM)
+    for q in ("what do I know about social", "summarise my social notes"):
+        text = composer._overview_answer(q, notes, today=TODAY, voice="", said="", prefer="")["text"]
+        assert not re.search(r"\bAsk (?:features|is) in", text)
+        assert "**Ask**" not in text
+
+
+def test_a_note_not_opening_in_you_is_still_said_as_prose_not_a_label_line():
+    """The owner's 2026-10-11 rule: no "**9 August:** ..." label lines; a
+    day's note that does not open in the person's own "you" is dated in a
+    clause too."""
+    text = _social()["text"]
+    assert not re.search(r"^\*\*\d{1,2} [A-Z][a-z]+(?: \d{4})?:\*\*", text, re.M)
+    assert re.search(r"[Oo]n 9 August, at Mia's barbecue", text)
+    assert not re.search(r"[Oo]n \d+ \w+, on \d+", text)
+
+
+_GAP_LEAD = re.compile(r"^(After [\w ]+?|[\w ]+? (?:later|on)),\s+(?:on|by) \d")
+
+
+def _shape(lead: str) -> str:
+    return "after" if lead.startswith("after ") else lead.rsplit(" ", 1)[-1]
+
+
+def repeated_openers(text: str) -> int:
+    """Dated paragraphs opening on a gap phrase: one is repeated when it is
+    worded as the paragraph just before it, or says the same words as any
+    earlier one."""
+    leads: list[str] = []
+    repeats = 0
+    for para in text.split("\n\n"):
+        m = _GAP_LEAD.match(para.strip())
+        lead = m.group(1).lower() if m else ""
+        if lead and (lead in leads or (leads and leads[-1] and _shape(leads[-1]) == _shape(lead))):
+            repeats += 1
+        leads.append(lead)
+    return repeats
+
+
+def test_no_gold_answer_opens_two_dated_lines_the_same_way():
+    """Item 22 said "After three weeks, on ..." three times of four."""
+    assert [a["n"] for a in FIXTURE["answers"] if repeated_openers(_answer(a)["text"])] == []

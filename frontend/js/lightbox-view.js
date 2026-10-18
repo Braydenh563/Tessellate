@@ -324,21 +324,18 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     film.replaceChildren();
     overlay.classList.toggle("lightbox-has-film", items.length > 1);
     if (items.length < 2) return;
-    filmSeen =
-      typeof IntersectionObserver === "function"
-        ? new IntersectionObserver(
-            (seen) => {
-              for (const entry of seen) {
-                if (!entry.isIntersecting) continue;
-                filmSeen.unobserve(entry.target);
-                const it = items[Number(entry.target.dataset.index)];
-                const pic = entry.target.querySelector("img");
-                if (it && pic) Promise.resolve(it.getUrl()).then((src) => { if (src) pic.src = src; }).catch(() => {});
-              }
-            },
-            { root: film, rootMargin: "0px 160px" }
-          )
-        : null;
+    filmSeen = new IntersectionObserver(
+      (seen) => {
+        for (const entry of seen) {
+          if (!entry.isIntersecting) continue;
+          filmSeen.unobserve(entry.target);
+          const it = items[Number(entry.target.dataset.index)];
+          const pic = entry.target.querySelector("img");
+          if (it && pic) Promise.resolve(it.getUrl()).then((src) => { if (src) pic.src = src; }).catch(() => {});
+        }
+      },
+      { root: film, rootMargin: "0px 160px" }
+    );
     items.forEach((it, i) => {
       const tile = document.createElement("button");
       tile.type = "button";
@@ -430,7 +427,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
   const ZOOM_MIN = 1;
   const zoomLabel = document.createElement("span");
   zoomLabel.className = "lightbox-zoom-label";
-  const reducedMotion = () => typeof reducedMotionWanted === "function" && reducedMotionWanted();
+  const reducedMotion = () => reducedMotionWanted();
   //: A turned picture is fitted again: a wide photo stood on its end is as
   //: tall as it was wide, so it is scaled into the box it had.
   const turnFit = () => {
@@ -1101,7 +1098,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     helpBody.appendChild(p);
   }
   topActions.append(helpBody, closeBtn);
-  if (typeof wireHelpPopover === "function") wireHelpPopover(helpBtn, helpBody);
+  wireHelpPopover(helpBtn, helpBody);
 
   // Only shown while a PDF is displayed as pages (see showDocument): swaps
   // to the AI-extracted-text view on demand, rather than automatically. A

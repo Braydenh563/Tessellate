@@ -266,7 +266,7 @@ def test_a_short_answer_has_no_more():
 def test_hashtags_and_today_are_tidied():
     text = composer_digest.answer("what have I saved about pottery?", _pottery(), today=TODAY)["text"]
     assert "#" not in text
-    assert "today" not in text and "**2 September:** trimmed your first bowl." in text
+    assert "today" not in text and "On 2 September, you trimmed your first bowl." in text
 
 
 @pytest.mark.parametrize(("question", "subject"), [

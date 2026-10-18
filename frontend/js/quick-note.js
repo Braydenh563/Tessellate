@@ -472,7 +472,7 @@ async function saveChatAsDocument() {
     chatWriteRecord("chatDocumentUndo", doc);
     toastAction("Saved to your documents.", "Open it", () => {
       switchTab("documents");
-      if (typeof openDocument === "function") openDocument(doc.id);
+      openDocument(doc.id);
     }, { go: { open: "doc", id: doc.id } });
   } catch (error) {
     toast(error.message || "Couldn't save that document.", true);
