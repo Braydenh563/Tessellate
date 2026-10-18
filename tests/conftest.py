@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from tessellate.ai import commands, help_chat, model_manager, spelling  # noqa: F401
+from tessellate.ai import model_manager, spelling
 from tessellate.core import background, deps, extras, jobs, taskhistory, vault
 
 
