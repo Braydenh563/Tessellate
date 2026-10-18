@@ -15,7 +15,7 @@
 | 965 SVG graph flag | WORLD_CLASS_PLAN.md:984 (not GRAPH's rows to build) | leave |
 | Tessellation view (owner 2026-10-11) | open, needs the owner to pick a variant | GRAPH_PLAN.md:656; no code |
 | Neighbours barely follow a drag | built this run (below) | graph100-1011.md "Open"; `carryForce` graph-worker.js |
-| Hover frame at 2,000 notes 22 to 24 ms | open | graph100-1011.md "Open" |
+| Hover frame at 2,000 notes 22 to 24 ms | measured, within budget | `scratchpad/ui-sweeps/graphhover1018.js` (2,000 notes, 40 hovers over the fitted map, 161 draws): gcDraw median 4.4 ms, p95 8.9, max 16.8; the earlier 22 to 24 ms was a wall frame (browser raster included, `(program)` 5.6 s of the CPU profile), not the app's draw |
 | B70 outlier | partly (tetherForce graph-worker.js:1206) | bugs-1017.md:81; owner question below |
 | B71 overlap | built this run: topic plates (below); dots overlap 0 at rest | graphtopics1018.js |
 
@@ -26,8 +26,10 @@
 
 - VC11 Treemap layout: 1,000 notes under 100 ms (node: test; page: 1 to 4 ms), worst category area error 0 (under 1% asserted), 200 of 200 dots inside, 0 headers under overlays (`graphtreemap1018.js`, 1440x900). Built, moved to HISTORY (graph-1018 block); GRAPH_PLAN rows replaced by pointers.
 
+- Hover at 2,000 notes: gcDraw median 4.4 ms, p95 8.9, max 16.8 (graphhover1018.js); closed by measurement.
+
 ## Next
-- Hover frame at 2,000 notes (22 to 24 ms, drawImage and clearRect dominate), then the final sweeps (errors, docks, contrast, touch; light and dark) and the report.
+- Final sweeps (errors, docks, contrast, touch; light and dark) and the report.
 
 ## Owner questions
 - B70: which note, tags and links does "Gym Routine Overview" have (it sat far from its cluster)? Not reproduced on synthetic data: worst-over-median nearest same-category distance 1.94 on the 200-note seed.
