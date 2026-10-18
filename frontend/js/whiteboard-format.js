@@ -72,11 +72,11 @@ function wbFmtKind(entry) {
 
 //: The fields each kind takes, by the `data-fmt` names in index.html.
 const WB_FMT_FIELDS = {
-  shape: ["stroke", "width", "dash", "fill", "alpha", "shadow", "rough", "text", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "fillstyle", "gradient"],
-  line: ["stroke", "width", "dash", "alpha", "shadow", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow"],
+  shape: ["stroke", "width", "dash", "fill", "alpha", "shadow", "rough", "text", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "fillstyle", "gradient", "tip"],
+  line: ["stroke", "width", "dash", "alpha", "shadow", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
   //: A straight line or arrow: a line that takes ends.
-  arrow: ["stroke", "width", "dash", "caps", "alpha", "shadow", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow"],
-  link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "props", "pattern", "round", "flow", "jumpsize", "gapstart", "gapend"],
+  arrow: ["stroke", "width", "dash", "caps", "alpha", "shadow", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
+  link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "props", "pattern", "round", "flow", "jumpsize", "gapstart", "gapend", "tip"],
   text: ["stroke", "fill", "alpha", "shadow", "fold", "text", "geometry", "angle", "style-lib", "props"],
   image: ["alpha", "shadow", "geometry", "angle", "props"],
   frame: ["geometry", "props"],
@@ -123,6 +123,7 @@ function wbFmtValue(entry, field) {
     case "jumps": return WB_JUMP_STYLES.includes(s?.jumps) ? s.jumps : "none";
     //: Empty for "automatic", so the field shows its placeholder.
     case "jumpsize": return s?.jumpSize != null && s.jumpSize !== "" ? wbJumpSize(s) : "";
+    case "tip": return typeof s?.tip === "string" ? s.tip : "";
     case "gapstart": return wbLinkGap(s)?.start || 0;
     case "gapend": return wbLinkGap(s)?.end || 0;
     case "startcap": return (kind === "arrow" ? wbSketchCaps(s) : wbLinkCaps(s)).startCap;
@@ -395,9 +396,12 @@ function wbFmtShowMixed(el, isMixed, value) {
       el.append(option);
     }
     el.value = isMixed ? "" : value;
-  } else if (el.type === "number") {
+  } else if (el.type === "number" || el.type === "text") {
+    //: The field's own hint (Jump size's "Auto", the tooltip's words) comes
+    //: back when the selection stops being mixed.
+    el.dataset.hint ??= el.placeholder;
     el.value = isMixed ? "" : value;
-    el.placeholder = isMixed ? "Mixed" : "";
+    el.placeholder = isMixed ? "Mixed" : el.dataset.hint;
   } else {
     el.value = value;
   }
@@ -473,7 +477,7 @@ function wbFormatSync() {
     ["wb-fmt-stroke", "stroke", "stroke"], ["wb-fmt-width", "width", "width"], ["wb-fmt-dash", "dash", "dash"],
     ["wb-fmt-fill", "fill", "fill"], ["wb-fmt-route", "route", "route"], ["wb-fmt-jumps", "jumps", "jumps"], ["wb-fmt-startcap", "startcap", "caps"],
     ["wb-fmt-fillstyle", "fillstyle", "fillstyle"], ["wb-fmt-gradient-dir", "gradient-dir", "gradient"], ["wb-fmt-gradient", "gradient", "gradient"],
-    ["wb-fmt-jumpsize", "jumpsize", "jumpsize"], ["wb-fmt-gapstart", "gapstart", "gapstart"], ["wb-fmt-gapend", "gapend", "gapend"],
+    ["wb-fmt-jumpsize", "jumpsize", "jumpsize"], ["wb-fmt-gapstart", "gapstart", "gapstart"], ["wb-fmt-gapend", "gapend", "gapend"], ["wb-fmt-tip", "tip", "tip"],
     ["wb-fmt-pattern", "pattern", "pattern"], ["wb-fmt-round", "round", "round"], ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-size", "size", "text"],
     ["wb-fmt-ink", "ink", "text"], ["wb-fmt-alpha", "alpha", "alpha"],
   ]) {
@@ -819,6 +823,10 @@ onDomReady(() => {
   on("wb-fmt-gapstart", "change", (e) => {
     const gap = Math.max(0, Math.min(60, Math.round(Number(e.target.value) || 0)));
     wbFmtApply("gapstart", () => ({ gapStart: gap || undefined }), gap ? `Start gap ${gap}.` : "Start touches the shape.");
+  });
+  on("wb-fmt-tip", "change", (e) => {
+    const tip = e.target.value.trim().slice(0, 200);
+    wbFmtApply("tip", () => ({ tip: tip || undefined }), tip ? "Tooltip set." : "Tooltip removed.");
   });
   on("wb-fmt-gapend", "change", (e) => {
     const gap = Math.max(0, Math.min(60, Math.round(Number(e.target.value) || 0)));

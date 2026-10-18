@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Whiteboard: board find gains Whole word and Pattern (regular expression) buttons, reads the values on shapes, connectors and text boxes, and Replace all takes `$1` in a pattern; type `%name%` in a shape's or connector's words to show its own value; a shape or connector can take a Tooltip in the Data tab (draw.io's find options, placeholders and tooltip, whiteboard-1018).
 - Whiteboard: a connector gains Jump size, Start gap and End gap in the Format panel's Style tab, and a "Clear the connector's bends" command (draw.io's line jumps size, perimeter spacing and clear waypoints, whiteboard-1018).
 - Whiteboard: eight board commands from draw.io, found by Ctrl+K and the menus: select all shapes, select all connectors, turn 90 degrees, remove from the group, copy the size, paste the size, grow to fit the words and reverse a connector; a selection of many now keeps its connectors in the Format panel (whiteboard-1018).
 - Whiteboard: the Format panel's Style tab gains a Gradient (a second colour, down, up, right, left or radial) and a Fill style (hatch, cross-hatch, dots, dashes, zigzag) for a closed shape, kept in the export (draw.io's Fill section, whiteboard-1018).

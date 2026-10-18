@@ -2808,7 +2808,8 @@ function wbToggleNavigator(force) {
 
 // --- Find a card on this board ---------------------------------------------
 
-const wbBoardSearch = { query: "", matches: [], index: -1 };
+//: `word` and `regex` are the find bar's two options; they outlive a close.
+const wbBoardSearch = { query: "", matches: [], index: -1, word: false, regex: false, error: "" };
 
 /**
  * Every searchable string an item carries, lowercased.
@@ -2844,31 +2845,72 @@ function wbSearchTextFor(kind, item, byId) {
     //: box was ever found (measured, canvasdepth: "SHIP" in a text box, 0).
     try {
       const data = typeof item.data === "string" ? JSON.parse(item.data || "{}") : item.data || {};
-      return String(data.content || "").toLowerCase();
+      return `${data.content || ""}${wbPropsText(data.props)}`.toLowerCase();
     } catch {
       return "";
     }
   }
   //: A shape's or a connector's label (canvasdepth): what draw.io's find
   //: reads first, and what this one missed.
-  if (kind === "sketch") return String(wbSketchData(item)?.label || "").toLowerCase();
+  if (kind === "sketch") {
+    const data = wbSketchData(item);
+    return `${data?.label || ""}${wbPropsText(data?.props)}`.toLowerCase();
+  }
   return "";
 }
 
-//: Pure (node-tested): every case-insensitive occurrence of `find` in
-//: `text` swapped for `to`, both taken literally (no pattern, no `$&`).
-function wbReplaceText(text, find, to) {
-  const source = String(text ?? "");
-  const needle = String(find || "");
-  if (!needle) return { text: source, count: 0 };
-  const lower = source.toLowerCase(), low = needle.toLowerCase();
-  let out = "", from = 0, count = 0;
-  for (let at = lower.indexOf(low); at >= 0; at = lower.indexOf(low, from)) {
-    out += source.slice(from, at) + to;
-    from = at + needle.length;
-    count += 1;
+//: Find reads an item's data values too (draw.io's find reads its metadata).
+//: Names are not searched, only what a person typed as a value.
+function wbPropsText(props) {
+  if (!props || typeof props !== "object") return "";
+  return Object.values(props).map((v) => `\n${v}`).join("");
+}
+
+//: Pure (node-tested): the one pattern find and replace share. Literal text
+//: is escaped, so "a.b" is three characters; `regex` takes the query as a
+//: pattern; `word` demands a non-word character (or an edge) on each side,
+//: which is a lookaround rather than `\b` so "c++" can still be a word.
+//: Case never matters and `^`/`$` work per line. A pattern that can match
+//: empty text would match everywhere, so it is refused with the others.
+function wbSearchPattern(query, { word = false, regex = false } = {}) {
+  const q = String(query ?? "");
+  if (!q.trim()) return { re: null, has: () => false, error: "" };
+  let source = regex ? q : q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  if (word) source = `(?<!\\w)(?:${source})(?!\\w)`;
+  let re = null;
+  try {
+    re = new RegExp(source, "gim");
+  } catch {
+    return { re: null, has: () => false, error: "Not a valid pattern" };
   }
-  return { text: out + source.slice(from), count };
+  if (re.test("")) return { re: null, has: () => false, error: "This pattern matches empty text" };
+  return {
+    re,
+    // A global pattern remembers where it stopped; every test starts over.
+    has: (text) => {
+      re.lastIndex = 0;
+      return re.test(text);
+    },
+    error: "",
+  };
+}
+
+//: Pure (node-tested): every match of `find` in `text` swapped for `to`.
+//: Literal mode takes `to` as typed; a pattern takes `$1`, `$&` and `$$`.
+function wbReplaceText(text, find, to, opts = {}) {
+  const source = String(text ?? "");
+  const { re } = wbSearchPattern(find, opts);
+  if (!re) return { text: source, count: 0 };
+  let count = 0;
+  const out = source.replace(re, (...args) => {
+    const hit = args[0];
+    if (!hit) return hit;
+    count += 1;
+    if (!opts.regex) return to;
+    const caught = args.slice(1, args.findIndex((a, i) => i > 0 && typeof a === "number"));
+    return String(to).replace(/\$(\d{1,2}|&|\$)/g, (_, k) => (k === "$" ? "$" : k === "&" ? hit : caught[Number(k) - 1] ?? ""));
+  });
+  return { text: out, count };
 }
 
 //: **Replace all** (canvasdepth; WHITEBOARD_PLAN section 9): text boxes,
@@ -2877,18 +2919,23 @@ function wbReplaceText(text, find, to) {
 async function wbBoardReplaceAll(find, to) {
   const needle = String(find || "").trim() ? String(find) : "";
   if (!needle) return 0;
+  const pattern = wbSearchPattern(needle, wbBoardSearch);
+  if (!pattern.re) {
+    toast(pattern.error, "info");
+    return 0;
+  }
   const undo = [];
   let changes = 0, cards = 0;
   for (const kind of ["object", "sketch", "node"]) {
     for (const item of wbState[WB_LIST_BY_KIND[kind]] || []) {
       if (wbItemHidden(kind, item) || wbIsLocked(kind, item)) continue;
       if (kind === "node") {
-        if (wbSearchTextFor("node", item, null).includes(needle.toLowerCase())) cards += 1;
+        if (pattern.has(wbSearchTextFor("node", item, null))) cards += 1;
         continue;
       }
       const field = kind === "object" ? item.data?.content : wbSketchData(item)?.label;
       if (typeof field !== "string") continue;
-      const done = wbReplaceText(field, needle, to);
+      const done = wbReplaceText(field, needle, to, wbBoardSearch);
       if (!done.count) continue;
       undo.push({ action: "move", kind, id: item.id, before: WB_KIND_INFO[kind].payload(item) });
       if (kind === "object") {
@@ -2914,8 +2961,9 @@ function wbBoardSearchRun(query) {
   wbBoardSearch.query = query;
   wbBoardSearch.matches = [];
   wbBoardSearch.index = -1;
-  const needle = query.trim().toLowerCase();
-  if (needle) {
+  const pattern = wbSearchPattern(wbBoardSearch.regex ? query : query.trim(), wbBoardSearch);
+  wbBoardSearch.error = pattern.error;
+  if (pattern.re) {
     const byId = new Map(
       (typeof allEntries !== "undefined" && Array.isArray(allEntries) ? allEntries : []).map((e) => [
         String(e.id),
@@ -2924,7 +2972,7 @@ function wbBoardSearchRun(query) {
     );
     for (const kind of ["node", "object", "sketch"]) {
       for (const item of wbState[WB_LIST_BY_KIND[kind]] || []) {
-        if (!wbItemHidden(kind, item) && wbSearchTextFor(kind, item, byId).includes(needle)) {
+        if (!wbItemHidden(kind, item) && pattern.has(wbSearchTextFor(kind, item, byId))) {
           wbBoardSearch.matches.push({ kind, id: item.id });
         }
       }
@@ -2974,7 +3022,7 @@ function wbUpdateSearchCount() {
   }
   // "3 of 12", not a bare number, a screen reader reading this aria-live
   // region needs to know which of how many, and so does everyone else.
-  el.textContent = total ? `${wbBoardSearch.index + 1} of ${total}` : "No matches";
+  el.textContent = total ? `${wbBoardSearch.index + 1} of ${total}` : wbBoardSearch.error || "No matches";
 }
 
 /** Step through the matches, wrapping at both ends. */
@@ -3049,6 +3097,26 @@ function wbEnsureReplaceRow(bar) {
   bar.append(row);
 }
 
+//: Whole word and Pattern, two pressed-state toggles after the find field,
+//: built on first use like the Replace row. Changing one searches again.
+function wbEnsureSearchOptions(bar) {
+  if (document.getElementById("wb-search-word")) return;
+  const input = document.getElementById("wb-search-input");
+  const make = (id, icon, title, option) => {
+    const button = smallButton(icon, title, () => {
+      wbBoardSearch[option] = !wbBoardSearch[option];
+      button.setAttribute("aria-pressed", String(wbBoardSearch[option]));
+      wbBoardSearchRun(input?.value || "");
+    });
+    button.id = id;
+    button.setAttribute("aria-pressed", String(wbBoardSearch[option]));
+    return button;
+  };
+  const word = make("wb-search-word", "ph:text-a-underline", "Whole word", "word");
+  const pattern = make("wb-search-regex", "ph:asterisk", "Pattern (a regular expression)", "regex");
+  input?.after(word, pattern);
+}
+
 function wbToggleReplace(on = null) {
   const row = document.getElementById("wb-replace-row");
   if (!row) return;
@@ -3064,6 +3132,7 @@ function wbOpenBoardSearch({ replace = false } = {}) {
   const input = document.getElementById("wb-search-input");
   if (!bar || !input) return;
   wbEnsureReplaceRow(bar);
+  wbEnsureSearchOptions(bar);
   bar.classList.remove("hidden");
   input.focus();
   input.select();
@@ -17305,10 +17374,37 @@ const WB_ITEM_FONTS = Object.freeze({
   hand: '"Segoe Print", "Bradley Hand", "Chalkboard SE", "Comic Sans MS", cursive',
 });
 
+//: Pure (node-tested): `%name%` in a label shows the item's own value of
+//: that name (draw.io's placeholders, from its Edit data). An unknown name
+//: stays as typed, so "100% of %x%" is not mangled. The stored label keeps the
+//: marks; only what is drawn, and so exported, is expanded.
+function wbExpandPlaceholders(text, props) {
+  const source = String(text ?? "");
+  if (!props || typeof props !== "object" || !source.includes("%")) return source;
+  return source.replace(/%([A-Za-z][\w .-]{0,39})%/g, (mark, name) => (Object.prototype.hasOwnProperty.call(props, name) ? String(props[name]) : mark));
+}
+
+//: A shape's or connector's hover text (`data.tip`): a native SVG `<title>`,
+//: so a pointer, a screen reader and the exported SVG all carry it.
+function wbSyncSketchTip(groupEl, parsed) {
+  const tip = typeof parsed?.tip === "string" ? parsed.tip.trim() : "";
+  let el = groupEl.querySelector(":scope > title.wb-sketch-tip");
+  if (!tip) {
+    el?.remove();
+    return;
+  }
+  if (!el) {
+    el = document.createElementNS("http://www.w3.org/2000/svg", "title");
+    el.setAttribute("class", "wb-sketch-tip");
+    groupEl.prepend(el);
+  }
+  if (el.textContent !== tip) el.textContent = tip;
+}
+
 //: Adds, updates or removes a shape's label for one render.
 function wbPaintShapeLabel(groupEl, parsed) {
   const kind = wbShapeLabelKind(parsed);
-  const text = kind && typeof parsed.label === "string" ? parsed.label : "";
+  const text = kind && typeof parsed.label === "string" ? wbExpandPlaceholders(parsed.label, parsed.props) : "";
   let label = groupEl.querySelector(":scope > .sketch-label");
   if (!text) {
     label?.remove();
@@ -17475,7 +17571,7 @@ function wbLayoutLinkLabel(groupEl) {
 }
 
 function wbPaintLinkLabel(groupEl, sketch, parsed) {
-  const text = wbLinkTakesLabel(sketch, parsed) && typeof parsed.label === "string" ? parsed.label : "";
+  const text = wbLinkTakesLabel(sketch, parsed) && typeof parsed.label === "string" ? wbExpandPlaceholders(parsed.label, parsed.props) : "";
   let label = groupEl.querySelector(":scope > .wb-link-label");
   if (!text) {
     label?.remove();
@@ -19364,6 +19460,7 @@ function renderWhiteboard() {
     d3.select(this)
       .attr("opacity", look?.alpha != null && look.alpha < 1 ? look.alpha : null)
       .style("filter", look?.shadow ? WB_ITEM_SHADOW : null);
+    wbSyncSketchTip(this, look);
     // After the path, which the label is laid out from (decision 12).
     wbPaintShapeLabel(this, shapeData);
     wbPaintLinkLabel(this, d, linkData);

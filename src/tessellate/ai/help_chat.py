@@ -1333,7 +1333,7 @@ HELP_TOPICS.extend(
             "keywords": (
                 "lasso", "highlighter", "eraser", "connector", "snap to grid",
                 "snap", "grid", "pan", "zoom", "zoom to fit",
-                "board overview", "find a card", "find and replace", "replace all", "tool",
+                "board overview", "find a card", "find and replace", "replace all", "whole word", "regular expression", "pattern", "tool",
                 "select all shapes", "select all connectors", "turn 90 degrees", "remove from group", "copy size", "paste size", "reverse a connector", "auto size",
             ),
             "body": (
@@ -1347,7 +1347,7 @@ HELP_TOPICS.extend(
                 "fingers pan, Shift+wheel pans sideways, Ctrl+wheel or a pinch "
                 "zooms, Space and drag pans, a drag to an edge pans, Ctrl+= and Ctrl+- zoom, "
                 "Ctrl+0 is 100%, Shift+1 fits all, Shift+N shows the "
-                "overview, / or Ctrl+F finds, Ctrl+H replaces, and Tab walks the board's "
+                "overview, / or Ctrl+F finds (with Whole word and Pattern buttons), Ctrl+H replaces, and Tab walks the board's "
                 "items. Ctrl+K also finds select all shapes or connectors, turn 90 degrees, remove from "
                 "the group, copy and paste the size, grow to fit the words, reverse a connector and clear its bends. "
                 "Selection, menus and presenting are in Whiteboard selection and menus."

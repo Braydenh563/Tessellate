@@ -2410,13 +2410,17 @@ MORE_TOPICS.extend([
         "keywords": (
             "edit data", "custom properties", "properties on a shape", "data on a shape",
             "named values", "metadata on a shape", "shape data", "add a property",
+            "placeholder", "placeholders", "%name%", "tooltip", "hover text", "show a value in a label",
         ),
         "body": (
             "Edit data, as in draw.io: select one shape, line, connector, text box, "
             "picture, frame or table and open the Format panel's Data tab (or Edit "
             "data in the command palette). Add a property gives a name and a "
             "value; a name starts with a letter. Changes save as you leave a field, "
-            "each one Undo step, and the values stay with the item."
+            "each one Undo step, and the values stay with the item. Type %name% in a "
+            "shape's or connector's words to show that value there (a name it does not "
+            "have stays as typed), and a shape or connector can take a Tooltip, shown "
+            "when the pointer rests on it. Find on the board reads the values too."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },
