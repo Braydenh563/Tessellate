@@ -37,5 +37,7 @@ Worktree agent-ac526d0d9067dc04a, server :8792 (data /tmp/mm-docs1018). Boot JS 
 
 - done 9561081: step 1 VC6.
 - step 2 B19 drag: documents-codekit.js (docSnippetDragStart, docSnippetScrollSpeed, docSnippetDragFrame), library-lazy.css .doc-drop-ghost; sweep snippetdrag1018.js 13/13 (ghost within 2px of the caret; bottom edge scrolled 0 to 1,319px in 0.7 s). Chromium's synthetic drag sends no repeat dragover while still, so the sweep nudges 1px. Not verified: a real mouse drag in the desktop webview, Firefox (draggable buttons).
-- next: B23 table right-click and row/column grips (documents.js DocTableMenuWidget:7628, docTableMenu:5399).
+- done 38ffce5: step 2 B19 drag (above).
+- step 3 B23 part 1: right-click or hold on a Live cell opens the table menu at the pointer (docTableMenuAtPoint, one contextmenu listener ahead of the suggestion), nine new commands (move row/column, sort A-Z and Z-A, select row/column/table); pure model in the DOC-TABLE region, tests/test_doc_table_manage.py (25 checks), sweep tablemanage1018.js 20/20 at 1440 and 390. Menu is 19 items, 546px tall at 1440x900. Not verified: a real touch hold on a device.
+- next: B23 part 2, edge grips (select, menu, drag reorder, plus) in a lazy bundle; then B18 sections library.
 - (history) step 1 VC6: five dialects in the worker, select, preference and pair table (documents.js DOC_VARIANT_FAMILY), help line. Sweep spellingdialects1018.js 12/12.

@@ -4698,6 +4698,93 @@ function docTableAlignEdits(table, col, align) {
   return [{ from: span.from, to: span.to, insert }];
 }
 
+//: **Managing a table by its rows and columns** (INBOX 904 B23): move a row
+//: or a column one place, sort the body by a column, and the ranges a row, a
+//: column or the whole table is, for selecting. Edits like every operation
+//: here: a row moves by swapping two lines' own bytes, a column by swapping
+//: each row's two cells (the alignment marker goes with its column).
+function docTableMoveRowEdits(table, row, delta) {
+  const other = row + delta;
+  const first = table.delim + 1;
+  if (row < first || other < first || other >= table.rows.length || !delta) return [];
+  const a = table.rows[row];
+  const b = table.rows[other];
+  return [
+    { from: a.from, to: a.to, insert: docTableJoinRow(b) },
+    { from: b.from, to: b.to, insert: docTableJoinRow(a) },
+  ];
+}
+
+function docTableMoveColumnEdits(table, col, delta) {
+  const to = col + delta;
+  if (!delta || col < 0 || to < 0 || col >= table.columns || to >= table.columns) return [];
+  const edits = [];
+  for (const row of table.rows) {
+    const cells = row.cells.slice();
+    //: A short row gains the cell it lacks, with its closing pipe: a blank
+    //: cell at the end of a row with no trailing pipe is not a cell.
+    const padded = cells.length < table.columns;
+    while (cells.length < table.columns) cells.push("  ");
+    [cells[col], cells[to]] = [cells[to], cells[col]];
+    const next = { ...row, cells, trail: row.trail || padded, tail: row.trail ? row.tail : "" };
+    edits.push({ from: row.from, to: row.to, insert: docTableJoinRow(next) });
+  }
+  return edits;
+}
+
+//: Numbers as numbers, words in natural order, blanks last in either
+//: direction, equal rows in the order they had.
+function docTableSortEdits(table, col, descending) {
+  const first = table.delim + 1;
+  const body = table.rows.slice(first);
+  if (body.length < 2 || col < 0 || col >= table.columns) return [];
+  const key = (row) => (row.cells[col] || "").trim();
+  const number = (text) => {
+    const value = Number(text.replace(/[,\s]/g, ""));
+    return text !== "" && Number.isFinite(value) ? value : null;
+  };
+  const order = (a, b) => {
+    const ka = key(a);
+    const kb = key(b);
+    if (ka === "" || kb === "") return ka === kb ? 0 : ka === "" ? 1 : -1;
+    const na = number(ka);
+    const nb = number(kb);
+    const way = na != null && nb != null ? na - nb : ka.localeCompare(kb, undefined, { numeric: true, sensitivity: "base" });
+    return descending ? -way : way;
+  };
+  const sorted = body.map((row, i) => ({ row, i })).sort((x, y) => order(x.row, y.row) || x.i - y.i);
+  const edits = [];
+  body.forEach((place, i) => {
+    if (sorted[i].row !== place) edits.push({ from: place.from, to: place.to, insert: docTableJoinRow(sorted[i].row) });
+  });
+  return edits;
+}
+
+//: What selecting a row, a column or the table selects: a row is its cells
+//: end to end, a column is each body cell's words (one range per row, the
+//: delimiter skipped), the table is its whole text.
+function docTableSelectRanges(table, kind, index) {
+  if (kind === "table") return [{ from: table.from, to: table.to }];
+  if (kind === "row") {
+    const row = table.rows[index];
+    if (!row || index === table.delim) return [];
+    return [{ from: docTableCellSpan(table, index, 0).from, to: docTableCellSpan(table, index, row.cells.length - 1).to }];
+  }
+  if (kind !== "column" || index < 0 || index >= table.columns) return [];
+  const ranges = [];
+  for (let r = 0; r < table.rows.length; r += 1) {
+    if (r === table.delim) continue;
+    const span = docTableCellSpan(table, r, index);
+    if (!span) continue;
+    const raw = table.rows[r].cells[index];
+    const lead = (/^[ \t]*/.exec(raw) || [""])[0].length;
+    const tail = (/[ \t]*$/.exec(raw) || [""])[0].length;
+    const from = span.from + (raw.trim() ? lead : Math.min(1, raw.length));
+    ranges.push({ from, to: raw.trim() ? span.to - tail : from });
+  }
+  return ranges;
+}
+
 //: The edits applied to a plain string, which is what the fallback surface
 //: and the test both need. Back to front so an earlier edit cannot move a
 //: later one's offsets.
@@ -5278,6 +5365,27 @@ function docTableRemoveEdits(context) {
   return [{ from: table.from, to, insert: "" }];
 }
 
+//: Select a row, a column (one range per cell, so Delete clears them and
+//: copy reads them) or the table. A textarea has one range only: the first
+//: to the last.
+function docTableSelect(context, kind) {
+  const index = kind === "row" ? context.cell.row : kind === "column" ? context.cell.col : 0;
+  const ranges = docTableSelectRanges(context.table, kind, index);
+  if (!ranges.length) return false;
+  const view = context.surface.view;
+  const CM = window.CM6;
+  if (view && CM) {
+    const { EditorSelection } = CM.state;
+    view.dispatch({
+      selection: EditorSelection.create(ranges.map((range) => EditorSelection.range(range.from, range.to))),
+      scrollIntoView: true,
+    });
+  } else {
+    context.surface.setSelectionRange(ranges[0].from, ranges[ranges.length - 1].to);
+  }
+  return true;
+}
+
 //: The commands, as data, because three things read them: the cell menu, the
 //: "/" menu's table entry and the tests. `run` takes the live context rather
 //: than closing over one, so a menu built for the cell you opened it on still
@@ -5344,6 +5452,89 @@ const DOC_TABLE_COMMANDS = [
         context.cell.row, Math.max(0, context.cell.col - 1)),
   },
   {
+    id: "row-up",
+    group: "arrange",
+    label: "Move row up",
+    title: "Swap this row with the one above",
+    enabled: (context) => context.cell.row > context.table.delim + 1,
+    run: (context) =>
+      docTableGo(context, docTableMoveRowEdits(context.table, context.cell.row, -1),
+        context.cell.row - 1, context.cell.col),
+  },
+  {
+    id: "row-down",
+    group: "arrange",
+    label: "Move row down",
+    title: "Swap this row with the one below",
+    enabled: (context) =>
+      context.cell.row > context.table.delim && context.cell.row < context.table.rows.length - 1,
+    run: (context) =>
+      docTableGo(context, docTableMoveRowEdits(context.table, context.cell.row, 1),
+        context.cell.row + 1, context.cell.col),
+  },
+  {
+    id: "col-move-left",
+    group: "arrange",
+    label: "Move column left",
+    title: "Swap this column with the one before it",
+    enabled: (context) => context.cell.col > 0,
+    run: (context) =>
+      docTableGo(context, docTableMoveColumnEdits(context.table, context.cell.col, -1),
+        context.cell.row, context.cell.col - 1),
+  },
+  {
+    id: "col-move-right",
+    group: "arrange",
+    label: "Move column right",
+    title: "Swap this column with the one after it",
+    enabled: (context) => context.cell.col < context.table.columns - 1,
+    run: (context) =>
+      docTableGo(context, docTableMoveColumnEdits(context.table, context.cell.col, 1),
+        context.cell.row, context.cell.col + 1),
+  },
+  {
+    id: "sort-up",
+    group: "arrange",
+    label: "Sort A to Z",
+    title: "Order the rows by this column, numbers as numbers",
+    enabled: (context) => context.table.rows.length > context.table.delim + 2,
+    run: (context) =>
+      docTableGo(context, docTableSortEdits(context.table, context.cell.col, false),
+        context.cell.row, context.cell.col),
+  },
+  {
+    id: "sort-down",
+    group: "arrange",
+    label: "Sort Z to A",
+    title: "Order the rows by this column, the other way",
+    enabled: (context) => context.table.rows.length > context.table.delim + 2,
+    run: (context) =>
+      docTableGo(context, docTableSortEdits(context.table, context.cell.col, true),
+        context.cell.row, context.cell.col),
+  },
+  {
+    id: "select-row",
+    group: "select",
+    label: "Select row",
+    title: "Select every cell of this row",
+    enabled: (context) => context.cell.row !== context.table.delim,
+    run: (context) => docTableSelect(context, "row"),
+  },
+  {
+    id: "select-column",
+    group: "select",
+    label: "Select column",
+    title: "Select this column's cells, to copy or clear them",
+    run: (context) => docTableSelect(context, "column"),
+  },
+  {
+    id: "select-table",
+    group: "select",
+    label: "Select table",
+    title: "Select the whole table",
+    run: (context) => docTableSelect(context, "table"),
+  },
+  {
     id: "align-left",
     group: "alignment",
     label: "Align left",
@@ -5396,9 +5587,8 @@ function docTableCommand(id) {
 //: from scratch: DESIGN.md's index says a menu is `kebabMenu`, and a
 //: hand-built one here would be the eleventh thing in this app that opens a
 //: list of actions and the first that does it differently.
-function docTableMenu(context) {
-  if (typeof kebabMenu !== "function") return document.createElement("span");
-  const items = DOC_TABLE_COMMANDS.map((command) => ({
+function docTableMenuItems(context) {
+  return DOC_TABLE_COMMANDS.map((command) => ({
     label: command.label,
     title: command.title,
     danger: command.danger,
@@ -5410,7 +5600,11 @@ function docTableMenu(context) {
     disabled: command.enabled ? !command.enabled(context) : false,
     run: () => docTableCommand(command.id),
   }));
-  const wrap = kebabMenu(items, "Table row and column actions");
+}
+
+function docTableMenu(context) {
+  if (typeof kebabMenu !== "function") return document.createElement("span");
+  const wrap = kebabMenu(docTableMenuItems(context), "Table row and column actions");
   //: **Pressing it must not move the caret out of the table** (the owner: the
   //: kebab "does nothing and just deselects the row when I try to press that
   //: meatball button"). The menu only exists while the selection is inside the
@@ -17543,16 +17737,68 @@ function docOpenSuggestAtPoint(target, point) {
   return Boolean(docOpenSuggestAtCaret(box, point));
 }
 
+//: The table's menu goes first (`docTableMenuAtPoint`, below), and takes the
+//: press from the caret-level suggestion: the one this listener opens on any
+//: press in a box with something to say. A misspelt word keeps its own. One
+//: listener, because the long-press twin below is one call (a lint counts both).
 document.addEventListener("contextmenu", (event) => {
-  if (docOpenSuggestAtPoint(event.target, { x: event.clientX, y: event.clientY })) {
+  const point = { x: event.clientX, y: event.clientY };
+  if (docTableMenuAtPoint(event.target, point.x, point.y) || docOpenSuggestAtPoint(event.target, point)) {
     event.preventDefault();
   }
 });
 if (typeof wireLongPress === "function") {
-  wireLongPress(document, (event, point) => docOpenSuggestAtPoint(event.target, point), {
-    selector: ".doc-flag, .cm-finding, .cm-content, textarea",
-  });
+  wireLongPress(
+    document,
+    (event, point) =>
+      docTableMenuAtPoint(event.target, point.x, point.y) || docOpenSuggestAtPoint(event.target, point),
+    { selector: ".doc-flag, .cm-finding, .cm-content, textarea" }
+  );
 }
+
+//: **A right-click or a hold on a Live table cell opens the table's menu at
+//: the pointer** (INBOX 904 B23: "I'm not given a popup menu for tables when I
+//: right click them"). The same list as the ⋯ at the header's end
+//: (`docTableMenuItems`). The caret goes to the pressed cell first, unless the
+//: press is inside what is already selected (a column the person just
+//: selected keeps its ranges); a misspelt word in the cell keeps its own menu,
+//: which is the listener above. Anywhere else the browser's menu stays.
+function docTableMenuAtPoint(target, x, y) {
+  if (target instanceof Element && target.closest(".doc-flag, .cm-finding")) return false;
+  //: By the element under the pointer when the event's own target is not a
+  //: cell: with a selection drawn, the press can land on the selection layer.
+  let cell = target instanceof Element ? target.closest(".cm-md-td") : null;
+  if (!cell && target instanceof Element && target.closest(".cm-editor")) {
+    cell = document.elementsFromPoint(x, y).map((el) => el.closest(".cm-md-td")).find(Boolean) || null;
+  }
+  const surface = cell && asSurface(cell);
+  const view = surface && surface.view;
+  if (!view) return false;
+  //: The pressed cell comes from the element, not from the pixel: the empty
+  //: part of a short cell maps to the start of the next one (the hidden pipe
+  //: is between them), which put the caret a column to the right. The press
+  //: point is only used inside the cell's own span.
+  const from = view.posAtDOM(cell);
+  const to = from + cell.textContent.length;
+  //: A column's ranges, or a row's, press through; one range across several
+  //: rows (the whole table) does not, since a menu acting on its first cell
+  //: would not be acting on the cell that was pressed.
+  const { doc, selection } = view.state;
+  const touched = selection.ranges.some(
+    (range) =>
+      range.from <= to && range.to >= from && range.to > range.from &&
+      (selection.ranges.length > 1 || doc.lineAt(range.from).number === doc.lineAt(range.to).number)
+  );
+  if (!touched) {
+    const at = view.posAtCoords({ x, y });
+    view.dispatch({ selection: { anchor: at == null ? from : Math.max(from, Math.min(at, to)) } });
+  }
+  const context = docTableContext(surface);
+  if (!context) return false;
+  openMenuAtPoint(docTableMenuItems(context), "Table row and column actions", x, y);
+  return true;
+}
+
 
 //: **Hover opens it too, in a code file** (the owner, 2026-10-11): a squiggle
 //: under a comment's or a string's word answers a pause of the pointer as it
