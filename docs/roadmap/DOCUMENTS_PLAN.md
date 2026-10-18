@@ -1314,7 +1314,7 @@ links, Typora for the live view (section 17).
 | 8 | expansion | Comments, highlights on pages, link cards with a viewer, the long-form choice at first run (Brief 42 items) | Brief 42's numbers | 6, 13 |
 | 9 | expansion | Built 2026-10-10 (HISTORY "DOCUMENTS 24 and 25, Brief 76"): Replace in every document (palette), plain or regex, case, through `POST /documents/contents`, one undo step | `docreplace76.js`: 50 documents, 1 step, one Ctrl+Z restores 50 of 50 | 1, 2 |
 | 10 | expansion | Labelled and linked sections with a local graph (the owner's idea; after 8) | Brief 42's last row | 6 |
-| 11 | optimisation | Every control in `#tab-documents` has a `data-help-for` popover and a palette command. Measured by Brief 76: 78 controls with ids, 0 with a popover of their own, 71 editor commands. Open: a popover per control is not DESIGN.md's recipe (one line per section, the rest behind one '?'); recommendation: one '?' per documents section (sidebar, dock and its menu, find bar, AI panel) naming every control in it, a palette command per control, and a ratchet test listing the gaps | `test_manual_parity.py`; 0 missing | 6 |
+| 11 | optimisation | Built 2026-10-18 (HISTORY "OPEN.md rows closed, 2026-10-18 (open-1018)"): one `data-help-for` per documents section naming its controls, `tests/test_documents_help.py` | `test_documents_help.py` | 6 |
 
 **Briefs.** 42 (rows 8, 10), 48 (Word round trip), 51 (row 6), 53 (row 5),
 76 (rows 1 to 4, 7, 9, 11, with section 25's code rows).

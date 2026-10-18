@@ -1086,7 +1086,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 1051 | The code document's dock at 390 is 238px tall (four rows). | docs/roadmap/agent-remaining/OPEN.md:2349 | S | unassigned |
 | 1052 | A code file's editor is capped at 78ch and centred (09-editor.css:59), so its panel is 724px at 1440. | docs/roadmap/agent-remaining/OPEN.md:2432 | S | unassigned |
 | 1053 | DOCUMENTS 24 row 7 (the list row's ⋮) not built: it would remake INBOX 722; keep the overlay. | docs/roadmap/agent-remaining/OPEN.md:2498 | S | unassigned |
-| 1054 | DOCUMENTS 24 row 11: 78 controls, none with its own data-help-for; one '?' per section plus a command per control. | docs/roadmap/agent-remaining/OPEN.md:2499 | S | unassigned |
+| 1054 | BUILT 2026-10-18 (HISTORY, open-1018; the popover at 1440 for dock and find not opened by the sweep): DOCUMENTS 24 row 11: 78 controls, none with its own data-help-for; one '?' per section plus a command per control. | docs/roadmap/agent-remaining/OPEN.md:2499 | S | unassigned |
 | 1055 | Replace in every document reads each document by one request; and it has no dock-menu row. | docs/roadmap/agent-remaining/OPEN.md:2501 | S | unassigned |
 | 1056 | Statistics row 3 (VC3, Brief 75): the page's two charts use the hand-built askChartTicks; tick labels did not collide at 1440 or 390 with this data... | docs/roadmap/agent-remaining/OPEN.md:2563 | S | unassigned |
 | 1057 | D1's folder again: the brief says frontend/js/run/debug-*.js; the pass is frontend/js/run-debug.js for ide1's reason (65 lints glob... | docs/roadmap/agent-remaining/OPEN.md:2576 | S | unassigned |
@@ -2490,7 +2490,7 @@ Detail: [translate83-1010.md](../archive/agent-remaining/translate83-1010.md).
 Detail: [docs76-1010.md](../archive/agent-remaining/docs76-1010.md).
 
 - DOCUMENTS 24 row 7 (the list row's ⋮) not built: it would remake INBOX 722; keep the overlay.
-- DOCUMENTS 24 row 11: 78 controls, none with its own `data-help-for`; one '?' per section plus a command per control.
+- Built (open-1018, HISTORY): DOCUMENTS 24 row 11: 78 controls, none with its own `data-help-for`; one '?' per section plus a command per control.
 - `confirmDialog` and `promptDialog` mount on `<body>`, so one asked from inside a modal opens beneath it; app.js is at its gzip ratchet.
 - Replace in every document reads each document by one request; and it has no dock-menu row.
 
