@@ -64,3 +64,13 @@ def test_today_line_rotates_with_its_seed_and_stays_grounded():
     for d in draws:
         assert EM_DASH not in d["text"] and "!" not in d["text"]
         assert not _voice_eval.trace(d, notes, today)
+
+
+def test_today_line_names_an_untitled_note():
+    """CI 5783f9d: a note with no heading is named "your note from ...", a
+    phrase of the answer's phrasebook the voice's lacked (a 500 on the dashboard)."""
+    today = date(2026, 10, 18)
+    notes = [{"id": 1, "content": "ring the landlord", "category": "Home", "tags": [], "created_at": "2026-10-18"}]
+    for seed in range(6):
+        line = composer_voice.today_line(notes, today=today, seed=seed)
+        assert line and "your note" in line["text"].lower()

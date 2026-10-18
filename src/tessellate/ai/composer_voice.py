@@ -215,8 +215,9 @@ class _Voice(_Answer):
     """`_Answer` with the voice's phrasebook and its own part kinds."""
 
     def t(self, *names: str) -> _Voice:
+        #: `_Answer.name` asks for the answer's own phrases ("your note from").
         for name in names:
-            self.parts.append(("template", VOICE[name]))
+            self.parts.append(("template", VOICE.get(name) or composer.PHRASES[name]))
         return self
 
     def word(self, text: str) -> _Voice:

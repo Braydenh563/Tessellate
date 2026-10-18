@@ -2,7 +2,7 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6065, frontend ids 2533, CSS sections 495, backend routes 610, backend modules 5835, test files 1276, tests 11440, plan headings 958.
+Counts: frontend functions 6065, frontend ids 2533, CSS sections 495, backend routes 610, backend modules 5835, test files 1276, tests 11441, plan headings 958.
 
 ## Frontend functions (6065)
 
@@ -11390,28 +11390,28 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `_Voice` | src/tessellate/ai/composer_voice.py:214 |
-| `_back` | src/tessellate/ai/composer_voice.py:331 |
-| `_clip` | src/tessellate/ai/composer_voice.py:259 |
-| `_day` | src/tessellate/ai/composer_voice.py:288 |
-| `_draw` | src/tessellate/ai/composer_voice.py:523 |
-| `_due` | src/tessellate/ai/composer_voice.py:307 |
-| `_empty_day` | src/tessellate/ai/composer_voice.py:465 |
-| `_on_this_day` | src/tessellate/ai/composer_voice.py:346 |
-| `_open_items` | src/tessellate/ai/composer_voice.py:369 |
-| `_patterns` | src/tessellate/ai/composer_voice.py:404 |
-| `_salt` | src/tessellate/ai/composer_voice.py:300 |
-| `_surface` | src/tessellate/ai/composer_voice.py:394 |
-| `_this_week` | src/tessellate/ai/composer_voice.py:390 |
-| `_views` | src/tessellate/ai/composer_voice.py:284 |
-| `_week_count` | src/tessellate/ai/composer_voice.py:447 |
-| `asks` | src/tessellate/ai/composer_voice.py:642 |
-| `lead` | src/tessellate/ai/composer_voice.py:270 |
-| `one_line` | src/tessellate/ai/composer_voice.py:654 |
-| `remarks` | src/tessellate/ai/composer_voice.py:481 |
-| `suggested_searches` | src/tessellate/ai/composer_voice.py:733 |
-| `title_for` | src/tessellate/ai/composer_voice.py:705 |
-| `today_line` | src/tessellate/ai/composer_voice.py:529 |
-| `week_review` | src/tessellate/ai/composer_voice.py:585 |
+| `_back` | src/tessellate/ai/composer_voice.py:332 |
+| `_clip` | src/tessellate/ai/composer_voice.py:260 |
+| `_day` | src/tessellate/ai/composer_voice.py:289 |
+| `_draw` | src/tessellate/ai/composer_voice.py:524 |
+| `_due` | src/tessellate/ai/composer_voice.py:308 |
+| `_empty_day` | src/tessellate/ai/composer_voice.py:466 |
+| `_on_this_day` | src/tessellate/ai/composer_voice.py:347 |
+| `_open_items` | src/tessellate/ai/composer_voice.py:370 |
+| `_patterns` | src/tessellate/ai/composer_voice.py:405 |
+| `_salt` | src/tessellate/ai/composer_voice.py:301 |
+| `_surface` | src/tessellate/ai/composer_voice.py:395 |
+| `_this_week` | src/tessellate/ai/composer_voice.py:391 |
+| `_views` | src/tessellate/ai/composer_voice.py:285 |
+| `_week_count` | src/tessellate/ai/composer_voice.py:448 |
+| `asks` | src/tessellate/ai/composer_voice.py:643 |
+| `lead` | src/tessellate/ai/composer_voice.py:271 |
+| `one_line` | src/tessellate/ai/composer_voice.py:655 |
+| `remarks` | src/tessellate/ai/composer_voice.py:482 |
+| `suggested_searches` | src/tessellate/ai/composer_voice.py:734 |
+| `title_for` | src/tessellate/ai/composer_voice.py:706 |
+| `today_line` | src/tessellate/ai/composer_voice.py:530 |
+| `week_review` | src/tessellate/ai/composer_voice.py:586 |
 
 ### src/tessellate/ai/context.py (6)
 
@@ -17965,7 +17965,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11440)
+## Tests (11441)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18180,7 +18180,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_route_688.py | 20 |
 | tests/test_composer_social.py | 15 |
 | tests/test_composer_tables.py | 32 |
-| tests/test_composer_voice.py | 7 |
+| tests/test_composer_voice.py | 8 |
 | tests/test_composer_voice_answers.py | 12 |
 | tests/test_composer_voice_turns.py | 12 |
 | tests/test_compress_chat_tool.py | 17 |
