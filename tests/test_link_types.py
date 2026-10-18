@@ -116,3 +116,11 @@ def test_a_link_made_without_a_kind_is_null(client):
         if e.get("kind") == "link" and {e["source"], e["target"]} == {a, b}
     )
     assert edge["link_type"] is None
+
+
+def test_pressing_the_current_kind_again_clears_it() -> None:
+    """INBOX 1300 C31: the ticked kind in the Kind of link sheet did nothing on
+    a second press; it now clears like "No kind"."""
+    js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "link-types.js").read_text(encoding="utf-8")
+    assert "current ? { link_type: null } : { link_type: t.key }" in js
+
