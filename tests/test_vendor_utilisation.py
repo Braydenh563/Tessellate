@@ -47,9 +47,10 @@ CALLED_FLOOR = {
     "pystdlib": 2,
     #: Every face shipped is declared by an @font-face (row 1595).
     "atkinson": 4,
-    #: 25 since the Timeline strip's labels (timeline-ticks.js: scaleTime, timeFormat,
-    #: timeDay, timeMonday, timeMonth, timeYear).
-    "d3": 25,
+    #: 26 since the Timeline strip's labels (timeline-ticks.js: scaleTime, timeFormat,
+    #: timeDay, timeMonday, timeMonth, timeYear) and the Treemap layout (`treemap`,
+    #: `treemapSquarify`; GRAPH_PLAN VC11).
+    "d3": 26,
     #: 12 since the Dashboard sky draws on the canvas context (its colour parsing was
     #: 426 ms of 540 ms busy idle at 4x CPU); p5 keeps the sketch, noise and timing.
     "p5": 12,
