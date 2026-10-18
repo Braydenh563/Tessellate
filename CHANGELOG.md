@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Undo and redo on a board or a document show "Undone: last change on this board" even with notifications muted (INBOX 1300 C32); `tests/test_link_types.py`.
 - Pressing the ticked kind in a link's Kind of link sheet (including "has example of") clears it (INBOX 1300 C31); `tests/test_link_types.py`.
 - A panel's hint line on the board edits its own text, not the title's, and an undo redraws it (INBOX 1300 C17); `tests/test_ui_recipes.py`.
 - The Add column and Add row circles in a document table draw their plus in CSS, centred: the typed glyph sat 0.875 css px low (INBOX 1300 C13); `tests/test_doc_table_manage.py`.

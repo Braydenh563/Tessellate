@@ -124,3 +124,12 @@ def test_pressing_the_current_kind_again_clears_it() -> None:
     js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "link-types.js").read_text(encoding="utf-8")
     assert "current ? { link_type: null } : { link_type: t.key }" in js
 
+
+def test_an_undo_on_a_board_or_document_says_so_even_when_muted() -> None:
+    """INBOX 1300 C32: the surface branches of performUndo/performRedo gave no
+    feedback; they now raise the exempt ("info") toast naming the place."""
+    js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "status.js").read_text(encoding="utf-8")
+    assert 'toast(`${verb}: last change on this ${where}`, "info")' in js
+    for name in ("performUndo", "performRedo"):
+        body = js[js.index(f"async function {name}(") :].split("\n}\n", 1)[0]
+        assert "surfaceStepNotice(" in body, name

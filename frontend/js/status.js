@@ -1514,10 +1514,21 @@ function appStackIsNewer(dir) {
   return Boolean(top) && top.at >= (window.docUndoAt?.() || 0);
 }
 
+//: **An undo on a board or a document says so** (INBOX 1300 C32: "undo shows
+//: no indication (notifications muted)"). Those histories hold no labels, so
+//: the words name the place. `"info"` is the toast's exempt shape: a muted
+//: notebook still shows it, as it still shows the zoom readout, because it
+//: answers a key the person just pressed.
+function surfaceStepNotice(verb, where) {
+  toast(`${verb}: last change on this ${where}`, "info");
+}
+
 async function performUndo() {
   const surface = surfaceHistory();
   if (surface) {
+    const had = surface.canUndo ? surface.canUndo() : true;
     await surface.undo();
+    if (had) surfaceStepNotice("Undone", surface.where);
     renderUndoBar();
     return;
   }
@@ -1540,7 +1551,9 @@ async function performUndo() {
 async function performRedo() {
   const surface = surfaceHistory("redo");
   if (surface) {
+    const had = surface.canRedo ? surface.canRedo() : true;
     await surface.redo();
+    if (had) surfaceStepNotice("Redone", surface.where);
     renderUndoBar();
     return;
   }
