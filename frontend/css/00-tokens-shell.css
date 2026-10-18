@@ -627,8 +627,6 @@ select optgroup {
      again, which is what 17a measured it at. */
   --doc-measure: 64ch;
   --doc-gutter: clamp(var(--space-6), 2.5vw, var(--space-9));
-  --page-left: var(--page-gutter);
-  --page-right: var(--page-gutter);
   /* 2rem, the inset five rules had by hand */
   /* Equal to the side gutter -- see `.layout`'s gap for the measurement. */
   --page-top: var(--page-gutter);
@@ -799,6 +797,13 @@ select optgroup {
      both the purple-tinted and flat-black families) existed before this,
      none dark-mode-aware unless they happened to reuse --glass-shadow. */
   --shadow-lg: 0 16px 40px rgba(31, 36, 48, calc(0.15 * var(--shadow-low) + 0.6 * var(--shadow-t)));
+  /* Three flat hairlines under a chat bubble, its action row and a tick, and the
+     accent glow under a filled primary: the drop shadows that repeat, so a
+     fourth hand-written one fails `test_a_drop_shadow_is_an_elevation_token`. */
+  --shadow-hair: 0 1px 2px rgba(0, 0, 0, 0.14);
+  --shadow-hair-md: 0 1px 2px rgba(0, 0, 0, 0.18);
+  --shadow-hair-lg: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow-accent-glow: 0 2px 10px color-mix(in srgb, var(--accent) 25%, transparent);
   /* The sketch/whiteboard surface set. */
   --sw-card: var(--card);
   --sw-border: var(--border);
@@ -817,7 +822,6 @@ select optgroup {
      happened to be (36, 59, 71, 180, 246px...), so controls in adjacent rows
      started at different x positions. */
   --form-label-col: 9rem;
-  --form-label-col-wide: 11rem;
   /* pills and round buttons.
      14px, not 18px. Blur radius is the exponential term in a
      backdrop-filter's cost, and the published band worth staying inside is
@@ -3653,8 +3657,8 @@ header#top-bar.tabs-wrapped #tab-bar {
   /* Custom margins (below) override the side halves with longhands rather
      than a four-value shorthand, so the one declaration the shell test
      pins stays the only place the page inset is set for everyone else. */
-  padding-left: var(--page-left);
-  padding-right: var(--page-right);
+  padding-left: var(--page-gutter);
+  padding-right: var(--page-gutter);
   /* The page is the scrolling element, not the window (§36A). `min-height: 0`
      is what lets a flex item shrink below its content and therefore scroll at
      all: without it the item grows to fit and the overflow never engages. */
