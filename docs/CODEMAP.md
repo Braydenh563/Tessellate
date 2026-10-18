@@ -2,7 +2,7 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6048, frontend ids 2528, CSS sections 495, backend routes 610, backend modules 5835, test files 1270, tests 11399, plan headings 959.
+Counts: frontend functions 6048, frontend ids 2528, CSS sections 495, backend routes 610, backend modules 5835, test files 1271, tests 11404, plan headings 958.
 
 ## Frontend functions (6048)
 
@@ -11723,40 +11723,40 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_of` | src/tessellate/ai/help_chat.py:2408 |
-| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2339 |
-| `_guide_lead` | src/tessellate/ai/help_chat.py:2856 |
-| `_guide_opening` | src/tessellate/ai/help_chat.py:2872 |
-| `_help_sentences` | src/tessellate/ai/help_chat.py:2839 |
-| `_keyword_in` | src/tessellate/ai/help_chat.py:2329 |
-| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2261 |
-| `_keyword_regex` | src/tessellate/ai/help_chat.py:2325 |
-| `_matching_topics` | src/tessellate/ai/help_chat.py:2458 |
-| `_meaning_topics` | src/tessellate/ai/help_chat.py:2538 |
-| `_normalise_keys` | src/tessellate/ai/help_chat.py:2284 |
-| `_place` | src/tessellate/ai/help_chat.py:2813 |
-| `_preference` | src/tessellate/ai/help_chat.py:2895 |
-| `_prompt_for` | src/tessellate/ai/help_chat.py:2686 |
-| `_read_as` | src/tessellate/ai/help_chat.py:2995 |
-| `_reading_topics` | src/tessellate/ai/help_chat.py:2430 |
-| `_repaired` | src/tessellate/ai/help_chat.py:2447 |
-| `_second_sentence` | src/tessellate/ai/help_chat.py:2843 |
-| `_state_line` | src/tessellate/ai/help_chat.py:2904 |
-| `_stated_lead` | src/tessellate/ai/help_chat.py:2913 |
-| `answer` | src/tessellate/ai/help_chat.py:3072 |
-| `answer_stream` | src/tessellate/ai/help_chat.py:3010 |
-| `badges_for` | src/tessellate/ai/help_chat.py:2626 |
-| `composed_answer` | src/tessellate/ai/help_chat.py:2924 |
-| `help_block_for` | src/tessellate/ai/help_chat.py:3152 |
-| `help_listing` | src/tessellate/ai/help_chat.py:2597 |
-| `help_sentences` | src/tessellate/ai/help_chat.py:2822 |
-| `names_app` | src/tessellate/ai/help_chat.py:3136 |
-| `offline_answer` | src/tessellate/ai/help_chat.py:2942 |
-| `social_reply` | src/tessellate/ai/help_chat.py:2786 |
-| `source_names` | src/tessellate/ai/help_chat.py:2593 |
-| `system_answer` | src/tessellate/ai/help_chat.py:2575 |
-| `topic_title` | src/tessellate/ai/help_chat.py:2561 |
-| `topics_for` | src/tessellate/ai/help_chat.py:2640 |
+| `_act_of` | src/tessellate/ai/help_chat.py:2413 |
+| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2344 |
+| `_guide_lead` | src/tessellate/ai/help_chat.py:2861 |
+| `_guide_opening` | src/tessellate/ai/help_chat.py:2877 |
+| `_help_sentences` | src/tessellate/ai/help_chat.py:2844 |
+| `_keyword_in` | src/tessellate/ai/help_chat.py:2334 |
+| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2266 |
+| `_keyword_regex` | src/tessellate/ai/help_chat.py:2330 |
+| `_matching_topics` | src/tessellate/ai/help_chat.py:2463 |
+| `_meaning_topics` | src/tessellate/ai/help_chat.py:2543 |
+| `_normalise_keys` | src/tessellate/ai/help_chat.py:2289 |
+| `_place` | src/tessellate/ai/help_chat.py:2818 |
+| `_preference` | src/tessellate/ai/help_chat.py:2900 |
+| `_prompt_for` | src/tessellate/ai/help_chat.py:2691 |
+| `_read_as` | src/tessellate/ai/help_chat.py:3000 |
+| `_reading_topics` | src/tessellate/ai/help_chat.py:2435 |
+| `_repaired` | src/tessellate/ai/help_chat.py:2452 |
+| `_second_sentence` | src/tessellate/ai/help_chat.py:2848 |
+| `_state_line` | src/tessellate/ai/help_chat.py:2909 |
+| `_stated_lead` | src/tessellate/ai/help_chat.py:2918 |
+| `answer` | src/tessellate/ai/help_chat.py:3077 |
+| `answer_stream` | src/tessellate/ai/help_chat.py:3015 |
+| `badges_for` | src/tessellate/ai/help_chat.py:2631 |
+| `composed_answer` | src/tessellate/ai/help_chat.py:2929 |
+| `help_block_for` | src/tessellate/ai/help_chat.py:3157 |
+| `help_listing` | src/tessellate/ai/help_chat.py:2602 |
+| `help_sentences` | src/tessellate/ai/help_chat.py:2827 |
+| `names_app` | src/tessellate/ai/help_chat.py:3141 |
+| `offline_answer` | src/tessellate/ai/help_chat.py:2947 |
+| `social_reply` | src/tessellate/ai/help_chat.py:2791 |
+| `source_names` | src/tessellate/ai/help_chat.py:2598 |
+| `system_answer` | src/tessellate/ai/help_chat.py:2580 |
+| `topic_title` | src/tessellate/ai/help_chat.py:2566 |
+| `topics_for` | src/tessellate/ai/help_chat.py:2645 |
 
 ### src/tessellate/ai/help_topics_more.py (2)
 
@@ -17938,7 +17938,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11399)
+## Tests (11404)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18043,6 +18043,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_board_history.py | 14 |
 | tests/test_board_kind_switch.py | 5 |
 | tests/test_board_library.py | 22 |
+| tests/test_board_library_diagram_sets.py | 5 |
 | tests/test_board_modified_time.py | 8 |
 | tests/test_board_named_layers.py | 4 |
 | tests/test_board_pan_layers.py | 2 |
@@ -19215,7 +19216,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_xmind_import.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |
 
-## Plan headings (959)
+## Plan headings (958)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -19999,7 +20000,6 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-11 (the topic's tools) | docs/roadmap/MINDMAP_PLAN.md:1844 |
 | Placed from INBOX, 2026-10-11 (voice notes, live captions, the focus timer; voiceup) | docs/roadmap/UI_MODERNISATION_PLAN.md:1565 |
 | Placed from INBOX, 2026-10-12 (grammar in digest answers) | docs/roadmap/BACKLOG.md:4294 |
-| Placed from INBOX, 2026-10-18 (1300) | docs/roadmap/WHITEBOARD_PLAN.md:1629 |
 | Placed from INBOX: 107d, the segmented mini bars | docs/roadmap/DOCUMENTS_PLAN.md:480 |
 | Placed from INBOX: the composer everywhere (the owner, 2026-10-06) | docs/roadmap/CHAT_PLAN.md:715 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/BACKLOG.md:4159 |

@@ -2342,6 +2342,1213 @@
     ],
     "links": []
    }
+  },
+  {
+   "key": "uml-class",
+   "kind": "element",
+   "name": "Class diagram",
+   "hint": "Classes, an interface and the lines between them",
+   "purpose": "solve",
+   "template": "board",
+   "tags": [
+    "class",
+    "uml",
+    "diagram",
+    "classes",
+    "model"
+   ],
+   "payload": {
+    "box": {
+     "w": 840,
+     "h": 410
+    },
+    "items": [
+     {
+      "key": "customer",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 200 0 L 200 150 L 0 150 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label": "Customer",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 0.24
+       },
+       "label_bold": true
+      },
+      "z": 5
+     },
+     {
+      "key": "customer_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 36 L 200 36 M 0 96 L 200 96",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     },
+     {
+      "key": "customer_a",
+      "kind": "sketch",
+      "data": {
+       "d": "M 4 38 L 196 38 L 196 94 L 4 94 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "- id: int\n- name: String",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     },
+     {
+      "key": "customer_m",
+      "kind": "sketch",
+      "data": {
+       "d": "M 4 98 L 196 98 L 196 148 L 4 148 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "+ placeOrder(): Order",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     },
+     {
+      "key": "order",
+      "kind": "sketch",
+      "data": {
+       "d": "M 320 0 L 520 0 L 520 150 L 320 150 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label": "Order",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 0.24
+       },
+       "label_bold": true
+      },
+      "z": 5
+     },
+     {
+      "key": "order_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 320 36 L 520 36 M 320 96 L 520 96",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     },
+     {
+      "key": "order_a",
+      "kind": "sketch",
+      "data": {
+       "d": "M 324 38 L 516 38 L 516 94 L 324 94 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "- id: int\n- placed: Date",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     },
+     {
+      "key": "order_m",
+      "kind": "sketch",
+      "data": {
+       "d": "M 324 98 L 516 98 L 516 148 L 324 148 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "+ total(): float",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     },
+     {
+      "key": "line",
+      "kind": "sketch",
+      "data": {
+       "d": "M 320 260 L 520 260 L 520 410 L 320 410 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label": "OrderLine",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 0.24
+       },
+       "label_bold": true
+      },
+      "z": 5
+     },
+     {
+      "key": "line_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 320 296 L 520 296 M 320 356 L 520 356",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     },
+     {
+      "key": "line_a",
+      "kind": "sketch",
+      "data": {
+       "d": "M 324 298 L 516 298 L 516 354 L 324 354 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "- quantity: int",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     },
+     {
+      "key": "line_m",
+      "kind": "sketch",
+      "data": {
+       "d": "M 324 358 L 516 358 L 516 408 L 324 408 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "+ subtotal(): float",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     },
+     {
+      "key": "product",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 260 L 200 260 L 200 410 L 0 410 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label": "Product",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 0.24
+       },
+       "label_bold": true
+      },
+      "z": 5
+     },
+     {
+      "key": "product_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 296 L 200 296 M 0 356 L 200 356",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     },
+     {
+      "key": "product_a",
+      "kind": "sketch",
+      "data": {
+       "d": "M 4 298 L 196 298 L 196 354 L 4 354 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "- sku: String\n- price: float",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     },
+     {
+      "key": "product_m",
+      "kind": "sketch",
+      "data": {
+       "d": "M 4 358 L 196 358 L 196 408 L 4 408 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "+ inStock(): bool",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     },
+     {
+      "key": "pay",
+      "kind": "sketch",
+      "data": {
+       "d": "M 640 0 L 840 0 L 840 110 L 640 110 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label": "«interface»\nPayable",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 0.473
+       },
+       "label_bold": true
+      },
+      "z": 5
+     },
+     {
+      "key": "pay_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 640 52 L 840 52",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     },
+     {
+      "key": "pay_m",
+      "kind": "sketch",
+      "data": {
+       "d": "M 644 54 L 836 54 L 836 106 L 644 106 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "+ pay(amount): void",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     }
+    ],
+    "links": [
+     {
+      "from": "customer",
+      "to": "order",
+      "data": {
+       "type": "link-straight",
+       "color": "ink",
+       "width": 2,
+       "endCap": "arrow",
+       "label": "places"
+      }
+     },
+     {
+      "from": "order",
+      "to": "line",
+      "data": {
+       "type": "link-straight",
+       "color": "ink",
+       "width": 2,
+       "startCap": "diamond-filled",
+       "label": "contains"
+      }
+     },
+     {
+      "from": "line",
+      "to": "product",
+      "data": {
+       "type": "link-straight",
+       "color": "ink",
+       "width": 2,
+       "endCap": "arrow",
+       "label": "refers to"
+      }
+     },
+     {
+      "from": "order",
+      "to": "pay",
+      "data": {
+       "type": "link-straight",
+       "color": "ink",
+       "width": 2,
+       "endCap": "triangle-open",
+       "dash": "dashed",
+       "label": "implements"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "key": "erd",
+   "kind": "element",
+   "name": "Entity relationship diagram",
+   "hint": "Four tables with keys and crow's foot lines",
+   "purpose": "solve",
+   "template": "board",
+   "tags": [
+    "erd",
+    "entity",
+    "relationship",
+    "database",
+    "schema",
+    "table"
+   ],
+   "payload": {
+    "box": {
+     "w": 520,
+     "h": 350
+    },
+    "items": [
+     {
+      "key": "customer",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 200 0 L 200 130 L 0 130 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label": "Customer",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 0.277
+       },
+       "label_bold": true
+      },
+      "z": 5
+     },
+     {
+      "key": "customer_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 36 L 200 36",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     },
+     {
+      "key": "customer_f_k",
+      "kind": "sketch",
+      "data": {
+       "d": "M 4 40 L 42 40 L 42 126 L 4 126 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "PK\n \n ",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     },
+     {
+      "key": "customer_f_n",
+      "kind": "sketch",
+      "data": {
+       "d": "M 42 40 L 196 40 L 196 126 L 42 126 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "id\nname\nemail",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     },
+     {
+      "key": "order",
+      "kind": "sketch",
+      "data": {
+       "d": "M 320 0 L 520 0 L 520 130 L 320 130 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label": "Order",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 0.277
+       },
+       "label_bold": true
+      },
+      "z": 5
+     },
+     {
+      "key": "order_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 320 36 L 520 36",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     },
+     {
+      "key": "order_f_k",
+      "kind": "sketch",
+      "data": {
+       "d": "M 324 40 L 362 40 L 362 126 L 324 126 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "PK\nFK\n ",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     },
+     {
+      "key": "order_f_n",
+      "kind": "sketch",
+      "data": {
+       "d": "M 362 40 L 516 40 L 516 126 L 362 126 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "id\ncustomer_id\nplaced_at",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     },
+     {
+      "key": "line",
+      "kind": "sketch",
+      "data": {
+       "d": "M 320 220 L 520 220 L 520 350 L 320 350 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label": "Order line",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 0.277
+       },
+       "label_bold": true
+      },
+      "z": 5
+     },
+     {
+      "key": "line_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 320 256 L 520 256",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     },
+     {
+      "key": "line_f_k",
+      "kind": "sketch",
+      "data": {
+       "d": "M 324 260 L 362 260 L 362 346 L 324 346 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "PK\nFK\nFK",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     },
+     {
+      "key": "line_f_n",
+      "kind": "sketch",
+      "data": {
+       "d": "M 362 260 L 516 260 L 516 346 L 362 346 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "id\norder_id\nproduct_id",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     },
+     {
+      "key": "product",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 220 L 200 220 L 200 350 L 0 350 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label": "Product",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 0.277
+       },
+       "label_bold": true
+      },
+      "z": 5
+     },
+     {
+      "key": "product_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 256 L 200 256",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     },
+     {
+      "key": "product_f_k",
+      "kind": "sketch",
+      "data": {
+       "d": "M 4 260 L 42 260 L 42 346 L 4 346 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "PK\n \n ",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     },
+     {
+      "key": "product_f_n",
+      "kind": "sketch",
+      "data": {
+       "d": "M 42 260 L 196 260 L 196 346 L 42 346 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "id\nname\nprice",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     }
+    ],
+    "links": [
+     {
+      "from": "customer",
+      "to": "order",
+      "data": {
+       "type": "link-straight",
+       "color": "ink",
+       "width": 2,
+       "startCap": "er-one",
+       "endCap": "er-zero-many",
+       "label": "places"
+      }
+     },
+     {
+      "from": "order",
+      "to": "line",
+      "data": {
+       "type": "link-straight",
+       "color": "ink",
+       "width": 2,
+       "startCap": "er-one",
+       "endCap": "er-one-many",
+       "label": "has"
+      }
+     },
+     {
+      "from": "product",
+      "to": "line",
+      "data": {
+       "type": "link-straight",
+       "color": "ink",
+       "width": 2,
+       "startCap": "er-one",
+       "endCap": "er-zero-many",
+       "label": "appears in"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "key": "wireframe",
+   "kind": "element",
+   "name": "Wireframe page",
+   "hint": "A page with a nav bar, a hero, three cards and a form",
+   "purpose": "plan",
+   "template": "board",
+   "tags": [
+    "wireframe",
+    "page",
+    "layout",
+    "website",
+    "screen",
+    "mockup"
+   ],
+   "payload": {
+    "box": {
+     "w": 760,
+     "h": 560
+    },
+    "items": [
+     {
+      "key": "page",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 760 0 L 760 560 L 0 560 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.04,
+       "label": "Page title",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 0.057
+       }
+      },
+      "z": 5
+     },
+     {
+      "key": "page_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 32 L 760 32 M 12 16 A 4 4 0 1 0 20 16 A 4 4 0 1 0 12 16 Z M 28 16 A 4 4 0 1 0 36 16 A 4 4 0 1 0 28 16 Z M 44 16 A 4 4 0 1 0 52 16 A 4 4 0 1 0 44 16 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     },
+     {
+      "key": "nav",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 32 L 760 32 L 760 80 L 0 80 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12
+      },
+      "z": 5
+     },
+     {
+      "key": "logo",
+      "kind": "sketch",
+      "data": {
+       "d": "M 16 32 L 96 32 L 96 80 L 16 80 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "Logo",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "middle",
+       "label_size": 15
+      },
+      "z": 6
+     },
+     {
+      "key": "nav0",
+      "kind": "sketch",
+      "data": {
+       "d": "M 440 32 L 520 32 L 520 80 L 440 80 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "Home",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "center",
+       "label_valign": "middle",
+       "label_size": 14
+      },
+      "z": 6
+     },
+     {
+      "key": "nav1",
+      "kind": "sketch",
+      "data": {
+       "d": "M 520 32 L 600 32 L 600 80 L 520 80 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "Features",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "center",
+       "label_valign": "middle",
+       "label_size": 14
+      },
+      "z": 6
+     },
+     {
+      "key": "nav2",
+      "kind": "sketch",
+      "data": {
+       "d": "M 600 32 L 680 32 L 680 80 L 600 80 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "Pricing",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "center",
+       "label_valign": "middle",
+       "label_size": 14
+      },
+      "z": 6
+     },
+     {
+      "key": "nav3",
+      "kind": "sketch",
+      "data": {
+       "d": "M 670 32 L 750 32 L 750 80 L 670 80 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "Sign in",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "center",
+       "label_valign": "middle",
+       "label_size": 14
+      },
+      "z": 6
+     },
+     {
+      "key": "hero",
+      "kind": "sketch",
+      "data": {
+       "d": "M 24 100 L 736 100 L 736 260 L 24 260 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.04
+      },
+      "z": 5
+     },
+     {
+      "key": "hero_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 24 100 L 736 260 M 736 100 L 24 260",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     },
+     {
+      "key": "card0",
+      "kind": "sketch",
+      "data": {
+       "d": "M 24 290 L 232 290 L 232 430 L 24 430 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.04,
+       "label": "First feature",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1
+       },
+       "label_valign": "bottom"
+      },
+      "z": 5
+     },
+     {
+      "key": "card0_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 46 326 A 14 14 0 1 0 74 326 A 14 14 0 1 0 46 326 Z M 40 372 L 216 372 M 40 392 L 184 392",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     },
+     {
+      "key": "card1",
+      "kind": "sketch",
+      "data": {
+       "d": "M 276 290 L 484 290 L 484 430 L 276 430 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.04,
+       "label": "Second feature",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1
+       },
+       "label_valign": "bottom"
+      },
+      "z": 5
+     },
+     {
+      "key": "card1_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 298 326 A 14 14 0 1 0 326 326 A 14 14 0 1 0 298 326 Z M 292 372 L 468 372 M 292 392 L 436 392",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     },
+     {
+      "key": "card2",
+      "kind": "sketch",
+      "data": {
+       "d": "M 528 290 L 736 290 L 736 430 L 528 430 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.04,
+       "label": "Third feature",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1
+       },
+       "label_valign": "bottom"
+      },
+      "z": 5
+     },
+     {
+      "key": "card2_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 550 326 A 14 14 0 1 0 578 326 A 14 14 0 1 0 550 326 Z M 544 372 L 720 372 M 544 392 L 688 392",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     },
+     {
+      "key": "email",
+      "kind": "sketch",
+      "data": {
+       "d": "M 28 470 L 480 470 A 4 4 0 0 1 484 474 L 484 506 A 4 4 0 0 1 480 510 L 28 510 A 4 4 0 0 1 24 506 L 24 474 A 4 4 0 0 1 28 470 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "Your email",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1
+       },
+       "label_align": "left"
+      },
+      "z": 5
+     },
+     {
+      "key": "cta",
+      "kind": "sketch",
+      "data": {
+       "d": "M 508 470 L 632 470 A 8 8 0 0 1 640 478 L 640 502 A 8 8 0 0 1 632 510 L 508 510 A 8 8 0 0 1 500 502 L 500 478 A 8 8 0 0 1 508 470 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label": "Get started",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1
+       },
+       "label_bold": true
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
   }
  ]
 }

@@ -1,0 +1,759 @@
+{
+ "format": "memorymap-library-set",
+ "version": 1,
+ "key": "uml",
+ "name": "UML",
+ "items": [
+  {
+   "key": "class",
+   "kind": "element",
+   "name": "Class",
+   "tags": [
+    "class",
+    "box",
+    "attributes",
+    "methods"
+   ],
+   "payload": {
+    "box": {
+     "w": 200,
+     "h": 168
+    },
+    "items": [
+     {
+      "key": "box",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 200 0 L 200 168 L 0 168 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label": "ClassName",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 0.21428571428571427
+       },
+       "label_bold": true
+      },
+      "z": 5
+     },
+     {
+      "key": "box_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 36 L 200 36 M 0 104 L 200 104",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     },
+     {
+      "key": "attrs",
+      "kind": "sketch",
+      "data": {
+       "d": "M 6 38 L 194 38 L 194 102 L 6 102 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "- id: int\n- name: String",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     },
+     {
+      "key": "methods",
+      "kind": "sketch",
+      "data": {
+       "d": "M 6 106 L 194 106 L 194 164 L 6 164 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "+ save(): void\n+ load(): void",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "abstract-class",
+   "kind": "element",
+   "name": "Abstract class",
+   "tags": [
+    "class",
+    "abstract"
+   ],
+   "payload": {
+    "box": {
+     "w": 200,
+     "h": 168
+    },
+    "items": [
+     {
+      "key": "box",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 200 0 L 200 168 L 0 168 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label": "Shape",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 0.21428571428571427
+       },
+       "label_bold": true,
+       "label_italic": true
+      },
+      "z": 5
+     },
+     {
+      "key": "box_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 36 L 200 36 M 0 104 L 200 104",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     },
+     {
+      "key": "attrs",
+      "kind": "sketch",
+      "data": {
+       "d": "M 6 38 L 194 38 L 194 102 L 6 102 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "# colour: String",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     },
+     {
+      "key": "methods",
+      "kind": "sketch",
+      "data": {
+       "d": "M 6 106 L 194 106 L 194 164 L 6 164 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "+ area(): float\n+ draw(): void",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "interface",
+   "kind": "element",
+   "name": "Interface",
+   "tags": [
+    "interface",
+    "contract"
+   ],
+   "payload": {
+    "box": {
+     "w": 200,
+     "h": 122
+    },
+    "items": [
+     {
+      "key": "box",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 200 0 L 200 122 L 0 122 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label": "«interface»\nPayable",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 0.4262295081967213
+       },
+       "label_bold": true
+      },
+      "z": 5
+     },
+     {
+      "key": "box_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 52 L 200 52",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     },
+     {
+      "key": "members",
+      "kind": "sketch",
+      "data": {
+       "d": "M 6 54 L 194 54 L 194 118 L 6 118 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "+ pay(amount): void\n+ refund(): void",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "enumeration",
+   "kind": "element",
+   "name": "Enumeration",
+   "tags": [
+    "enum",
+    "values"
+   ],
+   "payload": {
+    "box": {
+     "w": 200,
+     "h": 122
+    },
+    "items": [
+     {
+      "key": "box",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 200 0 L 200 122 L 0 122 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label": "«enumeration»\nStatus",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 0.4262295081967213
+       },
+       "label_bold": true
+      },
+      "z": 5
+     },
+     {
+      "key": "box_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 52 L 200 52",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     },
+     {
+      "key": "members",
+      "kind": "sketch",
+      "data": {
+       "d": "M 6 54 L 194 54 L 194 118 L 6 118 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "OPEN\nDONE\nCANCELLED",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "package",
+   "kind": "element",
+   "name": "Package",
+   "tags": [
+    "package",
+    "group",
+    "module"
+   ],
+   "payload": {
+    "box": {
+     "w": 220,
+     "h": 150
+    },
+    "items": [
+     {
+      "key": "p",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 90 0 L 90 26 L 220 26 L 220 150 L 0 150 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label": "Package",
+       "label_area": {
+        "x": 0,
+        "y": 0.22,
+        "w": 1,
+        "h": 0.3
+       },
+       "label_bold": true
+      },
+      "z": 5
+     },
+     {
+      "key": "p_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 26 L 90 26",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "note",
+   "kind": "element",
+   "name": "Note",
+   "tags": [
+    "note",
+    "comment"
+   ],
+   "payload": {
+    "box": {
+     "w": 180,
+     "h": 80
+    },
+    "items": [
+     {
+      "key": "n",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 150 0 L 180 30 L 180 80 L 0 80 Z M 150 0 L 150 30 L 180 30",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label": "A note",
+       "label_area": {
+        "x": 0.04,
+        "y": 0.1,
+        "w": 0.9,
+        "h": 0.8
+       },
+       "label_align": "left",
+       "label_valign": "top"
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "actor",
+   "kind": "element",
+   "name": "Actor",
+   "tags": [
+    "actor",
+    "person",
+    "use case",
+    "user"
+   ],
+   "payload": {
+    "box": {
+     "w": 60,
+     "h": 120
+    },
+    "items": [
+     {
+      "key": "a",
+      "kind": "sketch",
+      "data": {
+       "d": "M 16 14 A 14 14 0 1 0 44 14 A 14 14 0 1 0 16 14 Z M 30 28 L 30 70 M 8 44 L 52 44 M 30 70 L 10 100 M 30 70 L 50 100",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     },
+     {
+      "key": "l",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 100 L 60 100 L 60 120 L 0 120 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "Actor",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "center",
+       "label_valign": "middle",
+       "label_size": 14
+      },
+      "z": 6
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "use-case",
+   "kind": "element",
+   "name": "Use case",
+   "tags": [
+    "use case",
+    "ellipse"
+   ],
+   "payload": {
+    "box": {
+     "w": 200,
+     "h": 90
+    },
+    "items": [
+     {
+      "key": "u",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 45 A 100 45 0 1 0 200 45 A 100 45 0 1 0 0 45 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label": "Use case",
+       "label_area": {
+        "x": 0.12,
+        "y": 0.2,
+        "w": 0.76,
+        "h": 0.6
+       }
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "association",
+   "kind": "element",
+   "name": "Association",
+   "tags": [
+    "association",
+    "arrow",
+    "uses",
+    "relation",
+    "line"
+   ],
+   "payload": {
+    "box": {
+     "w": 180,
+     "h": 30
+    },
+    "items": [
+     {
+      "key": "r",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 15 L 180 15 M 160 5 L 180 15 L 160 25",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "dependency",
+   "kind": "element",
+   "name": "Dependency",
+   "tags": [
+    "dependency",
+    "dashed",
+    "arrow",
+    "relation",
+    "line"
+   ],
+   "payload": {
+    "box": {
+     "w": 180,
+     "h": 30
+    },
+    "items": [
+     {
+      "key": "r",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 15 L 180 15 M 160 5 L 180 15 L 160 25",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "dash": "dashed"
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "inheritance",
+   "kind": "element",
+   "name": "Inheritance",
+   "tags": [
+    "inheritance",
+    "generalisation",
+    "extends",
+    "triangle",
+    "relation",
+    "line"
+   ],
+   "payload": {
+    "box": {
+     "w": 180,
+     "h": 30
+    },
+    "items": [
+     {
+      "key": "r",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 15 L 150 15 M 180 15 L 150 3 L 150 27 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "realisation",
+   "kind": "element",
+   "name": "Realisation",
+   "tags": [
+    "realisation",
+    "implements",
+    "dashed",
+    "triangle",
+    "relation",
+    "line"
+   ],
+   "payload": {
+    "box": {
+     "w": 180,
+     "h": 30
+    },
+    "items": [
+     {
+      "key": "r",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 15 L 150 15 M 180 15 L 150 3 L 150 27 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "dash": "dashed"
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "aggregation",
+   "kind": "element",
+   "name": "Aggregation",
+   "tags": [
+    "aggregation",
+    "has",
+    "diamond",
+    "relation",
+    "line"
+   ],
+   "payload": {
+    "box": {
+     "w": 180,
+     "h": 30
+    },
+    "items": [
+     {
+      "key": "r",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 15 L 30 3 L 60 15 L 30 27 Z M 60 15 L 180 15",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "composition",
+   "kind": "element",
+   "name": "Composition",
+   "tags": [
+    "composition",
+    "owns",
+    "diamond",
+    "relation",
+    "line"
+   ],
+   "payload": {
+    "box": {
+     "w": 180,
+     "h": 30
+    },
+    "items": [
+     {
+      "key": "r",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 15 L 30 3 L 60 15 L 30 27 Z M 60 15 L 180 15",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 1
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  }
+ ]
+}

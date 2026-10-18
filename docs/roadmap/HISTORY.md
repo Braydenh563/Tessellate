@@ -513,6 +513,10 @@ the gesture guard moved onto the surface first; see HISTORY.md ("From OPEN.md,
 2026-09-23 (askcite agent): Phase 8c, the board's note card").
 
 
+## Moved from the plans, 2026-10-18 (WHITEBOARD C04, fixes5)
+
+- C04, the owner: "I want more templates and elements in the whiteboard like for wireframing and uml/class/erd diagrams etc." Built: three own-drawn sets in `frontend/board-library/` (`uml.json` 14 elements: class, abstract class, interface, enumeration, package, note, actor, use case and six relations; `erd.json` 10: entity, weak entity, attribute, key attribute, relationship and five crow's foot lines; `wireframe.json` 12: window, button, input, checkbox, radio, dropdown, image, navigation bar, card, text block, avatar, tab bar) and three templates (Class diagram, Entity relationship diagram, Wireframe page; 17 to 20). Nothing is taken from draw.io. A shape with inner lines is two sketches, an outline and its details, because a link anchors where a ray from the centre meets the path and a divider caught it (measured: a link ended 52 px inside its box before the split).
+
 ## Moved from the plans, 2026-10-18 (Popup agent citations, BACKLOG)
 
 From BACKLOG, as it stood:

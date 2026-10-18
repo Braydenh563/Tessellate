@@ -1435,9 +1435,10 @@ HELP_TOPICS.extend(
                 "strip under its title, the name, then the templates grouped by purpose (Plan and track, "
                 "Weigh and decide, Find the cause, Meet and review, Study and create, then your own), each "
                 "with its picture, and the chosen one drawn larger beside the list. A click chooses; Create, "
-                "Enter or a double click makes it. A board's seventeen: Kanban, Weekly planner, Roadmap, "
+                "Enter or a double click makes it. A board's twenty: Kanban, Weekly planner, Roadmap, "
                 "Project brief, OKRs, SWOT analysis, Eisenhower matrix, Pros and cons, Lean canvas, 5 whys, "
-                "Fishbone, Flowchart, Meeting notes, Retrospective, Study notes (Cornell), Mood board and User "
+                "Fishbone, Flowchart, Class diagram, Entity relationship diagram (tables with crow's foot lines), "
+                "Wireframe page, Meeting notes, Retrospective, Study notes (Cornell), Mood board and User "
                 "journey map. Each frame is a tinted panel with its title and a hint inside its top; drag the "
                 "title to move the frame and what is in it, double-click it to rename. A map's fifteen, "
                 "among them Brainstorm, Decision, Project plan, Cause and effect, Pros and cons, SWOT map, "
@@ -1470,7 +1471,7 @@ HELP_TOPICS.extend(
                 "holding the selection; its eye and lock act on all of it. Tinted rows are selected on the board "
                 "(the head counts them; Clear drops them), and a frame lists what it holds under its row. A locked item shows a lock when the pointer "
                 "is on it; right-click it to unlock it. The Library holds "
-                "built-in sets (General shapes, Flowchart, Arrows, Frames (a frame, a timeline lane and swimlanes in rows or columns) "
+                "built-in sets (General shapes, Flowchart, UML, Entity relationship, Wireframe, Arrows, Frames (a frame, a timeline lane and swimlanes in rows or columns) "
                 "and 1,530 icons drawn as shapes), five draw.io sets (196 shapes "
                 "with their own connection points), then Favourites, Recent and your own "
                 "libraries; the search field finds any of them by name or tag. Click a tile or press Enter "
@@ -1486,7 +1487,8 @@ HELP_TOPICS.extend(
                 "save to library", "save to the library", "my shapes", "custom shape", "saved style", "palette",
                 "saved branch", "import library", "export library", "save as template", "board template",
                 "templates in the library", "save my own shape", "save a shape to the library",
-                "save a board as a template", "board as a template",
+                "save a board as a template", "board as a template", "uml", "class diagram", "erd",
+                "entity relationship", "crow's foot", "wireframe",
             ),
             "body": (
                 "Saving to the library. To save your own: select things and press "
@@ -1496,7 +1498,10 @@ HELP_TOPICS.extend(
                 "beside the built-in ones. The library's ⋮ makes a new library, imports a library file and "
                 "exports one. A placed item is an ordinary copy: changing the library later never changes "
                 "a board. In Agent mode the assistant can search the library and place from it, draw "
-                "shapes and frames, and move, edit or delete what is on a board, asking first."
+                "shapes and frames, and move, edit or delete what is on a board, asking first. "
+                "For diagrams, the UML set has class, interface, enumeration and package boxes with the six "
+                "relations; Entity relationship has entities, attributes and crow's foot lines; Wireframe has "
+                "a window, button, input, checkbox, dropdown, image, navigation bar and card."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

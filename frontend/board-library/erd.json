@@ -1,0 +1,508 @@
+{
+ "format": "memorymap-library-set",
+ "version": 1,
+ "key": "erd",
+ "name": "Entity relationship",
+ "items": [
+  {
+   "key": "entity",
+   "kind": "element",
+   "name": "Entity",
+   "tags": [
+    "entity",
+    "table",
+    "fields",
+    "keys"
+   ],
+   "payload": {
+    "box": {
+     "w": 200,
+     "h": 150
+    },
+    "items": [
+     {
+      "key": "e",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 200 0 L 200 150 L 0 150 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label": "Entity",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 0.24
+       },
+       "label_bold": true
+      },
+      "z": 5
+     },
+     {
+      "key": "e_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 36 L 200 36",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     },
+     {
+      "key": "f_k",
+      "kind": "sketch",
+      "data": {
+       "d": "M 6 40 L 44 40 L 44 146 L 6 146 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "PK\nFK\n \n ",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     },
+     {
+      "key": "f_n",
+      "kind": "sketch",
+      "data": {
+       "d": "M 44 40 L 194 40 L 194 146 L 44 146 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "id\nowner_id\nname\ncreated_at",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "weak-entity",
+   "kind": "element",
+   "name": "Weak entity",
+   "tags": [
+    "entity",
+    "weak",
+    "double"
+   ],
+   "payload": {
+    "box": {
+     "w": 200,
+     "h": 150
+    },
+    "items": [
+     {
+      "key": "e",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 200 0 L 200 150 L 0 150 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label": "Weak entity",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.03,
+        "w": 0.94,
+        "h": 0.24
+       },
+       "label_bold": true
+      },
+      "z": 5
+     },
+     {
+      "key": "e_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 5 5 L 195 5 L 195 145 L 5 145 Z M 5 41 L 195 41",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     },
+     {
+      "key": "f_k",
+      "kind": "sketch",
+      "data": {
+       "d": "M 10 46 L 48 46 L 48 140 L 10 140 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "PK\nFK\n ",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     },
+     {
+      "key": "f_n",
+      "kind": "sketch",
+      "data": {
+       "d": "M 48 46 L 190 46 L 190 140 L 48 140 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "id\nparent_id\ndetail",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "attribute",
+   "kind": "element",
+   "name": "Attribute",
+   "tags": [
+    "attribute",
+    "chen",
+    "ellipse"
+   ],
+   "payload": {
+    "box": {
+     "w": 150,
+     "h": 64
+    },
+    "items": [
+     {
+      "key": "a",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 32 A 75 32 0 1 0 150 32 A 75 32 0 1 0 0 32 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label": "attribute",
+       "label_area": {
+        "x": 0.12,
+        "y": 0.2,
+        "w": 0.76,
+        "h": 0.6
+       }
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "key-attribute",
+   "kind": "element",
+   "name": "Key attribute",
+   "tags": [
+    "attribute",
+    "key",
+    "primary",
+    "chen"
+   ],
+   "payload": {
+    "box": {
+     "w": 150,
+     "h": 64
+    },
+    "items": [
+     {
+      "key": "a",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 32 A 75 32 0 1 0 150 32 A 75 32 0 1 0 0 32 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label": "key",
+       "label_area": {
+        "x": 0.12,
+        "y": 0.2,
+        "w": 0.76,
+        "h": 0.6
+       },
+       "label_underline": true
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "relationship",
+   "kind": "element",
+   "name": "Relationship",
+   "tags": [
+    "relationship",
+    "diamond",
+    "chen",
+    "verb"
+   ],
+   "payload": {
+    "box": {
+     "w": 170,
+     "h": 90
+    },
+    "items": [
+     {
+      "key": "r",
+      "kind": "sketch",
+      "data": {
+       "d": "M 85 0 L 170 45 L 85 90 L 0 45 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label": "relates",
+       "label_area": {
+        "x": 0.25,
+        "y": 0.28,
+        "w": 0.5,
+        "h": 0.44
+       }
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "one-to-one",
+   "kind": "element",
+   "name": "One to one",
+   "tags": [
+    "relationship",
+    "crow's foot",
+    "cardinality",
+    "1:1",
+    "relation",
+    "line"
+   ],
+   "payload": {
+    "box": {
+     "w": 180,
+     "h": 30
+    },
+    "items": [
+     {
+      "key": "r",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 15 L 180 15 M 14 3 L 14 27 M 22 3 L 22 27 M 158 3 L 158 27 M 166 3 L 166 27",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "one-to-many",
+   "kind": "element",
+   "name": "One to many",
+   "tags": [
+    "relationship",
+    "crow's foot",
+    "cardinality",
+    "1:n",
+    "relation",
+    "line"
+   ],
+   "payload": {
+    "box": {
+     "w": 180,
+     "h": 30
+    },
+    "items": [
+     {
+      "key": "r",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 15 L 180 15 M 14 3 L 14 27 M 22 3 L 22 27 M 150 15 L 180 3 M 150 15 L 180 15 M 150 15 L 180 27 M 140 3 L 140 27",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "many-to-many",
+   "kind": "element",
+   "name": "Many to many",
+   "tags": [
+    "relationship",
+    "crow's foot",
+    "cardinality",
+    "n:m",
+    "relation",
+    "line"
+   ],
+   "payload": {
+    "box": {
+     "w": 180,
+     "h": 30
+    },
+    "items": [
+     {
+      "key": "r",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 15 L 180 15 M 30 15 L 0 3 M 30 15 L 0 15 M 30 15 L 0 27 M 40 3 L 40 27 M 150 15 L 180 3 M 150 15 L 180 15 M 150 15 L 180 27 M 140 3 L 140 27",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "zero-or-one-to-many",
+   "kind": "element",
+   "name": "Zero or one to many",
+   "tags": [
+    "relationship",
+    "crow's foot",
+    "cardinality",
+    "0..1",
+    "optional",
+    "relation",
+    "line"
+   ],
+   "payload": {
+    "box": {
+     "w": 180,
+     "h": 30
+    },
+    "items": [
+     {
+      "key": "r",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 15 L 22 15 M 34 15 L 180 15 M 14 3 L 14 27 M 22 15 A 6 6 0 1 0 34 15 A 6 6 0 1 0 22 15 Z M 150 15 L 180 3 M 150 15 L 180 15 M 150 15 L 180 27 M 140 3 L 140 27",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "one-to-zero-or-many",
+   "kind": "element",
+   "name": "One to zero or many",
+   "tags": [
+    "relationship",
+    "crow's foot",
+    "cardinality",
+    "1:0..n",
+    "optional",
+    "relation",
+    "line"
+   ],
+   "payload": {
+    "box": {
+     "w": 180,
+     "h": 30
+    },
+    "items": [
+     {
+      "key": "r",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 15 L 120 15 M 134 15 L 150 15 M 14 3 L 14 27 M 22 3 L 22 27 M 150 15 L 180 3 M 150 15 L 180 15 M 150 15 L 180 27 M 120 15 A 7 7 0 1 0 134 15 A 7 7 0 1 0 120 15 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  }
+ ]
+}

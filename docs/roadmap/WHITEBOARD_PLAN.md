@@ -1624,8 +1624,3 @@ Decisions made:
 - P3. The card shows the preview cropped to the content's bounds, the title, items and last edited; an empty board shows an empty-state line, not a blank frame.
 
 Rows (owner: canvasdepth3, after C5): P1 to P3, each a commit with a test and a measured render time on the budget fixture's 500-object board.
-
-
-## Placed from INBOX, 2026-10-18 (1300)
-
-- C04, the owner: "I want more templates and elements in the whiteboard like for wireframing and uml/class/erd diagrams etc." Today: 17 templates, draw.io basic, flowchart, arrows, BPMN, networks; UML arrowheads only. Next: UML class, ERD and wireframe shape sets plus one template each; check the draw.io licence note in ANALYSIS.md first.
