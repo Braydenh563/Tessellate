@@ -69,6 +69,7 @@
  "phone-shell.js::resize-observer": 2,
  "quick-access.js::raf": 1,
  "quick-note.js::mutation-observer": 1,
+ "reply-kit.js::raf": 4,
  "router-overlays.js::mutation-observer": 1,
  "search.js::raf": 1,
  "search.js::resize-observer": 1,
