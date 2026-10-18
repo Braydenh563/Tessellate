@@ -1064,15 +1064,10 @@ function openLightbox(items, startIndex = 0, opts = {}) {
   openTabBtn.classList.add("lightbox-open-tab");
   //: The details under the picture (facts, caption, reading) can be put
   //: away for a clear view, and stay put away for the next picture.
-  let infoWanted = true;
-  try {
-    infoWanted = localStorage.getItem("lightboxInfo") !== "off";
-  } catch {}
+  let infoWanted = prefs.get("lightboxInfo", "on") !== "off";
   const infoBtn = actionBtn("ph:info", "Details (I)", () => {
     infoWanted = !infoWanted;
-    try {
-      localStorage.setItem("lightboxInfo", infoWanted ? "on" : "off");
-    } catch {}
+    prefs.set("lightboxInfo", infoWanted ? "on" : "off");
     syncInfoWanted();
   }, topActions);
   const syncInfoWanted = () => {

@@ -74,8 +74,9 @@ def test_ctrl_z_walks_the_newer_history_on_a_document():
     assert "window.docUndoAt" in body and "window.docRedoAt" in body
     assert "!appStackIsNewer(dir)" in _body("surfaceHistory")
     assert "docHistoryStamp(update);" in _body("docCmUpdate")
-    assert 'surfaceHistory("redo")' in _body("performRedo")
-    assert "action.undoneAt = Date.now();" in _body("performUndo")
+    # performUndo/performRedo queue their *Now bodies (historyQueue), which hold the logic.
+    assert 'surfaceHistory("redo")' in _body("performRedoNow")
+    assert "action.undoneAt = Date.now();" in _body("performUndoNow")
 
 
 def test_version_history_names_versions_and_compares_side_by_side():
