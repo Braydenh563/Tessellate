@@ -2659,19 +2659,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `companionThrowAt` | frontend/js/companion-throw.js:157 |
-| `companionThrowClimb` | frontend/js/companion-throw.js:284 |
-| `companionThrowFlat` | frontend/js/companion-throw.js:268 |
-| `companionThrowRng` | frontend/js/companion-throw.js:43 |
-| `companionThrowRun` | frontend/js/companion-throw.js:149 |
-| `companionThrowSettle` | frontend/js/companion-throw.js:173 |
-| `companionThrowSettleSoon` | frontend/js/companion-throw.js:295 |
-| `companionThrowSide` | frontend/js/companion-throw.js:69 |
-| `companionThrowSlide` | frontend/js/companion-throw.js:106 |
-| `companionThrowStep` | frontend/js/companion-throw.js:59 |
-| `companionThrowUp` | frontend/js/companion-throw.js:126 |
-| `companionThrowWrapOn` | frontend/js/companion-throw.js:88 |
-| `nameMarkBuddyThrow` | frontend/js/companion-throw.js:183 |
+| `companionThrowAt` | frontend/js/companion-throw.js:158 |
+| `companionThrowClimb` | frontend/js/companion-throw.js:285 |
+| `companionThrowFlat` | frontend/js/companion-throw.js:269 |
+| `companionThrowRng` | frontend/js/companion-throw.js:44 |
+| `companionThrowRun` | frontend/js/companion-throw.js:150 |
+| `companionThrowSettle` | frontend/js/companion-throw.js:174 |
+| `companionThrowSettleSoon` | frontend/js/companion-throw.js:296 |
+| `companionThrowSide` | frontend/js/companion-throw.js:70 |
+| `companionThrowSlide` | frontend/js/companion-throw.js:107 |
+| `companionThrowStep` | frontend/js/companion-throw.js:60 |
+| `companionThrowUp` | frontend/js/companion-throw.js:127 |
+| `companionThrowWrapOn` | frontend/js/companion-throw.js:89 |
+| `nameMarkBuddyThrow` | frontend/js/companion-throw.js:184 |
 
 ### frontend/js/connections.js (6)
 
@@ -4490,9 +4490,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `codeFamilyFor` | frontend/js/lightbox-view.js:2414 |
-| `codeScanner` | frontend/js/lightbox-view.js:2395 |
-| `highlightCodeInto` | frontend/js/lightbox-view.js:2368 |
+| `codeFamilyFor` | frontend/js/lightbox-view.js:2411 |
+| `codeScanner` | frontend/js/lightbox-view.js:2392 |
+| `highlightCodeInto` | frontend/js/lightbox-view.js:2365 |
 | `openLightbox` | frontend/js/lightbox-view.js:33 |
 
 ### frontend/js/link-types.js (8)

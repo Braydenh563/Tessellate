@@ -108,6 +108,8 @@ CSS_FILES = [
     CSS_DIR / "timeline-ticks-lazy.css",
     #: The Notes sidebar's folds (C43).
     CSS_DIR / "sidebar-folds-lazy.css",
+    #: The thrown companion's fates (companion-throw.js loads it, D6).
+    CSS_DIR / "companion-throw-lazy.css",
 ]
 
 

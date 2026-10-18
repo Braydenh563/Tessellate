@@ -50,7 +50,7 @@ async function pass(buddyKind, reduced) {
         nmb.flight?.stop();
         nmb.act && nameMarkBuddyAct('');
         nameMarkBuddyMoveTo(buddy, { kind: 'yours', pose: 'float', legs: '', x: cfg.x, y: cfg.y }, true);
-        companionThrowSeed = sd;
+        companionThrowSeed.seed = sd;
         nameMarkBuddyIndexReset();
         const w = nameMarkBuddyWorld(nameMarkBuddyTab());
         const rec = { classes: new Set(), minX: Infinity, maxX: -Infinity, splatYs: [], frames: 0, boxMax: 0 };
