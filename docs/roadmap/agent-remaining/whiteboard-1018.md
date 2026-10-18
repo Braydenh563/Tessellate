@@ -63,3 +63,4 @@ Audit, 2026-10-18, read from the code and tests (grep first, CLAUDE.md 1). "Buil
 
 (append two lines after each commit)
 - done: Text tab (underline, strike, font, clear format, font steps), see git log; next: step 3 style tab (corner rounding, dash pattern, flow), whiteboard-format.js + whiteboard.js sketch paint
+- done: Style tab Dashes, Corners, Flow; next: step 4 gradient and fill styles (whiteboard.js sketch paint, defs; export clones defs), then step 5 commands

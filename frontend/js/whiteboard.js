@@ -1558,10 +1558,128 @@ const WB_EXPORT_SHADOW_DEF =
 //: SVG `stroke-dasharray` for each style, scaled to the actual stroke width
 //: so a thick dashed line doesn't look like a row of dots. `null` (solid)
 //: means "don't set the attribute at all", not "set it to empty".
-function wbDashArray(style, width) {
+//: A custom `pattern` (draw.io's "8 4": dash, gap, dash... in line widths,
+//: `wbDashPatternOf`) wins over the named style.
+function wbDashArray(style, width, pattern = null) {
+  if (pattern) return pattern.map((n) => Math.round(n * width * 100) / 100).join(" ");
   if (style === "dashed") return `${width * 3} ${width * 2}`;
   if (style === "dotted") return `${width} ${width * 1.6}`;
   return null;
+}
+
+//: **Flow** (draw.io's flowAnimation, `data.flow`): the dashes march along
+//: the line, one loop per dash pattern so it never jumps. A Web Animation on
+//: the path, not a stylesheet rule, because the loop's length is the
+//: element's own and the sheets declare no per-element token for it. Kept on
+//: the element and replaced only when the period changes, so a render does not
+//: restart it; held still under the OS hint and both of the app's switches.
+//: The export clones the attributes, so it draws the dashes still.
+function wbSetFlowAnimation(path, period) {
+  if (!path) return;
+  const root = document.documentElement;
+  const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches || root.dataset.motion === "reduced" || root.dataset.uiMotion === "off";
+  const want = period > 0 && !still && typeof path.animate === "function" ? period : 0;
+  if (path.__wbFlowPeriod === want) return;
+  path.__wbFlowAnim?.cancel();
+  path.__wbFlowAnim = null;
+  path.__wbFlowPeriod = want;
+  if (want) {
+    path.__wbFlowAnim = path.animate(
+      [{ strokeDashoffset: "0px" }, { strokeDashoffset: `${-want}px` }],
+      { duration: 800, iterations: Infinity, easing: "linear" },
+    );
+  }
+}
+
+//: A typed dash pattern as numbers, or null when it is not one: one to six
+//: positive numbers of at most 200, split by spaces or commas.
+function wbDashPatternOf(text) {
+  const parts = String(text ?? "").split(/[\s,]+/).filter(Boolean);
+  if (!parts.length || parts.length > 6) return null;
+  const numbers = parts.map(Number);
+  return numbers.every((n) => Number.isFinite(n) && n > 0 && n <= 200) ? numbers : null;
+}
+
+//: **Rounded corners** (draw.io's "rounded", `data.round`): every corner of a
+//: path made only of M, L and Z becomes a quadratic curve that starts and
+//: ends a radius from it, held to half of each side so two corners never
+//: cross. A path with any other command is returned as it came.
+//: `shaftOnly` rounds the first subpath and leaves the rest as it came: a
+//: connector's arrowheads are the subpaths after its line, and a rounded tip
+//: would be a different head.
+function wbRoundedPathD(d, radius, shaftOnly = false) {
+  const r = Number(radius);
+  if (!(r > 0) || typeof d !== "string") return d;
+  if (shaftOnly) {
+    const cut = d.indexOf("M", 1);
+    return cut < 0 ? wbRoundedPathD(d, r) : `${wbRoundedPathD(d.slice(0, cut).trim(), r)} ${d.slice(cut)}`;
+  }
+  const tokens = d.match(/[A-Za-z]|-?\d*\.?\d+(?:e[-+]?\d+)?/g) || [];
+  const subpaths = [];
+  let current = null;
+  for (let i = 0; i < tokens.length; i += 1) {
+    const cmd = tokens[i];
+    if (cmd !== "M" && cmd !== "L" && cmd !== "Z") return d;
+    if (cmd === "Z") {
+      if (current) current.closed = true;
+      continue;
+    }
+    const x = Number(tokens[i + 1]);
+    const y = Number(tokens[i + 2]);
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return d;
+    i += 2;
+    if (cmd === "M") {
+      current = { pts: [[x, y]], closed: false };
+      subpaths.push(current);
+    } else if (current) {
+      const last = current.pts[current.pts.length - 1];
+      if (last[0] !== x || last[1] !== y) current.pts.push([x, y]);
+    }
+  }
+  const f = (n) => String(Math.round(n * 100) / 100);
+  const at = (p, q, dist) => {
+    const len = Math.hypot(q[0] - p[0], q[1] - p[1]) || 1;
+    return [p[0] + ((q[0] - p[0]) / len) * dist, p[1] + ((q[1] - p[1]) / len) * dist];
+  };
+  const out = [];
+  for (const { pts, closed } of subpaths) {
+    if (closed && pts.length > 1) {
+      const [first] = pts;
+      const [lastPt] = pts.slice(-1);
+      if (first[0] === lastPt[0] && first[1] === lastPt[1]) pts.pop();
+    }
+    const n = pts.length;
+    if (n < 3 && !closed) {
+      out.push(`M${f(pts[0][0])} ${f(pts[0][1])}${n > 1 ? ` L${f(pts[1][0])} ${f(pts[1][1])}` : ""}`);
+      continue;
+    }
+    const corner = (i) => {
+      const prev = pts[(i - 1 + n) % n];
+      const next = pts[(i + 1) % n];
+      const here = pts[i];
+      const rr = Math.min(r, Math.hypot(prev[0] - here[0], prev[1] - here[1]) / 2, Math.hypot(next[0] - here[0], next[1] - here[1]) / 2);
+      return { a: at(here, prev, rr), b: at(here, next, rr), here };
+    };
+    if (closed) {
+      const c0 = corner(0);
+      let text = `M${f(c0.b[0])} ${f(c0.b[1])}`;
+      for (let i = 1; i < n; i += 1) {
+        const c = corner(i);
+        text += ` L${f(c.a[0])} ${f(c.a[1])} Q${f(c.here[0])} ${f(c.here[1])} ${f(c.b[0])} ${f(c.b[1])}`;
+      }
+      text += ` L${f(c0.a[0])} ${f(c0.a[1])} Q${f(c0.here[0])} ${f(c0.here[1])} ${f(c0.b[0])} ${f(c0.b[1])} Z`;
+      out.push(text);
+    } else {
+      let text = `M${f(pts[0][0])} ${f(pts[0][1])}`;
+      for (let i = 1; i < n - 1; i += 1) {
+        const c = corner(i);
+        text += ` L${f(c.a[0])} ${f(c.a[1])} Q${f(c.here[0])} ${f(c.here[1])} ${f(c.b[0])} ${f(c.b[1])}`;
+      }
+      text += ` L${f(pts[n - 1][0])} ${f(pts[n - 1][1])}`;
+      out.push(text);
+    }
+  }
+  return out.join(" ");
 }
 
 //: Two head-stroke subpaths meeting at `(tipX, tipY)`, angled back from
@@ -4434,6 +4552,7 @@ let wbCopiedStyle = null; // { kind: "sketch" | "object", style: {...} }
 // thing it lands on.
 const WB_SKETCH_STYLE_KEYS = [
   "color", "width", "dash", "fill", "fillOpacity", "noStroke", "startCap", "endCap", "startCapSize", "endCapSize",
+  "dashPattern", "round", "flow",
 ];
 const WB_OBJECT_STYLE_KEYS = ["color", "bg", "border_color", "font_size"];
 
@@ -4521,7 +4640,7 @@ async function wbPasteCopiedStyle() {
 //: sticky goes back to the first paper; a map topic back to following its
 //: map and level (`wbMapResetToBranch`'s keys). One undo step for the lot.
 const WB_SKETCH_RESET_KEYS = [
-  "color", "width", "dash", "fill", "fillOpacity", "noStroke", "alpha", "shadow", "rough", "jumps",
+  "color", "width", "dash", "fill", "fillOpacity", "noStroke", "alpha", "shadow", "rough", "jumps", "round", "dashPattern", "flow",
   "startCapSize", "endCapSize", "label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign",
 ];
 const WB_OBJECT_RESET_KEYS = ["color", "bg", "border_color", "font_size", "bold", "italic", "underline", "strike", "font_family", "align", "valign", "alpha", "shadow", "fold"];
@@ -18986,12 +19105,12 @@ function renderWhiteboard() {
           fill = parsed.fill;
           fillOpacity = parsed.fillOpacity != null ? parsed.fillOpacity : 1;
         }
-        dashArray = wbDashArray(parsed.dash || "solid", parsed.width || 3);
+        dashArray = wbDashArray(parsed.dash || "solid", parsed.width || 3, wbDashPatternOf(parsed.dashPattern));
       } else if (parsed.type && parsed.type.startsWith("link-")) {
         linkData = parsed;
         stroke = parsed.color || stroke;
         strokeWidth = String(parsed.width || 3);
-        dashArray = wbDashArray(parsed.dash || "solid", parsed.width || 3);
+        dashArray = wbDashArray(parsed.dash || "solid", parsed.width || 3, wbDashPatternOf(parsed.dashPattern));
         const look = wbMapCrossLinkLook(parsed);
         if (look) {
           //: The branch's own drawing (see `wbMapCrossLinkLook`): a ribbon is
@@ -19016,8 +19135,19 @@ function renderWhiteboard() {
     d3.select(this).select(".sketch-hitbox").attr("d", hitboxData ?? pathData);
     //: The hand-drawn look (canvasdepth2): only the drawn line is roughened,
     //: so the hit band, the ports and the label keep the true shape.
-    if (wbDrawsRough(shapeData || linkData, Boolean(linkData && wbMapCrossLinkLook(linkData)))) pathData = wbRoughD(pathData, d.id);
+    //: Rounded corners (draw.io's, `data.round`) and flow (`data.flow`): the
+    //: drawn line only, like the rough look, so the hit band keeps the true
+    //: shape. A flowing line with no dashes of its own gets the dashed look,
+    //: since the marching is the dashes moving.
+    const styled = shapeData || linkData;
+    const plainLine = !(linkData && wbMapCrossLinkLook(linkData));
+    if (styled?.round && plainLine) pathData = wbRoundedPathD(pathData, styled.round, Boolean(linkData));
+    const flowing = Boolean(styled?.flow) && plainLine;
+    if (flowing && !dashArray) dashArray = wbDashArray("dashed", Number(strokeWidth) || 3);
+    const flowPeriod = flowing && dashArray ? dashArray.split(" ").map(Number).reduce((a, b) => a + b, 0) * (dashArray.split(" ").length % 2 ? 2 : 1) : 0;
+    if (wbDrawsRough(shapeData || linkData, !plainLine)) pathData = wbRoughD(pathData, d.id);
     d3.select(this).select(".sketch-path")
+      .classed("wb-flow", flowing)
       // The highlighter's multiply, re-applied every render and cleared on
       // every other kind so a reused element cannot keep it: the same reason
       // the width and opacity above are set explicitly rather than only when
@@ -19043,6 +19173,7 @@ function renderWhiteboard() {
       // "zero-length dashes" instead of "solid", a reused element from a
       // dashed sketch must not leave a stale dasharray on a solid one.
       .attr("stroke-dasharray", dashArray);
+    wbSetFlowAnimation(d3.select(this).select(".sketch-path").node(), flowing ? flowPeriod : 0);
     //: The Format panel's opacity and shadow (decision 19), on the group so
     //: the label goes with the shape; an attribute and an inline style, both
     //: of which the export's clone keeps.

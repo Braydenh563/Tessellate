@@ -973,14 +973,14 @@ the same three tabs (Style, Text, Arrange); fields per kind in
 | Line colour | yes (`wb-fmt-stroke`) | `addStroke` (Format.js 7193) `strokeColor` | done | none |
 | Line width | yes (`wb-fmt-width`) | `strokeWidth`, up to 999 | done | none |
 | Line pattern: solid, dashed, dotted | yes (`wb-fmt-dash`) | `solid`, `dashed`, `dotted` actions (Actions.js 1586 to 1630) | done | none |
-| Custom dash pattern ("8 4") | no | `addDashPattern` (Format.js 7165), `dashPattern` | `data.dashPattern` string overrides `dash`; one text field, validated to numbers | S |
+| Custom dash pattern ("8 4") | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `addDashPattern` (Format.js 7165), `dashPattern` | `data.dashPattern` string overrides `dash`; one text field, validated to numbers | S |
 | Line style for polylines: sharp, rounded, curved | no | `sharp`, `rounded`, `curved` actions (Actions.js 1631 to 1700) | `data.round` radius applied by the path builder at M/L corners (quad rounded into cubics) | M |
-| Corner rounding of a rectangle | no | `rounded=1` with `arcSize`; `toggleRounded` (Actions.js 1661) | `data.round` read by the rectangle path builder; the stencil `roundrect` op already uses it | S |
+| Corner rounding of a rectangle | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `rounded=1` with `arcSize`; `toggleRounded` (Actions.js 1661) | `data.round` read by the rectangle path builder; the stencil `roundrect` op already uses it | S |
 | Opacity | yes (`wb-fmt-alpha`) | `createRelativeOption` `opacity` (Format.js 6385) | done | none |
 | Shadow | yes (`wb-fmt-shadow`) | `addEffects` (Format.js 7939) `shadow` | done | none |
 | Glass | no | `glass` effect (Format.js 7939) | drop: a skeuomorphic gloss the board's look does not use | none |
 | Sketch (hand-drawn) | no | `sketch` effect (Format.js 8004), rough.js | drop (matrix verdict, unchanged) | none |
-| Flow animation on a connector | no | `flowAnimation` effect (Format.js 7939) | `data.flow` adds a CSS class that animates `stroke-dashoffset`; export writes it static | S |
+| Flow animation on a connector | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `flowAnimation` effect (Format.js 7939) | `data.flow` adds a CSS class that animates `stroke-dashoffset`; export writes it static | S |
 | Edit style (raw string) | no | `editStyle` (Actions.js 1717), Ctrl+E | see section 3: the board's equivalent is "Edit data", a JSON view of `data` | M |
 | Copy style, paste style | yes (`copy-style`, `paste-style`, `wb-fmt-copy-style`) | `copyStyle`, `pasteStyle` (Menus.js 1028, 1049) | done | none |
 | Set as default style, default for new connectors | no | `setAsDefaultStyle` (Actions.js 1749), `setAsDefaultForNewConnections` (1763), Ctrl+Shift+D | `board.defaults {shape, link, text}` in the board's settings row, read by the tools when they create an item; Ctrl+Shift+D writes it from the selection | M |
@@ -1064,7 +1064,7 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Source and target connect to a shape, an edge, or float | partly: links join cards and shapes; a free end floats | `mxConnectionHandler`, `Graph.connectVertex` (Graph.js 14940) | done for items; edge-to-edge is drop | none |
 | Hover connection arrows to create a connected shape | yes (`wb-clone-grips`, `wbCloneConnect`) | `HoverIcons` (Graph.js 17581), `connectVertex` | done; add a shape picker after a drag from a grip to empty space (section 17) | S |
 | Reverse direction, self-loop side | no | `addEdgeTurn`, `addLoopDirection` (Format.js 2811, 2650) | `reverse` command; self-loop as a drawn arc | S |
-| Rounded and curved polylines | no | `rounded`, `curved` styles | `data.round` on link polylines | M |
+| Rounded and curved polylines | rounded: yes, 2026-10-18 (an elbow connector; whiteboard-1018, HISTORY); curved: no | `rounded`, `curved` styles | `data.round` on link polylines | M |
 | Edge shadow and opacity | yes | `shadow`, `opacity` | done | none |
 
 ### 5. Connection points and constraints

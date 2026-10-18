@@ -62,17 +62,24 @@ function wbFmtKind(entry) {
 
 //: The fields each kind takes, by the `data-fmt` names in index.html.
 const WB_FMT_FIELDS = {
-  shape: ["stroke", "width", "dash", "fill", "alpha", "shadow", "rough", "text", "geometry", "flip", "style-lib", "props"],
-  line: ["stroke", "width", "dash", "alpha", "shadow", "rough", "geometry", "flip", "style-lib", "props"],
+  shape: ["stroke", "width", "dash", "fill", "alpha", "shadow", "rough", "text", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow"],
+  line: ["stroke", "width", "dash", "alpha", "shadow", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow"],
   //: A straight line or arrow: a line that takes ends.
-  arrow: ["stroke", "width", "dash", "caps", "alpha", "shadow", "rough", "geometry", "flip", "style-lib", "props"],
-  link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "props"],
+  arrow: ["stroke", "width", "dash", "caps", "alpha", "shadow", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow"],
+  link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "props", "pattern", "round", "flow"],
   text: ["stroke", "fill", "alpha", "shadow", "fold", "text", "geometry", "angle", "style-lib", "props"],
   image: ["alpha", "shadow", "geometry", "angle", "props"],
   frame: ["geometry", "props"],
   table: ["alpha", "shadow", "geometry", "props"],
   note: ["geometry", "angle"],
 };
+
+function wbFmtCanRound(entry) {
+  if (entry.kind !== "sketch") return false;
+  const parsed = wbFmtSketch(entry);
+  if (typeof parsed.d === "string") return wbRoundedPathD(parsed.d, 1) !== parsed.d;
+  return String(parsed.type || "").startsWith("link-") && wbLinkRouteName(parsed) === "elbow";
+}
 
 function wbFmtSketch(entry) {
   try {
@@ -91,6 +98,9 @@ function wbFmtValue(entry, field) {
     case "stroke": return s ? s.color || "#888888" : (o.border_color && o.border_color !== "transparent" ? o.border_color : "#8888aa");
     case "width": return s?.width || 3;
     case "dash": return s?.dash || "solid";
+    case "pattern": return s?.dashPattern || "";
+    case "round": return Number(s?.round) || 0;
+    case "flow": return Boolean(s?.flow);
     case "fill-on": return s ? Boolean(s.fill) : Boolean(o.bg && o.bg !== "transparent");
     case "fill": return s ? s.fill || "#3355ff" : (o.bg && o.bg !== "transparent" ? o.bg : "#ffffff");
     case "alpha": return Math.round(((s ? s.alpha : o?.alpha) ?? 1) * 100);
@@ -398,6 +408,8 @@ function wbFormatSync() {
   if (fieldSets.some((s) => s.has("geometry"))) fields.add("geometry");
   //: The folded corner is a sticky note's, not a plain text box's.
   if (!entries.some((e) => e.kind === "object" && wbIsSticky(e.item))) fields.delete("fold");
+  //: The Corners row is for a path of straight sides; an ellipse has none.
+  if (fields.has("round") && !entries.some(wbFmtCanRound)) fields.delete("round");
   const empty = document.getElementById("wb-format-empty");
   const map = kinds.has("topic");
   if (empty) {
@@ -442,7 +454,7 @@ function wbFormatSync() {
   for (const [id, field, row] of [
     ["wb-fmt-stroke", "stroke", "stroke"], ["wb-fmt-width", "width", "width"], ["wb-fmt-dash", "dash", "dash"],
     ["wb-fmt-fill", "fill", "fill"], ["wb-fmt-route", "route", "route"], ["wb-fmt-jumps", "jumps", "jumps"], ["wb-fmt-startcap", "startcap", "caps"],
-    ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-size", "size", "text"],
+    ["wb-fmt-pattern", "pattern", "pattern"], ["wb-fmt-round", "round", "round"], ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-size", "size", "text"],
     ["wb-fmt-ink", "ink", "text"], ["wb-fmt-alpha", "alpha", "alpha"],
   ]) {
     if (!takes.has(row)) continue;
@@ -459,7 +471,7 @@ function wbFormatSync() {
     }
     if (fillField) fillField.classList.toggle("wb-colour-off", !mixed("fill-on") && !wbFmtValue(first, "fill-on"));
   }
-  for (const [id, field] of [["wb-fmt-shadow", "shadow"], ["wb-fmt-rough", "rough"]]) {
+  for (const [id, field] of [["wb-fmt-shadow", "shadow"], ["wb-fmt-rough", "rough"], ["wb-fmt-flow", "flow"]]) {
     const box = document.getElementById(id);
     if (!takes.has(field) || !box || document.activeElement === box) continue;
     box.checked = wbFmtValue(first, field);
@@ -703,6 +715,23 @@ onDomReady(() => {
     const width = Math.max(1, Math.min(40, Number(e.target.value) || 3));
     wbFmtApply("width", () => ({ width }), `Line width ${width}.`);
   });
+  on("wb-fmt-pattern", "change", (e) => {
+    const typed = e.target.value.trim();
+    const numbers = typed ? wbDashPatternOf(typed) : null;
+    if (typed && !numbers) {
+      toast("Dashes are numbers like 8 4, up to six, each at most 200.");
+      //: The sync leaves a focused field alone, so put the saved pattern back here.
+      const first = wbFmtEntries().find((entry) => wbFmtKind(entry));
+      e.target.value = first ? wbFmtValue(first, "pattern") : "";
+      return;
+    }
+    wbFmtApply("pattern", () => ({ dashPattern: numbers ? numbers.join(" ") : undefined }), numbers ? "Custom dashes set." : "Custom dashes cleared.");
+  });
+  on("wb-fmt-round", "change", (e) => {
+    const radius = Math.max(0, Math.min(80, Math.round(Number(e.target.value) || 0)));
+    wbFmtApply("round", () => ({ round: radius || undefined }), radius ? `Corners rounded by ${radius}.` : "Corners sharp.");
+  });
+  on("wb-fmt-flow", "change", (e) => wbFmtApply("flow", () => ({ flow: e.target.checked || undefined }), e.target.checked ? "Flow on." : "Flow off."));
   on("wb-fmt-dash", "change", (e) => wbFmtApply("dash", () => ({ dash: e.target.value === "solid" ? undefined : e.target.value }), `Line ${e.target.value}.`));
   on("wb-fmt-fill-on", "change", (e) => {
     const colour = document.getElementById("wb-fmt-fill")?.value || "#3355ff";

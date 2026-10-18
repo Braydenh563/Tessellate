@@ -7952,6 +7952,9 @@ Link to another note with [[its first few words]]."></textarea>
               <option value="dotted">Dotted</option>
             </select>
           </label>
+          <label class="wb-fmt-row" data-fmt="pattern"><span class="wb-fmt-label">Dashes</span><input type="text" id="wb-fmt-pattern" inputmode="decimal" maxlength="40" placeholder="8 4" autocomplete="off" aria-label="Custom dash pattern" title="Your own dashes, in line widths: a dash, a gap, and so on, like 8 4. Empty uses the pattern above."></label>
+          <label class="wb-fmt-row" data-fmt="round"><span class="wb-fmt-label">Corners</span><input type="number" id="wb-fmt-round" min="0" max="80" step="1" aria-label="Corner rounding" title="Round the corners by this much; 0 keeps them sharp"></label>
+          <div class="wb-fmt-row" data-fmt="flow"><span class="wb-fmt-label">Flow</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="Dashes that move along the line, for a flow or a direction. Exports draw them still."><input type="checkbox" id="wb-fmt-flow" aria-label="Flow animation"></label></span></div>
           <label class="wb-fmt-row" data-fmt="alpha"><span class="wb-fmt-label">Opacity</span>
             <span class="wb-fmt-buttons"><input type="range" id="wb-fmt-alpha" min="10" max="100" step="5" aria-label="Opacity" title="Opacity"><output id="wb-fmt-alpha-out" for="wb-fmt-alpha" class="wb-fmt-out">100%</output></span>
           </label>
