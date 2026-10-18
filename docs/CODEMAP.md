@@ -12077,13 +12077,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_at_asking_place` | src/tessellate/ai/question_noise.py:2276 |
-| `_cosine` | src/tessellate/ai/question_noise.py:2391 |
+| `_at_asking_place` | src/tessellate/ai/question_noise.py:2287 |
+| `_cosine` | src/tessellate/ai/question_noise.py:2402 |
 | `_is_spelt` | src/tessellate/ai/question_noise.py:2219 |
 | `_join_asking` | src/tessellate/ai/question_noise.py:2133 |
-| `_one_slip_from` | src/tessellate/ai/question_noise.py:2339 |
+| `_one_slip_from` | src/tessellate/ai/question_noise.py:2350 |
 | `_real_word_slips` | src/tessellate/ai/question_noise.py:2115 |
-| `_repair_by_speller` | src/tessellate/ai/question_noise.py:2246 |
+| `_repair_by_speller` | src/tessellate/ai/question_noise.py:2249 |
 | `_repair_late_space` | src/tessellate/ai/question_noise.py:2168 |
 | `_repair_misspelt` | src/tessellate/ai/question_noise.py:2225 |
 | `_repair_slang` | src/tessellate/ai/question_noise.py:2188 |
@@ -12092,16 +12092,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_speller_may_read` | src/tessellate/ai/question_noise.py:2213 |
 | `_split` | src/tessellate/ai/question_noise.py:2068 |
 | `_strip_stray_tail` | src/tessellate/ai/question_noise.py:422 |
-| `_trigrams` | src/tessellate/ai/question_noise.py:2386 |
-| `_vector_cosine` | src/tessellate/ai/question_noise.py:2402 |
+| `_trigrams` | src/tessellate/ai/question_noise.py:2397 |
+| `_vector_cosine` | src/tessellate/ai/question_noise.py:2413 |
 | `_word_core` | src/tessellate/ai/question_noise.py:2206 |
 | `allowance` | src/tessellate/ai/question_noise.py:2006 |
 | `alternative` | src/tessellate/ai/question_noise.py:2053 |
-| `guess_kind` | src/tessellate/ai/question_noise.py:2409 |
-| `guided` | src/tessellate/ai/question_noise.py:2319 |
+| `guess_kind` | src/tessellate/ai/question_noise.py:2420 |
+| `guided` | src/tessellate/ai/question_noise.py:2330 |
 | `nearest` | src/tessellate/ai/question_noise.py:2024 |
 | `repair` | src/tessellate/ai/question_noise.py:2085 |
-| `router_words` | src/tessellate/ai/question_noise.py:2303 |
+| `router_words` | src/tessellate/ai/question_noise.py:2314 |
 | `social_kind` | src/tessellate/ai/question_noise.py:1922 |
 | `strip_strays` | src/tessellate/ai/question_noise.py:443 |
 | `strip_symbols` | src/tessellate/ai/question_noise.py:464 |
