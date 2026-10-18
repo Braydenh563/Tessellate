@@ -2,8 +2,9 @@
    (loaded with settings-controls.js through LAZY_MODULES.settingsControls, so
    it costs the boot sheets nothing; they are at their cap).
 
-   Themes (INBOX 904 B58): an eye in each card's corner previews that theme at
-   once, because resting the pointer on a card waits 450 ms. The card is a
+   Themes (INBOX 904 B58, 1300 C21): an eye in each card's corner previews
+   that theme on the whole app until Apply or Cancel; there is no hover
+   preview. The card is a
    <button>, and a button cannot hold a button, so the eye is its sibling in a
    cell that is the grid item. */
 .theme-card-cell {

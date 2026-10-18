@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Settings, Appearance: no hover preview on themes; the eye holds a preview under an Apply / Cancel notice, undone on closing Settings, another section, Escape or a hidden tab (INBOX 1300 C21).
 - Notifications: a stack shows only the newest card at rest with a "+N more" count, and opens to three under the pointer or the keyboard (INBOX 1300 C33).
 - Chat: the Sources fold shows its caret and a rail to its list, and starts shut on every surface, the popup agent included (INBOX 1300 C29).
 - In the chat box a bare "/" lists the commands first, the rows only this menu has (the first command was 443 px down a 384 px menu, out of sight; now 27 px and active), with Attach, This message and Mode after them (INBOX 1300 C05).

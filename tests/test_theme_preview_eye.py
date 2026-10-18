@@ -1,4 +1,4 @@
-"""Settings, Appearance, Themes: the preview on hover waits, and an eye previews at once.
+"""Settings, Appearance, Themes: an eye previews a theme, held under Apply and Cancel.
 
 Owner, 2026-10-17 (INBOX 904 B58): "I want the hover time to preview themes to
 be slightly longer or add like a small eye icon button in the corner to
@@ -18,11 +18,23 @@ from tests._app_js import APP_JS, JS_DIR
 CONTROLS = (JS_DIR / "settings-controls.js").read_text(encoding="utf-8")
 
 
-def test_hover_waits_long_enough_to_cross_the_grid():
-    ms = int(re.search(r"const THEME_HOVER_PREVIEW_MS = (\d+);", CONTROLS).group(1))
-    assert ms >= 400
-    # The old literal must not be the timer any more.
-    assert "name ? 120 : 0" not in CONTROLS
+def test_no_hover_preview_where_eyes_exist():
+    # INBOX 1300 C21: the eye replaced the hover preview (B58's 450 ms timer).
+    assert "THEME_HOVER_PREVIEW_MS" not in CONTROLS
+    body = CONTROLS.split("function themeEyeButton", 1)[1].split("\nfunction ", 1)[0]
+    assert "pointerenter" not in body and '"focus"' not in body
+    assert "pointerover" not in CONTROLS.split("function previewTheme", 1)[1].split('$("theme-surprise")', 1)[0]
+
+
+def test_a_held_preview_has_apply_and_cancel_and_ends_on_the_ways_out():
+    tail = CONTROLS.split("function previewTheme", 1)[1].split('$("theme-surprise")', 1)[0]
+    assert "Previewing the ${label} theme." in tail
+    assert 'textContent = "Apply"' in tail and 'textContent = "Cancel"' in tail
+    # Never stamped, so the toast stack does not fold it away.
+    assert "toastMark" not in tail
+    for way_out in ("closeSettingsModal = function", "showSettingsSection = function", '"visibilitychange"'):
+        assert way_out in tail, way_out
+    assert "name !== currentSettingsSection" in tail
 
 
 def test_each_card_gets_an_eye_that_previews_at_once():
