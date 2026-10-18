@@ -34,6 +34,16 @@ with its owner named in the entry.
 
 ## Open items
 
+1301. **The owner, 2026-10-18 evening, verbatim** (screenshots: the hero sub line running long; the dashboard dock's Get started button; Atlas with half-lidded eyes; Ask's answer to "What have I saved about social connections?" as one run-on paragraph of joined fragments, then "Your first Phase note has the Opener (Ice Breakers)" lines).
+    - D1: "be areful that the subtext in the hero doesnt get too long." Fixed dc59d5c (one sentence; the untitled-note date said once).
+    - D2: "I feel like the splash needs a better, more vunctional, better positioned, sized etc modern and professional redesign as it is still pushing down to the bottom of the screen every step completed."
+    - D3: "the user should be able to hide or mark as complete the getting started button."
+    - D4: "the half lidded eyes on atlas look creepy and like fnaf"
+    - D5: "please tell me the composer improvements havent been done yet as the responses for how they are written, how they sound, how they are formatted and everything are very poor and might have even gotten worse"
+    - D6: "If I flick the companion near the top bar or top screen elements, I want there to be the chance that the compainon an datlas will land up there or catch the rop elements and/or climb on to them, or maybe eve splat on the edge of the screen and slide down to land on a platform, maybe even the chance to go off one side and come back on the other. more transitions, more lifelife movement and behaviour, more depth and organic feel. betetr animations, more variety in body posture like sitting down, lying down, in different ways, leaning and more"
+    - D7: "mouse scroll on the whiteboard and mindmap still doesnt zoom and instead scrolls down like a page"
+    Triage: D5 Opus (CHAT_PLAN composer, first); D7 Sonnet bug (reproduce wheel on board and map); D2, D3, D4 one Opus design batch after D5; D6 Opus companion batch (B87/B88 lineage) after that.
+
 1300. **The owner, 2026-10-18, verbatim** (a Word document of 36 items; 29 screenshots, described in `agent-remaining/bugs-1018b.md`, attached to the item they follow). Triage and per-item status: `docs/roadmap/agent-remaining/bugs-1018b.md`.
 
      C01. If I throw the companion or atlas across the screen and it lands on a ui element but
