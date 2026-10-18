@@ -29,7 +29,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `hide` | frontend/js/app.js:168 |
 | `hideBootSplash` | frontend/js/app.js:952 |
 | `initAuth` | frontend/js/app.js:965 |
-| `installStandIns` | frontend/js/app.js:2290 |
+| `installStandIns` | frontend/js/app.js:2223 |
 | `kickBackgroundTaskPoll` | frontend/js/app.js:611 |
 | `lazyAssetStamp` | frontend/js/app.js:1954 |
 | `lazyScript` | frontend/js/app.js:1995 |
