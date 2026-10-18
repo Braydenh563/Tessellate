@@ -373,7 +373,7 @@ function paintDashClock() {
     month: "long",
   });
   //: The sub line rotates (INBOX 1300): a new draw once its bucket has passed.
-  if (dashLineBucket && dashLineDraw() !== dashLineBucket) renderDashSubmessage().catch(() => {});
+  if (dashLine.bucket && dashLineDraw() !== dashLine.bucket) renderDashSubmessage().catch(() => {});
 }
 
 // A short line about the notebook, note count, plus whatever's most
@@ -469,13 +469,13 @@ async function dashEntries() {
 //: noticing) takes another; it swaps text with no animation, so reduced
 //: motion needs nothing. `dashTodayLine` is in dash-day.js (lazy).
 const DASH_LINE_MS = 180000;
-let dashLineBucket = 0;
+const dashLine = { bucket: 0 };
 const dashLineDraw = () => Math.floor(Date.now() / DASH_LINE_MS);
 
 async function renderDashSubmessage() {
   const el = $("dash-submessage");
   if (!el) return;
-  dashLineBucket = dashLineDraw();
+  dashLine.bucket = dashLineDraw();
   const [stats, reminders, patterns, composed] = await Promise.all([
     fetchDashStats().catch(() => null),
     // To the end: `/reminders` is `due_at` ascending, so a first page of
@@ -486,7 +486,7 @@ async function renderDashSubmessage() {
     //: The Patterns line (CHAT_PLAN decision 32), its short form here and
     //: the measured sentence on hover; Tidy shows it whole.
     apiJson("/insights/patterns", { silent: true }).catch(() => null),
-    dashTodayLine(dashLineBucket).catch(() => ""),
+    dashTodayLine(dashLine.bucket).catch(() => ""),
   ]);
   const bits = [];
   if (composed) bits.push(["notes", composed]);
