@@ -2,7 +2,7 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6112, frontend ids 2535, CSS sections 495, backend routes 613, backend modules 5844, test files 1278, tests 11460, plan headings 958.
+Counts: frontend functions 6112, frontend ids 2535, CSS sections 495, backend routes 613, backend modules 5844, test files 1278, tests 11461, plan headings 958.
 
 ## Frontend functions (6112)
 
@@ -10316,9 +10316,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/logs/client` | POST | `record_client_error` | src/tessellate/api/routes_settings.py:2241 |
 | `/logs/stats` | GET | `server_log_stats` | src/tessellate/api/routes_settings.py:2293 |
 | `/logs/stream` | GET | `stream_server_logs` | src/tessellate/api/routes_settings.py:2321 |
-| `/maps/from-note/{note_id}` | POST | `map_from_note` | src/tessellate/api/routes_map_from_notes.py:442 |
+| `/maps/from-note/{note_id}` | POST | `map_from_note` | src/tessellate/api/routes_map_from_notes.py:446 |
 | `/maps/from-notes` | POST | `map_from_notes` | src/tessellate/api/routes_map_from_notes.py:258 |
-| `/maps/from-text` | POST | `map_from_text` | src/tessellate/api/routes_map_from_notes.py:470 |
+| `/maps/from-text` | POST | `map_from_text` | src/tessellate/api/routes_map_from_notes.py:474 |
 | `/media` | GET | `list_media` | src/tessellate/api/routes_files.py:1444 |
 | `/media-session` | POST | `media_session` | src/tessellate/api/routes_auth.py:904 |
 | `/media/meta/{filename}` | GET | `media_meta` | src/tessellate/api/routes_files.py:1601 |
@@ -14851,22 +14851,22 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `MapFromNotes` | src/tessellate/api/routes_map_from_notes.py:247 |
-| `MapFromText` | src/tessellate/api/routes_map_from_notes.py:464 |
-| `_clip` | src/tessellate/api/routes_map_from_notes.py:339 |
-| `_hang_topic` | src/tessellate/api/routes_map_from_notes.py:374 |
+| `MapFromText` | src/tessellate/api/routes_map_from_notes.py:468 |
+| `_clip` | src/tessellate/api/routes_map_from_notes.py:343 |
+| `_hang_topic` | src/tessellate/api/routes_map_from_notes.py:378 |
 | `_key_category` | src/tessellate/api/routes_map_from_notes.py:68 |
-| `_outline_line` | src/tessellate/api/routes_map_from_notes.py:362 |
-| `_outline_lines` | src/tessellate/api/routes_map_from_notes.py:383 |
-| `_paragraph_topics` | src/tessellate/api/routes_map_from_notes.py:352 |
-| `_topic_text` | src/tessellate/api/routes_map_from_notes.py:343 |
+| `_outline_line` | src/tessellate/api/routes_map_from_notes.py:366 |
+| `_outline_lines` | src/tessellate/api/routes_map_from_notes.py:387 |
+| `_paragraph_topics` | src/tessellate/api/routes_map_from_notes.py:356 |
+| `_topic_text` | src/tessellate/api/routes_map_from_notes.py:347 |
 | `_weight` | src/tessellate/api/routes_map_from_notes.py:211 |
 | `build_tree` | src/tessellate/api/routes_map_from_notes.py:72 |
 | `layout_both_sides` | src/tessellate/api/routes_map_from_notes.py:215 |
-| `map_from_note` | src/tessellate/api/routes_map_from_notes.py:443 |
-| `map_from_note_entry` | src/tessellate/api/routes_map_from_notes.py:420 |
+| `map_from_note` | src/tessellate/api/routes_map_from_notes.py:447 |
+| `map_from_note_entry` | src/tessellate/api/routes_map_from_notes.py:424 |
 | `map_from_notes` | src/tessellate/api/routes_map_from_notes.py:259 |
-| `map_from_text` | src/tessellate/api/routes_map_from_notes.py:471 |
-| `note_outline` | src/tessellate/api/routes_map_from_notes.py:393 |
+| `map_from_text` | src/tessellate/api/routes_map_from_notes.py:475 |
+| `note_outline` | src/tessellate/api/routes_map_from_notes.py:397 |
 
 ### src/tessellate/api/routes_map_suggest.py (18)
 
@@ -18038,7 +18038,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11460)
+## Tests (11461)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18702,7 +18702,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_map_drag_cost.py | 12 |
 | tests/test_map_expand.py | 9 |
 | tests/test_map_from_headings.py | 4 |
-| tests/test_map_from_notes.py | 8 |
+| tests/test_map_from_notes.py | 9 |
 | tests/test_map_generation.py | 13 |
 | tests/test_map_layouts.py | 3 |
 | tests/test_map_levels.py | 8 |

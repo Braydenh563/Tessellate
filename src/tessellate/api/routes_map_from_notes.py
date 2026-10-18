@@ -334,6 +334,10 @@ MAX_NOTE_MAP_NODES = 60
 _NOTE_LIST = re.compile(r"^(\s*)(?:[-*+]|\d{1,9}[.)])\s(.*)$")
 _NOTE_HEADING = re.compile(r"^(#{1,6})\s(.*)$")
 _NOTE_TICK = re.compile(r"^\[[ xX]\]\s")
+#: A link's words keep no bracket and its target no bracket or parenthesis, so
+#: each match attempt stops at the next "[" (CodeQL: "[" or "[](" repeated was
+#: quadratic with `[^\]]*` and `[^)]*`).
+_NOTE_LINK = re.compile(r"!?\[([^\[\]]*)\]\([^()\[\]]*\)")
 
 
 def _clip(text: str, length: int) -> str:
@@ -344,7 +348,7 @@ def _topic_text(text: str) -> str:
     """A line of Markdown as a topic's words: no emphasis, code, link or
     task marks, nor a heading's closing hashes."""
     text = _NOTE_TICK.sub("", text.strip()).rstrip("#").strip()
-    text = re.sub(r"!?\[([^\]]*)\]\([^)]*\)", r"\1", text)
+    text = _NOTE_LINK.sub(r"\1", text)
     text = re.sub(r"[*_`~]+", "", text).strip()
     return _clip(text, 120)
 

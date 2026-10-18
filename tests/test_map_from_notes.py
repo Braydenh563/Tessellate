@@ -135,3 +135,16 @@ def test_the_route_makes_the_map_and_its_cross_links(client):
 def test_the_route_refuses_nothing_to_map(client):
     r = client.post("/whiteboard/maps/from-notes", json={"name": "x", "note_ids": [999999]})
     assert r.status_code == 422
+
+
+def test_topic_text_is_linear_on_bracket_runs():
+    """CodeQL (PR 192): "[" or "[](" repeated made the link pattern quadratic."""
+    import time
+
+    from tessellate.api.routes_map_from_notes import _topic_text
+
+    assert _topic_text("see [the plan](http://x) and ![img](a.png)") == "see the plan and img"
+    for bait in ("[\\" * 20000, "[](" * 20000):
+        started = time.perf_counter()
+        _topic_text(bait)
+        assert time.perf_counter() - started < 0.5
