@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Whiteboard: hovering a Library tile (after 300 ms), or focusing it, shows a larger preview beside the sidebar; it hides on leave, Escape, a scroll and when a drag starts, and never shows under a touch.
 - Whiteboard and mind map: a plain mouse wheel zooms about the pointer (it panned before) and the page never scrolls; Shift+wheel pans sideways, Ctrl+wheel and a pinch still zoom; the shortcut sheet and the Guide say so.
 - Mind map: Branches from my notes and Expand from my notes draw their suggestions as faded ghost topics under the topic (Tab takes one, Enter adds the taken ones, Escape drops them) instead of a tick-list dialog; the styles are in the lazy Library sheet.
 - Whiteboard: `%date%` (today, in the reader's locale) and `%page%` (the frame the item sits in) work in labels beside `%name%`; Copy as SVG (Ctrl+K) puts the picture on the clipboard as text.

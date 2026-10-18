@@ -298,7 +298,7 @@ HELP_TOPICS: list[dict] = [
         "keywords": ("whiteboard", "sketch pad", "canvas", "freehand", "arrange as a grid", "grid of", "stack them", "sticky date", "date on a sticky", "export as jpg", "export as webp", "copy as an image", "copy the board as a picture"),
         "body": (
             "The whiteboard (Library, Boards & maps) is a pannable canvas for "
-            "freehand sketches and note cards together. Freehand sketches also "
+            "freehand sketches and note cards together. Hover a Library tile for a moment (or focus it with the keyboard) to see a larger preview beside the sidebar; Escape or starting a drag hides it. Freehand sketches also "
             "appear in the Library's Images sub-tab. A board's background colour "
             "and image are kept with the board. Board, Export saves a PNG (1x, 2x "
             "or 3x, with a transparent background if you like), JPG, WebP, SVG or PDF named "
