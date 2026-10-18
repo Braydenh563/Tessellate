@@ -933,13 +933,11 @@ def _recording_row(rec) -> Row | None:  # noqa: ANN001
         return None
     from tessellate.core import transcript
 
-    from tessellate.core import recordings
-
     spoken = " ".join(str(seg.get("text") or "").strip() for seg in transcript.loads(rec.segments))
     #: The comments pressed onto marks while recording ("ask about the retry
     #: budget") are words the person wrote about the recording; they were the
     #: one thing on it a search could not find.
-    marked = " ".join(mark["note"].strip() for mark in recordings.marks_of(rec) if mark["note"].strip())
+    marked = " ".join(mark["note"].strip() for mark in transcript.marks_of(rec) if mark["note"].strip())
     return Row(
         title=rec.title or "Recording",
         body=" ".join(part for part in (spoken.strip(), marked) if part),

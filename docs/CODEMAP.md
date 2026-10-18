@@ -16845,31 +16845,30 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `for_file` | src/tessellate/core/readings.py:77 |
 | `text_of` | src/tessellate/core/readings.py:96 |
 
-### src/tessellate/core/recordings.py (21)
+### src/tessellate/core/recordings.py (20)
 
 | Name | File:line |
 |---|---|
-| `_binned` | src/tessellate/core/recordings.py:216 |
-| `_forget_runs` | src/tessellate/core/recordings.py:159 |
-| `as_dict` | src/tessellate/core/recordings.py:169 |
-| `begin_transcription` | src/tessellate/core/recordings.py:127 |
-| `binned` | src/tessellate/core/recordings.py:233 |
+| `_binned` | src/tessellate/core/recordings.py:206 |
+| `_forget_runs` | src/tessellate/core/recordings.py:149 |
+| `as_dict` | src/tessellate/core/recordings.py:159 |
+| `begin_transcription` | src/tessellate/core/recordings.py:117 |
+| `binned` | src/tessellate/core/recordings.py:223 |
 | `clean_markers` | src/tessellate/core/recordings.py:82 |
 | `clean_peaks` | src/tessellate/core/recordings.py:77 |
 | `container` | src/tessellate/core/recordings.py:46 |
 | `directory` | src/tessellate/core/recordings.py:63 |
-| `empty` | src/tessellate/core/recordings.py:244 |
-| `end_transcription` | src/tessellate/core/recordings.py:143 |
-| `marks_of` | src/tessellate/core/recordings.py:99 |
+| `empty` | src/tessellate/core/recordings.py:234 |
+| `end_transcription` | src/tessellate/core/recordings.py:133 |
 | `matches` | src/tessellate/core/recordings.py:58 |
 | `new_filename` | src/tessellate/core/recordings.py:69 |
-| `note_progress` | src/tessellate/core/recordings.py:137 |
+| `note_progress` | src/tessellate/core/recordings.py:127 |
 | `path_of` | src/tessellate/core/recordings.py:73 |
-| `purge` | src/tessellate/core/recordings.py:238 |
-| `purge_expired` | src/tessellate/core/recordings.py:252 |
-| `recover_stale` | src/tessellate/core/recordings.py:194 |
-| `transcription_of` | src/tessellate/core/recordings.py:121 |
-| `wait_transcription` | src/tessellate/core/recordings.py:152 |
+| `purge` | src/tessellate/core/recordings.py:228 |
+| `purge_expired` | src/tessellate/core/recordings.py:242 |
+| `recover_stale` | src/tessellate/core/recordings.py:184 |
+| `transcription_of` | src/tessellate/core/recordings.py:111 |
+| `wait_transcription` | src/tessellate/core/recordings.py:142 |
 
 ### src/tessellate/core/reminder_notifier.py (18)
 
@@ -16965,7 +16964,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `recent` | src/tessellate/core/taskhistory.py:128 |
 | `record` | src/tessellate/core/taskhistory.py:70 |
 
-### src/tessellate/core/transcript.py (9)
+### src/tessellate/core/transcript.py (10)
 
 | Name | File:line |
 |---|---|
@@ -16975,6 +16974,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `clean` | src/tessellate/core/transcript.py:31 |
 | `dumps` | src/tessellate/core/transcript.py:52 |
 | `loads` | src/tessellate/core/transcript.py:56 |
+| `marks_of` | src/tessellate/core/transcript.py:109 |
 | `to_srt` | src/tessellate/core/transcript.py:70 |
 | `to_vtt` | src/tessellate/core/transcript.py:84 |
 | `turns` | src/tessellate/core/transcript.py:94 |
@@ -17757,7 +17757,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `last_rebuild` | src/tessellate/search/index.py:472 |
 | `rebuild` | src/tessellate/search/index.py:476 |
 | `reconcile_boards` | src/tessellate/search/index.py:378 |
-| `reconcile_sources` | src/tessellate/search/index.py:958 |
+| `reconcile_sources` | src/tessellate/search/index.py:956 |
 | `register` | src/tessellate/search/index.py:165 |
 | `source_for` | src/tessellate/search/index.py:182 |
 | `sources` | src/tessellate/search/index.py:199 |
