@@ -1349,7 +1349,7 @@ HELP_TOPICS.extend(
                 "Ctrl+0 is 100%, Shift+1 fits all, Shift+N shows the "
                 "overview, / or Ctrl+F finds, Ctrl+H replaces, and Tab walks the board's "
                 "items. Ctrl+K also finds select all shapes or connectors, turn 90 degrees, remove from "
-                "the group, copy and paste the size, grow to fit the words and reverse a connector. "
+                "the group, copy and paste the size, grow to fit the words, reverse a connector and clear its bends. "
                 "Selection, menus and presenting are in Whiteboard selection and menus."
             ),
             "badge": {"label": "Library", "tab": "library"},
@@ -1501,7 +1501,7 @@ HELP_TOPICS.extend(
                 "text size in a shape", "align text",
                 "line shape", "line end", "line ends", "arrowhead", "arrow end", "diamond end", "label position",
                 "arrow size", "end size", "bigger arrowhead", "stealth arrow", "memorymap arrow", "signature arrow",
-                "reset style", "default style", "reset an object", "back to default", "underline", "strikethrough", "font family", "clear formatting", "rounded corners", "round corners", "dash pattern", "custom dashes", "flow animation", "marching ants", "gradient", "hatch", "fill style", "pattern fill",
+                "reset style", "default style", "reset an object", "back to default", "underline", "strikethrough", "font family", "clear formatting", "rounded corners", "round corners", "dash pattern", "custom dashes", "flow animation", "marching ants", "jump size", "connector gap", "clear waypoints", "clear bends", "gradient", "hatch", "fill style", "pattern fill",
                 "line jumps", "line jump", "crossing lines", "lines cross", "hop over",
             ),
             "body": (
@@ -1510,7 +1510,7 @@ HELP_TOPICS.extend(
                 "your own dashes (a dash and a gap in line widths, like 8 4), rounded corners, flow (dashes that move), "
                 "fill (a gradient or hatch, dots or zigzag instead of solid), opacity, shadow, and for a connector its line shape (curved, straight or elbow), "
                 "its line jumps (it hops over a line under it with an arc, a gap or a "
-                "sharp peak), its two ends (twenty-one marks, from the Tessellate end through open, "
+                "sharp peak, of a size you set), a gap to stop short of the shape at each end, its two ends (twenty-one marks, from the Tessellate end through open, "
                 "filled, stealth, half and double arrows, circles and diamonds to a cross, a bar and a crow's foot, "
                 "each small, medium or large; a plain line takes them too) and where its label sits. Text: font (default, serif, monospace, wide sans, handwritten), size, colour, bold, italic, underline, strikethrough, "
                 "alignment and vertical place of a text box or a shape's words; Clear text formatting and larger or smaller text are in the command palette. Arrange: X, Y, width, height and "

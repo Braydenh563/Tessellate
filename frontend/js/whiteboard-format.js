@@ -76,7 +76,7 @@ const WB_FMT_FIELDS = {
   line: ["stroke", "width", "dash", "alpha", "shadow", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow"],
   //: A straight line or arrow: a line that takes ends.
   arrow: ["stroke", "width", "dash", "caps", "alpha", "shadow", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow"],
-  link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "props", "pattern", "round", "flow"],
+  link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "props", "pattern", "round", "flow", "jumpsize", "gapstart", "gapend"],
   text: ["stroke", "fill", "alpha", "shadow", "fold", "text", "geometry", "angle", "style-lib", "props"],
   image: ["alpha", "shadow", "geometry", "angle", "props"],
   frame: ["geometry", "props"],
@@ -121,6 +121,10 @@ function wbFmtValue(entry, field) {
     case "rough": return wbDrawsRough(s, false);
     case "route": return wbLinkRouteName(s);
     case "jumps": return WB_JUMP_STYLES.includes(s?.jumps) ? s.jumps : "none";
+    //: Empty for "automatic", so the field shows its placeholder.
+    case "jumpsize": return s?.jumpSize != null && s.jumpSize !== "" ? wbJumpSize(s) : "";
+    case "gapstart": return wbLinkGap(s)?.start || 0;
+    case "gapend": return wbLinkGap(s)?.end || 0;
     case "startcap": return (kind === "arrow" ? wbSketchCaps(s) : wbLinkCaps(s)).startCap;
     case "endcap": return (kind === "arrow" ? wbSketchCaps(s) : wbLinkCaps(s)).endCap;
     case "startsize": return (kind === "arrow" ? wbSketchCaps(s) : wbLinkCaps(s)).startSize || "m";
@@ -469,6 +473,7 @@ function wbFormatSync() {
     ["wb-fmt-stroke", "stroke", "stroke"], ["wb-fmt-width", "width", "width"], ["wb-fmt-dash", "dash", "dash"],
     ["wb-fmt-fill", "fill", "fill"], ["wb-fmt-route", "route", "route"], ["wb-fmt-jumps", "jumps", "jumps"], ["wb-fmt-startcap", "startcap", "caps"],
     ["wb-fmt-fillstyle", "fillstyle", "fillstyle"], ["wb-fmt-gradient-dir", "gradient-dir", "gradient"], ["wb-fmt-gradient", "gradient", "gradient"],
+    ["wb-fmt-jumpsize", "jumpsize", "jumpsize"], ["wb-fmt-gapstart", "gapstart", "gapstart"], ["wb-fmt-gapend", "gapend", "gapend"],
     ["wb-fmt-pattern", "pattern", "pattern"], ["wb-fmt-round", "round", "round"], ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-size", "size", "text"],
     ["wb-fmt-ink", "ink", "text"], ["wb-fmt-alpha", "alpha", "alpha"],
   ]) {
@@ -806,6 +811,19 @@ onDomReady(() => {
     const style = WB_JUMP_STYLES.includes(e.target.value) ? e.target.value : "none";
     wbFmtApply("jumps", () => ({ jumps: style === "none" ? undefined : style }), `Line jumps: ${e.target.selectedOptions[0]?.textContent || style}.`);
   });
+  //: Empty is automatic, so it stores nothing.
+  on("wb-fmt-jumpsize", "change", (e) => {
+    const size = e.target.value === "" ? null : Math.max(2, Math.min(40, Math.round(Number(e.target.value) || 0)));
+    wbFmtApply("jumpsize", () => ({ jumpSize: size || undefined }), size ? `Jump size ${size}.` : "Jump size automatic.");
+  });
+  on("wb-fmt-gapstart", "change", (e) => {
+    const gap = Math.max(0, Math.min(60, Math.round(Number(e.target.value) || 0)));
+    wbFmtApply("gapstart", () => ({ gapStart: gap || undefined }), gap ? `Start gap ${gap}.` : "Start touches the shape.");
+  });
+  on("wb-fmt-gapend", "change", (e) => {
+    const gap = Math.max(0, Math.min(60, Math.round(Number(e.target.value) || 0)));
+    wbFmtApply("gapend", () => ({ gapEnd: gap || undefined }), gap ? `End gap ${gap}.` : "End touches the shape.");
+  });
   for (const which of ["start", "end"]) {
     on(`wb-fmt-${which}cap`, "change", (e) => wbFmtApply("caps", (entry, kind) => {
       const parsed = wbFmtSketch(entry);
@@ -1042,6 +1060,15 @@ function wbAutoSizeSelection() {
     }
     wbAnnounce(grown ? "Grown to fit the words." : "Everything already fits.");
   }).then(() => wbScheduleRender());
+}
+
+//: Clear waypoints: a connector's bends (`points`, and the old single `bend`)
+//: go, and it runs the way its shape would on its own.
+function wbClearWaypoints() {
+  return wbFmtApply("route", (entry) => {
+    const parsed = wbFmtSketch(entry);
+    return parsed?.points?.length || parsed?.bend ? { points: undefined, bend: undefined } : null;
+  }, "Bends cleared.");
 }
 
 //: Reverse: a connector points the other way, a drawn arrow's heads swap ends.

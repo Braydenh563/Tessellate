@@ -3636,8 +3636,17 @@ function wbLinkCaps(parsed) {
 //: (`wbLinkShape`): an elbow, routed round its two boxes through its bends.
 function wbLinkPathD(type, sPt, tPt, caps, width, bend, shape = null) {
   if (shape?.route === "elbow") {
+    //: The gap is taken after a floating end has settled on its side, and
+    //: along the way the route leaves it.
     const ends = wbElbowEnds(sPt, tPt, shape.points);
-    return wbElbowPathD(wbElbowRoute(ends.source, ends.target, sPt.box, tPt.box, shape.points), caps, width);
+    const held = wbGapEnds(ends.source, ends.target, shape.gap);
+    return wbElbowPathD(wbElbowRoute(held.source, held.target, sPt.box, tPt.box, shape.points), caps, width);
+  }
+  if (shape?.gap) {
+    const way = shape.points || [];
+    ({ source: sPt, target: tPt } = wbGapEnds(sPt, tPt, shape.gap, {
+      chord: type === "link-straight", via: way.length ? [way[0], way[way.length - 1]] : null,
+    }));
   }
   //: A straight or curved connector with waypoints (draw.io's bends on any
   //: edge): straight runs through each in turn, curved is one smooth curve
@@ -4029,7 +4038,7 @@ function wbApplyLineJumps(groups) {
     if (straight && parsed.jumps && parsed.jumps !== "none" && under.length && pts.length > 1) {
       const path = el.querySelector(".sketch-path");
       const caps = String(path?.getAttribute("d") || "").split(/\s(?=M)/).slice(1).join(" ");
-      const shaft = wbLineJumpsD(pts, under, parsed.jumps, 4 + (Number(parsed.width) || 3));
+      const shaft = wbLineJumpsD(pts, under, parsed.jumps, wbJumpSize(parsed));
       path?.setAttribute("d", caps ? `${shaft} ${caps}` : shaft);
     }
     under.push(pts);
@@ -4096,9 +4105,46 @@ function wbLinkRouteName(parsed) {
 //: (or the legacy single `bend`), drawn as it always was.
 function wbLinkShape(parsed) {
   const points = Array.isArray(parsed?.points) ? parsed.points : [];
-  if (parsed?.route === "elbow") return { route: "elbow", points };
-  if (!points.length) return null;
-  return { route: parsed.type === "link-straight" ? "straight" : "curved", points };
+  const gap = wbLinkGap(parsed);
+  if (parsed?.route === "elbow") return { route: "elbow", points, gap };
+  if (!points.length && !gap) return null;
+  return { route: parsed.type === "link-straight" ? "straight" : "curved", points, gap };
+}
+
+//: A line jump's half-width: the connector's own (`jumpSize`, 2 to 40) or,
+//: when it has none, four more than its width.
+function wbJumpSize(parsed) {
+  const size = Number(parsed?.jumpSize);
+  if (Number.isFinite(size) && parsed?.jumpSize !== null && parsed?.jumpSize !== "") return Math.max(2, Math.min(40, Math.round(size)));
+  return 4 + (Number(parsed?.width) || 3);
+}
+
+//: draw.io's perimeter spacing: how far a connector stops short of the shape
+//: at each end (`gapStart`, `gapEnd`, 0 to 60), or null when it touches both.
+function wbLinkGap(parsed) {
+  const clamp = (n) => (Number.isFinite(Number(n)) ? Math.max(0, Math.min(60, Number(n))) : 0);
+  const start = clamp(parsed?.gapStart), end = clamp(parsed?.gapEnd);
+  return start || end ? { start, end } : null;
+}
+
+//: One end held off its shape by `gap`, along the line itself (`chord`, a
+//: straight run) or the way the end leaves its shape (a curve, an elbow).
+//: A free point has no shape to keep off, so it stays put.
+function wbGapEnd(pt, gap, toward, chord) {
+  if (!gap || !pt?.box) return pt;
+  const len = Math.hypot(toward.x - pt.x, toward.y - pt.y);
+  const v = !chord && pt.dir ? pt.dir : (len ? { x: (toward.x - pt.x) / len, y: (toward.y - pt.y) / len } : null);
+  return v ? { ...pt, x: pt.x + v.x * gap, y: pt.y + v.y * gap } : pt;
+}
+
+function wbGapEnds(sPt, tPt, gap, { chord = false, via = null } = {}) {
+  if (!gap) return { source: sPt, target: tPt };
+  //: Two gaps on a short line never run past each other.
+  const room = Math.hypot(tPt.x - sPt.x, tPt.y - sPt.y) * 0.45;
+  return {
+    source: wbGapEnd(sPt, Math.min(gap.start, room), via?.[0] || tPt, chord),
+    target: wbGapEnd(tPt, Math.min(gap.end, room), via?.[1] || sPt, chord),
+  };
 }
 
 //: A small SVG dot at each of a shape's connection points, shown while a link
@@ -4552,7 +4598,7 @@ let wbCopiedStyle = null; // { kind: "sketch" | "object", style: {...} }
 // thing it lands on.
 const WB_SKETCH_STYLE_KEYS = [
   "color", "width", "dash", "fill", "fillOpacity", "noStroke", "startCap", "endCap", "startCapSize", "endCapSize",
-  "dashPattern", "round", "flow", "gradient", "fillStyle",
+  "dashPattern", "round", "flow", "gradient", "fillStyle", "jumpSize", "gapStart", "gapEnd",
 ];
 const WB_OBJECT_STYLE_KEYS = ["color", "bg", "border_color", "font_size"];
 
@@ -4640,7 +4686,7 @@ async function wbPasteCopiedStyle() {
 //: sticky goes back to the first paper; a map topic back to following its
 //: map and level (`wbMapResetToBranch`'s keys). One undo step for the lot.
 const WB_SKETCH_RESET_KEYS = [
-  "color", "width", "dash", "fill", "fillOpacity", "noStroke", "alpha", "shadow", "rough", "jumps", "round", "dashPattern", "flow", "gradient", "fillStyle",
+  "color", "width", "dash", "fill", "fillOpacity", "noStroke", "alpha", "shadow", "rough", "jumps", "round", "dashPattern", "flow", "gradient", "fillStyle", "jumpSize", "gapStart", "gapEnd",
   "startCapSize", "endCapSize", "label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign",
 ];
 const WB_OBJECT_RESET_KEYS = ["color", "bg", "border_color", "font_size", "bold", "italic", "underline", "strike", "font_family", "align", "valign", "alpha", "shadow", "fold"];

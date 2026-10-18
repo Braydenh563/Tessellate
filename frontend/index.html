@@ -7996,6 +7996,9 @@ Link to another note with [[its first few words]]."></textarea>
               <option value="sharp">Sharp</option>
             </select>
           </label>
+          <label class="wb-fmt-row" data-fmt="jumpsize"><span class="wb-fmt-label">Jump size</span><input type="number" id="wb-fmt-jumpsize" min="2" max="40" step="1" placeholder="Auto" aria-label="Line jump size" title="How wide a hop is where this line crosses another; empty sizes it from the line width"></label>
+          <label class="wb-fmt-row" data-fmt="gapstart"><span class="wb-fmt-label">Start gap</span><input type="number" id="wb-fmt-gapstart" min="0" max="60" step="1" aria-label="Gap at the start" title="Stop this far short of the shape at the start; 0 touches it"></label>
+          <label class="wb-fmt-row" data-fmt="gapend"><span class="wb-fmt-label">End gap</span><input type="number" id="wb-fmt-gapend" min="0" max="60" step="1" aria-label="Gap at the end" title="Stop this far short of the shape at the end; 0 touches it"></label>
           <label class="wb-fmt-row" data-fmt="caps"><span class="wb-fmt-label">Start</span>
             <span class="wb-fmt-buttons"><select id="wb-fmt-startcap" aria-label="Line start" title="Line start"></select><select id="wb-fmt-startsize" class="wb-cap-size" aria-label="Start size" title="Size of the start mark"><option value="s">Small</option><option value="m" selected>Medium</option><option value="l">Large</option></select></span>
           </label>

@@ -71,6 +71,10 @@ const wbCommandNeeds = {
   },
   locked: () => wbLockedItems().length > 0,
   reversible: () => wbFmtEntries().some((e) => e.kind === "sketch" && ["link", "arrow"].includes(wbFmtKind(e))),
+  bent: () => wbFmtEntries().some((e) => {
+    const parsed = e.kind === "sketch" && wbFmtKind(e) === "link" ? wbFmtSketch(e) : null;
+    return Boolean(parsed?.points?.length || parsed?.bend);
+  }),
   grouped: () => wbFmtEntries().some((e) => e.item.group_id),
   sizeCopied: () => wbSizeClip !== null && wbCommandSelectionCount() > 0,
   topic: () => Boolean(wbSelectedMapNode()),
@@ -131,6 +135,7 @@ const WB_COMMANDS = [
   { id: "line-straight", group: "Item", icon: "ph:line-segment", label: "Line shape: straight", keys: "", surface: "board", needs: "link", run: () => wbSetLinkRoute("straight") },
   { id: "line-elbow", group: "Item", icon: "ph:arrow-elbow-down-right", label: "Line shape: elbow", keys: "", surface: "board", needs: "link", run: () => wbSetLinkRoute("elbow") },
   { id: "reverse", group: "Item", icon: "ph:arrows-left-right", label: "Reverse the connector or arrow", keys: "", surface: "board", needs: "reversible", run: () => wbReverseSelection() },
+  { id: "clear-waypoints", group: "Item", icon: "ph:bezier-curve", label: "Clear the connector's bends", keys: "", surface: "board", needs: "bent", run: () => wbClearWaypoints() },
   { id: "clone-right", group: "Item", icon: "ph:arrow-right", label: "Copy to the right and join", keys: "Alt+Shift+Right", surface: "board", needs: "clone", run: () => wbCloneConnect("right") },
   { id: "clone-down", group: "Item", icon: "ph:arrow-down", label: "Copy below and join", keys: "Alt+Shift+Down", surface: "board", needs: "clone", run: () => wbCloneConnect("down") },
   { id: "comment", group: "Item", icon: "ph:chat-teardrop-text", label: "Comment on the item", keys: "", surface: "board", needs: "comment",
