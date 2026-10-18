@@ -41,12 +41,13 @@ def _function_body(src: str, name: str) -> str:
 
 def test_board_owns_bare_m_but_a_map_does_not():
     body = _function_body(WB, "wbOwnsChord")
-    assert '=== "m"' in body
+    # C23: bare T (text tool) steps aside the same way as bare M.
+    assert '["m", "t"].includes(e.key.toLowerCase())' in body
     assert "wbIsMap()" in body
 
 
 def test_the_m_chord_steps_aside_for_the_board():
-    arm = WIRING[WIRING.index('singleKeys && e.key === "m"') - 200 :]
+    arm = WIRING[WIRING.index('singleKeys && (e.key === "m" || e.key === "t")') - 200 :]
     arm = arm[: arm.index("showTabJumpHint()")]
     assert "!boardOwns" in arm and "const boardOwns = typeof wbOwnsChord" in WIRING
 
@@ -141,7 +142,7 @@ def test_a_board_canvas_is_a_tab_stop_whose_tab_walks_the_items():
 def test_keys_typed_before_a_new_topics_editor_opens_are_kept():
     assert "wbMapCatchTypeahead(e)" in WB
     owns = _function_body(WB, "wbOwnsChord")
-    assert owns.index("wbMapTypeaheadLive()") < owns.index('=== "m"')
+    assert owns.index("wbMapTypeaheadLive()") < owns.index('["m", "t"]')
     assert "boardOwns" in WIRING
     edit = _function_body(MAP, "wbMapEditNode")
     assert "wbMapTypeahead = null" in edit and "el.textContent = typed" in edit

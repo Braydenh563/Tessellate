@@ -738,7 +738,7 @@ mark.text-highlight-grey { background: rgba(148, 163, 184, 0.25); }
   color: var(--muted);
 }
 .shortcut-list .shortcut-key:is(:hover, :focus-visible) .shortcut-edit {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 .shortcut-list li>span.shortcut-keys {
   flex: 0 1 auto;
