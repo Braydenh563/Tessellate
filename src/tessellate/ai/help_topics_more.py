@@ -1715,8 +1715,9 @@ MORE_TOPICS.extend(
                 "Study the map. On a mind map, the board menu's Study the map "
                 "goes full screen and asks one branch at a time: what is under "
                 "it is hidden until you press Show (or Enter), then Knew it or "
-                "Not yet marks it and moves on. Only branches with topics under "
-                "them are asked. Nothing on the map changes. Your marks are kept "
+                "Not yet marks it and moves on. Branches with topics under "
+                "them are asked, and then each topic that has a note: its note is the "
+                "answer, read out in the bar when you press Show. Nothing on the map changes. Your marks are kept "
                 "for that map on this device, a branch you missed says so next "
                 "time, and the end says how many you recalled. Esc stops."
             ),

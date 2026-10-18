@@ -7,6 +7,8 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Mind maps, Study the map: a topic with a note is now a question too, and Show reads its note out in the presenting bar; a bar caption the width would cut (a study question on a phone, a note's answer) takes its own line above the buttons, whole on hover.
+- Mind maps: a topic that is one of your notes has Add, Expand from my notes… (and a palette command): its own headings and the notes it links to, in the Branches picker, with no model needed; you tick which, and one Undo takes them back.
 - Tests: `test_ocr_engine` starts the app state its language reads need (a data/ writer CI's 3.13 job named); the graph agent's five one-off sweeps leave `scratchpad/` (findings stay in HISTORY).
 - The prompt clocks (`librarian.clock_hint`, the agent's `build_agent_messages`) read the settings with `peek_config` and `user_now` takes none, so building a prompt before the app starts no longer creates a `data/` folder in the repo (two `test_connected_results` tests failed on CI when a neighbour's cleanup removed it); `test_presets` and `test_prompt_budget` start the app state they read.
 - Complexity (INBOX 1298): `mcp_server.handle_request` dispatches through a method table and `_generate_diagram` is split into its node, shape, position, entry, card and link steps; both seed rows are gone.
