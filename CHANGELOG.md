@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Complexity: the 17 `composer_digest.py` rows seeded for INBOX 1298 (`_single` 79, `_facts` 75, `_lines` 62, `answer` 57, `_compare` 45 and 12 more) are split into helpers by step (the sentence, the line, the kind of ask) and their rows deleted from `tests/complexity_seed.json`; the composer tests pass unchanged.
 - Harper over composer output (INBOX 1299): a deterministic post-pass (`composer_digest.polish`) on the digest's own lines fixes lead capitals, weekday and month names, and the missing article in a closed list of verb-plus-place phrases ("go to gym" to "go to the gym"); quoted spans, links, file names and a joke's or quote's own sentences are set aside first, and a web answer is not touched. Closed lists, no model.
 - The composer's utility reading (`utilities.kind_of`, cached since the long-question fix) follows the web search setting: it is part of the cache key, so flipping the setting changes how "search the web for ..." routes without a restart. `web_on` reads the loaded config without building app state, and `conftest`'s `app_state` waits for background threads (`background.join_all`) so an embedding warm-up cannot recreate the repo's `data/` folder after teardown (the last `test_typo_routing` leak).
 - INBOX triage: eight placed items (735, 742, 771, 772, 804, 807, 808, 903) moved to HISTORY's "INBOX resolved"; the tray holds eleven.
