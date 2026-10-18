@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Answers: a day's note that does not open in "you" is dated in a clause ("On 9 August, at Mia's barbecue ..."), never a "**9 August:**" label line (INBOX 1301 D5).
 - Composer overview: a heading's first word is a thread only when it is a topic, so an ordinary word like "Ask" no longer reads as one ("Ask features in two of them") (INBOX 1301 D5).
 
 - Settings on a phone: the pane heading is hidden when the section list above it already shows the same name (Models over Models) (UX audit 9).

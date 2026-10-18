@@ -899,6 +899,15 @@ def _told_by_day(bodies: list[str], tail: str) -> str | None:
     ) + tail
 
 
+#: A note's shorthand opening on a past verb ("trimmed your first bowl"), which
+#: a date in front needs a subject for.
+_VERB_FIRST = re.compile(r"^(?!(?:\w*eed|\w{0,3}ed)\b)[a-z]{3,}ed\b")
+
+
+def _own_subject(body: str) -> str:
+    return "you " + body if _VERB_FIRST.match(body) else body
+
+
 def _dated_line(line_body: str, label: str, i: int, by_day: date | None, written: date | None, before: date | None) -> tuple[str, str]:
     """A day's line is said as that day, not under it (the owner,
     2026-10-11: no label lines), the time since the last one first."""
@@ -952,8 +961,11 @@ def _line_of(label: str, held: list[Fact], i: int, weave: bool, by_day: date | N
     told = _told_by_day(bodies, tail) if on_day and not mine else None
     if told:
         line_body, mine = told, True
-    if on_day and mine:
+    if on_day:
+        #: Not only a clause of the person's own: "at Mia's barbecue ..." is
+        #: dated too, never a "**9 August:**" label line (2026-10-11).
         heading = True
+        line_body = _own_subject(line_body)
         line_body, said = _dated_line(line_body, label, i, by_day, written, before)
     elif heading:
         line_body, said = _heading_line(label, held, bodies, i, by_day, tail, before)
