@@ -50629,6 +50629,27 @@ Decision 62 built: the search model already loaded on first use (or at launch wi
      Decision (away run, 2026-10-18, standing order 2.3: the recommendation is taken): keep. Fixed.
      Placed: WORLD_CLASS_PLAN 23 step 6.
 
+812. **The owner, 2026-10-11, verbatim.** "also the composer in the ask tab
+     and structuring of sentences and outputs needs to be cleaned up a lot. it
+     still looks messy. and the response feels, plain, boring, lifeless, and
+     doesnt give me anything more. I may as well just read the notes I made on
+     the right. the composer needs to be better but I dont know how and you
+     keep saying youve improved it but i still cant see much. I feel like Im
+     going in a loop 😞 also the first time I use the ask subtab search after
+     loading up the app, the badges next to the sub headers on each column are
+     visibly empty" (screenshots: Ask, "What have I saved about courses &
+     study?": quoted fragments with a bar, a superscript and "[your note, 27
+     July]" each, then "Grounded in" chips and "4 of 4 from your notes" that
+     repeat the right column; the corner Atlas drawn over "You asked"; empty
+     badges beside "Atlas" and "Matching records" while loading). Read: the
+     answer quotes, it does not answer; three citation marks per line; the
+     sources shown three times. Placed: CHAT_PLAN decision 70 (the answer is
+     judged against written gold answers, not rule counts), first in the
+     assistant brief; the empty badges and Atlas over the answer to ownerfix.
+     **Fixed 7976f0e, b9b13b7 (chat-1018).** The answer answers (gold 1 scores
+     99 live; one mark a paragraph, no chips, no "4 of 4"), reads a topic whole
+     and works out a day, a count and a list; live gold mean 76 to 87; the empty
+     badges and the Atlas overlap: 0 of 40 frames at 1440, 1024 and 390.
 
 ## Moved from the plans, 2026-10-18 (graph-1018)
 
