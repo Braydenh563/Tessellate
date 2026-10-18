@@ -16910,6 +16910,10 @@ function renderDocProse() {
 //: here is wrong", which is the opposite of what that finding means.
 const DOC_FINDING_SKIP = new Set(["long-sentence"]);
 
+//: Findings "Fix all" never applies: a model's reading and an offer to link a
+//: note are judgements for the writer, whatever replacement they carry.
+const DOC_FIX_ALL_NEVER = new Set(["ai", "link-offer"]);
+
 //: Three kinds, because three is what a reader can decode at a glance from
 //: the shape of a line. The rules are more numerous than that (there are
 //: eight), but "a spacing slip" and "a UK/US spelling" are the same *kind* of
@@ -16920,6 +16924,7 @@ function docFindingKind(finding) {
   if (finding.rule === "ai") return "ai";
   if (DOC_ACCESS_RULES.has(finding.rule)) return "access";
   if (finding.rule === "repeat") return "repeat";
+  if (finding.rule === "link-offer") return "link";
   return "style";
 }
 
@@ -16958,8 +16963,9 @@ function docProseHeader() {
     return button;
   };
   //: A model's fix is a judgement to read, never one of "every suggestion that
-  //: has one clear answer", so Fix all leaves the `ai` kind alone.
-  const fixable = docProseFound.filter((f) => f.replacement !== null && f.rule !== "ai");
+  //: has one clear answer", so Fix all leaves the `ai` kind alone, and an
+  //: offer to link a note (`DOC_FIX_ALL_NEVER`).
+  const fixable = docProseFound.filter((f) => f.replacement !== null && !DOC_FIX_ALL_NEVER.has(f.rule));
   if (fixable.length) {
     const all = tool(`ph:magic-wand Fix ${fixable.length}`, `Fix ${fixable.length}: apply every suggestion that has one clear answer`, () => docProseFixAll(), "doc-prose-fix-all");
     tools.appendChild(all);
@@ -17098,6 +17104,7 @@ const DOC_FINDING_GROUPS = [
   ["repeat", "Repeated words"],
   ["style", "Style and spacing"],
   ["access", "Accessibility"],
+  ["link", "Links to your notes"],
   //: Last: a model's reading is the weakest claim in the panel, and it says
   //: so by where it sits.
   ["ai", "Checked with AI"],
@@ -17388,7 +17395,7 @@ function docProseFixAll() {
   //: Back to front, so each replacement cannot move the offsets of the ones
   //: still to be applied.
   const fixable = docProseFound
-    .filter((f) => f.replacement !== null && f.rule !== "ai")
+    .filter((f) => f.replacement !== null && !DOC_FIX_ALL_NEVER.has(f.rule))
     .sort((a, b) => b.start - a.start);
   let text = box.value;
   let applied = 0;
@@ -19142,7 +19149,9 @@ function docFindingLine(finding, variant = "row") {
 //: common menu nine rows deep. Whitespace-only findings (a double space) are
 //: not passages either: there is nothing in them to rephrase.
 function docFindingIsPassage(finding) {
-  return /\s/.test(String(finding.text || "").trim());
+  //: A link offer's answer is the link; asking a model to reword a title
+  //: would be a different question.
+  return finding.rule !== "link-offer" && /\s/.test(String(finding.text || "").trim());
 }
 
 //: **The answers to a finding as data** (INBOX 689): the candidates that
@@ -21314,6 +21323,10 @@ function docCmTheme(CM) {
         backgroundColor: "color-mix(in srgb, var(--accent) 12%, transparent)",
         borderRadius: "3px",
       },
+      ".cm-finding-link:hover": {
+        backgroundColor: "color-mix(in srgb, var(--accent) 12%, transparent)",
+        borderRadius: "3px",
+      },
       ".cm-finding-spelling": {
         textDecoration: "underline wavy",
         textDecorationColor: "color-mix(in srgb, var(--error) 80%, transparent)",
@@ -21347,6 +21360,14 @@ function docCmTheme(CM) {
       ".cm-finding-access": {
         textDecoration: "underline dashed",
         textDecorationThickness: "2px",
+        textDecorationColor: "color-mix(in srgb, var(--accent) 80%, transparent)",
+      },
+      //: A link offer (VC5): a plain thin underline in the accent, the line a
+      //: link wears, because this is where one could be, not a mistake.
+      ".cm-finding-link": {
+        textDecoration: "underline solid",
+        textDecorationThickness: "1px",
+        textUnderlineOffset: "3px",
         textDecorationColor: "color-mix(in srgb, var(--accent) 80%, transparent)",
       },
     },

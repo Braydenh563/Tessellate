@@ -1077,7 +1077,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 1042 | Section: Section 21: the code editor against VS Code, and writing checks everywhere (INBOX 646) | docs/roadmap/DOCUMENTS_PLAN.md:544 | L | unassigned |
 | 1043 | Section: Section 17: the live view for professional use, phases open | docs/roadmap/DOCUMENTS_PLAN.md:1088 | L | unassigned |
 | 1044 | Section: Section 23: the code editor as an IDE, phases after I1 to I3 (Briefs 69 to 71 landed) | docs/roadmap/DOCUMENTS_PLAN.md:1267 | L | unassigned |
-| 1045 | A tag-named topic's chip repeats the tag chip beside it on the card (noteTopicChip, notes-list.js); dedupe against the card's own tags. | docs/roadmap/agent-remaining/OPEN.md:2026 | S | unassigned |
+| 1045 | BUILT earlier (notes-list.js topicRepeatsTag, tests/test_code_documents.py:345; found stale 2026-10-18, open-1018.md): A tag-named topic's chip repeats the tag chip beside it on the card (noteTopicChip, notes-list.js); dedupe against the card's own tags. | docs/roadmap/agent-remaining/OPEN.md:2026 | S | unassigned |
 | 1046 | An uploaded document cannot be given a reading from outside the app. POST /media/{id}/ocr and /media/{id}/vision-ocr both answer 415 for a PDF... | docs/roadmap/agent-remaining/OPEN.md:2131 | L | unassigned |
 | 1047 | .sidebar-head is off the dock grammar, deliberately. It carries min-height: var(--sidebar-toggle-size), a negative margin-top that meets the... | docs/roadmap/agent-remaining/OPEN.md:2165 | M | unassigned |
 | 1048 | Band 3 (600 to 820): the header is two rows, 128px at 819. The band's recorded design (the strip cannot fit beside the wordmark at any width in the... | docs/roadmap/agent-remaining/OPEN.md:2176 | M | unassigned |
@@ -1086,7 +1086,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 1051 | The code document's dock at 390 is 238px tall (four rows). | docs/roadmap/agent-remaining/OPEN.md:2349 | S | unassigned |
 | 1052 | A code file's editor is capped at 78ch and centred (09-editor.css:59), so its panel is 724px at 1440. | docs/roadmap/agent-remaining/OPEN.md:2432 | S | unassigned |
 | 1053 | DOCUMENTS 24 row 7 (the list row's ⋮) not built: it would remake INBOX 722; keep the overlay. | docs/roadmap/agent-remaining/OPEN.md:2498 | S | unassigned |
-| 1054 | DOCUMENTS 24 row 11: 78 controls, none with its own data-help-for; one '?' per section plus a command per control. | docs/roadmap/agent-remaining/OPEN.md:2499 | S | unassigned |
+| 1054 | BUILT 2026-10-18 (HISTORY, open-1018; the popover at 1440 for dock and find not opened by the sweep): DOCUMENTS 24 row 11: 78 controls, none with its own data-help-for; one '?' per section plus a command per control. | docs/roadmap/agent-remaining/OPEN.md:2499 | S | unassigned |
 | 1055 | Replace in every document reads each document by one request; and it has no dock-menu row. | docs/roadmap/agent-remaining/OPEN.md:2501 | S | unassigned |
 | 1056 | Statistics row 3 (VC3, Brief 75): the page's two charts use the hand-built askChartTicks; tick labels did not collide at 1440 or 390 with this data... | docs/roadmap/agent-remaining/OPEN.md:2563 | S | unassigned |
 | 1057 | D1's folder again: the brief says frontend/js/run/debug-*.js; the pass is frontend/js/run-debug.js for ide1's reason (65 lints glob... | docs/roadmap/agent-remaining/OPEN.md:2576 | S | unassigned |
@@ -1203,7 +1203,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 1168 | "The document editor and whiteboard and mindmap still have many design issues, functionality bugs, poor usability, lack features, and need... | docs/roadmap/DOCUMENTS_PLAN.md:1551 | M | unassigned |
 | 1169 | "And we should massively improve, expand, refine and better integrate long form note taking." Recommendation: the long-form path (document editor)... | docs/roadmap/DOCUMENTS_PLAN.md:1553 | M | unassigned |
 | 1170 | "Idea: on long form notes and documents, you can define topics, or use special characters, commands etc to label and link sections of documents on... | docs/roadmap/DOCUMENTS_PLAN.md:1558 | M | unassigned |
-| 1171 | VC5, FlashText link offers and tag offers (M, rank 5). FlashText is used by ai/taxonomy.py alone (2 of 19 members: add_keyword, extract_keywords)... | docs/roadmap/DOCUMENTS_PLAN.md:1566 | M | unassigned |
+| 1171 | BUILT 2026-10-18 (HISTORY.md, "OPEN.md rows closed, 2026-10-18 (open-1018)"; tag offers dropped, a document has no tags): VC5, FlashText link offers and tag offers (M, rank 5). FlashText is used by ai/taxonomy.py alone (2 of 19 members: add_keyword, extract_keywords)... | docs/roadmap/DOCUMENTS_PLAN.md:1566 | M | unassigned |
 | 1172 | VC6, Harper's own dictionary and the other three dialects (S, rank 6). The worker uses 3 of 29 Linter members; import_words and export_words take a... | docs/roadmap/DOCUMENTS_PLAN.md:1567 | S | unassigned |
 | 1173 | VC7, the diff and dockerFile modes already in the bundle (S, rank 7). legacy modes 15 of 18 called; diff, dockerFile and the sql factory are bundled... | docs/roadmap/DOCUMENTS_PLAN.md:1568 | S | unassigned |
 | 1174 | VC13, the lint panel and fold-all in the palette (S, rank 13). lint is 5 of 12 (gutter and next/previous only; openLintPanel and lintKeymap unused)... | docs/roadmap/DOCUMENTS_PLAN.md:1569 | S | unassigned |
@@ -2022,7 +2022,7 @@ being written by running agents stay beside this one.
 
 Left by the graph agent (Brief 38, merged 2026-10-10):
 
-- A tag-named topic's chip repeats the tag chip beside it on the card (`noteTopicChip`, notes-list.js); dedupe against the card's own tags.
+- Built (`topicRepeatsTag`, notes-list.js): a tag-named topic's chip repeats the tag chip beside it on the card (`noteTopicChip`, notes-list.js); dedupe against the card's own tags.
 - The floating topic rename field is 42px tall over a 17px plate (`gcRenameTopicInline`, graph-canvas.js); not seen by eye, size it to the plate.
 - A topic drag writes its core note's pin with its own `PUT /graph/pin` beside the group's one `PUT /graph/pins` (`gcDragEnd`); one write.
 - `scratchpad/ui-sweeps/graphfslightbox.js` reads `.lightbox` in the tick it calls the lazy `openLightbox`; the sweep needs an await.
@@ -2490,7 +2490,7 @@ Detail: [translate83-1010.md](../archive/agent-remaining/translate83-1010.md).
 Detail: [docs76-1010.md](../archive/agent-remaining/docs76-1010.md).
 
 - DOCUMENTS 24 row 7 (the list row's ⋮) not built: it would remake INBOX 722; keep the overlay.
-- DOCUMENTS 24 row 11: 78 controls, none with its own `data-help-for`; one '?' per section plus a command per control.
+- Built (open-1018, HISTORY): DOCUMENTS 24 row 11: 78 controls, none with its own `data-help-for`; one '?' per section plus a command per control.
 - `confirmDialog` and `promptDialog` mount on `<body>`, so one asked from inside a modal opens beneath it; app.js is at its gzip ratchet.
 - Replace in every document reads each document by one request; and it has no dock-menu row.
 

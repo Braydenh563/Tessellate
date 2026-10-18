@@ -4593,6 +4593,9 @@ Link to another note with [[its first few words]]."></textarea>
           <div class="row space-between sidebar-head">
             <h2>Recent</h2>
             <span class="row">
+              <button type="button" class="icon-only ghost small graph-help-toggle"
+                data-help-for="doc-list-help" aria-controls="doc-list-help" aria-expanded="false"
+                title="About this list" aria-label="About this list"><i class="ph ph-question" aria-hidden="true"></i></button>
               <button id="doc-new" class="small" type="button" title="Start a new document"
                 aria-label="Start a new document"><i class="ph ph-plus ph-lead" aria-hidden="true"></i>New</button>
               <!-- New from a template, asked for as part of "the documents
@@ -4608,6 +4611,14 @@ Link to another note with [[its first few words]]."></textarea>
                 aria-haspopup="dialog" aria-controls="doc-template-dialog"><i class="ph ph-layout" aria-hidden="true"></i></button>
             </span>
           </div>
+          <div class="help-body hidden" id="doc-list-help" role="dialog" aria-label="About the documents list">
+            <p>Recent lists the latest eight documents you changed. Press one to
+              open it; its ⋯ menu renames, archives or deletes it.</p>
+            <p>New starts an empty document. The layout button beside it starts one
+              from a template (a meeting, a plan, a lecture and more, or a code
+              file). All in Library opens every document, where you can search,
+              sort and manage them.</p>
+          </div>
           <ul id="doc-list" class="doc-list"></ul>
           <p id="doc-empty" class="muted empty-line hidden">No documents yet: start typing on the right, or press ＋ New.</p>
           <button id="doc-browse-all" class="ghost small conv-browse-all" type="button"
@@ -4615,6 +4626,25 @@ Link to another note with [[its first few words]]."></textarea>
         </div>
 
         <div id="doc-sidebar-outline" class="doc-sidebar-section hidden">
+          <!-- The tab's own '?': its sections come and go with the document, so
+               the one place that is always there carries what they all do. -->
+          <div class="row space-between sidebar-head">
+            <h2>This document</h2>
+            <button type="button" class="icon-only ghost small graph-help-toggle"
+              data-help-for="doc-outline-help" aria-controls="doc-outline-help" aria-expanded="false"
+              title="About this tab" aria-label="About this tab"><i class="ph ph-question" aria-hidden="true"></i></button>
+          </div>
+          <div class="help-body hidden" id="doc-outline-help" role="dialog" aria-label="About the outline tab">
+            <p>Outline lists this document's headings; press one to jump to it. Past
+              a screen of headings a filter box appears. Comments lists every
+              highlight that carries a remark.</p>
+            <p>Linked from shows the notes and documents that link here, with the
+              sentence each says it in, and the ones that only name this document;
+              Link turns those words into a [[link]]. Notes it draws on lists the
+              notes added to it. References holds saved links, and Attach a bookmark
+              adds one. Where are my documents kept? says where the files live.</p>
+            <p>A section with nothing in it is left out.</p>
+          </div>
           <!-- Built from the document's own headings: past two screens of text
                the scrollbar stops being a way to navigate. -->
           <div id="doc-outline-wrap" class="doc-outline-wrap hidden">
@@ -4886,6 +4916,28 @@ Link to another note with [[its first few words]]."></textarea>
                  visible way in at all. It sits here now, beside the kebab,
                  with its key in the tooltip; `toggleDocFocus` carries the
                  rest of the reasoning. -->
+            <button type="button" class="icon-only ghost small graph-help-toggle"
+              data-help-for="doc-dock-help" aria-controls="doc-dock-help" aria-expanded="false"
+              title="About these controls" aria-label="About these controls"><i class="ph ph-question" aria-hidden="true"></i></button>
+            <div class="help-body hidden" id="doc-dock-help" role="dialog" aria-label="About the document controls">
+              <p>View: Edit shows the markdown as it will look (Live), the markdown
+                itself (Source), a preview beside it (Split) or just the text
+                (Plain), and Read shows the finished page. Formatting shows the
+                formatting toolbar (Ctrl+Shift+X). AI edit asks Atlas to rewrite the
+                document or the selection.</p>
+              <p>A code file adds Format (Shift+Alt+F), Run (Ctrl+Shift+Enter),
+                Assistant and Snippets. Beside prose, Snippets reads Sections.
+                Focus hides everything but the page (F11).</p>
+              <p>The ⋯ menu holds the file type, Connections, History, Replace in
+                every document, Copy app link, Model for this feature, Extract
+                notes and Map the headings; the downloads (.md, .html, with images,
+                .docx, PDF); the page width, toolbar row and code switches (wrap,
+                whitespace, minimap); Dim all but this paragraph, Keep this line
+                centred, Margin reader and Serif for reading; Autocorrect, Suggest
+                words and Suggest changes (with Review the next change, Accept all
+                changes and Reject all changes once there are some); Read aloud;
+                and Delete document.</p>
+            </div>
             <button type="button" id="doc-focus-toggle" class="ghost small icon-only doc-focus-toggle"
               title="Focus mode: hide everything but the page (F11)" aria-pressed="false"
               aria-label="Focus mode: hide everything but the page (F11)"><i class="ph ph-corners-out" aria-hidden="true"></i></button>
@@ -5203,7 +5255,19 @@ Link to another note with [[its first few words]]."></textarea>
           <input type="text" id="doc-replace-input" placeholder="Replace with" aria-label="Replace with">
           <button type="button" id="doc-replace-one" class="ghost small">Replace</button>
           <button type="button" id="doc-replace-all" class="ghost small">Replace all</button>
+          <button type="button" class="icon-only ghost small graph-help-toggle"
+            data-help-for="doc-find-help" aria-controls="doc-find-help" aria-expanded="false"
+            title="About find and replace" aria-label="About find and replace"><i class="ph ph-question" aria-hidden="true"></i></button>
           <button type="button" id="doc-find-close" class="ghost small icon-only" title="Close (Esc)" aria-label="Close find and replace"><i class="ph ph-x" aria-hidden="true"></i></button>
+        </div>
+        <div class="help-body hidden" id="doc-find-help" role="dialog" aria-label="About find and replace">
+          <p>Type in Find and the first match is selected, with a count of them all;
+            Enter goes to the next match and Shift+Enter to the previous, or use
+            the arrows. Replace changes the selected match and moves to the next
+            one, and Replace all changes every match in this document as one undo
+            step.</p>
+          <p>To change a word across every document, use Replace in every document
+            in the ⋯ menu. Esc closes the bar.</p>
         </div>
         <!-- Where the caret is, in the document's own structure. Filled by
              `renderDocCrumbs` (documents.js) from the outline's heading list and
@@ -5442,8 +5506,8 @@ Link to another note with [[its first few words]]."></textarea>
                text field is a wall. -->
           <button type="button" class="icon-only ghost small dialog-head-btn"
             data-help-for="doc-ai-verb-help" aria-controls="doc-ai-verb-help"
-            aria-expanded="false" title="About the three verbs"
-            aria-label="About the three verbs">
+            aria-expanded="false" title="About this panel"
+            aria-label="About this panel">
             <i class="ph ph-question" aria-hidden="true"></i>
           </button>
           <span class="dialog-head-actions">
@@ -5471,13 +5535,19 @@ Link to another note with [[its first few words]]."></textarea>
           <label><input type="radio" name="doc-ai-verb" value="remove"><i class="ph ph-eraser ph-lead" aria-hidden="true"></i> Remove</label>
         </div>
         <div class="help-body hidden" id="doc-ai-verb-help" role="dialog"
-          aria-label="About the three verbs">
+          aria-label="About the Atlas edit panel">
           <p>Edit rewrites what is selected, or the whole document when
             nothing is.</p>
           <p>Write adds new text at the caret, or at the end of the document.</p>
           <p>Remove takes out what you name, and shows you what it took.</p>
-          <p>All three arrive as a suggestion you accept or discard; nothing is
-            written into the file until you accept it.</p>
+          <p>Type what you want and press Suggest an edit; Stop ends a run and
+            leaves the document untouched. The answer arrives as a suggestion
+            you accept or discard; nothing is written into the file until you
+            do.</p>
+          <p>The changed lines are listed so you can skip any of them, and
+            Atlas's version is a box you can edit before pressing Replace with
+            this. Cancel throws it away. History, at the top, lists every past AI
+            edit to this document and undoes one.</p>
         </div>
         <p class="muted doc-ai-scope" id="doc-ai-scope"></p>
         <!-- The instruction and the button that acts on it are one row, the

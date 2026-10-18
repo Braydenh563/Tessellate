@@ -4997,6 +4997,12 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .doc-finding-dot-ai {
   background: color-mix(in srgb, var(--accent) 50%, transparent);
 }
+/* A link offer: the accent as a short bar, the thin underline's own shape. */
+.doc-finding-dot-link {
+  border-radius: 0;
+  height: var(--space-1);
+  background: var(--accent);
+}
 /* Suggestion mode (INBOX 404). An insertion is underlined on a green ground,
    a deletion struck through in the error ink, the pair every editor with
    tracked changes uses; the ink of the words themselves is left alone, so
