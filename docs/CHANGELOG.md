@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Recordings: each transcript line has a copy button, Shift-click picks a run, and the more menu copies picked or all lines with or without times (INBOX 1300 C40).
 - Timeline: Options has a remembered switch for the dates beside the density strip (INBOX 1300 C36).
 - Timeline: opens scrolled so Today is the top row, future days only by scrolling up; the Today button does the same (INBOX 1300 C39).
 - Live view: a rendered section break (---) is drawn as a line inside a full-height row, so the gutter numbers no longer overlap (INBOX 1300 C44).

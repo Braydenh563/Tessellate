@@ -2,7 +2,7 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6038, frontend ids 2528, CSS sections 495, backend routes 609, backend modules 5832, test files 1264, tests 11373, plan headings 959.
+Counts: frontend functions 6038, frontend ids 2528, CSS sections 495, backend routes 609, backend modules 5832, test files 1265, tests 11375, plan headings 959.
 
 ## Frontend functions (6038)
 
@@ -4514,15 +4514,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addMeetingMarker` | frontend/js/meetings.js:2270 |
+| `addMeetingMarker` | frontend/js/meetings.js:2328 |
 | `addRecordingMark` | frontend/js/meetings.js:1815 |
-| `binRecording` | frontend/js/meetings.js:1990 |
+| `binRecording` | frontend/js/meetings.js:2048 |
 | `closeMeetingRecorder` | frontend/js/meetings.js:955 |
 | `discardMeetingTake` | frontend/js/meetings.js:969 |
 | `editRecordingMark` | frontend/js/meetings.js:1830 |
 | `enhanceGain` | frontend/js/meetings.js:1199 |
 | `enhanceRecording` | frontend/js/meetings.js:1221 |
-| `fillMicDevices` | frontend/js/meetings.js:2421 |
+| `fillMicDevices` | frontend/js/meetings.js:2479 |
 | `meetingAcceptOriginal` | frontend/js/meetings.js:1275 |
 | `meetingActionRow` | frontend/js/meetings.js:265 |
 | `meetingAppendUndoable` | frontend/js/meetings.js:539 |
@@ -4555,41 +4555,41 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `meetingTick` | frontend/js/meetings.js:892 |
 | `meetingTranscribeTake` | frontend/js/meetings.js:1142 |
 | `meetingWhenText` | frontend/js/meetings.js:29 |
-| `micControlsInto` | frontend/js/meetings.js:2361 |
-| `micLevelInto` | frontend/js/meetings.js:2481 |
-| `nameMeetingMic` | frontend/js/meetings.js:2522 |
-| `nameRecordingSpeakers` | frontend/js/meetings.js:1971 |
+| `micControlsInto` | frontend/js/meetings.js:2419 |
+| `micLevelInto` | frontend/js/meetings.js:2539 |
+| `nameMeetingMic` | frontend/js/meetings.js:2580 |
+| `nameRecordingSpeakers` | frontend/js/meetings.js:2029 |
 | `noteRecoveredRecordings` | frontend/js/meetings.js:1404 |
-| `openLiveCaptionsFrom` | frontend/js/meetings.js:2285 |
+| `openLiveCaptionsFrom` | frontend/js/meetings.js:2343 |
 | `openMeetingRecorder` | frontend/js/meetings.js:922 |
 | `openMeetingSheet` | frontend/js/meetings.js:334 |
 | `openNewMeeting` | frontend/js/meetings.js:131 |
-| `openRecordingTrim` | frontend/js/meetings.js:2137 |
+| `openRecordingTrim` | frontend/js/meetings.js:2195 |
 | `openRecordings` | frontend/js/meetings.js:1441 |
 | `openVoiceNote` | frontend/js/meetings.js:939 |
 | `playRecordingFrom` | frontend/js/meetings.js:1779 |
-| `recordingCardsRun` | frontend/js/meetings.js:2098 |
+| `recordingCardsRun` | frontend/js/meetings.js:2156 |
 | `recordingFacts` | frontend/js/meetings.js:1512 |
 | `recordingMarksFill` | frontend/js/meetings.js:1754 |
-| `recordingMenu` | frontend/js/meetings.js:1924 |
+| `recordingMenu` | frontend/js/meetings.js:1982 |
 | `recordingPaint` | frontend/js/meetings.js:1711 |
 | `recordingReady` | frontend/js/meetings.js:1605 |
 | `recordingRow` | frontend/js/meetings.js:1535 |
-| `recordingRunLine` | frontend/js/meetings.js:2107 |
+| `recordingRunLine` | frontend/js/meetings.js:2165 |
 | `recordingShowLine` | frontend/js/meetings.js:1789 |
 | `recordingSpeed` | frontend/js/meetings.js:1627 |
 | `recordingTranscript` | frontend/js/meetings.js:1857 |
 | `recordingTranscriptFill` | frontend/js/meetings.js:1873 |
-| `recordingTranscriptNow` | frontend/js/meetings.js:1915 |
+| `recordingTranscriptNow` | frontend/js/meetings.js:1973 |
 | `recordingTranscriptState` | frontend/js/meetings.js:1522 |
-| `recordingTranscriptionEnded` | frontend/js/meetings.js:2072 |
-| `recordingTrimField` | frontend/js/meetings.js:2194 |
-| `recordingWav` | frontend/js/meetings.js:2238 |
+| `recordingTranscriptionEnded` | frontend/js/meetings.js:2130 |
+| `recordingTrimField` | frontend/js/meetings.js:2252 |
+| `recordingWav` | frontend/js/meetings.js:2296 |
 | `recordingWave` | frontend/js/meetings.js:1646 |
 | `recordingsEmpty` | frontend/js/meetings.js:1477 |
 | `removeRecordingMark` | frontend/js/meetings.js:1840 |
-| `renameRecording` | frontend/js/meetings.js:1981 |
-| `renameRecordingSpeaker` | frontend/js/meetings.js:1947 |
+| `renameRecording` | frontend/js/meetings.js:2039 |
+| `renameRecordingSpeaker` | frontend/js/meetings.js:2005 |
 | `renderRecordings` | frontend/js/meetings.js:1455 |
 | `resetMeetingUI` | frontend/js/meetings.js:900 |
 | `saveMeetingDocument` | frontend/js/meetings.js:1357 |
@@ -4599,18 +4599,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `setMeetingState` | frontend/js/meetings.js:851 |
 | `showMeetingRecorder` | frontend/js/meetings.js:944 |
 | `startMeetingWave` | frontend/js/meetings.js:712 |
-| `startRecordingTranscription` | frontend/js/meetings.js:2037 |
+| `startRecordingTranscription` | frontend/js/meetings.js:2095 |
 | `stopMeetingTimer` | frontend/js/meetings.js:832 |
 | `stopMeetingTranscription` | frontend/js/meetings.js:1300 |
-| `stopRecordingTranscription` | frontend/js/meetings.js:2044 |
-| `syncMicSelects` | frontend/js/meetings.js:2433 |
+| `stopRecordingTranscription` | frontend/js/meetings.js:2102 |
+| `syncMicSelects` | frontend/js/meetings.js:2491 |
 | `syncRecordingDock` | frontend/js/meetings.js:877 |
-| `testMicrophone` | frontend/js/meetings.js:2442 |
+| `testMicrophone` | frontend/js/meetings.js:2500 |
 | `toggleMeetingPause` | frontend/js/meetings.js:1329 |
 | `toggleMeetingRecording` | frontend/js/meetings.js:986 |
-| `transcribeRecording` | frontend/js/meetings.js:2006 |
-| `trimRecording` | frontend/js/meetings.js:2214 |
-| `watchRecordingTranscription` | frontend/js/meetings.js:2053 |
+| `transcribeRecording` | frontend/js/meetings.js:2064 |
+| `trimRecording` | frontend/js/meetings.js:2272 |
+| `watchRecordingTranscription` | frontend/js/meetings.js:2111 |
 
 ### frontend/js/model-bench.js (7)
 
@@ -9929,7 +9929,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/library-lazy.css | 6353 |
 | frontend/css/lightbox-lazy.css | 178 |
 | frontend/css/manual-lazy.css | 153 |
-| frontend/css/meetings-lazy.css | 501 |
+| frontend/css/meetings-lazy.css | 543 |
 | frontend/css/motion-still.css | 94 |
 | frontend/css/nav-history-lazy.css | 144 |
 | frontend/css/offline-split-lazy.css | 62 |
@@ -11711,40 +11711,40 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_of` | src/tessellate/ai/help_chat.py:2404 |
-| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2335 |
-| `_guide_lead` | src/tessellate/ai/help_chat.py:2852 |
-| `_guide_opening` | src/tessellate/ai/help_chat.py:2868 |
-| `_help_sentences` | src/tessellate/ai/help_chat.py:2835 |
-| `_keyword_in` | src/tessellate/ai/help_chat.py:2325 |
-| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2257 |
-| `_keyword_regex` | src/tessellate/ai/help_chat.py:2321 |
-| `_matching_topics` | src/tessellate/ai/help_chat.py:2454 |
-| `_meaning_topics` | src/tessellate/ai/help_chat.py:2534 |
-| `_normalise_keys` | src/tessellate/ai/help_chat.py:2280 |
-| `_place` | src/tessellate/ai/help_chat.py:2809 |
-| `_preference` | src/tessellate/ai/help_chat.py:2891 |
-| `_prompt_for` | src/tessellate/ai/help_chat.py:2682 |
-| `_read_as` | src/tessellate/ai/help_chat.py:2991 |
-| `_reading_topics` | src/tessellate/ai/help_chat.py:2426 |
-| `_repaired` | src/tessellate/ai/help_chat.py:2443 |
-| `_second_sentence` | src/tessellate/ai/help_chat.py:2839 |
-| `_state_line` | src/tessellate/ai/help_chat.py:2900 |
-| `_stated_lead` | src/tessellate/ai/help_chat.py:2909 |
-| `answer` | src/tessellate/ai/help_chat.py:3068 |
-| `answer_stream` | src/tessellate/ai/help_chat.py:3006 |
-| `badges_for` | src/tessellate/ai/help_chat.py:2622 |
-| `composed_answer` | src/tessellate/ai/help_chat.py:2920 |
-| `help_block_for` | src/tessellate/ai/help_chat.py:3148 |
-| `help_listing` | src/tessellate/ai/help_chat.py:2593 |
-| `help_sentences` | src/tessellate/ai/help_chat.py:2818 |
-| `names_app` | src/tessellate/ai/help_chat.py:3132 |
-| `offline_answer` | src/tessellate/ai/help_chat.py:2938 |
-| `social_reply` | src/tessellate/ai/help_chat.py:2782 |
-| `source_names` | src/tessellate/ai/help_chat.py:2589 |
-| `system_answer` | src/tessellate/ai/help_chat.py:2571 |
-| `topic_title` | src/tessellate/ai/help_chat.py:2557 |
-| `topics_for` | src/tessellate/ai/help_chat.py:2636 |
+| `_act_of` | src/tessellate/ai/help_chat.py:2407 |
+| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2338 |
+| `_guide_lead` | src/tessellate/ai/help_chat.py:2855 |
+| `_guide_opening` | src/tessellate/ai/help_chat.py:2871 |
+| `_help_sentences` | src/tessellate/ai/help_chat.py:2838 |
+| `_keyword_in` | src/tessellate/ai/help_chat.py:2328 |
+| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2260 |
+| `_keyword_regex` | src/tessellate/ai/help_chat.py:2324 |
+| `_matching_topics` | src/tessellate/ai/help_chat.py:2457 |
+| `_meaning_topics` | src/tessellate/ai/help_chat.py:2537 |
+| `_normalise_keys` | src/tessellate/ai/help_chat.py:2283 |
+| `_place` | src/tessellate/ai/help_chat.py:2812 |
+| `_preference` | src/tessellate/ai/help_chat.py:2894 |
+| `_prompt_for` | src/tessellate/ai/help_chat.py:2685 |
+| `_read_as` | src/tessellate/ai/help_chat.py:2994 |
+| `_reading_topics` | src/tessellate/ai/help_chat.py:2429 |
+| `_repaired` | src/tessellate/ai/help_chat.py:2446 |
+| `_second_sentence` | src/tessellate/ai/help_chat.py:2842 |
+| `_state_line` | src/tessellate/ai/help_chat.py:2903 |
+| `_stated_lead` | src/tessellate/ai/help_chat.py:2912 |
+| `answer` | src/tessellate/ai/help_chat.py:3071 |
+| `answer_stream` | src/tessellate/ai/help_chat.py:3009 |
+| `badges_for` | src/tessellate/ai/help_chat.py:2625 |
+| `composed_answer` | src/tessellate/ai/help_chat.py:2923 |
+| `help_block_for` | src/tessellate/ai/help_chat.py:3151 |
+| `help_listing` | src/tessellate/ai/help_chat.py:2596 |
+| `help_sentences` | src/tessellate/ai/help_chat.py:2821 |
+| `names_app` | src/tessellate/ai/help_chat.py:3135 |
+| `offline_answer` | src/tessellate/ai/help_chat.py:2941 |
+| `social_reply` | src/tessellate/ai/help_chat.py:2785 |
+| `source_names` | src/tessellate/ai/help_chat.py:2592 |
+| `system_answer` | src/tessellate/ai/help_chat.py:2574 |
+| `topic_title` | src/tessellate/ai/help_chat.py:2560 |
+| `topics_for` | src/tessellate/ai/help_chat.py:2639 |
 
 ### src/tessellate/ai/help_topics_more.py (2)
 
@@ -17924,7 +17924,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11373)
+## Tests (11375)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19060,6 +19060,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_tour_follow.py | 7 |
 | tests/test_tour_targets.py | 2 |
 | tests/test_transcript_81.py | 6 |
+| tests/test_transcript_copy.py | 2 |
 | tests/test_translate_offline.py | 7 |
 | tests/test_tray.py | 18 |
 | tests/test_typo_routing.py | 4 |
