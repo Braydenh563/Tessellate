@@ -528,59 +528,41 @@ def _draw(seed: int, slot: str, n: int) -> int:
 
 
 def today_line(notes: list[dict], *, today: date, seed: int = 0) -> dict | None:
-    """One or two sentences for under the dashboard's greeting: what was
-    written today or yesterday (or when the last note was), and a note from
-    this day in an earlier year when there is one. `seed` rotates the wording
-    and the tail (the week's count, its main category, a note from this day):
+    """One short sentence for under the dashboard's greeting: what was written
+    today or yesterday, or when the last note was. `seed` rotates the wording:
     the same seed gives the same line, so a test with a fixed clock is exact.
-    Every fact in it is traced like the rest of the voice."""
+    One sentence only (the owner, 2026-10-18: the hero's sub line must not run
+    long). Every fact in it is traced like the rest of the voice."""
     views = _views(notes)
     dated = sorted((w for w in views if w.written), key=lambda w: (w.written, -w.rank), reverse=True)
     if not dated:
         return None
     v = _Voice({w.id: w for w in views}, today)
+    _today_opening(v, dated, today, _draw(seed, "open", 6))
+    return v.done("today")
+
+
+def _today_opening(v: _Voice, dated: list, today: date, k: int) -> None:
     todays = [w for w in dated if w.written == today]
     yesterdays = [w for w in dated if (today - w.written).days == 1]
     if len(todays) > 1:
-        k = _draw(seed, "open", 6)
         v.t(("v_today_wrote", "v_today_wrote_b", "v_today_wrote_c", "v_today_wrote_d", "v_today_wrote_e", "v_today_wrote_f")[k])
         v.m(_count_word(len(todays))).t(("v_today_notes", "v_today_notes_b", "v_today_notes_c", "v_today_notes_d", "v_today_notes_e", "v_today_notes_f")[k])
         v.name(todays[0]).t("stop")
     elif todays:
-        v.t(("v_today_one", "v_today_one_b", "v_today_one_c", "v_today_one_d", "v_today_one_e", "v_today_one_f")[_draw(seed, "open", 6)]).name(todays[0]).t("stop")
+        v.t(("v_today_one", "v_today_one_b", "v_today_one_c", "v_today_one_d", "v_today_one_e", "v_today_one_f")[k]).name(todays[0]).t("stop")
     elif yesterdays:
-        v.t(("v_yesterday", "v_yesterday_b", "v_yesterday_c", "v_yesterday_d", "v_yesterday_e", "v_yesterday_f")[_draw(seed, "open", 6)]).name(yesterdays[0])
+        v.t(("v_yesterday", "v_yesterday_b", "v_yesterday_c", "v_yesterday_d", "v_yesterday_e", "v_yesterday_f")[k]).name(yesterdays[0])
         if len(yesterdays) > 1:
             v.t("v_and_more").m(_count_word(len(yesterdays) - 1)).t("v_more")
         v.t("stop")
     else:
-        v.t(("v_last_was", "v_last_was_b", "v_last_was_c", "v_last_was_d", "v_last_was_e", "v_last_was_f")[_draw(seed, "open", 6)])
-        v.name(dated[0]).t("on_day").m(v.day(dated[0].written)).t("stop")
-    #: The tail: one of four, none of them required. A note from this day in
-    #: an earlier year leads when the seed lands on it and one exists.
-    week = _this_week(views, today)
-    cats = Counter(str(w.note.get("category")) for w in week if w.note.get("category"))
-    otd = next((w for w in dated if w.written.day == today.day and w.written.month == today.month and w.written.year < today.year), None)
-    tails = ["none"]
-    if otd:
-        tails += ["otd", "otd"]
-    #: Not said when it only repeats the count of today.
-    if len(week) > max(1, len(todays)):
-        tails.append("week")
-    if len(week) > 2 and cats and cats.most_common(1)[0][1] * 2 > len(week):
-        tails.append("cat")
-    tail = tails[_draw(seed, "tail", len(tails))]
-    if tail == "otd":
-        v.t("v_otd_short").m(str(otd.written.year)).t("v_otd_short_mid").name(otd).t("stop")
-    elif tail == "week":
-        k = _draw(seed, "week", 3)
-        count = _count_word(len(week))
-        v.t(("v_tail_week_a", "v_tail_week_c", "v_tail_week_e")[k]).m(count.capitalize() if k == 2 else count)
-        v.t(("v_tail_week_b", "v_tail_week_d", "v_tail_week_f")[k])
-    elif tail == "cat":
-        cat = cats.most_common(1)[0][0]
-        v.t("v_tail_cat").filed(cat, next(w.id for w in week if w.note.get("category") == cat)).t("stop")
-    return v.done("today")
+        v.t(("v_last_was", "v_last_was_b", "v_last_was_c", "v_last_was_d", "v_last_was_e", "v_last_was_f")[k]).name(dated[0])
+        #: An untitled note is already named by its day ("your note from 16
+        #: October"); saying "on 16 October" again read twice (owner screenshot).
+        if dated[0].titled:
+            v.t("on_day").m(v.day(dated[0].written))
+        v.t("stop")
 
 
 def week_review(notes: list[dict], *, today: date, unlinked: set[int] | None = None) -> dict:

@@ -779,6 +779,10 @@ def graph(
     return Response(content=body, media_type="application/json")
 
 
+def _iso_or_none(value):  # noqa: ANN001
+    return value.isoformat() if value else None
+
+
 def _build_graph(
     similarity: bool = False,
     include_entities: bool = False,
@@ -931,7 +935,7 @@ def _build_graph(
             "updated_at": (e.updated_at or e.created_at).isoformat(),
             # When a person last changed it (the hover card's Edited, INBOX
             # 1300 C11): `updated_at` also moves on the app's own writes.
-            "edited_at": e.edited_at.isoformat() if e.edited_at else None,
+            "edited_at": _iso_or_none(e.edited_at),
         }
         for e in entries
     ]

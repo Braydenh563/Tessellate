@@ -37,7 +37,6 @@
  "src/tessellate/ai/composer_voice.py::_patterns": 28,
  "src/tessellate/ai/composer_voice.py::one_line": 23,
  "src/tessellate/ai/composer_voice.py::suggested_searches": 19,
- "src/tessellate/ai/composer_voice.py::today_line": 17,
  "src/tessellate/ai/composer_voice.py::week_review": 32,
  "src/tessellate/ai/docreader.py::read_document_and_store": 20,
  "src/tessellate/ai/embeddings.py::embedding_text": 17,

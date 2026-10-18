@@ -52,13 +52,15 @@ def test_question_detection():
 
 def test_today_line_rotates_with_its_seed_and_stays_grounded():
     """INBOX 1300: the line under the greeting varies by seed (same seed, same
-    words), every draw traced to the notes."""
+    words), every draw traced to the notes. One sentence only (the owner,
+    2026-10-18: the sub line must not run long), so six openings, no tail."""
     data = _voice_eval.load()
     today = date.fromisoformat(data["today"])
     notes = _voice_eval.notes_until(data, today)
     draws = [composer_voice.today_line(notes, today=today, seed=s) for s in range(20)]
     assert all(d for d in draws)
-    assert len({d["text"] for d in draws}) >= 10
+    assert len({d["text"] for d in draws}) >= 5
+    assert all(d["text"].count(". ") == 0 and len(d["text"]) <= 120 for d in draws)
     again = composer_voice.today_line(notes, today=today, seed=3)
     assert again["text"] == draws[3]["text"]
     for d in draws:
