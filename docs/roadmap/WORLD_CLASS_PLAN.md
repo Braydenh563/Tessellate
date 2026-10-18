@@ -2123,7 +2123,7 @@ HISTORY.md, "Moved from the plans, 2026-09-24".
     an audit before any fix: every surface, what it pushes to history and
     what it makes undoable, as a table. Placed into WORLD_CLASS_PLAN.
 
-**State 2026-09-24:** (c) the audit table (every surface, what it pushes to history, what it makes undoable) does not exist yet. M.
+**State 2026-10-18:** the audit ran (`agent-remaining/worldclass-1018.md`: 21 visits 16 of 16 on Back, Forward and reload; Escape closes 30 of 30 reached openers). Fixed: Back with an overlay open (7 of 7 at 1440 and 390), Escape on Settings, agent palette focus; the mind map's undo works on the board's own stack (objects 1 to 0 on Ctrl+Z), `undo.js` misreads it. Open: image lightbox, reminders add form, notes edit entry and graph node panel Escape; the chat undo line.
 
 ## Audio in the notebook: the architecture decided 2026-09-21, the build deferred
 

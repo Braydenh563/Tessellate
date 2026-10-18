@@ -6286,7 +6286,9 @@ button.connection-row:is(:hover, :focus-visible) {
   top: 3.75rem;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 23;
+  /* Over the Format panel's 25, measured with elementFromPoint: at 1000px the
+     panel covered the bar's right 40px, at 700px 280px (the Replace row). */
+  z-index: 26;
   display: flex;
   align-items: center;
   gap: var(--space-2);

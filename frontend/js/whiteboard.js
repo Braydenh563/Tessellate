@@ -2919,6 +2919,20 @@ function wbReplaceText(text, find, to, opts = {}) {
   return { text: out, count };
 }
 
+//: Pure (node-tested): the replacement applied to each data value of an
+//: item, names untouched (as `wbPropsText` reads only values).
+function wbReplaceInProps(props, find, to, opts = {}) {
+  if (!props || typeof props !== "object") return { props, count: 0 };
+  let count = 0;
+  const out = {};
+  for (const [name, value] of Object.entries(props)) {
+    const done = wbReplaceText(String(value), find, to, opts);
+    count += done.count;
+    out[name] = done.count ? done.text : value;
+  }
+  return { props: out, count };
+}
+
 //: **Replace all** (canvasdepth; WHITEBOARD_PLAN section 9): text boxes,
 //: shape labels and connector labels, one undo step. A card is a note and
 //: keeps its words; the announcement says how many cards hold the words.
@@ -2939,16 +2953,20 @@ async function wbBoardReplaceAll(find, to) {
         if (pattern.has(wbSearchTextFor("node", item, null))) cards += 1;
         continue;
       }
-      const field = kind === "object" ? item.data?.content : wbSketchData(item)?.label;
-      if (typeof field !== "string") continue;
-      const done = wbReplaceText(field, needle, to, wbBoardSearch);
+      const own = kind === "object" ? item.data : wbSketchData(item);
+      const field = kind === "object" ? own?.content : own?.label;
+      //: Find reads the data values too (`wbPropsText`), so Replace all must
+      //: rewrite them, or the count says 3 of 3 and the toast says 1.
+      const text = typeof field === "string" ? wbReplaceText(field, needle, to, wbBoardSearch) : { text: field, count: 0 };
+      const values = wbReplaceInProps(own?.props, needle, to, wbBoardSearch);
+      const done = { count: text.count + values.count };
       if (!done.count) continue;
       undo.push({ action: "move", kind, id: item.id, before: WB_KIND_INFO[kind].payload(item) });
       if (kind === "object") {
-        item.data = { ...item.data, content: done.text };
+        item.data = { ...item.data, content: text.text, ...(values.count ? { props: values.props } : {}) };
         await wbSaveObject(item);
       } else {
-        await wbSaveSketchProps(item, { label: done.text });
+        await wbSaveSketchProps(item, { label: text.text, ...(values.count ? { props: values.props } : {}) });
       }
       changes += done.count;
     }

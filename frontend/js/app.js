@@ -1809,7 +1809,9 @@ const LAZY_MODULES = {
   //: Tesseract's status line (INBOX 443 (3)): see ocr-engine.js.
   ocrEngine: ["/js/ocr-engine.js"],
   //: Quick note and the note outbox (INBOX 434): see quick-note.js.
-  quickNote: ["/js/quick-note.js"],
+  //: router-overlays.js rides with the quick note: Back closes an open overlay first, and
+  //: Settings' close settles the address. Both preloaded below; boot code is at its cap.
+  quickNote: ["/js/quick-note.js", "/js/router-overlays.js"],
   fieldClear: ["/js/field-clear.js"],
   //: A date or time field's panel (Phase 12): see date-field.js.
   dateField: ["/js/date-field.js"],

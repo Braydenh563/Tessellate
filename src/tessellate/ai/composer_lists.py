@@ -54,6 +54,9 @@ _DATES = re.compile(
 )
 
 
+_NOT_A_FILING = frozenset({"your", "our", "their", "his", "her", "its", "recent", "latest", "newest", "last", "new", "old", "oldest", "some", "any", "other"})
+
+
 def clean(question: str) -> str:
     """The question without the stray marks a hurried hand leaves (INBOX 808:
     "'what is there about a gaming mouse?\\\\'" searched with the backslash
@@ -90,11 +93,18 @@ def list_target(question: str) -> tuple[str, str] | None:
     rest = _q(question)[lead.end():]
     by = _BY_WORD.match(rest)
     if by:
-        how = "tag" if by.group("how").lower().startswith(("tagged", "with")) else "category"
+        said = by.group("how").lower()
+        how = "tag" if said.startswith(("tagged", "with")) else "category"
         name = by.group("name").strip()
+        # A bare "from X" is a place or a source ("show me from Paris"), not a
+        # filing: it counts only when the question says notes.
+        if said == "from" and not re.match(r"(?:notes?|entries)\b", rest, re.I) and not re.search(r"\b(?:notes?|category|folder|tag)$", rest, re.I):
+            return None
     else:
         named = _NAME_NOTES.match(rest)
         how, name = "either", (named.group("name").strip() if named else "")
+        if name.split(" ")[0].lower() in _NOT_A_FILING:  # "your recent notes" asks for recency, not a filing
+            return None
     return (name, how) if name and name.lower() not in _NOT_A_NAME else None
 
 

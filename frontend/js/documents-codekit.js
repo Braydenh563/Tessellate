@@ -451,6 +451,13 @@ function docSnippetRow(entry) {
   return li;
 }
 
+//: The panel's toast when no editor is open, worded for the kind of document
+//: whose list it shows (a text document's list is sections, not code).
+function docNeedsDocument() {
+  const prose = typeof docFileType === "function" && docFileType().previewable;
+  return toast(prose ? "Open a document first." : "Open a code document first.", "info");
+}
+
 //: One transaction, so one Ctrl+Z takes it out. A built-in goes in through
 //: the engine's own snippet, so its stops are live; a saved one is text,
 //: since `${` in it is code, not a stop.
@@ -458,7 +465,7 @@ function docSnippetInsert(entry, { at = null } = {}) {
   const view = docCmView;
   const CM = window.CM6;
   const prose = docFileType().previewable;
-  if (!view || !CM || !currentDoc) return toast(prose ? "Open a document first." : "Open a code document first.", "info");
+  if (!view || !CM || !currentDoc) return docNeedsDocument();
   //: `at` is where a drag was dropped; a click or Enter uses the caret.
   const { from, to } = at == null ? view.state.selection.main : { from: at, to: at };
   //: A section is a block: it gets its own lines and a blank line either side
@@ -522,7 +529,7 @@ function docSnippetPlain(entry) {
 function docSnippetDragStart(event, entry) {
   if (!docCmView || !currentDoc) {
     event.preventDefault();
-    return toast("Open a code document first.", "info");
+    return docNeedsDocument();
   }
   docDrag.entry = entry;
   event.dataTransfer.setData("text/plain", docSnippetPlain(entry));
@@ -623,7 +630,7 @@ async function docSnippetSave() {
   const view = docCmView;
   const prose = docFileType().previewable;
   const noun = prose ? "section" : "snippet";
-  if (!view || !currentDoc) return toast(prose ? "Open a document first." : "Open a code document first.", "info");
+  if (!view || !currentDoc) return docNeedsDocument();
   const { from, to } = view.state.selection.main;
   const code = view.state.sliceDoc(from, to);
   if (!code.trim()) return toast(prose ? "Select some text first, then save it as a section." : "Select some code first, then save it as a snippet.", "info");

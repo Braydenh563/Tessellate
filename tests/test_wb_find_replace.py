@@ -47,3 +47,32 @@ def test_find_reads_labels_and_replace_is_one_step():
     replace = WB[WB.index("async function wbBoardReplaceAll(") :]
     replace = replace[: replace.index("\n}\n")]
     assert "wbPushMoveBatch(" in replace and "wbSaveSketchProps(" in replace and "wbSaveObject(" in replace
+
+
+def test_replace_all_rewrites_data_values_that_find_matches():
+    """Review note on PR 191: Find counted a match inside a custom property value,
+    Replace all skipped it (count 3 of 3, toast 1)."""
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    script = (
+        _function("wbSearchPattern") + _function("wbReplaceText") + _function("wbReplaceInProps")
+        + 'console.log(JSON.stringify(wbReplaceInProps({Owner: "Ship team", n: 3}, "ship", "send")));'
+    )
+    out = json.loads(subprocess.run([node, "-e", script], capture_output=True, text=True, check=True).stdout)
+    assert out == {"props": {"Owner": "send team", "n": 3}, "count": 1}
+    body = WB[WB.index("async function wbBoardReplaceAll(") :]
+    assert "wbReplaceInProps(" in body[: body.index("\n}\n")]
+
+
+def test_the_find_bar_sits_above_the_format_panel():
+    """Review note on PR 191: at 1000px the Format panel covered the find bar's
+    right end (elementFromPoint), at 700px its Replace row."""
+    import re
+
+    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+
+    def z(selector: str) -> int:
+        return int(re.search(r"\n" + re.escape(selector) + r" \{[^}]*?z-index: (\d+);", css).group(1))
+
+    assert z(".wb-search-bar") > z(".wb-format")
