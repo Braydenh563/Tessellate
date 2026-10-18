@@ -2,7 +2,7 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6037, frontend ids 2527, CSS sections 495, backend routes 609, backend modules 5832, test files 1260, tests 11367, plan headings 959.
+Counts: frontend functions 6037, frontend ids 2527, CSS sections 495, backend routes 609, backend modules 5832, test files 1261, tests 11369, plan headings 959.
 
 ## Frontend functions (6037)
 
@@ -596,34 +596,34 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `attachLibraryFile` | frontend/js/chat-attach.js:532 |
 | `attachSelectionContext` | frontend/js/chat-attach.js:695 |
 | `attachedNotes` | frontend/js/chat-attach.js:842 |
-| `buildFollowupStrip` | frontend/js/chat-attach.js:2777 |
-| `chatDeleteUndo` | frontend/js/chat-attach.js:3108 |
+| `buildFollowupStrip` | frontend/js/chat-attach.js:2780 |
+| `chatDeleteUndo` | frontend/js/chat-attach.js:3111 |
 | `chatDockMoreOpen` | frontend/js/chat-attach.js:1362 |
 | `chatTidyTyped` | frontend/js/chat-attach.js:1532 |
 | `chatTurnObjects` | frontend/js/chat-attach.js:850 |
-| `chatWriteRecord` | frontend/js/chat-attach.js:3126 |
+| `chatWriteRecord` | frontend/js/chat-attach.js:3129 |
 | `clearSelectionAttachment` | frontend/js/chat-attach.js:719 |
 | `closeChatDockMore` | frontend/js/chat-attach.js:1399 |
 | `closeExtractPreview` | frontend/js/chat-attach.js:164 |
 | `closeNotePicker` | frontend/js/chat-attach.js:1347 |
 | `commitExtractPreview` | frontend/js/chat-attach.js:169 |
 | `commitStagedImages` | frontend/js/chat-attach.js:346 |
-| `deleteChatTurn` | frontend/js/chat-attach.js:2883 |
-| `deleteCurrentChat` | frontend/js/chat-attach.js:3082 |
-| `exportChatMarkdown` | frontend/js/chat-attach.js:3131 |
+| `deleteChatTurn` | frontend/js/chat-attach.js:2886 |
+| `deleteCurrentChat` | frontend/js/chat-attach.js:3085 |
+| `exportChatMarkdown` | frontend/js/chat-attach.js:3134 |
 | `extractRefLabel` | frontend/js/chat-attach.js:53 |
 | `flattenNoteMarkdown` | frontend/js/chat-attach.js:879 |
-| `followupChain` | frontend/js/chat-attach.js:2806 |
-| `followupMatches` | frontend/js/chat-attach.js:2804 |
-| `followupParent` | frontend/js/chat-attach.js:2797 |
-| `followupTrail` | frontend/js/chat-attach.js:2823 |
+| `followupChain` | frontend/js/chat-attach.js:2809 |
+| `followupMatches` | frontend/js/chat-attach.js:2807 |
+| `followupParent` | frontend/js/chat-attach.js:2800 |
+| `followupTrail` | frontend/js/chat-attach.js:2826 |
 | `importChatDocuments` | frontend/js/chat-attach.js:436 |
 | `isImageFile` | frontend/js/chat-attach.js:387 |
-| `isStreamingConversation` | frontend/js/chat-attach.js:3010 |
+| `isStreamingConversation` | frontend/js/chat-attach.js:3013 |
 | `keepUnreadableChatFile` | frontend/js/chat-attach.js:407 |
-| `markFollowup` | frontend/js/chat-attach.js:2847 |
-| `mountChatTimer` | frontend/js/chat-attach.js:2936 |
-| `newChatConversation` | frontend/js/chat-attach.js:3030 |
+| `markFollowup` | frontend/js/chat-attach.js:2850 |
+| `mountChatTimer` | frontend/js/chat-attach.js:2939 |
+| `newChatConversation` | frontend/js/chat-attach.js:3033 |
 | `noteLabel` | frontend/js/chat-attach.js:856 |
 | `noteNamePlain` | frontend/js/chat-attach.js:915 |
 | `notePickerColumns` | frontend/js/chat-attach.js:1210 |
@@ -639,28 +639,28 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openChatDockMore` | frontend/js/chat-attach.js:1375 |
 | `openExtractPreview` | frontend/js/chat-attach.js:22 |
 | `openNotePicker` | frontend/js/chat-attach.js:1312 |
-| `paintChatTimer` | frontend/js/chat-attach.js:2949 |
+| `paintChatTimer` | frontend/js/chat-attach.js:2952 |
 | `plainText` | frontend/js/chat-attach.js:893 |
-| `reattachStreamingTurn` | frontend/js/chat-attach.js:3021 |
-| `refreshFollowupVisibility` | frontend/js/chat-attach.js:2757 |
-| `releaseChatComposer` | frontend/js/chat-attach.js:2980 |
+| `reattachStreamingTurn` | frontend/js/chat-attach.js:3024 |
+| `refreshFollowupVisibility` | frontend/js/chat-attach.js:2760 |
+| `releaseChatComposer` | frontend/js/chat-attach.js:2983 |
 | `renderAttachments` | frontend/js/chat-attach.js:968 |
 | `renderBoardAttachments` | frontend/js/chat-attach.js:600 |
 | `renderDocumentAttachments` | frontend/js/chat-attach.js:653 |
 | `renderExtractPreview` | frontend/js/chat-attach.js:59 |
 | `renderFileAttachments` | frontend/js/chat-attach.js:541 |
-| `renderFollowups` | frontend/js/chat-attach.js:2743 |
+| `renderFollowups` | frontend/js/chat-attach.js:2746 |
 | `renderImageAttachments` | frontend/js/chat-attach.js:262 |
 | `renderSelectionAttachment` | frontend/js/chat-attach.js:724 |
 | `revalidateSelection` | frontend/js/chat-attach.js:771 |
-| `saveFollowups` | frontend/js/chat-attach.js:2866 |
+| `saveFollowups` | frontend/js/chat-attach.js:2869 |
 | `selectionContextBlock` | frontend/js/chat-attach.js:822 |
 | `sendChatMessage` | frontend/js/chat-attach.js:1537 |
 | `setActiveChoice` | frontend/js/chat-attach.js:901 |
 | `setNoteLabel` | frontend/js/chat-attach.js:925 |
 | `setNotePickerSource` | frontend/js/chat-attach.js:1285 |
-| `startChatTimer` | frontend/js/chat-attach.js:2961 |
-| `stopChatTimer` | frontend/js/chat-attach.js:2970 |
+| `startChatTimer` | frontend/js/chat-attach.js:2964 |
+| `stopChatTimer` | frontend/js/chat-attach.js:2973 |
 
 ### frontend/js/sheets-selects.js (53)
 
@@ -2384,11 +2384,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `askAnswerFrom` | frontend/js/ask-compose.js:29 |
-| `askAnswerMenu` | frontend/js/ask-compose.js:553 |
-| `askKeepAsDocument` | frontend/js/ask-compose.js:585 |
-| `askKeepAsMap` | frontend/js/ask-compose.js:607 |
-| `askKeptTitle` | frontend/js/ask-compose.js:580 |
-| `citationVerdictRow` | frontend/js/ask-compose.js:524 |
+| `askAnswerMenu` | frontend/js/ask-compose.js:554 |
+| `askKeepAsDocument` | frontend/js/ask-compose.js:586 |
+| `askKeepAsMap` | frontend/js/ask-compose.js:608 |
+| `askKeptTitle` | frontend/js/ask-compose.js:581 |
+| `citationVerdictRow` | frontend/js/ask-compose.js:525 |
 | `digestMore` | frontend/js/ask-compose.js:389 |
 | `digestOffer` | frontend/js/ask-compose.js:427 |
 | `digestShape` | frontend/js/ask-compose.js:349 |
@@ -2396,10 +2396,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `markSaidSentences` | frontend/js/ask-compose.js:139 |
 | `readWebPage` | frontend/js/ask-compose.js:298 |
 | `renderActCard` | frontend/js/ask-compose.js:169 |
-| `renderAskFollowups` | frontend/js/ask-compose.js:696 |
-| `renderAskInsights` | frontend/js/ask-compose.js:634 |
+| `renderAskFollowups` | frontend/js/ask-compose.js:697 |
+| `renderAskInsights` | frontend/js/ask-compose.js:635 |
 | `renderAskUseAi` | frontend/js/ask-compose.js:34 |
-| `renderAskWhy` | frontend/js/ask-compose.js:657 |
+| `renderAskWhy` | frontend/js/ask-compose.js:658 |
 | `renderWebSources` | frontend/js/ask-compose.js:248 |
 | `wireAskUseAi` | frontend/js/ask-compose.js:46 |
 
@@ -17922,7 +17922,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11367)
+## Tests (11369)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18069,6 +18069,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_chat_dock.py | 11 |
 | tests/test_chat_failed_step.py | 1 |
 | tests/test_chat_followups.py | 14 |
+| tests/test_chat_followups_race.py | 2 |
 | tests/test_chat_intent.py | 13 |
 | tests/test_chat_live_citations.py | 2 |
 | tests/test_chat_metadata.py | 10 |

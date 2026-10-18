@@ -6,7 +6,7 @@ audits reproduced each bug in the app (ports 8791, 8792). A row is **open**,
 
 | Item | Rung, agent | Status | Evidence |
 | --- | --- | --- | --- |
-| C42 composer reply text lost after restart (first, data) | S, next free Sonnet | open | screenshot: reload shows the reply bubble with only its "Next:" chips; check what the chat store saves for a composer (no model) reply to small talk, and the reload render path |
+| C42 composer reply text lost after restart (first, data) | S, next free Sonnet | fixed HASH | fresh data dir, 'yo wassup :)' as first message: stored content empty in 1 of 2 runs before, 0 of 4 after (scratchpad/ui-sweeps/c42.js) |
 | C10 statistics in quick access | S, fixes1 | fixed 8430914 | `quickCatalogue()` now returns `act:statistics` beside `act:captions` |
 | C09 attach list Enter | S, fixes1 | fixed 1ce15c0 | two ArrowDowns then Enter: row 1 checked, focus on it, panel open; Enter in search is Done |
 | C13 table plus off centre | S, fixes1 | fixed 300e718 | plus drawn in CSS; ink centre 0.875 css px low at 4x before, 0.25 (one device pixel) after |
