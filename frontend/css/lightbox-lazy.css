@@ -176,3 +176,252 @@
 .lightbox-pdf-pages.zoomed {
   cursor: grab;
 }
+
+/* --- The viewer's chrome (INBOX 1300 C30) ---------------------------------
+   The owner: "Can the lightbox controls and elements have a new redesign and
+   upgrade in ui and ux usability??". Two `.dock`s on the panel ground
+   (`--modal-bg`, the same near-opaque surface the document page uses),
+   floating over the scrim: the top bar names the file and acts on it, the
+   foot holds the view, with the filmstrip above it. Theme ink on a theme
+   surface, so the contrast is the app's own in both themes rather than white
+   on a scrim. lightbox-view.js builds them; scratchpad/ui-sweeps/lightbox1300.js
+   measures them. */
+.lightbox.lightbox-framed {
+  /* Room for the bars, so nothing scrolls out from under them unreachable:
+     a bar's height (the dock's control, 32, plus its padding and edge) and
+     the gap either side. */
+  padding-top: calc(max(2rem, var(--control-h-dense)) + var(--space-4) * 2 + var(--space-5));
+  padding-bottom: calc(max(2rem, var(--control-h-dense)) + var(--space-4) * 2 + var(--space-5));
+}
+.lightbox.lightbox-framed.lightbox-has-film {
+  padding-bottom: calc(max(2rem, var(--control-h-dense)) + var(--space-9) * 2 + var(--space-4) * 3 + var(--space-7));
+}
+.lightbox .lightbox-topbar,
+.lightbox .lightbox-dock,
+.lightbox .lightbox-filmstrip {
+  --control-h: max(2rem, var(--control-h-dense));
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--modal-bg);
+  box-shadow: var(--shadow-md);
+  color: var(--ink);
+  cursor: default;
+}
+.lightbox .lightbox-topbar,
+.lightbox .lightbox-dock {
+  flex-wrap: nowrap;
+  padding: var(--space-2) var(--space-3);
+}
+.lightbox .lightbox-topbar {
+  position: fixed;
+  top: var(--space-4);
+  left: var(--space-4);
+  right: var(--space-4);
+  z-index: 2;
+  transition: opacity var(--ui-slow) var(--ease-out);
+}
+/* The name takes what the actions leave and ends in an ellipsis; the count
+   beside it never shrinks. */
+.lightbox .lightbox-topbar > .dock-identity {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+}
+.lightbox .lightbox-topbar .dock-identity h2.lightbox-title {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: var(--text-md);
+  font-weight: 600;
+}
+.lightbox .lightbox-position {
+  flex: 0 0 auto;
+  overflow: visible;
+}
+.lightbox .lightbox-top-actions,
+.lightbox .lightbox-dock .dock-group {
+  gap: var(--space-1);
+}
+/* A toggle that is on (Details shown, the view at Fit) says so in the
+   accent ink, the way every pressed ghost in a bar does. */
+.lightbox .lightbox-topbar button[aria-pressed="true"],
+.lightbox .lightbox-dock button[aria-pressed="true"] {
+  color: var(--accent-text);
+}
+.lightbox-bottom {
+  position: fixed;
+  left: var(--space-4);
+  right: var(--space-4);
+  bottom: var(--space-4);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  /* The gaps either side of the dock are still the backdrop: a press there
+     closes the viewer, as anywhere else outside the picture. */
+  pointer-events: none;
+  transition: opacity var(--ui-slow) var(--ease-out);
+}
+.lightbox-bottom > * {
+  pointer-events: auto;
+}
+.lightbox .lightbox-dock {
+  max-width: 100%;
+  gap: var(--space-4);
+}
+.lightbox .lightbox-dock.hidden,
+.lightbox .lightbox-dock .dock-group:not(:has(> :not(.hidden))) {
+  display: none;
+}
+.lightbox .lightbox-dock .lightbox-zoom-label,
+.lightbox .lightbox-dock .lightbox-page-label {
+  color: var(--ink);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.lightbox .lightbox-dock .lightbox-page-label {
+  min-width: 6.5rem;
+  text-align: center;
+}
+/* The filmstrip: every file in the view, the current one ringed. */
+.lightbox .lightbox-filmstrip {
+  display: flex;
+  gap: var(--space-2);
+  max-width: min(48rem, 100%);
+  padding: var(--space-2);
+  overflow-x: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+.lightbox .lightbox-filmstrip:empty {
+  display: none;
+}
+.lightbox .lightbox-thumb {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  aspect-ratio: 1;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--field-inset);
+  color: var(--muted);
+  font-size: var(--text-lg);
+  opacity: 0.6;
+  cursor: pointer;
+  transition: opacity var(--ui-base) var(--ease-out), outline-color var(--ui-fast) var(--ease-out);
+}
+.lightbox .lightbox-thumb:hover,
+.lightbox .lightbox-thumb:focus-visible {
+  opacity: 1;
+}
+.lightbox .lightbox-thumb.is-current {
+  opacity: 1;
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.lightbox .lightbox-thumb > img {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
+  border-radius: 0;
+  box-shadow: none;
+  cursor: inherit;
+}
+/* On the side arrows only the fade is new; the rest is every button's. */
+.lightbox .lightbox-prev,
+.lightbox .lightbox-next {
+  transition: scale var(--ui-fast) var(--ease-out), background-color var(--ui-fast) var(--ease-out),
+    outline-color var(--ui-fast) var(--ease-out), opacity var(--ui-slow) var(--ease-out);
+}
+/* Quiet chrome: a mouse resting on the picture fades the bars (the JS never
+   sets this for keys, a focus ring, an open menu or reduced motion). */
+.lightbox.lightbox-idle .lightbox-topbar,
+.lightbox.lightbox-idle .lightbox-bottom,
+.lightbox.lightbox-idle .lightbox-stage-wrap > button {
+  opacity: 0;
+  pointer-events: none;
+}
+.lightbox.lightbox-idle .lightbox-stage-wrap {
+  cursor: none;
+}
+/* The details panel, put away by the top bar's Details. */
+.lightbox .lightbox-info.lightbox-info-off {
+  display: none;
+}
+/* The document's own row under the page (Find, Edit, Read with AI) goes
+   when nothing in it applies, so a picture has no empty band under it. */
+.lightbox .lightbox-actions:not(:has(> :not(.hidden))) {
+  display: none;
+}
+/* A finger on the picture pinches and swipes rather than scrolling the
+   dialog (lightbox-view.js, `fingers`). */
+.lightbox-stage > img {
+  touch-action: none;
+}
+/* A zoom asked for by a press eases; a wheel, a pinch and a drag do not. */
+.lightbox .lightbox-glide {
+  transition: transform var(--ui-slow) var(--ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  .lightbox .lightbox-glide {
+    transition: none;
+  }
+}
+/* The dock's own arrows are a phone's; a wide window has them at the
+   picture's sides. */
+@media (min-width: 600px) {
+  .lightbox .lightbox-dock-prev,
+  .lightbox .lightbox-dock-next {
+    display: none;
+  }
+}
+@media (max-width: 599.98px) {
+  /* The side arrows narrowed a 390px screen's picture to 233px (7% of the
+     screen); here they move into the dock and the picture takes the width. */
+  .lightbox .lightbox-stage-wrap {
+    --lightbox-nav-room: 0px;
+  }
+  .lightbox .lightbox-stage-wrap > button {
+    display: none;
+  }
+  .lightbox.lightbox-framed {
+    padding-inline: var(--space-2);
+  }
+  .lightbox .lightbox-topbar,
+  .lightbox-bottom {
+    left: var(--space-2);
+    right: var(--space-2);
+  }
+  .lightbox .lightbox-topbar {
+    top: var(--space-2);
+  }
+  .lightbox-bottom {
+    bottom: var(--space-2);
+  }
+  /* Five controls and a name fit a phone's bar; the browser tab and the
+     keys-and-pointer help are a desktop's. */
+  .lightbox .lightbox-top-actions > .lightbox-help-btn,
+  .lightbox .lightbox-top-actions > .lightbox-open-tab {
+    display: none;
+  }
+  .lightbox .lightbox-dock {
+    gap: var(--space-2);
+  }
+  /* A phone's dock drops its count (07-whiteboard-misc.css); here the count
+     is where you are, so it stays and the name gives way instead. */
+  .lightbox .lightbox-topbar .dock-identity > .lightbox-position {
+    display: inline;
+    flex: 0 0 auto;
+    overflow: visible;
+  }
+}

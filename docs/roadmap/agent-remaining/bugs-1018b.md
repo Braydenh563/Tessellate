@@ -32,7 +32,7 @@ audits reproduced each bug in the app (ports 8791, 8792). A row is **open**,
 | C11 graph node hover card | O, design | fixed (design2) | `graph-canvas.js:3753` title tooltip only |
 | C27 graph popup props button | O, design | fixed (design2) | `index.html:4448` |
 | C28 reply reveal animation | O, design | fixed | a composed reply's blocks animating: chat 2, Ask 0, popup 0, Guide 0 (reduced motion: 0 everywhere) to 2, 2, 2, 4 at 200 ms opacity and lift (reduced: 120 ms opacity only); Reveal replies off: 0; switch under Interface animations, saved and marked changed (`d3/reveal.js`, `toggle.js`) |
-| C30 lightbox controls | O, design | open | `lightbox-view.js` |
+| C30 lightbox controls | O, design | fixed f4bcef8 | top bar plus view dock and filmstrip; min contrast 3.38 to 4.87, picture at 390 233 to 359px, keys + - 0 1 R I, swipe and pinch from no effect to working, idle fade (`lightbox1300.js`) |
 | C34 recorder panels | O, design | fixed bcabbaf | `.meeting-stage` radius 0, `meetings.js:922`; stage is surface-2, radius 0px to 8px (default), padding 8/9.6px to 9.6px, fixes8-rec.js |
 | C36 timeline tick labels switch | O, design | fixed ae7fb1c | the c36 sweep toggles the switch and counts the tick labels; test_timeline_ticks_switch.py |
 | C14 composer and model badge | O, design | fixed | Chat's head read "Atlas, from your notes" or "Atlas, composer" in words, the popup and Guide heads "Atlas" only, Ask a 2.4 px-radius chip; now one `chip item-label answer-model` pill (19 px, 11.2 px type, radius 999 px, `--chip-bg`, no edge, centred on the head within 0 px) on all four: From your notes, Composer ("hey"), the model, From the help; 1440 and 390, 0 page errors (`d3/byline.js`) |
