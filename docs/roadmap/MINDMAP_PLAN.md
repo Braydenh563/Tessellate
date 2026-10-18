@@ -1431,18 +1431,7 @@ topic: a control that wide has nowhere to go.
 - ~~**The owner's own map size is unknown**~~ Moot: 13a is built and met its
   gate at 500 topics (HISTORY.md, "Moved from the plans, 2026-10-05 (docs
   hygiene before 0.4.0: MINDMAP_PLAN)").
-- **Dark is now read for the map sweeps** (2026-10-18, mindmap-1018: mapstrip,
-  mapnarrow, mapdoors, mapstripcover, maptheme, mapedgelag at 1440 dark, 820
-  light and 820 dark). mapedgelag passes (0 of 61 frames behind). Two sweeps
-  fail the same way in light and dark, so they are stale expectations and not a
-  dark bug: maptheme (the strip select and the "thirteen fields" count) and
-  mapnarrow (it looks for a template-name dialog that no longer exists).
-- **820 wide: one handle is covered.** `mapstripcover.js` at 820x1100,
-  `tree-right`, reports 1 of 192 (the "Branch 1" line handle under the 412px
-  strip, which is now 0.50 of the window against §13b's "under half"). The same
-  sweep run through a resize from 1440 reports 0 of 192, so it depends on the
-  window being opened at 820. Unfixed: `wbMapStripClearOfHandle` already moves
-  the strip; the gap is its candidate positions at this width.
+- **Dark and 820 wide are read, and what they found is fixed** (HISTORY.md, "Moved from the plans, 2026-10-18 (left-1018)").
 - The timings are one machine, one Chromium, one run each except the 500-node
   row, which was run twice (1,583.3ms and 1,616.5ms worst drag frame). They
   are a shape, not a benchmark.

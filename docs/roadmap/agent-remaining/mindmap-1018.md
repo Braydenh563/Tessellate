@@ -34,8 +34,8 @@ Order taken: (1) Expand from my notes; (2) the dark and 820 measurements of sect
 
 ## Remaining (one line each)
 
-- Found, not fixed: at 820x1100 `tree-right` the map strip (412px) covers the "Branch 1" line handle (mapstripcover, 1 of 192). Placement is `wbMapStripClearOfHandle`, called from the strip placement in `frontend/js/whiteboard.js` (~5900); add a below-the-node candidate or icon-only door labels at 900px and under (`.wb-map-strip`, `frontend/css/07-whiteboard-misc.css` ~8433).
-- Stale sweeps to refresh: `scratchpad/ui-sweeps/maptheme.js` (strip select, field count), `mapnarrow.js` (template-name dialog), `mapstrip.js` (shapes and grip expectations).
+- done (left-1018): the 820 strip over the "Branch 1" handle (0 of 192), the three stale sweeps (maptheme 24/24, mapnarrow 3/3, mapstrip 43/43), the chevron under the grip at 390; see HISTORY "left-1018".
+- Open question: a Plain topic that is filled (or filled by its level) keeps its tint, because `.wb-map-filled` (07-whiteboard-misc.css:8111) is drawn after `[data-shape="none"]` (:8084) at equal specificity; mapstrip.js now asserts the tint stays. If the owner means Plain to be no box at all, put `:not([data-shape="none"])` on the filled rule and flip the sweep.
 - 12.3 item 2 ghost topics on the canvas (waits on boot CSS room); item 3 chat "Make a map" as floating topics (large).
 - 13g middle-button pan, 14.4 linked stickers and reaction stamps: need the owner.
 - VC12 Harper on node labels (OPEN.md 250).
