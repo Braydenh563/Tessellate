@@ -23,7 +23,7 @@ audits reproduced each bug in the app (ports 8791, 8792). A row is **open**,
 | C19, C20 companion layer and size on boards | O, design | fixed | over the Format panel: the companion drew on top (band z 44) to the panel on top (z 9 on the canvas); scale at zoom 0.5: 1 to 0.5; wander chance on a board 0.35 to 0.1 (`canvas1300.js`). WHITEBOARD step 8 (layer order) not a dependency, left |
 | C05 slash commands below fold | O, design | fixed | first command row 443 px down a 384 px menu (unseen) to 27 px, active; ArrowDown to the next command (`slash1300.js`) |
 | C29 popup Sources disclosure | O, design | fixed | caret e136 -90deg shut, none open; rail 1px at 14 px; shut at rest in popup and chat (`sources1300.js`) |
-| C33 notification stack | O, design | open | four toasts 186x205 px |
+| C33 notification stack | O, design | fixed | 5 live toasts: 3 cards 250x205 px at rest -> 1 card + "+4 more" 181x94 px; hover or focus opens 3 + "+2 more" (`toast1300.js`) |
 | C21 theme preview revert and bar | O, design | open | `settings-controls.js:2877` |
 | C22 shortcut chip Change | O, design | open | `settings-wiring.js:1386` |
 | C06, C07, C08 reply cards, preview, fold, calculator | O, design | open | `/calc` `slash_more.py:200`; peek `capture-ask.js:1412` |

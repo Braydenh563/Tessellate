@@ -13,3 +13,6 @@ Items: C01, C19+C20, C05, C29, C33, C21, C22, in that order.
 - done: C05 ba0d168
 - done: C29 (caret family, rail, shut at rest)
 - next: C33 toast stack
+- done: C29 c331895
+- done: C33 (one card at rest, `is-behind`)
+- next: C21 theme eye preview
