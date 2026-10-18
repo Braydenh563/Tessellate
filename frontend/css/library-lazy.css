@@ -6277,6 +6277,7 @@ input[type="color"].wb-mixed {
 }
 
 .doc-table-grip:hover::before,
+.doc-table-grip:is(:focus-visible, :has(:focus-visible))::before,
 .doc-table-grip.is-source::before {
   background: var(--accent);
 }
@@ -6299,7 +6300,8 @@ input[type="color"].wb-mixed {
   cursor: pointer;
 }
 
-.doc-table-add:hover {
+.doc-table-add:hover,
+.doc-table-add:is(:focus-visible, :has(:focus-visible)) {
   border-color: var(--accent);
   color: var(--accent-text);
 }
