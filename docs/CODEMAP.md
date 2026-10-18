@@ -2,9 +2,9 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6124, frontend ids 2534, CSS sections 495, backend routes 613, backend modules 5864, test files 1283, tests 11497, plan headings 958.
+Counts: frontend functions 6127, frontend ids 2534, CSS sections 495, backend routes 613, backend modules 5864, test files 1283, tests 11499, plan headings 958.
 
-## Frontend functions (6124)
+## Frontend functions (6127)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -2322,48 +2322,51 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `importReportSection` | frontend/js/app-import.js:79 |
 | `openImportReport` | frontend/js/app-import.js:113 |
 
-### frontend/js/app-palette.js (38)
+### frontend/js/app-palette.js (41)
 
 | Name | File:line |
 |---|---|
-| `closePalette` | frontend/js/app-palette.js:91 |
-| `notesPaletteCommands` | frontend/js/app-palette.js:706 |
-| `openPalette` | frontend/js/app-palette.js:55 |
-| `paletteActRows` | frontend/js/app-palette.js:350 |
-| `paletteBase` | frontend/js/app-palette.js:305 |
-| `paletteDistance` | frontend/js/app-palette.js:537 |
-| `paletteEditorMatches` | frontend/js/app-palette.js:130 |
-| `paletteFeature` | frontend/js/app-palette.js:37 |
-| `paletteFeatureRows` | frontend/js/app-palette.js:333 |
-| `paletteFind` | frontend/js/app-palette.js:583 |
-| `paletteFuzzyScore` | frontend/js/app-palette.js:110 |
-| `paletteGoToCategory` | frontend/js/app-palette.js:792 |
-| `paletteKeydown` | frontend/js/app-palette.js:664 |
-| `paletteLight` | frontend/js/app-palette.js:646 |
-| `paletteMatches` | frontend/js/app-palette.js:140 |
-| `paletteNearRows` | frontend/js/app-palette.js:563 |
-| `paletteNearest` | frontend/js/app-palette.js:517 |
-| `paletteNearestCommand` | frontend/js/app-palette.js:588 |
-| `paletteNearestRows` | frontend/js/app-palette.js:552 |
-| `paletteNotesInHand` | frontend/js/app-palette.js:782 |
-| `palettePick` | frontend/js/app-palette.js:492 |
-| `palettePicks` | frontend/js/app-palette.js:473 |
-| `palettePool` | frontend/js/app-palette.js:311 |
-| `palettePrefixPicks` | frontend/js/app-palette.js:481 |
-| `paletteRanked` | frontend/js/app-palette.js:449 |
-| `paletteRefresh` | frontend/js/app-palette.js:325 |
-| `paletteRun` | frontend/js/app-palette.js:44 |
-| `paletteScore` | frontend/js/app-palette.js:421 |
-| `paletteSettingRows` | frontend/js/app-palette.js:385 |
-| `paletteStartAct` | frontend/js/app-palette.js:372 |
-| `paletteTarget` | frontend/js/app-palette.js:316 |
-| `paletteText` | frontend/js/app-palette.js:101 |
-| `paletteVocab` | frontend/js/app-palette.js:437 |
-| `paletteWhy` | frontend/js/app-palette.js:506 |
-| `paletteWords` | frontend/js/app-palette.js:408 |
-| `renderPalette` | frontend/js/app-palette.js:599 |
-| `scrollPaletteToActive` | frontend/js/app-palette.js:691 |
-| `utilityPaletteRows` | frontend/js/app-palette.js:213 |
+| `closePalette` | frontend/js/app-palette.js:150 |
+| `notesPaletteCommands` | frontend/js/app-palette.js:772 |
+| `openPalette` | frontend/js/app-palette.js:107 |
+| `paletteActRows` | frontend/js/app-palette.js:415 |
+| `paletteAskNotes` | frontend/js/app-palette.js:57 |
+| `paletteBase` | frontend/js/app-palette.js:370 |
+| `paletteDistance` | frontend/js/app-palette.js:602 |
+| `paletteEditorMatches` | frontend/js/app-palette.js:195 |
+| `paletteFeature` | frontend/js/app-palette.js:89 |
+| `paletteFeatureRows` | frontend/js/app-palette.js:398 |
+| `paletteFind` | frontend/js/app-palette.js:648 |
+| `paletteFuzzyScore` | frontend/js/app-palette.js:175 |
+| `paletteGoToCategory` | frontend/js/app-palette.js:858 |
+| `paletteKeydown` | frontend/js/app-palette.js:729 |
+| `paletteLight` | frontend/js/app-palette.js:711 |
+| `paletteMatches` | frontend/js/app-palette.js:205 |
+| `paletteNearRows` | frontend/js/app-palette.js:628 |
+| `paletteNearest` | frontend/js/app-palette.js:582 |
+| `paletteNearestCommand` | frontend/js/app-palette.js:653 |
+| `paletteNearestRows` | frontend/js/app-palette.js:617 |
+| `paletteNoteAbout` | frontend/js/app-palette.js:35 |
+| `paletteNoteRows` | frontend/js/app-palette.js:42 |
+| `paletteNotesInHand` | frontend/js/app-palette.js:848 |
+| `palettePick` | frontend/js/app-palette.js:557 |
+| `palettePicks` | frontend/js/app-palette.js:538 |
+| `palettePool` | frontend/js/app-palette.js:376 |
+| `palettePrefixPicks` | frontend/js/app-palette.js:546 |
+| `paletteRanked` | frontend/js/app-palette.js:514 |
+| `paletteRefresh` | frontend/js/app-palette.js:390 |
+| `paletteRun` | frontend/js/app-palette.js:96 |
+| `paletteScore` | frontend/js/app-palette.js:486 |
+| `paletteSettingRows` | frontend/js/app-palette.js:450 |
+| `paletteStartAct` | frontend/js/app-palette.js:437 |
+| `paletteTarget` | frontend/js/app-palette.js:381 |
+| `paletteText` | frontend/js/app-palette.js:166 |
+| `paletteVocab` | frontend/js/app-palette.js:502 |
+| `paletteWhy` | frontend/js/app-palette.js:571 |
+| `paletteWords` | frontend/js/app-palette.js:473 |
+| `renderPalette` | frontend/js/app-palette.js:664 |
+| `scrollPaletteToActive` | frontend/js/app-palette.js:756 |
+| `utilityPaletteRows` | frontend/js/app-palette.js:278 |
 
 ### frontend/js/ask-chart.js (9)
 
@@ -11846,40 +11849,40 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_of` | src/tessellate/ai/help_chat.py:2418 |
-| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2349 |
-| `_guide_lead` | src/tessellate/ai/help_chat.py:2866 |
-| `_guide_opening` | src/tessellate/ai/help_chat.py:2882 |
-| `_help_sentences` | src/tessellate/ai/help_chat.py:2849 |
-| `_keyword_in` | src/tessellate/ai/help_chat.py:2339 |
-| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2271 |
-| `_keyword_regex` | src/tessellate/ai/help_chat.py:2335 |
-| `_matching_topics` | src/tessellate/ai/help_chat.py:2468 |
-| `_meaning_topics` | src/tessellate/ai/help_chat.py:2548 |
-| `_normalise_keys` | src/tessellate/ai/help_chat.py:2294 |
-| `_place` | src/tessellate/ai/help_chat.py:2823 |
-| `_preference` | src/tessellate/ai/help_chat.py:2905 |
-| `_prompt_for` | src/tessellate/ai/help_chat.py:2696 |
-| `_read_as` | src/tessellate/ai/help_chat.py:3005 |
-| `_reading_topics` | src/tessellate/ai/help_chat.py:2440 |
-| `_repaired` | src/tessellate/ai/help_chat.py:2457 |
-| `_second_sentence` | src/tessellate/ai/help_chat.py:2853 |
-| `_state_line` | src/tessellate/ai/help_chat.py:2914 |
-| `_stated_lead` | src/tessellate/ai/help_chat.py:2923 |
-| `answer` | src/tessellate/ai/help_chat.py:3084 |
-| `answer_stream` | src/tessellate/ai/help_chat.py:3020 |
-| `badges_for` | src/tessellate/ai/help_chat.py:2636 |
-| `composed_answer` | src/tessellate/ai/help_chat.py:2934 |
-| `help_block_for` | src/tessellate/ai/help_chat.py:3164 |
-| `help_listing` | src/tessellate/ai/help_chat.py:2607 |
-| `help_sentences` | src/tessellate/ai/help_chat.py:2832 |
-| `names_app` | src/tessellate/ai/help_chat.py:3148 |
-| `offline_answer` | src/tessellate/ai/help_chat.py:2952 |
-| `social_reply` | src/tessellate/ai/help_chat.py:2796 |
-| `source_names` | src/tessellate/ai/help_chat.py:2603 |
-| `system_answer` | src/tessellate/ai/help_chat.py:2585 |
-| `topic_title` | src/tessellate/ai/help_chat.py:2571 |
-| `topics_for` | src/tessellate/ai/help_chat.py:2650 |
+| `_act_of` | src/tessellate/ai/help_chat.py:2419 |
+| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2350 |
+| `_guide_lead` | src/tessellate/ai/help_chat.py:2867 |
+| `_guide_opening` | src/tessellate/ai/help_chat.py:2883 |
+| `_help_sentences` | src/tessellate/ai/help_chat.py:2850 |
+| `_keyword_in` | src/tessellate/ai/help_chat.py:2340 |
+| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2272 |
+| `_keyword_regex` | src/tessellate/ai/help_chat.py:2336 |
+| `_matching_topics` | src/tessellate/ai/help_chat.py:2469 |
+| `_meaning_topics` | src/tessellate/ai/help_chat.py:2549 |
+| `_normalise_keys` | src/tessellate/ai/help_chat.py:2295 |
+| `_place` | src/tessellate/ai/help_chat.py:2824 |
+| `_preference` | src/tessellate/ai/help_chat.py:2906 |
+| `_prompt_for` | src/tessellate/ai/help_chat.py:2697 |
+| `_read_as` | src/tessellate/ai/help_chat.py:3006 |
+| `_reading_topics` | src/tessellate/ai/help_chat.py:2441 |
+| `_repaired` | src/tessellate/ai/help_chat.py:2458 |
+| `_second_sentence` | src/tessellate/ai/help_chat.py:2854 |
+| `_state_line` | src/tessellate/ai/help_chat.py:2915 |
+| `_stated_lead` | src/tessellate/ai/help_chat.py:2924 |
+| `answer` | src/tessellate/ai/help_chat.py:3085 |
+| `answer_stream` | src/tessellate/ai/help_chat.py:3021 |
+| `badges_for` | src/tessellate/ai/help_chat.py:2637 |
+| `composed_answer` | src/tessellate/ai/help_chat.py:2935 |
+| `help_block_for` | src/tessellate/ai/help_chat.py:3165 |
+| `help_listing` | src/tessellate/ai/help_chat.py:2608 |
+| `help_sentences` | src/tessellate/ai/help_chat.py:2833 |
+| `names_app` | src/tessellate/ai/help_chat.py:3149 |
+| `offline_answer` | src/tessellate/ai/help_chat.py:2953 |
+| `social_reply` | src/tessellate/ai/help_chat.py:2797 |
+| `source_names` | src/tessellate/ai/help_chat.py:2604 |
+| `system_answer` | src/tessellate/ai/help_chat.py:2586 |
+| `topic_title` | src/tessellate/ai/help_chat.py:2572 |
+| `topics_for` | src/tessellate/ai/help_chat.py:2651 |
 
 ### src/tessellate/ai/help_topics_more.py (2)
 
@@ -18075,7 +18078,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11497)
+## Tests (11499)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19256,7 +19259,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_user_profile_context.py | 8 |
 | tests/test_utilities_zones.py | 4 |
 | tests/test_ux1005_copy.py | 6 |
-| tests/test_uxfix2_1018.py | 2 |
+| tests/test_uxfix2_1018.py | 4 |
 | tests/test_validate.py | 11 |
 | tests/test_validation_error_shape.py | 2 |
 | tests/test_vault_import.py | 7 |

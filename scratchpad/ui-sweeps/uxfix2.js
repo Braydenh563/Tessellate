@@ -37,7 +37,8 @@ const median = (a) => [...a].sort((x, y) => x - y)[Math.floor(a.length / 2)];
     }))));
   } else if (mode === "palette") {
     await page.evaluate(async () => {
-      await apiJson("/entries", { method: "POST", body: JSON.stringify({ content: "# Trip to Lisbon\nbook flights", category: "Notes" }) }).catch(() => null);
+      const have = await apiJson("/search?q=Lisbon&kind=note&limit=1").catch(() => null);
+      if (!have?.hits?.length) await apiJson("/entries", { method: "POST", body: JSON.stringify({ content: "# Trip to Lisbon\nbook flights", category: "Notes" }) }).catch(() => null);
     });
     await page.waitForTimeout(500);
     const open = [];
@@ -46,17 +47,20 @@ const median = (a) => [...a].sort((x, y) => x - y)[Math.floor(a.length / 2)];
       const r = await page.evaluate(() => new Promise((resolve) => {
         const t0 = performance.now();
         const input = document.getElementById("palette-input");
-        document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true, bubbles: true }));
         let focused = null;
+        input.addEventListener("focus", () => { if (focused === null) focused = performance.now() - t0; }, { once: true });
+        document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true, bubbles: true }));
+        const sync = Math.round(performance.now() - t0);
+        window.__paletteSync = sync;
         const tick = () => {
-          if (focused === null && document.activeElement === input) focused = performance.now() - t0;
           const rows = document.querySelectorAll("#palette-list [role=option]").length;
-          if (focused !== null && rows > 20) return resolve({ focused: Math.round(focused), rows: Math.round(performance.now() - t0) });
+          if (focused !== null && rows > 20) return resolve({ sync, focused: Math.round(focused), rows: Math.round(performance.now() - t0) });
           if (performance.now() - t0 > 3000) return resolve({ focused: Math.round(focused ?? -1), rows: -1 });
           requestAnimationFrame(tick);
         };
         requestAnimationFrame(tick);
       }));
+      console.log('sync ms', r.sync, 'focus', r.focused, 'rows', r.rows);
       open.push(r.focused);
       shown.push(r.rows);
       await page.keyboard.press("Escape");
@@ -68,6 +72,10 @@ const median = (a) => [...a].sort((x, y) => x - y)[Math.floor(a.length / 2)];
     await page.keyboard.type("Trip", { delay: 30 });
     await page.waitForTimeout(1200);
     console.log("rows for Trip", JSON.stringify(await page.evaluate(() => [...document.querySelectorAll("#palette-list [role=option]")].map((r) => r.innerText.replace(/\s+/g, " ").slice(0, 70)))));
+    await page.keyboard.press("ArrowDown"); await page.keyboard.press("ArrowDown"); await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(1200);
+    console.log("after Enter", JSON.stringify(await page.evaluate(() => ({ paletteHidden: document.getElementById("palette-overlay").classList.contains("hidden"), tab: document.querySelector(".tab.active, [data-tab].active")?.dataset?.tab }))));
   } else if (mode === "bell") {
     await page.waitForTimeout(2500);
     console.log("bell", JSON.stringify(await page.evaluate(async () => {
