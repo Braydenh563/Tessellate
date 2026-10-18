@@ -9047,6 +9047,23 @@ input[type="file"]:active::file-selector-button {
   gap: var(--space-2);
   min-height: var(--control-h-lg);
 }
+/* **A dialog's head stays put while its card scrolls** (C12, the owner:
+   "Make the top row with the title and x close button on the panels like the
+   statistics panel sticky to the top regardless of scroll"). `.modal-card` is
+   the scroll box (01-forms-settings.css) so the head pins to its top edge.
+   The negative margin and the matching padding put the head's rest position
+   where it always was, inside the card's padding, while sticky measures from
+   the scrollport edge. The ground is the opaque modal surface, not the card's
+   glass, so rows never show through (the glass-off list stays as it is: no
+   blur is added). Replaces the shortcuts card's own copy of this rule. */
+.modal-card > .dialog-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin-top: calc(-1 * var(--card-pad-y));
+  padding-top: var(--card-pad-y);
+  background: var(--modal-bg-opaque);
+}
 /* **One row, always** (INBOX 549 and 552, the owner: "wrapping elements at
    the top of the dictionary", the Suggestions head the same). The shared
    cause was `.card > .row.space-between { flex-wrap: wrap }` (01-forms-
@@ -10586,4 +10603,16 @@ html[data-other-device] [data-this-computer="hide"] {
 }
 #entry-list li.row-enter {
   animation: row-enter var(--ui-slow) ease-out;
+}
+
+/* Help's rows do not animate their hover (C25, the owner: "scrolling on the
+   help settings page is laggy"). The wheel moves rows under a still pointer,
+   so every frame starts a hover transition on a different one of Help's 170
+   summaries, 164 links and 37 list rows: Paint 2196ms against General's 255ms
+   over the same 40 wheel steps at 4x CPU. The colour changes still happen,
+   in the frame they are asked for. `scratchpad/ui-sweeps/helplag.js`. */
+#settings-help summary,
+#settings-help .linklike,
+#settings-help li {
+  transition: none;
 }

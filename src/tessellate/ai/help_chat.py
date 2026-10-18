@@ -471,7 +471,7 @@ HELP_TOPICS: list[dict] = [
             "Ctrl+Shift+A the popup agent, Ctrl+Shift+H ask Atlas about the app, "
             "Ctrl+Shift+O a new chat, Ctrl+Shift+G agent mode on or off, Ctrl+. "
             "stop the answer, Ctrl+Shift+P clip a note to your next question. "
-            "Press m then a letter to jump to a tab; the panel that appears lists "
+            "Press t then a letter to jump to a tab (m works too); the panel that appears lists "
             "Go to and Do with each letter beside its name, marks the tab you are "
             "on, and takes a click as well."
         ),
@@ -1348,7 +1348,7 @@ HELP_TOPICS.extend(
                 "rectangle, ellipse, hexagon, parallelogram, star, cylinder, cloud, speech "
                 "bubble and block arrow. Moving around: the wheel or two "
                 "fingers pan, Shift+wheel pans sideways, Ctrl+wheel or a pinch "
-                "zooms, Space and drag pans, a drag to an edge pans, Ctrl+= and Ctrl+- zoom, "
+                "zooms, Space and drag pans, so does the middle or right mouse button held down (a plain right-click still opens the board menu), a drag to an edge pans, Ctrl+= and Ctrl+- zoom, "
                 "Ctrl+0 is 100%, Shift+1 fits all, Shift+N shows the "
                 "overview, / or Ctrl+F finds (with Whole word and Pattern buttons), Ctrl+H replaces, and Tab walks the board's "
                 "items. Ctrl+K also finds select all shapes or connectors, turn 90 degrees, remove from "
@@ -2058,7 +2058,7 @@ HELP_TOPICS.extend(
                 "calendar (.ics) in the More menu saves every upcoming one; Import a "
                 "calendar (.ics) there reads a calendar file as reminders and names "
                 "any event it skipped. Calendar beside List opens the Timeline's "
-                "calendar with only reminders, where one drags to another day. Press m "
+                "calendar with only reminders, where one drags to another day. Press t "
                 "then r to jump here from anywhere."
             ),
             "badge": {"label": "Reminders", "tab": "reminders"},
@@ -2092,7 +2092,7 @@ HELP_TOPICS.extend(
                 "defaults. Quick access "
                 "starts as New note, Ask AI, Sketch, Remind me and New "
                 "meeting. All of it is "
-                "remembered per user. Press m then d to come back here from "
+                "remembered per user. Press t then d to come back here from "
                 "anywhere."
             ),
             "badge": {"label": "Dashboard", "tab": "dashboard"},
@@ -2102,7 +2102,7 @@ HELP_TOPICS.extend(
             "keywords": (
                 "hidden feature", "hidden", "secret", "tips", "tricks", "tips and tricks",
                 "power user", "easter egg", "things i might not know", "didn't know",
-                "chord", "m then", "m chord", "every feature", "all the features",
+                "chord", "t then", "m then", "t chord", "m chord", "every feature", "all the features",
             ),
             #: The "m" chord's two tables (`TAB_JUMP_KEYS` and `CHORD_ACTIONS`,
             #: app.js) are written out letter by label, and checked against the
@@ -2111,10 +2111,10 @@ HELP_TOPICS.extend(
                 "Hidden features and power keys. Ctrl+K is the command palette "
                 "(jump anywhere, run an action), Ctrl+P is Find anything (notes, "
                 "files and actions), and ? lists every shortcut, which Settings, "
-                "Keyboard shortcuts rebinds. Press m then a letter to jump: d (Dashboard), n "
-                "(Notes), c (Chat), g (Graph), l (Library), t (Timeline), r "
+                "Keyboard shortcuts rebinds. Press t (or m) then a letter to jump: d (Dashboard), n "
+                "(Notes), c (Chat), g (Graph), l (Library), i (Timeline), r "
                 "(Reminders), o (OCR workspace); or to act: s (Settings), q (Quick sketch), v (Record "
-                "a meeting), a (Guide), p (Popup agent). A second m or Esc closes the panel. "
+                "a meeting), a (Guide), p (Popup agent). A second t, m or Esc closes the panel. "
                 "Ctrl+Shift+A opens the agent over any tab, Ctrl+Shift+H asks Atlas "
                 "about the app, Ctrl+J writes at the cursor, Ctrl+Shift+E acts on "
                 "selected text (so does a right-click on the selection), Ctrl+Shift+K opens the quick sketch pad, and "

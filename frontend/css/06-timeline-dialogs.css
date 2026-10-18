@@ -3707,12 +3707,3 @@ aside[data-resizable="1"] {
   opacity: 0.35;
 }
 
-/* The shortcuts dialog's head stays put while its rows scroll (owner,
-   2026-10-12). The card is the scroll box, so the head pins to its top and
-   takes the card's own surface so rows never show through. */
-#shortcuts-card > .dialog-head {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: var(--card);
-}

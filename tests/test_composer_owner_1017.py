@@ -266,3 +266,12 @@ def test_a_how_to_in_chat_leads_with_the_sentence_that_answers_it(client, sessio
         assert text.startswith("Connect a model in Settings, Models"), (body, text)
         text = _ask(client, "how do I learn python", **body)["text"]
         assert "Settings" not in text and "python" in text.lower(), (body, text)
+
+
+def test_a_misspelt_what_can_you_do_gets_the_capability_reply(ai_client, session):
+    """C15 (screenshot): "Wat cna u do??" was read as "what can you do" and then
+    answered with note citations. It gets the same reply the clean question gets."""
+    clean = _ask(ai_client, "What can you do??", notes_only=True, use_tools=False)["text"]
+    typed = _ask(ai_client, "Wat cna u do??", notes_only=True, use_tools=False)["text"]
+    assert "assistant" in typed.lower() and typed.count("**") == clean.count("**"), typed
+    assert "no note" not in typed.lower() and "[1]" not in typed, typed

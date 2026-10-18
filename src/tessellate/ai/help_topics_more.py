@@ -603,7 +603,7 @@ MORE_TOPICS: list[dict] = [
             "everything else in one place. Timeline: everything by date. "
             "Reminders: what is due. Settings (the gear, or Ctrl+,) holds the "
             "rest, and Atlas the guide (this chat) answers how-to questions "
-            "from any tab. Press m then a letter to jump between tabs (o opens the OCR workspace), and "
+            "from any tab. Press t then a letter to jump between tabs (o opens the OCR workspace), and "
             "Settings, Help starts the guided tour."
         ),
         "badge": {"label": "Help", "section": "help"},
@@ -1949,12 +1949,12 @@ MORE_TOPICS.extend(
 TOPIC_META: dict[str, dict] = {
     "open-questions": {"title": "Open questions", "path": "Notes tab, Questions"},
     "capture": {"title": "Capturing a note", "path": "Notes tab", "steps": (
-        "Open the Notes tab (m then n).", "Type into Capture a thought.", "Press Save: a local AI files it and suggests tags.")},
+        "Open the Notes tab (t then n).", "Type into Capture a thought.", "Press Save: a local AI files it and suggests tags.")},
     "ask-chat": {"title": "Asking and chatting", "path": "Chat tab, or Ctrl+Shift+A over any tab"},
     "skills": {"title": "Skills", "path": "Settings, Skills"},
     "graph": {"title": "The graph", "path": "Graph tab"},
     "reminders": {"title": "Reminders", "path": "Reminders tab", "steps": (
-        "Open the Reminders tab (m then r).", "Type into Remind me to, with a time such as \"tomorrow at 5pm\".",
+        "Open the Reminders tab (t then r).", "Type into Remind me to, with a time such as \"tomorrow at 5pm\".",
         "Press Add; pick a priority or a repeat first if you like.")},
     "dashboard": {"title": "The dashboard", "path": "Dashboard tab"},
     "library": {"title": "The Library", "path": "Library tab"},

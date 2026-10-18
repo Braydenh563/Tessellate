@@ -655,7 +655,7 @@ function paletteLight(rows, matches, abouts) {
   const parts = paletteRowParts(match, abouts);
   richPickerPreview(pane, {
     ...parts,
-    keys: parts.keys.replace(/^M (\w)$/, "M then $1"),
+    keys: parts.keys.replace(/^T (\w)$/, "T then $1"),
     keysLead: "Press",
     keysTail: "to do it without the palette.",
   });
