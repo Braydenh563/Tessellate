@@ -11,6 +11,8 @@ below). Versioning is `0.x` while the app stabilises.
 - Composer overview: a heading's first word is a thread only when it is a topic, so an ordinary word like "Ask" no longer reads as one ("Ask features in two of them") (INBOX 1301 D5).
 
 - Undo and Redo run one at a time: Ctrl+Shift+Z pressed while Ctrl+Z was still settling found nothing to redo and left the note deleted. Ctrl+K lists only notes that contain every word typed, and drops the guessed Close in meaning commands when one matches.
+- Companion: a throw that splats on a side and slides onto a ledge now stands on that ledge (stepping along it past a control) instead of jumping 235px up to hang from the top bar (UX fix 2; the cause was the landing search's 48px reach, not an idle timer).
+- Dashboard hero on a phone: the greeting holds two lines, so saving a name no longer grows the hero 82 to 118px and pushes the page down 36px (UX fix 1).
 - Settings on a phone: the pane heading is hidden when the section list above it already shows the same name (Models over Models) (UX audit 9).
 - No-model notice: its action reads in ink on a phone, 4.5 or better in dark (was the accent at 3.96:1) (UX audit 2).
 - Suggested tags: the take target has a 28px press area (a band behind the 14px words), without growing the chip (UX audit 6).
