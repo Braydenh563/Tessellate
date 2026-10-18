@@ -3201,27 +3201,49 @@ def _tools_provider(req: _StreamRequest, prepared: dict, ollama_running: bool): 
     return req.ollama
 
 
-def _stream_lines(req: _StreamRequest) -> Iterator[str]:
-    def event(payload: dict) -> str:
-        return json.dumps(payload) + "\n"
+@dataclass
+class _Turn:
+    """What one streamed turn carries from its stages to the next. The stages
+    are separate functions so each can be read, and tested, on its own."""
 
-    # Flush a first byte immediately. The semantic search below can be a
-    # slow cold start (loading the embedding model, warming the index);
-    # emitting this now means the browser's stream opens right away and
-    # its "typing…" indicator keeps animating instead of looking frozen
-    # while the whole request blocks (user-reported lag).
-    yield event({"type": "status", "stage": "searching"})
+    ollama_running: bool = False
+    composed: bool = False
+    tools_provider: object = None
+    tools_only: bool = False
+    composing: bool = False
+    conversational: bool = False
+    will_answer: bool = False
+    agentic: bool = False
     #: B30: the seconds each stage landed at, for "Why this answer".
-    started = time.perf_counter()
-    marks: dict[str, float] = {}
+    started: float = 0.0
+    marks: dict = field(default_factory=dict)
+    answer_text: str = ""
+    in_prose: bool = False
+    #: Every note a tool read during the turn is a grounding candidate, not
+    #: only the retrieval set: an agent answer that named three notes cited
+    #: one before this. `touched` on each tool event names them.
+    touched_note_ids: list = field(default_factory=list)
+    #: Rows an answer brought with it, exact by construction (the composed
+    #: and the extractive answers): kept, saved, and never re-grounded.
+    exact_grounding: list | None = None
+    shape: str | None = None
+    sent_kinds: set = field(default_factory=set)
+    model_checks: dict | None = None
 
-    # Retrieval happens INSIDE the stream now, not before it, that's the
-    # whole latency win. Nothing before this line touches the model.
-    #: **A follow-up read against the turn before** (INBOX 725): "tell me
-    #: more" or "the second one" means nothing searched on its own. Only for a
-    #: turn the composer answers (Ask's From your notes, or any turn with no
-    #: model), and only with a turn before it: a model reads the history
-    #: itself, and the routing below (`_composed`) is unchanged by it.
+
+def _event(payload: dict) -> str:
+    return json.dumps(payload) + "\n"
+
+
+def _stream_prepare(req: _StreamRequest) -> dict:
+    """Retrieval happens INSIDE the stream, not before it: that is the whole
+    latency win. Nothing before this touches the model.
+
+    **A follow-up read against the turn before** (INBOX 725): "tell me more"
+    or "the second one" means nothing searched on its own. Only for a turn the
+    composer answers (Ask's From your notes, or any turn with no model), and
+    only with a turn before it: a model reads the history itself, and the
+    routing (`_composed`) is unchanged by it."""
     follow = _follow_up(req)
     prepared = _prepare(
         req.session,
@@ -3244,164 +3266,180 @@ def _stream_lines(req: _StreamRequest) -> Iterator[str]:
         locale=req.body.locale,
     )
     prepared["follow_on"] = follow
-    marks["read"] = marks["searched"] = time.perf_counter() - started
-    ollama_running = req.ollama.is_running()
-    if prepared["intent"] == intent.ACT and ollama_running and req.use_tools and not req.body.notes_only:
-        #: With a model in Agent mode, an act is the agent's: its tools are the
-        #: same, and it can ask and plan (decision 38 is for no model).
-        prepared["intent"] = intent.NOTES
-    composed = _composed(req, ollama_running)
-    _note_tool_read(req, prepared, ollama_running)
-    tools_provider = _tools_provider(req, prepared, ollama_running)
-    tools_only = tools_provider is not req.ollama
-    # In agent mode the model can act even when nothing matched, "save a
-    # note about X" must work on an empty notebook.
-    #: A turn with no model, no tool fallback and notes to quote is composed
-    #: in `_plain_events` whatever surface asked (INBOX 725): labelled so,
-    #: and its quotes are never trimmed or re-grounded.
-    composing = composed or (
+    return prepared
+
+
+def _is_composing(prepared: dict, composed: bool, ollama_running: bool, tools_only: bool) -> bool:
+    """A turn with no model, no tool fallback and notes to quote is composed in
+    `_plain_events` whatever surface asked (INBOX 725): labelled so, and its
+    quotes are never trimmed or re-grounded."""
+    return composed or (
         not ollama_running
         and not tools_only
         and prepared["stats"] is None
         and intent.needs_retrieval(prepared["intent"])
         and bool(prepared["notes"])
     )
-    conversational = not intent.needs_retrieval(prepared["intent"])
-    model_can_answer = ollama_running if conversational else (ollama_running or tools_only)
-    will_answer = not composed and not prepared.get("tool_read") and not (_asks_capability(req, prepared) and _app_answers(req, ollama_running)) and prepared["intent"] not in (intent.UTILITY, intent.ACT) and model_can_answer and (
-        bool(prepared["notes"])
-        or bool(req.images_raw)
-        or req.use_tools
-        or conversational
-    )
-    if will_answer and not tools_only:
+
+
+def _will_answer(req: _StreamRequest, prepared: dict, t: _Turn) -> bool:
+    """Whether a model writes this turn's prose."""
+    if t.composed or prepared.get("tool_read"):
+        return False
+    if _asks_capability(req, prepared) and _app_answers(req, t.ollama_running):
+        return False
+    if prepared["intent"] in (intent.UTILITY, intent.ACT):
+        return False
+    if not (t.ollama_running if t.conversational else (t.ollama_running or t.tools_only)):
+        return False
+    return bool(prepared["notes"]) or bool(req.images_raw) or req.use_tools or t.conversational
+
+
+def _plan_turn(req: _StreamRequest, prepared: dict) -> _Turn:
+    t = _Turn()
+    t.ollama_running = req.ollama.is_running()
+    if prepared["intent"] == intent.ACT and t.ollama_running and req.use_tools and not req.body.notes_only:
+        #: With a model in Agent mode, an act is the agent's: its tools are the
+        #: same, and it can ask and plan (decision 38 is for no model).
+        prepared["intent"] = intent.NOTES
+    t.composed = _composed(req, t.ollama_running)
+    _note_tool_read(req, prepared, t.ollama_running)
+    t.tools_provider = _tools_provider(req, prepared, t.ollama_running)
+    t.tools_only = t.tools_provider is not req.ollama
+    t.composing = _is_composing(prepared, t.composed, t.ollama_running, t.tools_only)
+    t.conversational = not intent.needs_retrieval(prepared["intent"])
+    t.will_answer = _will_answer(req, prepared, t)
+    return t
+
+
+def _prime_model_notes(req: _StreamRequest, prepared: dict, t: _Turn) -> None:
+    if t.will_answer and not t.tools_only:
         _assist(req, prepared)
-    if will_answer:
+    if t.will_answer:
         #: B31, B32: the model reads the notes with the person's verdicts
         #: written in, as context; grounding reads them as they are.
         known = _verdicts(req.session)
         if known:
             prepared["model_notes"] = verdicts.for_model(prepared.get("model_notes") or prepared["notes"], known)
 
-    yield event(
-        {
-            "type": "meta",
-            "raw_results": [] if prepared.get("tool_read") else [r.model_dump(mode="json") for r in prepared["raw_results"]],
-            "picture_alts": prepared.get("picture_alts") or {},
-            "picture_sizes": prepared.get("picture_sizes") or {},
-            "search_mode": prepared["search_mode"],
-            "connected_ids": prepared["connected_ids"],
-            "match_info": prepared["match_info"],
-            "when_phrase": prepared["when_phrase"],
-            "as_of": prepared.get("as_of"),
-            "as_of_revisions": prepared.get("as_of_revisions") or {},
-            "answered_by": (
-                "needle (tools only)"
-                if tools_only and will_answer
-                else req.model_manager.served_chat_model(req.ollama) if will_answer else None
-            ),
-            "ollama_running": ollama_running,
-            #: The Ask box labels the answer "Composed from your notes, no AI".
-            "composed": composing,
-        }
-    )
 
-    events = _first_events(req, prepared, ollama_running, tools_only)
-    agentic = False
-    # Small talk never goes near the agent: "hey" is not a request to do
-    # anything, and handing it a toolbox invites it to invent an errand.
-    if not composed and not prepared.get("tool_read") and (ollama_running or tools_only) and req.use_tools and intent.needs_retrieval(prepared["intent"]):
-        agent_events = _agent_events(req, prepared, tools_provider)
-        first = _first_agent_event(req, agent_events)
-        if first is None or first.get("type") == "unsupported":
-            # The active model can't do tool calls, plain Q&A, never
-            # a hard dependency. INBOX 272 part 1: this used to be a silent
-            # `pass`, so Agent mode was asked for and downgraded with
-            # nothing on screen to say so or how to fix it. `first` (built
-            # in ai/agent.py) already carries the remedy; forward it before
-            # falling through to the plain-answer stream below.
-            if first is not None:
-                yield event(first)
-        else:
-            events = chain([first], agent_events)
-            agentic = True
-    # ROADMAP.md item 36's frontend half: the non-streaming /chat already
-    # grounds its answer, but the live Ask box only ever calls this
-    # streaming route. Accumulated here (not computed per-delta: the
-    # sentence splitter needs the whole answer, and this is a handful of
-    # deltas' worth of string concatenation, not a hot loop) and sent as
-    # its own event once the answer is fully in, direct-Q&A only.
-    answer_text = ""
-    # Every note a tool read during the turn is a grounding candidate,
-    # not only the retrieval set. Reported: an agent answer that named
-    # three notes cited one, and a skill run cited none. The retrieval
-    # set is what the *search* found before the model started; in
-    # Agent mode and in a skill run the model then reads notes of its
-    # own choosing through `get_note`, `search_notes`, `related_notes`,
-    # and those are exactly the notes its answer is about. `touched` on
-    # each tool event already names them (it is what the transcript's
-    # action line opens), so this collects ids and loads the text once,
-    # after the answer is in.
-    touched_note_ids: list[int] = []
-    # **A blank line wherever the transcript starts a new paragraph.**
-    #
-    # Measured while fixing INBOX 40. A multi-round turn (an agent answer,
-    # every skill run) emits its prose in bursts with a step or a tool
-    # call between them, and the client draws each burst as its own block
-    # (`agentTimeline.startAnswer`, and `timeline.text()` joins them with
-    # a blank line). Concatenating the raw deltas here instead glued the
-    # last sentence of one round to the first of the next: "…in it.I
-    # checked…". `split_sentences` splits on `.` followed by whitespace,
-    # so that pair is one unsplittable "sentence" that exists in no
-    # paragraph on screen: the grounding row it produces can never be
-    # found by the client's citation walker, and both real sentences lose
-    # their marker. On a nine-step run the whole answer collapsed into a
-    # single such sentence and the run cited nothing at all, which is
-    # exactly what was reported.
-    #
-    # The set below is the events that begin a new prose block in the
-    # transcript, so this string keeps the same shape as what the reader
-    # sees. Anything else (`meta`, `token`, `stats`) is bookkeeping and
-    # must not break a paragraph in half.
-    paragraph_breaks = {"thinking", "tool", "step", "plan", "result"}
-    in_prose = False
-    conversational = not intent.needs_retrieval(prepared["intent"])
-    #: **Grounding as the answer streams** (INBOX 320). The Ask tab numbers
-    #: its Matching records from the answer's citations, and those used to
-    #: arrive in one event after the last token, so the column sat unnumbered
-    #: for the whole answer. Each completed sentence is grounded as it lands
-    #: and the rows so far go out as `grounding_live`, which the client treats
-    #: as provisional: the `grounding` event below is still computed over the
-    #: whole, trimmed answer and is what the saved turn and the support line
-    #: read. Plain answers only: an agent turn's candidates grow with every
-    #: note a tool reads, so a live row there could name a set the final pass
-    #: would not.
-    live_grounder = (
-        SentenceGrounder(
-            prepared["notes"], meaning=search_chunks.meaning_scorer(req.session, deps.get_embeddings())
-        )
-        if not agentic and not conversational and not composing and prepared["notes"]
-        else None
+def _meta_event(req: _StreamRequest, prepared: dict, t: _Turn) -> dict:
+    if t.tools_only and t.will_answer:
+        answered_by = "needle (tools only)"
+    else:
+        answered_by = req.model_manager.served_chat_model(req.ollama) if t.will_answer else None
+    return {
+        "type": "meta",
+        "raw_results": [] if prepared.get("tool_read") else [r.model_dump(mode="json") for r in prepared["raw_results"]],
+        "picture_alts": prepared.get("picture_alts") or {},
+        "picture_sizes": prepared.get("picture_sizes") or {},
+        "search_mode": prepared["search_mode"],
+        "connected_ids": prepared["connected_ids"],
+        "match_info": prepared["match_info"],
+        "when_phrase": prepared["when_phrase"],
+        "as_of": prepared.get("as_of"),
+        "as_of_revisions": prepared.get("as_of_revisions") or {},
+        "answered_by": answered_by,
+        "ollama_running": t.ollama_running,
+        #: The Ask box labels the answer "Composed from your notes, no AI".
+        "composed": t.composing,
+    }
+
+
+def _choose_events(req: _StreamRequest, prepared: dict, t: _Turn) -> tuple:
+    """The turn's event source, and the notice to send first (or None).
+
+    Small talk never goes near the agent: "hey" is not a request to do
+    anything, and handing it a toolbox invites it to invent an errand."""
+    events = _first_events(req, prepared, t.ollama_running, t.tools_only)
+    can_agent = (
+        not t.composed
+        and not prepared.get("tool_read")
+        and (t.ollama_running or t.tools_only)
+        and req.use_tools
+        and intent.needs_retrieval(prepared["intent"])
     )
-    #: The fence markers a small model echoes back are taken out of the
-    #: answer before anything reads or saves it (`fence.AnswerScrubber`).
+    if not can_agent:
+        return events, None
+    agent_events = _agent_events(req, prepared, t.tools_provider)
+    first = _first_agent_event(req, agent_events)
+    if first is None or first.get("type") == "unsupported":
+        # The active model can't do tool calls, plain Q&A, never a hard
+        # dependency. INBOX 272 part 1: this used to be a silent `pass`, so
+        # Agent mode was asked for and downgraded with nothing on screen to
+        # say so or how to fix it. `first` (built in ai/agent.py) already
+        # carries the remedy; the caller forwards it before the plain stream.
+        return events, first
+    t.agentic = True
+    return chain([first], agent_events), None
+
+
+#: The events that begin a new prose block in the transcript. A multi-round
+#: turn emits its prose in bursts with a step or a tool call between them, and
+#: the client draws each burst as its own block; gluing raw deltas made "…in
+#: it.I checked…", one unsplittable sentence no citation walker can find
+#: (INBOX 40). Anything else (`meta`, `token`, `stats`) is bookkeeping and
+#: must not break a paragraph in half.
+_PARAGRAPH_BREAKS = {"thinking", "tool", "step", "plan", "result"}
+
+
+def _note_kind(t: _Turn, kind: str, payload: dict) -> None:
+    t.sent_kinds.add(kind)
+    if kind == "grounding":
+        if payload.get("exact"):
+            t.exact_grounding = payload.get("sentences") or []
+        t.shape = (payload.get("support") or {}).get("shape") or t.shape
+    if kind == "answer" and "answered" not in t.marks:
+        t.marks["answered"] = time.perf_counter() - t.started
+
+
+def _fold_event(t: _Turn, kind: str, payload: dict, live_grounder) -> list:  # noqa: ANN001
+    """Fold one event into the running answer; the live grounding rows when
+    this delta could have closed a sentence."""
+    if kind in _PARAGRAPH_BREAKS:
+        t.in_prose = False
+        if kind == "tool":
+            for item in payload.get("touched") or []:
+                if item.get("kind") == "note" and isinstance(item.get("id"), int):
+                    t.touched_note_ids.append(item["id"])
+        return []
+    if kind != "answer":
+        return []
+    if t.answer_text and not t.in_prose:
+        t.answer_text += "\n\n"
+    delta = payload.get("delta") or ""
+    t.answer_text += delta
+    t.in_prose = True
+    #: Only when this delta could have ended a sentence: a split of the whole
+    #: answer per token is wasted work on every other one.
+    if live_grounder is not None and any(ch in delta for ch in ".!?\n"):
+        return live_grounder.feed(t.answer_text)
+    return []
+
+
+def _live_grounder(req: _StreamRequest, prepared: dict, t: _Turn):  # noqa: ANN202
+    """**Grounding as the answer streams** (INBOX 320). The Ask tab numbers its
+    Matching records from the answer's citations, which used to arrive in one
+    event after the last token. Each completed sentence is grounded as it lands
+    and the rows so far go out as `grounding_live`, which the client treats as
+    provisional: the `grounding` event is still computed over the whole,
+    trimmed answer. Plain answers only: an agent turn's candidates grow with
+    every note a tool reads, so a live row there could name a set the final
+    pass would not."""
+    if t.agentic or t.conversational or t.composing or not prepared["notes"]:
+        return None
+    return SentenceGrounder(prepared["notes"], meaning=search_chunks.meaning_scorer(req.session, deps.get_embeddings()))
+
+
+def _relay_events(req: _StreamRequest, prepared: dict, t: _Turn, events) -> Iterator[str]:  # noqa: ANN001
+    live_grounder = _live_grounder(req, prepared, t)
+    #: The fence markers a small model echoes back are taken out of the answer
+    #: before anything reads or saves it (`fence.AnswerScrubber`).
     scrubber = fence.AnswerScrubber()
-    #: Rows an answer brought with it, exact by construction (the composed
-    #: and the extractive answers): kept, saved, and never re-grounded.
-    exact_grounding: list[dict] | None = None
-    shape: str | None = None
-    sent_kinds: set = set()
     try:
         for payload in events:
             kind = payload.get("type")
-            live_rows: list[dict] = []
-            sent_kinds.add(kind)
-            if kind == "grounding" and payload.get("exact"):
-                exact_grounding = payload.get("sentences") or []
-            if kind == "grounding":
-                shape = (payload.get("support") or {}).get("shape") or shape
-            if kind == "answer" and "answered" not in marks:
-                marks["answered"] = time.perf_counter() - started
+            _note_kind(t, kind, payload)
             if kind == "answer":
                 payload = {**payload, "delta": scrubber.feed(payload.get("delta") or "")}
                 if not payload["delta"]:
@@ -3409,129 +3447,145 @@ def _stream_lines(req: _StreamRequest) -> Iterator[str]:
             else:
                 held = scrubber.flush()
                 if held:
-                    answer_text += held
-                    yield event({"type": "answer", "delta": held})
-            if kind == "answer":
-                if answer_text and not in_prose:
-                    answer_text += "\n\n"
-                delta = payload.get("delta") or ""
-                answer_text += delta
-                in_prose = True
-                #: Only when this delta could have ended a sentence: a split of
-                #: the whole answer per token is wasted work on every other one.
-                if live_grounder is not None and any(ch in delta for ch in ".!?\n"):
-                    live_rows = live_grounder.feed(answer_text)
-            elif kind in paragraph_breaks:
-                in_prose = False
-                if kind == "tool":
-                    for item in payload.get("touched") or []:
-                        if item.get("kind") == "note" and isinstance(item.get("id"), int):
-                            touched_note_ids.append(item["id"])
-            yield event(payload)
+                    t.answer_text += held
+                    yield _event({"type": "answer", "delta": held})
+            live_rows = _fold_event(t, kind, payload, live_grounder)
+            yield _event(payload)
             if live_rows:
-                yield event({"type": "grounding_live", "sentences": list(live_grounder.rows)})
+                yield _event({"type": "grounding_live", "sentences": list(live_grounder.rows)})
         held = scrubber.flush()
         if held:
-            answer_text += held
-            yield event({"type": "answer", "delta": held})
-    except Exception as exc:  # noqa: BLE001  # same outer boundary as above,
-        # for a failure that shows up partway through rather than before
-        # the first event (a later skill step, say). Same fix: say what
+            t.answer_text += held
+            yield _event({"type": "answer", "delta": held})
+    except Exception as exc:  # noqa: BLE001  # a failure partway through rather
+        # than before the first event (a later skill step, say): say what
         # happened instead of the stream just stopping.
         logging.getLogger("tessellate.chat").exception(
             "%s: unhandled error mid-stream: %s",
             "skill run" if req.skill else "agent turn",
             exc,
         )
-        # CodeQL: "information exposure through an exception" (#296): 
+        # CodeQL: "information exposure through an exception" (#296):
         # `exc`'s own str() is untrusted and can embed a file path or
         # connection detail; same sanitiser librarian.model_error_message
         # already trusts for this exact shape.
-        yield event({"type": "answer", "delta": f"\n\nSomething went wrong: {safe_value(exc)}"})
-    #: **The greeting and the sign-off come off before anything else reads it**
-    #: (the owner, 2026-09-21). Here, not in the browser: grounding marks
-    #: sentences by their offsets in this string, the saved turn stores it, and
-    #: an export reads it back, so trimming anywhere else would leave three
-    #: copies of the answer disagreeing about where sentence two starts.
-    #: Not a composed answer: its opening line is a fixed phrase, and its
-    #: quotes are the person's words, which no trim may touch.
-    trimmed_answer = answer_text if composing else trim_assistant_padding(answer_text)
-    if trimmed_answer != answer_text:
-        answer_text = trimmed_answer
+        yield _event({"type": "answer", "delta": f"\n\nSomething went wrong: {safe_value(exc)}"})
+
+
+def _trim_answer(t: _Turn) -> Iterator[str]:
+    """**The greeting and the sign-off come off before anything else reads it**
+    (the owner, 2026-09-21). Here, not in the browser: grounding marks
+    sentences by their offsets in this string, the saved turn stores it, and an
+    export reads it back, so trimming anywhere else would leave three copies of
+    the answer disagreeing about where sentence two starts. Not a composed
+    answer: its opening line is a fixed phrase, and its quotes are the
+    person's words, which no trim may touch."""
+    trimmed = t.answer_text if t.composing else trim_assistant_padding(t.answer_text)
+    if trimmed != t.answer_text:
+        t.answer_text = trimmed
         #: The browser has already drawn the untrimmed text, so it is sent the
         #: finished answer to replace it with. One event at the end rather than
         #: a filter on every delta: a stream that edits what it already said,
         #: token by token, flickers.
-        yield event({"type": "answer_final", "text": answer_text})
-    #: **The model proposes, the engine decides** (CHAT_PLAN decision 53): a
-    #: model's plain answer passes the same validators as the engine's, so a
-    #: number or name in none of the notes it was given, nor the question, is
-    #: said under it. The agent path checks its own (`agent.py`, H2).
-    model_checks = None
-    #: A model that stopped leaves the composed answer under MODEL_STOPPED_NOTE:
-    #: the engine's words, quoted from the notes, not the model's.
-    by_model = MODEL_STOPPED_NOTE not in answer_text
-    if _checks_grounding(prepared, agentic, composing, conversational) and exact_grounding is None and by_model and answer_text:
-        model_checks = validate.check_model_answer(
-            answer_text,
-            [
-                req.question,
-                str(req.image_context or ""),
-                #: The date the prompt told the model, so "today is 10 October" is backed.
-                user_now(deps.get_config()).strftime("%A %d %B %Y %H:%M"),
-                *(str(n.get("content") or "") for n in [*prepared["notes"], *(prepared.get("model_notes") or [])]),
-            ],
+        yield _event({"type": "answer_final", "text": t.answer_text})
+
+
+def _check_model_prose(req: _StreamRequest, prepared: dict, t: _Turn) -> Iterator[str]:
+    """**The model proposes, the engine decides** (CHAT_PLAN decision 53): a
+    model's plain answer passes the same validators as the engine's, so a
+    number or name in none of the notes it was given, nor the question, is
+    said under it. The agent path checks its own (`agent.py`, H2). A model that
+    stopped leaves the composed answer under MODEL_STOPPED_NOTE: the engine's
+    words, not the model's."""
+    if MODEL_STOPPED_NOTE in t.answer_text or t.exact_grounding is not None or not t.answer_text:
+        return
+    if not _checks_grounding(prepared, t.agentic, t.composing, t.conversational):
+        return
+    t.model_checks = validate.check_model_answer(
+        t.answer_text,
+        [
+            req.question,
+            str(req.image_context or ""),
+            #: The date the prompt told the model, so "today is 10 October" is backed.
+            user_now(deps.get_config()).strftime("%A %d %B %Y %H:%M"),
+            *(str(n.get("content") or "") for n in [*prepared["notes"], *(prepared.get("model_notes") or [])]),
+        ],
+    )
+    if t.model_checks["unbacked"]:
+        heads = source_check.heads_up(t.model_checks["unbacked"])
+        t.answer_text += heads
+        yield _event({"type": "answer", "delta": heads})
+
+
+def _ground_final(req: _StreamRequest, prepared: dict, t: _Turn) -> tuple:
+    """The rows the saved turn carries and the `grounding` event for them
+    (INBOX 241). A conversational turn, or one nothing could be grounded
+    against, saves an empty list, which is the truth about that answer."""
+    candidates = _grounding_candidates(req.session, prepared["notes"], t.touched_note_ids)
+    grounding: list[dict] = list(t.exact_grounding or [])
+    if t.exact_grounding is not None or t.conversational or not candidates or not t.answer_text:
+        return grounding, None
+    grounding = (
+        ground_answer_sentences(
+            t.answer_text, candidates, numbered=len(prepared["notes"]),
+            meaning=search_chunks.meaning_scorer(req.session, deps.get_embeddings()),
         )
-        if model_checks["unbacked"]:
-            heads = source_check.heads_up(model_checks["unbacked"])
-            answer_text += heads
-            yield event({"type": "answer", "delta": heads})
-    candidates = _grounding_candidates(req.session, prepared["notes"], touched_note_ids)
-    #: Kept past the branch below so the saved turn carries the same rows the
-    #: client was just sent (INBOX 241). A conversational turn, or one nothing
-    #: could be grounded against, saves an empty list, which is the truth about
-    #: that answer rather than a gap.
-    grounding: list[dict] = list(exact_grounding or [])
-    if exact_grounding is None and not conversational and candidates and answer_text:
-        grounding = (
-            ground_answer_sentences(
-                answer_text, candidates, numbered=len(prepared["notes"]),
-                meaning=search_chunks.meaning_scorer(req.session, deps.get_embeddings()),
-            )
-            or []
-        )
-        if grounding:
-            # A touched note is not in `raw_results`, so the client has
-            # no text to name it by; the label rides on each entry.
-            labels = {
-                note["id"]: " ".join(str(note.get("content") or "").split())[:60]
-                for note in candidates
-            }
-            for row in grounding:
-                row["label"] = labels.get(row["note_id"], "")
-            #: **How much of the answer the notebook actually backs, beside
-            #: which sentences it backs.** CHAT_PLAN Phase 1's fourth gate
-            #: line: the marks have always said which sentences are
-            #: supported, and nothing said how many of them there were, so an
-            #: answer with one cited sentence in six read at a glance exactly
-            #: like one with six in six. The threshold travels with the
-            #: numbers (`grounding.support`) rather than being picked again
-            #: in the frontend.
-            yield event({
-                "type": "grounding",
-                "sentences": grounding,
-                "support": grounding_support(answer_text, grounding),
-                **({"checks": model_checks["findings"]} if model_checks else {}),
-            })
-    if req.body.notes_only and answer_text:
-        _save_ask_turn(req.session, _in_full(req), answer_text, prepared, grounding)
+        or []
+    )
+    if not grounding:
+        return grounding, None
+    # A touched note is not in `raw_results`, so the client has no text to
+    # name it by; the label rides on each entry.
+    labels = {note["id"]: " ".join(str(note.get("content") or "").split())[:60] for note in candidates}
+    for row in grounding:
+        row["label"] = labels.get(row["note_id"], "")
+    #: How much of the answer the notebook backs, beside which sentences it
+    #: backs (CHAT_PLAN Phase 1): the threshold travels with the numbers
+    #: rather than being picked again in the frontend.
+    return grounding, {
+        "type": "grounding",
+        "sentences": grounding,
+        "support": grounding_support(t.answer_text, grounding),
+        **({"checks": t.model_checks["findings"]} if t.model_checks else {}),
+    }
+
+
+def _settle_turn(req: _StreamRequest, prepared: dict, t: _Turn) -> Iterator[str]:
+    yield from _trim_answer(t)
+    yield from _check_model_prose(req, prepared, t)
+    grounding, grounding_event = _ground_final(req, prepared, t)
+    if grounding_event is not None:
+        yield _event(grounding_event)
+    if req.body.notes_only and t.answer_text:
+        _save_ask_turn(req.session, _in_full(req), t.answer_text, prepared, grounding)
     #: A model that wrote a counted answer's words still gets its panel
     #: (INBOX 1300 C06; decision 75: the panel assists, the model leads).
-    yield from map(event, _late_panel(prepared, req.question, answer_text, sent_kinds))
-    if answer_text:
-        marks["done"] = time.perf_counter() - started
-        yield event({"type": "why", "lines": _why(req, prepared, grounding, composing, will_answer, tools_only, ollama_running, shape, marks)})
-    yield event({"type": "done"})
+    yield from map(_event, _late_panel(prepared, req.question, t.answer_text, t.sent_kinds))
+    if t.answer_text:
+        t.marks["done"] = time.perf_counter() - t.started
+        yield _event({"type": "why", "lines": _why(req, prepared, grounding, t.composing, t.will_answer, t.tools_only, t.ollama_running, t.shape, t.marks)})
+    yield _event({"type": "done"})
+
+
+def _stream_lines(req: _StreamRequest) -> Iterator[str]:
+    # Flush a first byte immediately. The semantic search below can be a
+    # slow cold start (loading the embedding model, warming the index);
+    # emitting this now means the browser's stream opens right away and
+    # its "typing…" indicator keeps animating instead of looking frozen
+    # while the whole request blocks (user-reported lag).
+    yield _event({"type": "status", "stage": "searching"})
+    started = time.perf_counter()
+    prepared = _stream_prepare(req)
+    t = _plan_turn(req, prepared)
+    t.started = started
+    t.marks["read"] = t.marks["searched"] = time.perf_counter() - started
+    _prime_model_notes(req, prepared, t)
+    yield _event(_meta_event(req, prepared, t))
+    events, notice = _choose_events(req, prepared, t)
+    if notice is not None:
+        yield _event(notice)
+    yield from _relay_events(req, prepared, t, events)
+    yield from _settle_turn(req, prepared, t)
 
 
 
