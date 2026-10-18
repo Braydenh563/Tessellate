@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- In the chat box a bare "/" lists the commands first, the rows only this menu has (the first command was 443 px down a 384 px menu, out of sight; now 27 px and active), with Attach, This message and Mode after them (INBOX 1300 C05).
 - The companion put over a board's canvas is drawn under the board's rail, top bar and Format panel and over its objects, and is sized to the board's zoom (half size at 50%, never above its own); on a panel or the app's bars it keeps its size above everything. It steps out of the open Format panel and sidebar, and wanders and hops about a third as often on a board (INBOX 1300 C19, C20).
 - The companion's large-view visit and return (`nameMarkBuddyVisit`, `nameMarkBuddyHome`) moved from avatars.js to the lazy companion-menu.js, which alone calls them: 865 gzipped bytes off the boot scripts.
 - A thrown companion that falls from a ledge to peek over the bottom bar travels whole and tucks in when it lands, instead of falling already cut in half (INBOX 1300 C01; `nameMarkBuddyLegsNow`).

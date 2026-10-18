@@ -21,7 +21,7 @@ audits reproduced each bug in the app (ports 8791, 8792). A row is **open**,
 | C23 go-key prefix | S, fixes2 | open | decision: prefix `t`, Timeline second key `i`, `m` alias one release |
 | C01 throw lands, peek then fall | O, design | fixed | tucked frames during the fall 43 of 43 to 1 of 44, sink 38 to 0 px (`peektravel.js`) |
 | C19, C20 companion layer and size on boards | O, design | fixed | over the Format panel: the companion drew on top (band z 44) to the panel on top (z 9 on the canvas); scale at zoom 0.5: 1 to 0.5; wander chance on a board 0.35 to 0.1 (`canvas1300.js`). WHITEBOARD step 8 (layer order) not a dependency, left |
-| C05 slash commands below fold | O, design | open | first command at 444 px in a 386 px menu |
+| C05 slash commands below fold | O, design | fixed | first command row 443 px down a 384 px menu (unseen) to 27 px, active; ArrowDown to the next command (`slash1300.js`) |
 | C29 popup Sources disclosure | O, design | open | `chat-agent.js:2220`, no marker |
 | C33 notification stack | O, design | open | four toasts 186x205 px |
 | C21 theme preview revert and bar | O, design | open | `settings-controls.js:2877` |
