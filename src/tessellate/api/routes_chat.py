@@ -2582,29 +2582,32 @@ def _with_lapsed(text: str, current: list, result: dict, req: _StreamRequest) ->
     return text + "\n\n" + supersede.lapsed_line(found, voice=_composer_voice(), today=today, seed=len(text))
 
 
-def _plain_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> Iterator[dict]:
-    """The pre-Wave-G behaviour: stream a grounded answer, no tools."""
-    exact = _exact_events(req, prepared, ollama_running)
-    if exact is not None:
-        yield from exact
-        return
-    conversational = not intent.needs_retrieval(prepared["intent"])
-    if conversational and prepared["intent"] == intent.ABOUT_APP and _HOW_TO.match(req.question or "") and (
-        _composed(req, ollama_running) or not ollama_running
+def _help_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list | None:
+    """A how-to the app answers itself: with no model, or when composed."""
+    if not (
+        prepared["intent"] == intent.ABOUT_APP
+        and _HOW_TO.match(req.question or "")
+        and (_composed(req, ollama_running) or not ollama_running)
     ):
-        helped = composer.compose(req.question, [], voice="help")
-        if helped["shape"] == "help":
-            yield {"type": "answer", "delta": helped["text"]}
-            return
-    if conversational and _composed(req, ollama_running):
+        return None
+    helped = composer.compose(req.question, [], voice="help")
+    return [{"type": "answer", "delta": helped["text"]}] if helped["shape"] == "help" else None
+
+
+def _small_talk_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list | None:
+    """The events for small talk the app answers itself, or None when a model
+    should (the caller builds its messages)."""
+    helped = _help_events(req, prepared, ollama_running)
+    if helped is not None:
+        return helped
+    if _composed(req, ollama_running):
         #: The app answers small talk itself when the answer is composed (the
         #: Ask box's From your notes, or no model): "what can you do" or
         #: "hello" there used to get no answer at all (engine probe P2).
-        yield {"type": "answer", "delta": _social_reply(req, prepared)}
-        return
+        return [{"type": "answer", "delta": _social_reply(req, prepared)}]
     #: A question about what Atlas can do is not small talk: with a model
     #: up it goes to the model with the app's own line (decision 75).
-    if conversational and req.body.notes_only and not _asks_capability(req, prepared):
+    if req.body.notes_only and not _asks_capability(req, prepared):
         # The Notes tab's Ask box has one job (§35A). A greeting is the one
         # input it has nothing to do with, so it says what it is for rather
         # than spending a model round chatting back.
@@ -2616,207 +2619,230 @@ def _plain_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> 
         # can render it as what it is, a prompt with questions you can
         # click: and can leave the empty results panel out, since nothing
         # was searched for.
-        yield {
-            "type": "hint",
-            "text": librarian.ASK_IS_FOR_NOTES,
-            "examples": librarian.ASK_EXAMPLES,
-        }
-        return
-    if conversational:
-        # Small talk: no notes, no grounding, no "I couldn't find any
-        # notes matching that" in reply to "hey".
-        if not ollama_running:
-            #: The app's own voice, warm and varied (INBOX 741): with no model
-            #: running Chat still answers from the notes, so small talk says
-            #: so rather than "the AI model isn't running".
-            yield {"type": "answer", "delta": _social_reply(req, prepared)}
-            return
-        #: Small talk reaches the model as it was said, its nickname and all
-        #: ("thanks legend"): the name came off only so nothing searched it.
-        said = question_noise.tidy(req.body.question) if req.address is not None else req.question
-        messages = librarian.build_conversational_messages(
-            f"{said}\n\n{req.image_context}" if req.image_context else said,
-            prepared["intent"],
-            style=prepared["style"],
-            profile=prepared["profile"],
-            history=req.history,
-            persona_prompt=req.persona_prompt,
-            mode=req.mode,
-            images=req.images,
-            #: Decision 75: the capability line reaches the model as a fact.
-            context=_capability_answer(req, ollama_running) if _asks_capability(req, prepared) else "",
+        return [{"type": "hint", "text": librarian.ASK_IS_FOR_NOTES, "examples": librarian.ASK_EXAMPLES}]
+    if not ollama_running:
+        #: The app's own voice, warm and varied (INBOX 741): with no model
+        #: running Chat still answers from the notes, so small talk says
+        #: so rather than "the AI model isn't running".
+        return [{"type": "answer", "delta": _social_reply(req, prepared)}]
+    return None
+
+
+def _conversational_messages(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list:
+    #: Small talk reaches the model as it was said, its nickname and all
+    #: ("thanks legend"): the name came off only so nothing searched it.
+    said = question_noise.tidy(req.body.question) if req.address is not None else req.question
+    return librarian.build_conversational_messages(
+        f"{said}\n\n{req.image_context}" if req.image_context else said,
+        prepared["intent"],
+        style=prepared["style"],
+        profile=prepared["profile"],
+        history=req.history,
+        persona_prompt=req.persona_prompt,
+        mode=req.mode,
+        images=req.images,
+        #: Decision 75: the capability line reaches the model as a fact.
+        context=_capability_answer(req, ollama_running) if _asks_capability(req, prepared) else "",
+    )
+
+
+def _related_sentence(related: list) -> str:
+    plural = len(related) != 1
+    kinds = sorted({item["kind"] for item in related})
+    return (
+        f" There {'are' if plural else 'is'} {len(related)} other {'items' if plural else 'item'}"
+        f" that mention it, in your {' and '.join(f'{k}s' for k in kinds)}."
+    )
+
+
+def _no_notes_events(req: _StreamRequest, ollama_running: bool) -> list:
+    # An attached image and "no matching notes" are unrelated: retrieval never
+    # sees the image, so an empty search result must not stand in for "there's
+    # nothing to look at" (same fix as `librarian.answer`'s own guard).
+    events: list = [{"type": "answer", "delta": _no_notes_line(req, ollama_running)}]
+    # …but the notebook is more than its notes. See `_related_elsewhere`: a
+    # question answered by a document, a saved chat or a reminder used to end
+    # here regardless.
+    related = _related_elsewhere(req.session, req.question)
+    if related:
+        events.append({"type": "answer", "delta": _related_sentence(related)})
+        events.append({"type": "related", "items": related})
+    return events
+
+
+def _digest_for(req: _StreamRequest, prepared: dict, follow, current: list, restated: bool, today):  # noqa: ANN001, ANN202
+    """The answer a person would give (decision 70, INBOX 812: "I may as well
+    just read the notes I made on the right"): a count and a span, the facts
+    under labels, what is missing, one offer. A follow-on, a "newest notes"
+    turn or a sum keeps the composer's."""
+    #: "where do I live", "what's my sister's name", "what do you know
+    #: about me": what the notebook says of its writer (`ai/personal.py`),
+    #: read from every note, not only the ones the search found.
+    digest = None if follow else personal.answer(req.question, lambda: personal.notes_of(req.session), today)
+    if digest is not None or (follow and not restated) or not _may_digest(prepared, req.question):
+        return digest
+    try:
+        return composer_digest.answer(
+            follow.question if restated else req.question, current, today=today,
+            voice=_answer_voice(), turn=len(req.history or []),
+            insight=_insight_level(), learned=_insight_memory(req.session), known=_verdicts(req.session),
         )
-    elif _web_first(req, prepared) and not req.images_raw and not ollama_running and _web_allowed(req) and (
-        web := _web_answer(req, req.question)
-    ):
+    except Exception:  # noqa: BLE001  # the composer's answer stands
+        logging.getLogger("tessellate.chat").exception("chat: the digest failed")
+        return None
+
+
+def _compose_for(req: _StreamRequest, prepared: dict, follow, current: list, today) -> dict:  # noqa: ANN001
+    #: The conversation the history describes (decisions 34 and 35): its
+    #: turn and salt word this answer, a retry ("Try again") rewords it,
+    #: and the words earlier answers used are not used again.
+    dialogue = composer.Dialogue.from_history(req.history)
+    attempt = req.body.attempt
+    return composer.compose(
+        follow.question if follow else req.question,
+        current,
+        today=today,
+        recent=str(prepared.get("search_mode") or "").endswith("recent"),
+        embed=_composer_embed(),
+        said=follow.said if follow else "",
+        voice=_composer_voice(),
+        #: The turn before's answer, so this one opens differently (INBOX 741).
+        previous=str(req.history[-1].get("answer") or "") if req.history else "",
+        now=user_now(deps.get_config()).replace(tzinfo=None),
+        salt=f"{dialogue.salt}:{attempt}" if attempt else dialogue.salt,
+        turn=len(req.history or []) + 1 + attempt,
+        dialogue=dialogue,
+        prefer=follow.prefer if follow else "",
+        resolved=True,
+        #: Insights the person confirmed are said as their word; the
+        #: ones they dismissed are not said (decision 60).
+        learned=_insight_memory(req.session),
+    )
+
+
+def _composed_result(req: _StreamRequest, prepared: dict) -> tuple:
+    """The composer's result with the follow-up it answered, the notes it read
+    and the older ones those replaced."""
+    follow = prepared.get("follow_on")
+    #: A follow-on that is a question in its own right ("what about
+    #: running?", "and last month?", "the second one") is answered the
+    #: same way as the first turn (B8); "tell me more", "shorter" and a
+    #: correction lean on the turn before and keep the composer's.
+    restated = follow is not None and follow.kind in composer._RESTATES
+    today = user_now(deps.get_config()).date()
+    #: O11: a newer note on the same thing is the current one.
+    current, older = _current_notes(req, prepared["notes"])
+    result = _digest_for(req, prepared, follow, current, restated, today) or _compose_for(req, prepared, follow, current, today)
+    if follow is not None and follow.kind == "more" and not result.get("grounding"):
+        #: Nothing left unsaid: say so, with how much there is (B8).
+        result = composer_digest.all_said(follow.question, prepared["notes"], today=today) or result
+    return result, follow, current, older
+
+
+def _composed_grounding_event(req: _StreamRequest, result: dict) -> dict:
+    return {
+        "type": "grounding",
+        "sentences": result["grounding"],
+        #: What to ask next, built from what the answer found and did
+        #: not say (INBOX 725): the chips under a composed answer,
+        #: which asks no model for them.
+        "next": result["next"],
+        #: `by_model: False`: no model wrote a word of it, so a low count
+        #: is the app's own joining words and picture readings, and the
+        #: notice says that rather than "the model's own writing".
+        "support": _composed_support(result),
+        "exact": True,
+        #: The engine's own answer through the same validators
+        #: (decisions 52 to 54): empty when every maxim holds.
+        "checks": validate.report(result, req.question)["findings"],
+        #: The insight lines said, for their Confirm and Not right.
+        "insights": result.get("insights", []),
+        #: A digest (decision 70) cites one mark a line and is not
+        #: followed by the sources again: the right column is them.
+        "digest": bool(result.get("digest")),
+        "offer": result.get("offer"),
+    }
+
+
+def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list:
+    """**A composed answer** (INBOX 688): the notes' own sentences, chosen
+    by the question's shape and laid out as an answer, every clause a
+    quote or a measured value (`ai/composer.py` says how). One piece,
+    no stream to wait on; its grounding rows are exact, marked so, and
+    the re-grounding leaves them alone.
+
+    **And the Chat tab's answer whenever no model runs** (INBOX 725, the
+    owner: "the composer response should also be able to be viewed in
+    chat messages"). It replaced `extractive.answer` here, the forty-
+    word passages under an apology: the composer quotes whole sentences
+    under the same rule. A running model still answers every Chat turn."""
+    result, follow, current, older = _composed_result(req, prepared)
+    if not result["grounding"] and not ollama_running and _web_allowed(req):
+        web = _web_answer(req, follow.question if follow else req.question)
+        if web:
+            return list(_web_events(*web))
+    text = result["text"]
+    if not result["grounding"] and not follow and personal.general(req.question or ""):
+        #: "what's the capital of France": the world, not the notes, and
+        #: said so rather than "nothing in your notes about capital".
+        text = personal.general_reply(_web_allowed(req))
+    if not result["grounding"] and prepared.get("meaning_loading"):
+        text += "\n\n" + composer_digest.PHRASES["meaning_loading"]
+    text = _with_older(text, older, result)
+    text = _with_lapsed(text, current, result, req)
+    events: list = [{"type": "answer", "delta": text}]
+    if result["grounding"]:
+        events.append(_composed_grounding_event(req, result))
+    return events
+
+
+def _no_model_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list | None:
+    """The events for a notes question the app answers itself (web, nothing
+    found, or composed), or None when a model streams the answer."""
+    if _web_first(req, prepared) and not req.images_raw and not ollama_running and _web_allowed(req):
         #: No note answers, no model runs, and web search is on: the web's
         #: own sentences, cited by address (decision 37).
-        yield from _web_events(*web)
-        return
-    elif not prepared["notes"] and not req.images_raw:
-        # An attached image and "no matching notes" are unrelated: 
-        # retrieval never sees the image, so an empty search result
-        # must not stand in for "there's nothing to look at" (same fix
-        # as `librarian.answer`'s own guard).
-        yield {"type": "answer", "delta": _no_notes_line(req, ollama_running)}
-        # …but the notebook is more than its notes. See
-        # `_related_elsewhere`: a question answered by a document, a saved
-        # chat or a reminder used to end here regardless.
-        related = _related_elsewhere(req.session, req.question)
-        if related:
-            kinds = sorted({item["kind"] for item in related})
-            yield {
-                "type": "answer",
-                "delta": (
-                    " There "
-                    + ("is" if len(related) == 1 else "are")
-                    + f" {len(related)} other "
-                    + ("item" if len(related) == 1 else "items")
-                    + " that mention it, in your "
-                    + " and ".join(f"{k}s" for k in kinds)
-                    + "."
-                ),
-            }
-            yield {"type": "related", "items": related}
-        return
-    elif _composed(req, ollama_running) or not ollama_running:
-        #: **A composed answer** (INBOX 688): the notes' own sentences, chosen
-        #: by the question's shape and laid out as an answer, every clause a
-        #: quote or a measured value (`ai/composer.py` says how). One piece,
-        #: no stream to wait on; its grounding rows are exact, marked so, and
-        #: the re-grounding below leaves them alone.
-        #:
-        #: **And the Chat tab's answer whenever no model runs** (INBOX 725, the
-        #: owner: "the composer response should also be able to be viewed in
-        #: chat messages"). It replaced `extractive.answer` here, the forty-
-        #: word passages under an apology: the composer quotes whole sentences
-        #: under the same rule. A running model still answers every Chat turn.
-        follow = prepared.get("follow_on")
-        #: The conversation the history describes (decisions 34 and 35): its
-        #: turn and salt word this answer, a retry ("Try again") rewords it,
-        #: and the words earlier answers used are not used again.
-        dialogue = composer.Dialogue.from_history(req.history)
-        #: The answer a person would give (decision 70, INBOX 812: "I may as
-        #: well just read the notes I made on the right"): a count and a
-        #: span, the facts under labels, what is missing, one offer. A
-        #: follow-on, a "newest notes" turn or a sum keeps the composer's.
-        digest = None
-        #: A follow-on that is a question in its own right ("what about
-        #: running?", "and last month?", "the second one") is answered the
-        #: same way as the first turn (B8); "tell me more", "shorter" and a
-        #: correction lean on the turn before and keep the composer's.
-        restated = follow is not None and follow.kind in composer._RESTATES
-        today = user_now(deps.get_config()).date()
-        #: "where do I live", "what's my sister's name", "what do you know
-        #: about me": what the notebook says of its writer (`ai/personal.py`),
-        #: read from every note, not only the ones the search found.
-        digest = None if follow else personal.answer(req.question, lambda: personal.notes_of(req.session), today)
-        #: O11: a newer note on the same thing is the current one.
-        current, older = _current_notes(req, prepared["notes"])
-        if digest is None and (not follow or restated) and _may_digest(prepared, req.question):
-            try:
-                digest = composer_digest.answer(
-                follow.question if restated else req.question, current, today=user_now(deps.get_config()).date(),
-                voice=_answer_voice(), turn=len(req.history or []),
-                insight=_insight_level(), learned=_insight_memory(req.session), known=_verdicts(req.session),
-            )
-            except Exception:  # noqa: BLE001  # the composer's answer stands
-                logging.getLogger("tessellate.chat").exception("chat: the digest failed")
-        result = digest or composer.compose(
-            follow.question if follow else req.question,
-            current,
-            today=user_now(deps.get_config()).date(),
-            recent=str(prepared.get("search_mode") or "").endswith("recent"),
-            embed=_composer_embed(),
-            said=follow.said if follow else "",
-            voice=_composer_voice(),
-            #: The turn before's answer, so this one opens differently (INBOX 741).
-            previous=str((req.history or [{}])[-1].get("answer") or "") if req.history else "",
-            now=user_now(deps.get_config()).replace(tzinfo=None),
-            salt=f"{dialogue.salt}:{req.body.attempt}" if req.body.attempt else dialogue.salt,
-            turn=len(req.history or []) + 1 + req.body.attempt,
-            dialogue=dialogue,
-            prefer=follow.prefer if follow else "",
-            resolved=True,
-            #: Insights the person confirmed are said as their word; the
-            #: ones they dismissed are not said (decision 60).
-            learned=_insight_memory(req.session),
-        )
-        if follow is not None and follow.kind == "more" and not result.get("grounding"):
-            #: Nothing left unsaid: say so, with how much there is (B8).
-            result = composer_digest.all_said(follow.question, prepared["notes"], today=user_now(deps.get_config()).date()) or result
-        if not result["grounding"] and not ollama_running and _web_allowed(req):
-            web = _web_answer(req, follow.question if follow else req.question)
-            if web:
-                yield from _web_events(*web)
-                return
-        text = result["text"]
-        if not result["grounding"] and not follow and personal.general(req.question or ""):
-            #: "what's the capital of France": the world, not the notes, and
-            #: said so rather than "nothing in your notes about capital".
-            text = personal.general_reply(_web_allowed(req))
-        if not result["grounding"] and prepared.get("meaning_loading"):
-            text += "\n\n" + composer_digest.PHRASES["meaning_loading"]
-        text = _with_older(text, older, result)
-        text = _with_lapsed(text, current, result, req)
-        yield {"type": "answer", "delta": text}
-        if result["grounding"]:
-            yield {
-                "type": "grounding",
-                "sentences": result["grounding"],
-                #: What to ask next, built from what the answer found and did
-                #: not say (INBOX 725): the chips under a composed answer,
-                #: which asks no model for them.
-                "next": result["next"],
-                #: `by_model: False`: no model wrote a word of it, so a low count
-                #: is the app's own joining words and picture readings, and the
-                #: notice says that rather than "the model's own writing".
-                "support": _composed_support(result),
-                "exact": True,
-                #: The engine's own answer through the same validators
-                #: (decisions 52 to 54): empty when every maxim holds.
-                "checks": validate.report(result, req.question)["findings"],
-                #: The insight lines said, for their Confirm and Not right.
-                "insights": result.get("insights", []),
-                #: A digest (decision 70) cites one mark a line and is not
-                #: followed by the sources again: the right column is them.
-                "digest": bool(result.get("digest")),
-                "offer": result.get("offer"),
-            }
-        return
-    else:
-        if prepared.get("preview"):
-            #: The composed answer at once, while the model writes its own;
-            #: the client draws it as a draft and the model's first token
-            #: replaces it (`_assist`).
-            yield prepared["preview"]
-        messages = librarian.build_messages(
-            f"{_in_full(req)}\n\n{req.image_context}" if req.image_context else _in_full(req),
-            prepared.get("model_notes") or prepared["notes"],
-            style=prepared["style"],
-            profile=prepared["profile"],
-            history=req.history,
-            persona_prompt=req.persona_prompt,
-            mode=req.mode,
-            images=req.images,
-            # The streaming path is the one people actually use, and it was
-            # the one with no cap on how much of the notebook it sent. Same
-            # budget the blocking `librarian.answer` now builds: measured
-            # against the model this turn will really stream from, which is
-            # the same `chat_model()` passed to `chat_stream` below.
-            budget=librarian.plan_budget(
-                req.model_manager.chat_model(),
-                req.ollama,
-                prepared["style"],
-                prepared["profile"],
-                req.persona_prompt,
-                req.mode,
-            ),
-            # The Ask box's own brief on the streaming path too, this is
-            # the one people actually use, so a fix only on the blocking
-            # route above would be a fix nobody sees.
-            ask_overview=req.body.notes_only,
-        )
+        web = _web_answer(req, req.question)
+        if web:
+            return list(_web_events(*web))
+    if not prepared["notes"] and not req.images_raw:
+        return _no_notes_events(req, ollama_running)
+    if _composed(req, ollama_running) or not ollama_running:
+        return _composed_events(req, prepared, ollama_running)
+    return None
+
+
+def _notes_messages(req: _StreamRequest, prepared: dict) -> list:
+    return librarian.build_messages(
+        f"{_in_full(req)}\n\n{req.image_context}" if req.image_context else _in_full(req),
+        prepared.get("model_notes") or prepared["notes"],
+        style=prepared["style"],
+        profile=prepared["profile"],
+        history=req.history,
+        persona_prompt=req.persona_prompt,
+        mode=req.mode,
+        images=req.images,
+        # The streaming path is the one people actually use, and it was
+        # the one with no cap on how much of the notebook it sent. Same
+        # budget the blocking `librarian.answer` now builds: measured
+        # against the model this turn will really stream from, which is
+        # the same `chat_model()` passed to `chat_stream` below.
+        budget=librarian.plan_budget(
+            req.model_manager.chat_model(),
+            req.ollama,
+            prepared["style"],
+            prepared["profile"],
+            req.persona_prompt,
+            req.mode,
+        ),
+        # The Ask box's own brief on the streaming path too, this is
+        # the one people actually use, so a fix only on the blocking
+        # route above would be a fix nobody sees.
+        ask_overview=req.body.notes_only,
+    )
+
+
+def _model_stream_events(req: _StreamRequest, prepared: dict, messages: list) -> Iterator[dict]:
     # §88.4 item 4: the same per-stage token estimate agent.py's tool
     # path now attaches to its own stats event (chars/4, no tool
     # schemas on this path by definition, see build_messages' own
@@ -2844,10 +2870,10 @@ def _plain_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> 
                 yield {"type": "answer", "delta": piece["content_delta"]}
     except OllamaError as exc:
         # The model died mid-answer, tell the user, keep the results.
-        # By construction this is reached only after the `elif not
-        # ollama_running` branch above already passed, so this is never
-        # "Ollama isn't running" (see librarian.model_error_message's
-        # own docstring for why that distinction matters).
+        # By construction this is reached only after the not-running
+        # branches passed, so this is never "Ollama isn't running" (see
+        # librarian.model_error_message's own docstring for why that
+        # distinction matters).
         #
         # Logged, not just shown in the answer: reported directly: this
         # failure reached the chat bubble but never the Settings → Logs
@@ -2872,6 +2898,33 @@ def _plain_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> 
             "type": "answer",
             "delta": f"{prefix}{librarian.model_error_message(req.model_manager.chat_model(), exc)}",
         }
+
+
+def _plain_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> Iterator[dict]:
+    """The pre-Wave-G behaviour: stream a grounded answer, no tools."""
+    exact = _exact_events(req, prepared, ollama_running)
+    if exact is not None:
+        yield from exact
+        return
+    if not intent.needs_retrieval(prepared["intent"]):
+        # Small talk: no notes, no grounding, no "I couldn't find any
+        # notes matching that" in reply to "hey".
+        own = _small_talk_events(req, prepared, ollama_running)
+        if own is None:
+            messages = _conversational_messages(req, prepared, ollama_running)
+    else:
+        own = _no_model_events(req, prepared, ollama_running)
+        if own is None:
+            if prepared.get("preview"):
+                #: The composed answer at once, while the model writes its own;
+                #: the client draws it as a draft and the model's first token
+                #: replaces it (`_assist`).
+                yield prepared["preview"]
+            messages = _notes_messages(req, prepared)
+    if own is not None:
+        yield from own
+        return
+    yield from _model_stream_events(req, prepared, messages)
 
 
 #: An act asked in the Ask box, which looks things up: said where to do it.
