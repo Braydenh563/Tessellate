@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Timeline calendar: the dock's count no longer flips from "1000 items · October 2026" to the hidden feed's "192 notes · 7 days"; a page of rows loaded in the calendar view is kept but not drawn into the feed. A 1,000-note month measured: 0 cells overflow, 168 dots; the week grid at 1024 coarse: hour cells 56 px or more.
 - Timeline: the density strip is labelled by month or year (day or week on a short range) from d3's time scale, in a lazy `timeline-ticks.js`; labels never share a line (27 span and height pairs tested), boot JS 6 bytes smaller.
 - Timeline audit (TIMELINE_PLAN 10 rows 2 and 5, 11 row 7): measured built, not rebuilt. Twenty typed phrases land on the day they name (`tests/test_timeline_typed_day.py`), day heads overlap 0 at 1440 and 390, the quick add chip shows in 65 ms (129 ms at 390), the rail dot is 0 px off the first line.
 - The composer's utility reading (`utilities.kind_of`, cached since the long-question fix) follows the web search setting: it is part of the cache key, so flipping the setting changes how "search the web for ..." routes without a restart. `web_on` reads the loaded config without building app state, and `conftest`'s `app_state` waits for background threads (`background.join_all`) so an embedding warm-up cannot recreate the repo's `data/` folder after teardown (the last `test_typo_routing` leak).

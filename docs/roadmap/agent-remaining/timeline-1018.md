@@ -18,13 +18,17 @@ Port 8788, data `/tmp/mm-tl1018` (48 back-dated notes, 12 reminders). Measured 2
 | 12 rows 1 to 6 | built | HISTORY "Brief 55" and "B72" blocks |
 | Placed bug: rail circle not on the first line's centre | built, re-measured | `timeline1018.js`: `.timeline-row-mark` centre minus the title's first line centre = 0 px for 12 rows at 1440 and at 390 (day scale) |
 | Placed INBOX 561 (day strip rework) | owner | waits on the owner's look (plan line 207) |
-| Phase 5 not verified: dot density at 1,000 notes in a month, touch drag, week grid at 1024 coarse | open, unmeasured | see next |
+| Phase 5 not verified: dot density at 1,000 notes in a month, week grid at 1024 coarse | measured this run | `calstress1018.js`: 0 overflow, 168 dots, month 1,247 ms; week hour cells >= 56 px; found and fixed the count chip overwrite (`timelineLoadMore`) |
+| Phase 5 not verified: touch drag, 5,000-note month | open | no touch drag exists; 5,000 not seeded |
 
 ## Done / next
 
 - done: 9a6c59f audit table, typed-day test, plan rows 2, 5, 7 pointed at HISTORY.
-- done: row 6, D3 labels on the density strip (this commit).
-- next: Phase 5 not-verified measures (1,000-note month dot density, week grid at 1024 coarse), then OPEN.md timeline rows 330, 341, 850 if time; final sweeps.
+- done: c794253 row 6, D3 labels on the density strip.
+- done: Phase 5 stress measures, and the calendar count chip overwrite fixed (this commit).
+- next: OPEN.md timeline rows 330 (On this day row at 390), 341 (table has no meeting mark), 850 (map under Boards); final sweeps.
+
+OPEN.md line 2527 ("The rail-dot alignment at 390") is answered: 0 px at 390, `timeline1018.js`.
 
 ## Questions for the owner
 

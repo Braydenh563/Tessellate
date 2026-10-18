@@ -2,7 +2,7 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 5961, frontend ids 2510, CSS sections 495, backend routes 607, backend modules 5679, test files 1235, tests 11200, plan headings 957.
+Counts: frontend functions 5961, frontend ids 2510, CSS sections 495, backend routes 607, backend modules 5679, test files 1236, tests 11201, plan headings 957.
 
 ## Frontend functions (5961)
 
@@ -1986,77 +1986,77 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `appendTimelineRows` | frontend/js/timeline.js:738 |
-| `applyTimelineRowTabOrder` | frontend/js/timeline.js:1435 |
-| `closeTimelineRow` | frontend/js/timeline.js:1651 |
-| `dailyNotePair` | frontend/js/timeline.js:1111 |
+| `appendTimelineRows` | frontend/js/timeline.js:740 |
+| `applyTimelineRowTabOrder` | frontend/js/timeline.js:1437 |
+| `closeTimelineRow` | frontend/js/timeline.js:1653 |
+| `dailyNotePair` | frontend/js/timeline.js:1113 |
 | `dailyNoteTitle` | frontend/js/timeline.js:184 |
-| `drawTimelineScrubber` | frontend/js/timeline.js:1849 |
-| `drawTimelineWindow` | frontend/js/timeline.js:1917 |
-| `fillTimelineBandOptions` | frontend/js/timeline.js:821 |
-| `focusTimelineRow` | frontend/js/timeline.js:1601 |
-| `openDayPage` | frontend/js/timeline.js:1079 |
-| `openTimelineRowDetail` | frontend/js/timeline.js:1664 |
-| `openTimelineTableDetail` | frontend/js/timeline.js:2247 |
-| `openTodaysPage` | frontend/js/timeline.js:1067 |
-| `paintTimeline` | frontend/js/timeline.js:884 |
-| `paintTimelineFeed` | frontend/js/timeline.js:926 |
-| `paintTimelineTable` | frontend/js/timeline.js:2071 |
+| `drawTimelineScrubber` | frontend/js/timeline.js:1851 |
+| `drawTimelineWindow` | frontend/js/timeline.js:1919 |
+| `fillTimelineBandOptions` | frontend/js/timeline.js:823 |
+| `focusTimelineRow` | frontend/js/timeline.js:1603 |
+| `openDayPage` | frontend/js/timeline.js:1081 |
+| `openTimelineRowDetail` | frontend/js/timeline.js:1666 |
+| `openTimelineTableDetail` | frontend/js/timeline.js:2249 |
+| `openTodaysPage` | frontend/js/timeline.js:1069 |
+| `paintTimeline` | frontend/js/timeline.js:886 |
+| `paintTimelineFeed` | frontend/js/timeline.js:928 |
+| `paintTimelineTable` | frontend/js/timeline.js:2073 |
 | `renderTimeline` | frontend/js/timeline.js:561 |
-| `renderTimelineDayStrip` | frontend/js/timeline.js:1196 |
+| `renderTimelineDayStrip` | frontend/js/timeline.js:1198 |
 | `renderTimelineKinds` | frontend/js/timeline.js:342 |
-| `renderTimelineMonthPop` | frontend/js/timeline.js:1316 |
+| `renderTimelineMonthPop` | frontend/js/timeline.js:1318 |
 | `renderTimelineRecall` | frontend/js/timeline.js:617 |
-| `setTimelineRowSelected` | frontend/js/timeline.js:2235 |
-| `shortDate` | frontend/js/timeline.js:1778 |
-| `startDayNote` | frontend/js/timeline.js:1142 |
-| `startTodaysNote` | frontend/js/timeline.js:1138 |
-| `syncTimelineDetailSpans` | frontend/js/timeline.js:2126 |
-| `syncTimelineFilterChip` | frontend/js/timeline.js:851 |
+| `setTimelineRowSelected` | frontend/js/timeline.js:2237 |
+| `shortDate` | frontend/js/timeline.js:1780 |
+| `startDayNote` | frontend/js/timeline.js:1144 |
+| `startTodaysNote` | frontend/js/timeline.js:1140 |
+| `syncTimelineDetailSpans` | frontend/js/timeline.js:2128 |
+| `syncTimelineFilterChip` | frontend/js/timeline.js:853 |
 | `syncTimelineKindsLabel` | frontend/js/timeline.js:398 |
-| `syncTimelineSelectUi` | frontend/js/timeline.js:2264 |
-| `syncTimelineViewSeg` | frontend/js/timeline.js:2315 |
+| `syncTimelineSelectUi` | frontend/js/timeline.js:2266 |
+| `syncTimelineViewSeg` | frontend/js/timeline.js:2317 |
 | `syncTimelineYears` | frontend/js/timeline.js:668 |
-| `timelineAheadBuckets` | frontend/js/timeline.js:978 |
+| `timelineAheadBuckets` | frontend/js/timeline.js:980 |
 | `timelineAutoScale` | frontend/js/timeline.js:452 |
 | `timelineBucketKey` | frontend/js/timeline.js:217 |
 | `timelineBucketLabel` | frontend/js/timeline.js:234 |
-| `timelineBucketSection` | frontend/js/timeline.js:988 |
-| `timelineCalendarCall` | frontend/js/timeline.js:2299 |
+| `timelineBucketSection` | frontend/js/timeline.js:990 |
+| `timelineCalendarCall` | frontend/js/timeline.js:2301 |
 | `timelineDailyNote` | frontend/js/timeline.js:201 |
-| `timelineDayKeys` | frontend/js/timeline.js:1260 |
-| `timelineDayLabel` | frontend/js/timeline.js:1191 |
-| `timelineDayPages` | frontend/js/timeline.js:1175 |
-| `timelineDayShift` | frontend/js/timeline.js:1132 |
-| `timelineDensitySpan` | frontend/js/timeline.js:1826 |
-| `timelineDensitySpanOf` | frontend/js/timeline.js:1832 |
-| `timelineForgetRows` | frontend/js/timeline.js:1912 |
+| `timelineDayKeys` | frontend/js/timeline.js:1262 |
+| `timelineDayLabel` | frontend/js/timeline.js:1193 |
+| `timelineDayPages` | frontend/js/timeline.js:1177 |
+| `timelineDayShift` | frontend/js/timeline.js:1134 |
+| `timelineDensitySpan` | frontend/js/timeline.js:1828 |
+| `timelineDensitySpanOf` | frontend/js/timeline.js:1834 |
+| `timelineForgetRows` | frontend/js/timeline.js:1914 |
 | `timelineIsDailyNote` | frontend/js/timeline.js:308 |
-| `timelineJumpToDay` | frontend/js/timeline.js:1303 |
+| `timelineJumpToDay` | frontend/js/timeline.js:1305 |
 | `timelineKindChoice` | frontend/js/timeline.js:292 |
 | `timelineLoadMore` | frontend/js/timeline.js:693 |
-| `timelineMonthKeys` | frontend/js/timeline.js:1370 |
-| `timelineMonthShift` | frontend/js/timeline.js:1297 |
-| `timelineMonthStart` | frontend/js/timeline.js:1293 |
+| `timelineMonthKeys` | frontend/js/timeline.js:1372 |
+| `timelineMonthShift` | frontend/js/timeline.js:1299 |
+| `timelineMonthStart` | frontend/js/timeline.js:1295 |
 | `timelineQuery` | frontend/js/timeline.js:531 |
 | `timelineResolvedScale` | frontend/js/timeline.js:479 |
 | `timelineRow` | frontend/js/timeline.js:115 |
-| `timelineRowElement` | frontend/js/timeline.js:1463 |
-| `timelineRowGroups` | frontend/js/timeline.js:807 |
+| `timelineRowElement` | frontend/js/timeline.js:1465 |
+| `timelineRowGroups` | frontend/js/timeline.js:809 |
 | `timelineRowMoment` | frontend/js/timeline.js:102 |
 | `timelineScaleChoice` | frontend/js/timeline.js:436 |
-| `timelineScrollToToday` | frontend/js/timeline.js:2426 |
-| `timelineScrubTo` | frontend/js/timeline.js:1965 |
-| `timelineSortValue` | frontend/js/timeline.js:2042 |
-| `timelineSortedRows` | frontend/js/timeline.js:2053 |
-| `timelineStepScale` | frontend/js/timeline.js:1747 |
-| `timelineTableColumnCount` | frontend/js/timeline.js:2106 |
-| `timelineTableRow` | frontend/js/timeline.js:2133 |
-| `timelineViewMode` | frontend/js/timeline.js:2015 |
-| `timelineVisibleRows` | frontend/js/timeline.js:864 |
-| `timelineWatchRow` | frontend/js/timeline.js:1902 |
+| `timelineScrollToToday` | frontend/js/timeline.js:2428 |
+| `timelineScrubTo` | frontend/js/timeline.js:1967 |
+| `timelineSortValue` | frontend/js/timeline.js:2044 |
+| `timelineSortedRows` | frontend/js/timeline.js:2055 |
+| `timelineStepScale` | frontend/js/timeline.js:1749 |
+| `timelineTableColumnCount` | frontend/js/timeline.js:2108 |
+| `timelineTableRow` | frontend/js/timeline.js:2135 |
+| `timelineViewMode` | frontend/js/timeline.js:2017 |
+| `timelineVisibleRows` | frontend/js/timeline.js:866 |
+| `timelineWatchRow` | frontend/js/timeline.js:1904 |
 | `toggleTimelineKind` | frontend/js/timeline.js:417 |
-| `toggleTimelineRow` | frontend/js/timeline.js:1625 |
+| `toggleTimelineRow` | frontend/js/timeline.js:1627 |
 
 ### frontend/js/palette.js (28)
 
@@ -17654,7 +17654,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11200)
+## Tests (11201)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18738,6 +18738,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_timeline_auto_scale.py | 3 |
 | tests/test_timeline_cal_add.py | 4 |
 | tests/test_timeline_cal_span_glide.py | 1 |
+| tests/test_timeline_calendar_loadmore.py | 1 |
 | tests/test_timeline_calendar_window.py | 7 |
 | tests/test_timeline_feed_ahead.py | 3 |
 | tests/test_timeline_load_more_range_change.py | 1 |
@@ -18940,7 +18941,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 1.9 The main user journeys | docs/roadmap/MODERNISATION_AUDIT.md:241 |
 | 10. Built: Phase 2 (frontend) | docs/roadmap/MINDMAP_PLAN.md:295 |
 | 10. Chat and the agent surface | docs/roadmap/PLAN.md:198 |
-| 10. Deepened 2026-10-10: the timeline (Brief 72b, decision 71) | docs/roadmap/TIMELINE_PLAN.md:316 |
+| 10. Deepened 2026-10-10: the timeline (Brief 72b, decision 71) | docs/roadmap/TIMELINE_PLAN.md:315 |
 | 10. Flaws found by static probes (cheap to reproduce, each with its command) | docs/roadmap/WORLD_CLASS_PLAN.md:848 |
 | 10. Not verified | docs/roadmap/ANALYSIS.md:4381 |
 | 10. Outline, navigation and view | docs/roadmap/WHITEBOARD_PLAN.md:1239 |
@@ -18952,7 +18953,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 109.3 The competitor gap analysis, triaged | docs/roadmap/BACKLOG.md:3553 |
 | 109.4 Brainstormed: not asked for, worth doing | docs/roadmap/BACKLOG.md:3592 |
 | 11. Built: the previews, Phase 4 and Phase 5 | docs/roadmap/MINDMAP_PLAN.md:299 |
-| 11. Deepened 2026-10-10: reminders and notifications (Brief 72b, decisions 69 and 71) | docs/roadmap/TIMELINE_PLAN.md:353 |
+| 11. Deepened 2026-10-10: reminders and notifications (Brief 72b, decisions 69 and 71) | docs/roadmap/TIMELINE_PLAN.md:352 |
 | 11. Graph | docs/roadmap/PLAN.md:210 |
 | 11. Keyboard shortcuts | docs/roadmap/WHITEBOARD_PLAN.md:1254 |
 | 11. Performance, accuracy and AI efficiency | docs/roadmap/BACKLOG.md:708 |
@@ -18983,7 +18984,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 116.2 Mindmaps, Phases 4-5 (MINDMAP_PLAN.md §5 items 14-21) | docs/roadmap/BACKLOG.md:3909 |
 | 116.3 PLAN.md rows not started (by track) | docs/roadmap/BACKLOG.md:3913 |
 | 116.4 Tooling | docs/roadmap/BACKLOG.md:3920 |
-| 12. Deepened 2026-10-10: the calendar (Brief 72b, decision 71) | docs/roadmap/TIMELINE_PLAN.md:394 |
+| 12. Deepened 2026-10-10: the calendar (Brief 72b, decision 71) | docs/roadmap/TIMELINE_PLAN.md:393 |
 | 12. Does the AI know it is an agent? | docs/roadmap/BACKLOG.md:956 |
 | 12. Library | docs/roadmap/PLAN.md:220 |
 | 12. Security review (read, not penetration-tested; each item names the file) | docs/roadmap/WORLD_CLASS_PLAN.md:904 |
@@ -19796,7 +19797,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/DOCUMENTS_PLAN.md:1478 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/GRAPH_PLAN.md:634 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/MINDMAP_PLAN.md:1816 |
-| Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/TIMELINE_PLAN.md:310 |
+| Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/TIMELINE_PLAN.md:309 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/UI_MODERNISATION_PLAN.md:1435 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/WHITEBOARD_PLAN.md:1566 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/WORLD_CLASS_PLAN.md:4171 |

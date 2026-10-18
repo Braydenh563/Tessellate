@@ -301,11 +301,10 @@ disagree.
 | --- | --- | --- |
 | 1 to 4 | the month grid, the week and day grids and the phone agenda, reminders and day pages on the grid with drag and undo, ICS export and import | Built 2026-10-11 (Brief 55): HISTORY.md, "Moved from the plans, 2026-10-11 (TIMELINE Brief 55)" |
 
-Not verified (Brief 55): the dot density at 5,000 notes in one month (the
-sweep's fixture is 48 over six months; a 1,000-note month is the stress
-case, read as at most ten pages of 1,000), touch drag (HTML drag and drop
-has none on a phone, where the calendar is the agenda), a week grid at
-1024 under a coarse pointer with hour rows full.
+Not verified (Brief 55, still): the dot density at 5,000 notes in one month
+(1,000 in a month is measured, HISTORY "TIMELINE timeline-1018"), and touch
+drag (HTML drag and drop has none on a phone, where the calendar is the
+agenda; a coarse pointer at 1024 keeps it).
 
 ### Vendored capabilities to use, 2026-10-10 (Brief 75)
 
