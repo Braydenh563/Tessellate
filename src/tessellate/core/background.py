@@ -80,11 +80,12 @@ def stop_all() -> list[str]:
 
 
 def join_all(timeout: float = 5.0) -> None:
-    """Wait up to `timeout` seconds for the registered threads to finish: a test
-    that tears the app state down must not leave one to rebuild it (and a
-    `./data` folder) from the thread."""
+    """Wait up to `timeout` seconds for the registered one-shot threads (those
+    with no `stop`, which end by themselves) to finish: a test that tears the
+    app state down must not leave one to rebuild it (and a `./data` folder)
+    from the thread. A long-lived watcher names its own stop and is skipped."""
     deadline = time.time() + timeout
     with _lock:
-        threads = [e.thread for e in _entries.values()]
+        threads = [e.thread for e in _entries.values() if e.stop is None]
     for thread in threads:
         thread.join(max(0.0, deadline - time.time()))
