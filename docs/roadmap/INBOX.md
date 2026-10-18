@@ -142,6 +142,57 @@ with its owner named in the entry.
      C36. These dates should be hidable or showable on the timeline side graph. [screenshots:
           image29]
 
+     **Triage 2026-10-18** (two Haiku audits, each bug reproduced in the app unless noted;
+     rungs: H Haiku, S Sonnet, O Opus; "now" = this run's batches, "plan" = placed).
+     Batch 1, bugs, Sonnet or Haiku, now: C10 H (`settings-panes.js:1499` lacks `quick:
+     "statistics"`), C09 S (`chat-attach.js:1224` Enter ticks nothing), C13 S (plus glyph
+     0.6 to 0.75 px low, `library-lazy.css:6293`), C17 S (`wbBeginTextEdit`
+     `whiteboard.js:9132` resets a frame hint to the header), C31 S (`link-types.js:109`
+     re-click on the current kind should clear), C32 S (undo toast missing on the surface
+     branch, `status.js:1517`), C35 S (`captions.js:84` toast needs an Open action to
+     Settings, Packages), C03 S (right-drag pan, `whiteboard.js:91`), C12 S (sticky
+     `.dialog-head`, glass-off list), C25 S (Help scroll: 4x CPU only, 33 to 50 ms a frame;
+     try `content-visibility`), C15 S (screenshot: "Wat cna u do??" was read as "what can you
+     do" and then answered from notes, not the capability reply: add the owner typo fixture
+     and fix), C02 S (splash rows uncapped, `scripts/splash.ps1:394`, Windows only, not
+     verifiable here).
+     Batch 2, design, Opus one at a time: C01 (fall route picks the peek pose before a
+     walk-off or poof, `avatars.js:5706`), C19 + C20 (companion band z 44 above the Format
+     panel z 25; perch takes its object's layer; size follows board zoom on canvas perches:
+     the WHITEBOARD layer-order step 8), C05 (slash menu: first command at 444 px in a 386 px
+     menu, none visible), C06 + C07 + C08 (reply cards, note preview, folded long text, an
+     accessible calculator popup tied to `/calc`), C11 (graph node hover card with dates
+     and values, `graph-canvas.js:3753`), C27 (graph popup props button), C28 (reply reveal
+     animation), C29 (Sources box has no disclosure state, `chat-agent.js:2220`), C30
+     (lightbox controls), C33 (notification stack, 186x205 px), C34 (audio recorder panels,
+     `.meeting-stage` radius 0), C21 (theme preview: revert on close or section switch plus
+     an apply or cancel bar), C22 (shortcut chip needs a visible Change), C36 (timeline
+     tick labels switch), C14 (composer and model byline as a badge), C18 (paper swatch row
+     as the colour dropdown).
+     Placed in plans: C04 WHITEBOARD_PLAN (UML class, ERD, wireframe sets; check the draw.io
+     licence in ANALYSIS.md), C16 + C26 CHAT_PLAN (larger composed pools, greeting sub line
+     rotation: wire the unused `composer_voice.today_line`, `dashboard.js:463`).
+     Decision taken (recommendation, standing order 3): C23 the go-key prefix becomes `t`
+     (for Tessellate) and Timeline's second key moves to `i`; the old `m` prefix stays an
+     alias for one release. Not reproduced: C24 (Logs section: scrollHeight equals
+     clientHeight at five sizes; found instead: the Settings nav column overflows 265 to
+     423 px on every pane, placed in WORLD_CLASS row 32).
+     Screenshots read by a scout (what they show): image1 install dialog "step 3 of 5"; image2
+     attach menu cut off at the right edge ("No model con..."); image3 mascot overlaps the
+     /random reply bubble corner; image4 Ask answer copies the note wording and ends
+     mid-sentence; image5 attach Notes tab with a Japanese-only row; image6 Quick access
+     search "stat" gives "No command matches that."; image7 and image8 Statistics charts
+     (a raw `tab:documen...` key label); image10 table corner "+" crop; image11 header
+     "Atlas, composer"; image12 and image13 composer replies ("I'm Atlas's assistant...",
+     "I read that as ..." then citations); image14 to image16 board card subtitle
+     "Tuesday" repeating the title after an edit; image17 to image19 board text toolbar,
+     empty Format panel with the mascot inside, zoomed-out board with the mascot over a
+     group; image20 and image21 shortcuts and go keys ("m d Dashboard"); image22 console
+     log panel; image23 note count 37 here, 38 on image3 and image7 (check); image24 note
+     title "Follow- Up Questions:"; image25 Sources panel; image26 PDF viewer; image27
+     "Kind of link" dialog, taskbar against its bottom edge; image28 Voice note dialog;
+     image29 narrow timeline strip with date labels.
+
 725. **The owner, 2026-10-06, verbatim**: "can you like maximise the application
      responses and sentence concatenation and responses?? I want it soooo good it is
      almost like a chat bot. make them something the world hasnt seen before like
