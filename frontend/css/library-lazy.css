@@ -6199,3 +6199,97 @@ input[type="color"].wb-mixed {
   content-visibility: auto;
   contain-intrinsic-size: auto 8.25rem;
 }
+
+/* Edge grips on a Live table (`docTableGripsPlugin`, INBOX 904 B23): a bar
+   above each column and beside each row, and a plus at the end of the header
+   and under the last row. Hit areas fill the band the table's spacing leaves;
+   the visible bar is drawn inside. */
+.doc-table-grips {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.doc-table-grip,
+.doc-table-add {
+  position: absolute;
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+}
+
+.doc-table-grip {
+  cursor: grab;
+}
+
+.doc-table-grip::before {
+  content: "";
+  position: absolute;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.doc-table-grip-col::before {
+  top: 50%;
+  right: var(--space-1);
+  left: var(--space-1);
+  height: var(--space-2);
+  margin-top: calc(var(--space-2) / -2);
+}
+
+.doc-table-grip-row::before {
+  top: var(--space-1);
+  bottom: var(--space-1);
+  left: 50%;
+  width: var(--space-2);
+  margin-left: calc(var(--space-2) / -2);
+}
+
+.doc-table-grip:hover::before,
+.doc-table-grip.is-source::before {
+  background: var(--accent);
+}
+
+.doc-table-grips.is-dragging .doc-table-grip {
+  cursor: grabbing;
+}
+
+.doc-table-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border: 1px solid var(--control-edge);
+  border-radius: var(--radius-pill);
+  background: var(--surface-1);
+  color: var(--muted);
+  font-size: var(--text-sm);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.doc-table-add:hover {
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.doc-table-grip-line {
+  position: absolute;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  pointer-events: none;
+}
+
+.doc-table-grip-line-col {
+  width: var(--space-1);
+  margin-left: calc(var(--space-1) / -2);
+}
+
+.doc-table-grip-line-row {
+  height: var(--space-1);
+  margin-top: calc(var(--space-1) / -2);
+}

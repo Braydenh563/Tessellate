@@ -4701,18 +4701,22 @@ function docTableAlignEdits(table, col, align) {
 //: **Managing a table by its rows and columns** (INBOX 904 B23): move a row
 //: or a column one place, sort the body by a column, and the ranges a row, a
 //: column or the whole table is, for selecting. Edits like every operation
-//: here: a row moves by swapping two lines' own bytes, a column by swapping
-//: each row's two cells (the alignment marker goes with its column).
+//: here: a row moves by re-writing the lines between its two places with
+//: their own bytes in the new order, a column by moving each row's cell (the
+//: alignment marker goes with its column). `delta` is any distance: the menu
+//: moves one place, the edge grips drag to any place (B23).
 function docTableMoveRowEdits(table, row, delta) {
-  const other = row + delta;
+  const to = row + delta;
   const first = table.delim + 1;
-  if (row < first || other < first || other >= table.rows.length || !delta) return [];
-  const a = table.rows[row];
-  const b = table.rows[other];
-  return [
-    { from: a.from, to: a.to, insert: docTableJoinRow(b) },
-    { from: b.from, to: b.to, insert: docTableJoinRow(a) },
-  ];
+  if (row < first || to < first || row >= table.rows.length || to >= table.rows.length || !delta) return [];
+  const body = table.rows.slice(first);
+  const moved = body.slice();
+  moved.splice(to - first, 0, moved.splice(row - first, 1)[0]);
+  const edits = [];
+  body.forEach((place, i) => {
+    if (moved[i] !== place) edits.push({ from: place.from, to: place.to, insert: docTableJoinRow(moved[i]) });
+  });
+  return edits;
 }
 
 function docTableMoveColumnEdits(table, col, delta) {
@@ -4725,7 +4729,7 @@ function docTableMoveColumnEdits(table, col, delta) {
     //: cell at the end of a row with no trailing pipe is not a cell.
     const padded = cells.length < table.columns;
     while (cells.length < table.columns) cells.push("  ");
-    [cells[col], cells[to]] = [cells[to], cells[col]];
+    cells.splice(to, 0, cells.splice(col, 1)[0]);
     const next = { ...row, cells, trail: row.trail || padded, tail: row.trail ? row.tail : "" };
     edits.push({ from: row.from, to: row.to, insert: docTableJoinRow(next) });
   }
@@ -5619,6 +5623,295 @@ function docTableMenu(context) {
   //: also what makes "Insert row above" mean a row.
   wrap.addEventListener("mousedown", (event) => event.preventDefault());
   return wrap;
+}
+
+//: **Grips on a Live table's edges** (INBOX 904 B23: "lines on the edges and
+//: rows and columns on the outside etc to select whole rows or columns, or to
+//: add new rows or columns or even dragging icons to drag and rearrange
+//: columns and rows"). While the caret is in a table: a bar above each column
+//: and one beside each row (a click selects it, a drag moves it, a right-click
+//: or a hold opens the table's menu there), and a plus at the end of the
+//: header (a column) and under the last row (a row). Every drag has the menu's
+//: Move row and Move column as its keyboard and touch alternative (WCAG 2.5.7).
+//:
+//: A layer inside the editor's scroller, so it scrolls with the text; the
+//: geometry is read from the rendered cells (`requestMeasure`), never guessed
+//: from the grid's template. Rebuilt only when that geometry changes, and never
+//: mid-press, because a press that loses its element loses its release.
+const DOC_GRIP_DRAG_PX = 4;
+let docTableGripsCache = null;
+
+function docTableGripsPlugin(CM) {
+  if (docTableGripsCache) return docTableGripsCache;
+  const { ViewPlugin } = CM.view;
+  docTableGripsCache = ViewPlugin.fromClass(
+    class {
+      constructor(view) {
+        this.view = view;
+        this.geo = null;
+        this.sig = "";
+        this.press = null;
+        this.layer = document.createElement("div");
+        this.layer.className = "doc-table-grips";
+        this.line = document.createElement("div");
+        this.line.className = "doc-table-grip-line hidden";
+        view.scrollDOM.appendChild(this.layer);
+        this.measure = {
+          key: this,
+          read: (v) => this.read(v),
+          write: (geo) => this.write(geo),
+        };
+        for (const type of ["pointerdown", "pointermove", "pointerup", "pointercancel"]) {
+          this.layer.addEventListener(type, (event) => this[type](event));
+        }
+        view.requestMeasure(this.measure);
+      }
+      update(update) {
+        if (update.docChanged || update.selectionSet || update.viewportChanged || update.geometryChanged
+            || update.focusChanged || update.heightChanged) {
+          update.view.requestMeasure(this.measure);
+        }
+      }
+      destroy() {
+        this.layer.remove();
+      }
+
+      read(view) {
+        const doc = view.state.doc;
+        const head = view.state.selection.main.head;
+        //: Cheap exit for the common case: a caret on a line with no pipe is not
+        //: in a table, and reading the document to say so on every keystroke of a
+        //: long page would be the cost of a feature most lines never use.
+        if (!doc.lineAt(head).text.includes("|") && !doc.lineAt(view.state.selection.main.anchor).text.includes("|")) return null;
+        const table = docTableParse(doc.toString(), head);
+        if (!table) return null;
+        const scroller = view.scrollDOM;
+        const sr = scroller.getBoundingClientRect();
+        const rect = (el) => {
+          const b = el.getBoundingClientRect();
+          return {
+            x: Math.round(b.left - sr.left - scroller.clientLeft + scroller.scrollLeft),
+            y: Math.round(b.top - sr.top - scroller.clientTop + scroller.scrollTop),
+            w: Math.round(b.width),
+            h: Math.round(b.height),
+          };
+        };
+        const rows = [];
+        let cols = [];
+        for (const el of view.contentDOM.querySelectorAll(".cm-line.cm-md-table")) {
+          const pos = view.posAtDOM(el);
+          const index = table.rows.findIndex((row) => pos >= row.from && pos <= row.to);
+          if (index < 0) continue;
+          rows.push({ row: index, ...rect(el) });
+          if (index === 0) cols = [...el.querySelectorAll(".cm-md-td")].map((cell, col) => ({ col, ...rect(cell) }));
+        }
+        if (!rows.length || !cols.length) return null;
+        rows.sort((a, b) => a.row - b.row);
+        const left = Math.min(...rows.map((r) => r.x));
+        const right = Math.max(...rows.map((r) => r.x + r.w));
+        const last = rows[rows.length - 1];
+        return {
+          from: table.from,
+          delim: table.delim,
+          columns: table.columns,
+          rows,
+          cols,
+          box: { left, top: rows[0].y, right, bottom: last.y + last.h },
+          limit: scroller.clientWidth + scroller.scrollLeft,
+        };
+      }
+
+      write(geo) {
+        const signature = geo ? JSON.stringify([geo.from, geo.rows, geo.cols, geo.limit]) : "";
+        if (this.press && this.press.drag) return;
+        if (signature === this.sig) return;
+        this.sig = signature;
+        this.geo = geo;
+        this.layer.replaceChildren();
+        if (!geo) return;
+        const put = (cls, kind, index, box, label) => {
+          const el = document.createElement("div");
+          el.className = cls;
+          el.dataset.kind = kind;
+          el.dataset.index = String(index);
+          el.title = label;
+          el.setAttribute("aria-hidden", "true");
+          el.style.left = `${box.x}px`;
+          el.style.top = `${box.y}px`;
+          el.style.width = `${box.w}px`;
+          el.style.height = `${box.h}px`;
+          this.layer.appendChild(el);
+          return el;
+        };
+        //: The hit areas are as high and as wide as the band the table's own
+        //: spacing leaves (16px above the header, what the content's left
+        //: padding allows beside the rows); the visible bar is drawn inside
+        //: them by the stylesheet.
+        const band = 16;
+        const side = Math.max(8, Math.min(band, geo.box.left));
+        const lastCol = geo.cols[geo.cols.length - 1];
+        geo.cols.forEach((c) => {
+          const shorten = c === lastCol ? band + 2 : 0;
+          put("doc-table-grip doc-table-grip-col", "col", c.col, { x: c.x, y: geo.box.top - band, w: Math.max(8, c.w - shorten), h: band },
+            `Column ${c.col + 1}: click to select, drag to move, right-click for more`);
+        });
+        geo.rows.forEach((r) => {
+          put("doc-table-grip doc-table-grip-row", "row", r.row, { x: geo.box.left - side, y: r.y, w: side, h: r.h },
+            `${r.row === 0 ? "Header row" : `Row ${r.row - geo.delim}`}: click to select, drag to move, right-click for more`);
+        });
+        const addCol = put("doc-table-add doc-table-add-col", "add-col", 0,
+          { x: lastCol.x + lastCol.w - band, y: geo.box.top - band, w: band, h: band }, "Add a column at the end");
+        addCol.textContent = "+";
+        const addRow = put("doc-table-add doc-table-add-row", "add-row", 0,
+          { x: geo.box.left, y: geo.box.bottom, w: band, h: band }, "Add a row at the end");
+        addRow.textContent = "+";
+        this.layer.appendChild(this.line);
+      }
+
+      pointerdown(event) {
+        const grip = event.target instanceof Element ? event.target.closest(".doc-table-grip, .doc-table-add") : null;
+        if (!grip || event.button !== 0 || !this.geo) return;
+        //: Not a text press: the caret stays in the table, and the editor keeps
+        //: its focus, which is what the commands read.
+        event.preventDefault();
+        this.press = { el: grip, kind: grip.dataset.kind, index: Number(grip.dataset.index), x: event.clientX, y: event.clientY, id: event.pointerId, drag: false, target: null };
+        try {
+          grip.setPointerCapture(event.pointerId);
+        } catch {
+          /* a pointer that is already gone: the release will not come, and the press is dropped below */
+        }
+      }
+
+      pointermove(event) {
+        const press = this.press;
+        if (!press || event.pointerId !== press.id) return;
+        //: The header is the table's shape, not a row that moves.
+        const movable = press.kind === "col" || (press.kind === "row" && press.index > this.geo.delim);
+        if (!press.drag && movable && Math.hypot(event.clientX - press.x, event.clientY - press.y) >= DOC_GRIP_DRAG_PX) {
+          press.drag = true;
+          this.layer.classList.add("is-dragging");
+          press.el.classList.add("is-source");
+        }
+        if (!press.drag) return;
+        const scroller = this.view.scrollDOM;
+        const sr = scroller.getBoundingClientRect();
+        const px = event.clientX - sr.left - scroller.clientLeft + scroller.scrollLeft;
+        const py = event.clientY - sr.top - scroller.clientTop + scroller.scrollTop;
+        const geo = this.geo;
+        const line = this.line;
+        line.classList.remove("hidden");
+        if (press.kind === "col") {
+          const slot = geo.cols.filter((c) => c.x + c.w / 2 < px).length;
+          press.target = slot > press.index ? slot - 1 : slot;
+          const edge = slot < geo.cols.length ? geo.cols[slot].x : geo.cols[geo.cols.length - 1].x + geo.cols[geo.cols.length - 1].w;
+          line.className = "doc-table-grip-line doc-table-grip-line-col";
+          line.style.left = `${edge}px`;
+          line.style.top = `${geo.box.top}px`;
+          line.style.height = `${geo.box.bottom - geo.box.top}px`;
+          line.style.width = "";
+        } else {
+          const body = geo.rows.filter((r) => r.row > geo.delim);
+          const slot = body.filter((r) => r.y + r.h / 2 < py).length;
+          const slotRow = geo.delim + 1 + slot;
+          press.target = slotRow > press.index ? slotRow - 1 : slotRow;
+          const edge = slot < body.length ? body[slot].y : body[body.length - 1].y + body[body.length - 1].h;
+          line.className = "doc-table-grip-line doc-table-grip-line-row";
+          line.style.top = `${edge}px`;
+          line.style.left = `${geo.box.left}px`;
+          line.style.width = `${geo.box.right - geo.box.left}px`;
+          line.style.height = "";
+        }
+      }
+
+      pointerup(event) {
+        const press = this.press;
+        if (!press || event.pointerId !== press.id) return;
+        this.finish();
+        if (press.drag) {
+          if (press.target != null && press.target !== press.index) this.commitMove(press);
+          else this.view.requestMeasure(this.measure);
+          return;
+        }
+        const grip = document.elementFromPoint(event.clientX, event.clientY);
+        //: A release off the grip it began on is a cancelled press, as it is on
+        //: every button.
+        if (!(grip instanceof Element) || grip.closest(".doc-table-grip, .doc-table-add") !== press.el) return;
+        this.click(press);
+      }
+
+      pointercancel() {
+        if (this.press) this.finish();
+        this.view.requestMeasure(this.measure);
+      }
+
+      finish() {
+        const press = this.press;
+        this.press = null;
+        this.layer.classList.remove("is-dragging");
+        this.line.classList.add("hidden");
+        if (press && press.el) {
+          press.el.classList.remove("is-source");
+          try {
+            press.el.releasePointerCapture(press.id);
+          } catch {
+            /* released already */
+          }
+        }
+      }
+
+      //: The live table the grips were drawn for, or null if the document moved
+      //: under them.
+      context() {
+        const surface = asSurface(this.view.contentDOM) || docSurface();
+        const context = surface && docTableContext(surface);
+        return context && this.geo && context.table.from === this.geo.from ? context : null;
+      }
+
+      click(press) {
+        const context = this.context();
+        if (!context) return;
+        const table = context.table;
+        if (press.kind === "col" || press.kind === "row") {
+          context.cell = press.kind === "row" ? { row: press.index, col: context.cell.col } : { row: context.cell.row, col: press.index };
+          docTableSelect(context, press.kind === "col" ? "column" : "row");
+        } else if (press.kind === "add-col") {
+          context.cell = { row: context.cell.row === table.delim ? 0 : context.cell.row, col: table.columns - 1 };
+          docTableCommandRun("col-right", context);
+        } else if (press.kind === "add-row") {
+          context.cell = { row: table.rows.length - 1, col: context.cell.col };
+          docTableCommandRun("row-below", context);
+        }
+        this.view.focus();
+      }
+
+      commitMove(press) {
+        const context = this.context();
+        if (!context) return;
+        const delta = press.target - press.index;
+        const edits = press.kind === "col"
+          ? docTableMoveColumnEdits(context.table, press.index, delta)
+          : docTableMoveRowEdits(context.table, press.index, delta);
+        docTableDispatch(context, edits);
+        //: The moved row or column stays selected, so the person sees where it
+        //: went and the next press acts on it.
+        const table = docTableParse(context.surface.text, context.table.from);
+        if (table) {
+          const cell = press.kind === "col" ? { row: 0, col: press.target } : { row: press.target, col: 0 };
+          docTableSelect({ surface: context.surface, table, cell }, press.kind === "col" ? "column" : "row");
+        }
+        this.view.focus();
+      }
+    }
+  );
+  return docTableGripsCache;
+}
+
+//: One command, by id, against a context the caller already holds. The named
+//: `docTableCommand` reads the caret itself; a grip has just moved it.
+function docTableCommandRun(id, context) {
+  const command = DOC_TABLE_COMMANDS.find((item) => item.id === id);
+  if (!command || (command.enabled && !command.enabled(context))) return false;
+  return command.run(context) !== false;
 }
 
 
@@ -9155,7 +9448,7 @@ function docColumnsField(CM) {
 //: widget and the arrow keys that step into it belong to Live exactly as the
 //: markdown decorations do.
 function docLiveExtensions(CM) {
-  return [docLivePlugin(CM), docColumnsField(CM), docColumnsArrowKeymap(CM), docMermaidField(CM)];
+  return [docLivePlugin(CM), docTableGripsPlugin(CM), docColumnsField(CM), docColumnsArrowKeymap(CM), docMermaidField(CM)];
 }
 
 //: Arrow into a rendered block rather than over it. CodeMirror moves the caret
@@ -17752,7 +18045,7 @@ if (typeof wireLongPress === "function") {
     document,
     (event, point) =>
       docTableMenuAtPoint(event.target, point.x, point.y) || docOpenSuggestAtPoint(event.target, point),
-    { selector: ".doc-flag, .cm-finding, .cm-content, textarea" }
+    { selector: ".doc-flag, .cm-finding, .cm-content, .doc-table-grip, textarea" }
   );
 }
 
@@ -17765,6 +18058,8 @@ if (typeof wireLongPress === "function") {
 //: which is the listener above. Anywhere else the browser's menu stays.
 function docTableMenuAtPoint(target, x, y) {
   if (target instanceof Element && target.closest(".doc-flag, .cm-finding")) return false;
+  const grip = target instanceof Element ? target.closest(".doc-table-grip") : null;
+  if (grip) return docTableGripMenu(grip, x, y);
   //: By the element under the pointer when the event's own target is not a
   //: cell: with a selection drawn, the press can land on the selection layer.
   let cell = target instanceof Element ? target.closest(".cm-md-td") : null;
@@ -17796,6 +18091,27 @@ function docTableMenuAtPoint(target, x, y) {
   const context = docTableContext(surface);
   if (!context) return false;
   openMenuAtPoint(docTableMenuItems(context), "Table row and column actions", x, y);
+  return true;
+}
+
+//: The same menu from an edge grip: the caret goes into the grip's own row or
+//: column first (the column's header cell, or the row's first cell), so the
+//: menu's "this row" and "this column" are the ones the grip stands for.
+function docTableGripMenu(grip, x, y) {
+  const surface = asSurface(grip);
+  const view = surface && surface.view;
+  const context = view && docTableContext(surface);
+  if (!context) return false;
+  const kind = grip.dataset.kind;
+  const index = Number(grip.dataset.index);
+  const cell = kind === "row"
+    ? { row: index, col: Math.min(context.cell.col, context.table.columns - 1) }
+    : { row: context.cell.row === context.table.delim ? 0 : context.cell.row, col: index };
+  const span = docTableCellSpan(context.table, cell.row, cell.col);
+  if (span) view.dispatch({ selection: { anchor: span.from } });
+  const next = docTableContext(surface);
+  if (!next) return false;
+  openMenuAtPoint(docTableMenuItems(next), "Table row and column actions", x, y);
   return true;
 }
 

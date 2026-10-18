@@ -50,6 +50,18 @@ const ragged = "| a | b | c |\n| --- | --- | --- |\n| 1 | 2 |\n| x | y | z |";
 const rt = docTableParse(ragged, 2);
 eq("column move on a ragged row fills the missing cell", docTableApplyEdits(ragged, docTableMoveColumnEdits(rt, 1, 1)).split("\n")[2].replace(/\s+/g, " "), "| 1 | | 2 |");
 
+// A drag moves by any distance: the lines between shift by one, bytes kept.
+eq("row two places up", apply(docTableMoveRowEdits(table, 4, -2)).split("\n").slice(2), ["| fig | 33 | purple |", "| pear | 10 | green |", "| apple | 2 | red |"]);
+eq("row two places down", apply(docTableMoveRowEdits(table, 2, 2)).split("\n").slice(2), ["| apple | 2 | red |", "| fig | 33 | purple |", "| pear | 10 | green |"]);
+eq("row drag past the end is no edit", docTableMoveRowEdits(table, 2, 3), []);
+eq("row drag into the header is no edit", docTableMoveRowEdits(table, 3, -3), []);
+const far = docTableApplyEdits(text, docTableMoveRowEdits(table, 4, -2));
+eq("row drag and back is byte-exact", docTableApplyEdits(far, docTableMoveRowEdits(docTableParse(far, BEFORE.length + 3), 2, 2)), text);
+eq("column two places left", apply(docTableMoveColumnEdits(table, 2, -2)).split("\n").slice(0, 3), ["| Note | Name | Qty |", "| --- | :--- | ---: |", "| green | pear | 10 |"]);
+eq("column two places right", apply(docTableMoveColumnEdits(table, 0, 2)).split("\n").slice(0, 3), ["| Qty | Note | Name |", "| ---: | --- | :--- |", "| 10 | green | pear |"]);
+const colFar = docTableApplyEdits(text, docTableMoveColumnEdits(table, 2, -2));
+eq("column drag and back is byte-exact", docTableApplyEdits(colFar, docTableMoveColumnEdits(docTableParse(colFar, BEFORE.length + 3), 0, 2)), text);
+
 // Sort: the body rows by one column, numbers as numbers, stable, header kept.
 eq("sort by name", apply(docTableSortEdits(table, 0, false)).split("\n").slice(2).map((l) => l.split("|")[1].trim()), ["apple", "fig", "pear"]);
 eq("sort by qty descending is numeric", apply(docTableSortEdits(table, 1, true)).split("\n").slice(2).map((l) => l.split("|")[2].trim()), ["33", "10", "2"]);
@@ -80,3 +92,29 @@ def test_move_sort_and_select_are_exact(tmp_path) -> None:
     failed = [r for r in results if not r["ok"]]
     assert not failed, failed
     assert len(results) >= 20
+
+
+def test_the_grips_are_wired_in_and_styled() -> None:
+    """The edge grips (the drawn half is `tablegrips1018.js`): the plugin is in
+    Live's extension list, a hold on a grip is the same one long-press call as
+    a hold on a cell, and every class the layer draws has a rule."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    js = (root / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    css = (root / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    assert "docTableGripsPlugin(CM)," in js.split("function docLiveExtensions", 1)[1].split("}", 1)[0]
+    assert '.doc-table-grip, .cm-content' in js or ".doc-table-grip, textarea" in js
+    for cls in (
+        ".doc-table-grips",
+        ".doc-table-grip-col::before",
+        ".doc-table-grip-row::before",
+        ".doc-table-add",
+        ".doc-table-grip-line-col",
+        ".doc-table-grip-line-row",
+    ):
+        assert cls in css, cls
+    # A press that can only be a drag has the menu's Move row / Move column as
+    # its alternative (WCAG 2.5.7): both commands exist.
+    for command in ('id: "row-up"', 'id: "row-down"', 'id: "col-move-left"', 'id: "col-move-right"'):
+        assert command in js, command
