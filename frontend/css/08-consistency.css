@@ -10604,3 +10604,15 @@ html[data-other-device] [data-this-computer="hide"] {
 #entry-list li.row-enter {
   animation: row-enter var(--ui-slow) ease-out;
 }
+
+/* Help's rows do not animate their hover (C25, the owner: "scrolling on the
+   help settings page is laggy"). The wheel moves rows under a still pointer,
+   so every frame starts a hover transition on a different one of Help's 170
+   summaries, 164 links and 37 list rows: Paint 2196ms against General's 255ms
+   over the same 40 wheel steps at 4x CPU. The colour changes still happen,
+   in the frame they are asked for. `scratchpad/ui-sweeps/helplag.js`. */
+#settings-help summary,
+#settings-help .linklike,
+#settings-help li {
+  transition: none;
+}

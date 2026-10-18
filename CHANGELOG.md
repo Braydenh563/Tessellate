@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Scrolling Settings > Help is smooth: its rows no longer animate their hover colour as the wheel moves them under the pointer (C25; `scratchpad/ui-sweeps/helplag.js` at 4x CPU: median frame 33.3 to 16.7 ms, General 16.7).
 - A modal panel's title row with its close button stays at the top while the panel scrolls (Statistics, Keyboard shortcuts and every other card that is itself the scroll box), on the opaque surface (C12; `scratchpad/ui-sweeps/dialogheadsticky.js`: Statistics head at 17 px after a 400 px scroll, was -383).
 - On the whiteboard a right-button drag on bare canvas pans (past 4 px), like draw.io; a plain right-click still opens the board menu and a card keeps its own menu (C03; `scratchpad/ui-sweeps/wbrightpan.js`: 150 px pan, 0 menus after a drag, 1 after a click).
 - "What is due this week" in Ask and Chat with no model answers from the days the notes name when Reminders has nothing waiting, instead of "You have no reminders waiting"; the computed days (until, before or after, what is due) also work through the route, whose notes had no day to read. The map's topic strip no longer covers a line handle at 820 wide, and the fold chevron is above the resize grip at phone width.
