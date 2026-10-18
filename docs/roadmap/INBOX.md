@@ -161,6 +161,12 @@ with its owner named in the entry.
           reply below it shows only "Next:" chips and a time, no text) the composer response
           dissappeared?? it was a response from a previous session I did earlier and Ive
           restarted the app since then
+     C43. (mid-run, 2026-10-18, two screenshots: Notes "Categories" sidebar with two nested
+          scrollbars, in the second a wide blue bar down the outer scrollbar; the list cut
+          mid-row above "Most used"; near-duplicate categories "Courses & Study" 10 and
+          "Courses | Study" 0; "AI" 0; "Tags" with no count) the categories sidebar is a little
+          messy and ther eis a lot happening and I want to be able to collapse sections like
+          with the most used section
      **Triage 2026-10-18** (two Haiku audits, each bug reproduced in the app unless noted;
      rungs: H Haiku, S Sonnet, O Opus; "now" = this run's batches, "plan" = placed).
      Batch 1, bugs, Sonnet or Haiku, now: C10 H (`settings-panes.js:1499` lacks `quick:
