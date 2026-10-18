@@ -408,7 +408,10 @@ function settingsIndexMark(name) {
   //: The phone's jump list follows the group you are reading.
   const jump = document.querySelector(".settings-jump");
   const value = `${name}#${current}`;
-  if (jump && jump.value !== value && jump.querySelector(`option[value="${CSS.escape(value)}"]`)) jump.value = value;
+  if (jump && jump.value !== value && jump.querySelector(`option[value="${CSS.escape(value)}"]`)) {
+    jump.value = value;
+    echoSettingsPaneTitle(jump);
+  }
 }
 
 //: Take the groups out of the sidebar and the jump list.

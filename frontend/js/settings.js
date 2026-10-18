@@ -117,6 +117,11 @@ function showSettingsSection(name) {
   const scroller = settingsScroller(name);
   if (scroller) scroller.scrollTop = 0;
   currentSettingsSection = name;
+  //: After the jump list has followed the nav (phone-shell.js), say the pane's name once.
+  setTimeout(() => {
+    const jump = document.getElementById("settings-jump");
+    if (jump) echoSettingsPaneTitle(jump);
+  }, 0);
   // Part of the same back/forward stack every tab and sub-tab already lives
   // in (app.js's tabHistory): asked for directly. Safe to call on every
   // section switch, restores included: recordTabVisit no-ops both when

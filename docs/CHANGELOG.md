@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Settings on a phone: the pane heading is hidden when the section list above it already shows the same name (Models over Models) (UX audit 9).
 - No-model notice: its action reads in ink on a phone, 4.5 or better in dark (was the accent at 3.96:1) (UX audit 2).
 - Suggested tags: the take target has a 28px press area (a band behind the 14px words), without growing the chip (UX audit 6).
 - Dashboard: the headline no longer repeats the sub line's count ("Already 12 notes today" is now "A full page today"), and an untitled newest note no longer reads "the latest your note from today" (UX audit 4).

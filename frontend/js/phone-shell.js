@@ -1713,6 +1713,17 @@ initKeyboardInset();
 // reader accessible for free, and adds no custom popup to a dialog that is
 // already a popup. It is built from the nav rather than declared beside it,
 // so a section added to the markup appears here with nothing to remember.
+//: The jump list already says the pane's name, so the pane's own first heading
+//: saying it again one row below is dropped on a phone (`.jump-echo`, 07-whiteboard-misc.css;
+//: UX audit 2026-10-18). Only the h3: a dock holding actions keeps them.
+function echoSettingsPaneTitle(select) {
+  for (const h of document.querySelectorAll("#settings-modal h3.jump-echo")) h.classList.remove("jump-echo");
+  if (select.value.includes("#")) return;
+  const head = document.querySelector(`#settings-${CSS.escape(select.value)} h3`);
+  const shown = select.options[select.selectedIndex]?.textContent.trim().toLowerCase();
+  if (head && shown && head.textContent.trim().toLowerCase() === shown) head.classList.add("jump-echo");
+}
+
 function buildSettingsJumpList() {
   const nav = document.getElementById("settings-nav");
   if (!nav || document.getElementById("settings-jump")) return;
@@ -1757,7 +1768,9 @@ function buildSettingsJumpList() {
     if (active && select.value !== active.dataset.section) {
       select.value = active.dataset.section;
     }
+    echoSettingsPaneTitle(select);
   }).observe(nav, { subtree: true, attributes: true, attributeFilter: ["class"] });
+  select.addEventListener("change", () => echoSettingsPaneTitle(select));
 
   // After the search field, which stays: searching the sections' contents and
   // jumping to one by name are different questions (the search field's own
