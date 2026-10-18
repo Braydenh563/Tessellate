@@ -449,7 +449,7 @@ HELP_TOPICS: list[dict] = [
         #: months, and the guide was the one place still teaching the old key.
         "body": (
             "Press ? for the full list; Settings, Keyboard shortcuts rebinds any of "
-            "them (press a shortcut's keys, then the keys you want; type in the "
+            "them (press a shortcut's keys, marked with a pencil, then the keys you want; type in the "
             "field above the list to find one), and on a Mac "
             "Cmd works in place of Ctrl. A button with a "
             "shortcut shows it in its tooltip, in your own binding. Everywhere: Ctrl+K "

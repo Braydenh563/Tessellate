@@ -19,3 +19,5 @@ Items: C01, C19+C20, C05, C29, C33, C21, C22, in that order.
 - done: C33 e0a80bd
 - done: C21 (eye-held preview, Apply/Cancel notice)
 - next: C22 shortcut chip
+- done: C21 b5101b1
+- done: C22 (pencil on the key chip)

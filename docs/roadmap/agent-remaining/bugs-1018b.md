@@ -25,7 +25,7 @@ audits reproduced each bug in the app (ports 8791, 8792). A row is **open**,
 | C29 popup Sources disclosure | O, design | fixed | caret e136 -90deg shut, none open; rail 1px at 14 px; shut at rest in popup and chat (`sources1300.js`) |
 | C33 notification stack | O, design | fixed | 5 live toasts: 3 cards 250x205 px at rest -> 1 card + "+4 more" 181x94 px; hover or focus opens 3 + "+2 more" (`toast1300.js`) |
 | C21 theme preview revert and bar | O, design | fixed | hover 900 ms on card or eye: no preview; eye: notice 254x81 "Previewing the X theme." Apply/Cancel; undone on Cancel, eye again, section switch, close, hidden tab, Escape; Apply keeps it (`theme1300.js`) |
-| C22 shortcut chip Change | O, design | open | `settings-wiring.js:1386` |
+| C22 shortcut chip Change | O, design | fixed | 32 of 32 rows carry a 16 px pencil 10 px after the keys, muted at rest, accent aimed at, x while capturing; no row or chip overflows at 1440 or 390 (`shortcut1300.js`) |
 | C06, C07, C08 reply cards, preview, fold, calculator | O, design | open | `/calc` `slash_more.py:200`; peek `capture-ask.js:1412` |
 | C11 graph node hover card | O, design | open | `graph-canvas.js:3753` title tooltip only |
 | C27 graph popup props button | O, design | open | `index.html:4448` |

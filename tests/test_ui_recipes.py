@@ -5536,7 +5536,7 @@ def test_a_rows_repeated_action_is_quiet_and_three_fold_into_its_menu() -> None:
 def test_a_shortcuts_keys_are_its_rebind_button() -> None:
     """The key chip is the button (title "Change"); no column of Change."""
     body = _function_body((ROOT / "frontend" / "js" / "settings-wiring.js").read_text(encoding="utf-8"), "buildShortcutList")
-    assert '"ghost small quiet shortcut-key"' in body and "change.append(combo)" in body
+    assert '"ghost small quiet shortcut-key"' in body and "change.append(combo, pen)" in body
     assert 'change.title = capturing ? "Cancel" : "Change"' in body
     assert "textContent = capturingShortcut === id ? \"Cancel\" : \"Change\"" not in body
     assert re.search(r"\.shortcut-list button\.shortcut-key \{[^}]*min-height: var\(--target-min\)", _css_all())

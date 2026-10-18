@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Settings, Keyboard shortcuts: a pencil after each shortcut's keys says pressing them changes it (an x while it waits for keys); the help lines name it (INBOX 1300 C22).
 - Settings, Appearance: no hover preview on themes; the eye holds a preview under an Apply / Cancel notice, undone on closing Settings, another section, Escape or a hidden tab (INBOX 1300 C21).
 - Notifications: a stack shows only the newest card at rest with a "+N more" count, and opens to three under the pointer or the keyboard (INBOX 1300 C33).
 - Chat: the Sources fold shows its caret and a rail to its list, and starts shut on every surface, the popup agent included (INBOX 1300 C29).
