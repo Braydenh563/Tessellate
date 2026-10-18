@@ -49,28 +49,29 @@ def _percent(done: int, total: int) -> float | None:
     return max(0.0, min(1.0, done / total))
 
 
-def collect() -> list[dict]:
-    """Every background job currently running, newest concern first."""
-    tasks: list[dict] = []
-
+def _reindex_rows() -> list[dict]:
     reindex = jobs.reindex_status()
-    if reindex and reindex["status"] == "running":
-        tasks.append(
-            {
-                "kind": "reindex",
-                "name": "",
-                "label": "Re-indexing your notes",
-                "detail": f"{reindex['done']} of {reindex['total']}",
-                "progress": _percent(reindex["done"], reindex["total"]),
-                "log": [],
-            }
-        )
+    if not (reindex and reindex["status"] == "running"):
+        return []
+    return [
+        {
+            "kind": "reindex",
+            "name": "",
+            "label": "Re-indexing your notes",
+            "detail": f"{reindex['done']} of {reindex['total']}",
+            "progress": _percent(reindex["done"], reindex["total"]),
+            "log": [],
+        }
+    ]
 
+
+def _pull_rows() -> list[dict]:
+    rows = []
     for name, job in (jobs.pull_statuses() or {}).items():
         if job["status"] != "running":
             continue
         fraction = _percent(job["done"], job["total"])
-        tasks.append(
+        rows.append(
             {
                 "kind": "pull",
                 "name": name,
@@ -80,48 +81,56 @@ def collect() -> list[dict]:
                 "log": [],
             }
         )
+    return rows
 
+
+def _warmup_rows() -> list[dict]:
     # The embedding model loads in a background thread at startup so the first
     # search isn't slow. On a fresh install that includes a ~90 MB download,
     # which is a long silence to explain with nothing on screen.
-    if embeddings_module.warmup_running():
-        tasks.append(
-            {
-                "kind": "embeddings",
-                "name": deps.get_model_manager().embedding_model(),
-                "label": "Loading the embedding model",
-                "detail": "The first run downloads it (~90 MB). Search falls "
-                "back to keywords until it's ready. This one can't be "
-                "stopped part-way: it is a single load with nothing to "
-                "interrupt between.",
-                "progress": None,
-                "log": [],
-            }
-        )
+    if not embeddings_module.warmup_running():
+        return []
+    return [
+        {
+            "kind": "embeddings",
+            "name": deps.get_model_manager().embedding_model(),
+            "label": "Loading the embedding model",
+            "detail": "The first run downloads it (~90 MB). Search falls "
+            "back to keywords until it's ready. This one can't be "
+            "stopped part-way: it is a single load with nothing to "
+            "interrupt between.",
+            "progress": None,
+            "log": [],
+        }
+    ]
 
-    # A vision-model caption in flight (ROADMAP §89.6). Not cancellable: 
+
+def _caption_rows() -> list[dict]:
+    # A vision-model caption in flight (ROADMAP §89.6). Not cancellable:
     # same reasoning as the embedding warmup above: one blocking model call
     # with nothing to check a flag between.
     from tessellate.ai import captioning
 
-    for job in captioning.running_captions():
-        tasks.append(
-            {
-                "kind": "caption",
-                "name": str(job["upload_id"]),
-                "label": f"Captioning {job['name']}",
-                "detail": "A vision model is describing this image.",
-                "progress": None,
-                #: One blocking call, so no fraction; the lines say what it
-                #: is waiting on (INBOX 1006).
-                "log": [
-                    f"Sent the picture to {job['model']}." if job.get("model") else "Sent the picture to the vision model.",
-                    "Waiting for its description. A small model can take a minute.",
-                ],
-                "started": job.get("started") or None,
-            }
-        )
+    return [
+        {
+            "kind": "caption",
+            "name": str(job["upload_id"]),
+            "label": f"Captioning {job['name']}",
+            "detail": "A vision model is describing this image.",
+            "progress": None,
+            #: One blocking call, so no fraction; the lines say what it
+            #: is waiting on (INBOX 1006).
+            "log": [
+                f"Sent the picture to {job['model']}." if job.get("model") else "Sent the picture to the vision model.",
+                "Waiting for its description. A small model can take a minute.",
+            ],
+            "started": job.get("started") or None,
+        }
+        for job in captioning.running_captions()
+    ]
 
+
+def _page_read_rows() -> list[dict]:
     # A PDF page being read in the OCR workspace (`_read_page`). Not
     # cancellable from here for the same reason the two above are not: it is
     # one blocking model (or Tesseract) call with nothing to check a flag
@@ -129,82 +138,90 @@ def collect() -> list[dict]:
     # what the person pressing it actually wants.
     from tessellate.ai import vision_ocr as _vision_ocr
 
-    for job in _vision_ocr.running_page_reads():
-        tasks.append(
-            {
-                "kind": "page-read",
-                "name": str(job["token"]),
-                "label": job["label"],
-                "detail": f"{job['model']} is reading this page."
-                if job["model"]
-                else "A vision model is reading this page.",
-                "progress": None,
-                "log": [
-                    f"Sent the page to {job['model']}." if job["model"] else "Sent the page to the reader.",
-                    "Waiting for the text. Closing the workspace does not stop it.",
-                ],
-                "started": job.get("started") or None,
-            }
-        )
+    return [
+        {
+            "kind": "page-read",
+            "name": str(job["token"]),
+            "label": job["label"],
+            "detail": f"{job['model']} is reading this page."
+            if job["model"]
+            else "A vision model is reading this page.",
+            "progress": None,
+            "log": [
+                f"Sent the page to {job['model']}." if job["model"] else "Sent the page to the reader.",
+                "Waiting for the text. Closing the workspace does not stop it.",
+            ],
+            "started": job.get("started") or None,
+        }
+        for job in _vision_ocr.running_page_reads()
+    ]
 
-    # Reading an attached file: "Describe with AI", the local OCR pass, and
-    # the vision read. Same not-cancellable reasoning as the three above.
-    tasks.extend(filejobs.running())
 
-    # Queued and running background work: the captions, OCR passes and
-    # document reads a bulk upload starts. Before the bounded pool these were
-    # loose threads that the panel could not see at all, so a folder of 200
-    # pictures looked exactly like an idle app (WORLD_CLASS_PLAN A3).
+def _pool_rows() -> list[dict]:
+    """Reading an attached file ("Describe with AI", the local OCR pass, the
+    vision read; not cancellable for the reasons above), then the queued and
+    running background work a bulk upload starts. Before the bounded pool
+    these were loose threads that the panel could not see at all, so a folder
+    of 200 pictures looked exactly like an idle app (WORLD_CLASS_PLAN A3)."""
+    from tessellate.ai import captioning, janitor
+
+    rows = list(filejobs.running())
     #: A caption that is running is already a row above, with the picture's
     #: own name ("Captioning sketch-..."); the pool's row for the same job
     #: ("Describing an image") made one caption look like two (owner's
     #: screenshot, INBOX 392). Queued captions stay: nothing else lists them.
     captioning_now = bool(captioning.running_captions())
-    tasks.extend(
+    rows.extend(
         row
         for row in bgpool.pending()
         if not (captioning_now and row["kind"] == "job-caption" and not row.get("queued"))
     )
-
     # Filing past its wait, and the launch warm-up of the filing model: the
     # queued and running filing jobs are pool rows above ("Filing a note").
-    from tessellate.ai import janitor
+    rows.extend(janitor.activity_rows())
+    return rows
 
-    tasks.extend(janitor.activity_rows())
 
-    # Autonomous optimization task
+def _autonomous_rows() -> list[dict]:
     from tessellate.ai import autonomous
-    if autonomous.is_running():
-        tasks.append(
-            {
-                "kind": "autonomous",
-                "name": "",
-                "label": "Autonomous optimization",
-                "detail": "Analysing your notes in the background. Quitting "
-                "stops it at the next safe point and keeps it from starting "
-                "again for a while.",
-                "progress": None,
-                "log": [],
-            }
-        )
 
+    if not autonomous.is_running():
+        return []
+    return [
+        {
+            "kind": "autonomous",
+            "name": "",
+            "label": "Autonomous optimization",
+            "detail": "Analysing your notes in the background. Quitting "
+            "stops it at the next safe point and keeps it from starting "
+            "again for a while.",
+            "progress": None,
+            "log": [],
+        }
+    ]
+
+
+def _tidy_rows() -> list[dict]:
     # Tidy's link reason pass (INBOX 691): a pool job, so it is also a pool
     # row while queued; this row is the running one, with a Quit that stops
     # it at its next chunk (what it named is kept, and undoable in Tidy).
     from tessellate.entry import tidy
 
-    if tidy.is_running():
-        tasks.append(
-            {
-                "kind": "tidy-link-reasons",
-                "name": "",
-                "label": "Naming link reasons",
-                "detail": "Tidy is naming what each linked pair of notes shares. Quitting stops it between batches.",
-                "progress": None,
-                "log": [],
-            }
-        )
+    if not tidy.is_running():
+        return []
+    return [
+        {
+            "kind": "tidy-link-reasons",
+            "name": "",
+            "label": "Naming link reasons",
+            "detail": "Tidy is naming what each linked pair of notes shares. Quitting stops it between batches.",
+            "progress": None,
+            "log": [],
+        }
+    ]
 
+
+def _searxng_start_rows() -> list[dict]:
     # Minutes long, on a worker thread, and previously visible only on the Web
     # search screen: so "is it still doing anything?" had no answer anywhere
     # else. Imported here rather than at module level: it pulls in the search
@@ -215,24 +232,27 @@ def collect() -> list[dict]:
     # the user's side: it waits up to START_TIMEOUT for the service to answer
     # and shows nothing while it does.
     starting = searxng_manager.starting()
-    if starting:
-        waited = int(time.time() - (starting.get("since") or time.time()))
-        tasks.append(
-            {
-                "kind": "searxng-start",
-                "name": "",
-                "label": "Starting SearXNG",
-                "detail": (
-                    f"Waiting for it to answer ({waited}s of "
-                    f"{searxng_manager.START_TIMEOUT}s): "
-                    f"{starting.get('backend') or 'source'} backend."
-                ),
-                "progress": min(waited / max(searxng_manager.START_TIMEOUT, 1), 1.0),
-                "log": [],
-                "started": starting.get("since") or None,
-            }
-        )
+    if not starting:
+        return []
+    waited = int(time.time() - (starting.get("since") or time.time()))
+    return [
+        {
+            "kind": "searxng-start",
+            "name": "",
+            "label": "Starting SearXNG",
+            "detail": (
+                f"Waiting for it to answer ({waited}s of "
+                f"{searxng_manager.START_TIMEOUT}s): "
+                f"{starting.get('backend') or 'source'} backend."
+            ),
+            "progress": min(waited / max(searxng_manager.START_TIMEOUT, 1), 1.0),
+            "log": [],
+            "started": starting.get("since") or None,
+        }
+    ]
 
+
+def _embed_download_rows() -> list[dict]:
     # Downloading an embedding model (Settings → Extras, the "Search by
     # meaning" models list). Its own `DownloadState` docstring already says
     # "for /tasks and the panel", the panel half was built, this half never
@@ -242,24 +262,47 @@ def collect() -> list[dict]:
     # `currentSettingsSection === "extras"`), and invisible everywhere else
     # in the app the instant you clicked away. Tier 1 §6.
     embed_download = embedmodels.current()
-    if embed_download.running:
-        model = embedmodels.EMBED_MODELS_BY_ID.get(embed_download.model_id)
-        tasks.append(
-            {
-                "kind": "embedding-model",
-                "name": embed_download.model_id,
-                "label": embedmodels.repair_title(model.label if model else embed_download.label or "the embedding model")
-                if embed_download.repair
-                else f"Downloading {model.label if model else embed_download.label or 'an embedding model'}",
-                "detail": embed_download.step or "starting…",
-                # No fraction reported for the same reason pip's isn't below:
-                # snapshot_download doesn't hand back one worth trusting.
-                "progress": None,
-                "log": list(embed_download.log),
-                "started": embed_download.started or None,
-            }
-        )
+    if not embed_download.running:
+        return []
+    model = embedmodels.EMBED_MODELS_BY_ID.get(embed_download.model_id)
+    return [
+        {
+            "kind": "embedding-model",
+            "name": embed_download.model_id,
+            "label": embedmodels.repair_title(model.label if model else embed_download.label or "the embedding model")
+            if embed_download.repair
+            else f"Downloading {model.label if model else embed_download.label or 'an embedding model'}",
+            "detail": embed_download.step or "starting…",
+            # No fraction reported for the same reason pip's isn't below:
+            # snapshot_download doesn't hand back one worth trusting.
+            "progress": None,
+            "log": list(embed_download.log),
+            "started": embed_download.started or None,
+        }
+    ]
 
+
+def _bulk_extra_row(bulk: dict, pip) -> dict:  # noqa: ANN001
+    #: A bulk action (INBOX 595) is one row, not one per package: its
+    #: label is the whole job, its detail the package in hand, and its
+    #: fraction is real here, packages done of packages asked.
+    now = next((item for item in bulk["items"] if item["outcome"] == "running"), None)
+    step = f"{now['label']}: {pip.step}" if now and pip.running else "Between packages…"
+    return {
+        "kind": "extra",
+        "name": bulk["bundle"] or "bulk",
+        "label": extras.bulk_label(bulk["action"], bulk["total"]),
+        "detail": f"{bulk['done'] + 1 if now else bulk['done']} of {bulk['total']}. {step}",
+        "progress": bulk["done"] / bulk["total"] if bulk["total"] else None,
+        "log": list(pip.log),
+        "started": extras.bulk().started or None,
+        #: Each package and where it is (INBOX 696), so the row can
+        #: say which are done, which is in hand and which wait.
+        "steps": [{"label": item["label"], "outcome": item["outcome"]} for item in bulk["items"]],
+    }
+
+
+def _extra_rows() -> list[dict]:
     # Installing an optional extra (Settings → Extras). Here rather than on its
     # own screen for the reason this module exists: anything long enough to
     # need a background thread belongs in one list, and the status bar and the
@@ -267,96 +310,90 @@ def collect() -> list[dict]:
     pip = extras.current()
     bulk = extras.bulk_status()
     if bulk["running"]:
-        #: A bulk action (INBOX 595) is one row, not one per package: its
-        #: label is the whole job, its detail the package in hand, and its
-        #: fraction is real here, packages done of packages asked.
-        now = next((item for item in bulk["items"] if item["outcome"] == "running"), None)
-        step = f"{now['label']}: {pip.step}" if now and pip.running else "Between packages…"
-        tasks.append(
-            {
-                "kind": "extra",
-                "name": bulk["bundle"] or "bulk",
-                "label": extras.bulk_label(bulk["action"], bulk["total"]),
-                "detail": f"{bulk['done'] + 1 if now else bulk['done']} of {bulk['total']}. {step}",
-                "progress": bulk["done"] / bulk["total"] if bulk["total"] else None,
-                "log": list(pip.log),
-                "started": extras.bulk().started or None,
-                #: Each package and where it is (INBOX 696), so the row can
-                #: say which are done, which is in hand and which wait.
-                "steps": [{"label": item["label"], "outcome": item["outcome"]} for item in bulk["items"]],
-            }
-        )
-    elif pip.running:
-        tasks.append(
-            {
-                "kind": "extra",
-                "name": pip.extra_id,
-                "label": f"Installing {extras.EXTRAS_BY_ID[pip.extra_id].label}"
-                if pip.extra_id in extras.EXTRAS_BY_ID
-                else "Installing an optional extra",
-                "detail": pip.step or "starting pip…",
-                # pip does not report a fraction it is worth believing, and a
-                # bar that guesses is worse than one that admits it can't say.
-                "progress": None,
-                "log": list(pip.log),
-                "started": pip.started or None,
-                #: The app began this one itself (search by meaning's
-                #: auto-install), so the page can offer "Don't install".
-                "auto": pip.auto,
-            }
-        )
+        return [_bulk_extra_row(bulk, pip)]
+    if not pip.running:
+        return []
+    return [
+        {
+            "kind": "extra",
+            "name": pip.extra_id,
+            "label": f"Installing {extras.EXTRAS_BY_ID[pip.extra_id].label}"
+            if pip.extra_id in extras.EXTRAS_BY_ID
+            else "Installing an optional extra",
+            "detail": pip.step or "starting pip…",
+            # pip does not report a fraction it is worth believing, and a
+            # bar that guesses is worse than one that admits it can't say.
+            "progress": None,
+            "log": list(pip.log),
+            "started": pip.started or None,
+            #: The app began this one itself (search by meaning's
+            #: auto-install), so the page can offer "Don't install".
+            "auto": pip.auto,
+        }
+    ]
+
+
+def _searxng_install_rows() -> list[dict]:
+    from tessellate.search import searxng_manager
 
     install = searxng_manager._install_state
-    if install["running"]:
-        stage = install.get("stage") or 1
-        tasks.append(
-            {
-                "kind": "searxng",
-                "name": "",
-                "label": f"Setting up SearXNG: step {stage} of {install['stages']}",
-                "detail": install["step"] or "This takes a few minutes the first time.",
-                "progress": install.get("progress"),
-                                # The lines the tools themselves printed. Reported directly:
-                # "the searxng reinstall doesn't have a progress bar so idk if
-                # it has frozen or is working", a bar answers that only while
-                # it moves, and pip building lxml can sit on one number for a
-                # while. Its output is the thing that keeps changing.
-                "log": list(install.get("log") or []),
-            }
-        )
+    if not install["running"]:
+        return []
+    stage = install.get("stage") or 1
+    return [
+        {
+            "kind": "searxng",
+            "name": "",
+            "label": f"Setting up SearXNG: step {stage} of {install['stages']}",
+            "detail": install["step"] or "This takes a few minutes the first time.",
+            "progress": install.get("progress"),
+            # The lines the tools themselves printed. Reported directly:
+            # "the searxng reinstall doesn't have a progress bar so idk if
+            # it has frozen or is working", a bar answers that only while
+            # it moves, and pip building lxml can sit on one number for a
+            # while. Its output is the thing that keeps changing.
+            "log": list(install.get("log") or []),
+        }
+    ]
 
+
+def _update_rows() -> list[dict]:
     # The Windows installer's download (Settings, About, Update now): minutes
     # on a slow line, and it was visible only in its own dialog (INBOX 696:
     # "does everything show in the background tasks??").
     from tessellate.api import routes_update
 
     update = routes_update.current()
-    if update["running"]:
-        tasks.append(
-            {
-                "kind": "app-update",
-                "name": "",
-                "label": "Downloading the update",
-                "detail": update["step"] or "starting…",
-                "progress": _percent(update["done_bytes"], update["total_bytes"]),
-                "log": [],
-            }
-        )
+    if not update["running"]:
+        return []
+    return [
+        {
+            "kind": "app-update",
+            "name": "",
+            "label": "Downloading the update",
+            "detail": update["step"] or "starting…",
+            "progress": _percent(update["done_bytes"], update["total_bytes"]),
+            "log": [],
+        }
+    ]
 
+
+def _embed_switch_rows() -> list[dict]:
     # Changing the embedding model (INBOX 700): its own row with the phase
     # and the notes done, like the re-index above.
     from tessellate.core import embedswitch
 
     switch = embedswitch.task_row()
-    if switch:
-        tasks.append({"kind": "embed-switch", **switch})
+    return [{"kind": "embed-switch", **switch}] if switch else []
 
-    # The scheduled passes report as they go (INBOX 1006): a bar, named steps
-    # and a short log, from the run record's live handle (`jobruns.live`). A
-    # pass already listed above (the pool's "job-pass" row for a Run now, the
-    # autonomous row) is filled in; one the pool never saw (the start-up
-    # housekeeping, a scheduled backup) gets its own row, so no pass runs
-    # unseen.
+
+def _fill_live_passes(tasks: list[dict]) -> None:
+    """The scheduled passes report as they go (INBOX 1006): a bar, named steps
+    and a short log, from the run record's live handle (`jobruns.live`). A
+    pass already listed above (the pool's "job-pass" row for a Run now, the
+    autonomous row) is filled in; one the pool never saw (the start-up
+    housekeeping, a scheduled backup) gets its own row, so no pass runs
+    unseen."""
     from tessellate.core import passes
 
     #: Runs whose row is built above from its own state: the live handle only
@@ -390,16 +427,17 @@ def collect() -> list[dict]:
         if live["detail"]:
             row["detail"] = live["detail"]
 
-    _ledger_rows(tasks)
-    _stamp_started(tasks)
 
-    # **One table decides, not eight hard-coded booleans.** Every entry above
-    # used to carry its own `"cancellable": True/False`, and six of them said
-    # False because nothing could stop them, which was true when they were
-    # written and stopped being true when `core/bgtasks.py` gave each one a
-    # canceller. A flag repeated at eight call sites is a flag that drifts;
-    # this reads the same table the cancel endpoint dispatches through, so the
-    # button appears exactly where pressing it does something.
+def _mark_cancellable(tasks: list[dict]) -> None:
+    """**One table decides, not eight hard-coded booleans.** Every entry used
+    to carry its own `"cancellable": True/False`, and six of them said False
+    because nothing could stop them, which was true when they were written and
+    stopped being true when `core/bgtasks.py` gave each one a canceller. A flag
+    repeated at eight call sites is a flag that drifts; this reads the same
+    table the cancel endpoint dispatches through, so the button appears
+    exactly where pressing it does something."""
+    from tessellate.core import passes
+
     for task in tasks:
         task["cancellable"] = (
             task["kind"] in bgtasks.CANCELLABLE_KINDS
@@ -410,6 +448,21 @@ def collect() -> list[dict]:
             # real stop (`jobstore.cancel`). A running one is not offered.
             or bool(task.get("queued") and task.get("job_id"))
         )
+
+
+def collect() -> list[dict]:
+    """Every background job currently running, newest concern first."""
+    tasks: list[dict] = []
+    for rows in (
+        _reindex_rows, _pull_rows, _warmup_rows, _caption_rows, _page_read_rows, _pool_rows, _autonomous_rows,
+        _tidy_rows, _searxng_start_rows, _embed_download_rows, _extra_rows, _searxng_install_rows, _update_rows,
+        _embed_switch_rows,
+    ):
+        tasks.extend(rows())
+    _fill_live_passes(tasks)
+    _ledger_rows(tasks)
+    _stamp_started(tasks)
+    _mark_cancellable(tasks)
     return tasks
 
 
