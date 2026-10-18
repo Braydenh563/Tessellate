@@ -68,3 +68,14 @@ Audit, 2026-10-18, read from the code and tests (grep first, CLAUDE.md 1). "Buil
 - done: step 5 commands (eight rows; wbFmtEntries keeps connectors); next: step 6 connectors (jump size, perimeter gap, clear waypoints)
 - done: step 6 connectors (jump size, gaps, clear bends); next: step 7 find (regex, whole word, placeholders, tooltip)
 - done: step 7 find options, data values, placeholders, tooltip; next: step 8 layer order, then step 9 export JPG, WebP, copy as image
+- done: step 9 export JPG, WebP, Copy image (step 8 layer order skipped: it adds a layer z base to four render sites and the order commands, and needs a stacking sweep on a populated board; left for an Opus agent); next: remaining list below
+
+## Remaining after this run (whiteboard-1018)
+
+- Step 8, layer order (plan section 6, S by the table, M in fact): effective z = layer base plus item z at `.style("z-index", d => d.z)` (whiteboard.js, the three render merges) and the order commands' z arithmetic (whiteboard.js, grep `item.z` near the `order-front` row); sketches sit beneath the HTML layer by plane, so a layer order only reorders within a plane. Needs a stacking sweep with two layers of overlapping shapes and text boxes.
+- Placeholders: `%date%`, `%page%`, `%id%` (only the item's own props are read).
+- Find: "all frames" scope, tags, notes' own text on a card (a card is edited in its note).
+- Export: copy as SVG, GIF, `.drawio` export, PNG with the board embedded.
+- Section 5 ports (custom offsets, add and delete, show or hide), section 10 (fit page width, enter group, grid size), section 17 (grid size, paper size): not started.
+- Text box fit at phone width: `wbCardFitHeight` reads 38 where the content is taller (seen on a double-click fit; not reproduced after the auto-size change that measures `.wb-text-content`).
+- Found, not mine: `tests/test_frontend_wake_sources.py` fails on `documents-codekit.js::raf: 0 to 2`.

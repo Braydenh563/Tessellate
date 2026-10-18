@@ -242,6 +242,7 @@ const WB_COMMANDS = [
   { id: "delete-board", group: "Board", icon: "ph:trash", label: "Delete this board and everything on it", keys: "", surface: "both", run: wbClickId("wb-delete-board") },
   { id: "keys", group: "Board", icon: "ph:keyboard", label: "Every key and gesture on a board", menu: "Keys and controls", keys: "?", surface: "both", run: wbClickId("wb-help-btn") },
   { id: "export", group: "Board", icon: "ph:download-simple", label: "Export this board", keys: "", surface: "both", run: wbClickId("wb-export") },
+  { id: "copy-image", group: "Board", icon: "ph:copy", label: "Copy as an image", keys: "", surface: "both", run: () => wbCopyAsImage() },
   { id: "rename", group: "Board", icon: "ph:pencil-simple", label: "Rename this board", keys: "", surface: "both", run: wbClickId("wb-rename-board") },
   { id: "new-board", group: "Board", icon: "ph:plus", label: "New board", keys: "", surface: "both", run: wbClickId("wb-new-board") },
   { id: "switch-kind", group: "Board", icon: "ph:tree-structure", label: "Switch between a whiteboard and a mind map", keys: "", surface: "both", run: wbClickId("wb-board-kind") },

@@ -1300,7 +1300,7 @@ clash is listed so the choice is made once.
 | Format | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | PNG with scale and transparent | yes (`wbExportPng`, `WB_EXPORT_FORMATS`) | `ExportDialog` (grapheditor/Dialogs.js 3582) zoom, width, height, dpi, transparent, grid, border width; "include a copy of my diagram" embeds the XML in the PNG | add border width, DPI; embedding the board JSON in a PNG `tEXt` chunk makes the PNG re-importable | S |
-| JPG, WebP, GIF | no | `exportJpg`, `exportWebp`, `exportAnimatedGif` (diagramly/Menus.js 1170 to 1181) | JPG and WebP are one canvas call each | S |
+| JPG, WebP, GIF | JPG and WebP yes, 2026-10-18 (whiteboard-1018; HISTORY); GIF open | `exportJpg`, `exportWebp`, `exportAnimatedGif` (diagramly/Menus.js 1170 to 1181) | JPG and WebP are one canvas call each | S |
 | SVG (re-editable, with the model embedded) | yes (`wbExportSvg`; `<metadata>` carries the board, `wbBoardSvgMetadata`) | `exportSvg` (diagramly/Menus.js 1101) with `content=` attribute | done | none |
 | PDF | yes (`wbExportPdf`) | `exportPdf` (692), server side | done (print path) | none |
 | HTML, embedded viewer, iframe, link | no | `exportHtml` (669), `embed` menu (4208) | an HTML export is the SVG in a page; embedding is out of scope | S |
@@ -1310,7 +1310,7 @@ clash is listed so the choice is made once.
 | Mermaid in and out; PlantUML | yes for Mermaid flowcharts (`whiteboard-interchange.js`); no PlantUML | `mermaid`, `plantUml` actions (insertAdvanced menu) | keep the Mermaid subset; PlantUML needs a server, drop | none |
 | Outline, Markdown, OPML, FreeMind, plain text | yes (for maps and outline) | no | Tessellate's own | none |
 | Export selection, visible area, whole board, one frame | yes | `selection only`, `crop`, page range | done | none |
-| Copy as image, copy as SVG | no | `copyAsImage`, `copyAsSvg` (diagramly/Menus.js 1186, 1194) | two commands that write to the clipboard | S |
+| Copy as image, copy as SVG | copy as image yes, 2026-10-18 (whiteboard-1018; HISTORY); copy as SVG open | `copyAsImage`, `copyAsSvg` (diagramly/Menus.js 1186, 1194) | two commands that write to the clipboard | S |
 
 ### 15. Insert menu, shape picker and the sidebar search
 

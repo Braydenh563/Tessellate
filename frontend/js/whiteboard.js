@@ -11586,7 +11586,8 @@ async function wbInlineSvgImages(svg) {
   return out;
 }
 
-async function wbRasterizeSvg(svgInput, width, height, mime) {
+//: `quality` (0 to 1) only means something to the lossy types; PNG ignores it.
+async function wbRasterizeSvg(svgInput, width, height, mime, quality) {
   //: The root's own size set to the canvas's, so a 2x or 3x export
   //: (FEAT-14) is drawn at that size from the vectors rather than drawn at
   //: 1x and stretched.
@@ -11607,7 +11608,8 @@ async function wbRasterizeSvg(svgInput, width, height, mime) {
       URL.revokeObjectURL(url);
       canvas.toBlob(
         (result) => (result ? resolve(result) : reject(new Error("Couldn't rasterize the board."))),
-        mime
+        mime,
+        quality
       );
     };
     img.onerror = () => {
@@ -12067,6 +12069,51 @@ async function wbSaveToLibrary(scope) {
   toast("Added to your image library.");
 }
 
+//: The raster types beyond PNG (draw.io's export formats). JPEG has no alpha,
+//: so it always draws the board's ground; WebP keeps a transparent one.
+const WB_EXPORT_PICTURES = Object.freeze({
+  jpg: Object.freeze({ mime: "image/jpeg", extension: "jpg", quality: 0.92, alpha: false }),
+  webp: Object.freeze({ mime: "image/webp", extension: "webp", quality: 0.92, alpha: true }),
+});
+
+async function wbExportPicture(scope, kind) {
+  const spec = WB_EXPORT_PICTURES[kind];
+  const { scale, transparent } = wbExportPngPrefs();
+  const { svg, width, height } = wbBuildExportSvg(scope, { transparent: transparent && spec.alpha });
+  const blob = await wbRasterizeSvg(svg, width * scale, height * scale, spec.mime, spec.quality);
+  //: A browser that cannot encode a type hands back a PNG; a ".webp" that is
+  //: really a PNG would open nowhere, so say so instead.
+  if (blob.type !== spec.mime) throw new Error(`This browser cannot write ${kind.toUpperCase()} files. Export a PNG instead.`);
+  await saveFile(wbExportFileName(scope, spec.extension), blob);
+  toast(`Board exported as ${kind.toUpperCase()}.`);
+}
+
+//: **Copy as an image** (draw.io's): the same picture as the PNG, put on the
+//: clipboard to paste into a chat, a document or another app. The blob is
+//: handed over as a promise so the browser's click permission is spent at the
+//: write, not lost while the board is drawn.
+async function wbExportCopyImage(scope) {
+  const { scale, transparent } = wbExportPngPrefs();
+  if (!navigator.clipboard?.write || typeof ClipboardItem === "undefined") {
+    throw new Error("This browser cannot copy a picture. Export a PNG instead.");
+  }
+  const { svg, width, height } = wbBuildExportSvg(scope, { transparent });
+  const picture = wbRasterizeSvg(svg, width * scale, height * scale, "image/png");
+  await navigator.clipboard.write([new ClipboardItem({ "image/png": picture })]);
+  toast("Copied the picture. Paste it into another app.");
+}
+
+//: The command row's entry: the selection if there is one, else what the
+//: canvas shows, and any refusal said rather than thrown into the console.
+async function wbCopyAsImage() {
+  const scope = wbMultiSelection.size > 0 || wbSelectedItem ? "selection" : "visible";
+  try {
+    await wbExportCopyImage(scope);
+  } catch (err) {
+    toast(err.message || voiceLine("failed", { what: "copy the picture" }), true);
+  }
+}
+
 async function wbExportPdf(scope) {
   const { svg, width, height } = wbBuildExportSvg(scope);
   const blob = await wbRasterizeSvg(svg, width, height, "image/png");
@@ -12115,12 +12162,28 @@ const WB_EXPORT_SCOPES = [
 //: gave in the same words: an outline of a whiteboard is not a thing.
 const WB_EXPORT_FORMATS = [
   {
-    value: "png", label: "PNG", scopes: ["selection", "visible", "whole"],
+    //: `picture: true` rows share the dialog's Size and ground rows.
+    value: "png", label: "PNG", scopes: ["selection", "visible", "whole"], picture: true,
     note: "An image file, and a copy in your image library.",
     run: (scope) => wbExportPng(scope),
   },
   {
-    value: "library", label: "Image library", scopes: ["selection", "visible", "whole"],
+    value: "jpg", label: "JPG", scopes: ["selection", "visible", "whole"], picture: true, noAlpha: true,
+    note: "A smaller image file, on the board's colour (it cannot be transparent).",
+    run: (scope) => wbExportPicture(scope, "jpg"),
+  },
+  {
+    value: "webp", label: "WebP", scopes: ["selection", "visible", "whole"], picture: true,
+    note: "A small image file for the web; it can be transparent.",
+    run: (scope) => wbExportPicture(scope, "webp"),
+  },
+  {
+    value: "copy", label: "Copy image", scopes: ["selection", "visible", "whole"], picture: true,
+    note: "Puts the picture on the clipboard, to paste into another app.",
+    run: (scope) => wbExportCopyImage(scope),
+  },
+  {
+    value: "library", label: "Image library", scopes: ["selection", "visible", "whole"], picture: true,
     note: "Straight into the gallery, with no file saved to disk.",
     run: (scope) => wbSaveToLibrary(scope),
   },
@@ -12320,10 +12383,11 @@ function wbExportBoard() {
     if (!allowed.has(scope)) scope = [...allowed][0];
     wbSyncExportSeg(formatSeg, format.value, null);
     wbSyncExportSeg(scopeSeg, scope, allowed);
-    const picture = format.value === "png" || format.value === "library";
+    const picture = Boolean(format.picture);
     sizeLabel.hidden = !picture;
     sizeSeg.hidden = !picture;
-    clearRow.hidden = !picture;
+    //: A JPEG has no alpha, so the ground choice is not offered for it.
+    clearRow.hidden = !picture || Boolean(format.noAlpha);
     if (picture) wbSyncExportSeg(sizeSeg, String(pngPrefs.scale), null);
     const chosenScope = WB_EXPORT_SCOPES.find((s) => s.value === scope);
     // Two sentences, the format's and the scope's, so the line reads the same
