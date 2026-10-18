@@ -120,9 +120,10 @@ def test_the_chips_are_drawn_by_the_follow_up_strip():
     chat = (root / "chat-attach.js").read_text(encoding="utf-8")
     compose = (root / "ask-compose.js").read_text(encoding="utf-8")
     body = compose[compose.index("function digestOffer"):]
-    #: In Chat the bubble's own strip (saved with the turn); in Ask the
-    #: strip drawn next, which takes the asks it was left.
-    assert "renderFollowups(bubble, offer.asks);" in body and "saveFollowups(bubble, offer.asks);" in body
+    #: In Chat the bubble's own strip, saved later by `offerFollowups` (a save
+    #: here raced the turn's own and emptied the reply, INBOX 1300 C42); in
+    #: Ask the strip drawn next, which takes the asks it was left.
+    assert "renderFollowups(bubble, offer.asks);" in body and "saveFollowups(" not in body.split("\n}\n")[0]
     assert "given = given || askOfferAsks;" in compose
     #: Both are drawn after the offer: the offer first, the strip after.
     assert ask.index("digestOffer(answerBox, answerOffer)") < ask.index("const followups = () => renderAskFollowups")
