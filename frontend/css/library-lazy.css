@@ -6168,3 +6168,17 @@ input[type="color"].wb-mixed {
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
+
+/* **A Library card off screen is not styled** (reveal-1018). The Library
+   keeps its 60 first cards in the DOM between visits, and showing the tab
+   restyled all of them: 1,335 elements, 155 to 218 ms at 4x CPU, though 18
+   are on screen at 1440x900. The same recipe as the Notes rows
+   (07-whiteboard-misc.css, `#entry-list > li`, DESIGN.md "A long list"): the
+   browser skips style, layout and paint until a card comes near the window,
+   and `auto` remembers the height it last drew at. 8.25rem is the measured
+   median card (132.6 px; 60 cards, 17rem columns). Not a card holding focus:
+   containment clips what a card paints to its own box. */
+.library-grid .library-card:not(:focus-within) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 8.25rem;
+}
