@@ -209,8 +209,17 @@ async function noteRow(page, id) {
 }
 
 async function menuItem(page, row, label) {
-  await row.locator('button[aria-label="More actions"]').click();
-  await page.locator(".action-menu:not(.hidden)").getByText(label, { exact: true }).click();
+  // A list refresh (filing finishing just after capture) can close the menu
+  // between opening it and the click; reopen it rather than wait out the test.
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    await row.locator('button[aria-label="More actions"]').click();
+    try {
+      await page.locator(".action-menu:not(.hidden)").getByText(label, { exact: true }).click({ timeout: 5000 });
+      return;
+    } catch (err) {
+      if (attempt === 2) throw err;
+    }
+  }
 }
 
 async function confirm(page) {
