@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Graph: the treemap's box titles end in an ellipsis with their count kept instead of being clipped mid-letter, a dot's size counts its links in the treemap too (all 57 dots were 5px; now six sizes, 8 to 15), computed layouts no longer ring every dot in the accent, and the legend says what size means ("Bigger dot, more links") (INBOX 1300 C37); `tests/test_graph_size_key.py`.
 - A notice that names "Settings, Packages" (not installed) now has an Open Settings, Packages button that scrolls to that package's row (INBOX 1300 C35); `tests/test_package_notice_action.py`.
 - Undo and redo on a board or a document show "Undone: last change on this board" even with notifications muted (INBOX 1300 C32); `tests/test_link_types.py`.
 - Pressing the ticked kind in a link's Kind of link sheet (including "has example of") clears it (INBOX 1300 C31); `tests/test_link_types.py`.

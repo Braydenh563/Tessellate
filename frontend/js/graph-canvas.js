@@ -1156,6 +1156,7 @@ function gcDrawTreemap(ctx, s, k) {
   ctx.textBaseline = "middle";
   ctx.font = `600 ${12 / k}px ${gcTokens.font}`;
   const inset = 1.5;
+  const heads = (s.treemapHeads = {});
   for (const rect of rects) {
     const x = rect.x0 + inset;
     const y = rect.y0 + inset;
@@ -1170,17 +1171,32 @@ function gcDrawTreemap(ctx, s, k) {
     ctx.strokeStyle = colour;
     ctx.lineWidth = 1.5 / k;
     ctx.strokeRect(x, y, w, h);
-    if (w * k < 44) continue;
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(x, y, w, h);
-    ctx.clip();
+    //: INBOX 1300 C37 ("the text at the top of the boxes gets cut off with
+    //: no ellipse"): a name wider than its box ends in an ellipsis and keeps
+    //: its count; it was clipped mid-letter. The legend names it whole.
+    const text = gcEllipsize(rect.category || "Unfiled", ` (${rect.count})`, w - 12 / k, (t) => ctx.measureText(t).width);
+    heads[rect.category] = text;
+    if (!text) continue;
     ctx.globalAlpha = 1;
     ctx.fillStyle = gcTokens.ink;
-    ctx.fillText(`${rect.category || "Unfiled"} (${rect.count})`, x + 6 / k, y + 9 / k);
-    ctx.restore();
+    ctx.fillText(text, x + 6 / k, y + 9 / k);
   }
   ctx.restore();
+}
+
+//: `name` plus `suffix`, the name cut to end in an ellipsis where the two are
+//: wider than `max`; empty when not even one letter, the ellipsis and the
+//: suffix fit. `measure` gives a string's width in the units of `max`.
+function gcEllipsize(name, suffix, max, measure) {
+  if (measure(name + suffix) <= max) return name + suffix;
+  let lo = 0;
+  let hi = name.length - 1;
+  while (lo < hi) {
+    const mid = Math.ceil((lo + hi) / 2);
+    if (measure(name.slice(0, mid).trimEnd() + "…" + suffix) <= max) lo = mid;
+    else hi = mid - 1;
+  }
+  return lo ? name.slice(0, lo).trimEnd() + "…" + suffix : "";
 }
 
 //: B71 (INBOX 904, "so messy and stuck together I couldn't read it"): each
@@ -2388,7 +2404,7 @@ function gcDraw(s = gcTab) {
   // pinned, held, hub or on a path get their own stroke.
   const haloByColour = new Map();
   const labelZoom = s.size === "full" ? gcLabelZoom() : GC_LABEL_ZOOM;
-  const ringed = [];
+  const ringed = (s.ringed = []);
   const hubs = { path: new Path2D(), any: false };
   const labelled = [];
   const drawn = [];
@@ -2443,7 +2459,10 @@ function gcDraw(s = gcTab) {
       matched ||
       onPath ||
       node.pinned ||
-      node.fx != null ||
+      //: Held only means something in Force: a computed layout holds every
+      //: note, and the test without the layout gave every treemap dot the
+      //: fallback accent ring below (INBOX 1300 C37, "all the same").
+      (node.fx != null && s.layoutKind === "force") ||
       !gcIsNote(node) ||
       node === s.dropTarget;
     if (special) {
@@ -4985,6 +5004,7 @@ async function renderGraphCanvas(s = gcTab) {
   };
   graphRenderLegend(data, colourMode, colour, clusterColour, ruleColour, groups, s);
   gcLegendEdgeKey(data);
+  gcLegendSizeKey();
   gcSelectionChanged(s);
 
   const ruleHides = !["category", "cluster", "topic"].includes(colourMode);
@@ -5112,7 +5132,23 @@ async function renderGraphCanvas(s = gcTab) {
     edge.target = s.byId.get(to) || edge.target;
     edge._path2d = null;
   }
-  const maxDegree = gcMaxDegree(s, nodes);
+  //: **A dot's size counts the notebook's links, not the lines drawn**
+  //: (INBOX 1300 C37, the owner on the treemap: "the nodes are all the same
+  //: size, should they be different??"). A treemap draws no lines, so every
+  //: note counted 0 and drew at 5px. The other layouts draw their links (a
+  //: tree also draws its filing), so they keep the drawn count.
+  const linkDegree = new Map();
+  if (s.tree && s.tree.treemap) {
+    for (const edge of visibleEdges) {
+      for (const end of [edge.source, edge.target]) {
+        const id = end && end.id != null ? end.id : end;
+        linkDegree.set(id, (linkDegree.get(id) || 0) + 1);
+      }
+    }
+  }
+  const degreeOf = (node) => (linkDegree.size ? linkDegree.get(node.id) || 0 : (s.adj.get(node.id) || { size: 0 }).size);
+  let maxDegree = 0;
+  for (const node of nodes) if (!node.isGroup) maxDegree = Math.max(maxDegree, degreeOf(node));
   //: Which category's cluster a note stands in, in the Clusters shape; null
   //: otherwise. Read by `gcBowPoint` and the line pass: a line between
   //: clusters is straight and quiet. `_straight`: every line is drawn
@@ -5120,7 +5156,7 @@ async function renderGraphCanvas(s = gcTab) {
   //: crossing "through the middle of the hub"; the worker's `clearCurve`).
   const shape = s.tree ? null : gcShape(s);
   for (const node of nodes) {
-    node.r = gcRadius(node, (s.adj.get(node.id) || { size: 0 }).size, maxDegree);
+    node.r = gcRadius(node, degreeOf(node), maxDegree);
     //: A treemap cell is only so big: the dot stays inside it.
     if (node.cell) node.r = Math.min(node.r, Math.max(2.5, Math.min(node.cell.w, node.cell.h) * 0.36));
     node.colour = s.colourOf(node);
@@ -5474,6 +5510,36 @@ function gcLegendEdgeKey(data, s = gcTab) {
   swatch(reasoned * 2 > links.length ? "reasoned" : "link", "Link");
   if (similar) swatch("similar", "Similar");
   if (cross) swatch("cross", "Between categories");
+  legend.appendChild(key);
+}
+
+//: **What a dot's size means, said on the map** (INBOX 1300 C37, the owner:
+//: "the nodes are all the same size, should they be different??"; a question
+//: is a report that the map did not say). A fact, not a toggle, like the line
+//: key above: two dots and the Size rule's meaning. None says nothing.
+const GC_SIZE_KEY = {
+  connections: "Bigger dot, more links",
+  length: "Bigger dot, longer note",
+  recency: "Bigger dot, edited more recently",
+};
+function gcLegendSizeKey() {
+  const legend = document.getElementById("graph-legend");
+  const words = GC_SIZE_KEY[graphSizeMode()];
+  if (!legend || !words) return;
+  const key = document.createElement("span");
+  key.className = "legend-item legend-edge-key legend-size-key";
+  key.title = "Change what size means under Size, in the graph's options";
+  //: Styled here, not in boot CSS (at its byte cap): the muted ink, the
+  //: first dot at six tenths of the second.
+  for (const scale of [0.6, 1]) {
+    const dot = document.createElement("span");
+    dot.className = "legend-dot";
+    dot.style.background = gcTokens.muted;
+    dot.style.transform = `scale(${scale})`;
+    dot.setAttribute("aria-hidden", "true");
+    key.appendChild(dot);
+  }
+  key.append(document.createTextNode(words));
   legend.appendChild(key);
 }
 

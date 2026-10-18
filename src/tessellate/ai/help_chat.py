@@ -1787,7 +1787,7 @@ HELP_TOPICS.extend(
                     " a Mind map of them, built from their links round the picked or most connected note, "
                     "with Open on the notice that follows. Display options, the gear, opens with View: Layout"
                     " (Force, Tree, Radial, Arc or Treemap; the dock names a fixed one), "
-                    "Shape (Organic, Clusters or Galaxy; the Force layout's own, dimmed under the others), Colour, Size, Trace, which "
+                    "Shape (Organic, Clusters or Galaxy; the Force layout's own, dimmed under the others), Colour, Size (links by default), Trace, which "
                     "finds how two notes connect, and Legend, which hides the key. Then Physics (Unpin all, "
                     "Reshuffle layout, Gravity, Spread, Link force, Length by similarity, Group by category),"
                     " the Show switches (Similarity, Entities, Documents, Boards, Tags, Attachments, "
