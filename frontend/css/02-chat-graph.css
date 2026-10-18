@@ -4746,6 +4746,12 @@ mark.lightbox-hit {
   flex-direction: column;
   gap: var(--space-1);
   padding: var(--space-2) 0 var(--space-1);
+  /* Hung from its summary by a rail under the caret (INBOX 1300 C29, the
+     owner: "hard to tell ... if the sources are actually part of that
+     button's dropdown and if the button is open or not"). */
+  margin-left: calc(var(--space-2) + 0.5em);
+  padding-left: var(--space-2);
+  border-left: 1px solid var(--border);
 }
 /* **The compact list** (`cmdSourceRow`, palette.js; INBOX 458): the
    popup agent's sources, one quiet row each on `.timeline-row`'s shape. The

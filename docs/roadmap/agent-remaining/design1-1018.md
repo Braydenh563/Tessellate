@@ -10,3 +10,6 @@ Items: C01, C19+C20, C05, C29, C33, C21, C22, in that order.
 - done: C19+C20 690e7eb
 - done: C05 (commands first, `editorBareSlashRows`)
 - next: C29 sources fold, chat-agent.js:2220
+- done: C05 ba0d168
+- done: C29 (caret family, rail, shut at rest)
+- next: C33 toast stack

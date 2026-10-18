@@ -2213,11 +2213,11 @@ function chatSourcesPanel(input) {
   //: numbered against; without it a panel of two would call them 1 and 2 and
   //: disagree with the [4] and [5] printed in the answer above it.
   const numbering = input.numberFrom || sources;
-  //: `row`: one-line rows instead of cards, open (the popup agent's).
+  //: `row`: one-line rows instead of cards (the popup agent's). Shut on
+  //: every surface, its caret saying so (INBOX 1300 C29).
   const row = input.row;
   const details = document.createElement("details");
   details.className = "chat-sources";
-  details.open = Boolean(row);
   const summary = document.createElement("summary");
   summary.className = "chat-sources-summary";
   //: The heading counts by kind, "4 notes · 2 files", rather than saying
