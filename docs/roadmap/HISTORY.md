@@ -50548,4 +50548,66 @@ Built 2026-10-11 (briefs-1011): the route modules keep the routes and nothing el
 ### Brief 63 part 1, the embedder (briefs-1011)
 
 Decision 62 built: the search model already loaded on first use (or at launch with notes, `warm_search_model_at_launch`); now an hour with no embed lets it go and the next embed loads it again. `embedding_idle_unload` (default on; Settings, Background tasks, "Let the search model go after an idle hour"). The request middleware looks once a minute and only queues the unload on the pool (`warm` lane, deduped), so the event loop never pays for the garbage collection; `malloc_trim` hands the pages back on Linux. A rested model still counts as ready, so search keeps its meaning half and the next embed reloads; `search_manager.warm` reads the new `is_loaded`, so focus in Ask starts the reload. Measured with `BAAI/bge-small-en-v1.5` and torch 2.14 CPU, load average 33: 77 MB after startup, 497 MB after the first embed (112 s cold, torch's import included), 491 MB after 20 embeds, 398 MB at the unload and 376 MB two seconds later, reload 3.2 s to 455 MB. The 300 MB left is torch's libraries, which stay mapped once imported; only a process restart drops them. `tests/test_embedder_idle_unload.py` (10).
+## INBOX resolved, 2026-10-18
+
+735. **The owner, 2026-10-06, verbatim**: "also since p5.js is vendored, can it be a
+     document option in the text editor?? also when on a code document, I get auto
+     fill for redular sentences, not code specific autofill" "I was on js document".
+     Two items for DOCUMENTS_PLAN: a p5.js sketch document kind (code beside a
+     sandboxed live canvas, the vendored p5 only, no network); and on a code
+     document (.js here) the prose autocomplete must switch off and code-aware
+     completion (words from the file, the language's keywords, bracket pairs) take
+     its place.
+     Owner: DOCUMENTS_PLAN 23 and Brief 42 (the p5 kind, code completion on code documents); Briefs 69 to 71 for the IDE.
+742. **The owner, 2026-10-07, verbatim**: "atlas doesnt seem to change emotions alot
+     if at all?? maybe log that for next pr". Next PR: measure how often Atlas's
+     mood changes in a session (the mood triggers in atlas-life.js and
+     companion code) and widen what drives it (answers found, nothing found,
+     reminders done, idle, time of day), each visible within a few seconds.
+     Owner: Brief 34 (companion), the second part; the mood-change count per session is its first number.
+771. **The owner, 2026-10-10, 16:02Z, verbatim.** "I am sleeping so continue
+     autonomously. Impress me a lot. I want to fall off my chair lol with how
+     good the changes, fixes, improvements, additions, and nire are when I
+     wake up in the morning lol." Read: no cap on the night's work beyond the
+     agent cap (four Opus, Sonnet extra); every open brief in SESSION_BRIEFS
+     order; the PR stays green and the docs current at each merge. Owner:
+     HANDOVER "Now" (the night's queue).
+772. **Decision needed, found by the companion agent (Brief 34), 2026-10-10.**
+     Under the system's reduce-motion hint Atlas keeps its calm CSS loops (an
+     earlier decision, `08-consistency.css:5056`): 1,579 style recalcs a
+     minute. Decision 7 says reduced motion keeps poses without loops.
+     Recommendation, taken: decision 7 wins; the system hint and the app's
+     own Reduce setting both stop every loop and keep the pose. Owner: Brief
+     34 continues (companion2).
+804. **The owner, 2026-10-11, verbatim.** "there are more backups than my max
+     set number of 3, this console line's border clashes with the line above,
+     also these buttons and ui in the documents editor need to be fixed in
+     their design and height and stlying etc." (screenshots: four backups
+     under "Keep this many backups 3"; the Python console's `>>>` input with a
+     focus border meeting the rule above; the document assistant's
+     suggestion buttons over an "Ask about this code..." field and a send
+     button of another height). Backups fixed in b928a7d9c (every start
+     prunes to the number). Owner: grammar57 (the console line and the
+     assistant's field, send and suggestions, in the button grammar).
+807. **The owner, 2026-10-11, verbatim.** "it isnt really clear exactly what
+     these were for" (screenshot: Where your data went, rows such as
+     "huggingface.co (2600:...:443) The internet, Optional downloads,
+     connected 4 times"). Owner: the transparency agent: each destination
+     says what it fetched or sent (the model or file name, the search
+     words) and why, the address behind a disclosure.
+808. **The owner, 2026-10-11, verbatim** (a log): Agent mode calls
+     `ask_user` with one option three times ("ask_user needs at least 2
+     different options"), calls `search_notes` with no query on "NOTEBOOK
+     STATS", searches `'what is there about a gaming mouse?\\'` with the
+     backslash kept, "can you search the web?" finds 0 notes via none, and
+     "Grammar check off for this session: the grammar worker did not start".
+     Owner: noagent (the agent's calls and the query clean-up); the grammar
+     worker to grammar57.
+903. **The owner, 2026-10-11, verbatim.** "alright lets rename and
+     retrademark to Tessellate update absolutely everything including all
+     the documentation and the pages site. make sure to still note the
+     former name though." Placed: the rebrand agent (agent/rebrand-1011):
+     step 1 the brand (`scripts/rebrand.py`, re-run after every merge;
+     `tests/test_brand_name.py`), step 2 the internal identifiers with
+     fallbacks for existing installs, as its own last commit.
 

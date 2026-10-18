@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- INBOX triage: eight placed items (735, 742, 771, 772, 804, 807, 808, 903) moved to HISTORY's "INBOX resolved"; the tray holds eleven.
 - Boot JS back under its cap after the companion and popup-citation merges (588,399 of 588,400 gzipped): the dead `logTerminalLineText`, same-file `typeof fn === "function"` guards in `avatars.js` and `atlas.js`, and a folded release and landing path in the companion; ten one-off probe scripts left `scratchpad/` for the file cap.
 - The owner's "a ghose cursor" reads as "a ghost cursor" and "shorter and shortyer" as "shorter and shorter" (INBOX 904 fixtures). A five-letter word keeping its first three letters is now a reading (`spelling._prefix_kept`), so "ghost" competes and the word frequency still gives "ghose" to "those" where nothing else says otherwise; no plural or relative determiner follows an article ("a those cursor"); the word after "a" or "the" is not an asking word ("a whose cursor"); and a long consonant-y stem with a comparative or past ending put straight on ("shortyer", "happyer") is no longer accepted as a word.
 - `test_the_running_model_manager_is_never_its_module` no longer fails only under `gate.sh`: its child interpreter got no `PYTHONPATH` (pytest.ini's `pythonpath = src` does not reach a child), so it could not import `tessellate`; the test now passes the repo's `src` in the child's environment.
