@@ -7,6 +7,7 @@ real database, and singletons are rebuilt between tests.
 from __future__ import annotations
 
 import os
+import shutil
 from pathlib import Path
 
 import pytest
@@ -64,6 +65,20 @@ def repo_tree():
     from tests._repo_files import repo_files
 
     return repo_files
+
+
+@pytest.fixture(autouse=True)
+def _no_repo_data_folder():
+    """A test that builds the app's config without `app_state` falls back to
+    `./data`, which is the repo's own folder when pytest runs from the root
+    (four `test_mcp_server` tests did, seen as an untracked `data/` after CI).
+    It fails the test that made one and clears it, so the next run is clean."""
+    folder = Path(__file__).resolve().parents[1] / "data"
+    existed = folder.exists()
+    yield
+    if not existed and folder.exists():
+        shutil.rmtree(folder, ignore_errors=True)
+        pytest.fail("this test wrote the repo's data/ folder: use the app_state fixture (or TESSELLATE_DATA_DIR)")
 
 
 @pytest.fixture()

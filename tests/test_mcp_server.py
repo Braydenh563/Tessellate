@@ -14,7 +14,7 @@ from tessellate.ai import tools
 from tessellate.mcp_server import handle_request, offered_tools, serve
 
 
-def test_offered_tools_excludes_every_destructive_tool():
+def test_offered_tools_excludes_every_destructive_tool(app_state):
     names = {spec.name for spec in offered_tools()}
     for spec in tools.TOOLS.values():
         if spec.destructive:
@@ -29,7 +29,7 @@ def test_offered_tools_excludes_a_tool_disabled_in_settings(app_state):
     assert "count_notes" not in names
 
 
-def test_initialize_returns_protocol_info():
+def test_initialize_returns_protocol_info(app_state):
     response = handle_request({"jsonrpc": "2.0", "id": 1, "method": "initialize"})
     assert response["id"] == 1
     assert response["result"]["protocolVersion"]
@@ -55,7 +55,7 @@ def test_an_unknown_method_notification_gets_no_response():
     assert handle_request({"jsonrpc": "2.0", "method": "not/a/real/method"}) is None
 
 
-def test_tools_list_shape():
+def test_tools_list_shape(app_state):
     response = handle_request({"jsonrpc": "2.0", "id": 3, "method": "tools/list"})
     listed = response["result"]["tools"]
     assert listed  # the registry is never empty
@@ -125,7 +125,7 @@ def test_serve_skips_blank_and_malformed_lines(app_state):
     assert json.loads(lines[0])["id"] == 8
 
 
-def test_chat_only_and_interactive_tools_are_not_listed():
+def test_chat_only_and_interactive_tools_are_not_listed(app_state):
     names = {spec.name for spec in offered_tools()}
     for spec in tools.TOOLS.values():
         if spec.ends_turn:
@@ -134,7 +134,7 @@ def test_chat_only_and_interactive_tools_are_not_listed():
         assert name not in names
 
 
-def test_annotations_mark_reads_and_writes():
+def test_annotations_mark_reads_and_writes(app_state):
     listed = {
         entry["name"]: entry["annotations"]
         for entry in handle_request({"jsonrpc": "2.0", "id": 1, "method": "tools/list"})["result"]["tools"]
@@ -152,7 +152,7 @@ def test_the_icon_prefix_is_stripped_from_a_label(app_state):
     assert payload.get("label") and not payload["label"].startswith("ph:")
 
 
-def test_protocol_version_follows_a_supported_client():
+def test_protocol_version_follows_a_supported_client(app_state):
     def init(version):
         params = {"protocolVersion": version} if version else {}
         return handle_request({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": params})["result"]

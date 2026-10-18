@@ -60,11 +60,16 @@ test.afterAll(() => {
 async function instrument(page) {
   await page.evaluate(() => {
     if (window.__fr) return;
-    const fr = { raf: 0, rafMs: 0, long: 0, longMs: 0 };
+    const fr = { raf: 0, rafMs: 0, long: 0, longMs: 0, by: {} };
     const native = window.requestAnimationFrame.bind(window);
     window.requestAnimationFrame = (cb) => native((t) => {
       const began = performance.now();
-      try { cb(t); } finally { fr.raf++; fr.rafMs += performance.now() - began; }
+      try { cb(t); } finally {
+        fr.raf++; fr.rafMs += performance.now() - began;
+        // Who asked, so an idle screen that redraws names the loop (an anonymous one by its first 50 characters).
+        const who = cb.name || String(cb).replace(/\s+/g, " ").slice(0, 50);
+        fr.by[who] = (fr.by[who] || 0) + 1;
+      }
     });
     try {
       new PerformanceObserver((list) => {
@@ -74,7 +79,7 @@ async function instrument(page) {
     window.__fr = fr;
   });
 }
-const reset = (page) => page.evaluate(() => Object.assign(window.__fr, { raf: 0, rafMs: 0, long: 0, longMs: 0 }));
+const reset = (page) => page.evaluate(() => Object.assign(window.__fr, { raf: 0, rafMs: 0, long: 0, longMs: 0, by: {} }));
 const read = (page) => page.evaluate(() => ({ ...window.__fr }));
 const round = (n) => Math.round(n * 10) / 10;
 
@@ -85,7 +90,8 @@ async function idle(page, name) {
   await page.waitForTimeout(IDLE_MS);
   const f = await read(page);
   const secs = IDLE_MS / 1000;
-  const row = { scenario: `${name}: idle`, rafPerSec: round(f.raf / secs), rafMsPerSec: round(f.rafMs / secs), longTasks: f.long };
+  const top = Object.entries(f.by || {}).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([who, n]) => `${who} x${n}`).join("; ");
+  const row = { scenario: `${name}: idle${top && f.raf / secs > CAPS.idleRafPerSec ? ` (${top})` : ""}`, rafPerSec: round(f.raf / secs), rafMsPerSec: round(f.rafMs / secs), longTasks: f.long };
   rows.push(row);
   if (STRICT) {
     expect.soft(row.rafPerSec, `${name} idle rAF/s`).toBeLessThanOrEqual(CAPS.idleRafPerSec);
@@ -150,7 +156,7 @@ async function surfaceBox(page, selector) {
 
 test("idle: busy screens redraw little when nothing changes", async ({ page }) => {
   await openApp(page);
-  for (const tab of ["dashboard", "notes", "timeline", "documents"]) {
+  for (const tab of ["dashboard", "notes", "timeline", "library"]) {
     await scenario(`${tab}`, async () => { await openTab(page, tab); await idle(page, tab); });
   }
 });
