@@ -329,16 +329,18 @@ def test_the_feminine_silhouette_is_one_body_arms_and_hair_grown_from_it():
 
 
 def test_drowsy_droops_softly_rather_than_staring():
-    # Round 9 (the owner: "the half lidded eyes look a little creepy"): the
-    # lid's edge droops in an arc, the pupils are small and look down, the
-    # mouth relaxes whatever the mood, and a blink lingers closed.
+    # Round 9, then INBOX 1301 D4 (the owner: "the half lidded eyes on atlas
+    # look creepy and like fnaf"): the soft drooping lid read as a half-shut
+    # stare too; drowsy now keeps the lid up and squints from below, the
+    # pupils are small and look down, the mouth relaxes whatever the mood,
+    # and a blink lingers closed (tests/test_atlas_lids_1301.py measures).
     start = CSS.index("#nm-buddy.nmb-drowsy .nm-atlas {")
     drowsy = CSS[start : CSS.index("}", start)]
-    assert "--atl-softlid: 1" in drowsy and "--atl-m-rest: 1" in drowsy and "--atl-m-grin: 0" in drowsy
+    assert "--atl-lid: 0.08" in drowsy and "--atl-low: 0.14" in drowsy
+    assert "--atl-m-rest: 1" in drowsy and "--atl-m-grin: 0" in drowsy
     assert "--atl-ps: 0.8" in drowsy and "--atl-py: 1.6px" in drowsy
-    assert '"atl-skin atl-lid-soft"' in ATLAS and ".nm-atlas .atl-lid-soft { opacity: var(--atl-softlid); }" in CSS
     # INBOX 540: the slow blink is the lid's own sweep, driven with the rest.
-    assert 'box.closest(".nmb-drowsy")) atlasBlink(box, true)' in ATLAS
+    assert 'box.closest(".nmb-drowsy, .nmb-groggy")) atlasBlink(box, true)' in ATLAS
     assert ".nm-atlas.atl-layer-lidf-1.atl-blinking-slow { animation: atl-blink-slow-f1 1420ms linear; }" in CSS
 
 
