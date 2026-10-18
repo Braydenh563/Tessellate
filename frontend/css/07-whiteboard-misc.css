@@ -6286,7 +6286,7 @@ button.connection-row:is(:hover, :focus-visible) {
   top: 3.75rem;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 7;
+  z-index: 23;
   display: flex;
   align-items: center;
   gap: var(--space-2);

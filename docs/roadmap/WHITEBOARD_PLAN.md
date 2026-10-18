@@ -894,50 +894,7 @@ Held by the boardmap-1005 agent; the built halves are in HISTORY.md
 
 ## Placed from INBOX, 2026-10-07 (next PR)
 
-740. **The owner, 2026-10-06, verbatim**, with an OKR board from the new templates
-     (frame titles "Objective one", hints "A goal worth the quarter") and a rotated
-     sticky note: "I cant edit the text under the titles in these objects?I rotated
-     an object int he whiteboard (a sticky note) and the arrows jsut off the middle
-     of each edge didnt rotate with it". Two bugs: the template frames' hint line
-     (INBOX 715's `hint` field) has no edit path, double-click should edit it like
-     the title; the quick-connect arrows beside each edge stay axis-aligned on a
-     rotated object, they must sit off its rotated edges.
-     Then, verbatim: "also the arrow head styles in the whiteboard have no
-     variations, not different arrow heads". Connector ends need a set of heads
-     (none, arrow, open arrow, triangle, circle, diamond, bar), per end, in the
-     connector toolbar.
-
-746. **The owner, 2026-10-07, verbatim**, with a board made from the flowchart
-     template (Start, Do the first step, Did it work?, Try again, End) after
-     dragging its shapes apart: "while dragging shapes, the arrows and lines dont
-     move with". The template's connectors (frontend/board-library/templates.json;
-     shapes carry a `key`) stayed where they were drawn: either they are created
-     as free arrows with fixed ends instead of connectors bound to the shapes'
-     keys, or the binding is lost when the template lands
-     (`/board-library/new-board`). Next PR: every template connector is bound
-     at both ends, a drag of a bound shape moves its connectors live, and a
-     test drags each built-in template's shapes and checks every connector
-     still meets its shapes. With 740 (arrows on rotated shapes).
-
-747. **The owner, 2026-10-07, verbatim**: "also in the whiteboard and mindmap,
-     there's no way to reset a object back to default style". No such action
-     exists (grep "Reset style" in whiteboard*.js finds nothing; a map topic's
-     Text, Shape and Branch panels each have their own reset arrow, INBOX 670,
-     but nothing resets the whole object). Next PR: "Reset style" on every
-     object's floating bar menu and right-click menu, and for a multi-selection:
-     colour, fill, stroke, text size and weight, shape and line style back to
-     the kind's defaults (a map topic back to following the map), content and
-     position kept, one undo step, in the command palette as a board command,
-     help text updated.
-
-- **The edge arrows also ignore resize and drag** (the owner, 2026-10-07,
-  verbatim: "can you fix the edge arrows and line arrows not moving or
-  rotating with the objects??", "the arrows dont resize either", with a
-  resized text box whose side triangles stayed at its old size). With 740:
-  the triangles outside each side of a selected object sit just outside the
-  midpoint of each edge of its current box, rotated with it, updated live
-  during drag, resize and rotate; bound connectors follow the same way (746).
-  Measure with getBoundingClientRect after each of the three.
+Built (code and tests read 2026-10-18, whiteboard-1018); moved whole to HISTORY.md ("Moved from the plans, 2026-10-18 (whiteboard-1018, built Placed blocks)").
 
 ## Placed from the owner's list, 2026-10-10
 
@@ -1010,20 +967,20 @@ the same three tabs (Style, Text, Arrange); fields per kind in
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | Fill colour, on or off | yes (`wb-fmt-fill-on`, `wb-fmt-fill`) | `addFill` (Format.js 6861), `createCellColorOption` `fillColor` | done | none |
-| Gradient: second colour plus direction (north, east, south, west, radial) | no | `addFill`: `gradientColor`, `gradientDirection` (Format.js 6925) | `data.gradient {to, dir}`, drawn as an SVG `linearGradient` or `radialGradient` in the board's `<defs>`; export clones defs so SVG and PNG keep it | M |
-| Fill style: hatch, cross-hatch, dots, dashed, zigzag line, solid | no | `Editor.fillStyles` (Editor.js 250), `fillStyle` select in `addFill` (Format.js 7009) | `data.fillStyle` picks one of six SVG `<pattern>` fills clipped to the shape | M |
+| Gradient: second colour plus direction (north, east, south, west, radial) | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `addFill`: `gradientColor`, `gradientDirection` (Format.js 6925) | `data.gradient {to, dir}`, drawn as an SVG `linearGradient` or `radialGradient` in the board's `<defs>`; export clones defs so SVG and PNG keep it | M |
+| Fill style: hatch, cross-hatch, dots, dashed, zigzag line, solid | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `Editor.fillStyles` (Editor.js 250), `fillStyle` select in `addFill` (Format.js 7009) | `data.fillStyle` picks one of six SVG `<pattern>` fills clipped to the shape | M |
 | Swatches and preset colours (24 presets, 40 defaults, custom row) | partly: saved palettes (`save-palette`), no swatch grid in the picker | `ColorDialog.presetColors`, `defaultColors` (Dialogs.js 1805, 1815), `getCustomColors` (Format.js 7119) | one swatch popover behind every colour input, seeded with draw.io's 24 and 40, plus the board's saved palettes | S |
 | Line colour | yes (`wb-fmt-stroke`) | `addStroke` (Format.js 7193) `strokeColor` | done | none |
 | Line width | yes (`wb-fmt-width`) | `strokeWidth`, up to 999 | done | none |
 | Line pattern: solid, dashed, dotted | yes (`wb-fmt-dash`) | `solid`, `dashed`, `dotted` actions (Actions.js 1586 to 1630) | done | none |
-| Custom dash pattern ("8 4") | no | `addDashPattern` (Format.js 7165), `dashPattern` | `data.dashPattern` string overrides `dash`; one text field, validated to numbers | S |
+| Custom dash pattern ("8 4") | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `addDashPattern` (Format.js 7165), `dashPattern` | `data.dashPattern` string overrides `dash`; one text field, validated to numbers | S |
 | Line style for polylines: sharp, rounded, curved | no | `sharp`, `rounded`, `curved` actions (Actions.js 1631 to 1700) | `data.round` radius applied by the path builder at M/L corners (quad rounded into cubics) | M |
-| Corner rounding of a rectangle | no | `rounded=1` with `arcSize`; `toggleRounded` (Actions.js 1661) | `data.round` read by the rectangle path builder; the stencil `roundrect` op already uses it | S |
+| Corner rounding of a rectangle | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `rounded=1` with `arcSize`; `toggleRounded` (Actions.js 1661) | `data.round` read by the rectangle path builder; the stencil `roundrect` op already uses it | S |
 | Opacity | yes (`wb-fmt-alpha`) | `createRelativeOption` `opacity` (Format.js 6385) | done | none |
 | Shadow | yes (`wb-fmt-shadow`) | `addEffects` (Format.js 7939) `shadow` | done | none |
 | Glass | no | `glass` effect (Format.js 7939) | drop: a skeuomorphic gloss the board's look does not use | none |
 | Sketch (hand-drawn) | no | `sketch` effect (Format.js 8004), rough.js | drop (matrix verdict, unchanged) | none |
-| Flow animation on a connector | no | `flowAnimation` effect (Format.js 7939) | `data.flow` adds a CSS class that animates `stroke-dashoffset`; export writes it static | S |
+| Flow animation on a connector | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `flowAnimation` effect (Format.js 7939) | `data.flow` adds a CSS class that animates `stroke-dashoffset`; export writes it static | S |
 | Edit style (raw string) | no | `editStyle` (Actions.js 1717), Ctrl+E | see section 3: the board's equivalent is "Edit data", a JSON view of `data` | M |
 | Copy style, paste style | yes (`copy-style`, `paste-style`, `wb-fmt-copy-style`) | `copyStyle`, `pasteStyle` (Menus.js 1028, 1049) | done | none |
 | Set as default style, default for new connectors | no | `setAsDefaultStyle` (Actions.js 1749), `setAsDefaultForNewConnections` (1763), Ctrl+Shift+D | `board.defaults {shape, link, text}` in the board's settings row, read by the tools when they create an item; Ctrl+Shift+D writes it from the selection | M |
@@ -1040,13 +997,13 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
-| Font family | no (size only) | `fontFamily` menu (Menus.js 137), `STYLE_FONTFAMILY` | `label_font` from a short list of the app's loaded faces plus system stacks | S |
+| Font family | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `fontFamily` menu (Menus.js 137), `STYLE_FONTFAMILY` | `label_font` from a short list of the app's loaded faces plus system stacks | S |
 | Font size | yes (`wb-fmt-size`) | `fontSize` menu (Menus.js 227) | done | none |
 | Bold, italic | yes | `fontStyle` bits, Ctrl+B, Ctrl+I | done | none |
-| Underline, strikethrough | no | `fontStyle` bits 4 and 8, Ctrl+U | `label_underline`, `label_strike`, drawn as `text-decoration` on the SVG text | S |
+| Underline, strikethrough | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `fontStyle` bits 4 and 8, Ctrl+U | `label_underline`, `label_strike`, drawn as `text-decoration` on the SVG text | S |
 | Subscript, superscript | no | `subscript`, `superscript` (Actions.js 1911, 1918) | needs rich text inside shapes; text boxes already hold markdown | M |
 | Horizontal align (left, centre, right) | yes (`wb-fmt-align`) | `STYLE_ALIGN` | done | none |
-| Vertical align (top, middle, bottom) | no (the owner's bug, "no way to vertically centre text", INBOX 2026-10-10) | `STYLE_VERTICAL_ALIGN` | `label_valign`; the SVG label block is positioned by it; Brief 36 carries it | S |
+| Vertical align (top, middle, bottom) | yes, 2026-10-10 (HISTORY) | `STYLE_VERTICAL_ALIGN` | `label_valign`; the SVG label block is positioned by it; Brief 36 carries it | S |
 | Font colour | yes (`wb-fmt-ink`) | `fontColor...` (Actions.js 1525) | done | none |
 | Label background and border colour | no | `labelBackgroundColor`, `labelBorderColor` (Format.js, Text tab) | `label_bg`, `label_border`: a rounded rect behind the label, which a connector label needs to stay readable over crossing lines | S |
 | Text opacity | no | `textOpacity` | `label_alpha` | S |
@@ -1056,24 +1013,24 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Word wrap, label width, padding | partly (shapes wrap inside `label_area`) | `whiteSpace=wrap`, `labelWidth`, `labelPadding` | `label_width`, `label_pad` on top of `label_area` | S |
 | Spacing: top, right, bottom, left, global | no | `spacing`, `spacingTop..Left` | `label_pad {t,r,b,l}` shares the row above | S |
 | Line height | no | `lineheight` in the text panel | `label_lh` | S |
-| Auto-size to text, fit text to shape | no | `autosize` action (Actions.js 1001), `autosizeText`, `fitTextToShape` | one command `autosize` in `WB_COMMANDS`: measure the label with `getBBox`, resize the shape's box; grows only | S |
+| Auto-size to text, fit text to shape | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `autosize` action (Actions.js 1001), `autosizeText`, `fitTextToShape` | one command `autosize` in `WB_COMMANDS`: measure the label with `getBBox`, resize the shape's box; grows only | S |
 | Formatted (HTML) text, lists, indent, links, horizontal rule | partly: text boxes are markdown with a slash menu; shapes plain | `formattedText` (Actions.js 1086), `html=1`, list and indent buttons | shapes keep plain text; markdown stays for text boxes; the Format panel shows the markdown toolbar for them | none |
-| Clear formatting | no | `removeFormat` (Actions.js 1564) | one command: drop all `label_*` | S |
-| Increase and decrease font size | no | Ctrl+Shift+Plus, Ctrl+Shift+Minus (Actions.js 1956, 1960) | two `WB_COMMANDS` rows, 1pt steps | S |
+| Clear formatting | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `removeFormat` (Actions.js 1564) | one command: drop all `label_*` | S |
+| Increase and decrease font size | yes, 2026-10-18 (whiteboard-1018; HISTORY, palette rows) | Ctrl+Shift+Plus, Ctrl+Shift+Minus (Actions.js 1956, 1960) | two `WB_COMMANDS` rows, 1pt steps | S |
 | Layer order: front, back, forward, backward | yes (four `order-*` commands) | `toFront`, `toBack`, `bringForward`, `sendBackward` (Actions.js 569 to 585) | done | none |
 | Group, ungroup, lock | yes (`group`, `ungroup`, `lock`) | `group`, `ungroup`, `lockUnlock` (Actions.js 644, 665, 521) | done | none |
-| Remove from group | no | `removeFromGroup` (Actions.js 705) | one command: clear `group_id` on the selected member, keeping the group | S |
-| Copy size, paste size, swap | no | `copySize`, `pasteSize`, `swap` (Actions.js 223, 238, 213) | `same-width`, `same-height` cover the multi-select case; copy size is two commands that remember w and h | S |
+| Remove from group | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `removeFromGroup` (Actions.js 705) | one command: clear `group_id` on the selected member, keeping the group | S |
+| Copy size, paste size, swap | copy and paste size yes, 2026-10-18 (whiteboard-1018; HISTORY); swap no | `copySize`, `pasteSize`, `swap` (Actions.js 223, 238, 213) | `same-width`, `same-height` cover the multi-select case; copy size is two commands that remember w and h | S |
 | X, Y, width, height | yes (`wb-fmt-x/y/w/h`) | `addGeometry` (Format.js 3082) | done; resize from the centre is the one gap (matrix) | S |
 | Constrain proportions | no | `constrainProportions` checkbox (Format.js 3082) | `data.aspect` lock; shift-drag already keeps it | S |
 | Rotation angle, flip horizontal and vertical | yes (`wb-fmt-angle`, `wb-fmt-flip-h/v`) | `addAngle` (Format.js 2913), `addFlip` (2612) | done | none |
-| Turn 90 degrees | no | `turn` action (Ctrl+R) | a command that adds 90 to `rotation` | S |
+| Turn 90 degrees | yes, 2026-10-18 (whiteboard-1018; HISTORY), no Ctrl+R (the browser's reload) | `turn` action (Ctrl+R) | a command that adds 90 to `rotation` | S |
 | Align (six), distribute (two) | yes (eight commands) | `addAlign` (Format.js 2575), `addDistribute` (2856) | done | none |
 | Snap to grid after align | partly (`wb-snap-toggle`) | `snapToGrid` in the align block | none worth building | none |
 | Group padding | no | `addGroupPadding` (Format.js 3663) | frame padding row (`tint` and `hint` exist on frames) | S |
 | Table: rows, columns, merge, stripes | no | `addTable` (Format.js 2162), section 12 below | section 12 | M |
 | Arrow shape geometry (width of a block arrow connector) | no | `addArrowGeometry` (Format.js 3972) | needs the `flexArrow` connector shape, section 4 | M |
-| Connector direction: reverse, loop side | no | `addEdgeTurn` (Format.js 2811), `addLoopDirection` (2650) | a `reverse` command swaps ends and caps; self-loops are not drawn today | S |
+| Connector direction: reverse, loop side | reverse yes, 2026-10-18 (whiteboard-1018; HISTORY); loop side no | `addEdgeTurn` (Format.js 2811), `addLoopDirection` (2650) | a `reverse` command swaps ends and caps; self-loops are not drawn today | S |
 | Edit data, copy and paste data, edit tooltip, note, link, open link | no (links on items exist) | `editData` (Actions.js 742), `editTooltip` (748), `editNote` (786), `editLink` (812) | section 3 | M |
 
 ### 3. Edit style, Edit data, placeholders, tooltips
@@ -1082,8 +1039,8 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | --- | --- | --- | --- | --- |
 | Edit style as text | no | `editStyle` (Actions.js 1717): a dialog with the `key=value;` string | an "Edit data" dialog showing the item's `data` JSON, parsed and validated on Apply, one undo step; the same field is how AI sees it | M |
 | Edit data: custom properties | yes, 2026-10-11 (canvasdepth2; HISTORY) | `EditDataDialog` (Dialogs.js 3707): key and value rows, id, placeholders toggle | `data.props {key: value}` shown as a two-column editor; search and the AI tools read it | M |
-| Placeholders `%name%` in labels | no | `Graph.replacePlaceholders` (Graph.js 14099), `updatePlaceholders` (13534) | the label renderer replaces `%key%` from `data.props`, `%date%`, `%page%`; export bakes the values | M |
-| Tooltip | no (a title attribute is set for control tooltips only) | `getTooltipForCell` (Graph.js 17291), `editTooltip` | `data.tip` rendered as a hover popover on the SVG item; a link row already exists for notes | S |
+| Placeholders `%name%` in labels | yes, 2026-10-18 (whiteboard-1018; HISTORY), `%date%` and `%page%` open | `Graph.replacePlaceholders` (Graph.js 14099), `updatePlaceholders` (13534) | the label renderer replaces `%key%` from `data.props`, `%date%`, `%page%`; export bakes the values | M |
+| Tooltip | yes, 2026-10-18 (whiteboard-1018; HISTORY), shapes and connectors; a native SVG title, not a popover | `getTooltipForCell` (Graph.js 17291), `editTooltip` | `data.tip` rendered as a hover popover on the SVG item; a link row already exists for notes | S |
 | Note on a shape | no (comments exist, `comment` command) | `editNote` (Actions.js 786) | covered by board comments | none |
 | Link on a shape (URL or page) | yes (object links, WHITEBOARD_PLAN decision) | `getLinkForCell` (Graph.js 15330), `editLink`, `openLink`, `link=`; `data:page/id,` links to pages | done for objects; add sketches and a "frame" target | S |
 | Edit geometry as numbers | yes (`wb-fmt-x/y/w/h`) | `editGeometry` (Menus.js 962) | done | none |
@@ -1097,17 +1054,17 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Straight, curved, elbow routes | yes (three: `wb-fmt-route`, `line-curved/straight/elbow`) | `edgeStyle` menu (Menus.js 59): straight, orthogonal, curved, entity relation, elbow horizontal and vertical, isometric horizontal and vertical, sequence | done | none |
 | Orthogonal routing that avoids other shapes | partly: elbow detours around its own two end boxes only (`wbElbowRoute`, `wbElbowDetour`) | mxEdgeStyle plus libavoid (`LibavoidRouting.js`, `libavoidRouting=1`), loaded when the extensions bundle is | an obstacle grid over item boxes (A* on a coarse grid, then simplify to corners); `route: "elbow"` keeps its shape, the router becomes the default behind it | L |
 | Entity relation, isometric and sequence routes | no | `entityRelationEdgeStyle`, `isometricEdgeStyle`, `addSequenceEdgeStyleItem` (Menus.js 59 to 105) | `route: "er"` (an S-shape with fixed stubs), `"iso"` (30 degree legs); sequence is a UML rule, drop | S |
-| Waypoints: add, move, remove, clear | yes (`waypoint` in `whiteboard-map.js`; `points` in the link data) | `addWaypoint`, `removeWaypoint`, `clearWaypoints` (Actions.js 1782, 1830, 1871), `addEdgeWaypoints` list (Format.js 4278) | done; add a "Clear waypoints" command and the numeric list in the Arrange tab | S |
-| Line jumps (arc, gap, sharp) with size | partly: style yes (`wb-fmt-jumps`), size no | `addLineJumps` (Format.js 7835), `jumpStyle`, `jumpSize` | add `jump_size` | S |
+| Waypoints: add, move, remove, clear | yes (`waypoint` in `whiteboard-map.js`; `points` in the link data); "Clear the connector's bends" command 2026-10-18 (whiteboard-1018; HISTORY), the numeric list not | `addWaypoint`, `removeWaypoint`, `clearWaypoints` (Actions.js 1782, 1830, 1871), `addEdgeWaypoints` list (Format.js 4278) | done; add a "Clear waypoints" command and the numeric list in the Arrange tab | S |
+| Line jumps (arc, gap, sharp) with size | yes, size 2026-10-18 (whiteboard-1018; HISTORY) | `addLineJumps` (Format.js 7835), `jumpStyle`, `jumpSize` | add `jump_size` | S |
 | Arrowheads: about 40 (classic, block, open, oval, diamond, thin variants, async, box, half circle, dash, cross, circle plus, ER set, double block), filled or hollow, with size | partly: 11 stroked kinds (`WB_CAP_KINDS`: arrow, circle, square, multiline, six ER); no filled heads, no size | `Format.processMenuIcon` list (Format.js 140 to 175), `startArrow`, `endArrow`, `startFill`, `endFill`, `startSize`, `endSize` | caps become `{kind, fill, size}`; add block, diamond, oval filled and hollow, open, dash, cross, half circle; draw as closed subpaths like `wbCapPath` | M |
 | Connector shapes: line, link (double), flex arrow, simple arrow, tapered arrow, filled edge, pipe, wire | no | `edgeShape` menu (Menus.js 107); `Shapes.js` `link`, `flexArrow`, `taperedArrow`, `filledEdge`, `pipe`, `wire` | `link-*` gains `shape` (line, double, block arrow, pipe) drawn as a closed outline around the centre line | L |
 | Edge labels: text, position along the line, background | yes (`wb-fmt-label-t`, `wblinklabel.js`) | `edge value`, label offset in `mxGeometry`; background `labelBackgroundColor` | done; add `label_bg` (section 2) and a perpendicular offset | S |
 | Multiple labels on one edge | no | child cells of the edge with relative geometry | a second label field `label2_*` is enough; more is drop | S |
-| Perimeter spacing (gap between line end and shape) | no | `sourcePerimeterSpacing`, `targetPerimeterSpacing`, `perimeterSpacing` (Format.js `addStroke`) | `gap_start`, `gap_end` subtracted along the end tangent | S |
+| Perimeter spacing (gap between line end and shape) | yes, 2026-10-18 (whiteboard-1018; HISTORY), as `gapStart` and `gapEnd` | `sourcePerimeterSpacing`, `targetPerimeterSpacing`, `perimeterSpacing` (Format.js `addStroke`) | `gap_start`, `gap_end` subtracted along the end tangent | S |
 | Source and target connect to a shape, an edge, or float | partly: links join cards and shapes; a free end floats | `mxConnectionHandler`, `Graph.connectVertex` (Graph.js 14940) | done for items; edge-to-edge is drop | none |
 | Hover connection arrows to create a connected shape | yes (`wb-clone-grips`, `wbCloneConnect`) | `HoverIcons` (Graph.js 17581), `connectVertex` | done; add a shape picker after a drag from a grip to empty space (section 17) | S |
-| Reverse direction, self-loop side | no | `addEdgeTurn`, `addLoopDirection` (Format.js 2811, 2650) | `reverse` command; self-loop as a drawn arc | S |
-| Rounded and curved polylines | no | `rounded`, `curved` styles | `data.round` on link polylines | M |
+| Reverse direction, self-loop side | reverse yes, 2026-10-18 (whiteboard-1018; HISTORY); self-loop no | `addEdgeTurn`, `addLoopDirection` (Format.js 2811, 2650) | `reverse` command; self-loop as a drawn arc | S |
+| Rounded and curved polylines | rounded: yes, 2026-10-18 (an elbow connector; whiteboard-1018, HISTORY); curved: no | `rounded`, `curved` styles | `data.round` on link polylines | M |
 | Edge shadow and opacity | yes | `shadow`, `opacity` | done | none |
 
 ### 5. Connection points and constraints
@@ -1232,8 +1189,8 @@ product; the NOTICE says so).
 | --- | --- | --- | --- | --- |
 | Find text, next and previous, highlight, count | yes for cards and objects (`wbBoardSearchRun`, whiteboard.js 2210; `wb-search-*`; Ctrl+F) | `FindWindow` (diagramly/Dialogs.js 9512), `findReplace` action (Ctrl+F) | done; extend to shape and connector labels (`label`) and `data.props` | S |
 | Replace and replace all | no | `FindWindow` with `withReplace`: replace field, Replace, Replace all | a second field and two buttons on `wb-search-bar`; one undo step per Replace all through `wbRecordGesture` | S |
-| Regular expression, all pages, case | no | `regularExpression` and `allPages` checkboxes (Dialogs.js 9512 onward); matches in label text and, with regex, in metadata | regex toggle and "all frames" (not boards); case-insensitive by default | S |
-| Find in custom data | no | `testMeta` over the cell's attributes | with `data.props` | S |
+| Regular expression, all pages, case | regex and whole word yes, 2026-10-18 (whiteboard-1018; HISTORY); "all frames" open | `regularExpression` and `allPages` checkboxes (Dialogs.js 9512 onward); matches in label text and, with regex, in metadata | regex toggle and "all frames" (not boards); case-insensitive by default | S |
+| Find in custom data | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `testMeta` over the cell's attributes | with `data.props` | S |
 | Tags on shapes, filter by tag | no | `tags` action (Ctrl+K, diagramly/Menus.js 1299), `tags` style attribute | `data.tags` with a tag filter that dims the rest; the Library already has tags | M |
 
 ### 10. Outline, navigation and view
@@ -1267,8 +1224,8 @@ clash is listed so the choice is made once.
 | Shift+Delete | delete labels only | none | S |
 | Ctrl+D | duplicate | Ctrl+D | same |
 | Ctrl+A | select all | same | |
-| Ctrl+Shift+I | select vertices | none | one command, "Select all shapes" |
-| Ctrl+Shift+E | select edges | none | one command, "Select all connectors" |
+| Ctrl+Shift+I | select vertices | none, 2026-10-18: a command without the key (whiteboard-1018) | one command, "Select all shapes" |
+| Ctrl+Shift+E | select edges | none, 2026-10-18: a command without the key (whiteboard-1018) | one command, "Select all connectors" |
 | Ctrl+Shift+A | select none | none | Esc deselects |
 | Ctrl+G, Ctrl+Shift+U | group, ungroup | Ctrl+G, Ctrl+Shift+G | differs on ungroup; keep ours, accept both |
 | Ctrl+L | lock | Ctrl+Shift+L | differs (ours is the lint-held key) |
@@ -1282,8 +1239,8 @@ clash is listed so the choice is made once.
 | Ctrl+Shift+O | outline | Shift+N | differs |
 | Ctrl+Shift+D | set as default style | none | section 1 |
 | Ctrl+Shift+R | clear default style | none | S |
-| Ctrl+R | turn 90 degrees | none | S |
-| Ctrl+Shift+Y | autosize | none | S |
+| Ctrl+R | turn 90 degrees | none, 2026-10-18: a command without the key (whiteboard-1018) | S |
+| Ctrl+Shift+Y | autosize | none, 2026-10-18: a command without the key (whiteboard-1018) | S |
 | Ctrl+Shift+G | grid on and off | ungroup (clash) | grid stays on the View menu |
 | Ctrl+F | find and replace | find only | section 9 |
 | Ctrl+K | tags | none | |
@@ -1301,7 +1258,7 @@ clash is listed so the choice is made once.
 | Arrow keys, Shift+arrow, Ctrl+arrow | move 1 px, move by the grid size, resize (`nudge`, EditorUi.js 8249) | arrows 1 px, Shift 10 px | add Ctrl+arrow resize |
 | Alt+Shift+arrow | clone and connect (`connectVertex`) | Alt+Shift+Arrow | same |
 | Alt+Shift+R, L, T, N | clear waypoints, edit link, edit tooltip, edit note (`altShiftActions`, EditorUi.js 8129) | none | with sections 3 and 4 |
-| Alt+Shift+F, V, B, E | copy size, paste size, copy data, paste data | none | S each |
+| Alt+Shift+F, V, B, E | copy size, paste size, copy data, paste data | none; copy and paste size are commands without the key, 2026-10-18 (whiteboard-1018) | S each |
 | Alt+Shift+A, O, Q | connection arrows, connection points, edit connection points | none | with section 5 |
 | Ctrl+Alt+Shift+F, B | bring forward, send backward | ] and [ | differs |
 | Ctrl+Alt+X, Ctrl+Alt+Shift+X | copy as image, as SVG | none | section 14 |
@@ -1316,7 +1273,7 @@ clash is listed so the choice is made once.
 
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
-| Rubber-band, lasso, shift-add, select all of a kind | yes (select, lasso K; Ctrl+A); no select-by-kind | `mxRubberband`, `selectVertices`, `selectEdges` (Actions.js 517, 518) | two commands | S |
+| Rubber-band, lasso, shift-add, select all of a kind | yes (select, lasso K; Ctrl+A); select all shapes and select all connectors, 2026-10-18 (whiteboard-1018; HISTORY) | `mxRubberband`, `selectVertices`, `selectEdges` (Actions.js 517, 518) | two commands | S |
 | Groups with nesting | partly: `group_id` (18 hits in whiteboard.js); nested depth not checked | `group`, `ungroup`, `removeFromGroup` (Actions.js 644 to 705); `Graph.updateGroupBounds` (Graph.js 16483) | check the depth, add remove from group | S |
 | Containers (a shape that holds children, drop target highlight, children move with it, auto-resize) | partly: frames hold items (`frames.json`); no drop highlight, no resize with children | `container=1`, `isContainer` (Graph.js 11233), `getDropTarget` (26334), `dropTarget`, `recursiveResize`, `collapsible`, `foldCells` (15610) | frames gain "fit to children", a drop highlight, and collapse; the frame-as-container rule is an existing decision | M |
 | Swimlanes and pools (header strip, lanes in a stack) | no (matrix: partly) | `swimlane;startSize=...`, `childLayout=stackLayout`, `horizontalStack`, `resizeParent`, `resizeLast` | a "Lane" frame preset (frames.json already has "Timeline lane") with a header strip and a stack layout in `wbFrameLayout`: new lane appended in line, children keep their offsets | M |
@@ -1343,7 +1300,7 @@ clash is listed so the choice is made once.
 | Format | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | PNG with scale and transparent | yes (`wbExportPng`, `WB_EXPORT_FORMATS`) | `ExportDialog` (grapheditor/Dialogs.js 3582) zoom, width, height, dpi, transparent, grid, border width; "include a copy of my diagram" embeds the XML in the PNG | add border width, DPI; embedding the board JSON in a PNG `tEXt` chunk makes the PNG re-importable | S |
-| JPG, WebP, GIF | no | `exportJpg`, `exportWebp`, `exportAnimatedGif` (diagramly/Menus.js 1170 to 1181) | JPG and WebP are one canvas call each | S |
+| JPG, WebP, GIF | JPG and WebP yes, 2026-10-18 (whiteboard-1018; HISTORY); GIF open | `exportJpg`, `exportWebp`, `exportAnimatedGif` (diagramly/Menus.js 1170 to 1181) | JPG and WebP are one canvas call each | S |
 | SVG (re-editable, with the model embedded) | yes (`wbExportSvg`; `<metadata>` carries the board, `wbBoardSvgMetadata`) | `exportSvg` (diagramly/Menus.js 1101) with `content=` attribute | done | none |
 | PDF | yes (`wbExportPdf`) | `exportPdf` (692), server side | done (print path) | none |
 | HTML, embedded viewer, iframe, link | no | `exportHtml` (669), `embed` menu (4208) | an HTML export is the SVG in a page; embedding is out of scope | S |
@@ -1353,7 +1310,7 @@ clash is listed so the choice is made once.
 | Mermaid in and out; PlantUML | yes for Mermaid flowcharts (`whiteboard-interchange.js`); no PlantUML | `mermaid`, `plantUml` actions (insertAdvanced menu) | keep the Mermaid subset; PlantUML needs a server, drop | none |
 | Outline, Markdown, OPML, FreeMind, plain text | yes (for maps and outline) | no | Tessellate's own | none |
 | Export selection, visible area, whole board, one frame | yes | `selection only`, `crop`, page range | done | none |
-| Copy as image, copy as SVG | no | `copyAsImage`, `copyAsSvg` (diagramly/Menus.js 1186, 1194) | two commands that write to the clipboard | S |
+| Copy as image, copy as SVG | copy as image yes, 2026-10-18 (whiteboard-1018; HISTORY); copy as SVG open | `copyAsImage`, `copyAsSvg` (diagramly/Menus.js 1186, 1194) | two commands that write to the clipboard | S |
 
 ### 15. Insert menu, shape picker and the sidebar search
 
@@ -1638,20 +1595,7 @@ the graph agent.
 
 ## Placed from INBOX, 2026-10-11 (fit a frame to its contents)
 
-INBOX 821, the owner, verbatim: "can you add the ability to double tap a resize anchor to resize that edge or the whole frame to snugly fit all the content in it with a comfortable margin??" (screenshot: "Frame 1" far larger than its cards, sticky, sketch and links). Not built (no fit in `whiteboard*.js`). Target: double-click or double-tap an edge handle and that edge moves to the contents' bound plus a 32-unit margin; a corner handle fits its two edges; "Fit to contents" on the frame's menu fits all four. The contents are the items the frame holds (`wbFrameContents`), links' curves included. A frame holding nothing does not move. One Undo step; the move animates in 150 ms (instant under reduced motion). Gate: after fitting each edge, the gap is 32 ± 1 units at 1440 and 390, and nothing the frame held falls outside it. Help moves with it. Owner: the mapfix agent.
-
-INBOX 822, the owner, verbatim: "I cant rename frames in the pages sidebar" (screenshot: Pages, row "1 Frame 1" with only a present icon). Target: double-click or F2 on a page row renames the frame inline (the same one-line editor as a frame's title on the canvas, Enter to keep, Esc to cancel, one Undo step); the row's kebab (row actions recipe) holds Rename, Fit to contents, Present from here and Delete; the canvas title updates live. Owner: the mapfix agent.
-
-INBOX 823, the owner, verbatim: "these popups overlap" (screenshot: the line tool's kind popover, line or arrow, drawn under its own options bar, Size, Plain, Solid, which crosses it). Target: one tool's options are one surface: the kind choice joins the options bar as its first segment, or the popover opens above the bar with no intersection (measured, 0 px at 1440 and 390).
-
-INBOX 824, the owner, verbatim: "why are some elements highlighted blue in the sidebar but not others?? is it because they are in the frame??" (screenshot: Layers, five rows tinted, three Drawing rows plain). Read: the tint is the canvas selection (`aria-selected`, `wbRenderLayers`), and nothing on the panel says so. Target: the panel's head says "4 selected" with Clear; a selected row wears the list recipe's selected state (accent bar and tint), distinct from hover; items a frame holds nest under the frame's row (indented, collapsible), so "in the frame" is shown by place, never by colour. Owner: the mapfix agent.
-
-INBOX 825, the owner, verbatim: "also idk why that show less button is there, all the text is showing. but also I think notes and their content should be dynamic in sizing with the show more or less hyperlink showing or not based off how the note is sized, same with the size of images and files in a note and also the note should be freely sizable and shouldn snap to a size, maybe could have guided snaps?? idk this is all in the mindmap and whiteboard" (screenshot: a note card "Current Commitments" with all its text shown and "Show less" under it). Target, boards and maps alike:
-1. "Show more" shows only when the card's content overflows its size, measured by `scrollHeight > clientHeight` after layout and re-measured on resize. "Show less" shows only after a person expanded a card that overflowed. A card that fits shows neither.
-2. Cards resize freely, to any width and height: no snap to preset sizes. Guided snaps instead, while dragging: to a neighbour's width or height, to the grid when the grid is on, and to "fit content". A guide line shows each one. Alt holds them off.
-3. Images and files in a card scale with the card's width: images keep their ratio up to the card's width, and a file chip is one line that truncates its name.
-4. A double-click on a card's resize handle fits the card to its content (the same gesture as a frame's fit, INBOX 821).
-Gate: 0 cards with a stray Show more or Show less on the owner-shaped fixture at 1440 and 390; any width from 120 to 1200 units is reachable by drag. Owner: the cards agent (Sonnet, queued after mapfix).
+Built (INBOX 821 to 825, code read 2026-10-18); moved whole to HISTORY.md ("Moved from the plans, 2026-10-18 (whiteboard-1018, built Placed blocks)").
 
 ## Placed from INBOX, 2026-10-11 (ends, edge arrows, guides while drawing; canvasdepth3)
 

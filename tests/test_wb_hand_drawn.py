@@ -30,7 +30,7 @@ def test_the_board_look_stores_only_on_and_a_patch_turns_it_off(ai_client):
 
 
 def test_only_the_drawn_line_is_roughened_and_seeded_by_the_item():
-    render = WB[WB.index('d3.select(this).select(".sketch-hitbox").attr("d", hitboxData ?? pathData);') :][:600]
+    render = WB[WB.index('d3.select(this).select(".sketch-hitbox").attr("d", hitboxData ?? pathData);') :][:1600]
     assert render.index(".sketch-hitbox") < render.index("wbRoughD(pathData, d.id)")
     rough = _body(FMT, "function wbRoughD(")
     assert "wbRoughRandom(" in rough and "WB_ROUGH_CACHE.set(key, out)" in rough

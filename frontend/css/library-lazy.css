@@ -5419,6 +5419,20 @@ button.ghost.doc-template-choice.wb-template-choice {
 .wb-replace-row[hidden] {
   display: none;
 }
+/* Whole word and Pattern (whiteboard-1018): on a phone the bar's eight
+   44px targets cannot share one row with a usable field, so the row wraps
+   and the field keeps a floor of ten ems. (The bar's layer, in the base rule,
+   now sits over the selection bar's 22: a match on a shape raises that bar
+   across the same top strip and it covered the find bar's own buttons.) */
+@media (max-width: 819.98px) {
+  .wb-search-bar {
+    flex-wrap: wrap;
+    width: max-content;
+  }
+  .wb-search-bar input[type="search"] {
+    flex: 1 1 10rem;
+  }
+}
 
 /* The laser pointer while presenting (canvasdepth): a trail of dots over
    the board that fade by themselves; the board's cursor is hidden inline

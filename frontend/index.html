@@ -7943,6 +7943,26 @@ Link to another note with [[its first few words]]."></textarea>
           <div class="wb-fmt-row" data-fmt="fill"><span class="wb-fmt-label">Fill</span>
             <span class="wb-fmt-buttons"><label class="wb-snap-label" title="Filled"><input type="checkbox" id="wb-fmt-fill-on" aria-label="Filled"></label><input type="color" id="wb-fmt-fill" class="wb-color-picker" aria-label="Fill colour" title="Fill colour"></span>
           </div>
+          <label class="wb-fmt-row" data-fmt="fillstyle"><span class="wb-fmt-label">Fill style</span>
+            <select id="wb-fmt-fillstyle" aria-label="Fill style" title="Fill the shape with lines or dots in its colour instead of a solid">
+              <option value="solid">Solid</option>
+              <option value="hatch">Hatch</option>
+              <option value="cross">Cross-hatch</option>
+              <option value="dots">Dots</option>
+              <option value="dashed">Dashes</option>
+              <option value="zigzag">Zigzag</option>
+            </select>
+          </label>
+          <div class="wb-fmt-row" data-fmt="gradient"><span class="wb-fmt-label">Gradient</span>
+            <span class="wb-fmt-buttons"><input type="color" id="wb-fmt-gradient" class="wb-color-picker" aria-label="Gradient second colour" title="The colour the fill fades to"><select id="wb-fmt-gradient-dir" aria-label="Gradient direction" title="Fade the fill into a second colour">
+              <option value="none">None</option>
+              <option value="s">Down</option>
+              <option value="n">Up</option>
+              <option value="e">Right</option>
+              <option value="w">Left</option>
+              <option value="radial">Radial</option>
+            </select></span>
+          </div>
           <label class="wb-fmt-row" data-fmt="stroke"><span class="wb-fmt-label" id="wb-fmt-stroke-word">Line</span><input type="color" id="wb-fmt-stroke" class="wb-color-picker" aria-label="Line colour" title="Line colour"></label>
           <label class="wb-fmt-row" data-fmt="width"><span class="wb-fmt-label">Width</span><input type="number" id="wb-fmt-width" min="1" max="40" step="1" aria-label="Line width" title="Line width"></label>
           <label class="wb-fmt-row" data-fmt="dash"><span class="wb-fmt-label">Pattern</span>
@@ -7952,6 +7972,9 @@ Link to another note with [[its first few words]]."></textarea>
               <option value="dotted">Dotted</option>
             </select>
           </label>
+          <label class="wb-fmt-row" data-fmt="pattern"><span class="wb-fmt-label">Dashes</span><input type="text" id="wb-fmt-pattern" inputmode="decimal" maxlength="40" placeholder="8 4" autocomplete="off" aria-label="Custom dash pattern" title="Your own dashes, in line widths: a dash, a gap, and so on, like 8 4. Empty uses the pattern above."></label>
+          <label class="wb-fmt-row" data-fmt="round"><span class="wb-fmt-label">Corners</span><input type="number" id="wb-fmt-round" min="0" max="80" step="1" aria-label="Corner rounding" title="Round the corners by this much; 0 keeps them sharp"></label>
+          <div class="wb-fmt-row" data-fmt="flow"><span class="wb-fmt-label">Flow</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="Dashes that move along the line, for a flow or a direction. Exports draw them still."><input type="checkbox" id="wb-fmt-flow" aria-label="Flow animation"></label></span></div>
           <label class="wb-fmt-row" data-fmt="alpha"><span class="wb-fmt-label">Opacity</span>
             <span class="wb-fmt-buttons"><input type="range" id="wb-fmt-alpha" min="10" max="100" step="5" aria-label="Opacity" title="Opacity"><output id="wb-fmt-alpha-out" for="wb-fmt-alpha" class="wb-fmt-out">100%</output></span>
           </label>
@@ -7973,6 +7996,9 @@ Link to another note with [[its first few words]]."></textarea>
               <option value="sharp">Sharp</option>
             </select>
           </label>
+          <label class="wb-fmt-row" data-fmt="jumpsize"><span class="wb-fmt-label">Jump size</span><input type="number" id="wb-fmt-jumpsize" min="2" max="40" step="1" placeholder="Auto" aria-label="Line jump size" title="How wide a hop is where this line crosses another; empty sizes it from the line width"></label>
+          <label class="wb-fmt-row" data-fmt="gapstart"><span class="wb-fmt-label">Start gap</span><input type="number" id="wb-fmt-gapstart" min="0" max="60" step="1" aria-label="Gap at the start" title="Stop this far short of the shape at the start; 0 touches it"></label>
+          <label class="wb-fmt-row" data-fmt="gapend"><span class="wb-fmt-label">End gap</span><input type="number" id="wb-fmt-gapend" min="0" max="60" step="1" aria-label="Gap at the end" title="Stop this far short of the shape at the end; 0 touches it"></label>
           <label class="wb-fmt-row" data-fmt="caps"><span class="wb-fmt-label">Start</span>
             <span class="wb-fmt-buttons"><select id="wb-fmt-startcap" aria-label="Line start" title="Line start"></select><select id="wb-fmt-startsize" class="wb-cap-size" aria-label="Start size" title="Size of the start mark"><option value="s">Small</option><option value="m" selected>Medium</option><option value="l">Large</option></select></span>
           </label>
@@ -7993,10 +8019,21 @@ Link to another note with [[its first few words]]."></textarea>
         <section class="wb-fmt-section" data-format-panel="text" aria-label="Text" hidden>
           <label class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Size</span><input type="number" id="wb-fmt-size" min="8" max="200" step="1" aria-label="Text size" title="Text size"></label>
           <label class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Colour</span><input type="color" id="wb-fmt-ink" class="wb-color-picker" aria-label="Text colour" title="Text colour"></label>
-          <div class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Weight</span>
+          <label class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Font</span>
+            <select id="wb-fmt-font" aria-label="Font" title="The face the text is set in">
+              <option value="default">Default</option>
+              <option value="serif">Serif</option>
+              <option value="mono">Monospace</option>
+              <option value="wide">Wide sans</option>
+              <option value="hand">Handwritten</option>
+            </select>
+          </label>
+          <div class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Style</span>
             <span class="wb-fmt-buttons">
               <button type="button" id="wb-fmt-bold" class="ghost small icon-only" aria-pressed="false" title="Bold, the whole text" aria-label="Bold"><i class="ph ph-text-b" aria-hidden="true"></i></button>
               <button type="button" id="wb-fmt-italic" class="ghost small icon-only" aria-pressed="false" title="Italic, the whole text" aria-label="Italic"><i class="ph ph-text-italic" aria-hidden="true"></i></button>
+              <button type="button" id="wb-fmt-underline" class="ghost small icon-only" aria-pressed="false" title="Underline, the whole text" aria-label="Underline"><i class="ph ph-text-underline" aria-hidden="true"></i></button>
+              <button type="button" id="wb-fmt-strike" class="ghost small icon-only" aria-pressed="false" title="Strikethrough, the whole text" aria-label="Strikethrough"><i class="ph ph-text-strikethrough" aria-hidden="true"></i></button>
             </span>
           </div>
           <div class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Align</span>
@@ -8032,8 +8069,9 @@ Link to another note with [[its first few words]]."></textarea>
         </section>
         <!-- Edit data (draw.io's; canvasdepth2): an item's own named values. -->
         <section class="wb-fmt-section" data-format-panel="data" aria-label="Data" hidden>
+          <label class="wb-fmt-row" data-fmt="tip"><span class="wb-fmt-label">Tooltip</span><input type="text" id="wb-fmt-tip" maxlength="200" placeholder="Shown on hover" aria-label="Tooltip" title="Words shown when the pointer rests on this item"></label>
           <div class="wb-fmt-props" data-fmt="props">
-            <p class="muted wb-lib-keys">Named values on this item, kept with it and in its exports.</p>
+            <p class="muted wb-lib-keys">Named values on this item, kept with it and in its exports. Type %name% in its text to show one.</p>
             <ul id="wb-fmt-props" class="wb-fmt-prop-list" aria-label="Custom properties"></ul>
             <button type="button" id="wb-fmt-prop-add" class="ghost small" aria-label="Add a property"><i class="ph ph-plus ph-lead" aria-hidden="true"></i>Add a property</button>
           </div>

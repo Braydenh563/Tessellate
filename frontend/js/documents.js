@@ -340,7 +340,7 @@ let docView = "source";
 //: switched back from `.py` to `.md` stayed there). Nothing stored, nothing
 //: remembered as the last editing view; the file type coming back to a
 //: markdown one restores the view the person actually chose.
-const docViewState = { held: false };
+const docViewState = { held: false, tableGrips: null };
 
 //: The view a markdown document opens in when it is not holding one: the
 //: stored choice, else Live (Rendered on a phone, Phase 11 item 6).
@@ -5861,12 +5861,11 @@ function docTableMenu(context) {
 //: from the grid's template. Rebuilt only when that geometry changes, and never
 //: mid-press, because a press that loses its element loses its release.
 const DOC_GRIP_DRAG_PX = 4;
-let docTableGripsCache = null;
 
 function docTableGripsPlugin(CM) {
-  if (docTableGripsCache) return docTableGripsCache;
+  if (docViewState.tableGrips) return docViewState.tableGrips;
   const { ViewPlugin } = CM.view;
-  docTableGripsCache = ViewPlugin.fromClass(
+  docViewState.tableGrips = ViewPlugin.fromClass(
     class {
       constructor(view) {
         this.view = view;
@@ -6125,7 +6124,7 @@ function docTableGripsPlugin(CM) {
       }
     }
   );
-  return docTableGripsCache;
+  return docViewState.tableGrips;
 }
 
 //: One command, by id, against a context the caller already holds. The named

@@ -34,6 +34,7 @@
  "dashboard.js::raf": 3,
  "dashboard.js::resize-observer": 2,
  "documents-code.js::interval": 1,
+ "documents-codekit.js::raf": 2,
  "documents-prose.js::raf": 1,
  "documents.js::mutation-observer": 4,
  "documents.js::raf": 15,
