@@ -2287,9 +2287,10 @@ def _repair_by_speller(word: str, tail: str, after: str, out: list[str], report,
 def _at_asking_place(before: list[str]) -> bool:
     """The opening words of a question, or the word after "how" or a
     question word: where an asking word goes."""
+    last = before[-1].lower().strip("?!.,:;") if before else ""
+    #: Not the word after an article: "a ghose cursor" is not "a whose cursor".
     if len(before) <= 1:
-        return True
-    last = before[-1].lower().strip("?!.,:;")
+        return last not in ("a", "an", "the")
     return last in ("how", "what", "when", "where", "who", "why", "which")
 
 

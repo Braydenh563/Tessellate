@@ -67,6 +67,7 @@ ACRONYM_LEADS = {
 NOT_AFTER_ARTICLE = frozenset("sure such very quite just even only also too so still then than now here there really maybe".split())
 #: Small words that take no ending: "thes" is a slip for "these", not "the" + s.
 NO_ENDINGS = frozenset("the and but for not you are was can her his its our who how why may any all one off out per via yet nor too".split())
+NOT_AFTER_A = frozenset("those these whose them they their there".split())
 PREPOSITIONS = frozenset("of in on to for at by with from about off up".split())
 DETERMINERS = frozenset("the a an my your this that these those his her our their its some any".split())
 
@@ -275,7 +276,18 @@ def _is_word(word: str) -> bool:
     seen = _recognised()
     if word in seen:
         return True
-    return any(stem in seen and len(stem) >= 3 and not (ending and stem in NO_ENDINGS) for _, stem, ending, _ in _readings(word))
+    return any(
+        stem in seen and len(stem) >= 3 and not (ending and stem in NO_ENDINGS) and not _y_then_ending(stem, ending, how)
+        for _, stem, ending, how in _readings(word)
+    )
+
+
+def _y_then_ending(stem: str, ending: str, how: str) -> bool:
+    """A long stem in a consonant and "y" with a comparative or past ending put
+    straight on ("shortyer", "happyer", "babyed"): the "y" becomes "i" ("happier")
+    or goes, so this is a slip, not "shorty" and "er". A short stem keeps it
+    ("flyer", "dryer", "shyer")."""
+    return not how and ending in ("er", "ers", "est", "ed", "es") and len(stem) >= 5 and stem.endswith("y") and stem[-2] not in "aeiou"
 
 
 def _rebuild(prefix: str, base: str, ending: str, how: str) -> str:
@@ -338,6 +350,24 @@ def _candidates(stem: str, distance):  # noqa: ANN001
     return tuple(out)
 
 
+def _prefix_kept(word: str, distance):  # noqa: ANN001
+    """A five-letter word that keeps its first three letters is a last-two-
+    letters slip ("ghose" is near "ghost"), though a whole substitution is
+    refused to `_accept`; it is only a reading, and the word frequency still
+    decides between it and a nearer, commoner word ("those"). Whole words
+    only: on a stem it read "comoser" as "comeser"."""
+    if len(word) != 5:
+        return []
+    weights = _dictionary()
+    out = []
+    for base, _ in _index().get(5, ()):
+        if base[:3] == word[:3] and base != word:
+            d = distance(word, base)
+            if d <= 1.0:
+                out.append((d, -weights[base], base))
+    return out
+
+
 def _own(stem: str, known, distance):  # noqa: ANN001
     """The person's own words a stem is near, weighted above the word list: a
     note that says "hotel" makes "hotle" a hotel."""
@@ -375,6 +405,9 @@ def _reading_row(word: str, before: str, after: str, prefix: str, ending: str, h
         return None
     #: After an article the head is a noun: adverbs lose a near tie.
     penalty = 0.5 if before in DETERMINERS and base in NOT_AFTER_ARTICLE else 0.0
+    #: Nor does a plural or relative determiner follow an article ("a those cursor").
+    if before in ("a", "an", "the") and base in NOT_AFTER_A:
+        penalty += 0.7
     #: Ranked by the whole word, not the stem: "professionaly" is one
     #: doubled letter from "professionally", two edits from "professionly".
     whole = d if rebuilt == base else distance(word, rebuilt)
@@ -400,7 +433,10 @@ def _fix(word: str, after: str, before: str, distance, known=()):  # noqa: ANN00
     for prefix, stem, ending, how in _readings(word):
         if len(stem) < 4:
             continue
-        for d, negw, base in [*_candidates(stem, distance), *_own(stem, known, distance)]:
+        near = [*_candidates(stem, distance), *_own(stem, known, distance)]
+        if not prefix and not ending:
+            near += _prefix_kept(stem, distance)
+        for d, negw, base in near:
             row = _reading_row(word, before, after, prefix, ending, how, d, negw, base, distance)
             if row:
                 scored.append(row)
