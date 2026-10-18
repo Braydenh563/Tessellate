@@ -4542,7 +4542,9 @@ function wbOwnsChord(e) {
   //: saved), and the next tool letter inside the chord's window was read as
   //: a destination: M then D, the diamond, left the board for the Dashboard.
   //: On a map the highlighter does not exist, so the chord keeps the key.
-  if (!e.ctrlKey && !e.metaKey && !e.altKey && e.key.toLowerCase() === "m") {
+  //: And bare T is the text tool, so the chord's new first key (C23) steps
+  //: aside the same way; "m" still arms it on a board's map and everywhere else.
+  if (!e.ctrlKey && !e.metaKey && !e.altKey && ["m", "t"].includes(e.key.toLowerCase())) {
     return !wbIsMap();
   }
   //: Ctrl+Shift+G is Ungroup here (agent mode in the app); Ctrl+Shift+P is

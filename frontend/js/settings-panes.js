@@ -1535,14 +1535,14 @@ function paletteCommands() {
 //: **A row's keycap: the way to run it without the palette.** A chord the
 //: row declares by its registry name (`chord`, read from the live
 //: `shortcuts` table, so a rebinding shows here as it is), the editor's own
-//: rows' `keys`, and for a tab the "m" then a letter jump. A palette that only
+//: rows' `keys`, and for a tab the "t" then a letter jump. A palette that only
 //: performs an action teaches nobody the key for it.
 function paletteKeys(match) {
   if (match.keys) return match.keys;
   if (match.chord && typeof shortcuts !== "undefined") return shortcuts[match.chord]?.keys || "";
   if (match.tab && typeof TAB_JUMP_KEYS !== "undefined") {
     const letter = Object.keys(TAB_JUMP_KEYS).find((key) => TAB_JUMP_KEYS[key] === match.tab);
-    if (letter) return `M ${letter.toUpperCase()}`;
+    if (letter) return `T ${letter.toUpperCase()}`;
   }
   return "";
 }

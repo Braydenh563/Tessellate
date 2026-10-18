@@ -87,10 +87,10 @@ def test_a_question_naming_a_chord_finds_the_entry_that_documents_it():
 
 
 def test_the_shortcuts_entry_teaches_the_m_chord_not_the_old_g_one():
-    """The chord is "m" then a letter (app.js, `TAB_JUMP_KEYS`); the entry
+    """The chord is "t" (alias "m") then a letter (settings-wiring.js, `TAB_JUMP_KEYS`); the entry
     said "g" for as long as the guide has existed."""
     body = next(t["body"] for t in help_chat.HELP_TOPICS if t["id"] == "shortcuts")
-    assert "m then a letter" in body
+    assert "t then a letter" in body
     assert "g then a letter" not in body
 
 
@@ -175,7 +175,7 @@ def test_the_m_chord_key_map_is_unchanged_by_the_redesign():
     )
     assert tabs == {
         "d": "dashboard", "n": "notes", "c": "chat", "g": "graph",
-        "l": "library", "t": "timeline", "r": "reminders",
+        "l": "library", "i": "timeline", "r": "reminders",
     }
     assert actions == {
         "s": "Settings", "q": "Quick sketch", "v": "Record a meeting", "a": "Guide", "p": "Popup agent",
