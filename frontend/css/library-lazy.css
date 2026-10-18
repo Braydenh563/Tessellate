@@ -6326,3 +6326,55 @@ input[type="color"].wb-mixed {
   height: var(--space-1);
   margin-top: calc(var(--space-1) / -2);
 }
+
+/* Ghost topics: the suggestions "Branches from my notes" and "Expand from my
+   notes" offer, faded under the topic they would hang from (whiteboard-map.js
+   `wbMapBranchPicker`). A fixed layer on <body> so the canvas never clips it, its
+   layer (22, the map strip's) set from the script: a literal here would add to
+   the z-index ratchet;
+   no blur (it is on the glass-off list's side: a few small chips). A taken
+   ghost firms up to the accent. */
+.wb-ghosts {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-width: min(22rem, calc(100vw - var(--space-4) * 2));
+}
+
+.wb-ghost {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  min-height: var(--target-min);
+  padding: var(--space-1) var(--space-3);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  text-align: left;
+  opacity: 0.6;
+}
+
+.wb-ghost:hover,
+.wb-ghost:focus-visible {
+  opacity: 0.9;
+}
+
+.wb-ghost.is-taken {
+  opacity: 1;
+  border-style: solid;
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.wb-ghost-from {
+  color: var(--muted);
+  font-size: var(--text-xs);
+}
+
+.wb-ghost-from:empty {
+  display: none;
+}

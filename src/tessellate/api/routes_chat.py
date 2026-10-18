@@ -377,6 +377,9 @@ class ChatRequest(BaseModel):
     #: (WORLD_CLASS_PLAN I5, row 23). Read, never act: the turn runs without
     #: tools, which would read and change the notebook as it is now.
     as_of: date | None = None
+    #: The browser's locale (`navigator.language`), so a bare "3/4" in a
+    #: question reads in the asker's date order.
+    locale: str | None = Field(default=None, max_length=35)
     # Prior turns for follow-up context (Round 1); the server clips this.
     history: list[ChatTurn] = Field(default_factory=list)
     # Persona name; None → the active persona preference.
@@ -1426,6 +1429,7 @@ def _prepare(
     board_ids: list[int] | None = None,
     surface: str = ASK_SURFACE,
     as_of: "date | None" = None,
+    locale: str | None = None,
 ) -> dict:
     """The shared first half of both chat endpoints: retrieve entries,
     bump their usage counters, log the question, gather AI settings.
@@ -1514,7 +1518,8 @@ def _prepare(
         #: due in CC" also finds the notes that say Cloud Computing, B7).
         meaning_loading = _meaning_loading()
         found = search_manager.retrieve_detailed(
-            session, glossary.expand(question, _glossary(session)), deps.get_embeddings(), limit=5
+            session, glossary.expand(question, _glossary(session)), deps.get_embeddings(), limit=5,
+            locale=locale,
         )
         entries, mode = found.entries, found.mode
         entries = _with_neighbours(session, question, _widened(session, question, entries, scope=found.category), scope=found.category)
@@ -1547,7 +1552,7 @@ def _prepare(
     if as_of is not None and intent.needs_retrieval(detected):
         from tessellate.ai import timetravel
 
-        found = search_manager.retrieve_detailed(session, question, deps.get_embeddings(), limit=20)
+        found = search_manager.retrieve_detailed(session, question, deps.get_embeddings(), limit=20, locale=locale)
         candidates = found.entries + timetravel.revision_candidates(session, question)
         zone = user_now(deps.get_config()).tzinfo
         rewound = timetravel.rewind(session, question, timetravel.end_of_day(as_of, zone), candidates, limit=5)
@@ -1747,6 +1752,7 @@ def chat(body: ChatRequest, session: Session = Depends(get_session)) -> ChatResp
         surface=ASK_SURFACE,
         # Row 23: the same time travel the stream takes.
         as_of=body.as_of,
+        locale=body.locale,
     )
     #: This surface's own model, if one is set (model_manager.FEATURES).
     #: A view over the same manager, so everything downstream, the agent
@@ -3227,6 +3233,7 @@ def _stream_lines(req: _StreamRequest) -> Iterator[str]:
         # Request turn in the chip row.
         surface=ASK_SURFACE if (req.body.notes_only or not req.use_tools) else AGENT_SURFACE,
         as_of=None if req.skill else req.body.as_of,
+        locale=req.body.locale,
     )
     prepared["follow_on"] = follow
     marks["read"] = marks["searched"] = time.perf_counter() - started

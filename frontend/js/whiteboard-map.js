@@ -10027,11 +10027,12 @@ async function wbMapSuggestBranches(node) {
     return;
   }
   const said = got.source === "model"
-    ? `Under "${got.topic}", from your notes. Tick the ones to add.`
-    : `Under "${got.topic}": your notes that match it${got.reason === "offline" ? " (no model is running, so these are their titles)" : ""}. Tick the ones to add.`;
+    ? `Under "${got.topic}", from your notes.`
+    : `Under "${got.topic}": your notes that match it${got.reason === "offline" ? " (no model is running, so these are their titles)" : ""}.`;
   const chosen = await wbMapBranchPicker(rows, {
     title: "Branches from your notes",
     about: said,
+    node,
     meta: (row) => [`From your note "${row.note_title}"`],
   });
   await wbMapAddChosenBranches(node, boardId, chosen);
@@ -10065,82 +10066,101 @@ async function wbMapExpandFromNote(node) {
   }
   const chosen = await wbMapBranchPicker(rows, {
     title: "Expand from your note",
-    about: `Under "${got.topic}", from the note's headings and the notes it links to. Tick the ones to add.`,
+    about: `Under "${got.topic}", from the note's headings and the notes it links to.`,
+    node,
     meta: (row) => [row.kind === "link" ? "A note it links to" : `A heading in "${row.note_title}"`],
   });
   await wbMapAddChosenBranches(node, boardId, chosen);
 }
 
-//: The tick-list both branch doors share: resolves with the ticked rows as
-//: `{text, note_id}`, or null when it is cancelled.
-function wbMapBranchPicker(rows, { title, about, meta }) {
+//: **Ghost topics** (MINDMAP_PLAN, the features audit's Phase G): the
+//: suggestions both branch doors offer, drawn faded under the topic they
+//: would hang from. Tab takes the one in focus (it firms up), Enter adds the
+//: taken ones (the one in focus when none is taken), Escape drops them all;
+//: a click takes or lets go. Resolves with the taken rows as `{text, note_id}`,
+//: or null when dropped, so `wbMapAddChosenBranches` is still the one add and
+//: one Undo step takes them back. A layer on `document.body`, fixed at the
+//: topic's screen box, so the canvas never clips it; it closes when the board
+//: is moved, zoomed or clicked, since it would no longer sit under its topic.
+function wbMapBranchPicker(rows, { title, about, meta, node }) {
   return new Promise((resolve) => {
-    const list = document.createElement("ul");
-    list.className = "note-picker-list entry-pick-list";
-    list.setAttribute("aria-label", "Suggested branches");
-    const shell = pickerDialog({ title, about, placeholder: "Filter the suggestions", list });
-    const on = new Set(rows.map((r) => r.id));
-    const count = document.createElement("span");
-    count.className = "muted";
-    const add = smallButton("Add", "Add the ticked branches", () => {
-      if (on.size) shell.close(rows.filter((r) => on.has(r.id)).map((r) => ({ text: r.text, note_id: r.note_id })));
-    }, false);
-    add.classList.add("accent");
-    const cancel = smallButton("Cancel", "Cancel", () => shell.close(null));
-    const foot = document.createElement("div");
-    foot.className = "row space-dialog-actions";
-    foot.append(count, cancel, add);
-    const refresh = () => {
-      count.textContent = on.size ? `${on.size} of ${rows.length} ticked` : "Tick a branch to add it.";
-      add.disabled = on.size === 0;
+    document.querySelector(".wb-ghosts")?.remove();
+    const anchor = wbMapNodeScreenBox(node);
+    const layer = document.createElement("div");
+    layer.className = "wb-ghosts";
+    layer.setAttribute("role", "group");
+    layer.style.zIndex = "22";
+    layer.setAttribute("aria-label", title);
+    const taken = new Set();
+    const buttons = rows.map((row) => {
+      const ghost = document.createElement("button");
+      ghost.type = "button";
+      ghost.className = "wb-ghost";
+      ghost.setAttribute("aria-pressed", "false");
+      const text = document.createElement("span");
+      text.className = "wb-ghost-text";
+      text.textContent = row.text;
+      const from = document.createElement("span");
+      from.className = "wb-ghost-from";
+      from.textContent = (meta?.(row) || []).join(" ");
+      ghost.append(text, from);
+      ghost.addEventListener("click", () => toggle(ghost, row));
+      layer.append(ghost);
+      return ghost;
+    });
+    const toggle = (ghost, row, on = !taken.has(row.id)) => {
+      if (on) taken.add(row.id);
+      else taken.delete(row.id);
+      ghost.classList.toggle("is-taken", on);
+      ghost.setAttribute("aria-pressed", String(on));
     };
-    const shape = {
-      label: (row) => row.text,
-      icon: () => "ph:tree-structure",
-      meta,
-      isOn: (row) => on.has(row.id),
-      add: (row) => {
-        on.add(row.id);
-      },
-      remove: (row) => on.delete(row.id),
+    const finish = (chosen) => {
+      window.removeEventListener("pointerdown", outside, true);
+      window.removeEventListener("wheel", away, true);
+      window.removeEventListener("resize", away);
+      layer.remove();
+      document.getElementById("whiteboard-container")?.focus?.();
+      resolve(chosen);
     };
-    const paint = () => {
-      const term = shell.search.value.trim().toLowerCase();
-      const shown = rows.filter((r) => !term || `${r.text} ${r.note_title}`.toLowerCase().includes(term));
-      if (!shown.length) return pickerListState(list, "No suggestion has those words.");
-      list.replaceChildren(...shown.map((row) => {
-        const li = notePickerRow(shape, row);
-        li.classList.add("entry-pick-check");
-        li.querySelector(".note-picker-box").addEventListener("change", refresh);
-        return li;
-      }));
-      notePickerRoving(list, 0);
+    const away = () => finish(null);
+    const outside = (event) => {
+      if (!layer.contains(event.target)) finish(null);
     };
-    list.addEventListener("keydown", (event) => {
-      const boxes = [...list.querySelectorAll(".note-picker-box")];
-      const at = boxes.indexOf(document.activeElement);
+    layer.addEventListener("keydown", (event) => {
+      const at = buttons.indexOf(document.activeElement);
       if (at < 0) return;
-      if (event.key === "Enter") {
+      //: Taken here, not passed on: the map's own Enter adds a sibling topic
+      //: and Tab a child, and the layer is gone by the time they would run.
+      if (["Escape", "Tab", "Enter", "ArrowDown", "ArrowUp"].includes(event.key)) event.stopPropagation();
+      if (event.key === "Escape") {
         event.preventDefault();
-        add.click();
-        return;
+        wbAnnounce("Suggestions dropped.");
+        finish(null);
+      } else if (event.key === "Tab") {
+        //: Tab takes, Shift+Tab lets go: the walk is the arrows'.
+        event.preventDefault();
+        toggle(buttons[at], rows[at], !event.shiftKey);
+        buttons[Math.min(at + (event.shiftKey ? 0 : 1), buttons.length - 1)].focus();
+      } else if (event.key === "Enter") {
+        event.preventDefault();
+        const chosen = (taken.size ? rows.filter((r) => taken.has(r.id)) : [rows[at]]).map((r) => ({ text: r.text, note_id: r.note_id }));
+        finish(chosen);
+      } else if ({ ArrowDown: 1, ArrowUp: -1 }[event.key]) {
+        event.preventDefault();
+        buttons[(at + { ArrowDown: 1, ArrowUp: -1 }[event.key] + buttons.length) % buttons.length].focus();
       }
-      const to = { ArrowDown: at + 1, ArrowUp: at - 1, Home: 0, End: boxes.length - 1 }[event.key];
-      if (to === undefined) return;
-      event.preventDefault();
-      if (to < 0) return shell.search.focus();
-      notePickerRoving(list, Math.min(to, boxes.length - 1))[Math.min(to, boxes.length - 1)].focus();
     });
-    shell.search.addEventListener("keydown", (event) => {
-      if (event.key !== "ArrowDown") return;
-      event.preventDefault();
-      list.querySelector(".note-picker-box")?.focus();
-    });
-    shell.search.addEventListener("input", paint);
-    paint();
-    refresh();
-    shell.open(resolve, { foot });
-    list.querySelector(".note-picker-box")?.focus();
+    document.body.append(layer);
+    const room = layer.getBoundingClientRect();
+    const left = anchor ? Math.min(Math.max(anchor.left, 8), window.innerWidth - room.width - 8) : 8;
+    const top = anchor ? Math.min(anchor.bottom + 8, window.innerHeight - room.height - 8) : 8;
+    layer.style.left = `${Math.max(left, 8)}px`;
+    layer.style.top = `${Math.max(top, 8)}px`;
+    window.addEventListener("pointerdown", outside, true);
+    window.addEventListener("wheel", away, { capture: true, passive: true });
+    window.addEventListener("resize", away);
+    buttons[0]?.focus();
+    wbAnnounce(`${rows.length} suggested branch${rows.length === 1 ? "" : "es"}. ${about} Tab takes one, Enter adds, Escape drops them.`);
   });
 }
 
