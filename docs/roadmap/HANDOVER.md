@@ -6,14 +6,13 @@
 
 # HANDOVER
 
-## Morning summary (away run 2026-10-18, branch claude/trusting-cannon-wrf8s5, PR 191)
+## Morning summary (away run 2026-10-18b, branch claude/magical-feynman-7bgj7j, PR 192, 0.6.0)
 
-- Done: red CI fixed in four rounds (last: Pattern icon, undo exemptions, table-grip focus twins); the serial run's `data/` writers closed; clock, long-question and `kind_of` fixes; Library reveal; typo fixtures; popup citations; complexity splits.
-- Plans worked: TIMELINE, GRAPH (treemap, plates, neighbours), DOCUMENTS (dialects, snippet drag, table menu, sections, block move, link offers, section help), WHITEBOARD (draw.io steps 1 to 7 and 9), CHAT (computed answers, topic read whole, due dates in Ask), MINDMAP (Expand from my notes, 820 strip), UI 13a (shadows 19 to 7, important 128 to 117), WORLD_CLASS row 32 audit.
-- Review: security review fixed (5691a83); a full pre-merge review of the PR diff ran last (its findings are in the PR conversation or below).
-- Blocked on the owner: B61, B58, B39, B20, B70 (which note), Tessellation variant, Plain topic tint, link offers Settings switch.
-- Usage: not reported by the host; 22 agents, all Sonnet but one Opus review.
-- Next: the queue in the "Now (2026-10-18)" paragraph below (browser Back with an overlay open first).
+- Done: INBOX 1300 C01 to C44 and 1301 D1 to D8 fixed; C30 lightbox redesign; UX audit items 1 to 12; composer leftovers; undo/redo race; palette lexical note rows; phone hero height; splat landing reach; CodeQL ReDoS in map-from-notes fixed. Released as 0.6.0 (version, asset stamps, CHANGELOG, README); PR title and description updated.
+- CI: green on every pushed head through the uxfix3 merge.
+- Blocked on the owner: the merge of PR 192; the PR 191 items still listed below (B61, B58, B39, B20, B70).
+- Usage: weekly 47% to about 50% (self-stop 55%); agents fixes1 to 9, design1 to 7, uxfix1 to 3, composer5.
+- Next: the composer's remaining headed label lines in `_lines` ("**Your week:**"); whiteboard and map dark contrast with a seeded board; INBOX open items.
 
 
 > **Where the owner reads screenshots (UI_MODERNISATION_PLAN Phase 11 item 11; ledger 1539):** `docs/screenshots/*.png`, shown in the README and `docs/index.html`; `scratchpad/ui-sweeps/readmeshots.js` retakes them against a running app. A change to a surface retakes that surface's shot in the same commit. The phone picture is `docs/screenshots/phone.png` (390 wide, the same script; `SKIP=phone` leaves it); nothing else is a place the owner reads.
