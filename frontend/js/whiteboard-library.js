@@ -350,6 +350,59 @@ function wbLibThumb(entry) {
     : wbThumbSvg(wbBoardThumbSpec(payload, { placed: true, ink: wbLibInk() }));
 }
 
+//: **A larger preview beside the sidebar** (INBOX 1301 D8, the owner: "hover
+//: over and have a panel popup next to the sidebar to show a larger preview of
+//: the thing being hovered over in the elements library"). The help popover's
+//: shell (`.help-popover.wb-lib-peek`, DESIGN.md's library peek row), lifted
+//: to <body> and set against the sidebar's edge, level with the tile. It
+//: appears after 300ms of hover or on keyboard focus, never under a touch,
+//: and goes on leave, Escape, a press, a scroll, a re-render and a drag.
+const wbLibPeek = { panel: null, timer: 0, tile: null };
+
+function wbLibPeekClose() {
+  clearTimeout(wbLibPeek.timer);
+  wbLibPeek.tile?.removeAttribute("aria-describedby");
+  wbLibPeek.panel?.remove();
+  Object.assign(wbLibPeek, { panel: null, tile: null });
+}
+
+function wbLibPeekOpen(tile) {
+  wbLibPeekClose();
+  const entry = tile._entry;
+  const side = document.getElementById("wb-sidebar");
+  if (!entry || !side || !tile.isConnected || wbLibState.libDragging) return;
+  const panel = document.createElement("div");
+  panel.className = "help-popover wb-lib-peek";
+  panel.id = "wb-lib-peek";
+  panel.setAttribute("role", "tooltip");
+  const name = document.createElement("strong");
+  name.className = "wb-lib-peek-name";
+  name.textContent = entry.name;
+  const kindWord = { element: "", shape: "Shape", style: "Style", palette: "Palette", preset: "Preset", branch: "Branch", template: "Template" }[entry.kind] || "";
+  const meta = document.createElement("span");
+  meta.className = "library-file-meta wb-lib-peek-meta";
+  meta.textContent = [kindWord, entry.set, entry.tags?.length ? entry.tags.join(", ") : ""].filter(Boolean).join(" · ");
+  panel.append(wbLibThumb(entry), name);
+  if (meta.textContent) panel.append(meta);
+  document.body.appendChild(panel);
+  const margin = 8;
+  const box = panel.getBoundingClientRect();
+  const edge = side.getBoundingClientRect();
+  const at = tile.getBoundingClientRect();
+  const left = Math.min(edge.right + margin, Math.max(margin, window.innerWidth - margin - box.width));
+  const top = Math.min(Math.max(margin, at.top + at.height / 2 - box.height / 2), Math.max(margin, window.innerHeight - margin - box.height));
+  panel.style.left = `${Math.round(left)}px`;
+  panel.style.top = `${Math.round(top)}px`;
+  tile.setAttribute("aria-describedby", panel.id);
+  Object.assign(wbLibPeek, { panel, tile });
+}
+
+function wbLibPeekSoon(tile, delay = 300) {
+  if (wbLibPeek.tile === tile) return;
+  wbLibPeekClose();
+  wbLibPeek.timer = setTimeout(() => wbLibPeekOpen(tile), delay);
+}
+
 function wbLibTile(entry) {
   const tile = document.createElement("div");
   tile.className = "wb-lib-tile";
@@ -361,7 +414,7 @@ function wbLibTile(entry) {
   const kindWord = { element: "", shape: "shape", style: "style", palette: "palette", preset: "preset", branch: "branch", template: "template" }[entry.kind] || "";
   const said = [entry.name, kindWord, entry.set, entry.favourite ? "favourite" : ""].filter(Boolean).join(", ");
   tile.setAttribute("aria-label", said);
-  tile.title = entry.tags?.length ? `${entry.name} (${entry.tags.join(", ")})` : entry.name;
+  //: No `title`: the browser's tooltip would sit over the peek, which names the tile and its tags.
   tile.append(wbLibThumb(entry));
   const name = document.createElement("span");
   name.className = "wb-lib-name";
@@ -414,6 +467,7 @@ function wbLibGroup(host, key, title, entries, { open = true, extra = null, coun
 }
 
 function wbRenderLibrary() {
+  wbLibPeekClose();
   const list = document.getElementById("wb-lib-list");
   if (!list || !wbLibState.lib) return;
   const query = (document.getElementById("wb-lib-search")?.value || "").trim().toLowerCase();
@@ -1372,13 +1426,38 @@ onDomReady(() => {
     } else return;
     e.preventDefault();
   });
+  //: The peek (see `wbLibPeek`). A touch never hovers, so none is shown for
+  //: one, and a drag in flight shows none.
+  list?.addEventListener("pointerover", (e) => {
+    const tile = e.target.closest(".wb-lib-tile");
+    if (!tile || e.pointerType === "touch" || wbLibState.libDragging) return;
+    if (!e.relatedTarget || !tile.contains(e.relatedTarget)) wbLibPeekSoon(tile);
+  });
+  list?.addEventListener("pointerout", (e) => {
+    const tile = e.target.closest(".wb-lib-tile");
+    if (tile && !tile.contains(e.relatedTarget)) wbLibPeekClose();
+  });
+  list?.addEventListener("focusin", (e) => {
+    const tile = e.target.closest(".wb-lib-tile");
+    if (tile?.matches(":focus-visible")) wbLibPeekSoon(tile, 0);
+  });
+  list?.addEventListener("focusout", () => wbLibPeekClose());
+  list?.addEventListener("scroll", () => wbLibPeekClose(), { passive: true });
+  list?.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape" || !wbLibPeek.panel) return;
+    e.preventDefault();
+    e.stopPropagation();
+    wbLibPeekClose();
+  }, true);
   list?.addEventListener("pointerdown", (e) => {
+    wbLibPeekClose();
     const tile = e.target.closest(".wb-lib-tile");
     wbLibState.libPress = tile ? { tile, x: e.clientX, y: e.clientY } : null;
   });
   list?.addEventListener("dragstart", (e) => {
     const tile = e.target.closest(".wb-lib-tile");
     if (!tile?._entry) return;
+    wbLibPeekClose();
     e.dataTransfer.setData("application/x-memorymap-library", tile._entry.ref);
     e.dataTransfer.effectAllowed = "copy";
     wbLibState.libDragging = tile._entry;

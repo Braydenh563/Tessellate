@@ -5885,3 +5885,16 @@ def test_ghost_topics_are_one_lazy_layer_with_four_keys():
         assert "wb-ghost" not in (ROOT / "frontend" / "css" / f"{boot}.css").read_text(encoding="utf-8")
     rule = lazy[lazy.index(".wb-ghosts {") :].split("}")[0]
     assert "backdrop-filter" not in rule
+
+
+def test_the_library_peek_is_the_help_popover_shell_and_closes_on_drag() -> None:
+    script = (ROOT / "frontend" / "js" / "whiteboard-library.js").read_text(encoding="utf-8")
+    assert '"help-popover wb-lib-peek"' in script, "the peek is the help popover's shell"
+    assert "wbLibPeekSoon(tile);" in script and "wbLibPeekSoon(tile, 0)" in script, "hover waits, focus is at once"
+    assert 'e.pointerType === "touch"' in script, "no peek under a touch"
+    drag = script[script.index('list?.addEventListener("dragstart"') :][:300]
+    assert "wbLibPeekClose();" in drag, "a drag hides the peek"
+    assert 'e.key !== "Escape" || !wbLibPeek.panel' in script, "Escape hides it"
+    assert "tile.title =" not in script[script.index("function wbLibTile(") :][:1500], "a native title would stack on the peek"
+    css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    assert re.search(r"\.help-popover\.wb-lib-peek \{[^}]*pointer-events: none", css), "the peek takes no pointer"

@@ -298,7 +298,7 @@ HELP_TOPICS: list[dict] = [
         "keywords": ("whiteboard", "sketch pad", "canvas", "freehand", "arrange as a grid", "grid of", "stack them", "sticky date", "date on a sticky", "export as jpg", "export as webp", "copy as an image", "copy the board as a picture"),
         "body": (
             "The whiteboard (Library, Boards & maps) is a pannable canvas for "
-            "freehand sketches and note cards together. Freehand sketches also "
+            "freehand sketches and note cards together. Hover a Library tile for a moment (or focus it with the keyboard) to see a larger preview beside the sidebar; Escape or starting a drag hides it. Freehand sketches also "
             "appear in the Library's Images sub-tab. A board's background colour "
             "and image are kept with the board. Board, Export saves a PNG (1x, 2x "
             "or 3x, with a transparent background if you like), JPG, WebP, SVG or PDF named "
@@ -1354,9 +1354,9 @@ HELP_TOPICS.extend(
                 "triangle, D diamond, T text, N sticky note, F frame, C connector (Shift+C "
                 "curved), I image, X delete. The Shapes button's flyout also has a rounded "
                 "rectangle, ellipse, hexagon, parallelogram, star, cylinder, cloud, speech "
-                "bubble and block arrow. Moving around: the wheel or two "
-                "fingers pan, Shift+wheel pans sideways, Ctrl+wheel or a pinch "
-                "zooms, Space and drag pans, so does the middle or right mouse button held down (a plain right-click still opens the board menu), a drag to an edge pans, Ctrl+= and Ctrl+- zoom, "
+                "bubble and block arrow. Moving around: the wheel "
+                "zooms about the pointer, Shift+wheel pans sideways, a pinch "
+                "zooms too, Space and drag pans, so does the middle or right mouse button held down (a plain right-click still opens the board menu), a drag to an edge pans, Ctrl+= and Ctrl+- zoom, "
                 "Ctrl+0 is 100%, Shift+1 fits all, Shift+N shows the "
                 "overview, / or Ctrl+F finds (with Whole word and Pattern buttons), Ctrl+H replaces, and Tab walks the board's "
                 "items. Ctrl+K also finds select all shapes or connectors, turn 90 degrees, remove from "

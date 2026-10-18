@@ -6378,3 +6378,29 @@ input[type="color"].wb-mixed {
 .wb-ghost-from:empty {
   display: none;
 }
+
+/* The library peek (INBOX 1301 D8): a larger drawing of the tile under the
+   pointer, beside the sidebar. The help popover's shell without its caret,
+   which points at a trigger above or below; this one sits to the side. It
+   takes no pointer, so it can never sit between the pointer and a tile. */
+.help-popover.wb-lib-peek {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 14rem;
+  padding: var(--space-3);
+  pointer-events: none;
+}
+
+.wb-lib-peek::before,
+.wb-lib-peek::after {
+  display: none;
+}
+
+.wb-lib-peek .wb-lib-thumb {
+  height: 9rem;
+}
+
+.wb-lib-peek-name {
+  overflow-wrap: anywhere;
+}

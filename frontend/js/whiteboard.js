@@ -77,14 +77,15 @@ let wbMidPanHeld = false;
 const wbBoardState = { pasteArrived: false, lockHoverKey: null, lockHoverFrame: 0, lockHintSaid: false };
 
 function wbZoomFilter(event) {
-  // Wheel: zoom only with Ctrl/⌘ held (which is also what a trackpad pinch
-  // arrives as). A plain wheel *pans*, see the native listener in
-  // initWhiteboard: because that is what Miro, FigJam, Figma and draw.io
-  // all do, and reported as "annoying to... pan, navigate the board": a
-  // wheel that zooms leaves no fast way to move around at a fixed zoom.
+  //: **A plain wheel zooms about the pointer** (the owner, 2026-10-18: "mouse
+  //: scroll on the whiteboard and mindmap still doesnt zoom"; this reverses the
+  //: earlier plain-wheel pan, recorded in WHITEBOARD_PLAN decision 24). Ctrl or
+  //: a trackpad pinch zooms too; Shift+wheel is left out so the native
+  //: listener in initWhiteboard can pan sideways. Panning is a drag, Space, or
+  //: the middle button.
   //: Never while the middle button is held: see the plain-wheel listener in
   //: initWhiteboard, the same stray tilt with Ctrl down would zoom mid-pan.
-  if (event.type === "wheel") return (event.ctrlKey || event.metaKey) && !wbMidPanHeld && (event.buttons & 4) !== 4;
+  if (event.type === "wheel") return (event.ctrlKey || event.metaKey || !event.shiftKey) && !wbMidPanHeld && (event.buttons & 4) !== 4;
   // Middle button pans from anywhere. `buttons` rather than `button` because
   // mousemove reports the held set, and the drag half of the gesture needs to
   // pass the filter too.
@@ -12643,9 +12644,9 @@ async function initWhiteboard() {
     if (event.button === 1 && event.target?.closest?.("#library-view-whiteboard")) event.preventDefault();
   }, true);
   container.call(wbZoom).on("dblclick.zoom", null);
-  // Plain wheel pans (Shift+wheel pans sideways); Ctrl/⌘+wheel is left to
-  // d3-zoom's own handler by `wbZoomFilter`. `passive: false` so the page
-  // behind the board does not scroll as well.
+  // Shift+wheel pans sideways; every other wheel is d3-zoom's, by
+  // `wbZoomFilter`, which prevents the page scrolling too. `passive: false`
+  // here so the page behind the board does not scroll on a shifted wheel.
   if (!container.node().dataset.wbWheelPan) {
     container.node().dataset.wbWheelPan = "1";
     container.node().addEventListener("wheel", (e) => {
@@ -12667,12 +12668,12 @@ async function initWhiteboard() {
         e.preventDefault();
         return;
       }
-      if (e.ctrlKey || e.metaKey) return;
+      if (e.ctrlKey || e.metaKey || !e.shiftKey) return;
       e.preventDefault();
       const k = d3.zoomTransform(container.node()).k || 1;
       const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1;
       let dx = e.deltaX * unit, dy = e.deltaY * unit;
-      if (e.shiftKey && !dx) { dx = dy; dy = 0; }
+      if (!dx) { dx = dy; dy = 0; }
       container.call(wbZoom.translateBy, -dx / k, -dy / k);
     }, { passive: false });
   }

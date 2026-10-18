@@ -328,6 +328,11 @@ accessibility, and learnability") are why.
     that overlaps, ties broken by paint order, the fewest rows written);
     Ctrl+] and Ctrl+[ are the front and the back (FEAT-07). A shape's z is its
     paint order. No Order on a map (FEAT-17).
+24. **A plain wheel zooms about the pointer, on a board and a map alike**
+    (taken 2026-10-18, the owner, INBOX 1301 D7: "mouse scroll on the
+    whiteboard and mindmap still doesnt zoom"). Reverses the old plain-wheel
+    pan. Ctrl+wheel and a pinch zoom too; Shift+wheel pans sideways; panning
+    is a drag, Space+drag or the middle button. The page never scrolls.
 24. **A board's look lives on the board** (FEAT-06): `background {color,
     image}` in the board's settings beside type and layout, migrated once from
     the old per-browser keys on open; media cleanup counts the image. Grid and

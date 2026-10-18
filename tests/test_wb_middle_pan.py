@@ -51,7 +51,8 @@ def test_the_middle_press_flag_is_set_by_the_autoscroll_guard() -> None:
     [
         ({"type": "wheel", "ctrlKey": True, "buttons": 0}, True),
         ({"type": "wheel", "ctrlKey": True, "buttons": 4}, False),
-        ({"type": "wheel", "ctrlKey": False, "buttons": 0}, False),
+        ({"type": "wheel", "ctrlKey": False, "buttons": 0}, True),  # a plain wheel zooms
+        ({"type": "wheel", "ctrlKey": False, "shiftKey": True, "buttons": 0}, False),  # shifted: the pan listener's
         ({"type": "mousedown", "button": 1, "buttons": 4}, True),
     ],
 )
