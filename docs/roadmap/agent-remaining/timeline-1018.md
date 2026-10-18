@@ -26,7 +26,8 @@ Port 8788, data `/tmp/mm-tl1018` (48 back-dated notes, 12 reminders). Measured 2
 - done: 9a6c59f audit table, typed-day test, plan rows 2, 5, 7 pointed at HISTORY.
 - done: c794253 row 6, D3 labels on the density strip.
 - done: Phase 5 stress measures, and the calendar count chip overwrite fixed (this commit).
-- next: OPEN.md timeline rows 330 (On this day row at 390), 341 (table has no meeting mark), 850 (map under Boards); final sweeps.
+- done: final sweeps on the timeline tab, light and dark: errors.js 1440 0 errors 0 findings, 390 timeline 0 (2 findings are the Notes tab, below); contrast.js timeline "ok (204 text elements)" both themes; touch.js 0 findings both themes; docks.js timeline dock 3 controls at 1440.
+- left (not mine, untouched): OPEN.md rows 330 (On this day row moves the list 44 px at 390), 341 (the table has no meeting mark), 850 (a map under the Boards chip); `timeline.js` sweep's "a bucket head stays pinned after scrolling" fails 1 to 3 times a run on the base too (the week-ahead heads, flaky by run: 1440, 390 then 1440, 1024); errors.js at 390 reports 4 off-screen `button.ghost.small` on the Notes tab (both themes), not the Timeline.
 
 OPEN.md line 2527 ("The rail-dot alignment at 390") is answered: 0 px at 390, `timeline1018.js`.
 
