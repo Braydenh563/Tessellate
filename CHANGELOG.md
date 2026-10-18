@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- A panel's hint line on the board edits its own text, not the title's, and an undo redraws it (INBOX 1300 C17); `tests/test_ui_recipes.py`.
 - The Add column and Add row circles in a document table draw their plus in CSS, centred: the typed glyph sat 0.875 css px low (INBOX 1300 C13); `tests/test_doc_table_manage.py`.
 - Attach: Enter on a focused row ticks it and keeps focus, like Space; Enter in the search field is still Done (INBOX 1300 C09); the panel help and the Guide say so.
 - Statistics can be added to Dashboard Quick access: its palette row now carries a quick id (INBOX 1300 C10); `tests/test_quick_access.py`.

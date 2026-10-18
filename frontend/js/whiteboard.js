@@ -9129,12 +9129,17 @@ function wbBulletTextLines() {
   wbScheduleRender();
 }
 
-function wbBeginTextEdit(contentEl) {
+function wbBeginTextEdit(contentEl, ownText) {
   if (!contentEl || contentEl.isContentEditable) return;
   //: Back to the source while editing, whatever the rendered view showed.
+  //: A caller that edits a field of its own (a frame's title or hint line)
+  //: passes that field's text: the object's `content` is not it (C17: the
+  //: hint opened as the title).
   const objectEl = contentEl.closest(".wb-object");
   const item = (wbState.objects || []).find((o) => String(o.id) === objectEl?.dataset.id);
-  if (item) {
+  if (ownText !== undefined) {
+    contentEl.textContent = ownText;
+  } else if (item) {
     contentEl.classList.remove("wb-text-md");
     contentEl.textContent = item.data.content || "";
   }
@@ -10789,7 +10794,7 @@ function wbEditFrameTitle(titleEl, frame, field = "content") {
   const isHint = field === "hint";
   const before = isHint ? frame.data?.hint || "" : wbFrameTitle(frame);
   //: The board's one way into an edit (DESIGN.md: `wbBeginTextEdit`).
-  wbBeginTextEdit(titleEl);
+  wbBeginTextEdit(titleEl, before);
   const range = document.createRange();
   range.selectNodeContents(titleEl);
   const sel = window.getSelection();
@@ -10815,6 +10820,11 @@ function wbEditFrameTitle(titleEl, frame, field = "content") {
     if (isHint && !name) delete frame.data.hint;
     titleEl.textContent = name;
     if (isHint) titleEl.hidden = !name;
+    //: The text was written straight into the element, so the object's paint
+    //: key still names the old data: an undo back to it matched the key and
+    //: repainted nothing (C17). Clearing it makes the next render redraw.
+    const objectEl = titleEl.closest(".wb-object");
+    if (objectEl) objectEl._wbPaintKey = null;
     wbSaveObject(frame);
   }, { once: true });
 }

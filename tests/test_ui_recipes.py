@@ -4113,7 +4113,11 @@ def test_a_frame_is_one_kind_reached_three_ways() -> None:
     assert 'data-tool="frame"' in index and 'data-wb-insert="frame"' in index
     assert "Frame (F)" in index
     edit = wb[wb.index("function wbEditFrameTitle(") :][:2000]
-    assert "wbBeginTextEdit(titleEl)" in edit and "wbEndTextEdit(titleEl)" in edit
+    assert "wbBeginTextEdit(titleEl, before)" in edit and "wbEndTextEdit(titleEl)" in edit
+    # C17: the hint edits its own text, and an undo repaints what the edit wrote.
+    assert "wbBeginTextEdit(titleEl, before)" in edit and "_wbPaintKey = null" in edit
+    begin = wb[wb.index("function wbBeginTextEdit(") :][:900]
+    assert "ownText !== undefined" in begin
     assert "|| wbFrameDragOrigin(d, d._dragAlone)" in wb
     assert "wbCaptureBulkMoveOrigin(null, keys)" in wb[wb.index("function wbFrameDragOrigin(") :][:400]
     frame_rule = css[css.index(".wb-object-frame {") :][:600]
