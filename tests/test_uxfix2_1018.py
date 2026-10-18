@@ -34,3 +34,11 @@ def test_palette_focuses_before_it_draws_the_catalogue():
     assert body.index('$("palette-input").focus()') < body.index("requestAnimationFrame(draw)")
     # A late usage answer must not draw 108 rows into a closed palette.
     assert 'classList.contains("hidden")) renderPalette("")' in body
+
+
+def test_system_log_lines_do_not_count_as_unread():
+    status = (ROOT / "frontend/js/status.js").read_text()
+    assert 'NOTIFICATION_LOG_KINDS = new Set(["task", "job"])' in status
+    body = status.split("function isNotificationUnread")[1].split("}\n")[0]
+    # A hand-set unread flag still wins; the log kinds only skip the watermark.
+    assert body.index("forced.has") < body.index("NOTIFICATION_LOG_KINDS")

@@ -1211,7 +1211,9 @@ HELP_TOPICS.extend(
             "body": (
                 "The bell in the top bar collects what happened while you were "
                 "busy: reminders coming due, background jobs that finished, and "
-                "Atlas's suggestions. The number on it is what you have not seen. "
+                "Atlas's suggestions. The number on it is what you have not seen; "
+                "the app's own jobs (a backup, housekeeping) are listed but never counted, "
+                "unless one fails. "
                 "A pop-up with a button (Undo, Open it, Show it) is kept here with "
                 "the same button: an opener still works after a restart, an Undo "
                 "only while it can still be undone, then its line says Undo expired. "

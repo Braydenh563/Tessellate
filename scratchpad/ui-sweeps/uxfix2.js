@@ -78,9 +78,9 @@ const median = (a) => [...a].sort((x, y) => x - y)[Math.floor(a.length / 2)];
     console.log("after Enter", JSON.stringify(await page.evaluate(() => ({ paletteHidden: document.getElementById("palette-overlay").classList.contains("hidden"), tab: document.querySelector(".tab.active, [data-tab].active")?.dataset?.tab }))));
   } else if (mode === "bell") {
     await page.waitForTimeout(2500);
-    console.log("bell", JSON.stringify(await page.evaluate(async () => {
-      const badge = document.querySelector("#notif-badge, .notif-badge, #bell-badge");
-      return { badge: badge ? badge.textContent : null, badgeId: badge?.id || null };
+    console.log("bell", JSON.stringify(await page.evaluate(() => {
+      const btn = document.getElementById("notif-btn");
+      return { count: btn.dataset.count, label: btn.getAttribute("aria-label"), rows: storedNotifications().map((n) => `${n.kind}: ${n.title}`) };
     })));
   } else if (mode === "more") {
     await page.waitForTimeout(1500);
