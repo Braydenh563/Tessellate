@@ -2,7 +2,7 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6131, frontend ids 2534, CSS sections 496, backend routes 613, backend modules 5867, test files 1285, tests 11517, plan headings 958.
+Counts: frontend functions 6131, frontend ids 2534, CSS sections 496, backend routes 613, backend modules 5867, test files 1285, tests 11518, plan headings 958.
 
 ## Frontend functions (6131)
 
@@ -4810,22 +4810,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `closeOnboarding` | frontend/js/onboarding.js:438 |
-| `firstRunPump` | frontend/js/onboarding.js:375 |
-| `firstRunSurfaceOpen` | frontend/js/onboarding.js:326 |
-| `firstRunToastsGone` | frontend/js/onboarding.js:346 |
-| `firstRunTurn` | frontend/js/onboarding.js:360 |
-| `firstRunWelcomeDue` | frontend/js/onboarding.js:367 |
+| `closeOnboarding` | frontend/js/onboarding.js:441 |
+| `firstRunPump` | frontend/js/onboarding.js:378 |
+| `firstRunSurfaceOpen` | frontend/js/onboarding.js:329 |
+| `firstRunToastsGone` | frontend/js/onboarding.js:349 |
+| `firstRunTurn` | frontend/js/onboarding.js:363 |
+| `firstRunWelcomeDue` | frontend/js/onboarding.js:370 |
 | `loadOnboardingDiagnostics` | frontend/js/onboarding.js:68 |
-| `maybeShowConsoleViewIntro` | frontend/js/onboarding.js:492 |
-| `onboardingBack` | frontend/js/onboarding.js:474 |
-| `onboardingNext` | frontend/js/onboarding.js:455 |
-| `openOnboarding` | frontend/js/onboarding.js:425 |
+| `maybeShowConsoleViewIntro` | frontend/js/onboarding.js:495 |
+| `onboardingBack` | frontend/js/onboarding.js:477 |
+| `onboardingNext` | frontend/js/onboarding.js:458 |
+| `openOnboarding` | frontend/js/onboarding.js:428 |
 | `renderOnboardingActions` | frontend/js/onboarding.js:129 |
 | `renderOnboardingSlide` | frontend/js/onboarding.js:240 |
-| `showOnboarding` | frontend/js/onboarding.js:430 |
-| `showOnboardingTurn` | frontend/js/onboarding.js:408 |
-| `whenFirstRunClear` | frontend/js/onboarding.js:339 |
+| `showOnboarding` | frontend/js/onboarding.js:433 |
+| `showOnboardingTurn` | frontend/js/onboarding.js:411 |
+| `whenFirstRunClear` | frontend/js/onboarding.js:342 |
 
 ### frontend/js/personas-pane.js (2)
 
@@ -18086,7 +18086,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11517)
+## Tests (11518)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18521,7 +18521,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_final_pass_bugs.py | 5 |
 | tests/test_find_it.py | 8 |
 | tests/test_finder_star_790.py | 3 |
-| tests/test_first_run_472.py | 13 |
+| tests/test_first_run_472.py | 14 |
 | tests/test_flaw_class_lints.py | 2 |
 | tests/test_focus_timer.py | 5 |
 | tests/test_folder_roundtrip.py | 8 |
@@ -20079,7 +20079,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1265 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:268 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:269 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4173 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

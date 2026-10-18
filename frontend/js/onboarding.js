@@ -253,6 +253,9 @@ function renderOnboardingSlide() {
   if (greet) {
     const face = document.createElement("span");
     face.className = "nm-live";
+    //: The swirl and orbit paint up to 4px past the svg's own box (measured
+    //: at 390); the holder's padding keeps them inside it, off the bubble.
+    face.style.padding = "var(--space-1)";
     face.appendChild(atlasMark(104, "happy"));
     const say = document.createElement("p");
     say.className = "onboarding-atlas-say";
