@@ -358,3 +358,61 @@
   border-style: dashed;
   color: var(--muted);
 }
+
+/* **A note's hover card** (INBOX 1300 C11, "hover over ... graph nodes and
+   see their values and dates"): `gcHoverCardFrame` places it beside the dot
+   the pointer or the keyboard is on. Opaque, not glass: words laid over the
+   map must not read through it. It takes no pointer, so the hover stays on
+   the canvas underneath. DESIGN.md, "A card about one dot on a canvas". */
+.graph-hovercard {
+  position: absolute;
+  /* Over the canvas; the popup (which hides it) and the menus stay above. */
+  z-index: 2;
+  max-width: min(18rem, calc(100% - 1.5rem));
+  padding: var(--space-3);
+  background: var(--modal-bg-opaque);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  color: var(--text);
+  font-size: var(--text-sm);
+  pointer-events: none;
+}
+.graph-hovercard[hidden] {
+  display: none;
+}
+.graph-hovercard-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  overflow-wrap: anywhere;
+}
+.graph-hovercard-head .legend-dot {
+  flex: none;
+}
+.graph-hovercard-sub,
+.graph-hovercard-hint {
+  margin: var(--space-1) 0 0;
+  color: var(--muted);
+  white-space: pre-line;
+}
+.graph-hovercard-hint {
+  font-size: var(--text-xs);
+}
+.graph-hovercard-facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-1) var(--space-3);
+  margin: var(--space-2) 0 0;
+}
+.graph-hovercard-facts dt {
+  color: var(--muted);
+}
+.graph-hovercard-facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.graph-hovercard-props {
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border);
+}

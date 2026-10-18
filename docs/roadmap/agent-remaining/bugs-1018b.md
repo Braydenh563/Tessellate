@@ -29,7 +29,7 @@ audits reproduced each bug in the app (ports 8791, 8792). A row is **open**,
 | C21 theme preview revert and bar | O, design | fixed | hover 900 ms on card or eye: no preview; eye: notice 254x81 "Previewing the X theme." Apply/Cancel; undone on Cancel, eye again, section switch, close, hidden tab, Escape; Apply keeps it (`theme1300.js`) |
 | C22 shortcut chip Change | O, design | fixed | 32 of 32 rows carry a 16 px pencil 10 px after the keys, muted at rest, accent aimed at, x while capturing; no row or chip overflows at 1440 or 390 (`shortcut1300.js`) |
 | C06, C07, C08 reply cards, preview, fold, calculator | O, design | open | `/calc` `slash_more.py:200`; peek `capture-ask.js:1412` |
-| C11 graph node hover card | O, design | open | `graph-canvas.js:3753` title tooltip only |
+| C11 graph node hover card | O, design | fixed (design2) | `graph-canvas.js:3753` title tooltip only |
 | C27 graph popup props button | O, design | open | `index.html:4448` |
 | C28 reply reveal animation | O, design | open | chat 0.2 s fade only; guide streams words |
 | C30 lightbox controls | O, design | open | `lightbox-view.js` |

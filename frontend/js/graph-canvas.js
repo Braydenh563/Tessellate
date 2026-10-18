@@ -2998,6 +2998,7 @@ function gcDraw(s = gcTab) {
   }
 
   ctx.restore();
+  gcHoverCardFrame(s);
   s.timing.lastFrame = performance.now() - started;
   s.timing.frames += 1;
   // **Only a frame with something in it stops the clock.** A frame drawn
@@ -3843,7 +3844,9 @@ function gcWireInteraction(s = gcTab) {
       // The native tooltip the SVG renderer got from a `<title>` child. A
       // canvas has no children, so the canvas itself carries whichever one
       // applies.
-      s.canvas.title = node ? gcTooltip(node, s) : edge ? "Click to see this connection" : gcPlateTitle(plate, s);
+      //: On the tab a note answers with its hover card (`gcHoverCardFrame`),
+      //: so the native tooltip is only the pane's.
+      s.canvas.title = node ? (s.size === "full" ? "" : gcTooltip(node, s)) : edge ? "Click to see this connection" : gcPlateTitle(plate, s);
       gcRequestDraw(s);
     }
   });
@@ -4325,6 +4328,155 @@ const GC_ENTITY_CATEGORY = "Entity";
 const GC_ENTITY_HELP =
   "An entity is a person, place or thing Atlas found named across your notes, " +
   "joined to every note that mentions it. Click it for its page";
+
+//: **A note's hover card** (INBOX 1300 C11, the owner: "I wanna be able to
+//: hover over and click graph nodes and see their values and dates etc").
+//: What the card says, worked out apart from the DOM so it is tested in
+//: node: the title, the category, the facts (dates, links, views, length),
+//: the note's properties and its tags. `day` and `ago` format a date, so a
+//: test passes its own clock. A node that is not a note says what it is.
+function gcHoverCardFacts(node, entry, day, ago) {
+  const card = { title: node.preview || "Untitled", sub: node.category || "", facts: [], props: [], tags: "", note: "" };
+  const kinds = {
+    entity: GC_ENTITY_HELP,
+    document: "A document your notes are attached to",
+    map: "A mind map, joined to the notes on it",
+    tag: "A tag, joined to the notes that carry it",
+    attachment: "A file on the note it is joined to",
+    unresolved: "No note has this name yet. Click to write it",
+    board: "A whiteboard, joined to the notes on it",
+    whiteboard: "A whiteboard, joined to the notes on it",
+  };
+  if (kinds[node.type]) {
+    card.note = kinds[node.type];
+    return card;
+  }
+  if (node.created_at) card.facts.push(["Created", day(node.created_at)]);
+  const made = Date.parse(node.created_at || "");
+  const edited = Date.parse(node.updated_at || "");
+  //: An edit within a minute of writing is the writing.
+  if (Number.isFinite(edited) && (!Number.isFinite(made) || edited - made > 60000)) card.facts.push(["Edited", ago(node.updated_at)]);
+  const links = node._links || 0;
+  card.facts.push(["Links", links ? String(links) : "None"]);
+  card.facts.push(["Views", node.access_count ? String(node.access_count) : "Not opened yet"]);
+  if (node.words) card.facts.push(["Words", String(node.words)]);
+  for (const [key, values] of Object.entries((entry && entry.properties) || {}).slice(0, 5)) {
+    const shown = (values || []).filter(Boolean).map((v) => String(v).replace(/^\[\[|\]\]$/g, ""));
+    if (shown.length) card.props.push([key, shown.join(", ")]);
+  }
+  card.tags = (node.tags || []).slice(0, 6).map((t) => `#${t}`).join(" ");
+  return card;
+}
+
+//: The card's element, built once into the map's box: `role="tooltip"`, the
+//: canvas `aria-describedby` it while it shows, never focusable (the arrow
+//: keys move the note it describes, Enter opens the note).
+function gcHoverCardEl(s) {
+  if (s._hoverCard && s._hoverCard.isConnected) return s._hoverCard;
+  const box = s.canvas && s.canvas.parentElement;
+  if (!box) return null;
+  const card = document.createElement("div");
+  card.id = "graph-hovercard";
+  card.className = "graph-hovercard";
+  card.setAttribute("role", "tooltip");
+  card.hidden = true;
+  box.appendChild(card);
+  s._hoverCard = card;
+  return card;
+}
+
+function gcHoverCardFill(card, node, s) {
+  const entry = typeof allEntries !== "undefined" ? allEntries.find((e) => e.id === node.id) : null;
+  const facts = gcHoverCardFacts(
+    node,
+    entry,
+    (iso) => {
+      const at = parseServerTime(iso);
+      return at ? at.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "";
+    },
+    relativeTime
+  );
+  const head = document.createElement("div");
+  head.className = "graph-hovercard-head";
+  const dot = document.createElement("span");
+  dot.className = "legend-dot";
+  dot.style.background = node.colour || gcTokens.muted;
+  dot.setAttribute("aria-hidden", "true");
+  const title = document.createElement("strong");
+  title.textContent = facts.title;
+  head.append(dot, title);
+  const parts = [head];
+  const line = (text, cls) => {
+    const p = document.createElement("p");
+    p.className = cls;
+    p.textContent = text;
+    parts.push(p);
+  };
+  if (facts.sub) line(facts.sub, "graph-hovercard-sub");
+  if (facts.note) line(facts.note, "graph-hovercard-sub");
+  const grid = (rows, cls) => {
+    if (!rows.length) return;
+    const dl = document.createElement("dl");
+    dl.className = cls;
+    for (const [key, value] of rows) {
+      const dt = document.createElement("dt");
+      dt.textContent = key;
+      const dd = document.createElement("dd");
+      dd.textContent = value;
+      dl.append(dt, dd);
+    }
+    parts.push(dl);
+  };
+  grid(facts.facts, "graph-hovercard-facts");
+  grid(facts.props, "graph-hovercard-facts graph-hovercard-props");
+  if (facts.tags) line(facts.tags, "graph-hovercard-sub");
+  const matches = gcTooltipMatches(node, s);
+  if (matches) line(matches.trim().split("\n").slice(0, 4).join("\n"), "graph-hovercard-sub graph-hovercard-matches");
+  if (gcIsNote(node)) line("Click to open, double-click to pin", "graph-hovercard-hint");
+  card.replaceChildren(...parts);
+}
+
+//: Once a frame (`gcDraw`): which note the card is about, the pointer's or
+//: else the keyboard's, and where it stands, beside the dot and inside the
+//: map. Hidden while a drag or a pan moves the map, while the note's popup
+//: is open, and on a pane (which keeps the native tooltip).
+function gcHoverCardFrame(s) {
+  if (s.size !== "full") return;
+  const id = s.hoveredId != null ? s.hoveredId : gcKeyboardId(s);
+  const node = id != null && s.byId ? s.byId.get(id) : null;
+  const popup = document.getElementById("graph-popup");
+  const show = node && !node.isGroup && !s.dragNode && !s.panning && !s.intro && (!popup || popup.classList.contains("hidden"));
+  const card = show ? gcHoverCardEl(s) : s._hoverCard;
+  if (!card) return;
+  if (!show) {
+    if (!card.hidden) {
+      card.hidden = true;
+      s.canvas.removeAttribute("aria-describedby");
+    }
+    card._for = null;
+    return;
+  }
+  if (card._for !== node.id || card._epoch !== s.epoch) {
+    gcHoverCardFill(card, node, s);
+    card._for = node.id;
+    card._epoch = s.epoch;
+  }
+  card.hidden = false;
+  s.canvas.setAttribute("aria-describedby", card.id);
+  const t = s.transform;
+  const sx = node.x * t.k + t.x;
+  const sy = node.y * t.k + t.y;
+  const r = (node.r + (node._grow || 0)) * t.k;
+  const w = card.offsetWidth;
+  const h = card.offsetHeight;
+  const gap = 12;
+  let left = sx + r + gap;
+  if (left + w > s.dims.w - gap) left = sx - r - gap - w;
+  left = Math.max(gap, Math.min(left, s.dims.w - w - gap));
+  const top = Math.max(gap, Math.min(sy - h / 2, s.dims.h - h - gap));
+  card.style.left = `${Math.round(left)}px`;
+  card.style.top = `${Math.round(top)}px`;
+}
 
 function gcTooltip(node, s = gcTab) {
   const links = (s.adj && s.adj.get(node.id) ? s.adj.get(node.id).size : 0) || 0;
@@ -5230,7 +5382,8 @@ async function renderGraphCanvas(s = gcTab) {
   //: crossing "through the middle of the hub"; the worker's `clearCurve`).
   const shape = s.tree ? null : gcShape(s);
   for (const node of nodes) {
-    node.r = gcRadius(node, degreeOf(node), maxDegree);
+    node._links = degreeOf(node);
+    node.r = gcRadius(node, node._links, maxDegree);
     //: A treemap cell is only so big: the dot stays inside it.
     if (node.cell) node.r = Math.min(node.r, Math.max(2.5, Math.min(node.cell.w, node.cell.h) * 0.36));
     node.colour = s.colourOf(node);

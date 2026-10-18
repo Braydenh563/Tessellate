@@ -4435,6 +4435,12 @@ function renderGraphPopupInfo(entry) {
     `${links} link${links === 1 ? "" : "s"}`,
     `${views} view${views === 1 ? "" : "s"}`,
   ];
+  //: The edit date beside the writing date (INBOX 1300 C11, "see their
+  //: values and dates"), as the hover card says it; an edit within a minute
+  //: of writing is the writing.
+  const made = Date.parse(entry.created_at || "");
+  const edited = Date.parse(entry.updated_at || "");
+  if (Number.isFinite(edited) && (!Number.isFinite(made) || edited - made > 60000)) parts.splice(1, 0, `Edited ${relativeTime(entry.updated_at)}`);
   //: **Star and "Favourite", not pin and "Pinned".** `entry.pinned` is one
   //: flag with one meaning, it floats a note to the top *and* collects it
   //: into the sidebar's Favourites row: and app.js's own note cards were

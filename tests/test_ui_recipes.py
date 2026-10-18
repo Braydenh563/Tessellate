@@ -5857,3 +5857,14 @@ def test_help_rows_do_not_animate_hover() -> None:
     start = css.index("#settings-help summary,")
     block = css[start : css.index("}", start)]
     assert "#settings-help .linklike" in block and "transition: none;" in block
+
+
+def test_a_dot_on_the_graph_answers_with_its_hover_card():
+    """DESIGN.md, "A card about one dot on a canvas" (INBOX 1300 C11): the
+    hover card, never the native title, for a note on the Graph tab."""
+    canvas = (ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "graph-lazy.css").read_text(encoding="utf-8")
+    assert "s.canvas.title = node ? gcTooltip(node, s)" not in canvas
+    assert "gcHoverCardFrame(s);" in canvas
+    rule = css[css.index(".graph-hovercard {") :].split("}")[0]
+    assert "backdrop-filter" not in rule and "var(--modal-bg-opaque)" in rule
