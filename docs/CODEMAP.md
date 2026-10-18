@@ -2,7 +2,7 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 5957, frontend ids 2510, CSS sections 495, backend routes 607, backend modules 5679, test files 1233, tests 11195, plan headings 957.
+Counts: frontend functions 5957, frontend ids 2510, CSS sections 495, backend routes 607, backend modules 5679, test files 1234, tests 11196, plan headings 957.
 
 ## Frontend functions (5957)
 
@@ -17644,7 +17644,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11195)
+## Tests (11196)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18732,6 +18732,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_timeline_feed_ahead.py | 3 |
 | tests/test_timeline_load_more_range_change.py | 1 |
 | tests/test_timeline_on_this_day.py | 5 |
+| tests/test_timeline_typed_day.py | 1 |
 | tests/test_timewords.py | 23 |
 | tests/test_timezone.py | 6 |
 | tests/test_toast_over_sheets.py | 2 |

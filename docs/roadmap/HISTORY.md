@@ -908,6 +908,14 @@ The filing agent's Built block (standing order 10); WORLD_CLASS_PLAN's "Placed f
 - Measured and not shipped: tags from the note's own words for a notebook with no tags (a title word said twice): 4 of 12 right on the set, below the bar.
 - Learning from turn-downs: a tag discarded on three notes or more is offered at 0.3 of its vote everywhere (`tagging.turned_down`, `_damp`); Manage tags lists them under Turned down with Offer again (`GET /tags/turned-down`, `POST /tags/turned-down/offer-again`, preference `tags_offered_again`). Driven at 1440 and 390 on port 8851: the row shows, its button 122x32 (44 tall at 390), no overflow, and Offer again hides it. Capture: title "Biology revision" and a body without the word gave the chip "biology", titled "It says “biology”.", focus left in the editor.
 - Help moved with it: the Guide topic `suggested-tags`, the tag manager's '?' popover.
+## Moved from the plans, 2026-10-18 (TIMELINE timeline-1018)
+
+The timeline-1018 agent's Built block (standing order 10); TIMELINE_PLAN section 10 rows 2, 5 and 6 and section 11 row 7 carry the pointer. Audit first: each open row was grepped and measured, and three were found already built.
+
+- Audit, measured with `scratchpad/ui-sweeps/timeline1018.js` on 48 back-dated notes: day-head overlaps 1 to 0 at 1440 and at 390 over 59 heads; day-head buttons 32 px high at 1440 and 44 px at 390 (coarse); the owner's rail circle (Placed from the owner's list, Bugs) 0 px off the first line's centre for 12 rows at both widths. The one control under 24 px is `#timeline-search`'s input (20 px inside its 32 px `.search-field`, the app-wide recipe).
+- Row 7, live chips: `scratchpad/ui-sweeps/remindersqa1018.js`, "dentist friday at 9am" shows its chip in 65 ms at 1440 and 129 ms at 390 (Brief 66 built it); at 390 the row is the FAB's sheet, 304 px wide, inside the viewport.
+- Row 5, typed entries: `tests/test_timeline_typed_day.py` holds twenty phrases against a fixed Sunday, save to `/timeline` row, 20 of 20 on the named day, placed "mentioned" with the phrase. Three phrases the audit found wrong or unresolved are owner questions in `agent-remaining/timeline-1018.md`, not in the set.
+
 ## Moved from the plans, 2026-10-17 (TIMELINE B72)
 
 The calendar-b72-1017 agent's Built block (standing order 10); TIMELINE_PLAN section 12 row 6 and the INBOX 561 placement carry the pointer. The owner, INBOX 904 B72: "I wanna be able to double click on a date and be able to add an event and set a reminder ... scroll above today's date to see future dates ... recognise future date and time mentions and suggest to use magic add". Decisions taken are in `agent-remaining/calendar-b72-1017.md` (archived with it).

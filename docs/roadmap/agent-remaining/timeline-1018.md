@@ -1,0 +1,30 @@
+# timeline-1018 (Sonnet): TIMELINE_PLAN sections 9 to 12 audit and the open rows
+
+Port 8788, data `/tmp/mm-tl1018` (48 back-dated notes, 12 reminders). Measured 2026-10-18 with
+`scratchpad/ui-sweeps/timeline1018.js` (day heads, small targets, rail dot) and
+`remindersqa1018.js` (quick add chips) against the served worktree.
+
+## Audit (step 0)
+
+| Item | State | Evidence |
+| --- | --- | --- |
+| 9 Phase 5 gates 1 to 4 (grid, week and day, agenda, drag and undo, ICS) | built | HISTORY.md:924 and the "Moved from the plans, 2026-10-11 (TIMELINE Brief 55)" block |
+| 10 row 1, 3, 4, 7, 8 | built | HISTORY "Brief 85" and "Brief 55" blocks (pointers in the plan table) |
+| 10 row 2, day head button beside its date, targets 24/44 | built (measured now) | `timeline1018.js`: head overlaps 0 at 1440 and 390 over 59 heads; day-head buttons 32 px high at 1440, 44 px at 390 (coarse); the only sub-24 control is `#timeline-search` 408x20, the app-wide `.search-field` recipe whose wrapper is the 32 px target |
+| 10 row 5, typed entries land on the day they name | built, unpinned | `entry/timewords.py` + `routes_timeline.py` (`placed_by: mentioned`); 17 of 20 phrases land on the named day over HTTP (`tests/test_timeline_typed_day.py` pins them); 3 need a decision (see questions) |
+| 10 row 6, scrubber and month ticks from D3's time scale | open | `drawTimelineScrubber` (`timeline.js:1849`) draws a density path only: no labels, no tick lines (so none to delete); strip hidden below 600 px (`06-timeline-dialogs.css:342`); `timeline.js` calls no `d3.*` |
+| 11 row 7, live chips in the quick-add row and the row at 390 | built (measured now) | `remindersqa1018.js`: "dentist friday at 9am" chip in 65 ms at 1440, 129 ms at 390 (inside the 150 ms line); at 390 the row is in the FAB sheet (`#reminders-new`), 304 px wide, inside the viewport; Brief 66 / F2 in HISTORY |
+| 11 rows 1 to 6, 8, 9 | built | HISTORY "Brief 85", "Brief 86", "Brief 55" blocks |
+| 12 rows 1 to 6 | built | HISTORY "Brief 55" and "B72" blocks |
+| Placed bug: rail circle not on the first line's centre | built, re-measured | `timeline1018.js`: `.timeline-row-mark` centre minus the title's first line centre = 0 px for 12 rows at 1440 and at 390 (day scale) |
+| Placed INBOX 561 (day strip rework) | owner | waits on the owner's look (plan line 207) |
+| Phase 5 not verified: dot density at 1,000 notes in a month, touch drag, week grid at 1024 coarse | open, unmeasured | see next |
+
+## Done / next
+
+- done: audit table (this file).
+- next: row 6, D3 time labels on the density strip, a lazy file `frontend/js/timeline-ticks.js` (boot hook only), node test first.
+
+## Questions for the owner
+
+- (none yet)

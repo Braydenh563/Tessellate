@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Timeline audit (TIMELINE_PLAN 10 rows 2 and 5, 11 row 7): measured built, not rebuilt. Twenty typed phrases land on the day they name (`tests/test_timeline_typed_day.py`), day heads overlap 0 at 1440 and 390, the quick add chip shows in 65 ms (129 ms at 390), the rail dot is 0 px off the first line.
 - The composer's utility reading (`utilities.kind_of`, cached since the long-question fix) follows the web search setting: it is part of the cache key, so flipping the setting changes how "search the web for ..." routes without a restart. `web_on` reads the loaded config without building app state, and `conftest`'s `app_state` waits for background threads (`background.join_all`) so an embedding warm-up cannot recreate the repo's `data/` folder after teardown (the last `test_typo_routing` leak).
 - INBOX triage: eight placed items (735, 742, 771, 772, 804, 807, 808, 903) moved to HISTORY's "INBOX resolved"; the tray holds eleven.
 - Boot JS back under its cap after the companion and popup-citation merges (588,399 of 588,400 gzipped): the dead `logTerminalLineText`, same-file `typeof fn === "function"` guards in `avatars.js` and `atlas.js`, and a folded release and landing path in the companion; ten one-off probe scripts left `scratchpad/` for the file cap.
