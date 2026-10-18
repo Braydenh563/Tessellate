@@ -25,6 +25,11 @@ import pytest
 from tessellate.ai import autonomous
 from tessellate.core import bgtasks, embedmodels, extras
 
+# The cancellers read the config (`autonomous.request_stop`), which without an
+# app state builds one in the repo's own `data/` folder and leaves it alive for
+# the next test.
+pytestmark = pytest.mark.usefixtures("app_state")
+
 
 def _source_of(module) -> str:
     """A module's own text, read through `Path.read_text`.

@@ -19,8 +19,8 @@ const TIMELINE_TICK_GAP = 28;
 //: Hold the first and last label off the strip's ends, where half of it would
 //: be cut by the rounded corner.
 const TIMELINE_TICK_EDGE = 7;
-let timelineTickFormats = null;
-let timelineTickKey = "";
+//: The d3 formats (built once, d3 loads lazily) and the plan last drawn.
+const timelineTickCache = { formats: null, key: "" };
 
 //: The steps, finest first, each with the days one tick stands for (the
 //: nominal length, to choose by) and d3's interval (to place by).
@@ -43,8 +43,8 @@ function timelineTickSteps() {
 //: with the month ("Oct 5"), since a strip of one week has no other month in
 //: view to say which.
 function timelineTickLabel(date, step) {
-  timelineTickFormats ||= { y: d3.timeFormat("%Y"), m: d3.timeFormat("%b"), w: d3.timeFormat("%b %-d") };
-  const f = timelineTickFormats;
+  timelineTickCache.formats ||= { y: d3.timeFormat("%Y"), m: d3.timeFormat("%b"), w: d3.timeFormat("%b %-d") };
+  const f = timelineTickCache.formats;
   if (step === "year") return f.y(date);
   if (step === "month") return date.getMonth() === 0 ? f.y(date) : f.m(date);
   return f.w(date);
@@ -87,8 +87,8 @@ async function timelineTicks() {
   if (!loaded || !span || strip.classList.contains("hidden") || height < 60) return;
   const plan = timelineTickPlan(span, height);
   const key = `${plan.step}|${height}|${span.newest}|${span.width}`;
-  if (key === timelineTickKey && strip.querySelector(".timeline-ticks")) return;
-  timelineTickKey = key;
+  if (key === timelineTickCache.key && strip.querySelector(".timeline-ticks")) return;
+  timelineTickCache.key = key;
   let layer = strip.querySelector(".timeline-ticks");
   if (!layer) {
     layer = document.createElement("div");

@@ -235,16 +235,17 @@ def test_a_sentence_heading_is_not_wrapped_in_your_note():
     assert "Your the" not in line and "structure note" not in line, line
 
 
-def test_a_cold_process_routes_an_act_without_anything_else_imported():
-    """`intent.classify` alone in a fresh interpreter reads "pin the dentist
-    noe" as an act: the typed reader is registered by `commands`, which the
-    classifier itself must bring in (it used to depend on what ran before)."""
+def test_a_cold_process_that_loads_the_chat_route_routes_an_act():
+    """"pin the dentist noe" is an act in a fresh interpreter that has loaded
+    the chat route: the typed reader is registered by `commands`, which the
+    route brings in. (`intent` cannot name `commands` itself: that made the
+    two and the agent one import cycle, `test_import_module_cycles.py`.)"""
     import subprocess
     import sys
 
     src = Path(__file__).resolve().parents[1] / "src"
     code = (
-        "from tessellate.ai import intent;"
+        "import tessellate.api.routes_chat;from tessellate.ai import intent;"
         "print(intent.classify('pin the dentist noe'), intent.classify('unlnk the gym note from the running note'))"
     )
     out = subprocess.run(

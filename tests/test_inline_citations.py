@@ -245,8 +245,8 @@ def test_the_popup_agent_numbers_its_answer_like_chat():
     palette = frontend_text("palette.js")
     start = palette.index("async function cmdPaletteAsk(")
     ask = palette[start:]
-    assert "onGrounding: onCites" in ask
-    assert "onGroundingLive: onCites" in ask
+    assert "onGrounding: cite" in ask
+    assert "onGroundingLive: cite" in ask
     call = ask[ask.index("addInlineCitations(") :]
     call = call[: call.index(");")]
     assert "answerBox" in call and "found" in call

@@ -24,7 +24,7 @@ composer offers "Did you mean" instead of guessing silently.
 
 from __future__ import annotations
 
-import importlib
+import logging
 import re
 from collections import Counter
 from collections.abc import Callable
@@ -126,17 +126,13 @@ def set_topic_source(source: Callable[[], list]) -> None:
 
 
 def _help_text() -> str | None:
-    """The app's help topics as one string, or None when they cannot be read."""
-    if _topic_source is None:
-        #: The topics register themselves when `help_chat` loads; a process
-        #: that has not met the Guide yet (the first question after launch,
-        #: a test file run alone) read every question without the app's own
-        #: words ("dayz" stayed "dayz"). `importlib`, not an `import`
-        #: statement: help_chat imports this module (an import cycle).
-        try:
-            importlib.import_module("tessellate.ai.help_chat")
-        except Exception:  # noqa: BLE001 - a missing help must not stop a question being read
-            pass
+    """The app's help topics as one string, or None when they cannot be read.
+
+    Empty until `help_chat` registers its topics, which the help route does
+    before any question is read; a test or script that skips the route loads
+    `help_chat` first (tests/conftest.py does). The speller cannot load it
+    itself: `help_chat` reaches this module through `question_noise`, and an
+    `importlib` call here made the three one import cycle."""
     try:
         return " ".join(
             " ".join([str(t.get("title", "")), str(t.get("body", "")), " ".join(t.get("keywords") or [])])
@@ -144,6 +140,7 @@ def _help_text() -> str | None:
             if isinstance(t, dict)
         )
     except Exception:  # noqa: BLE001 - a missing help must not stop a question being read
+        logging.getLogger(__name__).debug("the help topics could not be read; questions are read without them", exc_info=True)
         return None
 
 
@@ -870,6 +867,4 @@ def _warm() -> None:
         _common()
         variants.pairs()
     except Exception:  # noqa: BLE001  # a warm-up that fails leaves the first use to build them
-        import logging
-
         logging.getLogger(__name__).debug("spelling warm-up failed; the first question builds the lists", exc_info=True)

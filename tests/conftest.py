@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from tessellate.ai import model_manager
+from tessellate.ai import commands, help_chat, model_manager, spelling  # noqa: F401
 from tessellate.core import background, deps, jobs, taskhistory, vault
 
 
@@ -101,6 +101,11 @@ def app_state(tmp_path, monkeypatch):
     # way the job registry does, and a test asserting "no jobs have finished"
     # would otherwise pass or fail on what ran before it.
     taskhistory.clear()
+    # The app's start enqueues the speller's one-per-process warm-up on the job
+    # pool; whichever test first started an app saw it in `/tasks` ("Warm: warm
+    # the spelling lists"), so test_tasks passed or failed on the order a worker
+    # ran its files in. No test wants the job, and the lists load on first use.
+    spelling._WARMED["started"] = True
     deps.init_app_state(data_dir=tmp_path / "data")
     yield deps.get_config()
     # A worker the test started (the embedding warm-up after a capture, a

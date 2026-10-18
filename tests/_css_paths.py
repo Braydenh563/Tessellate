@@ -102,6 +102,8 @@ CSS_FILES = [
     CSS_DIR / "offline-split-lazy.css",
     #: The Settings listeners' additions: the theme cards' eye (settings-controls.js).
     CSS_DIR / "settings-controls-lazy.css",
+    #: The density strip's year and month labels (timeline-ticks.js loads it).
+    CSS_DIR / "timeline-ticks-lazy.css",
 ]
 
 

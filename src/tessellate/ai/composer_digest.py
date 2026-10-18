@@ -30,6 +30,7 @@ The connecting words are in `PHRASES`, one table, so a voice preset
 
 from __future__ import annotations
 
+import calendar
 import re
 import sys
 import zlib
@@ -2431,7 +2432,10 @@ def _lead_figure(line: str) -> str | None:
 #: The composer's grammar pass (INBOX 1299): closed lists, no model. Words
 #: the person wrote are never touched: quoted spans, links, addresses, file
 #: names and a joke's or quote's own sentences are set aside first.
-_WEEKDAYS = "monday|tuesday|wednesday|thursday|friday|saturday|sunday"
+#: Spelled for writing capitals, never read into a date (that is
+#: `ai/recognise.py`'s), so they come from the calendar module.
+_WEEKDAY_WORDS = frozenset(name.lower() for name in calendar.day_name)
+_WEEKDAYS = "|".join(sorted(_WEEKDAY_WORDS))
 #: "may" and "march" are also words: they are months only beside a day number.
 _MONTH_NAMES = "january|february|april|june|july|august|september|october|november|december"
 _DAY_NAME = re.compile(rf"\b(?:{_WEEKDAYS}|{_MONTH_NAMES})\b", re.I)
@@ -2454,7 +2458,12 @@ _PLACES = (
 )
 #: What may follow the place: the phrase must end there, so "gym class" and
 #: "bank holiday" (a noun on it) are left alone.
-_AFTER_PLACE = rf"(?=\s*(?:$|[.,;:!?)]|(?i:and|or|but|then|on|at|in|after|before|every|today|tonight|tomorrow|yesterday|this|next|last|again|for|with|so|when|if|as|by|from|until|once|twice|daily|weekly|early|late|now|soon|later|instead|still|too|to|{_WEEKDAYS})\b))"
+_AFTER_WORDS = (
+    "and", "or", "but", "then", "on", "at", "in", "after", "before", "every", "today", "tonight", "tomorrow",
+    "yesterday", "this", "next", "last", "again", "for", "with", "so", "when", "if", "as", "by", "from", "until",
+    "once", "twice", "daily", "weekly", "early", "late", "now", "soon", "later", "instead", "still", "too", "to",
+)
+_AFTER_PLACE = rf"(?=\s*(?:$|[.,;:!?)]|(?i:{'|'.join(_AFTER_WORDS)}|{_WEEKDAYS})\b))"
 _NEEDS_THE = re.compile(rf"\b((?i:{_VERB_TO}(?: back)?)) to ({_PLACES}){_AFTER_PLACE}")
 
 
@@ -2463,7 +2472,7 @@ def _capital(m: re.Match) -> str:
     if _NOT_AN_END.search(m.string[max(0, m.start() - 12):m.start()]):
         return m.group(0)
     known = _dictionary()
-    if word in ("a", "i") or word in _WEEKDAYS or (known and len(word) > 1 and word in known):
+    if word in ("a", "i") or word in _WEEKDAY_WORDS or (known and len(word) > 1 and word in known):
         return f"{m.group(1) or ''}{word[0].upper()}{word[1:]}"
     return m.group(0)
 

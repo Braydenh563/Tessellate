@@ -340,18 +340,19 @@ def test_a_real_word_no_note_holds_is_not_put_right_to_one_that_does():
     assert "rust" in said["text"]
 
 
-def test_a_cold_speller_reads_the_apps_own_words_without_the_guide_imported():
-    """The speller's app vocabulary came from the help topics, registered only
-    when `help_chat` was imported: a fresh process that had not met the Guide
-    left "dayz" as typed (and `test_composer_725` passed or failed with the
-    order it ran in). It now loads the topics itself, on first use."""
+def test_a_cold_process_that_loads_the_app_reads_the_apps_own_words():
+    """The speller's app vocabulary comes from the help topics, registered when
+    `help_chat` is imported, which the app does (routes_help): a fresh process that
+    loaded the route repairs "dayz". (The speller cannot import `help_chat`
+    itself: that made it, `question_noise` and the Guide one import cycle,
+    `test_import_module_cycles.py`; tests/conftest.py loads it for the suite.)"""
     import subprocess
     import sys
     from pathlib import Path
 
     src = Path(__file__).resolve().parents[1] / "src"
     code = (
-        "from tessellate.ai import question_noise;"
+        "import tessellate.api.app;from tessellate.ai import question_noise;"
         "print(question_noise.repair('how many dayz until mums bday'))"
     )
     out = subprocess.run(

@@ -160,16 +160,13 @@ def classify(message: str) -> str:
     if kind and kind != "until_note":
         return UTILITY
 
-    import importlib
     from datetime import datetime
 
     from tessellate.ai import act_registry
 
-    # `commands` registers the typed reader on import; a classifier called
-    # before anything imported it (a cold process, a test run alone) read
-    # every act as a notes question. `importlib`, not an `import` statement:
-    # commands reaches back to this module through the agent (an import cycle).
-    importlib.import_module("tessellate.ai.commands")
+    # `commands` registers the typed reader when it loads, and the chat route
+    # loads it (through the agent) before any question is classified. Naming it
+    # here would make intent, agent and commands one import cycle.
     act = act_registry.typed_reader(message, datetime.now())
     if act and act["intent"] != "summarise":
         return ACT
