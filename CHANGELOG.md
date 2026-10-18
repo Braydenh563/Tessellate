@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Mind map: Branches from my notes and Expand from my notes draw their suggestions as faded ghost topics under the topic (Tab takes one, Enter adds the taken ones, Escape drops them) instead of a tick-list dialog; the styles are in the lazy Library sheet.
 - Whiteboard: `%date%` (today, in the reader's locale) and `%page%` (the frame the item sits in) work in labels beside `%name%`; Copy as SVG (Ctrl+K) puts the picture on the clipboard as text.
 - Chat: Make a mind map, on an answer (Mind map this) and in the chat menu (Make a mind map of this chat), builds a map from the text's headings and lists with no model (`POST /whiteboard/maps/from-text`); Save this chat as a document moved to the lazy quick-note bundle for the boot budget.
 - Ask and Chat: a bare "3/4" in a question follows the browser's locale (the chat request carries it), so in en-US "what's on 3/4" reads as 4 March.

@@ -511,8 +511,7 @@ export that claims it.
    children from the notebook (grounded, with the source note on each),
    "Expand from my notes" fills a branch from search results,
    "Summarise this branch" writes the parent's note. (Suggest branches is in:
-   WHITEBOARD_PLAN decision 36, HISTORY "wb-phase2"; a picker, not yet
-   ghosts on the canvas. Summarise this branch is built, HISTORY.md, "Moved
+   WHITEBOARD_PLAN decision 36, HISTORY "wb-phase2"; drawn as ghosts under the topic, fixes7-1018. Summarise this branch is built, HISTORY.md, "Moved
    from the plans, 2026-10-05 (op3-1005)". Expand from my notes is built,
    HISTORY.md, "Moved from the plans, 2026-10-18 (mindmap-1018)".)
 3. **From a question**: "Make a map of..." in chat proposes a map
@@ -1637,9 +1636,7 @@ notes (decision 36 in WHITEBOARD_PLAN) and Summarise this branch (HISTORY.md,
 "Moved from the plans, 2026-10-05 (op3-1005)"). Open, each with the fake
 transport for its tests and the no-model fallback measured in a sweep:
 
-- **Ghost topics on the canvas**: the suggestions drawn faded under the topic,
-  Tab to take one, Escape to drop them all. Waits on boot CSS room (the cap
-  is full; the picker dialog is the shape until then).
+- ~~**Ghost topics on the canvas**~~ built 2026-10-18 (HISTORY.md, "Moved from the plans, 2026-10-18 (fixes7-1018)").
 - ~~**Expand from my notes**~~ built 2026-10-18 (HISTORY.md, "Moved from the
   plans, 2026-10-18 (mindmap-1018)").
 - **The affinity sort** (a board, WHITEBOARD_PLAN's territory): thirty

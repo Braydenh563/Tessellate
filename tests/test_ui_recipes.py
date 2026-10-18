@@ -5868,3 +5868,20 @@ def test_a_dot_on_the_graph_answers_with_its_hover_card():
     assert "gcHoverCardFrame(s);" in canvas
     rule = css[css.index(".graph-hovercard {") :].split("}")[0]
     assert "backdrop-filter" not in rule and "var(--modal-bg-opaque)" in rule
+
+
+def test_ghost_topics_are_one_lazy_layer_with_four_keys():
+    """DESIGN.md, "Suggestions offered under a map topic": the picker dialog is
+    gone; ghosts live in the lazy Library sheet, never the boot CSS."""
+    js = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    body = js[js.index("function wbMapBranchPicker(") :]
+    body = body[: body.index("\n}\n")]
+    assert "pickerDialog(" not in body
+    for needle in ('"Tab"', '"Enter"', '"Escape"', "is-taken", "wb-ghosts"):
+        assert needle in body, needle
+    lazy = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    assert ".wb-ghosts {" in lazy and ".wb-ghost.is-taken {" in lazy
+    for boot in ("00-tokens-shell", "07-whiteboard-misc", "08-consistency"):
+        assert "wb-ghost" not in (ROOT / "frontend" / "css" / f"{boot}.css").read_text(encoding="utf-8")
+    rule = lazy[lazy.index(".wb-ghosts {") :].split("}")[0]
+    assert "backdrop-filter" not in rule
