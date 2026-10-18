@@ -14,7 +14,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from tessellate.ai import commands, help_chat, model_manager, spelling  # noqa: F401
-from tessellate.core import background, deps, jobs, taskhistory, vault
+from tessellate.core import background, deps, extras, jobs, taskhistory, vault
 
 
 # --- one copy of each source file, however many test modules read it ----------
@@ -106,6 +106,11 @@ def app_state(tmp_path, monkeypatch):
     # the spelling lists"), so test_tasks passed or failed on the order a worker
     # ran its files in. No test wants the job, and the lists load on first use.
     spelling._WARMED["started"] = True
+    # The extras installer's one-at-a-time record is process-global too: an
+    # install a test queued and the pool then dropped (or a removal still
+    # running at teardown) stayed "running" for the next test, which saw
+    # "Installing ... (needle)" in `/tasks`.
+    extras.reset_for_tests()
     deps.init_app_state(data_dir=tmp_path / "data")
     yield deps.get_config()
     # A worker the test started (the embedding warm-up after a capture, a
@@ -113,6 +118,7 @@ def app_state(tmp_path, monkeypatch):
     # the repo's `data/` once it is reset.
     jobs.shutdown(2.0)
     background.join_all()
+    extras.reset_for_tests()
     vault.close()
     deps.reset_app_state()
     model_manager.reset_jobs()
