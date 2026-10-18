@@ -272,6 +272,8 @@ function docSnippetRow(entry) {
     row.appendChild(label);
   }
   row.addEventListener("click", () => docSnippetInsert(entry));
+  row.draggable = true;
+  row.addEventListener("dragstart", (event) => docSnippetDragStart(event, entry));
   li.appendChild(row);
   if (!entry.builtin) {
     li.appendChild(kebabMenu([
@@ -286,11 +288,12 @@ function docSnippetRow(entry) {
 //: One transaction, so one Ctrl+Z takes it out. A built-in goes in through
 //: the engine's own snippet, so its stops are live; a saved one is text,
 //: since `${` in it is code, not a stop.
-function docSnippetInsert(entry) {
+function docSnippetInsert(entry, { at = null } = {}) {
   const view = docCmView;
   const CM = window.CM6;
   if (!view || !CM || !currentDoc) return toast("Open a code document first.", "info");
-  const { from, to } = view.state.selection.main;
+  //: `at` is where a drag was dropped; a click or Enter uses the caret.
+  const { from, to } = at == null ? view.state.selection.main : { from: at, to: at };
   if (entry.template) {
     CM.autocomplete.snippet(entry.template)(view, null, from, to);
   } else {
@@ -305,6 +308,117 @@ function docSnippetInsert(entry) {
   if (docKit.sheetClose) docKit.sheetClose();
   view.focus();
 }
+
+//: **Drag a row into the text** (INBOX 904 B19). The row carries its plain
+//: text (so a drop anywhere else still pastes something sensible); over the
+//: editor a caret-high accent bar shows where it will land and the text
+//: scrolls when the pointer sits in the band at its top or bottom edge; the
+//: drop inserts there, through the same one-transaction insert a click uses.
+//: The listeners are on the document in the capture phase, so the editor's
+//: own drop handler never also pastes the text/plain it was handed.
+const docDrag = { entry: null, x: 0, y: 0, raf: 0, ghost: null };
+
+//: Pixels to scroll this frame for a pointer at `y` over an editor spanning
+//: `top` to `bottom`: nothing in the middle, one to `fastest` inside the
+//: `band` at either edge (more the closer), the cap beyond it.
+function docSnippetScrollSpeed(y, top, bottom, band = 48, fastest = 20) {
+  if (y < top + band) return -Math.min(fastest, Math.ceil((fastest * (top + band - y)) / band));
+  if (y > bottom - band) return Math.min(fastest, Math.ceil((fastest * (y - (bottom - band))) / band));
+  return 0;
+}
+
+//: The text a drag carries: a snippet's stops (`${name}`, `${}`) read as
+//: their names, a saved snippet as it is.
+function docSnippetPlain(entry) {
+  return entry.template ? entry.template.replace(/\$\{(\w*)\}/g, "$1") : entry.code || "";
+}
+
+function docSnippetDragStart(event, entry) {
+  if (!docCmView || !currentDoc) {
+    event.preventDefault();
+    return toast("Open a code document first.", "info");
+  }
+  docDrag.entry = entry;
+  event.dataTransfer.setData("text/plain", docSnippetPlain(entry));
+  event.dataTransfer.effectAllowed = "copy";
+}
+
+function docSnippetDragEnd() {
+  cancelAnimationFrame(docDrag.raf);
+  docDrag.raf = 0;
+  docDrag.ghost?.remove();
+  docDrag.ghost = null;
+  docDrag.entry = null;
+}
+
+//: One frame of an active drag: scroll if the pointer is at an edge, then
+//: put the ghost caret where the text under the pointer says it will land.
+function docSnippetDragFrame() {
+  const view = docCmView;
+  if (!docDrag.entry || !view) return docSnippetDragEnd();
+  const box = view.scrollDOM.getBoundingClientRect();
+  //: Only while the pointer is over the editor's columns: a drag passing
+  //: the sidebar at the editor's height must not scroll it.
+  const over = docDrag.x >= box.left && docDrag.x <= box.right;
+  const speed = over ? docSnippetScrollSpeed(docDrag.y, box.top, box.bottom) : 0;
+  if (speed) view.scrollDOM.scrollTop += speed;
+  const pos = view.posAtCoords({ x: docDrag.x, y: docDrag.y }, false);
+  const at = pos == null ? null : view.coordsAtPos(pos);
+  if (!docDrag.ghost) {
+    docDrag.ghost = document.createElement("div");
+    docDrag.ghost.className = "doc-drop-ghost";
+    docDrag.ghost.setAttribute("aria-hidden", "true");
+    document.body.appendChild(docDrag.ghost);
+  }
+  const ghost = docDrag.ghost;
+  //: A line cut by the editor's edge keeps its visible part; one wholly
+  //: outside has no ghost.
+  const top = at ? Math.max(at.top, box.top) : 0;
+  const bottom = at ? Math.min(at.bottom, box.bottom) : 0;
+  const within = over && docDrag.y >= box.top && docDrag.y <= box.bottom && bottom > top;
+  ghost.classList.toggle("hidden", !within);
+  if (within) {
+    ghost.style.left = `${Math.round(at.left)}px`;
+    ghost.style.top = `${Math.round(top)}px`;
+    ghost.style.height = `${Math.round(bottom - top)}px`;
+  }
+  docDrag.raf = requestAnimationFrame(docSnippetDragFrame);
+}
+
+document.addEventListener(
+  "dragover",
+  (event) => {
+    if (!docDrag.entry) return;
+    docDrag.x = event.clientX;
+    docDrag.y = event.clientY;
+    if (!docCmView || !docCmView.dom.contains(event.target)) {
+      docDrag.ghost?.classList.add("hidden");
+      return;
+    }
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "copy";
+    if (!docDrag.raf) docDrag.raf = requestAnimationFrame(docSnippetDragFrame);
+  },
+  true
+);
+
+document.addEventListener(
+  "drop",
+  (event) => {
+    if (!docDrag.entry) return;
+    const view = docCmView;
+    const entry = docDrag.entry;
+    const inside = view && view.dom.contains(event.target);
+    docSnippetDragEnd();
+    if (!inside) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const pos = view.posAtCoords({ x: event.clientX, y: event.clientY }, false);
+    if (pos != null) docSnippetInsert(entry, { at: pos });
+  },
+  true
+);
+document.addEventListener("dragend", docSnippetDragEnd, true);
 
 //: "Read a file #io #files": the words are the name, the #words its tags.
 function docKitSplitName(text) {

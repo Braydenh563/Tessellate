@@ -35,4 +35,7 @@ Worktree agent-ac526d0d9067dc04a, server :8792 (data /tmp/mm-docs1018). Boot JS 
 
 ## Log
 
-- step 1 VC6: five dialects in the worker, select, preference and pair table (documents.js DOC_VARIANT_FAMILY), help line. Sweep spellingdialects1018.js 12/12.
+- done 9561081: step 1 VC6.
+- step 2 B19 drag: documents-codekit.js (docSnippetDragStart, docSnippetScrollSpeed, docSnippetDragFrame), library-lazy.css .doc-drop-ghost; sweep snippetdrag1018.js 13/13 (ghost within 2px of the caret; bottom edge scrolled 0 to 1,319px in 0.7 s). Chromium's synthetic drag sends no repeat dragover while still, so the sweep nudges 1px. Not verified: a real mouse drag in the desktop webview, Firefox (draggable buttons).
+- next: B23 table right-click and row/column grips (documents.js DocTableMenuWidget:7628, docTableMenu:5399).
+- (history) step 1 VC6: five dialects in the worker, select, preference and pair table (documents.js DOC_VARIANT_FAMILY), help line. Sweep spellingdialects1018.js 12/12.
