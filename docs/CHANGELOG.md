@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Launcher: the starting splash has minimise and close buttons in its top right corner; close cancels the launch (INBOX 1320).
+- Boards and maps: previews are now a real snapshot of the board, a 480px WebP (about 2 to 3 KB on the test boards) taken when edits settle or you leave the board, stored as a file, cached by the browser and used by the Library, Dashboard and chat cards; the drawn preview stays as the fallback (INBOX 1317).
 - Chat: the box stays open while an answer streams; Enter queues the message above the box, with Edit (back into the box) and Remove, and the queue sends in order as each answer ends; Stop holds it (INBOX 1321).
 - Statistics: the page is wider and taller, and only its body scrolls, so the title and close stay in view (INBOX 1319, part).
 - Composer, no model (INBOX 1324, 1315): Ask answers a find with the matching notes instead of sending it to Chat; "how many notes do I have about work" gives the figure; "list my recipes" lists the tag; "last week" and "next month" no longer drop or empty a subject; "knives" finds "Knife sharpening"; "delete everything" is answered with the safe way; reminders asked for "this week" are that week's, without a false Heads up; the Guide answers "can I use this offline" and "what does Atlas do"; compare questions name Porto and Lisbon as typed and a heading is named without its hash. 40-question grade: 23 to 32 fully good (scratchpad/composer1324-grades.md).

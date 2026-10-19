@@ -4600,6 +4600,14 @@ summary:not(.icon-only):not(.icon-button) {
   aspect-ratio: 1 / 1;
   margin: 0;
 }
+/* The stored raster thumbnail (INBOX 1317) in the same box the SVG fills:
+   `contain` letterboxes it as `meet` does, and the board's own ground is in
+   the picture, so it needs no paper of its own. */
+img.board-minimap {
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  background: var(--chip-bg);
+}
 /* Rows mode. The minimap is `width: 100%` of a card that is now the full
    width of the panel, and `aspect-ratio` turned that into a 448px-tall
    "row" (measured). A row's job is to fit forty boards on a screen, so the

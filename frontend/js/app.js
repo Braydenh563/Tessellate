@@ -1821,7 +1821,7 @@ const LAZY_MODULES = {
   quickAccess: ["/css/quick-access-lazy.css", "/js/quick-access.js"],
   notesRail: ["/js/notes-rail-spy.js"],
   //: The dashboard's Boards & maps widget (INBOX 553(d)): see dash-boards.js.
-  dashBoards: ["/js/dash-boards.js"],
+  dashBoards: ["/js/pick-row.js", "/js/dash-boards.js"],
   //: The suggestions inbox (GRAPH_PLAN KG9): see suggestions-inbox.js.
   inbox: ["/css/inbox-lazy.css", "/js/suggestions-inbox.js", "/js/entity-page.js", "/js/link-types.js", "/js/note-properties.js"],
   //: 2026-10-05 (gzip budget), the next seven: each file's header says why.

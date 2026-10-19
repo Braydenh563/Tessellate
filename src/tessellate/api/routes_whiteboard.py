@@ -27,14 +27,14 @@ from collections import OrderedDict
 from datetime import datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 
 from tessellate.api import paging
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, ValidationError, field_validator, model_serializer
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from tessellate.core import deps, events
+from tessellate.core import board_thumbs, deps, events
 from tessellate.core.database import LIKE_ESCAPE, Entry, WhiteboardNode, WhiteboardObject, WhiteboardSketch
 from tessellate.core.deps import get_session
 from tessellate.entry.manager import apply_title, extract_title, update_entry
@@ -1515,6 +1515,9 @@ class BoardOut(BaseModel):
     #: is a sliver a few pixels wide inside a card that is mostly empty, which
     #: says less about the board than a slightly wrong ratio does.
     preview_aspect: float = 1.0
+    #: Fingerprint of the stored raster thumbnail when it is current for the
+    #: board as it is now, else None (the client then draws the SVG preview).
+    thumb_v: str | None = None
 
 
 class BoardTypeMixin(BaseModel):
@@ -2270,11 +2273,91 @@ def _preview_fields(db: Session, board_id: int | None) -> dict:
     # Copied on the way out: the cached lists are shared with every later
     # caller, and a response model that a caller mutated in place would poison
     # every board list after it.
+    fp = _thumb_fp(key)
+    stored = board_thumbs.stored_fp(deps.get_config().data_dir, board_id) if board_id else None
     return {
         "preview_items": [dict(item) for item in items],
         "preview_edges": [dict(edge) for edge in edges],
         "preview_aspect": aspect,
+        "thumb_v": fp if stored == fp else None,
     }
+
+
+def _thumb_fp(key: tuple) -> str:
+    """The fingerprint a raster thumbnail is stored against: the cache key
+    without the database identity, so it survives a restart."""
+    return board_thumbs.fingerprint_hash(key[1:])
+
+
+def _current_thumb_fp(db: Session, board_id: int) -> str:
+    entry = db.get(Entry, board_id)
+    palette_name = (_board_theme(entry).get("palette") if entry else None) or "classic"
+    return _thumb_fp((*_preview_fingerprint(db, board_id), palette_name))
+
+
+@router.get("/boards/{board_id}/thumbnail/state")
+def thumbnail_state(board_id: int, db: Session = Depends(get_session)) -> dict:
+    """What the client needs to decide whether to draw a thumbnail: the
+    board's fingerprint now and the one the stored thumbnail was drawn at."""
+    _board_entry(db, board_id)
+    return {
+        "fp": _current_thumb_fp(db, board_id),
+        "stored": board_thumbs.stored_fp(deps.get_config().data_dir, board_id),
+    }
+
+
+@router.put("/boards/{board_id}/thumbnail")
+async def put_thumbnail(
+    board_id: int,
+    request: Request,
+    fp: str = Query(...),
+    db: Session = Depends(get_session),
+) -> dict:
+    _board_entry(db, board_id)
+    if not board_thumbs.valid_fp(fp):
+        raise HTTPException(status_code=422, detail="That thumbnail version is not valid.")
+    declared = int(request.headers.get("content-length") or 0)
+    if declared > board_thumbs.MAX_BYTES:
+        raise HTTPException(status_code=413, detail="That thumbnail is too large.")
+    data = b""
+    async for chunk in request.stream():
+        data += chunk
+        if len(data) > board_thumbs.MAX_BYTES:
+            raise HTTPException(status_code=413, detail="That thumbnail is too large.")
+    mime = board_thumbs.sniff(data)
+    if mime is None:
+        raise HTTPException(status_code=415, detail="A thumbnail must be a WebP or JPEG image.")
+    board_thumbs.save(deps.get_config().data_dir, board_id, fp, mime, data)
+    return {"fp": fp, "bytes": len(data)}
+
+
+#: Served under `/media` because an `<img src>` cannot send the auth header and
+#: the media cookie is scoped to `/media` and `/files`; app.py includes this
+#: router behind `require_unlock_media`, the same gate `/media/{filename}` has.
+media_router = APIRouter(tags=["whiteboard"])
+
+
+@media_router.get("/media/board-thumb/{board_id}")
+def get_thumbnail(
+    board_id: int, request: Request, v: str | None = None, db: Session = Depends(get_session)
+):
+    """The stored thumbnail. The `?v=` URL is immutable (a new fingerprint is a
+    new URL), so it is cached for a year; without it the ETag still answers 304."""
+    _board_entry(db, board_id)
+    found = board_thumbs.find(deps.get_config().data_dir, board_id)
+    if found is None:
+        raise HTTPException(status_code=404, detail="That board has no thumbnail yet.")
+    path, fp, mime = found
+    etag = f'"{fp}"'
+    headers = {
+        "ETag": etag,
+        "Cache-Control": "private, max-age=31536000, immutable"
+        if v == fp
+        else "private, max-age=0, must-revalidate",
+    }
+    if request.headers.get("if-none-match") == etag:
+        return Response(status_code=304, headers=headers)
+    return Response(content=path.read_bytes(), media_type=mime, headers=headers)
 
 
 #: A page of boards, and a page of board images. Both lists grow with the
