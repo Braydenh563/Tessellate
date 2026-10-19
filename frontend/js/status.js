@@ -929,10 +929,11 @@ const SUPPORT_EMAIL = "brayden.hoyle@outlook.com";
 //: A toast steps aside for the focused control it covers (WCAG 2.4.11,
 //: measured at 200% and 400% zoom: a lasting "3 reminders are due" hid the
 //: Tab stop under it on six tabs). Fades and lets clicks through until focus
-//: moves off it; focus inside the toast itself never counts.
+//: moves off it; focus inside the toast itself never counts, nor the body
+//: (the first-Tab reset focuses it, and its box covers every toast).
 document.addEventListener("focusin", (e) => {
   const box = $("toast-box");
-  if (!box?.children.length || box.contains(e.target)) return box?.classList.remove("is-yielding");
+  if (!box?.children.length || box.contains(e.target) || e.target === document.body) return box?.classList.remove("is-yielding");
   const r = e.target.getBoundingClientRect();
   box.classList.toggle("is-yielding", [...box.children].some((el) => {
     const b = el.getBoundingClientRect();
