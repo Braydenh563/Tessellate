@@ -164,3 +164,13 @@ def test_a_question_box_does_not_offer_the_writing_popup():
     for ident in ("question", "help-chat-input"):
         tag = re.search(rf'<input[^>]*\bid="{ident}"[^>]*>', html, re.S).group(0)
         assert "data-no-selection-popup" in tag, ident
+
+
+def test_sketch_pad_never_draws_the_text_kebab():
+    """INBOX 1303: a stroke on the sketch pad showed the selection kebab over the ink."""
+    js = _app_js()
+    excluded = re.search(r'const SELECTION_POPUP_EXCLUDED =\s*"([^"]+)"', js).group(1)
+    assert "#sketch-overlay" in excluded
+    assert "#sketch-overlay" in re.search(r"function fieldSelection\(\)[\s\S]*?\n}", js).group(0)
+    start = re.search(r"function sketchStart\(event\) \{[\s\S]*?\n}", (Path(__file__).resolve().parents[1] / "frontend/js/sketch-pad.js").read_text(encoding="utf-8")).group(0)
+    assert "event.preventDefault()" in start

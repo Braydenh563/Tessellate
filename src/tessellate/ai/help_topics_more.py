@@ -926,7 +926,7 @@ MORE_TOPICS: list[dict] = [
             "first note. Remove the sample notes moves them all to the bin, where "
             "Restore brings one back, and takes away the categories they made. The steps leave once all three are done and "
             "the sample notes are gone. Mark all as done ticks every step and puts the card away; Hide Get started "
-            "hides the card and the dock's Get started button. Customise, Show Get started brings them back. "
+            "hides the card and the dock's Get started button. Customise, Show Get started, the hide notice's Show again or the palette (Ctrl+K, Show Get started) brings them back. "
             "Until then the dashboard's Get started menu (beside Customise) lists the same three, ticked as "
             "they are done, with Take the tour and Replay the welcome, and the same checklist "
             "is the first row of the notifications bell until all three are done."

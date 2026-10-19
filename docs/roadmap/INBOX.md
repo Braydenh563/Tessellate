@@ -173,6 +173,21 @@ with its owner named in the entry.
      `python scripts/complexity.py`: split each toward its seed, lower the row in
      `tests/complexity_seed.json`, start of the next PR.
 
+1302. **The owner, 2026-10-18, verbatim.** "bug: if I throw the companion down to the bottom of the screen, it will always instantly teleport to hang off the top bar above when when I threw it to the bottom bar on the right side"
+     Owner: the orchestrator, now (`frontend/js/companion-throw.js`).
+
+1307. **The owner, 2026-10-19, verbatim.** "cna you add more element and template options for the wireframes, and other diagrams?? also multi shap templates should grouped or semi grouped so if I resize or move, parts of them arent left separate. also there should be a property link option in the arrange tab where the width and height are so I can choose to change width or height and it will either only change that one property or it will keep them at their ratios when they were linked."
+     Owner: the whiteboard agent (WHITEBOARD_PLAN, with B25): more wireframe and diagram elements and templates; a multi-shape template lands grouped; a W/H link toggle in Arrange that keeps the ratio when on.
+
+1308. **The owner, 2026-10-19, verbatim** (after 1307). "stuff like that, dont stop[ there, find what is missing on the whiteboard, mindmap and documents editor and add them"
+     Owner: the surfaces agent (with 1307): a gap audit of whiteboard, mind map and documents against draw.io, Miro, Excalidraw, XMind and Obsidian/Notion, the gaps ranked, the small and medium ones built.
+
+1306. **The owner, 2026-10-18, verbatim** (screenshots: dark theme graph; a toast "Map settings reset to defaults. Undo" drawn faint and see-through over the colour legend, under the zoom controls; the graph with default settings, about 40 nodes, labels on long note titles crowding the lower half, a brown hub with many crossing edges). "notifications are hard to see on the graph, and my graph is messy and a bit hard to read and these are the default settings."
+     Owner: a graph agent (GRAPH_PLAN): the toast over the map must be opaque and clear of the legend and controls (measure contrast and overlap); default layout and labels readable at 40 nodes (label collisions, edge crossings, hub spread), measured before and after.
+
+1305. **The owner, 2026-10-18, verbatim.** "and companion movement for bot small and large distances needs a lot of improvement, and reworking"
+     Owner: the companion Opus agent (next Opus slot), with 1302. Measured for 1302 (chat, 1440x900, seeded throw down-right, seed 2 splat): came to rest at 1376,774 on the floor, ended at 1235,582 on a dock (`nameMarkBuddyDrop` finds no free place within 48 px of the landing among the composer controls, falls to `nameMarkBuddyChoose`, which can pick the top bar).
+
 904. **The owner, 2026-10-17, verbatim** (a OneNote bug list pasted into a Word document, 86 items, screenshots described in `agent-remaining/bugs-1017.md`; the pasted model-thinking transcript under B42 is elided). Triage and per-bug status: `docs/roadmap/agent-remaining/bugs-1017.md`.
 
      B01. A first install setup popup showed as I was looking through the app but I accidentally clicked off it and idk what it was, there should be some way to access it, like a get started dropdown checklist to complete and maybe they can go in the notifications as well??

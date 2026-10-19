@@ -181,8 +181,10 @@ function captionCredit(model, short = (name) => name) {
 //: Overlays are out too: the Finder, the palette and a dialog are about the
 //: thing they show, and a popup offering to turn their text into a note
 //: would sit over the controls a person is using.
+//: The sketch pad is a drawing surface: a stroke that strays into its labels
+//: selected them and drew the text kebab over the ink (INBOX 1303).
 const SELECTION_POPUP_EXCLUDED =
-  "input, textarea, [contenteditable], .selection-popup, .lock-overlay, .modal-overlay, .command-palette";
+  "input, textarea, [contenteditable], .selection-popup, .lock-overlay, .modal-overlay, .command-palette, #sketch-overlay";
 
 let selectionPopupEl = null;
 let selectionPopupText = "";

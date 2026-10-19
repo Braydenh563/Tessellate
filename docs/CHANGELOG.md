@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Sketch pad: a stroke no longer brings up the selected-text menu over the ink; the pad's press is ink, never a text selection (INBOX 1303).
+- Get started: hiding it now offers Show again in its notice, and the palette (Ctrl+K) has Show Get started, beside Customise's row; each brings back the card and its button and opens the Dashboard (INBOX 1304).
 - Complexity (INBOX 1298): 13 more functions are under 15 with no change in behaviour (the chat stream, the plain answer, the date and time readers, fact reading, the tasks list, the search engine, the follow-up reader, the composer and the lexical filer), checked against the old code on thousands of phrases and by the existing tests; the seed rows are lowered or gone.
 - Welcome card: Atlas's swirl no longer paints past its holder (4 px at 390 before, 0 to 1 px after); the "Companion hidden" notice was measured against the toast-with-action recipe and already meets it (INBOX 743 tail).
 - Settings, Backups: each row now shows badges for what made it ("Made by you", "Automatic daily backup", "Before an update", "Before a restore") and "Verified" or "Not verified", beside the Latest mark, date in words, size and file name (INBOX 805; measured 10 rows at 1440 and 390, no overflow).

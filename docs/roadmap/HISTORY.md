@@ -51007,3 +51007,10 @@ From WHITEBOARD_PLAN "The draw.io programme", section 2 (Text tab), built by the
 - Offers: `_task_of` makes a reminder only from an open checkbox or an instruction that names what it is about ("ask the tutor on Thursday"); "ask follow-up questions that reflect genuine interest" is advice. `insights.drift` skips another person's plan ("He wants to try the crag" was "no later note picks up this plan: wants to try ...").
 - Ask: the "You asked:" line above the answer is gone (`renderAskedQuestion`, `#asked-question`); the question stays in the box it was typed in.
 - Measured over the 22 gold answers (`tests/_gold.py` `form`, `tests/test_composer_form_1301.py`): longest sentence 134 to 35 words, ";" joins 27 to 1, answers with a broken pattern 1 (15 hits) to 0, total characters 7,567 to 6,731 (item 22: 1,787 to 1,097); the note answers' gold score 88.9 to 90.9 (item 22: 57 to 81). The same text through Ask, Chat and the popup's `/chat/stream` bodies on a running app (`scratchpad/ui-sweeps/social-1301.js`); the Ask box keeps the question in its input and has no echo.
+## INBOX resolved, 2026-10-19
+
+1303. **The owner, 2026-10-18, verbatim** (screenshot: a dark rounded "..." square beside a pen stroke on the quick sketch canvas). "drawing on the quick sketch panel now constantly shows the popup highlight text meatball menu button"
+     **Fixed (sketch commit).** Not reproduced with a mouse in Chromium (popup hidden after 2 strokes, before and after); guarded at the cause: `#sketch-overlay` is outside the selection kebab (DOM and field paths) and the pad's pointerdown is `preventDefault`, so a pen drag cannot select text (`tests/test_selection_menu.py`).
+1304. **The owner, 2026-10-18, verbatim.** "also make suee there is a way to reshow the get started menu button"
+     **Fixed (Get started commit).** Ways back were one (Customise, shown only while hidden); now three: Customise, the hide notice's Show again and the palette's Show Get started, all `getStartedShow` in dashboard.js (first-run.js is lazy and never loads while hidden). Driven in Chromium: hidden 0 children, Show again 1, palette from Notes 1 and on the Dashboard.
+

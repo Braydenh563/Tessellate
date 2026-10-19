@@ -569,7 +569,7 @@ function fieldSelection() {
   //: UX-09: `data-no-selection-popup` marks a query box that is not type=search
   //: (the Ask box among them: an answer selects its question so typing
   //: replaces it, and that selection drew the menu over the sources).
-  if (el.type === "search" || el.closest("[data-no-selection-popup], .lock-overlay, .modal-overlay, .command-palette, [role='combobox']")) {
+  if (el.type === "search" || el.closest("[data-no-selection-popup], .lock-overlay, .modal-overlay, #sketch-overlay, .command-palette, [role='combobox']")) {
     return null;
   }
   const text = el.value.slice(el.selectionStart, el.selectionEnd);

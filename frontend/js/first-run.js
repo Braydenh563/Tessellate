@@ -127,7 +127,7 @@ function getStartedHide() {
   $("dash-first-steps")?.replaceChildren();
   $("dash-start")?.replaceChildren();
   renderDashMore();
-  toast("Get started is hidden. Customise, Show Get started brings it back.");
+  toastAction("Get started is hidden. Customise or the palette (Show Get started) brings it back.", "Show again", getStartedShow);
 }
 
 function getStartedMarkDone() {

@@ -1473,11 +1473,7 @@ function dashCustomiseItems() {
       label: "ph:list-checks Show Get started",
       title: "The first steps card and the Get started button, as they were",
       group: "page",
-      run: () => {
-        ["getStartedHidden", "getStartedDone", "firstStepsHidden"].forEach((key) => prefs.remove(key));
-        renderFirstStepsLazy();
-        renderDashMore();
-      },
+      run: () => getStartedShow(),
     });
   }
   items.push({ label: "ph:pencil-simple Edit quick access", title: "Add, remove and reorder the Quick access tiles", group: "quick", run: () => { quickEditing = true; renderQuickLinks(); } });
@@ -1626,6 +1622,17 @@ function renderFeatures(query) {
 //: name, a first note and a first answer, ticked as each is done, and the
 //: sample notebook. Above the grid rather than in it, so they stay past the
 //: first note; a notebook that hid them, or finished them, never loads it.
+//: **The way back, from anywhere** (INBOX 1304, the owner: "make sure there
+//: is a way to reshow the get started menu button"): Customise's row, the
+//: hide toast's Show again and the palette's Show Get started all run this;
+//: here, not in first-run.js, which is lazy and never loads while hidden.
+function getStartedShow() {
+  ["getStartedHidden", "getStartedDone", "firstStepsHidden"].forEach((key) => prefs.remove(key));
+  if (typeof revealTab === "function") revealTab("dashboard");
+  renderFirstStepsLazy();
+  renderDashMore();
+}
+
 function renderFirstStepsLazy() {
   const host = $("dash-first-steps");
   if (!host || !entriesEverLoaded) return;
