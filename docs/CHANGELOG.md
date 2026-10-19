@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Launcher: the starting splash has minimise and close buttons in its top right corner; close cancels the launch (INBOX 1320).
 - Chat: the box stays open while an answer streams; Enter queues the message above the box, with Edit (back into the box) and Remove, and the queue sends in order as each answer ends; Stop holds it (INBOX 1321).
 - Statistics: the page is wider and taller, and only its body scrolls, so the title and close stay in view (INBOX 1319, part).
 - Timeline: the density strip's window rises as the feed scrolls into future dates; its span reaches the newest row and the week ahead, and the strip is drawn by the lazy labels file (INBOX 1316).

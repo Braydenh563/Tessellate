@@ -418,8 +418,38 @@ try {
   $rowName[0].Text = "Starting"
   $rowName[0].Size = New-Object System.Drawing.Size(400, 20)
 
+  # Minimise and close in the top right corner (INBOX 1320, the owner: "I
+  # want a minimise and close x button in the top right corner to cancel or
+  # minimise the launch"). The window has no title bar, so they are its own.
+  function New-CornerButton([string]$glyph, [int]$x, [string]$name) {
+    $b             = New-Object System.Windows.Forms.Label
+    $b.Text        = $glyph
+    $b.Location    = New-Object System.Drawing.Point($x, 10)
+    $b.Size        = New-Object System.Drawing.Size(32, 28)
+    $b.ForeColor   = $muted
+    $b.Font        = New-Object System.Drawing.Font -ArgumentList "Segoe UI", ([float]12)
+    $b.TextAlign   = $centre
+    $b.Cursor      = [System.Windows.Forms.Cursors]::Hand
+    $b.AccessibleName = $name
+    $b.Add_MouseEnter({ $this.ForeColor = $ink })
+    $b.Add_MouseLeave({ $this.ForeColor = $muted })
+    return $b
+  }
+  $btnMin   = New-CornerButton ([string][char]0x2013) ($WIDTH - 76) "Minimise"
+  $btnClose = New-CornerButton ([string][char]0x00D7) ($WIDTH - 42) "Cancel the launch and close"
+  $btnMin.Add_Click({ $form.WindowState = "Minimized" })
+  # Close cancels the launch (the Cancel link's own request) and closes the
+  # window; after a failure it only closes.
+  $btnClose.Add_Click({
+    if (-not $st.failed -and -not $st.cancelled) {
+      try { Set-Content -LiteralPath ($StatusFile + ".cancel") -Value "__cancel__" -ErrorAction Stop } catch { }
+      $st.cancelled = $true
+    }
+    $form.Close()
+  })
+
   $form.Controls.AddRange(@($logo, $title, $tag, $status, $count, $barTrack, $list, $hint, $tip,
-                            $btnDetails, $btnCopy, $btnRetry, $btnCancel))
+                            $btnDetails, $btnCopy, $btnRetry, $btnCancel, $btnMin, $btnClose))
   $list.Controls.Add($details)
   foreach ($i in 0..($MAX_ROWS - 1)) {
     $list.Controls.AddRange(@($rowMark[$i], $rowName[$i], $rowDetail[$i]))
