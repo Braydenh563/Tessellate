@@ -2,7 +2,7 @@
 
 Generated 2026-10-19 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6131, frontend ids 2534, CSS sections 496, backend routes 613, backend modules 6049, test files 1286, tests 11522, plan headings 958.
+Counts: frontend functions 6131, frontend ids 2534, CSS sections 496, backend routes 613, backend modules 6056, test files 1286, tests 11522, plan headings 958.
 
 ## Frontend functions (6131)
 
@@ -10293,7 +10293,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/history/snapshots` | POST | `save_snapshot` | src/tessellate/api/routes_board_history.py:346 |
 | `/history/snapshots/{snapshot_id}` | DELETE | `delete_snapshot` | src/tessellate/api/routes_board_history.py:372 |
 | `/history/{event_id}` | GET | `board_at` | src/tessellate/api/routes_board_history.py:385 |
-| `/history/{event_id}/restore` | POST | `restore_board` | src/tessellate/api/routes_board_history.py:416 |
+| `/history/{event_id}/restore` | POST | `restore_board` | src/tessellate/api/routes_board_history.py:528 |
 | `/images` | GET | `list_images` | src/tessellate/api/routes_whiteboard.py:2479 |
 | `/import` | POST | `import_document` | src/tessellate/api/routes_documents.py:574 |
 | `/import.ics` | POST | `import_ics` | src/tessellate/api/routes_reminders.py:401 |
@@ -10685,7 +10685,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (6049)
+## Backend modules (6056)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14070,7 +14070,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `stop` | src/tessellate/api/routes_bench.py:250 |
 | `time_share` | src/tessellate/api/routes_bench.py:70 |
 
-### src/tessellate/api/routes_board_history.py (21)
+### src/tessellate/api/routes_board_history.py (28)
 
 | Name | File:line |
 |---|---|
@@ -14080,11 +14080,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_board_param` | src/tessellate/api/routes_board_history.py:76 |
 | `_board_settings` | src/tessellate/api/routes_board_history.py:316 |
 | `_current_rows` | src/tessellate/api/routes_board_history.py:89 |
+| `_drop_orphaned_links` | src/tessellate/api/routes_board_history.py:483 |
 | `_is_delete` | src/tessellate/api/routes_board_history.py:164 |
+| `_link_data` | src/tessellate/api/routes_board_history.py:416 |
 | `_link_ends` | src/tessellate/api/routes_board_history.py:412 |
 | `_moments` | src/tessellate/api/routes_board_history.py:234 |
 | `_names_board` | src/tessellate/api/routes_board_history.py:81 |
+| `_remove_gone` | src/tessellate/api/routes_board_history.py:427 |
+| `_repoint` | src/tessellate/api/routes_board_history.py:519 |
+| `_repoint_link` | src/tessellate/api/routes_board_history.py:498 |
 | `_require_board` | src/tessellate/api/routes_board_history.py:263 |
+| `_restore_one` | src/tessellate/api/routes_board_history.py:451 |
+| `_restore_order` | src/tessellate/api/routes_board_history.py:442 |
 | `_row_out` | src/tessellate/api/routes_board_history.py:291 |
 | `_snapshot_board` | src/tessellate/api/routes_board_history.py:324 |
 | `_state_of` | src/tessellate/api/routes_board_history.py:98 |
@@ -14093,7 +14100,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `board_history` | src/tessellate/api/routes_board_history.py:272 |
 | `delete_snapshot` | src/tessellate/api/routes_board_history.py:373 |
 | `list_snapshots` | src/tessellate/api/routes_board_history.py:332 |
-| `restore_board` | src/tessellate/api/routes_board_history.py:417 |
+| `restore_board` | src/tessellate/api/routes_board_history.py:529 |
 | `save_snapshot` | src/tessellate/api/routes_board_history.py:347 |
 
 ### src/tessellate/api/routes_board_library.py (48)
@@ -20262,7 +20269,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1265 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:274 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:275 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4173 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
