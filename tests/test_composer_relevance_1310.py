@@ -165,4 +165,18 @@ def test_the_records_card_draws_the_reason_on_the_why_this_result_line():
     assert "if (opts.match_info) replyRecordReasons(opts.match_info);" in kit
     body = kit.split("function replyRecordReasons(info) {", 1)[1].split("\n}\n", 1)[0]
     assert '"entry-why"' in body and "result-reason-chip result-reason-why" in body and ".why" in body
-    assert "finishReply(answerBox, answerMeta || {});" in (js / "capture-ask.js").read_text(encoding="utf-8")
+    assert "finishReply(answerBox, { composed: answerMeta?.composed, match_info: answerMeta?.match_info });" in (js / "capture-ask.js").read_text(encoding="utf-8")
+
+
+def test_two_notes_linked_both_ways_list_each_other_once(session):
+    """Reviewer finding on PR 193: A to B and B to A gave linked_to [B, B]."""
+    from tessellate.api.routes_chat import _frame_matches
+    from tessellate.core.database import EntryLink
+
+    a = manager.create_entry(session, "Gym Routine Overview", tags=["gym"])
+    b = manager.create_entry(session, "Legs on Tuesday", tags=["gym"])
+    session.add_all([EntryLink(source_entry_id=a.id, target_entry_id=b.id), EntryLink(source_entry_id=b.id, target_entry_id=a.id)])
+    session.commit()
+    notes = [{"id": a.id, "content": a.content, "tags": ["gym"]}, {"id": b.id, "content": b.content, "tags": ["gym"]}]
+    _frame_matches(session, "gym", notes, {}, "notes")
+    assert notes[0]["linked_to"] == [b.id] and notes[1]["linked_to"] == [a.id]

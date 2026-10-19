@@ -136,7 +136,7 @@ def test_a_note_a_reply_gives_is_previewed_on_every_surface():
     calls = {
         "chat-attach.js": "finishReply(answerEls, { composed: meta?.composed",
         #: The meta is the options (its `composed`, and `match_info` for the records, INBOX 1310).
-        "capture-ask.js": "finishReply(answerBox, answerMeta || {});",
+        "capture-ask.js": "finishReply(answerBox, { composed: answerMeta?.composed, match_info: answerMeta?.match_info });",
         "palette.js": "finishReply(answerBox, { composed: meta?.composed, head: agentLabel",
         "help-chat.js": 'finishReply(answerRow.querySelector(".help-chat-prose")',
     }
