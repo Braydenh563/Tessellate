@@ -60,7 +60,9 @@
 // this the same way, and it is a filter rather than a mode: the zoom
 // behaviour stays attached at all times, and decides per-event whether a
 // gesture is a pan. Held space or the middle mouse button pans from *any*
-// tool; a plain left-drag only pans when Pan is genuinely the active tool, so
+// tool; a plain left-drag pans when Pan is the active tool, or on bare canvas
+// with Select (WHITEBOARD_PLAN decision 41, MINDMAP_PLAN decision 48: the
+// "Left-drag on empty canvas" preference, Pan by default, Shift flips it), so
 // drawing, the marquee and lasso are untouched.
 let wbSpaceHeld = false;
 //: **Tab on a map adds a topic only after the person has engaged the map**
@@ -74,12 +76,29 @@ let wbMapKeysArmed = false;
 let wbMidPanHeld = false;
 
 //: Paste and hover-lock bookkeeping, one name in the shared scope.
-const wbBoardState = { pasteArrived: false, lockHoverKey: null, lockHoverFrame: 0, lockHintSaid: false };
+const wbBoardState = { pasteArrived: false, lockHoverKey: null, lockHoverFrame: 0, lockHintSaid: false, wheel: { at: -1e9, pad: false } };
 
-//: A two-finger trackpad scroll still pans: it arrives in pixels with a
-//: sideways part, where a mouse wheel's notch has none.
+//: A two-finger trackpad scroll pans (both axes); a pinch (ctrlKey, which
+//: browsers synthesise for it) and a mouse wheel zoom. The decision is made
+//: per gesture, not per event (INBOX 1327): a vertical-only frame of a
+//: two-finger scroll has no deltaX, and judging frames alone made the board
+//: flip between panning and zooming mid-gesture. A gesture is a run of wheel
+//: events less than 200ms apart; one trackpad-looking event (a sideways part,
+//: or small or fractional pixel deltas, where a wheel notch is a steady 50px
+//: or more) makes the rest of it a pan. Fed once per event by both the d3
+//: filter and the board's own wheel listener, so the latch is advanced once
+//: per event timestamp.
 function wbTrackpadPan(event) {
-  return !event.ctrlKey && !event.metaKey && event.deltaMode === 0 && event.deltaX !== 0;
+  if (event.ctrlKey || event.metaKey || event.deltaMode !== 0) return false;
+  const g = wbBoardState.wheel;
+  const now = event.timeStamp || 0;
+  if (g.at !== now) {
+    if (now - g.at > 200 || now < g.at) g.pad = false;
+    g.at = now;
+    const dy = Math.abs(event.deltaY);
+    if (event.deltaX !== 0 || (dy > 0 && (dy < 50 || dy % 1 !== 0))) g.pad = true;
+  }
+  return g.pad;
 }
 
 function wbZoomFilter(event) {
@@ -128,7 +147,11 @@ function wbZoomFilter(event) {
   }
   // Left button: Pan tool, or space held down.
   if (event.button === 0 || event.buttons === 1 || event.buttons === 0) {
-    return window.currentTool === "pan" || wbSpaceHeld;
+    if (window.currentTool === "pan" || wbSpaceHeld) return true;
+    //: Bare canvas with Select: equal means pan, unequal means the marquee
+    //: (`wbMarqueeStart` reads the same pair). An item keeps its own drag.
+    return window.currentTool === "select" && event.type === "mousedown"
+      && Boolean(event.shiftKey) === wbLeftDragSelects() && wbIsBareCanvas(event.target);
   }
   return false;
 }
@@ -845,6 +868,14 @@ function wbPublishInvZoom(el, inv) {
 
 function wbGridType() {
   return prefs.get("wb-grid", null) || "none";
+}
+
+//: **What a plain left-drag on empty canvas does with Select** (INBOX 1332):
+//: Pan (the default) or Select, the area rectangle. Shift flips whichever it
+//: is, so both gestures stay one modifier away. One preference for boards and
+//: maps, so the two cannot teach different hands.
+function wbLeftDragSelects() {
+  return prefs.get("wb-drag", null) === "select";
 }
 
 function wbSnapOn() {
@@ -11055,6 +11086,30 @@ function wbPaintFrame(node, d) {
   }
 }
 
+//: **A click on a panel's body, or on a frame's edge, selects that frame**
+//: (INBOX 1327: "whiteboard panels sometimes dont select when I click on
+//: them"). A frame's own box lets the pointer through (decision 14) so shapes
+//: under it stay reachable, which left a tinted panel looking solid and
+//: answering only on its title. The press still reaches the board first, so
+//: shapes and cards win; only a click that found nothing lands here. A plain
+//: frame answers on its edge band (`slop` logical units), a panel anywhere
+//: inside; the smallest such frame wins, so a panel inside a panel selects.
+function wbSelectFrameAt(x, y, slop) {
+  let best = null;
+  for (const f of wbState.objects || []) {
+    if (f.kind !== "frame" || wbIsLocked("object", f)) continue;
+    const inside = x >= f.x && y >= f.y && x <= f.x + f.width && y <= f.y + f.height;
+    const near = x >= f.x - slop && y >= f.y - slop && x <= f.x + f.width + slop && y <= f.y + f.height + slop;
+    if (!near) continue;
+    const onEdge = !inside || x - f.x <= slop || f.x + f.width - x <= slop || y - f.y <= slop || f.y + f.height - y <= slop;
+    if (!(f.data?.tint && inside) && !onEdge) continue;
+    if (!best || f.width * f.height < best.width * best.height) best = f;
+  }
+  if (!best) return false;
+  selectWbItem("object", best.id);
+  return true;
+}
+
 //: **The box a text or sticky drag draws** (the owner, 2026-09-24: a drag
 //: with either tool should make a box that size). From the press to the
 //: pointer, in board units, never smaller than `WB_PLACE_MIN` for its kind:
@@ -12818,7 +12873,9 @@ async function initWhiteboard() {
       const k = d3.zoomTransform(container.node()).k || 1;
       const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1;
       let dx = e.deltaX * unit, dy = e.deltaY * unit;
-      if (!dx) { dx = dy; dy = 0; }
+      //: Shift+wheel on a mouse turns the notch sideways; a trackpad scroll
+      //: already carries both axes and keeps them.
+      if (!dx && !wbTrackpadPan(e)) { dx = dy; dy = 0; }
       container.call(wbZoom.translateBy, -dx / k, -dy / k);
     }, { passive: false });
   }
@@ -13545,6 +13602,11 @@ async function initWhiteboard() {
   }
   $("wb-sticky-fold")?.addEventListener("change", (e) => wbSetBackground({ sticky_fold: e.target.checked }));
   $("wb-rough-toggle")?.addEventListener("change", (e) => wbSetBackground({ rough: e.target.checked }));
+  const dragSelect = $("wb-drag-select");
+  if (dragSelect) {
+    dragSelect.value = wbLeftDragSelects() ? "select" : "pan";
+    dragSelect.addEventListener("change", (e) => prefs.set("wb-drag", e.target.value === "select" ? "select" : "pan"));
+  }
   const snapToggle = $("wb-snap-toggle");
   if (snapToggle) {
     snapToggle.checked = prefs.get("wb-snap", null) === "on";
@@ -15323,6 +15385,8 @@ async function initWhiteboard() {
     if (window.currentTool === "select" || window.currentTool === "lasso") {
       if (wbMarqueeJustSelected) {
         wbMarqueeJustSelected = false;
+      } else if (window.currentTool === "select" && wbSelectFrameAt(...getLogicalMouse(e), 8 / (d3.zoomTransform(containerEl).k || 1))) {
+        // A click on a panel's body or a frame's edge selected that frame.
       } else {
         clearWbSelection();
         // The other half of the Escape fix: a click on empty canvas is the
@@ -15437,6 +15501,9 @@ async function initWhiteboard() {
     // click pans; neither ends with the pointerup this drag is waiting for,
     // so both used to start a rectangle that nothing would ever remove.
     if (e.button !== 0 || !e.isPrimary) return;
+    //: With Select the unmodified drag is the preference's (INBOX 1332): the
+    //: rectangle starts when Shift disagrees with it, otherwise the press is a pan.
+    if (!place && e.shiftKey === wbLeftDragSelects()) return;
     // A gesture already in flight loses its rectangle rather than orphaning
     // it: `wbMarqueeEl` is one variable, so a second pointerdown overwrote
     // the reference to the first rect and left it on the canvas forever.
@@ -15955,6 +16022,10 @@ async function initWhiteboard() {
   };
   containerEl.addEventListener("pointerdown", (e) => {
     if (e.button !== 0 || e.pointerType === "touch" || window.currentTool !== "select" || !port.item || e.altKey || e.shiftKey) return;
+    //: A selected connector's end grip wins over a port beneath it (INBOX
+    //: 1328: dragging the end of an arrow drew a second arrow instead,
+    //: because the grip sits on the very edge point the item's port is).
+    if (e.target?.closest?.(".wb-link-endpoint-handle, .wb-resize-handle, .wb-rotate-handle")) return;
     const [x, y] = getLogicalMouse(e);
     if (!portTarget(x, y)) return;
     //: Near enough to a point, and never so far that a small shape on screen
@@ -21208,9 +21279,10 @@ function renderWbObjects(canvas) {
         .attr("title", wbResizeHandleTitle(d.kind))
         .call(resizeDrag(handle));
     }
-    //: A frame is a region of the board, and a turned region holds nothing
-    //: square (decision 14); nor does a table's grid.
-    if (d.kind === "frame" || d.kind === "table") return;
+    //: A table's grid holds nothing square once turned. A frame does turn
+    //: (INBOX 1327, reversing decision 14's "no rotation"): its box rotates
+    //: and what lies inside stays where it is.
+    if (d.kind === "table") return;
     el.append("div")
       .attr("class", "wb-rotate-handle")
       .attr("title", "Drag to rotate: Shift snaps to 15°, double-click stands it upright")

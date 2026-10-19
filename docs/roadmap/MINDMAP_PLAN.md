@@ -1751,6 +1751,10 @@ whiteboard half of 641's research (beyond stickers).
     Coggle). On the level-0 topic, Enter and Shift+Enter add a child, since a
     second centre is never what was meant; a floating topic's Enter keeps
     adding a free topic beside it.
+48. **A map's left-drag on empty canvas is the board's** (the owner,
+    2026-10-19, INBOX 1332): pans by default, Shift-drag draws the
+    selection box, and the one "Left-drag on empty canvas" preference
+    swaps them for maps and boards together (WHITEBOARD_PLAN decision 41).
 
 ### 14.4 What is open
 

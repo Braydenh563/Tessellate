@@ -9,6 +9,10 @@ below). Versioning is `0.x` while the app stabilises.
 - Statistics: a failed open, range change or question offers Try again.
 - Keyboard: the first Tab after the app loads or unlocks lands on "Skip to content" again, not the Local chip halfway along the top bar.
 - Statistics: the Ask box reads "in July", "last month" and "in sept 2025" through the shared date reader, and a tile shows its hover look on keyboard focus too.
+- Whiteboard and maps: a left-drag on empty canvas pans and Shift-drag draws the selection box; View, Left-drag on empty canvas, swaps them for boards and maps together; right, middle and Space drags still pan (INBOX 1332, WHITEBOARD_PLAN decision 41, MINDMAP_PLAN decision 48).
+- Whiteboard: a click on a tinted panel's body or a plain frame's edge selects the frame, and a selected frame has a rotate handle like other objects; what lies inside does not turn (INBOX 1327).
+- Whiteboard and maps: a two-finger trackpad scroll always pans (both axes) and a pinch or the mouse wheel zooms; the call is made once per gesture, so vertical-only frames no longer flip the board between panning and zooming (INBOX 1327).
+- Whiteboard: pressing a selected connector's end grip moves that end instead of drawing a new arrow from the port beneath it (INBOX 1328).
 - Boards and maps: deleting a board for good finds its thumbnail from the uploads folder, so the notes layer no longer imports the API layer (CodeQL cyclic import).
 - CI fixes: "what is due this week" lists waiting reminders again (only a question that says reminders is cut to its window), the answer chip has its keyboard focus style, the board Format panel menu row and command table share their words, and five functions plus the chat, board and task state were split or folded to meet the complexity and global-scope ratchets.
 - Launcher: the starting splash has minimise and close buttons in its top right corner; close cancels the launch (INBOX 1320).
