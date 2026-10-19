@@ -363,7 +363,12 @@ for (const button of document.querySelectorAll("#tab-bar button")) {
       wbShowBoardsLanding();
       return;
     }
+    //: **The tab you are on, pressed again, goes to the top of its page**
+    //: (INBOX 1314): a phone's convention, and on a long list the bar is
+    //: the one control always under the thumb.
+    const again = button.classList.contains("active") && matchMedia(PHONE_TABS).matches;
     switchTab(button.dataset.tab);
+    if (again) tabPageScroller(button.dataset.tab)?.scrollTo({ top: 0, behavior: reducedMotionWanted() ? "auto" : "smooth" });
     if (event.detail > 0) focusTabPage(button);
   });
   //: Double-click: back to the first sub-tab (INBOX 659).
@@ -385,8 +390,17 @@ for (const button of document.querySelectorAll("#tab-bar button")) {
 //: focus stays in the strip, where its arrows are expected.
 function focusTabPage(button) {
   if (document.activeElement !== button) return;
-  const page = document.getElementById(`tab-${button.dataset.tab}`);
-  if (!page || !page.getClientRects().length) return;
+  const target = tabPageScroller(button.dataset.tab);
+  if (!target) return;
+  if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) target.tabIndex = -1;
+  target.focus({ preventScroll: true });
+}
+
+//: The region that scrolls a tab's page: the page itself, or the biggest
+//: scrolling region inside it (Notes and the Library scroll a list).
+function tabPageScroller(tab) {
+  const page = document.getElementById(`tab-${tab}`);
+  if (!page || !page.getClientRects().length) return null;
   const scrolls = (el) => /(auto|scroll)/.test(getComputedStyle(el).overflowY) &&
     el.scrollHeight > el.clientHeight + 1;
   let target = scrolls(page) ? page : null;
@@ -403,9 +417,7 @@ function focusTabPage(button) {
       }
     }
   }
-  target ||= page;
-  if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) target.tabIndex = -1;
-  target.focus({ preventScroll: true });
+  return target || page;
 }
 // Arrow keys walk the tablist; Home/End jump to the ends (Wave L).
 //
@@ -675,7 +687,9 @@ function initPhoneHeaderMore() {
         group: "app",
       },
     ],
-    "More"
+    //: Not "More": the tab bar's last column is More, and two buttons with
+    //: one name on one screen is two answers to "where is it" (INBOX 1314).
+    "App menu"
   );
   menu.id = "header-more";
   // Lock is only offered once a password exists, which is what shows the
@@ -1483,103 +1497,14 @@ function sheetRow(iconClass, label, run) {
 }
 
 // --- More: the three tabs the phone's five-item bar does not show -------------
-// UI_MODERNISATION_PLAN.md Phase 11, item 1. Seven columns on a 390px screen is
-// seven 55px glyphs with no room for a caption; five is 72px a column at 360,
-// which fits every caption in the set. Nothing is hidden by that trade, which
-// is the phase's own decision: what leaves the bar is reached in one more tap,
-// through this sheet.
-//
-// Ordered as the tab strip orders them, so the bar and the sheet never disagree
-// about where a tab sits. Settings is last because it is the one row here that
-// is not a tab.
-const PHONE_MORE_TABS = ["dashboard", "timeline", "reminders"];
+// UI_MODERNISATION_PLAN.md Phase 11, item 1; INBOX 1314 for which three. The
+// bar's four are Dashboard, Notes, Chat and Library, Simple mode's four, and
+// these are the rest, ordered as the tab strip orders them. The sheet itself
+// is built in phone-more.js (lazy, `LAZY_MODULES.phoneMore`): boot keeps the
+// list, which `syncPhoneMoreButton` reads on every tab change.
+const PHONE_MORE_TABS = ["graph", "timeline", "reminders"];
 
-function openPhoneMoreSheet() {
-  const opener = document.getElementById("phone-more-btn");
-  opener?.setAttribute("aria-expanded", "true");
-  openSheet({
-    label: "More",
-    name: "more",
-    returnFocus: opener,
-    onClose: () => opener?.setAttribute("aria-expanded", "false"),
-    build: (card, close) => {
-      const list = document.createElement("div");
-      list.className = "sheet-list";
-      for (const tab of PHONE_MORE_TABS) {
-        //: Simple mode (Settings, General) hides these tabs everywhere, the
-        //: sheet included; the palette still opens them.
-        if (tab !== "dashboard" && document.documentElement.dataset.simple === "on") continue;
-        //: Read off the tab button rather than written out again here: the
-        //: icon and the caption are then the same two things the strip shows
-        //: at every other width, and a tab renamed in the markup is renamed
-        //: in the sheet without anyone remembering to.
-        const button = document.querySelector(`#tab-bar button[data-tab="${tab}"]`);
-        if (!button) continue;
-        const icon = button.querySelector(".tab-icon")?.className || "ph ph-circle tab-icon";
-        const caption = button.querySelector(".tab-label")?.textContent?.trim()
-          || button.getAttribute("aria-label") || tab;
-        const row = sheetRow(icon, caption, () => {
-          close();
-          switchTab(tab);
-        });
-        const due = tab === "reminders" ? phoneMoreDueCount() : 0;
-        if (due) {
-          const count = document.createElement("span");
-          count.className = "tab-badge";
-          count.textContent = String(due);
-          row.appendChild(count);
-        }
-        list.appendChild(row);
-      }
-      //: **The agent and the Guide, where the header cannot hold them.**
-      //: Measured after they were added (INBOX 190): the header's first
-      //: cluster grew from three controls to five, and at 390 the bar's
-      //: scrollWidth went from inside the window to 407px against a 390px
-      //: client, which is the app scrolling sideways. A phone's answer to a
-      //: chrome that will not fit is this sheet, which is where Settings
-      //: already went for the same reason; the header keeps both at every
-      //: width that has room (600 and up, `10-responsive.css`).
-      list.appendChild(sheetRow("ph ph-strategy tab-icon", "Ask the agent", () => {
-        close();
-        toggleAgentPalette();
-      }));
-      //: The command palette, which a phone had no way to open (no Ctrl+K,
-      //: and More's Find opens the search): found by the deep-flows sweep.
-      list.appendChild(sheetRow("ph ph-command tab-icon", "Commands", () => {
-        close();
-        if (typeof openPalette === "function") openPalette();
-      }));
-      list.appendChild(sheetRow("ph ph-question tab-icon", "Guide", () => {
-        close();
-        //: settings.js owns the Guide sheet and loads beside this file.
-        openHelpChat();
-      }));
-      //: The agent's runs, which the status bar holds above 600 and a phone
-      //: does not show (INBOX 430): a row with the count, opening the panel.
-      const runs = phoneMoreRunCount();
-      if (runs) {
-        const row = sheetRow("ph ph-strategy tab-icon", "Agent activity", () => {
-          close();
-          $("status-activity")?.click();
-        });
-        const count = document.createElement("span");
-        count.className = "tab-badge";
-        count.textContent = String(runs);
-        row.appendChild(count);
-        list.appendChild(row);
-      }
-      list.appendChild(sheetRow("ph ph-gear tab-icon", "Settings", () => {
-        close();
-        //: settings.js owns the modal and loads beside this file; `typeof` so
-        //: a page served without it closes the sheet rather than throwing.
-        if (typeof openSettingsModal === "function") openSettingsModal();
-      }));
-      card.appendChild(list);
-    },
-  });
-}
-
-$("phone-more-btn")?.addEventListener("click", openPhoneMoreSheet);
+$("phone-more-btn")?.addEventListener("click", () => openPhoneMoreSheet());
 
 //: The status bar's run count, for More: running runs, else every run this
 //: session, the same number `renderActivityStatusItem` paints.

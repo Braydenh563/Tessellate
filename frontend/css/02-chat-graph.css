@@ -3005,8 +3005,10 @@ kbd {
    list scannable is the break, not the word. The inline margin pulls it in to
    the rows' own text, so it reads as a rule between them rather than as an
    edge of the card; `.action-menu` is a flex column, so `flex: none` stops it
-   being stretched into a thick band by the free space. */
-.action-menu > .menu-sep {
+   being stretched into a thick band by the free space. The phone's More
+   sheet draws the same rule between its pages and its tools (INBOX 1314). */
+.action-menu > .menu-sep,
+.sheet-list > .menu-sep {
   flex: none;
   height: 1px;
   margin: 0.25rem 0.4rem;
@@ -3129,11 +3131,9 @@ html {
     gap: 0.6rem;
     flex-wrap: wrap;
   }
-  #tab-bar {
-    order: 3;
-    width: 100%;
-    overflow-x: auto;
-  }
+  /* No `#tab-bar` rule here: below 600 the strip lives in `#phone-tab-dock`
+     (`dockTabBar`), and the `order: 3` this block gave it for a row of its
+     own in the header drew More as the dock's first column (INBOX 1314). */
   /* Categories become a chip row instead of a tall list. */
   #sidebar ul#category-list {
     display: flex;

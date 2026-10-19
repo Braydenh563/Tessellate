@@ -51007,6 +51007,29 @@ From WHITEBOARD_PLAN "The draw.io programme", section 2 (Text tab), built by the
 - Offers: `_task_of` makes a reminder only from an open checkbox or an instruction that names what it is about ("ask the tutor on Thursday"); "ask follow-up questions that reflect genuine interest" is advice. `insights.drift` skips another person's plan ("He wants to try the crag" was "no later note picks up this plan: wants to try ...").
 - Ask: the "You asked:" line above the answer is gone (`renderAskedQuestion`, `#asked-question`); the question stays in the box it was typed in.
 - Measured over the 22 gold answers (`tests/_gold.py` `form`, `tests/test_composer_form_1301.py`): longest sentence 134 to 35 words, ";" joins 27 to 1, answers with a broken pattern 1 (15 hits) to 0, total characters 7,567 to 6,731 (item 22: 1,787 to 1,097); the note answers' gold score 88.9 to 90.9 (item 22: 57 to 81). The same text through Ask, Chat and the popup's `/chat/stream` bodies on a running app (`scratchpad/ui-sweeps/social-1301.js`); the Ask box keeps the question in its input and has no echo.
+## Moved from the plans, 2026-10-19 (mobile1314)
+
+From UI_MODERNISATION_PLAN Phase 11 item 1, both built:
+
+   - **The recede to icons on scroll down and back on scroll up (INBOX 104):
+     built** (2026-09-13); the block, with its numbers, is in HISTORY.md
+     ("Moved from the plans, 2026-09-13").
+   - **The top bar's own reduction: built** (2026-09-20). Measured first
+     (`scratchpad/ui-sweeps/phonehead.js`): at 320 the bar held six 44px
+     controls (space switcher, notifications, theme, settings, lock, quit)
+     and the last ended at 332, so every phone page scrolled sideways by one
+     button; the bell and the menu opener were 36 against 44. Now three
+     controls below 600: the space switcher, the bell, and one `kebabMenu`
+     (`#header-more`) holding the four verbs, the desktop buttons hidden by
+     one stylesheet band and never removed. After: 320 in 320, 360 in 360,
+     390 in 390, every header control 44, the menu's rows 44 (every
+     `kebabMenu` row in the touch band takes the floor now: the one control
+     type that only exists after a tap had kept the desktop's 36), Escape
+     closes it, and the desktop bar at 1024 is exactly what it was. The
+     wordmark is already gone below 1500 and the logo below 400, so the
+     "title" of this item is the space switcher, which is the truer name for
+     where you are. The AI dot lives in the status bar (§36D) and stays there.
+
 ## INBOX resolved, 2026-10-19
 
 1303. **The owner, 2026-10-18, verbatim** (screenshot: a dark rounded "..." square beside a pen stroke on the quick sketch canvas). "drawing on the quick sketch panel now constantly shows the popup highlight text meatball menu button"

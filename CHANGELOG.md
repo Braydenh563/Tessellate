@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Phone: the bottom bar reads Dashboard, Notes, Chat, Library, More, with More last (it drew first); More's sheet lists Graph, Timeline and Reminders, a rule, then the tools; the header's menu is the App menu; pressing the tab you are on goes to the top of its page; a reminder's +1h and the timeline's days at 360 meet 44 px (INBOX 1314).
 - Whiteboard: Ctrl+Enter while typing in a sticky starts the next one beside it, same paper and size (INBOX 1308).
 - Whiteboard: a C4 and architecture set in the library (person, software system, external system, container, database, component, boundary, relationship); each places as one group (INBOX 1308).
 - Notifications over the Graph: a toast is opaque under every look (it was the glass card at 0.55 alpha, so the map read through it) and stands above the zoom strip and legend instead of over them (INBOX 1306).

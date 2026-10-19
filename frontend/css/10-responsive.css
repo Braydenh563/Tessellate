@@ -600,9 +600,9 @@ header#top-bar[data-scrolled="1"],
    other half is arithmetic that no rule can argue with. Seven captions need
    476px. Five need 340px, and five columns at 360 are 72px each, which fits
    every caption in the set with room over.
-   So the bar shows the four tabs a phone opens most, and a fifth column that
-   is not a tab: More, which is a sheet holding Dashboard, Timeline, Reminders
-   and Settings. Nothing is hidden, which is this phase's own decision ("it is
+   So the bar shows four tabs, Dashboard, Notes, Chat and Library (Simple
+   mode's four, INBOX 1314), and a fifth column, last, that is not a tab:
+   More, a sheet holding Graph, Timeline and Reminders, then the tools. Nothing is hidden, which is this phase's own decision ("it is
    reached through a sheet or a menu instead"), and nothing in the app is more
    than two taps away.
    **The bar is `#phone-tab-dock` now, not `#tab-bar`.** The strip is a
@@ -679,7 +679,7 @@ header#top-bar[data-scrolled="1"],
      button` in 07-whiteboard-misc.css is (1,0,1) and an id on its own is
      (1,0,0), so the bare ids lost to it and all seven columns stayed on
      screen. */
-  #tab-bar #tab-btn-dashboard,
+  #tab-bar #tab-btn-graph,
   #tab-bar #tab-btn-timeline,
   #tab-bar #tab-btn-reminders {
     display: none;
@@ -951,6 +951,17 @@ header#top-bar[data-scrolled="1"],
   #settings-peek > .ph {
     margin: 0;
     font-size: var(--text-body);
+  }
+  /* The timeline's day strip (INBOX 1314, measured at 360x740): the head's
+     fixed-width month and the year menu made it 322px in a 300px card, and
+     seven days in 300px were 41.8px targets. The year menu wraps under the
+     month, and the well takes the card's inner padding, so each day is
+     44.5px. At 390 both fit as they are (330px of card). */
+  .timeline-daystrip-head {
+    flex-wrap: wrap;
+  }
+  .timeline-days {
+    margin-inline: calc(-1 * var(--space-4));
   }
 }
 /* --- Phase 11 item 9: 44px targets, the ones the docks sweep cannot see ----
