@@ -10383,6 +10383,14 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   padding-inline: var(--ring-room);
   margin-inline: calc(-1 * var(--ring-room));
 }
+/* The notes column keeps its ring room on the right as padding but no longer
+   takes it back out as a negative margin: that margin pushed the grid's
+   scrollable width 4px past its box (INBOX 1435: scrollWidth 1412 for 1408
+   at 1440, 1003 for 999 at 1024, 368 for 364 at 390). The cards end 4px
+   short of the grid's edge instead; the left edge is unchanged. */
+#tab-notes .layout > .tab-main {
+  margin-right: 0;
+}
 :is(.launch-row, .library-filters, #chat-suggest) {
   padding-block: var(--ring-room);
   margin-block: calc(-1 * var(--ring-room));
@@ -10397,6 +10405,15 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   #dash-quicklinks .launch-group > .launch-row {
     padding: 0;
     margin: 0;
+  }
+}
+/* Under 600 the strip scrolls and keeps its ring room as padding, but its
+   negative right margin pushed the group's scrollable width 4px past its box
+   (INBOX 1278: 368 for 364 at 390). Only the right margin is taken back; the
+   left edge is unchanged. */
+@media (max-width: 599.98px) {
+  #dash-quicklinks .launch-group > .launch-row {
+    margin-right: 0;
   }
 }
 /* **The chips' gap to what is below them** (INBOX 726, the owner: "no

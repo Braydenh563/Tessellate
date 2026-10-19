@@ -1310,7 +1310,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 1275 | Link-label blur not reproduced headless; the re-raster after zoom is untested on a GPU compositor or the desktop webview. | docs/roadmap/agent-remaining/OPEN.md:2413 | S | unassigned |
 | 1276 | The sidebar's Comments, Linked from and Notes rows keep their old styling. | docs/roadmap/agent-remaining/OPEN.md:2434 | S | unassigned |
 | 1277 | After Undo the run, the per-write stack entries stay; a later Ctrl+Z re-runs an already applied inverse (harmless for pin, tag and edit).... | docs/roadmap/agent-remaining/OPEN.md:2517 | S | unassigned |
-| 1278 | Dashboard quick links overflow by 4 px at 1440 and 390 (#dash-quicklinks .launch-group). | docs/roadmap/agent-remaining/OPEN.md:2520 | S | unassigned |
+| 1278 | **Fixed 2026-10-19.** Dashboard quick links overflow by 4 px at 1440 and 390 (#dash-quicklinks .launch-group). | docs/roadmap/agent-remaining/OPEN.md:2520 | S | unassigned |
 | 1279 | The More sheet on a map is 59 to 62 rows at 390 (the table plus the map palette); grouped by hairlines but long. A search field or the palette's own... | docs/roadmap/agent-remaining/OPEN.md:2552 | S | unassigned |
 | 1280 | EntryLink rows are counted whole: a link to a binned or private note is still a link on the page (_notebook_block). | docs/roadmap/agent-remaining/OPEN.md:2568 | S | unassigned |
 | 1281 | The other search surfaces still do their own thing Closed. The account is in HISTORY.md, "OPEN.md rows closed, 2026-10-05 (the open-ledger pass)". | docs/roadmap/agent-remaining/OPEN.md:2693 | S | unassigned |
@@ -1467,7 +1467,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 1432 | Rule 14: the Health block stays in Settings, About (where it was built, PLAN B9) rather than its own section; reach is the palette's Health (1) and... | docs/roadmap/agent-remaining/OPEN.md:3525 | S | unassigned |
 | 1433 | Not reached by the sweep: right-click menus, keyboard-only acts (Tab for a branch), controls that open a picker and then need a second choice (note... | docs/roadmap/agent-remaining/OPEN.md:3552 | M | unassigned |
 | 1434 | #select-btn span.dock-word 40px and #notes-filter-menu span.dock-word 32px clipped at 320 to 1024: the labelled-to-icon collapse hides words by... | docs/roadmap/agent-remaining/OPEN.md:3556 | S | unassigned |
-| 1435 | button#notes-tidy.ghost.small 4px at every width; #tab-notes div.layout 4px at 320 to 1024. | docs/roadmap/agent-remaining/OPEN.md:3557 | S | unassigned |
+| 1435 | **Fixed 2026-10-19.** button#notes-tidy.ghost.small 4px at every width; #tab-notes div.layout 4px at 320 to 1024. | docs/roadmap/agent-remaining/OPEN.md:3557 | S | unassigned |
 | 1436 | Dashboard: 3 overflow and 1 clipped text at 320 and 390, 2 overflow at 820 and wider (selectors in the sweep output, not yet named here). | docs/roadmap/agent-remaining/OPEN.md:3558 | S | unassigned |
 | 1437 | Crawl: 55 destinations found from the dashboard (1, 14, 36, 3 and 1 at depths 0 to 4, crawl complete to depth 4), 1 deeper than 3, 16 with no palette... | docs/roadmap/agent-remaining/OPEN.md:3561 | M | unassigned |
 | 1438 | The crawl presses navigation-looking controls only and one item of each repeated list; a destination absent from it is "not found by the crawl", not... | docs/roadmap/agent-remaining/OPEN.md:3564 | M | unassigned |
