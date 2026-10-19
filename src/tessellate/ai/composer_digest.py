@@ -1304,7 +1304,7 @@ def _prose(label: str, held: list, bodies: list[str], i: int, today: date | None
     written = held[0].view.written
     #: "Hobbies: ..." filed under Hobbies names nothing the filing does not
     #: (INBOX 1310: "Your hobbies note has thinking of buying").
-    filed = label.lower() == str(held[0].view.note.get("category") or "").lower()
+    filed = label.lower() == str((getattr(held[0].view, "note", None) or {}).get("category") or "").lower()
     frame, opening = _prose_opening(label, named, written, today, filed)
     clauses = [_clause(b, frame, i + n, n == 0) for n, b in enumerate(bodies)]
     if frame in ("planned", "noted") and re.match(r"you\b", clauses[0]):

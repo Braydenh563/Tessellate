@@ -2421,7 +2421,9 @@ def _tool_read_events(req: _StreamRequest, notes: list | None = None) -> list[di
     #: Said with its links to what it lists and the place to open
     #: (`tool_say`); a chart, when the counts make one, stands for the table.
     say_args: dict = {}
-    if got.tool == "list_reminders":
+    #: Only a question that says "reminders" is cut to its window; "what is
+    #: due this week" lists what waits, as before (1324 widened it to both).
+    if got.tool == "list_reminders" and "remind" in asked.lower():
         window = composer.plan(asked, now.date())
         if window.window and window.window_phrase:
             start, end = window.window
