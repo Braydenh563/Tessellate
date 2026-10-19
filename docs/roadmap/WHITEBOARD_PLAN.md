@@ -473,6 +473,7 @@ accessibility, and learnability") are why.
     hand (MINDMAP_PLAN decision 48); Shift flips whichever it is. Items
     keep their own drag; right, middle and Space drags still pan; the Pan
     and Lasso tools are untouched; touch already pans bare canvas.
+    **Reversed** (the owner, 2026-10-19: "we need to revert the left click pan as it clashes with and negates the drag selection tools"): a left-drag with Select draws the selection box again; Pan, Space, the middle and right buttons and the trackpad pan; the preference is removed.
 
 ## Built, 2026-09-09: one surface per panel, and the Arrange section
 

@@ -586,8 +586,7 @@ const WB_HELP_SECTIONS = [
     { cmd: "insert-image" }, { cmd: "tool-connector" }, { cmd: "tool-connector-curved" }, { cmd: "tool-delete" },
   ] },
   { title: "Move around", surface: "both", rows: [
-    { icon: "ph:hand", label: "Pan", keys: ["drag on empty canvas", "H then drag", "middle drag", "two-finger scroll"] },
-    { icon: "ph:selection", label: "Select an area", keys: ["Shift+drag on empty canvas"] },
+    { icon: "ph:hand", label: "Pan", keys: ["H then drag", "middle drag", "two-finger scroll"] },
     { icon: "ph:arrows-horizontal", label: "Pan sideways", keys: ["Shift+wheel"] },
     { icon: "ph:hand-grabbing", label: "Pan with any tool", keys: ["Space+drag"] },
     { icon: "ph:magnifying-glass-plus", label: "Zoom", keys: ["wheel", "pinch"] },

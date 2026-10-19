@@ -162,14 +162,11 @@ def test_frames_turn_and_a_click_on_a_panel_selects_it() -> None:
     assert "wbSelectFrameAt(...getLogicalMouse(e)" in SOURCE
 
 
-@pytest.mark.parametrize(
-    ("pref", "shift", "pans"),
-    [("pan", False, True), ("pan", True, False), ("select", False, False), ("select", True, True)],
-)
-def test_left_drag_on_empty_canvas_pans_or_selects_by_preference(pref: str, shift: bool, pans: bool) -> None:
-    """INBOX 1332: the default is Pan with Shift drawing the rectangle; the preference swaps
-    them, one pair for boards and maps. Browser half (measured at 1440x900): pan, no shift moved
-    the view 100,50 and drew no marquee; Shift drew it and moved 0; Select swapped both."""
+@pytest.mark.parametrize("shift", [False, True])
+def test_a_left_drag_with_select_never_pans(shift: bool) -> None:
+    """INBOX 1332 reverted by the owner: a left-drag pan on empty canvas took the drag from the
+    marquee and lasso. With Select a left-drag never pans, Shift or not; Pan, Space, the middle
+    button and the trackpad still do."""
     import json
 
     node = shutil.which("node")
@@ -178,18 +175,16 @@ def test_left_drag_on_empty_canvas_pans_or_selects_by_preference(pref: str, shif
     event = {"type": "mousedown", "button": 0, "buttons": 1, "shiftKey": shift, "target": None}
     script = (
         "let wbSpaceHeld = false; let wbMidPanHeld = false;"
-        f" const prefs = {{ get: () => {json.dumps(pref)} }};"
         " const wbBoardState = { wheel: { at: -1e9, pad: false } }; globalThis.window = { currentTool: 'select' };\n"
-        + _function("wbLeftDragSelects")
-        + "function wbIsBareCanvas() { return true; }\n"
+        "function wbIsBareCanvas() { return true; }\n"
         + _function("wbTrackpadPan")
         + _function("wbZoomFilter")
         + f"\nconsole.log(JSON.stringify(Boolean(wbZoomFilter({json.dumps(event)}))));\n"
     )
     out = subprocess.run([node, "-e", script], capture_output=True, text=True, check=True)
-    assert json.loads(out.stdout.strip()) is pans
+    assert json.loads(out.stdout.strip()) is False
 
 
-def test_the_marquee_starts_when_shift_disagrees_with_the_preference() -> None:
-    assert "if (!place && e.shiftKey === wbLeftDragSelects()) return;" in SOURCE
-    assert 'id="wb-drag-select"' in (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+def test_no_left_drag_pan_preference_is_left() -> None:
+    assert "wbLeftDragSelects" not in SOURCE
+    assert 'id="wb-drag-select"' not in (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")

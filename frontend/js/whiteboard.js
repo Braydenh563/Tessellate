@@ -60,9 +60,7 @@
 // this the same way, and it is a filter rather than a mode: the zoom
 // behaviour stays attached at all times, and decides per-event whether a
 // gesture is a pan. Held space or the middle mouse button pans from *any*
-// tool; a plain left-drag pans when Pan is the active tool, or on bare canvas
-// with Select (WHITEBOARD_PLAN decision 41, MINDMAP_PLAN decision 48: the
-// "Left-drag on empty canvas" preference, Pan by default, Shift flips it), so
+// tool; a plain left-drag only pans when Pan is genuinely the active tool, so
 // drawing, the marquee and lasso are untouched.
 let wbSpaceHeld = false;
 //: **Tab on a map adds a topic only after the person has engaged the map**
@@ -147,11 +145,7 @@ function wbZoomFilter(event) {
   }
   // Left button: Pan tool, or space held down.
   if (event.button === 0 || event.buttons === 1 || event.buttons === 0) {
-    if (window.currentTool === "pan" || wbSpaceHeld) return true;
-    //: Bare canvas with Select: equal means pan, unequal means the marquee
-    //: (`wbMarqueeStart` reads the same pair). An item keeps its own drag.
-    return window.currentTool === "select" && event.type === "mousedown"
-      && Boolean(event.shiftKey) === wbLeftDragSelects() && wbIsBareCanvas(event.target);
+    return window.currentTool === "pan" || wbSpaceHeld;
   }
   return false;
 }
@@ -868,14 +862,6 @@ function wbPublishInvZoom(el, inv) {
 
 function wbGridType() {
   return prefs.get("wb-grid", null) || "none";
-}
-
-//: **What a plain left-drag on empty canvas does with Select** (INBOX 1332):
-//: Pan (the default) or Select, the area rectangle. Shift flips whichever it
-//: is, so both gestures stay one modifier away. One preference for boards and
-//: maps, so the two cannot teach different hands.
-function wbLeftDragSelects() {
-  return prefs.get("wb-drag", null) === "select";
 }
 
 function wbSnapOn() {
@@ -13602,11 +13588,6 @@ async function initWhiteboard() {
   }
   $("wb-sticky-fold")?.addEventListener("change", (e) => wbSetBackground({ sticky_fold: e.target.checked }));
   $("wb-rough-toggle")?.addEventListener("change", (e) => wbSetBackground({ rough: e.target.checked }));
-  const dragSelect = $("wb-drag-select");
-  if (dragSelect) {
-    dragSelect.value = wbLeftDragSelects() ? "select" : "pan";
-    dragSelect.addEventListener("change", (e) => prefs.set("wb-drag", e.target.value === "select" ? "select" : "pan"));
-  }
   const snapToggle = $("wb-snap-toggle");
   if (snapToggle) {
     snapToggle.checked = prefs.get("wb-snap", null) === "on";
@@ -15501,9 +15482,6 @@ async function initWhiteboard() {
     // click pans; neither ends with the pointerup this drag is waiting for,
     // so both used to start a rectangle that nothing would ever remove.
     if (e.button !== 0 || !e.isPrimary) return;
-    //: With Select the unmodified drag is the preference's (INBOX 1332): the
-    //: rectangle starts when Shift disagrees with it, otherwise the press is a pan.
-    if (!place && e.shiftKey === wbLeftDragSelects()) return;
     // A gesture already in flight loses its rectangle rather than orphaning
     // it: `wbMarqueeEl` is one variable, so a second pointerdown overwrote
     // the reference to the first rect and left it on the canvas forever.
