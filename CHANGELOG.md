@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Dashboard: the Stats and Streak widgets have a Statistics button, as the heatmap does, and the Stats bar strip opens Statistics too (INBOX 1318).
 - Whiteboard: Ctrl+Enter while typing in a sticky starts the next one beside it, same paper and size (INBOX 1308).
 - Whiteboard: a C4 and architecture set in the library (person, software system, external system, container, database, component, boundary, relationship); each places as one group (INBOX 1308).
 - Notifications over the Graph: a toast is opaque under every look (it was the glass card at 0.55 alpha, so the map read through it) and stands above the zoom strip and legend instead of over them (INBOX 1306).

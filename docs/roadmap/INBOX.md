@@ -34,6 +34,18 @@ with its owner named in the entry.
 
 ## Open items
 
+1321. **The owner, 2026-10-19, verbatim.** "and I cant type in the chat bar while it is generating, I want to be able to queue messages, and edit or delete/bring back queued messages as well to the chat bar for resending"
+     Owner: chat-queue agent (Sonnet), queued: the box stays editable while a reply streams; Enter queues; queued messages show as chips above the box with edit, delete and "back to the box"; they send in order when the reply ends; CHAT_PLAN row.
+
+1320. **The owner, 2026-10-19, verbatim.** "and I cant minimise the splash popup, I want a minimise (- or _ or smth) and close x button in the top right corner to cancel or minimise the launch"
+     Same as 904 B50. Owner: splash agent (Sonnet), queued: scripts/splash.ps1 (borderless WinForms, a Cancel button exists at ~678): add a minimise button and a close X top right (close = the existing cancel path), keyboard reachable; Windows only, so held by tests/test_launcher_scripts.py shapes and said as not verified.
+
+1319. **The owner, 2026-10-19, verbatim** (screenshot, dark: Statistics, "Notes made per month, the last year", a line chart, Save as PNG). "and I still cant interact with the statistics . also the statistics page gets cut off by the header at the top and I want to expand it more and make it more dynamic. maybe even include a specialised composer and ai chat like the help guide idk in it for helping the user explore and summarise their statistics??"
+     Owner: statistics agent (Sonnet, then Opus for the chat design if needed), next free slot.
+
+1318. **The owner, 2026-10-19, verbatim** (screenshot, dark: the Dashboard Stats widget, "37 notes", a 14-day bar strip, five category chips). "and I want to be able to view the status popup from the stats widget and other related widgets as well like the streak."
+     Orchestrator: Stats and Streak widgets got the heatmap's Statistics button (`dashStatsButton`), the Stats strip opens it too; not yet driven in the app (the test dashboard has no Stats widget). The statistics agent verifies it.
+
 1317. **The owner, 2026-10-19, verbatim** (screenshot, dark: Dashboard "Boards & maps": the board "test board" preview is grey placeholder blocks and teal squiggles that do not look like the board; the map "test" a tiny strip of coloured bars). "also the whiteboard and mindmap previews just arent working, can we like snapshot a thumbnail for it and really compress it so it doesnt take up much space or storage or load time and then use that or smth and it can be stored in cache or smth"
      Owner: thumbnails agent (Sonnet), after the current three: render a small snapshot on save/close (canvas to WebP, about 320px wide, quality around 0.6, a few KB), stored with the board and cached (ETag), used by every preview surface; the drawn placeholder only as a fallback.
 

@@ -2813,6 +2813,15 @@ function dashStreak(perDay) {
   return streak;
 }
 
+//: Brief 89, and INBOX 1318 for Stats and Streak (the owner: "view the
+//: status popup from the stats widget and other related widgets as well like
+//: the streak"): each counting widget opens the Statistics page.
+function dashStatsButton(id) {
+  const button = smallButton("ph:chart-bar Statistics", "Open the Statistics page", () => openStatistics());
+  button.id = id;
+  return button;
+}
+
 async function renderStreakWidget(body) {
   const stats = await fetchDashStats();
   const perDay = stats.per_day || []; // oldest → newest, last = today
@@ -2842,7 +2851,7 @@ async function renderStreakWidget(body) {
   } else {
     sub.textContent = "Save a note today to start one.";
   }
-  body.appendChild(sub);
+  body.append(sub, dashStatsButton("streak-statistics"));
 }
 
 async function renderStatsWidget(body) {
@@ -2871,7 +2880,8 @@ async function renderStatsWidget(body) {
   for (const category of stats.categories.slice(0, 5)) {
     cats.appendChild(chip(`${category.name} · ${category.count}`));
   }
-  body.appendChild(cats);
+  strip.addEventListener("click", () => openStatistics());
+  body.append(cats, dashStatsButton("stats-statistics"));
 }
 // Shared by the Pinned/Most-used/Recent-notes dashboard widgets, reported
 // directly for Most Used, but all three shared the same gap: `notePreviewText`
@@ -3487,8 +3497,7 @@ async function renderHeatmapWidget(body) {
   //: Brief 89 (statistics row 1): the page is one click from here, the
   //: grid itself and the button below, where it was three (Settings,
   //: General, What you use).
-  const stats = smallButton("ph:chart-bar Statistics", "Open the Statistics page: notebook, reminders and usage, counted", () => openStatistics());
-  stats.id = "heatmap-statistics";
+  const stats = dashStatsButton("heatmap-statistics");
   grid.addEventListener("click", () => openStatistics());
   //: In a row so the button is its own width beside the line, not a bar.
   const foot = document.createElement("div");
