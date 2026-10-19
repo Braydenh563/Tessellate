@@ -718,6 +718,529 @@
     ],
     "links": []
    }
+  },
+  {
+   "key": "phone",
+   "kind": "element",
+   "name": "Phone frame",
+   "tags": [
+    "phone",
+    "mobile",
+    "device",
+    "screen",
+    "app",
+    "frame"
+   ],
+   "payload": {
+    "box": {
+     "w": 220,
+     "h": 440
+    },
+    "items": [
+     {
+      "key": "p",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 220 0 L 220 440 L 0 440 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.04
+      },
+      "z": 5
+     },
+     {
+      "key": "p_s",
+      "kind": "sketch",
+      "data": {
+       "d": "M 14 44 L 206 44 L 206 396 L 14 396 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0
+      },
+      "z": 5
+     },
+     {
+      "key": "p_n",
+      "kind": "sketch",
+      "data": {
+       "d": "M 80 18 L 140 18 M 100 420 L 120 420",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "toggle",
+   "kind": "element",
+   "name": "Toggle",
+   "tags": [
+    "toggle",
+    "switch",
+    "on off",
+    "setting"
+   ],
+   "payload": {
+    "box": {
+     "w": 64,
+     "h": 32
+    },
+    "items": [
+     {
+      "key": "t",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 4 L 64 4 L 64 28 L 0 28 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12
+      },
+      "z": 5
+     },
+     {
+      "key": "t_k",
+      "kind": "sketch",
+      "data": {
+       "d": "M 39 16 A 9 9 0 1 0 57 16 A 9 9 0 1 0 39 16 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.5
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "modal",
+   "kind": "element",
+   "name": "Modal dialog",
+   "tags": [
+    "modal",
+    "dialog",
+    "popup",
+    "overlay",
+    "confirm"
+   ],
+   "payload": {
+    "box": {
+     "w": 320,
+     "h": 200
+    },
+    "items": [
+     {
+      "key": "m",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 320 0 L 320 200 L 0 200 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.04,
+       "label": "Dialog title",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 0.2
+       },
+       "label_bold": true,
+       "shadow": true
+      },
+      "z": 5
+     },
+     {
+      "key": "m_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 40 L 320 40 M 296 14 L 308 26 M 308 14 L 296 26",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0
+      },
+      "z": 5
+     },
+     {
+      "key": "m_b",
+      "kind": "sketch",
+      "data": {
+       "d": "M 16 52 L 304 52 L 304 132 L 16 132 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0,
+       "label": "Say what this dialog asks, in a line or two.",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 14
+      },
+      "z": 6
+     },
+     {
+      "key": "m_c",
+      "kind": "sketch",
+      "data": {
+       "d": "M 132 148 L 212 148 L 212 184 L 132 184 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0,
+       "label": "Cancel",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1
+       }
+      },
+      "z": 5
+     },
+     {
+      "key": "m_o",
+      "kind": "sketch",
+      "data": {
+       "d": "M 224 148 L 304 148 L 304 184 L 224 184 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.2,
+       "label": "OK",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1
+       }
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "table",
+   "kind": "element",
+   "name": "Table",
+   "tags": [
+    "table",
+    "grid",
+    "rows",
+    "list",
+    "data"
+   ],
+   "payload": {
+    "box": {
+     "w": 360,
+     "h": 144
+    },
+    "items": [
+     {
+      "key": "t",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 360 0 L 360 144 L 0 144 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0
+      },
+      "z": 5
+     },
+     {
+      "key": "t_h",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 360 0 L 360 36 L 0 36 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12
+      },
+      "z": 5
+     },
+     {
+      "key": "t_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 72 L 360 72 M 0 108 L 360 108 M 120 0 L 120 144 M 240 0 L 240 144",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0
+      },
+      "z": 5
+     },
+     {
+      "key": "t_a",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 120 0 L 120 36 L 0 36 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0,
+       "label": "Name",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "center",
+       "label_valign": "middle",
+       "label_size": 14,
+       "label_bold": true
+      },
+      "z": 6
+     },
+     {
+      "key": "t_b",
+      "kind": "sketch",
+      "data": {
+       "d": "M 120 0 L 240 0 L 240 36 L 120 36 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0,
+       "label": "Status",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "center",
+       "label_valign": "middle",
+       "label_size": 14,
+       "label_bold": true
+      },
+      "z": 6
+     },
+     {
+      "key": "t_c",
+      "kind": "sketch",
+      "data": {
+       "d": "M 240 0 L 360 0 L 360 36 L 240 36 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0,
+       "label": "Date",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "center",
+       "label_valign": "middle",
+       "label_size": 14,
+       "label_bold": true
+      },
+      "z": 6
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "icon-placeholder",
+   "kind": "element",
+   "name": "Icon placeholder",
+   "tags": [
+    "icon",
+    "placeholder",
+    "glyph",
+    "symbol"
+   ],
+   "payload": {
+    "box": {
+     "w": 40,
+     "h": 40
+    },
+    "items": [
+     {
+      "key": "i",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 40 0 L 40 40 L 0 40 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.04
+      },
+      "z": 5
+     },
+     {
+      "key": "i_x",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 40 40 M 40 0 L 0 40",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "search-field",
+   "kind": "element",
+   "name": "Search field",
+   "tags": [
+    "search",
+    "input",
+    "find",
+    "magnifier"
+   ],
+   "payload": {
+    "box": {
+     "w": 240,
+     "h": 40
+    },
+    "items": [
+     {
+      "key": "s",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 240 0 L 240 40 L 0 40 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0,
+       "label": "Search",
+       "label_area": {
+        "x": 0.12,
+        "y": 0.05,
+        "w": 0.8,
+        "h": 0.9
+       },
+       "label_align": "left",
+       "label_valign": "middle",
+       "label_size": 14
+      },
+      "z": 5
+     },
+     {
+      "key": "s_i",
+      "kind": "sketch",
+      "data": {
+       "d": "M 13 18 A 7 7 0 1 0 27 18 A 7 7 0 1 0 13 18 Z M 25 23 L 31 29",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "slider",
+   "kind": "element",
+   "name": "Slider",
+   "tags": [
+    "slider",
+    "range",
+    "volume",
+    "control"
+   ],
+   "payload": {
+    "box": {
+     "w": 240,
+     "h": 24
+    },
+    "items": [
+     {
+      "key": "s",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 12 L 240 12",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0
+      },
+      "z": 5
+     },
+     {
+      "key": "s_f",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 12 L 120 12",
+       "shape": "custom",
+       "color": "ink",
+       "width": 5,
+       "fill": "ink",
+       "fillOpacity": 0.0
+      },
+      "z": 5
+     },
+     {
+      "key": "s_k",
+      "kind": "sketch",
+      "data": {
+       "d": "M 110 12 A 10 10 0 1 0 130 12 A 10 10 0 1 0 110 12 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.5
+      },
+      "z": 6
+     }
+    ],
+    "links": []
+   }
   }
  ]
 }

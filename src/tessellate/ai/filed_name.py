@@ -24,12 +24,29 @@ _NOT_FILED = frozenset({
 })
 
 
+#: "list my recipes", "what books do I have": a bare plural names a tag or
+#: category (1324); a word the app has a list of its own for is not one.
+_BARE_PLURAL = re.compile(
+    r"^(?:(?:can|could|would) you |please |pls )?(?:(?:list|show)(?: me)?(?: all)?(?: of)? (?:my|the) (?P<c>[a-z]{3,20}s)"
+    r"|what (?P<d>[a-z]{3,20}s) do i have)(?: (?:please|pls|plz))?[?.]*$",
+    re.I,
+)
+_APP_LISTS = frozenset({
+    "tags", "categories", "reminders", "tasks", "todos", "skills", "documents", "docs", "notes", "entries", "boards",
+    "files", "photos", "chats", "conversations", "settings", "shortcuts", "personas", "spaces", "links", "dates",
+    "deadlines", "themes", "models", "commands", "tools", "features", "templates", "backups", "exports", "meetings",
+})
+
+
 def filed_listing(text: str) -> str | None:
     """The category or tag a listing names ("work" in "list my work notes"),
     else None."""
-    found = _FILED_LISTING.match(" ".join((text or "").split()))
+    flat = " ".join((text or "").split())
+    found = _FILED_LISTING.match(flat)
     if not found:
-        return None
+        bare = _BARE_PLURAL.match(flat)
+        name = ((bare.group("c") or bare.group("d")) if bare else "") or ""
+        return name.lower() if name and name.lower() not in _APP_LISTS and name.lower() not in _NOT_FILED else None
     name = (found.group("a") or found.group("b") or "").strip()
     name = re.sub(r"^(?:all|every|my|the) ", "", name, flags=re.I)
     return name if name and name.split()[0].lower() not in _NOT_FILED else None

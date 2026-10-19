@@ -114,3 +114,16 @@ function updateNotePickerCount() {
     button.setAttribute("aria-label", `${button.firstChild.textContent.trim()}, ${n} attached`);
   }
 }
+
+// A board's stored thumbnail as an <img> (INBOX 1317), asked for by name from
+// `mapPreview` (note-cards.js, boot), which draws its SVG when this has not
+// loaded. The server sets `thumb_v` only while the file is current for the
+// board, and the URL carries it, so the browser caches each version for good.
+window.mapRaster = (board, size) =>
+  Object.assign(new Image(), {
+    className: `board-minimap board-minimap-${size}`,
+    alt: "",
+    loading: "lazy",
+    decoding: "async",
+    src: `/media/board-thumb/${board.id}?v=${board.thumb_v}`,
+  });

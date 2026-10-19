@@ -149,3 +149,38 @@ def test_the_layered_stars_are_the_rigs_not_a_css_turn() -> None:
     frame = MOTION[MOTION.index("function atlasRigFrame(") :]
     frame = frame[: frame.index("\n}\n")]
     assert "atlasTossDraw(" in frame and frame.count("requestAnimationFrame(") == 1
+
+
+FADE = r"""
+const log = [];
+for (const [k, s] of stars.entries()) s.animate = (frames, opts) => { const a = { k, frames, opts, cancelled: false, cancel() { a.cancelled = true; } }; log.push(a); return a; };
+classes.add("nmb-act-juggle");
+ctx.__wake(box);
+run(10);
+const started = log.length;
+classes.delete("nmb-act-juggle");
+ctx.__wake(box);
+run(10);
+process.stdout.write(JSON.stringify({ started, kept: log.filter((a) => !a.cancelled).length, opts: log.map((a) => a.opts), op: log.map((a) => a.frames.map((f) => f.opacity)) }));
+"""
+
+
+@needs_node
+def test_reduced_motion_juggle_twinkles_its_stars_instead_of_standing_still() -> None:
+    """The reproduced report (INBOX 1322b, 2026-10-19): with the system asking
+    for less motion, a juggle asked for from the large view drew three stars
+    that did not change at all (0 px of travel over 2 s). Fades are allowed
+    under reduced motion, so each star now pulses its opacity, staggered, and
+    stops with the act."""
+    out = _run(FADE, "reduced")
+    assert out["started"] == 3, "one fade per star"
+    assert out["kept"] == 0, "every fade is cancelled when the act ends"
+    assert all(o["iterations"] == float("inf") or o["iterations"] is None or o["iterations"] > 1 for o in out["opts"])
+    assert len({o["delay"] for o in out["opts"]}) == 3, "the stars are out of step"
+    assert all(min(f) < 0.6 for f in out["op"]), "a visible dip, not a flicker"
+
+
+@needs_node
+def test_live_juggle_does_not_start_the_reduced_motion_twinkle() -> None:
+    out = _run(FADE, "live")
+    assert out["started"] == 0

@@ -1477,6 +1477,8 @@ function paletteCommands() {
     //: The tour's third door (the e2e flow pass): the Dashboard's first-run
     //: tile and Settings, Help were the only two (tests/test_palette_synonyms.py).
     { label: "ph:compass Take the guided tour", keywords: "tour walkthrough guide how to start show me around", about: "A short walk round the app, pointing at the real controls.", act: () => openTour("basics") },
+    //: INBOX 1304: Get started, hidden or done, comes back from the palette too.
+    { label: "ph:list-checks Show Get started", keywords: "unhide", act: () => lazyScript("/js/first-run.js").then(() => getStartedShow()) },
     { label: "ph:arrow-u-up-left Undo", keywords: "undo take back revert", about: "Undo the last change, wherever it was made.", act: () => performUndo() },
     { label: "ph:arrow-u-up-right Redo", keywords: "redo", about: "Do again what Undo took back.", act: () => performRedo() },
     {
@@ -1499,6 +1501,7 @@ function paletteCommands() {
     { label: "ph:list-checks Settings → Background tasks", reveal: "settings:tasks", about: "What the app is working on while you write." },
     { label: "ph:heartbeat Health", reveal: "settings:about", keywords: "integrity check last backup last error data folder size status storage disk space files", about: "How the notebook is: last backup, last error, what is running, size, integrity." },
     { label: "ph:chart-bar Statistics", quick: "statistics", keywords: "stats numbers counts usage week review growth", about: "Your notebook, reminders and usage, counted, with this week against last.", act: () => openStatistics() },
+    { label: "ph:book-open-text Open the manual", reveal: "manual" },
     //: The small tools (Brief 89, UI_MODERNISATION utilities rows 2 to 4):
     //: "timer 10 minutes" and "insert template ..." also build their own rows
     //: from the words (`utilityPaletteRows`, app-palette.js).

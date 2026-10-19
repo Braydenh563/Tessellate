@@ -88,7 +88,8 @@ def test_one_registry_feeds_the_route_the_menu_and_the_help(client):
     topic = next(t for t in help_chat.HELP_TOPICS if t["id"] == "slash-commands")
     for name in names:
         assert f"/{name}" in topic["body"], name
-    assert 'sendChatMessage("/help")' in fn
+    #: The fallback row sends /help through the box's own sender, Chat's by default (INBOX 1309).
+    assert 'send = sendChatMessage' in fn and 'send("/help")' in fn
 
 
 def test_house_style():
@@ -248,3 +249,16 @@ def test_plain_words_read_as_the_command(said, read):
 )
 def test_other_sentences_are_not_commands(said):
     assert slash.infer(said) is None
+
+
+def test_agent_popup_has_the_slash_menu():
+    """INBOX 1309: the Agent popup's box offers the same "/" commands as Chat."""
+    js = (ROOT / "frontend" / "js" / "editor.js").read_text(encoding="utf-8")
+    assert '"command-palette-input": "agent"' in js
+    assert 'if (context === "agent") return agentCommands();' in js
+    body = js[js.index("function agentCommands()") :][:600]
+    assert 'chatSlashRows(afterPress, "command-palette-input"' in body and "cmdPaletteAsk" in body
+    from tessellate.ai.help_topics_more import MORE_TOPICS
+
+    topic = next(t for t in MORE_TOPICS if t["id"] == "slash-commands")
+    assert "the Agent popup" in topic["body"]

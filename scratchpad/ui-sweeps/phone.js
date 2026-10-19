@@ -110,6 +110,21 @@ const TABS = ['dashboard', 'notes', 'chat', 'graph', 'library', 'timeline', 'rem
       // before it becomes one.
       const wide = [...page_.querySelectorAll('*')]
         .filter((el) => el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).overflowX === 'visible')
+        //: A row a window off screen is not drawn (`content-visibility`) and
+        //: is fitted when it is (`fitNoteMetas`): measuring it here lays it
+        //: out unfitted, which read as 32 of 60 note lines overflowing.
+        .filter((el) => el.checkVisibility({ contentVisibilityAuto: true }))
+        //: Not a bleed by design (INBOX 1314): a child that runs past by its
+        //: own negative inline margin and no further (the ring-room rule, the
+        //: timeline's day well below 400) was placed there on purpose.
+        .filter((el) => {
+          const right = el.getBoundingClientRect().right;
+          return [...el.children].some((k) => {
+            const b = k.getBoundingClientRect(), cs = getComputedStyle(k);
+            if (b.right <= right + 1 || cs.position === 'absolute') return false;
+            return !(parseFloat(cs.marginRight) < 0 && b.right <= right + 1 - parseFloat(cs.marginRight));
+          });
+        })
         .slice(0, 4)
         .map((el) => `${el.id || el.className.toString().split(' ')[0] || el.tagName} ${el.scrollWidth}>${el.clientWidth}`);
       // One column: two cards whose boxes share a line and sit side by side.

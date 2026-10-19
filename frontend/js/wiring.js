@@ -354,14 +354,16 @@ $("chat-dock-more-panel").addEventListener("keydown", (event) => {
     $("chat-dock-more-btn").focus();
   }
 });
-$("chat-stop").addEventListener("click", () => chatController && chatController.abort());
+$("chat-stop").addEventListener("click", () => {
+  chatQueueState.held = true;
+  chatController?.abort();
+});
 //: **Escape stops the answer being written** (CHAT_PLAN section 6, the
 //: consistency rules: "Enter sends, Shift+Enter newline, Ctrl+K palette,
 //: Escape stops streaming"). Only Ctrl+. did (the shortcut table's
 //: `stopAI`); Escape mid-answer did nothing, measured by `chataudit.js`,
-//: part `keys`. On the document, not the tab: the composer is disabled while
-//: an answer streams, so the key a person presses lands on the Stop button
-//: (it takes the focus, `sendChatMessage`) or on the page, never in the box.
+//: part `keys`. On the document, not the tab, so it is heard from the box
+//: (open mid-answer for the queue, INBOX 1321), the Stop button or the page.
 //: Only while the Chat tab is on screen and an answer is streaming, and not
 //: while anything is open on top: a dialog, the note picker, a menu, each of
 //: which takes its own Escape first (they stop the key or prevent it).
@@ -376,6 +378,7 @@ document.addEventListener("keydown", (event) => {
   if ($("chat-stop").classList.contains("hidden")) return;
   if (document.querySelector(".modal-overlay:not(.hidden), .sheet-overlay:not(.hidden)")) return;
   event.preventDefault();
+  chatQueueState.held = true;
   chatController.abort();
 });
 $("chat-new").addEventListener("click", newChatConversation);

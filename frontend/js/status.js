@@ -926,13 +926,30 @@ function toastCloseButton(note, timer) {
 const SUPPORT_EMAIL = "brayden.hoyle@outlook.com";
 
 
+//: **The lock's field takes the typing** (the owner, 2026-10-19: on first
+//: load the password box was not selected). `showLock` focuses it, but the
+//: desktop window is often not focused yet then; so the field is focused
+//: again when the window gains focus, and a printable key pressed while
+//: nothing editable has focus lands in it (focus moved in keydown takes the
+//: character in Chromium).
+function lockFieldWants(e) {
+  const field = $("lock-password");
+  if (!field || $("lock-overlay")?.classList.contains("hidden")) return null;
+  const at = document.activeElement;
+  if (at && at !== document.body && (at.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(at.tagName))) return null;
+  return !e || (e.key?.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) ? field : null;
+}
+window.addEventListener("focus", () => lockFieldWants()?.focus());
+document.addEventListener("keydown", (e) => lockFieldWants(e)?.focus(), true);
+
 //: A toast steps aside for the focused control it covers (WCAG 2.4.11,
 //: measured at 200% and 400% zoom: a lasting "3 reminders are due" hid the
 //: Tab stop under it on six tabs). Fades and lets clicks through until focus
-//: moves off it; focus inside the toast itself never counts.
+//: moves off it; focus inside the toast itself never counts, nor the body
+//: (the first-Tab reset focuses it, and its box covers every toast).
 document.addEventListener("focusin", (e) => {
   const box = $("toast-box");
-  if (!box?.children.length || box.contains(e.target)) return box?.classList.remove("is-yielding");
+  if (!box?.children.length || box.contains(e.target) || e.target === document.body) return box?.classList.remove("is-yielding");
   const r = e.target.getBoundingClientRect();
   box.classList.toggle("is-yielding", [...box.children].some((el) => {
     const b = el.getBoundingClientRect();
@@ -2908,6 +2925,9 @@ function renderSettings() {
 // screen. So a re-index that finished while you were anywhere else, which is
 // most of them, since these jobs run for minutes, was recorded nowhere. It is
 // polled from here now, so the record does not depend on being watched.
+const TASKS_RUNNING_MS = 1500;
+const tasksState = { beat: null };
+
 async function refreshBackgroundTasks() {
   // Before the unlock there is no token and this is a guaranteed 401 on every
   // poll: noise in the browser's network log and in the server's, where it
@@ -2918,6 +2938,14 @@ async function refreshBackgroundTasks() {
   }
   const body = await apiJson("/tasks", { silent: true }).catch(() => null);
   backgroundTasks = (body && body.tasks) || [];
+  //: While anything runs, the slot keeps its own beat (INBOX 805, B77): on
+  //: the status loop alone it waited behind `/models/status`, which a busy
+  //: runner makes slow exactly while jobs run, and it said "running" for 12 s
+  //: after the job had ended (scratchpad/late805.js).
+  clearTimeout(tasksState.beat);
+  if (backgroundTasks.length && !document.hidden) {
+    tasksState.beat = setTimeout(() => refreshBackgroundTasks().catch(() => {}), TASKS_RUNNING_MS);
+  }
   noticeTaskTransitions(backgroundTasks, (body && body.history) || []);
   const auto = backgroundTasks.find((t) => t.auto);
   if (auto || lazyModuleLoads.has("semanticNotice")) semanticInstallNotice(auto);

@@ -1,4 +1,4 @@
-"""The UML, entity relationship and wireframe sets and their three templates
+"""The UML, entity relationship, wireframe and C4 sets and their three templates
 (WHITEBOARD_PLAN, INBOX 1300 C04). Drawn here, nothing from draw.io."""
 
 from __future__ import annotations
@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 
 LIB = Path(__file__).resolve().parents[1] / "frontend" / "board-library"
-SETS = {"uml": 14, "erd": 10, "wireframe": 12}
+SETS = {"uml": 23, "erd": 14, "wireframe": 19, "c4": 8}
 TEMPLATES = {"uml-class", "erd", "wireframe"}
 
 
@@ -73,3 +73,38 @@ def test_a_class_box_places_on_a_board(ai_client):
     assert len(placed.json()["sketches"]) >= 3
     made = ai_client.post("/board-library/new-board", json={"builtin": "templates/erd", "name": "Tables"})
     assert made.status_code in (200, 201)
+
+
+def test_the_new_wireframe_and_sequence_templates_exist_and_stand_on_their_own():
+    by_key = {t["key"]: t for t in _load("templates")["items"]}
+    assert {"wireframe-login", "wireframe-dashboard", "wireframe-mobile", "sequence"} <= set(by_key)
+    for key in ("wireframe-login", "wireframe-dashboard", "wireframe-mobile", "sequence"):
+        assert len(by_key[key]["payload"]["items"]) >= 10 and len(by_key[key]["hint"]) <= 60
+
+
+def test_the_new_elements_are_findable_by_a_keyword():
+    want = {"wireframe": {"phone", "toggle", "modal", "table", "icon-placeholder"},
+            "uml": {"lifeline", "activation", "state", "component", "initial-state", "final-state"},
+            "erd": {"associative-entity", "many-to-one"}}
+    for name, keys in want.items():
+        have = {e["key"]: e for e in _load(name)["items"]}
+        assert keys <= set(have)
+        assert all(len(have[k]["tags"]) >= 3 for k in keys)
+
+
+def test_swimlanes_are_in_the_flowchart_set_with_a_search_keyword():
+    index = {s["key"]: s for s in _load("index")["sets"]}
+    items = {e["key"]: e for e in _load("flowchart")["items"]}
+    assert index["flowchart"]["count"] == len(items)
+    assert {"swimlane-h2", "swimlane-h3", "swimlane-v3"} <= set(items)
+    assert all("swimlane" in items[k]["tags"] for k in ("swimlane-h2", "swimlane-h3", "swimlane-v3"))
+
+
+def test_the_c4_set_places_through_the_route(ai_client):
+    """WHITEBOARD_PLAN gap row 10 (INBOX 1308): person, systems, containers, boundary."""
+    board = ai_client.post("/whiteboard/boards", json={"name": "Context"}).json()
+    placed = ai_client.post(f"/whiteboard/boards/{board['id']}/place", json={"builtin": "c4/person", "x": 0, "y": 0})
+    assert placed.status_code == 201, placed.text
+    assert len({s["group_id"] for s in placed.json()["sketches"]}) == 1, "head and body move as one"
+    keys = {e["key"] for e in _load("c4")["items"]}
+    assert {"person", "software-system", "container", "container-database", "boundary", "external-system"} <= keys

@@ -34,6 +34,34 @@ with its owner named in the entry.
 
 ## Open items
 
+1339. **The owner, 2026-10-19, verbatim** (screenshot, dark: an Ask answer "You have ten notes about courses & study, 17 July to 15 October." whose theme paragraph reads "Your university notes share #university: your uni days this week are Tuesday, Cloud computing is the delivery of computing, I had three lectures for my cloud, ... and you linked your uni days this week are Tuesday to I had three lectures for my cloud.", while the dated lines below correctly say "On 17 July, your uni days the week of 13 July are Tuesday and Thursday."; Matching records cards beside it). "it is not this week anymore like said at the top of the composer"
+     For the next PR. Recommendation: the theme summary and link phrases go through the same relative-time rewrite as the dated lines ("this week" in a 17 July note becomes "the week of 13 July"); the summary also reads as clipped title fragments joined by commas, so it should name the shared theme and two or three topics, not chain note openings.
+
+1338. **The owner, 2026-10-19, verbatim** (screenshot, dark: a "Use AI" switch, off, with a sparkle icon and a "?" button). "this button should be disabled when the ai isnt available"
+     For the next PR. Recommendation: the switch is disabled with the reason as its description (no model set up) while no model is reachable, and comes back on its own when one is.
+
+1334. **The owner, 2026-10-19, verbatim** (screenshot, dark: Chat, the owner sent "timer\\"; Atlas "From your notes" answered "Your notes don't mention “timer”. Which note would it be in, or how else might you have put it?" with "Sources: 10 notes · meaning + keywords", 19.1s, Agent). "the composer also needs to handle short requests for tools and commands but also in the case that they may be asking for a note or keyword search, it should probably ask and provide buttons to click to go that route or do a probability assumption and user intent analysis"
+     For the next PR. Recommendation: a one- or two-word message that names a tool or command (timer, reminder, stats, categories), with stray punctuation stripped, is scored for intent; a clear winner runs, a close call answers with choice buttons (run the tool, search notes for the word), and a note search that finds nothing offers the tool instead of asking which note.
+
+1333. **The owner, 2026-10-19, verbatim** (screenshots, dark: Chat, Atlas "From your notes" answering a stats question with the "Your notebook" card (notes, words, tags, links, reminders, notes this week, with sparkline and bars); `/categories` answered as one prose line of ten categories with counts; `/today` answered "There's nothing written today. Your notes run from 16 July to 16 October." with no graphic; the Agent popup with "/" typed and no command menu, only the On Chat and Recent suggestions; the Agent popup answering a stats question with the notebook card). "I love the chat message stats in the bubble but Id like to see it more in other scenaries like for categories, naybe if it shows recent notes or notes I wrote today then it can show a small timeline graph or if it says that I wrote no notes today andthat my notes only go from one date to another then it can graph that. commands like the / commands and stuff dont show or appear to be accepted in the popup agent and the / command menu doesnt appear though the graphed statistics did show"
+     For the next PR. Recommendation: (a) bug first: the Agent popup's / menu (INBOX 1309, e9a7a64) does not open on "/" and slash commands are not taken there; reproduce in the running app. (b) Reuse the notebook card's recipe for a categories bar card, and a small timeline strip for /today, /recent and the "nothing today, notes run from X to Y" answer.
+     **Fixed (a) 1333a.** The menu did open (19 rows, 610x386 at 480,235) but at `z-index: 60` under the popup's overlay (2000): `elementFromPoint` on it returned `.command-palette-intro`; typed `/help` was accepted and answered. `.editor-menu` is now 2550, the one menu Chat and the popup share; after the change `elementFromPoint` returns `.rich-picker-label`. (b), the categories bar card and the timeline strip, is open.
+
+1324. **The owner, 2026-10-19, verbatim.** "also is the ask ai quick link accurate if the composer can compensate?? also keep improving the composer and integrating it in the whole app, expand it, improve understanding, improve language and sentence generation, expand responses, make it smarter, have it flawless and robust, have every single possible response in all of its roles (guide, chat, popup agent, agent, ask, other integrated features) be very good and more."
+     Standing. Done (composer1324): "Ask AI" link is now "Ask your notes"; 40-question grade with no model 23 to 32 fully good (scratchpad/composer1324-grades.md). Open: fact questions answered with a quote, "five notes" showing one, "From today:" labels, compare as a table, fragment joins (agent-remaining/composer1324-1019.md).
+
+1318. **The owner, 2026-10-19, verbatim** (screenshot, dark: the Dashboard Stats widget, "37 notes", a 14-day bar strip, five category chips). "and I want to be able to view the status popup from the stats widget and other related widgets as well like the streak."
+     Orchestrator: Stats and Streak widgets got the heatmap's Statistics button (`dashStatsButton`), the Stats strip opens it too; not yet driven in the app (the test dashboard has no Stats widget). The statistics agent verifies it.
+
+1315. **The owner, 2026-10-19, verbatim.** "keep improving the composer and companions and atlas as well. just keep doing what youre doing. Im going to go and do some uni work now so Ill leave you to it.. leep using lean-workflow"
+     Standing: composer (CHAT_PLAN), companion and Atlas rows stay in the away queue after the bugs.
+
+1313. **Part fixed** (alignment guides, Align to this one, keep-proportions link: wb1313 015bd02; WHITEBOARD_PLAN rows 3, 4, 5, 7, 8, 12 to 14 open). **The owner, 2026-10-19, verbatim.** "can you make sure the whiteboard isnt missing any more features?? can you improve the alignment guides as well??"
+     Owner: whiteboard agent (Sonnet), now: alignment guides first, then WHITEBOARD_PLAN gap rows 3, 4, 5, 7, 8, 12, 13, 14.
+
+1312. **The owner, 2026-10-19, verbatim.** "maybe assign haiku agents to go the grunt work and catalog everything, haiku must be used a lot for grunt work and repo exploring so that I can maximise usage and progress. make the agents use haiku for those tasks as well."
+     Standing order, recorded in HANDOVER's owner notes; the catalogue is a Haiku agent rebuilding agent-remaining/OPEN.md.
+
 725. **The owner, 2026-10-06, verbatim**: "can you like maximise the application
      responses and sentence concatenation and responses?? I want it soooo good it is
      almost like a chat bot. make them something the world hasnt seen before like
@@ -113,19 +141,6 @@ with its owner named in the entry.
      Tail done 2026-10-18 (uxfix5-1018): welcome Atlas spill 4 px to 0 to 1 px by holder padding; no oval frame exists on that card; every other framed Atlas (persona, profile, atlas-mark) already clips; the Show companion notice meets the toast recipe (actions row, accent text 600, close alone in its corner at 1440 and 390). Gestures remain.
      Owner: Brief 34 (companion), second part, and OPEN.md Atlas rows (INBOX 752): gestures, the enlarged view mirroring the corner, the framed Atlas clipped to its oval, the Show companion notice measured against the toast recipe.
 
-805. **The owner, 2026-10-11, verbatim.** "it is unclear which backup is the
-     latest, and also the backups need more file info and details I feel. all
-     information and processes across the app need to be 100% transparent. so
-     all things that use the ai or composer and all background processes need
-     to be logged and shown in bg processes wtc, along with their individual
-     logs and process lines to show thier process live and when they are
-     finished as well. whena ny process is running it needs to be clear to the
-     suer." Owner: the transparency agent (next Opus slot): one process
-     ledger every AI, composer and background run writes to, live lines per
-     run in the background processes panel, a running indicator in the
-     shell, and the backup rows (latest marked, date in words, what made it,
-     size, checked).
-
 810. **The owner, 2026-10-11, verbatim** (screenshots: the personas' quiet
      Edit and Delete text buttons; Keyboard shortcuts with a bordered tinted
      "Change" on every row; What it learned, three "Claim" cards with a large
@@ -167,11 +182,16 @@ with its owner named in the entry.
      behaviour change (`_stream_lines` 105, `_plain_events` 81, `recognise.py` span 60, resolve 44,
      `_date_cands` 45, `_time_cands` 22, `parse_reminder_text` 27, `factgraph._note_facts` 105,
      `routes_tasks.collect` 74, `engine.search` 69, `composer._follow_one` 66 and `_compose` 77,
-     `lexical_filing.decide` 59; list in `agent-remaining/cx1298-1018.md`). Left, largest first:
-     `agent.run_agent` 78, `search_manager._retrieve` 60, `skill_runner._run_one_step` 53,
-     `routes_chat._prepare` 52, `routes_board_history.restore_board` 49 and the rest of
-     `python scripts/complexity.py`: split each toward its seed, lower the row in
+     `lexical_filing.decide` 59; list in `agent-remaining/cx1298-1018.md`); cx1298b-1018 split the
+     five largest (`run_agent` 78, `_retrieve` 60, `_run_one_step` 53, `_prepare` 52,
+     `restore_board` 49; `agent-remaining/cx1298b-1018.md`). Left, largest first:
+     `routes_files.analyse_attachment` 47, `inbox.merge_candidates` 46 and the rest of
+     `python scripts/complexity.py` (223 over 15): split each toward its seed, lower the row in
      `tests/complexity_seed.json`, start of the next PR.
+
+1306. **The owner, 2026-10-18, verbatim** (screenshots: dark theme graph; a toast "Map settings reset to defaults. Undo" drawn faint and see-through over the colour legend, under the zoom controls; the graph with default settings, about 40 nodes, labels on long note titles crowding the lower half, a brown hub with many crossing edges). "notifications are hard to see on the graph, and my graph is messy and a bit hard to read and these are the default settings."
+     Owner: a graph agent (GRAPH_PLAN): the toast over the map must be opaque and clear of the legend and controls (measure contrast and overlap); default layout and labels readable at 40 nodes (label collisions, edge crossings, hub spread), measured before and after.
+     **Part fixed** 2026-10-19 (graph1306, c623544): toasts are opaque (dark rgb(24,27,37), about 14:1 text) and lifted clear of the zoom strip, legend and dock on the Graph tab. Default layout measured on a 36-note seed: 0 dot and 0 label overlaps, 77 link crossings (49 at the hub), fills 0.48 of the width; two tunings tried and reverted (no clear win). Open: crossings and hub spokes (graph-worker.js applyGrouping), label density (graph-canvas.js label gate); the owner's crowding did not reproduce without their data. Owner: next graph agent.
 
 904. **The owner, 2026-10-17, verbatim** (a OneNote bug list pasted into a Word document, 86 items, screenshots described in `agent-remaining/bugs-1017.md`; the pasted model-thinking transcript under B42 is elided). Triage and per-bug status: `docs/roadmap/agent-remaining/bugs-1017.md`.
 
@@ -251,7 +271,7 @@ with its owner named in the entry.
      B74. Could there be a way to print out or render a document or attachment in the whiteboard?? Like a pdf or document viewer object that the user can resize and move around, or even print the documents as separate pages like images that the user can move around, like dragging a document on onenote and having the option to print it out or place as an attachment
      B75. The text size in tooltip dropdowns across the app are always different and arent consistent (I think)
      B76. Should the drafting rotating animation and text be at the top of the ai side not the bottom of the user input side in the writing room??
-     B77. The agent run still says the note is filing but it is finished. Though there needs to be some more metrics like how long it took to file and similar across the app.
+     B77. **Fixed 4261fca** (the late answer's row is "Waiting for a late filing answer" and ends on every way out; finished runs show "Finished in 2 ms at 12:03 AM"). The agent run still says the note is filing but it is finished. Though there needs to be some more metrics like how long it took to file and similar across the app.
      B78. 9:57:12 pm INFO:    tessellate.embeddings: retrieval matrix warm with 46 vector(s)
           10:02:29 pm ERROR:   browser: [HTTP 422] PUT /graph/pin/document:2: Check the entry id and try again.
           10:04:57 pm INFO:    tessellate.jobruns: [run-7] Drafting started
@@ -273,6 +293,9 @@ with its owner named in the entry.
 
 ## Placed (last 20, newest first)
 
+- 2026-10-19: 1344 (the Composer badge explains it is not an AI) placed in UI_MODERNISATION_PLAN, starting as soon as an agent slot frees.
+- 2026-10-19: 1342 (map edges never use the sides) placed in MINDMAP_PLAN, next PR.
+- 2026-10-19: 1340 (board and map views) and 1341 (Format on a map) placed in WHITEBOARD_PLAN; 1336 (peek sidebar header) and 1337 (split button halves) placed in UI_MODERNISATION_PLAN; all for the next PR.
 - 2026-10-12: 1299 (Ask digest grammar; Harper over composer output) placed in BACKLOG "Placed from INBOX, 2026-10-12" (CHAT_PLAN is at its cap); "every a week" and "Your the ... note" fixed now.
 - 2026-10-11: 899 ("dont notes also already work out timewords and time references?? can the composer and agents ... pull from those") sent to atlas; 900 ("click on the lan icon in the bototm bar and easily be able to toggle it on or off ... without having to restert") folded into 896; 901 (show more and less awkward on wide paragraphs, two screenshots) sent to tags89; 902 (companion physics, entries, organic movement, no jolts, Atlas behaviours, the expanded panel's hanging arms, the arm that rises on a click) sent to throw.
 - 2026-10-11: 898 ("make sure that the undo and redo are properly and completely universal") sent to undoall: every mutating request offers undo and redo through `pushUndo`, or sits on a shrinking exempt list. **Fixed d68f621c6, 466d4721a, 353d975b5.** The exempt list has no GAP left (89 to 0, the rest classed with a reason); a ratchet fails any step without a Redo; 21 live acts in Chromium (`scratchpad/ui-sweeps/undoall.js`) each undo and redo twice, which found and fixed Ctrl+Z walking a covered board's history and a several-shape step undoing twice.

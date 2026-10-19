@@ -464,6 +464,74 @@ class _LateFiling:
             logger.warning("couldn't apply the late filing for entry %s", self.entry_id, exc_info=True)
 
 
+def _settle_filed_entry(session, entry, entry_id: int, late, category, confidence, filed_by):
+    """Write the decided category and the settled `filing_state`; returns the
+    active run (or None) so the later steps can add their lines to it."""
+    manager.record_filing(
+        session,
+        entry,
+        category,
+        by=janitor.filed_by_label(
+            filed_by, confidence, deps.get_model_manager(), deps.get_embeddings()
+        ),
+    )
+    entry.ai_confidence = confidence
+    # `auto` rather than `done` when the AI is the one that
+    # chose (Brief 13): it is the flag that makes a later move by
+    # hand legible as a correction, and it is terminal for every
+    # reader, the composer's poller stops on anything but
+    # `pending`.
+    entry.filing_state = janitor.settled_state(filed_by)
+    # A model answer is still coming: the note is a stand-in
+    # until it lands, and is retried next launch if it never does.
+    if late.is_waiting and filed_by != "llm":
+        entry.filing_state = manager.STAND_IN
+    #: The run's lines and its result (INBOX 805, B77: "how long it
+    #: took to file"); the run itself carries the duration.
+    run = jobruns.active()
+    if run is not None:
+        how = "by Atlas" if filed_by == "llm" else "by meaning" if filed_by != "none" else "with no model"
+        run.say(f"Filed in {category or 'no category'} {how}.")
+        run.result = f"note {entry_id} filed in {category or 'no category'} {how}"
+    return run
+
+
+def _embed_and_tidy(session, entry, entry_id: int, filed_by, run) -> None:
+    """Embed the settled note, look for a near duplicate, keep tag
+    suggestions and run Tidy's automatic reviews."""
+    deps.store_quietly(session, entry)
+    duplicate = _find_near_duplicate(session, entry)
+    if duplicate is not None:
+        entry.filing_similar_id = duplicate.id
+    session.commit()
+    if run is not None:
+        run.say("Saved its search vector and checked for a near duplicate.")
+    try:
+        _keep_suggestions(session, entry, filed_by)
+        session.commit()
+    except Exception:
+        logger.warning("couldn't keep tag suggestions for entry %s", entry_id, exc_info=True)
+        session.rollback()
+    # Tidy's reviews a person switched on (INBOX 691, off by
+    # default): after filing, as `system:tidy`, each run undoable
+    # from Tidy's history. Never raises.
+    from tessellate.entry import tidy
+
+    tidy.run_automatic(session)
+
+
+def _mark_filing_failed(entry_id: int) -> None:
+    """The last resort: a note whose filing raised is `failed`, never left pending."""
+    try:
+        with deps.get_db().session() as session:
+            entry = session.get(Entry, entry_id)
+            if entry is not None:
+                entry.filing_state = "failed"
+                session.commit()
+    except Exception:
+        logger.warning("couldn't mark entry %s as failed", entry_id, exc_info=True)
+
+
 def _file_entry_in_background(entry_id: int, workspace_id: str) -> None:
     """Decide a deferred note's category after its POST has already returned.
 
@@ -527,25 +595,7 @@ def _file_entry_in_background(entry_id: int, workspace_id: str) -> None:
                 session.refresh(entry)
                 if (getattr(entry, "filing_state", "") or "") != "pending":
                     return
-                manager.record_filing(
-                    session,
-                    entry,
-                    category,
-                    by=janitor.filed_by_label(
-                        filed_by, confidence, deps.get_model_manager(), deps.get_embeddings()
-                    ),
-                )
-                entry.ai_confidence = confidence
-                # `auto` rather than `done` when the AI is the one that
-                # chose (Brief 13): it is the flag that makes a later move by
-                # hand legible as a correction, and it is terminal for every
-                # reader, the composer's poller stops on anything but
-                # `pending`.
-                entry.filing_state = janitor.settled_state(filed_by)
-                # A model answer is still coming: the note is a stand-in
-                # until it lands, and is retried next launch if it never does.
-                if late.is_waiting and filed_by != "llm":
-                    entry.filing_state = manager.STAND_IN
+                run = _settle_filed_entry(session, entry, entry_id, late, category, confidence, filed_by)
                 # **Settled first, embedded after.** The vector and the
                 # near-duplicate search used to land before `filing_state`
                 # did, so the card said "Filing…" for as long as the
@@ -555,33 +605,10 @@ def _file_entry_in_background(entry_id: int, workspace_id: str) -> None:
                 # anything to compare against; a duplicate found after the
                 # poller has stopped is simply not toasted.
                 session.commit()
-                deps.store_quietly(session, entry)
-                duplicate = _find_near_duplicate(session, entry)
-                if duplicate is not None:
-                    entry.filing_similar_id = duplicate.id
-                session.commit()
-                try:
-                    _keep_suggestions(session, entry, filed_by)
-                    session.commit()
-                except Exception:
-                    logger.warning("couldn't keep tag suggestions for entry %s", entry_id, exc_info=True)
-                    session.rollback()
-                # Tidy's reviews a person switched on (INBOX 691, off by
-                # default): after filing, as `system:tidy`, each run undoable
-                # from Tidy's history. Never raises.
-                from tessellate.entry import tidy
-
-                tidy.run_automatic(session)
+                _embed_and_tidy(session, entry, entry_id, filed_by, run)
     except Exception:
         logger.warning("background filing failed for entry %s", entry_id, exc_info=True)
-        try:
-            with deps.get_db().session() as session:
-                entry = session.get(Entry, entry_id)
-                if entry is not None:
-                    entry.filing_state = "failed"
-                    session.commit()
-        except Exception:
-            logger.warning("couldn't mark entry %s as failed", entry_id, exc_info=True)
+        _mark_filing_failed(entry_id)
 
 
 def stand_ins_waiting() -> int:
@@ -1539,7 +1566,9 @@ def reevaluate_entry(entry_id: int, session: Session = Depends(get_session)) -> 
         logger.warning("re-evaluation's filing step failed", exc_info=True)
         filed_by = None  # AI down, keep the note exactly as it was
         refiling.fail("The filing step stopped before it finished. The log has the reason.")
-    refiling.finish()
+    finally:
+        #: Every way out, a cancel included: nothing stays "running" (B77).
+        refiling.finish()
 
     # 2. Suggest tags (best effort: never blocks the re-evaluation).
     suggested_tags = _reevaluate_tags(session, entry)

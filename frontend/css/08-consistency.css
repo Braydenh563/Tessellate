@@ -2843,6 +2843,19 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
   .entry-meta.note-meta:not(.is-measuring) > .chip.category {
     flex-shrink: 0;
   }
+  /* **When every fact is already an icon and the line is still too wide, it
+     wraps rather than clips** (UX audit 2026-10-19). At 390 a long-titled
+     card's category (104px), three 44px icon facts, the time and the 44px
+     "More actions" button need 392px in a 316px line, and the card's
+     `overflow: hidden` cut the button off at x 388-432. `fitNoteMetas`
+     measures with `.is-measuring` on (still `nowrap`, so its overflow sum is
+     honest), folds what it can (words to `.is-icon`), and a line that has
+     folded any fact may then take a second row for the remainder. One that
+     fits is drawn the same wrapped as not, and a line that overflowed with
+     nothing left to fold was never wide enough to need this. */
+  .entry-meta.note-meta:has(> .is-icon):not(.is-measuring) {
+    flex-wrap: wrap;
+  }
 }
 .entry-meta.note-meta > .chip > .ph-text {
   min-width: 0;
@@ -3793,9 +3806,30 @@ body .chip.item-label,
 }
 .library-grid:not(.library-list) .library-board-card > .library-card-title {
   padding-right: var(--space-8);
+  /* One line that ends in an ellipsis, so a long name never pushes the grid. */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.library-grid:not(.library-list) .library-board-card > :is(svg, .library-card-meta) {
+/* The picture is an `<svg>` or, once the board has a stored thumbnail, an
+   `<img>` (INBOX 1317): both carry `.board-minimap`. Naming only `svg` left
+   the image in the title's track (INBOX 1331). */
+.library-grid:not(.library-list) .library-board-card > :is(.board-minimap, .library-card-meta) {
   grid-column: 1 / -1;
+}
+/* The footer is one line: the count truncates, the time never wraps. */
+.library-grid:not(.library-list) .library-board-card > .library-card-meta {
+  min-width: 0;
+  white-space: nowrap;
+}
+.library-grid:not(.library-list) .library-board-card > .library-card-meta > :first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.library-grid:not(.library-list) .library-board-card > .library-card-meta > .library-card-when {
+  flex: 0 0 auto;
 }
 /* 5. The boards grid is the same reading order by the simpler means: its
       cards are one height (a picture of fixed size and a line of facts), so
@@ -6141,6 +6175,15 @@ body .chip.item-label,
   line-height: 1;
 }
 #nm-buddy:is(.nmb-sleep, .nmb-act-nap, .nmb-act-lie) .nm-buddy-z { display: block; }
+/* Lying down, the head drops to the side, so the Zs drop with it (the owner,
+   2026-10-19: they rose "from where its head would be if it was standing").
+   Offsets measured in Chromium (2026-10-19): the first z
+   sits about 30px right of and 40px above the eyes in every pose. */
+#nm-buddy[data-pose="lie"] .nm-buddy-z { translate: 0 46px; }
+#nm-buddy[data-pose="lie-2"] .nm-buddy-z { translate: -24px 25px; }
+#nm-buddy[data-pose="lie-1"] .nm-buddy-z { translate: -24px 0; }
+#nm-buddy[data-pose="lie-2"][data-atlas-variant="1"] .nm-buddy-z { translate: 22px 25px; }
+#nm-buddy[data-pose="lie-1"][data-atlas-variant="1"] .nm-buddy-z { translate: 22px 0; }
 /* The three z's (avatars.js), each its own drift; the second and third
    smaller and larger, so they read as a trail. */
 .nm-buddy-z i {
@@ -9073,10 +9116,18 @@ input[type="file"]:active::file-selector-button {
    where it always was, inside the card's padding, while sticky measures from
    the scrollport edge. The ground is the opaque modal surface, not the card's
    glass, so rows never show through (the glass-off list stays as it is: no
-   blur is added). Replaces the shortcuts card's own copy of this rule. */
+   blur is added). Replaces the shortcuts card's own copy of this rule.
+   **`top` is the same negative step as the margin** (INBOX 1329, the owner:
+   "the suggestions panel content and probably other panels content get cut
+   off at the top below the header"): a sticky box's insets are measured
+   from the scroller's padding edge deflated by its padding, so `top: 0`
+   pinned the head a card-pad below where it rests and it covered the first
+   16px of every dialog's content at scroll 0 (Statistics 16px over its
+   first row, Suggestions 8px over its list, Settings 3px, Features 8px;
+   the sidebar head already had the matching inset). */
 .modal-card > .dialog-head {
   position: sticky;
-  top: 0;
+  top: calc(-1 * var(--card-pad-y));
   z-index: 1;
   margin-top: calc(-1 * var(--card-pad-y));
   padding-top: var(--card-pad-y);
@@ -10171,7 +10222,8 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   .sheet-row,
   .graph-zoom-btn,
   .chat-dock-controls .seg > button,
-  .job-run-now
+  .job-run-now,
+  .phone-tab-more
 ):focus-visible {
   outline-offset: -2px;
 }
@@ -10218,6 +10270,7 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
    the bottom edge (2px of padding for a 4px ring). */
 .modal-nav {
   padding-block: var(--ring-room);
+  scroll-padding-block: var(--ring-room);
 }
 /* The Settings pane's controls start at its left edge (a link, the field
    under Memory, the profile mark, the help search). */
@@ -10354,6 +10407,14 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   padding-inline: var(--ring-room);
   margin-inline: calc(-1 * var(--ring-room));
 }
+/* The notes column keeps its ring room on the right as padding but no longer
+   takes it back out as a negative margin: that margin pushed the grid's
+   scrollable width 4px past its box (INBOX 1435: scrollWidth 1412 for 1408
+   at 1440, 1003 for 999 at 1024, 368 for 364 at 390). The cards end 4px
+   short of the grid's edge instead; the left edge is unchanged. */
+#tab-notes .layout > .tab-main {
+  margin-right: 0;
+}
 :is(.launch-row, .library-filters, #chat-suggest) {
   padding-block: var(--ring-room);
   margin-block: calc(-1 * var(--ring-room));
@@ -10368,6 +10429,15 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   #dash-quicklinks .launch-group > .launch-row {
     padding: 0;
     margin: 0;
+  }
+}
+/* Under 600 the strip scrolls and keeps its ring room as padding, but its
+   negative right margin pushed the group's scrollable width 4px past its box
+   (INBOX 1278: 368 for 364 at 390). Only the right margin is taken back; the
+   left edge is unchanged. */
+@media (max-width: 599.98px) {
+  #dash-quicklinks .launch-group > .launch-row {
+    margin-right: 0;
   }
 }
 /* **The chips' gap to what is below them** (INBOX 726, the owner: "no
@@ -10633,4 +10703,13 @@ html[data-other-device] [data-this-computer="hide"] {
 #settings-help .linklike,
 #settings-help li {
   transition: none;
+}
+/* **The header's rings fit the bar** (OPEN 408). The bar is 44px with 36px
+   controls, so a control's top is 3.5px from the window's edge, and the
+   2px ring at the 2px offset reached 0.5px past it (measured at 1440: ring
+   top -0.5 on the six right-hand buttons). A 1px offset puts the ring top at
+   +0.5. The tab strip keeps its own ring inside its well. */
+header#top-bar :is(.header-cluster, .notif-wrap, .header-controls) button:focus-visible,
+header#top-bar button.space-switcher-btn:focus-visible {
+  outline-offset: 1px;
 }

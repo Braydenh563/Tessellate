@@ -852,3 +852,97 @@ function nameMarkBuddyHome() {
   if (!nmb.act) nameMarkBuddySchedule();
   queueNameMarkBuddyCheck();
 }
+
+//: ---- The way a far move is travelled (INBOX 1305, the owner: "companion
+//: movement for both small and large distances needs a lot of improvement,
+//: and reworking") ----
+//:
+//: Fetched with the companion's mind at its first tick. Until it is here a far move walks. `nameMarkBuddyGo` (avatars.js) asks
+//: `companionPathPlan` for a move past `NMB_FAR_SIZES` of itself and plays
+//: the frames it gets back, so the plan is pure: a distance in, a path out.
+//:
+//: **Never a teleport, never a diagonal glide through the page.** The old far
+//: ways were a glide (a straight slide at up to 43px a frame), a walk, or past
+//: 480px a poof, one frame of 1,000px. Now:
+//:   run    on the level: a walk quickened to a run, its pace set by distance
+//:   arc    to a higher place, or a short way down: a jump over a parabola
+//:   drop   a long way down, not far across: it runs to the edge above the
+//:          place, then falls
+//: Every plan is sampled into straight pieces and its time is stretched until
+//: the fastest piece is at most `COMPANION_PATH_PEAK` px a 60 Hz frame (the
+//: teleport line is 40), so the longest move across a 1440px window takes
+//: about 1.3s, and a 1000px one about a second.
+
+const COMPANION_PATH_PEAK = 30;
+const COMPANION_PATH_SAMPLES = 32;
+const COMPANION_PATH_LEVEL = 36;
+const COMPANION_PATH_DROP = 120;
+
+//: Sine in and out: it sets off from rest, and its fastest moment is 1.57
+//: times its mean (a cubic's is three).
+function companionPathEase(t) {
+  return (1 - Math.cos(Math.PI * t)) / 2;
+}
+
+//: Where on the way it is at `s` in [0, 1] of the time. `dx`, `dy` run from
+//: where it goes back to where it was (the `translate` it starts at and
+//: animates to 0); `kind` is run, arc or drop; `h` the arc's rise; `split` the
+//: share of a drop's time spent running to the edge.
+function companionPathAt(kind, dx, dy, h, split, s) {
+  if (kind === "arc") {
+    const e = companionPathEase(s);
+    return [dx * (1 - e), dy * (1 - e) - h * 4 * s * (1 - s)];
+  }
+  if (kind === "drop") {
+    if (s <= split) return [dx * (1 - companionPathEase(s / split)), dy];
+    const f = (s - split) / (1 - split);
+    return [0, dy * (1 - f * f)];
+  }
+  const e = companionPathEase(s);
+  return [dx * (1 - e), dy * (1 - e)];
+}
+
+//: The kind of way for a move of `dx`, `dy` (back to where it was; dy > 0 is
+//: a rise). A flyer never drops: it floats down.
+function companionPathKind(dx, dy, flies) {
+  if (Math.abs(dy) <= COMPANION_PATH_LEVEL) return "run";
+  if (dy > 0 || flies || -dy < COMPANION_PATH_DROP || Math.abs(dx) > -dy * 1.2) return "arc";
+  return "drop";
+}
+
+//: Longest piece of a sampled path, in px, over its pieces' share of the time.
+function companionPathPeak(points, ms) {
+  let worst = 0;
+  for (let i = 1; i < points.length; i += 1) worst = Math.max(worst, Math.hypot(points[i][1] - points[i - 1][1], points[i][2] - points[i - 1][2]));
+  return (worst * 1000) / 60 / (ms / (points.length - 1));
+}
+
+//: The plan: `{ kind, ms, frames, peak, beat, points }`. `frames` are the
+//: keyframes for the host's `translate` (linear between samples), `beat` how
+//: much quicker its legs go than a walk's, `peak` the fastest frame in px at
+//: 60 Hz. Pure.
+function companionPathPlan(dx, dy, size, flies = false) {
+  const d = Math.hypot(dx, dy);
+  const kind = companionPathKind(dx, dy, flies);
+  const h = kind === "arc" ? Math.min(150, 24 + d * 0.1 + Math.max(0, dy) * 0.25) : 0;
+  const fall = kind === "drop" ? 200 + Math.sqrt(-dy) * 34 : 0;
+  const along = kind === "drop" ? 260 + Math.abs(dx) * 0.7 : 0;
+  const base = kind === "drop" ? along + fall : 380 + d * 0.55;
+  const split = kind === "drop" ? along / base : 0;
+  const n = COMPANION_PATH_SAMPLES;
+  const points = [];
+  for (let i = 0; i <= n; i += 1) {
+    const [x, y] = companionPathAt(kind, dx, dy, h, split, i / n);
+    points.push([i / n, x, y]);
+  }
+  //: Stretched only as far as the fastest piece needs; never shortened.
+  const ms = Math.round(Math.max(base, companionPathPeak(points, 1) / COMPANION_PATH_PEAK));
+  return {
+    kind,
+    ms,
+    peak: +companionPathPeak(points, ms).toFixed(1),
+    beat: +Math.min(1.8, Math.max(1.1, 0.9 + d / ms)).toFixed(2),
+    frames: points.map(([offset, x, y]) => ({ offset, translate: `${x.toFixed(1)}px ${y.toFixed(1)}px` })),
+    points,
+  };
+}

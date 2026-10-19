@@ -452,7 +452,7 @@ class Pool:
                 error = ""
                 run = _ledger_run(job)
                 try:
-                    with origin.acting_for(job.another_device):
+                    with origin.acting_for(job.another_device), jobruns.bound(run):
                         job.func(*job.args, **job.kwargs)
                 except Exception as exc:
                     # One bad job used to be one dead thread and no record.
@@ -462,6 +462,12 @@ class Pool:
                     error = str(exc) or type(exc).__name__
                     if run is not None:
                         run.fail(error)
+                except BaseException:
+                    #: A stop from outside the job (a shutdown): not a failure,
+                    #: and never left saying "running" (B77).
+                    if run is not None:
+                        run.cancel("stopped before it finished")
+                    raise
                 finally:
                     if run is not None:
                         run.finish()

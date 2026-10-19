@@ -63,8 +63,11 @@ def test_a_selection_of_several_can_be_sized_on_one_axis_from_the_panel() -> Non
     sync = _function(FORMAT, "wbFormatSync")
     assert "entries.length !== 1" not in sync, "W and H were disabled for every multi-selection"
     geometry = _function(FORMAT, "wbFmtGeometry")
-    assert "entries.length !== 1) return" not in geometry
-    assert "wbFmtScaleSelection" in geometry
+    #: The W/H link (INBOX 1307) moved the sizing into wbFmtSizeAxis, which both sides go through.
+    assert "wbFmtSizeAxis(" in geometry
+    sizing = _function(FORMAT, "wbFmtSizeAxis")
+    assert "entries.length !== 1) return" not in sizing
+    assert "wbFmtScaleSelection" in sizing
 
 
 def test_the_panel_numbers_follow_a_drag_while_it_is_held() -> None:

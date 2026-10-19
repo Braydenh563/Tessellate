@@ -14424,6 +14424,16 @@ try {
 //: The class goes on the tab rather than on each pane so Split's two halves
 //: can never disagree, and it is remembered because it is a preference about
 //: how you read, not a place you are.
+//: A toggle shows its state in its glyph, not only in a fill (INBOX 904 B58:
+//: "clicking an icon button to toggle smth doesn't change the icon's" look).
+//: Keeps `ph-lead` on a menu row's icon.
+function docToggleIcon(button, on, onIcon, offIcon) {
+  const icon = button?.querySelector("i.ph");
+  if (!icon) return;
+  const lead = icon.classList.contains("ph-lead") ? " ph-lead" : "";
+  icon.className = `ph ${on ? onIcon : offIcon}${lead}`;
+}
+
 const DOC_WIDTH_KEY = "doc-full-width";
 
 function applyDocWidth(wide) {
@@ -14439,6 +14449,7 @@ function applyDocWidth(wide) {
   for (const button of [$("doc-width-toggle"), $("doc-width-menu")]) {
     if (!button) continue;
     button.setAttribute("aria-pressed", String(wide));
+    docToggleIcon(button, wide, "ph-arrows-in-line-horizontal", "ph-arrows-out-line-horizontal");
     button.title = title;
     button.setAttribute("aria-label", title);
   }
@@ -14559,6 +14570,7 @@ function applyDocDim(on) {
   const button = $("doc-dim-others");
   if (button) {
     button.setAttribute("aria-pressed", String(on));
+    docToggleIcon(button, on, "ph-drop-half-bottom", "ph-drop-half");
     button.title = on
       ? "Show the whole document again"
       : "Fade everything except the paragraph the caret is in";
@@ -14576,6 +14588,7 @@ function applyDocTypewriter(on) {
   const button = $("doc-typewriter");
   if (button) {
     button.setAttribute("aria-pressed", String(on));
+    docToggleIcon(button, on, "ph-arrows-in-line-vertical", "ph-arrows-down-up");
     button.title = on
       ? "Let the page scroll the way it normally does"
       : "Keep the line you are typing on in the middle of the pane";
@@ -16518,7 +16531,36 @@ function docSpellGuesses(word, limit = DOC_SUGGEST_MAX) {
     if (length) return length;
     return a[0] < b[0] ? -1 : 1;
   });
-  return near.slice(0, limit).map(([candidate]) => candidate);
+  const words = near.map(([candidate]) => candidate);
+  const contraction = docSpellContraction(lower);
+  if (contraction) words.unshift(contraction);
+  return words.slice(0, limit);
+}
+
+//: **"whats" is "what's" with the apostrophe left out** (the owner,
+//: 2026-10-19: "this should have been picked up as what's"). The word list
+//: keeps "what" and drops the "'s" (`docWordKnown`), so no edit of "whats"
+//: reaches it. Offered first in the menu only, never as the sure answer:
+//: an apostrophe is a style choice (`DOC_AUTOCORRECT`), so typing never
+//: rewrites it on its own.
+const DOC_CONTRACTION_BASES = {
+  re: new Set(["you", "we", "they", "who", "what", "there"]),
+  ll: new Set(["i", "you", "we", "they", "he", "she", "it", "that", "there", "who", "what"]),
+  ve: new Set(["i", "you", "we", "they", "who", "would", "could", "should", "might", "must"]),
+  d: new Set(["i", "you", "we", "they", "he", "she", "it", "that", "there", "who"]),
+  m: new Set(["i"]),
+};
+
+function docSpellContraction(lower) {
+  if (/['\u2019]/.test(lower)) return null;
+  if (lower.endsWith("nt") && docWordlist.has(`${lower.slice(0, -2)}n't`)) return `${lower.slice(0, -2)}n't`;
+  for (const [tail, bases] of Object.entries(DOC_CONTRACTION_BASES)) {
+    if (lower.endsWith(tail) && bases.has(lower.slice(0, -tail.length))) return `${lower.slice(0, -tail.length)}'${tail}`;
+  }
+  if (lower.length > 3 && lower.endsWith("s") && docWordlist.has(lower.slice(0, -1)) && /^(?:what|that|there|here|who|where|when|how|it|he|she|let)$/.test(lower.slice(0, -1))) {
+    return `${lower.slice(0, -1)}'s`;
+  }
+  return null;
 }
 
 //: **The one answer, or none.** A correction this app is willing to make

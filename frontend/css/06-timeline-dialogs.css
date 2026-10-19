@@ -528,6 +528,12 @@
   .timeline-table .timeline-col-wide {
     display: none;
   }
+  /* The Kind column is gone, so a meeting says what it is in its title (INBOX 341). */
+  .timeline-trow[data-placed="meeting"] .timeline-col-title::before {
+    content: "Meeting: ";
+    font-weight: 400;
+    color: var(--muted);
+  }
 }
 /* **Between 600px and 1024px, three columns give way** (TIMELINE_PLAN section
    7's second measurement, taken 2026-09-20 with

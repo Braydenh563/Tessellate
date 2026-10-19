@@ -76,7 +76,9 @@ def test_the_report_is_reachable_from_the_activity_panel(client, folder_with_bad
     data, _ = folder_with_bad_files
     activity.clear()
     report_id = client.post("/import/app?source=memorymap", files=[("files", ("n.zip", data, "application/zip"))]).json()["report"]
-    finished = client.get("/activity").json()["finished"]
+    #: The finished list carries every run that ended (INBOX 805); the
+    #: import's is the one with a report, listed once.
+    finished = [row for row in client.get("/activity").json()["finished"] if row.get("report")]
     assert [row["report"] for row in finished] == [report_id]
     assert "imported 23 notes" in finished[0]["detail"]
     assert client.get("/import/reports/../../etc").status_code == 404

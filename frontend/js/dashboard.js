@@ -884,7 +884,7 @@ const QUICK_START = [
   {
     id: "ask-ai",
     icon: "ph:chat-circle",
-    label: "Ask AI",
+    label: "Ask your notes",
     hint: "Answered from your notes",
     run: () => openAskFromDashboard(),
   },
@@ -1473,11 +1473,7 @@ function dashCustomiseItems() {
       label: "ph:list-checks Show Get started",
       title: "The first steps card and the Get started button, as they were",
       group: "page",
-      run: () => {
-        ["getStartedHidden", "getStartedDone", "firstStepsHidden"].forEach((key) => prefs.remove(key));
-        renderFirstStepsLazy();
-        renderDashMore();
-      },
+      run: () => lazyScript("/js/first-run.js").then(() => getStartedShow()),
     });
   }
   items.push({ label: "ph:pencil-simple Edit quick access", title: "Add, remove and reorder the Quick access tiles", group: "quick", run: () => { quickEditing = true; renderQuickLinks(); } });
@@ -1494,7 +1490,7 @@ function dashCustomiseItems() {
   }
   items.push({
     label: "ph:arrow-counter-clockwise Reset quick access",
-    title: "Back to New note, Ask AI, Sketch, Remind me and New meeting, the first highlighted",
+    title: "Back to New note, Ask your notes, Sketch, Remind me and New meeting, the first highlighted",
     group: "quick",
     run: async () => { await saveQuickAccess([]); await saveQuickTints({}); renderQuickLinks(); },
   });
@@ -2232,8 +2228,10 @@ let artInstance = null; // the one live p5 instance, if any
 let artNonce = 0; // bumped by "Regenerate" for a fresh arrangement
 //: The drift reads a page-lifetime clock, so a rebuilt sketch (theme change,
 //: INBOX 838) carries on instead of restarting every star's drift at phase 0.
-const artEpoch = performance.now();
-const artDriftMs = () => performance.now() - artEpoch;
+//: A rest while idle moves it on by the rest, so the stars go on from where
+//: they stopped rather than jumping.
+const artClock = { epoch: performance.now() };
+const artDriftMs = () => performance.now() - artClock.epoch;
 // Bumped on every startArt call. A run that finds it has changed while it was
 // waiting knows it was superseded and must not mount its canvas, see the
 // comment in startArt for the stacking bug this fixes (§35G).
@@ -2737,6 +2735,23 @@ async function startArt(holder) {
     //: `frameCount * 0.005` at sixty frames a second advanced `t` by 0.3 a
     //: second, and `millis() * 0.0003` advances it by 0.3 a second full stop.
     p.draw = () => {
+      //: **Rests when nobody is there**: after the background art's two idle
+      //: minutes (bg-art.js stamps every input), and goes on at the next
+      //: one. Traced idle on the Dashboard: 600 p5 frames and 204ms of
+      //: script every ten seconds, for a drift no one was watching.
+      if (!reduceMotion && !glide && !fade && performance.now() - bgArtLastInput > BG_ART_IDLE_MS) {
+        p.noLoop();
+        //: Stamped, so a listener left over from an earlier rest does nothing.
+        const rested = (p.rested = performance.now());
+        const wake = () => {
+          if (artInstance !== p || p.rested !== rested) return;
+          p.rested = 0;
+          artClock.epoch += performance.now() - rested;
+          p.loop();
+        };
+        for (const type of ["pointermove", "keydown", "wheel", "touchstart"]) window.addEventListener(type, wake, { once: true, passive: true });
+        return;
+      }
       scene(reduceMotion ? 0 : artDriftMs() * 0.0003);
       const now = p.millis();
       if (glide && glide.elapsed >= ART_GLIDE_MS) {
@@ -2817,6 +2832,15 @@ function dashStreak(perDay) {
   return streak;
 }
 
+//: Brief 89, and INBOX 1318 for Stats and Streak (the owner: "view the
+//: status popup from the stats widget and other related widgets as well like
+//: the streak"): each counting widget opens the Statistics page.
+function dashStatsButton(id) {
+  const button = smallButton("ph:chart-bar Statistics", "Open the Statistics page", () => openStatistics());
+  button.id = id;
+  return button;
+}
+
 async function renderStreakWidget(body) {
   const stats = await fetchDashStats();
   const perDay = stats.per_day || []; // oldest → newest, last = today
@@ -2846,7 +2870,7 @@ async function renderStreakWidget(body) {
   } else {
     sub.textContent = "Save a note today to start one.";
   }
-  body.appendChild(sub);
+  body.append(sub, dashStatsButton("streak-statistics"));
 }
 
 async function renderStatsWidget(body) {
@@ -2875,7 +2899,8 @@ async function renderStatsWidget(body) {
   for (const category of stats.categories.slice(0, 5)) {
     cats.appendChild(chip(`${category.name} · ${category.count}`));
   }
-  body.appendChild(cats);
+  strip.addEventListener("click", () => openStatistics());
+  body.append(cats, dashStatsButton("stats-statistics"));
 }
 // Shared by the Pinned/Most-used/Recent-notes dashboard widgets, reported
 // directly for Most Used, but all three shared the same gap: `notePreviewText`
@@ -3491,8 +3516,7 @@ async function renderHeatmapWidget(body) {
   //: Brief 89 (statistics row 1): the page is one click from here, the
   //: grid itself and the button below, where it was three (Settings,
   //: General, What you use).
-  const stats = smallButton("ph:chart-bar Statistics", "Open the Statistics page: notebook, reminders and usage, counted", () => openStatistics());
-  stats.id = "heatmap-statistics";
+  const stats = dashStatsButton("heatmap-statistics");
   grid.addEventListener("click", () => openStatistics());
   //: In a row so the button is its own width beside the line, not a bar.
   const foot = document.createElement("div");

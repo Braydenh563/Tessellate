@@ -37,3 +37,25 @@ def test_the_poll_functions_still_exist_in_library_js():
     lib = (ROOT / "frontend" / "js" / "library.js").read_text(encoding="utf-8")
     assert "function startLibraryImagesPoll()" in lib
     assert "function stopLibraryImagesPoll()" in lib
+
+
+def _poll_source() -> str:
+    lib = (ROOT / "frontend" / "js" / "library.js").read_text(encoding="utf-8")
+    start = lib.index("function startLibraryImagesPoll()")
+    return lib[start : lib.index("function stopLibraryImagesPoll()", start)]
+
+
+def test_the_poll_skips_a_hidden_window_and_backs_off_when_nothing_changes():
+    """The poll refetched every `/media` and `/files/gallery` page every six
+    seconds while the gallery showed, hidden window or not, for a caption
+    that may never come (no vision model). The jobs stream
+    (`/jobs/stream`, routes_tasks.py) does report captions, but only
+    Settings, Running jobs opens it (chat-tasks.js), and a second held stream
+    for the gallery costs more code than it saves; so the poll skips a hidden
+    window and doubles its wait after each look that changed nothing, from
+    six seconds to a minute, back to six on a change."""
+    body = _poll_source()
+    assert "setInterval" not in body
+    assert "document.hidden" in body
+    assert "60000" in body
+    assert re.search(r"6000 \* 2 \*\* ", body)

@@ -51007,3 +51007,140 @@ From WHITEBOARD_PLAN "The draw.io programme", section 2 (Text tab), built by the
 - Offers: `_task_of` makes a reminder only from an open checkbox or an instruction that names what it is about ("ask the tutor on Thursday"); "ask follow-up questions that reflect genuine interest" is advice. `insights.drift` skips another person's plan ("He wants to try the crag" was "no later note picks up this plan: wants to try ...").
 - Ask: the "You asked:" line above the answer is gone (`renderAskedQuestion`, `#asked-question`); the question stays in the box it was typed in.
 - Measured over the 22 gold answers (`tests/_gold.py` `form`, `tests/test_composer_form_1301.py`): longest sentence 134 to 35 words, ";" joins 27 to 1, answers with a broken pattern 1 (15 hits) to 0, total characters 7,567 to 6,731 (item 22: 1,787 to 1,097); the note answers' gold score 88.9 to 90.9 (item 22: 57 to 81). The same text through Ask, Chat and the popup's `/chat/stream` bodies on a running app (`scratchpad/ui-sweeps/social-1301.js`); the Ask box keeps the question in its input and has no echo.
+## Moved from the plans, 2026-10-19 (mobile1314)
+
+From UI_MODERNISATION_PLAN Phase 11 item 1, both built:
+
+   - **The recede to icons on scroll down and back on scroll up (INBOX 104):
+     built** (2026-09-13); the block, with its numbers, is in HISTORY.md
+     ("Moved from the plans, 2026-09-13").
+   - **The top bar's own reduction: built** (2026-09-20). Measured first
+     (`scratchpad/ui-sweeps/phonehead.js`): at 320 the bar held six 44px
+     controls (space switcher, notifications, theme, settings, lock, quit)
+     and the last ended at 332, so every phone page scrolled sideways by one
+     button; the bell and the menu opener were 36 against 44. Now three
+     controls below 600: the space switcher, the bell, and one `kebabMenu`
+     (`#header-more`) holding the four verbs, the desktop buttons hidden by
+     one stylesheet band and never removed. After: 320 in 320, 360 in 360,
+     390 in 390, every header control 44, the menu's rows 44 (every
+     `kebabMenu` row in the touch band takes the floor now: the one control
+     type that only exists after a tap had kept the desktop's 36), Escape
+     closes it, and the desktop bar at 1024 is exactly what it was. The
+     wordmark is already gone below 1500 and the logo below 400, so the
+     "title" of this item is the space switcher, which is the truer name for
+     where you are. The AI dot lives in the status bar (§36D) and stays there.
+
+## INBOX resolved, 2026-10-19
+
+1303. **The owner, 2026-10-18, verbatim** (screenshot: a dark rounded "..." square beside a pen stroke on the quick sketch canvas). "drawing on the quick sketch panel now constantly shows the popup highlight text meatball menu button"
+     **Fixed (sketch commit).** Not reproduced with a mouse in Chromium (popup hidden after 2 strokes, before and after); guarded at the cause: `#sketch-overlay` is outside the selection kebab (DOM and field paths) and the pad's pointerdown is `preventDefault`, so a pen drag cannot select text (`tests/test_selection_menu.py`).
+1304. **The owner, 2026-10-18, verbatim.** "also make suee there is a way to reshow the get started menu button"
+     **Fixed (Get started commit).** Ways back were one (Customise, shown only while hidden); now three: Customise, the hide notice's Show again and the palette's Show Get started, all `getStartedShow` in dashboard.js (first-run.js is lazy and never loads while hidden). Driven in Chromium: hidden 0 children, Show again 1, palette from Notes 1 and on the Dashboard.
+
+1309. **The owner, 2026-10-19, verbatim** (screenshot: the Agent popup over a board, "/" typed in its box, no command menu, only the starter rows). "the popup agent doesnt have the / command popup like chat"
+     **Fixed (agent slash commit).** `command-palette-input` is an editor surface of its own context, "agent": the registry's rows (`chatSlashRows` with the popup's box and `cmdPaletteAsk`). Driven in Chromium: "/" showed 18 command rows (before: none); "/rece", Enter, Enter answered "/recent" in the popup.
+
+1302. **The owner, 2026-10-18, verbatim.** "bug: if I throw the companion down to the bottom of the screen, it will always instantly teleport to hang off the top bar above when when I threw it to the bottom bar on the right side"
+     Owner: the orchestrator, now (`frontend/js/companion-throw.js`).
+     **Fixed (throw landing commit).** Measured on Chat at 1440, seeded throw down-right, seed 2 (splat): rest 1376,774, before put at 1235,582 on a dock (192 px up), after 944,774 on the floor. `nameMarkBuddyThrowSpot` steps along any surface it rested on (was a wall slide only), reach 400 then the window; `nameMarkBuddyStepAside` takes the reach. The movement itself (the jump to the spot) is 1305.
+805. **The owner, 2026-10-11, verbatim.** "it is unclear which backup is the
+     latest, and also the backups need more file info and details I feel. all
+     information and processes across the app need to be 100% transparent. so
+     all things that use the ai or composer and all background processes need
+     to be logged and shown in bg processes wtc, along with their individual
+     logs and process lines to show thier process live and when they are
+     finished as well. whena ny process is running it needs to be clear to the
+     suer." Owner: the transparency agent (next Opus slot): one process
+     ledger every AI, composer and background run writes to, live lines per
+     run in the background processes panel, a running indicator in the
+     shell, and the backup rows (latest marked, date in words, what made it,
+     size, checked). **Fixed 4261fca.** Backup rows in uxfix5-1018; every model
+     call now writes to the ledger (12 generation methods on 3 backends wrapped;
+     endpoints that call a model and opened a run: 8 of 64 by a source scan before, every call through a backend after), the Running tab
+     lists finished runs with outcome, length and time (11 rows measured at 1440,
+     no overflow, `scratchpad/ledger805.js`), and the job slot clears within one
+     2 s sample of the job ending (12 s before, `scratchpad/late805.js`).
+
+1311. **The owner, 2026-10-19, verbatim** (screenshot: the Notes categories sidebar head, dark: a 64 px square chevron button, "Categories", a filter icon, and the collapse sidebar icon higher than the row, with the sidebar's scrollbar beside it). "the top of the categories sidebar and the buttons need fixing in design, positioning etc, the collapse sidebar button scrolls and the top sidebar elements arent properly spaced, padded or positioned actually it is mainly the collapse sidebar button"
+     Follow-up, verbatim (screenshot): "but that whole top row slightly overflows on the top border of the sidebar"
+     **Fixed** 2026-10-19: the toggle is first in flow and sticky in the Notes sidebar; measured at 1440x900 toggle y17, heading y17, scrolled 200px still y17 (was y9, and y-191 scrolled); right inset 17px matches the left. tests/test_sidebar_head_1311.py.
+
+1307. **The owner, 2026-10-19, verbatim.** "cna you add more element and template options for the wireframes, and other diagrams?? also multi shap templates should grouped or semi grouped so if I resize or move, parts of them arent left separate. also there should be a property link option in the arrange tab where the width and height are so I can choose to change width or height and it will either only change that one property or it will keep them at their ratios when they were linked."
+     Owner: the whiteboard agent (WHITEBOARD_PLAN, with B25): more wireframe and diagram elements and templates; a multi-shape template lands grouped; a W/H link toggle in Arrange that keeps the ratio when on.
+     **Fixed** 2026-10-19 (surfaces agent, 81e8485, e40e222): W/H chain in Arrange keeps the ratio at link time; multi-part elements place as one group; wireframe 12 to 19 elements, UML 14 to 23, ERD 10 to 14, flowchart 13 to 16, templates 20 to 24; Select similar. tests/test_wb_size_link_and_groups.py, test_board_library_diagram_sets.py.
+
+1308. **The owner, 2026-10-19, verbatim** (after 1307). "stuff like that, dont stop[ there, find what is missing on the whiteboard, mindmap and documents editor and add them"
+     Owner: the surfaces agent (with 1307): a gap audit of whiteboard, mind map and documents against draw.io, Miro, Excalidraw, XMind and Obsidian/Notion, the gaps ranked, the small and medium ones built.
+     **Fixed** 2026-10-19 (surfaces agent, e40e222): gap lists placed in WHITEBOARD_PLAN, MINDMAP_PLAN and DOCUMENTS_PLAN 'Placed from INBOX, 2026-10-19'; built Select similar and Sort branches A to Z / Z to A; next S items in agent-remaining/surfaces-1019.md.
+
+1305. **The owner, 2026-10-18, verbatim.** "and companion movement for bot small and large distances needs a lot of improvement, and reworking"
+     Owner: the companion Opus agent (next Opus slot), with 1302. Measured for 1302 (chat, 1440x900, seeded throw down-right, seed 2 splat): came to rest at 1376,774 on the floor, ended at 1235,582 on a dock (`nameMarkBuddyDrop` finds no free place within 48 px of the landing among the composer controls, falls to `nameMarkBuddyChoose`, which can pick the top bar).
+     **Fixed** 2026-10-19 (companion1305, 59d417d): far moves are a run, an arc or a drop planned by companionPathPlan with no frame over 30px (1000px level was a 1000px one-frame poof, now a 0.87s walk; across the screen with a height change an arc of about 1.15s); throws capped at 2.3 px/ms, no frame over 40 (was 5). Not verified: reduced motion, Atlas flyers, the drop kind in a browser.
+
+1310. **The owner, 2026-10-19, verbatim** (screenshots: Ask, "What have I saved about hobbies?", no model: a dated digest of ten notes, "Prices:" and "Your week:" bold labels, "One weeks on, by 27 July, **Gym Routine Overview**. Go to the gym ...", "Your note of 27 July has Pull, Push, Legs, Rest Day, Pull, Push and Rest Day.", "Two notes more on the right."; Matching records 16 cards, each with category, percent, tags, Similar, and link chips; Why this answer: 6 steps, "Searched your notes by meaning: 16 notes matched", "Cited 8 of the 16"). "also the composer needs to be improved in grammar and wording and sentence structure even more and it just lists every entry, it has no frame of reference for how related each shown matching record is or why it was shown and how  the shown notes link if they do etc," Then: "can the composer also be better at grammar and saying dates and time words in sentences??"
+     Seen in the shot: "One weeks on" (number agreement), a title dropped in as a sentence fragment, a list read out as "has Pull, Push, Legs, Rest Day, Pull, Push and Rest Day", a run of "After a week, on ... / A week later, on ... / Two days on, by ..." openers, an off-topic note (movie, Pokemon image, girl with bell) cited under hobbies with no reason. Owner: the composer Opus agent (next Opus slot): grouping by theme with one line why each group answers the question, relevance said in words (closest, also related, loosely related), the links between shown notes said ("these two are linked: both about games"), each Matching records card saying why it was shown in words, grammar and date/time phrasing (agreement, varied and correct time connectives, no fragments), measured on the gold set.
+     **Fixed** 2026-10-19 (composer1310, 78fa7f2, 0cb21e5): answers grouped by theme, closest first, one line on what joins each group and any links; loose matches last as "more loosely"; each Matching records card carries a reason in words; no "one weeks", titles in sentences, a split read as a split, today/yesterday/last Friday/earlier this month. Not verified: with a model up (the model's prompt does not get the reasons yet, librarian.py `_match_info_hint`); themes need shared tags or links.
+
+1323. **Fixed.** **The owner, 2026-10-19, verbatim.** "Also I think the grounding needs a redesign and modern/professional ui/ux improvement" (screenshot: a reply's "Grounded in:" row, chip 1 reads "1. --- type: Meeting date: 2026-10-15 12:55 attendees: [] --- M..." (raw front matter as the title), chip 2 wraps to a second line, a lone image thumbnail after it)
+     Owner: orchestrator after the gate; source titles skip front matter, a compact source list (title, kind icon, date, snippet on hover), thumbnails inside their chip, CHAT_PLAN row.
+
+1316. **Fixed.** **The owner, 2026-10-19, verbatim.** "also the timeline side graph should scroll higher if I scroll to future dates on the timeline as well"
+     Owner: timeline agent (Sonnet), queued after the current three.
+
+1320. **Fixed** (scripts/splash.ps1 `New-CornerButton`: minimise and a close that cancels the launch, top right; not run on Windows from this sandbox). **The owner, 2026-10-19, verbatim.** "and I cant minimise the splash popup, I want a minimise (- or _ or smth) and close x button in the top right corner to cancel or minimise the launch"
+     Same as 904 B50. Owner: splash agent (Sonnet), queued: scripts/splash.ps1 (borderless WinForms, a Cancel button exists at ~678): add a minimise button and a close X top right (close = the existing cancel path), keyboard reachable; Windows only, so held by tests/test_launcher_scripts.py shapes and said as not verified.
+
+1321. **Fixed.** **The owner, 2026-10-19, verbatim.** "and I cant type in the chat bar while it is generating, I want to be able to queue messages, and edit or delete/bring back queued messages as well to the chat bar for resending"
+     Owner: chat-queue agent (Sonnet), queued: the box stays editable while a reply streams; Enter queues; queued messages show as chips above the box with edit, delete and "back to the box"; they send in order when the reply ends; CHAT_PLAN row.
+
+1322. **Fixed.** **The owner, 2026-10-19, verbatim.** "and can you make it easier to access the format panel like with this library button in the whiteboard top bar button? also atlas needs to have its animations and expressions improved behaviours, even micro behaviours and movements, small movement adjustments, more variety, the juggling stars dont animate at all." (screenshot: the whiteboard top bar, Insert, Edit, Arrange, View, Board menus, then a Library button)
+     Owner: (a) Format button beside Library in the whiteboard bar: built (wb1313, 47c713a); (b) Atlas micro behaviours built (atlas1322 bb3cf27, lazy atlas-micro.js: ten kinds, randomised 1.2 to 11 s); the stars moved 42 to 45 px in every pose with motion on and stood still under reduced motion, now they pulse there (4d85591). If they still look still, ask for Appearance, Motion and the system setting.
+1314. **The owner, 2026-10-19, verbatim.** "also I should mention the mobile view needs a bit of redesign and layout/nav reworking because it is annoing to use and the bottom nav bar just doesnt make sense with how it works and is layed out and is annoying to use. can you work on that?"
+     Owner: mobile agent (Opus, design), now. UI_MODERNISATION_PLAN phone phase.
+     **Fixed a21d487.** More drew first (x=0) and is last (x=312 at 390); the bar is Dashboard, Notes, Chat, Library, More; More's sheet is pages, a rule, then tools; the header's menu is the App menu; the active tab pressed again goes to the top; +1h 39.6 to 44px, the timeline's days at 360 41.8 to 44.5px. phonemore, phonetabs, phonechrome, phone (390, 360, dark), touch 360: 0 findings; contrast 390 and 360 light and dark: 0 low. Findings and the decision: UI_MODERNISATION_PLAN "Placed from INBOX, 2026-10-19 (mobile1314)".
+
+1317. **The owner, 2026-10-19, verbatim** (screenshot, dark: Dashboard "Boards & maps": the board "test board" preview is grey placeholder blocks and teal squiggles that do not look like the board; the map "test" a tiny strip of coloured bars). "also the whiteboard and mindmap previews just arent working, can we like snapshot a thumbnail for it and really compress it so it doesnt take up much space or storage or load time and then use that or smth and it can be stored in cache or smth"
+   **Fixed (thumbs1317).** Raster thumbnail per board: PUT /whiteboard/boards/{id}/thumbnail, served at /media/board-thumb/{id}?v=fp with ETag; 2,206 and 3,068 bytes on the seeded board and map; card build 0.03 to 0.08 ms vs 0.26 to 0.43 ms for the SVG; naturalWidth 480 in light and dark.
+     Owner: thumbnails agent (Sonnet), after the current three: render a small snapshot on save/close (canvas to WebP, about 320px wide, quality around 0.6, a few KB), stored with the board and cached (ETag), used by every preview surface; the drawn placeholder only as a fallback.
+
+1319. **The owner, 2026-10-19, verbatim** (screenshot, dark: Statistics, "Notes made per month, the last year", a line chart, Save as PNG). "and I still cant interact with the statistics . also the statistics page gets cut off by the header at the top and I want to expand it more and make it more dynamic. maybe even include a specialised composer and ai chat like the help guide idk in it for helping the user explore and summarise their statistics??"
+     Owner: statistics agent (Sonnet, then Opus for the chat design if needed), next free slot.
+     **Fixed 4091da3, 5d61fcc, 290a5cf.** Hover and focus tooltip with the exact value (12 of 12 points, "July 2026: 12 notes"), arrow keys walk the points, a click opens the Timeline at the month or the feature; counts open their surfaces (7 of 7 clicks landed); range 3/12/all; week sparklines; Ask box answered 6 sample questions equal to sqlite counts (July 12, this month 8, 88 notes, September by the 19th 12), light and dark, phone 390 fits (stats1319-act.js, -dyn.js, -ask.js).
+
+1326. **The owner, 2026-10-19, verbatim.** "when I load the app, and press tab, the first focused element is th elocal button, btu what's the point of having accessibility features like the skip to main content button if it is ignored?? that needs to be fixed."
+     **Fixed (orchestrator).** Removing the boot splash or hiding the lock screen left Tab's starting point mid-page; `tabFromTop()` (app.js) focuses the body at both moments unless something real has focus. Measured in Chromium after unlock and after reload: Tab 1 was #privacy-chip, now #skip-link; Enter moves focus to the open tab page. `tests/test_skip_link_first_tab.py`.
+
+1327. **The owner, 2026-10-19, verbatim** (two screenshots, dark: a "Wednesday / Plans and appointments" panel, unselected and selected with eight handles and no rotate handle). "panning around the whiteboard with two fingers on my trackpad is wierd now because it cant decide to zoom or pan, I want it to pan, Ill two finger in or out to zoom in or out. also whiteboard panels sometimes dont select when I click on them and also there's no way to rotate them either"
+     **Fixed (wb1327, 7fe264d, 41b5a4f).** Trackpad pans per gesture (latched), pinch and mouse wheel zoom; panel body, border and title select the frame (`wbSelectFrameAt`); frames rotate (90 stored, persists; children do not turn). Cause was: `wbTrackpadPan` (whiteboard.js:81) calls a wheel a trackpad pan only when that event has deltaX, so a mostly vertical two-finger scroll flips between pan and zoom event by event. Owner: whiteboard agent (Sonnet), wbtrack1327.
+
+1328. **The owner, 2026-10-19, verbatim** (screenshot, dark: a selected curved arrow between two sticky notes; its end handle sits on the lower note's edge, next to the note's own connect dots). "Im trying to move this arrow where it connects but it is just drawing another arrow :("
+     **Fixed (wb1327, 7fe264d).** Pressing the selected connector's end grip kept sketches at 1 (was 1 to 2) and moved its end; a guard in the port pointerdown. Cause: the selected arrow's end handle lost the press to the card's drag-to-connect dot under it. Owner: whiteboard agent wb1327.
+
+1330. **The owner, 2026-10-19, verbatim.** "can you make the suggested searches popup in the find anything a little easier to close?? like maybe add an x close button in the corner or do smth else like make it close on scroll or smth"
+     **Fixed (lib1330).** Escape and a click outside (blur) already closed it; scrolling the page or results behind now closes it too (own scroll and the 400 ms after a keystroke excepted). No x: measured at 1440 and 390 touch, Escape, outside click and results scroll each take it from shown to hidden, its own scroll leaves it shown. `tests/test_search_suggest_close.py`.
+
+1331. **The owner, 2026-10-19, verbatim.** "the library boards and maps subtab is completely screwed with the new thumbnail additions (for the header and top of cards)" / "its messy and same for the bottom as well".
+     **Fixed (lib1331).** The grid rule that spans the picture named `svg` only, so the snapshot `<img>` sat in the title's track (title 24px wide at x=311). Now `.board-minimap` spans, the title ellipsises (269px at x=42), the snapshot is `object-fit: cover` in the SVG's box (294x164, no bands), the footer is one line with the time `nowrap`. Measured at 1440 and 390, light and dark; pinned by `tests/test_library_board_card.py`.
+
+1329. **The owner, 2026-10-19, verbatim** (screenshot, dark: the Suggestions dialog on Links (12); the "Links (12)" select's top border is cut off under the "Suggestions" header). "the suggestions panel content  and probably other panels content get cut off at the top below the header and the suggestions panel needs a better redesign and restructuring"
+     Owner: design agent (Opus), sugg1329: the clip in every dialog/panel with a sticky header, then the Suggestions redesign.
+
+1341. **The owner, 2026-10-19, verbatim** (screenshot, dark: the mind map's top bar, search, map, Edit, View, Board, Library, Format, full screen). "also the format button shouldnt be there on the mindmap as it is useless and empty"
+     **Fixed**: Format is hidden on a map (wbIsMap) until it has something for a selected node to show; help surfaces updated in the same commit.
+
+1343. **The owner, 2026-10-19, verbatim** (screenshot, dark: a document line "whats up :D" with "whats" underlined; the spelling menu: "whats is not in the dictionary", then wats, what, hats, whams, whets). "also I feel like this should have been picked up as "what's""
+     **Fixed**: a missing apostrophe (whats, thats, isnt, youre, im) is offered as the contraction first in the menu; never rewritten on its own, since an apostrophe is a style choice (`docSpellContraction`, documents.js).
+
+1337. **The owner, 2026-10-19, verbatim** (screenshot, dark: a split button, "Save as note" in the accent fill, its dropdown chevron half in the neutral grey). "these buttons are not the same colour, should they be?"
+     **Fixed**: the caret dropped kebabMenu's ghost class, so both halves are the accent fill (measured: both oklab(0.452 -0.015 -0.168); the caret was transparent).
+
+1336. **The owner, 2026-10-19, verbatim** (screenshot, dark: the notes sidebar collapsed and hover-opened; the "Categories" header with the collapse chevron at the left, the filter and pin buttons crowded at the right, the pin focused and set apart from the filter). "also the categories notes sidebar header buttons lose their positioning when the sidebar is collapsed and temporarily hover opened"
+     For the next PR. Recommendation: the hover-opened (peek) sidebar keeps the docked header's layout; measure the button rects in both states and match them.
+     **Fixed**: the peek sidebar keeps the docked sticky header rule, so the collapse toggle sits at top 77px in both states (was 69px in peek, 8px above the filter).
+
+1335. **Fixed 6c5cc17** (the manual and Statistics each push a history entry, so the list names them and Back closes them; the current row was 32px against 52.5px and is now 52.5px). **The owner, 2026-10-19, verbatim.** "also the backwards global navigation and nav history didnt register me having the statistics panel open"
+     For the next PR. Recommendation: opening Statistics pushes a nav history entry like the other panels, so Back closes it and the history list names it.
+1344. **The owner, 2026-10-19, verbatim** (screenshot, dark: a chat answer's head, the Atlas avatar, "Atlas", and a grey "Composer" badge). "can you also add a hover/click tooltip popup with a disclaimer and description for the composer message badge to inform the user how it isnt an ai and give some details?? maybe find some other ways to make it clear as well"
+     Next: the badge opens a `data-help-for` popover (hover and click) saying the answer was written without an AI model, from your notes' own words and the app's counts, how to tell it apart, and how to turn on a model; the same on "From your notes"; consider a one-line note under the first composer answer of a session.
+     **Fixed.** A badge no model wrote (From your notes, Composer, From the help) is a button on the `data-help-for` recipe (`reply-kit.js` `replyByline`, `replyByHelpPanel`, `replyByHover`): hover (350 ms rest, where the device has hover), click, Enter and Space open a popover saying the answer was written without an AI model, from the notes' own sentences and the app's counts, that a model's name shows there instead, and how to turn a model on; the accessible name says "written without an AI model". Measured at 1440x900 in the Agent popup: Tab reaches it, hover opens at 428,374 (416x271), leaving closes, a click stays open, Escape closes. Not done: the one-line note under a session's first composed answer (the badge now carries it); Ask's `#answered-by` chip is still a plain chip.
+

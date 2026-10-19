@@ -21,7 +21,7 @@ import time
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 from dataclasses import replace as with_changes
-from datetime import date, timezone
+from datetime import date, datetime, timedelta, timezone
 from itertools import chain
 from pathlib import Path
 from typing import Annotated, Literal
@@ -33,7 +33,7 @@ from sqlalchemy import or_, select
 from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
-from tessellate.ai import budget as run_budget, capability, composer, composer_digest, composer_lists, find_it, glossary, list_pool, neighbours, personal, phrasing, verdicts, toolwords, vocative, why
+from tessellate.ai import budget as run_budget, capability, composer, composer_digest, composer_frame, composer_lists, find_it, glossary, list_pool, neighbours, personal, phrasing, verdicts, toolwords, vocative, why
 from tessellate.ai import (
     acts,
     agent,
@@ -76,6 +76,7 @@ from tessellate.core.database import (
     Document,
     Entity,
     Entry,
+    EntryLink,
     MediaUpload,
     Reminder,
     like_escape,
@@ -1418,6 +1419,365 @@ def _picture_notes(session: Session, terms: list[str]) -> list:
     return list(session.scalars(select(Entry).where(Entry.is_deleted == False, holding).limit(PICTURE_MATCHES)))  # noqa: E712
 
 
+@dataclass
+class _Found:
+    """What `_prepare` learns about one question, filled in stage by stage."""
+
+    detected: str
+    stats: object = None
+    entries: list = field(default_factory=list)
+    mode: str = "none"
+    meaning_loading: bool = False
+    #: Ids that are here because they are *connected* to a match rather than
+    #: because they matched. The user asked about one thing and is shown notes
+    #: about another; without saying why, the panel looks like the search
+    #: misfired, and the model, told nothing, would report them as results.
+    connected_ids: set = field(default_factory=set)
+    match_info: dict = field(default_factory=dict)
+    when_phrase: str = ""
+    #: As of a date: per note, the revision its text came from.
+    as_of_then: dict = field(default_factory=dict)
+
+
+@dataclass
+class _NoteCtx:
+    """What turning an entry into a prompt row needs besides the entry."""
+
+    session: Session
+    found: _Found
+    attached_ids: set
+    zone: object
+    today: object
+    time_words: dict
+    files_on: dict
+    as_of: "date | None"
+
+
+def _detect_intent(question: str, force_notes_intent: bool, *attachments: list) -> str:
+    detected = intent.classify(question)
+    # `body.answering_agent` (Tier 1 section 4): a reply to the agent's own
+    # question is about the notebook by construction, however smalltalk-shaped
+    # the reply itself reads ("yes", "ok"). Attaching a note (or a document) is
+    # likewise a statement that this is about the notebook, so it overrides the
+    # classifier: the client already knows what the request actually is.
+    if force_notes_intent or any(attachments):
+        return intent.NOTES
+    return detected
+
+
+def _worked_out(question: str):
+    """**Worked out, like a count** (CHAT_PLAN decision 41): a sum, a
+    conversion, the time. Its sentence is exact and needs no model, so it
+    travels the counted answer's road: no retrieval, said as it is.
+    Translating is a model's job when one runs: that one is chat."""
+    from tessellate.ai import utilities
+
+    worked = None
+    if utilities.kind_of(question) != "translate" or not deps.get_ollama().is_running():
+        now = user_now(deps.get_config())
+        worked = composer.compose(question, [], today=now.date(), now=now.replace(tzinfo=None))
+    if worked and worked["shape"] == "utility":
+        return intent.UTILITY, notebook_stats.StatAnswer(kind="utility", text=worked["text"], facts=[])
+    return intent.SMALLTALK, None
+
+
+def _from_records(question: str, session: Session):
+    """**The app's own records** (CHAT_PLAN A3): "what did I search yesterday",
+    "what ran overnight", "when did I last back up" are read from History, the
+    job records and the backup folder, with times, and never searched for in
+    the notes."""
+    from tessellate.ai import records
+
+    if not records.asks(question):
+        return None
+    config = deps.get_config()
+    return records.answer(question, session, now=user_now(config), data_dir=config.data_dir)
+
+
+def _computed_answer(session: Session, question: str, detected: str, as_of, attached: list) -> tuple[str, object]:  # noqa: ANN001
+    #: **A question about the notebook's shape is answered by counting it**
+    #: ("what are my most common tags", "categories with the most notes").
+    #: Retrieval cannot answer those, and no tuning would: semantic search finds
+    #: the notes most *like* a question, and that is not like any note. It used
+    #: to retrieve five arbitrary notes and have the model decline or invent a
+    #: ranking from a five-note sample. The facts are computed exactly, from
+    #: rows; the model still writes the sentence when it runs (the answer is
+    #: handed to it as ground truth), and with the model stopped the computed
+    #: sentence is a complete answer on its own.
+    stats = notebook_stats.answer(question, session) if detected == intent.NOTES and as_of is None else None
+    if detected == intent.UTILITY:
+        detected, stats = _worked_out(question)
+    if stats is None and as_of is None and not attached:
+        stats = _from_records(question, session)
+    return detected, stats
+
+
+def _recall_window(session: Session, question: str, found: _Found) -> None:
+    #: **A recall by time reads the window, not a ranking** (CHAT_PLAN decision
+    #: 31): "what did I do last week" is every note of that week, newest first,
+    #: which five notes ranked by likeness never were.
+    asked = composer.plan(question, user_now(deps.get_config()).date())
+    if asked.kind == "recall" and asked.window:
+        found.entries = search_manager.entries_between(session, asked.window[0], asked.window[1])
+        found.mode, found.connected_ids, found.match_info, found.when_phrase = "window", set(), {}, asked.window_phrase
+    elif asked.window and found.entries:
+        #: **A subject inside a window keeps the window** (1324): "what did I
+        #: write about sourdough last week" was answered with sourdough notes
+        #: from six weeks, under a header that said "last week". The notes
+        #: inside the window are the answer when there are any.
+        inside = [e for e in found.entries if e.created_at and asked.window[0] <= e.created_at.date() <= asked.window[1]]
+        if inside:
+            found.entries = inside
+            found.when_phrase = found.when_phrase or asked.window_phrase
+
+
+def _search_notes(session: Session, question: str, found: _Found, attached: list, as_of, locale: str | None) -> None:  # noqa: ANN001
+    #: Searched with the person's own abbreviations spelt out ("what's due in
+    #: CC" also finds the notes that say Cloud Computing, B7).
+    found.meaning_loading = _meaning_loading()
+    hit = search_manager.retrieve_detailed(
+        session, glossary.expand(question, _glossary(session)), deps.get_embeddings(), limit=5,
+        locale=locale,
+    )
+    entries = _with_neighbours(session, question, _widened(session, question, hit.entries, scope=hit.category), scope=hit.category)
+    found.entries = list_pool.pool(session, question, entries)
+    found.mode = hit.mode
+    found.connected_ids = hit.connected_ids
+    found.match_info = hit.match_info
+    found.when_phrase = hit.when_phrase
+    if not attached and as_of is None:
+        _recall_window(session, question, found)
+
+
+def _retrieve_for(session: Session, question: str, found: _Found, attached: list, attached_notes_only: bool, as_of, locale: str | None) -> None:  # noqa: ANN001
+    # `attached_notes_only`: the caller has already chosen the exact, closed set
+    # of notes this turn should see; retrieval on top would only add notes
+    # nobody asked for, matched against whatever the turn's own instruction
+    # text happens to contain. Only when there is something attached to fall
+    # back to, or an empty list would search nothing and answer from silence.
+    if found.stats is not None:
+        # Nothing to retrieve: the answer is a count, and five notes about
+        # whatever the question sounded like would only be noise beside it.
+        found.mode = "stats"
+    elif intent.needs_retrieval(found.detected) and not (attached_notes_only and attached):
+        _search_notes(session, question, found, attached, as_of, locale)
+
+
+def _rewind_as_of(session: Session, question: str, found: _Found, as_of, locale: str | None) -> None:  # noqa: ANN001
+    #: **As of a date** (WORLD_CLASS_PLAN I5, row 23; `ai/timetravel.py`): the
+    #: candidates are today's matches and every note whose past text matches,
+    #: each read as it stood at the end of that day, those that did not exist
+    #: then dropped. With none left the answer is the honest empty one, said
+    #: without a model, never today's notebook.
+    if as_of is None or not intent.needs_retrieval(found.detected):
+        return
+    from tessellate.ai import timetravel
+
+    hit = search_manager.retrieve_detailed(session, question, deps.get_embeddings(), limit=20, locale=locale)
+    candidates = hit.entries + timetravel.revision_candidates(session, question)
+    zone = user_now(deps.get_config()).tzinfo
+    rewound = timetravel.rewind(session, question, timetravel.end_of_day(as_of, zone), candidates, limit=5)
+    found.entries, found.mode = [then.entry for then in rewound], "as of"
+    found.connected_ids, found.match_info = set(), {}
+    found.as_of_then = {then.entry.id: then for then in rewound}
+    if not rewound:
+        found.stats = notebook_stats.StatAnswer(
+            kind="as_of_empty",
+            text=(
+                f"There are no notes from on or before {timetravel.day_words(as_of)} to answer "
+                "from, so there is nothing to say about how things stood then."
+            ),
+            facts=[],
+        )
+
+
+def _note_content(ctx: _NoteCtx, entry) -> str:  # noqa: ANN001
+    session, found = ctx.session, ctx.found
+    content = found.as_of_then[entry.id].text if entry.id in found.as_of_then else entry.content
+    if entry.id in ctx.attached_ids:
+        # Only for notes the user picked by hand. A retrieved note is a
+        # candidate; an attached one is the subject of the question, and that is
+        # worth the extra characters: doing this for all ten search hits would
+        # spend the notes budget on pictures nobody asked about.
+        return f"{content}{_media_readings(session, content)}{_attachment_readings(session, entry.id)}"
+    if _mostly_pictures(content):
+        return f"{content}{_media_readings(session, content)}"
+    if _MEDIA_REF.search(content or ""):
+        #: **A picture's caption is the note's content** (CHAT_PLAN decision
+        #: 37; the owner: "Note captions arent counted as note content"): every
+        #: retrieved note with a picture brings what its pictures show, one line
+        #: each, so an answer can quote the caption. The text read in them stays
+        #: for a note that is mostly pictures or was picked by hand: it can run
+        #: to pages.
+        return f"{content}{_media_readings(session, content, captions_only=True)}"
+    return content
+
+
+def _context_note(ctx: _NoteCtx, entry) -> dict:  # noqa: ANN001
+    found, as_of = ctx.found, ctx.as_of
+    return {
+        # id lets agent-mode tool calls target these notes; the plain librarian
+        # prompt simply ignores it.
+        "id": entry.id,
+        "content": _note_content(ctx, entry),
+        #: How many pictures the note holds: the prompt says so, because the
+        #: answer shows them beside this note's citation (INBOX 502).
+        "pictures": len(set(_MEDIA_REF.findall(entry.content or ""))),
+        "category": manager.category_name_for(ctx.session, entry),
+        # Marked so the prompt can say which notes the user chose.
+        "attached": entry.id in ctx.attached_ids,
+        # Clipped from the web or imported (SEC-02): the agent starts the turn
+        # tainted, so writes and reaching out ask first.
+        "from_outside": manager.came_from_outside(entry),
+        # ...and which arrived by the graph rather than by the search. The
+        # prompt renders this as a caveat, so an answer can say "you linked this
+        # to the note about X" instead of implying it was a hit.
+        "connected": entry.id in found.connected_ids,
+        # Already computed (match_info feeds the frontend's similarity/hops
+        # badges) and shown to the user, just never reached the model itself.
+        # Asked for directly: "can the ai see the link reasons and similarity
+        # scores in the searches?"
+        "match_info": found.match_info.get(entry.id),
+        #: The day it was written, and edited if since (wrapup-0927 10 n): with
+        #: no dates a model guessed "your last entry" from the listing order.
+        "written": _note_dates(entry, ctx.zone)
+        + (f", as it read on {as_of.day} {as_of:%B %Y}" if entry.id in found.as_of_then else ""),
+        "dates": _time_words(ctx.time_words.get(entry.id, []), ctx.today),
+        #: Its tags and the files on it, which the model never saw (INBOX 594,
+        #: the owner: "it only mentions one of the sketches not all the
+        #: sketches").
+        "tags": manager.entry_tags(entry),
+        "files": ctx.files_on.get(entry.id, []),
+    }
+
+
+def _document_row(document) -> dict:  # noqa: ANN001
+    # The same shape `_context_note` builds, by hand rather than through it: a
+    # Document has no category/tags and its id lives in a different table than
+    # Entry's, so folding it through the Entry-shaped helper would be the wrong
+    # abstraction, not a shortcut. `connected`/`match_info` are never true for a
+    # hand-picked document, same as an attached note.
+    return {
+        "id": document.id,
+        "content": f"{document.title}\n\n{document.content}",
+        "category": "Document",
+        "kind": "document",
+        "attached": True,
+        "connected": False,
+        "match_info": None,
+    }
+
+
+def _context_notes(session: Session, found: _Found, attached: list, attached_docs: list, attached_files: list, attached_boards: list, as_of) -> list[dict]:  # noqa: ANN001
+    # Attached notes come first and are never dropped by the retrieval limit.
+    # Anything retrieval also found is de-duplicated against them.
+    attached_ids = {entry.id for entry in attached}
+    found.entries = attached + [e for e in found.entries if e.id not in attached_ids]
+    if attached:
+        found.mode = "attached" if found.mode == "none" else f"attached + {found.mode}"
+    now = user_now(deps.get_config())
+    ids = [entry.id for entry in found.entries]
+    ctx = _NoteCtx(
+        session, found, attached_ids, now.tzinfo, now.date(),
+        manager.entry_dates_bulk(session, ids), _files_on(session, ids), as_of,
+    )
+    notes = [_context_note(ctx, entry) for entry in found.entries]
+    #: Listed newest first for "my last note": said on the first, which a small
+    #: model otherwise ignores the order of (measured on a 1.5B model).
+    if found.mode == "recent" and notes:
+        notes[0]["newest"] = True
+    notes.extend(_document_row(document) for document in attached_docs)
+    # Library files, already shaped as context rows by `_attached_files`; mind
+    # maps likewise (`_attached_boards` builds the outline).
+    notes.extend(attached_files)
+    notes.extend(attached_boards)
+    return notes
+
+
+def _stats_out(stats) -> dict | None:  # noqa: ANN001
+    #: The computed answer, when this was a question about the notebook's shape
+    #: rather than its contents. `text` is already a complete answer, which is
+    #: what makes these work with the model stopped.
+    if stats is None:
+        return None
+    return {"kind": stats.kind, "text": stats.text, "facts": stats.facts, "offer": stats.offer}
+
+
+def _raw_results(session: Session, found: _Found) -> list:
+    from tessellate.api.routes_entries import _to_out  # avoids a route-module cycle
+
+    rows = []
+    for entry in found.entries:
+        out = _to_out(session, entry)
+        if entry.id in found.as_of_then:
+            out = out.model_copy(update={"content": found.as_of_then[entry.id].text})
+        rows.append(out)
+    return rows
+
+
+def _chat_payload(session: Session, found: _Found, notes: list[dict], config, as_of) -> dict:  # noqa: ANN001
+    return {
+        "notes": notes,
+        "intent": found.detected,
+        "stats": _stats_out(found.stats),
+        #: The search model was still loading, so this one read words only
+        #: (`search_manager.query_vector`): said in Why, and when nothing
+        #: matched, said with the answer.
+        "meaning_loading": found.meaning_loading,
+        "raw_results": _raw_results(session, found),
+        #: The day asked about and, per note, the revision its text came from
+        #: (None for a note that read the same then as now).
+        "as_of": as_of.isoformat() if as_of is not None else None,
+        "as_of_revisions": {str(i): then.revision_id for i, then in found.as_of_then.items()},
+        #: Words for each retrieved note's pictures, for the thumbnails an
+        #: answer draws beside a citation (INBOX 502, `_picture_alts`).
+        "picture_alts": _picture_alts(session, found.entries),
+        "picture_sizes": _picture_sizes(found.entries),
+        "search_mode": found.mode,
+        # Sent beside the results rather than as a field on EntryOut: it is a
+        # fact about this search, not about the note, and every other route that
+        # returns an entry would otherwise carry a field that is always false.
+        "connected_ids": sorted(found.connected_ids),
+        # str() keys: JSON object keys are always strings and Pydantic's
+        # dict[str, dict] won't silently coerce an int key.
+        "match_info": {str(k): v for k, v in found.match_info.items()},
+        "when_phrase": found.when_phrase,
+        "style": config.get_preference("communication_style", "friendly"),
+        # The name and the capped "About me", or nothing while the profile
+        # switch is off: `librarian.profile_from_config` decides.
+        "profile": librarian.profile_from_config(config),
+    }
+
+
+def _frame_matches(session: Session, question: str, notes: list[dict], match_info: dict, mode: str) -> None:
+    """Why each Matching records card is there, in words, and which shown
+    notes the person linked (INBOX 1310, the owner: "it has no frame of
+    reference for how related each shown matching record is or why it was
+    shown and how the shown notes link"). Each note gets `linked_to`, the
+    shown notes it is linked to; each entry's `match_info` gets `why`, made
+    for a note that came by date or recency too. Facts either way: the model
+    reads them as context, the composer says them (decision 75)."""
+    ids = [n["id"] for n in notes]
+    if not ids:
+        return
+    linked: dict[int, list[int]] = {i: [] for i in ids}
+    rows = session.query(EntryLink.source_entry_id, EntryLink.target_entry_id).filter(
+        EntryLink.source_entry_id.in_(ids), EntryLink.target_entry_id.in_(ids)
+    )
+    for a, b in rows:
+        #: Once each: two notes linked both ways are one link to the reader.
+        if b not in linked[a]:
+            linked[a].append(b)
+        if a not in linked[b]:
+            linked[b].append(a)
+    for note in notes:
+        note["linked_to"] = linked[note["id"]]
+    for key, reason in composer_frame.reasons(question, notes, mode).items():
+        match_info.setdefault(int(key), {})["why"] = reason
+    for note in notes:
+        note["match_info"] = match_info.get(note["id"])
+
+
 def _prepare(
     session: Session,
     question: str,
@@ -1438,301 +1798,34 @@ def _prepare(
     nothing to search for, and searching anyway is what made "hey" come back
     with a list of notes.
     """
-    from tessellate.api.routes_entries import _to_out  # avoids a route-module cycle
-
-    detected = intent.classify(question)
-    # `body.answering_agent` (Tier 1 §4): a reply to the agent's own question
-    # is about the notebook by construction, however smalltalk-shaped the
-    # reply itself reads ("yes", "ok"). Same override shape as `attached`
-    # below, and the same reason: this route's job is to route what the
-    # request actually is, and the client already knows.
-    if force_notes_intent:
-        detected = intent.NOTES
-    # Attaching a note (or a document) is itself a statement that this is
-    # about the notebook, so it overrides the classifier, "what do you
-    # think?" with three notes clipped to it is a question about those notes.
     attached = _attached_notes(session, note_ids or [])
     attached_docs = _attached_documents(session, document_ids or [])
     attached_files = _attached_files(session, file_ids or [])
     attached_boards = _attached_boards(session, board_ids or [])
-    if attached or attached_docs or attached_files or attached_boards:
-        detected = intent.NOTES
-    #: **A question about the notebook's shape is answered by counting it.**
-    #: Asked for directly: "enhance the semantic search so it can pick up stuff
-    #: like if I ask 'what are my most common tags', or maybe 'categories with
-    #: the most notes'."
-    #:
-    #: Retrieval cannot answer those, and no amount of tuning would: semantic
-    #: search finds the notes most *like* a question, and "what are my most
-    #: common tags" is not like any note. It used to retrieve five arbitrary
-    #: notes and tell the model to answer from those alone, so the model
-    #: either declined or invented a ranking from a five-note sample.
-    #:
-    #: The facts are computed here, exactly, from rows. The model still writes
-    #: the sentence when it is running (the answer is handed to it as ground
-    #: truth below), which means the phrasing is natural and the numbers cannot
-    #: be invented: and with the model stopped the computed sentence is
-    #: already a complete answer on its own.
-    meaning_loading = False
-    stats = notebook_stats.answer(question, session) if detected == intent.NOTES and as_of is None else None
-    if detected == intent.UTILITY:
-        #: **Worked out, like a count** (CHAT_PLAN decision 41): a sum, a
-        #: conversion, the time. Its sentence is exact and needs no model, so
-        #: it travels the counted answer's road: no retrieval, said as it is.
-        #: Translating is a model's job when one runs: that one is chat.
-        from tessellate.ai import utilities
-
-        worked = None
-        if utilities.kind_of(question) != "translate" or not deps.get_ollama().is_running():
-            worked = composer.compose(question, [], today=user_now(deps.get_config()).date(), now=user_now(deps.get_config()).replace(tzinfo=None))
-        if worked and worked["shape"] == "utility":
-            stats = notebook_stats.StatAnswer(kind="utility", text=worked["text"], facts=[])
-        else:
-            detected = intent.SMALLTALK
-    if stats is None and as_of is None and not attached:
-        #: **The app's own records** (CHAT_PLAN A3): "what did I search
-        #: yesterday", "what ran overnight", "when did I last back up" are
-        #: read from History, the job records and the backup folder, with
-        #: times, and never searched for in the notes.
-        from tessellate.ai import records
-
-        if records.asks(question):
-            config = deps.get_config()
-            stats = records.answer(question, session, now=user_now(config), data_dir=config.data_dir)
-    connected_ids: set[int] = set()
-    match_info: dict = {}
-    when_phrase = ""
-    # `attached_notes_only`: the caller has already chosen the exact, closed
-    # set of notes this turn should see, running retrieval on top would only
-    # add notes nobody asked for, matched against whatever the turn's own
-    # instruction text happens to contain rather than anything the user
-    # picked. Only takes effect when there is something attached to fall
-    # back to; an empty attachment list with this flag set would otherwise
-    # search nothing at all and answer from silence.
-    if stats is not None:
-        #: Nothing to retrieve: the answer is a count, and five notes about
-        #: whatever the question sounded like would only be noise beside it.
-        entries, mode = [], "stats"
-    elif intent.needs_retrieval(detected) and not (attached_notes_only and attached):
-        #: Searched with the person's own abbreviations spelt out ("what's
-        #: due in CC" also finds the notes that say Cloud Computing, B7).
-        meaning_loading = _meaning_loading()
-        found = search_manager.retrieve_detailed(
-            session, glossary.expand(question, _glossary(session)), deps.get_embeddings(), limit=5,
-            locale=locale,
-        )
-        entries, mode = found.entries, found.mode
-        entries = _with_neighbours(session, question, _widened(session, question, entries, scope=found.category), scope=found.category)
-        entries = list_pool.pool(session, question, entries)
-        # Which of these are here because they are *connected* to a match
-        # rather than because they matched. The user asked about one thing and
-        # is being shown notes about another; without saying why, the panel
-        # looks like the search misfired, and the model, told nothing, would
-        # report them as results.
-        connected_ids = found.connected_ids
-        match_info = found.match_info
-        when_phrase = found.when_phrase
-        #: **A recall by time reads the window, not a ranking** (CHAT_PLAN
-        #: decision 31): "what did I do last week" is every note of that week,
-        #: newest first, which five notes ranked by likeness never were.
-        if not attached and as_of is None:
-            asked = composer.plan(question, user_now(deps.get_config()).date())
-            if asked.kind == "recall" and asked.window:
-                entries = search_manager.entries_between(session, asked.window[0], asked.window[1])
-                mode, connected_ids, match_info, when_phrase = "window", set(), {}, asked.window_phrase
-    else:
-        entries, mode = [], "none"
-
-    #: **As of a date** (WORLD_CLASS_PLAN I5, row 23; `ai/timetravel.py`):
-    #: the candidates are today's matches and every note whose past text
-    #: matches, each read as it stood at the end of that day, those that did
-    #: not exist then dropped. With none left the answer is the honest empty
-    #: one, said without a model, never today's notebook.
-    as_of_then: dict = {}
-    if as_of is not None and intent.needs_retrieval(detected):
-        from tessellate.ai import timetravel
-
-        found = search_manager.retrieve_detailed(session, question, deps.get_embeddings(), limit=20, locale=locale)
-        candidates = found.entries + timetravel.revision_candidates(session, question)
-        zone = user_now(deps.get_config()).tzinfo
-        rewound = timetravel.rewind(session, question, timetravel.end_of_day(as_of, zone), candidates, limit=5)
-        entries, mode = [then.entry for then in rewound], "as of"
-        connected_ids, match_info = set(), {}
-        as_of_then = {then.entry.id: then for then in rewound}
-        if not rewound:
-            stats = notebook_stats.StatAnswer(
-                kind="as_of_empty",
-                text=(
-                    f"There are no notes from on or before {timetravel.day_words(as_of)} to answer "
-                    "from, so there is nothing to say about how things stood then."
-                ),
-                facts=[],
-            )
-
-    # Attached notes come first and are never dropped by the retrieval limit.
-    # Anything retrieval also found is de-duplicated against them.
-    attached_ids = {entry.id for entry in attached}
-    entries = attached + [e for e in entries if e.id not in attached_ids]
-    if attached:
-        mode = "attached" if mode == "none" else f"attached + {mode}"
-
-    def as_note(entry) -> dict:
-        content = as_of_then[entry.id].text if entry.id in as_of_then else entry.content
-        if entry.id in attached_ids:
-            # Only for notes the user picked by hand. A retrieved note is a
-            # candidate; an attached one is the subject of the question, and
-            # that is worth the extra characters, doing this for all ten
-            # search hits would spend the notes budget on pictures nobody
-            # asked about.
-            content = f"{content}{_media_readings(session, content)}{_attachment_readings(session, entry.id)}"
-        elif _mostly_pictures(content):
-            content = f"{content}{_media_readings(session, content)}"
-        elif _MEDIA_REF.search(content or ""):
-            #: **A picture's caption is the note's content** (CHAT_PLAN
-            #: decision 37; the owner: "Note captions arent counted as note
-            #: content"): every retrieved note with a picture brings what its
-            #: pictures show, one line each, so an answer can quote the
-            #: caption. The text read in them stays for a note that is mostly
-            #: pictures or was picked by hand: it can run to pages.
-            content = f"{content}{_media_readings(session, content, captions_only=True)}"
-        return {
-            # id lets agent-mode tool calls target these notes;
-            # the plain librarian prompt simply ignores it.
-            "id": entry.id,
-            "content": content,
-            #: How many pictures the note holds: the prompt says so, because
-            #: the answer shows them beside this note's citation (INBOX 502).
-            "pictures": len(set(_MEDIA_REF.findall(entry.content or ""))),
-            "category": manager.category_name_for(session, entry),
-            # Marked so the prompt can say which notes the user chose.
-            "attached": entry.id in attached_ids,
-            # Clipped from the web or imported (SEC-02): the agent starts the
-            # turn tainted, so writes and reaching out ask first.
-            "from_outside": manager.came_from_outside(entry),
-            # …and which arrived by the graph rather than by the search. The
-            # prompt renders this as a caveat, so an answer can say "you linked
-            # this to the note about X" instead of implying it was a hit.
-            "connected": entry.id in connected_ids,
-            # Already computed (match_info feeds the frontend's own similarity/
-            # hops badges) and already shown to the user, just never reached
-            # the model itself before. Asked for directly: "can the ai see the
-            # link reasons and similarity scores in the searches?" It's the
-            # score half of that; a linked note's own reason text would need
-            # tracing back to the specific Link row, a bigger change not made
-            # here.
-            "match_info": match_info.get(entry.id),
-            #: The day it was written, and edited if since (wrapup-0927 10 n):
-            #: with no dates a model guessed "your last entry" from the order
-            #: the notes were listed in.
-            "written": _note_dates(entry, zone)
-            + (f", as it read on {as_of.day} {as_of:%B %Y}" if entry.id in as_of_then else ""),
-            "dates": _time_words(time_words.get(entry.id, []), today),
-            #: Its tags and the files on it, which the model never saw (INBOX
-            #: 594, the owner: "it only mentions one of the sketches not all
-            #: the sketches"). Two of three sketches were notes whose text is
-            #: one word with a `sketch.png` attached and `#Sketches` on them;
-            #: shown "[Hobbies] whoaaahhh", the model called them "too vague".
-            "tags": manager.entry_tags(entry),
-            "files": files_on.get(entry.id, []),
-        }
-
-    now = user_now(deps.get_config())
-    zone, today = now.tzinfo, now.date()
-    time_words = manager.entry_dates_bulk(session, [entry.id for entry in entries])
-    files_on = _files_on(session, [entry.id for entry in entries])
-    notes = [as_note(entry) for entry in entries]
-    #: Listed newest first for "my last note": said on the first, which a
-    #: small model otherwise ignores the order of (measured on a 1.5B model).
-    if mode == "recent" and notes:
-        notes[0]["newest"] = True
-    # Same shape `as_note` builds, by hand rather than through it, a
-    # Document has no category/tags and its id lives in a different table
-    # than Entry's, so folding it through the Entry-shaped helper above
-    # would be the wrong abstraction, not a shortcut. `connected`/
-    # `match_info` are never true for a hand-picked document, same as an
-    # attached note.
-    notes.extend(
-        {
-            "id": document.id,
-            "content": f"{document.title}\n\n{document.content}",
-            "category": "Document",
-            "kind": "document",
-            "attached": True,
-            "connected": False,
-            "match_info": None,
-        }
-        for document in attached_docs
-    )
-    # Library files, already shaped as context rows by `_attached_files`.
-    notes.extend(attached_files)
-    # Mind maps, likewise: `_attached_boards` builds the outline.
-    notes.extend(attached_boards)
+    detected = _detect_intent(question, force_notes_intent, attached, attached_docs, attached_files, attached_boards)
+    detected, stats = _computed_answer(session, question, detected, as_of, attached)
+    found = _Found(detected=detected, stats=stats)
+    _retrieve_for(session, question, found, attached, attached_notes_only, as_of, locale)
+    _rewind_as_of(session, question, found, as_of, locale)
+    notes = _context_notes(session, found, attached, attached_docs, attached_files, attached_boards, as_of)
+    #: Only the notes: a document or a file row has another table's id.
+    _frame_matches(session, question, notes[: len(found.entries)], found.match_info, found.mode)
     config = deps.get_config()
-    # The name and the capped "About me", or nothing while the profile switch
-    # is off: `librarian.profile_from_config` is the one place that decides.
-    profile = librarian.profile_from_config(config)
 
     # Every entry this question surfaced counts as "used".
-    for entry in entries:
+    for entry in found.entries:
         entry.access_count += 1
     manager.log_action(session, "queried", surface, detail=question)
     session.commit()
     logging.getLogger("tessellate.chat").info(
         "chat: %d note(s) via %s search for %r",
-        len(entries),
-        mode,
+        len(found.entries),
+        found.mode,
         # The question is the user's own text, and it reaches the terminal as
         # well as the in-app viewer, a bare %r of it can forge a log line.
         safe_value(question, 80),
     )
-
-    return {
-        "notes": notes,
-        "intent": detected,
-        #: The computed answer, when this was a question about the notebook's
-        #: shape rather than its contents. `text` is already a complete answer
-        #:, which is what makes these work with the model stopped, and the
-        #: prompt below hands it to the model as ground truth rather than
-        #: asking it to work the numbers out.
-        "stats": (
-            {"kind": stats.kind, "text": stats.text, "facts": stats.facts, "offer": stats.offer}
-            if stats is not None
-            else None
-        ),
-        #: The search model was still loading, so this one read words only
-        #: (`search_manager.query_vector`): said in Why, and when nothing
-        #: matched, said with the answer.
-        "meaning_loading": meaning_loading,
-        "raw_results": [
-            _to_out(session, entry).model_copy(update={"content": as_of_then[entry.id].text})
-            if entry.id in as_of_then
-            else _to_out(session, entry)
-            for entry in entries
-        ],
-        #: The day asked about and, per note, the revision its text came from
-        #: (None for a note that read the same then as now).
-        "as_of": as_of.isoformat() if as_of is not None else None,
-        "as_of_revisions": {str(i): then.revision_id for i, then in as_of_then.items()},
-        #: Words for each retrieved note's pictures, for the thumbnails an
-        #: answer draws beside a citation (INBOX 502, `_picture_alts`).
-        "picture_alts": _picture_alts(session, entries),
-        "picture_sizes": _picture_sizes(entries),
-        "search_mode": mode,
-        # Ids that came along because they are *connected* to a match, so the
-        # results panel can label them rather than presenting a note about
-        # something else as though the search had found it. Sent beside the
-        # results rather than as a field on EntryOut: it is a fact about this
-        # search, not about the note, and every other route that returns an
-        # entry would otherwise carry a field that is always false.
-        "connected_ids": sorted(connected_ids),
-        # str() keys: match_info is keyed by entry id internally, but JSON
-        # object keys are always strings and Pydantic's dict[str, dict]
-        # won't silently coerce an int key for us here.
-        "match_info": {str(k): v for k, v in match_info.items()},
-        "when_phrase": when_phrase,
-        "style": config.get_preference("communication_style", "friendly"),
-        "profile": profile,
-    }
+    return _chat_payload(session, found, notes, config, as_of)
 
 
 @router.post("", response_model=ChatResponse)
@@ -2283,28 +2376,82 @@ def _notes_answer_due(req: _StreamRequest, tool: str, result: object, notes: lis
     return composer_lists.holds_days(notes or [], user_now(deps.get_config()).date())
 
 
+def _count_lead(result: dict, args: dict, counted: str) -> str:
+    """"You have 4 notes in Work.", with the per-category split for the whole notebook."""
+    total = int(result.get("total") or result.get("count") or 0)
+    where = ""
+    if counted:
+        where = f" in {args['category'][:1].upper() + args['category'][1:]}" if "category" in args else f" tagged {args['tag']}"
+    lead = f"You have {total} note{'' if total == 1 else 's'}{where}."
+    per = result.get("by_category") or {}
+    if not counted and len(per) > 1:
+        lead += " Per category: " + ", ".join(f"{k} {v}" for k, v in sorted(per.items(), key=lambda kv: -int(kv[1]))[:6]) + "."
+    return lead
+
+
+def _counted_lead(req: _StreamRequest, asked: str) -> str:
+    """"how many notes do I have about work": a figure, not a quote."""
+    from tessellate.ai import tools as agent_tools
+
+    counted = composer_lists.counted_filing(asked)
+    if counted is None:
+        return ""
+    for args in ({"category": counted}, {"tag": counted}) if counted else ({},):
+        result = agent_tools.execute_tool(req.session, "count_notes", args)
+        if isinstance(result, dict) and (result.get("total") or result.get("count")) and not result.get("error"):
+            return _count_lead(result, args, counted)
+    return ""
+
+
+def _filed_said(req: _StreamRequest, asked: str, now: datetime) -> str:
+    """"list my work notes": the Work notes, or the notes tagged work
+    (ledger row 442); a name that is neither is the composer's."""
+    from tessellate.ai import commands, tool_say
+    from tessellate.ai import tools as agent_tools
+
+    filed = commands.filed_listing(asked)
+    for key in ("category", "tag") if filed else ():
+        args = {key: filed}
+        result = agent_tools.execute_tool(req.session, "list_notes", args)
+        if isinstance(result, dict) and result.get("total_matching"):
+            return tool_say.say("list_notes", result, args, now.date())["text"]
+    return ""
+
+
+def _filed_or_counted_events(req: _StreamRequest, asked: str, now: datetime) -> list[dict]:
+    """A filed listing or a count of notes, said from the tool's figures;
+    empty when the sentence is neither."""
+    text = _filed_said(req, asked, now) or _counted_lead(req, asked)
+    return [{"type": "answer", "delta": text}] if text else []
+
+
+def _reminder_window(asked: str, now: datetime) -> tuple | None:
+    """(phrase, first day, last day) of the window a reminders question names."""
+    window = composer.plan(asked, now.date())
+    if not (window.window and window.window_phrase):
+        return None
+    start, end = window.window
+    if window.window_phrase == "this week":
+        #: A recall window stops at today; what is due runs to Sunday.
+        end = max(end, start - timedelta(days=start.weekday()) + timedelta(days=6))
+    return window.window_phrase, start, end
+
+
 def _tool_read_events(req: _StreamRequest, notes: list | None = None) -> list[dict]:
     """A read tool run with no model (decision 59, steps 1 and 2): the reading
     names the tool (`reading.tool_of`), Chat runs it with no arguments, and
     the realiser says it in one line and draws it in its form. Empty when the
     sentence names no such tool, so the composer answers as before."""
-    from tessellate.ai import act_registry, commands, question_noise, reading, realise, tool_say
+    from tessellate.ai import act_registry, question_noise, reading, realise, tool_say
     from tessellate.ai import tools as agent_tools
 
     now = user_now(deps.get_config())
     #: Read as repaired: "shwo me evry tag i hav plz" is the tag list, as
     #: "list my tags" is (the routing gold, `fixtures/composer/routing_1011.json`).
     asked = question_noise.repair(question_noise.tidy(req.question or ""))
-    filed = commands.filed_listing(asked)
-    if filed:
-        #: "list my work notes": the Work notes, or the notes tagged work
-        #: (ledger row 442); a name that is neither is the composer's.
-        for key in ("category", "tag"):
-            args = {key: filed}
-            result = agent_tools.execute_tool(req.session, "list_notes", args)
-            if isinstance(result, dict) and result.get("total_matching"):
-                said = tool_say.say("list_notes", result, args, now.date())
-                return [{"type": "answer", "delta": said["text"]}]
+    early = _filed_or_counted_events(req, asked, now)
+    if early:
+        return early
     got = reading.read(asked, now=now)
     if got.tool not in act_registry.NO_MODEL_READS or got.intent in act_registry.ACTS:
         return []
@@ -2314,7 +2461,15 @@ def _tool_read_events(req: _StreamRequest, notes: list | None = None) -> list[di
     drawn = realise.tool_answer(got.tool, result, now.date())
     #: Said with its links to what it lists and the place to open
     #: (`tool_say`); a chart, when the counts make one, stands for the table.
-    said = tool_say.say(got.tool, result, {}, now.date())
+    say_args: dict = {}
+    #: Only a question that says "reminders" is cut to its window; "what is
+    #: due this week" lists what waits, as before (1324 widened it to both).
+    if got.tool == "list_reminders" and "remind" in asked.lower():
+        within = _reminder_window(asked, now)
+        if within:
+            say_args["within"] = within
+            drawn = None
+    said = tool_say.say(got.tool, result, say_args, now.date())
     chart = drawn["chart"] if drawn else None
     parts = (said["lead"], "" if chart else said["body"], said["chips"])
     out = [{"type": "answer", "delta": "\n\n".join(p for p in parts if p)}]
@@ -2958,7 +3113,7 @@ def _act_events(req: _StreamRequest, prepared: dict) -> Iterator[dict]:
     object that is not one note is asked about, never guessed. Ask is a
     client too: it names the act it read and says where it is done."""
     parsed = acts.parse(req.question, user_now(deps.get_config()))
-    if req.body.notes_only:
+    if req.body.notes_only and (parsed or {}).get("intent") != "find":
         yield {"type": "answer", "delta": acts.ask_line(parsed)}
         return
     if parsed is None:
@@ -2971,6 +3126,12 @@ def _act_events(req: _StreamRequest, prepared: dict) -> Iterator[dict]:
 
         yield {"type": "answer", "delta": commands.ask_when(parsed.get("said") or parsed["text"])}
         return
+    yield from _act_planned_events(req, parsed)
+
+
+def _act_planned_events(req: _StreamRequest, parsed: dict) -> Iterator[dict]:
+    """The preview of a parsed act: run at once with its card, or the line and
+    the card that waits for Confirm."""
     planned = acts.preview(req.session, parsed, req.body.note_ids)
     card = planned.get("card")
     if card and planned.get("run"):
@@ -3005,12 +3166,36 @@ def _forced_notes(req: _StreamRequest, follow: object) -> bool:
     to the agent's question, a follow-up, and, in Ask, "list my work notes"
     (an act in Chat, the question it is here: the listing is the answer,
     CHAT_PLAN Phase 6 P12)."""
-    return bool(req.body.answering_agent or follow is not None or (req.body.notes_only and composer_lists.kind(req.question) is not None))
+    if req.body.answering_agent or follow is not None:
+        return True
+    if not req.body.notes_only:
+        return False
+    if composer_lists.kind(req.question) is not None:
+        return True
+    #: "summarise my gym notes": a look-up, and Ask is where look-ups are
+    #: answered, so it is read as the question it is (1324). A find is
+    #: listed in `_act_events`.
+    parsed = acts.parse(req.question, user_now(deps.get_config()))
+    return bool(parsed and parsed["intent"] == "summarise")
+
+
+#: "delete everything", "wipe all my notes": a request the app never does in
+#: one step, answered with the way it can be done (1324: it was answered with
+#: a quote of the first notes that said "everything").
+_BULK_DELETE = re.compile(
+    r"^(?:please |pls )?(?:delete|erase|wipe|remove|clear|bin|trash)(?: out)? (?:everything|all(?: of)?(?: (?:my|the))?(?: notes| entries| data| stuff)?|every note|my (?:whole )?notebook)[?.!]*$",
+    re.I,
+)
 
 
 def _first_events(req: _StreamRequest, prepared: dict, ollama_running: bool, tools_only: bool) -> Iterator[dict]:
     """The turn's events before the agent is asked: an act, a starter the
     engine answers with no model, or the plain answer."""
+    if _BULK_DELETE.match(" ".join((req.question or "").split())):
+        return iter([{"type": "answer", "delta": (
+            "I will not delete everything in one go. Name one note instead, for example “delete the boiler note”: "
+            "it waits for your Confirm, and Undo brings it back."
+        )}])
     if prepared["intent"] == intent.ACT:
         return _act_events(req, prepared)
     starter = _starter_read(req, ollama_running or tools_only)
@@ -3222,7 +3407,7 @@ def _checks_grounding(prepared: dict, agentic: bool, composing: bool, conversati
     numbers are counts of rows, in no note, and "Heads up: I could not find
     96 in your notes" under "You have 96 notes" was the check misreading it
     (Brief 89)."""
-    return not agentic and not composing and not conversational and prepared["stats"] is None
+    return not agentic and not composing and not conversational and prepared["stats"] is None and not prepared.get("tool_read")
 
 
 def _engine_answers(req: _StreamRequest, prepared: dict) -> bool:

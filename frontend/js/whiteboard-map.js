@@ -1499,6 +1499,29 @@ async function wbMapMoveAmongSiblings(id, dir) {
   return true;
 }
 
+//: **Sort a topic's branches** (XMind's "Sort", MindManager's "Sort
+//: subtopics"): its children reordered by their words, A to Z or Z to A,
+//: numbers read as numbers, so "Step 2" comes before "Step 10". The same
+//: `data.order` key the move keys write, so the outline and the exports
+//: agree; one Undo step (the name is in `WB_RECORDED`).
+async function wbMapSortChildren(id, dir = 1) {
+  const index = wbMapIndex();
+  const kids = index.childrenOf.get(id) || [];
+  if (kids.length < 2) {
+    toast("This topic needs at least two branches to sort.");
+    return false;
+  }
+  const word = (o) => String(wbMapLabel(o) || "");
+  const sorted = [...kids].sort((x, y) => dir * word(x).localeCompare(word(y), undefined, { numeric: true, sensitivity: "base" }) || x.id - y.id);
+  sorted.forEach((kid, at) => { kid.data = { ...kid.data, order: at + 1 }; });
+  await Promise.all(sorted.map((kid) => wbSaveObject(kid)));
+  if (wbMapLayout() === "free") toast("Sorted in the outline. This map's layout is Free, so the canvas stays as it is.");
+  else await wbMapTidyBranch(id);
+  renderWhiteboardNow();
+  wbAnnounce(`Branches sorted ${dir > 0 ? "A to Z" : "Z to A"}.`);
+  return true;
+}
+
 //: Every node reachable from `id`, itself first, deepest last. Seen-guarded
 //: for the ring case above; every walk in this section goes through it.
 function wbMapSubtree(index, id) {
@@ -6225,6 +6248,12 @@ function wbSyncToolSurfaces(isMap) {
   for (const section of document.querySelectorAll("#wb-tool-group [data-wb-surface], .wb-board-menu [data-wb-surface]")) {
     section.hidden = section.dataset.wbSurface === (isMap ? "board" : "map");
   }
+  //: The Format button too (the owner, 2026-10-19: "useless and empty" on a
+  //: map): a topic's look lives on its own toolbar, so the panel had nothing
+  //: to show. Its command is already board-only (`surface: "board"`).
+  const format = $("wb-format-btn");
+  if (format) format.hidden = isMap;
+  if (isMap && !$("wb-format")?.classList.contains("hidden")) window.wbFormatClose?.({ restoreFocus: false });
   wbSyncConnectWords(isMap);
   // A tool stays selected across a board switch, so opening a map while the
   // pen was active would leave the pen drawing on a surface whose own button
@@ -7560,7 +7589,8 @@ function wbSyncMapRadialAlt(alt) {
     if (!button) continue;
     button.classList.toggle("wb-map-radial-danger", alt);
     button.title = title;
-    button.setAttribute("aria-label", title.split(".")[0]);
+    //: The drawn word opens the name (WCAG 2.5.3, OPEN 1400).
+    button.setAttribute("aria-label", `${word}: ${title.split(".")[0]}`);
     //: The half of "how they work" that a label cannot carry: these two slots
     //: are two actions each, and the modifier that swaps them was only ever
     //: stated in a tooltip's second sentence. The ring's caption reads this.

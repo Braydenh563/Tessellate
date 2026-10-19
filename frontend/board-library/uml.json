@@ -754,6 +754,455 @@
     ],
     "links": []
    }
+  },
+  {
+   "key": "lifeline",
+   "kind": "element",
+   "name": "Lifeline",
+   "tags": [
+    "lifeline",
+    "sequence",
+    "participant",
+    "object"
+   ],
+   "payload": {
+    "box": {
+     "w": 120,
+     "h": 260
+    },
+    "items": [
+     {
+      "key": "h",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 120 0 L 120 40 L 0 40 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label": "Object",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1
+       },
+       "label_bold": true
+      },
+      "z": 5
+     },
+     {
+      "key": "l",
+      "kind": "sketch",
+      "data": {
+       "d": "M 60 40 L 60 260",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0,
+       "dash": "dashed"
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "activation",
+   "kind": "element",
+   "name": "Activation bar",
+   "tags": [
+    "activation",
+    "sequence",
+    "execution",
+    "focus of control"
+   ],
+   "payload": {
+    "box": {
+     "w": 16,
+     "h": 100
+    },
+    "items": [
+     {
+      "key": "a",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 16 0 L 16 100 L 0 100 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.2
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "message",
+   "kind": "element",
+   "name": "Message",
+   "tags": [
+    "message",
+    "sequence",
+    "call",
+    "arrow",
+    "sync"
+   ],
+   "payload": {
+    "box": {
+     "w": 180,
+     "h": 24
+    },
+    "items": [
+     {
+      "key": "m",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 12 L 180 12 M 168 6 L 180 12 L 168 18",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "return-message",
+   "kind": "element",
+   "name": "Return message",
+   "tags": [
+    "return",
+    "sequence",
+    "reply",
+    "dashed arrow"
+   ],
+   "payload": {
+    "box": {
+     "w": 180,
+     "h": 24
+    },
+    "items": [
+     {
+      "key": "m",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 12 L 180 12 M 12 6 L 0 12 L 12 18",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0,
+       "dash": "dashed"
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "state",
+   "kind": "element",
+   "name": "State",
+   "tags": [
+    "state",
+    "state machine",
+    "rounded",
+    "status"
+   ],
+   "payload": {
+    "box": {
+     "w": 160,
+     "h": 80
+    },
+    "items": [
+     {
+      "key": "s",
+      "kind": "sketch",
+      "data": {
+       "d": "M 16 0 L 144 0 A 16 16 0 0 1 160 16 L 160 64 A 16 16 0 0 1 144 80 L 16 80 A 16 16 0 0 1 0 64 L 0 16 A 16 16 0 0 1 16 0 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label": "State",
+       "label_area": {
+        "x": 0.05,
+        "y": 0,
+        "w": 0.9,
+        "h": 0.4
+       },
+       "label_bold": true
+      },
+      "z": 5
+     },
+     {
+      "key": "s_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 32 L 160 32",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0
+      },
+      "z": 5
+     },
+     {
+      "key": "s_a",
+      "kind": "sketch",
+      "data": {
+       "d": "M 8 34 L 152 34 L 152 74 L 8 74 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0,
+       "label": "entry / action",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "initial-state",
+   "kind": "element",
+   "name": "Initial state",
+   "tags": [
+    "initial",
+    "start",
+    "state",
+    "pseudostate"
+   ],
+   "payload": {
+    "box": {
+     "w": 28,
+     "h": 28
+    },
+    "items": [
+     {
+      "key": "i",
+      "kind": "sketch",
+      "data": {
+       "d": "M 1 14 A 13 13 0 1 0 27 14 A 13 13 0 1 0 1 14 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 1.0
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "final-state",
+   "kind": "element",
+   "name": "Final state",
+   "tags": [
+    "final",
+    "end",
+    "state",
+    "pseudostate"
+   ],
+   "payload": {
+    "box": {
+     "w": 36,
+     "h": 36
+    },
+    "items": [
+     {
+      "key": "o",
+      "kind": "sketch",
+      "data": {
+       "d": "M 1 18 A 17 17 0 1 0 35 18 A 17 17 0 1 0 1 18 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0
+      },
+      "z": 5
+     },
+     {
+      "key": "i",
+      "kind": "sketch",
+      "data": {
+       "d": "M 9 18 A 9 9 0 1 0 27 18 A 9 9 0 1 0 9 18 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 1.0
+      },
+      "z": 6
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "component",
+   "kind": "element",
+   "name": "Component",
+   "tags": [
+    "component",
+    "module",
+    "service",
+    "package"
+   ],
+   "payload": {
+    "box": {
+     "w": 180,
+     "h": 90
+    },
+    "items": [
+     {
+      "key": "c",
+      "kind": "sketch",
+      "data": {
+       "d": "M 10 0 L 180 0 L 180 90 L 10 90 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label": "Component",
+       "label_area": {
+        "x": 0.1,
+        "y": 0,
+        "w": 0.88,
+        "h": 1
+       },
+       "label_bold": true
+      },
+      "z": 5
+     },
+     {
+      "key": "c_a",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 16 L 22 16 L 22 30 L 0 30 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.2
+      },
+      "z": 6
+     },
+     {
+      "key": "c_b",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 52 L 22 52 L 22 66 L 0 66 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.2
+      },
+      "z": 6
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "fragment",
+   "kind": "element",
+   "name": "Combined fragment",
+   "tags": [
+    "fragment",
+    "alt",
+    "loop",
+    "opt",
+    "sequence",
+    "frame"
+   ],
+   "payload": {
+    "box": {
+     "w": 260,
+     "h": 140
+    },
+    "items": [
+     {
+      "key": "f",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 260 0 L 260 140 L 0 140 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0
+      },
+      "z": 5
+     },
+     {
+      "key": "f_t",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 60 0 L 60 18 L 52 26 L 0 26 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label": "alt",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 0.2,
+        "h": 0.17
+       }
+      },
+      "z": 5
+     },
+     {
+      "key": "f_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 76 L 260 76",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0,
+       "dash": "dashed"
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
   }
  ]
 }

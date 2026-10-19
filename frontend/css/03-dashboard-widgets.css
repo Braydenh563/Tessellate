@@ -10,86 +10,6 @@
   font-size: var(--text-lg);
 }
 
-/* On the app's own scale, not on four numbers typed by hand. Part of the
-   same report that the panel is "not consistent with the rest of the app ui
-   style": every other list row in this app is spaced in `--space-*` and
-   sized in `--text-*`, and 0.5/0.6/0.4rem and 0.92rem are none of those, so
-   this list sat a couple of pixels off everything around it in every
-   direction at once. */
-.link-suggestion {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  flex-wrap: wrap;
-  padding: var(--space-3);
-  margin-bottom: var(--space-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  font-size: var(--text-sm);
-}
-
-/* Two note chips joined by an arrow (WORLD_CLASS_PLAN, Placed 2026-09-09
-   item 92). A chip keeps its own line clamp; the pair wraps whole. */
-.link-suggestion-pair {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--space-1) var(--space-2);
-}
-
-.link-suggestion-pair > .chip {
-  max-width: 100%;
-  min-width: 0;
-}
-
-.link-suggestion-bar {
-  display: inline-block;
-  width: 3rem;
-  height: 0.375rem;
-  border-radius: var(--radius-pill);
-  background: var(--border);
-  overflow: hidden;
-}
-
-/* Each reason the pair was found for, with its own confidence, on a line of
-   its own under the row (GRAPH_PLAN KG2). */
-.link-suggestion-why {
-  flex: 1 1 100%;
-  margin: 0;
-  font-size: var(--text-xs);
-}
-
-/* The reason box. Sized so it is obviously a field you may type in rather
-   than a label: the whole complaint was that every suggestion said "similar
-   in meaning" and there was no way to say anything else without linking
-   first, hunting the link down and editing it. */
-.link-suggestion-reason {
-  flex: 1 1 14rem;
-  min-width: 10rem;
-  margin: 0;
-  font-size: var(--text-sm);
-  /* One control height on the row (INBOX 110/111, "poorly designed and not
-     consistent with the rest of the app"): measured, the reason field was
-     42px beside 28px buttons and a 23px chip, three heights on one line,
-     which made every row 69px tall. The field takes the small buttons'
-     height, as the capture and draft rows already do for their fields. */
-  height: 1.75rem;
-  padding-block: 0;
-}
-
-/* The one height left on the row. Measured on the live panel (INBOX 110, the
-   spacing and padding report): the reason field and both buttons stand 28px
-   and the score chip stood 23.2px between them, which is the same "three
-   heights on one line" the field's own rule above was written for, two
-   pixels' worth rather than fourteen. A chip is text in a pill everywhere
-   else in the app, so the height goes on this row's chip rather than on the
-   chip recipe. */
-.link-suggestion > .chip {
-  display: inline-flex;
-  align-items: center;
-  height: 1.75rem;
-}
-
 /* The suggestions inbox (GRAPH_PLAN KG9, suggestions-inbox.js): one sheet,
    a `.seg` of four kinds with their counts, and one scroller under it. A
    reading width wider than a sheet of choices: a link row holds a name pair,
@@ -2698,47 +2618,6 @@ button.chat-trail-link {
   min-width: 0;
 }
 
-.answer-grounding-thumbs {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  flex: none;
-}
-
-button.answer-grounding-thumb {
-  display: inline-grid;
-  place-items: center;
-  width: 2rem;
-  height: 2rem;
-  min-height: 0;
-  padding: 0;
-  overflow: hidden;
-  border: 1px solid var(--divider);
-  border-radius: var(--radius-sm);
-  background: var(--chip-bg);
-  box-shadow: none;
-  cursor: zoom-in;
-}
-
-.answer-grounding-thumb > img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-button.answer-grounding-thumb:hover,
-button.answer-grounding-thumb:is(:focus-visible, :has(:focus-visible)) {
-  border-color: var(--accent);
-}
-
-/* A finger's target, not a pointer's (DESIGN.md, "Hit targets"). */
-@media (pointer: coarse) {
-  button.answer-grounding-thumb {
-    width: var(--target-min);
-    height: var(--target-min);
-  }
-}
-
 /* A picture the answer placed (INBOX 526): inside the bubble, never wider than
    it, and no taller than 20rem; the width/height attributes hold its space. */
 .answer-figure {
@@ -2794,10 +2673,6 @@ button.answer-figure-open {
   text-align: left;
 }
 
-.answer-grounding-more {
-  font-size: var(--text-xs);
-}
-
 /* Same cap as `.tool-touched-chip` (02-chat-graph.css): a note-preview chip
    that can carry an arbitrarily long opening is the same control wherever it
    appears, so it gets the same width rather than a new number invented for
@@ -2850,6 +2725,7 @@ button.answer-figure-open {
 .result-reason-why {
   min-width: 0;
 }
+
 
 .result-reason-connected {
   background: var(--accent-soft);
@@ -3659,6 +3535,7 @@ button.answer-figure-open {
     radial-gradient(120% 90% at 50% 0%, var(--accent-soft), transparent 60%),
     var(--inner);
 }
+
 
 /* Zoom controls as one floating pill. */
 .graph-zoom {

@@ -331,3 +331,15 @@ def test_the_loading_page_wears_the_saved_look(tmp_path):
     assert "#eceff2" in mono.split("</style>")[0]
     # The logo's own colours are untouched.
     assert mono.split("</style>")[1] == main._LOADING_HTML.split("</style>")[1]
+
+
+def test_the_splash_has_minimise_and_close_in_its_top_right_corner():
+    """INBOX 1320: "I want a minimise and close x button in the top right
+    corner to cancel or minimise the launch". Close asks the launcher to stop
+    (the Cancel link's own `.cancel` file) and closes the window."""
+    text = (REPO / "scripts" / "splash.ps1").read_text(encoding="utf-8")
+    assert 'New-CornerButton ([string][char]0x2013) ($WIDTH - 76) "Minimise"' in text
+    assert '$btnMin.Add_Click({ $form.WindowState = "Minimized" })' in text
+    close = text[text.index("$btnClose.Add_Click({"):][:400]
+    assert '($StatusFile + ".cancel")' in close and "$form.Close()" in close
+    assert "$btnMin, $btnClose))" in text

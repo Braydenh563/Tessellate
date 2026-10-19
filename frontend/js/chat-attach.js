@@ -877,7 +877,8 @@ function noteLabel(entry, length = 40) {
 //: `safeHref` guards the anchors this app does want; a badge simply does not
 //: want one.
 function flattenNoteMarkdown(md) {
-  return String(md ?? "")
+  //: Front matter is the note's settings, not its words (INBOX 1323).
+  return stripFrontmatter(md)
     .replace(/^\s{0,3}(?:#{1,6}\s+|>\s?|[-*+]\s+|\d+[.)]\s+)/gm, "")
     .replace(/!?\[([^\]]{0,300})\]\([^)]{0,500}\)?/g, "$1")
     .replace(/\[\[([^[\]]{1,120})\]\]/g, "$1")
@@ -1534,7 +1535,35 @@ function chatTidyTyped(text) {
   return m ? text.slice(0, m.index + 1) : text;
 }
 
+//: **A message sent while the answer on screen is still coming waits its
+//: turn** (INBOX 1321, the owner: "queue messages, and edit or delete/bring
+//: back queued messages"). Stop shows exactly while that answer streams; a
+//: Stop pressed holds the queue until the next send (`chatQueueState.held`).
 async function sendChatMessage(preset, opts = {}) {
+  const input = $("chat-input");
+  if (!$("chat-stop").classList.contains("hidden")) {
+    const typed = chatTidyTyped((preset ?? input.value).trim());
+    if (typed) chatQueue.push(typed);
+    if (preset == null) {
+      input.value = "";
+      input.dispatchEvent(new Event("input"));
+    }
+    return chatQueueShow();
+  }
+  chatQueueState.held = false;
+  try {
+    return await chatSendTurn(preset, opts);
+  } finally {
+    if (!chatQueueState.held && chatQueue.length && $("chat-stop").classList.contains("hidden")) sendChatMessage(chatQueue.shift());
+    chatQueueShow();
+  }
+}
+
+function chatQueueShow() {
+  if (chatQueue.length || document.querySelector(".chat-queue")) ensureModule("replyKit").then(() => chatQueuePaint()).catch(() => {});
+}
+
+async function chatSendTurn(preset, opts = {}) {
   const input = $("chat-input");
   const status = $("chat-status");
   const typed = chatTidyTyped((preset ?? input.value).trim());
@@ -1695,17 +1724,10 @@ async function sendChatMessage(preset, opts = {}) {
   // ones that were dismissed, which belonged to that draft and not to the
   // next one.
   resetChatNudge();
-  //: The box is disabled while the answer streams, and a disabled box loses
-  //: the focus to the page: Tab then started again from the top of the app,
-  //: and nothing on screen held the keyboard. The Stop button takes it
-  //: instead, so Enter, Space and Escape all stop the answer from where the
-  //: person already is; `releaseChatComposer` and the stream's end give it
-  //: back to the box.
-  const composerHadFocus = document.activeElement === input;
-  input.disabled = true;
+  //: The box stays open while the answer streams, so the next message can
+  //: be written and queued (INBOX 1321); Escape still stops the answer.
   hide("chat-send");
   show("chat-stop");
-  if (composerHadFocus) $("chat-stop").focus({ preventScroll: true });
   status.classList.remove("error");
   status.textContent = "Searching your notes…";
   startChatTimer();

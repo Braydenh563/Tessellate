@@ -177,12 +177,15 @@ const TABS = ['dashboard', 'notes', 'chat', 'graph', 'library', 'timeline', 'rem
   // is one tap on More and one on its row.
   const taps = await page.evaluate(async () => {
     const out = {};
-    for (const tab of ['dashboard', 'timeline', 'reminders']) {
+    //: The three behind More since INBOX 1314 (Dashboard took Graph's column).
+    for (const tab of ['graph', 'timeline', 'reminders']) {
       document.getElementById('phone-more-btn').click();
-      await new Promise((r) => setTimeout(r, 250));
-      const rows = [...document.querySelectorAll('.sheet-overlay .sheet-row')];
+      //: The sheet is a lazy file on the first press (phone-more.js).
+      await new Promise((r) => setTimeout(r, 700));
+      const rows = [...document.querySelectorAll('.sheet-overlay[data-sheet="more"] .sheet-row')];
       const want = document.querySelector(`#tab-bar button[data-tab="${tab}"] .tab-label`)?.textContent.trim();
-      const row = rows.find((r) => r.textContent.trim() === want);
+      //: Less a count badge (Reminders carries the due count).
+      const row = rows.find((r) => r.textContent.replace(r.querySelector('.tab-badge')?.textContent || '', '').trim() === want);
       if (!row) { out[tab] = 'no row in the sheet'; continue; }
       row.click();
       await new Promise((r) => setTimeout(r, 400));

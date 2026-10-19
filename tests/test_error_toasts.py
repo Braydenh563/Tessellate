@@ -219,6 +219,11 @@ for _name, _messages in EXPECTED_RULE4.items():
 #: fault. Anything that passes `true` and is not a failed request's own
 #: `.message` has to appear here.
 FAULTS = {
+    'statistics.js': {
+        '"Couldn\'t open that."': 'opening what a chart point or tile counts failed',
+        '"Couldn\'t change the range."': 'the growth chart request for a new range failed',
+        '"Couldn\'t answer that."': 'the Statistics Ask request failed',
+    },
     'app.js': {
         '"Can\'t reach the Tessellate server. Is it running?"': 'network failure: the server cannot be reached',
     },

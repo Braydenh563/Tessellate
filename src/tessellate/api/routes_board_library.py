@@ -876,14 +876,82 @@ def _ink(value: Any, ink: str) -> Any:
     return ink if value == INK else value
 
 
-def _place_element(db: Session, board_id: int | None, payload: dict, body: PlaceBody, ref: dict) -> dict:
-    box = payload.get("box") or {"w": 100, "h": 100}
-    bw, bh = max(1.0, float(box.get("w", 100))), max(1.0, float(box.get("h", 100)))
-    sx = (body.w / bw) if body.w else 1.0
-    sy = (body.h / bh) if body.h else 1.0
-    left = body.x - bw * sx / 2
-    top = body.y - bh * sy / 2
-    ink = body.ink if body.ink and BOARD_BG_COLOR_RE.match(body.ink) else "#3355ff"
+def _place_sketch_part(db: Session, board_id: int | None, item: dict, geo: tuple, ink: str, ref: dict,
+                       group_id: str | None) -> WhiteboardSketch:
+    sx, sy, left, top = geo
+    data = dict(item["data"])
+    if "d" in data:
+        data["d"] = transform_path(data["d"], sx, sy, left, top)
+    for key in ("color", "fill"):
+        if key in data:
+            data[key] = _ink(data[key], ink)
+    if isinstance(data.get("width"), (int, float)) and data["width"] and sx != 1:
+        data["width"] = max(1, round(data["width"] * min(sx, sy) ** 0.5, 1))
+    data["library_ref"] = ref
+    row = WhiteboardSketch(board_id=board_id, data=json.dumps(data), x=0, y=0, z=int(item.get("z", 5)),
+                           group_id=group_id)
+    db.add(row)
+    db.flush()
+    return row
+
+
+def _place_object_part(db: Session, board_id: int | None, item: dict, geo: tuple, ink: str, ref: dict,
+                       group_id: str | None) -> WhiteboardObject:
+    sx, sy, left, top = geo
+    data = dict(item["data"])
+    for key in ("color", "bg", "border_color"):
+        if key in data:
+            data[key] = _ink(data[key], ink)
+    row = WhiteboardObject(
+        board_id=board_id, kind=item["type"],
+        data=json.dumps({**WhiteboardObjectData(**data).model_dump(exclude_none=True), "library_ref": ref}),
+        x=left + item["x"] * sx, y=top + item["y"] * sy, z=int(item.get("z", 1)),
+        width=max(20.0, item["w"] * sx), height=max(20.0, item["h"] * sy),
+        rotation=item.get("rotation"), group_id=group_id,
+    )
+    db.add(row)
+    db.flush()
+    return row
+
+
+def _place_link_part(db: Session, board_id: int | None, link: dict, ends: tuple, geo: tuple, ink: str,
+                     ref: dict) -> WhiteboardSketch:
+    a, b = ends
+    sx, sy, left, top = geo
+    data = dict(link["data"])
+    for key in ("color",):
+        if key in data:
+            data[key] = _ink(data[key], ink)
+    if isinstance(data.get("bend"), dict):
+        data["bend"] = {"x": float(data["bend"].get("x", 0)) * sx, "y": float(data["bend"].get("y", 0)) * sy}
+    # An elbow's bends (Phase B) were saved from the box's corner.
+    if isinstance(data.get("points"), list):
+        data["points"] = [
+            {"x": left + float(p.get("x", 0)) * sx, "y": top + float(p.get("y", 0)) * sy}
+            for p in data["points"][:50]
+            if isinstance(p, dict)
+        ]
+    data.update(sourceId=a[1], sourceKind=a[0], targetId=b[1], targetKind=b[0], library_ref=ref)
+    row = WhiteboardSketch(board_id=board_id, data=json.dumps(data), x=0, y=0, z=1)
+    db.add(row)
+    db.flush()
+    return row
+
+
+def _grouped_parts(payload: dict) -> list[dict]:
+    """A multi-part element is one thing on the board: with no group named by
+    the stencil itself, its parts share one, so a move or a resize takes
+    them all (INBOX 1307). Ungroup still splits it."""
+    parts = payload.get("items") or []
+    if len(parts) > 1 and not any(p.get("group") for p in parts):
+        parts = [{**p, "group": "_whole"} for p in parts]
+    return parts
+
+
+def _place_parts(db: Session, board_id: int | None, parts: list[dict], geo: tuple, ink: str, ref: dict,
+                 ids: dict) -> tuple[list, list]:
+    """Place each sketch and object part, sharing one fresh group id per named
+    group; fills `ids` (stencil key to kind and row id) for the links."""
     groups: dict[str, str] = {}
 
     def group_for(raw: str | None) -> str | None:
@@ -892,62 +960,32 @@ def _place_element(db: Session, board_id: int | None, payload: dict, body: Place
         groups.setdefault(raw, uuid.uuid4().hex[:24])
         return groups[raw]
 
-    made_sketches, made_objects, ids = [], [], {}
-    for item in payload.get("items") or []:
+    made_sketches, made_objects = [], []
+    for item in parts:
         if item["kind"] == "sketch":
-            data = dict(item["data"])
-            if "d" in data:
-                data["d"] = transform_path(data["d"], sx, sy, left, top)
-            for key in ("color", "fill"):
-                if key in data:
-                    data[key] = _ink(data[key], ink)
-            if isinstance(data.get("width"), (int, float)) and data["width"] and sx != 1:
-                data["width"] = max(1, round(data["width"] * min(sx, sy) ** 0.5, 1))
-            data["library_ref"] = ref
-            row = WhiteboardSketch(board_id=board_id, data=json.dumps(data), x=0, y=0, z=int(item.get("z", 5)),
-                                   group_id=group_for(item.get("group")))
-            db.add(row)
-            db.flush()
+            row = _place_sketch_part(db, board_id, item, geo, ink, ref, group_for(item.get("group")))
             made_sketches.append(row)
             ids[item["key"]] = ("sketch", row.id)
         else:
-            data = dict(item["data"])
-            for key in ("color", "bg", "border_color"):
-                if key in data:
-                    data[key] = _ink(data[key], ink)
-            row = WhiteboardObject(
-                board_id=board_id, kind=item["type"],
-                data=json.dumps({**WhiteboardObjectData(**data).model_dump(exclude_none=True), "library_ref": ref}),
-                x=left + item["x"] * sx, y=top + item["y"] * sy, z=int(item.get("z", 1)),
-                width=max(20.0, item["w"] * sx), height=max(20.0, item["h"] * sy),
-                rotation=item.get("rotation"), group_id=group_for(item.get("group")),
-            )
-            db.add(row)
-            db.flush()
+            row = _place_object_part(db, board_id, item, geo, ink, ref, group_for(item.get("group")))
             made_objects.append(row)
             ids[item["key"]] = ("object", row.id)
+    return made_sketches, made_objects
+
+
+def _place_element(db: Session, board_id: int | None, payload: dict, body: PlaceBody, ref: dict) -> dict:
+    box = payload.get("box") or {"w": 100, "h": 100}
+    bw, bh = max(1.0, float(box.get("w", 100))), max(1.0, float(box.get("h", 100)))
+    sx = (body.w / bw) if body.w else 1.0
+    sy = (body.h / bh) if body.h else 1.0
+    geo = (sx, sy, body.x - bw * sx / 2, body.y - bh * sy / 2)
+    ink = body.ink if body.ink and BOARD_BG_COLOR_RE.match(body.ink) else "#3355ff"
+    ids: dict = {}
+    made_sketches, made_objects = _place_parts(db, board_id, _grouped_parts(payload), geo, ink, ref, ids)
     for link in payload.get("links") or []:
         a, b = ids.get(link["from"]), ids.get(link["to"])
-        if not a or not b:
-            continue
-        data = dict(link["data"])
-        for key in ("color",):
-            if key in data:
-                data[key] = _ink(data[key], ink)
-        if isinstance(data.get("bend"), dict):
-            data["bend"] = {"x": float(data["bend"].get("x", 0)) * sx, "y": float(data["bend"].get("y", 0)) * sy}
-        # An elbow's bends (Phase B) were saved from the box's corner.
-        if isinstance(data.get("points"), list):
-            data["points"] = [
-                {"x": left + float(p.get("x", 0)) * sx, "y": top + float(p.get("y", 0)) * sy}
-                for p in data["points"][:50]
-                if isinstance(p, dict)
-            ]
-        data.update(sourceId=a[1], sourceKind=a[0], targetId=b[1], targetKind=b[0], library_ref=ref)
-        row = WhiteboardSketch(board_id=board_id, data=json.dumps(data), x=0, y=0, z=1)
-        db.add(row)
-        db.flush()
-        made_sketches.append(row)
+        if a and b:
+            made_sketches.append(_place_link_part(db, board_id, link, (a, b), geo, ink, ref))
     return {"sketches": made_sketches, "objects": made_objects}
 
 

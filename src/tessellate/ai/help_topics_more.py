@@ -83,6 +83,21 @@ MORE_TOPICS: list[dict] = [
         "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
     },
     {
+        "id": "what-is-atlas",
+        "keywords": (
+            "what is atlas", "who is atlas", "what does atlas do", "what can atlas do", "about atlas",
+            "meet atlas", "atlas assistant",
+        ),
+        "body": (
+            "Atlas is the assistant inside Tessellate. It answers questions from your notes and cites them, "
+            "files new notes, sets reminders, finds, tags, moves and links notes (a change that cannot be "
+            "taken back waits for your Confirm), and opens the part of the app you name. Ask lives in Notes, "
+            "Chat has its own tab, and Ctrl+Shift+A opens it over any tab. With no model connected it "
+            "answers from your notes by itself."
+        ),
+        "badge": {"label": "Chat", "tab": "chat"},
+    },
+    {
         "id": "atlas-look",
         "keywords": (
             "atlas look", "atlas style", "classic globe", "globe", "atlas character",
@@ -427,7 +442,9 @@ MORE_TOPICS: list[dict] = [
             "Activity lists every job running now: indexing, a model loading or "
             "answering, imports, reading text, transcribing, backups and the "
             "agent's passes, each with a bar, its lines and Stop where it can stop "
-            "part way. While anything runs, the status bar's job slot says how "
+            "part way; every model call is listed, on its own or inside the job "
+            "that made it. Under it, what finished in the last half hour says how "
+            "it ended, how long it took and when, with its lines. While anything runs, the status bar's job slot says how "
             "many and names the newest. Open Activity from it, its agent runs count, or the "
             "palette (Activity). Its Agent runs tab lists each run this session "
             "with its steps, and the log is in its menu. Stop the model, in the "
@@ -635,6 +652,27 @@ MORE_TOPICS: list[dict] = [
             "rest, and Atlas the guide (this chat) answers how-to questions "
             "from any tab. Press t then a letter to jump between tabs (o opens the OCR workspace), and "
             "Settings, Help starts the guided tour."
+        ),
+        "badge": {"label": "Help", "section": "help"},
+    },
+    {
+        "id": "phone-nav",
+        "keywords": (
+            "phone", "on my phone", "mobile", "bottom bar", "tab bar", "bottom tabs",
+            "more button", "where is the graph on my phone", "where is the timeline",
+            "phone menu", "app menu",
+        ),
+        "body": (
+            "On a phone the tabs are a bar along the bottom: Dashboard, Notes, "
+            "Chat, Library and More, last. More opens a sheet: Graph, Timeline "
+            "and Reminders first, then Ask the agent, Commands, Guide, Agent "
+            "activity while the agent runs, and Settings. More is lit while one "
+            "of its pages is showing, and carries the count of reminders due. "
+            "Press the tab you are on again to go back to the top of its page. "
+            "The bar shrinks to icons while you scroll down and gets its words "
+            "back on the way up. The app menu (the three dots at the top right) "
+            "holds Forward, Recent places, Redo, Find, light or dark, the "
+            "Settings window, Lock, and Quit; Back and Undo sit in the top bar."
         ),
         "badge": {"label": "Help", "section": "help"},
     },
@@ -853,7 +891,16 @@ MORE_TOPICS: list[dict] = [
             "categories, documents, links and notes with no link, a chart of notes "
             "made per month over the last year, reminders made, done, open and late, "
             "and what you use on this computer (features used, uses counted, and "
-            "the ones not used lately). This week compares notes made, words "
+            "the ones not used lately). The charts answer you: hover or focus a point "
+            "or bar for its period and exact value, move between them with the arrow "
+            "keys, and click or press Enter to open it (a month opens the Timeline "
+            "there, a feature bar opens that feature). The counts open what they count, "
+            "the Range menu sets how far back the growth chart goes (3 months, a "
+            "year, or since the first note), and each week row has a small line of "
+            "this week's days against last week's. The Ask about your statistics box at "
+            "the top answers from the same counts with no model: try Summarise my "
+            "month, What do I use most? or Am I writing more than last month?, or ask "
+            "how many notes you wrote in July, or when you wrote your first or newest note. Clear (shown once there is an answer) empties the box. This week compares notes made, words "
             "written and reminders done since Monday with the whole of last week. "
             "Open it from the Statistics button under the Dashboard's Activity "
             "heatmap (or a click on the heatmap), the This week card's All "
@@ -926,7 +973,7 @@ MORE_TOPICS: list[dict] = [
             "first note. Remove the sample notes moves them all to the bin, where "
             "Restore brings one back, and takes away the categories they made. The steps leave once all three are done and "
             "the sample notes are gone. Mark all as done ticks every step and puts the card away; Hide Get started "
-            "hides the card and the dock's Get started button. Customise, Show Get started brings them back. "
+            "hides the card and the dock's Get started button. Customise, Show Get started, the hide notice's Show again or the palette (Ctrl+K, Show Get started) brings them back. "
             "Until then the dashboard's Get started menu (beside Customise) lists the same three, ticked as "
             "they are done, with Take the tour and Replay the welcome, and the same checklist "
             "is the first row of the notifications bell until all three are done."
@@ -941,8 +988,10 @@ MORE_TOPICS: list[dict] = [
             "print the help", "read all the help", "every help topic", "help page",
         ),
         "body": (
-            "The manual is every topic Atlas answers from, on one page: Settings, "
-            "Help, Open the manual, or Open the manual in the Guide's ... menu. "
+            "The manual is every topic Atlas answers from, on one page: Ctrl+K or "
+            "Find anything, Open the manual; Settings, Help, Open the manual; or "
+            "Open the manual in the Guide's More actions menu. It can also sit on "
+            "the dashboard as a quick link (Quick access, Customise). "
             "The contents on the left jump to a group, the search box keeps only "
             "the topics that hold every word you type or what the words mean "
             "(\"trash\" keeps the bin's topic), those whose name holds them "
@@ -1577,9 +1626,9 @@ MORE_TOPICS.extend(
                     "mode is greyed unless the Needle extra can run it (the app's own tools go first). Every "
                     "sentence is quoted from a note and cited like any answer; the app adds only the joining "
                     "words and the counts and dates it measured, names two notes that may disagree, and says "
-                    "which of your words none of the notes found mention. Beside the name on every answer a "
-                    "badge says who wrote it: From your notes, the model's name, or Composer when the app "
-                    "answered itself. The No model connected line above the Chat box "
+                    "which of your words none of the notes found mention. The badge by the name says who "
+                    "wrote it (From your notes, a model's name, or Composer); hover or click it for what "
+                    "that means. The No model connected line above the Chat box "
                     "and the Ask box has a close button (the small x at its end): it hides that line until "
                     "the next time you start the app, a new session, and connecting a model in Settings, "
                     "Models always brings the answers back. Hide it for good under Model backend."
@@ -2086,6 +2135,7 @@ TOPIC_META: dict[str, dict] = {
         "Open Settings, Appearance, Atlas and faces.", "Pick who it is under Corner companion.", "Right-click it on the page for its menu; Ctrl+Shift+Y shows or hides it.")},
     "image-viewer": {"title": "The picture and PDF viewer", "path": "Library, open a picture or PDF"},
     "companion-throw": {"title": "Throwing the companion", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
+    "what-is-atlas": {"title": "What Atlas does", "path": "The Chat tab, or Ctrl+Shift+A over any tab"},
     "atlas-look": {"title": "How Atlas looks", "path": "Settings, Appearance, Atlas and faces, Atlas style and Atlas look"},
     "faces": {"title": "Generated faces", "path": "Settings, Appearance, Atlas and faces"},
     "profile": {"title": "Your profile", "path": "Settings, Profile"},
@@ -2107,6 +2157,7 @@ TOPIC_META: dict[str, dict] = {
     "background-art": {"title": "The animated background", "path": "Settings, Appearance, Animated background"},
     "themes": {"title": "Themes, colour and type", "path": "Settings, Appearance"},
     "tabs-overview": {"title": "The app at a glance", "path": "The tabs along the top"},
+    "phone-nav": {"title": "The app on a phone", "path": "The bar along the bottom, then More"},
     "settings-overview": {"title": "Finding your way round Settings", "path": "The gear in the top bar, or Ctrl+,"},
     "lock": {"title": "Passwords and locking", "path": "Settings, Account & security"},
     #: Titles for the entries that had none (INBOX 448): Settings, Help lists
@@ -2209,7 +2260,7 @@ TOPIC_META: dict[str, dict] = {
 #: entry is in no group, or in two.
 HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     ("Getting started", (
-        "tabs-overview", "first-steps", "tour", "guide", "manual", "hidden-features", "shortcuts",
+        "tabs-overview", "phone-nav", "first-steps", "tour", "guide", "manual", "hidden-features", "shortcuts",
         "command-palette", "find-anything", "find-a-place", "search", "addresses", "settings-overview", "settings-reset", "install-app", "name",
     )),
     ("Writing notes", (
@@ -2249,7 +2300,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "statusbar", "companion", "companion-throw", "atlas-look", "faces",
     )),
     ("Models and the AI", (
-        "models", "model-downloads", "model-bench", "tools-setting", "autonomous", "websearch",
+        "models", "what-is-atlas", "model-downloads", "model-bench", "tools-setting", "autonomous", "websearch",
         "search-index", "packages",
     )),
     ("Privacy and your data", (
@@ -2653,9 +2704,9 @@ def _slash_commands_topic() -> dict:
     listed = " ".join(f"{usage}: {summary}" for _, usage, summary, _ in TABLE)
     return {
         "id": "slash-commands",
-        "keywords": ("slash commands", "slash command", "commands", "exact answers", "chat commands", "type a command"),
+        "keywords": ("slash commands", "slash command", "commands", "exact answers", "chat commands", "type a command", "agent popup commands"),
         "body": (
-            "Type a command in the chat box for an exact answer from your notes, with no AI. "
+            "Type a command in the chat box or the Agent popup's box for an exact answer from your notes, with no AI. "
             f"{listed} Typing / opens a menu with a row for each command; one that takes words "
             "fills the box with its name and waits for them. Asking in plain words "
             "(\"which notes have no tags\") runs the same command. A note named "

@@ -45,6 +45,9 @@ NAMED = (
     ("fulfil", "fulfill"), ("fulfils", "fulfills"), ("enrol", "enroll"), ("enrols", "enrolls"),
     ("skilful", "skillful"), ("judgement", "judgment"), ("ageing", "aging"), ("practise", "practice"),
     ("practised", "practiced"), ("practising", "practicing"), ("manoeuvre", "maneuver"),
+    #: Not spellings but the same pairing: an irregular plural meets its
+    #: singular in search ("find notes about knives" meets "Knife sharpening").
+    ("knives", "knife"), ("shelves", "shelf"), ("loaves", "loaf"), ("wives", "wife"), ("leaves", "leaf"),
 )
 #: Two words a rule pairs that mean different things ("prise" a lid, a "prize").
 _NOT_PAIRS = frozenset("prise prised prises prising".split())

@@ -634,6 +634,7 @@ function modelHardwareSentence(hw) {
   if (hw.vram_gb) parts.push(`${card && !hw.override ? `${card.name} with ` : ""}${modelGb(hw.vram_gb)} of video memory`);
   else if (card && card.shared) parts.push(`${card.name}, which shares the memory`);
   else parts.push("no graphics card with memory of its own");
+  if (hw.cpu_cores) parts.push(`${hw.cpu_cores} processor core${hw.cpu_cores === 1 ? "" : "s"}`);
   const here = hw.models_installed
     ? ` ${hw.models_installed} model${hw.models_installed === 1 ? "" : "s"} installed${hw.models_loaded ? `, ${hw.models_loaded} loaded now` : ""}.`
     : "";

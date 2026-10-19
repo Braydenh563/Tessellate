@@ -102,6 +102,10 @@ REACHED_AFTER_LOAD = {
     #: INBOX 1301 D6: the release calls it only when `typeof nameMarkBuddyThrow
     #: === "function"`; the carry's first move fetched the bundle, and a let-go
     #: before it arrives is a drop.
+    #: INBOX 1305: a far move asks for its path when `typeof companionPathPlan
+    #: === "function"`; the mind's first tick fetches the bundle, and until
+    #: it is here a far move walks.
+    "companionPathPlan": "companionMenu, fetched with the mind at the first tick; a far move walks until then (typeof check)",
     "nameMarkBuddyThrow": "companionThrow, fetched on the carry's first move; the release checks typeof and drops otherwise",
     #: Back closing an open overlay (router-overlays.js): preloaded three seconds
     #: after boot; before that Back steps the tab history as it always did. A
@@ -120,7 +124,11 @@ REACHED_AFTER_LOAD = {
     "ensureSettingsFoldAll": "settingsControls, the Settings window awaits it before any pane is shown",
     "renderSmallModelAuto":"settingsControls, paints itself at the end of the file; later renders re-label",
     #: The history row's Logs button: it sits in Settings, whose window loads settingsControls first.
-    "openTaskLog": "settingsControls, the Settings window awaits it before any row in it can be pressed",
+    #: The per-feature model rows: `renderSettings` (status.js) runs only while
+    #: the Settings window is open, and openSettingsModal awaits settingsControls
+    #: before it shows.
+    "renderFeatureModelRows": "settingsControls, drawn only by renderSettings, which runs while the window that awaited it is open",
+    "openTaskLog":"settingsControls, the Settings window awaits it before any row in it can be pressed",
     #: Background jobs, Report: the click awaits ensureModule('appImport') first.
     "openImportReport": "appImport, called after `await ensureModule('appImport')` in the Report button's click",
     #: Connections, opened in the .then of lazyScript('/js/connections.js') at its three callers.

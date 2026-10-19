@@ -1092,6 +1092,7 @@ function restoreSettingsScroll(section, top) {
 //: visits (a reload, a pasted link: `routerOpen`, router.js), which are the
 //: same question asked from an address instead of from the stack.
 async function openHistoryEntry(entry) {
+  if (await window.overlayGo?.(entry)) return;
   // Settings is a modal overlay, not one of the tab-pages switchTab knows
   // about: asked for directly: "the back and forward buttons should cover
   // going in and out of settings too", which they didn't, because nothing

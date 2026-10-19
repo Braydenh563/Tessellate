@@ -477,3 +477,31 @@ def test_the_tag_popover_gives_focus_back_after_a_list_re_render():
     assert "li[data-id=" in target and ".tag-add" in target and ".note-meta" in target
     assert "entries-heading" in target
     assert "tabIndex = -1" in target
+
+
+def test_a_parked_sidebar_sheet_takes_no_pointer_but_its_toggle_does():
+    # 800x700 Notes: the parked aside (fixed, translateX(-260px), 320px wide)
+    # was the elementFromPoint(54, 136) answer over the first sub-tab, so a
+    # click missed (UX audit 2026-10-19). Measured after: the sub-tab.
+    misc = (CSS / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    parked = misc[misc.index("#sidebar:not(.sidebar-sheet-open),"):]
+    parked = parked[: parked.index("}")]
+    assert "pointer-events: none;" in parked
+    toggle = misc[misc.index("#sidebar > .sidebar-collapse-toggle,\n  #chat-sidebar"):]
+    toggle = toggle[: toggle.index("}")]
+    assert "pointer-events: auto;" in toggle
+
+
+def test_visible_text_is_inside_the_accessible_name_wcag_2_5_3():
+    """UX audit 2026-10-19: the Capture "Add to document" opener was named
+    "Add this note to a document" and the Dashboard's featured board button
+    "Open the map Bubble tea" against the visible "Bubble tea 6 topics". The
+    opener's name is its visible words now; the feature button has no
+    aria-label, so its name is its caption (title and count) and its tooltip
+    says what a press does."""
+    assert 'labelledMenu("ph:file-plus Add to document", items, "Add to document", "ghost")' in _read("capture-ask.js")
+    feature = _read("dash-boards.js")
+    feature = feature[feature.index("function dashMapFeature("):]
+    feature = feature[: feature.index("return button;")]
+    assert 'button.setAttribute("aria-label"' not in feature
+    assert "button.title = `Open the ${kind} ${board.title}`;" in feature

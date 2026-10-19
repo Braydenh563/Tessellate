@@ -124,7 +124,10 @@ def test_every_act_and_walk_has_three_ways_and_never_the_last() -> None:
     assert "nmb.stride = nameMarkBuddyPickVariant(NMB_STRIDES.length, nmb.stride ?? -1);" in _fn(AV, "nameMarkBuddyStride")
     # A walk and a float (Atlas's way about) each take one; a walk's travel
     # and its legs' beat change together.
-    assert go.count("const beat = nameMarkBuddyStride();") == 2
+    assert go.count("const beat = nameMarkBuddyStride();") == 1
+    #: A far move's beat follows its planned speed (INBOX 1305, companionPathPlan)
+    #: so its feet keep up; a near walk still picks one of the three strides.
+    assert "const beat = plan ? plan.beat : nameMarkBuddyStride();" in go
     assert "* pace) / beat);" in go and "anim.playbackRate = beat;" in go
     # A move cut short in a float's lean eases out of it.
     move = _fn(AV, "nameMarkBuddyMoveTo")

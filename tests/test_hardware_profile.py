@@ -147,3 +147,26 @@ def test_the_models_page_shows_the_hardware_and_can_correct_it():
     assert "fit_reason" in code
     # Free memory moves, so the verdicts are asked for again while the page is open.
     assert "MODEL_HARDWARE_REFRESH_MS" in code
+
+
+def test_the_profile_reports_the_processor_cores(monkeypatch):
+    # INBOX 904 B67: the hardware line names memory, graphics and cores.
+    monkeypatch.setattr(hardware.os, "cpu_count", lambda: 12)
+    monkeypatch.setattr(hardware, "detect_gpus", lambda: [])
+    assert hardware.profile(None)["cpu_cores"] == 12
+    monkeypatch.setattr(hardware.os, "cpu_count", lambda: None)
+    assert hardware.profile(None)["cpu_cores"] is None
+
+
+def test_the_hardware_line_names_the_cores():
+    from tests._app_js import JS_DIR
+
+    code = (JS_DIR / "settings-models.js").read_text(encoding="utf-8")
+    assert "hw.cpu_cores" in code and "processor core" in code
+
+
+def test_a_lowered_memory_correction_caps_the_free_memory(monkeypatch):
+    monkeypatch.setattr(hardware, "free_memory_gb", lambda: 13.0)
+    monkeypatch.setattr(hardware, "detect_gpus", lambda: [])
+    assert hardware.profile({"ram_gb": 4})["free_ram_gb"] == 4.0
+    assert hardware.profile(None)["free_ram_gb"] == 13.0

@@ -142,3 +142,28 @@
   background: var(--error-soft);
   color: var(--error);
 }
+
+/* **No row gives up height when the list scrolls** (the owner, 2026-10-19:
+   "this nav history location item is crushed"). The menu is a column with a
+   max-height, and the current row is a bare div with `overflow: hidden`, so
+   its automatic minimum height is zero and the column shrank it to 32px
+   against the others' 52.5px, clipping the subtitle (scrollHeight 42). Every
+   child keeps its own height; the menu scrolls instead. */
+.nav-history-menu > * {
+  flex: none;
+}
+
+/* **The history menu opens below the header on a phone** (UX audit
+   2026-10-19). Back and Forward live in the header there, and
+   `openNavHistoryMenu` (navigation.js) always opens upward by writing an
+   inline `bottom`: at 390 the menu sat at top -304 with its anchor at y 6-50,
+   wholly above the viewport. That inline value cannot be beaten without
+   `!important` (ratcheted), so the menu keeps its upward place and is moved
+   by its own height plus the opener's: `translate` is independent of the
+   `transform` the menu's animation uses. The menu's bottom edge is 4px above
+   the opener's top, so the shift is its height, the opener, and 2 x 4px. */
+@media (max-width: 599.98px) {
+  #status-nav-history-menu {
+    translate: 0 calc(100% + var(--target-min) + 2 * var(--space-1));
+  }
+}

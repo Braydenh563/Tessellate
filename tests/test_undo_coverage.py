@@ -446,6 +446,8 @@ def uncovered() -> dict[str, list[int]]:
 
 
 EXEMPT: dict[str, str] = {
+    "statistics.js:ask": "read: a counted answer to a question about the notebook (readOnly); nothing is written",
+    "whiteboard-interchange.js:wbThumbFlush": "board: stores the board's preview picture, rebuilt from the board itself; nothing of the person's changes",
     "documents-prose.js:docLinkOfferAsk": "read: asks which note names the text mentions; applying an offer is an editor change, undone by the editor's own history",
     "lan-watch.js:lanAnswerDevice": "auth: a sign-in decision for a device; Other devices lists it again to remove",
     "lan-watch.js:lanDismissSwitchedOff": "settings: dismisses a notice; nothing of the person's is changed",
@@ -552,7 +554,7 @@ EXEMPT: dict[str, str] = {
     "chat-attach.js:offerFollowups": "read: reads or asks the model; shows a result, writes nothing",
     "chat-attach.js:openExtractPreview": "read: reads or asks the model; shows a result, writes nothing",
     "chat-attach.js:saveFollowups": "telemetry: stores suggested follow-up chips",
-    "chat-attach.js:sendChatMessage": "send: a chat message, kept by the chat's own turn history",
+    "chat-attach.js:chatSendTurn": "send: a chat message, kept by the chat's own turn history (was sendChatMessage, INBOX 1321)",
     "chat-attach.js:writeCheckpoint": "send: a chat message, kept by the chat's own turn history",
     "chat.js:setResponseMode": "settings: a setting with its own Reset or the settings history",
     "chat.js:setWebSearxngRunning": "job: starts or stops work or a model; deletes no user data",
@@ -668,7 +670,7 @@ EXEMPT: dict[str, str] = {
     "status.js:setChatMode": "settings: a setting with its own Reset or the settings history",
     "status.js:toggleNotificationMute": "settings: a setting with its own Reset or the settings history",
     "suggestions-inbox.js:fillReasons": "read: reads or asks the model; shows a result, writes nothing",
-    "suggestions-inbox.js:inboxLinksPane": "read: reads or asks the model; shows a result, writes nothing",
+    "suggestions-inbox.js:run": "read: reads or asks the model; shows a result, writes nothing",
     "tag-manager.js:drawTurnedDown": "settings: turned-down tag suggestions list, a preference",
     "tidy.js:tidyHistory": "inverse: undoes a past tidy run from the history list",
     "tidy.js:tidyTools": "settings: a setting with its own Reset or the settings history",

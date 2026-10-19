@@ -14,3 +14,16 @@ date | item | type | rung | rework | note
 2026-10-18 | WHITEBOARD_PLAN draw.io steps (whiteboard-1018) | feature | sonnet | 1 | 
 2026-10-18 | MINDMAP_PLAN expand and study note (mindmap-1018) | feature | sonnet | 0 | 
 2026-10-18 | Security review of the branch and its five fixes | security | sonnet | 0 | 
+2026-10-19 | INBOX 1311 sidebar toggle + boot budget | ui | opus | 1 | 
+2026-10-19 | C4 library set | feature | opus | 0 | 
+2026-10-19 | INBOX 1318 Stats/Streak open Statistics | ui | opus | 0 | 
+2026-10-19 | INBOX 1323 grounding source list | ui | opus | 0 | 
+2026-10-19 | INBOX 1316 timeline strip future | bug | opus | 0 | 
+2026-10-19 | INBOX 1313/1322a wb guides + Format button | ui | sonnet | 0 | 
+2026-10-19 | INBOX 1321 chat queue | ui | opus | 0 | 
+2026-10-19 | INBOX 1319 stats fit | ui | opus | 0 | 
+2026-10-19 | CodeQL lambda | bug | opus | 0 | 
+2026-10-19 | INBOX 1320 splash buttons | ui | opus | 0 | 
+2026-10-19 | INBOX 1322b Atlas micro | ui | sonnet | 0 | 
+2026-10-19 | INBOX 1324 composer roles | feature | sonnet | 0 | 
+2026-10-19 | mobile1314 phone bar and More sheet | ui | opus | 0 | 

@@ -1368,6 +1368,46 @@ def test_every_selection_bar_is_one_sticky_recipe() -> None:
     )
 
 
+def test_a_sticky_head_pulled_into_the_padding_pins_where_it_rests() -> None:
+    """INBOX 1329: a sticky head that takes back its scroller's padding with
+    a negative top margin must pin at the same negative inset. Sticky insets
+    are measured from the scroller's content edge, so `top: 0` held every
+    dialog head a card-pad below its rest position, over the first 16px of
+    the content (Statistics, Suggestions, Settings, Features: 16, 8, 3, 8px
+    measured with Playwright). The sidebar head had it right."""
+    bad = []
+    for path in CSS:
+        for selector, body in _rules(path.read_text(encoding="utf-8")):
+            if not re.search(r"position:\s*sticky", body):
+                continue
+            pull = re.search(r"margin-(?:top|block-start):\s*calc\(-1 \* ([^;]+)\);", body)
+            if not pull:
+                continue
+            top = re.search(r"(?<![-\w])(?:top|inset-block-start):\s*([^;]+);", body)
+            want = f"calc(-1 * {pull.group(1).strip()})"
+            if not top or top.group(1).strip() != want:
+                bad.append(f"{path.name}: {selector.splitlines()[-1].strip()} (top {top.group(1) if top else 'unset'}, want {want})")
+    assert not bad, "sticky head pinned below its rest position:\n" + "\n".join(bad)
+
+
+def test_a_suggested_link_is_two_names_a_facts_line_and_one_action_cell() -> None:
+    """INBOX 1329 (DESIGN.md, Suggestions a person decides): the Links bar is
+    one bulk button and a kebabMenu, not a row of bordered buttons; a row's
+    names are cut to one line rather than wrapping chips; its actions are one
+    cell. Measured: 75 to 107px a row at 1440 went to 61, 210 to 228px at 390
+    went to 131, rows in view 3 to 6 and 1 to 2."""
+    inbox = (ROOT / "frontend" / "js" / "suggestions-inbox.js").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "inbox-lazy.css").read_text(encoding="utf-8")
+    pane = inbox.split("function inboxLinksPane(", 1)[1].split("\nfunction ", 1)[0]
+    assert "kebabMenu([suggestReasons, backfill]" in pane
+    assert pane.count("smallButton(") == 1, "the Links bar has one button; the rest are its menu's rows"
+    row = inbox.split("function inboxLinkRow(", 1)[1].split("\nfunction ", 1)[0]
+    assert "chip(" not in row and "link-suggestion-actions" in row
+    rules = dict(_rules(css))
+    assert "text-overflow: ellipsis" in rules[".link-suggestion-name,\n.link-suggestion-facts > .link-suggestion-why"]
+    assert "display: grid" in css.split(".link-suggestion {", 1)[1].split("}", 1)[0]
+
+
 def test_a_viewport_popup_leaves_the_surfaces_that_can_blur() -> None:
     """DESIGN.md's recipe index: a popup placed in window coordinates lives in
     the window's own frame, and proves it landed there.
@@ -5845,7 +5885,7 @@ def test_a_modal_cards_dialog_head_is_sticky_on_an_opaque_surface() -> None:
     css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
     start = css.index(".modal-card > .dialog-head {")
     block = css[start : css.index("}", start)]
-    assert "position: sticky;" in block and "top: 0;" in block
+    assert "position: sticky;" in block and "top: calc(-1 * var(--card-pad-y));" in block
     assert "background: var(--modal-bg-opaque);" in block
 
 

@@ -133,7 +133,8 @@ HELP_TOPICS: list[dict] = [
         "keywords": ("ask", "chat", "agent", "conversation", "tool", "question", "popup agent", "everywhere", "calculate", "convert", "conversion", "units", "currency"),
         "body": (
             "\"Ask your notebook\" (Notes tab) and the Chat tab both answer from "
-            "saved notes, with the raw notes shown beside the answer; in Ask, "
+            "saved notes, with the raw notes beside the answer, each saying why "
+            "it is there; in Ask, "
             "Enter asks and Escape clears the question, and the clock button "
             "answers from your notes as they were on a day you pick. Its Use AI switch "
             "picks who answers: off, the answer is From your notes, quoted from your "
@@ -533,6 +534,8 @@ HELP_TOPICS: list[dict] = [
         "id": "privacy",
         "keywords": ("private note", "encrypt", "password", "lock", "security", "offline", "online", "internet", "cloud", "telemetry", "tracking", "local chip"),
         "body": (
+            "Yes, it works offline: Tessellate runs on this computer and needs no account or "
+            "internet, and with no model connected it still answers from your notes. "
             "Private notes are encrypted at rest with a key derived from your "
             "unlock password. The app binds to localhost, has no account or "
             "telemetry, and nothing leaves your machine unless you explicitly "
@@ -1026,7 +1029,7 @@ HELP_TOPICS.extend(
                 "notes list, use Filter notes on the Your notes tab. Every search box "
                 "suggests as you type: your recent searches first, then note titles, "
                 "tags and categories that start with your words (a Library list's box: "
-                "that list's own titles), with the best match in grey (Tab or Right takes it, Down and Up walk the list, Esc closes it). "
+                "that list's own titles), with the best match in grey (Tab or Right takes it, Down and Up walk the list; Esc, a click outside it, or scrolling the page behind it closes it). "
                 "A recent search has its own x, the list's foot clears them, Settings, "
                 "Import & export, Clear and forget clears every box's at once, and Settings, "
                 "General, Search turns the suggestions off."
@@ -1054,8 +1057,9 @@ HELP_TOPICS.extend(
                 "the command palette) is one sheet of four kinds: Links lists pairs "
                 "worth connecting with every reason (similar wording, people or "
                 "things both name, a note both link with, a rare tag both carry) "
-                "and how sure it is (Link all above 70% in the head links every pair at "
-                "least that sure, after asking); Tensions, notes that may disagree; Names, one "
+                "and how sure it is (Link all above 70% over the list links every pair at "
+                "least that sure, after asking, and the More menu beside it has Suggest reasons "
+                "and Explain your existing links); Tensions, notes that may disagree; Names, one "
                 "person or thing named two ways, with Merge; and Link types, a link whose own "
                 "sentence says \"for example\" or \"continues\". Accepting or "
                 "dismissing any of them teaches it which reasons to trust in your "
@@ -1348,13 +1352,13 @@ HELP_TOPICS.extend(
                 "lasso", "highlighter", "eraser", "connector", "snap to grid",
                 "snap", "grid", "pan", "zoom", "zoom to fit",
                 "board overview", "find a card", "find and replace", "replace all", "whole word", "regular expression", "pattern", "tool",
-                "select all shapes", "select all connectors", "turn 90 degrees", "remove from group", "copy size", "paste size", "reverse a connector", "auto size",
+                "select all shapes", "select all connectors", "select similar", "turn 90 degrees", "remove from group", "copy size", "paste size", "reverse a connector", "auto size",
             ),
             "body": (
                 "Whiteboard keys (Library, Boards & maps; Ctrl+Shift+B opens it). "
                 "Tools: V or S select, H hand, K lasso, P pen, M highlighter, E "
                 "eraser, B fill, L line, A arrow, R rectangle, O circle, G "
-                "triangle, D diamond, T text, N sticky note, F frame, C connector (Shift+C "
+                "triangle, D diamond, T text, N sticky note (Ctrl+Enter in one starts the next beside it), F frame, C connector (Shift+C "
                 "curved), I image, X delete. The Shapes button's flyout also has a rounded "
                 "rectangle, ellipse, hexagon, parallelogram, star, cylinder, cloud, speech "
                 "bubble and block arrow. Moving around: the wheel "
@@ -1362,7 +1366,7 @@ HELP_TOPICS.extend(
                 "zooms too, Space and drag pans, so does the middle or right mouse button held down (a plain right-click still opens the board menu), a drag to an edge pans, Ctrl+= and Ctrl+- zoom, "
                 "Ctrl+0 is 100%, Shift+1 fits all, Shift+N shows the "
                 "overview, / or Ctrl+F finds (with Whole word and Pattern buttons), Ctrl+H replaces, and Tab walks the board's "
-                "items. Ctrl+K also finds select all shapes or connectors, turn 90 degrees, remove from "
+                "items. Ctrl+K also finds select all shapes or connectors, select similar (every item of the same kind, fill and line colour as the selected one), turn 90 degrees, remove from "
                 "the group, copy and paste the size, grow to fit the words, reverse a connector and clear its bends. "
                 "Selection, menus and presenting are in Whiteboard selection and menus."
             ),
@@ -1382,19 +1386,19 @@ HELP_TOPICS.extend(
             ),
             "body": (
                 (
-                    "Whiteboard selection and menus. Selection: Shift+click adds, Ctrl+A selects all, Ctrl+D "
+                    "Whiteboard selection: Shift+click adds, Ctrl+A selects all, Ctrl+D "
                     "duplicates, Alt and drag copies as you drag, Ctrl+V pastes at the pointer, the arrows "
                     "nudge (Shift for further), Shift and drag keeps to one axis, Shift and a corner keeps "
                     "proportions, Alt resizes from the centre; a move, resize or box drawn out shows guides "
-                    "and its size (Alt: none), [ and ] move one step back or forward, Ctrl+[ and Ctrl+] to "
+                    "and its size (Alt: none); [ and ] move one step back or forward, Ctrl+[ and Ctrl+] to "
                     "the back or front, Ctrl+G groups, Ctrl+Shift+G ungroups, Ctrl+Alt+C and Ctrl+Alt+V copy "
-                    "and paste a style, Delete (or a drop on the bin) removes, Esc cancels a drag or goes to "
+                    "and paste a style, Delete (or a bin drop) removes, Esc cancels a drag or goes to "
                     "Select. Double-click empty board for a text box, double-click a closed shape (or select "
                     "it and press Enter) to write in it, right-click (or hold on touch) for the menu, double-"
                     "click a line to bend it, and select a connector and press Label in its bar (or Enter) to"
-                    " label it. A frame's title drags it and what is inside it (Ctrl: the frame alone); its "
-                    "menu exports it or fits it to its contents, and a double-click on one of its resize "
-                    "handles fits that edge (a corner, two) to what it holds, with a margin. Ctrl+Shift+L "
+                    " label it. A frame's title drags it and what is inside it (Ctrl: the frame alone); a click on a panel's body or a frame's edge selects it, and its top handle turns it; its "
+                    "menu exports it or fits it to its contents, and a double-click on a resize "
+                    "handle fits that edge to what it holds. Ctrl+Shift+L "
                     "locks the selection; Unlock is on the board's right-click menu. Right-click an item, "
                     "Comment…, starts a thread; its count reopens it. View, Present frames: one frame at a "
                     "time; ? shows every key; Ctrl+K finds any board action by name. Menus: Insert, Edit, "
@@ -1478,8 +1482,8 @@ HELP_TOPICS.extend(
                 "holding the selection; its eye and lock act on all of it. Tinted rows are selected on the board "
                 "(the head counts them; Clear drops them), and a frame lists what it holds under its row. A locked item shows a lock when the pointer "
                 "is on it; right-click it to unlock it. The Library holds "
-                "built-in sets (General shapes, Flowchart, UML, Entity relationship, Wireframe, Arrows, Frames (a frame, a timeline lane and swimlanes in rows or columns) "
-                "and 1,530 icons drawn as shapes), five draw.io sets (196 shapes "
+                "built-in sets (General shapes, Flowchart, UML, Entity relationship, Wireframe, C4, Arrows, Frames (a frame, a timeline lane and swimlanes in rows or columns) "
+                "and 1,530 icons), five draw.io sets (196 shapes "
                 "with their own connection points), then Favourites, Recent and your own "
                 "libraries; the search field finds any of them by name or tag. Click a tile or press Enter "
                 "to place it in the middle of the view, drag it and it lands held where you grabbed it, or Shift+Enter to place "
@@ -1495,7 +1499,7 @@ HELP_TOPICS.extend(
                 "saved branch", "import library", "export library", "save as template", "board template",
                 "templates in the library", "save my own shape", "save a shape to the library",
                 "save a board as a template", "board as a template", "uml", "class diagram", "erd",
-                "entity relationship", "crow's foot", "wireframe",
+                "entity relationship", "crow's foot", "wireframe", "c4", "architecture diagram",
             ),
             "body": (
                 "Saving to the library. To save your own: select things and press "
@@ -1524,7 +1528,7 @@ HELP_TOPICS.extend(
                 "line jumps", "line jump", "crossing lines", "lines cross", "hop over",
             ),
             "body": (
-                "Ctrl+Shift+P on a board (or Format panel in the selection's More menu, or View) opens "
+                "The top bar's Format button, Ctrl+Shift+P or View > Format panel opens "
                 "the Format panel on the right, with three tabs. Style: line colour, width and pattern, "
                 "your own dashes (a dash and a gap in line widths, like 8 4), rounded corners, flow (dashes that move), "
                 "fill (a gradient or hatch, dots or zigzag instead of solid), opacity, shadow, and for a connector its line shape (curved, straight or elbow), "
@@ -1532,11 +1536,10 @@ HELP_TOPICS.extend(
                 "sharp peak, of a size you set), a gap to stop short of the shape at each end, its two ends (twenty-one marks, from the Tessellate end through open, "
                 "filled, stealth, half and double arrows, circles and diamonds to a cross, a bar and a crow's foot, "
                 "each small, medium or large; a plain line takes them too) and where its label sits. Text: font (default, serif, monospace, wide sans, handwritten), size, colour, bold, italic, underline, strikethrough, "
-                "alignment and vertical place of a text box or a shape's words; Clear text formatting and larger or smaller text are in the command palette. Arrange: X, Y, width, height and "
+                "alignment and vertical place of a text box or a shape's words; Clear text formatting and larger or smaller text are in the command palette. Arrange: X, Y, width, height (a chain button links them at their present ratio) and "
                 "angle as numbers, flip, and the order, align, spacing, group and lock buttons. With "
                 "several items selected it shows what they share, and a value they differ on reads Mixed. Every "
-                "change is one undo step. Reset style (right-click menu, ... menu "
-                "or Ctrl+K) puts colour, fill, line and text back to the defaults, its words, place and ends kept. "
+                "change is one undo step. Reset style (right-click menu or Ctrl+K) puts colour, fill, line and text back to the defaults. "
                 "Colours are in Fill, border and recent colours. Bends, connection points and imports are in Connector bends and importing."
             ),
             "badge": {"label": "Library", "tab": "library"},
@@ -1583,7 +1586,7 @@ HELP_TOPICS.extend(
                 "resize a topic", "topic size", "bigger topic", "text size on a topic", "topic bar", "topic toolbar",
                 "several topics", "select several topics", "many topics at once", "bold several topics", "fold several branches",
                 "show levels", "fold to a level", "only the first levels", "collapse to level",
-                "summarise this branch", "summarize this branch", "summary of a branch",
+                "summarise this branch", "summarize this branch", "summary of a branch", "sort branches", "sort a topic's branches", "alphabetical branches",
             ),
             "body": (
                 "Mind map keys (a map lives in the Library under Boards and "
@@ -1615,7 +1618,7 @@ HELP_TOPICS.extend(
                 "the right-click menu act on all of them: colour, bold, tasks, "
                 "fold, and a summary when they share a parent. A topic's menu "
                 "has Summarise this branch: a few sentences about everything "
-                "under it go into the topic's note, yours to change or keep."
+                "under it go into the topic's note, yours to change or keep. Ctrl+K finds Sort branches."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -1934,11 +1937,12 @@ HELP_TOPICS.extend(
                 "context window", "export the chat", "stop the answer", "stop an answer",
                 "source mark", "numbers in an answer", "numbered", "citation number",
                 "footnote", "evidence", "show the evidence", "square brackets", "note name in an answer", "supported", "unsupported",
-                "from your notes", "why this source",
+                "from your notes", "why this source", "queue", "queued message",
             ),
             "body": (
                 "Chat keys and controls. Enter sends, Shift+Enter starts a new "
                 "line; Escape or Ctrl+. stops the answer, Ctrl+Shift+O starts a new chat, "
+                "and one sent mid-answer queues above the box (Edit, Remove). "
                 "Ctrl+Shift+G turns agent mode on or off, Ctrl+Shift+P clips a note "
                 "to your next question, and Ctrl+Shift+A opens the same agent over "
                 "any tab. Typing / in the box opens the chat menu: attach a note, a "
@@ -1951,8 +1955,7 @@ HELP_TOPICS.extend(
                 "question, regenerate from here, save it as a note or read it "
                 "aloud. The header can fork the conversation, compress the earlier "
                 "messages (Undo goes back), show how full the model's context is "
-                "(press it for what fills it, Compact earlier messages and Change "
-                "the window, the size set in Settings, Models), "
+                "(press it for what fills it, Compact and Change the window), "
                 "switch the model, and export the chat as Markdown. A numbered "
                 "source mark in an answer shows a preview of its note on hover or "
                 "focus (the passage it came from, whether it supports the sentence "
@@ -2107,7 +2110,7 @@ HELP_TOPICS.extend(
                 "Reset highlights clears the colours (the first tile is "
                 "highlighted again); Reset quick access goes back to the "
                 "defaults. Quick access "
-                "starts as New note, Ask AI, Sketch, Remind me and New "
+                "starts as New note, Ask your notes, Sketch, Remind me and New "
                 "meeting. All of it is "
                 "remembered per user. Press t then d to come back here from "
                 "anywhere."

@@ -21,6 +21,7 @@ attempts:
 
 from __future__ import annotations
 
+import contextvars
 import inspect
 import json
 import logging
@@ -691,24 +692,75 @@ FILING_WAIT_RANGE = (5, 60)
 BLOCKING_MODEL_DEADLINE_SECONDS = 180.0
 
 #: Background filing Settings can see (`/tasks`): the model answering past
-#: the wait, and the launch warm-up. Counted, not listed: neither has a name
-#: worth showing, and the rows say what they are.
-_activity = {"late": 0}
+#: the wait. Each late answer is a run in the process ledger (INBOX 805) that
+#: ends on every way out: the answer lands, it fails, or the wait is given up.
+#: The note itself is already filed by meaning by then, so the row says that
+#: rather than "Filing a note" (B77: "still says the note is filing but it is
+#: finished").
+_late: dict[int, tuple[Any, float]] = {}
+_late_ids = iter(range(1, 1 << 62))
 _activity_lock = threading.Lock()
+#: How long a late answer is waited for before its run ends: a runner that
+#: never answers must not leave a row running for the rest of the session.
+FILING_LATE_GIVE_UP_SECONDS = 600.0
+LATE_TITLE = "Waiting for a late filing answer"
 
 
 def activity_rows() -> list[dict]:
+    _give_up_stale_late()
     rows = []
     with _activity_lock:
-        late = _activity["late"]
+        late = len(_late)
     if late:
-        rows.append(_row("filing-late", "Filing a note", f"waiting for {late} model answer(s) past the wait"))
+        rows.append(_row(
+            "filing-late", LATE_TITLE,
+            f"{late} note{'' if late == 1 else 's'} filed by meaning; Atlas's answer refines "
+            f"{'it' if late == 1 else 'them'} when it lands",
+        ))
     return rows
 
 
-def _uncount_late() -> None:
+def late_count() -> int:
     with _activity_lock:
-        _activity["late"] = max(0, _activity["late"] - 1)
+        return len(_late)
+
+
+def _count_late(model: str, waited: float) -> int:
+    from tessellate.core import jobruns
+
+    run = jobruns.Run("filing-late", None, title=LATE_TITLE, origin="app")
+    #: The janitor's own row shows it; the run lends that row its lines.
+    run.listed = True
+    run.start()
+    run.say(f"{model or 'The model'} missed the {waited:.0f} s wait: the note is filed by meaning for now.")
+    with _activity_lock:
+        token = next(_late_ids)
+        _late[token] = (run, time.monotonic())
+    return token
+
+
+def _uncount_late(token: int, said: str, outcome: str = "completed") -> None:
+    with _activity_lock:
+        item = _late.pop(token, None)
+    if item is None:
+        return
+    run, started = item
+    run.say(f"{said} ({time.monotonic() - started:.0f} s after the wait).")
+    if outcome == "failed":
+        run.fail(said)
+    elif outcome == "cancelled":
+        run.cancel(said)
+    else:
+        run.result = said
+    run.finish()
+
+
+def _give_up_stale_late(now: float | None = None) -> None:
+    now = time.monotonic() if now is None else now
+    with _activity_lock:
+        stale = [token for token, (_, at) in _late.items() if now - at > FILING_LATE_GIVE_UP_SECONDS]
+    for token in stale:
+        _uncount_late(token, "Stopped waiting: the note stays filed by meaning", "cancelled")
 
 
 def _row(kind: str, label: str, detail: str) -> dict:
@@ -873,19 +925,29 @@ def _chat_within_deadline(
                 outcome[key] = value
                 return bool(outcome.get("abandoned"))
 
+        from tessellate.core import jobruns
+
+        #: The filing job's run, so the call's lines land there, not in a run
+        #: of their own on this thread.
+        parent = jobruns.active()
+
         def run() -> None:
             try:
-                if takes_mode:
-                    reply = ollama.chat(model, messages, mode="quick")
-                else:
-                    reply = ollama.chat(model, messages)
+                with jobruns.bound(parent):
+                    if takes_mode:
+                        reply = ollama.chat(model, messages, mode="quick")
+                    else:
+                        reply = ollama.chat(model, messages)
             except Exception as exc:  # noqa: BLE001 - re-raised on the caller's thread
                 if settle("error", exc):
                     logger.warning(
                         "janitor: the model's late filing answer failed (%s)", safe_value(str(exc), 200)
                     )
-                    _uncount_late()
+                    _uncount_late(outcome.get("late", 0), "The late answer failed; the note stays filed by meaning", "failed")
                 return
+            except BaseException:
+                _uncount_late(outcome.get("late", 0), "The late answer stopped", "cancelled")
+                raise
             if settle("reply", reply):
                 _stall_set(ollama, None)  # it answered after all: ask it again
                 try:
@@ -893,17 +955,19 @@ def _chat_within_deadline(
                         on_late(reply)
                 except Exception:  # noqa: BLE001
                     logger.warning("janitor: applying a late filing answer failed", exc_info=True)
+                    _uncount_late(outcome.get("late", 0), "The late answer came but could not be applied", "failed")
                 finally:
-                    _uncount_late()
+                    _uncount_late(outcome.get("late", 0), "The late answer came and was applied")
 
-        worker = threading.Thread(target=run, name="mm-filing-chat", daemon=True)
+        #: The request's context too, so a call made for a request is named
+        #: for it ("Create entry") rather than "AI request to <model>".
+        worker = threading.Thread(target=contextvars.copy_context().run, args=(run,), name="mm-filing-chat", daemon=True)
         worker.start()
         worker.join(deadline)
         with lock:
             if "reply" not in outcome and "error" not in outcome:
                 outcome["abandoned"] = True
-                with _activity_lock:
-                    _activity["late"] += 1
+                outcome["late"] = _count_late(model, deadline)
         if outcome.get("abandoned"):
             logger.info(
                 "janitor: the model took over %.0fs to file a note, filing by meaning for now",

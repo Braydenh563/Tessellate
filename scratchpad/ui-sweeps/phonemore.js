@@ -68,6 +68,7 @@ const WIDTHS = (process.env.WIDTHS || '390,360,320').split(',').map(Number);
           const shown = label ? getComputedStyle(label).display !== 'none' : false;
           return {
             name: (label && label.textContent.trim()) || c.getAttribute('aria-label') || '?',
+            x: Math.round(r.left),
             w: +r.width.toFixed(1), h: +r.height.toFixed(1),
             caption: shown,
             clipped: shown && label.scrollWidth > label.clientWidth + 1,
@@ -80,6 +81,11 @@ const WIDTHS = (process.env.WIDTHS || '390,360,320').split(',').map(Number);
     bar.columns.forEach((c) => console.log(`    ${c.name} ${c.w}x${c.h}  caption ${c.caption}${c.clipped ? ' CLIPPED' : ''}`));
     if (!bar.stripInDock) fail('the tab strip is not inside #phone-tab-dock');
     if (bar.columns.length !== 5) fail(`${bar.columns.length} columns, not five`);
+    //: INBOX 1314: the bar reads Dashboard, Notes, Chat, Library, More, left
+    //: to right. A stale `order: 3` once drew More at x=0.
+    const order = [...bar.columns].sort((a, b) => a.x - b.x).map((c) => c.name).join(',');
+    console.log(`    order ${order}`);
+    if (order !== 'Dashboard,Notes,Chat,Library,More') fail(`the bar reads ${order}`);
     if (bar.rows !== 1) fail(`the bar is ${bar.rows} rows`);
     if (Math.abs(bar.dock.bottom - bar.innerH) > 1) fail('the bar is not flush to the bottom edge');
     if (bar.sideways) fail('the page scrolls sideways');
@@ -96,9 +102,10 @@ const WIDTHS = (process.env.WIDTHS || '390,360,320').split(',').map(Number);
       if (!overlay) return { missing: true };
       const card = overlay.querySelector('.sheet-card');
       const cardBox = card.getBoundingClientRect();
+      const seps = card.querySelectorAll('.sheet-list > .menu-sep').length;
       const rows = [...card.querySelectorAll('.sheet-row')].map((r) => {
         const b = r.getBoundingClientRect();
-        return { name: r.textContent.trim(), w: +b.width.toFixed(1), h: +b.height.toFixed(1) };
+        return { name: r.textContent.replace(r.querySelector('.tab-badge')?.textContent || '', '').trim(), w: +b.width.toFixed(1), h: +b.height.toFixed(1) };
       });
       return {
         role: overlay.getAttribute('role'),
@@ -107,6 +114,7 @@ const WIDTHS = (process.env.WIDTHS || '390,360,320').split(',').map(Number);
         card: { top: +cardBox.top.toFixed(1), bottom: +cardBox.bottom.toFixed(1), h: +cardBox.height.toFixed(1), w: +cardBox.width.toFixed(1) },
         innerH: window.innerHeight,
         focusIn: card.contains(document.activeElement),
+        seps,
         rows,
       };
     });
@@ -123,6 +131,9 @@ const WIDTHS = (process.env.WIDTHS || '390,360,320').split(',').map(Number);
       //: header controls a phone-width bar has no room for (INBOX 190).
       //: Seven since the Commands row (phone-shell.js openPhoneMoreSheet).
       if (sheet.rows.length !== 7) fail(`${sheet.rows.length} rows in the sheet, not seven`);
+      //: Pages first, a hairline, then the tools (INBOX 1314).
+      if (sheet.rows.slice(0, 3).map((r) => r.name).join(',') !== 'Graph,Timeline,Reminders') fail('the sheet does not open with its three pages');
+      if (sheet.seps !== 1) fail(`${sheet.seps} separators in the sheet, not one`);
       if (!sheet.focusIn) fail('the sheet did not take focus');
       sheet.rows.forEach((r) => { if (r.h < MIN) fail(`sheet row ${r.name} is ${r.h}px tall`); });
     }
@@ -131,7 +142,7 @@ const WIDTHS = (process.env.WIDTHS || '390,360,320').split(',').map(Number);
     await page.keyboard.press('Escape');
     await page.waitForTimeout(400);
     const closed = await page.evaluate(() => ({
-      gone: !document.querySelector('.sheet-overlay'),
+      gone: !document.querySelector('.sheet-overlay[data-sheet="more"]'),
       focused: document.activeElement?.id || '',
       expanded: document.getElementById('phone-more-btn').getAttribute('aria-expanded'),
     }));
@@ -148,7 +159,7 @@ const WIDTHS = (process.env.WIDTHS || '390,360,320').split(',').map(Number);
       shown: [...document.querySelectorAll('.tab-page')].filter((p) => !p.classList.contains('hidden')).map((p) => p.id),
       moreLit: document.getElementById('phone-more-btn').classList.contains('active'),
       current: document.getElementById('phone-more-btn').getAttribute('aria-current'),
-      sheetGone: !document.querySelector('.sheet-overlay'),
+      sheetGone: !document.querySelector('.sheet-overlay[data-sheet="more"]'),
     }));
     console.log(`    two taps -> ${after.shown.join(',')}  More lit ${after.moreLit}  aria-current ${after.current}`);
     if (!after.shown.includes('tab-timeline')) fail('the Timeline row did not open the Timeline');

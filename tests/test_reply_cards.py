@@ -135,7 +135,8 @@ def test_a_note_a_reply_gives_is_previewed_on_every_surface():
     #: Chat, Ask, the popup agent and the Guide each finish a reply through it.
     calls = {
         "chat-attach.js": "finishReply(answerEls, { composed: meta?.composed",
-        "capture-ask.js": "finishReply(answerBox, { composed: answerMeta?.composed });",
+        #: The meta is the options (its `composed`, and `match_info` for the records, INBOX 1310).
+        "capture-ask.js": "finishReply(answerBox, { composed: answerMeta?.composed, match_info: answerMeta?.match_info });",
         "palette.js": "finishReply(answerBox, { composed: meta?.composed, head: agentLabel",
         "help-chat.js": 'finishReply(answerRow.querySelector(".help-chat-prose")',
     }
@@ -205,3 +206,34 @@ def test_who_wrote_a_reply_is_one_badge_on_every_surface():
     assert 'head: answerRow.querySelector(".msg-role"), help: true' in guide
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert 'id="answered-by" class="chip item-label answer-model"' in html
+
+
+def test_the_no_model_badge_opens_a_help_popover_1344():
+    """INBOX 1344: "a hover/click tooltip popup with a disclaimer and
+    description for the composer message badge". A badge no model wrote
+    (From your notes, Composer, From the help) is a button on the
+    `data-help-for` recipe with its own `.help-body`; a model's name stays a
+    plain chip. Hover opens it where hover exists; click, Enter and Space
+    always do."""
+    kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
+    assert 'chip.setAttribute("data-help-for", panel.id);' in kit
+    assert "wireHelpPopover(chip, panel);" in kit
+    assert "function replyByHelpPanel(" in kit and "written without an AI model" in kit
+    assert "(hover: hover)" in kit
+    assert "Use AI" in kit[kit.index("function replyByHelpPanel(") :].split("\n}\n", 1)[0]
+    css = (ROOT / "frontend" / "css" / "reply-kit-lazy.css").read_text(encoding="utf-8")
+    assert "button.reply-by" in css
+
+
+def test_the_slash_menu_clears_the_agent_popup_overlay_1333a():
+    """INBOX 1333a: "the / command menu doesnt appear" in the Agent popup.
+    Measured in Chromium (1440x900): the menu opened (19 rows, 610x386 at
+    480,235) but sat at z-index 60 under the popup's overlay (2000), and
+    `elementFromPoint` on it returned `.command-palette-intro`. The menu is
+    the one Chat uses (`agentCommands` -> `chatSlashRows`), so the fix is its
+    layer, not a second menu."""
+    css = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
+    rule = css[css.index("\n.editor-menu {") :].split("}", 1)[0]
+    assert "z-index: 2550;" in rule
+    overlay = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    assert "z-index: 2000;" in overlay

@@ -650,6 +650,24 @@ function replyFinish(answers, opts = {}) {
   if (opts.head && list.some((answer) => answer.textContent.trim())) replyByline(opts.head, opts);
   if (opts.composed) replyReveal(list);
   if (opts.unsupported) renderToolsUnsupportedNotice(opts.bubble, opts.unsupported);
+  if (opts.match_info) replyRecordReasons(opts.match_info);
+}
+
+//: **Why each Matching records card is there, in words** (INBOX 1310, the
+//: owner: "it has no frame of reference for how related each shown matching
+//: record is or why it was shown"): the server's `match_info[id].why`
+//: ("Matches hobbies by meaning, and shares #gaming with ..."), on the Notes
+//: search's "why this result" line, wrapping inside the card. Drawn here when
+//: the answer is final, not in capture-ask.js, for the boot budget.
+function replyRecordReasons(info) {
+  for (const row of document.querySelectorAll("#raw-results > li[data-id]")) {
+    const why = info[row.dataset.id]?.why;
+    if (!why || row.querySelector(":scope > .entry-why")) continue;
+    const line = document.createElement("div");
+    line.className = "entry-why";
+    line.appendChild(chip(`ph:sparkle ${why}`, "result-reason-chip result-reason-why"));
+    row.appendChild(line);
+  }
 }
 
 //: INBOX 272 part 1, "every failure names its way out": the same
@@ -691,21 +709,101 @@ function renderToolsUnsupportedNotice(container, event) {
 function replyBylineFacts({ composed, model, engine, help }) {
   if (composed) {
     return help
-      ? ["From the help", "No model answered: this is the app's own help for what you asked"]
-      : ["From your notes", "Answered from your notes with no model: every sentence comes from a note"];
+      ? ["From the help", "No model answered: this is the app's own help for what you asked", "help"]
+      : ["From your notes", "Answered from your notes with no model: every sentence comes from a note", "notes"];
   }
   if (model) return [model, `Answered by ${model}`];
-  if (engine) return ["Composer", "The app answered this itself, with no model"];
+  if (engine) return ["Composer", "The app answered this itself, with no model", "engine"];
   return null;
+}
+
+//: **The badge explains itself** (INBOX 1344, the owner: "a hover/click
+//: tooltip popup with a disclaimer and description for the composer message
+//: badge to inform the user how it isnt an ai"). A badge no model wrote is a
+//: button on the `data-help-for` recipe; its `.help-body` is built per badge
+//: because `wireHelpPopover` takes one trigger per panel.
+const REPLY_BY_WHAT = {
+  notes: "This answer was written without an AI model. The app picked sentences from your own notes and joined them.",
+  help: "This answer was written without an AI model. It is the app's own help text for what you asked.",
+  engine: "This answer was worked out by the app itself, without an AI model: a greeting, a count, a time, a sum.",
+};
+
+function replyByHelpPanel(kind) {
+  const panel = document.createElement("div");
+  panel.className = "help-body hidden";
+  panel.id = `reply-by-help-${(replyByHelpPanel.seq = (replyByHelpPanel.seq || 0) + 1)}`;
+  panel.setAttribute("role", "dialog");
+  panel.setAttribute("aria-label", "About this badge");
+  for (const line of [
+    REPLY_BY_WHAT[kind] || REPLY_BY_WHAT.notes,
+    "Every sentence in a notes answer is quoted from a note and cited. The only words the app adds are the joining ones and the counts and dates it measured. It does not guess, so it can miss what a model would work out.",
+    "A model's answer shows the model's name here instead, and its sentences are new wording.",
+    "To use a model, turn on Use AI in Ask when a model is running, or connect one in Settings, Models.",
+  ]) {
+    const p = document.createElement("p");
+    p.textContent = line;
+    panel.appendChild(p);
+  }
+  return panel;
+}
+
+//: Hover opens it where the device has hover and the pointer rests (a
+//: crossing mouse is not a request); a click right after is not a close.
+function replyByHover(badge, panel) {
+  if (!window.matchMedia("(hover: hover)").matches) return;
+  let timer = 0;
+  let openedAt = 0;
+  const open = () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      if (badge.getAttribute("aria-expanded") === "true") return;
+      openedAt = Date.now();
+      badge.click();
+    }, 350);
+  };
+  const leave = () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      if (badge.getAttribute("aria-expanded") === "true" && openedAt) badge.click();
+      openedAt = 0;
+    }, 250);
+  };
+  badge.addEventListener("click", (event) => {
+    if (openedAt && event.isTrusted && Date.now() - openedAt < 600) {
+      event.stopImmediatePropagation();
+      event.preventDefault();
+    }
+    if (event.isTrusted) openedAt = 0;
+  }, true);
+  badge.addEventListener("mouseenter", open);
+  badge.addEventListener("mouseleave", leave);
+  panel.addEventListener("mouseenter", () => clearTimeout(timer));
+  panel.addEventListener("mouseleave", leave);
 }
 
 function replyByline(head, facts) {
   const said = head && replyBylineFacts(facts);
   if (!said) return;
-  const chip = head.querySelector(":scope > .reply-by") || document.createElement("span");
+  head.querySelector(":scope > .reply-by")?.remove();
+  const kind = said[2];
+  const chip = document.createElement(kind ? "button" : "span");
   chip.className = "chip item-label answer-model reply-by";
   chipWords(chip, said[0]);
   chip.title = said[1];
+  if (kind) {
+    const panel = replyByHelpPanel(kind);
+    chip.type = "button";
+    chip.classList.add("chip-interactive");
+    chip.setAttribute("data-help-for", panel.id);
+    chip.setAttribute("aria-controls", panel.id);
+    chip.setAttribute("aria-expanded", "false");
+    chip.setAttribute("aria-label", `${said[0]}, written without an AI model. About this badge`);
+    head.appendChild(chip);
+    head.after(panel);
+    wireHelpPopover(chip, panel);
+    replyByHover(chip, panel);
+    return;
+  }
   head.appendChild(chip);
 }
 
@@ -898,4 +996,48 @@ function replyNoteCard(id, name) {
   card.append(tile, text, go);
   card.addEventListener("click", () => openNoteAtPassage(id, ""));
   return card;
+}
+
+//: **The chat's queue** (INBOX 1321, `sendChatMessage`): each message sent
+//: while an answer streams, above the box, with Edit (back into the box,
+//: out of the queue) and Remove. They go in order as each answer ends.
+function chatQueuePaint() {
+  const input = $("chat-input");
+  const row = input.parentElement;
+  let list = document.querySelector(".chat-queue");
+  if (!chatQueue.length) {
+    list?.remove();
+    return;
+  }
+  if (!list) {
+    list = document.createElement("ul");
+    list.className = "chat-queue";
+    list.setAttribute("aria-label", "Queued messages");
+    row.parentElement.insertBefore(list, row);
+  }
+  list.replaceChildren(
+    ...chatQueue.map((text, i) => {
+      const li = document.createElement("li");
+      li.className = "chat-queue-item";
+      const words = document.createElement("span");
+      words.className = "chat-queue-text";
+      words.textContent = text;
+      words.title = text;
+      const edit = smallButton("ph:pencil-simple", "Edit: back into the box", () => {
+        chatQueue.splice(i, 1);
+        input.value = input.value.trim() ? `${text}\n${input.value}` : text;
+        input.dispatchEvent(new Event("input"));
+        input.focus();
+        chatQueuePaint();
+      });
+      const remove = smallButton("ph:x", "Remove from the queue", () => {
+        chatQueue.splice(i, 1);
+        chatQueuePaint();
+        input.focus();
+      });
+      for (const b of [edit, remove]) b.classList.add("icon-only");
+      li.append(words, edit, remove);
+      return li;
+    })
+  );
 }

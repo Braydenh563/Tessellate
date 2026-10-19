@@ -59,7 +59,7 @@ def test_the_release_speed_is_the_last_80ms_of_the_pull_clamped() -> None:
         "nameMarkBuddyReleaseVelocity([[0,0,0],[10,0,100],[20,0,200],[60,0,220],[100,0,240],[140,0,260]], 270),"
         # Let go after the pointer had stopped: no throw.
         "nameMarkBuddyReleaseVelocity([[0,0,0],[100,0,40]], 200),"
-        # Faster than the cap: clamped to 4.5 px/ms, in the same direction.
+        # Faster than the cap: clamped to 2.3 px/ms, in the same direction.
         "nameMarkBuddyReleaseVelocity([[0,0,0],[-500,0,50]], 60),"
         # A slow machine's input, one move inside the window: the one before it too.
         "nameMarkBuddyReleaseVelocity([[0,0,0],[150,-30,100]], 110),"
@@ -69,7 +69,7 @@ def test_the_release_speed_is_the_last_80ms_of_the_pull_clamped() -> None:
     )
     assert [round(v, 2) for v in got[0]] == [2.0, 0.0]
     assert got[1] is None
-    assert [round(v, 2) for v in got[2]] == [-4.5, 0.0]
+    assert [round(v, 2) for v in got[2]] == [-2.3, 0.0]
     assert [round(v, 2) for v in got[3]] == [1.5, -0.3]
     assert got[4] is None and got[5] is None
 
@@ -141,9 +141,9 @@ def test_the_flight_is_one_frame_loop_on_transforms_and_lands_as_a_drop() -> Non
     spot = _fn("nameMarkBuddyThrowSpot")
     assert "nameMarkBuddyDrop(s.x, s.y)" in spot and "nameMarkBuddyChoose" not in land + spot
     assert "spots[tab] = nameMarkBuddySpotFor(spot);" in land
-    # A splat that slid onto a ledge steps along it, never up to the top bar
-    # (seed 2 of scratchpad/ui-sweeps/throwfates.js: 274 to 39 after the slide).
-    assert 's.fate?.kind === "splat" && spot.y < s.y - 40' in spot and "nameMarkBuddyDrop(s.x, s.y, 400)" in spot
+    # Any landing on a surface it cannot stand on steps along it, never up to
+    # the top bar (seed 2 of throwfates.js; INBOX 1302 widened it from splats).
+    assert "s.on && spot.y < s.y - 40" in spot and "nameMarkBuddyDrop(s.x, s.y, reach)" in spot
     assert "nameMarkBuddyToss" not in AV
 
 

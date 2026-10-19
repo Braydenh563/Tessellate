@@ -198,7 +198,9 @@ kind. Every tool has a key and every key is in the tooltip and the help.
    or draws as on bare board); the title takes the pointer. Dragging the
    title carries whatever lies wholly inside, decided when the drag starts;
    Ctrl moves the frame alone (the map topic's rule). Double-click the title
-   to rename. Delete leaves what it held. No rotation, no style or order
+   to rename. Delete leaves what it held. Rotation added 2026-10-19 (INBOX 1327,
+   the owner asked): the box turns, what lay inside stays put. A click on a
+   tinted panel's body or a plain frame's edge selects it. No style or order
    controls. Not on maps. Nesting, clipping and a frame as an export or
    presentation unit are not in this decision.
 15. **A locked item lets the pointer through** (taken 2026-10-04, the open
@@ -463,6 +465,15 @@ accessibility, and learnability") are why.
     because zoom, tool and selection already read from the zoom dock, the
     pressed tool and the context bar, and section 3 wants less chrome, not a
     fourth strip. The contextual quick bar is `.wb-context` (built).
+41. **A left-drag on empty canvas pans; Shift-drag selects** (the owner,
+    2026-10-19, INBOX 1332; supersedes the "a plain left-drag only pans
+    with Pan" rule in `wbZoomFilter` and the marquee being the plain
+    drag). One preference, "Left-drag on empty canvas" in the View menu,
+    Pan (default) or Select, shared by boards and maps so they teach one
+    hand (MINDMAP_PLAN decision 48); Shift flips whichever it is. Items
+    keep their own drag; right, middle and Space drags still pan; the Pan
+    and Lasso tools are untouched; touch already pans bare canvas.
+    **Reversed** (the owner, 2026-10-19: "we need to revert the left click pan as it clashes with and negates the drag selection tools"): a left-drag with Select draws the selection box again; Pan, Space, the middle and right buttons and the trackpad pan; the preference is removed.
 
 ## Built, 2026-09-09: one surface per panel, and the Arrange section
 
@@ -1629,3 +1640,35 @@ Decisions made:
 - P3. The card shows the preview cropped to the content's bounds, the title, items and last edited; an empty board shows an empty-state line, not a blank frame.
 
 Rows (owner: canvasdepth3, after C5): P1 to P3, each a commit with a test and a measured render time on the budget fixture's 500-object board.
+
+## Placed from INBOX, 2026-10-19 (INBOX 1307, 1308: elements, templates, the W/H link; the gap audit)
+
+Owner: "stuff like that, dont stop there, find what is missing on the whiteboard, mindmap and documents editor and add them." Built in surfaces-1019: the W/H link in Arrange, multi-part library elements placing as one group, 19 wireframe / 23 UML / 14 ERD / 16 flowchart elements, four templates (login, dashboard, mobile, sequence), Select similar, swimlanes. Gap list, read from the code against draw.io, Excalidraw and Miro (the first rows are done; sizes S, M, L):
+
+1. Select similar (same kind, fill, line colour) - S, built.
+2. Swimlane stencils, horizontal and vertical - S, built.
+3. Align to a key object (draw.io: the shape the others line up to stays put) - M.
+4. A shape's own web link, opened from the shape (draw.io "Edit link") - M; BACKLOG has a row.
+5. A per-shape "keep proportions" property, so dragging a corner keeps the ratio without Shift (the W/H link is the numeric half) - S.
+6. Quick sticky chain: Tab on a sticky makes the next one beside it (Miro) - S, built as Ctrl+Enter (Tab indents a sticky's lines here).
+7. Dimension and measure lines with a live length - M.
+8. Text that shrinks to fit its shape (draw.io "autosize" is grow only) - M.
+9. BPMN set: task, event, gateway, data object - M.
+10. C4 and architecture set: person, system, container, boundary - S, built (8 elements, `c4.json`).
+11. Cloud and network icon sets, drawn here (no draw.io files) - M.
+12. Org chart: a tree layout command for a board's boxes and connectors - M.
+13. Crop a picture to a shape (circle, rounded) - M.
+14. Voting dots and a timer for workshops (Miro) - M.
+15. Text along a path - L.
+
+## Placed from INBOX, 2026-10-19 (wb1327)
+
+- INBOX 1332. **The owner, 2026-10-19, verbatim.** "im wondering if instead I should change the right click pan on the whiteboard and mind map to left click to make it more intuitive??" then "shouldnt it be kept consistent tho for learnabilioty?"
+     Then: "maybe it csn be togglable bu=y the user??" A Settings choice, "Left-drag on empty canvas: Pan / Select", default Pan, one setting for both surfaces.
+     Decision (taken): left-drag on empty canvas pans on both the whiteboard and the mind map; box select moves to Shift+drag; right, middle and Space drags keep panning. Owner: whiteboard agent wb1327, item 5.
+
+## Placed from INBOX, 2026-10-19 (per-board view, Format on a map; next PR)
+
+1340. **The owner, 2026-10-19, verbatim.** "when I go between the mind map and whiteboard, should the board recenter on the main content?" **Built in memory for the session (not saved with the board), 2026-10-19:** `wbBoardViews`, `wbRestoreOrFrameBoard`; a map too big to fit opens at its content corner (`wbMapOpenTarget`); sweep `scratchpad/ui-sweeps/mapopenframe.js`. Saving the view with the board is still open.
+     Measured by code reading: a map refits on every open (`wbFrameMapOnOpen`, whiteboard.js:2516, `wbZoomToFit`); a board is not reframed and keeps whatever the shared camera (`wbZoom`, :170) last was, which may be the map's; no view is saved per board. For the next PR. Recommendation: each board and map remembers its own view (pan and zoom, saved with the board); returning restores it; fit to content only on first open, or when nothing would be on screen.
+

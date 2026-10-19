@@ -1134,7 +1134,8 @@ class RequestPulse:
         another = is_another_device(Request(scope))
         if not another and scope.get("method") in _ACTS and origin.has_deferred():
             origin.run_deferred(jobs.enqueue)
-        with origin.acting_for(another):
+        #: The request's endpoint names a model call no run owns (INBOX 805).
+        with origin.acting_for(another), jobruns.for_request(scope):
             await self.app(scope, receive, send)
 
 
@@ -1368,6 +1369,9 @@ def _include_routers(app: FastAPI, locked: list) -> None:
     app.include_router(routes_timeline.router, dependencies=locked)
     app.include_router(routes_library.router, dependencies=locked)
     app.include_router(routes_whiteboard.router, dependencies=locked)
+    app.include_router(
+        routes_whiteboard.media_router, dependencies=[Depends(routes_auth.require_unlock_media)]
+    )
     app.include_router(routes_board_library.router, dependencies=locked)
     app.include_router(routes_code_snippets.router, dependencies=locked)
     app.include_router(routes_code_assist.router, dependencies=locked)

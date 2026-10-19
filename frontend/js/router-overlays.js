@@ -9,6 +9,9 @@
 // history and left the overlay open on the other tab (5 of 5). Back now closes
 // the top overlay and puts the history back where it was.
 
+//: The manual and Statistics are places too (INBOX 1335): overlays that push an
+//: entry on open, as Settings does; their own close steps back off it.
+const OVERLAY_TABS = { Manual: 1, Statistics: 1 };
 const routerBack = { swallow: 0, timer: 0 };
 
 //: The top overlay, closed the way its own Escape closes it. True when one was
@@ -73,6 +76,8 @@ function routerBackHook(event) {
     return true;
   }
   if (typeof settingsModalOpen === "function" && settingsModalOpen()) return false;
+  //: The manual and Statistics have entries of their own, as Settings does.
+  if (OVERLAY_TABS[tabHistory.stack[tabHistory.index]?.tab]) return false;
   const navId = event.state && event.state.navId;
   const to = navId ? tabHistory.stack.findIndex((entry) => entry.navId === navId) : -1;
   const delta = to - tabHistory.index;
@@ -123,3 +128,27 @@ function routerSettle() {
     if (back && back.isConnected && (!active || active === document.body || overlay.contains(active))) back.focus?.();
   }).observe(overlay, { attributes: true, attributeFilter: ["class"] });
 })();
+
+//: An overlay's own close, not a move through history (manual.js, statistics.js).
+//: `stay`: the close is about to go somewhere, so the entry stays for Back.
+function overlayClosed(name, { stay = false } = {}) {
+  if (stay || tabHistory.navigating) return;
+  if (tabHistory.stack[tabHistory.index]?.tab === name && tabHistory.index > 0) stepTabHistory(-1);
+}
+
+//: `openHistoryEntry`'s first step. The manual and Statistics open over what is
+//: under them (a manual opened from Settings keeps Settings behind it); any
+//: other entry closes both. True when the entry was one of the two.
+async function overlayGo(entry) {
+  if (entry.tab !== "Manual") (typeof manualOpen !== "undefined" ? manualOpen : null)?.close?.();
+  if (entry.tab !== "Statistics" && typeof statsCard !== "undefined") statsCard.close?.();
+  if (entry.tab === "Manual") {
+    if (await lazyScript("/js/manual.js")) await openManual();
+  } else if (entry.tab === "Statistics") {
+    openStatistics();
+  } else {
+    return false;
+  }
+  paintTabHistory();
+  return true;
+}

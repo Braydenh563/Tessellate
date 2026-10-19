@@ -2859,6 +2859,350 @@ def _wrap_up_round(ollama, agent_model: str, mode, state: _TurnState, card: _Tur
     return wrapped
 
 
+@dataclass
+class _Loop:
+    """The round loop's own counters, kept apart from `_TurnState` (what the
+    tools learn) because only the loop and its stage helpers touch them."""
+
+    #: Granted, then earned: see `_prepare_turn` for the two caps.
+    allowance: int
+    ceiling: int
+    round_number: int = -1
+    #: One nudge per turn for a round that came back with nothing at all.
+    nudged_empty: bool = False
+    #: A forced first round that came back without a call is asked once more
+    #: with the call required again (`FORCED_PROSE_NUDGE`); set when that
+    #: second round is owed, so the retry is forced and the turn gets one.
+    retry_forced: bool = False
+    #: And one for a round that only said what it would do.
+    nudged_intent: bool = False
+    #: And one for a reply that claimed an act no tool performed.
+    nudged_claim: bool = False
+    #: The replies a nudge set aside, for the claim check at the turn's end.
+    said_before: str = ""
+    #: Only a turn that has done nothing at all is nudged: a skill step that
+    #: read its page and then stops is finished, and the runner reads that
+    #: silence (`skill_runner`'s paging and postconditions depend on it).
+    called_any: bool = False
+
+
+@dataclass
+class _Streamed:
+    """What one round's stream produced, filled in as it arrives so the error
+    paths can still see whether any prose reached the user."""
+
+    reply: dict = field(default_factory=dict)
+    streamed_any: bool = False
+
+
+def _budget_events(spend, state: _TurnState, loop: _Loop) -> list[dict]:  # noqa: ANN001
+    """Checked between rounds, never mid-stream: stopping inside a model call
+    would leave half an answer on screen and a tool result nobody read, so the
+    most a run can overshoot its budget by is one round."""
+    if spend is None or not spend.exceeded():
+        return []
+    return [
+        {
+            "type": "limit",
+            "reason": "budget",
+            "detail": spend.exceeded(),
+            "rounds": loop.round_number + 1,
+            "tokens": spend.spent_tokens,
+            "wrote": sorted(state.ran_writes),
+        },
+        {"type": "answer", "delta": f"I stopped here: {spend.exceeded()}"},
+    ]
+
+
+def _round_tools(question: str, plan: "_TurnPlan", state: _TurnState, loop: _Loop, session: Session) -> tuple[bool, list[dict]]:
+    required = (loop.round_number == 0 or loop.retry_forced) and plan.tier.force_first_call and _requires_a_call(question, plan)
+    first = loop.round_number == 0 or (loop.retry_forced and required)
+    tools = _first_round_tools(question, plan, state.offered, required, session) if first else state.offered
+    loop.retry_forced = False
+    return required, tools
+
+
+def _relay_stream(stream, got: _Streamed, cap: int | None, tier_name: str) -> Iterator[dict]:  # noqa: ANN001
+    said = ""
+    for piece in stream:
+        if "thinking_delta" in piece:
+            yield {"type": "thinking", "delta": piece["thinking_delta"]}
+        elif "content_delta" in piece:
+            got.streamed_any = True
+            said += piece["content_delta"]
+            yield {"type": "answer", "delta": piece["content_delta"]}
+            if cap is not None and len(said) >= cap:
+                # Closing the generator closes the HTTP stream with it (the
+                # same path Stop takes).
+                stream.close()
+                logging.getLogger("tessellate.agent").info("reply cap: %s-tier round cut at %d chars", tier_name, len(said))
+                yield {"type": "answer", "delta": REPLY_CAP_NOTE}
+                got.reply = {"content": said, "tool_calls": [], "streamed": True}
+                break
+        elif "final" in piece:
+            got.reply = piece["final"]
+
+
+def _unsupported_events(card: _TurnCard, agent_model: str, exc: ToolsUnsupportedError) -> Iterator[dict]:
+    # INBOX 272 part 1: named here, once, so every caller that forwards this
+    # event (routes_chat.py, skill_runner.py) shows the same remedy instead of
+    # dropping it (see tools_unsupported_message's own docstring).
+    yield from card.end_round(TURN_ROW_RUNNING, "failed", "the model cannot use tools")
+    yield {
+        "type": "unsupported",
+        "model": agent_model,
+        "message": tools_unsupported_message(agent_model, getattr(exc, "declared", True)),
+    }
+
+
+def _model_died_events(card: _TurnCard, agent_model: str, exc: OllamaError, streamed_any: bool) -> Iterator[dict]:
+    # Mid-answer death: say so, but don't wipe what already streamed.
+    # `offline: True` alongside the normal answer shape (Tier 1 section 3): an
+    # ordinary chat turn renders this like any other answer, but skill_runner
+    # cannot tell this boilerplate from a real answer without it, and was
+    # ticking the step "done" and repeating the identical failure on every
+    # later step. It only ever checks the flag's truthiness, never the text.
+    # Logged too, so the failure reaches Settings -> Logs and not only the
+    # chat bubble (librarian.model_error_message's docstring has the history).
+    logging.getLogger("tessellate.chat").warning("agent: model call failed for %r: %s", agent_model, exc)
+    prefix = "\n\n" if streamed_any else ""
+    yield {"type": "answer", "delta": f"{prefix}{librarian.model_error_message(agent_model, exc)}", "offline": True}
+    yield from card.end_round(TURN_ROW_RUNNING, "failed", "the model stopped answering")
+
+
+def _stream_round(ollama, plan: "_TurnPlan", state: _TurnState, loop: _Loop, question: str, mode, session: Session, card: _TurnCard):  # noqa: ANN001
+    """One model call, streamed to the user. Returns (reply, required), or None
+    after yielding why the turn cannot go on. Streamed: the model's prose
+    reaches the user as it's written, rather than in one lump after a pause."""
+    got = _Streamed()
+    #: H3: prose this round streams, against the tier's reply cap.
+    cap = plan.tier.reply_chars if state.offered else None
+    required = False
+    try:
+        required, tools = _round_tools(question, plan, state, loop, session)
+        stream = _round_stream(ollama, plan.agent_model, state.messages, tools, mode, required)
+        yield from _relay_stream(stream, got, cap, plan.tier.name)
+    except ToolsUnsupportedError as exc:
+        yield from _unsupported_events(card, plan.agent_model, exc)
+        return None
+    except OllamaError as exc:
+        yield from _model_died_events(card, plan.agent_model, exc, got.streamed_any)
+        return None
+    return got.reply, required
+
+
+def _round_stats(spend, reply: dict, plan: "_TurnPlan", loop: _Loop) -> list[dict]:  # noqa: ANN001
+    # Charged whatever the provider reported, once per round, before anything
+    # is done with the result: a round that ran cost something even if its
+    # answer is thrown away. Agent turns once emitted nothing here, which
+    # silently stripped the token counts from the message metadata line.
+    if spend is not None:
+        spend.charge(reply.get("stats"))
+    if not reply.get("stats"):
+        return []
+    stats = {**reply["stats"], "round": loop.round_number + 1}
+    if loop.round_number == 0:
+        stats["composition"] = plan.composition_tokens
+    return [{"type": "stats", **stats}]
+
+
+def _nudge(state: _TurnState, card: _TurnCard, answer: str | None, text: str) -> Iterator[dict]:
+    if answer is not None:
+        state.messages.append({"role": "assistant", "content": answer})
+    state.messages.append({"role": "user", "content": text})
+    if answer is not None:
+        yield {"type": "answer", "delta": "\n\n"}
+    yield from card.end_round(TURN_ROW_RECHECK)
+
+
+def _nudge_empty(state: _TurnState, loop: _Loop, card: _TurnCard, reply: dict, answer: str, required: bool):
+    """**A round with no words and no tool call is asked once more.** Reported
+    twice with granite4.1:3b in the popup agent ("what can I use the graph
+    for?", "make a note"): the model answered with nothing, often having spent
+    the round thinking after a long tool list. One plain-words nudge is the
+    cheap recovery; a second empty round ends the turn, and the client says the
+    model wrote nothing. True when it nudged."""
+    if answer or reply.get("streamed") or loop.nudged_empty or loop.called_any:
+        return False
+    loop.nudged_empty = True
+    loop.retry_forced = required
+    yield from _nudge(state, card, None, EMPTY_ROUND_NUDGE)
+    return True
+
+
+def _nudge_prose(state: _TurnState, loop: _Loop, card: _TurnCard, answer: str, required: bool):
+    """**A forced round that came back as prose is asked once more**, with the
+    call required again. One re-prompt per turn: it takes the place of the
+    intent and claim nudges, which would otherwise stack a second and third
+    round onto the same miss."""
+    if not (required and answer and not loop.called_any and not loop.nudged_empty and not loop.nudged_intent):
+        return False
+    if loop.round_number + 1 >= loop.allowance:
+        return False
+    loop.nudged_intent = loop.nudged_claim = True
+    loop.retry_forced = True
+    yield from _nudge(state, card, answer, FORCED_PROSE_NUDGE)
+    return True
+
+
+def _nudge_intent(state: _TurnState, loop: _Loop, card: _TurnCard, answer: str):
+    """**Said it would act, and did not.** Asked once to do it; the sentence
+    already shown stays as the turn's opening line, and what the tool finds
+    follows it. A second such round ends the turn with the claim checks."""
+    if loop.nudged_intent or not announces_unacted_tool(answer, state.offered):
+        return False
+    loop.nudged_intent = True
+    yield from _nudge(state, card, answer, UNACTED_INTENT_NUDGE)
+    return True
+
+
+def _nudge_claim(state: _TurnState, loop: _Loop, card: _TurnCard, answer: str, unsupported: list[str]):
+    """**Reflect and retry: a claimed act is asked for once** (INBOX 527,
+    Qwen2.5-1.5B): "Make a note: buy oat milk" got "I've made a new note for
+    you" and no call. The model is told what it claimed and which tool does it,
+    once, while it still has a round; the heads-up is what is left when the
+    retry does not do it either, checked against everything said this turn."""
+    offered = {t["function"]["name"] for t in state.offered}
+    needed = [tool for label, _verb, needs in _CLAIMED_ACTIONS if label in unsupported for tool in sorted(needs) if tool in offered]
+    if not (unsupported and needed) or loop.nudged_claim or loop.round_number + 1 >= loop.allowance:
+        return False
+    loop.nudged_claim = True
+    loop.said_before += f"{answer}\n"
+    text = CLAIM_RETRY_NUDGE.format(claims=", ".join(unsupported), tools=" or ".join(needed))
+    yield from _nudge(state, card, answer, text)
+    return True
+
+
+def _claim_notice(state: _TurnState, answer: str, unsupported: list[str]) -> list[dict]:
+    if unsupported:
+        # Named, not vague: the answer may have claimed five things, and the
+        # user needs to know which did not happen, since the rest may be true.
+        listed = ", ".join(unsupported)
+        return [
+            {
+                "type": "answer",
+                "delta": (
+                    f"\n\nHeads up: I said I {listed}, but I didn't "
+                    "actually run the tool that does it, so that part did "
+                    "not happen and nothing was changed by it. Ask me again "
+                    "and I'll do it properly."
+                ),
+            }
+        ]
+    if not state.did_write and _CLAIM_PATTERN.search(answer):
+        # The looser net, for a claim with no recognisable action in it ("new
+        # note titled..."). Only when nothing was written, since it can't say
+        # which action it means.
+        return [
+            {
+                "type": "answer",
+                "delta": (
+                    "\n\nHeads up: I described that, but it looks like I "
+                    "didn't actually save it (my model didn't run the tool). "
+                    "Nothing was changed: try again, or paste the text into "
+                    "a new note yourself."
+                ),
+            }
+        ]
+    return []
+
+
+def _settle_answer(state: _TurnState, loop: _Loop, card: _TurnCard, reply: dict, required: bool, show_plan: bool):
+    """A round with no tool call: this text IS the final answer. True when the
+    turn is over, False when a nudge asked for another round."""
+    answer = reply.get("content", "").strip()
+    if (yield from _nudge_empty(state, loop, card, reply, answer, required)):
+        return False
+    # It has usually streamed already; send it only if the tool-call gate held it back.
+    if not reply.get("streamed") and answer:
+        yield {"type": "answer", "delta": answer}
+    if (yield from _nudge_prose(state, loop, card, answer, required)) or (yield from _nudge_intent(state, loop, card, answer)):
+        return False
+    # Safety net: a claim to have saved/created something when no write tool
+    # ran is a hallucination; say so rather than let the user believe a note
+    # exists that doesn't.
+    unsupported = unsupported_claims(f"{loop.said_before}{answer}", state.ran_writes | state.implied)
+    if (yield from _nudge_claim(state, loop, card, answer, unsupported)):
+        return False
+    yield from _claim_notice(state, answer, unsupported)
+    yield from _check_sources(f"{loop.said_before}{answer}", state.messages, loop.called_any and show_plan)
+    yield from card.end_round(TURN_ROW_ANSWER)
+    return True
+
+
+def _replay_message(reply: dict) -> dict:
+    """The assistant turn with its calls, replayed so the model keeps its own
+    context. **Including the round's own reasoning**, asked for directly: *"it
+    often thinks up this whole plan, then it does a tool call and either loses
+    track or has to rethink the plan again."* `thinking` was streamed to the
+    user and then dropped, so a thinking model spent its output budget
+    re-deriving the same plan every round. Carried as content rather than a
+    `thinking` field because that field is not portable (Ollama accepts one,
+    the OpenAI-compatible dialect does not, and a message shape one backend
+    rejects is an outage). Marked and clipped, so it reads as a note-to-self
+    and cannot grow into the round's whole budget."""
+    replay = reply.get("content") or ""
+    reasoning = (reply.get("thinking") or "").strip()
+    if reasoning:
+        clipped = reasoning[:THINKING_CARRIED_CHARS]
+        if len(reasoning) > THINKING_CARRIED_CHARS:
+            clipped += "…"
+        replay = f"[my reasoning so far: {clipped}]{chr(10) if replay else ''}{replay}"
+    return {"role": "assistant", "content": replay, "tool_calls": reply.get("raw_tool_calls") or []}
+
+
+def _widen_focus(plan: "_TurnPlan", state: _TurnState, calls: list[dict]) -> None:
+    # Did the model reach for something it was not shown? Then the focus
+    # misread the request, and later rounds should not work from the same
+    # misreading. Widening is one-way and lasts the rest of the turn.
+    if not plan.focused_only or state.offered is plan.every_tool:
+        return
+    shown = {t["function"]["name"] for t in state.offered}
+    reached_past = [c["name"] for c in calls if c["name"] not in shown]
+    if reached_past:
+        logging.getLogger("tessellate.agent").info(
+            "focus corrected: model called %s, which the question's "
+            "words did not suggest, offering the full set from here",
+            ", ".join(sorted(set(reached_past))[:5]),
+        )
+        state.offered = plan.every_tool
+
+
+def _dispatch_round(session: Session, plan: "_TurnPlan", state: _TurnState, card: _TurnCard, calls: list[dict], history):  # noqa: ANN001
+    """Every call of one round; True when a tool ended the turn (the handover
+    tools). See `_dispatch_call`."""
+    labels: list[str] = []
+    ended = False
+    for call in calls:
+        if (yield from _labelled(_dispatch_call(session, plan, state, call, history), labels)):
+            ended = True
+            break
+    yield from card.end_round(_TurnCard.row_for(labels))
+    return ended
+
+
+def _exhausted_events(ollama, plan: "_TurnPlan", state: _TurnState, loop: _Loop, card: _TurnCard, spend, mode, show_plan: bool, exhausted_note):  # noqa: ANN001
+    # Out of rounds with tools still being called: the job is unfinished, and
+    # saying so is the honest end. The `limit` event is what distinguishes this
+    # from an answer: the skill runner marks the step stalled rather than
+    # ticking it off, and the chat UI offers Continue instead of making the
+    # user type "carry on".
+    yield {"type": "limit", "reason": "rounds", "rounds": loop.round_number + 1, "wrote": sorted(state.ran_writes)}
+    wrapped = ""
+    if exhausted_note is None and not (spend is not None and spend.exceeded()):
+        wrapped = yield from _wrap_up_round(ollama, plan.agent_model, mode, state, card, show_plan)
+    yield {
+        "type": "answer",
+        "delta": exhausted_note
+        or (
+            ("\n\n" if wrapped.strip() else "")
+            + "I stopped after "
+            f"{loop.round_number + 1} rounds of tool calls, here's where things "
+            "stand. Continue and I'll pick up from here."
+        ),
+    }
+
+
 def run_agent(
     session: Session,
     question: str,
@@ -2920,358 +3264,51 @@ def run_agent(
         model_override=model_override,
         image_context=image_context,
     )
-    agent_model = plan.agent_model
-    every_tool = plan.every_tool
-    focused_only = plan.focused_only
-    composition_tokens = plan.composition_tokens
     state = _TurnState(messages=plan.messages, offered=plan.offered, named_hosts=_hosts_named(question))
     # SEC-02: a note retrieved for the question that was clipped from the web
     # or imported is already in the prompt, so the turn starts tainted.
     if any(isinstance(n, dict) and n.get("from_outside") for n in notes or ()):
         state.outside = True
-
-    # Granted, then earned: see `_prepare_turn` for the two caps.
-    granted, ceiling = plan.granted, plan.ceiling
-    allowance = granted
-    round_number = -1
-
+    loop = _Loop(allowance=plan.granted, ceiling=plan.ceiling)
     #: **The run this turn belongs to, if it belongs to one** (Brief 13).
     #: None for an ordinary chat turn: that is bounded per turn already, by
-    #: `allowance` immediately below, and has no notion of a run to belong to.
-    #: See `ai/budget.py` for why this is a scope rather than a parameter.
+    #: `loop.allowance`, and has no notion of a run to belong to. See
+    #: `ai/budget.py` for why this is a scope rather than a parameter.
     spend = run_budget.current()
-    #: One nudge per turn for a round that came back with nothing at all.
-    nudged_empty = False
-    #: A forced first round that came back without a call is asked once more
-    #: with the call required again (`FORCED_PROSE_NUDGE`); set when that
-    #: second round is owed, so the retry is forced and the turn gets one.
-    retry_forced = False
-    #: And one for a round that only said what it would do.
-    nudged_intent = False
-    #: And one for a reply that claimed an act no tool performed.
-    nudged_claim = False
-    #: The replies a nudge set aside, for the claim check at the turn's end.
-    said_before = ""
-    #: Only a turn that has done nothing at all is nudged: a skill step that
-    #: read its page and then stops is finished, and the runner reads that
-    #: silence (`skill_runner`'s paging and postconditions depend on it).
-    called_any = False
     card = _TurnCard(question, show_plan)
 
-    while round_number + 1 < allowance:
-        #: Checked between rounds, never mid-stream: stopping inside a model
-        #: call would leave half an answer on screen and a tool result nobody
-        #: read, so the most a run can overshoot its budget by is one round.
-        if spend is not None and spend.exceeded():
-            yield {
-                "type": "limit",
-                "reason": "budget",
-                "detail": spend.exceeded(),
-                "rounds": round_number + 1,
-                "tokens": spend.spent_tokens,
-                "wrote": sorted(state.ran_writes),
-            }
-            yield {
-                "type": "answer",
-                "delta": f"I stopped here: {spend.exceeded()}",
-            }
+    while loop.round_number + 1 < loop.allowance:
+        stop = _budget_events(spend, state, loop)
+        if stop:
+            yield from stop
             return
-        round_number += 1
-        yield from card.start_round(called_any)
-        # Set by any tool call that succeeded and had not been made before, 
+        loop.round_number += 1
+        yield from card.start_round(loop.called_any)
+        # Set by any tool call that succeeded and had not been made before,
         # the definition of "this round got somewhere". Read at the bottom of
         # the loop, where it buys the next round.
         state.progressed = False
-        # Streamed: the model's prose reaches the user as it's written. The
-        # non-streamed call this used to make is why an agent answer landed in
-        # one lump after a visible pause (user-reported): every other chat
-        # path streamed, and the default path (tools on) didn't.
-        reply: dict = {}
-        streamed_any = False
-        #: H3: prose this round has streamed, against the tier's reply cap.
-        cap = plan.tier.reply_chars if state.offered else None
-        said = ""
-        try:
-            required = (round_number == 0 or retry_forced) and plan.tier.force_first_call and _requires_a_call(question, plan)
-            this_round = (
-                _first_round_tools(question, plan, state.offered, required, session)
-                if round_number == 0 or (retry_forced and required)
-                else state.offered
-            )
-            retry_forced = False
-            stream = _round_stream(ollama, agent_model, state.messages, this_round, mode, required)
-            for piece in stream:
-                if "thinking_delta" in piece:
-                    yield {"type": "thinking", "delta": piece["thinking_delta"]}
-                elif "content_delta" in piece:
-                    streamed_any = True
-                    said += piece["content_delta"]
-                    yield {"type": "answer", "delta": piece["content_delta"]}
-                    if cap is not None and len(said) >= cap:
-                        # Closing the generator closes the HTTP stream with
-                        # it (the same path Stop takes).
-                        stream.close()
-                        logging.getLogger("tessellate.agent").info(
-                            "reply cap: %s-tier round cut at %d chars", plan.tier.name, len(said)
-                        )
-                        yield {"type": "answer", "delta": REPLY_CAP_NOTE}
-                        reply = {"content": said, "tool_calls": [], "streamed": True}
-                        break
-                elif "final" in piece:
-                    reply = piece["final"]
-        except ToolsUnsupportedError as exc:
-            # INBOX 272 part 1: named here, once, so every caller that
-            # forwards this event (routes_chat.py, skill_runner.py) shows
-            # the same remedy instead of dropping the event on the floor,
-            # which is what happened before (see tools_unsupported_message's
-            # own docstring).
-            yield from card.end_round(TURN_ROW_RUNNING, "failed", "the model cannot use tools")
-            yield {
-                "type": "unsupported",
-                "model": agent_model,
-                "message": tools_unsupported_message(agent_model, getattr(exc, "declared", True)),
-            }
+        got = yield from _stream_round(ollama, plan, state, loop, question, mode, session, card)
+        if got is None:
             return
-        except OllamaError as exc:
-            # Mid-answer death: say so, but don't wipe what already streamed.
-            # `offline: True` alongside the normal answer shape (Tier 1 §3): 
-            # an ordinary chat turn renders this exactly like any other
-            # answer and needs no change, but skill_runner cannot tell this
-            # boilerplate apart from a real answer without it, and was
-            # ticking the step "done" and moving on to repeat the identical
-            # failure on every later step. `skill_runner` only ever checks
-            # this flag's truthiness (never the message text), so swapping
-            # in the real error below changes nothing about that contract.
-            #
-            # This used to be librarian.OFFLINE_MESSAGE unconditionally, 
-            # "Ollama doesn't seem to be running", which is simply false
-            # whenever this except is reached at all (the loop had already
-            # gotten at least one successful round trip to be here) and the
-            # same misdiagnosis routes_chat.py's plain_events() had for the
-            # Ask mode (see librarian.model_error_message's own docstring).
-            # Logged too, for the same reason that fix added logging: this
-            # failure used to reach the chat bubble but never Settings → Logs.
-            logging.getLogger("tessellate.chat").warning(
-                "agent: model call failed for %r: %s", agent_model, exc
-            )
-            prefix = "\n\n" if streamed_any else ""
-            yield {
-                "type": "answer",
-                "delta": f"{prefix}{librarian.model_error_message(agent_model, exc)}",
-                "offline": True,
-            }
-            yield from card.end_round(TURN_ROW_RUNNING, "failed", "the model stopped answering")
-            return
-
-        # Report what this round cost. Agent turns used to emit nothing here,
-        # so switching tools on, the default, silently stripped the token
-        # counts out of the message metadata line.
-        # Charged whatever the provider reported, once per round, before
-        # anything is done with the result: a round that ran is a round that
-        # cost something even if the answer it produced is thrown away.
-        if spend is not None:
-            spend.charge(reply.get("stats"))
-        if reply.get("stats"):
-            stats = {**reply["stats"], "round": round_number + 1}
-            if round_number == 0:
-                stats["composition"] = composition_tokens
-            yield {"type": "stats", **stats}
-
+        reply, required = got
+        yield from _round_stats(spend, reply, plan, loop)
         calls = reply.get("tool_calls") or []
         if not calls:
-            # No tools wanted → this text IS the final answer. It has usually
-            # already streamed; send it only if the tool-call gate held it back.
-            answer = reply.get("content", "").strip()
-            #: **A round with no words and no tool call is asked once more.**
-            #: Reported twice in one sitting with granite4.1:3b in the popup
-            #: agent ("what can I use the graph for?", "make a note"): the
-            #: model answered with nothing, and the turn ended with nothing
-            #: to show. Small models do this after a long tool list, often
-            #: having spent the round thinking. One plain-words nudge is the
-            #: cheap recovery; a second empty round ends the turn as before,
-            #: and the client says the model wrote nothing.
-            if not answer and not reply.get("streamed") and not nudged_empty and not called_any:
-                nudged_empty = True
-                retry_forced = required
-                state.messages.append({"role": "user", "content": EMPTY_ROUND_NUDGE})
-                yield from card.end_round(TURN_ROW_RECHECK)
-                continue
-            if not reply.get("streamed") and answer:
-                yield {"type": "answer", "delta": answer}
-            #: **A forced round that came back as prose is asked once more**,
-            #: with the call required again. One re-prompt per turn: it takes
-            #: the place of the intent and claim nudges below, which would
-            #: otherwise stack a second and third round onto the same miss.
-            if required and answer and not called_any and not nudged_empty and not nudged_intent and round_number + 1 < allowance:
-                nudged_intent = nudged_claim = True
-                retry_forced = True
-                state.messages.append({"role": "assistant", "content": answer})
-                state.messages.append({"role": "user", "content": FORCED_PROSE_NUDGE})
-                yield {"type": "answer", "delta": "\n\n"}
-                yield from card.end_round(TURN_ROW_RECHECK)
-                continue
-            #: **Said it would act, and did not.** Asked once to do it; the
-            #: sentence already shown stays as the turn's opening line, and
-            #: what the tool finds follows it. A second such round ends the
-            #: turn as before, with the claim checks below.
-            if not nudged_intent and announces_unacted_tool(answer, state.offered):
-                nudged_intent = True
-                state.messages.append({"role": "assistant", "content": answer})
-                state.messages.append({"role": "user", "content": UNACTED_INTENT_NUDGE})
-                yield {"type": "answer", "delta": "\n\n"}
-                yield from card.end_round(TURN_ROW_RECHECK)
-                continue
-            # Safety net: if the model claims it saved/created something but no
-            # write tool actually ran, it hallucinated, say so instead of
-            # letting the user believe a note exists that doesn't.
-            unsupported = unsupported_claims(f"{said_before}{answer}", state.ran_writes | state.implied)
-            #: **Reflect and retry: a claimed act is asked for once** (INBOX
-            #: 527, Qwen2.5-1.5B): "Make a note: buy oat milk" got "I've made a
-            #: new note for you" and no call, and the heads-up below was all
-            #: the user got. Now the model is told what it claimed and which
-            #: tool does it, once, while it still has a round; the heads-up is
-            #: what is left when the retry does not do it either, checked
-            #: against everything said this turn, not only the last reply.
-            needed = [
-                tool
-                for label, _verb, needs in _CLAIMED_ACTIONS
-                if label in unsupported
-                for tool in sorted(needs)
-                if tool in {t["function"]["name"] for t in state.offered}
-            ]
-            if unsupported and needed and not nudged_claim and round_number + 1 < allowance:
-                nudged_claim = True
-                said_before += f"{answer}\n"
-                state.messages.append({"role": "assistant", "content": answer})
-                state.messages.append(
-                    {
-                        "role": "user",
-                        "content": CLAIM_RETRY_NUDGE.format(
-                            claims=", ".join(unsupported), tools=" or ".join(needed)
-                        ),
-                    }
-                )
-                yield {"type": "answer", "delta": "\n\n"}
-                yield from card.end_round(TURN_ROW_RECHECK)
-                continue
-            if unsupported:
-                # Named, not vague. "It looks like I didn't actually save it"
-                # is useless when the answer claimed five different things, 
-                # the user needs to know which of them did not happen, because
-                # the rest of the list may well be true.
-                listed = ", ".join(unsupported)
-                yield {
-                    "type": "answer",
-                    "delta": (
-                        f"\n\nHeads up: I said I {listed}, but I didn't "
-                        "actually run the tool that does it, so that part did "
-                        "not happen and nothing was changed by it. Ask me again "
-                        "and I'll do it properly."
-                    ),
-                }
-            elif not state.did_write and _CLAIM_PATTERN.search(answer):
-                # The looser net, for a claim with no recognisable action in
-                # it ("new note titled…"). Only when nothing at all was
-                # written, since it can't say which action it means.
-                yield {
-                    "type": "answer",
-                    "delta": (
-                        "\n\nHeads up: I described that, but it looks like I "
-                        "didn't actually save it (my model didn't run the tool). "
-                        "Nothing was changed: try again, or paste the text into "
-                        "a new note yourself."
-                    ),
-                }
-            yield from _check_sources(f"{said_before}{answer}", state.messages, called_any and show_plan)
-            yield from card.end_round(TURN_ROW_ANSWER)
-            return
-
-        called_any = True
-        # Replay the assistant turn (with its calls) so the model keeps
-        # its own context, then answer each call.
-        #
-        # **Including the round's own reasoning**, asked for directly: *"it
-        # often thinks up this whole plan, then it does a tool call and either
-        # loses track or has to rethink the plan again."* That is exactly what
-        # happened: `thinking` was streamed to the user and then dropped, so
-        # the next round saw its own tool calls with no record of why it made
-        # them, and a thinking model spent its output budget re-deriving the
-        # same plan every round.
-        #
-        # Carried as content rather than as a `thinking` field because that
-        # field is not portable: Ollama accepts one, the OpenAI-compatible
-        # dialect does not, and a message shape one backend rejects is an
-        # outage rather than a degradation. Marked and clipped, so it reads as
-        # a note-to-self and cannot grow into the round's whole budget.
-        replay = reply.get("content") or ""
-        reasoning = (reply.get("thinking") or "").strip()
-        if reasoning:
-            clipped = reasoning[:THINKING_CARRIED_CHARS]
-            if len(reasoning) > THINKING_CARRIED_CHARS:
-                clipped += "…"
-            replay = f"[my reasoning so far: {clipped}]{chr(10) if replay else ''}{replay}"
-        state.messages.append(
-            {
-                "role": "assistant",
-                "content": replay,
-                "tool_calls": reply.get("raw_tool_calls") or [],
-            }
-        )
-        # Did the model reach for something it was not shown? Then the focus
-        # misread the request, and the rounds after this one should not be
-        # working from the same misreading. Widening is deliberately one-way
-        # and lasts the rest of the turn: a request whose subject the words did
-        # not carry does not become readable later in the same turn.
-        if focused_only and state.offered is not every_tool:
-            shown = {t["function"]["name"] for t in state.offered}
-            reached_past = [c["name"] for c in calls if c["name"] not in shown]
-            if reached_past:
-                logging.getLogger("tessellate.agent").info(
-                    "focus corrected: model called %s, which the question's "
-                    "words did not suggest, offering the full set from here",
-                    ", ".join(sorted(set(reached_past))[:5]),
-                )
-                state.offered = every_tool
-
+            if (yield from _settle_answer(state, loop, card, reply, required, show_plan)):
+                return
+            continue
+        loop.called_any = True
+        state.messages.append(_replay_message(reply))
+        _widen_focus(plan, state, calls)
         state.tainted = state.outside
         if not state.tainted:
             _prefetch_outbound(calls)
-        labels: list[str] = []
-        for call in calls:
-            # One call, its guards and its result; True when the tool ended the
-            # turn (the handover tools). See `_dispatch_call`.
-            if (yield from _labelled(_dispatch_call(session, plan, state, call, history), labels)):
-                yield from card.end_round(_TurnCard.row_for(labels))
-                return
-        yield from card.end_round(_TurnCard.row_for(labels))
-        if state.progressed and allowance < ceiling:
+        if (yield from _dispatch_round(session, plan, state, card, calls, history)):
+            return
+        if state.progressed and loop.allowance < loop.ceiling:
             # This round did something new, so the turn gets another one. The
-            # cap that stops a runaway is still there, a round that repeats
+            # cap that stops a runaway is still there: a round that repeats
             # itself or errors buys nothing, so a loop never reaches `ceiling`.
-            allowance += 1
-
-    # Out of rounds with tools still being called: the job is unfinished, and
-    # saying so is the honest end. The `limit` event is what distinguishes this
-    # from an answer: the skill runner uses it to mark the step stalled rather
-    # than ticking it off, and the chat UI uses it to offer Continue instead of
-    # making the user type "carry on" (both reported: a run that "cuts out half
-    # way through and has to restart").
-    yield {
-        "type": "limit",
-        "reason": "rounds",
-        "rounds": round_number + 1,
-        "wrote": sorted(state.ran_writes),
-    }
-    wrapped = ""
-    if exhausted_note is None and not (spend is not None and spend.exceeded()):
-        wrapped = yield from _wrap_up_round(ollama, agent_model, mode, state, card, show_plan)
-    yield {
-        "type": "answer",
-        "delta": exhausted_note
-        or (
-            ("\n\n" if wrapped.strip() else "")
-            + "I stopped after "
-            f"{round_number + 1} rounds of tool calls, here's where things "
-            "stand. Continue and I'll pick up from here."
-        ),
-    }
+            loop.allowance += 1
+    yield from _exhausted_events(ollama, plan, state, loop, card, spend, mode, show_plan, exhausted_note)

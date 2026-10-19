@@ -59,8 +59,11 @@ def test_escape_stops_the_answer_and_the_stop_button_holds_the_keyboard() -> Non
     assert "chatController.abort()" in esc
     assert '$("tab-chat").classList.contains("hidden")' in esc, "Escape on another tab must not stop a chat"
     assert "event.defaultPrevented" in esc, "an Escape a menu or dialog already used must be left alone"
-    send = _function(app, "sendChatMessage")
-    assert '$("chat-stop").focus(' in send, "the Stop button no longer takes the focus while the answer streams"
+    #: INBOX 1321 moved the intent: the box stays open mid-answer so the next
+    #: message can be written and queued, and keeps the keyboard; Escape on
+    #: the page still stops the answer.
+    turn = _function(app, "chatSendTurn")
+    assert "input.disabled = true" not in turn, "the box stays open while the answer streams (INBOX 1321)"
 
 
 def test_escape_leaves_an_answer_being_written_in_another_chat_alone() -> None:

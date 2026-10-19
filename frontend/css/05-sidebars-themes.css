@@ -844,7 +844,11 @@ button.map-chip:focus-visible {
   position: fixed;
   top: -9999px;
   left: -9999px;
-  z-index: 60;
+  /* Above the Agent popup's overlay (2000, 07-whiteboard-misc.css), which
+     hid this menu while the commands still worked (INBOX 1333a:
+     elementFromPoint on the open menu returned the popup's intro text).
+     2550 is the tier `.action-menu-escaped` uses for the same reason. */
+  z-index: 2550;
   display: flex;
   align-items: stretch;
   max-width: calc(100vw - var(--space-9));
@@ -3972,16 +3976,16 @@ button.is-on {
     --header-pad-y: var(--space-2);
     --header-pad-x: var(--space-5);
     gap: 0.6rem;
-    /* On a phone the tab bar deliberately takes a row of its own (order: 3
-       below), which needs the wrapping the desktop rule turns off. */
+    /* The header's own controls wrap rather than push the window sideways;
+       the tab strip is not in it below 600 (`dockTabBar`). */
     flex-wrap: wrap;
   }
   header#top-bar h1 {
     font-size: var(--text-body);
   }
+  /* No `order` and no full width: below 600 the strip is a child of
+     `#phone-tab-dock`, where `order: 3` put it after More (INBOX 1314). */
   #tab-bar {
-    order: 3;
-    width: 100%;
     flex-wrap: nowrap;
     overflow-x: auto;
     /* Momentum scrolling, and no scrollbar eating a row of pixels. */
@@ -4062,17 +4066,16 @@ button.is-on {
     grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
   }
 }
-/* Touch targets. A 28px button is a miss waiting to happen on a phone; the
-   usual floor is around 44px, and these are the rows people tap most. */
+/* Touch targets: a coarse pointer gets the 44px floor at every width (Phase
+   11's decision). These were 38px, which held a reminder's +1h at 39.6px on
+   a phone (INBOX 1314, phonechrome.js at 390). */
 @media (pointer: coarse) {
   .doc-toolbar button,
   .msg-action,
-  .entry-actions button {
-    min-height: 38px;
-    min-width: 38px;
-  }
+  .entry-actions button,
   #tab-bar button {
-    min-height: 40px;
+    min-height: var(--target-min);
+    min-width: var(--target-min);
   }
 }
 /* ================================================================================
@@ -6225,6 +6228,27 @@ button.ghost.doc-template-choice[aria-checked="true"] {
   }
   #sidebar {
     scrollbar-width: thin;
+  }
+  /* INBOX 1311: absolute in the scroller, the toggle scrolled off with the
+     list and sat --sidebar-toggle-inset above the head's row. Sticky and in
+     flow, it stays put on the row's line. Sibling margins collapse to the
+     most negative one, so the bottom margin carries the head's own pull-up
+     too: the head starts at the border, its row level with the toggle. */
+  #sidebar:not(.sidebar-collapsed) > .sidebar-collapse-toggle {
+    position: sticky;
+    top: 0;
+    right: auto;
+    z-index: 3;
+    margin: 0 0 calc(-1 * (var(--sidebar-toggle-size) + var(--card-pad-y))) auto;
+  }
+  /* The same row while the collapsed sidebar is peeked open (INBOX 1336): the
+     class that makes it a rail also drops the sticky rule above, so the
+     toggle fell back to the 8px rail inset and sat 8px above the filter
+     button beside it. Absolute in the aside's padding box, one card-pad-y
+     down, it lands where the docked one is. */
+  .layout-sidebar-collapsed > #sidebar.sidebar-collapsed:hover > .sidebar-collapse-toggle,
+  .layout-sidebar-collapsed > #sidebar.sidebar-collapsed:is(:focus-visible, :has(:focus-visible)) > .sidebar-collapse-toggle {
+    top: var(--card-pad-y);
   }
 }
 /* The Tags sheet's rows (categories-panel.js `openTagsSheet`): the sheet row

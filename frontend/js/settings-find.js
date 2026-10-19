@@ -358,7 +358,10 @@ function settingsIndexGo(name, head) {
 //: its own scroll is not counted as theirs. Smooth only under the motion
 //: switches (reduced motion, Interface animations).
 function settingsNavFollow(link) {
-  const box = nearestScrollParent(link);
+  //: Found once: the marker changes many times in one scroll of Help, and
+  //: each walk asked a computed style of every ancestor (12-15ms of a
+  //: 40-step scroll).
+  const box = settingsNavFollow.box?.contains(link) ? settingsNavFollow.box : (settingsNavFollow.box = nearestScrollParent(link));
   if (box === document.documentElement) return;
   if (!box._followWired) {
     box._followWired = true;
@@ -387,26 +390,28 @@ function settingsIndexMark(name) {
   const line = scroller.getBoundingClientRect().top + settingsIndexOffset($(`settings-${name}`)) + 24;
   let current = 0;
   const links = [...nav.querySelectorAll(".settings-nav-group")];
-  links.forEach((link, i) => {
+  //: Heads are in page order: the first one below the line ends the look.
+  for (const [i, link] of links.entries()) {
     const head = link._head;
-    if (head?.isConnected && head.getBoundingClientRect().top <= line) current = i;
-  });
+    if (!head?.isConnected) continue;
+    if (head.getBoundingClientRect().top > line) break;
+    current = i;
+  }
   const pinned = links.findIndex((link) => scroller._indexPinned && link._head === scroller._indexPinned);
   if (pinned >= 0) current = pinned;
   //: At the very bottom the last head may never reach the line.
   else if (scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 2) current = links.length - 1;
-  links.forEach((link, i) => {
-    if (i === current) {
-      if (link.getAttribute("aria-current") !== "location") {
-        link.setAttribute("aria-current", "location");
-        settingsNavFollow(link);
-      }
-    } else if (link.hasAttribute("aria-current")) {
-      link.removeAttribute("aria-current");
-    }
-  });
+  //: The sidebar is followed before any attribute moves: the follow measures,
+  //: and a measure after the write was a second style and layout pass in the
+  //: frame (`settingsNavFollow` 17-26ms of a 40-step scroll of Help).
+  const link = links[current];
+  if (link && link.getAttribute("aria-current") !== "location") {
+    settingsNavFollow(link);
+    for (const other of links) if (other !== link) other.removeAttribute("aria-current");
+    link.setAttribute("aria-current", "location");
+  }
   //: The phone's jump list follows the group you are reading.
-  const jump = document.querySelector(".settings-jump");
+  const jump = document.getElementById("settings-jump");
   const value = `${name}#${current}`;
   if (jump && jump.value !== value && jump.querySelector(`option[value="${CSS.escape(value)}"]`)) {
     jump.value = value;
@@ -580,6 +585,8 @@ function helpTopicLink(link) {
   if (link.section) button.dataset.gotoSection = link.section;
   if (link.target) button.dataset.gotoTarget = link.target;
   button.textContent = `Open ${link.label}`;
+  //: The manual's own topic opens the manual itself, not Settings, Help (owner, 2026-10-19).
+  if (link.manual) button.addEventListener("click", () => lazyScript("/js/manual.js").then((ok) => ok && openManual()));
   return button;
 }
 
@@ -682,7 +689,7 @@ function helpTopicRow(topic) {
   details._named = `${topic.title} ${topic.find}`.toLowerCase();
   details.append(summary, document.createElement("p"));
   //: A link to Help from inside Help goes nowhere.
-  const link = topic.link && topic.link.section !== "help" ? topic.link : null;
+  const link = topic.id === "manual" ? { manual: true, label: "the manual" } : topic.link && topic.link.section !== "help" ? topic.link : null;
   if (topic.path || link) {
     const where = document.createElement("p");
     where.className = "help-topic-links muted";

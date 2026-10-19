@@ -3,8 +3,13 @@
    at boot: the boot CSS budget is full (tests/test_boot_budget.py). The
    palette's timer chip is a plain `.status-item` and needs nothing here. */
 
+/* Wider and taller than a settings dialog, with the body as the scroll pane
+   so the title and its close never scroll away (INBOX 1319, the owner: "the
+   statistics page gets cut off by the header at the top", "expand it more"). */
 .stats-card {
-  width: min(56rem, 100%);
+  width: min(72rem, 96vw);
+  max-height: 92dvh;
+  overflow: hidden;
 }
 
 .stats-lede {
@@ -15,6 +20,16 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* Ring room (DESIGN.md): the ask field, its buttons and the link tiles sit
+     flush with this scroller, which cut 4px off their rings. The padding
+     gives the ring somewhere to be painted and the margin keeps the layout
+     where it was. */
+  padding: var(--ring-room);
+  margin: calc(-1 * var(--ring-room));
 }
 
 .stats-section > h3 {
@@ -70,7 +85,7 @@
 
 .stats-week-row {
   display: grid;
-  grid-template-columns: minmax(7rem, 1fr) auto;
+  grid-template-columns: minmax(7rem, 1fr) auto auto;
   column-gap: var(--space-3);
   align-items: baseline;
 }
@@ -78,6 +93,7 @@
 .stats-week-value {
   font-variant-numeric: tabular-nums;
   text-align: end;
+  grid-column: -2 / -1;
 }
 
 .stats-week-change {
@@ -113,4 +129,176 @@
   padding: var(--space-3);
   border-radius: var(--radius-md);
   background: var(--surface-2);
+}
+
+/* The Statistics charts answer the pointer and the keyboard (INBOX 1319;
+   ask-chart.js `askChartWire`): a point or bar is one `.ask-chart-pt` with a
+   transparent hit area the height of its slot, a tooltip with the exact
+   value, and a ring where the arrow keys have put the focus. */
+.stats-chart {
+  position: relative;
+}
+
+.ask-chart-pt {
+  cursor: pointer;
+  outline: none;
+}
+
+.ask-chart-hit {
+  fill: transparent;
+}
+
+.ask-chart-pt:hover .ask-chart-hit,
+.ask-chart-pt:focus .ask-chart-hit {
+  fill: var(--accent-soft);
+}
+
+.ask-chart-pt:focus-visible .ask-chart-hit {
+  stroke: var(--accent-text);
+  stroke-width: 2;
+}
+
+/* The group itself carries the ring too (UX audit 2026-10-19: a focusable
+   SVG `g` showed no outline, only the hit rect's stroke inside it). Inside
+   the slot, so the chart's own clip never cuts it. */
+.ask-chart-pt:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: -2px;
+}
+
+.ask-chart-pt:hover .ask-chart-dot,
+.ask-chart-pt:focus .ask-chart-dot {
+  r: 5;
+}
+
+.ask-chart-tip {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  box-shadow: var(--shadow-md);
+  color: var(--text);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Counts that open what they count, the growth chart's range, and the week
+   rows' small lines (INBOX 1319). A tile that opens something is a button in
+   the tile's tone, lifted under the pointer; it keeps the focus ring. */
+button.stats-tile {
+  border: 0;
+  font: inherit;
+  color: inherit;
+  text-align: start;
+  cursor: default;
+}
+
+button.stats-tile.is-link {
+  cursor: pointer;
+}
+
+button.stats-tile.is-link:hover,
+button.stats-tile.is-link:is(:focus-visible, :has(:focus-visible)) {
+  background: var(--surface-3);
+}
+
+.stats-range {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.stats-spark {
+  align-self: center;
+}
+
+.stats-spark-last,
+.stats-spark-this {
+  fill: none;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.stats-spark-last {
+  stroke: var(--muted);
+  opacity: 0.55;
+}
+
+.stats-spark-this {
+  stroke: var(--accent);
+}
+
+.stats-spark-dot {
+  fill: var(--accent);
+}
+
+/* Ask about your statistics: a label, a box with its button, three starters
+   and the counted answer (INBOX 1319; the Guide's pattern, compact). The
+   answer is a tone, not a second bordered pane. */
+.stats-ask {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.stats-ask-label {
+  font-weight: 600;
+}
+
+.stats-ask-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  --control-h: max(var(--control-h-lg), var(--target-min));
+}
+
+/* One row at one height: the field was 42px (padding on a
+   20px line) beside a 51px button, so the two read as different controls. */
+.stats-ask-row > input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: var(--control-h);
+  margin: 0;
+  padding-block: 0;
+}
+
+.stats-ask-row > button {
+  flex: 0 0 auto;
+  height: var(--control-h);
+  min-height: var(--control-h);
+  margin: 0;
+  padding-block: 0;
+}
+
+.stats-ask-row > button[hidden] {
+  display: none;
+}
+
+.stats-ask-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.stats-ask-answer {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+}
+
+.stats-ask-text {
+  margin: 0;
+}
+
+.stats-ask-facts {
+  margin: var(--space-2) 0 0;
+  padding-inline-start: var(--space-5);
+  font-size: var(--text-sm);
 }

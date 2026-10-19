@@ -146,6 +146,8 @@ document.addEventListener(
 );
 
 function sketchStart(event) {
+  //: A pen or a drag on the canvas is ink, never a text selection (INBOX 1303).
+  event.preventDefault();
   sketchDrawing = true;
   sketchDirty = true;
   sketchMoved = false;

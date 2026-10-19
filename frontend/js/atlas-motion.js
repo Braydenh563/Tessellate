@@ -57,6 +57,9 @@ function atlasBlinkTick() {
 }
 function atlasBlinkStart() {
   if (!atlasState.blinkTimer) atlasState.blinkTimer = setTimeout(atlasBlinkTick, 1800);
+  //: The small behaviours are a file of their own (atlas-micro.js), fetched once.
+  if (typeof atlasMicroStart === "function") atlasMicroStart();
+  else if (!atlasState.microLoad) atlasState.microLoad = lazyScript("/js/atlas-micro.js").then((ok) => ok && atlasMicroStart());
 }//: **The rig: limbs that move like limbs** (INBOX 554, 564; the owner: "fix
 //: how the arms connect to the atlas bodies and how they are used in
 //: transitions between places and positions ... animate everything to be
@@ -347,6 +350,21 @@ function atlasTossDraw(rig, toss) {
   set(els.root, "opacity", toss.mode === "spill" || toss.shown ? "1" : "");
   set(els.arc, "opacity", toss.mode === "spill" || Array.isArray(toss.op) ? "0" : "");
 }
+//: **Reduced motion keeps the juggle visible** (INBOX 1322b, "the juggling
+//: stars dont animate at all": the one case that reproduced, 0 px of travel
+//: in 2 s, was the system asking for less motion with the act asked for from
+//: the large view). Nothing travels there, but a fade is allowed: each star
+//: pulses its opacity, a third of a cycle apart, for as long as the act lasts.
+function atlasStarsFade(rig, on) {
+  if (!on) {
+    if (rig.fades) for (const a of rig.fades) a.cancel();
+    rig.fades = null;
+    return;
+  }
+  if (rig.fades) return;
+  const stars = rig.tossEls?.stars || [...rig.box.querySelectorAll(".atl-layer .nmp-stars > .atl-juggle")];
+  rig.fades = stars.map((star, k) => star.animate?.([{ opacity: 1 }, { opacity: 0.35 }, { opacity: 1 }], { duration: 1500, delay: -k * 500, iterations: Infinity, easing: "ease-in-out" })).filter(Boolean);
+}
 function atlasRigFrame(rig, now) {
   rig.raf = 0;
   const { box } = rig;
@@ -484,6 +502,7 @@ function atlasRigFrame(rig, now) {
   //: The lower body's pose for the state, once atlas-life.js has given the
   //: rig its lower body (`atlasRigLowerAttach`).
   if (rig.lower) atlasRigLower(rig, now, live, buddy);
+  atlasStarsFade(rig, !live && !!buddy && !box.classList.contains("atl-off") && document.documentElement.dataset.avatarMotion !== "off" && (buddy.classList.contains("nmb-act-juggle") || buddy.classList.contains("nmb-act-toss")));
   if (toss) {
     atlasTossDraw(rig, toss);
     if (toss.mode) busy = true;

@@ -993,7 +993,11 @@ function timelineBucketSection(bucket, scale, density, isToday = bucket.rows.len
   const section = document.createElement("section");
   section.className = "timeline-bucket";
   section.dataset.bucket = bucket.key;
-  if (!bucket.rows.length) section.dataset.empty = "1";
+  //: An empty day ahead still moves the strip's window (INBOX 1316).
+  if (!bucket.rows.length) {
+    section.dataset.empty = "1";
+    if (scale === "day") timelineWatchRow(section);
+  }
   const head = document.createElement("h3");
   head.className = "timeline-bucket-head";
   const label = document.createElement("span");
@@ -1236,7 +1240,10 @@ async function renderTimelineDayStrip() {
     button.tabIndex = key === stop ? 0 : -1;
     if (key === today) button.setAttribute("aria-current", "date");
     const { long, label } = timelineDayLabel(key, has);
-    button.setAttribute("aria-label", label);
+    //: The visible words ("Tue 13") open the name (WCAG 2.5.3, OPEN 1400);
+    //: the long date follows for a screen reader.
+    const face = `${day.toLocaleDateString(undefined, { weekday: "short" })} ${day.getDate()}`;
+    button.setAttribute("aria-label", `${face}, ${label}`);
     button.title = has ? `Open the page for ${long}` : `Start the page for ${long}`;
     const name = document.createElement("span");
     name.className = "timeline-day-name";
@@ -1827,16 +1834,20 @@ const TIMELINE_SCRUBBER_HEIGHT = 1000; // the viewBox's own units
 // every scroll frame asks for it, and parsing a date per day in the range on
 // each was 24ms of a thousand-note scroll (libtl-0926).
 let timelineSpanCache = { density: null, span: null };
+//: Up to the newest row too (INBOX 1316): the window pinned at the strip's
+//: top while the feed scrolled on into the future,
 function timelineDensitySpan() {
-  if (timelineSpanCache.density === timelineDensity) return timelineSpanCache.span;
-  const span = timelineDensitySpanOf(timelineDensity);
-  timelineSpanCache = { density: timelineDensity, span };
+  //: and a week past today, the empty days the feed draws ahead.
+  const head = Math.max(timelineRows[0]?.when.getTime() || 0, new Date().setHours(0, 0, 0, 0) + 7 * 864e5);
+  if (timelineSpanCache.density === timelineDensity && timelineSpanCache.head === head) return timelineSpanCache.span;
+  const span = timelineDensitySpanOf(timelineDensity, head);
+  timelineSpanCache = { density: timelineDensity, head, span };
   return span;
 }
-function timelineDensitySpanOf(density) {
+function timelineDensitySpanOf(density, head = -Infinity) {
   const days = Object.keys(density);
   if (!days.length) return null;
-  let newest = -Infinity;
+  let newest = head;
   let oldest = Infinity;
   for (const day of days) {
     const at = new Date(`${day}T00:00:00`).getTime();
@@ -1850,46 +1861,10 @@ function timelineDensitySpanOf(density) {
   return { newest, oldest: newest - width, width };
 }
 
+//: The strip itself is drawn by the lazy labels file (`drawTimelineStrip`,
+//: timeline-ticks.js), which the strip always needed anyway.
 function drawTimelineScrubber() {
-  const strip = $("timeline-scrubber");
-  const span = timelineDensitySpan();
-  // One slot per band of time, filled with everything written inside it: the
-  // strip is a shape, not a list of days, and 120 slots is about one per 8
-  // pixels of a full-height strip.
-  const slots = new Array(TIMELINE_SCRUBBER_SLOTS).fill(0);
-  if (span) {
-    for (const [day, count] of Object.entries(timelineDensity)) {
-      const at = new Date(`${day}T00:00:00`).getTime();
-      if (Number.isNaN(at)) continue;
-      const fraction = (span.newest - at) / span.width;
-      const slot = Math.min(TIMELINE_SCRUBBER_SLOTS - 1, Math.max(0, Math.round(fraction * (TIMELINE_SCRUBBER_SLOTS - 1))));
-      slots[slot] += count;
-    }
-  }
-  const peak = Math.max(...slots, 1);
-  //: The shape decides, not the count: see the constants above. The slotting
-  //: has to run first to ask the question at all, which is cheap (120 numbers
-  //: over the days in range) and is the work this function was going to do
-  //: anyway on every notebook large enough to draw.
-  const show =
-    span !== null &&
-    slots.filter((count) => count > 0).length >= TIMELINE_SCRUBBER_MIN_SLOTS &&
-    peak >= TIMELINE_SCRUBBER_MIN_PEAK;
-  strip.classList.toggle("hidden", !show);
-  if (!show) return;
-  const step = TIMELINE_SCRUBBER_HEIGHT / TIMELINE_SCRUBBER_SLOTS;
-  // A step chart drawn from the strip's right edge, closed along it, so the
-  // shape reads as a profile of the writing rather than as a line drawing.
-  const parts = ["M 40 0"];
-  slots.forEach((count, index) => {
-    const x = 40 - (count / peak) * 34;
-    parts.push(`L ${x.toFixed(1)} ${(index * step).toFixed(1)}`);
-    parts.push(`L ${x.toFixed(1)} ${((index + 1) * step).toFixed(1)}`);
-  });
-  parts.push(`L 40 ${TIMELINE_SCRUBBER_HEIGHT}`, "Z");
-  $("timeline-density-path").setAttribute("d", parts.join(" "));
-  lazyScript("/js/timeline-ticks.js").then((ok) => ok && timelineTicks());
-  drawTimelineWindow();
+  lazyScript("/js/timeline-ticks.js").then((ok) => ok && drawTimelineStrip());
 }
 
 //: Where the reader is, as a band on the strip. Taken from the rows actually
@@ -1939,9 +1914,9 @@ function drawTimelineWindow() {
       timelineOnScreen.delete(el);
       continue;
     }
-    const row = timelineById.get(el.dataset.key);
-    if (!row) continue;
-    const t = row.when.getTime();
+    const at = el.dataset.empty ? new Date(`${el.dataset.bucket}T00:00:00`) : timelineById.get(el.dataset.key)?.when;
+    if (!at) continue;
+    const t = at.getTime();
     if (top === null || t > top) top = t;
     if (bottom === null || t < bottom) bottom = t;
   }
@@ -2049,7 +2024,7 @@ function timelineSortValue(row, key) {
   //: The same word the cell shows, or the column sorts by one string and
   //: displays another: a document sorted as "Note" and shown as "Document" is
   //: a column that looks broken (`timelinetable.js` caught exactly that).
-  if (key === "kind") return TIMELINE_KIND_NAMES[row.kind] || "Note";
+  if (key === "kind") return timelineKindName(row);
   if (key === "words" || key === "links") return row[key];
   return row[key] || "";
 }
@@ -2134,6 +2109,10 @@ function syncTimelineDetailSpans() {
   }
 }
 
+function timelineKindName(row) {
+  return row.kind === "note" && row.placedBy === "meeting" ? "Meeting" : TIMELINE_KIND_NAMES[row.kind] || "Note";
+}
+
 function timelineTableRow(row) {
   const tr = document.createElement("tr");
   tr.className = "timeline-row timeline-trow";
@@ -2190,7 +2169,7 @@ function timelineTableRow(row) {
 
   const kind = document.createElement("td");
   kind.className = "timeline-col-wide";
-  kind.textContent = TIMELINE_KIND_NAMES[row.kind] || "Note";
+  kind.textContent = timelineKindName(row);
   tr.appendChild(kind);
 
   const category = document.createElement("td");

@@ -434,3 +434,10 @@
   padding-top: var(--space-2);
   border-top: 1px solid var(--border);
 }
+
+/* A toast over the map stands above its zoom strip and legend (INBOX 1306): the strip is 4 buttons tall, 12rem clears it. */
+@media (min-width: 600px) {
+  :root body:has(#tab-graph:not(.hidden)) #toast-box {
+    bottom: calc(var(--status-bar-h) + 12rem);
+  }
+}

@@ -31,7 +31,7 @@ import json
 import threading
 import time
 from collections.abc import Callable, Iterator
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 
 _lock = threading.Lock()
 _ids = itertools.count(1)
@@ -197,12 +197,16 @@ def track(
     title: str = "",
     ledger: bool = True,
     stop_event: threading.Event | None = None,
+    bind_thread: bool = True,
 ) -> Iterator[Job]:
     """Register for the length of the block. `stoppable` defaults to True
     because a block that loops is expected to read `job.stopped`."""
     job = start(kind, label, on_stop=on_stop, stoppable=stoppable, title=title, ledger=ledger, stop_event=stop_event)
     try:
-        yield job
+        #: Not across a generator's yields (`tracked_stream` binds per step):
+        #: a thread-local left set there would leak into the next request.
+        with bind(job) if bind_thread else nullcontext():
+            yield job
     except GeneratorExit:
         #: The reader went (a closed tab, a new question): a stop, not a failure.
         if job.run is not None:
@@ -228,10 +232,14 @@ _bound = threading.local()
 @contextmanager
 def bind(job: Job) -> Iterator[None]:
     """Make `job` this thread's current job for the length of the block."""
+    from tessellate.core import jobruns
+
     previous = getattr(_bound, "job", None)
     _bound.job = job
     try:
-        yield
+        #: Its run too, so a model call inside the step adds its lines there.
+        with jobruns.bound(job.run):
+            yield
     finally:
         _bound.job = previous
 
@@ -251,7 +259,7 @@ def tracked_stream(
     HTTP stream to the model, so the runner stops generating too. Each line
     the stream sends is read by a `StreamNarrator`, so the run's log says
     what the answer did (searched, called a tool, wrote) in words."""
-    with track(kind, label, title=title, stop_event=stop_event) as job:
+    with track(kind, label, title=title, stop_event=stop_event, bind_thread=False) as job:
         narrator = StreamNarrator()
         try:
             source = iter(lines)
