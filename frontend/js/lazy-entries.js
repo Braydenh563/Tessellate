@@ -15,6 +15,8 @@ Object.assign(LAZY_MODULES, {
   dashLazy: ["/css/dash-orphans-lazy.css", "/css/dash-night-lazy.css", "/js/dash-orphans.js", "/js/dash-night.js", "/js/dash-day.js"],
   //: What the app draws into a reply beside its words (reply-kit.js's header).
   replyKit: ["/css/reply-kit-lazy.css", "/js/reply-kit.js"],
+  //: The phone bar's More sheet (phone-more.js's header; INBOX 1314).
+  phoneMore: ["/js/phone-more.js"],
 });
 installStandIns({
   settingsPanes: ["renderTasks", "renderTaskHistory", "renderHealthBlock", "renderSamplingRows", "renderPersonas", "savePersonaList"],
@@ -23,4 +25,5 @@ installStandIns({
   statusPanels: ["renderSearchEngineHealth", "emailSupportReport", "renderBackendPicker", "openUndoHistoryMenu"],
   featureModelSheet: ["openFeatureModelSheet"],
   dashLazy: ["renderOrphanNotesWidget", "renderNightWidget", "renderDayDigest", "dashPatternBit", "dashTodayLine"],
+  phoneMore: ["openPhoneMoreSheet"],
 });

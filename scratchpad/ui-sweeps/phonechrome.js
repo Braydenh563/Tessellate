@@ -145,7 +145,9 @@ const TABS = [
         .filter((el) => { const b = el.getBoundingClientRect(); return b.left < W - 1 && b.right > 1; });
       const small = controls.filter((el) => { const b = el.getBoundingClientRect(); return b.width + 0.5 < MIN || b.height + 0.5 < MIN; })
         .map((el) => { const b = el.getBoundingClientRect(); return `${name(el)} ${round(b.width)}x${round(b.height)}`; });
-      const clipped = controls.filter((el) => el.tagName !== 'INPUT' && el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).overflowX !== 'auto')
+      //: Less a corner count hung over the edge on purpose (the Tidy broom's).
+      const clipped = controls.filter((el) => el.tagName !== 'INPUT' && el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).overflowX !== 'auto'
+        && ![...el.children].some((k) => k.classList.contains('tab-badge') && getComputedStyle(k).position === 'absolute'))
         .map((el) => `${name(el)} ${el.scrollWidth}>${el.clientWidth}`);
       // A control cut by an ancestor that clips without scrolling (the chat
       // composer's model picker read "Inherited: llam" this way): its box
@@ -193,9 +195,20 @@ const TABS = [
           if (d.getBoundingClientRect().right <= right + 1) return false;
           const own = getComputedStyle(d);
           if ((own.position === 'absolute' || own.position === 'fixed') && !d.textContent.trim()) return false;
+          //: A deliberate bleed (a negative inline margin: the ring-room rule,
+          //: the timeline's day well below 400) runs past by that margin only.
+          //: A corner count (`.tab-badge` on the Tidy broom) hangs over on
+          //: purpose; and the ring-room bleed (`margin-inline: -ring-room`
+          //: with the same padding, 08-consistency.css) keeps its content
+          //: inside the box: only its padding runs past (INBOX 1314).
+          if (own.position === 'absolute' && d.classList.contains('tab-badge')) return false;
+          if (parseFloat(own.marginRight) < 0 && d.getBoundingClientRect().right <= right + 1 - parseFloat(own.marginRight)) return false;
           for (let p = d; p && p !== el; p = p.parentElement) {
             const cs = getComputedStyle(p);
             if (Number(cs.opacity) === 0 || cs.visibility === 'hidden' || cs.display === 'none') return false;
+            //: Inside a strip that scrolls or clips on its own, what is past
+            //: the edge is that strip's to show (INBOX 1314).
+            if (p !== d && cs.overflowX !== 'visible') return false;
           }
           return true;
         });

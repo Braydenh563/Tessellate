@@ -169,7 +169,7 @@ AGENT_ICON_PLACES = {
     "chat-attach.js": 1,  # an agent turn's run in the activity panel
     "chat.js": 1,  # a past turn answered in Agent mode
     "editor.js": 1,  # the chat palette's Agent mode row
-    "phone-shell.js": 2,  # More sheet: Ask the agent, Agent activity
+    "phone-more.js": 2,  # More sheet: Ask the agent, Agent activity (moved out of phone-shell.js, INBOX 1314)
     "settings-panes.js": 1,  # the command palette's Ask the agent anything
     "settings-wiring.js": 1,  # the tools popup's Popup agent
     "skills.js": 1,  # the nudge to switch to Agent mode

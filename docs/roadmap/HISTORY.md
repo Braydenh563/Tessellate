@@ -51007,6 +51007,29 @@ From WHITEBOARD_PLAN "The draw.io programme", section 2 (Text tab), built by the
 - Offers: `_task_of` makes a reminder only from an open checkbox or an instruction that names what it is about ("ask the tutor on Thursday"); "ask follow-up questions that reflect genuine interest" is advice. `insights.drift` skips another person's plan ("He wants to try the crag" was "no later note picks up this plan: wants to try ...").
 - Ask: the "You asked:" line above the answer is gone (`renderAskedQuestion`, `#asked-question`); the question stays in the box it was typed in.
 - Measured over the 22 gold answers (`tests/_gold.py` `form`, `tests/test_composer_form_1301.py`): longest sentence 134 to 35 words, ";" joins 27 to 1, answers with a broken pattern 1 (15 hits) to 0, total characters 7,567 to 6,731 (item 22: 1,787 to 1,097); the note answers' gold score 88.9 to 90.9 (item 22: 57 to 81). The same text through Ask, Chat and the popup's `/chat/stream` bodies on a running app (`scratchpad/ui-sweeps/social-1301.js`); the Ask box keeps the question in its input and has no echo.
+## Moved from the plans, 2026-10-19 (mobile1314)
+
+From UI_MODERNISATION_PLAN Phase 11 item 1, both built:
+
+   - **The recede to icons on scroll down and back on scroll up (INBOX 104):
+     built** (2026-09-13); the block, with its numbers, is in HISTORY.md
+     ("Moved from the plans, 2026-09-13").
+   - **The top bar's own reduction: built** (2026-09-20). Measured first
+     (`scratchpad/ui-sweeps/phonehead.js`): at 320 the bar held six 44px
+     controls (space switcher, notifications, theme, settings, lock, quit)
+     and the last ended at 332, so every phone page scrolled sideways by one
+     button; the bell and the menu opener were 36 against 44. Now three
+     controls below 600: the space switcher, the bell, and one `kebabMenu`
+     (`#header-more`) holding the four verbs, the desktop buttons hidden by
+     one stylesheet band and never removed. After: 320 in 320, 360 in 360,
+     390 in 390, every header control 44, the menu's rows 44 (every
+     `kebabMenu` row in the touch band takes the floor now: the one control
+     type that only exists after a tap had kept the desktop's 36), Escape
+     closes it, and the desktop bar at 1024 is exactly what it was. The
+     wordmark is already gone below 1500 and the logo below 400, so the
+     "title" of this item is the space switcher, which is the truer name for
+     where you are. The AI dot lives in the status bar (§36D) and stays there.
+
 ## INBOX resolved, 2026-10-19
 
 1303. **The owner, 2026-10-18, verbatim** (screenshot: a dark rounded "..." square beside a pen stroke on the quick sketch canvas). "drawing on the quick sketch panel now constantly shows the popup highlight text meatball menu button"
@@ -51072,4 +51095,7 @@ From WHITEBOARD_PLAN "The draw.io programme", section 2 (Text tab), built by the
 
 1322. **Fixed.** **The owner, 2026-10-19, verbatim.** "and can you make it easier to access the format panel like with this library button in the whiteboard top bar button? also atlas needs to have its animations and expressions improved behaviours, even micro behaviours and movements, small movement adjustments, more variety, the juggling stars dont animate at all." (screenshot: the whiteboard top bar, Insert, Edit, Arrange, View, Board menus, then a Library button)
      Owner: (a) Format button beside Library in the whiteboard bar: built (wb1313, 47c713a); (b) Atlas micro behaviours built (atlas1322 bb3cf27, lazy atlas-micro.js: ten kinds, randomised 1.2 to 11 s); the stars moved 42 to 45 px in every pose with motion on and stood still under reduced motion, now they pulse there (4d85591). If they still look still, ask for Appearance, Motion and the system setting.
+1314. **The owner, 2026-10-19, verbatim.** "also I should mention the mobile view needs a bit of redesign and layout/nav reworking because it is annoing to use and the bottom nav bar just doesnt make sense with how it works and is layed out and is annoying to use. can you work on that?"
+     Owner: mobile agent (Opus, design), now. UI_MODERNISATION_PLAN phone phase.
+     **Fixed a21d487.** More drew first (x=0) and is last (x=312 at 390); the bar is Dashboard, Notes, Chat, Library, More; More's sheet is pages, a rule, then tools; the header's menu is the App menu; the active tab pressed again goes to the top; +1h 39.6 to 44px, the timeline's days at 360 41.8 to 44.5px. phonemore, phonetabs, phonechrome, phone (390, 360, dark), touch 360: 0 findings; contrast 390 and 360 light and dark: 0 low. Findings and the decision: UI_MODERNISATION_PLAN "Placed from INBOX, 2026-10-19 (mobile1314)".
 

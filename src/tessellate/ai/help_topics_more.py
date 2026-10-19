@@ -656,6 +656,27 @@ MORE_TOPICS: list[dict] = [
         "badge": {"label": "Help", "section": "help"},
     },
     {
+        "id": "phone-nav",
+        "keywords": (
+            "phone", "on my phone", "mobile", "bottom bar", "tab bar", "bottom tabs",
+            "more button", "where is the graph on my phone", "where is the timeline",
+            "phone menu", "app menu",
+        ),
+        "body": (
+            "On a phone the tabs are a bar along the bottom: Dashboard, Notes, "
+            "Chat, Library and More, last. More opens a sheet: Graph, Timeline "
+            "and Reminders first, then Ask the agent, Commands, Guide, Agent "
+            "activity while the agent runs, and Settings. More is lit while one "
+            "of its pages is showing, and carries the count of reminders due. "
+            "Press the tab you are on again to go back to the top of its page. "
+            "The bar shrinks to icons while you scroll down and gets its words "
+            "back on the way up. The app menu (the three dots at the top right) "
+            "holds Forward, Recent places, Redo, Find, light or dark, the "
+            "Settings window, Lock, and Quit; Back and Undo sit in the top bar."
+        ),
+        "badge": {"label": "Help", "section": "help"},
+    },
+    {
         "id": "settings-overview",
         "keywords": (
             "settings", "where are the settings", "open settings", "find a setting",
@@ -2125,6 +2146,7 @@ TOPIC_META: dict[str, dict] = {
     "background-art": {"title": "The animated background", "path": "Settings, Appearance, Animated background"},
     "themes": {"title": "Themes, colour and type", "path": "Settings, Appearance"},
     "tabs-overview": {"title": "The app at a glance", "path": "The tabs along the top"},
+    "phone-nav": {"title": "The app on a phone", "path": "The bar along the bottom, then More"},
     "settings-overview": {"title": "Finding your way round Settings", "path": "The gear in the top bar, or Ctrl+,"},
     "lock": {"title": "Passwords and locking", "path": "Settings, Account & security"},
     #: Titles for the entries that had none (INBOX 448): Settings, Help lists
@@ -2227,7 +2249,7 @@ TOPIC_META: dict[str, dict] = {
 #: entry is in no group, or in two.
 HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     ("Getting started", (
-        "tabs-overview", "first-steps", "tour", "guide", "manual", "hidden-features", "shortcuts",
+        "tabs-overview", "phone-nav", "first-steps", "tour", "guide", "manual", "hidden-features", "shortcuts",
         "command-palette", "find-anything", "find-a-place", "search", "addresses", "settings-overview", "settings-reset", "install-app", "name",
     )),
     ("Writing notes", (

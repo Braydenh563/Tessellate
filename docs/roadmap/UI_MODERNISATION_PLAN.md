@@ -615,24 +615,10 @@ desktop has; it is reached through a sheet or a ⋯ menu instead.
    the block, with its numbers, is in HISTORY.md, "Moved from the plans,
    2026-09-13"). What is left of item 1, in order:
 
-   - **The recede to icons on scroll down and back on scroll up (INBOX 104):
-     built** (2026-09-13); the block, with its numbers, is in HISTORY.md
-     ("Moved from the plans, 2026-09-13").
-   - **The top bar's own reduction: built** (2026-09-20). Measured first
-     (`scratchpad/ui-sweeps/phonehead.js`): at 320 the bar held six 44px
-     controls (space switcher, notifications, theme, settings, lock, quit)
-     and the last ended at 332, so every phone page scrolled sideways by one
-     button; the bell and the menu opener were 36 against 44. Now three
-     controls below 600: the space switcher, the bell, and one `kebabMenu`
-     (`#header-more`) holding the four verbs, the desktop buttons hidden by
-     one stylesheet band and never removed. After: 320 in 320, 360 in 360,
-     390 in 390, every header control 44, the menu's rows 44 (every
-     `kebabMenu` row in the touch band takes the floor now: the one control
-     type that only exists after a tap had kept the desktop's 36), Escape
-     closes it, and the desktop bar at 1024 is exactly what it was. The
-     wordmark is already gone below 1500 and the logo below 400, so the
-     "title" of this item is the space switcher, which is the truer name for
-     where you are. The AI dot lives in the status bar (§36D) and stays there.
+   - The recede (INBOX 104) and the top bar's own reduction are built;
+     both blocks are in HISTORY.md ("Moved from the plans, 2026-10-19
+     (mobile1314)"). The bar's rework for INBOX 1314 is under "Placed from
+     INBOX, 2026-10-19" at the end of this plan.
 
 2. **Notes.** Capture as a full-height sheet from the floating + button;
    the list as full-width rows with swipe actions (pin, bin) matched to
@@ -1592,3 +1578,12 @@ Decisions made:
 - T4. A menu's first and last items sit one menu padding from its edge, never a group label's or a separator's gap (owner: grammar57, with 813's one dropdown grammar).
 
 Rows: T1 and T2 (owner: voiceup, with V7's dialog work); T3 learnaudit; T4 grammar57.
+
+## Placed from INBOX, 2026-10-19 (mobile1314)
+
+- INBOX 1314, the owner 2026-10-19, verbatim: "the mobile view needs a bit of redesign and layout/nav reworking because it is annoing to use and the bottom nav bar just doesnt make sense with how it works and is layed out and is annoying to use."
+- Measured before (390x844 and 360x740, light and dark, a touch context; `phonemore.js`, `phonetabs.js`, `phonechrome.js`, `phone.js`): More drew as the bar's first column (x=0), not its last: `#tab-bar { order: 3 }`, two header-era rules in 02 and 05, still applied inside `#phone-tab-dock`. Columns Notes, Chat, Graph, Library and More, 78x57 at 390 and 72x57 at 360; Dashboard (home, one of Simple mode's four) behind More while Graph held a column. More's sheet: seven rows, three pages and four tools, undivided. Two buttons called More (the header's menu and the bar's). Pressing the tab you are on did nothing. A reminder's +1h was 39.6x44 (a coarse-pointer floor of 38px against the 44 decision); at 360 the timeline's seven days were 41.8px and its head 322px in a 300px card. No sideways scroll on any tab; every page ends at the bar's top (786/786) and every last control scrolls clear of it.
+- Decision (taken per standing order 3): the bar is Dashboard, Notes, Chat, Library, More, left to right; Graph, Timeline and Reminders are More's first group.
+- Built 2026-10-19: the order rules gone; the four columns; More's sheet in a lazy file (`phone-more.js`) with pages, a hairline, then tools, the page in hand `aria-current`; the header menu named "App menu"; the active tab pressed again scrolls its page to the top (`tabPageScroller`); the coarse-pointer floor 44; the timeline under 380 (the existing 380 block in 10-responsive.css) wraps its year menu and lets the day well take the card's padding (44.5px days). Guide topic `phone-nav`. After: `phonemore.js`, `phonetabs.js`, `phone.js` (390, 360, dark) 0 findings.
+- Not verified: a real phone (safe-area insets resolve to 0 in headless Chromium); the smooth scroll-to-top under reduced motion on a device.
+
