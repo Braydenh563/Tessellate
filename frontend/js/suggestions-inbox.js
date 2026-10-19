@@ -19,7 +19,7 @@ const INBOX_KINDS = [
 
 const INBOX_HELP = [
   "The list at the top picks the kind of suggestion; each row says how many are waiting, as in Links (3).",
-  "Links: pairs worth connecting, with every reason: similar wording, people or things both name, a note both link with, a rare tag both carry. Type a reason before Link, or leave it to Atlas; Link all above 70% links every pair at least that sure.",
+  "Links: pairs worth connecting, with every reason: similar wording, people or things both name, a note both link with, a rare tag both carry. Add a reason before Link, or leave it to Atlas; Link all above 70% links every pair at least that sure, and the ⋯ beside it has Suggest reasons and Explain your existing links.",
   "Tensions: Start the review reads likely pairs with your local model and shows the two sides with their dates. Nothing runs until you start it.",
   "Names: \"Sam\" and \"Sam Lee\", or one name spelled two ways. Merge keeps the fuller name and moves every mention; the other name is kept as an alias, so it is never found twice.",
   "Link types: a link whose sentence says \"for example\", \"continues\", \"evidence\", \"contradicts\" or \"background\". Accepting gives the link that type; the graph draws it.",
@@ -514,16 +514,33 @@ function inboxLinksPane(suggestions) {
   const rowReasons = [];
   //: Explains links that already exist (similarity, then Atlas names the
   //: connection); not the rows below, which are not links yet.
-  const backfill = smallButton(
-    "ph:lightbulb Explain your existing links",
-    "For links you've already made elsewhere: work out why each one exists, first from how alike the notes are, then by asking Atlas to name the actual connection. Doesn't touch the suggestions below, which aren't links yet.",
-    async () => {
-      setBusy(backfill, true, "Working…");
+  //: **One bar, one button** (INBOX 1329, the owner: "the suggestions panel
+  //: needs a better redesign and restructuring"): three bordered buttons in a
+  //: row read as three equal choices over the list. The pane's one bulk act
+  //: (link the sure ones) stays a button; the two that ask Atlas fold into the
+  //: bar's ⋯ (DESIGN.md "A menu behind a button"), and the status line beside
+  //: them says when "Explain" last ran and what is working now.
+  const status = jobLineEl("link-reasons");
+  status.classList.add("inbox-status");
+  const working = (text) => {
+    const opener = more.querySelector("button");
+    if (text) opener?.setAttribute("aria-busy", "true");
+    else opener?.removeAttribute("aria-busy");
+    if (text) {
+      status.dataset.jobSig = "";
+      setLabel(status, `ph:spin ${text}`);
+    } else paintJobLine(status);
+  };
+  const backfill = {
+    label: "ph:lightbulb Explain your existing links",
+    title: "For links you've already made elsewhere: work out why each one exists, first from how alike the notes are, then by asking Atlas to name the actual connection. Doesn't touch the suggestions below, which aren't links yet.",
+    run: async () => {
+      working("Explaining your links…");
       const result = await apiJson("/entries/links/backfill-reasons", { method: "POST", body: JSON.stringify({ ai: true }) }).catch((e) => {
         toast(e.message, true);
         return null;
       });
-      setBusy(backfill, false);
+      working("");
       refreshJobRuns();
       if (!result) return;
       const parts = [];
@@ -533,7 +550,7 @@ function inboxLinksPane(suggestions) {
       else if (result.ai_unavailable) toast("Marked what I could, Atlas isn't running, so none could be put into words yet.", "info");
       else toast("Every link already has a reason.");
     },
-  );
+  };
   //: An AI guess for these rows' own Why boxes, written in as a real value
   //: (editable, and used as-is by Link if left alone).
   const fillReasons = async (targets, quiet) => {
@@ -560,24 +577,24 @@ function inboxLinksPane(suggestions) {
     }
     return { filled, result };
   };
-  const suggestReasons = smallButton(
-    "ph:sparkle Suggest reasons",
-    "Ask Atlas to guess why each note pair below might be connected, and fill in any empty Why box with its answer, still yours to edit or clear before linking.",
-    async () => {
+  const suggestReasons = {
+    label: "ph:sparkle Suggest reasons",
+    title: "Ask Atlas to guess why each note pair below might be connected, and fill in any empty reason with its answer, still yours to edit or clear before linking.",
+    run: async () => {
       const targets = rowReasons.filter((r) => r.input.isConnected && !r.input.value.trim());
       if (!targets.length) {
         toast("Every visible suggestion already has a reason.");
         return;
       }
-      setBusy(suggestReasons, true, "Working…");
+      working("Suggesting reasons…");
       const done = await fillReasons(targets, false);
-      setBusy(suggestReasons, false);
+      working("");
       if (!done) return;
       if (done.filled) toast(`Filled in ${done.filled} reason${done.filled === 1 ? "" : "s"}.`);
       else if (done.result.ai_unavailable) toast("Atlas isn't running, so no reasons could be guessed.", "info");
       else toast("Couldn't guess a reason for any of these.");
     },
-  );
+  };
   //: **Every sure one at once** (WORLD_CLASS_PLAN, Placed 2026-09-09 item
   //: 92): the rows at 70% or more, linked through each row's own Link, so a
   //: typed reason and the learning go with each as they would one by one.
@@ -598,12 +615,12 @@ function inboxLinksPane(suggestions) {
       toast(`Linked ${linked} of ${many}.`, linked < sure.length);
     },
   );
+  const more = kebabMenu([suggestReasons, backfill], "More ways to fill in reasons");
   const tools = document.createElement("div");
   tools.className = "row inbox-tools";
-  tools.append(linkSure, backfill, suggestReasons);
-  list.appendChild(tools);
   //: When "Explain your existing links" last ran (INBOX 438); settings.js.
-  if (typeof jobLineEl === "function") list.appendChild(jobLineEl("link-reasons"));
+  tools.append(linkSure, more, status);
+  list.appendChild(tools);
   for (const s of suggestions) list.appendChild(inboxLinkRow(s, rowReasons));
   inboxCount("links", suggestions.length);
   if (!suggestions.length) inboxEmpty(list, list.dataset.empty);
@@ -616,25 +633,32 @@ function inboxLinksPane(suggestions) {
 function inboxLinkRow(s, rowReasons) {
   const row = document.createElement("div");
   row.className = "link-suggestion";
-  //: **Two notes and the join between them** (WORLD_CLASS_PLAN, Placed
-  //: 2026-09-09 item 92): each note a chip, an arrow between, where the row
-  //: was a quoted "A ↔ B" string; the full text of each is its chip's title.
+  //: **The two notes are the subject** (INBOX 1329): each name one line, cut
+  //: with an ellipsis and whole in its title, an arrow between, where two
+  //: wrapping chips of raw file names were the row's tallest thing (measured
+  //: at 390: 210px a row, one row in view). Side by side on a wide sheet,
+  //: stacked on a phone (inbox-lazy.css).
   const text = document.createElement("span");
   text.className = "link-suggestion-text link-suggestion-pair";
   //: The note's name, not its markdown (`notePreviewText`, as everywhere).
-  const name = (raw) => {
-    const clean = notePreviewText(raw || "").replace(/\s+/g, " ").trim();
-    return clean.length > 70 ? `${clean.slice(0, 69)}…` : clean || "Untitled note";
-  };
-  const noteChip = (raw) => {
-    const made = chip(`ph:note ${name(raw)}`, "link-suggestion-note");
-    made.title = notePreviewText(raw || "");
+  const name = (raw) => notePreviewText(raw || "").replace(/\s+/g, " ").trim() || "Untitled note";
+  const noteName = (raw) => {
+    const made = document.createElement("span");
+    made.className = "link-suggestion-note";
+    const icon = document.createElement("i");
+    icon.className = "ph ph-note";
+    icon.setAttribute("aria-hidden", "true");
+    const words = document.createElement("span");
+    words.className = "link-suggestion-name";
+    words.textContent = name(raw);
+    made.title = name(raw);
+    made.append(icon, words);
     return made;
   };
   const join = document.createElement("i");
   join.className = "ph ph-arrows-left-right link-suggestion-join";
   join.setAttribute("aria-hidden", "true");
-  text.append(noteChip(s.source_preview), join, noteChip(s.target_preview));
+  text.append(noteName(s.source_preview), join, noteName(s.target_preview));
   text.setAttribute("role", "group");
   text.setAttribute("aria-label", `${name(s.source_preview)} and ${name(s.target_preview)}`);
   //: A reason you can type before you link; left blank, the server deduces.
@@ -652,7 +676,7 @@ function inboxLinkRow(s, rowReasons) {
   //: fills in shows it.
   reason.classList.add("hidden");
   const addReason = smallButton("ph:text-t Add a reason", "Say why these two belong together", () => reveal());
-  addReason.classList.add("link-suggestion-add-reason");
+  addReason.classList.add("quiet", "link-suggestion-add-reason");
   const reveal = () => {
     reason.classList.remove("hidden");
     addReason.classList.add("hidden");
@@ -699,8 +723,25 @@ function inboxLinkRow(s, rowReasons) {
     inboxCorrection("dismiss_link", { a: s.source_id, b: s.target_id, signals }, "Dismissed a link suggestion");
     inboxDone("links", row);
   });
-  row.append(text, addReason, reason, inboxScoreBar(s.confidence ?? s.similarity), link, dismiss);
-  if (sigs.length) row.appendChild(inboxWhy(sigs));
+  //: How sure and why, one line under the names: the bar and its number,
+  //: then the reasons, cut to the line, each with its own percentage in the
+  //: title (`inboxWhy` spells them out under the other kinds' rows).
+  const facts = document.createElement("p");
+  facts.className = "muted link-suggestion-facts";
+  facts.appendChild(inboxScoreBar(s.confidence ?? s.similarity));
+  if (sigs.length) {
+    const why = inboxWhy(sigs);
+    why.title = why.textContent;
+    why.textContent = sigs.map((g) => g.reason).join(" · ");
+    facts.appendChild(why);
+  }
+  //: The row's actions, one cell: the reason as a quiet word, Link with its
+  //: edge (the row's one accept), the dismiss a quiet cross.
+  dismiss.classList.add("quiet");
+  const actions = document.createElement("span");
+  actions.className = "link-suggestion-actions";
+  actions.append(addReason, link, dismiss);
+  row.append(text, facts, actions, reason);
   return row;
 }
 

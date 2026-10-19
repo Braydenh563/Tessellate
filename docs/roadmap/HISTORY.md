@@ -51122,3 +51122,6 @@ From UI_MODERNISATION_PLAN Phase 11 item 1, both built:
 1331. **The owner, 2026-10-19, verbatim.** "the library boards and maps subtab is completely screwed with the new thumbnail additions (for the header and top of cards)" / "its messy and same for the bottom as well".
      **Fixed (lib1331).** The grid rule that spans the picture named `svg` only, so the snapshot `<img>` sat in the title's track (title 24px wide at x=311). Now `.board-minimap` spans, the title ellipsises (269px at x=42), the snapshot is `object-fit: cover` in the SVG's box (294x164, no bands), the footer is one line with the time `nowrap`. Measured at 1440 and 390, light and dark; pinned by `tests/test_library_board_card.py`.
 
+1329. **The owner, 2026-10-19, verbatim** (screenshot, dark: the Suggestions dialog on Links (12); the "Links (12)" select's top border is cut off under the "Suggestions" header). "the suggestions panel content  and probably other panels content get cut off at the top below the header and the suggestions panel needs a better redesign and restructuring"
+     Owner: design agent (Opus), sugg1329: the clip in every dialog/panel with a sticky header, then the Suggestions redesign.
+

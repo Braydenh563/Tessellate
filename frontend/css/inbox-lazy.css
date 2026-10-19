@@ -1,26 +1,128 @@
 /* Rules only this bundle's files use, out of the boot sheets (gzip budget, 2026-10-12). */
 
-.link-suggestion-text {
-  flex: 1 1 16rem;
-  min-width: 12rem;
+/* A suggested link (INBOX 1329, the owner: "the suggestions panel needs a
+   better redesign and restructuring"). The two notes are the row's subject,
+   one line each and cut with an ellipsis; under them one line of how sure
+   and why; the actions one cell centred on the row (DESIGN.md "A row in a
+   list"), on its own line on a phone; the reason field, when asked for,
+   under all of it. Measured before: 75 to 107px a row at 1440, 210 to 228px
+   at 390 with one row in view and four pieces spilling past the row. */
+.link-suggestion {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "pair actions" "facts actions" "reason reason";
+  align-items: center;
+  column-gap: var(--space-3);
+  row-gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
 }
+/* The first name takes what it needs up to half the line, the second the
+   rest, so a long name never squeezes a short one to a few letters. */
+.link-suggestion-pair {
+  grid-area: pair;
+  display: grid;
+  grid-template-columns: fit-content(calc(50% - var(--space-4))) auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.link-suggestion-note {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex: 0 1 auto;
+  min-width: 0;
+  font-weight: 500;
+}
+.link-suggestion-note > .ph,
 .link-suggestion-join {
+  flex: none;
   color: var(--muted);
+}
+.link-suggestion-name,
+.link-suggestion-facts > .link-suggestion-why {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.link-suggestion-facts {
+  grid-area: facts;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  margin: 0;
+  font-size: var(--text-xs);
+}
+.link-suggestion-facts > .link-suggestion-why {
+  flex: 1 1 auto;
+  margin: 0;
+  font-size: inherit;
 }
 /* The score as a short bar with its number beside it. */
 .link-suggestion-score {
   display: inline-flex;
+  flex: none;
   align-items: center;
   gap: var(--space-1);
-  font-size: var(--text-xs);
-  color: var(--muted);
   font-variant-numeric: tabular-nums;
+}
+.link-suggestion-bar {
+  display: inline-block;
+  width: 3rem;
+  height: 0.375rem;
+  border-radius: var(--radius-pill);
+  background: var(--border);
+  overflow: hidden;
 }
 .link-suggestion-bar > span {
   display: block;
   height: 100%;
   background: var(--accent);
 }
+.link-suggestion-actions {
+  grid-area: actions;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+/* "Add a reason" is the row's optional step: quiet and in the muted ink
+   until it is aimed at, so Link, the one action with an edge, reads first. */
+.link-suggestion-actions > .link-suggestion-add-reason:not(:hover, :focus-visible) {
+  color: var(--muted);
+}
+/* The reason field, the small buttons' height (INBOX 110/111). */
+.link-suggestion-reason {
+  grid-area: reason;
+  width: 100%;
+  height: var(--control-h-dense);
+  margin: var(--space-1) 0 0;
+  padding-block: 0;
+  font-size: var(--text-sm);
+}
+@media (max-width: 599.98px) {
+  .link-suggestion {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "pair" "facts" "actions" "reason";
+  }
+  .link-suggestion-pair {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-1);
+  }
+  .link-suggestion-join {
+    display: none;
+  }
+  .link-suggestion-actions > .link-suggestion-add-reason {
+    margin-inline-end: auto;
+  }
+}
+/* The Links bar: the one bulk button, the ⋯ of the two Atlas passes, and
+   the status line, cut to its line (its full words in its title). */
 .inbox-tools {
   gap: var(--space-2);
   flex-wrap: wrap;
@@ -29,7 +131,15 @@
 }
 .inbox-status {
   flex: 1 1 12rem;
+  min-width: 0;
+  margin: 0;
   font-size: var(--text-sm);
+}
+.inbox-status.job-line {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-xs);
 }
 .inbox-row-title {
   margin: 0;

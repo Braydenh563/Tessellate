@@ -34,9 +34,6 @@ with its owner named in the entry.
 
 ## Open items
 
-1329. **The owner, 2026-10-19, verbatim** (screenshot, dark: the Suggestions dialog on Links (12); the "Links (12)" select's top border is cut off under the "Suggestions" header). "the suggestions panel content  and probably other panels content get cut off at the top below the header and the suggestions panel needs a better redesign and restructuring"
-     Owner: design agent (Opus), sugg1329: the clip in every dialog/panel with a sticky header, then the Suggestions redesign.
-
 1324. **The owner, 2026-10-19, verbatim.** "also is the ask ai quick link accurate if the composer can compensate?? also keep improving the composer and integrating it in the whole app, expand it, improve understanding, improve language and sentence generation, expand responses, make it smarter, have it flawless and robust, have every single possible response in all of its roles (guide, chat, popup agent, agent, ask, other integrated features) be very good and more."
      Standing. Done (composer1324): "Ask AI" link is now "Ask your notes"; 40-question grade with no model 23 to 32 fully good (scratchpad/composer1324-grades.md). Open: fact questions answered with a quote, "five notes" showing one, "From today:" labels, compare as a table, fragment joins (agent-remaining/composer1324-1019.md).
 
