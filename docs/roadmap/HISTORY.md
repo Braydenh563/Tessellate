@@ -51061,3 +51061,6 @@ From WHITEBOARD_PLAN "The draw.io programme", section 2 (Text tab), built by the
 1323. **Fixed.** **The owner, 2026-10-19, verbatim.** "Also I think the grounding needs a redesign and modern/professional ui/ux improvement" (screenshot: a reply's "Grounded in:" row, chip 1 reads "1. --- type: Meeting date: 2026-10-15 12:55 attendees: [] --- M..." (raw front matter as the title), chip 2 wraps to a second line, a lone image thumbnail after it)
      Owner: orchestrator after the gate; source titles skip front matter, a compact source list (title, kind icon, date, snippet on hover), thumbnails inside their chip, CHAT_PLAN row.
 
+1316. **Fixed.** **The owner, 2026-10-19, verbatim.** "also the timeline side graph should scroll higher if I scroll to future dates on the timeline as well"
+     Owner: timeline agent (Sonnet), queued after the current three.
+

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Timeline: the density strip's window rises as the feed scrolls into future dates; its span reaches the newest row and the week ahead, and the strip is drawn by the lazy labels file (INBOX 1316).
 - Chat and Ask: "Grounded in" is a source list: a quiet heading over bordered source cards with number badges and pictures inside their card, and a note's front matter no longer shows as its title (INBOX 1323).
 - Dashboard: the Stats and Streak widgets have a Statistics button, as the heatmap does, and the Stats bar strip opens Statistics too (INBOX 1318).
 - Whiteboard: Ctrl+Enter while typing in a sticky starts the next one beside it, same paper and size (INBOX 1308).

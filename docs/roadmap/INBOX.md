@@ -34,6 +34,9 @@ with its owner named in the entry.
 
 ## Open items
 
+1324. **The owner, 2026-10-19, verbatim.** "also is the ask ai quick link accurate if the composer can compensate?? also keep improving the composer and integrating it in the whole app, expand it, improve understanding, improve language and sentence generation, expand responses, make it smarter, have it flawless and robust, have every single possible response in all of its roles (guide, chat, popup agent, agent, ask, other integrated features) be very good and more."
+     Owner: composer agent (Sonnet, then an Opus review): the "Ask AI" quick link's wording when no model is set and the composer answers; then CHAT_PLAN composer rows across every role.
+
 1322. **The owner, 2026-10-19, verbatim.** "and can you make it easier to access the format panel like with this library button in the whiteboard top bar button? also atlas needs to have its animations and expressions improved behaviours, even micro behaviours and movements, small movement adjustments, more variety, the juggling stars dont animate at all." (screenshot: the whiteboard top bar, Insert, Edit, Arrange, View, Board menus, then a Library button)
      Owner: (a) Format button beside Library in the whiteboard bar, wb1313 agent; (b) Atlas micro behaviours, expression variety and the juggling stars animation, atlas1322 agent (Sonnet).
 
@@ -48,9 +51,6 @@ with its owner named in the entry.
 
 1317. **The owner, 2026-10-19, verbatim** (screenshot, dark: Dashboard "Boards & maps": the board "test board" preview is grey placeholder blocks and teal squiggles that do not look like the board; the map "test" a tiny strip of coloured bars). "also the whiteboard and mindmap previews just arent working, can we like snapshot a thumbnail for it and really compress it so it doesnt take up much space or storage or load time and then use that or smth and it can be stored in cache or smth"
      Owner: thumbnails agent (Sonnet), after the current three: render a small snapshot on save/close (canvas to WebP, about 320px wide, quality around 0.6, a few KB), stored with the board and cached (ETag), used by every preview surface; the drawn placeholder only as a fallback.
-
-1316. **The owner, 2026-10-19, verbatim.** "also the timeline side graph should scroll higher if I scroll to future dates on the timeline as well"
-     Owner: timeline agent (Sonnet), queued after the current three.
 
 1315. **The owner, 2026-10-19, verbatim.** "keep improving the composer and companions and atlas as well. just keep doing what youre doing. Im going to go and do some uni work now so Ill leave you to it.. leep using lean-workflow"
      Standing: composer (CHAT_PLAN), companion and Atlas rows stay in the away queue after the bugs.
