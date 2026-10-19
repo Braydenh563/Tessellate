@@ -2116,6 +2116,10 @@ function syncModelGatedControls(status = modelStatus) {
     "No model connected. Ask shows the matching records below.",
     { dismissible: true, detail: "Ask answers from your notes alone until one is connected." }
   );
+  //: The Use AI switch draws its true state from ask-compose.js, so load that
+  //: with the first status rather than at the 3 s preload: until then the
+  //: markup's own "on" showed over a model that was off (2026-10-19).
+  ensureModule("askCompose");
   //: The agent with no model runs acts and readings (AGENT_SKILLS_REFORM
   //: "Deepened 2026-10-10" row 1, `ai/starter_acts.py`), so the line says
   //: what a model adds rather than that nothing runs.
