@@ -1098,6 +1098,12 @@ def _hard_delete(session: Session, entries: list[Entry], uploads_dir: Path | Non
     ids = [e.id for e in entries]
     if not ids:
         return 0
+    try:
+        from tessellate.core import board_thumbs, deps
+
+        board_thumbs.forget(deps.get_config().data_dir, ids)
+    except (AssertionError, OSError):  # no config yet must not block a purge
+        pass
     seal_private_events(session, [e.id for e in entries if e.is_private])
     # Attached files: remove bytes from disk (best effort) then the rows.
     attachments = list(

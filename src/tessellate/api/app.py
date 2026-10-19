@@ -1369,6 +1369,9 @@ def _include_routers(app: FastAPI, locked: list) -> None:
     app.include_router(routes_timeline.router, dependencies=locked)
     app.include_router(routes_library.router, dependencies=locked)
     app.include_router(routes_whiteboard.router, dependencies=locked)
+    app.include_router(
+        routes_whiteboard.media_router, dependencies=[Depends(routes_auth.require_unlock_media)]
+    )
     app.include_router(routes_board_library.router, dependencies=locked)
     app.include_router(routes_code_snippets.router, dependencies=locked)
     app.include_router(routes_code_assist.router, dependencies=locked)

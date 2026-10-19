@@ -44,6 +44,7 @@ with its owner named in the entry.
      Orchestrator: Stats and Streak widgets got the heatmap's Statistics button (`dashStatsButton`), the Stats strip opens it too; not yet driven in the app (the test dashboard has no Stats widget). The statistics agent verifies it.
 
 1317. **The owner, 2026-10-19, verbatim** (screenshot, dark: Dashboard "Boards & maps": the board "test board" preview is grey placeholder blocks and teal squiggles that do not look like the board; the map "test" a tiny strip of coloured bars). "also the whiteboard and mindmap previews just arent working, can we like snapshot a thumbnail for it and really compress it so it doesnt take up much space or storage or load time and then use that or smth and it can be stored in cache or smth"
+   **Fixed (thumbs1317).** Raster thumbnail per board: PUT /whiteboard/boards/{id}/thumbnail, served at /media/board-thumb/{id}?v=fp with ETag; 2,206 and 3,068 bytes on the seeded board and map; card build 0.03 to 0.08 ms vs 0.26 to 0.43 ms for the SVG; naturalWidth 480 in light and dark.
      Owner: thumbnails agent (Sonnet), after the current three: render a small snapshot on save/close (canvas to WebP, about 320px wide, quality around 0.6, a few KB), stored with the board and cached (ETag), used by every preview surface; the drawn placeholder only as a fallback.
 
 1315. **The owner, 2026-10-19, verbatim.** "keep improving the composer and companions and atlas as well. just keep doing what youre doing. Im going to go and do some uni work now so Ill leave you to it.. leep using lean-workflow"

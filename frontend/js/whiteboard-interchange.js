@@ -1167,3 +1167,80 @@ onDomReady(() => {
     await wbImportText(text);
   });
 });
+
+//: **Board thumbnails (INBOX 1317).** When edits settle (3 s) or the person
+//: clicks away from the board, the board is drawn through the export path to a
+//: ~480px WebP (JPEG where WebP cannot be encoded) and PUT to the server, which
+//: keeps it as a file and serves it to every card and widget as a cached
+//: <img>. The server's fingerprint decides whether a redraw is needed at all,
+//: so panning or selecting (which also mutate the DOM) costs one small GET.
+//: The SVG is built synchronously, before any await, because the click that
+//: leaves the board hides it and the export reads live sizes.
+const WB_THUMB = Object.freeze({ width: 480, maxHeight: 960, quality: 0.6, delayMs: 3000, maxBytes: 60 * 1024 });
+let wbThumbTimer = null;
+let wbThumbPending = null;
+let wbThumbBusy = false;
+
+function wbThumbMark() {
+  const id = window.currentBoardId;
+  if (!id) return;
+  wbThumbPending = id;
+  clearTimeout(wbThumbTimer);
+  wbThumbTimer = setTimeout(wbThumbFlush, WB_THUMB.delayMs);
+}
+
+async function wbThumbFlush() {
+  clearTimeout(wbThumbTimer);
+  const id = wbThumbPending;
+  wbThumbPending = null;
+  const container = document.getElementById("whiteboard-container");
+  if (!id || wbThumbBusy || String(window.currentBoardId ?? "") !== String(id)) return;
+  if (!container || container.offsetParent === null) return;
+  if (!(wbState.nodes?.length || wbState.sketches?.length || wbState.objects?.length)) return;
+  let built;
+  try {
+    built = wbBuildExportSvg("board");
+  } catch {
+    return;
+  }
+  wbThumbBusy = true;
+  try {
+    const state = await apiJson(`/whiteboard/boards/${id}/thumbnail/state`);
+    if (state.stored === state.fp) return;
+    const w = Math.max(1, Math.min(WB_THUMB.width, Math.round(built.width)));
+    const h = Math.max(1, Math.min(WB_THUMB.maxHeight, Math.round((built.height * w) / built.width)));
+    let blob = null;
+    for (const quality of [WB_THUMB.quality, 0.4]) {
+      blob = await wbRasterizeSvg(built.svg, w, h, "image/webp", quality);
+      if (blob.type !== "image/webp") blob = await wbRasterizeSvg(built.svg, w, h, "image/jpeg", quality);
+      if (blob.size <= WB_THUMB.maxBytes) break;
+    }
+    if (blob.size > WB_THUMB.maxBytes) return;
+    await api(`/whiteboard/boards/${id}/thumbnail?fp=${state.fp}`, {
+      method: "PUT",
+      headers: { "Content-Type": blob.type },
+      body: blob,
+      silent: true,
+    });
+  } catch {
+    // A thumbnail is a convenience: the SVG preview stays the fallback.
+  } finally {
+    wbThumbBusy = false;
+  }
+}
+
+(function wbThumbWatch() {
+  const container = document.getElementById("whiteboard-container");
+  if (!container) return;
+  new MutationObserver(wbThumbMark).observe(container, { childList: true, subtree: true, attributes: true });
+  document.addEventListener(
+    "pointerdown",
+    (event) => {
+      if (wbThumbPending && !container.contains(event.target)) wbThumbFlush();
+    },
+    true
+  );
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden" && wbThumbPending) wbThumbFlush();
+  });
+})();

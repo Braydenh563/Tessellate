@@ -378,6 +378,8 @@ function mapPreviewSketch(NS, x, y, w, h, shape, unit) {
 //: dead markup (CLAUDE.md, "a policy silently refusing the work").
 function mapPreview(board, { size = "card" } = {}) {
   const geo = MAP_PREVIEW_SIZES[size] || MAP_PREVIEW_SIZES.card;
+  //: The stored thumbnail (board-raster.js, lazy) when this board has a current one.
+  if (board?.thumb_v && window.mapRaster) return mapRaster(board, size);
   const items = Array.isArray(board?.preview_items) ? board.preview_items : [];
   const NS = "http://www.w3.org/2000/svg";
   const svg = document.createElementNS(NS, "svg");

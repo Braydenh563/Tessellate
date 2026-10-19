@@ -47,4 +47,4 @@ def test_a_long_thin_map_keeps_a_floor():
 
 
 def test_the_widget_loads_lazily():
-    assert 'dashBoards: ["/js/dash-boards.js"]' in APP
+    assert 'dashBoards: ["/js/pick-row.js", "/js/dash-boards.js"]' in APP
