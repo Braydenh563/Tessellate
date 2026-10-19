@@ -51,3 +51,33 @@ def test_408_header_buttons_ring_fits_inside_the_window_top() -> None:
         css,
     )
     assert m and re.search(r"outline-offset:\s*1px", m.group(1))
+
+
+def test_1400_worded_buttons_carry_their_visible_words_in_their_name() -> None:
+    """WCAG 2.5.3: a static button with visible words and an aria-label has those words in the label.
+
+    Before: eight buttons (Local, From library, Jump to latest, Dock the tools..., Add child, Add beside,
+    More, Reverse) were named by their tooltip sentence. The Snippets/Sections button is renamed by
+    documents.js with the file type, so it is exempt here.
+    """
+    from pathlib import Path
+
+    html = (Path(__file__).resolve().parents[1] / "frontend" / "index.html").read_text(encoding="utf-8")
+    bad = []
+    for m in re.finditer(r"<button\b([^>]*)>(.*?)</button>", html, re.S):
+        attrs, inner = m.groups()
+        label = re.search(r'aria-label="([^"]*)"', attrs)
+        if not label or 'id="doc-code-snippets-open"' in attrs:
+            continue
+        inner = re.sub(r"<i [^>]*></i>|<svg.*?</svg>", "", inner, flags=re.S)
+        words = " ".join(re.sub(r"<[^>]+>", "", inner).split())
+        if len(words) >= 2 and words.lower() not in label.group(1).lower():
+            bad.append((words, label.group(1)))
+    assert not bad
+
+
+def test_1400_the_timeline_day_strip_name_opens_with_its_face() -> None:
+    from pathlib import Path
+
+    js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "timeline.js").read_text(encoding="utf-8")
+    assert 'button.setAttribute("aria-label", `${face}, ${label}`)' in js

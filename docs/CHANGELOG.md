@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Accessibility: eight worded buttons (Local chip default, From library, Jump to latest, Dock the tools, the map ring's Add child, Add beside, More and Reverse) and the Timeline day strip now start their accessible name with the words on them (WCAG 2.5.3; OPEN 1400).
 - Header: the six right-hand buttons' keyboard ring no longer reaches past the window's top edge (offset 1px, ring top 0.5px; was -0.5px) (OPEN 408). The Library sub-tab rings were measured uncut.
 - Notes and Dashboard: the notes grid and the phone quick-links strip no longer scroll 4px sideways; their ring room is padding only, with no negative right margin (OPEN 1435, 1278).
 - Sidebar: the Categories collapse toggle sits on the head's row (8px lower, level with the filter button) while the collapsed sidebar is hover-opened.

@@ -210,7 +210,7 @@
            it never claims "Local" it has not checked. Below 600 it is a row
            of the header's More menu (PHONE_STATUS_ROWS). -->
       <button id="privacy-chip" class="ghost small privacy-chip hidden" type="button"
-        title="What left this computer since the app started" aria-label="Privacy record"><i class="ph ph-shield-check ph-lead" aria-hidden="true"></i><span class="privacy-chip-word">Local</span></button>
+        title="What left this computer since the app started" aria-label="Local: privacy record"><i class="ph ph-shield-check ph-lead" aria-hidden="true"></i><span class="privacy-chip-word">Local</span></button>
       <span class="notif-wrap">
         <button id="notif-btn" class="ghost small icon-only" title="Notifications"
           aria-label="Notifications" aria-expanded="false"
@@ -1708,7 +1708,7 @@ Link to another note with [[its first few words]]."></textarea>
                  document" select above): this is the image/file half of
                  the same ask. -->
             <button id="entry-attach-existing" class="ghost" type="button"
-              title="Attach an image already in your library" aria-label="Attach an image already in your library"><i class="ph ph-images-square ph-lead" aria-hidden="true"></i> From library</button>
+              title="Attach an image already in your library" aria-label="From library: attach an image already in your library"><i class="ph ph-images-square ph-lead" aria-hidden="true"></i> From library</button>
             <!-- Sketch, Dictate and Improve moved up here from the "File
                  under" row. They are the same family as Attach and From
                  library, three more ways to *put something into* this note , 
@@ -2897,7 +2897,7 @@ Link to another note with [[its first few words]]."></textarea>
                  one did not have. -->
             <button type="button" id="chat-jump-latest" class="chat-jump-latest hidden"
               title="Back to the end of the conversation"
-              aria-label="Back to the end of the conversation">
+              aria-label="Jump to latest: back to the end of the conversation">
               <span id="chat-jump-latest-dots" class="chat-jump-latest-dots" aria-hidden="true"></span>
               <span id="chat-jump-latest-label">Jump to latest</span>
               <i class="ph ph-arrow-down ph-lead" aria-hidden="true"></i>
@@ -6778,7 +6778,7 @@ Link to another note with [[its first few words]]."></textarea>
               <label class="wb-menu-row wb-snap-label" title="The sidebar: the library, notes and layers"><span><i class="ph ph-sidebar-simple ph-lead" aria-hidden="true"></i>Sidebar</span><input type="checkbox" id="wb-panel-library"></label>
               <label class="wb-menu-row wb-snap-label" data-wb-surface="map" hidden title="The map as an indented list you can edit"><span><i class="ph ph-list-dashes ph-lead" aria-hidden="true"></i>Outline</span><input type="checkbox" id="wb-panel-outline"></label>
               <label class="wb-menu-row wb-snap-label" title="Find on this board (Ctrl+F)"><span><i class="ph ph-magnifying-glass ph-lead" aria-hidden="true"></i>Search</span><input type="checkbox" id="wb-panel-search"></label>
-              <button id="wb-dock-toggle" class="wb-menu-item" type="button" title="Dock the tools as a sidebar" aria-label="Dock the tools as a sidebar"><i class="ph ph-sidebar-simple ph-lead" aria-hidden="true"></i><span>Dock the tools at the side</span></button>
+              <button id="wb-dock-toggle" class="wb-menu-item" type="button" title="Dock the tools as a sidebar" aria-label="Dock the tools at the side as a sidebar"><i class="ph ph-sidebar-simple ph-lead" aria-hidden="true"></i><span>Dock the tools at the side</span></button>
             </div>
             <!-- Zoom in and Zoom out are the zoom bar's two buttons already,
                  one click away at the foot of the canvas, so they are not
@@ -7862,12 +7862,12 @@ Link to another note with [[its first few words]]."></textarea>
          Coggle's gesture; the slots re-label themselves, word and icon, while
          it is held, so it is not a secret. -->
     <div id="wb-map-radial" class="wb-map-radial hidden" role="toolbar" aria-label="What you can do with this topic">
-      <button type="button" id="wb-radial-child" class="ghost small wb-map-radial-slot" title="Add a branch off this topic (Tab). Hold Alt to remove the branch instead" aria-label="Add a branch off this topic (Tab)"><span class="wb-map-radial-face"><i class="ph ph-arrow-elbow-down-right" aria-hidden="true"></i><span class="wb-map-radial-name">Add child</span></span></button>
-      <button type="button" id="wb-radial-sibling" class="ghost small wb-map-radial-slot" title="Add a topic beside this one (Enter). Hold Alt to remove this topic and keep its branch" aria-label="Add a topic beside this one (Enter)"><span class="wb-map-radial-face"><i class="ph ph-arrow-down" aria-hidden="true"></i><span class="wb-map-radial-name">Add beside</span></span></button>
+      <button type="button" id="wb-radial-child" class="ghost small wb-map-radial-slot" title="Add a branch off this topic (Tab). Hold Alt to remove the branch instead" aria-label="Add child: a branch off this topic (Tab)"><span class="wb-map-radial-face"><i class="ph ph-arrow-elbow-down-right" aria-hidden="true"></i><span class="wb-map-radial-name">Add child</span></span></button>
+      <button type="button" id="wb-radial-sibling" class="ghost small wb-map-radial-slot" title="Add a topic beside this one (Enter). Hold Alt to remove this topic and keep its branch" aria-label="Add beside: a topic beside this one (Enter)"><span class="wb-map-radial-face"><i class="ph ph-arrow-down" aria-hidden="true"></i><span class="wb-map-radial-name">Add beside</span></span></button>
       <button type="button" id="wb-radial-collapse" class="ghost small wb-map-radial-slot" title="Fold this branch away (C)" aria-label="Fold this branch away (C)"><span class="wb-map-radial-face"><i class="ph ph-caret-circle-down" aria-hidden="true"></i><span class="wb-map-radial-name">Fold</span></span></button>
       <button type="button" id="wb-radial-delete" class="ghost small wb-map-radial-slot" title="Delete this topic and everything under it (Delete)" aria-label="Delete this topic and everything under it (Delete)"><span class="wb-map-radial-face"><i class="ph ph-trash" aria-hidden="true"></i><span class="wb-map-radial-name">Delete</span></span></button>
       <button type="button" id="wb-radial-connect" class="ghost small wb-map-radial-slot" title="Draw a cross-link from this topic to another (Shift+C): it joins two branches without changing the tree" aria-label="Draw a cross-link from this topic to another (Shift+C)"><span class="wb-map-radial-face"><i class="ph ph-graph" aria-hidden="true"></i><span class="wb-map-radial-name">Cross-link</span></span></button>
-      <button type="button" id="wb-radial-more" class="ghost small wb-map-radial-slot" title="Everything else you can do with this topic (Shift+F10)" aria-label="Everything else you can do with this topic (Shift+F10)"><span class="wb-map-radial-face"><i class="ph ph-dots-three" aria-hidden="true"></i><span class="wb-map-radial-name">More</span></span></button>
+      <button type="button" id="wb-radial-more" class="ghost small wb-map-radial-slot" title="Everything else you can do with this topic (Shift+F10)" aria-label="More: everything else you can do with this topic (Shift+F10)"><span class="wb-map-radial-face"><i class="ph ph-dots-three" aria-hidden="true"></i><span class="wb-map-radial-name">More</span></span></button>
       <span class="wb-map-radial-caption" aria-hidden="true" data-rest="Tab adds a child, Enter one beside, C folds, Delete removes"></span>
     </div>
 
@@ -7888,7 +7888,7 @@ Link to another note with [[its first few words]]."></textarea>
          plain left-click; that is deliberately not copied, see the comment on
          `wbWireMapEdgeGestures`. -->
     <div id="wb-map-link-radial" class="wb-map-radial wb-map-radial-triad hidden" role="toolbar" aria-label="What you can do with this line">
-      <button type="button" id="wb-link-reverse" class="ghost small wb-map-radial-slot" title="Turn the line around: the topic below becomes the one above" aria-label="Turn this line around"><span class="wb-map-radial-face"><i class="ph ph-swap" aria-hidden="true"></i><span class="wb-map-radial-name">Reverse</span></span></button>
+      <button type="button" id="wb-link-reverse" class="ghost small wb-map-radial-slot" title="Turn the line around: the topic below becomes the one above" aria-label="Reverse: turn this line around"><span class="wb-map-radial-face"><i class="ph ph-swap" aria-hidden="true"></i><span class="wb-map-radial-name">Reverse</span></span></button>
       <button type="button" id="wb-link-label" class="ghost small wb-map-radial-slot" title="Label this line" aria-label="Label this line"><span class="wb-map-radial-face"><i class="ph ph-tag" aria-hidden="true"></i><span class="wb-map-radial-name">Label</span></span></button>
       <button type="button" id="wb-link-cut" class="ghost small wb-map-radial-slot" title="Cut this line: the topic below becomes a trunk of its own" aria-label="Cut this line"><span class="wb-map-radial-face"><i class="ph ph-scissors" aria-hidden="true"></i><span class="wb-map-radial-name">Cut</span></span></button>
       <span class="wb-map-radial-caption" aria-hidden="true" data-rest="How the line is drawn is in the topic strip"></span>

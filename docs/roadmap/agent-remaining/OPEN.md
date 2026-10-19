@@ -1432,7 +1432,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 1397 | settings-reset is in no help group (test_help_coverage.py). | docs/roadmap/agent-remaining/OPEN.md:2278 | S | unassigned |
 | 1398 | maplayouts.js "tree-left carries the branch bar" fails on base too (it measures the centre topic). | docs/roadmap/agent-remaining/OPEN.md:2294 | S | unassigned |
 | 1399 | The 14 browser-only appearance settings do not follow you to a second browser: decided (WORLD_CLASS 25f, placed 2026-10-11): mirror them all except... | docs/roadmap/agent-remaining/OPEN.md:2322 | S | unassigned |
-| 1400 | smallButton (app.js) names every worded button by its tooltip (WCAG 2.5.3); only the first-steps buttons are fixed. | docs/roadmap/agent-remaining/OPEN.md:2330 | S | unassigned |
+| 1400 | **Fixed 2026-10-19.** smallButton (app.js) names every worded button by its tooltip (WCAG 2.5.3); only the first-steps buttons are fixed. | docs/roadmap/agent-remaining/OPEN.md:2330 | S | unassigned |
 | 1401 | Most used in the sidebar keeps a binned note for up to 30 s (status.js cacheMs). | docs/roadmap/agent-remaining/OPEN.md:2331 | S | unassigned |
 | 1402 | The first-run queue (welcome, recovery key, updates) costs 3 acts before the dashboard. | docs/roadmap/agent-remaining/OPEN.md:2332 | S | unassigned |
 | 1403 | Still open from uipolish: the rows-view 28px meta button in a 24px line, the tool-confirm pair, lowering BOOT_CSS_CAP. | docs/roadmap/agent-remaining/OPEN.md:2341 | S | unassigned |
