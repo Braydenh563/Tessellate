@@ -413,6 +413,118 @@ def _link_ends(data: dict) -> list[tuple[str, str]]:
     return [(id_key, kind_key) for id_key, kind_key in (("sourceId", "sourceKind"), ("targetId", "targetKind")) if data.get(id_key) is not None]
 
 
+def _link_data(raw: str | None) -> dict | None:
+    """A connector's parsed data, or None when `raw` is not one."""
+    try:
+        data = json.loads(raw or "{}")
+    except (TypeError, ValueError):
+        return None
+    if isinstance(data, dict) and str(data.get("type", "")).startswith("link-"):
+        return data
+    return None
+
+
+def _remove_gone(db: Session, board_id: int, scope: set[str], current: dict, states: dict, counts: dict) -> set[str]:
+    """Removed: on the board now, not then."""
+    removed: set[str] = set()
+    for key in sorted(scope):
+        if key in current and key not in states:
+            removed.add(key)
+            kind = key.split(":")[0]
+            row = current[key]
+            events.record(db, "deleted", KINDS[kind][0], row.id, f"{kind} off board {board_id} (history)",
+                          payload={"before": _state_of(kind, row), "after": dict(events.DELETED)})
+            db.delete(row)
+            counts["removed"] += 1
+    return removed
+
+
+def _restore_order(scope: set[str], states: dict) -> list[str]:
+    # Objects first (a topic's parent), links last.
+    order = {"object": 0, "node": 1, "sketch": 2}
+    return sorted(
+        (k for k in scope if k in states),
+        key=lambda k: (order[k.split(":")[0]], _link_data(states[k].get("data")) is not None, int(k.split(":")[1])),
+    )
+
+
+def _restore_one(db: Session, board_id: int, key: str, state: dict, current: dict, made: dict, counts: dict, touched: list) -> None:
+    """Make one item again, or write it back when it is still here."""
+    kind = key.split(":")[0]
+    etype, model = KINDS[kind]
+    if kind == "node":
+        entry = db.get(Entry, state.get("entry_id"))
+        if entry is None or entry.is_deleted:
+            return
+    values = {f: state.get(f) for f in FIELDS[kind] if f in state}
+    if kind == "node":
+        values["locked"] = bool(values.get("locked"))
+        values["hidden"] = bool(values.get("hidden"))
+    row = current.get(key)
+    if row is None:
+        row = model(board_id=board_id, **values)
+        db.add(row)
+        db.flush()
+        made[key] = row.id
+        touched.append((kind, row))
+        counts["made"] += 1
+        return
+    before = _state_of(kind, row)
+    for field, value in values.items():
+        setattr(row, field, value)
+    after = _state_of(kind, row)
+    if after != before:
+        touched.append((kind, row))
+        events.record(db, "edited", etype, row.id, f"{kind} on board {board_id} (history)",
+                      payload={"before": before, "after": after})
+        counts["changed"] += 1
+
+
+def _drop_orphaned_links(db: Session, board_id: int, current: dict, removed: set[str], touched: list, counts: dict) -> None:
+    """Drop a connector already here whose end this restore took away."""
+    for key, row in current.items():
+        if key in removed or not key.startswith("sketch:") or any(row is r for _, r in touched):
+            continue
+        data = _link_data(row.data)
+        if data is None:
+            continue
+        if any(f"{data.get(kind_key) or 'node'}:{data[id_key]}" in removed for id_key, kind_key in _link_ends(data)):
+            events.record(db, "deleted", "whiteboard_sketch", row.id, f"sketch off board {board_id} (history)",
+                          payload={"before": _state_of("sketch", row), "after": dict(events.DELETED)})
+            db.delete(row)
+            counts["removed"] += 1
+
+
+def _repoint_link(db: Session, row, made: dict, alive: set[str], counts: dict) -> None:  # noqa: ANN001
+    """Point a connector at the remade ends; a remade connector left with an end
+    on nothing is dropped again."""
+    data = _link_data(row.data)
+    if data is None:
+        return
+    whole = True
+    for id_key, kind_key in _link_ends(data):
+        end = f"{data.get(kind_key) or 'node'}:{data[id_key]}"
+        if end in made:
+            data[id_key] = made[end]
+        elif end not in alive:
+            whole = False
+    row.data = json.dumps(data)
+    if not whole and row.id in made.values():
+        db.delete(row)
+        counts["made"] -= 1
+        for k in [k for k, v in made.items() if v == row.id]:
+            del made[k]
+
+
+def _repoint(db: Session, touched: list, made: dict, alive: set[str], counts: dict) -> None:
+    """Re-point what names a remade item."""
+    for kind, row in touched:
+        if kind == "object" and row.parent_id is not None and f"object:{row.parent_id}" in made:
+            row.parent_id = made[f"object:{row.parent_id}"]
+        if kind == "sketch":
+            _repoint_link(db, row, made, alive, counts)
+
+
 @router.post("/history/{event_id}/restore")
 def restore_board(
     event_id: int, body: RestoreBody, board_id: int | None = None, db: Session = Depends(get_session)
@@ -439,101 +551,13 @@ def restore_board(
     counts = {"made": 0, "changed": 0, "removed": 0}
     touched: list[tuple[str, object]] = []
 
-    # Removed: on the board now, not then.
-    removed: set[str] = set()
-    for key in sorted(scope):
-        if key in current and key not in states:
-            removed.add(key)
-            kind = key.split(":")[0]
-            row = current[key]
-            etype = KINDS[kind][0]
-            events.record(db, "deleted", etype, row.id, f"{kind} off board {board_id} (history)",
-                          payload={"before": _state_of(kind, row), "after": dict(events.DELETED)})
-            db.delete(row)
-            counts["removed"] += 1
-
-    def is_link(state: dict) -> bool:
-        try:
-            data = json.loads(state.get("data") or "{}")
-        except (TypeError, ValueError):
-            return False
-        return isinstance(data, dict) and str(data.get("type", "")).startswith("link-")
-
-    # Made again or written back, objects first (a topic's parent), links last.
-    order = {"object": 0, "node": 1, "sketch": 2}
-    wanted = sorted((k for k in scope if k in states), key=lambda k: (order[k.split(":")[0]], is_link(states[k]), int(k.split(":")[1])))
-    for key in wanted:
-        kind = key.split(":")[0]
-        state = states[key]
-        etype, model = KINDS[kind]
-        if kind == "node":
-            entry = db.get(Entry, state.get("entry_id"))
-            if entry is None or entry.is_deleted:
-                continue
-        values = {f: state.get(f) for f in FIELDS[kind] if f in state}
-        if kind == "node":
-            values["locked"] = bool(values.get("locked"))
-            values["hidden"] = bool(values.get("hidden"))
-        row = current.get(key)
-        if row is None:
-            row = model(board_id=board_id, **values)
-            db.add(row)
-            db.flush()
-            made[key] = row.id
-            touched.append((kind, row))
-            counts["made"] += 1
-            continue
-        before = _state_of(kind, row)
-        for field, value in values.items():
-            setattr(row, field, value)
-        after = _state_of(kind, row)
-        if after != before:
-            touched.append((kind, row))
-            events.record(db, "edited", etype, row.id, f"{kind} on board {board_id} (history)",
-                          payload={"before": before, "after": after})
-            counts["changed"] += 1
-
-    # Re-point what names a remade item, and drop a connector left with an
-    # end on nothing: one made again, or one already here whose end this
-    # restore took away.
-    alive = set(current) - removed
-    for key, row in current.items():
-        if key in removed or not key.startswith("sketch:") or any(row is r for _, r in touched):
-            continue
-        try:
-            data = json.loads(row.data or "{}")
-        except (TypeError, ValueError):
-            continue
-        if not isinstance(data, dict) or not str(data.get("type", "")).startswith("link-"):
-            continue
-        if any(f"{data.get(kind_key) or 'node'}:{data[id_key]}" in removed for id_key, kind_key in _link_ends(data)):
-            events.record(db, "deleted", "whiteboard_sketch", row.id, f"sketch off board {board_id} (history)",
-                          payload={"before": _state_of("sketch", row), "after": dict(events.DELETED)})
-            db.delete(row)
-            counts["removed"] += 1
-    for kind, row in touched:
-        if kind == "object" and row.parent_id is not None and f"object:{row.parent_id}" in made:
-            row.parent_id = made[f"object:{row.parent_id}"]
-        if kind != "sketch":
-            continue
-        try:
-            data = json.loads(row.data or "{}")
-        except (TypeError, ValueError):
-            continue
-        if not isinstance(data, dict) or not str(data.get("type", "")).startswith("link-"):
-            continue
-        whole = True
-        for id_key, kind_key in _link_ends(data):
-            end = f"{data.get(kind_key) or 'node'}:{data[id_key]}"
-            if end in made:
-                data[id_key] = made[end]
-            elif end not in alive:
-                whole = False
-        row.data = json.dumps(data)
-        if not whole and row.id in made.values():
-            db.delete(row)
-            counts["made"] -= 1
-            made = {k: v for k, v in made.items() if v != row.id}
+    removed = _remove_gone(db, board_id, scope, current, states, counts)
+    for key in _restore_order(scope, states):
+        _restore_one(db, board_id, key, states[key], current, made, counts, touched)
+    # A connector with an end on nothing goes: one made again, or one already
+    # here whose end this restore took away.
+    _drop_orphaned_links(db, board_id, current, removed, touched, counts)
+    _repoint(db, touched, made, set(current) - removed, counts)
     db.flush()
     for kind, row in touched:
         if row.id in made.values():

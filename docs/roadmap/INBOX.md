@@ -154,10 +154,11 @@ with its owner named in the entry.
      behaviour change (`_stream_lines` 105, `_plain_events` 81, `recognise.py` span 60, resolve 44,
      `_date_cands` 45, `_time_cands` 22, `parse_reminder_text` 27, `factgraph._note_facts` 105,
      `routes_tasks.collect` 74, `engine.search` 69, `composer._follow_one` 66 and `_compose` 77,
-     `lexical_filing.decide` 59; list in `agent-remaining/cx1298-1018.md`). Left, largest first:
-     `agent.run_agent` 78, `search_manager._retrieve` 60, `skill_runner._run_one_step` 53,
-     `routes_chat._prepare` 52, `routes_board_history.restore_board` 49 and the rest of
-     `python scripts/complexity.py`: split each toward its seed, lower the row in
+     `lexical_filing.decide` 59; list in `agent-remaining/cx1298-1018.md`); cx1298b-1018 split the
+     five largest (`run_agent` 78, `_retrieve` 60, `_run_one_step` 53, `_prepare` 52,
+     `restore_board` 49; `agent-remaining/cx1298b-1018.md`). Left, largest first:
+     `routes_files.analyse_attachment` 47, `inbox.merge_candidates` 46 and the rest of
+     `python scripts/complexity.py` (223 over 15): split each toward its seed, lower the row in
      `tests/complexity_seed.json`, start of the next PR.
 
 1307. **The owner, 2026-10-19, verbatim.** "cna you add more element and template options for the wireframes, and other diagrams?? also multi shap templates should grouped or semi grouped so if I resize or move, parts of them arent left separate. also there should be a property link option in the arrange tab where the width and height are so I can choose to change width or height and it will either only change that one property or it will keep them at their ratios when they were linked."

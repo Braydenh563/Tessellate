@@ -45,6 +45,7 @@ import logging
 from collections.abc import Callable, Iterator
 from itertools import chain
 from dataclasses import dataclass
+from dataclasses import field as dc_field
 
 from sqlalchemy.orm import Session
 
@@ -879,6 +880,360 @@ def _usage(spend: run_budget.RunBudget | None) -> dict | None:
     return spend.usage() if spend is not None else None
 
 
+@dataclass
+class _StepState:
+    """One step's bookkeeping across its attempts, pages and re-plans."""
+
+    index: int
+    step: str
+    spec: dict
+    offered: list
+    example: str | None
+    attempts: int
+    attempt: int = 1
+    #: Pages fetched so far, counted apart from `attempt` on purpose: paging is
+    #: the step *working*, and spending a contract retry on it would end a step
+    #: that is doing exactly what it was asked to.
+    pages: int = 1
+    #: Set when the step ran out of pages before the read ran out of notes.
+    truncated: str = ""
+    announced: bool = False
+    nudge: str | None = None
+    #: "done", "failed", "stalled", or "abort" (the model cannot use tools and
+    #: nothing has been shown yet); None while the step is still being tried.
+    outcome: str | None = None
+    #: Whether the way this step ended is worth re-planning at all, and the one
+    #: sentence saying what went wrong: the material `_replan_step` gives the
+    #: model, and the reason the `replanned` event carries.
+    replannable: bool = True
+    fail_reason: str = ""
+
+
+@dataclass
+class _Seen:
+    """What one turn of a step did, read off its events."""
+
+    #: Where this step's own changes start in the run's running list, so they
+    #: can be told apart from every earlier step's (see _step_answer and the
+    #: `notes_changed` contract).
+    changes_before: int
+    said: list[str] = dc_field(default_factory=list)
+    failures: list[str] = dc_field(default_factory=list)
+    ran_out: bool = False
+    called: set[str] = dc_field(default_factory=set)
+    #: Every tool event of the turn, in order, so the paging check can ask what
+    #: the *last* call of the step's own tool came back with.
+    tool_events: list[dict] = dc_field(default_factory=list)
+    ran_any_tool: bool = False
+    handed_over: bool = False
+    went_offline: bool = False
+
+
+def _begin_step(setup: _RunSetup, index: int, step: str) -> _StepState:
+    spec = setup.specs[index]
+    offered = _plan_step_offer(setup, index, _step_tools(spec, setup.allowed, setup.small_model))
+    example = tools.call_example(spec["tools"][0]) if setup.small_model and spec.get("tools") else None
+    attempts = spec.get("retries", skills.DEFAULT_STEP_RETRIES) + 1
+    return _StepState(index=index, step=step, spec=spec, offered=offered, example=example, attempts=attempts)
+
+
+def _turn_instruction(setup: _RunSetup, run: _RunState, st: _StepState) -> str:
+    instruction = skills.step_instruction(
+        setup.skill, setup.values, st.index, state=run.known, only_tools=st.offered, example=st.example
+    )
+    # Folded into the instruction, not appended to `step_history`: this is what
+    # the user is asking for as part of *this* step, not a fact about an
+    # earlier one, and a history entry is something the model may or may not
+    # weigh against everything else in the window.
+    if setup.manual_note and st.index == setup.resume_from:
+        instruction = f"Before this step, the person running this added: “{setup.manual_note}”\n\n{instruction}"
+    if st.nudge:
+        # First, and on its own line: this is a correction, and a correction
+        # buried under three paragraphs of restated context is one a small
+        # model reads as more context.
+        instruction = f"{st.nudge}\n\n{instruction}"
+    return instruction
+
+
+def _halt(run: _RunState, st: _StepState, state: str, reason: str, fail_reason: str = "", replannable: bool = True) -> dict:
+    """End the step as `failed` or `stalled`: the event to show, with the run's
+    `stopped_at` (what Resume picks up from) and the re-plan inputs set."""
+    run.stopped_at = st.index
+    st.replannable = replannable
+    if fail_reason:
+        st.fail_reason = fail_reason
+    st.outcome = state
+    return {"type": "step", "index": st.index, "state": state, "text": st.step, "reason": reason}
+
+
+def _open_turn(setup: _RunSetup, run: _RunState, st: _StepState):
+    """Start one model turn. Returns its events, or None when the step ended
+    before it began (the model cannot use tools)."""
+    instruction = _turn_instruction(setup, run, st)
+    st.announced = yield from _announce_early(run, st.index, st.step, st.announced)
+    events = setup.turn(
+        instruction,
+        run.step_history,
+        f"I couldn't finish step {st.index + 1}: I used every round it had without reaching an answer.",
+        st.offered,
+    )
+    first = next(events, None)
+    if first is not None and first.get("type") == "unsupported":
+        if not run.started:
+            # Nothing has been shown yet, so the caller can still fall back to
+            # a plain answer. Once a step has run, it cannot. An explicit stop
+            # (outcome "abort"), not a bare return: a None would run this same
+            # step again for ever (CodeQL, mixed implicit and explicit returns).
+            st.outcome = "abort"
+            yield first
+            return None
+        # INBOX 272 part 1: `first["message"]` (set once, in ai/agent.py)
+        # already names the remedy; only an older event shape (or a test
+        # double) falls back to the bare fact. Not re-plannable: no rewording
+        # of a step gives a model back the ability to call tools.
+        reason = first.get("message") or "The model stopped being able to use tools part-way through."
+        yield _halt(run, st, "failed", reason, replannable=False)
+        return None
+    if not run.started:
+        yield setup.plan
+        run.started = True
+    if not st.announced:
+        st.announced = True
+        yield {"type": "step", "index": st.index, "state": "running", "text": st.step}
+    return chain([first], events) if first else events
+
+
+def _note_event(seen: _Seen, run: _RunState, event: dict) -> None:
+    kind = event["type"]
+    if kind == "answer":
+        seen.said.append(event["delta"])
+        if event.get("offline"):
+            seen.went_offline = True
+    elif kind == "tool":
+        seen.ran_any_tool = True
+        seen.tool_events.append(event)
+        if event.get("tool"):
+            seen.called.add(event["tool"])
+        if not event.get("ok"):
+            seen.failures.append(str(event.get("error") or event.get("label")))
+    elif kind == "limit":
+        # The step used every round it had and was still calling tools.
+        # Whatever it says next is a stopping notice, not the step's result.
+        seen.ran_out = True
+        #: **A budget stop is not a rounds stop.** Out of rounds means "this
+        #: step is bigger than a step": Resume it, split it, try again. Out of
+        #: budget means the *run* is over, so re-planning this step would spend
+        #: rounds the run does not have on a call that would be refused.
+        if event.get("reason") == "budget":
+            run.out_of_budget = str(event.get("detail") or "the run's budget ran out")
+    elif kind in _HANDOVERS:
+        # `ask_user` ends the turn by handing the question to the person. It
+        # never reaches here as a tool event, so a contract check would see a
+        # step that called nothing and re-prompt a model that is correctly
+        # waiting for an answer only the user can give.
+        seen.handed_over = True
+
+
+def _observe_turn(run: _RunState, source) -> Iterator[dict]:  # noqa: ANN001
+    seen = _Seen(changes_before=len(run.changes))
+    for event in _collect(source, run.changes, run.known):
+        _note_event(seen, run, event)
+        yield event
+    return seen
+
+
+_OFFLINE_REASON = "Ollama isn't reachable: check Settings → Models and try again."
+_RAN_OUT_REASON = "ran out of rounds before finishing, Resume continues from here, or split this step into two smaller ones"
+#: **Say what to do about it, not only what happened.** Reported: *"skills are
+#: too hard for small ais and things go wrong often."* One empty turn from a
+#: small model is the most common way a run stops, and it usually passes on the
+#: next attempt, which the Resume button already does from this step.
+_SAID_NOTHING_REASON = (
+    "the model didn't respond: no answer and no tool call. "
+    "Resume picks up from this step; a smaller model often "
+    "gets it on the second attempt, and Manual mode lets you "
+    "steer each step."
+)
+
+
+def _stop_reason(run: _RunState, seen: _Seen, answer: str):
+    """(state, reason, fail_reason, replannable) when the turn ended the step
+    outright, else None. The order is load-bearing."""
+    if seen.went_offline:
+        # **Tier 1 section 3.** Ollama died mid-round, and the agent's own
+        # answer for that is a real sentence of prose, which used to satisfy the
+        # "did this step say something" check and get ticked done; the run then
+        # repeated the identical failure on every later step. Not retried: the
+        # notebook will not come back online between two attempts a second
+        # apart, and the re-plan call would need the model that went away.
+        return "failed", _OFFLINE_REASON, "", False
+    if run.out_of_budget:
+        #: Checked before `ran_out`, which a budget stop also sets: the two
+        #: arrive together and only one of them is the reason. Nothing to
+        #: re-plan: a rewritten step is not a cheaper one, it is another turn.
+        return "stalled", run.out_of_budget, "", False
+    if seen.ran_out:
+        # **Stalled, not done.** The runner could only see that the turn
+        # produced text, and the "I ran out of rounds" notice is text, so a step
+        # cut off mid-job was ticked green and the next ran on half-finished
+        # work. `stopped_at` is what Resume picks up from.
+        #
+        # **Not re-plannable, and this is the sharpest line in the mechanism.**
+        # A step that ran out of rounds was *doing the job* and got cut off;
+        # rewritten and run again, the model has no context about what it
+        # already tagged, answers in prose, and the step goes green over a job
+        # still half finished (`tests/test_long_runs.py` catches it). The honest
+        # ending is stop, and let Resume carry on with the notebook as it stands.
+        return "stalled", _RAN_OUT_REASON, "it used every round it had without finishing", False
+    # A step that ran no tools and said nothing did not happen. Anything else is
+    # reported as done: the model's own words are the record, and calling a step
+    # failed because a tool errored mid-way would be wrong when it recovered.
+    if not answer and seen.failures:
+        return "failed", seen.failures[-1], f"a tool failed: {seen.failures[-1]}", True
+    # **The other half of the reported bug.** A turn can end with no answer, no
+    # tool call and no failure at all, which fell straight through to "done" and
+    # made the skill's progress list lie. Deliberately *not* folded into the
+    # contract retry: this is a model that produced nothing, not one that did the
+    # wrong thing, and the two want different words.
+    if not answer and not seen.ran_any_tool and not seen.handed_over:
+        return "failed", _SAID_NOTHING_REASON, "the model said nothing and called no tool", True
+    return None
+
+
+def _truncation_note(run: _RunState) -> str:
+    return (
+        f"stopped after {MAX_PAGES_PER_STEP} pages with more left "
+        f"to read; {len(run.known.get('seen_ids') or [])} notes were seen"
+    )
+
+
+def _done_event(st: _StepState, step_changes: list[dict], called: set[str]) -> dict:
+    #: What the step wrote, each with its Undo, drawn under the step when it
+    #: ticks (AGENT_SKILLS_REFORM "Deepened 2026-10-10" row 3).
+    done: dict = {"type": "step", "index": st.index, "state": "done", "text": st.step, "changes": step_changes}
+    #: **A step that could have changed something and did not says so.** Nine
+    #: shipped steps name a tool and declare `answer_only`, so a model that
+    #: writes "I used unlink_notes..." without calling anything would tick the
+    #: step green over an untouched notebook. The contract cannot forbid that
+    #: without failing every honest run with nothing to fix, so `no_change` is
+    #: drawn as a caveat on the row instead.
+    if st.spec.get("expects") == "tool_optional" and not (set(st.spec.get("tools") or []) & called):
+        done["no_change"] = True
+        done["reason"] = "nothing was changed in this step"
+    if st.truncated:
+        done["reason"] = st.truncated
+        done["truncated"] = True
+    return done
+
+
+def _judge_turn(run: _RunState, st: _StepState, seen: _Seen) -> Iterator[dict]:
+    """Decide what the turn means for the step: sets `st.outcome` when the step
+    is over, and leaves it None when the step is to be tried again."""
+    answer = "".join(seen.said).strip()
+    step_changes = run.changes[seen.changes_before :]
+    stop = _stop_reason(run, seen, answer)
+    if stop is not None:
+        state, reason, fail_reason, replannable = stop
+        yield _halt(run, st, state, reason, fail_reason, replannable)
+        return
+    #: **More pages to read: the step is not over** (CHAT_PLAN decision 10).
+    #: Checked before the contract because the two say different things: the
+    #: contract is "you never reached for the tool", this is "you reached for it
+    #: and stopped a quarter of the way through". The event says `paging`, as
+    #: `retrying` does, because what the person watches is progress, not a fault.
+    page = None if seen.handed_over else _pages_left(st.spec, seen.tool_events)
+    if page is not None and st.pages < MAX_PAGES_PER_STEP:
+        st.pages += 1
+        st.nudge = _paging_nudge(page, st.pages, MAX_PAGES_PER_STEP)
+        yield {
+            "type": "step",
+            "index": st.index,
+            "state": "paging",
+            "text": st.step,
+            "page": st.pages,
+            "of": MAX_PAGES_PER_STEP,
+            "seen": len(run.known.get("seen_ids") or []),
+        }
+        return
+    #: **Out of pages with more still to read.** Said out loud three times: on
+    #: the step event, in the step's history so the next step knows, and through
+    #: `result.truncated` so the run does not report a partial pass as complete.
+    if page is not None:
+        run.truncated = True
+        st.truncated = _truncation_note(run)
+    if seen.handed_over or _contract_met(st.spec, seen.called, step_changes, answer):
+        yield _done_event(st, step_changes, seen.called)
+        run.step_history.append({"question": st.step, "answer": _step_answer(answer, step_changes, st.truncated)})
+        st.outcome = "done"
+        return
+    if st.attempt < st.attempts:
+        # **Re-prompted, not skipped.** A small model that narrated the step
+        # instead of doing it is told, literally, which call to make; the UI
+        # shows it retrying rather than ticked.
+        st.attempt += 1
+        st.nudge = skills.contract_nudge(st.spec, st.attempt, st.attempts)
+        yield {
+            "type": "step",
+            "index": st.index,
+            "state": "retrying",
+            "text": st.step,
+            "attempt": st.attempt,
+            "of": st.attempts,
+            "reason": _unmet_reason(st.spec),
+        }
+        return
+    # Out of attempts. Stalled: never `done`, which is the whole point.
+    reason = (
+        f"{_unmet_reason(st.spec)} after {st.attempts} attempt(s). Resume "
+        "continues from here: or, if there was genuinely nothing "
+        "to do in this step, skip past it by resuming from the next."
+    )
+    yield _halt(run, st, "stalled", reason, _unmet_reason(st.spec))
+
+
+def _replan_or_stop(setup: _RunSetup, run: _RunState, st: _StepState) -> Iterator[dict]:
+    #: **Re-plan, then try the step again** (PLAN.md section 4 A2). Bounded by
+    #: `MAX_REPLANS` per *run*, not per step: two rewrites is where a run that
+    #: keeps failing is telling you something about the job rather than the
+    #: wording, and an unbounded loop would be a model rewriting its own
+    #: instructions forever over a notebook it cannot act on.
+    if not (st.replannable and run.replans < MAX_REPLANS):
+        return "stop"
+    run.replans += 1
+    revised = _replan_step(setup.model_manager, setup.ollama, setup.skill, setup.values, st.step, st.spec, st.fail_reason)
+    run.steps[st.index] = revised
+    yield {
+        "type": "step",
+        "index": st.index,
+        "state": "replanned",
+        "text": revised,
+        "attempt": run.replans,
+        "of": MAX_REPLANS,
+        "reason": st.fail_reason,
+    }
+    # It is no longer where the run stopped, it is about to be tried again, and
+    # a `stopped_at` left behind would offer a Resume for a step still running.
+    run.stopped_at = None
+    return "again"
+
+
+def _after_done(setup: _RunSetup, run: _RunState, index: int) -> str:
+    # Manual mode: the same stop-and-resume machinery `stopped_at` already gives
+    # a failed/stalled step, used deliberately here instead of a second
+    # mechanism: the difference is only `paused`, so the client can render
+    # "waiting for you" rather than "something broke". Nothing to pause for
+    # after the last step; that's just the run ending.
+    #
+    # **One step, and then stop** (`only_step`) is reported as a pause for the
+    # same reason: the person asked for this step and got it, and the rest of
+    # the skill is still there to carry on with.
+    if (setup.manual or setup.only_step is not None) and index + 1 < len(run.steps):
+        run.stopped_at = index + 1
+        run.paused = True
+        return "stop"
+    return "stop" if setup.only_step is not None else "next"
+
+
 def _run_one_step(setup: _RunSetup, run: _RunState, index: int) -> Iterator[dict]:
     """One step of a run: its attempts, its contract, and what to do next.
 
@@ -895,419 +1250,18 @@ def _run_one_step(setup: _RunSetup, run: _RunState, index: int) -> Iterator[dict
     """
     step = run.steps[index]
     _count_step()
-    # Whether the way this step ended is worth re-planning at all, and the
-    # one sentence saying what went wrong, the material `_replan_step`
-    # gives the model, and the reason the `replanned` event carries.
-    replannable = True
-    fail_reason = ""
-    spec = setup.specs[index]
-    offered = _plan_step_offer(setup, index, _step_tools(spec, setup.allowed, setup.small_model))
-    example = (
-        tools.call_example(spec["tools"][0])
-        if setup.small_model and spec.get("tools")
-        else None
-    )
-    attempts = spec.get("retries", skills.DEFAULT_STEP_RETRIES) + 1
-    attempt = 1
-    # Pages fetched for this step so far, counted apart from `attempt` on
-    # purpose: paging is the step *working*, and spending a contract retry
-    # on it would end a step that is doing exactly what it was asked to.
-    pages = 1
-    # Set when the step ran out of pages before the read ran out of notes.
-    truncated = ""
-    announced = False
-    nudge: str | None = None
-    outcome: str | None = None  # set when the step is over, either way
-    while outcome is None:
-        instruction = skills.step_instruction(
-            setup.skill, setup.values, index, state=run.known, only_tools=offered, example=example
-        )
-        # Folded into the instruction, not appended to `step_history`: this
-        # is what the user is asking for as part of *this* step, not a fact
-        # about an earlier one, and a history entry is something the model
-        # may or may not weigh against everything else in the window.
-        if setup.manual_note and index == setup.resume_from:
-            instruction = (
-                f"Before this step, the person running this added: "
-                f"“{setup.manual_note}”\n\n{instruction}"
-            )
-        if nudge:
-            # First, and on its own line: this is a correction, and a
-            # correction buried under three paragraphs of restated context
-            # is one a small model reads as more context.
-            instruction = f"{nudge}\n\n{instruction}"
-        announced = yield from _announce_early(run, index, step, announced)
-        events = setup.turn(
-            instruction,
-            run.step_history,
-            f"I couldn't finish step {index + 1}: I used every round it had "
-            "without reaching an answer.",
-            offered,
-        )
-        first = next(events, None)
-        if first is not None and first.get("type") == "unsupported":
-            if not run.started:
-                # Nothing has been shown yet, so the caller can still fall
-                # back to a plain answer. Once a step has run, it cannot.
-                # An explicit "stop", not a bare return: the loop above
-                # advances only on "next" and leaves only on "stop", so the
-                # None a bare return hands it would run this same step again
-                # for ever (CodeQL, mixed implicit and explicit returns).
-                yield first
-                return "stop"
-            yield {
-                "type": "step",
-                "index": index,
-                "state": "failed",
-                "text": step,
-                # INBOX 272 part 1: `first["message"]` (set once, in
-                # ai/agent.py) already names the remedy; only a `first` from
-                # an older event shape (or a test double) falls back to the
-                # bare fact.
-                "reason": first.get("message")
-                or "The model stopped being able to use tools part-way through.",
-            }
-            run.stopped_at = index
-            # Not re-plannable: no rewording of a step gives a model back
-            # the ability to call tools.
-            replannable = False
-            outcome = "failed"
+    st = _begin_step(setup, index, step)
+    while st.outcome is None:
+        source = yield from _open_turn(setup, run, st)
+        if source is None:
             break
-        if not run.started:
-            yield setup.plan
-            run.started = True
-        if not announced:
-            announced = True
-            yield {"type": "step", "index": index, "state": "running", "text": step}
-
-        said: list[str] = []
-        failures: list[str] = []
-        ran_out = False
-        called: set[str] = set()
-        # Every tool event of this turn, in order, so the paging check can
-        # ask what the *last* call of the step's own tool came back with.
-        tool_events: list[dict] = []
-        ran_any_tool = False
-        handed_over = False
-        went_offline = False
-        # Where this step's own changes start in the run's running list, so
-        # they can be told apart from every earlier step's: see
-        # _step_answer, and the `notes_changed` contract.
-        changes_before = len(run.changes)
-        for event in _collect(chain([first], events) if first else events, run.changes, run.known):
-            if event["type"] == "answer":
-                said.append(event["delta"])
-                if event.get("offline"):
-                    went_offline = True
-            elif event["type"] == "tool":
-                ran_any_tool = True
-                tool_events.append(event)
-                if event.get("tool"):
-                    called.add(event["tool"])
-                if not event.get("ok"):
-                    failures.append(str(event.get("error") or event.get("label")))
-            elif event["type"] == "limit":
-                # The step used every round it had and was still calling
-                # tools. Whatever it says next is a stopping notice, so it
-                # must not be read as the step's result.
-                ran_out = True
-                #: **A budget stop is not a rounds stop**, and telling
-                #: them apart is the whole of what the run does next. Out
-                #: of rounds means "this step is bigger than a step":
-                #: Resume it, split it, try again. Out of budget means the
-                #: *run* is over, so re-planning this step and running it
-                #: again would spend rounds the run does not have on a
-                #: model call that would be refused before it was made.
-                if event.get("reason") == "budget":
-                    run.out_of_budget = str(event.get("detail") or "the run's budget ran out")
-            elif event["type"] in _HANDOVERS:
-                # `ask_user` ends the turn by handing the question to the
-                # person. It never reaches here as a tool event, so a
-                # contract check would see a step that called nothing and
-                # re-prompt a model that is correctly waiting for an
-                # answer only the user can give.
-                handed_over = True
-            yield event
-
-        answer = "".join(said).strip()
-        step_changes = run.changes[changes_before:]
-        if went_offline:
-            # **Tier 1 §3.** Ollama died mid-round, and `agent.run_agent`'s
-            # own answer for that is a real sentence of prose ("Ollama
-            # doesn't seem to be running…"), which used to satisfy the
-            # "did this step say something" check below and get ticked
-            # done. The run then quietly repeated the identical failure on
-            # every later step, since the notebook did not get any less
-            # offline between them. Named and stopped here instead, the
-            # same way `ran_out` is. Not retried either: the notebook will
-            # not come back online between two attempts a second apart.
-            yield {
-                "type": "step",
-                "index": index,
-                "state": "failed",
-                "text": step,
-                "reason": "Ollama isn't reachable: check Settings → Models and try again.",
-            }
-            run.stopped_at = index
-            # Not re-plannable, and the re-plan call itself would need the
-            # same model that has just gone away.
-            replannable = False
-            outcome = "failed"
-            break
-        if run.out_of_budget:
-            #: Checked before `ran_out`, which a budget stop also sets:
-            #: the two arrive together and only one of them is the reason.
-            yield {
-                "type": "step",
-                "index": index,
-                "state": "stalled",
-                "text": step,
-                "reason": run.out_of_budget,
-            }
-            run.stopped_at = index
-            # Nothing to re-plan: the next attempt would be refused before
-            # it reached the model, and a rewritten step is not a cheaper
-            # one, it is another turn.
-            replannable = False
-            outcome = "stalled"
-            break
-        if ran_out:
-            # **Stalled, not done.** This is the half of the reported
-            # failure that made the other half invisible: the runner could
-            # only see that the turn produced text, and the "I ran out of
-            # rounds" notice is text: so a step that was cut off mid-job
-            # was ticked green and the next step ran on top of half-finished
-            # work. It stops here instead, and `stopped_at` is what Resume
-            # picks up from.
-            yield {
-                "type": "step",
-                "index": index,
-                "state": "stalled",
-                "text": step,
-                "reason": (
-                    "ran out of rounds before finishing, Resume continues "
-                    "from here, or split this step into two smaller ones"
-                ),
-            }
-            run.stopped_at = index
-            fail_reason = "it used every round it had without finishing"
-            #: **Not re-plannable, and this is the sharpest line in the
-            #: whole mechanism.** A step that ran out of rounds was
-            #: *doing the job* and got cut off half way, unlike every
-            #: other ending here, work was done and more is left. Rewrite
-            #: it and run it again and the model, having no rounds' worth
-            #: of context about what it already tagged, answers in prose
-            #:, and the step goes green over a job that is still half
-            #: finished. That is precisely the bug this file exists to
-            #: prevent (`tests/test_long_runs.py` catches it), and the
-            #: honest ending for a cut-off step is the one it already
-            #: has: stop, and let Resume carry on from here with the
-            #: notebook as it now stands.
-            replannable = False
-            outcome = "stalled"
-            break
-        # A step that ran no tools and said nothing did not happen. Anything
-        # else is reported as done, the model's own words are the record,
-        # and calling a step failed because a tool errored mid-way would be
-        # wrong when it recovered on the next call.
-        if not answer and failures:
-            yield {
-                "type": "step",
-                "index": index,
-                "state": "failed",
-                "text": step,
-                "reason": failures[-1],
-            }
-            run.stopped_at = index
-            fail_reason = f"a tool failed: {failures[-1]}"
-            outcome = "failed"
-            break
-        # **The other half of the reported bug.** A turn can end with no
-        # answer, no tool call and no failure at all, a model that replies
-        # with empty content and no tool calls produces exactly this, and it
-        # used to fall straight through to "done" below because nothing here
-        # checked for *nothing happening*. That is what made the skill's own
-        # progress list lie: a step ticked green though the model never
-        # actually said or did anything ("the AI fails to respond… and the
-        # skill step counted as done"). Reported the same way `ran_out` was:
-        # stop and let Resume pick it back up, rather than hand the next step
-        # a "done" step with nothing in its history to build on.
-        #
-        # Deliberately *not* folded into the contract retry below: this is a
-        # model that produced nothing at all, not one that did the wrong
-        # thing, and the two want different words. Retrying it would also
-        # change a failure the UI already explains ("Resume picks up from
-        # this step") into two more silent rounds first.
-        if not answer and not ran_any_tool and not handed_over:
-            yield {
-                "type": "step",
-                "index": index,
-                "state": "failed",
-                "text": step,
-                #: **Say what to do about it, not only what happened.**
-                #: Reported: *"skills are too hard for small ais and things go
-                #: wrong often."* A small model producing one empty turn is the
-                #: single most common way a run stops, and it usually passes on
-                #: the next attempt: which the Resume button already does,
-                #: from this step, without re-running the ones before it. A
-                #: reason that does not say that leaves the reader with a dead
-                #: run and no move.
-                "reason": (
-                    "the model didn't respond: no answer and no tool call. "
-                    "Resume picks up from this step; a smaller model often "
-                    "gets it on the second attempt, and Manual mode lets you "
-                    "steer each step."
-                ),
-            }
-            run.stopped_at = index
-            fail_reason = "the model said nothing and called no tool"
-            outcome = "failed"
-            break
-        #: **More pages to read: the step is not over** (CHAT_PLAN
-        #: decision 10). Checked before the contract rather than inside
-        #: it, because the two say different things to the reader: the
-        #: contract is "you never reached for the tool", and this is "you
-        #: reached for it and stopped a quarter of the way through". The
-        #: step event says `paging` for the same reason it says
-        #: `retrying`: what the person is watching is progress, not a
-        #: fault.
-        page = None if handed_over else _pages_left(spec, tool_events)
-        if page is not None and pages < MAX_PAGES_PER_STEP:
-            pages += 1
-            nudge = _paging_nudge(page, pages, MAX_PAGES_PER_STEP)
-            yield {
-                "type": "step",
-                "index": index,
-                "state": "paging",
-                "text": step,
-                "page": pages,
-                "of": MAX_PAGES_PER_STEP,
-                "seen": len(run.known.get("seen_ids") or []),
-            }
-            continue
-        #: **Out of pages with more still to read.** Said out loud, three
-        #: times over: on the step event, in the step's own history so the
-        #: next step knows what it is building on, and through
-        #: `result.truncated` so the run does not report a partial pass as
-        #: a complete one. This is the same failure the contract exists to
-        #: catch, one level up: "I went through your notes" over the first
-        #: sixth of them is the sentence nobody can tell from the truthful
-        #: version unless the app says so.
-        if page is not None:
-            run.truncated = True
-            truncated = (
-                f"stopped after {MAX_PAGES_PER_STEP} pages with more left "
-                f"to read; {len(run.known.get('seen_ids') or [])} notes were seen"
-            )
-        if handed_over or _contract_met(spec, called, step_changes, answer):
-            #: What the step wrote, each with its Undo, drawn under the step
-            #: when it ticks (AGENT_SKILLS_REFORM "Deepened 2026-10-10" row 3).
-            done: dict = {"type": "step", "index": index, "state": "done", "text": step, "changes": step_changes}
-            #: **A step that could have changed something and did not says
-            #: so.** The owner, reading a run's own reasoning: nine shipped
-            #: steps name a tool and declare `answer_only`, so a model that
-            #: writes "I used unlink_notes to remove the link between #12 and
-            #: #45" without calling anything ticks the step green over an
-            #: untouched notebook. The contract cannot forbid that without
-            #: failing every honest run with nothing to fix, so the
-            #: transcript carries the difference instead: `no_change` is
-            #: drawn as a caveat on the row, and a reader can tell the two
-            #: apart at a glance.
-            if spec.get("expects") == "tool_optional" and not (
-                called & set(spec.get("tools") or [])
-            ):
-                done["no_change"] = True
-                done["reason"] = "nothing was changed in this step"
-            if truncated:
-                done["reason"] = truncated
-                done["truncated"] = True
-            yield done
-            run.step_history.append(
-                {"question": step, "answer": _step_answer(answer, step_changes, truncated)}
-            )
-            outcome = "done"
-            break
-        if attempt < attempts:
-            # **Re-prompted, not skipped.** The single highest-yield change
-            # in the reform: a small model that narrated the step instead of
-            # doing it is told, literally, which call to make. The step stays
-            # open and the UI shows it retrying rather than ticked.
-            attempt += 1
-            nudge = skills.contract_nudge(spec, attempt, attempts)
-            yield {
-                "type": "step",
-                "index": index,
-                "state": "retrying",
-                "text": step,
-                "attempt": attempt,
-                "of": attempts,
-                "reason": _unmet_reason(spec),
-            }
-            continue
-        # Out of attempts. Stalled: never `done`, which is the whole point.
-        yield {
-            "type": "step",
-            "index": index,
-            "state": "stalled",
-            "text": step,
-            "reason": (
-                f"{_unmet_reason(spec)} after {attempts} attempt(s). Resume "
-                "continues from here: or, if there was genuinely nothing "
-                "to do in this step, skip past it by resuming from the next."
-            ),
-        }
-        run.stopped_at = index
-        fail_reason = _unmet_reason(spec)
-        outcome = "stalled"
-    if outcome != "done":
-        #: **Re-plan, then try the step again** (PLAN.md §4 A2). Bounded by
-        #: `MAX_REPLANS` per *run*, not per step: two rewrites is the point
-        #: at which a run that keeps failing is telling you something about
-        #: the job rather than about the wording, and an unbounded loop
-        #: here would be a model rewriting its own instructions forever
-        #: over a notebook it cannot act on.
-        if replannable and run.replans < MAX_REPLANS:
-            run.replans += 1
-            revised = _replan_step(
-                setup.model_manager, setup.ollama, setup.skill, setup.values, step, spec, fail_reason
-            )
-            run.steps[index] = revised
-            yield {
-                "type": "step",
-                "index": index,
-                "state": "replanned",
-                "text": revised,
-                "attempt": run.replans,
-                "of": MAX_REPLANS,
-                "reason": fail_reason,
-            }
-            # It is no longer where the run stopped, it is about to be
-            # tried again, and a `stopped_at` left behind here would offer
-            # a Resume for a step that is still running.
-            run.stopped_at = None
-            return "again"
+        seen = yield from _observe_turn(run, source)
+        yield from _judge_turn(run, st, seen)
+    if st.outcome == "abort":
         return "stop"
-    # Manual mode: the same stop-and-resume machinery `stopped_at` already
-    # gives a failed/stalled step, used deliberately here instead of a
-    # second mechanism: the difference is only `paused` below, so the
-    # client can render "waiting for you" rather than "something broke".
-    # Nothing to pause for after the last step; that's just the run ending.
-    if setup.manual and index + 1 < len(run.steps):
-        run.stopped_at = index + 1
-        run.paused = True
-        return "stop"
-    #: **One step, and then stop.** Reported as a pause rather than as a
-    #: stop, because that is what it is: the person asked for this step and
-    #: got it, and the rest of the skill is still there to carry on with.
-    #: `paused` is what makes the app offer Resume instead of drawing a run
-    #: that looks broken, and it is the same field manual mode sets for the
-    #: same reason.
-    if setup.only_step is not None:
-        if index + 1 < len(run.steps):
-            run.stopped_at = index + 1
-            run.paused = True
-        return "stop"
-    return "next"
+    if st.outcome != "done":
+        return (yield from _replan_or_stop(setup, run, st))
+    return _after_done(setup, run, index)
 
 
 def _run_skill(
