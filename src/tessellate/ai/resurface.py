@@ -71,6 +71,27 @@ def score_for(age_days: float, link_count: int, access_count: int) -> float:
     return _clamp(W_AGE * age + W_UNLINKED * unlinked + W_UNREAD * unread)
 
 
+def _refresh(row: NoteScore, values: dict) -> None:
+    for key, value in values.items():
+        setattr(row, key, value)
+
+
+def _upsert_scores(session: Session, fresh: list[dict]) -> None:
+    """Insert the new rows as an upsert, not `session.add`: two requests that
+    both find the table stale each read "no row yet" and both insert, and the
+    second hit UNIQUE note_scores.entry_id (a 500 on `GET /resurface/near/{id}`).
+    The later writer simply refreshes the row the earlier one made."""
+    for start in range(0, len(fresh), 100):
+        chunk = fresh[start:start + 100]
+        stmt = sqlite_insert(NoteScore).values(chunk)
+        session.execute(
+            stmt.on_conflict_do_update(
+                index_elements=[NoteScore.entry_id],
+                set_={col: getattr(stmt.excluded, col) for col in chunk[0] if col != "entry_id"},
+            )
+        )
+
+
 def compute_scores(session: Session) -> int:
     """Refresh every note's fading score. Returns how many rows were written.
 
@@ -128,8 +149,7 @@ def compute_scores(session: Session) -> int:
         if row is None:
             fresh.append({"entry_id": entry.id, **values})
         else:
-            for key, value in values.items():
-                setattr(row, key, value)
+            _refresh(row, values)
         written += 1
 
     # A note that has since been deleted keeps no row: this is a cache, and a
@@ -140,19 +160,7 @@ def compute_scores(session: Session) -> int:
         if entry_id not in live:
             session.delete(row)
     session.flush()
-    for start in range(0, len(fresh), 100):
-        chunk = fresh[start:start + 100]
-        # An upsert, not `session.add`: two requests that both find the table
-        # stale each read "no row yet" and both insert, and the second hit
-        # UNIQUE note_scores.entry_id (a 500 on `GET /resurface/near/{id}`).
-        # The later writer simply refreshes the row the earlier one made.
-        stmt = sqlite_insert(NoteScore).values(chunk)
-        session.execute(
-            stmt.on_conflict_do_update(
-                index_elements=[NoteScore.entry_id],
-                set_={col: getattr(stmt.excluded, col) for col in chunk[0] if col != "entry_id"},
-            )
-        )
+    _upsert_scores(session, fresh)
     return written
 
 

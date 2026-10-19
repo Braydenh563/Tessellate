@@ -117,5 +117,5 @@ def test_the_constellation_rests_while_idle_and_resumes_where_it_stopped():
     assert "bgArtLastInput > BG_ART_IDLE_MS" in draw
     assert "p.noLoop()" in draw and "p.loop()" in draw
     assert "!reduceMotion" in draw, "a still sketch must not be woken into motion"
-    assert "artEpoch += performance.now() - rested" in draw
-    assert "let artEpoch" in src
+    assert "artClock.epoch += performance.now() - rested" in draw
+    assert "const artClock = { epoch" in src

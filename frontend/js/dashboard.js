@@ -2230,8 +2230,8 @@ let artNonce = 0; // bumped by "Regenerate" for a fresh arrangement
 //: INBOX 838) carries on instead of restarting every star's drift at phase 0.
 //: A rest while idle moves it on by the rest, so the stars go on from where
 //: they stopped rather than jumping.
-let artEpoch = performance.now();
-const artDriftMs = () => performance.now() - artEpoch;
+const artClock = { epoch: performance.now() };
+const artDriftMs = () => performance.now() - artClock.epoch;
 // Bumped on every startArt call. A run that finds it has changed while it was
 // waiting knows it was superseded and must not mount its canvas, see the
 // comment in startArt for the stacking bug this fixes (§35G).
@@ -2746,7 +2746,7 @@ async function startArt(holder) {
         const wake = () => {
           if (artInstance !== p || p.rested !== rested) return;
           p.rested = 0;
-          artEpoch += performance.now() - rested;
+          artClock.epoch += performance.now() - rested;
           p.loop();
         };
         for (const type of ["pointermove", "keydown", "wheel", "touchstart"]) window.addEventListener(type, wake, { once: true, passive: true });

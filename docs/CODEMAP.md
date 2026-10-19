@@ -2,7 +2,7 @@
 
 Generated 2026-10-19 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6200, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6158, test files 1317, tests 11720, plan headings 967.
+Counts: frontend functions 6200, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6160, test files 1317, tests 11720, plan headings 967.
 
 ## Frontend functions (6200)
 
@@ -10771,7 +10771,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (6158)
+## Backend modules (6160)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -12967,19 +12967,21 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `parse_reminder` | src/tessellate/ai/reminder_parser.py:108 |
 | `worded` | src/tessellate/ai/reminder_parser.py:198 |
 
-### src/tessellate/ai/resurface.py (10)
+### src/tessellate/ai/resurface.py (12)
 
 | Name | File:line |
 |---|---|
 | `_clamp` | src/tessellate/ai/resurface.py:62 |
-| `_comparable_vectors` | src/tessellate/ai/resurface.py:336 |
-| `_dismissed` | src/tessellate/ai/resurface.py:196 |
-| `_relatedness` | src/tessellate/ai/resurface.py:298 |
-| `compute_scores` | src/tessellate/ai/resurface.py:74 |
-| `ensure_fresh` | src/tessellate/ai/resurface.py:166 |
-| `for_context` | src/tessellate/ai/resurface.py:352 |
-| `for_day` | src/tessellate/ai/resurface.py:249 |
-| `ranked` | src/tessellate/ai/resurface.py:204 |
+| `_comparable_vectors` | src/tessellate/ai/resurface.py:344 |
+| `_dismissed` | src/tessellate/ai/resurface.py:204 |
+| `_refresh` | src/tessellate/ai/resurface.py:74 |
+| `_relatedness` | src/tessellate/ai/resurface.py:306 |
+| `_upsert_scores` | src/tessellate/ai/resurface.py:79 |
+| `compute_scores` | src/tessellate/ai/resurface.py:95 |
+| `ensure_fresh` | src/tessellate/ai/resurface.py:174 |
+| `for_context` | src/tessellate/ai/resurface.py:360 |
+| `for_day` | src/tessellate/ai/resurface.py:257 |
+| `ranked` | src/tessellate/ai/resurface.py:212 |
 | `score_for` | src/tessellate/ai/resurface.py:66 |
 
 ### src/tessellate/ai/sampling.py (5)
