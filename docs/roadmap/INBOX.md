@@ -295,6 +295,7 @@ with its owner named in the entry.
 
 ## Placed (last 20, newest first)
 
+- 2026-10-19: 1344 (the Composer badge explains it is not an AI) placed in UI_MODERNISATION_PLAN, starting as soon as an agent slot frees.
 - 2026-10-19: 1342 (map edges never use the sides) placed in MINDMAP_PLAN, next PR.
 - 2026-10-19: 1340 (board and map views) and 1341 (Format on a map) placed in WHITEBOARD_PLAN; 1336 (peek sidebar header) and 1337 (split button halves) placed in UI_MODERNISATION_PLAN; all for the next PR.
 - 2026-10-12: 1299 (Ask digest grammar; Harper over composer output) placed in BACKLOG "Placed from INBOX, 2026-10-12" (CHAT_PLAN is at its cap); "every a week" and "Your the ... note" fixed now.
