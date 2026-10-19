@@ -8,7 +8,6 @@
  "src/tessellate/ai/agent.py::_run_and_record": 23,
  "src/tessellate/ai/agent.py::_tool_sources": 30,
  "src/tessellate/ai/agent.py::build_agent_messages": 16,
- "src/tessellate/ai/agent.py::run_agent": 78,
  "src/tessellate/ai/autonomous.py::_optimization_pass": 41,
  "src/tessellate/ai/bench.py::run": 35,
  "src/tessellate/ai/commands.py::_plan_one": 17,

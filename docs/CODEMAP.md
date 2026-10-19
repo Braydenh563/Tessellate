@@ -2,7 +2,7 @@
 
 Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6131, frontend ids 2534, CSS sections 496, backend routes 613, backend modules 5991, test files 1286, tests 11522, plan headings 958.
+Counts: frontend functions 6131, frontend ids 2534, CSS sections 496, backend routes 613, backend modules 6011, test files 1286, tests 11522, plan headings 958.
 
 ## Frontend functions (6131)
 
@@ -10685,7 +10685,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (5991)
+## Backend modules (6011)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -10786,26 +10786,32 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `propose` | src/tessellate/ai/acts.py:84 |
 | `run` | src/tessellate/ai/acts.py:69 |
 
-### src/tessellate/ai/agent.py (55)
+### src/tessellate/ai/agent.py (75)
 
 | Name | File:line |
 |---|---|
 | `SizeTier` | src/tessellate/ai/agent.py:56 |
+| `_Loop` | src/tessellate/ai/agent.py:2863 |
+| `_Streamed` | src/tessellate/ai/agent.py:2890 |
 | `_TurnCard` | src/tessellate/ai/agent.py:169 |
 | `_TurnPlan` | src/tessellate/ai/agent.py:1655 |
 | `_TurnState` | src/tessellate/ai/agent.py:1963 |
 | `_bare_host` | src/tessellate/ai/agent.py:1302 |
+| `_budget_events` | src/tessellate/ai/agent.py:2898 |
 | `_change_category_name` | src/tessellate/ai/agent.py:1090 |
 | `_change_diff` | src/tessellate/ai/agent.py:2361 |
 | `_change_document_id` | src/tessellate/ai/agent.py:1046 |
 | `_change_note_id` | src/tessellate/ai/agent.py:1028 |
 | `_change_reminder_id` | src/tessellate/ai/agent.py:1068 |
 | `_check_sources` | src/tessellate/ai/agent.py:235 |
+| `_claim_notice` | src/tessellate/ai/agent.py:3076 |
 | `_cleared_page` | src/tessellate/ai/agent.py:1333 |
 | `_clip_strings` | src/tessellate/ai/agent.py:2034 |
 | `_copies_what_was_read` | src/tessellate/ai/agent.py:1588 |
 | `_count_call` | src/tessellate/ai/agent.py:2368 |
 | `_dispatch_call` | src/tessellate/ai/agent.py:2547 |
+| `_dispatch_round` | src/tessellate/ai/agent.py:3171 |
+| `_exhausted_events` | src/tessellate/ai/agent.py:3184 |
 | `_finish_handover` | src/tessellate/ai/agent.py:2318 |
 | `_first_round_tools` | src/tessellate/ai/agent.py:2175 |
 | `_fit_result` | src/tessellate/ai/agent.py:2045 |
@@ -10813,8 +10819,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_handoff_refused` | src/tessellate/ai/agent.py:2522 |
 | `_hosts_named` | src/tessellate/ai/agent.py:1307 |
 | `_labelled` | src/tessellate/ai/agent.py:247 |
+| `_model_died_events` | src/tessellate/ai/agent.py:2958 |
 | `_names_an_existing_category` | src/tessellate/ai/agent.py:2153 |
 | `_narrow_keeps` | src/tessellate/ai/agent.py:1683 |
+| `_nudge` | src/tessellate/ai/agent.py:3009 |
+| `_nudge_claim` | src/tessellate/ai/agent.py:3059 |
+| `_nudge_empty` | src/tessellate/ai/agent.py:3018 |
+| `_nudge_intent` | src/tessellate/ai/agent.py:3048 |
+| `_nudge_prose` | src/tessellate/ai/agent.py:3033 |
 | `_one_option_ask` | src/tessellate/ai/agent.py:2510 |
 | `_page_key` | src/tessellate/ai/agent.py:1286 |
 | `_picture_in_hand` | src/tessellate/ai/agent.py:1609 |
@@ -10825,23 +10837,31 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_prepare_turn` | src/tessellate/ai/agent.py:1696 |
 | `_recent_text` | src/tessellate/ai/agent.py:1548 |
 | `_recovery_hint` | src/tessellate/ai/agent.py:681 |
+| `_relay_stream` | src/tessellate/ai/agent.py:2925 |
+| `_replay_message` | src/tessellate/ai/agent.py:3133 |
 | `_requires_a_call` | src/tessellate/ai/agent.py:2110 |
 | `_result_summary` | src/tessellate/ai/agent.py:750 |
 | `_result_urls` | src/tessellate/ai/agent.py:1312 |
+| `_round_stats` | src/tessellate/ai/agent.py:2994 |
 | `_round_stream` | src/tessellate/ai/agent.py:2223 |
+| `_round_tools` | src/tessellate/ai/agent.py:2917 |
 | `_run_and_record` | src/tessellate/ai/agent.py:2375 |
 | `_seen_ids` | src/tessellate/ai/agent.py:870 |
+| `_settle_answer` | src/tessellate/ai/agent.py:3110 |
+| `_stream_round` | src/tessellate/ai/agent.py:2973 |
 | `_tidied_arguments` | src/tessellate/ai/agent.py:2485 |
 | `_tool_event` | src/tessellate/ai/agent.py:2235 |
 | `_tool_events` | src/tessellate/ai/agent.py:2300 |
 | `_tool_sources` | src/tessellate/ai/agent.py:917 |
 | `_touched_items` | src/tessellate/ai/agent.py:807 |
 | `_touched_kind` | src/tessellate/ai/agent.py:789 |
+| `_unsupported_events` | src/tessellate/ai/agent.py:2946 |
+| `_widen_focus` | src/tessellate/ai/agent.py:3154 |
 | `_wrap_up_round` | src/tessellate/ai/agent.py:2825 |
 | `announces_unacted_tool` | src/tessellate/ai/agent.py:298 |
 | `build_agent_messages` | src/tessellate/ai/agent.py:1346 |
 | `plan_now` | src/tessellate/ai/agent.py:2345 |
-| `run_agent` | src/tessellate/ai/agent.py:2862 |
+| `run_agent` | src/tessellate/ai/agent.py:3206 |
 | `size_tier` | src/tessellate/ai/agent.py:89 |
 | `tools_guide` | src/tessellate/ai/agent.py:511 |
 | `unsupported_claims` | src/tessellate/ai/agent.py:1219 |
@@ -20078,7 +20098,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E2 · The complexity of the AI path is where the next bug will be, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:653 |
 | E3 · Model calls are scattered across request handlers, background threads and module singletons, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:666 |
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:557 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:559 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4267 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
@@ -20111,7 +20131,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Harper (Automattic) | docs/roadmap/ANALYSIS.md:1783 |
 | Headroom: evaluated, not adopted | docs/roadmap/BACKLOG.md:710 |
 | How far each plan actually is (honest, as of 2026-10-03) | docs/roadmap/HANDOVER.md:336 |
-| How to proceed after PR 149 (the owner asked, 2026-09-14) | docs/roadmap/HANDOVER.md:511 |
+| How to proceed after PR 149 (the owner asked, 2026-09-14) | docs/roadmap/HANDOVER.md:513 |
 | How to proceed after PR 149 (written 2026-09-14; the live order is CLAUDE.md standing order 1 and HANDOVER's Now line) | docs/ROADMAP.md:295 |
 | How to read the evidence in here | docs/roadmap/MODERNISATION_AUDIT.md:23 |
 | How to work on this repo | docs/ROADMAP.md:364 |
