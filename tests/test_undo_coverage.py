@@ -668,7 +668,7 @@ EXEMPT: dict[str, str] = {
     "status.js:setChatMode": "settings: a setting with its own Reset or the settings history",
     "status.js:toggleNotificationMute": "settings: a setting with its own Reset or the settings history",
     "suggestions-inbox.js:fillReasons": "read: reads or asks the model; shows a result, writes nothing",
-    "suggestions-inbox.js:inboxLinksPane": "read: reads or asks the model; shows a result, writes nothing",
+    "suggestions-inbox.js:run": "read: reads or asks the model; shows a result, writes nothing",
     "tag-manager.js:drawTurnedDown": "settings: turned-down tag suggestions list, a preference",
     "tidy.js:tidyHistory": "inverse: undoes a past tidy run from the history list",
     "tidy.js:tidyTools": "settings: a setting with its own Reset or the settings history",

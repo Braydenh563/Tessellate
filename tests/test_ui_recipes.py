@@ -1390,6 +1390,24 @@ def test_a_sticky_head_pulled_into_the_padding_pins_where_it_rests() -> None:
     assert not bad, "sticky head pinned below its rest position:\n" + "\n".join(bad)
 
 
+def test_a_suggested_link_is_two_names_a_facts_line_and_one_action_cell() -> None:
+    """INBOX 1329 (DESIGN.md, Suggestions a person decides): the Links bar is
+    one bulk button and a kebabMenu, not a row of bordered buttons; a row's
+    names are cut to one line rather than wrapping chips; its actions are one
+    cell. Measured: 75 to 107px a row at 1440 went to 61, 210 to 228px at 390
+    went to 131, rows in view 3 to 6 and 1 to 2."""
+    inbox = (ROOT / "frontend" / "js" / "suggestions-inbox.js").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "inbox-lazy.css").read_text(encoding="utf-8")
+    pane = inbox.split("function inboxLinksPane(", 1)[1].split("\nfunction ", 1)[0]
+    assert "kebabMenu([suggestReasons, backfill]" in pane
+    assert pane.count("smallButton(") == 1, "the Links bar has one button; the rest are its menu's rows"
+    row = inbox.split("function inboxLinkRow(", 1)[1].split("\nfunction ", 1)[0]
+    assert "chip(" not in row and "link-suggestion-actions" in row
+    rules = dict(_rules(css))
+    assert "text-overflow: ellipsis" in rules[".link-suggestion-name,\n.link-suggestion-facts > .link-suggestion-why"]
+    assert "display: grid" in css.split(".link-suggestion {", 1)[1].split("}", 1)[0]
+
+
 def test_a_viewport_popup_leaves_the_surfaces_that_can_blur() -> None:
     """DESIGN.md's recipe index: a popup placed in window coordinates lives in
     the window's own frame, and proves it landed there.

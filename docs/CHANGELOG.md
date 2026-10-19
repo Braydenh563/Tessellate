@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Suggestions: the Links list is redesigned: one bar with Link all above 70% and a menu holding Suggest reasons and Explain your existing links; each pair shows the two note names on one line each (cut, whole on hover), how sure and why on one line under them, and Add a reason, Link and dismiss together on the right (INBOX 1329).
 - Dialogs: the title row no longer covers the top of a dialog's content when it opens; every sticky dialog head pinned 16px low (Suggestions, Statistics, Settings, Features and the rest) (INBOX 1329, part).
 - Boards and maps: deleting a board for good finds its thumbnail from the uploads folder, so the notes layer no longer imports the API layer (CodeQL cyclic import).
 - Launcher: the starting splash has minimise and close buttons in its top right corner; close cancels the launch (INBOX 1320).
