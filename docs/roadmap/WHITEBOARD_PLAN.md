@@ -1629,3 +1629,23 @@ Decisions made:
 - P3. The card shows the preview cropped to the content's bounds, the title, items and last edited; an empty board shows an empty-state line, not a blank frame.
 
 Rows (owner: canvasdepth3, after C5): P1 to P3, each a commit with a test and a measured render time on the budget fixture's 500-object board.
+
+## Placed from INBOX, 2026-10-19 (INBOX 1307, 1308: elements, templates, the W/H link; the gap audit)
+
+Owner: "stuff like that, dont stop there, find what is missing on the whiteboard, mindmap and documents editor and add them." Built in surfaces-1019: the W/H link in Arrange, multi-part library elements placing as one group, 19 wireframe / 23 UML / 14 ERD / 16 flowchart elements, four templates (login, dashboard, mobile, sequence), Select similar, swimlanes. Gap list, read from the code against draw.io, Excalidraw and Miro (the first rows are done; sizes S, M, L):
+
+1. Select similar (same kind, fill, line colour) - S, built.
+2. Swimlane stencils, horizontal and vertical - S, built.
+3. Align to a key object (draw.io: the shape the others line up to stays put) - M.
+4. A shape's own web link, opened from the shape (draw.io "Edit link") - M; BACKLOG has a row.
+5. A per-shape "keep proportions" property, so dragging a corner keeps the ratio without Shift (the W/H link is the numeric half) - S.
+6. Quick sticky chain: Tab on a sticky makes the next one beside it (Miro) - S.
+7. Dimension and measure lines with a live length - M.
+8. Text that shrinks to fit its shape (draw.io "autosize" is grow only) - M.
+9. BPMN set: task, event, gateway, data object - M.
+10. C4 and architecture set: person, system, container, boundary - S.
+11. Cloud and network icon sets, drawn here (no draw.io files) - M.
+12. Org chart: a tree layout command for a board's boxes and connectors - M.
+13. Crop a picture to a shape (circle, rounded) - M.
+14. Voting dots and a timer for workshops (Miro) - M.
+15. Text along a path - L.

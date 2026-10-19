@@ -1857,3 +1857,23 @@ Owner: the mapfix agent (Sonnet).
 - INBOX 818, the owner 2026-10-11, verbatim: "labels on mind map links dont move with the links". Target: a link's label is placed on the link's path (the midpoint of the drawn curve, `getPointAtLength`) and re-placed in the same frame as the link on a topic drag, a layout change, a fold and a pan or zoom; measured: label centre within 2 px of the path midpoint after a 200 px topic drag.
 - INBOX 819, the owner 2026-10-11, verbatim: "also i dont think there is a way to label links on a whiteboard. also can link labels be customisable??" (screenshot: a selected board connector, its ends and midpoint handles, no label control). Read: a board connector takes a label today only by Enter on the selected link (`wbLinkTakesLabel`, decision 13), with nothing on screen saying so. Target: (1) the selected connector's context bar has "Label" (the tag icon), and a double-click on the line starts one at the click; (2) a label's look in the same bar: size, bold, text colour, a background chip on or off, and position along the line (start, middle, end, or dragged, kept as `t`); mind map link labels share the same controls and recipe; help moves with it (the Guide's board-connectors topic).
   Decided 2026-10-11 (mapfix found the clash): a double-click on a line stays "add a bend", as the owner asked earlier; a label starts from the visible Label button (built 2026-10-11, mapfix) or Enter, and a double-click on the label itself edits it. Open: (2), the label look controls, owner: the cards agent with 825.
+
+## Placed from INBOX, 2026-10-19 (INBOX 1308: the gap audit)
+
+Read from the code against XMind, MindManager and Miro mind maps. Sizes S, M, L; the first row is built in surfaces-1019.
+
+1. Sort a topic's branches A to Z or Z to A, numbers as numbers (XMind "Sort") - S, built.
+2. Import a .xmind file (the map already reads OPML, FreeMind and Markdown) - M.
+3. A Gantt view of the topics that have dates (XMind) - L.
+4. Audio notes on a topic, recorded and kept with the board - M.
+5. A brainstorm timer on the map bar (XMind "Brainstorming") - S.
+6. Copy the shape of a branch (layout and look together) to another branch - S.
+7. Topic templates for one topic (a pros and cons topic from the topic's menu) - S.
+8. Topic image from a link, fetched and kept - M.
+9. Export a branch only, as PNG, PDF or Markdown - S.
+10. Rainbow branches as a theme option for every branch, not only first level - S.
+11. A legend for markers and colours, drawn on the map - M.
+12. A second root on one map, joined by a labelled link (floating topics exist; named roots do not) - M.
+13. Search inside topics' notes from the map's find bar - S.
+14. Fisheye and focus dimming of everything but the selected branch - S.
+15. Real-time presenter pointer in the present mode - L.

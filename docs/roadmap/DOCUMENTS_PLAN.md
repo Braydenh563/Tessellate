@@ -1507,3 +1507,23 @@ Decisions made (the Links half extends WORLD_CLASS D9 and Brief 42; do not re-de
 - L6. More from the read of Raindrop, Pocket and browser bookmark managers, ranked by how often a person meets it: sort and view (list, cards), tags, a read-later state, duplicate finding, import and export of browser bookmarks HTML. Built in that order after L1 to L5.
 
 Rows (owner: libraryup, Opus, after canvasdepth3): R1 to R6 build L1 to L6, each a commit with a test, measured at 1440 and 390, help moving with it (standing order 13).
+
+## Placed from INBOX, 2026-10-19 (INBOX 1308: the gap audit)
+
+Read from the code against Notion and Obsidian. Sizes S, M, L. Nothing here is built yet this run; the app already has callouts, toggles, columns, tables, footnotes, wiki links, backlinks, the slash menu, find and replace, outline and versions.
+
+1. Video and audio embed from a link or a local file in a note (Notion "Embed", Obsidian `![[file.mp4]]`) - M.
+2. Citations: a reference list built from footnote-style keys (Obsidian citations plugin) - M.
+3. A block's own link (heading links exist in documents.js; a paragraph's does not, to verify) - S.
+4. "Turn into" is in documents.js; check it reaches lists, callouts and code from the bubble toolbar - S.
+5. Synced blocks: one block shown in two notes, edited in either - L.
+6. A database view of notes by property (Notion, Obsidian Bases): table, board, calendar - L.
+7. Inline date and reminder mention that creates a reminder (Notion "@date") - S.
+8. Page cover and icon picker parity with Notion's gallery - S.
+9. Web clipper fields on a note's properties - M.
+10. Canvas block: a board embedded and editable in place - M.
+11. Equation numbering and cross-reference - S.
+12. Table: column sort, filter row, formulas - M.
+13. Reading mode: the note full width without chrome, with a progress line (check Focus mode first) - S. Remembered heading folds already exist (`docOutlineFoldStore`).
+14. Template variables exist (documents.js, documents-codekit.js); check they cover time and the cursor place - S.
+15. Export a note as a slide deck from its headings - M.

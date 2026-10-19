@@ -5,7 +5,7 @@
   {
    "key": "templates",
    "name": "Templates",
-   "count": 20
+   "count": 24
   },
   {
    "key": "maps",
@@ -20,22 +20,22 @@
   {
    "key": "flowchart",
    "name": "Flowchart",
-   "count": 13
+   "count": 16
   },
   {
    "key": "uml",
    "name": "UML",
-   "count": 14
+   "count": 23
   },
   {
    "key": "erd",
    "name": "Entity relationship",
-   "count": 10
+   "count": 14
   },
   {
    "key": "wireframe",
    "name": "Wireframe",
-   "count": 12
+   "count": 19
   },
   {
    "key": "arrows",

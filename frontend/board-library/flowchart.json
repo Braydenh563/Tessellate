@@ -489,6 +489,389 @@
     ],
     "links": []
    }
+  },
+  {
+   "key": "swimlane-h2",
+   "kind": "element",
+   "name": "Horizontal swimlanes, two",
+   "tags": [
+    "swimlane",
+    "lane",
+    "pool",
+    "process",
+    "bpmn",
+    "horizontal"
+   ],
+   "payload": {
+    "box": {
+     "w": 480,
+     "h": 160
+    },
+    "items": [
+     {
+      "key": "p",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 480 0 L 480 160 L 0 160 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.04
+      },
+      "z": 5
+     },
+     {
+      "key": "hd",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 36 0 L 36 160 L 0 160 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12
+      },
+      "z": 5
+     },
+     {
+      "key": "d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 36 0 L 36 160 M 0 80 L 480 80",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0
+      },
+      "z": 5
+     },
+     {
+      "key": "t0",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 36 0 L 36 80 L 0 80 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0,
+       "label": "L1",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "center",
+       "label_valign": "middle",
+       "label_size": 13,
+       "label_bold": true
+      },
+      "z": 6
+     },
+     {
+      "key": "t1",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 80 L 36 80 L 36 160 L 0 160 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0,
+       "label": "L2",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "center",
+       "label_valign": "middle",
+       "label_size": 13,
+       "label_bold": true
+      },
+      "z": 6
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "swimlane-h3",
+   "kind": "element",
+   "name": "Horizontal swimlanes, three",
+   "tags": [
+    "swimlane",
+    "lane",
+    "pool",
+    "process",
+    "bpmn",
+    "horizontal"
+   ],
+   "payload": {
+    "box": {
+     "w": 480,
+     "h": 240
+    },
+    "items": [
+     {
+      "key": "p",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 480 0 L 480 240 L 0 240 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.04
+      },
+      "z": 5
+     },
+     {
+      "key": "hd",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 36 0 L 36 240 L 0 240 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12
+      },
+      "z": 5
+     },
+     {
+      "key": "d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 36 0 L 36 240 M 0 80 L 480 80 M 0 160 L 480 160",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0
+      },
+      "z": 5
+     },
+     {
+      "key": "t0",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 36 0 L 36 80 L 0 80 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0,
+       "label": "L1",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "center",
+       "label_valign": "middle",
+       "label_size": 13,
+       "label_bold": true
+      },
+      "z": 6
+     },
+     {
+      "key": "t1",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 80 L 36 80 L 36 160 L 0 160 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0,
+       "label": "L2",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "center",
+       "label_valign": "middle",
+       "label_size": 13,
+       "label_bold": true
+      },
+      "z": 6
+     },
+     {
+      "key": "t2",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 160 L 36 160 L 36 240 L 0 240 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0,
+       "label": "L3",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "center",
+       "label_valign": "middle",
+       "label_size": 13,
+       "label_bold": true
+      },
+      "z": 6
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "swimlane-v3",
+   "kind": "element",
+   "name": "Vertical swimlanes, three",
+   "tags": [
+    "swimlane",
+    "lane",
+    "pool",
+    "process",
+    "bpmn",
+    "vertical"
+   ],
+   "payload": {
+    "box": {
+     "w": 420,
+     "h": 360
+    },
+    "items": [
+     {
+      "key": "p",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 420 0 L 420 360 L 0 360 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.04
+      },
+      "z": 5
+     },
+     {
+      "key": "hd",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 420 0 L 420 36 L 0 36 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12
+      },
+      "z": 5
+     },
+     {
+      "key": "d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 36 L 420 36 M 140 0 L 140 360 M 280 0 L 280 360",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0
+      },
+      "z": 5
+     },
+     {
+      "key": "t0",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 140 0 L 140 36 L 0 36 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0,
+       "label": "Lane 1",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "center",
+       "label_valign": "middle",
+       "label_size": 14,
+       "label_bold": true
+      },
+      "z": 6
+     },
+     {
+      "key": "t1",
+      "kind": "sketch",
+      "data": {
+       "d": "M 140 0 L 280 0 L 280 36 L 140 36 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0,
+       "label": "Lane 2",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "center",
+       "label_valign": "middle",
+       "label_size": 14,
+       "label_bold": true
+      },
+      "z": 6
+     },
+     {
+      "key": "t2",
+      "kind": "sketch",
+      "data": {
+       "d": "M 280 0 L 420 0 L 420 36 L 280 36 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0,
+       "label": "Lane 3",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "center",
+       "label_valign": "middle",
+       "label_size": 14,
+       "label_bold": true
+      },
+      "z": 6
+     }
+    ],
+    "links": []
+   }
   }
  ]
 }
