@@ -2021,7 +2021,7 @@ function timelineSortValue(row, key) {
   //: The same word the cell shows, or the column sorts by one string and
   //: displays another: a document sorted as "Note" and shown as "Document" is
   //: a column that looks broken (`timelinetable.js` caught exactly that).
-  if (key === "kind") return TIMELINE_KIND_NAMES[row.kind] || "Note";
+  if (key === "kind") return timelineKindName(row);
   if (key === "words" || key === "links") return row[key];
   return row[key] || "";
 }
@@ -2106,6 +2106,10 @@ function syncTimelineDetailSpans() {
   }
 }
 
+function timelineKindName(row) {
+  return row.kind === "note" && row.placedBy === "meeting" ? "Meeting" : TIMELINE_KIND_NAMES[row.kind] || "Note";
+}
+
 function timelineTableRow(row) {
   const tr = document.createElement("tr");
   tr.className = "timeline-row timeline-trow";
@@ -2162,7 +2166,7 @@ function timelineTableRow(row) {
 
   const kind = document.createElement("td");
   kind.className = "timeline-col-wide";
-  kind.textContent = TIMELINE_KIND_NAMES[row.kind] || "Note";
+  kind.textContent = timelineKindName(row);
   tr.appendChild(kind);
 
   const category = document.createElement("td");

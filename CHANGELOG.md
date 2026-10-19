@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Timeline: the table view names a meeting "Meeting" in its Kind column (and in sort), and below 600px, where that column is hidden, the title starts with "Meeting: " (INBOX 341).
 - Ask: "Ask all notes" clears the scope before the Questions view has ever been opened (its setter and button moved into capture-ask.js, INBOX 430).
 - Sidebar: the Categories collapse toggle sits on the head's row (8px lower, level with the filter button) while the collapsed sidebar is hover-opened.
 - Statistics: the Ask box answers "when did I write my first note" (also oldest, newest, latest, when did I start) with the date and title, its field and Ask button share one 32px height, and a Clear button empties the answer and the box.
