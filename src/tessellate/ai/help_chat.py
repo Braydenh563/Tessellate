@@ -1058,7 +1058,7 @@ HELP_TOPICS.extend(
                 "worth connecting with every reason (similar wording, people or "
                 "things both name, a note both link with, a rare tag both carry) "
                 "and how sure it is (Link all above 70% over the list links every pair at "
-                "least that sure, after asking, and the ⋯ beside it has Suggest reasons "
+                "least that sure, after asking, and the More menu beside it has Suggest reasons "
                 "and Explain your existing links); Tensions, notes that may disagree; Names, one "
                 "person or thing named two ways, with Merge; and Link types, a link whose own "
                 "sentence says \"for example\" or \"continues\". Accepting or "

@@ -5500,7 +5500,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `inboxDone` | frontend/js/suggestions-inbox.js:186 |
 | `inboxEmpty` | frontend/js/suggestions-inbox.js:178 |
 | `inboxHead` | frontend/js/suggestions-inbox.js:108 |
-| `inboxLinkRow` | frontend/js/suggestions-inbox.js:633 |
+| `inboxLinkRow` | frontend/js/suggestions-inbox.js:632 |
 | `inboxLinksPane` | frontend/js/suggestions-inbox.js:509 |
 | `inboxLoad` | frontend/js/suggestions-inbox.js:96 |
 | `inboxMergeRow` | frontend/js/suggestions-inbox.js:240 |
@@ -5511,7 +5511,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `inboxTensionsPane` | frontend/js/suggestions-inbox.js:347 |
 | `inboxTypeRow` | frontend/js/suggestions-inbox.js:279 |
 | `inboxWhy` | frontend/js/suggestions-inbox.js:205 |
-| `jobLineEl` | frontend/js/suggestions-inbox.js:750 |
+| `jobLineEl` | frontend/js/suggestions-inbox.js:749 |
 | `openSuggestionsInbox` | frontend/js/suggestions-inbox.js:35 |
 | `tensionCard` | frontend/js/suggestions-inbox.js:399 |
 | `tensionGapText` | frontend/js/suggestions-inbox.js:470 |

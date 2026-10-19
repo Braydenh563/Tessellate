@@ -19,7 +19,7 @@ const INBOX_KINDS = [
 
 const INBOX_HELP = [
   "The list at the top picks the kind of suggestion; each row says how many are waiting, as in Links (3).",
-  "Links: pairs worth connecting, with every reason: similar wording, people or things both name, a note both link with, a rare tag both carry. Add a reason before Link, or leave it to Atlas; Link all above 70% links every pair at least that sure, and the ⋯ beside it has Suggest reasons and Explain your existing links.",
+  "Links: pairs worth connecting, with every reason: similar wording, people or things both name, a note both link with, a rare tag both carry. Add a reason before Link, or leave it to Atlas; Link all above 70% links every pair at least that sure, and the More menu beside it has Suggest reasons and Explain your existing links.",
   "Tensions: Start the review reads likely pairs with your local model and shows the two sides with their dates. Nothing runs until you start it.",
   "Names: \"Sam\" and \"Sam Lee\", or one name spelled two ways. Merge keeps the fuller name and moves every mention; the other name is kept as an alias, so it is never found twice.",
   "Link types: a link whose sentence says \"for example\", \"continues\", \"evidence\", \"contradicts\" or \"background\". Accepting gives the link that type; the graph draws it.",
@@ -518,14 +518,13 @@ function inboxLinksPane(suggestions) {
   //: needs a better redesign and restructuring"): three bordered buttons in a
   //: row read as three equal choices over the list. The pane's one bulk act
   //: (link the sure ones) stays a button; the two that ask Atlas fold into the
-  //: bar's ⋯ (DESIGN.md "A menu behind a button"), and the status line beside
+  //: bar's More menu (DESIGN.md "A menu behind a button"), and the status line beside
   //: them says when "Explain" last ran and what is working now.
   const status = jobLineEl("link-reasons");
   status.classList.add("inbox-status");
   const working = (text) => {
     const opener = more.querySelector("button");
-    if (text) opener?.setAttribute("aria-busy", "true");
-    else opener?.removeAttribute("aria-busy");
+    setBusy(opener, Boolean(text));
     if (text) {
       status.dataset.jobSig = "";
       setLabel(status, `ph:spin ${text}`);
