@@ -1803,10 +1803,16 @@ function renderAnswerGrounding(
     byNote.get(g.note_id).push(g.sentence);
     if (g.label && !labelFor.has(g.note_id)) labelFor.set(g.note_id, g.label);
   }
-  const label = document.createElement("span");
-  label.className = "muted answer-grounding-label";
-  label.textContent = "Grounded in";
-  target.appendChild(label);
+  ensureModule("replyKit");
+  const fold = target.appendChild(document.createElement("details"));
+  fold.className = "agent-step grounding-fold";
+  fold.open = prefs.get("grounding-fold") !== "0";
+  fold.ontoggle = () => prefs.set("grounding-fold", +fold.open);
+  const summary = fold.appendChild(document.createElement("summary"));
+  summary.className = "fold-summary answer-grounding-label";
+  summary.textContent = "Grounded in";
+  const body = fold.appendChild(document.createElement("div"));
+  body.className = "grounding-body";
   const numberFor = citationNumbers(sentences, orderedSources);
   //: The records column numbered from the same map (INBOX 299): a fourth
   //: loop deriving "the same" order is how the first three came to disagree.
@@ -1821,9 +1827,7 @@ function renderAnswerGrounding(
     const chip = document.createElement("button");
     chip.type = "button";
     chip.className = "chip result-reason-chip result-reason-connected answer-grounding-chip";
-    // Numbered as the markers are. `setNoteLabel`: the number is the app's and
-    // the rest the note's Markdown (`1. ` alone would render as a list).
-    setNoteLabel(chip, `ph:file-text ${n}.`, entry?.content || labelFor.get(noteId) || "", 30);
+    setNoteLabel(chip, `ph:file-text ${n}`, entry?.content || labelFor.get(noteId) || "", 30);
     // A tooltip prints characters: `plainText` (chat-attach.js, run at render).
     chip.title = plainText(forSentences.join(" "));
     chip.addEventListener("click", () => {
@@ -1844,9 +1848,9 @@ function renderAnswerGrounding(
       const item = document.createElement("span");
       item.className = "answer-grounding-item";
       item.append(chip, groundingThumbs(pictures, n, pictureAlts));
-      target.appendChild(item);
+      body.appendChild(item);
     } else {
-      target.appendChild(chip);
+      body.appendChild(chip);
     }
   }
   const foot = document.createElement("div");

@@ -477,23 +477,13 @@ const MD_INLINE_MARKS = {
 // (MD_COLOURS, documents.js) and the stylesheet's: a missing one printed its
 // own name ("red|text"). tests/test_highlight_colours.py pins all three.
 const INLINE_MD =
-  /`([^`\n]+)`|\*\*([^*\n]+?)\*\*|~~([^~\n]+?)~~|==(?:(yellow|green|blue|pink|purple|orange|red|grey)\|)?([^=\n]+?)==|\+\+(yellow|green|blue|pink|purple|orange|red|grey)\|([^+\n]+?)\+\+|\*([^*\n]+?)\*|!\[([^\]\n]{0,200})\]\(([^)\n]{1,500})\)|\[([^\]\n]{1,200})\]\(([^)\n]{1,500})\)/g;
+  /`([^`\n]+)`|\*\*([^*\n]+?)\*\*|~~([^~\n]+?)~~|==(?:(yellow|green|blue|pink|purple|orange|red|grey)\|)?([^=\n]+?)==|\+\+(yellow|green|blue|pink|purple|orange|red|grey)\|([^+\n]+?)\+\+|\*([^*\n]+?)\*|!\[([^\]\n]{0,200})\]\(([^)\n]{1,500})\)|\[([^\]\n]{0,200})\]\(([^)\n]{1,500})\)/g;
 
 // `appendInline`'s own grammar, before it was merged into renderInlineMarkdown
 // below: adds `__bold__`/`_italic_` and bare `https://…` autolinking, and its
-// character classes don't stop at a newline. Kept as a **textually separate**
-// pattern rather than folded into INLINE_MD behind an "underscore syntax"
-// flag applied after matching, appendInline's callers (block-markdown
-// lines, already split on "\n" and rejoined with spaces before this ever
-// runs) never feed it a newline, so the missing `\n` exclusion is invisible
-// in practice, but a shared superset pattern would make renderInlineMarkdown
-// start matching `_word_`/bare URLs it doesn't today, splitting its plain
-// prose runs differently and changing exactly what substring a caller that
-// passes search `terms` ever hands to highlightInto. Two literal patterns,
-// selected by `options.underscoreSyntax` below, guarantee neither caller's
-// matching behaviour moves at all.
+// Kept textually separate from INLINE_MD so neither caller's matching moves; selected by `options.underscoreSyntax`.
 const INLINE_MD_LEGACY =
-  /`([^`]+)`|\*\*([^*]+)\*\*|__([^_]+)__|~~([^~]+)~~|==(?:(yellow|green|blue|pink|purple|orange|red|grey)\|)?([^=]+?)==|\+\+(yellow|green|blue|pink|purple|orange|red|grey)\|([^+]+?)\+\+|\*([^*]+)\*|(?<![\w])_([^_]+)_(?![\w])|!\[([^\]]{0,200})\]\(([^)\s]{1,500})\)|\[([^\]]{1,200})\]\(([^)\s]{1,500})\)|(https?:\/\/[^\s)]+)/g;
+  /`([^`]+)`|\*\*([^*]+)\*\*|__([^_]+)__|~~([^~]+)~~|==(?:(yellow|green|blue|pink|purple|orange|red|grey)\|)?([^=]+?)==|\+\+(yellow|green|blue|pink|purple|orange|red|grey)\|([^+]+?)\+\+|\*([^*]+)\*|(?<![\w])_([^_]+)_(?![\w])|!\[([^\]]{0,200})\]\(([^)\s]{1,500})\)|\[([^\]]{0,200})\]\(([^)\s]{1,500})\)|(https?:\/\/[^\s)]+)/g;
 
 // Same allowlist an <img src> or <a href> built from note text has to pass:
 // an absolute http(s) URL, or a same-origin relative path (one leading
@@ -974,7 +964,7 @@ function appendInlineRun(element, text, terms, compact, options) {
       // had search terms to mark). Keeping that distinction means neither
       // mode's DOM shape moves for its own callers.
       if (underscoreSyntax) {
-        element.appendChild(document.createTextNode(chunk));
+        appendPlainText(element, chunk);
       } else {
         const before = document.createElement("span");
         highlightIconsInto(before, chunk, terms);
@@ -1100,9 +1090,9 @@ function appendInlineRun(element, text, terms, compact, options) {
           //: twice, and the same wall of slug on screen. Shown as the bare
           //: form is (see `readableUrl` below); a link whose words differ from
           //: its address is a real label and is left alone.
-          const labelIsTheUrl = linkText.trim() === linkUrl.trim();
+          const labelIsTheUrl = !linkText.trim() || linkText.trim() === linkUrl.trim();
           if (labelIsTheUrl) a.title = linkUrl;
-          highlightInto(a, labelIsTheUrl ? (linkTarget === linkUrl ? readableUrl(linkUrl) : appAddressLabel(linkTarget)) : linkText, terms);
+          highlightInto(a, labelIsTheUrl ? (/^https?:/i.test(linkUrl) ? readableUrl(linkUrl) : appAddressLabel(linkTarget)) : linkText, terms);
           element.appendChild(a);
         }
       } else {
@@ -1173,7 +1163,7 @@ function appendInlineRun(element, text, terms, compact, options) {
   if (cursor < text.length) {
     const rest = text.slice(cursor);
     if (underscoreSyntax) {
-      element.appendChild(document.createTextNode(rest));
+      appendPlainText(element, rest);
     } else {
       const restSpan = document.createElement("span");
       highlightIconsInto(restSpan, rest, terms);
@@ -1651,6 +1641,22 @@ function renderNoteInline(element, text, terms) {
 //: The name is held to Phosphor's own character set, and it is only ever a
 //: class: nothing typed reaches the markup.
 const INLINE_ICON_RE = /:ph-([a-z0-9-]{1,40}):/g;
+
+function appendPlainText(element, text) {
+  let cursor = 0;
+  for (const match of text.matchAll(/\[([ xX])\](?!\S)/g)) {
+    element.append(text.slice(cursor, match.index));
+    const box = document.createElement("input");
+    box.type = "checkbox";
+    box.className = "md-task-inline";
+    box.disabled = true;
+    box.checked = match[1] !== " ";
+    box.ariaLabel = box.checked ? "Done" : "Not done";
+    element.append(box);
+    cursor = match.index + 3;
+  }
+  element.append(text.slice(cursor));
+}
 
 function highlightIconsInto(element, text, terms) {
   if (!text.includes(":ph-")) {

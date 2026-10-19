@@ -729,6 +729,20 @@ function renderMarkdown(container, text, depth = 0) {
       para.push(lines[i]);
       i++;
     }
+    //: A line of only this app's links is a row of ghost buttons.
+    const appLinks = para.length === 1 ? [...para[0].matchAll(/\[([^[\]\n]+)\]\((#\/[^)\s]+)\)/g)] : [];
+    if (appLinks[0] && !para[0].replace(/\[[^[\]\n]*\]\(#[^()\n]*\)|[\s·]/g, "")) {
+      const row = container.appendChild(document.createElement("div"));
+      row.className = "row";
+      row.style.flexWrap = "wrap";
+      for (const [, label, address] of appLinks) {
+        const button = row.appendChild(document.createElement("button"));
+        button.className = "ghost small";
+        button.textContent = label;
+        button.onclick = () => { location.hash = address; };
+      }
+      continue;
+    }
     //: **A link on a line of its own is a card** (CHAT_PLAN.md decision 12,
     //: INBOX 172: web links the AI writes, "better and more modern cool").
     //: A link inside a sentence stays inline, because a card in the middle of
@@ -776,7 +790,7 @@ function revealTab(name) {
   for (const tab of TABS) {
     $(`tab-${tab}`).classList.toggle("hidden", tab !== name);
   }
-  if (typeof scheduleUndoBar === "function") scheduleUndoBar();
+  scheduleUndoBar();
   // `documents` is a sub-view of Library, there is no `data-tab="documents"`
   // button in the tab bar, so the name that determines which button is active
   // must be "library" whenever we are showing the documents pane. Without
@@ -985,7 +999,7 @@ function recordTabVisit(name, section = null, title = "", { refine = false } = {
   // Re-selecting exactly where you already are is not a step.
   if (current && current.tab === name && current.section === section) {
     //: Its title may have arrived since (a note's words, a document's name).
-    if (typeof routerOnVisit === "function") routerOnVisit(current, false);
+    routerOnVisit(current, false);
     return;
   }
   //: `refine`: this is a closer look at the view already on top, not a new
@@ -994,7 +1008,7 @@ function recordTabVisit(name, section = null, title = "", { refine = false } = {
   if (refine && current && current.tab === name) {
     current.section = section;
     paintTabHistory();
-    if (typeof routerOnVisit === "function") routerOnVisit(current, false);
+    routerOnVisit(current, false);
     return;
   }
   // One entry per visit. A Notes arrival is recorded twice, as {notes,
@@ -1006,7 +1020,7 @@ function recordTabVisit(name, section = null, title = "", { refine = false } = {
   if (current && current.tab === name && (current.section == null || section == null)) {
     if (section != null) current.section = section;
     paintTabHistory();
-    if (typeof routerOnVisit === "function") routerOnVisit(current, false);
+    routerOnVisit(current, false);
     return;
   }
   tabHistory.stack = tabHistory.stack.slice(0, tabHistory.index + 1);
@@ -1015,7 +1029,7 @@ function recordTabVisit(name, section = null, title = "", { refine = false } = {
   if (tabHistory.stack.length > TAB_HISTORY_CAP) tabHistory.stack.shift();
   tabHistory.index = tabHistory.stack.length - 1;
   paintTabHistory();
-  if (typeof routerOnVisit === "function") routerOnVisit(entry, true);
+  routerOnVisit(entry, true);
 }
 
 //: Back and Forward go through the browser's history when the router is
