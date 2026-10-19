@@ -329,6 +329,17 @@ def _forget_the_docker_probe():
 
 
 @pytest.fixture(autouse=True)
+def _forget_ollama_down():
+    """The refused-connection memory is module level; a test that refused one
+    must not make the next test's Ollama look off."""
+    from tessellate.ai import ollama_client
+
+    ollama_client._down_until.clear()
+    yield
+    ollama_client._down_until.clear()
+
+
+@pytest.fixture(autouse=True)
 def _reset_the_librarian():
     """The librarian's Quit flag and hold are module level (one scheduler per
     process), so a test that pressed Quit left them set for every test after

@@ -208,6 +208,28 @@ def _date_fact() -> str:
 #: user"): asking the person mid-run, and the tools that hand their work to a
 #: chat model (a plan, a skill, a compressed chat, a contradiction or link
 #: audit). With no model they can only fail, so they are not planned.
+#: Needle reads every schema on every call (72 tools were 30,089 chars and
+#: 50 s on the owner's Windows machine, 2026-10-19), so it is offered a
+#: shortlist: the tools the question's words suggest (`tools.focus_for`), or
+#: the likeliest by `tools.rank_tools` when the question hints at none.
+NEEDLE_MAX_TOOLS = 15
+
+
+def shortlist(schemas: list[dict], text: str) -> list[dict]:
+    """`schemas` cut to at most `NEEDLE_MAX_TOOLS`, in their given order."""
+    if len(schemas) <= NEEDLE_MAX_TOOLS:
+        return schemas
+    from tessellate.ai import tools
+
+    have = {s.get("name") for s in schemas}
+    focus = tools.focus_for(text)
+    keep = [] if focus is None else [n for n in dict.fromkeys([*tools.CORE_TOOLS, *focus]) if n in have]
+    if not keep or len(keep) > NEEDLE_MAX_TOOLS:
+        keep = [n for n, _ in tools.rank_tools(text) if n in have][:NEEDLE_MAX_TOOLS]
+    chosen = set(keep)
+    return [s for s in schemas if s.get("name") in chosen]
+
+
 NOT_WITHOUT_A_MODEL = frozenset({
     "ask_user", "make_plan", "run_skill", "save_skill", "compress_chat", "find_contradictions", "audit_link_reasons",
 })
@@ -381,6 +403,7 @@ class NeedleProvider(Provider):
             t["function"] for t in tools or []
             if isinstance(t, dict) and t.get("function") and t["function"].get("name") not in NOT_WITHOUT_A_MODEL
         ]
+        schemas = shortlist(schemas, text)
         answer = self._engine().complete(_date_fact(), json.dumps(schemas), text)
         raw_calls = _cleaned_calls(answer.get("function_calls") or [], schemas, text)
         return self._reply("" if raw_calls else NO_TOOL_FITS, raw_calls, started, answer)
