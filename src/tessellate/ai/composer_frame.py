@@ -192,7 +192,8 @@ def short_name(note: dict, lower=_lower) -> str:  # noqa: ANN001
 
 
 def _names(ids: list[int], by_id: dict[int, dict], lower) -> str:  # noqa: ANN001
-    said = [short_name(by_id[i], lower) for i in ids]
+    #: Two notes of the same words are named once.
+    said = list(dict.fromkeys(short_name(by_id[i], lower) for i in ids))
     if len(said) <= 2:
         return " and ".join(said)
     return ", ".join(said[:-1]) + " and " + said[-1]
@@ -277,7 +278,8 @@ def _base(note: dict, topic: str, by_id: dict[int, dict], mode: str) -> str:
     say = _sayer(info)
     if say:
         return say(note, info, topic or "your question", by_id)
-    return _BASE_BY_MODE.get(mode.split(" + ")[0] if mode else "", "Found by your search")
+    fallback = f"Matches {topic}" if topic else "Found by your search"
+    return _BASE_BY_MODE.get(mode.split(" + ")[0] if mode else "", fallback)
 
 
 def _relation(note: dict, before: list[dict], by_id: dict[int, dict], common: set[str]) -> str:

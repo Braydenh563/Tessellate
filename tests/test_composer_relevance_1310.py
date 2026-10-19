@@ -144,3 +144,25 @@ def test_the_route_sends_a_reason_on_every_matching_record(ai_client, session):
     assert shown, meta
     for i in shown:
         assert (meta["match_info"].get(str(i)) or {}).get("why"), (i, meta["match_info"])
+
+
+def test_a_group_names_a_repeated_note_once():
+    notes = _notes()[:7] + [dict(_notes()[3], id=11)]
+    line = composer_frame.group_line(next(g for g in composer_frame.groups(notes) if 11 in g.ids), notes, "hobbies")
+    assert line.count("League of Legends") == 1, line
+
+
+def test_the_records_card_draws_the_reason_on_the_why_this_result_line():
+    """The card's reason is the Notes search's "why this result" line (the
+    `.entry-why` recipe), drawn by the lazy reply kit when the answer is
+    final; boot JS sits at its cap. Measured with Playwright at 1440 and 390,
+    light and dark (scratchpad why1310.js): every card's line inside it,
+    none clipped."""
+    from pathlib import Path
+
+    js = Path(__file__).resolve().parents[1] / "frontend" / "js"
+    kit = (js / "reply-kit.js").read_text(encoding="utf-8")
+    assert "if (opts.match_info) replyRecordReasons(opts.match_info);" in kit
+    body = kit.split("function replyRecordReasons(info) {", 1)[1].split("\n}\n", 1)[0]
+    assert '"entry-why"' in body and "result-reason-chip result-reason-why" in body and ".why" in body
+    assert "finishReply(answerBox, answerMeta || {});" in (js / "capture-ask.js").read_text(encoding="utf-8")

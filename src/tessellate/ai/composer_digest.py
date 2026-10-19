@@ -464,7 +464,7 @@ def _span(views: list[composer.NoteView], today: date) -> str:
         return "undated"
     first, last = days[0], days[-1]
     if first == last:
-        return f"on {_day(first, today)}"
+        return "all from today" if first == today else f"on {_day(first, today)}"
     if (first.year, first.month) == (last.year, last.month):
         return f"{first.day} to {_day(last, today)}"
     return f"{_day(first, today)} to {_day(last, today)}"
@@ -1301,7 +1301,8 @@ def _prose(label: str, held: list, bodies: list[str], i: int, today: date | None
     clauses = [_clause(b, frame, i + n, n == 0) for n, b in enumerate(bodies)]
     if frame in ("planned", "noted") and re.match(r"you\b", clauses[0]):
         #: The person's own doing needs no heading: its day says when.
-        opening = f"On {_day(written, today or written)}," if written else f"In your {named} note,"
+        recent = _recent(written, today).rstrip(", ")
+        opening = (recent[:1].upper() + recent[1:] + "," if recent else f"On {_day(written, today or written)},") if written else f"In your {named} note,"
     line = f"{opening} {clauses[0]}"
     for clause in clauses[1:]:
         line += (", though " if clause.startswith("you were still") else ", and ") + clause
@@ -1890,6 +1891,10 @@ def _framed(out: _Out, question: str, members, facts, today: date, groups: list)
     its notes, told oldest first; past the short answer, behind Show more."""
     out.framed = True
     by_id = {v.id: v for v in members}
+    told_order = {v.id: n for n, v in enumerate(members)}
+    for group in groups:
+        #: Named in the order its notes are told below.
+        group.ids.sort(key=told_order.get)
     notes = [v.note for v in members]
     topic = _topic(question, members)
     budget = LINES["overview"]

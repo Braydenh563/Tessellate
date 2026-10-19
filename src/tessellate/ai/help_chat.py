@@ -133,7 +133,8 @@ HELP_TOPICS: list[dict] = [
         "keywords": ("ask", "chat", "agent", "conversation", "tool", "question", "popup agent", "everywhere", "calculate", "convert", "conversion", "units", "currency"),
         "body": (
             "\"Ask your notebook\" (Notes tab) and the Chat tab both answer from "
-            "saved notes, with the raw notes shown beside the answer; in Ask, "
+            "saved notes, with the raw notes beside the answer, each saying why "
+            "it is there; in Ask, "
             "Enter asks and Escape clears the question, and the clock button "
             "answers from your notes as they were on a day you pick. Its Use AI switch "
             "picks who answers: off, the answer is From your notes, quoted from your "
