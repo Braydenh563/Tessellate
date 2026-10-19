@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Resurfacing: two requests scoring at once no longer 500 on UNIQUE note_scores.entry_id; new rows are upserted (GET /resurface/near/{id}).
 - Security: a phrase filter in the Notes list ("tagged work", "pinned", "connected to") no longer returns private notes or boards; a private note's tags are stored in plain text, so the filter could name it.
 - Agent popup: typing "/" shows the command menu again; it opened underneath the popup's overlay (z-index 60 against 2000), now above it like the other menus (INBOX 1333a).
 - Chat, Agent popup and Guide: the From your notes, Composer and From the help badges are buttons that open a note on hover, click or Enter saying the answer was written without an AI model, how to tell it from a model's, and how to turn one on (INBOX 1344).

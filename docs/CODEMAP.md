@@ -2,7 +2,7 @@
 
 Generated 2026-10-19 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6199, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6158, test files 1316, tests 11703, plan headings 967.
+Counts: frontend functions 6199, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6158, test files 1316, tests 11704, plan headings 967.
 
 ## Frontend functions (6199)
 
@@ -12970,16 +12970,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_clamp` | src/tessellate/ai/resurface.py:61 |
-| `_comparable_vectors` | src/tessellate/ai/resurface.py:317 |
-| `_dismissed` | src/tessellate/ai/resurface.py:177 |
-| `_relatedness` | src/tessellate/ai/resurface.py:279 |
-| `compute_scores` | src/tessellate/ai/resurface.py:73 |
-| `ensure_fresh` | src/tessellate/ai/resurface.py:147 |
-| `for_context` | src/tessellate/ai/resurface.py:333 |
-| `for_day` | src/tessellate/ai/resurface.py:230 |
-| `ranked` | src/tessellate/ai/resurface.py:185 |
-| `score_for` | src/tessellate/ai/resurface.py:65 |
+| `_clamp` | src/tessellate/ai/resurface.py:62 |
+| `_comparable_vectors` | src/tessellate/ai/resurface.py:336 |
+| `_dismissed` | src/tessellate/ai/resurface.py:196 |
+| `_relatedness` | src/tessellate/ai/resurface.py:298 |
+| `compute_scores` | src/tessellate/ai/resurface.py:74 |
+| `ensure_fresh` | src/tessellate/ai/resurface.py:166 |
+| `for_context` | src/tessellate/ai/resurface.py:352 |
+| `for_day` | src/tessellate/ai/resurface.py:249 |
+| `ranked` | src/tessellate/ai/resurface.py:204 |
+| `score_for` | src/tessellate/ai/resurface.py:66 |
 
 ### src/tessellate/ai/sampling.py (5)
 
@@ -18477,7 +18477,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11703)
+## Tests (11704)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19442,7 +19442,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_repo_files_helper.py | 6 |
 | tests/test_restart_everywhere.py | 7 |
 | tests/test_restore_roundtrip.py | 2 |
-| tests/test_resurface_spec.py | 15 |
+| tests/test_resurface_spec.py | 16 |
 | tests/test_review_queue_17.py | 6 |
 | tests/test_ring_room.py | 6 |
 | tests/test_round2_sweep_fixes.py | 3 |
