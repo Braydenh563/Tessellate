@@ -9,6 +9,7 @@ below). Versioning is `0.x` while the app stabilises.
 - Whiteboard: Ctrl+Enter while typing in a sticky starts the next one beside it, same paper and size (INBOX 1308).
 - Whiteboard: a C4 and architecture set in the library (person, software system, external system, container, database, component, boundary, relationship); each places as one group (INBOX 1308).
 - Notifications over the Graph: a toast is opaque under every look (it was the glass card at 0.55 alpha, so the map read through it) and stands above the zoom strip and legend instead of over them (INBOX 1306).
+- Companion movement: a far move is now a run, an arc or a drop paced by its length (about 0.9 s across 1000 px, 1.15 s across the screen and up a level) instead of a poof or a straight glide; no frame jumps over 40 px (a 1000 px move was one 1000 px frame, a 400 px glide 26 px a frame), and a throw is drawn at 2.3 px/ms at most (31 px a frame, was 60) (INBOX 1305).
 - Notes sidebar: the collapse button stays put while the category list scrolls and sits level with the Categories row (it scrolled away and sat 8 px above the row) (INBOX 1311).
 - Companion: thrown onto a ledge or the bottom bar where it cannot stand, it steps along that surface instead of jumping up to the top bar or a far panel (on Chat at 1440: a throw that ended 192 px up now stays on the floor) (INBOX 1302).
 - Agent popup: typing / opens the same command menu as Chat (18 commands), and a chosen command answers in the popup (INBOX 1309).

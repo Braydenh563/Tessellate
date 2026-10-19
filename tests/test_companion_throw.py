@@ -59,7 +59,7 @@ def test_the_release_speed_is_the_last_80ms_of_the_pull_clamped() -> None:
         "nameMarkBuddyReleaseVelocity([[0,0,0],[10,0,100],[20,0,200],[60,0,220],[100,0,240],[140,0,260]], 270),"
         # Let go after the pointer had stopped: no throw.
         "nameMarkBuddyReleaseVelocity([[0,0,0],[100,0,40]], 200),"
-        # Faster than the cap: clamped to 4.5 px/ms, in the same direction.
+        # Faster than the cap: clamped to 2.3 px/ms, in the same direction.
         "nameMarkBuddyReleaseVelocity([[0,0,0],[-500,0,50]], 60),"
         # A slow machine's input, one move inside the window: the one before it too.
         "nameMarkBuddyReleaseVelocity([[0,0,0],[150,-30,100]], 110),"
@@ -69,7 +69,7 @@ def test_the_release_speed_is_the_last_80ms_of_the_pull_clamped() -> None:
     )
     assert [round(v, 2) for v in got[0]] == [2.0, 0.0]
     assert got[1] is None
-    assert [round(v, 2) for v in got[2]] == [-4.5, 0.0]
+    assert [round(v, 2) for v in got[2]] == [-2.3, 0.0]
     assert [round(v, 2) for v in got[3]] == [1.5, -0.3]
     assert got[4] is None and got[5] is None
 
