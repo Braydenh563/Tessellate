@@ -37,9 +37,6 @@ with its owner named in the entry.
 1324. **The owner, 2026-10-19, verbatim.** "also is the ask ai quick link accurate if the composer can compensate?? also keep improving the composer and integrating it in the whole app, expand it, improve understanding, improve language and sentence generation, expand responses, make it smarter, have it flawless and robust, have every single possible response in all of its roles (guide, chat, popup agent, agent, ask, other integrated features) be very good and more."
      Owner: composer agent (Sonnet, then an Opus review): the "Ask AI" quick link's wording when no model is set and the composer answers; then CHAT_PLAN composer rows across every role.
 
-1322. **The owner, 2026-10-19, verbatim.** "and can you make it easier to access the format panel like with this library button in the whiteboard top bar button? also atlas needs to have its animations and expressions improved behaviours, even micro behaviours and movements, small movement adjustments, more variety, the juggling stars dont animate at all." (screenshot: the whiteboard top bar, Insert, Edit, Arrange, View, Board menus, then a Library button)
-     Owner: (a) Format button beside Library in the whiteboard bar: built (wb1313, 47c713a); (b) Atlas micro behaviours, expression variety and the juggling stars animation, atlas1322 agent (Sonnet).
-
 1319. **The owner, 2026-10-19, verbatim** (screenshot, dark: Statistics, "Notes made per month, the last year", a line chart, Save as PNG). "and I still cant interact with the statistics . also the statistics page gets cut off by the header at the top and I want to expand it more and make it more dynamic. maybe even include a specialised composer and ai chat like the help guide idk in it for helping the user explore and summarise their statistics??"
      Owner: statistics agent (Sonnet, then Opus for the chat design if needed), next free slot.
 
