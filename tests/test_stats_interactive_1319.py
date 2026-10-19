@@ -92,7 +92,7 @@ def test_the_statistics_page_opts_in_and_styles_the_tooltip():
 
 def test_a_click_acts_and_the_card_closes_first():
     go = _fn(STATS, "statsGo")
-    assert go.index("statsCloseCard") < go.index("await go()")
+    assert go.index("statsCard.close") < go.index("await go()")
     assert "timelineJumpToDay" in _fn(STATS, "statsOpenMonth")
     assert "switchTab" in _fn(STATS, "statsOpenFeature")
     assert "onPick: statsOpenMonth" in STATS

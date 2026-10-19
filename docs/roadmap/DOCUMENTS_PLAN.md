@@ -1527,3 +1527,9 @@ Read from the code against Notion and Obsidian. Sizes S, M, L. Nothing here is b
 13. Reading mode: the note full width without chrome, with a progress line (check Focus mode first) - S. Remembered heading folds already exist (`docOutlineFoldStore`).
 14. Template variables exist (documents.js, documents-codekit.js); check they cover time and the cursor place - S.
 15. Export a note as a slide deck from its headings - M.
+
+## Placed from INBOX, 2026-10-19
+
+- INBOX 1325. **The owner, 2026-10-19, verbatim.** "should thumbnails be stores for documents in the document editor as well for the library page??"
+     Recommendation (taken): no stored raster for documents. A board is a drawing, so only a picture tells boards apart; a document is text, and its Library row already shows a live 240-character opening (`routes_documents._preview`) that is current on every save, theme-correct and costs no writes. Instead: a page-shaped card (heading, first lines, first embedded image as the cover) drawn from data the list already has. Next: build the page-shaped card in the Library Documents list.
+

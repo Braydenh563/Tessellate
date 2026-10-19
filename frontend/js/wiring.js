@@ -355,7 +355,7 @@ $("chat-dock-more-panel").addEventListener("keydown", (event) => {
   }
 });
 $("chat-stop").addEventListener("click", () => {
-  chatQueueHeld = true;
+  chatQueueState.held = true;
   chatController?.abort();
 });
 //: **Escape stops the answer being written** (CHAT_PLAN section 6, the
@@ -378,7 +378,7 @@ document.addEventListener("keydown", (event) => {
   if ($("chat-stop").classList.contains("hidden")) return;
   if (document.querySelector(".modal-overlay:not(.hidden), .sheet-overlay:not(.hidden)")) return;
   event.preventDefault();
-  chatQueueHeld = true;
+  chatQueueState.held = true;
   chatController.abort();
 });
 $("chat-new").addEventListener("click", newChatConversation);

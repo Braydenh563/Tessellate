@@ -17,13 +17,13 @@ def test_a_send_mid_answer_queues_and_the_end_of_a_turn_sends_the_next():
     text = _read("chat-attach.js")
     send = text[text.index("async function sendChatMessage("):text.index("function chatQueueShow(")]
     assert 'if (!$("chat-stop").classList.contains("hidden"))' in send and "chatQueue.push(typed)" in send
-    assert "sendChatMessage(chatQueue.shift())" in send and "!chatQueueHeld" in send
+    assert "sendChatMessage(chatQueue.shift())" in send and "!chatQueueState.held" in send
     turn = text[text.index("async function chatSendTurn("):][:6000]
     assert "input.disabled = true" not in turn
 
 
 def test_stop_holds_the_queue_and_the_list_has_edit_and_remove():
-    assert _read("wiring.js").count("chatQueueHeld = true") == 2
+    assert _read("wiring.js").count("chatQueueState.held = true") == 2
     kit = _read("reply-kit.js")
     paint = kit[kit.index("function chatQueuePaint("):]
     assert "Edit: back into the box" in paint and "Remove from the queue" in paint

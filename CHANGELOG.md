@@ -6,7 +6,10 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Keyboard: the first Tab after the app loads or unlocks lands on "Skip to content" again, not the Local chip halfway along the top bar.
+- Statistics: the Ask box reads "in July", "last month" and "in sept 2025" through the shared date reader, and a tile shows its hover look on keyboard focus too.
 - Boards and maps: deleting a board for good finds its thumbnail from the uploads folder, so the notes layer no longer imports the API layer (CodeQL cyclic import).
+- CI fixes: "what is due this week" lists waiting reminders again (only a question that says reminders is cut to its window), the answer chip has its keyboard focus style, the board Format panel menu row and command table share their words, and five functions plus the chat, board and task state were split or folded to meet the complexity and global-scope ratchets.
 - Launcher: the starting splash has minimise and close buttons in its top right corner; close cancels the launch (INBOX 1320).
 - Boards and maps: previews are now a real snapshot of the board, a 480px WebP (about 2 to 3 KB on the test boards) taken when edits settle or you leave the board, stored as a file, cached by the browser and used by the Library, Dashboard and chat cards; the drawn preview stays as the fallback (INBOX 1317).
 - Chat: the box stays open while an answer streams; Enter queues the message above the box, with Edit (back into the box) and Remove, and the queue sends in order as each answer ends; Stop holds it (INBOX 1321).

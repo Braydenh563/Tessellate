@@ -578,6 +578,10 @@ def _stem_plain(word: str) -> str:
         return w
     if w in _F_PLURALS:
         return _F_PLURALS[w]
+    return _strip_suffix(w)
+
+
+def _strip_suffix(w: str) -> str:
     for suffix, keep, least in (("ies", "y", 4), ("ing", "", 3), ("ed", "", 4), ("es", "", 3), ("s", "", 3)):
         if w.endswith(suffix) and len(w) - len(suffix) >= least:
             if suffix == "s" and w.endswith(("ss", "us", "is")):

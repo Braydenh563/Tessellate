@@ -69,7 +69,7 @@ function openPhoneMoreSheet() {
       //: The command palette, which a phone had no other way to open.
       list.appendChild(sheetRow("ph ph-command tab-icon", "Commands", () => {
         close();
-        if (typeof openPalette === "function") openPalette();
+        openPalette();
       }));
       list.appendChild(sheetRow("ph ph-question tab-icon", "Guide", () => {
         close();
@@ -85,7 +85,7 @@ function openPhoneMoreSheet() {
       }
       list.appendChild(sheetRow("ph ph-gear tab-icon", "Settings", () => {
         close();
-        if (typeof openSettingsModal === "function") openSettingsModal();
+        openSettingsModal();
       }));
       card.appendChild(list);
     },

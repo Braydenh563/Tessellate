@@ -51107,3 +51107,6 @@ From UI_MODERNISATION_PLAN Phase 11 item 1, both built:
      Owner: statistics agent (Sonnet, then Opus for the chat design if needed), next free slot.
      **Fixed 4091da3, 5d61fcc, 290a5cf.** Hover and focus tooltip with the exact value (12 of 12 points, "July 2026: 12 notes"), arrow keys walk the points, a click opens the Timeline at the month or the feature; counts open their surfaces (7 of 7 clicks landed); range 3/12/all; week sparklines; Ask box answered 6 sample questions equal to sqlite counts (July 12, this month 8, 88 notes, September by the 19th 12), light and dark, phone 390 fits (stats1319-act.js, -dyn.js, -ask.js).
 
+1326. **The owner, 2026-10-19, verbatim.** "when I load the app, and press tab, the first focused element is th elocal button, btu what's the point of having accessibility features like the skip to main content button if it is ignored?? that needs to be fixed."
+     **Fixed (orchestrator).** Removing the boot splash or hiding the lock screen left Tab's starting point mid-page; `tabFromTop()` (app.js) focuses the body at both moments unless something real has focus. Measured in Chromium after unlock and after reload: Tab 1 was #privacy-chip, now #skip-link; Enter moves focus to the open tab page. `tests/test_skip_link_first_tab.py`.
+

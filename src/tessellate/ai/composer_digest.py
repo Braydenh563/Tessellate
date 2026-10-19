@@ -857,29 +857,40 @@ def _shared_tags(members: list[composer.NoteView]) -> list[str]:
     return [t for t, n in sorted(tags.items(), key=lambda kv: -kv[1]) if n >= max(2, len(members) * 3 // 4) and t not in CONTEXT_TAGS]
 
 
+def _named_category(q: str, members: list[composer.NoteView]) -> str:
+    """The first member's category that the question names, or empty."""
+    return next((str(v.note.get("category")) for v in members if str(v.note.get("category") or "").lower() in q.lower() and v.note.get("category")), "")
+
+
+def _topic_typed(typed: "re.Match[str] | None") -> str:
+    """The subject after "about/on/for", as typed, without a time window."""
+    if not typed:
+        return ""
+    #: "for next month" is a time, not a topic (1324).
+    return re.sub(r"^(?:my|the)\s+", "", recogniser.without_windows(typed.group(1))).strip(" ,")
+
+
+def _topic_sides(q: str) -> str:
+    """"compare the Porto and Lisbon notes": about Porto and Lisbon, as typed,
+    not "porto lisbon" (1324)."""
+    sides = composer.compare_sides(q)
+    return " and ".join(re.sub(r"^(?:my|the|our)\s+", "", side, flags=re.I) for side in sides) if sides else ""
+
+
 def _topic(question: str, members: list[composer.NoteView]) -> str:
     """What the notes are about, in the person's word: the tag they share,
     or the subject as typed."""
     q = clean(question)
     shared = _shared_tags(members)
     typed = re.search(r"\b(?:about|on|for|regarding|in)\s+(.+?)\s*\??$", q, re.I)
-    category = next((str(v.note.get("category")) for v in members if str(v.note.get("category") or "").lower() in q.lower() and v.note.get("category")), "")
+    category = _named_category(q, members)
     if category and shared:
         #: "social connections", tagged social: the category as typed, not
         #: its first word (INBOX 1301 D5); "Courses & Study" tagged uni: uni.
-        if shared[0] in category.lower().split():
-            return category.lower()
-        return shared[0]
-    sides = composer.compare_sides(q)
-    if sides and not typed:
-        #: "compare the Porto and Lisbon notes": about Porto and Lisbon, as
-        #: typed, not "porto lisbon" (1324).
-        return " and ".join(re.sub(r"^(?:my|the|our)\s+", "", side, flags=re.I) for side in sides)
-    if typed:
-        said = re.sub(r"^(?:my|the)\s+", "", recogniser.without_windows(typed.group(1))).strip(" ,")
-        #: "for next month" is a time, not a topic (1324).
-        if said:
-            return said
+        return category.lower() if shared[0] in category.lower().split() else shared[0]
+    said = (not typed and _topic_sides(q)) or _topic_typed(typed)
+    if said:
+        return said
     terms = composer.subject_terms(q)
     if shared and (not terms or shared[0] in " ".join(terms)):
         return shared[0]
@@ -1304,7 +1315,7 @@ def _prose(label: str, held: list, bodies: list[str], i: int, today: date | None
     written = held[0].view.written
     #: "Hobbies: ..." filed under Hobbies names nothing the filing does not
     #: (INBOX 1310: "Your hobbies note has thinking of buying").
-    filed = label.lower() == str(held[0].view.note.get("category") or "").lower()
+    filed = label.lower() == str((getattr(held[0].view, "note", None) or {}).get("category") or "").lower()
     frame, opening = _prose_opening(label, named, written, today, filed)
     clauses = [_clause(b, frame, i + n, n == 0) for n, b in enumerate(bodies)]
     if frame in ("planned", "noted") and re.match(r"you\b", clauses[0]):

@@ -188,7 +188,8 @@ button.stats-tile.is-link {
   cursor: pointer;
 }
 
-button.stats-tile.is-link:hover {
+button.stats-tile.is-link:hover,
+button.stats-tile.is-link:is(:focus-visible, :has(:focus-visible)) {
   background: var(--surface-3);
 }
 

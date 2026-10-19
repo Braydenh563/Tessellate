@@ -1177,24 +1177,22 @@ onDomReady(() => {
 //: The SVG is built synchronously, before any await, because the click that
 //: leaves the board hides it and the export reads live sizes.
 const WB_THUMB = Object.freeze({ width: 480, maxHeight: 960, quality: 0.6, delayMs: 3000, maxBytes: 60 * 1024 });
-let wbThumbTimer = null;
-let wbThumbPending = null;
-let wbThumbBusy = false;
+const wbThumbState = { timer: null, pending: null, busy: false };
 
 function wbThumbMark() {
   const id = window.currentBoardId;
   if (!id) return;
-  wbThumbPending = id;
-  clearTimeout(wbThumbTimer);
-  wbThumbTimer = setTimeout(wbThumbFlush, WB_THUMB.delayMs);
+  wbThumbState.pending = id;
+  clearTimeout(wbThumbState.timer);
+  wbThumbState.timer = setTimeout(wbThumbFlush, WB_THUMB.delayMs);
 }
 
 async function wbThumbFlush() {
-  clearTimeout(wbThumbTimer);
-  const id = wbThumbPending;
-  wbThumbPending = null;
+  clearTimeout(wbThumbState.timer);
+  const id = wbThumbState.pending;
+  wbThumbState.pending = null;
   const container = document.getElementById("whiteboard-container");
-  if (!id || wbThumbBusy || String(window.currentBoardId ?? "") !== String(id)) return;
+  if (!id || wbThumbState.busy || String(window.currentBoardId ?? "") !== String(id)) return;
   if (!container || container.offsetParent === null) return;
   if (!(wbState.nodes?.length || wbState.sketches?.length || wbState.objects?.length)) return;
   let built;
@@ -1203,7 +1201,7 @@ async function wbThumbFlush() {
   } catch {
     return;
   }
-  wbThumbBusy = true;
+  wbThumbState.busy = true;
   try {
     const state = await apiJson(`/whiteboard/boards/${id}/thumbnail/state`);
     if (state.stored === state.fp) return;
@@ -1225,7 +1223,7 @@ async function wbThumbFlush() {
   } catch {
     // A thumbnail is a convenience: the SVG preview stays the fallback.
   } finally {
-    wbThumbBusy = false;
+    wbThumbState.busy = false;
   }
 }
 
@@ -1236,11 +1234,11 @@ async function wbThumbFlush() {
   document.addEventListener(
     "pointerdown",
     (event) => {
-      if (wbThumbPending && !container.contains(event.target)) wbThumbFlush();
+      if (wbThumbState.pending && !container.contains(event.target)) wbThumbFlush();
     },
     true
   );
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden" && wbThumbPending) wbThumbFlush();
+    if (document.visibilityState === "hidden" && wbThumbState.pending) wbThumbFlush();
   });
 })();

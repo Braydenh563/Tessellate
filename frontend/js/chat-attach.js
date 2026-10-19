@@ -1538,7 +1538,7 @@ function chatTidyTyped(text) {
 //: **A message sent while the answer on screen is still coming waits its
 //: turn** (INBOX 1321, the owner: "queue messages, and edit or delete/bring
 //: back queued messages"). Stop shows exactly while that answer streams; a
-//: Stop pressed holds the queue until the next send (`chatQueueHeld`).
+//: Stop pressed holds the queue until the next send (`chatQueueState.held`).
 async function sendChatMessage(preset, opts = {}) {
   const input = $("chat-input");
   if (!$("chat-stop").classList.contains("hidden")) {
@@ -1550,11 +1550,11 @@ async function sendChatMessage(preset, opts = {}) {
     }
     return chatQueueShow();
   }
-  chatQueueHeld = false;
+  chatQueueState.held = false;
   try {
     return await chatSendTurn(preset, opts);
   } finally {
-    if (!chatQueueHeld && chatQueue.length && $("chat-stop").classList.contains("hidden")) sendChatMessage(chatQueue.shift());
+    if (!chatQueueState.held && chatQueue.length && $("chat-stop").classList.contains("hidden")) sendChatMessage(chatQueue.shift());
     chatQueueShow();
   }
 }

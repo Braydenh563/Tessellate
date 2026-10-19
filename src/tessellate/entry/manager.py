@@ -1093,20 +1093,26 @@ def seal_private_events(session: Session, ids: list[int]) -> None:
     )
 
 
+def _forget_board_thumbs(uploads_dir: Path | None, ids: list[int]) -> None:
+    """A purged board's stored thumbnail goes with it."""
+    if uploads_dir is None:
+        return
+    # uploads/ sits in the data folder; reading it from config here would
+    # import the API's deps layer from the entry layer (a cycle).
+    from tessellate.core import board_thumbs
+
+    try:
+        board_thumbs.forget(uploads_dir.parent, ids)
+    except OSError:  # a stuck thumbnail must not block a purge
+        pass
+
+
 def _hard_delete(session: Session, entries: list[Entry], uploads_dir: Path | None = None) -> int:
     """Permanently remove entries plus their vectors, links, and files."""
     ids = [e.id for e in entries]
     if not ids:
         return 0
-    if uploads_dir is not None:
-        # uploads/ sits in the data folder; reading it from config here would
-        # import the API's deps layer from the entry layer (a cycle).
-        from tessellate.core import board_thumbs
-
-        try:
-            board_thumbs.forget(uploads_dir.parent, ids)
-        except OSError:  # a stuck thumbnail must not block a purge
-            pass
+    _forget_board_thumbs(uploads_dir, ids)
     seal_private_events(session, [e.id for e in entries if e.is_private])
     # Attached files: remove bytes from disk (best effort) then the rows.
     attachments = list(

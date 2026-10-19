@@ -219,7 +219,7 @@ const WB_COMMANDS = [
   { id: "tool-delete", group: "Tools", icon: "ph:trash", label: "Delete tool", keys: "X", surface: "board", run: wbTool("delete") },
   // View
   { id: "import-diagram", group: "Insert", icon: "ph:flow-arrow", label: "Import a Mermaid diagram, a draw.io file or a board SVG", menu: "Mermaid, draw.io or board SVG…", keys: "", surface: "board", run: () => wbOpenImportDialog() },
-  { id: "format-panel", group: "View", icon: "ph:sliders-horizontal", label: "Format panel (top bar button)", keys: "Ctrl+Shift+P", surface: "board", run: () => wbFormatToggle() },
+  { id: "format-panel", group: "View", icon: "ph:sliders-horizontal", label: "Format panel (top bar button)", menu: "Format panel", keys: "Ctrl+Shift+P", surface: "board", run: () => wbFormatToggle() },
   { id: "zoom-in", group: "View", icon: "ph:magnifying-glass-plus", label: "Zoom in", keys: "Ctrl+=", surface: "both", run: wbClickId("wb-zoom-in") },
   { id: "zoom-out", group: "View", icon: "ph:magnifying-glass-minus", label: "Zoom out", keys: "Ctrl+-", surface: "both", run: wbClickId("wb-zoom-out") },
   { id: "zoom-100", group: "View", icon: "ph:magnifying-glass", label: "Zoom to 100%", keys: "Ctrl+0", surface: "both", run: wbClickId("wb-zoom-actual") },

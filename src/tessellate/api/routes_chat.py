@@ -21,7 +21,7 @@ import time
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 from dataclasses import replace as with_changes
-from datetime import date, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from itertools import chain
 from pathlib import Path
 from typing import Annotated, Literal
@@ -2376,41 +2376,82 @@ def _notes_answer_due(req: _StreamRequest, tool: str, result: object, notes: lis
     return composer_lists.holds_days(notes or [], user_now(deps.get_config()).date())
 
 
+def _count_lead(result: dict, args: dict, counted: str) -> str:
+    """"You have 4 notes in Work.", with the per-category split for the whole notebook."""
+    total = int(result.get("total") or result.get("count") or 0)
+    where = ""
+    if counted:
+        where = f" in {args['category'][:1].upper() + args['category'][1:]}" if "category" in args else f" tagged {args['tag']}"
+    lead = f"You have {total} note{'' if total == 1 else 's'}{where}."
+    per = result.get("by_category") or {}
+    if not counted and len(per) > 1:
+        lead += " Per category: " + ", ".join(f"{k} {v}" for k, v in sorted(per.items(), key=lambda kv: -int(kv[1]))[:6]) + "."
+    return lead
+
+
+def _counted_lead(req: _StreamRequest, asked: str) -> str:
+    """"how many notes do I have about work": a figure, not a quote."""
+    from tessellate.ai import tools as agent_tools
+
+    counted = composer_lists.counted_filing(asked)
+    if counted is None:
+        return ""
+    for args in ({"category": counted}, {"tag": counted}) if counted else ({},):
+        result = agent_tools.execute_tool(req.session, "count_notes", args)
+        if isinstance(result, dict) and (result.get("total") or result.get("count")) and not result.get("error"):
+            return _count_lead(result, args, counted)
+    return ""
+
+
+def _filed_said(req: _StreamRequest, asked: str, now: datetime) -> str:
+    """"list my work notes": the Work notes, or the notes tagged work
+    (ledger row 442); a name that is neither is the composer's."""
+    from tessellate.ai import commands, tool_say
+    from tessellate.ai import tools as agent_tools
+
+    filed = commands.filed_listing(asked)
+    for key in ("category", "tag") if filed else ():
+        args = {key: filed}
+        result = agent_tools.execute_tool(req.session, "list_notes", args)
+        if isinstance(result, dict) and result.get("total_matching"):
+            return tool_say.say("list_notes", result, args, now.date())["text"]
+    return ""
+
+
+def _filed_or_counted_events(req: _StreamRequest, asked: str, now: datetime) -> list[dict]:
+    """A filed listing or a count of notes, said from the tool's figures;
+    empty when the sentence is neither."""
+    text = _filed_said(req, asked, now) or _counted_lead(req, asked)
+    return [{"type": "answer", "delta": text}] if text else []
+
+
+def _reminder_window(asked: str, now: datetime) -> tuple | None:
+    """(phrase, first day, last day) of the window a reminders question names."""
+    window = composer.plan(asked, now.date())
+    if not (window.window and window.window_phrase):
+        return None
+    start, end = window.window
+    if window.window_phrase == "this week":
+        #: A recall window stops at today; what is due runs to Sunday.
+        end = max(end, start - timedelta(days=start.weekday()) + timedelta(days=6))
+    return window.window_phrase, start, end
+
+
 def _tool_read_events(req: _StreamRequest, notes: list | None = None) -> list[dict]:
     """A read tool run with no model (decision 59, steps 1 and 2): the reading
     names the tool (`reading.tool_of`), Chat runs it with no arguments, and
     the realiser says it in one line and draws it in its form. Empty when the
     sentence names no such tool, so the composer answers as before."""
-    from tessellate.ai import act_registry, commands, question_noise, reading, realise, tool_say
+    from tessellate.ai import act_registry, question_noise, reading, realise, tool_say
     from tessellate.ai import tools as agent_tools
 
     now = user_now(deps.get_config())
     #: Read as repaired: "shwo me evry tag i hav plz" is the tag list, as
     #: "list my tags" is (the routing gold, `fixtures/composer/routing_1011.json`).
     asked = question_noise.repair(question_noise.tidy(req.question or ""))
-    filed = commands.filed_listing(asked)
-    if filed:
-        #: "list my work notes": the Work notes, or the notes tagged work
-        #: (ledger row 442); a name that is neither is the composer's.
-        for key in ("category", "tag"):
-            args = {key: filed}
-            result = agent_tools.execute_tool(req.session, "list_notes", args)
-            if isinstance(result, dict) and result.get("total_matching"):
-                said = tool_say.say("list_notes", result, args, now.date())
-                return [{"type": "answer", "delta": said["text"]}]
-    counted = composer_lists.counted_filing(asked)
-    if counted is not None:
-        #: "how many notes do I have about work": a figure, not a quote.
-        for args in ({"category": counted}, {"tag": counted}) if counted else ({},):
-            result = agent_tools.execute_tool(req.session, "count_notes", args)
-            if isinstance(result, dict) and (result.get("total") or result.get("count")) and not result.get("error"):
-                total = int(result.get("total") or result.get("count") or 0)
-                where = f" in {args['category'][:1].upper() + args['category'][1:]}" if "category" in args and counted else (f" tagged {args['tag']}" if counted else "")
-                lead = f"You have {total} note{'' if total == 1 else 's'}{where}."
-                per = result.get("by_category") or {}
-                if not counted and len(per) > 1:
-                    lead += " Per category: " + ", ".join(f"{k} {v}" for k, v in sorted(per.items(), key=lambda kv: -int(kv[1]))[:6]) + "."
-                return [{"type": "answer", "delta": lead}]
+    early = _filed_or_counted_events(req, asked, now)
+    if early:
+        return early
     got = reading.read(asked, now=now)
     if got.tool not in act_registry.NO_MODEL_READS or got.intent in act_registry.ACTS:
         return []
@@ -2421,14 +2462,12 @@ def _tool_read_events(req: _StreamRequest, notes: list | None = None) -> list[di
     #: Said with its links to what it lists and the place to open
     #: (`tool_say`); a chart, when the counts make one, stands for the table.
     say_args: dict = {}
-    if got.tool == "list_reminders":
-        window = composer.plan(asked, now.date())
-        if window.window and window.window_phrase:
-            start, end = window.window
-            if window.window_phrase == "this week":
-                #: A recall window stops at today; what is due runs to Sunday.
-                end = max(end, start - timedelta(days=start.weekday()) + timedelta(days=6))
-            say_args["within"] = (window.window_phrase, start, end)
+    #: Only a question that says "reminders" is cut to its window; "what is
+    #: due this week" lists what waits, as before (1324 widened it to both).
+    if got.tool == "list_reminders" and "remind" in asked.lower():
+        within = _reminder_window(asked, now)
+        if within:
+            say_args["within"] = within
             drawn = None
     said = tool_say.say(got.tool, result, say_args, now.date())
     chart = drawn["chart"] if drawn else None
@@ -3087,6 +3126,12 @@ def _act_events(req: _StreamRequest, prepared: dict) -> Iterator[dict]:
 
         yield {"type": "answer", "delta": commands.ask_when(parsed.get("said") or parsed["text"])}
         return
+    yield from _act_planned_events(req, parsed)
+
+
+def _act_planned_events(req: _StreamRequest, parsed: dict) -> Iterator[dict]:
+    """The preview of a parsed act: run at once with its card, or the line and
+    the card that waits for Confirm."""
     planned = acts.preview(req.session, parsed, req.body.note_ids)
     card = planned.get("card")
     if card and planned.get("run"):

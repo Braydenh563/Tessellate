@@ -10,8 +10,8 @@
 let chatConv = { id: null, turns: [] }; // the open conversation
 let chatController = null;
 //: Messages sent while an answer streams, oldest first (INBOX 1321).
-let chatQueue = [];
-let chatQueueHeld = false;
+const chatQueue = [];
+const chatQueueState = { held: false };
 let lastChatQuestion = ""; // powers Regenerate / Edit & resend
 // Set while an `ask` card (renderAgentQuestion) is on screen waiting for a
 // reply. Covers typing a free-text answer into the composer, not just

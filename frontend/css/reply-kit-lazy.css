@@ -374,7 +374,7 @@
 }
 
 .answer-grounding-chip:is(:hover, :focus-visible),
-.answer-grounding-item:has(> .answer-grounding-chip:hover) {
+.answer-grounding-item:has(> .answer-grounding-chip:is(:hover, :focus-visible)) {
   border-color: var(--accent);
 }
 

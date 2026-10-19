@@ -481,6 +481,25 @@ document.addEventListener("keydown", (e) => {
   target.focus();
 });
 // Skip link (Wave L): jump keyboard focus straight into the open panel.
+//: Tab's starting point stays where a removed splash or lock screen sat, so
+//: the first Tab skipped "Skip to content" (INBOX 1326): focusing the body
+//: puts it back at the top, unless something real already has focus.
+function tabFromTop() {
+  const b = document.body, a = document.activeElement;
+  if (a && a !== b && !$("lock-overlay").contains(a)) return;
+  b.tabIndex = -1;
+  b.focus({ preventScroll: true });
+  b.removeAttribute("tabindex");
+}
+
+new MutationObserver((_, seen) => {
+  if ($("boot-splash")) return;
+  seen.disconnect();
+  tabFromTop();
+}).observe(document.body, { childList: true });
+new MutationObserver(() => {
+  if ($("lock-overlay").classList.contains("hidden")) tabFromTop();
+}).observe($("lock-overlay"), { attributes: true, attributeFilter: ["class"] });
 $("skip-link").addEventListener("click", (e) => {
   e.preventDefault();
   $(`tab-${prefs.get("activeTab", null) || "notes"}`).focus();

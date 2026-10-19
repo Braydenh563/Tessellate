@@ -4409,7 +4409,7 @@ function wbPushMoveBatch(entries) {
 //: selection the others line up to, which itself stays put. Set with the
 //: "Align to this one" command; it holds while it is part of the selection and
 //: clears the moment it is not, so a stale key never moves the wrong thing.
-let wbKeyObject = null;
+const wbKey = { object: null };
 
 function wbSetKeyObject() {
   const key = wbSelectedItem ? wbMultiKey(wbSelectedItem.kind, wbSelectedItem.id) : null;
@@ -4417,8 +4417,8 @@ function wbSetKeyObject() {
     toast("Select two or more items, with the one to line up to selected last.");
     return;
   }
-  wbKeyObject = wbKeyObject === key ? null : key;
-  toast(wbKeyObject ? "Align commands now line up to this item and leave it where it is." : "Align commands use the whole selection again.");
+  wbKey.object = wbKey.object === key ? null : key;
+  toast(wbKey.object ? "Align commands now line up to this item and leave it where it is." : "Align commands use the whole selection again.");
 }
 
 //: The reference box and the entries that move. Pure (node-tested): with a
@@ -4442,8 +4442,8 @@ async function wbAlignSelection(edge) {
     toast("Select two or more items to align them.");
     return;
   }
-  if (wbKeyObject && !entries.some((e) => `${e.kind}:${e.id}` === wbKeyObject)) wbKeyObject = null;
-  const { box, moving } = wbAlignReference(entries, wbKeyObject);
+  if (wbKey.object && !entries.some((e) => `${e.kind}:${e.id}` === wbKey.object)) wbKey.object = null;
+  const { box, moving } = wbAlignReference(entries, wbKey.object);
   const target = { left: box.minX, right: box.maxX, top: box.minY, bottom: box.maxY,
     hcenter: (box.minX + box.maxX) / 2, vcenter: (box.minY + box.maxY) / 2 }[edge];
 

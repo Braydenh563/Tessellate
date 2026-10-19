@@ -2909,7 +2909,7 @@ function renderSettings() {
 // most of them, since these jobs run for minutes, was recorded nowhere. It is
 // polled from here now, so the record does not depend on being watched.
 const TASKS_RUNNING_MS = 1500;
-let tasksBeat = null;
+const tasksState = { beat: null };
 
 async function refreshBackgroundTasks() {
   // Before the unlock there is no token and this is a guaranteed 401 on every
@@ -2925,9 +2925,9 @@ async function refreshBackgroundTasks() {
   //: the status loop alone it waited behind `/models/status`, which a busy
   //: runner makes slow exactly while jobs run, and it said "running" for 12 s
   //: after the job had ended (scratchpad/late805.js).
-  clearTimeout(tasksBeat);
+  clearTimeout(tasksState.beat);
   if (backgroundTasks.length && !document.hidden) {
-    tasksBeat = setTimeout(() => refreshBackgroundTasks().catch(() => {}), TASKS_RUNNING_MS);
+    tasksState.beat = setTimeout(() => refreshBackgroundTasks().catch(() => {}), TASKS_RUNNING_MS);
   }
   noticeTaskTransitions(backgroundTasks, (body && body.history) || []);
   const auto = backgroundTasks.find((t) => t.auto);

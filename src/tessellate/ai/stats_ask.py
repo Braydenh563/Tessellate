@@ -13,7 +13,6 @@ then to a line saying what it can.
 
 from __future__ import annotations
 
-import calendar
 import re
 from collections import Counter
 from datetime import date, datetime, time, timedelta
@@ -22,13 +21,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import notebook_stats as ns
+from tessellate.ai import recognise
 from tessellate.ai.notebook_stats import StatAnswer
 from tessellate.core.database import Entry, utcnow
 
-_MONTHS = {name.lower(): number for number, name in enumerate(calendar.month_name) if name}
-_MONTHS.update({name.lower(): number for number, name in enumerate(calendar.month_abbr) if name})
-_MONTHS["sept"] = 9
-_MONTH_IN = re.compile(r"\b(?:in|during|for|of|from)\s+(" + "|".join(sorted(_MONTHS, key=len, reverse=True)) + r")\b(?:\s+(\d{4}))?")
 
 _HOW_MANY = r"how many|number of|\bcount\b|how much"
 _USAGE = re.compile(r"\b(?:use|used|using|open|opened)\b.*\bmost\b|\bmost (?:used|use|opened|visited)\b|favou?rite (?:feature|tab)|which features|what features")
@@ -73,22 +69,20 @@ def _name(start: datetime) -> str:
 
 
 def _named_month(text: str, now: datetime) -> datetime | None:
-    found = _MONTH_IN.search(text)
-    if not found:
-        return None
-    month = _MONTHS[found.group(1)]
-    year = int(found.group(2)) if found.group(2) else (now.year if month <= now.month else now.year - 1)
-    return _midnight(date(year, month, 1), now.tzinfo)
+    """The first of the month the question names ("in July", "last month",
+    "in sept 2025"), read by the recogniser like every other date; a month
+    with no year is the latest one that has begun."""
+    for start, end, _ in recognise.find(text):
+        found = recognise.span(text[start:end], now.date(), "past")
+        if found and found[2] == "month":
+            return _midnight(found[0], now.tzinfo)
+    return None
 
 
 def _month_count(text: str, session: Session, now: datetime) -> StatAnswer | None:
     if not re.search(_HOW_MANY, text) or ns._SUBJECT_AFTER.search(text):
         return None
     start = _named_month(text, now)
-    if start is None and re.search(r"\blast month\b", text):
-        start = _month_start(now, 1)
-    elif start is None and re.search(r"\bthis month\b", text):
-        start = _month_start(now)
     if start is None:
         return None
     end = min(_next_month(start), now + timedelta(seconds=1))

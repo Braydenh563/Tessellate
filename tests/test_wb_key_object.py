@@ -38,7 +38,7 @@ def test_without_a_key_the_outer_box_is_the_reference() -> None:
 
 
 def test_a_key_outside_the_selection_is_ignored_and_cleared() -> None:
-    assert "wbKeyObject = null;" in WB
+    assert "wbKey.object = null;" in WB
     out = _reference([_entry(1, 0, 10), _entry(2, 50, 90)], "object:9")
     assert out["moving"] == [1, 2]
 

@@ -68,13 +68,13 @@ function statsChart(chart) {
 
 //: Closes the open Statistics card, if one is open (set by `openStatistics`),
 //: so what a click opens is not behind it.
-let statsCloseCard = null;
+const statsCard = { close: null };
 
 //: A click on the page acts: it closes the card and goes where the thing is.
 //: Month points open the Timeline at that month; a feature bar opens that
 //: feature, a tab or the palette command the ledger counted it under.
 async function statsGo(go) {
-  statsCloseCard?.();
+  statsCard.close?.();
   try {
     await go();
   } catch {
@@ -406,7 +406,7 @@ function openStatistics() {
   help.setAttribute("aria-controls", "stats-help");
   help.setAttribute("aria-expanded", "false");
   const close = () => {
-    statsCloseCard = null;
+    statsCard.close = null;
     document.removeEventListener("keydown", onKey, true);
     overlay.remove();
     if (returnFocus?.isConnected) returnFocus.focus?.();
@@ -439,7 +439,7 @@ function openStatistics() {
   card.append(head, about, helpBody, body);
   overlay.appendChild(card);
   document.body.appendChild(overlay);
-  statsCloseCard = close;
+  statsCard.close = close;
   wireBackdropClose(overlay, close);
   document.addEventListener("keydown", onKey, true);
   initHelpToggles(card);
