@@ -2,9 +2,9 @@
 
 Generated 2026-10-19 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6169, frontend ids 2537, CSS sections 496, backend routes 613, backend modules 6115, test files 1301, tests 11617, plan headings 961.
+Counts: frontend functions 6176, frontend ids 2537, CSS sections 496, backend routes 613, backend modules 6115, test files 1302, tests 11623, plan headings 961.
 
-## Frontend functions (6169)
+## Frontend functions (6176)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -2377,19 +2377,23 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `scrollPaletteToActive` | frontend/js/app-palette.js:762 |
 | `utilityPaletteRows` | frontend/js/app-palette.js:284 |
 
-### frontend/js/ask-chart.js (9)
+### frontend/js/ask-chart.js (13)
 
 | Name | File:line |
 |---|---|
 | `askChartLabel` | frontend/js/ask-chart.js:49 |
-| `askChartPng` | frontend/js/ask-chart.js:139 |
-| `askChartSvg` | frontend/js/ask-chart.js:60 |
+| `askChartPng` | frontend/js/ask-chart.js:178 |
+| `askChartStep` | frontend/js/ask-chart.js:76 |
+| `askChartSvg` | frontend/js/ask-chart.js:91 |
 | `askChartSvgEl` | frontend/js/ask-chart.js:23 |
-| `askChartTable` | frontend/js/ask-chart.js:111 |
+| `askChartTable` | frontend/js/ask-chart.js:150 |
 | `askChartTickLabel` | frontend/js/ask-chart.js:45 |
 | `askChartTicks` | frontend/js/ask-chart.js:33 |
-| `drawAskChart` | frontend/js/ask-chart.js:198 |
-| `renderAskChart` | frontend/js/ask-chart.js:182 |
+| `askChartTipText` | frontend/js/ask-chart.js:63 |
+| `askChartWidth` | frontend/js/ask-chart.js:86 |
+| `askChartWire` | frontend/js/ask-chart.js:268 |
+| `drawAskChart` | frontend/js/ask-chart.js:238 |
+| `renderAskChart` | frontend/js/ask-chart.js:222 |
 
 ### frontend/js/ask-compose.js (19)
 
@@ -5442,24 +5446,27 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `sketchStart` | frontend/js/sketch-pad.js:148 |
 | `sketchTogglePalette` | frontend/js/sketch-pad.js:122 |
 
-### frontend/js/statistics.js (14)
+### frontend/js/statistics.js (17)
 
 | Name | File:line |
 |---|---|
-| `openStatistics` | frontend/js/statistics.js:183 |
-| `paintStatistics` | frontend/js/statistics.js:164 |
-| `renderWeekWidget` | frontend/js/statistics.js:248 |
-| `statsChange` | frontend/js/statistics.js:66 |
+| `openStatistics` | frontend/js/statistics.js:222 |
+| `paintStatistics` | frontend/js/statistics.js:203 |
+| `renderWeekWidget` | frontend/js/statistics.js:289 |
+| `statsChange` | frontend/js/statistics.js:98 |
 | `statsChart` | frontend/js/statistics.js:53 |
-| `statsDay` | frontend/js/statistics.js:60 |
-| `statsNotebookSection` | frontend/js/statistics.js:117 |
-| `statsRemindersSection` | frontend/js/statistics.js:135 |
+| `statsDay` | frontend/js/statistics.js:92 |
+| `statsGo` | frontend/js/statistics.js:68 |
+| `statsNotebookSection` | frontend/js/statistics.js:149 |
+| `statsOpenFeature` | frontend/js/statistics.js:84 |
+| `statsOpenMonth` | frontend/js/statistics.js:77 |
+| `statsRemindersSection` | frontend/js/statistics.js:167 |
 | `statsSection` | frontend/js/statistics.js:30 |
 | `statsTile` | frontend/js/statistics.js:17 |
 | `statsTiles` | frontend/js/statistics.js:45 |
-| `statsUnused` | frontend/js/statistics.js:106 |
-| `statsUsageSection` | frontend/js/statistics.js:141 |
-| `statsWeekCard` | frontend/js/statistics.js:74 |
+| `statsUnused` | frontend/js/statistics.js:138 |
+| `statsUsageSection` | frontend/js/statistics.js:173 |
+| `statsWeekCard` | frontend/js/statistics.js:106 |
 
 ### frontend/js/status-panels.js (4)
 
@@ -10109,7 +10116,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/timeline-calendar-lazy.css | 292 |
 | frontend/css/timeline-ticks-lazy.css | 42 |
 | frontend/css/usage-lazy.css | 34 |
-| frontend/css/utilities-lazy.css | 125 |
+| frontend/css/utilities-lazy.css | 173 |
 
 ## Backend routes (613)
 
@@ -12024,8 +12031,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2566 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2668 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2569 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2671 |
 
 ### src/tessellate/ai/inbox.py (7)
 
@@ -18385,7 +18392,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11617)
+## Tests (11623)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19450,6 +19457,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_static_freshness.py | 5 |
 | tests/test_static_precompressed.py | 7 |
 | tests/test_stats_fit_1319.py | 1 |
+| tests/test_stats_interactive_1319.py | 6 |
 | tests/test_status_bar_fit.py | 4 |
 | tests/test_status_bar_grammar.py | 5 |
 | tests/test_stop_discards_write.py | 5 |

@@ -53,8 +53,40 @@ function statsTiles(pairs) {
 function statsChart(chart) {
   const host = document.createElement("div");
   host.className = "ask-chart stats-chart";
-  drawAskChart(host, chart);
+  //: Every chart here answers the pointer and the keyboard (INBOX 1319).
+  drawAskChart(host, { ...chart, interactive: true });
   return host;
+}
+
+//: Closes the open Statistics card, if one is open (set by `openStatistics`),
+//: so what a click opens is not behind it.
+let statsCloseCard = null;
+
+//: A click on the page acts: it closes the card and goes where the thing is.
+//: Month points open the Timeline at that month; a feature bar opens that
+//: feature, a tab or the palette command the ledger counted it under.
+async function statsGo(go) {
+  statsCloseCard?.();
+  try {
+    await go();
+  } catch {
+    toast("Couldn't open that.", true);
+  }
+}
+
+function statsOpenMonth(row) {
+  return statsGo(async () => {
+    await switchTab("timeline");
+    timelineJumpToDay(`${row.label}-01`);
+  });
+}
+
+function statsOpenFeature(name) {
+  return statsGo(async () => {
+    if (name.startsWith("tab:")) return switchTab(name.slice(4));
+    const command = paletteCommands().find((c) => usageFeatureName(c.label) === name);
+    if (command) command.run();
+  });
 }
 
 function statsDay(iso) {
@@ -128,7 +160,7 @@ function statsNotebookSection(book) {
     ])
   );
   const total = book.growth.reduce((sum, row) => sum + row.value, 0);
-  section.appendChild(statsChart({ title: "Notes made per month, the last year", kind: "line", by: "month", rows: book.growth, total }));
+  section.appendChild(statsChart({ title: "Notes made per month, the last year", kind: "line", by: "month", rows: book.growth, total, onPick: statsOpenMonth }));
   return section;
 }
 
@@ -149,8 +181,15 @@ async function statsUsageSection(usage, asOf) {
       ...(unused ? [[unused.length, "not used lately"]] : []),
     ])
   );
-  const top = usedNames.slice(0, STATS_USAGE_TOP).map((f) => ({ label: labels[f.name] || f.name, value: f.count }));
-  if (top.length) section.appendChild(statsChart({ title: "Most used", kind: "bar", by: "feature", rows: top, total: usage.uses, columns: ["Feature", "Uses"], source: "uses on this computer" }));
+  const top = usedNames.slice(0, STATS_USAGE_TOP).map((f) => ({ label: labels[f.name] || f.name, value: f.count, name: f.name }));
+  if (top.length) {
+    section.appendChild(
+      statsChart({
+        title: "Most used", kind: "bar", by: "feature", rows: top, total: usage.uses, columns: ["Feature", "Uses"],
+        source: "uses on this computer", unit: ["use", "uses"], onPick: (row) => statsOpenFeature(row.name),
+      })
+    );
+  }
   if (unused && unused.length) {
     const line = document.createElement("p");
     line.className = "muted stats-unused";
@@ -204,6 +243,7 @@ function openStatistics() {
   help.setAttribute("aria-controls", "stats-help");
   help.setAttribute("aria-expanded", "false");
   const close = () => {
+    statsCloseCard = null;
     document.removeEventListener("keydown", onKey, true);
     overlay.remove();
     if (returnFocus?.isConnected) returnFocus.focus?.();
@@ -227,7 +267,7 @@ function openStatistics() {
   helpBody.setAttribute("aria-label", "About statistics");
   const helpText = document.createElement("p");
   helpText.textContent =
-    "Every number here is counted from your notes, reminders and this computer's usage counts, with no model. Private and binned notes are left out. This week runs from Monday on your clock; words written are the words in the notes made that week; a reminder counts as done in the week it was ticked off. Usage is counted on this computer and never leaves it.";
+    "Every number here is counted from your notes, reminders and this computer's usage counts, with no model. Private and binned notes are left out. This week runs from Monday on your clock; words written are the words in the notes made that week; a reminder counts as done in the week it was ticked off. Hover or focus a point or bar for its exact value, use the arrow keys to move between them, and click or press Enter to open it: a month opens the Timeline there, a feature bar opens that feature. Usage is counted on this computer and never leaves it.";
   helpBody.appendChild(helpText);
   const body = document.createElement("div");
   body.className = "stats-body";
@@ -236,6 +276,7 @@ function openStatistics() {
   card.append(head, about, helpBody, body);
   overlay.appendChild(card);
   document.body.appendChild(overlay);
+  statsCloseCard = close;
   wireBackdropClose(overlay, close);
   document.addEventListener("keydown", onKey, true);
   initHelpToggles(card);

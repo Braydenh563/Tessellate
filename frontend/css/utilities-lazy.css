@@ -123,3 +123,51 @@
   border-radius: var(--radius-md);
   background: var(--surface-2);
 }
+
+/* The Statistics charts answer the pointer and the keyboard (INBOX 1319;
+   ask-chart.js `askChartWire`): a point or bar is one `.ask-chart-pt` with a
+   transparent hit area the height of its slot, a tooltip with the exact
+   value, and a ring where the arrow keys have put the focus. */
+.stats-chart {
+  position: relative;
+}
+
+.ask-chart-pt {
+  cursor: pointer;
+  outline: none;
+}
+
+.ask-chart-hit {
+  fill: transparent;
+}
+
+.ask-chart-pt:hover .ask-chart-hit,
+.ask-chart-pt:focus .ask-chart-hit {
+  fill: var(--accent-soft);
+}
+
+.ask-chart-pt:focus-visible .ask-chart-hit {
+  stroke: var(--accent-text);
+  stroke-width: 2;
+}
+
+.ask-chart-pt:hover .ask-chart-dot,
+.ask-chart-pt:focus .ask-chart-dot {
+  r: 5;
+}
+
+.ask-chart-tip {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  box-shadow: var(--shadow-md);
+  color: var(--text);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 2;
+}
