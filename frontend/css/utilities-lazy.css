@@ -24,6 +24,12 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
+  /* Ring room (DESIGN.md): the ask field, its buttons and the link tiles sit
+     flush with this scroller, which cut 4px off their rings. The padding
+     gives the ring somewhere to be painted and the margin keeps the layout
+     where it was. */
+  padding: var(--ring-room);
+  margin: calc(-1 * var(--ring-room));
 }
 
 .stats-section > h3 {

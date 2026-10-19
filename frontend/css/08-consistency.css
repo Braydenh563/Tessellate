@@ -10222,7 +10222,8 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   .sheet-row,
   .graph-zoom-btn,
   .chat-dock-controls .seg > button,
-  .job-run-now
+  .job-run-now,
+  .phone-tab-more
 ):focus-visible {
   outline-offset: -2px;
 }
@@ -10269,6 +10270,7 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
    the bottom edge (2px of padding for a 4px ring). */
 .modal-nav {
   padding-block: var(--ring-room);
+  scroll-padding-block: var(--ring-room);
 }
 /* The Settings pane's controls start at its left edge (a link, the field
    under Memory, the profile mark, the help search). */

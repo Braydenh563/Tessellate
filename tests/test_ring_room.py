@@ -159,3 +159,26 @@ def test_a_focusable_chart_mark_carries_its_own_ring():
     block = css[css.index(".ask-chart-pt:focus-visible {"):].split("}", 1)[0]
     assert "outline: 2px solid var(--accent-text);" in block
     assert "outline-offset: -2px;" in block
+
+
+def _block(name: str, selector: str) -> str:
+    text = (CSS_DIR / name).read_text(encoding="utf-8")
+    return text[text.index(selector + " {"):].split("}", 1)[0]
+
+
+def test_the_2026_10_19_audit_containers_keep_their_ring_room():
+    """Clipped rings the audit measured (outline 2px + offset 2px against an
+    overflow container with no padding, 4px cut), each 0 cut after, by
+    `scratchpad/ui-sweeps`-style probe: the Statistics body (ask field,
+    buttons, link tiles), the manual's contents jumps and topic links, the
+    Settings nav's last button (focus scrolled it flush: 4.1px) and the phone
+    More button (cut by the viewport at x 390 and y 900)."""
+    stats = _block("utilities-lazy.css", ".stats-body")
+    assert "padding: var(--ring-room);" in stats and "margin: calc(-1 * var(--ring-room));" in stats
+    assert ".manual-jump:focus-visible {\n  outline-offset: -2px;" in (CSS_DIR / "manual-lazy.css").read_text(encoding="utf-8")
+    topics = _block("manual-lazy.css", ".manual-topics")
+    for line in ("padding-left: var(--ring-room);", "margin-left: calc(-1 * var(--ring-room));", "scroll-padding-block: var(--ring-room);"):
+        assert line in topics
+    rules = _rules(_section())
+    assert any(sel == ".modal-nav" and "scroll-padding-block: var(--ring-room)" in body for sel, body in rules)
+    assert any(".phone-tab-more" in sel and "outline-offset: -2px" in body for sel, body in rules)

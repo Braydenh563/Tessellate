@@ -46,6 +46,9 @@
   text-align: start;
   white-space: normal;
 }
+.manual-jump:focus-visible {
+  outline-offset: -2px;
+}
 .manual-jump:is(:hover, :focus-visible),
 .manual-jump:is(:focus-visible, :has(:focus-visible)) {
   background: var(--hover-veil);
@@ -62,6 +65,11 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   padding-right: var(--space-1);
+  /* Ring room: the topics' "Go to" links start at this scroller's left edge.
+     The margin keeps the text where it was. */
+  padding-left: var(--ring-room);
+  margin-left: calc(-1 * var(--ring-room));
+  scroll-padding-block: var(--ring-room);
 }
 .manual-group h3 {
   margin: var(--space-4) 0 var(--space-2);
