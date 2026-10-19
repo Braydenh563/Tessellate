@@ -29,7 +29,7 @@ const WB_FMT_TABS = ["style", "text", "arrange", "data"];
 //: What is selected, as `{kind, id, item, bbox}` rows: the multi-selection
 //: when there is one, else the one selected item.
 //: The Format panel's open tab and its queued sync.
-const wbFmtState = { sizeClip: null, fmtTab: "style", fmtSyncQueued: false, fmtLiveQueued: false, fmtFrameQueued: false };
+const wbFmtState = { sizeClip: null, fmtTab: "style", fmtSyncQueued: false, fmtLiveQueued: false, fmtFrameQueued: false, links: new Map() };
 
 function wbFmtEntries() {
   //: A selection of many keeps its connectors (which have no box: "Select all
@@ -190,6 +190,51 @@ function wbFmtBox(entries) {
 }
 
 //: X and Y move the selection to the number; W and H size one item to it.
+//: The W/H link, remembered per selection: `{ratio}` is width over height at
+//: the moment it was switched on, so editing one side scales the other by
+//: that ratio rather than by whatever the box has drifted to.
+function wbFmtLinkKey(entries) {
+  return entries.map((e) => `${e.kind}:${e.id}`).sort().join(",");
+}
+
+function wbFmtLinkRatio(entries) {
+  return wbFmtState.links.get(wbFmtLinkKey(entries))?.ratio || 0;
+}
+
+function wbFmtToggleLink() {
+  const entries = wbFmtEntries();
+  const box = wbFmtBox(entries);
+  if (!box) return;
+  const key = wbFmtLinkKey(entries);
+  if (wbFmtState.links.has(key)) wbFmtState.links.delete(key);
+  else if (box.maxY > box.minY) wbFmtState.links.set(key, { ratio: (box.maxX - box.minX) / (box.maxY - box.minY) });
+  wbFmtShowLink();
+}
+
+function wbFmtShowLink() {
+  const button = document.getElementById("wb-fmt-link");
+  if (!button) return;
+  button.setAttribute("aria-pressed", wbFmtLinkRatio(wbFmtEntries()) ? "true" : "false");
+}
+
+//: One axis of the selection sized to a number: one item by its own size,
+//: several (a group) as one box about its top left.
+async function wbFmtSizeAxis(axis, target) {
+  const entries = wbFmtEntries().filter((e) => !wbIsLocked(e.kind, e.item));
+  const box = wbFmtBox(entries);
+  if (!entries.length || !box) return;
+  if (entries.length !== 1) {
+    await wbFmtScaleSelection(entries, box, axis, target);
+    return;
+  }
+  const [e] = entries;
+  if (!e.bbox) return;
+  const dim = axis === "w" ? "width" : "height";
+  const size = axis === "w" ? e.bbox.maxX - e.bbox.minX : e.bbox.maxY - e.bbox.minY;
+  if (size > 0 && Math.abs(size - target) >= 0.5) await wbSizeItemTo(e, dim, target, target / size);
+}
+
+//: X and Y move the selection to the number; W and H size one item to it.
 async function wbFmtGeometry(axis, value) {
   const entries = wbFmtEntries().filter((e) => !wbIsLocked(e.kind, e.item));
   if (!entries.length || !Number.isFinite(value)) return;
@@ -210,18 +255,9 @@ async function wbFmtGeometry(axis, value) {
     //: Several items (a group): the set is sized as one box about its top
     //: left, each member scaling with it (B29: "I cant widen objects on one
     //: axis when grouped").
-    if (entries.length !== 1) {
-      await wbFmtScaleSelection(entries, box, axis, target);
-      wbScheduleRender();
-      wbAnnounce(`${axis === "w" ? "Width" : "Height"} ${Math.round(value)}.`);
-      wbFormatSyncSoon();
-      return;
-    }
-    const [e] = entries;
-    if (!e.bbox) return;
-    const dim = axis === "w" ? "width" : "height";
-    const size = axis === "w" ? e.bbox.maxX - e.bbox.minX : e.bbox.maxY - e.bbox.minY;
-    if (size > 0 && Math.abs(size - target) >= 0.5) await wbSizeItemTo(e, dim, target, target / size);
+    await wbFmtSizeAxis(axis, target);
+    const ratio = wbFmtLinkRatio(wbFmtEntries());
+    if (ratio) await wbFmtSizeAxis(axis === "w" ? "h" : "w", Math.max(8, axis === "w" ? target / ratio : target * ratio));
   });
   wbScheduleRender();
   wbAnnounce(`${{ x: "X", y: "Y", w: "Width", h: "Height" }[axis]} ${Math.round(value)}.`);
@@ -528,6 +564,7 @@ function wbFormatSync() {
   set("wb-fmt-w", Math.round(box.maxX - box.minX));
   set("wb-fmt-h", Math.round(box.maxY - box.minY));
   set("wb-fmt-angle", Math.round(first.item.rotation || 0));
+  wbFmtShowLink();
 }
 
 //: **The numbers follow the hand** (B29: "resizing or moving objects doesn't
@@ -888,6 +925,7 @@ onDomReady(() => {
       return kind === "shape" ? { label_valign: at === plain ? undefined : at } : { valign: at === plain ? undefined : at };
     }, `Text at the ${at}.`);
   });
+  on("wb-fmt-link", "click", wbFmtToggleLink);
   for (const axis of ["x", "y", "w", "h"]) {
     on(`wb-fmt-${axis}`, "change", (e) => wbFmtGeometry(axis, Number(e.target.value)));
   }

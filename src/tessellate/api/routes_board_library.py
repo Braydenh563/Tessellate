@@ -893,7 +893,13 @@ def _place_element(db: Session, board_id: int | None, payload: dict, body: Place
         return groups[raw]
 
     made_sketches, made_objects, ids = [], [], {}
-    for item in payload.get("items") or []:
+    #: A multi-part element is one thing on the board: with no group named by
+    #: the stencil itself, its parts share one, so a move or a resize takes
+    #: them all (INBOX 1307). Ungroup still splits it.
+    parts = payload.get("items") or []
+    if len(parts) > 1 and not any(p.get("group") for p in parts):
+        parts = [{**p, "group": "_whole"} for p in parts]
+    for item in parts:
         if item["kind"] == "sketch":
             data = dict(item["data"])
             if "d" in data:
