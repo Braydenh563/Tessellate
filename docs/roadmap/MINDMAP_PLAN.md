@@ -1881,3 +1881,8 @@ Read from the code against XMind, MindManager and Miro mind maps. Sizes S, M, L;
 13. Search inside topics' notes from the map's find bar - S.
 14. Fisheye and focus dimming of everything but the selected branch - S.
 15. Real-time presenter pointer in the present mode - L.
+
+## Placed from INBOX, 2026-10-19 (edge sides; next PR)
+
+1342. **The owner, 2026-10-19, verbatim.** "also the mindmap links will always connect only to the top or bottom of nodes, never the sides, should they?"
+     Measured by code reading: `wbMapEdgeAnchors` (whiteboard-map.js:3224) uses the sides for tree-right, tree-left, tree-both and logic-right, and top and bottom for tree-down and org. For radial and free it picks the axis per edge, but compares the boxes' top-left corners (`child.x - parent.x`), not their centres, so a wide parent or a narrow child tips edges to the top or bottom. Recommendation: compare centre to centre, and weight the comparison by the boxes' aspect (a child level with the parent's side leaves from the side); reproduce on the owner's layout first.
