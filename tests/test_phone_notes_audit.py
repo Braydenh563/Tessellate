@@ -142,3 +142,14 @@ def test_a_note_line_still_too_wide_after_folding_wraps_instead_of_clipping_its_
     (358) and the button sits at x 312-356."""
     css = (FRONTEND / "css/08-consistency.css").read_text(encoding="utf-8")
     assert ".entry-meta.note-meta:has(> .is-icon):not(.is-measuring) {\n    flex-wrap: wrap;" in css
+
+
+def test_the_phone_history_menu_opens_below_the_header_not_above_the_viewport():
+    """UX audit 2026-10-19, 390x844: `openNavHistoryMenu` anchors to
+    `#status-back` (header, y 6-50) and always opens upward, so the menu sat
+    at top -304, wholly off screen. After: y 62 to 369."""
+    css = (FRONTEND / "css/nav-history-lazy.css").read_text(encoding="utf-8")
+    block = css[css.index("#status-nav-history-menu {"):]
+    block = block[: block.index("}")]
+    assert "translate: 0 calc(100% + var(--target-min) + 2 * var(--space-1));" in block
+    assert "!important" not in block
