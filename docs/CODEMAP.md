@@ -1,8 +1,8 @@
 # Code map
 
-Generated 2026-10-18 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
+Generated 2026-10-19 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6131, frontend ids 2534, CSS sections 496, backend routes 613, backend modules 6011, test files 1286, tests 11522, plan headings 958.
+Counts: frontend functions 6131, frontend ids 2534, CSS sections 496, backend routes 613, backend modules 6018, test files 1286, tests 11522, plan headings 958.
 
 ## Frontend functions (6131)
 
@@ -10685,7 +10685,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (6011)
+## Backend modules (6018)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -18045,30 +18045,37 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_terms` | src/tessellate/search/query.py:454 |
 | `understand` | src/tessellate/search/query.py:355 |
 
-### src/tessellate/search/search_manager.py (35)
+### src/tessellate/search/search_manager.py (42)
 
 | Name | File:line |
 |---|---|
 | `Retrieval` | src/tessellate/search/search_manager.py:887 |
+| `_append_connected` | src/tessellate/search/search_manager.py:1264 |
+| `_candidates` | src/tessellate/search/search_manager.py:1152 |
 | `_category_named_whole` | src/tessellate/search/search_manager.py:1059 |
 | `_category_notes` | src/tessellate/search/search_manager.py:1114 |
 | `_category_only` | src/tessellate/search/search_manager.py:1108 |
 | `_corrected_terms` | src/tessellate/search/search_manager.py:245 |
+| `_early_answer` | src/tessellate/search/search_manager.py:1131 |
 | `_fuse` | src/tessellate/search/search_manager.py:665 |
-| `_learned_order` | src/tessellate/search/search_manager.py:1359 |
+| `_learned_order` | src/tessellate/search/search_manager.py:1350 |
 | `_linked_neighbours` | src/tessellate/search/search_manager.py:704 |
 | `_load_later` | src/tessellate/search/search_manager.py:352 |
+| `_match_info` | src/tessellate/search/search_manager.py:1246 |
 | `_meaningful_terms` | src/tessellate/search/search_manager.py:295 |
 | `_named_category` | src/tessellate/search/search_manager.py:1074 |
+| `_narrow_to_range` | src/tessellate/search/search_manager.py:1168 |
+| `_nothing_matched` | src/tessellate/search/search_manager.py:1214 |
+| `_outside_window` | src/tessellate/search/search_manager.py:1192 |
 | `_rank` | src/tessellate/search/search_manager.py:983 |
 | `_rank_inner` | src/tessellate/search/search_manager.py:996 |
 | `_recency_pin_ranking` | src/tessellate/search/search_manager.py:639 |
-| `_retrieve` | src/tessellate/search/search_manager.py:1131 |
+| `_retrieve` | src/tessellate/search/search_manager.py:1281 |
 | `_score_from_matrix` | src/tessellate/search/search_manager.py:506 |
 | `_score_from_table` | src/tessellate/search/search_manager.py:545 |
 | `_user_today` | src/tessellate/search/search_manager.py:44 |
 | `_within` | src/tessellate/search/search_manager.py:871 |
-| `_without_private` | src/tessellate/search/search_manager.py:1413 |
+| `_without_private` | src/tessellate/search/search_manager.py:1404 |
 | `_written_at` | src/tessellate/search/search_manager.py:863 |
 | `configured_thresholds` | src/tessellate/search/search_manager.py:300 |
 | `entries_between` | src/tessellate/search/search_manager.py:101 |

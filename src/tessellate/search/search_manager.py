@@ -1128,6 +1128,156 @@ def _category_notes(session: Session, category_id: int, limit: int) -> list[Entr
     )
 
 
+def _early_answer(session: Session, query: str, asked, limit: int):  # noqa: ANN001
+    """The two questions that are an order or a range, not a subject, or None."""
+    #: **"My last note" is an order, not a subject** (the owner at release,
+    #: wrapup-0927 10 n: "Show me my last entry" answered with an older
+    #: note). Searched by meaning, "last entry" matches whatever note talks
+    #: about entries; the question is about when. The newest notes, newest
+    #: first, and the prompt now carries each note's dates, so the answer
+    #: can say which is newest written and which was last edited.
+    if is_recency_ask(query):
+        return _without_private(recent_entries(session, limit=min(limit, RECENT_FALLBACK_LIMIT))), "recent"
+    if asked.time_only:
+        # Nothing but a date range: list it. Ranking by similarity here would
+        # be ranking noise, and the honest answer to "what did I write last
+        # week" is *the notes from last week*, in order. An empty week falls
+        # through so the caller still gets recent notes.
+        dated = in_range(session, asked.since, asked.until)
+        if dated:
+            return _without_private(dated)[: max(limit, 10)], "dated"
+    return None
+
+
+def _candidates(session: Session, subject: str, embeddings: EmbeddingService, scope):  # noqa: ANN001
+    """Both searches for the subject rather than the sentence, inside the
+    named category when there is one."""
+    _min_sim, _z_margin = configured_thresholds()
+    semantic = semantic_search(
+        session, subject, embeddings, limit=FUSION_DEPTH,
+        min_similarity=_min_sim, relative_z_margin=_z_margin,
+    )
+    keyword = keyword_search(session, subject, limit=FUSION_DEPTH)
+    if scope is not None:
+        if semantic is not None:
+            semantic = [(entry, score) for entry, score in semantic if entry.category_id == scope.id]
+        keyword = [entry for entry in keyword if entry.category_id == scope.id]
+    return semantic, keyword
+
+
+def _narrow_to_range(semantic, keyword, asked):  # noqa: ANN001
+    """A range alongside a subject narrows the candidates before they are
+    ranked, so "the allotment, last week" cannot be answered with a note from
+    March that happens to be a better match.
+
+    **Except when the range is soft.** "Recently" is a lean, not a boundary
+    (`Understood.soft`), and filtering on it is what made "jokes I have saved
+    recently" come back with a gym routine: the two notes tagged `jokes` were
+    16 and 30 days old, the fortnight window dropped both. A soft range sorts
+    (newest first) and labels; it does not exclude."""
+    if asked.has_range and not asked.soft:
+        if semantic is not None:
+            semantic = [(entry, score) for entry, score in semantic if _within(entry, asked.since, asked.until)]
+        keyword = [e for e in keyword if _within(e, asked.since, asked.until)]
+    elif asked.soft:
+        # Recency as a tiebreak rather than a gate: of the notes that match the
+        # subject, the newer ones come first, which is the whole of what the
+        # word was asking for.
+        keyword = sorted(keyword, key=_written_at, reverse=True)
+        if semantic is not None:
+            semantic = sorted(semantic, key=lambda pair: _written_at(pair[0]), reverse=True)
+    return semantic, keyword
+
+
+def _outside_window(semantic_any_time, keyword_any_time, asked, limit: int):  # noqa: ANN001
+    """A subject was named and nothing matched it *inside* the window (reported
+    directly: a note about jokes, asked about as "two weeks ago", was written
+    three weeks ago and came back empty). This drops the date and keeps the
+    subject, so it can never return something unrelated to what was asked,
+    only the same match outside the window the person's memory of *when* was
+    wrong about.
+
+    **Bounded, not unbounded**: widened by the window's own span rather than
+    searched across the whole notebook, so "the allotment, last week" still
+    answers nothing when the only allotment note is three months old."""
+    span = asked.until - asked.since if asked.since and asked.until else None
+    since_wide = asked.since - span if span is not None else asked.since
+    until_wide = asked.until + span if span is not None else asked.until
+    outside, _mode = _rank(
+        [(e, s) for e, s in semantic_any_time if _within(e, since_wide, until_wide)] if semantic_any_time is not None else None,
+        [e for e in keyword_any_time if _within(e, since_wide, until_wide)],
+        limit,
+    )
+    return (_without_private(outside), "outside_range") if outside else ([], "dated")
+
+
+def _nothing_matched(session: Session, asked, scope, semantic, any_time, limit: int, found: dict, subject: str):  # noqa: ANN001
+    """What to answer when ranking found nothing, or None to carry on empty."""
+    if scope is not None:
+        return _without_private(_category_notes(session, scope.id, max(limit, 10))), "category"
+    if semantic is None:
+        #: **No meaning search yet** (the model still loading, or none): a
+        #: subject that is a category's whole name ("what have I saved about
+        #: courses & study?") is that category, not the newest notes. With
+        #: the model up, meaning finds the same notes by what they say.
+        named = _category_named_whole(session, subject)
+        if named is not None:
+            found["category"] = named.name
+            return _without_private(_category_notes(session, named.id, max(limit, 10))), "category"
+    # The "never look empty" fallback is recent notes, but **not when the
+    # question named a date range**: "what did I write about the allotment last
+    # week" with nothing that week would otherwise come back with unrelated
+    # notes from any time, silently dropping the one constraint the person
+    # stated. A dated question that finds nothing falls back *within its
+    # range*, and if that is empty returns nothing, labelled `dated`.
+    #
+    # **Only when the question was about time alone.** With a subject, listing
+    # the window drops the more specific constraint and is how "jokes I have
+    # saved recently" was answered with a gym routine. Nothing, labelled
+    # `dated`, is the honest reply for a subject.
+    if asked.has_range and not asked.subject:
+        return _without_private(in_range(session, asked.since, asked.until, limit=limit)), "dated"
+    if asked.has_range:
+        return _outside_window(any_time[0], any_time[1], asked, limit)
+    recent = recent_entries(session, limit=RECENT_FALLBACK_LIMIT)
+    return (_without_private(recent), "recent") if recent else None
+
+
+def _match_info(entries: list[Entry], sem_scores: dict, kw_terms) -> dict:  # noqa: ANN001
+    """Why each of these is here, built before graph expansion appends any
+    connected notes, so "connected" always wins over an incidental keyword
+    overlap for those (a neighbour that also shares a word with the question is
+    still here *because it's linked*, not because it matched)."""
+    info: dict = {}
+    for entry in entries:
+        content = (entry.content or "").lower()
+        matched_terms = [t for t in kw_terms if t in content]
+        if entry.id in sem_scores and matched_terms:
+            info[entry.id] = {"type": "hybrid", "score": round(sem_scores[entry.id], 2), "terms": matched_terms}
+        elif entry.id in sem_scores:
+            info[entry.id] = {"type": "semantic", "score": round(sem_scores[entry.id], 2)}
+        elif matched_terms:
+            info[entry.id] = {"type": "keyword", "terms": matched_terms}
+    return info
+
+
+def _append_connected(session: Session, entries: list[Entry], match_info: dict, found: dict) -> None:
+    # Appended, never interleaved: a connected note is context and a match is
+    # an answer, and a prompt that has to drop something should drop the
+    # context first. The order encodes that.
+    neighbours, neighbour_reasons, neighbour_hops = graph_expansion(session, entries)
+    for neighbour in neighbours:
+        if all(neighbour.id != entry.id for entry in entries):
+            entries.append(neighbour)
+            found["connected"].add(neighbour.id)
+            # A second-hop note (item 33) is real evidence but weaker, so it
+            # gets its own badge type rather than looking like a neighbour.
+            info = {"type": "connected_2hop" if neighbour_hops.get(neighbour.id) == 2 else "connected"}
+            if neighbour.id in neighbour_reasons:
+                info["reason"] = neighbour_reasons[neighbour.id]
+            match_info[neighbour.id] = info
+
+
 def _retrieve(
     session: Session,
     query: str,
@@ -1147,206 +1297,47 @@ def _retrieve(
     found["until"] = asked.until
     found["when_phrase"] = asked.when_phrase
     found["connected"] = set()
-    #: **"My last note" is an order, not a subject** (the owner at release,
-    #: wrapup-0927 10 n: "Show me my last entry" answered with an older
-    #: note). Searched by meaning, "last entry" matches whatever note talks
-    #: about entries; the question is about when. The newest notes, newest
-    #: first, and the prompt now carries each note's dates, so the answer
-    #: can say which is newest written and which was last edited.
-    if is_recency_ask(query):
-        return _without_private(recent_entries(session, limit=min(limit, RECENT_FALLBACK_LIMIT))), "recent"
-    if asked.time_only:
-        # Nothing but a date range: list it. Ranking by similarity here would
-        # be ranking noise, and the honest answer to "what did I write last
-        # week" is *the notes from last week*, in order.
-        dated = in_range(session, asked.since, asked.until)
-        if dated:
-            return _without_private(dated)[: max(limit, 10)], "dated"
-        # An empty week is a real answer, but an empty *list* looks like a
-        # failure: fall through so the caller still gets recent notes.
+    early = _early_answer(session, query, asked, limit)
+    if early is not None:
+        return early
 
     #: **A named category is a scope** (`_named_category`). A question that
     #: asks for the whole category lists it; one with a subject searches
     #: inside it, and lists it when nothing inside matches.
     scoped = _named_category(session, query)
+    scope = None
     if scoped is not None:
         scope, rest = scoped
         found["category"] = scope.name
         if _category_only(rest):
             return _without_private(_category_notes(session, scope.id, max(limit, 10))), "category"
 
-    # Searching for the subject rather than the sentence. Falls back to the
-    # whole question when stripping left nothing to search for.
+    # Falls back to the whole question when stripping left nothing to search for.
     subject = asked.subject or query
-    _min_sim, _z_margin = configured_thresholds()
-    semantic = semantic_search(
-        session, subject, embeddings, limit=FUSION_DEPTH,
-        min_similarity=_min_sim, relative_z_margin=_z_margin,
-    )
-    keyword = keyword_search(session, subject, limit=FUSION_DEPTH)
-    if scoped is not None:
-        if semantic is not None:
-            semantic = [(entry, score) for entry, score in semantic if entry.category_id == scope.id]
-        keyword = [entry for entry in keyword if entry.category_id == scope.id]
-    # Kept before the range narrows them below, so a subject match outside
-    # the stated window is still reachable as a fallback (see "outside the
-    # window you named" further down) without a second, identical search.
-    semantic_any_time, keyword_any_time = semantic, keyword
-    # Captured here, before range-filtering or `_rank`/`_fuse` collapse both
-    # lists into one ordered-by-relevance list of entries and lose the
-    # per-entry detail: a cosine score means something, a fused rank
-    # position doesn't. Range-filtering only removes candidates, never
-    # changes their score, so looking these up by id later stays correct
-    # regardless of what the caller keeps or drops afterwards.
+    semantic, keyword = _candidates(session, subject, embeddings, scope)
+    # Kept before the range narrows them, so a subject match outside the
+    # stated window stays reachable as a fallback without a second search.
+    any_time = (semantic, keyword)
+    # Captured before `_rank`/`_fuse` collapse both lists into one ordered list
+    # and lose the per-entry detail: a cosine score means something, a fused
+    # rank position doesn't. Range-filtering only removes candidates, never
+    # changes their score, so looking these up by id later stays correct.
     sem_scores = {entry.id: score for entry, score in semantic} if semantic is not None else {}
     kw_terms = _meaningful_terms(subject)
-
-    # A range alongside a subject narrows the candidates before they are
-    # ranked, so "the allotment, last week" cannot be answered with a note from
-    # March that happens to be a better match.
-    #
-    # **Except when the range is soft.** "Recently" is a lean, not a boundary, 
-    # see `Understood.soft`, and filtering on it is what made "jokes I have
-    # saved recently" come back with a note about a gym routine: the two notes
-    # tagged `jokes` were 16 and 30 days old, the fortnight window dropped both,
-    # and the empty-handed fallback below listed whatever *was* in the window.
-    # A soft range still sorts (newest first, below) and still labels; it does
-    # not exclude.
-    if asked.has_range and not asked.soft:
-        if semantic is not None:
-            semantic = [
-                (entry, score)
-                for entry, score in semantic
-                if _within(entry, asked.since, asked.until)
-            ]
-        keyword = [e for e in keyword if _within(e, asked.since, asked.until)]
-    elif asked.soft:
-        # Recency as a tiebreak rather than a gate: of the notes that match the
-        # subject, the newer ones come first, which is the whole of what the
-        # word was asking for.
-        keyword = sorted(keyword, key=_written_at, reverse=True)
-        if semantic is not None:
-            semantic = sorted(semantic, key=lambda pair: _written_at(pair[0]), reverse=True)
+    semantic, keyword = _narrow_to_range(semantic, keyword, asked)
 
     entries, mode = _rank(semantic, keyword, limit)
-
-    if not entries and scoped is not None:
-        return _without_private(_category_notes(session, scope.id, max(limit, 10))), "category"
-
-    if not entries and semantic is None:
-        #: **No meaning search yet** (the model still loading, or none): a
-        #: subject that is a category's whole name ("what have I saved about
-        #: courses & study?") is that category, not the newest notes. With
-        #: the model up, meaning finds the same notes by what they say.
-        named = _category_named_whole(session, subject)
-        if named is not None:
-            found["category"] = named.name
-            return _without_private(_category_notes(session, named.id, max(limit, 10))), "category"
-
     if not entries:
-        # Nothing matched. The "never look empty" fallback is recent notes, 
-        # but **not when the question named a date range.** "What did I write
-        # about the allotment last week", with nothing about the allotment that
-        # week, would otherwise come back with unrelated notes from any time at
-        # all, labelled `recent`, silently dropping the one constraint the
-        # person actually stated. Answering the wrong question confidently is
-        # worse than answering none.
-        #
-        # So a dated question that finds nothing falls back *within its range*,
-        # and if the range is genuinely empty it returns nothing and says
-        # `dated`, which is a true answer the caller can render as "nothing
-        # that week".
-        #
-        # **Only when the question was about time alone.** With a subject, this
-        # fallback drops the more specific of the two constraints and hands
-        # back every note in the window, which is how "jokes I have saved
-        # recently" was answered with a gym routine. Listing the window is a
-        # true answer to "what did I write last week"; presented as the answer
-        # to "which jokes", it is a confident answer to a question nobody
-        # asked, and the person has no way to tell it apart from a real hit.
-        # Nothing, labelled `dated`, is the honest reply, and the caller
-        # renders it as "nothing about that in this window".
-        if asked.has_range and not asked.subject:
-            in_window = in_range(session, asked.since, asked.until, limit=limit)
-            return _without_private(in_window), "dated"
-        if asked.has_range:
-            # A subject was named and nothing matched it *inside* the
-            # window: reported directly: a note tagged joke/jokes/funny,
-            # asked about as "two weeks ago", was actually written three
-            # weeks ago, and came back empty rather than found-but-
-            # mislabelled. This is not the fallback rejected above: that one
-            # dropped the *subject* and kept the date ("jokes... recently"
-            # answered with a gym routine); this drops the date and keeps
-            # the subject, so it can never return something unrelated to
-            # what was asked for, only the same match, outside the window
-            # the person's memory of *when* turned out to be wrong about.
-            #
-            # **Bounded, not unbounded**: widened by the window's own span
-            # rather than searched across the whole notebook. Without a
-            # bound this reintroduces the *other* shape of the rejected
-            # fallback: "the allotment, last week" must still answer nothing
-            # when the only allotment note is three months old, the same
-            # test that pins the fallback above pins this one too (a
-            # subject match 90 days from a 7-day window is not "the person's
-            # memory was a little off", it's a different note weighing in
-            # on a question it wasn't asked). "Two weeks" that was actually
-            # three is one window-span away; that's the case this catches.
-            since_wide = asked.since - (asked.until - asked.since) if asked.since and asked.until else asked.since
-            until_wide = asked.until + (asked.until - asked.since) if asked.since and asked.until else asked.until
-            outside, _mode = _rank(
-                [(e, s) for e, s in semantic_any_time if _within(e, since_wide, until_wide)]
-                if semantic_any_time is not None
-                else None,
-                [e for e in keyword_any_time if _within(e, since_wide, until_wide)],
-                limit,
-            )
-            if outside:
-                return _without_private(outside), "outside_range"
-            return [], "dated"
-        recent = recent_entries(session, limit=RECENT_FALLBACK_LIMIT)
-        if recent:
-            return _without_private(recent), "recent"
+        miss = _nothing_matched(session, asked, scope, semantic, any_time, limit, found, subject)
+        if miss is not None:
+            return miss
 
     entries = _without_private(entries)
-    # Why each of these is here, built before graph expansion appends any
-    # connected notes, so "connected" always wins over an incidental keyword
-    # overlap for those (a neighbour that also happens to share a word with
-    # the question is still here *because it's linked*, not because it
-    # matched).
-    match_info = {}
-    for entry in entries:
-        content = (entry.content or "").lower()
-        matched_terms = [t for t in kw_terms if t in content]
-        if entry.id in sem_scores and matched_terms:
-            match_info[entry.id] = {
-                "type": "hybrid",
-                "score": round(sem_scores[entry.id], 2),
-                "terms": matched_terms,
-            }
-        elif entry.id in sem_scores:
-            match_info[entry.id] = {"type": "semantic", "score": round(sem_scores[entry.id], 2)}
-        elif matched_terms:
-            match_info[entry.id] = {"type": "keyword", "terms": matched_terms}
+    match_info = _match_info(entries, sem_scores, kw_terms)
     #: Not across a scope: a neighbour from another category is exactly the
     #: stray a question about one category must not be answered with.
-    if expand_graph and entries and scoped is None:
-        # Appended, never interleaved: a connected note is context and a match
-        # is an answer, and a prompt that has to drop something should drop the
-        # context first. The order encodes that.
-        neighbours, neighbour_reasons, neighbour_hops = graph_expansion(session, entries)
-        for neighbour in neighbours:
-            if all(neighbour.id != entry.id for entry in entries):
-                entries.append(neighbour)
-                found["connected"].add(neighbour.id)
-                # A second-hop note (item 33) is real evidence but weaker, 
-                # linked to something linked to a match, not to the match
-                # itself: so it gets its own badge type rather than being
-                # indistinguishable from a direct neighbour.
-                two_hops = neighbour_hops.get(neighbour.id) == 2
-                info = {"type": "connected_2hop" if two_hops else "connected"}
-                if neighbour.id in neighbour_reasons:
-                    info["reason"] = neighbour_reasons[neighbour.id]
-                match_info[neighbour.id] = info
+    if expand_graph and entries and scope is None:
+        _append_connected(session, entries, match_info, found)
     found["match_info"] = match_info
 
     # One final filter covering every mode. Private notes are also excluded by
