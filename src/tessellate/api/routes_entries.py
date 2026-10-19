@@ -1562,8 +1562,12 @@ def reevaluate_entry(entry_id: int, session: Session = Depends(get_session)) -> 
             )
         else:
             refiling.fail("No filing model or embeddings were available.")
-    except Exception:
-        logger.warning("re-evaluation's filing step failed", exc_info=True)
+    except Exception as exc:
+        if isinstance(exc, (OllamaError, ConnectionError)):
+            #: One line: a model that is off (connection refused) is a state, not a bug.
+            logger.info("re-evaluation's filing step skipped: %s", exc)
+        else:
+            logger.warning("re-evaluation's filing step failed", exc_info=True)
         filed_by = None  # AI down, keep the note exactly as it was
         refiling.fail("The filing step stopped before it finished. The log has the reason.")
     finally:
@@ -1632,8 +1636,11 @@ def _reevaluate_tags(session: Session, entry) -> list[str]:  # noqa: ANN001
         model = librarian.suggest_tags(
             entry.content, have, deps.get_model_manager(), deps.get_ollama(), vocabulary=_tag_vocabulary(session),
         )
-    except Exception:
-        logger.info("re-evaluation's model tag step failed; using the notebook's own", exc_info=True)
+    except Exception as exc:
+        logger.info(
+            "re-evaluation's model tag step failed; using the notebook's own: %s", exc,
+            exc_info=not isinstance(exc, (OllamaError, ConnectionError)),
+        )
     if getattr(entry, "is_private", False):
         return model
     try:
