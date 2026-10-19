@@ -85,6 +85,8 @@ SCRIPTS = (
     "reply-kit.js",
     #: Get started (INBOX 1304): the palette loads it, then calls getStartedShow.
     "first-run.js",
+    #: The manual (Find anything and the palette open it after `lazyScript`).
+    "manual.js",
 )
 
 #: Names a row may call that are the platform rather than the app. Kept short

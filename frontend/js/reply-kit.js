@@ -722,7 +722,6 @@ function replyBylineFacts({ composed, model, engine, help }) {
 //: badge to inform the user how it isnt an ai"). A badge no model wrote is a
 //: button on the `data-help-for` recipe; its `.help-body` is built per badge
 //: because `wireHelpPopover` takes one trigger per panel.
-let replyByHelpSeq = 0;
 const REPLY_BY_WHAT = {
   notes: "This answer was written without an AI model. The app picked sentences from your own notes and joined them.",
   help: "This answer was written without an AI model. It is the app's own help text for what you asked.",
@@ -732,7 +731,7 @@ const REPLY_BY_WHAT = {
 function replyByHelpPanel(kind) {
   const panel = document.createElement("div");
   panel.className = "help-body hidden";
-  panel.id = `reply-by-help-${++replyByHelpSeq}`;
+  panel.id = `reply-by-help-${(replyByHelpPanel.seq = (replyByHelpPanel.seq || 0) + 1)}`;
   panel.setAttribute("role", "dialog");
   panel.setAttribute("aria-label", "About this badge");
   for (const line of [
