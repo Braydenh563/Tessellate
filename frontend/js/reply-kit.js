@@ -650,6 +650,24 @@ function replyFinish(answers, opts = {}) {
   if (opts.head && list.some((answer) => answer.textContent.trim())) replyByline(opts.head, opts);
   if (opts.composed) replyReveal(list);
   if (opts.unsupported) renderToolsUnsupportedNotice(opts.bubble, opts.unsupported);
+  if (opts.match_info) replyRecordReasons(opts.match_info);
+}
+
+//: **Why each Matching records card is there, in words** (INBOX 1310, the
+//: owner: "it has no frame of reference for how related each shown matching
+//: record is or why it was shown"): the server's `match_info[id].why`
+//: ("Matches hobbies by meaning, and shares #gaming with ..."), on the Notes
+//: search's "why this result" line, wrapping inside the card. Drawn here when
+//: the answer is final, not in capture-ask.js, for the boot budget.
+function replyRecordReasons(info) {
+  for (const row of document.querySelectorAll("#raw-results > li[data-id]")) {
+    const why = info[row.dataset.id]?.why;
+    if (!why || row.querySelector(":scope > .entry-why")) continue;
+    const line = document.createElement("div");
+    line.className = "entry-why";
+    line.appendChild(chip(`ph:sparkle ${why}`, "result-reason-chip result-reason-why"));
+    row.appendChild(line);
+  }
 }
 
 //: INBOX 272 part 1, "every failure names its way out": the same

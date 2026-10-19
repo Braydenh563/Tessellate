@@ -33,7 +33,7 @@ from sqlalchemy import or_, select
 from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
-from tessellate.ai import budget as run_budget, capability, composer, composer_digest, composer_lists, find_it, glossary, list_pool, neighbours, personal, phrasing, verdicts, toolwords, vocative, why
+from tessellate.ai import budget as run_budget, capability, composer, composer_digest, composer_frame, composer_lists, find_it, glossary, list_pool, neighbours, personal, phrasing, verdicts, toolwords, vocative, why
 from tessellate.ai import (
     acts,
     agent,
@@ -76,6 +76,7 @@ from tessellate.core.database import (
     Document,
     Entity,
     Entry,
+    EntryLink,
     MediaUpload,
     Reminder,
     like_escape,
@@ -1739,6 +1740,32 @@ def _chat_payload(session: Session, found: _Found, notes: list[dict], config, as
     }
 
 
+def _frame_matches(session: Session, question: str, notes: list[dict], match_info: dict, mode: str) -> None:
+    """Why each Matching records card is there, in words, and which shown
+    notes the person linked (INBOX 1310, the owner: "it has no frame of
+    reference for how related each shown matching record is or why it was
+    shown and how the shown notes link"). Each note gets `linked_to`, the
+    shown notes it is linked to; each entry's `match_info` gets `why`, made
+    for a note that came by date or recency too. Facts either way: the model
+    reads them as context, the composer says them (decision 75)."""
+    ids = [n["id"] for n in notes]
+    if not ids:
+        return
+    linked: dict[int, list[int]] = {i: [] for i in ids}
+    rows = session.query(EntryLink.source_entry_id, EntryLink.target_entry_id).filter(
+        EntryLink.source_entry_id.in_(ids), EntryLink.target_entry_id.in_(ids)
+    )
+    for a, b in rows:
+        linked[a].append(b)
+        linked[b].append(a)
+    for note in notes:
+        note["linked_to"] = linked[note["id"]]
+    for key, reason in composer_frame.reasons(question, notes, mode).items():
+        match_info.setdefault(int(key), {})["why"] = reason
+    for note in notes:
+        note["match_info"] = match_info.get(note["id"])
+
+
 def _prepare(
     session: Session,
     question: str,
@@ -1769,6 +1796,8 @@ def _prepare(
     _retrieve_for(session, question, found, attached, attached_notes_only, as_of, locale)
     _rewind_as_of(session, question, found, as_of, locale)
     notes = _context_notes(session, found, attached, attached_docs, attached_files, attached_boards, as_of)
+    #: Only the notes: a document or a file row has another table's id.
+    _frame_matches(session, question, notes[: len(found.entries)], found.match_info, found.mode)
     config = deps.get_config()
 
     # Every entry this question surfaced counts as "used".
