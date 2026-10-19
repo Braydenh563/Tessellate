@@ -474,6 +474,7 @@ accessibility, and learnability") are why.
     keep their own drag; right, middle and Space drags still pan; the Pan
     and Lasso tools are untouched; touch already pans bare canvas.
     **Reversed** (the owner, 2026-10-19: "we need to revert the left click pan as it clashes with and negates the drag selection tools"): a left-drag with Select draws the selection box again; Pan, Space, the middle and right buttons and the trackpad pan; the preference is removed.
+42. **Turning a frame turns what lies wholly inside it** (the owner, 2026-10-19: "if I rotate a frame, should it also rotate all the elements in that frame??"; yes). Contents are captured at grip-down by `wbFrameContents`, each turns about the frame's centre by the frame's delta (centre rotated, own rotation gains the delta), links follow their ends, Ctrl turns the frame alone, one Undo step; built as `wbFrameTurnOrigin`.
 
 ## Built, 2026-09-09: one surface per panel, and the Arrange section
 

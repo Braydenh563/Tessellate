@@ -10932,6 +10932,7 @@ function wbCloseComments({ restoreFocus = false } = {}) {
 //: board, and the frame is taken by its title or its edge handles. Moving it
 //: carries whatever lies wholly inside it (`wbFrameDragOrigin`), Ctrl held
 //: moves it alone, as Ctrl does a map topic; deleting it leaves what it held.
+//: Turning it by its grip turns what it holds too (`wbFrameTurnOrigin`).
 
 //: The default size: a third of a 1440 board, room for a handful of cards.
 const WB_FRAME_SIZE = { w: 480, h: 320 };
@@ -11059,6 +11060,92 @@ function wbFrameDragOrigin(d, alone) {
   if (alone || d.kind !== "frame") return null;
   const keys = wbFrameContents(d);
   return keys.length ? wbCaptureBulkMoveOrigin(null, keys) : null;
+}
+
+//: **Turning a frame turns what lies wholly inside it** (WHITEBOARD_PLAN
+//: decision 42, the owner 2026-10-19: "if I rotate a frame, should it also
+//: rotate all the elements in that frame??"). The contents are captured when
+//: the grip is taken, by the rule a title drag uses (`wbFrameContents`), so
+//: the set cannot change mid-gesture. Each one turns about the frame's centre
+//: by the frame's delta: its own centre point is carried round and its own
+//: rotation gains the same delta; a shape's path is turned about that point.
+//: Links follow their ends as they do for a move. Ctrl turns the frame alone.
+function wbTurnAbout(px, py, cx, cy, deg) {
+  const t = (deg * Math.PI) / 180, c = Math.cos(t), s = Math.sin(t);
+  const rx = cx - px, ry = cy - py;
+  return [px + rx * c - ry * s, py + rx * s + ry * c];
+}
+
+function wbFrameTurnOrigin(frame, alone) {
+  if (alone || frame.kind !== "frame") return null;
+  const keys = wbFrameContents(frame);
+  if (!keys.length) return null;
+  const origin = wbCaptureBulkMoveOrigin(null, keys);
+  for (const entry of origin.values()) {
+    entry.before = WB_KIND_INFO[entry.kind].payload(entry.item);
+    if (entry.kind === "sketch") continue;
+    //: The drawn size, as `wbItemBBox` reads it: a card grows with its text.
+    const el = wbBulkMoveElement(entry, WB_SELECTOR_BY_KIND[entry.kind](entry.id));
+    entry.w = el?.offsetWidth || entry.item.width || 0;
+    entry.h = el?.offsetHeight || entry.item.height || 0;
+    entry.rot = entry.item.rotation || 0;
+  }
+  return origin;
+}
+
+function wbApplyFrameTurn(frame, origin, delta) {
+  const px = frame.x + frame.width / 2, py = frame.y + frame.height / 2;
+  for (const entry of origin.values()) {
+    if (entry.kind === "sketch") {
+      const turned = wbTransformPathD(entry.d, { rotate: delta, anchorX: px, anchorY: py });
+      const el = wbBulkMoveElement(entry, `.sketch-group[data-id="${entry.id}"]`);
+      for (const part of el?.querySelectorAll(".sketch-path, .sketch-hitbox") || []) part.setAttribute("d", turned);
+      entry.item._liveD = delta ? turned : undefined;
+      continue;
+    }
+    const [cx, cy] = wbTurnAbout(px, py, entry.x + entry.w / 2, entry.y + entry.h / 2, delta);
+    entry.item.x = Math.round(cx - entry.w / 2);
+    entry.item.y = Math.round(cy - entry.h / 2);
+    entry.item.rotation = (((entry.rot + delta) % 360) + 360) % 360;
+    const el = wbBulkMoveElement(entry, WB_SELECTOR_BY_KIND[entry.kind](entry.id));
+    if (el) el.style.transform = wbItemTransform(entry.item);
+  }
+  for (const entry of origin.values()) if (entry.kind !== "sketch") wbUpdateLinkedSketches(entry.id, entry.linked);
+}
+
+function wbFrameTurnLive(d) {
+  if (d._turnOrigin) wbApplyFrameTurn(d, d._turnOrigin, (d.rotation || 0) - d._turnFrom);
+}
+
+function wbFrameTurnRevert(d) {
+  if (d._turnOrigin) wbApplyFrameTurn(d, d._turnOrigin, 0);
+  delete d._turnOrigin;
+}
+
+//: Saves what the turn moved and pushes the one undo step for the frame and
+//: everything it carried.
+async function wbFrameTurnEnd(d, primary) {
+  const origin = d._turnOrigin;
+  delete d._turnOrigin;
+  const delta = (d.rotation || 0) - d._turnFrom;
+  const entries = [];
+  for (const entry of origin?.values() || []) {
+    if (entry.kind === "sketch") {
+      const live = entry.item._liveD;
+      delete entry.item._liveD;
+      const parsed = wbSketchParsedData(entry.item);
+      if (live) await wbSaveSketchProps(entry.item, { d: live, turned: ((Number(parsed?.turned) || 0) + delta) % 360 });
+    } else if (entry.kind === "node") await wbSaveNode(entry.item);
+    else await wbSaveObject(entry.item);
+    entries.push({ action: "move", kind: entry.kind, id: entry.id, before: entry.before });
+  }
+  wbPushDragUndo([primary, ...entries]);
+  if (entries.length) wbScheduleRender();
+}
+
+function wbRotateGripTitle(kind) {
+  const base = "Drag to rotate: Shift snaps to 15°, double-click stands it upright";
+  return kind === "frame" ? `${base}. What is inside the frame turns with it; Ctrl turns the frame alone` : base;
 }
 
 //: The title, renamed in place: double-click it, Enter or a click away keeps
@@ -21086,7 +21173,10 @@ function renderWbObjects(canvas) {
   //: the same reasoning `nodeResizeDrag`'s own comment already gives for not
   //: sharing with `resizeDrag`.
   function objectRotateDrag() {
+    //: Not d3's default filter, which refuses a Ctrl press: Ctrl is how a
+    //: frame is turned without what it holds.
     return d3.drag()
+      .filter((event) => !event.button)
       .on("start", (event, d) => {
         event.sourceEvent.stopPropagation();
         d._rotateUndoBefore = WB_KIND_INFO.object.payload(d);
@@ -21094,7 +21184,15 @@ function renderWbObjects(canvas) {
         //: as much as a move does, and without this they stayed where the
         //: unturned box had them until the next move (INBOX 647).
         d._linkedSketches = wbLinkedSketchesFor(d.id, "object");
-        d._gesture = wbBeginGesture(() => wbRestoreBox("object", d, d._rotateUndoBefore));
+        //: Decided here, not per frame: the set a turn carries is the set
+        //: inside the frame when the grip was taken.
+        const alone = Boolean(event.sourceEvent.ctrlKey || event.sourceEvent.metaKey);
+        d._turnFrom = d.rotation || 0;
+        d._turnOrigin = wbFrameTurnOrigin(d, alone);
+        d._gesture = wbBeginGesture(() => {
+          wbRestoreBox("object", d, d._rotateUndoBefore);
+          wbFrameTurnRevert(d);
+        });
       })
       .on("drag", (event, d) => {
         if (d._gesture?.cancelled) return;
@@ -21107,6 +21205,7 @@ function renderWbObjects(canvas) {
           event.sourceEvent.shiftKey
         );
         el.style.transform = wbItemTransform(d);
+        wbFrameTurnLive(d);
         if (d._linkedSketches?.length) wbUpdateLinkedSketches(d.id, d._linkedSketches);
         wbQueueSelectionBar();
       })
@@ -21116,9 +21215,16 @@ function renderWbObjects(canvas) {
         delete d._linkedSketches;
         const cancelled = wbEndGesture(d._gesture);
         delete d._gesture;
-        if (cancelled || (before && (before.rotation || 0) === (d.rotation || 0))) return;
+        if (cancelled || (before && (before.rotation || 0) === (d.rotation || 0))) {
+          wbFrameTurnRevert(d);
+          return;
+        }
         await wbSaveObject(d);
-        if (before) wbPushUndo({ action: "move", kind: "object", id: d.id, before });
+        if (!d._turnOrigin) {
+          if (before) wbPushUndo({ action: "move", kind: "object", id: d.id, before });
+          return;
+        }
+        await wbFrameTurnEnd(d, before && { action: "move", kind: "object", id: d.id, before });
       });
   }
 
@@ -21332,12 +21438,12 @@ function renderWbObjects(canvas) {
         .call(resizeDrag(handle));
     }
     //: A table's grid holds nothing square once turned. A frame does turn
-    //: (INBOX 1327, reversing decision 14's "no rotation"): its box rotates
-    //: and what lies inside stays where it is.
+    //: (INBOX 1327, reversing decision 14's "no rotation"), and what lies
+    //: wholly inside it turns with it (decision 42, `wbFrameTurnOrigin`).
     if (d.kind === "table") return;
     el.append("div")
       .attr("class", "wb-rotate-handle")
-      .attr("title", "Drag to rotate: Shift snaps to 15°, double-click stands it upright")
+      .attr("title", wbRotateGripTitle(d.kind))
       .call(objectRotateDrag());
   });
 
