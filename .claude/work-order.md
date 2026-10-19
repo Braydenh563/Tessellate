@@ -12,4 +12,4 @@ finish-up: 60% weekly (owner)
 - [x] Companion agent: 1305 movement rework
 - [x] (part) Graph agent: INBOX 1306 toast over the map, default layout readability
 - [ ] PR 193 CI green on the head (gitleaks race rerun on 838c391)
-- [ ] Scan rotation 1: reviewer on the PR 193 diff
+- [ ] (running) Scan rotation 1: reviewer on the PR 193 diff
