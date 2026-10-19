@@ -34,6 +34,12 @@ with its owner named in the entry.
 
 ## Open items
 
+1341. **The owner, 2026-10-19, verbatim** (screenshot, dark: the mind map's top bar, search, map, Edit, View, Board, Library, Format, full screen). "also the format button shouldnt be there on the mindmap as it is useless and empty"
+     For the next PR. Recommendation: Format is hidden on a map (wbIsMap) until it has something for a selected node to show; help surfaces updated in the same commit.
+
+1340. **The owner, 2026-10-19, verbatim.** "when I go between the mind map and whiteboard, should the board recenter on the main content?"
+     Measured by code reading: a map refits on every open (`wbFrameMapOnOpen`, whiteboard.js:2516, `wbZoomToFit`); a board is not reframed and keeps whatever the shared camera (`wbZoom`, :170) last was, which may be the map's; no view is saved per board. For the next PR. Recommendation: each board and map remembers its own view (pan and zoom, saved with the board); returning restores it; fit to content only on first open, or when nothing would be on screen.
+
 1339. **The owner, 2026-10-19, verbatim** (screenshot, dark: an Ask answer "You have ten notes about courses & study, 17 July to 15 October." whose theme paragraph reads "Your university notes share #university: your uni days this week are Tuesday, Cloud computing is the delivery of computing, I had three lectures for my cloud, ... and you linked your uni days this week are Tuesday to I had three lectures for my cloud.", while the dated lines below correctly say "On 17 July, your uni days the week of 13 July are Tuesday and Thursday."; Matching records cards beside it). "it is not this week anymore like said at the top of the composer"
      For the next PR. Recommendation: the theme summary and link phrases go through the same relative-time rewrite as the dated lines ("this week" in a 17 July note becomes "the week of 13 July"); the summary also reads as clipped title fragments joined by commas, so it should name the shared theme and two or three topics, not chain note openings.
 
