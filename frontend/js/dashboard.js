@@ -884,7 +884,7 @@ const QUICK_START = [
   {
     id: "ask-ai",
     icon: "ph:chat-circle",
-    label: "Ask AI",
+    label: "Ask your notes",
     hint: "Answered from your notes",
     run: () => openAskFromDashboard(),
   },
@@ -1490,7 +1490,7 @@ function dashCustomiseItems() {
   }
   items.push({
     label: "ph:arrow-counter-clockwise Reset quick access",
-    title: "Back to New note, Ask AI, Sketch, Remind me and New meeting, the first highlighted",
+    title: "Back to New note, Ask your notes, Sketch, Remind me and New meeting, the first highlighted",
     group: "quick",
     run: async () => { await saveQuickAccess([]); await saveQuickTints({}); renderQuickLinks(); },
   });

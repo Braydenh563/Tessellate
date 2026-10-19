@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Dashboard: the Ask AI quick link is now Ask your notes, since it answers from your notes with or without a model running.
 - Timeline: the density strip's window rises as the feed scrolls into future dates; its span reaches the newest row and the week ahead, and the strip is drawn by the lazy labels file (INBOX 1316).
 - Chat and Ask: "Grounded in" is a source list: a quiet heading over bordered source cards with number badges and pictures inside their card, and a note's front matter no longer shows as its title (INBOX 1323).
 - Whiteboard: a Format button beside Library in the top bar toggles the Format panel (empty state when nothing is selected); help and the command row name it (INBOX 1322a).

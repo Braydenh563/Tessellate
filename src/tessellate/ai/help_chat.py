@@ -2107,7 +2107,7 @@ HELP_TOPICS.extend(
                 "Reset highlights clears the colours (the first tile is "
                 "highlighted again); Reset quick access goes back to the "
                 "defaults. Quick access "
-                "starts as New note, Ask AI, Sketch, Remind me and New "
+                "starts as New note, Ask your notes, Sketch, Remind me and New "
                 "meeting. All of it is "
                 "remembered per user. Press t then d to come back here from "
                 "anywhere."

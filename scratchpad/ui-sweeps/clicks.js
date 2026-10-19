@@ -31,7 +31,7 @@ const PATHS = [
   // [task, [selectors pressed in order], end state (runs in the page), budget]
   ['Write a note', [dash('New note')], () => Boolean(document.activeElement?.closest('#entry-content, #capture'))],
   ['Search everything', ['#dash-find'], () => !document.getElementById('finder-overlay').classList.contains('hidden')],
-  ['Ask a question of your notes', [dash('Ask AI')], () => ['question', 'chat-input'].includes(document.activeElement?.id)],
+  ['Ask a question of your notes', [dash('Ask your notes')], () => ['question', 'chat-input'].includes(document.activeElement?.id)],
   ['Set a reminder', [dash('Remind me')], () => ['reminder-magic', 'reminder-text'].includes(document.activeElement?.id)],
   ['Record a meeting', [dash('Meeting notes')], () => Boolean(document.getElementById('meeting-record')?.checkVisibility())],
   ['Learn how something works (the guide)', ['#status-guide'], () => Boolean(document.querySelector('[data-sheet="guide"]'))],
