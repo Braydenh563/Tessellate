@@ -2,7 +2,7 @@
 
 Generated 2026-10-19 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6197, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6158, test files 1316, tests 11700, plan headings 967.
+Counts: frontend functions 6197, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6158, test files 1316, tests 11701, plan headings 967.
 
 ## Frontend functions (6197)
 
@@ -11930,7 +11930,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_window` | src/tessellate/ai/filters.py:60 |
 | `read` | src/tessellate/ai/filters.py:126 |
 | `resolve` | src/tessellate/ai/filters.py:213 |
-| `setting_words` | src/tessellate/ai/filters.py:232 |
+| `setting_words` | src/tessellate/ai/filters.py:236 |
 
 ### src/tessellate/ai/find_it.py (17)
 
@@ -18475,7 +18475,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11700)
+## Tests (11701)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19350,7 +19350,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_phone_notes_audit.py | 6 |
 | tests/test_phone_select_mode_tap.py | 2 |
 | tests/test_phone_touch.py | 8 |
-| tests/test_phrase_filters.py | 4 |
+| tests/test_phrase_filters.py | 5 |
 | tests/test_pin_unlock.py | 22 |
 | tests/test_placed_0909_row31.py | 6 |
 | tests/test_plain_errors.py | 3 |

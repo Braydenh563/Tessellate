@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Security: a phrase filter in the Notes list ("tagged work", "pinned", "connected to") no longer returns private notes or boards; a private note's tags are stored in plain text, so the filter could name it.
 - Atlas: asleep lying down, its Zs rise from its head (about 40px above the eyes in every pose) instead of from where a standing head would be.
 - Timeline: the table view names a meeting "Meeting" in its Kind column (and in sort), and below 600px, where that column is hidden, the title starts with "Meeting: " (INBOX 341).
 - Accessibility: eight worded buttons (Local chip default, From library, Jump to latest, Dock the tools, the map ring's Add child, Add beside, More and Reverse) and the Timeline day strip now start their accessible name with the words on them (WCAG 2.5.3; OPEN 1400).

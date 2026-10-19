@@ -75,3 +75,15 @@ def test_the_surfaces_ask_the_route():
     assert '"/read/filter?q="' in (js / "library.js").read_text(encoding="utf-8")
     #: Every search box's meaning layer (Brief 94), in the Settings bundle.
     assert '"/read/words"' in (js / "meaning.js").read_text(encoding="utf-8")
+
+
+def test_a_private_note_or_a_board_is_never_a_filter_result(session):
+    """Security review 2026-10-19: `resolve` started from not-binned, not-draft
+    only, so "tagged work" returned a private note's id by its plaintext tags,
+    and boards too. It starts from what the reading tools may see."""
+    shown = Entry(content="Crane hire quote", tags='["work"]')
+    hidden = Entry(content="Salary talk", tags='["work"]', is_private=True)
+    board = Entry(content="Work board", tags='["work"]', is_board=True)
+    session.add_all([shown, hidden, board])
+    session.commit()
+    assert set(filters.resolve(session, filters.read("tagged work", NOW)["filters"], NOW)) == {shown.id}

@@ -214,7 +214,11 @@ def resolve(session: Session, filters: list[dict], now: datetime) -> list[int]:
     """The notes every filter leaves, newest first (at most 2,000)."""
     from tessellate.core.database import Entry
 
-    query = select(Entry.id).where(Entry.is_deleted == False, Entry.is_draft == False)  # noqa: E712
+    #: Private notes and boards stay out, as in the reading tools (`tools._common._visible`):
+    #: a private note's tags are plaintext, so "tagged X" would otherwise name it.
+    query = select(Entry.id).where(
+        Entry.is_deleted == False, Entry.is_draft == False, Entry.is_private == False, Entry.is_board == False  # noqa: E712
+    )
     for item in filters:
         narrow = _RESOLVERS.get(item["kind"])
         if narrow is not None:
