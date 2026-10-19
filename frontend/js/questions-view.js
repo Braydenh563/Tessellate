@@ -214,6 +214,10 @@ function initQuestionsView() {
     if (!box.value.trim()) box.value = "What am I still undecided about?";
     box.focus();
   });
+  $("ask-scope-clear")?.addEventListener("click", () => {
+    setAskScope(null);
+    $("question")?.focus();
+  });
 }
 
 function setAskScope(scope) {
