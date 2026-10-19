@@ -65,7 +65,8 @@ def test_the_zoom_filter_never_zooms_mid_pan(event: dict, want: bool) -> None:
     import json
 
     script = (
-        "let wbSpaceHeld = false; let wbMidPanHeld = false; globalThis.window = { currentTool: 'select' };\n"
+        "let wbSpaceHeld = false; let wbMidPanHeld = false;"
+        " const wbBoardState = { wheel: { at: -1e9, pad: false } }; globalThis.window = { currentTool: 'select' };\n"
         + _function("wbTrackpadPan")
         + _function("wbZoomFilter")
         + f"\nconsole.log(JSON.stringify(Boolean(wbZoomFilter({json.dumps(event)}))));\n"
@@ -97,3 +98,56 @@ def test_the_right_button_pans_from_bare_canvas_and_a_drag_eats_its_menu() -> No
     assert "const WB_RIGHT_SLOP = 4;" in SOURCE
     handler = SOURCE[SOURCE.index('containerEl.addEventListener("contextmenu", (e) => {\n    //: A topic'):][:600]
     assert "wbRightOwns()" in handler, "the native menu must stand aside while a right press owns the gesture"
+
+
+def _gesture(events: list[dict]) -> list[bool]:
+    """Run wheel events through the filter in order; True where the board zooms."""
+    import json
+
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    script = (
+        "let wbSpaceHeld = false; let wbMidPanHeld = false;"
+        " const wbBoardState = { wheel: { at: -1e9, pad: false } }; globalThis.window = { currentTool: 'select' };\n"
+        + _function("wbTrackpadPan")
+        + _function("wbZoomFilter")
+        + f"\nconsole.log(JSON.stringify({json.dumps(events)}.map((e) => Boolean(wbZoomFilter(e)))));\n"
+    )
+    out = subprocess.run([node, "-e", script], capture_output=True, text=True, check=True)
+    return json.loads(out.stdout.strip())
+
+
+def _w(t: float, dy: float, dx: float = 0, **extra: object) -> dict:
+    return {"type": "wheel", "timeStamp": t, "deltaX": dx, "deltaY": dy, "deltaMode": 0, "buttons": 0, **extra}
+
+
+def test_a_two_finger_scroll_pans_even_when_a_frame_has_no_sideways_part() -> None:
+    """INBOX 1327: vertical-only frames used to zoom, so the board could not decide."""
+    frames = [_w(1000, 3, 1), _w(1016, 5), _w(1032, 12), _w(1048, 30), _w(1064, 2), _w(1080, 80)]
+    assert _gesture(frames) == [False] * 6
+
+
+def test_a_vertical_only_trackpad_scroll_pans_from_its_first_small_frame() -> None:
+    assert _gesture([_w(500, 4), _w(516, 9), _w(532, 7.5)]) == [False] * 3
+
+
+def test_a_pinch_zooms_and_a_mouse_wheel_zooms() -> None:
+    pinch = [_w(0, 4, ctrlKey=True), _w(16, 6, ctrlKey=True)]
+    assert _gesture(pinch) == [True, True]
+    wheel = [_w(0, 100), _w(400, 100), _w(800, 100)]
+    assert _gesture(wheel) == [True, True, True]
+
+
+def test_the_next_gesture_starts_fresh_after_a_pause() -> None:
+    frames = [_w(0, 3, 1), _w(16, 4), _w(1000, 100), _w(1100, 100)]
+    assert _gesture(frames) == [False, False, True, True]
+
+
+def test_a_selected_connectors_end_grip_wins_over_an_items_port() -> None:
+    """INBOX 1328: pressing a connector's end grip, which sits on the very edge point the
+    item's port is, drew a second arrow (sketches 1 -> 2, measured). Browser half: the press
+    must reach the grip's own drag (1 -> 1, the end moves)."""
+    start = SOURCE.index('containerEl.addEventListener("pointerdown", (e) => {\n    if (e.button !== 0 || e.pointerType === "touch" || window.currentTool !== "select" || !port.item')
+    body = SOURCE[start : SOURCE.index("portTarget(x, y)", start)]
+    assert ".wb-link-endpoint-handle" in body, "the port press must yield to a connector's end grip"

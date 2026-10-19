@@ -74,12 +74,29 @@ let wbMapKeysArmed = false;
 let wbMidPanHeld = false;
 
 //: Paste and hover-lock bookkeeping, one name in the shared scope.
-const wbBoardState = { pasteArrived: false, lockHoverKey: null, lockHoverFrame: 0, lockHintSaid: false };
+const wbBoardState = { pasteArrived: false, lockHoverKey: null, lockHoverFrame: 0, lockHintSaid: false, wheel: { at: -1e9, pad: false } };
 
-//: A two-finger trackpad scroll still pans: it arrives in pixels with a
-//: sideways part, where a mouse wheel's notch has none.
+//: A two-finger trackpad scroll pans (both axes); a pinch (ctrlKey, which
+//: browsers synthesise for it) and a mouse wheel zoom. The decision is made
+//: per gesture, not per event (INBOX 1327): a vertical-only frame of a
+//: two-finger scroll has no deltaX, and judging frames alone made the board
+//: flip between panning and zooming mid-gesture. A gesture is a run of wheel
+//: events less than 200ms apart; one trackpad-looking event (a sideways part,
+//: or small or fractional pixel deltas, where a wheel notch is a steady 50px
+//: or more) makes the rest of it a pan. Fed once per event by both the d3
+//: filter and the board's own wheel listener, so the latch is advanced once
+//: per event timestamp.
 function wbTrackpadPan(event) {
-  return !event.ctrlKey && !event.metaKey && event.deltaMode === 0 && event.deltaX !== 0;
+  if (event.ctrlKey || event.metaKey || event.deltaMode !== 0) return false;
+  const g = wbBoardState.wheel;
+  const now = event.timeStamp || 0;
+  if (g.at !== now) {
+    if (now - g.at > 200 || now < g.at) g.pad = false;
+    g.at = now;
+    const dy = Math.abs(event.deltaY);
+    if (event.deltaX !== 0 || (dy > 0 && (dy < 50 || dy % 1 !== 0))) g.pad = true;
+  }
+  return g.pad;
 }
 
 function wbZoomFilter(event) {
@@ -12818,7 +12835,9 @@ async function initWhiteboard() {
       const k = d3.zoomTransform(container.node()).k || 1;
       const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1;
       let dx = e.deltaX * unit, dy = e.deltaY * unit;
-      if (!dx) { dx = dy; dy = 0; }
+      //: Shift+wheel on a mouse turns the notch sideways; a trackpad scroll
+      //: already carries both axes and keeps them.
+      if (!dx && !wbTrackpadPan(e)) { dx = dy; dy = 0; }
       container.call(wbZoom.translateBy, -dx / k, -dy / k);
     }, { passive: false });
   }
@@ -15955,6 +15974,10 @@ async function initWhiteboard() {
   };
   containerEl.addEventListener("pointerdown", (e) => {
     if (e.button !== 0 || e.pointerType === "touch" || window.currentTool !== "select" || !port.item || e.altKey || e.shiftKey) return;
+    //: A selected connector's end grip wins over a port beneath it (INBOX
+    //: 1328: dragging the end of an arrow drew a second arrow instead,
+    //: because the grip sits on the very edge point the item's port is).
+    if (e.target?.closest?.(".wb-link-endpoint-handle, .wb-resize-handle, .wb-rotate-handle")) return;
     const [x, y] = getLogicalMouse(e);
     if (!portTarget(x, y)) return;
     //: Near enough to a point, and never so far that a small shape on screen

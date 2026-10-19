@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard and maps: a two-finger trackpad scroll always pans (both axes) and a pinch or the mouse wheel zooms; the call is made once per gesture, so vertical-only frames no longer flip the board between panning and zooming (INBOX 1327).
+- Whiteboard: pressing a selected connector's end grip moves that end instead of drawing a new arrow from the port beneath it (INBOX 1328).
 - Boards and maps: deleting a board for good finds its thumbnail from the uploads folder, so the notes layer no longer imports the API layer (CodeQL cyclic import).
 - Launcher: the starting splash has minimise and close buttons in its top right corner; close cancels the launch (INBOX 1320).
 - Boards and maps: previews are now a real snapshot of the board, a 480px WebP (about 2 to 3 KB on the test boards) taken when edits settle or you leave the board, stored as a file, cached by the browser and used by the Library, Dashboard and chat cards; the drawn preview stays as the fallback (INBOX 1317).
