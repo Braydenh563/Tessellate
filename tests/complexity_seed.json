@@ -116,7 +116,6 @@
  "src/tessellate/api/asset_strip.py::js_comment_spans": 24,
  "src/tessellate/api/routes_board_history.py::_board_events": 20,
  "src/tessellate/api/routes_board_history.py::_states_at": 21,
- "src/tessellate/api/routes_board_history.py::restore_board": 49,
  "src/tessellate/api/routes_board_library.py::_clean_element": 34,
  "src/tessellate/api/routes_board_library.py::_clean_payload": 32,
  "src/tessellate/api/routes_board_library.py::_place_element": 27,
