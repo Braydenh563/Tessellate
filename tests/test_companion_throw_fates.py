@@ -182,3 +182,13 @@ def test_the_moments_are_transforms_on_the_figure_and_block_nothing() -> None:
     frame = _fn(THROW, "nameMarkBuddyThrow")
     frame = frame[frame.index("const frame = (now) =>") : frame.index("const next = () =>")]
     assert "setTimeout" not in frame and "classList.toggle" not in frame
+
+
+def test_a_throw_that_lands_on_a_surface_stays_on_it():
+    """INBOX 1302: thrown onto the bottom bar where it cannot stand, it went up
+    to the top bar; now it steps along the surface it landed on, however far."""
+    spot = _fn(AV, "nameMarkBuddyThrowSpot")
+    assert 'fate?.kind === "splat"' not in spot
+    assert "if (s.on && spot.y < s.y - 40)" in spot and "innerWidth" in spot
+    assert "far = 320" in _fn(AV, "nameMarkBuddyStepAside")
+    assert "Math.max(320, reach)" in _fn(AV, "nameMarkBuddyDrop")

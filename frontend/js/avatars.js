@@ -4437,9 +4437,9 @@ function nameMarkBuddyRestore(spot) {
 //: Your spot, unless something has come up under it since (the back-to-top
 //: button, a toast): then the nearest free place along the same line, for
 //: as long as it is there. The spot itself is kept.
-function nameMarkBuddyStepAside(spot, obstacles) {
+function nameMarkBuddyStepAside(spot, obstacles, far = 320) {
   if (!nameMarkBuddyHits(spot.x, spot.y, spot.pose, obstacles, spot.legs)) return spot;
-  for (let d = 16; d <= 320; d += 16) {
+  for (let d = 16; d <= far; d += 16) {
     for (const x of [spot.x - d, spot.x + d]) {
       if (x < 0 || x > innerWidth - NMB_W) continue;
       if (!nameMarkBuddyHits(x, spot.y, spot.pose, obstacles, spot.legs)) return { ...spot, x };
@@ -4491,7 +4491,7 @@ function nameMarkBuddyDrop(x, y, reach = 48) {
   let best = null;
   const consider = (spot, d) => {
     if (d > 80 || (best && d >= best.d)) return;
-    const free = fits(spot) ? spot : nameMarkBuddyStepAside({ ...spot }, nameMarkBuddyYoursObstacles(obstacles, spot));
+    const free = fits(spot) ? spot : nameMarkBuddyStepAside({ ...spot }, nameMarkBuddyYoursObstacles(obstacles, spot), Math.max(320, reach));
     if (fits(free) && Math.abs(free.x - spot.x) <= reach) best = { ...free, d: d + Math.abs(free.x - spot.x) / 4 };
   };
   for (const edge of edges) {
@@ -5970,12 +5970,19 @@ function nameMarkBuddyWorld(tab) {
 function nameMarkBuddyThrowSpot(s) {
   nameMarkBuddyIndexReset();
   let spot = nameMarkBuddyDrop(s.x, s.y);
-  //: Slid down a wall onto a ledge it cannot stand on at the wall (a control
-  //: there): it steps along that ledge, not up to the top bar (seed 2, 800ms
-  //: after the slide ended, 235px up). The step-aside reach opens only then.
-  if (s.on && s.fate?.kind === "splat" && spot.y < s.y - 40) {
-    const along = nameMarkBuddyDrop(s.x, s.y, 400);
-    if (Math.abs(along.y - s.y) <= 40) spot = along;
+  //: Came down on a ledge or the floor it cannot stand on there (a control
+  //: there): it steps along that surface, however far, not up to the top bar
+  //: (INBOX 1302, the owner: thrown to the bottom bar's right "it will always
+  //: instantly teleport to hang off the top bar above"; measured on Chat at
+  //: 1440: rest 1376,774, put at 1235,582). Was a slide down a wall only.
+  if (s.on && spot.y < s.y - 40) {
+    for (const reach of [400, innerWidth]) {
+      const along = nameMarkBuddyDrop(s.x, s.y, reach);
+      if (Math.abs(along.y - s.y) <= 40) {
+        spot = along;
+        break;
+      }
+    }
   }
   if (spot.y >= s.y + 2) spot.falls = true;
   return spot;

@@ -51017,3 +51017,7 @@ From WHITEBOARD_PLAN "The draw.io programme", section 2 (Text tab), built by the
 1309. **The owner, 2026-10-19, verbatim** (screenshot: the Agent popup over a board, "/" typed in its box, no command menu, only the starter rows). "the popup agent doesnt have the / command popup like chat"
      **Fixed (agent slash commit).** `command-palette-input` is an editor surface of its own context, "agent": the registry's rows (`chatSlashRows` with the popup's box and `cmdPaletteAsk`). Driven in Chromium: "/" showed 18 command rows (before: none); "/rece", Enter, Enter answered "/recent" in the popup.
 
+1302. **The owner, 2026-10-18, verbatim.** "bug: if I throw the companion down to the bottom of the screen, it will always instantly teleport to hang off the top bar above when when I threw it to the bottom bar on the right side"
+     Owner: the orchestrator, now (`frontend/js/companion-throw.js`).
+     **Fixed (throw landing commit).** Measured on Chat at 1440, seeded throw down-right, seed 2 (splat): rest 1376,774, before put at 1235,582 on a dock (192 px up), after 944,774 on the floor. `nameMarkBuddyThrowSpot` steps along any surface it rested on (was a wall slide only), reach 400 then the window; `nameMarkBuddyStepAside` takes the reach. The movement itself (the jump to the spot) is 1305.
+
