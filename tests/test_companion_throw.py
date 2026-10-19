@@ -141,9 +141,9 @@ def test_the_flight_is_one_frame_loop_on_transforms_and_lands_as_a_drop() -> Non
     spot = _fn("nameMarkBuddyThrowSpot")
     assert "nameMarkBuddyDrop(s.x, s.y)" in spot and "nameMarkBuddyChoose" not in land + spot
     assert "spots[tab] = nameMarkBuddySpotFor(spot);" in land
-    # A splat that slid onto a ledge steps along it, never up to the top bar
-    # (seed 2 of scratchpad/ui-sweeps/throwfates.js: 274 to 39 after the slide).
-    assert 's.fate?.kind === "splat" && spot.y < s.y - 40' in spot and "nameMarkBuddyDrop(s.x, s.y, 400)" in spot
+    # Any landing on a surface it cannot stand on steps along it, never up to
+    # the top bar (seed 2 of throwfates.js; INBOX 1302 widened it from splats).
+    assert "s.on && spot.y < s.y - 40" in spot and "nameMarkBuddyDrop(s.x, s.y, reach)" in spot
     assert "nameMarkBuddyToss" not in AV
 
 
