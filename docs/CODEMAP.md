@@ -2,7 +2,7 @@
 
 Generated 2026-10-19 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6149, frontend ids 2536, CSS sections 496, backend routes 613, backend modules 6112, test files 1292, tests 11569, plan headings 961.
+Counts: frontend functions 6149, frontend ids 2536, CSS sections 496, backend routes 613, backend modules 6112, test files 1293, tests 11571, plan headings 962.
 
 ## Frontend functions (6149)
 
@@ -585,7 +585,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `appendRunResumeControls` | frontend/js/chat-attach.js:1423 |
+| `appendRunResumeControls` | frontend/js/chat-attach.js:1424 |
 | `attachBoardToChat` | frontend/js/chat-attach.js:587 |
 | `attachChatFiles` | frontend/js/chat-attach.js:394 |
 | `attachDocumentToChat` | frontend/js/chat-attach.js:640 |
@@ -593,71 +593,71 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `attachLibraryFile` | frontend/js/chat-attach.js:532 |
 | `attachSelectionContext` | frontend/js/chat-attach.js:695 |
 | `attachedNotes` | frontend/js/chat-attach.js:842 |
-| `buildFollowupStrip` | frontend/js/chat-attach.js:2777 |
-| `chatDeleteUndo` | frontend/js/chat-attach.js:3108 |
-| `chatDockMoreOpen` | frontend/js/chat-attach.js:1362 |
-| `chatTidyTyped` | frontend/js/chat-attach.js:1532 |
+| `buildFollowupStrip` | frontend/js/chat-attach.js:2778 |
+| `chatDeleteUndo` | frontend/js/chat-attach.js:3109 |
+| `chatDockMoreOpen` | frontend/js/chat-attach.js:1363 |
+| `chatTidyTyped` | frontend/js/chat-attach.js:1533 |
 | `chatTurnObjects` | frontend/js/chat-attach.js:850 |
-| `chatWriteRecord` | frontend/js/chat-attach.js:3126 |
+| `chatWriteRecord` | frontend/js/chat-attach.js:3127 |
 | `clearSelectionAttachment` | frontend/js/chat-attach.js:719 |
-| `closeChatDockMore` | frontend/js/chat-attach.js:1399 |
+| `closeChatDockMore` | frontend/js/chat-attach.js:1400 |
 | `closeExtractPreview` | frontend/js/chat-attach.js:164 |
-| `closeNotePicker` | frontend/js/chat-attach.js:1347 |
+| `closeNotePicker` | frontend/js/chat-attach.js:1348 |
 | `commitExtractPreview` | frontend/js/chat-attach.js:169 |
 | `commitStagedImages` | frontend/js/chat-attach.js:346 |
-| `deleteChatTurn` | frontend/js/chat-attach.js:2883 |
-| `deleteCurrentChat` | frontend/js/chat-attach.js:3082 |
-| `exportChatMarkdown` | frontend/js/chat-attach.js:3131 |
+| `deleteChatTurn` | frontend/js/chat-attach.js:2884 |
+| `deleteCurrentChat` | frontend/js/chat-attach.js:3083 |
+| `exportChatMarkdown` | frontend/js/chat-attach.js:3132 |
 | `extractRefLabel` | frontend/js/chat-attach.js:53 |
 | `flattenNoteMarkdown` | frontend/js/chat-attach.js:879 |
-| `followupChain` | frontend/js/chat-attach.js:2806 |
-| `followupMatches` | frontend/js/chat-attach.js:2804 |
-| `followupParent` | frontend/js/chat-attach.js:2797 |
-| `followupTrail` | frontend/js/chat-attach.js:2823 |
+| `followupChain` | frontend/js/chat-attach.js:2807 |
+| `followupMatches` | frontend/js/chat-attach.js:2805 |
+| `followupParent` | frontend/js/chat-attach.js:2798 |
+| `followupTrail` | frontend/js/chat-attach.js:2824 |
 | `importChatDocuments` | frontend/js/chat-attach.js:436 |
 | `isImageFile` | frontend/js/chat-attach.js:387 |
-| `isStreamingConversation` | frontend/js/chat-attach.js:3010 |
+| `isStreamingConversation` | frontend/js/chat-attach.js:3011 |
 | `keepUnreadableChatFile` | frontend/js/chat-attach.js:407 |
-| `markFollowup` | frontend/js/chat-attach.js:2847 |
-| `mountChatTimer` | frontend/js/chat-attach.js:2936 |
-| `newChatConversation` | frontend/js/chat-attach.js:3030 |
+| `markFollowup` | frontend/js/chat-attach.js:2848 |
+| `mountChatTimer` | frontend/js/chat-attach.js:2937 |
+| `newChatConversation` | frontend/js/chat-attach.js:3031 |
 | `noteLabel` | frontend/js/chat-attach.js:856 |
-| `noteNamePlain` | frontend/js/chat-attach.js:915 |
-| `notePickerColumns` | frontend/js/chat-attach.js:1210 |
-| `notePickerEmpty` | frontend/js/chat-attach.js:1174 |
-| `notePickerFacts` | frontend/js/chat-attach.js:1020 |
-| `notePickerKeydown` | frontend/js/chat-attach.js:1224 |
-| `notePickerOpen` | frontend/js/chat-attach.js:1356 |
-| `notePickerPage` | frontend/js/chat-attach.js:1191 |
-| `notePickerRoving` | frontend/js/chat-attach.js:1200 |
-| `notePickerShape` | frontend/js/chat-attach.js:1030 |
-| `notePickerUsedIn` | frontend/js/chat-attach.js:1012 |
-| `offerFollowups` | frontend/js/chat-attach.js:2705 |
-| `openChatDockMore` | frontend/js/chat-attach.js:1375 |
+| `noteNamePlain` | frontend/js/chat-attach.js:916 |
+| `notePickerColumns` | frontend/js/chat-attach.js:1211 |
+| `notePickerEmpty` | frontend/js/chat-attach.js:1175 |
+| `notePickerFacts` | frontend/js/chat-attach.js:1021 |
+| `notePickerKeydown` | frontend/js/chat-attach.js:1225 |
+| `notePickerOpen` | frontend/js/chat-attach.js:1357 |
+| `notePickerPage` | frontend/js/chat-attach.js:1192 |
+| `notePickerRoving` | frontend/js/chat-attach.js:1201 |
+| `notePickerShape` | frontend/js/chat-attach.js:1031 |
+| `notePickerUsedIn` | frontend/js/chat-attach.js:1013 |
+| `offerFollowups` | frontend/js/chat-attach.js:2706 |
+| `openChatDockMore` | frontend/js/chat-attach.js:1376 |
 | `openExtractPreview` | frontend/js/chat-attach.js:22 |
-| `openNotePicker` | frontend/js/chat-attach.js:1312 |
-| `paintChatTimer` | frontend/js/chat-attach.js:2949 |
-| `plainText` | frontend/js/chat-attach.js:893 |
-| `reattachStreamingTurn` | frontend/js/chat-attach.js:3021 |
-| `refreshFollowupVisibility` | frontend/js/chat-attach.js:2757 |
-| `releaseChatComposer` | frontend/js/chat-attach.js:2980 |
-| `renderAttachments` | frontend/js/chat-attach.js:968 |
+| `openNotePicker` | frontend/js/chat-attach.js:1313 |
+| `paintChatTimer` | frontend/js/chat-attach.js:2950 |
+| `plainText` | frontend/js/chat-attach.js:894 |
+| `reattachStreamingTurn` | frontend/js/chat-attach.js:3022 |
+| `refreshFollowupVisibility` | frontend/js/chat-attach.js:2758 |
+| `releaseChatComposer` | frontend/js/chat-attach.js:2981 |
+| `renderAttachments` | frontend/js/chat-attach.js:969 |
 | `renderBoardAttachments` | frontend/js/chat-attach.js:600 |
 | `renderDocumentAttachments` | frontend/js/chat-attach.js:653 |
 | `renderExtractPreview` | frontend/js/chat-attach.js:59 |
 | `renderFileAttachments` | frontend/js/chat-attach.js:541 |
-| `renderFollowups` | frontend/js/chat-attach.js:2743 |
+| `renderFollowups` | frontend/js/chat-attach.js:2744 |
 | `renderImageAttachments` | frontend/js/chat-attach.js:262 |
 | `renderSelectionAttachment` | frontend/js/chat-attach.js:724 |
 | `revalidateSelection` | frontend/js/chat-attach.js:771 |
-| `saveFollowups` | frontend/js/chat-attach.js:2866 |
+| `saveFollowups` | frontend/js/chat-attach.js:2867 |
 | `selectionContextBlock` | frontend/js/chat-attach.js:822 |
-| `sendChatMessage` | frontend/js/chat-attach.js:1537 |
-| `setActiveChoice` | frontend/js/chat-attach.js:901 |
-| `setNoteLabel` | frontend/js/chat-attach.js:925 |
-| `setNotePickerSource` | frontend/js/chat-attach.js:1285 |
-| `startChatTimer` | frontend/js/chat-attach.js:2961 |
-| `stopChatTimer` | frontend/js/chat-attach.js:2970 |
+| `sendChatMessage` | frontend/js/chat-attach.js:1538 |
+| `setActiveChoice` | frontend/js/chat-attach.js:902 |
+| `setNoteLabel` | frontend/js/chat-attach.js:926 |
+| `setNotePickerSource` | frontend/js/chat-attach.js:1286 |
+| `startChatTimer` | frontend/js/chat-attach.js:2962 |
+| `stopChatTimer` | frontend/js/chat-attach.js:2971 |
 
 ### frontend/js/sheets-selects.js (53)
 
@@ -9536,7 +9536,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 
 | Section | File:line |
 |---|---|
-| "Tools it can use": the row, measured against a normal one | frontend/css/03-dashboard-widgets.css:4541 |
+| "Tools it can use": the row, measured against a normal one | frontend/css/03-dashboard-widgets.css:4496 |
 | "how are these connected?" | frontend/css/02-chat-graph.css:4087 |
 | 08-consistency.css - one recipe per repeated shape | frontend/css/08-consistency.css:1 |
 | 1. One menu row | frontend/css/08-consistency.css:24 |
@@ -9549,7 +9549,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | 6. One toggle-row recipe: the switch says on, not the row | frontend/css/08-consistency.css:853 |
 | 7. Meta looks like meta | frontend/css/08-consistency.css:1050 |
 | 8. A panel head is identity, one fact, then the actions, and it does not | frontend/css/08-consistency.css:2397 |
-| A CALMER TOP, NOTHING TAKEN AWAY (Full view) | frontend/css/03-dashboard-widgets.css:4714 |
+| A CALMER TOP, NOTHING TAKEN AWAY (Full view) | frontend/css/03-dashboard-widgets.css:4669 |
 | A card's date is in the same corner on every card (INBOX 719) | frontend/css/08-consistency.css:10467 |
 | A chip's x: a round target inset evenly (INBOX 403) | frontend/css/08-consistency.css:4715 |
 | A dialog's head: title, its '?', icon-only actions, Close last | frontend/css/08-consistency.css:9030 |
@@ -9593,14 +9593,14 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Inline AI (editor.js) | frontend/css/07-whiteboard-misc.css:6335 |
 | Lagoon: indigo and teal together | frontend/css/05-sidebars-themes.css:3346 |
 | Library -> Contents: an outline (INBOX 496) | frontend/css/01-forms-settings.css:2480 |
-| Library → Documents | frontend/css/03-dashboard-widgets.css:4202 |
-| Library → Whiteboards | frontend/css/03-dashboard-widgets.css:4227 |
+| Library → Documents | frontend/css/03-dashboard-widgets.css:4157 |
+| Library → Whiteboards | frontend/css/03-dashboard-widgets.css:4182 |
 | Live preview | frontend/css/04-chat-dock-appearance.css:4545 |
 | MICRO-ANIMATIONS | frontend/css/07-whiteboard-misc.css:604 |
 | Midnight: deep navy and gold (Brief 95, INBOX 858: "truly good themes"). | frontend/css/05-sidebars-themes.css:3503 |
 | Ocean: cool teal and deep blue. Crisp rather than cosy. | frontend/css/05-sidebars-themes.css:3311 |
 | On paper (DOCUMENTS_PLAN Phase 5 item 4, the print stylesheet) | frontend/css/09-editor.css:916 |
-| On this day | frontend/css/03-dashboard-widgets.css:4491 |
+| On this day | frontend/css/03-dashboard-widgets.css:4446 |
 | One sidebar row recipe for every rail (INBOX 702) | frontend/css/08-consistency.css:10420 |
 | One ⋯ opener, styled once (INBOX 722) | frontend/css/08-consistency.css:10496 |
 | PLAN.md D1: the documents dock's formatting strip hides entirely | frontend/css/07-whiteboard-misc.css:7848 |
@@ -9624,7 +9624,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Phase 5: quick access + toasts | frontend/css/01-forms-settings.css:2841 |
 | Phase 5: the three things a map says about itself | frontend/css/07-whiteboard-misc.css:4356 |
 | Phones (roadmap §8: the layout had breakpoints but had never been driven at | frontend/css/05-sidebars-themes.css:3960 |
-| Placed at the end of this file on purpose. A panel keeps its original class | frontend/css/03-dashboard-widgets.css:4238 |
+| Placed at the end of this file on purpose. A panel keeps its original class | frontend/css/03-dashboard-widgets.css:4193 |
 | Plum: deep violet and magenta. The most saturated. | frontend/css/05-sidebars-themes.css:3433 |
 | Progress that keeps moving (INBOX 95) | frontend/css/08-consistency.css:2216 |
 | Quick access, and arranging it (INBOX 461) | frontend/css/03-dashboard-widgets.css:1838 |
@@ -9706,7 +9706,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Wave O: brand logo + a more present background | frontend/css/03-dashboard-widgets.css:350 |
 | Wave O: expanded appearance (theme/size/density/glass) | frontend/css/03-dashboard-widgets.css:414 |
 | Whiteboard chrome, restructured: one top bar, a centred tool dock, a | frontend/css/07-whiteboard-misc.css:6629 |
-| Writing pace | frontend/css/03-dashboard-widgets.css:4500 |
+| Writing pace | frontend/css/03-dashboard-widgets.css:4455 |
 | [[wiki links]] | frontend/css/05-sidebars-themes.css:765 |
 | `.seg-multi`'s word, and the width that decides it | frontend/css/10-responsive.css:545 |
 | `.seg-multi`: one well, independent toggles | frontend/css/03-dashboard-widgets.css:479 |
@@ -9742,7 +9742,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | a sticker (MINDMAP_PLAN decision 44, INBOX 642) | frontend/css/library-lazy.css:3258 |
 | a stored file that is no longer stored | frontend/css/02-chat-graph.css:4480 |
 | a traced path (§9) | frontend/css/graph-lazy.css:253 |
-| a turn that is still working says so, for as long as it is | frontend/css/03-dashboard-widgets.css:4309 |
+| a turn that is still working says so, for as long as it is | frontend/css/03-dashboard-widgets.css:4264 |
 | a zone that cannot shrink says so, instead of spilling | frontend/css/10-responsive.css:1032 |
 | account & security | frontend/css/01-forms-settings.css:3478 |
 | activity heatmap + tag cloud widgets | frontend/css/03-dashboard-widgets.css:1992 |
@@ -9770,7 +9770,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | chat dock density pass (§37C) | frontend/css/04-chat-dock-appearance.css:1303 |
 | chat page layout | frontend/css/04-chat-dock-appearance.css:509 |
 | chat panel: answer and raw records side by side | frontend/css/01-forms-settings.css:1074 |
-| chat polish | frontend/css/03-dashboard-widgets.css:3434 |
+| chat polish | frontend/css/03-dashboard-widgets.css:3389 |
 | chat tab (Wave C) | frontend/css/02-chat-graph.css:1 |
 | chat, de-vibecoded | frontend/css/08-consistency.css:3064 |
 | chat: an organised sidebar, readable code, correctable answers | frontend/css/05-sidebars-themes.css:2445 |
@@ -9803,7 +9803,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | glass reaches the floating chrome that sat outside it | frontend/css/08-consistency.css:2663 |
 | glass restraint (UI_MODERNISATION_PLAN.md, Phase 3) | frontend/css/07-whiteboard-misc.css:7721 |
 | graph minimap | frontend/css/02-chat-graph.css:3937 |
-| graph polish | frontend/css/03-dashboard-widgets.css:3656 |
+| graph polish | frontend/css/03-dashboard-widgets.css:3611 |
 | graph: depth, halos and legible labels | frontend/css/04-chat-dock-appearance.css:1538 |
 | graph: physics sliders + node popup | frontend/css/04-chat-dock-appearance.css:1581 |
 | heading hierarchy (§35L) | frontend/css/01-forms-settings.css:1 |
@@ -9853,7 +9853,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | radio groups as choices, not as a list of dots (§35L) | frontend/css/06-timeline-dialogs.css:1265 |
 | reading a scan against its own pages | frontend/css/lightbox-lazy.css:82 |
 | rebindable shortcuts | frontend/css/05-sidebars-themes.css:697 |
-| reminders page polish | frontend/css/03-dashboard-widgets.css:2898 |
+| reminders page polish | frontend/css/03-dashboard-widgets.css:2853 |
 | reminders, de-vibecoded | frontend/css/08-consistency.css:3132 |
 | reminders: "when" is one decision, so it is one group | frontend/css/07-whiteboard-misc.css:3562 |
 | resizable sidebars | frontend/css/05-sidebars-themes.css:1749 |
@@ -9902,8 +9902,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the accessible card: the title opens it (INBOX 433) | frontend/css/08-consistency.css:2968 |
 | the agent activity panel: nothing scrolls sideways, nothing folds onto | frontend/css/07-whiteboard-misc.css:10427 |
 | the agent's run, as a timeline | frontend/css/02-chat-graph.css:581 |
-| the app emblem, reused across the UI | frontend/css/03-dashboard-widgets.css:3134 |
-| the app's one help popover | frontend/css/03-dashboard-widgets.css:4247 |
+| the app emblem, reused across the UI | frontend/css/03-dashboard-widgets.css:3089 |
+| the app's one help popover | frontend/css/03-dashboard-widgets.css:4202 |
 | the app's own dropdown | frontend/css/07-whiteboard-misc.css:3655 |
 | the arrange zone, once it is inside the overflow menu | frontend/css/07-whiteboard-misc.css:9652 |
 | the assistant's head and its three verbs (the owner, 2026-09-24: | frontend/css/04-chat-dock-appearance.css:4801 |
@@ -9941,7 +9941,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the documents sidebar's vertical budget (§41) | frontend/css/07-whiteboard-misc.css:2110 |
 | the documents sidebar, redrawn as one tree (the owner, 2026-10-10: | frontend/css/library-lazy.css:4630 |
 | the export dialog (WHITEBOARD_PLAN.md Phase 3, decision 4) | frontend/css/06-timeline-dialogs.css:2596 |
-| the faded notes card (WORLD_CLASS_PLAN 15, I4) | frontend/css/03-dashboard-widgets.css:4650 |
+| the faded notes card (WORLD_CLASS_PLAN 15, I4) | frontend/css/03-dashboard-widgets.css:4605 |
 | the field: the glyph inside, Stop only while something is loading | frontend/css/03-dashboard-widgets.css:1138 |
 | the file picker, in the app's own clothes | frontend/css/08-consistency.css:8872 |
 | the first steps (first-run.js; the head row, the fold and the bar are | frontend/css/05-sidebars-themes.css:3874 |
@@ -10007,9 +10007,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the timeline, de-vibecoded | frontend/css/08-consistency.css:3115 |
 | the tool rail (WHITEBOARD_PLAN.md Phase 1, decision 1) | frontend/css/07-whiteboard-misc.css:10497 |
 | the tools panel, sorted into what each group of icons does | frontend/css/06-timeline-dialogs.css:2751 |
-| the touch floor, for the two surfaces the dock rule cannot reach | frontend/css/03-dashboard-widgets.css:4614 |
+| the touch floor, for the two surfaces the dock rule cannot reach | frontend/css/03-dashboard-widgets.css:4569 |
 | the trace strip | frontend/css/04-chat-dock-appearance.css:1 |
-| the two radio-backed segmented bars | frontend/css/03-dashboard-widgets.css:3739 |
+| the two radio-backed segmented bars | frontend/css/03-dashboard-widgets.css:3694 |
 | the two whiteboard controls that never joined the strip | frontend/css/07-whiteboard-misc.css:3259 |
 | the web-search engine picker | frontend/css/04-chat-dock-appearance.css:2526 |
 | the whiteboard top bar and the documents editor join the families | frontend/css/07-whiteboard-misc.css:7755 |
@@ -10040,7 +10040,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/00-tokens-shell.css | 4299 |
 | frontend/css/01-forms-settings.css | 6309 |
 | frontend/css/02-chat-graph.css | 5613 |
-| frontend/css/03-dashboard-widgets.css | 5031 |
+| frontend/css/03-dashboard-widgets.css | 4986 |
 | frontend/css/04-chat-dock-appearance.css | 6476 |
 | frontend/css/05-sidebars-themes.css | 6243 |
 | frontend/css/06-timeline-dialogs.css | 3708 |
@@ -10073,7 +10073,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/quick-access-lazy.css | 105 |
 | frontend/css/quickadd-lazy.css | 35 |
 | frontend/css/recovery-lazy.css | 115 |
-| frontend/css/reply-kit-lazy.css | 335 |
+| frontend/css/reply-kit-lazy.css | 443 |
 | frontend/css/reveal-lazy.css | 10 |
 | frontend/css/search-lazy.css | 153 |
 | frontend/css/settings-controls-lazy.css | 94 |
@@ -18356,7 +18356,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11569)
+## Tests (11571)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18871,6 +18871,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_greeting_compose.py | 5 |
 | tests/test_greeting_name.py | 9 |
 | tests/test_grounding.py | 28 |
+| tests/test_grounding_1323.py | 2 |
 | tests/test_grounding_fixtures.py | 10 |
 | tests/test_guide_composed_787.py | 18 |
 | tests/test_guide_gaps.py | 3 |
@@ -19655,7 +19656,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_xmind_import.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |
 
-## Plan headings (961)
+## Plan headings (962)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -20442,6 +20443,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-19 (INBOX 1307, 1308: elements, templates, the W/H link; the gap audit) | docs/roadmap/WHITEBOARD_PLAN.md:1633 |
 | Placed from INBOX, 2026-10-19 (INBOX 1308: the gap audit) | docs/roadmap/DOCUMENTS_PLAN.md:1511 |
 | Placed from INBOX, 2026-10-19 (INBOX 1308: the gap audit) | docs/roadmap/MINDMAP_PLAN.md:1861 |
+| Placed from INBOX, 2026-10-19 (the launch splash) | docs/roadmap/UI_MODERNISATION_PLAN.md:1596 |
 | Placed from INBOX: 107d, the segmented mini bars | docs/roadmap/DOCUMENTS_PLAN.md:480 |
 | Placed from INBOX: the composer everywhere (the owner, 2026-10-06) | docs/roadmap/CHAT_PLAN.md:715 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/BACKLOG.md:4159 |

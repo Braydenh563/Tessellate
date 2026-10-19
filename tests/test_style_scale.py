@@ -753,11 +753,13 @@ def test_the_nested_surfaces_are_concentric():
 #: and a file may only go down. A new control height reads a token.
 #: 2026-10-17: one `min-height: 12rem` (an OCR workspace pane) moved with its
 #: rule from 07 to library-lazy.css for the boot CSS cap: 45 to 44 and 21 to 22.
+#: 2026-10-19: the grounding thumbnail's `height: 2rem` moved with its rule
+#: from 03 to reply-kit-lazy.css (INBOX 1323, the boot CSS cap): 23 to 22, 0 to 1.
 LITERAL_HEIGHTS = {
-    "01-forms-settings.css": 22, "02-chat-graph.css": 34, "03-dashboard-widgets.css": 23,
+    "01-forms-settings.css": 22, "02-chat-graph.css": 34, "03-dashboard-widgets.css": 22,
     "04-chat-dock-appearance.css": 25, "05-sidebars-themes.css": 34, "06-timeline-dialogs.css": 24,
     "07-whiteboard-misc.css": 44, "08-consistency.css": 46, "09-editor.css": 6, "10-responsive.css": 6,
-    "library-lazy.css": 22, "nav-history-lazy.css": 1,
+    "library-lazy.css": 22, "nav-history-lazy.css": 1, "reply-kit-lazy.css": 1,
 }
 LITERAL_HEIGHT = re.compile(r"(?<![-\w])(?:min-|max-)?height:\s*[0-9.]+(?:rem|px)\s*[;}]")
 

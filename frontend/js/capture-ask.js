@@ -1805,7 +1805,7 @@ function renderAnswerGrounding(
   }
   const label = document.createElement("span");
   label.className = "muted answer-grounding-label";
-  label.textContent = "Grounded in:";
+  label.textContent = "Grounded in";
   target.appendChild(label);
   const numberFor = citationNumbers(sentences, orderedSources);
   //: The records column numbered from the same map (INBOX 299): a fourth

@@ -2698,47 +2698,6 @@ button.chat-trail-link {
   min-width: 0;
 }
 
-.answer-grounding-thumbs {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  flex: none;
-}
-
-button.answer-grounding-thumb {
-  display: inline-grid;
-  place-items: center;
-  width: 2rem;
-  height: 2rem;
-  min-height: 0;
-  padding: 0;
-  overflow: hidden;
-  border: 1px solid var(--divider);
-  border-radius: var(--radius-sm);
-  background: var(--chip-bg);
-  box-shadow: none;
-  cursor: zoom-in;
-}
-
-.answer-grounding-thumb > img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-button.answer-grounding-thumb:hover,
-button.answer-grounding-thumb:is(:focus-visible, :has(:focus-visible)) {
-  border-color: var(--accent);
-}
-
-/* A finger's target, not a pointer's (DESIGN.md, "Hit targets"). */
-@media (pointer: coarse) {
-  button.answer-grounding-thumb {
-    width: var(--target-min);
-    height: var(--target-min);
-  }
-}
-
 /* A picture the answer placed (INBOX 526): inside the bubble, never wider than
    it, and no taller than 20rem; the width/height attributes hold its space. */
 .answer-figure {
@@ -2792,10 +2751,6 @@ button.answer-figure-open {
   white-space: nowrap;
   text-overflow: ellipsis;
   text-align: left;
-}
-
-.answer-grounding-more {
-  font-size: var(--text-xs);
 }
 
 /* Same cap as `.tool-touched-chip` (02-chat-graph.css): a note-preview chip

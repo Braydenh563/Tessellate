@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat and Ask: "Grounded in" is a source list: a quiet heading over bordered source cards with number badges and pictures inside their card, and a note's front matter no longer shows as its title (INBOX 1323).
 - Dashboard: the Stats and Streak widgets have a Statistics button, as the heatmap does, and the Stats bar strip opens Statistics too (INBOX 1318).
 - Whiteboard: Ctrl+Enter while typing in a sticky starts the next one beside it, same paper and size (INBOX 1308).
 - Whiteboard: a C4 and architecture set in the library (person, software system, external system, container, database, component, boundary, relationship); each places as one group (INBOX 1308).

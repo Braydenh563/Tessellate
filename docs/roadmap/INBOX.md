@@ -34,17 +34,11 @@ with its owner named in the entry.
 
 ## Open items
 
-1323. **The owner, 2026-10-19, verbatim.** "Also I think the grounding needs a redesign and modern/professional ui/ux improvement" (screenshot: a reply's "Grounded in:" row, chip 1 reads "1. --- type: Meeting date: 2026-10-15 12:55 attendees: [] --- M..." (raw front matter as the title), chip 2 wraps to a second line, a lone image thumbnail after it)
-     Owner: orchestrator after the gate; source titles skip front matter, a compact source list (title, kind icon, date, snippet on hover), thumbnails inside their chip, CHAT_PLAN row.
-
 1322. **The owner, 2026-10-19, verbatim.** "and can you make it easier to access the format panel like with this library button in the whiteboard top bar button? also atlas needs to have its animations and expressions improved behaviours, even micro behaviours and movements, small movement adjustments, more variety, the juggling stars dont animate at all." (screenshot: the whiteboard top bar, Insert, Edit, Arrange, View, Board menus, then a Library button)
      Owner: (a) Format button beside Library in the whiteboard bar, wb1313 agent; (b) Atlas micro behaviours, expression variety and the juggling stars animation, atlas1322 agent (Sonnet).
 
 1321. **The owner, 2026-10-19, verbatim.** "and I cant type in the chat bar while it is generating, I want to be able to queue messages, and edit or delete/bring back queued messages as well to the chat bar for resending"
      Owner: chat-queue agent (Sonnet), queued: the box stays editable while a reply streams; Enter queues; queued messages show as chips above the box with edit, delete and "back to the box"; they send in order when the reply ends; CHAT_PLAN row.
-
-1320. **The owner, 2026-10-19, verbatim.** "and I cant minimise the splash popup, I want a minimise (- or _ or smth) and close x button in the top right corner to cancel or minimise the launch"
-     Same as 904 B50. Owner: splash agent (Sonnet), queued: scripts/splash.ps1 (borderless WinForms, a Cancel button exists at ~678): add a minimise button and a close X top right (close = the existing cancel path), keyboard reachable; Windows only, so held by tests/test_launcher_scripts.py shapes and said as not verified.
 
 1319. **The owner, 2026-10-19, verbatim** (screenshot, dark: Statistics, "Notes made per month, the last year", a line chart, Save as PNG). "and I still cant interact with the statistics . also the statistics page gets cut off by the header at the top and I want to expand it more and make it more dynamic. maybe even include a specialised composer and ai chat like the help guide idk in it for helping the user explore and summarise their statistics??"
      Owner: statistics agent (Sonnet, then Opus for the chat design if needed), next free slot.

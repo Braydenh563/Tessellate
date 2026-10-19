@@ -333,3 +333,111 @@
 #raw-results .entry-why .result-reason-why .ph-text {
   white-space: normal;
 }
+
+/* **Grounded in, as a source list** (INBOX 1323, the owner: "the grounding
+   needs a redesign and modern/professional ui/ux"). A quiet heading over
+   bordered source cards, each led by its number as a badge, a cited note's
+   pictures inside its card. The boot rules (03-dashboard-widgets.css) are
+   the fallback until this file arrives. */
+.answer-grounding {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--divider);
+}
+
+.answer-grounding-label {
+  flex-basis: 100%;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.answer-grounding-chip,
+.answer-grounding-item {
+  border: 1px solid var(--divider);
+  border-radius: var(--radius-md);
+  background: var(--card);
+}
+
+.answer-grounding-chip {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.answer-grounding-item {
+  flex-wrap: nowrap;
+  padding-inline-end: var(--space-1);
+}
+
+.answer-grounding-item > .answer-grounding-chip {
+  border: 0;
+  background: none;
+}
+
+.answer-grounding-chip:is(:hover, :focus-visible),
+.answer-grounding-item:has(> .answer-grounding-chip:hover) {
+  border-color: var(--accent);
+}
+
+.answer-grounding-chip .note-label-prefix {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.25rem;
+  line-height: 1.25rem;
+  margin-inline-end: var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+/* A cited note's pictures (INBOX 502, `groundingThumbs`): 32px squares that
+   open the picture, after the note's own label. */
+.answer-grounding-thumbs {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex: none;
+}
+
+button.answer-grounding-thumb {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--divider);
+  border-radius: var(--radius-sm);
+  background: var(--chip-bg);
+  box-shadow: none;
+  cursor: zoom-in;
+}
+
+.answer-grounding-thumb > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+button.answer-grounding-thumb:hover,
+button.answer-grounding-thumb:is(:focus-visible, :has(:focus-visible)) {
+  border-color: var(--accent);
+}
+
+/* A finger's target, not a pointer's (DESIGN.md, "Hit targets"). */
+@media (pointer: coarse) {
+  button.answer-grounding-thumb {
+    width: var(--target-min);
+    height: var(--target-min);
+  }
+}
+
+.answer-grounding-more {
+  font-size: var(--text-xs);
+}
+
+/* The number badge leads; the note icon would be a second lead. */
+.answer-grounding-chip > .ph-lead {
+  display: none;
+}

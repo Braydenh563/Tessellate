@@ -1593,3 +1593,7 @@ Decisions made:
 
 Rows: T1 and T2 (owner: voiceup, with V7's dialog work); T3 learnaudit; T4 grammar57.
 
+## Placed from INBOX, 2026-10-19 (the launch splash)
+
+1320. **The owner, 2026-10-19, verbatim.** "and I cant minimise the splash popup, I want a minimise (- or _ or smth) and close x button in the top right corner to cancel or minimise the launch"
+     Same as 904 B50. Owner: splash agent (Sonnet), queued: scripts/splash.ps1 (borderless WinForms, a Cancel button exists at ~678): add a minimise button and a close X top right (close = the existing cancel path), keyboard reachable; Windows only, so held by tests/test_launcher_scripts.py shapes and said as not verified.
