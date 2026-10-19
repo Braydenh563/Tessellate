@@ -80,7 +80,6 @@
  "src/tessellate/ai/resurface.py::compute_scores": 17,
  "src/tessellate/ai/skill_folder.py::parse": 17,
  "src/tessellate/ai/skill_runner.py::_absorb": 22,
- "src/tessellate/ai/skill_runner.py::_run_one_step": 53,
  "src/tessellate/ai/skill_runner.py::_run_skill": 37,
  "src/tessellate/ai/skill_runner.py::verify": 18,
  "src/tessellate/ai/skills.py::_one_step_spec": 16,
