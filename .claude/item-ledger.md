@@ -16,3 +16,7 @@ date | item | type | rung | rework | note
 2026-10-18 | Security review of the branch and its five fixes | security | sonnet | 0 | 
 2026-10-19 | INBOX 1311 sidebar toggle + boot budget | ui | opus | 1 | 
 2026-10-19 | C4 library set | feature | opus | 0 | 
+2026-10-19 | INBOX 1318 Stats/Streak open Statistics | ui | opus | 0 | 
+2026-10-19 | INBOX 1323 grounding source list | ui | opus | 0 | 
+2026-10-19 | INBOX 1316 timeline strip future | bug | opus | 0 | 
+2026-10-19 | INBOX 1313/1322a wb guides + Format button | ui | sonnet | 0 | 
