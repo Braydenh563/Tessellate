@@ -43,9 +43,6 @@ with its owner named in the entry.
 1315. **The owner, 2026-10-19, verbatim.** "keep improving the composer and companions and atlas as well. just keep doing what youre doing. Im going to go and do some uni work now so Ill leave you to it.. leep using lean-workflow"
      Standing: composer (CHAT_PLAN), companion and Atlas rows stay in the away queue after the bugs.
 
-1314. **The owner, 2026-10-19, verbatim.** "also I should mention the mobile view needs a bit of redesign and layout/nav reworking because it is annoing to use and the bottom nav bar just doesnt make sense with how it works and is layed out and is annoying to use. can you work on that?"
-     Owner: mobile agent (Opus, design), now. UI_MODERNISATION_PLAN phone phase.
-
 1313. **The owner, 2026-10-19, verbatim.** "can you make sure the whiteboard isnt missing any more features?? can you improve the alignment guides as well??"
      Owner: whiteboard agent (Sonnet), now: alignment guides first, then WHITEBOARD_PLAN gap rows 3, 4, 5, 7, 8, 12, 13, 14.
 
