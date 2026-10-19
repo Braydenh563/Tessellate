@@ -102,6 +102,10 @@ REACHED_AFTER_LOAD = {
     #: INBOX 1301 D6: the release calls it only when `typeof nameMarkBuddyThrow
     #: === "function"`; the carry's first move fetched the bundle, and a let-go
     #: before it arrives is a drop.
+    #: INBOX 1305: a far move asks for its path when `typeof companionPathPlan
+    #: === "function"`; the mind's first tick fetches the bundle, and until
+    #: it is here a far move walks.
+    "companionPathPlan": "companionMenu, fetched with the mind at the first tick; a far move walks until then (typeof check)",
     "nameMarkBuddyThrow": "companionThrow, fetched on the carry's first move; the release checks typeof and drops otherwise",
     #: Back closing an open overlay (router-overlays.js): preloaded three seconds
     #: after boot; before that Back steps the tab history as it always did. A

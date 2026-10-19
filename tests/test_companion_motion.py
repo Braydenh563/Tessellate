@@ -699,7 +699,7 @@ def test_every_change_of_place_is_travelled_by_its_body() -> None:
         assert way in go, way
     # Distances are in its own size, not pixels.
     assert "const size = NMB_W * Math.max(0.7, nmb.scale || 1);" in go
-    assert "distance > size * NMB_POOF_SIZES" in go
+    assert "companionPathPlan(dx, dy, size, flies)" in go and "NMB_POOF_SIZES" not in go
     assert "NMB_POOF_PX" not in AV
     # Atlas and the winged and ghostly faces float.
     assert "isAtlasSeed(seed)" in _fn("nameMarkBuddyFlies")
@@ -1362,7 +1362,7 @@ def test_the_way_there_is_chosen_by_the_shape_of_the_move() -> None:
     assert flown == ["hop", "float", "leap", "float", "float", "far"]
     go = _fn("nameMarkBuddyGo")
     # Far: the geometry says which far ways are open (a walk only on the level).
-    assert 'nameMarkBuddyFarWay([...(distance > size * NMB_FAR_POOF_SIZES ? ["poof"] : []), "glide", ...(Math.abs(dy) <= 36 ? ["walk"] : [])])' in go
+    assert 'plan.kind === "arc" ? "leap" : "walk"' in go
     # A climb is one path with a corner, its limbs switching at the corner.
     assert 'goingUp ? `0px ${dy}px` : `${dx}px 0px`' in go
     assert 'nameMarkBuddyTravel(buddy, "", at, "climb")' in go

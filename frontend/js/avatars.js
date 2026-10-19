@@ -5426,20 +5426,9 @@ function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
 //: chooses (`nameMarkBuddyRoute`). Every one eases from rest to rest, or
 //: from the speed it already had, so its speed never jumps.
 const NMB_HOP_SIZES = 0.7;
-const NMB_POOF_SIZES = 7.5;
 const NMB_FAR_SIZES = 3;
-//: One far way at random, never the same one three times running.
-const nmbFarWays = [];
-//: A poof only from `NMB_FAR_POOF_SIZES` on: nearer, a vanish is what the
-//: owner once reported as "keeps disappearing" (INBOX 426 n).
+//: A climb up an edge only within this many of itself; further is a path.
 const NMB_FAR_POOF_SIZES = 5;
-function nameMarkBuddyFarWay(ways) {
-  let pick = ways[Math.floor(Math.random() * ways.length)];
-  if (nmbFarWays.length >= 2 && nmbFarWays.every((w) => w === pick)) pick = ways[(ways.indexOf(pick) + 1) % ways.length];
-  nmbFarWays.push(pick);
-  if (nmbFarWays.length > 2) nmbFarWays.shift();
-  return pick;
-}
 const NMB_FLYERS = ["bat", "bird", "owl", "ghost", "bee", "butterfly", "fairy", "angel", "dragon", "phoenix"];
 //: **A way of moving by look** (the owner: "masculine and feminine ways to
 //: stand and move the body"): Atlas's look (its drawing says which) or,
@@ -5506,7 +5495,8 @@ function nameMarkBuddyCrossfade(buddy, dx, dy, ms) {
 //:                    then along, going down)
 //:   a change of level within `NMB_FAR_SIZES`  leap: a crouch, an arc over
 //:                    the gap with its arms out, a landing
-//:   further          "far": `nameMarkBuddyFarWay` picks among the far ways
+//:   further          "far": `companionPathPlan` (companion-menu.js) draws a run,
+//:                    an arc or a drop, paced by its length, never a vanish
 //:   anything else    walk, along the ledge it is on
 function nameMarkBuddyRoute(dx, dy, size, flies, poseChanged, roll) {
   const d = Math.hypot(dx, dy);
@@ -5650,16 +5640,14 @@ function nameMarkBuddyGo(buddy, dx, dy, spot = {}, poseChanged = false, was = { 
   const seenFrom = !nmb.outOfSight && was.x > -NMB_W && was.y > -NMB_H && was.x < innerWidth && was.y < innerHeight;
   const flies = nameMarkBuddyFlies(buddy);
   let route = spot.falls ? "fall" : nameMarkBuddyRoute(dx, dy, size, flies, poseChanged, Math.random());
-  //: **A far move picks a far way of going** (the owner at release: "if the
-  //: move is too far it should choose one of the further travel options").
-  //: The geometry says which: on the level a glide or the walk, across
-  //: levels a glide, and past `NMB_FAR_POOF_SIZES` a poof as well.
-  if (route === "far") route = nameMarkBuddyFarWay([...(distance > size * NMB_FAR_POOF_SIZES ? ["poof"] : []), "glide", ...(Math.abs(dy) <= 36 ? ["walk"] : [])]);
-  //: **A poof when it must jump** (INBOX 426 x): out of sight with its
-  //: panel, or further than any way of going should go, it dissolves in
-  //: stars where it was (when that could be seen) and appears in another
-  //: burst where it is going, the soft materialise.
-  if (route !== "fall" && (!seenFrom || distance > size * NMB_POOF_SIZES || route === "poof")) {
+  //: **A far move is a path, never a vanish** (INBOX 1305, the owner:
+  //: "companion movement for both small and large distances needs a lot of
+  //: improvement"): `companionPathPlan` (companion-menu.js, lazy) draws a run,
+  //: an arc or a drop paced by its length with no frame over 40px; until it
+  //: is here a far move walks. Only a start out of sight is a poof.
+  const plan = route === "far" && typeof companionPathPlan === "function" ? companionPathPlan(dx, dy, size, flies) : null;
+  if (route === "far") route = !plan ? "walk" : flies ? "glide" : plan.kind === "arc" ? "leap" : "walk";
+  if (route !== "fall" && !seenFrom) {
     buddy.dataset.route = "poof";
     nameMarkBuddyPoof(buddy, dx, dy, seenFrom);
     return;
@@ -5667,11 +5655,10 @@ function nameMarkBuddyGo(buddy, dx, dy, spot = {}, poseChanged = false, was = { 
   buddy.dataset.route = route;
   nameMarkBuddyWay(buddy, dx > 0 ? "-1" : "1");
   if (route === "glide") {
-    //: A glide: a low sweep, leaning into the way it goes, arms out. Its
-    //: fastest frame was 43px on the old curve (companionroutes.js); this
-    //: one, and a little longer, keep it under 20.
-    const duration = Math.round(Math.min(1000, 380 + distance * 0.9));
-    nmb.anim = buddy.animate([{ translate: `${dx}px ${dy}px` }, { translate: "0px 0px" }], { duration, delay: setOff, fill: "backwards", easing: leave("cubic-bezier(0.45, 0, 0.2, 1)", duration) });
+    //: A flyer's far way (the plan's run or arc), leaning into the way it
+    //: goes, arms out.
+    const duration = plan.ms;
+    nmb.anim = buddy.animate(plan.frames, { duration, delay: setOff, fill: "backwards", easing: "linear" });
     const lean = way * 12;
     nmb.hopAnim = char?.animate([
       { rotate: "0deg", translate: "0px 0px" }, { rotate: `${lean}deg`, translate: "0px -3px", offset: 0.3 },
@@ -5732,9 +5719,10 @@ function nameMarkBuddyGo(buddy, dx, dy, spot = {}, poseChanged = false, was = { 
   //: arms out for balance, legs reaching for the landing, and a squash.
   if (route === "hop" || route === "leap") {
     const leap = route === "leap";
-    const duration = Math.round(leap ? Math.min(1000, 420 + distance * 1.4) : 300 + distance * 2.5);
-    nmb.anim = buddy.animate([{ translate: `${dx}px ${dy}px` }, { translate: "0px 0px" }], { duration, delay: setOff, fill: "backwards", easing: leave("cubic-bezier(0.45, 0, 0.2, 1)", duration) });
-    const arc = leap ? Math.min(90, 18 + Math.abs(dy) * 0.35 + Math.abs(dx) * 0.05) : Math.min(22, 8 + distance * 0.35);
+    const duration = plan ? plan.ms : Math.round(leap ? Math.min(1000, 420 + distance * 1.4) : 300 + distance * 2.5);
+    nmb.anim = buddy.animate(plan ? plan.frames : [{ translate: `${dx}px ${dy}px` }, { translate: "0px 0px" }], { duration, delay: setOff, fill: "backwards", easing: plan ? "linear" : leave("cubic-bezier(0.45, 0, 0.2, 1)", duration) });
+    //: The plan's own path is the arc; the body adds only its small bob.
+    const arc = plan ? 4 : leap ? Math.min(90, 18 + Math.abs(dy) * 0.35 + Math.abs(dx) * 0.05) : Math.min(22, 8 + distance * 0.35);
     const top = leap && dy > 0 ? 0.55 : 0.45;
     nmb.hopAnim = char?.animate([
       { translate: "0px 0px", easing: "cubic-bezier(0.2, 0.8, 0.4, 1)" },
@@ -5757,8 +5745,8 @@ function nameMarkBuddyGo(buddy, dx, dy, spot = {}, poseChanged = false, was = { 
   //: **And a stride of its own** (Brief 88 d): a stroll, its pace or a
   //: hurry, any of the three but the last, the travel and the legs' beat
   //: changed together so its feet keep up with the ground.
-  const beat = nameMarkBuddyStride();
-  const duration = Math.round(((climb ? Math.min(2200, 380 + along + up) : Math.min(1600, 450 + distance * 2.2)) * pace) / beat);
+  const beat = plan ? plan.beat : nameMarkBuddyStride();
+  const duration = plan ? plan.ms : Math.round(((climb ? Math.min(2200, 380 + along + up) : Math.min(1600, 450 + distance * 2.2)) * pace) / beat);
   buddy.dataset.turn = dx > 0 ? "l" : "r";
   nameMarkBuddyBlend(buddy, () => buddy.classList.add("nmb-walking"), NMB_BLEND_IN_MS);
   //: The walk's own animations are paced from its first step, not when
@@ -5772,7 +5760,7 @@ function nameMarkBuddyGo(buddy, dx, dy, spot = {}, poseChanged = false, was = { 
   //: long), springs up out of it, and on arriving squashes into the landing
   //: and rebounds once: anticipation and follow-through, on the
   //: character's own `scale` about its feet, the compositor's.
-  let frames = [{ translate: `${dx}px ${dy}px` }, { translate: "0px 0px" }];
+  let frames = plan ? plan.frames : [{ translate: `${dx}px ${dy}px` }, { translate: "0px 0px" }];
   if (climb) {
     const goingUp = dy > 0;
     const corner = Math.abs(dx) < 8 ? (goingUp ? 0 : 1) : (goingUp ? along : up) / (along + up);
@@ -5787,7 +5775,7 @@ function nameMarkBuddyGo(buddy, dx, dy, spot = {}, poseChanged = false, was = { 
     if (goingUp) nameMarkBuddyTravel(buddy, "", at, "climb");
     else nameMarkBuddyTravel(buddy, "climb", at, "");
   }
-  nmb.anim = buddy.animate(frames, { duration, delay: setOff, fill: "backwards", easing: climb ? "linear" : leave("cubic-bezier(0.45, 0, 0.2, 1)", duration) });
+  nmb.anim = buddy.animate(frames, { duration, delay: setOff, fill: "backwards", easing: climb || plan ? "linear" : leave("cubic-bezier(0.45, 0, 0.2, 1)", duration) });
   nameMarkBuddySquash(char, duration + setOff, underway);
   //: This walk's own end only (see `nameMarkBuddyPoof`): a walk cut short
   //: by the next reports its `cancel` after the next has begun.
@@ -5849,21 +5837,22 @@ function nameMarkBuddySquash(char, travel, underway = false) {
 //: floor under its path with a squash, slides to a stop, and then takes the
 //: nearest place to where it stopped (`nameMarkBuddyThrowLand`). px and ms.
 const NMB_TOSS_SPEED = 0.6;
-const NMB_THROW = { max: 4.5, g: 0.0032, air: 0.0011, ground: 0.006, bounce: 0.4, wall: 0.12, stick: 0.35, tilt: 14, ms: 1200 };
+//: `max` is the fastest it is ever drawn: 2.3 px/ms is 38px a 60 Hz frame, under the 40 that reads as a jump (INBOX 1305; it was 4.5, 75px).
+const NMB_THROW = { max: 2.3, g: 0.0032, air: 0.0011, ground: 0.006, bounce: 0.4, wall: 0.12, stick: 0.35, tilt: 14, ms: 1200 };
 const NMB_PET_MS = 1100;
 
 //: **Never the same flight twice** (Brief 88 (b), the owner: "it just
 //: bounces off a panel and back to the top, I want it to do that, but vary
 //: how much it does that"). Each throw draws its own bounce, floor grip and
 //: air from a range by `roll` (three draws in [0, 1)), and one thrown hard
-//: (past 2.6 px/ms) tumbles head over heels instead of leaning, by its speed.
+//: (past 1.9 px/ms) tumbles head over heels instead of leaning, by its speed.
 function nameMarkBuddyThrowFeel(roll, speed, k = NMB_THROW) {
   return {
     ...k,
     bounce: +(0.28 + roll[0] * 0.24).toFixed(3),
     ground: +(0.0045 + roll[1] * 0.0035).toFixed(5),
     air: +(0.0009 + roll[2] * 0.0004).toFixed(5),
-    spin: speed > 2.6 ? 0.3 : 0,
+    spin: speed > 1.9 ? 0.3 : 0,
   };
 }
 
@@ -5907,6 +5896,9 @@ function nameMarkBuddyFlightStep(s, dt, world, k = NMB_THROW) {
     const drag = Math.exp(-k.air * dt);
     n.vx *= drag;
     n.vy *= drag;
+    const fast = Math.min(1, k.max / Math.hypot(n.vx, n.vy));
+    n.vx *= fast;
+    n.vy *= fast;
     if (k.spin) n.rot += n.vx * k.spin * dt;
     else n.rot += (Math.max(-40, Math.min(40, n.vx * k.tilt)) - n.rot) * ease;
   }
