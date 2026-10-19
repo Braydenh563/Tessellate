@@ -92,3 +92,14 @@ def test_every_help_surface_names_the_switch():
     for text in (source, chat):
         assert "AI and From your notes switch" not in text
         assert "AI, or From your notes" not in text
+
+
+def test_the_switch_is_drawn_from_the_first_status_not_the_preload():
+    # The owner, 2026-10-19: the switch was off in fact but drawn on until it
+    # was clicked. The markup's "checked" stands only until ask-compose.js
+    # loads, and that was a 3 s timer after boot; the status poll now loads it.
+    status = (ROOT / "frontend" / "js" / "status.js").read_text(encoding="utf-8")
+    assert 'ensureModule("askCompose");' in status
+    assert status.index('"No model connected. Ask shows the matching records below."') < status.index(
+        'ensureModule("askCompose");'
+    )

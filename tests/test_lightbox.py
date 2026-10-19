@@ -266,3 +266,12 @@ def test_the_viewer_keys_leave_typing_alone():
     assert "typing(e.target)" in keys
     for key in ('"+"', '"-"', '"0"', '"1"', '"r"', '"i"', '"ArrowLeft"', '"Escape"'):
         assert key in keys, key
+
+
+def test_actual_size_shows_pressed_when_the_picture_is_already_there():
+    """Owner 2026-10-19: "is that ratio button meant to do anything when I click
+    it in the lightbox? rn it doesnt". A picture smaller than the window fits at
+    1:1, so the button changes nothing; it now reads pressed at actual size,
+    as Back to fit does at fit, and the dock's pressed style shows it."""
+    assert 'actualBtn.setAttribute("aria-pressed", String(Math.abs(zoom - actualZoom()) < 0.01));' in JS
+    assert '.lightbox .lightbox-dock button[aria-pressed="true"]' in CSS

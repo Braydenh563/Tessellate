@@ -21,7 +21,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import notebook_stats as ns
-from tessellate.ai import questions, recognise
+from tessellate.ai import note_order, recognise
 from tessellate.ai.notebook_stats import StatAnswer
 from tessellate.core.database import Entry, utcnow
 
@@ -50,18 +50,23 @@ HELP_LINE = (
 
 
 def _end_note(session: Session, now: datetime, newest: bool) -> StatAnswer:
-    """The first or newest visible note, by date and title: one row, ordered
-    by the same column the counts above use."""
-    order = (Entry.created_at.desc(), Entry.id.desc()) if newest else (Entry.created_at.asc(), Entry.id.asc())
-    row = session.execute(ns._visible(select(Entry.created_at, Entry.content)).order_by(*order).limit(1)).first()
-    kind = "latest-note" if newest else "first-note"
-    if row is None:
-        return StatAnswer(kind, "You have no notes yet.")
-    made = row[0] if row[0].tzinfo else row[0].replace(tzinfo=utcnow().tzinfo)
-    made = made.astimezone(now.tzinfo)
-    title = questions._title(row[1]) or "Untitled"
-    which = "newest" if newest else "first"
-    return StatAnswer(kind, f"Your {which} note is from {made.day} {made.strftime('%B %Y')}: {title}")
+    """The first or newest visible note, by date and title: the shared reader
+    in `ai/note_order.py`, as plain words (this box draws no links)."""
+    text, _ = note_order.say(session, note_order.Ask(1, newest), now.tzinfo, linked=False)
+    return StatAnswer("latest-note" if newest else "first-note", text)
+
+
+def _ends(text: str, raw: str, session: Session, now: datetime) -> StatAnswer | None:
+    """The first, newest or nth note: one reader (`ai/note_order.py`)."""
+    placed = note_order.read(raw)
+    if placed is not None and placed.n > 1:
+        return StatAnswer("note-order", note_order.say(session, placed, now.tzinfo, linked=False)[0])
+    #: The raw words too: the spelling pass turns "start" into "stats".
+    if placed is not None and not placed.newest or _FIRST.search(text) or _FIRST.search(raw):
+        return _end_note(session, now, False)
+    if placed is not None or _LATEST.search(text) or _LATEST.search(raw):
+        return _end_note(session, now, True)
+    return None
 
 
 def _span(session: Session, start: datetime, end: datetime) -> dict:
@@ -212,11 +217,9 @@ def ask(question: str, session: Session, now: datetime, usage_summary: dict, fir
     text = ns._despell(raw)
     if _USAGE.search(text):
         return _usage(usage_summary)
-    #: The raw words too: the spelling pass turns "start" into "stats".
-    if _FIRST.search(text) or _FIRST.search(raw):
-        return _end_note(session, now, False)
-    if _LATEST.search(text) or _LATEST.search(raw):
-        return _end_note(session, now, True)
+    ends = _ends(text, raw, session, now)
+    if ends is not None:
+        return ends
     counted = _month_count(text, session, now)
     if counted is not None:
         return counted

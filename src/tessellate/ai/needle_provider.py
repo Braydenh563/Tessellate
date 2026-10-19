@@ -208,9 +208,54 @@ def _date_fact() -> str:
 #: user"): asking the person mid-run, and the tools that hand their work to a
 #: chat model (a plan, a skill, a compressed chat, a contradiction or link
 #: audit). With no model they can only fail, so they are not planned.
+#: Needle reads every schema on every call (72 tools were 30,089 chars and
+#: 50 s on the owner's Windows machine, 2026-10-19), so it is offered a
+#: shortlist: the tools the question's words suggest (`tools.focus_for`), or
+#: the likeliest by `tools.rank_tools` when the question hints at none.
+NEEDLE_MAX_TOOLS = 15
+
+
+def shortlist(schemas: list[dict], text: str) -> list[dict]:
+    """`schemas` cut to at most `NEEDLE_MAX_TOOLS`, in their given order."""
+    if len(schemas) <= NEEDLE_MAX_TOOLS:
+        return schemas
+    from tessellate.ai import tools
+
+    have = {s.get("name") for s in schemas}
+    focus = tools.focus_for(text)
+    keep = [] if focus is None else [n for n in dict.fromkeys([*tools.CORE_TOOLS, *focus]) if n in have]
+    if not keep or len(keep) > NEEDLE_MAX_TOOLS:
+        keep = [n for n, _ in tools.rank_tools(text) if n in have][:NEEDLE_MAX_TOOLS]
+    chosen = set(keep)
+    return [s for s in schemas if s.get("name") in chosen]
+
+
 NOT_WITHOUT_A_MODEL = frozenset({
     "ask_user", "make_plan", "run_skill", "save_skill", "compress_chat", "find_contradictions", "audit_link_reasons",
 })
+
+#: Where the agent's user turn puts the person's words, after the app's own
+#: lines about the notes it found (`agent._build_messages`). Needle reads the
+#: whole turn, and those lines name tools ("count_notes and search_notes do"):
+#: it searched for "doesn't have count_notes" (INBOX 1345 b), a refusal's own
+#: wording fed back as a query. It is given the request alone.
+_REQUEST = "My request:"
+
+
+def request_of(text: str) -> str:
+    """The person's words from an agent user turn, without the app's preamble."""
+    _, marker, tail = text.rpartition(_REQUEST)
+    return tail.strip() if marker and tail.strip() else text
+
+
+def _names_a_tool(arguments: object, offered: dict) -> bool:
+    """A tool's name inside an argument: the app's own text read back as a
+    request, never something the person asked to find."""
+    if not isinstance(arguments, dict):
+        return False
+    words = " ".join(str(v) for v in arguments.values() if isinstance(v, str)).lower()
+    return any(name and name in words for name in offered)
+
 
 def _cleaned_calls(calls: list, schemas: list[dict], text: str) -> list[dict]:
     """needle's calls with their arguments cleaned (INBOX 801: "NOTEBOOK
@@ -221,6 +266,8 @@ def _cleaned_calls(calls: list, schemas: list[dict], text: str) -> list[dict]:
     out = []
     for call in calls:
         if not isinstance(call, dict) or call.get("name") not in offered:
+            continue
+        if _names_a_tool(call.get("arguments"), offered):
             continue
         args = _cleaned_arguments(call.get("arguments") or {}, offered[call["name"]].get("parameters") or {}, text)
         if args is not None:
@@ -351,10 +398,12 @@ class NeedleProvider(Provider):
         text = next(
             (_text(m.get("content")) for m in reversed(messages) if m.get("role") == "user"), ""
         )
+        text = request_of(text)
         schemas = [
             t["function"] for t in tools or []
             if isinstance(t, dict) and t.get("function") and t["function"].get("name") not in NOT_WITHOUT_A_MODEL
         ]
+        schemas = shortlist(schemas, text)
         answer = self._engine().complete(_date_fact(), json.dumps(schemas), text)
         raw_calls = _cleaned_calls(answer.get("function_calls") or [], schemas, text)
         return self._reply("" if raw_calls else NO_TOOL_FITS, raw_calls, started, answer)

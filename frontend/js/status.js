@@ -2116,6 +2116,7 @@ function syncModelGatedControls(status = modelStatus) {
     "No model connected. Ask shows the matching records below.",
     { dismissible: true, detail: "Ask answers from your notes alone until one is connected." }
   );
+  ensureModule("askCompose");
   //: The agent with no model runs acts and readings (AGENT_SKILLS_REFORM
   //: "Deepened 2026-10-10" row 1, `ai/starter_acts.py`), so the line says
   //: what a model adds rather than that nothing runs.

@@ -6,6 +6,14 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Needle is offered at most 15 tool schemas (the ones the question's words suggest, else the likeliest) instead of all 70: 30,359 to about 6,200 chars for a typical question, so each call reads a fifth of the text.
+- With Ollama off, a refused connection is remembered for 5 s, so one chat turn makes one connect attempt instead of one per stage (probe, embed, filing, each ~2 s a refusal on Windows); the connect wait is 1 s (was 5), and re-evaluating a note with the model off logs one line, not a traceback.
+- Lightbox: the 1:1 (Actual size) button shows pressed when the picture is already at actual size, as a picture smaller than the window is at fit; a press that changes nothing no longer looks broken (200x150: pressed at 100% before any press; 4000x3000: 20% to 100% and pressed).
+- Whiteboard: turning a frame by its grip now turns everything wholly inside it about the frame's centre (each item's centre is carried round and its own rotation gains the same angle), in one Undo step; Ctrl turns the frame alone. The grip's tooltip says so.
+- Chat, the Agent popup and Ask answer notes by the order made ("the first note I ever wrote", "my 5th note", "my 3rd most recent note") with the note linked and its date, or how many notes you have when the place is past the end; with no model they no longer say your notes don't mention "first" or answer with the tag table. Needle is now given only your request, and a call that puts a tool's name in a search is dropped (it had searched for "doesn't have count_notes").
+- Ask and Chat: the "Grounded in" block is one collapsible fold (the heading is the toggle, open by default, remembered per browser); Chat now loads the same look as Ask. The number in each source badge is the bare digit, centred in its circle (0.01 px off, was 1.8 px with the trailing period).
+- Use AI switch: draws its real state from the first status poll, not the 3 s preload (was drawn on for about 2.7 s over a model that was off, until clicked).
+- Chat answers: a link with no words (`[](#/notes/85)`) shows the note's name, `[ ]` and `[x]` in prose are the app's disabled checkbox at text size, and a line of only the app's own links ("Open your notes") is a row of small ghost buttons.
 - Notes from 600 to 820px wide: the "Your notes" sub-tab no longer sits under the sidebar's collapse toggle (the column keeps the rail clear; the tab starts at x 63 to 66, was 9.6 under a toggle ending at 51).
 - Focus rings no longer cut off by their container: the Statistics body, the manual's contents jumps and topic links, the Settings nav's last button and the phone More button (0 px cut each, was 3.5 to 4.5).
 - Statistics: a focused chart mark (a focusable SVG group) shows a 2px ring of its own, inside its slot.

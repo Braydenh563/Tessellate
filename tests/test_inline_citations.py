@@ -175,7 +175,8 @@ def test_placing_the_markers_twice_draws_them_once(app_js):
 
 def test_the_chips_are_numbered_to_match_the_markers(app_js):
     body = app_js.split("function renderAnswerGrounding(")[1].split("\n}")[0]
-    assert "${n}." in body, "the chip row is the key to the markers, so it has to count"
+    #: The bare digit since INBOX 1345: "2." sat 1.8 px off the circle's centre.
+    assert "file-text ${n}`" in body, "the chip row is the key to the markers, so it has to count"
 
 
 #: **Every live renderer is stopped before its box is written to again.**

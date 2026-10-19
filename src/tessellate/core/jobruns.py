@@ -747,6 +747,13 @@ def _calling():  # noqa: ANN202
         _bound.calling = before
 
 
+def _named(provider, model: str) -> str:  # noqa: ANN001
+    """What a call is logged under. Needle ignores the configured chat model
+    (it picks tools in process), so the ledger said "Asked <that model> with
+    tools" for a call it never made (INBOX 1345 b)."""
+    return "needle" if getattr(provider, "name", "") == "needle" else model
+
+
 def _open_call(model: str, tools: bool) -> tuple["Run", "Run | None", str]:
     name = _clip(model) or "the model"
     parent = active()
@@ -770,7 +777,7 @@ def model_call(method):  # noqa: ANN001, ANN201
     def call(self, model, *args, **kwargs):  # noqa: ANN001, ANN202
         if getattr(_bound, "calling", False):
             return method(self, model, *args, **kwargs)
-        run, own, name = _open_call(model, tools)
+        run, own, name = _open_call(_named(self, model), tools)
         t0 = time.monotonic()
         try:
             with _calling(), bound(own or run):
@@ -807,7 +814,7 @@ def model_stream(method):  # noqa: ANN001, ANN201
         if getattr(_bound, "calling", False):
             yield from method(self, model, *args, **kwargs)
             return
-        run, own, name = _open_call(model, tools)
+        run, own, name = _open_call(_named(self, model), tools)
         t0 = time.monotonic()
         source = None
         try:

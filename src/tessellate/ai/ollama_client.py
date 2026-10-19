@@ -15,6 +15,8 @@ can do, because those are handed a model that is already on disk.
 from __future__ import annotations
 
 import json
+import time
+
 from collections.abc import Iterator
 
 # `requests` with redirects held to the configured address (§12, S6).
@@ -147,7 +149,41 @@ def describe_http_error(exc: requests.HTTPError, model: str) -> str:
 
 #: How long a model request may take to *connect* (ARCH-17): a reachable
 #: server accepts in milliseconds; past this it is off or unreachable.
-CONNECT_TIMEOUT_SECONDS = 5.0
+CONNECT_TIMEOUT_SECONDS = 1.0
+#: How long a refused connection is remembered. Windows spends about 2 s per
+#: refused attempt on `localhost` (::1, then 127.0.0.1), so a turn that probes,
+#: embeds and files with Ollama off cost ~8 s per stage (owner log, 2026-10-19).
+DOWN_TTL_SECONDS = 5.0
+_down_until: dict[str, float] = {}
+_clock = time.monotonic
+
+
+def _mark_down(base_url: str) -> None:
+    _down_until[base_url] = _clock() + DOWN_TTL_SECONDS
+
+
+def _mark_up(base_url: str) -> None:
+    _down_until.pop(base_url, None)
+
+
+def _is_down(base_url: str) -> bool:
+    until = _down_until.get(base_url)
+    if until is None:
+        return False
+    if _clock() >= until:
+        _down_until.pop(base_url, None)
+        return False
+    return True
+
+
+def _note_failure(base_url: str, exc: BaseException) -> None:
+    if _is_refusal(exc):
+        _mark_down(base_url)
+
+
+def _is_refusal(exc: BaseException) -> bool:
+    return isinstance(exc, (requests.RefusedError, requests.ConnectTimeout)) and not isinstance(exc, requests.ReadTimeout)
+
 
 class OllamaClient(Provider):
     name = "ollama"
@@ -198,7 +234,10 @@ class OllamaClient(Provider):
         step for the whole ten minutes before saying anything. Connecting is
         quick or it is not happening; only the answer may take long.
         """
+        if _is_down(self.base_url):
+            raise OllamaError(f"Ollama is not running at {self.base_url}")
         return (CONNECT_TIMEOUT_SECONDS, self.timeout if read is None else read)
+
     def supports_pull(self) -> bool:
         """Ollama is the only backend that can fetch a model it doesn't have."""
         return True
@@ -222,9 +261,11 @@ class OllamaClient(Provider):
         if model in self._shown:
             return self._shown[model]
         info: dict = {}
+        if _is_down(self.base_url):
+            return {}
         try:
             response = requests.post(
-                f"{self.base_url}/api/show", json={"model": model}, timeout=5
+                f"{self.base_url}/api/show", json={"model": model}, timeout=(CONNECT_TIMEOUT_SECONDS, 5)
             )
             response.raise_for_status()
             payload = response.json()
@@ -388,11 +429,16 @@ class OllamaClient(Provider):
     def is_running(self) -> bool:
         """Cheap reachability probe: short timeout so the UI never hangs
         just to discover Ollama is off (plan §6.5)."""
+        if _is_down(self.base_url):
+            return False
         try:
-            response = requests.get(f"{self.base_url}/api/tags", timeout=2)
+            response = requests.get(f"{self.base_url}/api/tags", timeout=(CONNECT_TIMEOUT_SECONDS, 2))
             response.raise_for_status()
+            _mark_up(self.base_url)
             return True
-        except requests.RequestException:
+        except requests.RequestException as exc:
+            if _is_refusal(exc):
+                _mark_down(self.base_url)
             return False
 
     def loaded_models(self) -> list[str] | None:
@@ -512,6 +558,7 @@ class OllamaClient(Provider):
                     continue
                 raise OllamaError(describe_http_error(exc, model)) from exc
             except (requests.RequestException, KeyError, TypeError, ValueError) as exc:
+                _note_failure(self.base_url, exc)
                 raise OllamaError(f"Chat with '{model}' failed: {exc}") from exc
         # Unreachable: every branch above either returns or raises. Only here
         # so the function reads as exhaustive rather than implicitly
@@ -569,6 +616,7 @@ class OllamaClient(Provider):
                     continue
                 raise OllamaError(describe_http_error(exc, model)) from exc
             except (requests.RequestException, KeyError, TypeError, ValueError) as exc:
+                _note_failure(self.base_url, exc)
                 raise OllamaError(f"Chat with '{model}' failed: {exc}") from exc
 
     # Both dialects normalise the same way, see `provider.normalise_tool_calls`.
@@ -640,7 +688,8 @@ class OllamaClient(Provider):
                 timeout=self._request_timeout(min(self.timeout, 60)),
             )
             return bool(response.ok)
-        except requests.RequestException:
+        except requests.RequestException as exc:
+            _note_failure(self.base_url, exc)
             return False
 
     @staticmethod
@@ -785,6 +834,7 @@ class OllamaClient(Provider):
         except ToolsUnsupportedError:
             raise
         except (requests.RequestException, KeyError, TypeError, ValueError) as exc:
+            _note_failure(self.base_url, exc)
             # A 5xx here may be an outage, or a model whose chat template
             # breaks on the tools path, see _tools_path_is_broken, which
             # settles it by asking rather than by reading the status code.
@@ -910,6 +960,7 @@ class OllamaClient(Provider):
         except ToolsUnsupportedError:
             raise
         except (requests.RequestException, KeyError, TypeError, ValueError) as exc:
+            _note_failure(self.base_url, exc)
             # A 5xx here may be an outage, or a model whose chat template
             # breaks on the tools path, see _tools_path_is_broken, which
             # settles it by asking rather than by reading the status code.
@@ -990,4 +1041,5 @@ class OllamaClient(Provider):
             TypeError,
             ValueError,
         ) as exc:
+            _note_failure(self.base_url, exc)
             raise OllamaError(f"Embedding with '{model}' failed: {exc}") from exc

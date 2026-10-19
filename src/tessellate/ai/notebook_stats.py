@@ -221,6 +221,20 @@ def looks_like_a_question_about_the_notebook(message: str) -> bool:
     )
 
 
+def by_order(message: str, session: Session) -> StatAnswer | None:
+    """"The first note I wrote", "my 5th note": read off the creation column
+    (INBOX 1345 b), on the raw words since the spelling pass rewrites "first"."""
+    from tessellate.ai import note_order
+
+    placed = note_order.read(message or "")
+    return None if placed is None else StatAnswer("note-order", note_order.say(session, placed)[0])
+
+
+def answer_chat(message: str, session: Session) -> StatAnswer | None:
+    """What the Chat counts: an ordinal question first, then the shape of the notebook."""
+    return by_order(message, session) or answer(message, session)
+
+
 def answer(message: str, session: Session) -> StatAnswer | None:
     """The computed answer to this question, or None to fall through to search."""
     #: Spelling is fixed once, here, and every matcher below sees the corrected

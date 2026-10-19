@@ -9,6 +9,7 @@ from __future__ import annotations
 import os
 import importlib
 import shutil
+import sys
 from pathlib import Path
 
 import pytest
@@ -326,6 +327,22 @@ def _forget_the_docker_probe():
     searxng_docker.forget_docker_daemon_state()
     yield
     searxng_docker.forget_docker_daemon_state()
+
+
+@pytest.fixture(autouse=True)
+def _forget_ollama_down():
+    """The refused-connection memory is module level; a test that refused one
+    must not make the next test's Ollama look off. Read from `sys.modules`,
+    not imported: importing it here reaches the config before a test's
+    `app_state` does, and the default config writes the repo's `data/`."""
+    def forget():
+        module = sys.modules.get("tessellate.ai.ollama_client")
+        if module is not None:
+            module._down_until.clear()
+
+    forget()
+    yield
+    forget()
 
 
 @pytest.fixture(autouse=True)
