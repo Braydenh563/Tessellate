@@ -94,7 +94,7 @@ def test_an_existing_reading_is_never_overwritten(client, session, monkeypatch):
     assert row.caption == "a description somebody typed"
 
 
-def test_a_missing_row_is_not_an_error(monkeypatch):
+def test_a_missing_row_is_not_an_error(session, monkeypatch):
     assert docreader.read_document_and_store(9_999_999) is None
 
 
