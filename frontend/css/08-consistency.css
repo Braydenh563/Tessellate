@@ -2843,6 +2843,19 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
   .entry-meta.note-meta:not(.is-measuring) > .chip.category {
     flex-shrink: 0;
   }
+  /* **When every fact is already an icon and the line is still too wide, it
+     wraps rather than clips** (UX audit 2026-10-19). At 390 a long-titled
+     card's category (104px), three 44px icon facts, the time and the 44px
+     "More actions" button need 392px in a 316px line, and the card's
+     `overflow: hidden` cut the button off at x 388-432. `fitNoteMetas`
+     measures with `.is-measuring` on (still `nowrap`, so its overflow sum is
+     honest), folds what it can (words to `.is-icon`), and a line that has
+     folded any fact may then take a second row for the remainder. One that
+     fits is drawn the same wrapped as not, and a line that overflowed with
+     nothing left to fold was never wide enough to need this. */
+  .entry-meta.note-meta:has(> .is-icon):not(.is-measuring) {
+    flex-wrap: wrap;
+  }
 }
 .entry-meta.note-meta > .chip > .ph-text {
   min-width: 0;

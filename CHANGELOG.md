@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Notes list on a phone: a card whose facts are still too wide after folding to icons wraps to a second row instead of clipping its More actions button (li scrollWidth 418 to 358 at 390).
 - Notes at 800px: the parked sidebar sheet no longer takes clicks over the first sub-tab; only its toggle does (elementFromPoint(54, 136) was the aside, now the sub-tab).
 - Resurfacing: two requests scoring at once no longer 500 on UNIQUE note_scores.entry_id; new rows are upserted (GET /resurface/near/{id}).
 - Security: a phrase filter in the Notes list ("tagged work", "pinned", "connected to") no longer returns private notes or boards; a private note's tags are stored in plain text, so the filter could name it.

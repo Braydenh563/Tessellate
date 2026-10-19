@@ -131,3 +131,14 @@ def test_the_drawer_opener_says_what_it_holds_and_closes_on_a_choice():
     close = close[: close.index("\n});")]
     assert 'classList.remove("sidebar-sheet-open")' in close
     assert 'setAttribute("aria-expanded", "false")' in close
+
+
+def test_a_note_line_still_too_wide_after_folding_wraps_instead_of_clipping_its_actions():
+    """UX audit 2026-10-19, 390 wide: a long-titled card's category (104px),
+    three 44px icon facts, the time and the 44px More actions button need 392px
+    in a 316px line; the li (overflow hidden, scrollWidth 418 vs 358) cut the
+    button at x 388-432. After the fix a line that `fitNoteMetas` has folded
+    (any `.is-icon` child) may wrap: the li scrollWidth equals its clientWidth
+    (358) and the button sits at x 312-356."""
+    css = (FRONTEND / "css/08-consistency.css").read_text(encoding="utf-8")
+    assert ".entry-meta.note-meta:has(> .is-icon):not(.is-measuring) {\n    flex-wrap: wrap;" in css
