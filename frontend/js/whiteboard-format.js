@@ -379,6 +379,7 @@ function wbFormatOpen(tab = null, { focus = true } = {}) {
   } catch {
     /* a private window: the panel still opens, it is just not remembered */
   }
+  wbFmtMarkButton(true);
   wbFormatSync();
   if (focus) panel.querySelector(`[data-format-tab="${wbFmtState.fmtTab}"]`)?.focus();
 }
@@ -388,12 +389,21 @@ function wbFormatClose({ restoreFocus = true } = {}) {
   if (!panel || panel.classList.contains("hidden")) return;
   const hadFocus = panel.contains(document.activeElement);
   panel.classList.add("hidden");
+  wbFmtMarkButton(false);
   try {
     prefs.remove(WB_FMT_KEY);
   } catch {
     /* nothing to forget */
   }
   if (restoreFocus && hadFocus) document.getElementById("whiteboard-container")?.focus({ preventScroll: true });
+}
+
+//: The top bar's Format button mirrors the panel, as Library's does.
+function wbFmtMarkButton(on) {
+  const btn = document.getElementById("wb-format-btn");
+  if (!btn) return;
+  btn.classList.toggle("is-on", on);
+  btn.setAttribute("aria-pressed", String(on));
 }
 
 function wbFormatToggle(tab = null) {
@@ -758,6 +768,7 @@ onDomReady(() => {
   }
   const on = (id, type, fn) => document.getElementById(id)?.addEventListener(type, fn);
   on("wb-format-close", "click", () => wbFormatClose());
+  on("wb-format-btn", "click", () => wbFormatToggle());
   panel.addEventListener("click", (e) => {
     const tab = e.target.closest("[data-format-tab]");
     if (tab) {

@@ -1525,7 +1525,7 @@ HELP_TOPICS.extend(
                 "line jumps", "line jump", "crossing lines", "lines cross", "hop over",
             ),
             "body": (
-                "Ctrl+Shift+P on a board (or Format panel in the selection's More menu, or View) opens "
+                "The top bar's Format button, Ctrl+Shift+P or View > Format panel opens "
                 "the Format panel on the right, with three tabs. Style: line colour, width and pattern, "
                 "your own dashes (a dash and a gap in line widths, like 8 4), rounded corners, flow (dashes that move), "
                 "fill (a gradient or hatch, dots or zigzag instead of solid), opacity, shadow, and for a connector its line shape (curved, straight or elbow), "

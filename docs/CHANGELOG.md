@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: a Format button beside Library in the top bar toggles the Format panel (empty state when nothing is selected); help and the command row name it (INBOX 1322a).
 - Whiteboard guides: the snap pull is a constant 6 screen pixels at any zoom (it was 6 board units, 1.5px zoomed out and 24px zoomed in), guide lines run across every item they line up with, equal-gap guides show their length, a tilted item aligns by the edges it shows, and the guide inks (the theme error, accent and warn) pass 6:1 or better in both themes (the old cyan was 1.96:1 on light) (INBOX 1313).
 - Dashboard: the Stats and Streak widgets have a Statistics button, as the heatmap does, and the Stats bar strip opens Statistics too (INBOX 1318).
 - Whiteboard: Ctrl+Enter while typing in a sticky starts the next one beside it, same paper and size (INBOX 1308).
