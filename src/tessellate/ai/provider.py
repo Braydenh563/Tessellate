@@ -43,6 +43,8 @@ import re
 from collections.abc import Callable
 from urllib.parse import urlparse
 
+from tessellate.core import jobruns
+
 
 #: Returns the user's stored sampling overrides, installed by the app's own
 #: wiring so this module never has to import it.
@@ -350,6 +352,21 @@ class Provider:
 
     #: Shown in Settings → Models and in the support bundle.
     name = "provider"
+
+    def __init_subclass__(cls, **kwargs: object) -> None:
+        """Every generation path a backend defines is in the process ledger
+        (INBOX 805: "all things that use the ai ... need to be logged"), so a
+        new backend or a new caller cannot make a model call nobody sees."""
+        super().__init_subclass__(**kwargs)
+        for attr, wrap in (
+            ("chat", jobruns.model_call),
+            ("chat_tools", jobruns.model_call),
+            ("chat_stream", jobruns.model_stream),
+            ("chat_tools_stream", jobruns.model_stream),
+        ):
+            method = cls.__dict__.get(attr)
+            if callable(method) and not getattr(method, "ledgered", False):
+                setattr(cls, attr, wrap(method))
 
     def context_length(self, model: str) -> int | None:
         """How many tokens this model can hold, or None for "I can't tell".

@@ -47,7 +47,8 @@ function activityRow(job, now) {
   if (job.finished) {
     const done = document.createElement("span");
     done.className = "muted task-elapsed";
-    done.textContent = "finished";
+    done.textContent = activityEnding(job);
+    if (job.origin) done.title = `${job.origin[0].toUpperCase()}${job.origin.slice(1)}.`;
     row.appendChild(done);
   } else if (job.started && now) {
     const took = document.createElement("span");
@@ -86,6 +87,24 @@ function activityRow(job, now) {
   return li;
 }
 
+//: How a finished run ended, how long it took and when (INBOX 805, B77: "how
+//: long it took to file"): "Finished in 2.4 s at 10:04 pm".
+const ACTIVITY_ENDINGS = { failed: "Failed after", cancelled: "Stopped after" };
+
+function activityDuration(ms) {
+  if (typeof ms !== "number") return "";
+  if (ms < 1000) return `${Math.max(1, Math.round(ms))} ms`;
+  return ms < 10000 ? `${(ms / 1000).toFixed(1)} s` : taskElapsed(ms / 1000);
+}
+
+function activityEnding(job) {
+  const took = activityDuration(job.duration_ms);
+  const verb = ACTIVITY_ENDINGS[job.outcome] || (took ? "Finished in" : "Finished");
+  const at = new Date(job.finished * 1000).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  const times = job.count > 1 ? `, ${job.count} times` : "";
+  return `${verb}${took ? ` ${took}` : ""} at ${at}${times}`;
+}
+
 function paintActivity(body) {
   activityModelLine(body.model);
   const jobs = body.jobs || [];
@@ -100,6 +119,7 @@ function paintActivity(body) {
     return li;
   });
   $("activity-finished").replaceChildren(...finished);
+  $("activity-finished-head").classList.toggle("hidden", !finished.length);
 }
 
 //: The report sheet lives with the importers (app-import.js, lazy).

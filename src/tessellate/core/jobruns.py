@@ -38,6 +38,7 @@ run.
 
 from __future__ import annotations
 
+import contextvars
 import itertools
 import logging
 import threading
@@ -81,6 +82,15 @@ KINDS: dict[str, str] = {
     "redate": "Reading dates in notes",
     "extra": "Package install",
     "searxng": "SearXNG setup",
+}
+
+#: Kinds that are runs to watch but never a "last run" row (no database
+#: write, so the Background jobs overview does not list them as never run):
+#: one model call nothing else recorded (`model_call`), and the wait for a
+#: filing answer that came in past the deadline (`ai/janitor.py`).
+WATCH_ONLY_KINDS: dict[str, str] = {
+    "ai-call": "AI request",
+    "filing-late": "Late filing answer",
 }
 
 #: Longest result or error kept: the column is 400 and a line is a line.
@@ -275,6 +285,7 @@ class Run:
         self._error = ""
         self._skipped = False
         self._finished = False
+        self._ended = False
         #: What the row said before this run began, for `skip`.
         self._before: dict | None = None
         self._started_epoch = time.time()
@@ -332,7 +343,7 @@ class Run:
         return {
             "id": self.id,
             "kind": self.kind,
-            "label": KINDS.get(self.kind, self.kind),
+            "label": KINDS.get(self.kind) or WATCH_ONLY_KINDS.get(self.kind, self.kind),
             "title": self.title,
             "origin": self.origin,
             "started": self._started_epoch,
@@ -397,9 +408,15 @@ class Run:
         except Exception:  # noqa: BLE001  # bookkeeping must never break the job
             logger.debug("could not record the start of %r", self.kind, exc_info=True)
 
+    @property
+    def ended(self) -> bool:
+        """True once `finish` has run: no longer on the running list."""
+        return self._ended
+
     def finish(self) -> None:
         """Write the ending. Idempotent: the second call is a no-op, so a
         caller that finishes by hand can still sit inside a `finally`."""
+        self._ended = True
         with _live_lock:
             if self in _live:
                 _live.remove(self)
@@ -538,7 +555,8 @@ def job_run(kind: str, db=None, *, title: str = "", origin: str = "", persist: b
     run = Run(kind, _database(db) if persist else None, title=title, origin=origin)
     run.start()
     try:
-        yield run
+        with bound(run):
+            yield run
     except BaseException as exc:
         # GeneratorExit and KeyboardInterrupt are not "failed", but nothing
         # may leave the row saying "running" forever either.
@@ -661,3 +679,171 @@ def describe_night_pass(run: "Run", outcome: dict) -> None:
     )
     if outcome.get("stopped_reason") == "budget":
         run.result += " (stopped at its budget)"
+
+
+# --- The thread's current run, and every model call (INBOX 805, B77) --------
+
+#: The run this thread is advancing, so a model call made deep inside it
+#: adds its lines there rather than opening a run of its own.
+_bound = threading.local()
+
+#: The request being served, for the words of a model call no run owns
+#: ("Improve writing"). Set by the app's `RequestPulse` middleware.
+_request_scope: contextvars.ContextVar = contextvars.ContextVar("jobruns_request", default=None)
+
+
+@contextmanager
+def bound(run: "Run | None"):  # noqa: ANN201
+    """Make `run` this thread's current run for the length of the block."""
+    previous = getattr(_bound, "run", None)
+    _bound.run = run
+    try:
+        yield
+    finally:
+        _bound.run = previous
+
+
+def active() -> "Run | None":
+    """The run this thread is advancing, or None (also once it has ended)."""
+    run = getattr(_bound, "run", None)
+    return None if run is None or run.ended else run
+
+
+@contextmanager
+def for_request(scope: dict):  # noqa: ANN201
+    token = _request_scope.set(scope)
+    try:
+        yield
+    finally:
+        _request_scope.reset(token)
+
+
+def _purpose() -> str:
+    """What the request is for, in words, from its endpoint's name."""
+    scope = _request_scope.get()
+    if not scope:
+        return ""
+    name = getattr(scope.get("endpoint"), "__name__", "") or ""
+    if name:
+        return name.replace("_", " ").strip().capitalize()
+    path = str(scope.get("path") or "")
+    return f"AI request for {path}" if path else ""
+
+
+def _seconds(t0: float) -> str:
+    took = time.monotonic() - t0
+    if took < 1:
+        return f"{max(1, round(took * 1000))} ms"
+    return f"{took:.1f} s" if took < 60 else f"{int(took // 60)} min {int(took % 60)} s"
+
+
+@contextmanager
+def _calling():  # noqa: ANN202
+    before = getattr(_bound, "calling", False)
+    _bound.calling = True
+    try:
+        yield
+    finally:
+        _bound.calling = before
+
+
+def _open_call(model: str, tools: bool) -> tuple["Run", "Run | None", str]:
+    name = _clip(model) or "the model"
+    parent = active()
+    own = None
+    if parent is None:
+        scope = _request_scope.get()
+        own = Run("ai-call", None, title=_purpose() or f"AI request to {name}", origin="you" if scope else "app")
+        own.start()
+    run = parent or own
+    run.say(f"Asked {name}{' with tools' if tools else ''}.")
+    return run, own, name
+
+
+def model_call(method):  # noqa: ANN001, ANN201
+    """Wrap a provider's `chat` or `chat_tools`: every model call is in the
+    ledger. Inside a run (a pool job, a chat answer) it adds two timed lines
+    to that run; outside one it is a run of its own, named for the request
+    that made it, so no AI work happens unseen."""
+    tools = "tools" in method.__name__
+
+    def call(self, model, *args, **kwargs):  # noqa: ANN001, ANN202
+        if getattr(_bound, "calling", False):
+            return method(self, model, *args, **kwargs)
+        run, own, name = _open_call(model, tools)
+        t0 = time.monotonic()
+        try:
+            with _calling(), bound(own or run):
+                reply = method(self, model, *args, **kwargs)
+        except BaseException as exc:
+            run.say(f"{name} did not answer ({_seconds(t0)}).")
+            if own is not None:
+                own.fail(_failure_reason(exc))
+            raise
+        else:
+            run.say(f"{name} answered in {_seconds(t0)}.")
+            if own is not None:
+                own.result = f"answered in {_seconds(t0)}"
+        finally:
+            if own is not None:
+                own.finish()
+        return reply
+
+    call.__name__ = method.__name__
+    call.__qualname__ = getattr(method, "__qualname__", method.__name__)
+    call.__doc__ = method.__doc__
+    call.__wrapped__ = method
+    call.ledgered = True
+    return call
+
+
+def model_stream(method):  # noqa: ANN001, ANN201
+    """`model_call` for a streamed reply: the run opens at the first chunk
+    and ends however the stream does (finished, closed by the reader, or
+    raised), so nothing stays "running"."""
+    tools = "tools" in method.__name__
+
+    def stream(self, model, *args, **kwargs):  # noqa: ANN001, ANN202
+        if getattr(_bound, "calling", False):
+            yield from method(self, model, *args, **kwargs)
+            return
+        run, own, name = _open_call(model, tools)
+        t0 = time.monotonic()
+        source = None
+        try:
+            with _calling():
+                source = iter(method(self, model, *args, **kwargs))
+            while True:
+                with _calling(), bound(own or run):
+                    try:
+                        chunk = next(source)
+                    except StopIteration:
+                        break
+                yield chunk
+        except GeneratorExit:
+            run.say(f"Stopped reading {name} after {_seconds(t0)}.")
+            if own is not None:
+                own.cancel("closed before it finished")
+            raise
+        except BaseException as exc:
+            run.say(f"{name} did not answer ({_seconds(t0)}).")
+            if own is not None:
+                own.fail(_failure_reason(exc))
+            raise
+        else:
+            run.say(f"{name} answered in {_seconds(t0)}.")
+            if own is not None:
+                own.result = f"answered in {_seconds(t0)}"
+        finally:
+            close = getattr(source, "close", None)
+            if close is not None:
+                close()
+            if own is not None:
+                own.finish()
+
+    stream.__name__ = method.__name__
+    stream.__qualname__ = getattr(method, "__qualname__", method.__name__)
+    stream.__doc__ = method.__doc__
+    stream.__wrapped__ = method
+    stream.ledgered = True
+    return stream
