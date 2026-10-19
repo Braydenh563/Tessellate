@@ -2,9 +2,9 @@
 
 Generated 2026-10-19 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6195, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6158, test files 1314, tests 11685, plan headings 967.
+Counts: frontend functions 6197, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6158, test files 1314, tests 11686, plan headings 967.
 
-## Frontend functions (6195)
+## Frontend functions (6197)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -4992,17 +4992,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `listenToReminderWorker` | frontend/js/reminder-notify.js:25 |
 | `showReminderNotification` | frontend/js/reminder-notify.js:35 |
 
-### frontend/js/reply-kit.js (38)
+### frontend/js/reply-kit.js (40)
 
 | Name | File:line |
 |---|---|
 | `calcFigure` | frontend/js/reply-kit.js:413 |
-| `chatQueuePaint` | frontend/js/reply-kit.js:924 |
+| `chatQueuePaint` | frontend/js/reply-kit.js:1005 |
 | `openCalculator` | frontend/js/reply-kit.js:339 |
 | `renderRelatedElsewhere` | frontend/js/reply-kit.js:65 |
 | `renderReplyPanel` | frontend/js/reply-kit.js:20 |
 | `renderToolsUnsupportedNotice` | frontend/js/reply-kit.js:680 |
-| `replyByline` | frontend/js/reply-kit.js:720 |
+| `replyByHelpPanel` | frontend/js/reply-kit.js:732 |
+| `replyByHover` | frontend/js/reply-kit.js:753 |
+| `replyByline` | frontend/js/reply-kit.js:785 |
 | `replyBylineFacts` | frontend/js/reply-kit.js:709 |
 | `replyCalcBuild` | frontend/js/reply-kit.js:358 |
 | `replyCalcConvertPane` | frontend/js/reply-kit.js:570 |
@@ -5017,19 +5019,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `replyDrawAll` | frontend/js/reply-kit.js:31 |
 | `replyFillMeters` | frontend/js/reply-kit.js:190 |
 | `replyFinish` | frontend/js/reply-kit.js:645 |
-| `replyFoldLong` | frontend/js/reply-kit.js:782 |
-| `replyGist` | frontend/js/reply-kit.js:777 |
+| `replyFoldLong` | frontend/js/reply-kit.js:863 |
+| `replyGist` | frontend/js/reply-kit.js:858 |
 | `replyMeter` | frontend/js/reply-kit.js:157 |
 | `replyMonthName` | frontend/js/reply-kit.js:198 |
-| `replyNoteCard` | frontend/js/reply-kit.js:875 |
-| `replyNoteEntry` | frontend/js/reply-kit.js:824 |
-| `replyNoteId` | frontend/js/reply-kit.js:819 |
-| `replyNotePreviews` | frontend/js/reply-kit.js:828 |
+| `replyNoteCard` | frontend/js/reply-kit.js:956 |
+| `replyNoteEntry` | frontend/js/reply-kit.js:905 |
+| `replyNoteId` | frontend/js/reply-kit.js:900 |
+| `replyNotePreviews` | frontend/js/reply-kit.js:909 |
 | `replyPanelShell` | frontend/js/reply-kit.js:41 |
-| `replyPeekLink` | frontend/js/reply-kit.js:847 |
+| `replyPeekLink` | frontend/js/reply-kit.js:928 |
 | `replyRecordReasons` | frontend/js/reply-kit.js:662 |
-| `replyReveal` | frontend/js/reply-kit.js:747 |
-| `replyRevealWanted` | frontend/js/reply-kit.js:742 |
+| `replyReveal` | frontend/js/reply-kit.js:828 |
+| `replyRevealWanted` | frontend/js/reply-kit.js:823 |
 | `replySpark` | frontend/js/reply-kit.js:133 |
 | `replyStatCard` | frontend/js/reply-kit.js:101 |
 | `replyStatCards` | frontend/js/reply-kit.js:203 |
@@ -10130,7 +10132,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/quick-access-lazy.css | 105 |
 | frontend/css/quickadd-lazy.css | 35 |
 | frontend/css/recovery-lazy.css | 115 |
-| frontend/css/reply-kit-lazy.css | 473 |
+| frontend/css/reply-kit-lazy.css | 481 |
 | frontend/css/reveal-lazy.css | 10 |
 | frontend/css/search-lazy.css | 153 |
 | frontend/css/settings-controls-lazy.css | 94 |
@@ -18473,7 +18475,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11685)
+## Tests (11686)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19432,7 +19434,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_reminders_ics.py | 10 |
 | tests/test_reminders_reschedule.py | 5 |
 | tests/test_reminders_with_model.py | 2 |
-| tests/test_reply_cards.py | 11 |
+| tests/test_reply_cards.py | 12 |
 | tests/test_reply_variety.py | 11 |
 | tests/test_repo_files_helper.py | 6 |
 | tests/test_restart_everywhere.py | 7 |

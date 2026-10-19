@@ -206,3 +206,20 @@ def test_who_wrote_a_reply_is_one_badge_on_every_surface():
     assert 'head: answerRow.querySelector(".msg-role"), help: true' in guide
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert 'id="answered-by" class="chip item-label answer-model"' in html
+
+
+def test_the_no_model_badge_opens_a_help_popover_1344():
+    """INBOX 1344: "a hover/click tooltip popup with a disclaimer and
+    description for the composer message badge". A badge no model wrote
+    (From your notes, Composer, From the help) is a button on the
+    `data-help-for` recipe with its own `.help-body`; a model's name stays a
+    plain chip. Hover opens it where hover exists; click, Enter and Space
+    always do."""
+    kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
+    assert 'chip.setAttribute("data-help-for", panel.id);' in kit
+    assert "wireHelpPopover(chip, panel);" in kit
+    assert "function replyByHelpPanel(" in kit and "written without an AI model" in kit
+    assert "(hover: hover)" in kit
+    assert "Use AI" in kit[kit.index("function replyByHelpPanel(") :].split("\n}\n", 1)[0]
+    css = (ROOT / "frontend" / "css" / "reply-kit-lazy.css").read_text(encoding="utf-8")
+    assert "button.reply-by" in css

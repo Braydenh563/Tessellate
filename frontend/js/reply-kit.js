@@ -709,21 +709,102 @@ function renderToolsUnsupportedNotice(container, event) {
 function replyBylineFacts({ composed, model, engine, help }) {
   if (composed) {
     return help
-      ? ["From the help", "No model answered: this is the app's own help for what you asked"]
-      : ["From your notes", "Answered from your notes with no model: every sentence comes from a note"];
+      ? ["From the help", "No model answered: this is the app's own help for what you asked", "help"]
+      : ["From your notes", "Answered from your notes with no model: every sentence comes from a note", "notes"];
   }
   if (model) return [model, `Answered by ${model}`];
-  if (engine) return ["Composer", "The app answered this itself, with no model"];
+  if (engine) return ["Composer", "The app answered this itself, with no model", "engine"];
   return null;
+}
+
+//: **The badge explains itself** (INBOX 1344, the owner: "a hover/click
+//: tooltip popup with a disclaimer and description for the composer message
+//: badge to inform the user how it isnt an ai"). A badge no model wrote is a
+//: button on the `data-help-for` recipe; its `.help-body` is built per badge
+//: because `wireHelpPopover` takes one trigger per panel.
+let replyByHelpSeq = 0;
+const REPLY_BY_WHAT = {
+  notes: "This answer was written without an AI model. The app picked sentences from your own notes and joined them.",
+  help: "This answer was written without an AI model. It is the app's own help text for what you asked.",
+  engine: "This answer was worked out by the app itself, without an AI model: a greeting, a count, a time, a sum.",
+};
+
+function replyByHelpPanel(kind) {
+  const panel = document.createElement("div");
+  panel.className = "help-body hidden";
+  panel.id = `reply-by-help-${++replyByHelpSeq}`;
+  panel.setAttribute("role", "dialog");
+  panel.setAttribute("aria-label", "About this badge");
+  for (const line of [
+    REPLY_BY_WHAT[kind] || REPLY_BY_WHAT.notes,
+    "Every sentence in a notes answer is quoted from a note and cited. The only words the app adds are the joining ones and the counts and dates it measured. It does not guess, so it can miss what a model would work out.",
+    "A model's answer shows the model's name here instead, and its sentences are new wording.",
+    "To use a model, turn on Use AI in Ask when a model is running, or connect one in Settings, Models.",
+  ]) {
+    const p = document.createElement("p");
+    p.textContent = line;
+    panel.appendChild(p);
+  }
+  return panel;
+}
+
+//: Hover opens it where the device has hover and the pointer rests (a
+//: crossing mouse is not a request); a click right after is not a close.
+function replyByHover(badge, panel) {
+  if (!window.matchMedia("(hover: hover)").matches) return;
+  let timer = 0;
+  let openedAt = 0;
+  const open = () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      if (badge.getAttribute("aria-expanded") === "true") return;
+      openedAt = Date.now();
+      badge.click();
+    }, 350);
+  };
+  const leave = () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      if (badge.getAttribute("aria-expanded") === "true" && openedAt) badge.click();
+      openedAt = 0;
+    }, 250);
+  };
+  badge.addEventListener("click", (event) => {
+    if (openedAt && event.isTrusted && Date.now() - openedAt < 600) {
+      event.stopImmediatePropagation();
+      event.preventDefault();
+    }
+    if (event.isTrusted) openedAt = 0;
+  }, true);
+  badge.addEventListener("mouseenter", open);
+  badge.addEventListener("mouseleave", leave);
+  panel.addEventListener("mouseenter", () => clearTimeout(timer));
+  panel.addEventListener("mouseleave", leave);
 }
 
 function replyByline(head, facts) {
   const said = head && replyBylineFacts(facts);
   if (!said) return;
-  const chip = head.querySelector(":scope > .reply-by") || document.createElement("span");
+  head.querySelector(":scope > .reply-by")?.remove();
+  const kind = said[2];
+  const chip = document.createElement(kind ? "button" : "span");
   chip.className = "chip item-label answer-model reply-by";
   chipWords(chip, said[0]);
   chip.title = said[1];
+  if (kind) {
+    const panel = replyByHelpPanel(kind);
+    chip.type = "button";
+    chip.classList.add("chip-interactive");
+    chip.setAttribute("data-help-for", panel.id);
+    chip.setAttribute("aria-controls", panel.id);
+    chip.setAttribute("aria-expanded", "false");
+    chip.setAttribute("aria-label", `${said[0]}, written without an AI model. About this badge`);
+    head.appendChild(chip);
+    head.after(panel);
+    wireHelpPopover(chip, panel);
+    replyByHover(chip, panel);
+    return;
+  }
   head.appendChild(chip);
 }
 

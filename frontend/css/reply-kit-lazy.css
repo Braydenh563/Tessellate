@@ -322,6 +322,14 @@
   margin-inline-start: var(--space-1);
 }
 
+/* The badge no model wrote is a button (INBOX 1344): it keeps the chip's
+   look and opens its `data-help-for` popover. */
+button.reply-by {
+  font: inherit;
+  color: inherit;
+  cursor: help;
+}
+
 /* Ask's Matching records say why each card is there in a sentence (INBOX
    1310): it wraps inside the card rather than ellipsising, since the reason
    is the line's whole point; the chip's corner radius holds over two lines. */

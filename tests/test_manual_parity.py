@@ -127,6 +127,7 @@ UTILITIES = {
     "timer": ("utility-tools.js", "function startUtilityTimer(minutes = 25)", "the palette's Start a timer, or timer 10 minutes", "timer"),
     "stopwatch": ("utility-tools.js", "function startStopwatch()", "the palette's Start a stopwatch", "timer"),
     "stop the clock": ("utility-tools.js", '$("status-timer").addEventListener("click", stopUtilityClock);', "the status bar's timer chip", "timer"),
+    "no-model badge": ("reply-kit.js", "function replyByHelpPanel(kind)", "the From your notes badge", "ask-chat"),
     "calculator": ("reply-kit.js", 'function openCalculator(input = "")', "the palette's Calculator, or /calc", "calculator"),
     "count words": ("utility-tools.js", "function countSelection(caught)", "the palette's Count words", "count-words"),
     "live captions": ("captions.js", "async function startLiveCaptions(opts = {})", "the palette's Live captions", "live-captions"),
