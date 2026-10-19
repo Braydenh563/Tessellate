@@ -3660,6 +3660,13 @@ button.answer-figure-open {
     var(--inner);
 }
 
+/* A toast over the map stands above its zoom strip and legend (INBOX 1306): the strip is 4 buttons tall, 12rem clears it. */
+@media (min-width: 600px) {
+  :root body:has(#tab-graph:not(.hidden)) #toast-box {
+    bottom: calc(var(--status-bar-h) + 12rem);
+  }
+}
+
 /* Zoom controls as one floating pill. */
 .graph-zoom {
   display: flex;
