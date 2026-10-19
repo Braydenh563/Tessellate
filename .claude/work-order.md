@@ -1,5 +1,5 @@
 mode: continue
-status: blocked (waiting on CI for 25ba0fb and agents mobile1314, thumbs1317, stats1319)
+status: blocked (waiting on CI for ac44b59 and agents thumbs1317, stats1319)
 max-continues: 40
 max-idle-minutes: 60
 started: 2026-10-19 00:20
