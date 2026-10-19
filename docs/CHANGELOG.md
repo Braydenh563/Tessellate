@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer, no model (INBOX 1310): a broad ask ("What have I saved about hobbies?") is said by theme, closest first: one line per group saying what joins it ("Your gym notes go together: the Gym Routine Overview and ..., both tagged #gym", a link said as "you linked ... to ..."), then its notes, then "Also under hobbies, more loosely: ..." for notes on their own. Every Matching records entry carries a reason in words ("Matches hobbies by meaning, and shares #gaming with the gaming mouse"). Grammar: no "one weeks", a title is "you saved your Gym Routine Overview", a repeated schedule is "a Pull, Push, Legs split with rest days", "Your League of Legends note says ...", and a day in the last week is "a week ago", "last Friday" or "yesterday".
 - Notes sidebar: the collapse button stays put while the category list scrolls and sits level with the Categories row (it scrolled away and sat 8 px above the row) (INBOX 1311).
 - Companion: thrown onto a ledge or the bottom bar where it cannot stand, it steps along that surface instead of jumping up to the top bar or a far panel (on Chat at 1440: a throw that ended 192 px up now stays on the floor) (INBOX 1302).
 - Agent popup: typing / opens the same command menu as Chat (18 commands), and a chosen command answers in the popup (INBOX 1309).

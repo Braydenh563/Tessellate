@@ -67,6 +67,10 @@ def _corpus() -> list[str]:
 
     texts = [_answer(item)["text"] for item in FIXTURE["answers"]]
     texts += [_digest(q) for q in ("how is gaming going?", "what have I saved about gaming?")]
+    #: The owner's hobbies notebook said by theme (INBOX 1310), with a link.
+    from tests.test_composer_relevance_1310 import _hobbies, _notes
+
+    texts += [_hobbies(), _hobbies(_notes(links={4: [6], 6: [4]}, score={2: 0.82, 3: 0.8}))]
     for question, tab in (("what should I ask", "graph"), ("what should I ask", "notes"), ("What can Atlas change in my notebook?", "chat"),
                           ("How do I use the app??", "graph"), ("help", "graph")):
         texts.append(help_chat.offline_answer(question, tab)["content"])
