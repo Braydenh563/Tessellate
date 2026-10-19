@@ -130,7 +130,7 @@ def test_the_gold_questions_reach_their_topic():
     assert len(GOLD) >= 25 and 1 - len(wrong) / len(GOLD) >= FLOOR, wrong
 
 
-def test_the_gold_questions_are_answered_in_the_first_line():
+def test_the_gold_questions_are_answered_in_the_first_line(app_state):
     wrong = [(q, _lead(q)[:120]) for q, _ids, words in GOLD if not any(w in _lead(q) for w in words)]
     assert 1 - len(wrong) / len(GOLD) >= FLOOR, wrong
 
