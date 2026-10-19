@@ -2,7 +2,7 @@
 
 Generated 2026-10-19 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6199, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6158, test files 1316, tests 11708, plan headings 967.
+Counts: frontend functions 6199, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6158, test files 1316, tests 11709, plan headings 967.
 
 ## Frontend functions (6199)
 
@@ -2721,10 +2721,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `dashBoardThumb` | frontend/js/dash-boards.js:136 |
+| `dashBoardThumb` | frontend/js/dash-boards.js:137 |
 | `dashMapFeature` | frontend/js/dash-boards.js:30 |
 | `dashMapFeatureHeight` | frontend/js/dash-boards.js:20 |
-| `dashRenderBoards` | frontend/js/dash-boards.js:62 |
+| `dashRenderBoards` | frontend/js/dash-boards.js:63 |
 
 ### frontend/js/dash-day.js (4)
 
@@ -18477,13 +18477,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11708)
+## Tests (11709)
 
 `def test_` lines in each `tests/test_*.py`.
 
 | File | Tests |
 |---|---|
-| tests/test_a11y_wcag22.py | 35 |
+| tests/test_a11y_wcag22.py | 36 |
 | tests/test_about_github_link.py | 1 |
 | tests/test_accent_text.py | 3 |
 | tests/test_account.py | 16 |

@@ -490,3 +490,18 @@ def test_a_parked_sidebar_sheet_takes_no_pointer_but_its_toggle_does():
     toggle = misc[misc.index("#sidebar > .sidebar-collapse-toggle,\n  #chat-sidebar"):]
     toggle = toggle[: toggle.index("}")]
     assert "pointer-events: auto;" in toggle
+
+
+def test_visible_text_is_inside_the_accessible_name_wcag_2_5_3():
+    """UX audit 2026-10-19: the Capture "Add to document" opener was named
+    "Add this note to a document" and the Dashboard's featured board button
+    "Open the map Bubble tea" against the visible "Bubble tea 6 topics". The
+    opener's name is its visible words now; the feature button has no
+    aria-label, so its name is its caption (title and count) and its tooltip
+    says what a press does."""
+    assert 'labelledMenu("ph:file-plus Add to document", items, "Add to document", "ghost")' in _read("capture-ask.js")
+    feature = _read("dash-boards.js")
+    feature = feature[feature.index("function dashMapFeature("):]
+    feature = feature[: feature.index("return button;")]
+    assert 'button.setAttribute("aria-label"' not in feature
+    assert "button.title = `Open the ${kind} ${board.title}`;" in feature

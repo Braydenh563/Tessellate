@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Label in name (WCAG 2.5.3): Capture's Add to document opener is named by its visible words, and the Dashboard's featured board button by its caption (title and count) rather than "Open the map ...".
 - Settings > Data: a backup row's origin label ("Automatic daily backup") takes the ink instead of muted type on its tint (4.27:1 to above 4.5:1 in light).
 - Phone: the Back and Forward history menu opens below the header instead of above the viewport (top -304 to 54 at 390).
 - Notes list on a phone: a card whose facts are still too wide after folding to icons wraps to a second row instead of clipping its More actions button (li scrollWidth 418 to 358 at 390).
