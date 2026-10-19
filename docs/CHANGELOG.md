@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Scrolling: Settings, Help scrolls with less script per wheel step (5.0-8.0ms to 4.0-5.2ms; its "On this page" marker 65-83ms to 11-14ms over 40 steps), and the Notes list runs 1.7-1.95ms of scroll listeners a step instead of 3.3-4.2ms: the section scroller is found once, the sidebar follow measures before it writes, and open toolbar menus are kept by their own toggle instead of searched for on every scroll.
 - Atlas: asleep lying down, its Zs rise from its head (about 40px above the eyes in every pose) instead of from where a standing head would be.
 - Timeline: the table view names a meeting "Meeting" in its Kind column (and in sort), and below 600px, where that column is hidden, the title starts with "Meeting: " (INBOX 341).
 - Sidebar: the Categories collapse toggle sits on the head's row (8px lower, level with the filter button) while the collapsed sidebar is hover-opened.
