@@ -3093,10 +3093,8 @@ li.link-source {
   transition: opacity var(--ui-fast) var(--ease-out);
 }
 .toast {
-  background: var(--card);
-  /* INBOX 89: same hand-picked-18px bug as #top-bar (00-tokens-shell.css). */
-  backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  /* Opaque, never the glass card (INBOX 1306): the map read through it. */
+  background: var(--modal-bg-opaque);
   border: 1px solid var(--glass-border);
   border-left: 4px solid var(--accent);
   border-radius: var(--radius-lg);
