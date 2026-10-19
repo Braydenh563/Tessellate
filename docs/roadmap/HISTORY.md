@@ -51007,3 +51007,23 @@ From WHITEBOARD_PLAN "The draw.io programme", section 2 (Text tab), built by the
 - Offers: `_task_of` makes a reminder only from an open checkbox or an instruction that names what it is about ("ask the tutor on Thursday"); "ask follow-up questions that reflect genuine interest" is advice. `insights.drift` skips another person's plan ("He wants to try the crag" was "no later note picks up this plan: wants to try ...").
 - Ask: the "You asked:" line above the answer is gone (`renderAskedQuestion`, `#asked-question`); the question stays in the box it was typed in.
 - Measured over the 22 gold answers (`tests/_gold.py` `form`, `tests/test_composer_form_1301.py`): longest sentence 134 to 35 words, ";" joins 27 to 1, answers with a broken pattern 1 (15 hits) to 0, total characters 7,567 to 6,731 (item 22: 1,787 to 1,097); the note answers' gold score 88.9 to 90.9 (item 22: 57 to 81). The same text through Ask, Chat and the popup's `/chat/stream` bodies on a running app (`scratchpad/ui-sweeps/social-1301.js`); the Ask box keeps the question in its input and has no echo.
+## INBOX resolved, 2026-10-19
+
+805. **The owner, 2026-10-11, verbatim.** "it is unclear which backup is the
+     latest, and also the backups need more file info and details I feel. all
+     information and processes across the app need to be 100% transparent. so
+     all things that use the ai or composer and all background processes need
+     to be logged and shown in bg processes wtc, along with their individual
+     logs and process lines to show thier process live and when they are
+     finished as well. whena ny process is running it needs to be clear to the
+     suer." Owner: the transparency agent (next Opus slot): one process
+     ledger every AI, composer and background run writes to, live lines per
+     run in the background processes panel, a running indicator in the
+     shell, and the backup rows (latest marked, date in words, what made it,
+     size, checked). **Fixed 4261fca.** Backup rows in uxfix5-1018; every model
+     call now writes to the ledger (12 generation methods on 3 backends wrapped;
+     endpoints that call a model and opened a run: 8 of 64 by a source scan before, every call through a backend after), the Running tab
+     lists finished runs with outcome, length and time (11 rows measured at 1440,
+     no overflow, `scratchpad/ledger805.js`), and the job slot clears within one
+     2 s sample of the job ending (12 s before, `scratchpad/late805.js`).
+
