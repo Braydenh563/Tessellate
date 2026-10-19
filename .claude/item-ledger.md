@@ -20,3 +20,9 @@ date | item | type | rung | rework | note
 2026-10-19 | INBOX 1323 grounding source list | ui | opus | 0 | 
 2026-10-19 | INBOX 1316 timeline strip future | bug | opus | 0 | 
 2026-10-19 | INBOX 1313/1322a wb guides + Format button | ui | sonnet | 0 | 
+2026-10-19 | INBOX 1321 chat queue | ui | opus | 0 | 
+2026-10-19 | INBOX 1319 stats fit | ui | opus | 0 | 
+2026-10-19 | CodeQL lambda | bug | opus | 0 | 
+2026-10-19 | INBOX 1320 splash buttons | ui | opus | 0 | 
+2026-10-19 | INBOX 1322b Atlas micro | ui | sonnet | 0 | 
+2026-10-19 | INBOX 1324 composer roles | feature | sonnet | 0 | 

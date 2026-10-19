@@ -24,4 +24,7 @@ finish-up: 60% weekly (owner)
 - [x] INBOX 1319 part: Statistics fit and scroll
 - [x] CodeQL thread (unnecessary lambda) fixed and resolved
 - [ ] (running) thumbs1317 (Sonnet)
-- [ ] Next: statistics 1319 interactivity and stats chat, splash (UI plan), OPEN.md Haiku catalogue
+- [x] INBOX 1320 splash minimise and close
+- [x] composer1324 merged (Ask your notes, 23 to 32)
+- [ ] (running) stats1319 (Sonnet): interactive charts, range, stats chat
+- [ ] Next: composer follow-ups (agent-remaining/composer1324), WHITEBOARD_PLAN rows 3, 4, 5, 7, 8, 12 to 14, OPEN.md Haiku catalogue
