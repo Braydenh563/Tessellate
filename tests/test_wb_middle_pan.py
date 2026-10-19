@@ -151,3 +151,45 @@ def test_a_selected_connectors_end_grip_wins_over_an_items_port() -> None:
     start = SOURCE.index('containerEl.addEventListener("pointerdown", (e) => {\n    if (e.button !== 0 || e.pointerType === "touch" || window.currentTool !== "select" || !port.item')
     body = SOURCE[start : SOURCE.index("portTarget(x, y)", start)]
     assert ".wb-link-endpoint-handle" in body, "the port press must yield to a connector's end grip"
+
+
+def test_frames_turn_and_a_click_on_a_panel_selects_it() -> None:
+    """INBOX 1327. Browser half (measured): a tinted panel's body, a plain frame's edge and a
+    panel's title select (object ids returned), a plain frame's body and bare board do not,
+    and dragging a frame's rotate handle stored rotation 90."""
+    assert 'if (d.kind === "table") return;\n    el.append("div")\n      .attr("class", "wb-rotate-handle")' in SOURCE
+    assert "function wbSelectFrameAt(" in SOURCE
+    assert "wbSelectFrameAt(...getLogicalMouse(e)" in SOURCE
+
+
+@pytest.mark.parametrize(
+    ("pref", "shift", "pans"),
+    [("pan", False, True), ("pan", True, False), ("select", False, False), ("select", True, True)],
+)
+def test_left_drag_on_empty_canvas_pans_or_selects_by_preference(pref: str, shift: bool, pans: bool) -> None:
+    """INBOX 1332: the default is Pan with Shift drawing the rectangle; the preference swaps
+    them, one pair for boards and maps. Browser half (measured at 1440x900): pan, no shift moved
+    the view 100,50 and drew no marquee; Shift drew it and moved 0; Select swapped both."""
+    import json
+
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    event = {"type": "mousedown", "button": 0, "buttons": 1, "shiftKey": shift, "target": None}
+    script = (
+        "let wbSpaceHeld = false; let wbMidPanHeld = false;"
+        f" const prefs = {{ get: () => {json.dumps(pref)} }};"
+        " const wbBoardState = { wheel: { at: -1e9, pad: false } }; globalThis.window = { currentTool: 'select' };\n"
+        + _function("wbLeftDragSelects")
+        + "function wbIsBareCanvas() { return true; }\n"
+        + _function("wbTrackpadPan")
+        + _function("wbZoomFilter")
+        + f"\nconsole.log(JSON.stringify(Boolean(wbZoomFilter({json.dumps(event)}))));\n"
+    )
+    out = subprocess.run([node, "-e", script], capture_output=True, text=True, check=True)
+    assert json.loads(out.stdout.strip()) is pans
+
+
+def test_the_marquee_starts_when_shift_disagrees_with_the_preference() -> None:
+    assert "if (!place && e.shiftKey === wbLeftDragSelects()) return;" in SOURCE
+    assert 'id="wb-drag-select"' in (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")

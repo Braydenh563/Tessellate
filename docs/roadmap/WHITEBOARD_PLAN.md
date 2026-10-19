@@ -198,7 +198,9 @@ kind. Every tool has a key and every key is in the tooltip and the help.
    or draws as on bare board); the title takes the pointer. Dragging the
    title carries whatever lies wholly inside, decided when the drag starts;
    Ctrl moves the frame alone (the map topic's rule). Double-click the title
-   to rename. Delete leaves what it held. No rotation, no style or order
+   to rename. Delete leaves what it held. Rotation added 2026-10-19 (INBOX 1327,
+   the owner asked): the box turns, what lay inside stays put. A click on a
+   tinted panel's body or a plain frame's edge selects it. No style or order
    controls. Not on maps. Nesting, clipping and a frame as an export or
    presentation unit are not in this decision.
 15. **A locked item lets the pointer through** (taken 2026-10-04, the open
@@ -463,6 +465,14 @@ accessibility, and learnability") are why.
     because zoom, tool and selection already read from the zoom dock, the
     pressed tool and the context bar, and section 3 wants less chrome, not a
     fourth strip. The contextual quick bar is `.wb-context` (built).
+41. **A left-drag on empty canvas pans; Shift-drag selects** (the owner,
+    2026-10-19, INBOX 1332; supersedes the "a plain left-drag only pans
+    with Pan" rule in `wbZoomFilter` and the marquee being the plain
+    drag). One preference, "Left-drag on empty canvas" in the View menu,
+    Pan (default) or Select, shared by boards and maps so they teach one
+    hand (MINDMAP_PLAN decision 48); Shift flips whichever it is. Items
+    keep their own drag; right, middle and Space drags still pan; the Pan
+    and Lasso tools are untouched; touch already pans bare canvas.
 
 ## Built, 2026-09-09: one surface per panel, and the Arrange section
 
