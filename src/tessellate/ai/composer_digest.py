@@ -1899,7 +1899,7 @@ def _framed(out: _Out, question: str, members, facts, today: date, groups: list)
     topic = _topic(question, members)
     budget = LINES["overview"]
     for group in groups:
-        (out.lines if budget > 0 else out.more).append(composer_frame.group_line(group, notes, topic, lambda t: _heading_said(t)))
+        (out.lines if budget > 0 else out.more).append(composer_frame.group_line(group, notes, topic, _heading_said))
         held = [f for f in facts if f.view.id in group.ids]
         told: set = set()
         for i in group.ids:
