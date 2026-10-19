@@ -94,7 +94,13 @@ function wbTrackpadPan(event) {
     if (now - g.at > 200 || now < g.at) g.pad = false;
     g.at = now;
     const dy = Math.abs(event.deltaY);
-    if (event.deltaX !== 0 || (dy > 0 && (dy < 50 || dy % 1 !== 0))) g.pad = true;
+    //: A mouse notch is a whole multiple of 120 in `wheelDeltaY` whatever the
+    //: display scale (the owner, 2026-10-19: the wheel scrolled instead of
+    //: zooming; at a fractional Windows scale a notch's deltaY is fractional,
+    //: which read as a trackpad). Trackpads report arbitrary values there.
+    const raw = Math.abs(event.wheelDeltaY || 0);
+    const notch = raw > 0 && raw % 120 === 0 && event.deltaX === 0;
+    if (!notch && (event.deltaX !== 0 || (dy > 0 && (dy < 50 || dy % 1 !== 0)))) g.pad = true;
   }
   return g.pad;
 }

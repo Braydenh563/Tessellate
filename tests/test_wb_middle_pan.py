@@ -132,6 +132,13 @@ def test_a_vertical_only_trackpad_scroll_pans_from_its_first_small_frame() -> No
     assert _gesture([_w(500, 4), _w(516, 9), _w(532, 7.5)]) == [False] * 3
 
 
+def test_a_mouse_notch_at_a_fractional_display_scale_zooms() -> None:
+    """The owner, 2026-10-19: the wheel scrolled instead of zooming. At 125% or 150% Windows
+    scale a notch's deltaY is fractional (80, 66.67); wheelDeltaY stays a multiple of 120."""
+    notches = [_w(2000, 66.666, wheelDeltaY=-120), _w(2040, 66.666, wheelDeltaY=-120), _w(2080, 33.333, wheelDeltaY=-240)]
+    assert _gesture(notches) == [True] * 3
+
+
 def test_a_pinch_zooms_and_a_mouse_wheel_zooms() -> None:
     pinch = [_w(0, 4, ctrlKey=True), _w(16, 6, ctrlKey=True)]
     assert _gesture(pinch) == [True, True]

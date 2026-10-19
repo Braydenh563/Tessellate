@@ -926,6 +926,22 @@ function toastCloseButton(note, timer) {
 const SUPPORT_EMAIL = "brayden.hoyle@outlook.com";
 
 
+//: **The lock's field takes the typing** (the owner, 2026-10-19: on first
+//: load the password box was not selected). `showLock` focuses it, but the
+//: desktop window is often not focused yet then; so the field is focused
+//: again when the window gains focus, and a printable key pressed while
+//: nothing editable has focus lands in it (focus moved in keydown takes the
+//: character in Chromium).
+function lockFieldWants(e) {
+  const field = $("lock-password");
+  if (!field || $("lock-overlay")?.classList.contains("hidden")) return null;
+  const at = document.activeElement;
+  if (at && at !== document.body && (at.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(at.tagName))) return null;
+  return !e || (e.key?.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) ? field : null;
+}
+window.addEventListener("focus", () => lockFieldWants()?.focus());
+document.addEventListener("keydown", (e) => lockFieldWants(e)?.focus(), true);
+
 //: A toast steps aside for the focused control it covers (WCAG 2.4.11,
 //: measured at 200% and 400% zoom: a lasting "3 reminders are due" hid the
 //: Tab stop under it on six tabs). Fades and lets clicks through until focus
