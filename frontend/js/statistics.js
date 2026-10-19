@@ -287,6 +287,81 @@ async function statsUsageSection(usage, asOf) {
   return section;
 }
 
+//: "Ask about your statistics": the Guide's pattern (a box, three starters,
+//: the answer under it) over `POST /statistics/ask`, which counts the answer
+//: from the rows with no model (ai/stats_ask.py). Nothing is kept: a new
+//: question replaces the last answer.
+const STATS_ASK_STARTERS = ["Summarise my month", "What do I use most?", "Am I writing more than last month?"];
+
+function statsAskBox() {
+  const form = document.createElement("form");
+  form.className = "stats-ask";
+  const label = document.createElement("label");
+  label.className = "stats-ask-label";
+  label.htmlFor = "stats-ask-input";
+  label.textContent = "Ask about your statistics";
+  const row = document.createElement("div");
+  row.className = "stats-ask-row";
+  const input = document.createElement("input");
+  input.id = "stats-ask-input";
+  input.type = "text";
+  input.maxLength = 300;
+  input.autocomplete = "off";
+  input.placeholder = "How many notes did I write in July?";
+  const send = document.createElement("button");
+  send.type = "submit";
+  send.className = "primary small";
+  send.textContent = "Ask";
+  row.append(input, send);
+  const chips = document.createElement("div");
+  chips.className = "stats-ask-chips";
+  const answer = document.createElement("div");
+  answer.className = "stats-ask-answer hidden";
+  answer.setAttribute("aria-live", "polite");
+  const ask = async (question) => {
+    const text = question.trim();
+    if (!text) return;
+    input.value = text;
+    send.disabled = true;
+    try {
+      const done = await apiJson("/statistics/ask", { method: "POST", body: JSON.stringify({ question: text }), readOnly: true, silent: true });
+      const line = document.createElement("p");
+      line.className = "stats-ask-text";
+      line.textContent = done.text;
+      answer.replaceChildren(line);
+      if ((done.facts || []).length > 1 && done.kind !== "none") {
+        const list = document.createElement("ul");
+        list.className = "muted stats-ask-facts";
+        for (const fact of done.facts.slice(0, 8)) {
+          const li = document.createElement("li");
+          li.textContent = `${fact.label}: ${Number(fact.count).toLocaleString()}`;
+          list.appendChild(li);
+        }
+        answer.appendChild(list);
+      }
+      answer.classList.remove("hidden");
+    } catch {
+      toast("Couldn't answer that.", true);
+    } finally {
+      send.disabled = false;
+    }
+  };
+  for (const starter of STATS_ASK_STARTERS) {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "ghost small stats-ask-chip";
+    chip.textContent = starter;
+    chip.addEventListener("click", () => ask(starter));
+    chips.appendChild(chip);
+  }
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    ask(input.value);
+  });
+  form.append(label, row, chips, answer);
+  return form;
+}
+
 async function paintStatistics(body) {
   let data;
   try {
@@ -299,6 +374,7 @@ async function paintStatistics(body) {
   const week = statsSection("This week", "Every line is a count, against last week.");
   week.appendChild(statsWeekCard(data.week));
   body.replaceChildren(
+    statsAskBox(),
     week,
     statsNotebookSection(data.notebook),
     statsRemindersSection(data.reminders),
@@ -354,7 +430,7 @@ function openStatistics() {
   helpBody.setAttribute("aria-label", "About statistics");
   const helpText = document.createElement("p");
   helpText.textContent =
-    "Every number here is counted from your notes, reminders and this computer's usage counts, with no model. Private and binned notes are left out. This week runs from Monday on your clock; words written are the words in the notes made that week; a reminder counts as done in the week it was ticked off. Hover or focus a point or bar for its exact value, use the arrow keys to move between them, and click or press Enter to open it: a month opens the Timeline there, a feature bar opens that feature. The counts open what they count, the range picks how far back the growth chart goes, and the small line beside each week row is this week's days against last week's. Usage is counted on this computer and never leaves it.";
+    "Every number here is counted from your notes, reminders and this computer's usage counts, with no model. Private and binned notes are left out. This week runs from Monday on your clock; words written are the words in the notes made that week; a reminder counts as done in the week it was ticked off. Hover or focus a point or bar for its exact value, use the arrow keys to move between them, and click or press Enter to open it: a month opens the Timeline there, a feature bar opens that feature. The counts open what they count, the range picks how far back the growth chart goes, and the small line beside each week row is this week's days against last week's. The Ask box answers from these same counts, with no model: try the three starters. Usage is counted on this computer and never leaves it.";
   helpBody.appendChild(helpText);
   const body = document.createElement("div");
   body.className = "stats-body";

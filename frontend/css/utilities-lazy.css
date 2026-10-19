@@ -223,3 +223,48 @@ button.stats-tile.is-link:hover {
 .stats-spark-dot {
   fill: var(--accent);
 }
+
+/* Ask about your statistics: a label, a box with its button, three starters
+   and the counted answer (INBOX 1319; the Guide's pattern, compact). The
+   answer is a tone, not a second bordered pane. */
+.stats-ask {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.stats-ask-label {
+  font-weight: 600;
+}
+
+.stats-ask-row {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.stats-ask-row > input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.stats-ask-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.stats-ask-answer {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+}
+
+.stats-ask-text {
+  margin: 0;
+}
+
+.stats-ask-facts {
+  margin: var(--space-2) 0 0;
+  padding-inline-start: var(--space-5);
+  font-size: var(--text-sm);
+}

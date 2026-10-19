@@ -2,9 +2,9 @@
 
 Generated 2026-10-19 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6182, frontend ids 2537, CSS sections 496, backend routes 613, backend modules 6117, test files 1302, tests 11628, plan headings 961.
+Counts: frontend functions 6183, frontend ids 2537, CSS sections 496, backend routes 614, backend modules 6132, test files 1303, tests 11637, plan headings 961.
 
-## Frontend functions (6182)
+## Frontend functions (6183)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -5446,13 +5446,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `sketchStart` | frontend/js/sketch-pad.js:148 |
 | `sketchTogglePalette` | frontend/js/sketch-pad.js:122 |
 
-### frontend/js/statistics.js (23)
+### frontend/js/statistics.js (24)
 
 | Name | File:line |
 |---|---|
-| `openStatistics` | frontend/js/statistics.js:309 |
-| `paintStatistics` | frontend/js/statistics.js:290 |
-| `renderWeekWidget` | frontend/js/statistics.js:376 |
+| `openStatistics` | frontend/js/statistics.js:385 |
+| `paintStatistics` | frontend/js/statistics.js:365 |
+| `renderWeekWidget` | frontend/js/statistics.js:452 |
+| `statsAskBox` | frontend/js/statistics.js:296 |
 | `statsChange` | frontend/js/statistics.js:121 |
 | `statsChart` | frontend/js/statistics.js:61 |
 | `statsDay` | frontend/js/statistics.js:115 |
@@ -10122,9 +10123,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/timeline-calendar-lazy.css | 292 |
 | frontend/css/timeline-ticks-lazy.css | 42 |
 | frontend/css/usage-lazy.css | 34 |
-| frontend/css/utilities-lazy.css | 225 |
+| frontend/css/utilities-lazy.css | 270 |
 
-## Backend routes (613)
+## Backend routes (614)
 
 `@router.<method>(`, `@<name>_router.<method>(` and `@app.<method>(` decorators in `src/tessellate/api/*.py`, sorted by path. The line is the decorator's.
 
@@ -10548,7 +10549,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/spaces/{space_id}/move-notes` | POST | `move_notes_to_space` | src/tessellate/api/routes_spaces.py:462 |
 | `/spec` | GET | `model_spec` | src/tessellate/api/routes_models.py:525 |
 | `/start` | POST | `start` | src/tessellate/api/routes_captions.py:96 |
-| `/statistics` | GET | `statistics` | src/tessellate/api/routes_statistics.py:24 |
+| `/statistics` | GET | `statistics` | src/tessellate/api/routes_statistics.py:25 |
+| `/statistics/ask` | POST | `ask_statistics` | src/tessellate/api/routes_statistics.py:39 |
 | `/stats` | GET | `ask_history_stats` | src/tessellate/api/routes_ask_history.py:84 |
 | `/stats` | GET | `stats` | src/tessellate/api/routes_insights.py:33 |
 | `/stats` | GET | `stats` | src/tessellate/api/routes_search.py:162 |
@@ -10744,7 +10746,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (6117)
+## Backend modules (6132)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -12037,8 +12039,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2572 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2674 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2575 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2677 |
 
 ### src/tessellate/ai/inbox.py (7)
 
@@ -13217,6 +13219,24 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_vectors` | src/tessellate/ai/starter_acts.py:291 |
 | `events` | src/tessellate/ai/starter_acts.py:90 |
 | `read` | src/tessellate/ai/starter_acts.py:58 |
+
+### src/tessellate/ai/stats_ask.py (13)
+
+| Name | File:line |
+|---|---|
+| `_compare` | src/tessellate/ai/stats_ask.py:122 |
+| `_feature` | src/tessellate/ai/stats_ask.py:100 |
+| `_midnight` | src/tessellate/ai/stats_ask.py:56 |
+| `_month_count` | src/tessellate/ai/stats_ask.py:84 |
+| `_month_start` | src/tessellate/ai/stats_ask.py:60 |
+| `_name` | src/tessellate/ai/stats_ask.py:71 |
+| `_named_month` | src/tessellate/ai/stats_ask.py:75 |
+| `_next_month` | src/tessellate/ai/stats_ask.py:67 |
+| `_period` | src/tessellate/ai/stats_ask.py:118 |
+| `_span` | src/tessellate/ai/stats_ask.py:46 |
+| `_summary` | src/tessellate/ai/stats_ask.py:155 |
+| `_usage` | src/tessellate/ai/stats_ask.py:107 |
+| `ask` | src/tessellate/ai/stats_ask.py:189 |
 
 ### src/tessellate/ai/supersede.py (15)
 
@@ -15602,11 +15622,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `restore_space` | src/tessellate/api/routes_spaces.py:183 |
 | `update_space` | src/tessellate/api/routes_spaces.py:85 |
 
-### src/tessellate/api/routes_statistics.py (1)
+### src/tessellate/api/routes_statistics.py (3)
 
 | Name | File:line |
 |---|---|
-| `statistics` | src/tessellate/api/routes_statistics.py:25 |
+| `AskBody` | src/tessellate/api/routes_statistics.py:35 |
+| `ask_statistics` | src/tessellate/api/routes_statistics.py:40 |
+| `statistics` | src/tessellate/api/routes_statistics.py:26 |
 
 ### src/tessellate/api/routes_tags.py (15)
 
@@ -18400,7 +18422,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11628)
+## Tests (11637)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19464,6 +19486,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_static_compression.py | 6 |
 | tests/test_static_freshness.py | 5 |
 | tests/test_static_precompressed.py | 7 |
+| tests/test_statistics_ask_1319.py | 9 |
 | tests/test_stats_fit_1319.py | 1 |
 | tests/test_stats_interactive_1319.py | 8 |
 | tests/test_status_bar_fit.py | 4 |
