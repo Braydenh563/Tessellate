@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Manual: Find anything and the palette have Open the manual (it can be a dashboard quick link), Settings, Help, The manual topic opens the manual itself, and the Guide's text names its More actions menu.
 - Navigation: the manual and Statistics are places in the history list (Back closes them, the list names them), and the current row no longer shrinks when the list scrolls (INBOX 1335).
 - Statistics: a failed open, range change or question offers Try again.
 - Keyboard: the first Tab after the app loads or unlocks lands on "Skip to content" again, not the Local chip halfway along the top bar.

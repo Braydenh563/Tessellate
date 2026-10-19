@@ -935,7 +935,7 @@ function tabLabel(name) {
   //: The document editor is a page, not a tab, so it has no button either.
   if (name === "documents") return "Documents";
   const button = document.querySelector(`#tab-bar button[data-tab="${name}"]`);
-  return button?.textContent?.trim() || ROUTE_VIEW_NAMES[name] || name;
+  return button?.textContent?.trim() || name;
 }
 
 // "Notes → Capture" rather than just "Notes", so Back names the step it
@@ -1092,7 +1092,7 @@ function restoreSettingsScroll(section, top) {
 //: visits (a reload, a pasted link: `routerOpen`, router.js), which are the
 //: same question asked from an address instead of from the stack.
 async function openHistoryEntry(entry) {
-  if (typeof overlayGo === "function" && (await overlayGo(entry))) return;
+  if (await window.overlayGo?.(entry)) return;
   // Settings is a modal overlay, not one of the tab-pages switchTab knows
   // about: asked for directly: "the back and forward buttons should cover
   // going in and out of settings too", which they didn't, because nothing

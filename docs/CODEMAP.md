@@ -2,7 +2,7 @@
 
 Generated 2026-10-19 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6192, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6157, test files 1310, tests 11679, plan headings 967.
+Counts: frontend functions 6192, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6157, test files 1311, tests 11682, plan headings 967.
 
 ## Frontend functions (6192)
 
@@ -978,10 +978,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `markPrefsDirty` | frontend/js/settings-panes.js:1028 |
 | `markPrefsSaved` | frontend/js/settings-panes.js:1044 |
 | `nudgeZoom` | frontend/js/settings-panes.js:1191 |
-| `paletteAbouts` | frontend/js/settings-panes.js:1559 |
+| `paletteAbouts` | frontend/js/settings-panes.js:1560 |
 | `paletteCommands` | frontend/js/settings-panes.js:1283 |
-| `paletteKeys` | frontend/js/settings-panes.js:1545 |
-| `paletteRowParts` | frontend/js/settings-panes.js:1570 |
+| `paletteKeys` | frontend/js/settings-panes.js:1546 |
+| `paletteRowParts` | frontend/js/settings-panes.js:1571 |
 | `refitComposer` | frontend/js/settings-panes.js:269 |
 | `renderAccount` | frontend/js/settings-panes.js:488 |
 | `renderAutonomousSettings` | frontend/js/settings-panes.js:799 |
@@ -5038,21 +5038,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `foldedText` | frontend/js/reveal-targets.js:622 |
-| `markNotePassage` | frontend/js/reveal-targets.js:651 |
-| `notePassageFor` | frontend/js/reveal-targets.js:610 |
-| `packagesNoticeOpen` | frontend/js/reveal-targets.js:678 |
-| `packagesNoticeTarget` | frontend/js/reveal-targets.js:665 |
-| `passageRange` | frontend/js/reveal-targets.js:637 |
+| `foldedText` | frontend/js/reveal-targets.js:624 |
+| `markNotePassage` | frontend/js/reveal-targets.js:653 |
+| `notePassageFor` | frontend/js/reveal-targets.js:612 |
+| `packagesNoticeOpen` | frontend/js/reveal-targets.js:680 |
+| `packagesNoticeTarget` | frontend/js/reveal-targets.js:667 |
+| `passageRange` | frontend/js/reveal-targets.js:639 |
 | `revealBoard` | frontend/js/reveal-targets.js:155 |
-| `revealBoardsGallery` | frontend/js/reveal-targets.js:527 |
+| `revealBoardsGallery` | frontend/js/reveal-targets.js:529 |
 | `revealDashWidget` | frontend/js/reveal-targets.js:174 |
 | `revealDetails` | frontend/js/reveal-targets.js:65 |
 | `revealDocument` | frontend/js/reveal-targets.js:145 |
 | `revealEntryMenu` | frontend/js/reveal-targets.js:82 |
-| `revealFeature` | frontend/js/reveal-targets.js:540 |
+| `revealFeature` | frontend/js/reveal-targets.js:542 |
 | `revealGraphOptions` | frontend/js/reveal-targets.js:135 |
-| `revealLibrarySub` | frontend/js/reveal-targets.js:536 |
+| `revealLibrarySub` | frontend/js/reveal-targets.js:538 |
 | `revealQuery` | frontend/js/reveal-targets.js:72 |
 | `revealStrip` | frontend/js/reveal-targets.js:127 |
 | `revealSubmenuFor` | frontend/js/reveal-targets.js:109 |
@@ -5062,11 +5062,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `overlayClosed` | frontend/js/router-overlays.js:135 |
-| `overlayGo` | frontend/js/router-overlays.js:143 |
-| `routerBackHook` | frontend/js/router-overlays.js:73 |
-| `routerCloseTopOverlay` | frontend/js/router-overlays.js:21 |
-| `routerSettle` | frontend/js/router-overlays.js:101 |
+| `overlayClosed` | frontend/js/router-overlays.js:134 |
+| `overlayGo` | frontend/js/router-overlays.js:142 |
+| `routerBackHook` | frontend/js/router-overlays.js:72 |
+| `routerCloseTopOverlay` | frontend/js/router-overlays.js:20 |
+| `routerSettle` | frontend/js/router-overlays.js:100 |
 
 ### frontend/js/run-core.js (10)
 
@@ -5302,20 +5302,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `findSettings` | frontend/js/settings-find.js:113 |
-| `helpAlternation` | frontend/js/settings-find.js:606 |
-| `helpApplySearch` | frontend/js/settings-find.js:726 |
-| `helpEmphasis` | frontend/js/settings-find.js:612 |
-| `helpFill` | frontend/js/settings-find.js:633 |
-| `helpMarks` | frontend/js/settings-find.js:646 |
-| `helpMatches` | frontend/js/settings-find.js:710 |
-| `helpQueryTerms` | frontend/js/settings-find.js:702 |
-| `helpSearchBind` | frontend/js/settings-find.js:783 |
+| `helpAlternation` | frontend/js/settings-find.js:608 |
+| `helpApplySearch` | frontend/js/settings-find.js:728 |
+| `helpEmphasis` | frontend/js/settings-find.js:614 |
+| `helpFill` | frontend/js/settings-find.js:635 |
+| `helpMarks` | frontend/js/settings-find.js:648 |
+| `helpMatches` | frontend/js/settings-find.js:712 |
+| `helpQueryTerms` | frontend/js/settings-find.js:704 |
+| `helpSearchBind` | frontend/js/settings-find.js:785 |
 | `helpTopicLink` | frontend/js/settings-find.js:575 |
-| `helpTopicPaint` | frontend/js/settings-find.js:660 |
-| `helpTopicRow` | frontend/js/settings-find.js:674 |
+| `helpTopicPaint` | frontend/js/settings-find.js:662 |
+| `helpTopicRow` | frontend/js/settings-find.js:676 |
 | `openSettingRow` | frontend/js/settings-find.js:179 |
-| `renderCredits` | frontend/js/settings-find.js:806 |
-| `renderHelpTopics` | frontend/js/settings-find.js:854 |
+| `renderCredits` | frontend/js/settings-find.js:808 |
+| `renderHelpTopics` | frontend/js/settings-find.js:856 |
 | `renderSettingResults` | frontend/js/settings-find.js:226 |
 | `settingNearAdd` | frontend/js/settings-find.js:241 |
 | `settingQueryAlts` | frontend/js/settings-find.js:101 |
@@ -12060,8 +12060,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2597 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2699 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2599 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2701 |
 
 ### src/tessellate/ai/inbox.py (7)
 
@@ -18469,7 +18469,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11679)
+## Tests (11682)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19138,6 +19138,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_maintenance.py | 19 |
 | tests/test_make_plan.py | 21 |
 | tests/test_manage_lists_504.py | 5 |
+| tests/test_manual_entry_points.py | 3 |
 | tests/test_manual_parity.py | 9 |
 | tests/test_map_actions_clear_of_label.py | 1 |
 | tests/test_map_add_speed.py | 6 |
@@ -20487,7 +20488,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1265 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:296 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:293 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4173 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

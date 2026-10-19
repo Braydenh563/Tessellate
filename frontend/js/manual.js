@@ -175,7 +175,7 @@ async function openManual(topicId = "") {
     overlay.remove();
     manualOpen.close = null;
     if (returnFocus?.isConnected) returnFocus.focus?.();
-    if (typeof overlayClosed === "function") overlayClosed("manual", { stay: opts?.stay === true });
+    if (typeof overlayClosed === "function") overlayClosed("Manual", { stay: opts?.stay === true });
   };
   const head = dialogHead("Manual", () => manualOpen.close?.());
   const print = smallButton("ph:printer", "Print the manual (what is shown)", () => {
@@ -223,7 +223,7 @@ async function openManual(topicId = "") {
   wireBackdropClose(overlay, () => manualOpen.close?.());
   document.addEventListener("keydown", onKey, true);
   document.body.appendChild(overlay);
-  recordTabVisit("manual");
+  recordTabVisit("Manual");
   const target = topicId && document.getElementById(`manual-${topicId}`);
   if (target) {
     parts.topics.scrollTop = target.offsetTop;

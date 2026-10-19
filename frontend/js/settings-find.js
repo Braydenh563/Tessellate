@@ -580,6 +580,8 @@ function helpTopicLink(link) {
   if (link.section) button.dataset.gotoSection = link.section;
   if (link.target) button.dataset.gotoTarget = link.target;
   button.textContent = `Open ${link.label}`;
+  //: The manual's own topic opens the manual itself, not Settings, Help (owner, 2026-10-19).
+  if (link.manual) button.addEventListener("click", () => lazyScript("/js/manual.js").then((ok) => ok && openManual()));
   return button;
 }
 
@@ -682,7 +684,7 @@ function helpTopicRow(topic) {
   details._named = `${topic.title} ${topic.find}`.toLowerCase();
   details.append(summary, document.createElement("p"));
   //: A link to Help from inside Help goes nowhere.
-  const link = topic.link && topic.link.section !== "help" ? topic.link : null;
+  const link = topic.id === "manual" ? { manual: true, label: "the manual" } : topic.link && topic.link.section !== "help" ? topic.link : null;
   if (topic.path || link) {
     const where = document.createElement("p");
     where.className = "help-topic-links muted";

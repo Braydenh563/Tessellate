@@ -410,7 +410,7 @@ function openStatistics() {
     document.removeEventListener("keydown", onKey, true);
     overlay.remove();
     if (returnFocus?.isConnected) returnFocus.focus?.();
-    if (typeof overlayClosed === "function") overlayClosed("statistics", { stay: opts?.stay === true });
+    if (typeof overlayClosed === "function") overlayClosed("Statistics", { stay: opts?.stay === true });
   };
   const onKey = (event) => {
     if (event.key !== "Escape" || document.querySelector("#stats-help:not(.hidden)")) return;
@@ -441,7 +441,7 @@ function openStatistics() {
   overlay.appendChild(card);
   document.body.appendChild(overlay);
   statsCard.close = close;
-  recordTabVisit("statistics");
+  recordTabVisit("Statistics");
   ensureModule("quickNote");
   wireBackdropClose(overlay, close);
   document.addEventListener("keydown", onKey, true);

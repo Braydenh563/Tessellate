@@ -521,6 +521,8 @@ const REVEAL_TARGETS = {
   features: { open: () => openFeatures(), el: "features-card", flash: false },
   shortcuts: { open: () => openShortcuts(), el: "shortcuts-card", flash: false },
   onboarding: { open: () => openOnboarding(), el: "onboarding-card", flash: false },
+  //: The manual (manual.js, lazy): Find anything, the palette and a quick-access tile open it, not Settings, Help.
+  manual: { open: () => lazyScript("/js/manual.js").then((ok) => ok && openManual()), sel: ".manual-overlay", built: "openManual", flash: false },
 };
 
 //: The Library's gallery of boards, not a board on its canvas.

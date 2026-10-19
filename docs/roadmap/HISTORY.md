@@ -51131,3 +51131,6 @@ From UI_MODERNISATION_PLAN Phase 11 item 1, both built:
 1343. **The owner, 2026-10-19, verbatim** (screenshot, dark: a document line "whats up :D" with "whats" underlined; the spelling menu: "whats is not in the dictionary", then wats, what, hats, whams, whets). "also I feel like this should have been picked up as "what's""
      **Fixed**: a missing apostrophe (whats, thats, isnt, youre, im) is offered as the contraction first in the menu; never rewritten on its own, since an apostrophe is a style choice (`docSpellContraction`, documents.js).
 
+1335. **Fixed 6c5cc17** (the manual and Statistics each push a history entry, so the list names them and Back closes them; the current row was 32px against 52.5px and is now 52.5px). **The owner, 2026-10-19, verbatim.** "also the backwards global navigation and nav history didnt register me having the statistics panel open"
+     For the next PR. Recommendation: opening Statistics pushes a nav history entry like the other panels, so Back closes it and the history list names it.
+

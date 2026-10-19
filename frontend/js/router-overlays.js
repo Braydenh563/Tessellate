@@ -11,8 +11,7 @@
 
 //: The manual and Statistics are places too (INBOX 1335): overlays that push an
 //: entry on open, as Settings does; their own close steps back off it.
-const OVERLAY_TABS = { manual: 1, statistics: 1 };
-Object.assign(ROUTE_VIEW_NAMES, { manual: "Manual", statistics: "Statistics" });
+const OVERLAY_TABS = { Manual: 1, Statistics: 1 };
 const routerBack = { swallow: 0, timer: 0 };
 
 //: The top overlay, closed the way its own Escape closes it. True when one was
@@ -141,11 +140,11 @@ function overlayClosed(name, { stay = false } = {}) {
 //: under them (a manual opened from Settings keeps Settings behind it); any
 //: other entry closes both. True when the entry was one of the two.
 async function overlayGo(entry) {
-  if (entry.tab !== "manual") (typeof manualOpen !== "undefined" ? manualOpen : null)?.close?.();
-  if (entry.tab !== "statistics" && typeof statsCard !== "undefined") statsCard.close?.();
-  if (entry.tab === "manual") {
+  if (entry.tab !== "Manual") (typeof manualOpen !== "undefined" ? manualOpen : null)?.close?.();
+  if (entry.tab !== "Statistics" && typeof statsCard !== "undefined") statsCard.close?.();
+  if (entry.tab === "Manual") {
     if (await lazyScript("/js/manual.js")) await openManual();
-  } else if (entry.tab === "statistics") {
+  } else if (entry.tab === "Statistics") {
     openStatistics();
   } else {
     return false;

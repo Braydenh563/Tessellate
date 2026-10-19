@@ -40,9 +40,6 @@ with its owner named in the entry.
 1338. **The owner, 2026-10-19, verbatim** (screenshot, dark: a "Use AI" switch, off, with a sparkle icon and a "?" button). "this button should be disabled when the ai isnt available"
      For the next PR. Recommendation: the switch is disabled with the reason as its description (no model set up) while no model is reachable, and comes back on its own when one is.
 
-1335. **The owner, 2026-10-19, verbatim.** "also the backwards global navigation and nav history didnt register me having the statistics panel open"
-     For the next PR. Recommendation: opening Statistics pushes a nav history entry like the other panels, so Back closes it and the history list names it.
-
 1334. **The owner, 2026-10-19, verbatim** (screenshot, dark: Chat, the owner sent "timer\\"; Atlas "From your notes" answered "Your notes don't mention “timer”. Which note would it be in, or how else might you have put it?" with "Sources: 10 notes · meaning + keywords", 19.1s, Agent). "the composer also needs to handle short requests for tools and commands but also in the case that they may be asking for a note or keyword search, it should probably ask and provide buttons to click to go that route or do a probability assumption and user intent analysis"
      For the next PR. Recommendation: a one- or two-word message that names a tool or command (timer, reminder, stats, categories), with stray punctuation stripped, is scored for intent; a clear winner runs, a close call answers with choice buttons (run the tool, search notes for the word), and a note search that finds nothing offers the tool instead of asking which note.
 
