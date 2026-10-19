@@ -898,7 +898,9 @@
       <p>
         Running lists every job the app is doing now (indexing, a model loading
         or answering, imports, reading text, transcribing, backups, the agent)
-        with Stop where a job can stop part way. Stop the model, in the menu,
+        with Stop where a job can stop part way, and every model call is one of
+        them. Under it, what finished in the last half hour says how it ended,
+        how long it took and when, with its lines. Stop the model, in the menu,
         ends any answer and lets the model leave memory. Agent runs lists each
         run this session with its steps; the log is in the menu.
       </p>
@@ -913,9 +915,10 @@
       <p id="activity-model" class="status activity-model"></p>
       <ul id="activity-list" class="entry-list"></ul>
       <p id="activity-empty" class="muted empty-line">Nothing running right now.</p>
-      <!-- Jobs that ended with a page to open (an import's report), under
-           what is running: activity-panel.js, WORLD_CLASS 25b. -->
-      <ul id="activity-finished" class="entry-list" aria-label="Finished with a report"></ul>
+      <!-- What ended in the last half hour, each with its outcome, length
+           and lines (INBOX 805), and an import's report: activity-panel.js. -->
+      <p id="activity-finished-head" class="eyebrow hidden">Finished in the last half hour</p>
+      <ul id="activity-finished" class="entry-list" aria-labelledby="activity-finished-head"></ul>
     </div>
     <div id="activity-runs" role="tabpanel" aria-labelledby="activity-tab-runs" class="hidden">
       <div id="agent-monitor-runs" class="monitor-runs"></div>

@@ -2908,6 +2908,9 @@ function renderSettings() {
 // screen. So a re-index that finished while you were anywhere else, which is
 // most of them, since these jobs run for minutes, was recorded nowhere. It is
 // polled from here now, so the record does not depend on being watched.
+const TASKS_RUNNING_MS = 1500;
+let tasksBeat = null;
+
 async function refreshBackgroundTasks() {
   // Before the unlock there is no token and this is a guaranteed 401 on every
   // poll: noise in the browser's network log and in the server's, where it
@@ -2918,6 +2921,14 @@ async function refreshBackgroundTasks() {
   }
   const body = await apiJson("/tasks", { silent: true }).catch(() => null);
   backgroundTasks = (body && body.tasks) || [];
+  //: While anything runs, the slot keeps its own beat (INBOX 805, B77): on
+  //: the status loop alone it waited behind `/models/status`, which a busy
+  //: runner makes slow exactly while jobs run, and it said "running" for 12 s
+  //: after the job had ended (scratchpad/late805.js).
+  clearTimeout(tasksBeat);
+  if (backgroundTasks.length && !document.hidden) {
+    tasksBeat = setTimeout(() => refreshBackgroundTasks().catch(() => {}), TASKS_RUNNING_MS);
+  }
   noticeTaskTransitions(backgroundTasks, (body && body.history) || []);
   const auto = backgroundTasks.find((t) => t.auto);
   if (auto || lazyModuleLoads.has("semanticNotice")) semanticInstallNotice(auto);

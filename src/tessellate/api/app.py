@@ -1134,7 +1134,8 @@ class RequestPulse:
         another = is_another_device(Request(scope))
         if not another and scope.get("method") in _ACTS and origin.has_deferred():
             origin.run_deferred(jobs.enqueue)
-        with origin.acting_for(another):
+        #: The request's endpoint names a model call no run owns (INBOX 805).
+        with origin.acting_for(another), jobruns.for_request(scope):
             await self.app(scope, receive, send)
 
 

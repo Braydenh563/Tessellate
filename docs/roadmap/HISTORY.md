@@ -51020,4 +51020,21 @@ From WHITEBOARD_PLAN "The draw.io programme", section 2 (Text tab), built by the
 1302. **The owner, 2026-10-18, verbatim.** "bug: if I throw the companion down to the bottom of the screen, it will always instantly teleport to hang off the top bar above when when I threw it to the bottom bar on the right side"
      Owner: the orchestrator, now (`frontend/js/companion-throw.js`).
      **Fixed (throw landing commit).** Measured on Chat at 1440, seeded throw down-right, seed 2 (splat): rest 1376,774, before put at 1235,582 on a dock (192 px up), after 944,774 on the floor. `nameMarkBuddyThrowSpot` steps along any surface it rested on (was a wall slide only), reach 400 then the window; `nameMarkBuddyStepAside` takes the reach. The movement itself (the jump to the spot) is 1305.
+805. **The owner, 2026-10-11, verbatim.** "it is unclear which backup is the
+     latest, and also the backups need more file info and details I feel. all
+     information and processes across the app need to be 100% transparent. so
+     all things that use the ai or composer and all background processes need
+     to be logged and shown in bg processes wtc, along with their individual
+     logs and process lines to show thier process live and when they are
+     finished as well. whena ny process is running it needs to be clear to the
+     suer." Owner: the transparency agent (next Opus slot): one process
+     ledger every AI, composer and background run writes to, live lines per
+     run in the background processes panel, a running indicator in the
+     shell, and the backup rows (latest marked, date in words, what made it,
+     size, checked). **Fixed 4261fca.** Backup rows in uxfix5-1018; every model
+     call now writes to the ledger (12 generation methods on 3 backends wrapped;
+     endpoints that call a model and opened a run: 8 of 64 by a source scan before, every call through a backend after), the Running tab
+     lists finished runs with outcome, length and time (11 rows measured at 1440,
+     no overflow, `scratchpad/ledger805.js`), and the job slot clears within one
+     2 s sample of the job ending (12 s before, `scratchpad/late805.js`).
 

@@ -171,3 +171,132 @@ def test_the_jobs_stream_carries_the_runs(client):
     payload = json.loads(text.split("event: runs\ndata: ", 1)[1].split("\n", 1)[0])
     mine = next(r for r in payload["running"] if r["id"] == run.id)
     assert mine["lines"][0]["text"] == "Wrote 3 notes."
+
+
+# --- Every model call, and every way a run ends (INBOX 805 second half, B77) --
+
+from tessellate.ai.provider import Provider  # noqa: E402
+
+
+class _Model(Provider):
+    """A backend whose generation paths are the ledger's wrapped ones."""
+
+    def __init__(self, fail: bool = False) -> None:
+        self.fail = fail
+
+    def chat(self, model, messages, mode=None):  # noqa: ANN001, ANN201
+        if self.fail:
+            raise RuntimeError("runner down")
+        return {"message": {"content": "ok"}}
+
+    def chat_stream(self, model, messages, mode=None):  # noqa: ANN001, ANN201
+        yield from ("a", "b", "c")
+
+
+def _wait_for(predicate, seconds: float = 5.0) -> None:
+    import time
+
+    end = time.monotonic() + seconds
+    while time.monotonic() < end and not predicate():
+        time.sleep(0.01)
+
+
+def test_a_model_call_no_run_owns_is_a_run_of_its_own():
+    _Model().chat("tiny", [])
+    done = jobruns.finished()[0]
+    assert done["kind"] == "ai-call" and done["outcome"] == "completed" and done["duration_ms"] >= 0
+    assert [line["text"] for line in done["lines"]][0] == "Asked tiny."
+    assert done["lines"][-1]["text"].startswith("tiny answered in ")
+    assert jobruns.live() == []
+
+
+def test_a_failed_model_call_ends_failed_not_running():
+    with pytest.raises(RuntimeError):
+        _Model(fail=True).chat("tiny", [])
+    done = jobruns.finished()[0]
+    assert done["outcome"] == "failed" and done["detail"] == "runner down"
+    assert jobruns.live() == []
+
+
+def test_a_model_call_inside_a_run_adds_its_lines_there():
+    with jobruns.job_run("duplicate-scan", persist=False) as run:
+        _Model().chat("tiny", [])
+        texts = [line["text"] for line in run.lines()]
+    assert texts[0] == "Asked tiny." and texts[1].startswith("tiny answered in ")
+    assert [row["kind"] for row in jobruns.finished()] == ["duplicate-scan"]
+
+
+def test_a_stream_the_reader_closes_ends_cancelled():
+    stream = _Model().chat_stream("tiny", [])
+    assert next(stream) == "a"
+    assert [row["kind"] for row in jobruns.live()] == ["ai-call"]
+    stream.close()
+    done = jobruns.finished()[0]
+    assert done["outcome"] == "cancelled" and jobruns.live() == []
+    assert list(_Model().chat_stream("tiny", [])) == ["a", "b", "c"]
+    assert jobruns.finished()[0]["outcome"] == "completed"
+
+
+def test_a_model_call_is_named_for_the_request_that_made_it():
+    def improve_writing():  # noqa: ANN202
+        return None
+
+    with jobruns.for_request({"type": "http", "path": "/entries/3/improve", "endpoint": improve_writing}):
+        _Model().chat("tiny", [])
+    assert jobruns.finished()[0]["title"] == "Improve writing"
+    assert jobruns.finished()[0]["origin"] == "you"
+
+
+@pytest.mark.parametrize("body", ["raises", "returns early", "cancelled"])
+def test_a_filing_run_ends_on_every_way_out(body):
+    """B77: "The agent run still says the note is filing but it is finished."
+    A filing job whose body raises, returns early or is cancelled ends in the
+    ledger, so nothing stays running."""
+
+    class _Cancelled(BaseException):
+        pass
+
+    def work() -> None:
+        _Model().chat("tiny", [])
+        if body == "raises":
+            raise ValueError("no category")
+        if body == "cancelled":
+            raise _Cancelled
+        return
+
+    lane = pool.Pool(widths={"model": 1}, kind_lanes={"file-entry": "model"})
+    lane.enqueue("file-entry", work, name="Shopping list")
+    _wait_for(lambda: bool(jobruns.finished()))
+    lane.shutdown(1.0)
+    assert jobruns.live() == []
+    done = jobruns.finished()[0]
+    assert done["title"] == "Filing a note: Shopping list"
+    assert done["outcome"] == {"raises": "failed", "cancelled": "cancelled"}.get(body, "completed")
+    #: The model call's lines are on the filing run, not a run of their own.
+    assert [row["kind"] for row in jobruns.finished()] == ["file-entry"]
+    assert done["lines"][0]["text"] == "Asked tiny."
+
+
+def test_a_late_filing_answer_is_a_run_that_is_given_up_not_left_running():
+    from tessellate.ai import janitor
+
+    token = janitor._count_late("tiny", 15)
+    row = janitor.activity_rows()[0]
+    assert row["label"] == janitor.LATE_TITLE and "filed by meaning" in row["detail"]
+    assert "Filing a note" not in row["label"]
+    assert [r["kind"] for r in jobruns.live()] == ["filing-late"]
+    janitor._give_up_stale_late(now=10**12)
+    assert janitor.late_count() == 0 and janitor.activity_rows() == []
+    assert jobruns.live() == [] and jobruns.finished()[0]["outcome"] == "cancelled"
+    janitor._uncount_late(token, "late")  # the answer after the give-up: no second ending
+    assert len(jobruns.finished()) == 1
+
+
+def test_the_running_tab_lists_finished_runs_with_outcome_and_length(client):
+    with jobruns.job_run("duplicate-scan", title="Looking for duplicates", origin="you", persist=False) as run:
+        run.say("Read 40 notes.")
+    finished = client.get("/activity").json()["finished"]
+    row = next(r for r in finished if r["run_id"] == run.id)
+    assert row["outcome"] == "completed" and row["duration_ms"] >= 0
+    assert row["started"] <= row["finished"] and row["origin"] == "you started it"
+    assert row["lines"][0]["text"] == "Read 40 notes."

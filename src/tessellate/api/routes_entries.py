@@ -546,6 +546,13 @@ def _file_entry_in_background(entry_id: int, workspace_id: str) -> None:
                 # until it lands, and is retried next launch if it never does.
                 if late.is_waiting and filed_by != "llm":
                     entry.filing_state = manager.STAND_IN
+                #: The run's lines and its result (INBOX 805, B77: "how long it
+                #: took to file"); the run itself carries the duration.
+                run = jobruns.active()
+                if run is not None:
+                    how = "by Atlas" if filed_by == "llm" else "by meaning" if filed_by != "none" else "with no model"
+                    run.say(f"Filed in {category or 'no category'} {how}.")
+                    run.result = f"note {entry_id} filed in {category or 'no category'} {how}"
                 # **Settled first, embedded after.** The vector and the
                 # near-duplicate search used to land before `filing_state`
                 # did, so the card said "Filing…" for as long as the
@@ -560,6 +567,8 @@ def _file_entry_in_background(entry_id: int, workspace_id: str) -> None:
                 if duplicate is not None:
                     entry.filing_similar_id = duplicate.id
                 session.commit()
+                if run is not None:
+                    run.say("Saved its search vector and checked for a near duplicate.")
                 try:
                     _keep_suggestions(session, entry, filed_by)
                     session.commit()
@@ -1539,7 +1548,9 @@ def reevaluate_entry(entry_id: int, session: Session = Depends(get_session)) -> 
         logger.warning("re-evaluation's filing step failed", exc_info=True)
         filed_by = None  # AI down, keep the note exactly as it was
         refiling.fail("The filing step stopped before it finished. The log has the reason.")
-    refiling.finish()
+    finally:
+        #: Every way out, a cancel included: nothing stays "running" (B77).
+        refiling.finish()
 
     # 2. Suggest tags (best effort: never blocks the re-evaluation).
     suggested_tags = _reevaluate_tags(session, entry)

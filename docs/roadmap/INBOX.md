@@ -113,19 +113,6 @@ with its owner named in the entry.
      Tail done 2026-10-18 (uxfix5-1018): welcome Atlas spill 4 px to 0 to 1 px by holder padding; no oval frame exists on that card; every other framed Atlas (persona, profile, atlas-mark) already clips; the Show companion notice meets the toast recipe (actions row, accent text 600, close alone in its corner at 1440 and 390). Gestures remain.
      Owner: Brief 34 (companion), second part, and OPEN.md Atlas rows (INBOX 752): gestures, the enlarged view mirroring the corner, the framed Atlas clipped to its oval, the Show companion notice measured against the toast recipe.
 
-805. **The owner, 2026-10-11, verbatim.** "it is unclear which backup is the
-     latest, and also the backups need more file info and details I feel. all
-     information and processes across the app need to be 100% transparent. so
-     all things that use the ai or composer and all background processes need
-     to be logged and shown in bg processes wtc, along with their individual
-     logs and process lines to show thier process live and when they are
-     finished as well. whena ny process is running it needs to be clear to the
-     suer." Owner: the transparency agent (next Opus slot): one process
-     ledger every AI, composer and background run writes to, live lines per
-     run in the background processes panel, a running indicator in the
-     shell, and the backup rows (latest marked, date in words, what made it,
-     size, checked).
-
 810. **The owner, 2026-10-11, verbatim** (screenshots: the personas' quiet
      Edit and Delete text buttons; Keyboard shortcuts with a bordered tinted
      "Change" on every row; What it learned, three "Claim" cards with a large
@@ -269,7 +256,7 @@ with its owner named in the entry.
      B74. Could there be a way to print out or render a document or attachment in the whiteboard?? Like a pdf or document viewer object that the user can resize and move around, or even print the documents as separate pages like images that the user can move around, like dragging a document on onenote and having the option to print it out or place as an attachment
      B75. The text size in tooltip dropdowns across the app are always different and arent consistent (I think)
      B76. Should the drafting rotating animation and text be at the top of the ai side not the bottom of the user input side in the writing room??
-     B77. The agent run still says the note is filing but it is finished. Though there needs to be some more metrics like how long it took to file and similar across the app.
+     B77. **Fixed 4261fca** (the late answer's row is "Waiting for a late filing answer" and ends on every way out; finished runs show "Finished in 2 ms at 12:03 AM"). The agent run still says the note is filing but it is finished. Though there needs to be some more metrics like how long it took to file and similar across the app.
      B78. 9:57:12 pm INFO:    tessellate.embeddings: retrieval matrix warm with 46 vector(s)
           10:02:29 pm ERROR:   browser: [HTTP 422] PUT /graph/pin/document:2: Check the entry id and try again.
           10:04:57 pm INFO:    tessellate.jobruns: [run-7] Drafting started
