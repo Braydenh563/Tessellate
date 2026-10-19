@@ -152,6 +152,14 @@
   stroke-width: 2;
 }
 
+/* The group itself carries the ring too (UX audit 2026-10-19: a focusable
+   SVG `g` showed no outline, only the hit rect's stroke inside it). Inside
+   the slot, so the chart's own clip never cuts it. */
+.ask-chart-pt:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: -2px;
+}
+
 .ask-chart-pt:hover .ask-chart-dot,
 .ask-chart-pt:focus .ask-chart-dot {
   r: 5;

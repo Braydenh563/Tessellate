@@ -148,3 +148,14 @@ def test_clipped_single_lines_keep_their_descenders():
 
 def test_1423_library_sections_keep_the_focus_ring_room():
     assert re.search(r"\.dash-body,\s*\.library-view-section \{\s*scroll-padding-block: var\(--ring-room\);", (CSS_DIR / "08-consistency.css").read_text(encoding="utf-8"))
+
+
+def test_a_focusable_chart_mark_carries_its_own_ring():
+    """UX audit 2026-10-19: a focusable SVG `g` (`.ask-chart-pt`, Statistics)
+    showed no outline, only the hit rect's stroke inside it. Measured after:
+    solid 2px, offset -2px (inside its slot, so the chart's clip cannot cut
+    it)."""
+    css = (CSS_DIR / "utilities-lazy.css").read_text(encoding="utf-8")
+    block = css[css.index(".ask-chart-pt:focus-visible {"):].split("}", 1)[0]
+    assert "outline: 2px solid var(--accent-text);" in block
+    assert "outline-offset: -2px;" in block
