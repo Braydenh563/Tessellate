@@ -383,6 +383,18 @@ def general(question: str) -> bool:
     return bool(_GENERAL.match(q)) and not _PERSONAL.search(q) and not re.search(r"\b(?:you|your|note|notes)\b", q)
 
 
+_OWN_NOTES = re.compile(
+    r"\b(?:my|our|your)\s+(?:\w+\s+){0,2}(?:notes?|notebook|entries|entry)\b|\b(?:notes?|entry) (?:i|we) (?:ever )?(?:wrote|made|took|saved)\b"
+    r"|\bi (?:ever )?(?:wrote|made|saved)\b|\bin (?:my|the) notes\b"
+)
+
+
+def about_own_notes(question: str) -> bool:
+    """A question about the person's own notes ("the first note I ever
+    wrote"): the web has nothing on it, so it is never sent there (INBOX 1345 b)."""
+    return bool(_OWN_NOTES.search(_clean(question)))
+
+
 def general_reply(web_on: bool) -> str:
     if web_on:
         return "That's general knowledge rather than something in your notes, and the web search found nothing to go on."

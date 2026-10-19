@@ -212,6 +212,29 @@ NOT_WITHOUT_A_MODEL = frozenset({
     "ask_user", "make_plan", "run_skill", "save_skill", "compress_chat", "find_contradictions", "audit_link_reasons",
 })
 
+#: Where the agent's user turn puts the person's words, after the app's own
+#: lines about the notes it found (`agent._build_messages`). Needle reads the
+#: whole turn, and those lines name tools ("count_notes and search_notes do"):
+#: it searched for "doesn't have count_notes" (INBOX 1345 b), a refusal's own
+#: wording fed back as a query. It is given the request alone.
+_REQUEST = "My request:"
+
+
+def request_of(text: str) -> str:
+    """The person's words from an agent user turn, without the app's preamble."""
+    _, marker, tail = text.rpartition(_REQUEST)
+    return tail.strip() if marker and tail.strip() else text
+
+
+def _names_a_tool(arguments: object, offered: dict) -> bool:
+    """A tool's name inside an argument: the app's own text read back as a
+    request, never something the person asked to find."""
+    if not isinstance(arguments, dict):
+        return False
+    words = " ".join(str(v) for v in arguments.values() if isinstance(v, str)).lower()
+    return any(name and name in words for name in offered)
+
+
 def _cleaned_calls(calls: list, schemas: list[dict], text: str) -> list[dict]:
     """needle's calls with their arguments cleaned (INBOX 801: "NOTEBOOK
     STATS" called search_notes with an empty query): every string tidied, an
@@ -221,6 +244,8 @@ def _cleaned_calls(calls: list, schemas: list[dict], text: str) -> list[dict]:
     out = []
     for call in calls:
         if not isinstance(call, dict) or call.get("name") not in offered:
+            continue
+        if _names_a_tool(call.get("arguments"), offered):
             continue
         args = _cleaned_arguments(call.get("arguments") or {}, offered[call["name"]].get("parameters") or {}, text)
         if args is not None:
@@ -351,6 +376,7 @@ class NeedleProvider(Provider):
         text = next(
             (_text(m.get("content")) for m in reversed(messages) if m.get("role") == "user"), ""
         )
+        text = request_of(text)
         schemas = [
             t["function"] for t in tools or []
             if isinstance(t, dict) and t.get("function") and t["function"].get("name") not in NOT_WITHOUT_A_MODEL

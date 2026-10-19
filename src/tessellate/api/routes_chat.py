@@ -1504,7 +1504,7 @@ def _computed_answer(session: Session, question: str, detected: str, as_of, atta
     #: rows; the model still writes the sentence when it runs (the answer is
     #: handed to it as ground truth), and with the model stopped the computed
     #: sentence is a complete answer on its own.
-    stats = notebook_stats.answer(question, session) if detected == intent.NOTES and as_of is None else None
+    stats = notebook_stats.answer_chat(question, session) if detected == intent.NOTES and as_of is None else None
     if detected == intent.UTILITY:
         detected, stats = _worked_out(question)
     if stats is None and as_of is None and not attached:
@@ -2264,7 +2264,8 @@ def _web_allowed(req: _StreamRequest) -> bool:
     """Web sources only when the person turned web search on in Settings and
     the turn may use tools (decision 43: never fetched without the toggle)."""
     try:
-        return bool(deps.get_config().get_preference("web_search_enabled", False)) and bool(req.use_tools)
+        on = bool(deps.get_config().get_preference("web_search_enabled", False)) and bool(req.use_tools)
+        return on and not personal.about_own_notes(req.question or "")
     except Exception:  # noqa: BLE001  # no preference is off
         return False
 
@@ -2301,8 +2302,9 @@ def _web_answer(req: _StreamRequest, question: str) -> tuple[dict, list[dict]] |
     searxng_url, provider = websearch.settings_from(config)
     try:
         results = websearch.search_web(composer_digest.web_query(question), limit=5, searxng_url=searxng_url or None, provider=provider)
-    except websearch.WebSearchError:
-        logging.getLogger("tessellate.chat").info("chat: web search failed for a composed answer", exc_info=True)
+    except websearch.WebSearchError as exc:
+        #: One line: a refused optional service (SearXNG not running) is not a bug.
+        logging.getLogger("tessellate.chat").info("chat: web search failed for a composed answer: %s", exc)
         return None
     pages = _web_pages(websearch, results)
     if not pages:

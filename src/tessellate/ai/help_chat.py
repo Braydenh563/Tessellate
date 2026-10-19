@@ -878,7 +878,7 @@ HELP_TOPICS: list[dict] = [
             "\"what are my most common tags\", \"which categories have the most "
             "notes\", \"how many notes do I have\", \"how many notes have no "
             "tags\", \"which are my most linked notes\", \"when do I write "
-            "most\". These are counted from your data rather than generated, so "
+            "most\", and notes by the order you made them: \"the first note I ever wrote\", \"my 5th note\", \"my newest note\". These are counted from your data rather than generated, so "
             "the numbers are exact, the answer is instant, and it works even "
             "with no AI model running at all. Private and binned notes are never "
             "counted. Your own abbreviations are learned the same way: when a "
