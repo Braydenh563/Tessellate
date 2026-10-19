@@ -352,6 +352,29 @@ def _parse_operators(text: str) -> tuple[str, dict[str, list[str]], list[str], l
     return remainder, filters, phrases, excluded, since, until
 
 
+def _read_window(remainder: str, today: date, locale: str | None, operator_dates: bool, since: date | None, until: date | None) -> tuple:
+    """The time phrase in `remainder`, taken out: (remainder, since, until,
+    phrase, soft). A stated `before:`/`after:` is the more precise of the two,
+    so a phrase pass that could overwrite it does not run at all. The phrases
+    are read by `ai/recognise.py` (CHAT_PLAN decision 46): first a stretch
+    ending now ("the last two weeks"), then a day or span ("on tuesday", "in
+    March", "two weeks ago", widened to what its phrasing meant)."""
+    phrase = ""
+    soft = False
+    if operator_dates:
+        return remainder, since, until, phrase, soft
+    found = recognise.question_range(remainder, today)
+    if found is not None:
+        since, until, phrase, start, end, soft = found
+        remainder = (remainder[:start] + " " + remainder[end:]).strip()
+        return remainder, since, until, phrase, soft
+    day = recognise.question_day(remainder, today, locale)
+    if day is not None:
+        since, until, phrase, start, end = day
+        remainder = (remainder[:start] + " " + remainder[end:]).strip()
+    return remainder, since, until, phrase, soft
+
+
 def understand(question: str, now: datetime | date | None = None, locale: str | None = None) -> Understood:
     """Read a question for a time range and a subject.
 
@@ -368,24 +391,8 @@ def understand(question: str, now: datetime | date | None = None, locale: str | 
     # Operators first: they carry their own dates, and a `before:2026-01-01`
     # left in the text would be read a second time by the time pass below.
     remainder, filters, phrases, excluded, since, until = _parse_operators(text)
-    phrase = ""
-    soft = False
     operator_dates = since is not None or until is not None
-    # A stated `before:`/`after:` is the more precise of the two, so a phrase
-    # pass that could overwrite it does not run at all. Somebody who typed
-    # both means the dates they typed. The phrases are read by
-    # `ai/recognise.py` (CHAT_PLAN decision 46): first a stretch ending now
-    # ("the last two weeks"), then a day or span ("on tuesday", "in March",
-    # "two weeks ago", widened to what its phrasing meant).
-    found = None if operator_dates else recognise.question_range(remainder, today)
-    if found is not None:
-        since, until, phrase, start, end, soft = found
-        remainder = (remainder[:start] + " " + remainder[end:]).strip()
-    elif not operator_dates:
-        day = recognise.question_day(remainder, today, locale)
-        if day is not None:
-            since, until, phrase, start, end = day
-            remainder = (remainder[:start] + " " + remainder[end:]).strip()
+    remainder, since, until, phrase, soft = _read_window(remainder, today, locale, operator_dates, since, until)
 
     subject = _strip_scaffolding(remainder)
     #: **A window that has not happened yet filters nothing**: no note was

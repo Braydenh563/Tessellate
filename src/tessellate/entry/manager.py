@@ -1093,17 +1093,22 @@ def seal_private_events(session: Session, ids: list[int]) -> None:
     )
 
 
-def _hard_delete(session: Session, entries: list[Entry], uploads_dir: Path | None = None) -> int:
-    """Permanently remove entries plus their vectors, links, and files."""
-    ids = [e.id for e in entries]
-    if not ids:
-        return 0
+def _forget_board_thumbs(ids: list[int]) -> None:
+    """A purged board's stored thumbnail goes with it."""
     try:
         from tessellate.core import board_thumbs, deps
 
         board_thumbs.forget(deps.get_config().data_dir, ids)
     except (AssertionError, OSError):  # no config yet must not block a purge
         pass
+
+
+def _hard_delete(session: Session, entries: list[Entry], uploads_dir: Path | None = None) -> int:
+    """Permanently remove entries plus their vectors, links, and files."""
+    ids = [e.id for e in entries]
+    if not ids:
+        return 0
+    _forget_board_thumbs(ids)
     seal_private_events(session, [e.id for e in entries if e.is_private])
     # Attached files: remove bytes from disk (best effort) then the rows.
     attachments = list(

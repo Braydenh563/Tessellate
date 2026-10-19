@@ -127,7 +127,7 @@ async function firstStepsSample(host, add, event) {
 //: callers outside this file load it first (lazyScript), as it is lazy.
 function getStartedShow() {
   ["getStartedHidden", "getStartedDone", "firstStepsHidden"].forEach((key) => prefs.remove(key));
-  if (typeof revealTab === "function") revealTab("dashboard");
+  revealTab("dashboard");
   renderFirstStepsLazy();
   renderDashMore();
 }
