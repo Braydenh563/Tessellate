@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Settings > Data: a backup row's origin label ("Automatic daily backup") takes the ink instead of muted type on its tint (4.27:1 to above 4.5:1 in light).
 - Phone: the Back and Forward history menu opens below the header instead of above the viewport (top -304 to 54 at 390).
 - Notes list on a phone: a card whose facts are still too wide after folding to icons wraps to a second row instead of clipping its More actions button (li scrollWidth 418 to 358 at 390).
 - Notes at 800px: the parked sidebar sheet no longer takes clicks over the first sub-tab; only its toggle does (elementFromPoint(54, 136) was the aside, now the sub-tab).

@@ -2,7 +2,7 @@
 
 Generated 2026-10-19 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6199, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6158, test files 1316, tests 11707, plan headings 967.
+Counts: frontend functions 6199, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6158, test files 1316, tests 11708, plan headings 967.
 
 ## Frontend functions (6199)
 
@@ -10137,7 +10137,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/reply-kit-lazy.css | 481 |
 | frontend/css/reveal-lazy.css | 10 |
 | frontend/css/search-lazy.css | 153 |
-| frontend/css/settings-controls-lazy.css | 94 |
+| frontend/css/settings-controls-lazy.css | 102 |
 | frontend/css/settings-data-lazy.css | 60 |
 | frontend/css/sidebar-folds-lazy.css | 18 |
 | frontend/css/tidy-lazy.css | 333 |
@@ -18477,7 +18477,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11707)
+## Tests (11708)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18573,7 +18573,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_backup_roundtrip_full.py | 2 |
 | tests/test_backup_secrets.py | 3 |
 | tests/test_backups_api.py | 13 |
-| tests/test_badge_recipe.py | 15 |
+| tests/test_badge_recipe.py | 16 |
 | tests/test_bars_618.py | 7 |
 | tests/test_bench_spec.py | 7 |
 | tests/test_bg_art_styles.py | 24 |
