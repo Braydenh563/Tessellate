@@ -534,6 +534,8 @@ HELP_TOPICS: list[dict] = [
         "id": "privacy",
         "keywords": ("private note", "encrypt", "password", "lock", "security", "offline", "online", "internet", "cloud", "telemetry", "tracking", "local chip"),
         "body": (
+            "Yes, it works offline: Tessellate runs on this computer and needs no account or "
+            "internet, and with no model connected it still answers from your notes. "
             "Private notes are encrypted at rest with a key derived from your "
             "unlock password. The app binds to localhost, has no account or "
             "telemetry, and nothing leaves your machine unless you explicitly "
@@ -2107,7 +2109,7 @@ HELP_TOPICS.extend(
                 "Reset highlights clears the colours (the first tile is "
                 "highlighted again); Reset quick access goes back to the "
                 "defaults. Quick access "
-                "starts as New note, Ask AI, Sketch, Remind me and New "
+                "starts as New note, Ask your notes, Sketch, Remind me and New "
                 "meeting. All of it is "
                 "remembered per user. Press t then d to come back here from "
                 "anywhere."

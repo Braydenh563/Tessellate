@@ -73,7 +73,7 @@ def test_the_start_row_is_kept_whole_with_one_primary():
     start = start[: start.index("\n];\n")]
     labels = re.findall(r'label: "([^"]+)"', start)
     #: "New meeting", not the recorder (INBOX 644: a meeting note, recording inside it).
-    assert labels == ["New note", "Ask AI", "Sketch", "Remind me", "New meeting"]
+    assert labels == ["New note", "Ask your notes", "Sketch", "Remind me", "New meeting"]
     # One highlighted tile, the first by position (INBOX 589), not New note by name.
     assert len(re.findall(r'hint: "', start)) == 5 and "primary" not in start
     assert 'return index === 0 ? "accent" : "";' in _function("quickTintKey")

@@ -16,7 +16,7 @@ from __future__ import annotations
 import re
 from datetime import date, timedelta
 
-from tessellate.ai import composer, realise, recognise, utilities
+from tessellate.ai import composer, filed_name, realise, recognise, utilities
 
 #: At most this many lines under the opening; the rest are on the right.
 SHOWN = 8
@@ -89,7 +89,8 @@ def list_target(question: str) -> tuple[str, str] | None:
     filing."""
     lead = _LIST_LEAD.match(_q(question))
     if not lead:
-        return None
+        bare = filed_name.filed_listing(_q(question))
+        return (bare, "either") if bare else None
     rest = _q(question)[lead.end():]
     by = _BY_WORD.match(rest)
     if by:
@@ -105,7 +106,10 @@ def list_target(question: str) -> tuple[str, str] | None:
         how, name = "either", (named.group("name").strip() if named else "")
         if name.split(" ")[0].lower() in _NOT_A_FILING:  # "your recent notes" asks for recency, not a filing
             return None
-    return (name, how) if name and name.lower() not in _NOT_A_NAME else None
+    if not name:
+        bare = filed_name.filed_listing(_q(question))
+        return (bare, "either") if bare else None
+    return (name, how) if name.lower() not in _NOT_A_NAME else None
 
 
 def window_of(question: str) -> tuple[str, int]:
@@ -383,3 +387,29 @@ def holds_days(notes: list[dict], today: date) -> bool:
     it where "You have no reminders waiting" would not."""
     views = [v for v in (composer.read_note(n, i) for i, n in enumerate(notes or [])) if v]
     return bool(_upcoming(views, today))
+
+
+_COUNT_LEAD = r"^how many (?:(?P<pre>[\w&' -]{1,30}?)\s+)?(?:notes|entries)"
+_COUNT_TAIL = r"(?:\s+(?:do i have|have i (?:got|written|saved|made)|are there|did i (?:write|save|make)))?"
+_COUNTED = re.compile(
+    _COUNT_LEAD + _COUNT_TAIL + r"(?:\s+(?:are\s+)?(?:about|in|on|under|for|tagged(?: with)?|filed under)\s+(?:the\s+|my\s+)?(?P<post>[\w&' -]{1,40}?))?" + r"(?:\s+(?:category|folder|tag))?$",
+    re.I,
+)
+
+
+def counted_filing(question: str) -> str | None:
+    """What "how many notes do I have about work" counts: a name to read as a
+    category or a tag, "" for the whole notebook, None when the question is
+    not a count of notes (1324: it was answered with a quote of whichever
+    note matched best, "41 testers active")."""
+    found = _COUNTED.match(_q(question))
+    if not found:
+        return None
+    pre = (found.group("pre") or "").strip().lower()
+    post = (found.group("post") or "").strip()
+    if pre in _NOT_A_NAME or pre in ("many", "my"):
+        pre = ""
+    name = post or pre
+    if name.lower() in _NOT_A_NAME:
+        return ""
+    return name

@@ -49,7 +49,7 @@ const check = (label, ok, detail = '') => {
 
   await page.evaluate(async () => { prefsCache = await apiJson('/preferences', { method: 'PUT', body: JSON.stringify({ dashboard_quick_access: [] }) }); });
   await go();
-  check('default five', (await labels()).join('|') === 'New note|Ask AI|Sketch|Remind me|Meeting notes', (await labels()).join('|'));
+  check('default five', (await labels()).join('|') === 'New note|Ask your notes|Sketch|Remind me|Meeting notes', (await labels()).join('|'));
   check('named Quick access', (await page.textContent('#dash-quicklinks .launch-label')) === 'Quick access');
   check('no row menu "Start something"', !(await page.textContent('#dash-quicklinks')).includes('Start something'));
   await shot('default');
@@ -101,7 +101,7 @@ const check = (label, ok, detail = '') => {
     await page.dragAndDrop('.quick-edit-tile[data-id="meeting-notes"]', '.quick-edit-tile[data-id="ask-ai"]', { targetPosition: { x: 20, y: 30 } });
     await page.waitForTimeout(900);
     now = await labels();
-    check('dragged before Ask AI', now.indexOf('Meeting notes') < now.indexOf('Ask AI'), now.join('|'));
+    check('dragged before Ask your notes', now.indexOf('Meeting notes') < now.indexOf('Ask your notes'), now.join('|'));
   }
 
   // Remove Sketch.
@@ -135,7 +135,7 @@ const check = (label, ok, detail = '') => {
 
   // Reset.
   await clickMenu('#dash-customise', 'Reset quick access');
-  check('reset', (await labels()).join('|') === 'New note|Ask AI|Sketch|Remind me|Meeting notes', (await labels()).join('|'));
+  check('reset', (await labels()).join('|') === 'New note|Ask your notes|Sketch|Remind me|Meeting notes', (await labels()).join('|'));
 
   // Eight at most.
   await page.evaluate(async () => { prefsCache = await apiJson('/preferences', { method: 'PUT', body: JSON.stringify({ dashboard_quick_access: ['new-note', 'ask-ai', 'sketch', 'remind-me', 'meeting-notes', 'tab:graph', 'tab:timeline', 'tab:library'] }) }); });

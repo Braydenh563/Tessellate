@@ -173,6 +173,8 @@ def short_name(note: dict, lower=_lower) -> str:  # noqa: ANN001
     about; quoted when it is an instruction ("go to the gym at 9pm")."""
     content = str(note.get("content") or "").strip()
     first = content.splitlines()[0].strip().rstrip(".") if content else ""
+    #: A heading's own marks are not part of its name: "the # Trains" (1324).
+    first = re.sub(r"^#{1,6}\s+", "", first)
     head = _PREFIX.match(first)
     category = str(note.get("category") or "").lower()
     if head and len(head.group(1).split()) <= 5 and head.group(1).strip().lower() != category:

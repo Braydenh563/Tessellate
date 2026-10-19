@@ -1,0 +1,284 @@
+### [guide] How do I add a reminder?
+ERROR <HTTPError 405: 'Method Not Allowed'>
+([])
+
+### [guide] where do I change the theme
+ERROR <HTTPError 405: 'Method Not Allowed'>
+([])
+
+### [guide] what is the graph for
+ERROR <HTTPError 405: 'Method Not Allowed'>
+([])
+
+### [guide] can I use this offline?
+ERROR <HTTPError 405: 'Method Not Allowed'>
+([])
+
+### [guide] how do I export my notes
+ERROR <HTTPError 405: 'Method Not Allowed'>
+([])
+
+### [guide] what does Atlas do
+ERROR <HTTPError 405: 'Method Not Allowed'>
+([])
+
+### [chat] What is the Harbor launch plan?
+From your three workstreams note, 24 September: Harbor launch, the sync rewrite and the support backlog.
+
+**Three workstreams:** Harbor gets two thirds of the team until launch week, then the sync rewrite takes over.
+
+Remind you to store listing copy?
+(['answered_by=None', 'grounding', 'why'])
+
+### [chat] when is my dentist appointment
+Check-up booked for the 21st. [**Dentist**]
+
+None of these notes mention “appointment”.
+(['answered_by=None', 'grounding', 'why'])
+
+### [chat] what did i write about sourdough last week
+You have three notes about sourdough last week, 15 September to 16 October.
+
+On 15 September, 1:5:5 at night, ready by morning in a warm kitchen. In winter it needs the oven with only the light on.
+
+Your sixth loaf note has 78% hydration and 20 hour cold proof, and it has best crumb yet and still pale underneath, and it has next time the stone goes one shelf lower.
+
+Last Friday, you wrote down the sourdough discard makes a good thin base. 48 hour dough, hottest oven, steel on the top shelf.
+
+That's about one every two weeks, the newest a few days ago.
+(['answered_by=None', 'grounding', 'why'])
+
+### [chat] Which books have I finished?
+The point is not to get everything done; it is to choose what to neglect on purpose, from your note of 11 October.
+
+**Also:** pairs well with the systems book.
+
+It's your only note on that so far.
+(['answered_by=None', 'grounding', 'why'])
+
+### [chat] how much is the trip budget in total
+What your notes have: Roughly 1,900 for two, flights included. The quinta night is the splurge; everything else is mid-range. [**Trip budget**]
+
+According to another record: Lisbon to Porto on the Alfa Pendular, 2h50. Tickets open 60 days ahead and are half price if booked early. [**Trains**]
+
+There is nothing in these notes regarding “total”.
+(['answered_by=None', 'grounding', 'why'])
+
+### [chat] who is on the team offsite list
+One day, no laptops. A walk in the morning, the roadmap in the afternoon, dinner somewhere with a long table. [**Team offsite ideas**]
+(['answered_by=None', 'grounding', 'why'])
+
+### [chat] compare the Porto and Lisbon notes
+You have four notes about porto lisbon, 1 September to 6 October.
+
+Your bookings notes share #bookings: the # Portugal trip, overview, the # Trains and the # Flights, and you linked the # Portugal trip, overview to the # Flights.
+
+Your ten days in May note has four in Lisbon, a day in Sintra, three in Porto and two in the Douro valley, and it has the train between the cities and a car only for the valley, which is seven months from now.
+
+A week later, on 4 October, you wrote down Lisbon to Porto on the Alfa Pendular, 2h50. Tickets open 60 days ahead and are half price if booked early.
+
+Two days on, by 6 October, you jotted down out to Lisbon, back from Porto, so no day is lost going back. You booked, seats 14A and 14B.
+
+Also under porto lisbon, more loosely: the # Useful phrases, a note of its own.
+
+On 1 September, you noted Obrigado or obrigada, depending on who is speaking. Uma bica is an espresso in Lisbon and um cimbalino in Porto.
+
+That's about one every two weeks, the newest two weeks ago.
+(['answered_by=None', 'grounding', 'why'])
+
+### [chat] what are my open tasks for the launch
+You have two notes about open tasks for the launch, all from September.
+
+- 6 September: Five screenshots, dark and light. The first line has to say what it does in under ten words: notes that sort themselves, offline.
+- 27 September: a list: beta invite list, crash reporting, store listing copy and launch email.
+(['answered_by=None', 'grounding', 'why'])
+
+### [chat] summarise my health notes
+Nine notes in Health, 2 September to 3 October.
+
+**2 September:** foam roll the IT band after every long run; Single-leg squats twice a week, three sets of ten.
+
+**9 September:** bib and pins the night before; same breakfast as the long runs; start slower than feels right.
+
+**10 September:** twelve weeks to the October race; the long run grows by a kilometre a week.
+
+**Three runs a week:** one easy, one tempo, one long.
+
+**Ten minutes:** hips, hamstrings, thoracic rotation; done before coffee or it does not happen.
+
+**23 September:** screens off at 10:30 helps more than anything else tried; coffee after 2pm costs about forty minutes.
+
+**27 September:** Check-up booked for the 21st; ask about the night guard.
+
+**29 September:** the old pair has 700 km on it; try two in the shop, run on the treadmill in both; a gel every 40 minutes past the first hour; practise it in training, never new on race day.
+
+**3 October:** easy pace is still too fast.
+
+**How it went:** slow the Tuesday run down until it is boring, then hold it for three weeks.
+(['answered_by=None', 'grounding', 'why'])
+
+### [chat] hello
+Hi there. What should we search for?
+(['answered_by=None', 'answer_final', 'why'])
+
+### [chat] thanks
+Of course. Let me know if you need more.
+(['answered_by=None', 'answer_final', 'why'])
+
+### [chat] what's the weather
+The weather is not something this app knows, and nothing leaves this computer to look it up.
+(['answered_by=None', 'why'])
+
+### [chat] do I have anything about pricing?
+I found nine notes about “pricing”. Here are the first four.
+
+- [Pricing page](#/notes/5): One free tier and one paid. The comparison table moves above the fold; the FAQ answers… · Work · #harbor, #pricing
+- [Launch risks](#/notes/14): The store review takes longer than a week. · Work · #harbor, #risks
+- [Harbor launch plan](#/notes/1): Ship the mobile app to the public on the 14th of next month. Three gates before then… · Work · #harbor, #launch
+- [Trains](#/notes/24): Lisbon to Porto on the Alfa Pendular, 2h50. Tickets open 60 days ahead and are half… · Travel · #portugal, #bookings
+(['answered_by=None', 'tool', 'why'])
+
+### [chat] what happened on Thursday
+You wrote one note on Thursday:
+- **Knife sharpening** (15 October): Whetstone at 15 degrees, 1000 then 6000 grit. Every two months, or when the tomato test fails.
+(['answered_by=None', 'grounding', 'why'])
+
+### [ask] how long is the train from Lisbon to Porto
+Lisbon to Porto on the Alfa Pendular, 2h50, from your note of 4 October.
+
+**Also:** tickets open 60 days ahead and are half price if booked early.
+(['answered_by=None', 'grounding', 'why'])
+
+### [ask] what do I need to buy for pizza night
+Based on what you've saved: The sourdough discard makes a good thin base. 48 hour dough, hottest oven, steel on the top shelf. [**Pizza night**]
+(['answered_by=None', 'grounding', 'why'])
+
+### [ask] list my recipes
+Cook grains and one sauce for the week, from your note of 30 September.
+
+**Also:** freeze half the soup; saves about four evenings.
+(['answered_by=None', 'grounding', 'why'])
+
+### [ask] which notes mention the boiler
+That is something to do (find a note) rather than to look up: say it in Chat and it is done there, with Undo.
+(['answered_by=None', 'why'])
+
+### [ask] what is my running plan for next month
+I couldn't find any saved notes matching that question. There are 4 other items that mention it, in your chats and documents.
+(['answered_by=None', 'related', 'why'])
+
+### [ask] why was the list slow
+It was not the database, from your note of 10 October.
+
+**Also:** every row re-measured its own height on scroll; caching the height per row took a long list from 40ms a frame to 6.
+
+It's your only note on that so far.
+(['answered_by=None', 'grounding', 'why'])
+
+### [ask] what did I decide about the public API
+Three people in the beta asked for one, from your note of 9 October.
+
+**Also:** not before launch; write down the read-only version so the idea is not lost.
+
+It's your only note on that so far.
+(['answered_by=None', 'grounding', 'why'])
+
+### [ask] notes from yesterday
+You wrote two notes yesterday, newest first:
+- **Launch risks** (yesterday): a list: the store review takes longer than a week, sync conflicts surface under real load and the pricing page is not signed off in time.
+- **Wi-fi in the back room** (yesterday): One mesh point on the landing fixed it. Speed in the study went from 4 to 180.
+(['answered_by=None', 'grounding', 'why'])
+
+### [ask] how many notes do I have about work
+41 testers active.
+
+**Also:** the top complaint is the sign-up flow (nine fields); second is that offline mode is hard to find; nobody mentioned speed, which is the first time.
+
+Remind you to store listing copy?
+(['answered_by=None', 'grounding', 'why'])
+
+### [ask] bike service dates
+This was your thought: The gears skip under load. New chain and a cassette check before the summer. [**Bike service**]
+
+These notes do not talk about “dates”.
+(['answered_by=None', 'grounding', 'why'])
+
+### [agent] add a reminder to call the dentist tomorrow at 9
+Done: remind you tomorrow at 9: call the dentist.
+(['answered_by=None', 'act', 'why'])
+
+### [agent] tag my Porto notes with travel
+Here's the change: tag 7 notes about “Porto” #travel. Confirm it, or Cancel.
+(['answered_by=None', 'act', 'why'])
+
+### [agent] create a note called Ideas for the garden
+Done: Created note #78 in Uncategorised.
+(['answered_by=None', 'act', 'why'])
+
+### [agent] what reminders do I have this week
+You have ten reminders waiting.
+
+| Reminder | When |
+| --- | --- |
+| Send the launch email to the team for review | Monday 19 October at 1pm |
+| Feed the starter | Tuesday 20 October at 12am |
+| Book the Alfa Pendular tickets (60 days ahead) | Tuesday 20 October at 4am |
+| Call the dentist | Tuesday 20 October at 9am |
+| Long run, 14 km | Tuesday 20 October at 10am |
+| Portfolio review for the designer role | Wednesday 21 October at 2am |
+| Compare three home insurance quotes | Thursday 22 October at 11am |
+| Water the houseplants | Friday 23 October at 1am |
+| Boiler service: mention the pressure | Saturday 24 October at 1am |
+| Harbor launch: go or no-go | Tuesday 27 October at 3am |
+
+[Open Reminders](#/reminders)
+
+Heads up: I could not find 20, 12, 60, 4 and more in your notes or in anything I read this turn, so check that before relying on it.
+(['answered_by=None', 'why'])
+
+### [agent] delete everything
+Scanning through your notes: The quinta night is the splurge; everything else is mid-range. [**Trip budget**]
+
+The point is not to get everything done; it is to choose what to neglect on purpose. [**Four Thousand Weeks**]
+
+None of these records discuss “delete”.
+(['answered_by=None', 'grounding', 'why'])
+
+### [popup] launch risks
+The store review takes longer than a week, from your note of 18 October.
+
+**Also:** sync conflicts surface under real load; the pricing page is not signed off in time.
+
+It's your only note on that so far.
+(['answered_by=None', 'grounding', 'why'])
+
+### [popup] open the pricing page note
+The closest note about “pricing page” is [Pricing page](#/notes/5): One free tier and one paid. The comparison table moves above the fold; the FAQ answers… · Work · #harbor, #pricing
+(['answered_by=None', 'tool', 'why'])
+
+### [popup] what should I pack
+Walking shoes with grip (the pavements are polished stone), from your note of 21 September.
+
+**Also:** a light jacket for the evenings; plug adapter; the rail pass printout.
+
+It's your only note on that so far.
+(['answered_by=None', 'grounding', 'why'])
+
+### [popup] find notes about knives
+Nothing matched “knives”, so here are your ten newest notes instead. Here are the first eight.
+
+- [Ideas for the garden](#/notes/78) · Uncategorised
+- [Launch risks](#/notes/14): The store review takes longer than a week. · Work · #harbor, #risks
+- [Wi-fi in the back room](#/notes/68): One mesh point on the landing fixed it. Speed in the study went from 4 to 180. · Home · #tech
+- [Weeknight dinners](#/notes/32): Five that take under 30 minutes: miso salmon, chickpea curry, lemon orzo, egg fried… · Cooking · #recipes, #weeknight
+- [Pizza night](#/notes/35): The sourdough discard makes a good thin base. 48 hour dough, hottest oven, steel on the… · Cooking · #baking
+- [Roast tomato soup](#/notes/33): Roast the tomatoes and garlic first, add a little smoked paprika, blend half and leave… · Cooking · #recipes
+- [Knife sharpening](#/notes/38): Whetstone at 15 degrees, 1000 then 6000 grit. Every two months, or when the tomato test… · Cooking · #kitchen
+- [Launch email draft](#/notes/10): Subject: Harbor is out. One paragraph, one screenshot, one button. Send at 9 in each… · Work · #harbor, #marketing
+(['answered_by=None', 'tool', 'why'])
+
+### [popup] summarise today
+You wrote one note today:
+- From today: Ideas for the garden.
+(['answered_by=None', 'grounding', 'why'])
+

@@ -870,8 +870,16 @@ def _topic(question: str, members: list[composer.NoteView]) -> str:
         if shared[0] in category.lower().split():
             return category.lower()
         return shared[0]
+    sides = composer.compare_sides(q)
+    if sides and not typed:
+        #: "compare the Porto and Lisbon notes": about Porto and Lisbon, as
+        #: typed, not "porto lisbon" (1324).
+        return " and ".join(re.sub(r"^(?:my|the|our)\s+", "", side, flags=re.I) for side in sides)
     if typed:
-        return re.sub(r"^(?:my|the)\s+", "", typed.group(1))
+        said = re.sub(r"^(?:my|the)\s+", "", recogniser.without_windows(typed.group(1))).strip(" ,")
+        #: "for next month" is a time, not a topic (1324).
+        if said:
+            return said
     terms = composer.subject_terms(q)
     if shared and (not terms or shared[0] in " ".join(terms)):
         return shared[0]

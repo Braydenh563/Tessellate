@@ -132,7 +132,7 @@ def test_the_row_never_draws_more_than_eight():
 def test_the_default_ids_are_the_only_hard_coded_tiles():
     start = _block(DASH, "const QUICK_START = [", "\n];\n")
     assert re.findall(r'\bid: "([^"]+)"', start) == DEFAULT_IDS
-    assert re.findall(r'label: "([^"]+)"', start) == ["New note", "Ask AI", "Sketch", "Remind me", "New meeting"]
+    assert re.findall(r'label: "([^"]+)"', start) == ["New note", "Ask your notes", "Sketch", "Remind me", "New meeting"]
 
 
 def test_an_act_row_is_a_tile_only_when_it_opts_in_with_quick():
