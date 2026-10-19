@@ -3,8 +3,13 @@
    at boot: the boot CSS budget is full (tests/test_boot_budget.py). The
    palette's timer chip is a plain `.status-item` and needs nothing here. */
 
+/* Wider and taller than a settings dialog, with the body as the scroll pane
+   so the title and its close never scroll away (INBOX 1319, the owner: "the
+   statistics page gets cut off by the header at the top", "expand it more"). */
 .stats-card {
-  width: min(56rem, 100%);
+  width: min(72rem, 96vw);
+  max-height: 92dvh;
+  overflow: hidden;
 }
 
 .stats-lede {
@@ -15,6 +20,10 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .stats-section > h3 {
