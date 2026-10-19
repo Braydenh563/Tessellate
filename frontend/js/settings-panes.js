@@ -1478,7 +1478,7 @@ function paletteCommands() {
     //: tile and Settings, Help were the only two (tests/test_palette_synonyms.py).
     { label: "ph:compass Take the guided tour", keywords: "tour walkthrough guide how to start show me around", about: "A short walk round the app, pointing at the real controls.", act: () => openTour("basics") },
     //: INBOX 1304: Get started, hidden or done, comes back from the palette too.
-    { label: "ph:list-checks Show Get started", keywords: "get started first steps checklist setup show again unhide welcome", about: "The Dashboard's Get started checklist and button, back as they were.", act: () => getStartedShow() },
+    { label: "ph:list-checks Show Get started", keywords: "unhide", act: () => lazyScript("/js/first-run.js").then(() => getStartedShow()) },
     { label: "ph:arrow-u-up-left Undo", keywords: "undo take back revert", about: "Undo the last change, wherever it was made.", act: () => performUndo() },
     { label: "ph:arrow-u-up-right Redo", keywords: "redo", about: "Do again what Undo took back.", act: () => performRedo() },
     {

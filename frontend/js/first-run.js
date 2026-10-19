@@ -121,6 +121,17 @@ async function firstStepsSample(host, add, event) {
 //: be able to hide or mark as complete the getting started button"). Both
 //: are this browser's preferences, as `firstStepsHidden` always was; Show Get
 //: started in the Customise menu (`dashCustomiseItems`) clears all three.
+//: **The way back, from anywhere** (INBOX 1304, the owner: "make sure there
+//: is a way to reshow the get started menu button"): Customise's row, the
+//: hide toast's Show again and the palette's Show Get started all run this;
+//: callers outside this file load it first (lazyScript), as it is lazy.
+function getStartedShow() {
+  ["getStartedHidden", "getStartedDone", "firstStepsHidden"].forEach((key) => prefs.remove(key));
+  if (typeof revealTab === "function") revealTab("dashboard");
+  renderFirstStepsLazy();
+  renderDashMore();
+}
+
 function getStartedHide() {
   prefs.set("getStartedHidden", "1");
   prefs.set("firstStepsHidden", "1");

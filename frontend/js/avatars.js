@@ -5970,11 +5970,7 @@ function nameMarkBuddyWorld(tab) {
 function nameMarkBuddyThrowSpot(s) {
   nameMarkBuddyIndexReset();
   let spot = nameMarkBuddyDrop(s.x, s.y);
-  //: Came down on a ledge or the floor it cannot stand on there (a control
-  //: there): it steps along that surface, however far, not up to the top bar
-  //: (INBOX 1302, the owner: thrown to the bottom bar's right "it will always
-  //: instantly teleport to hang off the top bar above"; measured on Chat at
-  //: 1440: rest 1376,774, put at 1235,582). Was a slide down a wall only.
+  //: Landed where it cannot stand: step along that surface, not up to the top bar (INBOX 1302).
   if (s.on && spot.y < s.y - 40) {
     for (const reach of [400, innerWidth]) {
       const along = nameMarkBuddyDrop(s.x, s.y, reach);

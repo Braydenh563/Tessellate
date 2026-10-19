@@ -376,7 +376,9 @@ function makeSidebarResizable(aside) {
     const saved = Number(prefs.get(`sidebarWidth:${aside.id}`, null)) || sidebarDefault(aside.id);
     applySidebarWidth(aside, saved, { remember: false });
   });
-  aside.appendChild(collapseBtn);
+  // First in flow so it can stick with Notes' sticky head (INBOX 1311).
+  if (aside.id === "sidebar") aside.prepend(collapseBtn);
+  else aside.appendChild(collapseBtn);
   let foldedBefore = false;
   try {
     foldedBefore = prefs.get(`sidebarCollapsed:${aside.id}`, null) === "1";

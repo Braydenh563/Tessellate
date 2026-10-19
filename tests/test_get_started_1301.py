@@ -82,9 +82,10 @@ def test_the_choices_persist_and_are_honoured_everywhere():
 
 def test_customise_brings_it_back():
     items = _body(DASH, "function dashCustomiseItems(")
-    assert "Show Get started" in items and "getStartedShow()" in items
-    #: INBOX 1304: one way back shared by Customise, the hide toast and the palette.
-    show = _body(DASH, "function getStartedShow(")
+    assert "Show Get started" in items and '.then(() => getStartedShow())' in items
+    #: INBOX 1304: one way back shared by Customise, the hide toast and the palette;
+    #: in the lazy first-run.js, loaded first by callers outside it (boot budget).
+    show = _body(FIRST, "function getStartedShow(")
     for key in ("getStartedHidden", "getStartedDone", "firstStepsHidden"):
         assert f'"{key}"' in show, key
 

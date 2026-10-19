@@ -51038,3 +51038,7 @@ From WHITEBOARD_PLAN "The draw.io programme", section 2 (Text tab), built by the
      no overflow, `scratchpad/ledger805.js`), and the job slot clears within one
      2 s sample of the job ending (12 s before, `scratchpad/late805.js`).
 
+1311. **The owner, 2026-10-19, verbatim** (screenshot: the Notes categories sidebar head, dark: a 64 px square chevron button, "Categories", a filter icon, and the collapse sidebar icon higher than the row, with the sidebar's scrollbar beside it). "the top of the categories sidebar and the buttons need fixing in design, positioning etc, the collapse sidebar button scrolls and the top sidebar elements arent properly spaced, padded or positioned actually it is mainly the collapse sidebar button"
+     Follow-up, verbatim (screenshot): "but that whole top row slightly overflows on the top border of the sidebar"
+     **Fixed** 2026-10-19: the toggle is first in flow and sticky in the Notes sidebar; measured at 1440x900 toggle y17, heading y17, scrolled 200px still y17 (was y9, and y-191 scrolled); right inset 17px matches the left. tests/test_sidebar_head_1311.py.
+

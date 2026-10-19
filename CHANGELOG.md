@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Notes sidebar: the collapse button stays put while the category list scrolls and sits level with the Categories row (it scrolled away and sat 8 px above the row) (INBOX 1311).
 - Companion: thrown onto a ledge or the bottom bar where it cannot stand, it steps along that surface instead of jumping up to the top bar or a far panel (on Chat at 1440: a throw that ended 192 px up now stays on the floor) (INBOX 1302).
 - Agent popup: typing / opens the same command menu as Chat (18 commands), and a chosen command answers in the popup (INBOX 1309).
 - Sketch pad: a stroke no longer brings up the selected-text menu over the ink; the pad's press is ink, never a text selection (INBOX 1303).
