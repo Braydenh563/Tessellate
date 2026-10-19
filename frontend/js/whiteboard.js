@@ -9840,11 +9840,12 @@ function wbIsSticky(item) {
   return Boolean(data.sticky) || (data.border_color === "#e8d56a" && Boolean(data.bg));
 }
 
-async function wbCreateSticky(x, y, box = null) {
+async function wbCreateSticky(x, y, box = null, like = null) {
   const at = box || { x: x - 90, y: y - 70, w: 180, h: 140 };
+  const paper = like?.data || {};
   const created = await wbCreateObject(
     "text",
-    { content: "", sticky: true, bg: WB_STICKY_PAPERS[0].value, color: "#2a2a1f", font_size: 16 },
+    { content: "", sticky: true, bg: paper.bg || WB_STICKY_PAPERS[0].value, color: paper.color || "#2a2a1f", font_size: paper.font_size || 16 },
     at.x, at.y, at.w, at.h
   );
   if (!created) return;
@@ -21051,6 +21052,14 @@ function renderWbObjects(canvas) {
         }
         if (event.key === "Tab" && !event.ctrlKey && !event.altKey && !event.metaKey) {
           if (wbIndentEditableLines(this, event.shiftKey)) event.preventDefault();
+        }
+        //: **Sticky chain** (WHITEBOARD_PLAN gap row 6, Miro's Tab): Ctrl+Enter
+        //: ends this sticky and starts the next beside it, same paper and size.
+        //: Not Tab, which indents a sticky's lines here.
+        if (event.key === "Enter" && (event.ctrlKey || event.metaKey) && wbIsSticky(d)) {
+          event.preventDefault();
+          this.blur();
+          wbCreateSticky(0, 0, { x: d.x + d.width + 24, y: d.y, w: d.width, h: d.height }, d);
         }
       });
       content.on("pointerdown", function (event) {

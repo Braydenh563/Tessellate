@@ -1639,7 +1639,7 @@ Owner: "stuff like that, dont stop there, find what is missing on the whiteboard
 3. Align to a key object (draw.io: the shape the others line up to stays put) - M.
 4. A shape's own web link, opened from the shape (draw.io "Edit link") - M; BACKLOG has a row.
 5. A per-shape "keep proportions" property, so dragging a corner keeps the ratio without Shift (the W/H link is the numeric half) - S.
-6. Quick sticky chain: Tab on a sticky makes the next one beside it (Miro) - S.
+6. Quick sticky chain: Tab on a sticky makes the next one beside it (Miro) - S, built as Ctrl+Enter (Tab indents a sticky's lines here).
 7. Dimension and measure lines with a live length - M.
 8. Text that shrinks to fit its shape (draw.io "autosize" is grow only) - M.
 9. BPMN set: task, event, gateway, data object - M.

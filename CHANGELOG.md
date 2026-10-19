@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: Ctrl+Enter while typing in a sticky starts the next one beside it, same paper and size (INBOX 1308).
 - Whiteboard: a C4 and architecture set in the library (person, software system, external system, container, database, component, boundary, relationship); each places as one group (INBOX 1308).
 - Notes sidebar: the collapse button stays put while the category list scrolls and sits level with the Categories row (it scrolled away and sat 8 px above the row) (INBOX 1311).
 - Companion: thrown onto a ledge or the bottom bar where it cannot stand, it steps along that surface instead of jumping up to the top bar or a far panel (on Chat at 1440: a throw that ended 192 px up now stays on the floor) (INBOX 1302).

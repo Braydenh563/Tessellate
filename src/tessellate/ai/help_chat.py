@@ -1354,7 +1354,7 @@ HELP_TOPICS.extend(
                 "Whiteboard keys (Library, Boards & maps; Ctrl+Shift+B opens it). "
                 "Tools: V or S select, H hand, K lasso, P pen, M highlighter, E "
                 "eraser, B fill, L line, A arrow, R rectangle, O circle, G "
-                "triangle, D diamond, T text, N sticky note, F frame, C connector (Shift+C "
+                "triangle, D diamond, T text, N sticky note (Ctrl+Enter in one starts the next beside it), F frame, C connector (Shift+C "
                 "curved), I image, X delete. The Shapes button's flyout also has a rounded "
                 "rectangle, ellipse, hexagon, parallelogram, star, cylinder, cloud, speech "
                 "bubble and block arrow. Moving around: the wheel "

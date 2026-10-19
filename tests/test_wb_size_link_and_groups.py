@@ -36,3 +36,13 @@ def test_sort_branches_is_a_recorded_map_command() -> None:
         line = next(x for x in cmd.splitlines() if f'{{ id: "{row}"' in x)
         assert 'surface: "map"' in line and 'needs: "topic"' in line and "wbMapSortChildren" in line
     assert '"wbMapSortChildren"' in board, "one Undo step: the name is in WB_RECORDED"
+
+
+def test_ctrl_enter_chains_a_sticky():
+    """WHITEBOARD_PLAN gap row 6 (INBOX 1308): Ctrl+Enter in a sticky starts the
+    next beside it, same paper and size (measured: 310, 514, 718 at y 230).
+    Not Tab, which indents a sticky's lines."""
+    js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    assert 'event.key === "Enter" && (event.ctrlKey || event.metaKey) && wbIsSticky(d)' in js
+    assert "wbCreateSticky(0, 0, { x: d.x + d.width + 24, y: d.y, w: d.width, h: d.height }, d)" in js
+    assert "bg: paper.bg || WB_STICKY_PAPERS[0].value" in js
