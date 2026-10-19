@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Notes at 800px: the parked sidebar sheet no longer takes clicks over the first sub-tab; only its toggle does (elementFromPoint(54, 136) was the aside, now the sub-tab).
 - Resurfacing: two requests scoring at once no longer 500 on UNIQUE note_scores.entry_id; new rows are upserted (GET /resurface/near/{id}).
 - Security: a phrase filter in the Notes list ("tagged work", "pinned", "connected to") no longer returns private notes or boards; a private note's tags are stored in plain text, so the filter could name it.
 - Agent popup: typing "/" shows the command menu again; it opened underneath the popup's overlay (z-index 60 against 2000), now above it like the other menus (INBOX 1333a).

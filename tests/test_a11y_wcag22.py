@@ -477,3 +477,16 @@ def test_the_tag_popover_gives_focus_back_after_a_list_re_render():
     assert "li[data-id=" in target and ".tag-add" in target and ".note-meta" in target
     assert "entries-heading" in target
     assert "tabIndex = -1" in target
+
+
+def test_a_parked_sidebar_sheet_takes_no_pointer_but_its_toggle_does():
+    # 800x700 Notes: the parked aside (fixed, translateX(-260px), 320px wide)
+    # was the elementFromPoint(54, 136) answer over the first sub-tab, so a
+    # click missed (UX audit 2026-10-19). Measured after: the sub-tab.
+    misc = (CSS / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    parked = misc[misc.index("#sidebar:not(.sidebar-sheet-open),"):]
+    parked = parked[: parked.index("}")]
+    assert "pointer-events: none;" in parked
+    toggle = misc[misc.index("#sidebar > .sidebar-collapse-toggle,\n  #chat-sidebar"):]
+    toggle = toggle[: toggle.index("}")]
+    assert "pointer-events: auto;" in toggle
