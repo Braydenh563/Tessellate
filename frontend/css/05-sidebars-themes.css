@@ -6237,6 +6237,15 @@ button.ghost.doc-template-choice[aria-checked="true"] {
     z-index: 3;
     margin: 0 0 calc(-1 * (var(--sidebar-toggle-size) + var(--card-pad-y))) auto;
   }
+  /* The same row while the collapsed sidebar is peeked open (INBOX 1336): the
+     class that makes it a rail also drops the sticky rule above, so the
+     toggle fell back to the 8px rail inset and sat 8px above the filter
+     button beside it. Absolute in the aside's padding box, one card-pad-y
+     down, it lands where the docked one is. */
+  .layout-sidebar-collapsed > #sidebar.sidebar-collapsed:hover > .sidebar-collapse-toggle,
+  .layout-sidebar-collapsed > #sidebar.sidebar-collapsed:is(:focus-visible, :has(:focus-visible)) > .sidebar-collapse-toggle {
+    top: var(--card-pad-y);
+  }
 }
 /* The Tags sheet's rows (categories-panel.js `openTagsSheet`): the sheet row
    takes the width, its two small buttons sit at its end. */

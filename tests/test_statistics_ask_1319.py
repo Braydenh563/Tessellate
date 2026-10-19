@@ -110,3 +110,41 @@ def test_the_page_has_the_box_with_three_starters_and_posts_to_the_route():
     assert "/statistics/ask" in box and 'input.id = "stats-ask-input"' in box and "Ask about your statistics" in box
     assert stats.count('"', stats.index("STATS_ASK_STARTERS"), stats.index("];", stats.index("STATS_ASK_STARTERS"))) >= 6
     assert "statsAskBox()," in stats
+
+
+def _titled(session):
+    session.add(Entry(content="Trip plan. Flights next.", created_at=datetime(2026, 6, 2, 23, 30, tzinfo=timezone.utc)))
+    session.add(Entry(content="Binned", deleted_at=datetime(2026, 1, 1), created_at=datetime(2026, 1, 1, 9, 0, tzinfo=timezone.utc)))
+    session.add(Entry(content="Private", is_private=True, created_at=datetime(2026, 2, 1, 9, 0, tzinfo=timezone.utc)))
+    session.commit()
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
+        "when did I write my first note ion this notebook?",
+        "when was my first note",
+        "what is my oldest note",
+        "earliest note",
+        "when did I start",
+    ],
+)
+def test_first_note_is_answered_with_its_date_and_title(seeded, question):
+    _titled(seeded)
+    answer = _ask(seeded, question)
+    assert answer.kind == "first-note"
+    assert "2 June 2026" in answer.text and "Trip plan." in answer.text
+    assert "can count" not in answer.text
+
+
+@pytest.mark.parametrize("question", ["what is my newest note", "latest note", "when did I last write a note", "my most recent note"])
+def test_newest_note_is_answered_with_its_date_and_title(seeded, question):
+    answer = _ask(seeded, question)
+    assert answer.kind == "latest-note"
+    assert "13 October 2026" in answer.text and "one two three" in answer.text
+
+
+def test_first_note_with_no_notes_says_so(client):
+    with deps.get_db().session() as session:
+        answer = _ask(session, "when did I write my first note")
+    assert answer.kind == "first-note" and "no notes yet" in answer.text.lower()

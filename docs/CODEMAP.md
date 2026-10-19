@@ -2,7 +2,7 @@
 
 Generated 2026-10-19 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6190, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6157, test files 1310, tests 11674, plan headings 967.
+Counts: frontend functions 6190, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6158, test files 1310, tests 11677, plan headings 967.
 
 ## Frontend functions (6190)
 
@@ -5459,9 +5459,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `openStatistics` | frontend/js/statistics.js:385 |
-| `paintStatistics` | frontend/js/statistics.js:365 |
-| `renderWeekWidget` | frontend/js/statistics.js:452 |
+| `openStatistics` | frontend/js/statistics.js:400 |
+| `paintStatistics` | frontend/js/statistics.js:380 |
+| `renderWeekWidget` | frontend/js/statistics.js:467 |
 | `statsAskBox` | frontend/js/statistics.js:296 |
 | `statsChange` | frontend/js/statistics.js:121 |
 | `statsChart` | frontend/js/statistics.js:61 |
@@ -10094,7 +10094,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/02-chat-graph.css | 5613 |
 | frontend/css/03-dashboard-widgets.css | 4906 |
 | frontend/css/04-chat-dock-appearance.css | 6476 |
-| frontend/css/05-sidebars-themes.css | 6242 |
+| frontend/css/05-sidebars-themes.css | 6251 |
 | frontend/css/06-timeline-dialogs.css | 3708 |
 | frontend/css/07-whiteboard-misc.css | 11846 |
 | frontend/css/08-consistency.css | 10665 |
@@ -10135,7 +10135,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/timeline-calendar-lazy.css | 292 |
 | frontend/css/timeline-ticks-lazy.css | 42 |
 | frontend/css/usage-lazy.css | 34 |
-| frontend/css/utilities-lazy.css | 271 |
+| frontend/css/utilities-lazy.css | 290 |
 
 ## Backend routes (617)
 
@@ -10761,7 +10761,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (6157)
+## Backend modules (6158)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -13239,23 +13239,24 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `events` | src/tessellate/ai/starter_acts.py:90 |
 | `read` | src/tessellate/ai/starter_acts.py:58 |
 
-### src/tessellate/ai/stats_ask.py (13)
+### src/tessellate/ai/stats_ask.py (14)
 
 | Name | File:line |
 |---|---|
-| `_compare` | src/tessellate/ai/stats_ask.py:116 |
-| `_feature` | src/tessellate/ai/stats_ask.py:94 |
-| `_midnight` | src/tessellate/ai/stats_ask.py:52 |
-| `_month_count` | src/tessellate/ai/stats_ask.py:82 |
-| `_month_start` | src/tessellate/ai/stats_ask.py:56 |
-| `_name` | src/tessellate/ai/stats_ask.py:67 |
-| `_named_month` | src/tessellate/ai/stats_ask.py:71 |
-| `_next_month` | src/tessellate/ai/stats_ask.py:63 |
-| `_period` | src/tessellate/ai/stats_ask.py:112 |
-| `_span` | src/tessellate/ai/stats_ask.py:42 |
-| `_summary` | src/tessellate/ai/stats_ask.py:149 |
-| `_usage` | src/tessellate/ai/stats_ask.py:101 |
-| `ask` | src/tessellate/ai/stats_ask.py:183 |
+| `_compare` | src/tessellate/ai/stats_ask.py:141 |
+| `_end_note` | src/tessellate/ai/stats_ask.py:52 |
+| `_feature` | src/tessellate/ai/stats_ask.py:119 |
+| `_midnight` | src/tessellate/ai/stats_ask.py:77 |
+| `_month_count` | src/tessellate/ai/stats_ask.py:107 |
+| `_month_start` | src/tessellate/ai/stats_ask.py:81 |
+| `_name` | src/tessellate/ai/stats_ask.py:92 |
+| `_named_month` | src/tessellate/ai/stats_ask.py:96 |
+| `_next_month` | src/tessellate/ai/stats_ask.py:88 |
+| `_period` | src/tessellate/ai/stats_ask.py:137 |
+| `_span` | src/tessellate/ai/stats_ask.py:67 |
+| `_summary` | src/tessellate/ai/stats_ask.py:174 |
+| `_usage` | src/tessellate/ai/stats_ask.py:126 |
+| `ask` | src/tessellate/ai/stats_ask.py:208 |
 
 ### src/tessellate/ai/supersede.py (15)
 
@@ -18467,7 +18468,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11674)
+## Tests (11677)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19538,7 +19539,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_static_compression.py | 6 |
 | tests/test_static_freshness.py | 5 |
 | tests/test_static_precompressed.py | 7 |
-| tests/test_statistics_ask_1319.py | 9 |
+| tests/test_statistics_ask_1319.py | 12 |
 | tests/test_stats_fit_1319.py | 1 |
 | tests/test_stats_interactive_1319.py | 8 |
 | tests/test_status_bar_fit.py | 4 |

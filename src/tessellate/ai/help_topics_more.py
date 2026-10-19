@@ -900,7 +900,7 @@ MORE_TOPICS: list[dict] = [
             "this week's days against last week's. The Ask about your statistics box at "
             "the top answers from the same counts with no model: try Summarise my "
             "month, What do I use most? or Am I writing more than last month?, or ask "
-            "how many notes you wrote in July. This week compares notes made, words "
+            "how many notes you wrote in July, or when you wrote your first or newest note. Clear (shown once there is an answer) empties the box. This week compares notes made, words "
             "written and reminders done since Monday with the whole of last week. "
             "Open it from the Statistics button under the Dashboard's Activity "
             "heatmap (or a click on the heatmap), the This week card's All "

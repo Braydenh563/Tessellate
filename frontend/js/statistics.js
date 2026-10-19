@@ -312,7 +312,14 @@ function statsAskBox() {
   send.type = "submit";
   send.className = "primary small";
   send.textContent = "Ask";
-  row.append(input, send);
+  //: Clear: only while there is an answer to clear.
+  const clear = document.createElement("button");
+  clear.type = "button";
+  clear.className = "ghost small stats-ask-clear";
+  clear.textContent = "Clear";
+  clear.hidden = true;
+  clear.title = "Clear the answer and the question";
+  row.append(input, send, clear);
   const chips = document.createElement("div");
   chips.className = "stats-ask-chips";
   const answer = document.createElement("div");
@@ -340,6 +347,7 @@ function statsAskBox() {
         answer.appendChild(list);
       }
       answer.classList.remove("hidden");
+      clear.hidden = false;
     } catch {
       toast("Couldn't answer that.", true, { action: ["Try again", () => ask(text)] });
     } finally {
@@ -357,6 +365,13 @@ function statsAskBox() {
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     ask(input.value);
+  });
+  clear.addEventListener("click", () => {
+    answer.replaceChildren();
+    answer.classList.add("hidden");
+    input.value = "";
+    clear.hidden = true;
+    input.focus();
   });
   form.append(label, row, chips, answer);
   return form;
