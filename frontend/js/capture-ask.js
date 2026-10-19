@@ -1821,9 +1821,10 @@ function renderAnswerGrounding(
     const chip = document.createElement("button");
     chip.type = "button";
     chip.className = "chip result-reason-chip result-reason-connected answer-grounding-chip";
-    // Numbered as the markers are. `setNoteLabel`: the number is the app's and
-    // the rest the note's Markdown (`1. ` alone would render as a list).
-    setNoteLabel(chip, `ph:file-text ${n}.`, entry?.content || labelFor.get(noteId) || "", 30);
+    // Numbered as the markers are, in the badge as the bare digit: a trailing
+    // period sat off-centre in the circle (2026-10-19, 1.8px at 12px). The prefix
+    // is its own element, not Markdown, so no list rule applies to it.
+    setNoteLabel(chip, `ph:file-text ${n}`, entry?.content || labelFor.get(noteId) || "", 30);
     // A tooltip prints characters: `plainText` (chat-attach.js, run at render).
     chip.title = plainText(forSentences.join(" "));
     chip.addEventListener("click", () => {
