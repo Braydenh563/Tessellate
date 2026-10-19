@@ -34,6 +34,9 @@ with its owner named in the entry.
 
 ## Open items
 
+1323. **The owner, 2026-10-19, verbatim.** "Also I think the grounding needs a redesign and modern/professional ui/ux improvement" (screenshot: a reply's "Grounded in:" row, chip 1 reads "1. --- type: Meeting date: 2026-10-15 12:55 attendees: [] --- M..." (raw front matter as the title), chip 2 wraps to a second line, a lone image thumbnail after it)
+     Owner: orchestrator after the gate; source titles skip front matter, a compact source list (title, kind icon, date, snippet on hover), thumbnails inside their chip, CHAT_PLAN row.
+
 1322. **The owner, 2026-10-19, verbatim.** "and can you make it easier to access the format panel like with this library button in the whiteboard top bar button? also atlas needs to have its animations and expressions improved behaviours, even micro behaviours and movements, small movement adjustments, more variety, the juggling stars dont animate at all." (screenshot: the whiteboard top bar, Insert, Edit, Arrange, View, Board menus, then a Library button)
      Owner: (a) Format button beside Library in the whiteboard bar, wb1313 agent; (b) Atlas micro behaviours, expression variety and the juggling stars animation, atlas1322 agent (Sonnet).
 
