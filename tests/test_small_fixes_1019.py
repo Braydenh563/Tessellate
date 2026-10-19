@@ -39,3 +39,15 @@ def test_1278_quicklinks_strip_does_not_overflow_its_group_on_phones() -> None:
         css,
     )
     assert m and re.search(r"margin-right:\s*0\b", m.group(1))
+
+
+def test_408_header_buttons_ring_fits_inside_the_window_top() -> None:
+    """Bar 44px, controls 36px: top 3.5px. Ring 2px at offset 2 reached -0.5; offset 1 gives +0.5
+    (Tab-driven sweep at 1440: ring top -0.5 before, 0.5 after; Library sub-tab rings cut 0 top and bottom)."""
+    css = _consistency()
+    m = re.search(
+        r"header#top-bar :is\(\.header-cluster, \.notif-wrap, \.header-controls\) button:focus-visible,\s*"
+        r"header#top-bar button\.space-switcher-btn:focus-visible \{([^{}]*)\}",
+        css,
+    )
+    assert m and re.search(r"outline-offset:\s*1px", m.group(1))

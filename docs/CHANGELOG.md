@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Header: the six right-hand buttons' keyboard ring no longer reaches past the window's top edge (offset 1px, ring top 0.5px; was -0.5px) (OPEN 408). The Library sub-tab rings were measured uncut.
 - Notes and Dashboard: the notes grid and the phone quick-links strip no longer scroll 4px sideways; their ring room is padding only, with no negative right margin (OPEN 1435, 1278).
 - Sidebar: the Categories collapse toggle sits on the head's row (8px lower, level with the filter button) while the collapsed sidebar is hover-opened.
 - Statistics: the Ask box answers "when did I write my first note" (also oldest, newest, latest, when did I start) with the date and title, its field and Ask button share one 32px height, and a Clear button empties the answer and the box.

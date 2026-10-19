@@ -10680,3 +10680,12 @@ html[data-other-device] [data-this-computer="hide"] {
 #settings-help li {
   transition: none;
 }
+/* **The header's rings fit the bar** (OPEN 408). The bar is 44px with 36px
+   controls, so a control's top is 3.5px from the window's edge, and the
+   2px ring at the 2px offset reached 0.5px past it (measured at 1440: ring
+   top -0.5 on the six right-hand buttons). A 1px offset puts the ring top at
+   +0.5. The tab strip keeps its own ring inside its well. */
+header#top-bar :is(.header-cluster, .notif-wrap, .header-controls) button:focus-visible,
+header#top-bar button.space-switcher-btn:focus-visible {
+  outline-offset: 1px;
+}

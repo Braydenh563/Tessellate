@@ -441,7 +441,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 405 | A real word missing from both word lists can be mis-repaired; add it to common_words.py and LEFT_ALONE. | docs/roadmap/agent-remaining/OPEN.md:2234 | S | unassigned |
 | 406 | The asking-word nearest rule turns an all-caps token ("NASA") into "has" unless the whole text is capitals. | docs/roadmap/agent-remaining/OPEN.md:2235 | S | unassigned |
 | 407 | Readings guessed: "liks" (like), "mut" (must), "odf" (of), "ro" (or). Brief 90 is standing: each new prompt's typos join owner_typos.json. | docs/roadmap/agent-remaining/OPEN.md:2236 | S | unassigned |
-| 408 | Mechanical: the header's six buttons lose 0.5px of their ring at the window top; the Library active sub-tab's border is cut 2.3px at 390; the chat... | docs/roadmap/agent-remaining/OPEN.md:2275 | S | unassigned |
+| 408 | **Fixed 2026-10-19.** Mechanical: the header's six buttons lose 0.5px of their ring at the window top; the Library active sub-tab's border is cut 2.3px at 390; the chat... | docs/roadmap/agent-remaining/OPEN.md:2275 | S | unassigned |
 | 409 | "What do I know about X" still quotes one sentence unless its notes are tagged with the subject (the 725 and 741 evals pin it). | docs/roadmap/agent-remaining/OPEN.md:2440 | S | unassigned |
 | 410 | Single-note answers still end with "[your note, date]"; some next-question chips repeat the subject; an overview over more than 24 notes should say... | docs/roadmap/agent-remaining/OPEN.md:2441 | S | unassigned |
 | 411 | Send stays off the undo bar (Ctrl+Z in the composer is text undo); recommended as is. | docs/roadmap/agent-remaining/OPEN.md:2448 | S | unassigned |
