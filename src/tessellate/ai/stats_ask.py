@@ -21,7 +21,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import notebook_stats as ns
-from tessellate.ai import recognise
+from tessellate.ai import questions, recognise
 from tessellate.ai.notebook_stats import StatAnswer
 from tessellate.core.database import Entry, utcnow
 
@@ -33,10 +33,35 @@ _COMPARE = re.compile(
 )
 _SUMMARY = re.compile(r"summar|overview|recap|sum up|how(?:'s| is| was| has) my (?:month|week)|how am i doing|how(?:'s| is) it going")
 
-HELP_LINE = (
-    "I can count your notes, words, tags, reminders and what you use. "
-    'Try "summarise my month", "what do I use most" or "am I writing more than last month".'
+#: The ends of the notebook's timeline: "my first note", "oldest", "when did I
+#: start", and "my newest note", "when did I last write". A stray word between
+#: ("first note ion this notebook") changes nothing, only these anchors count.
+_FIRST = re.compile(
+    r"\b(?:first|oldest|earliest)\b.*\b(?:notes?|entry|entries)\b|\bwhen did i (?:first )?(?:start|begin)\b"
 )
+_LATEST = re.compile(
+    r"\b(?:newest|latest|last|most recent)\s+(?:\w+\s+)?(?:notes?|entry)\b|\bwhen did i last (?:write|make|add|save|take)\b"
+)
+
+HELP_LINE = (
+    "I can count your notes, words, tags, reminders and what you use, and say when you wrote your first or newest note. "
+    'Try "summarise my month", "what do I use most", "when did I write my first note" or "am I writing more than last month".'
+)
+
+
+def _end_note(session: Session, now: datetime, newest: bool) -> StatAnswer:
+    """The first or newest visible note, by date and title: one row, ordered
+    by the same column the counts above use."""
+    order = (Entry.created_at.desc(), Entry.id.desc()) if newest else (Entry.created_at.asc(), Entry.id.asc())
+    row = session.execute(ns._visible(select(Entry.created_at, Entry.content)).order_by(*order).limit(1)).first()
+    kind = "latest-note" if newest else "first-note"
+    if row is None:
+        return StatAnswer(kind, "You have no notes yet.")
+    made = row[0] if row[0].tzinfo else row[0].replace(tzinfo=utcnow().tzinfo)
+    made = made.astimezone(now.tzinfo)
+    title = questions._title(row[1]) or "Untitled"
+    which = "newest" if newest else "first"
+    return StatAnswer(kind, f"Your {which} note is from {made.day} {made.strftime('%B %Y')}: {title}")
 
 
 def _span(session: Session, start: datetime, end: datetime) -> dict:
@@ -183,9 +208,15 @@ def _summary(text: str, session: Session, now: datetime, first_day: int) -> Stat
 def ask(question: str, session: Session, now: datetime, usage_summary: dict, first_day: int = 0) -> StatAnswer:
     """The answer to one question about the page's figures; never raises for
     a question it cannot count, it says what it can."""
-    text = ns._despell((question or "").strip().lower())
+    raw = (question or "").strip().lower()
+    text = ns._despell(raw)
     if _USAGE.search(text):
         return _usage(usage_summary)
+    #: The raw words too: the spelling pass turns "start" into "stats".
+    if _FIRST.search(text) or _FIRST.search(raw):
+        return _end_note(session, now, False)
+    if _LATEST.search(text) or _LATEST.search(raw):
+        return _end_note(session, now, True)
     counted = _month_count(text, session, now)
     if counted is not None:
         return counted
