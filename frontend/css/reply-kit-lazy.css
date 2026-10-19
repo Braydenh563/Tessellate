@@ -321,3 +321,15 @@
   max-width: min(16rem, 50%);
   margin-inline-start: var(--space-1);
 }
+
+/* Ask's Matching records say why each card is there in a sentence (INBOX
+   1310): it wraps inside the card rather than ellipsising, since the reason
+   is the line's whole point; the chip's corner radius holds over two lines. */
+#raw-results .entry-why .result-reason-why {
+  max-width: 100%;
+  align-items: flex-start;
+}
+
+#raw-results .entry-why .result-reason-why .ph-text {
+  white-space: normal;
+}

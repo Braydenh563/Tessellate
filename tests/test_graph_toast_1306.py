@@ -29,7 +29,7 @@ def test_a_toast_is_painted_on_the_opaque_surface_not_the_glass_card() -> None:
 
 
 def test_the_graph_lifts_the_toast_box_above_the_zoom_strip() -> None:
-    text = (CSS / "03-dashboard-widgets.css").read_text(encoding="utf-8")
+    text = (CSS / "graph-lazy.css").read_text(encoding="utf-8")  # with the graph bundle (boot CSS budget)
     m = re.search(r":root body:has\(#tab-graph:not\(\.hidden\)\) #toast-box\s*\{([^}]*)\}", text)
     assert m, "the Graph tab gives #toast-box no offset of its own"
     assert "12rem" in m.group(1)

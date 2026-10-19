@@ -2851,17 +2851,6 @@ button.answer-figure-open {
   min-width: 0;
 }
 
-/* Ask's Matching records say why each card is there in a sentence (INBOX
-   1310): it wraps inside the card rather than ellipsising, since the reason
-   is the line's whole point; the chip's corner radius holds over two lines. */
-#raw-results .entry-why .result-reason-why {
-  max-width: 100%;
-  align-items: flex-start;
-}
-
-#raw-results .entry-why .result-reason-why .ph-text {
-  white-space: normal;
-}
 
 .result-reason-connected {
   background: var(--accent-soft);
@@ -3672,12 +3661,6 @@ button.answer-figure-open {
     var(--inner);
 }
 
-/* A toast over the map stands above its zoom strip and legend (INBOX 1306): the strip is 4 buttons tall, 12rem clears it. */
-@media (min-width: 600px) {
-  :root body:has(#tab-graph:not(.hidden)) #toast-box {
-    bottom: calc(var(--status-bar-h) + 12rem);
-  }
-}
 
 /* Zoom controls as one floating pill. */
 .graph-zoom {
