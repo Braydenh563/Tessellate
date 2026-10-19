@@ -96,11 +96,20 @@ function ensureSettingsPaneTitle(box, name) {
 
 //: The section's own scrolling ancestor. Shared with the back/forward
 //: history (navigation.js), which remembers where in a section you were.
+//: Asked on every scroll event of a section (navigation.js) and every frame
+//: of one ("On this page", settings-find.js), so the walk, a computed style
+//: per ancestor and a forced style recalculation straight after a scroll,
+//: is done once per pane and window width (the phone band moves it).
 function settingsScroller(name) {
   const box = $(`settings-${name}`);
+  if (box?._scroller?.contains(box) && box._scrollerAt === innerWidth) return box._scroller;
   for (let el = box && box.parentElement; el; el = el.parentElement) {
     const overflow = getComputedStyle(el).overflowY;
-    if (overflow === "auto" || overflow === "scroll") return el;
+    if (overflow === "auto" || overflow === "scroll") {
+      box._scroller = el;
+      box._scrollerAt = innerWidth;
+      return el;
+    }
   }
   return null;
 }

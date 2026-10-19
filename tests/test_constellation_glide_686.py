@@ -181,7 +181,8 @@ def test_the_constellation_keeps_its_shape_and_its_height_across_a_theme_change(
     holder = css[css.index(".art-holder {") :].split("}", 1)[0]
     assert "min-height: 13.75rem;" in holder
     js = (JS / "dashboard.js").read_text(encoding="utf-8")
-    # The drift is read off a page-lifetime clock, never a sketch's own.
-    assert "const artEpoch = performance.now();" in js
+    # The drift is read off a page-lifetime clock, never a sketch's own (moved
+    # on only by an idle rest, so the stars go on from where they stopped).
+    assert "let artEpoch = performance.now();" in js
     assert "p.millis() * 0.0003" not in js
     assert js.count("artDriftMs() * 0.0003") == 2

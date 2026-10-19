@@ -2228,7 +2228,9 @@ let artInstance = null; // the one live p5 instance, if any
 let artNonce = 0; // bumped by "Regenerate" for a fresh arrangement
 //: The drift reads a page-lifetime clock, so a rebuilt sketch (theme change,
 //: INBOX 838) carries on instead of restarting every star's drift at phase 0.
-const artEpoch = performance.now();
+//: A rest while idle moves it on by the rest, so the stars go on from where
+//: they stopped rather than jumping.
+let artEpoch = performance.now();
 const artDriftMs = () => performance.now() - artEpoch;
 // Bumped on every startArt call. A run that finds it has changed while it was
 // waiting knows it was superseded and must not mount its canvas, see the
@@ -2733,6 +2735,23 @@ async function startArt(holder) {
     //: `frameCount * 0.005` at sixty frames a second advanced `t` by 0.3 a
     //: second, and `millis() * 0.0003` advances it by 0.3 a second full stop.
     p.draw = () => {
+      //: **Rests when nobody is there**: after the background art's two idle
+      //: minutes (bg-art.js stamps every input), and goes on at the next
+      //: one. Traced idle on the Dashboard: 600 p5 frames and 204ms of
+      //: script every ten seconds, for a drift no one was watching.
+      if (!reduceMotion && !glide && !fade && performance.now() - bgArtLastInput > BG_ART_IDLE_MS) {
+        p.noLoop();
+        //: Stamped, so a listener left over from an earlier rest does nothing.
+        const rested = (p.rested = performance.now());
+        const wake = () => {
+          if (artInstance !== p || p.rested !== rested) return;
+          p.rested = 0;
+          artEpoch += performance.now() - rested;
+          p.loop();
+        };
+        for (const type of ["pointermove", "keydown", "wheel", "touchstart"]) window.addEventListener(type, wake, { once: true, passive: true });
+        return;
+      }
       scene(reduceMotion ? 0 : artDriftMs() * 0.0003);
       const now = p.millis();
       if (glide && glide.elapsed >= ART_GLIDE_MS) {

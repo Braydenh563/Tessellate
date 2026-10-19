@@ -48,7 +48,6 @@
  "graph-canvas.js::resize-observer": 1,
  "graph.js::raf": 3,
  "graph.js::resize-observer": 2,
- "library.js::interval": 1,
  "library.js::mutation-observer": 1,
  "library.js::raf": 4,
  "library.js::resize-observer": 5,

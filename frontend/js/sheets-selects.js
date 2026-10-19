@@ -1563,15 +1563,18 @@ function clampToolbarMenu(details, { retry = true } = {}) {
 //: anchor-positioning polyfill) and covers the two ways it can happen: the
 //: page scrolls under a sticky toolbar, or the toolbar itself is scrolled
 //: sideways in row mode.
-//: A live collection for the same reason as `ACTION_MENUS`: a capturing
-//: scroll listener on every tab, with nothing open nearly always (18ms of
-//: selector matching over a 30-step scroll, traced).
-const TOOLBAR_MENUS = document.getElementsByClassName("doc-toolbar-menu");
+//: **The open ones, kept by their own `toggle`**, not looked for: this is a
+//: capturing scroll listener on every tab with nothing open nearly always.
+//: A selector cost 18ms of a 30-step scroll; the live collection that
+//: replaced it is rebuilt after any change to the page, and the Notes list
+//: changes every frame as cards come into view: 47ms of a 40-step scroll.
+const OPEN_TOOLBAR_MENUS = new Set();
 
 function replaceOpenToolbarMenus() {
-  const open = [];
-  for (const details of TOOLBAR_MENUS) if (details.open) open.push(details);
-  for (const details of open) clampToolbarMenu(details);
+  for (const details of OPEN_TOOLBAR_MENUS) {
+    if (details.open && details.isConnected) clampToolbarMenu(details);
+    else OPEN_TOOLBAR_MENUS.delete(details);
+  }
 }
 window.addEventListener("resize", replaceOpenToolbarMenus);
 window.addEventListener("scroll", replaceOpenToolbarMenus, true);
@@ -1580,16 +1583,19 @@ document.addEventListener(
   "toggle",
   (event) => {
     const details = event.target;
-    if (!(details instanceof HTMLElement) || details.tagName !== "DETAILS") return;
-    if (!details.classList.contains("doc-toolbar-menu")) return;
+    //: Every `.doc-toolbar-menu` is a `<details>` (index.html, documents.js,
+    //: graph.js); a popover's toggle carries no such class.
+    if (!details.classList?.contains("doc-toolbar-menu")) return;
     if (!details.open) {
+      OPEN_TOOLBAR_MENUS.delete(details);
       // Back to invisible for the next open, so it never paints unplaced.
       details.querySelector(".doc-dock-menu-list")?.classList.remove("is-placed");
       return;
     }
     //: One toolbar menu open at a time: a `<details>` never closes its
     //: neighbours, so two lists stood over each other (owner, 2026-10-12).
-    for (const other of TOOLBAR_MENUS) if (other !== details && other.open) other.open = false;
+    for (const other of OPEN_TOOLBAR_MENUS) if (other !== details) other.open = false;
+    OPEN_TOOLBAR_MENUS.add(details);
     clampToolbarMenu(details);
   },
   true
