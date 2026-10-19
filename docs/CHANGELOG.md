@@ -13,6 +13,8 @@ below). Versioning is `0.x` while the app stabilises.
 - Whiteboard: a click on a tinted panel's body or a plain frame's edge selects the frame, and a selected frame has a rotate handle like other objects; what lies inside does not turn (INBOX 1327).
 - Whiteboard and maps: a two-finger trackpad scroll always pans (both axes) and a pinch or the mouse wheel zooms; the call is made once per gesture, so vertical-only frames no longer flip the board between panning and zooming (INBOX 1327).
 - Whiteboard: pressing a selected connector's end grip moves that end instead of drawing a new arrow from the port beneath it (INBOX 1328).
+- Search: the suggestions under a search box now also close when the page or results behind them scroll (INBOX 1330); Escape and a click outside already did.
+- Boards and maps: Library cards with a snapshot keep their layout again: the icon and title share one row and the title ends in an ellipsis, the snapshot fills its box with no grey bands, and the footer stays on one line (INBOX 1331).
 - Boards and maps: deleting a board for good finds its thumbnail from the uploads folder, so the notes layer no longer imports the API layer (CodeQL cyclic import).
 - CI fixes: "what is due this week" lists waiting reminders again (only a question that says reminders is cut to its window), the answer chip has its keyboard focus style, the board Format panel menu row and command table share their words, and five functions plus the chat, board and task state were split or folded to meet the complexity and global-scope ratchets.
 - Launcher: the starting splash has minimise and close buttons in its top right corner; close cancels the launch (INBOX 1320).

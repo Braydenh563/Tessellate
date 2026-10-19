@@ -1029,7 +1029,7 @@ HELP_TOPICS.extend(
                 "notes list, use Filter notes on the Your notes tab. Every search box "
                 "suggests as you type: your recent searches first, then note titles, "
                 "tags and categories that start with your words (a Library list's box: "
-                "that list's own titles), with the best match in grey (Tab or Right takes it, Down and Up walk the list, Esc closes it). "
+                "that list's own titles), with the best match in grey (Tab or Right takes it, Down and Up walk the list; Esc, a click outside it, or scrolling the page behind it closes it). "
                 "A recent search has its own x, the list's foot clears them, Settings, "
                 "Import & export, Clear and forget clears every box's at once, and Settings, "
                 "General, Search turns the suggestions off."

@@ -205,12 +205,12 @@ const SEARCH_SUGGEST_GROUPS = { recent: "Recent searches", item: "In this list",
 
 function closeSearchSuggest() {
   if (!searchSuggest) return;
-  const { input, box, ghost, onInput, onKey, onBlur, onWindow } = searchSuggest;
+  const { input, box, ghost, onInput, onKey, onBlur, onWindow, onScroll } = searchSuggest;
   input.removeEventListener("input", onInput);
   input.removeEventListener("keydown", onKey, true);
   input.removeEventListener("blur", onBlur);
   window.removeEventListener("resize", onWindow);
-  window.removeEventListener("scroll", onWindow, true);
+  window.removeEventListener("scroll", onScroll, true);
   input.setAttribute("aria-expanded", "false");
   input.removeAttribute("aria-activedescendant");
   box.remove();
@@ -466,6 +466,7 @@ function openSearchSuggest(input) {
   const onInput = () => {
     if (!searchSuggest || searchSuggest.accepting) return;
     searchSuggest.quiet = false;
+    searchSuggest.touched = performance.now();
     fillSearchSuggest();
     placeSearchSuggestSoon();
   };
@@ -501,12 +502,24 @@ function openSearchSuggest(input) {
   };
   const onBlur = () => closeSearchSuggest();
   const onWindow = () => searchSuggest && placeSearchSuggest();
+  //: **The page or results behind the list scrolling closes it** (INBOX 1330,
+  //: "easier to close"): the list stays where it was drawn, so it would hang
+  //: over the wrong rows. Its own scrolling does not, nor does the scroll a
+  //: browser makes to bring the box into view just after opening or a
+  //: keystroke (400ms). Closing is the Escape state: shut until the next key.
+  const onScroll = (event) => {
+    const state = searchSuggest;
+    if (!state || event.target === input || (event.target instanceof Node && state.box.contains(event.target))) return;
+    if (performance.now() - state.touched < 400 || state.box.classList.contains("hidden")) return;
+    state.quiet = true;
+    fillSearchSuggest();
+  };
   input.addEventListener("input", onInput);
   input.addEventListener("keydown", onKey, true);
   input.addEventListener("blur", onBlur);
   window.addEventListener("resize", onWindow);
-  window.addEventListener("scroll", onWindow, true);
-  searchSuggest = { input, box, list, foot, ghost, items: [], rows: [], active: -1, moved: false, quiet: false, accepting: false, ghostItem: null, announced: 0, onInput, onKey, onBlur, onWindow };
+  window.addEventListener("scroll", onScroll, true);
+  searchSuggest = { input, box, list, foot, ghost, items: [], rows: [], active: -1, moved: false, quiet: false, accepting: false, ghostItem: null, announced: 0, touched: performance.now(), onInput, onKey, onBlur, onWindow, onScroll };
   fillSearchSuggest();
   placeSearchSuggestSoon();
 }

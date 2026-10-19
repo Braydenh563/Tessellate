@@ -34,20 +34,8 @@ with its owner named in the entry.
 
 ## Open items
 
-1331. **The owner, 2026-10-19, verbatim** (two screenshots, dark, Library Boards and maps sub-tab: the type icon top left, the title pushed to the card's right edge and clipped ("tes / bo"), the snapshot letterboxed with grey bands above and below, the footer meta wrapping onto two lines beside "6 min / ago"). "the library boards and maps subtab is completely screwed with the new thumbnail additions (for the header and top of cards)" / "its messy and same for the bottom as well"
-     Regression from thumbs1317 (90818d6). Owner: lib1331 (Sonnet), before anything else in its brief.
-
-1330. **The owner, 2026-10-19, verbatim** (screenshot: the Find anything box with its suggestions popup open under it, a "Notes" group with one row). "can you make the suggested searches popup in the find anything a little easier to close?? like maybe add an x close button in the corner or do smth else like make it close on scroll or smth"
-     Recommendation (taken): close on Escape, on a click outside, and when the results list under it scrolls; an x only if those leave a case uncovered. Owner: lib1331 agent, second.
-
 1329. **The owner, 2026-10-19, verbatim** (screenshot, dark: the Suggestions dialog on Links (12); the "Links (12)" select's top border is cut off under the "Suggestions" header). "the suggestions panel content  and probably other panels content get cut off at the top below the header and the suggestions panel needs a better redesign and restructuring"
      Owner: design agent (Opus), sugg1329: the clip in every dialog/panel with a sticky header, then the Suggestions redesign.
-
-1328. **The owner, 2026-10-19, verbatim** (screenshot, dark: a selected curved arrow between two sticky notes; its end handle sits on the lower note's edge, next to the note's own connect dots). "Im trying to move this arrow where it connects but it is just drawing another arrow :("
-     Likely cause: the selected arrow's end handle loses the press to the card's drag-to-connect dot under it. Owner: whiteboard agent wb1327.
-
-1327. **The owner, 2026-10-19, verbatim** (two screenshots, dark: a "Wednesday / Plans and appointments" panel, unselected and selected with eight handles and no rotate handle). "panning around the whiteboard with two fingers on my trackpad is wierd now because it cant decide to zoom or pan, I want it to pan, Ill two finger in or out to zoom in or out. also whiteboard panels sometimes dont select when I click on them and also there's no way to rotate them either"
-     Cause found (orchestrator): `wbTrackpadPan` (whiteboard.js:81) calls a wheel a trackpad pan only when that event has deltaX, so a mostly vertical two-finger scroll flips between pan and zoom event by event. Owner: whiteboard agent (Sonnet), wbtrack1327.
 
 1324. **The owner, 2026-10-19, verbatim.** "also is the ask ai quick link accurate if the composer can compensate?? also keep improving the composer and integrating it in the whole app, expand it, improve understanding, improve language and sentence generation, expand responses, make it smarter, have it flawless and robust, have every single possible response in all of its roles (guide, chat, popup agent, agent, ask, other integrated features) be very good and more."
      Standing. Done (composer1324): "Ask AI" link is now "Ask your notes"; 40-question grade with no model 23 to 32 fully good (scratchpad/composer1324-grades.md). Open: fact questions answered with a quote, "five notes" showing one, "From today:" labels, compare as a table, fragment joins (agent-remaining/composer1324-1019.md).

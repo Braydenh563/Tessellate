@@ -3793,9 +3793,30 @@ body .chip.item-label,
 }
 .library-grid:not(.library-list) .library-board-card > .library-card-title {
   padding-right: var(--space-8);
+  /* One line that ends in an ellipsis, so a long name never pushes the grid. */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.library-grid:not(.library-list) .library-board-card > :is(svg, .library-card-meta) {
+/* The picture is an `<svg>` or, once the board has a stored thumbnail, an
+   `<img>` (INBOX 1317): both carry `.board-minimap`. Naming only `svg` left
+   the image in the title's track (INBOX 1331). */
+.library-grid:not(.library-list) .library-board-card > :is(.board-minimap, .library-card-meta) {
   grid-column: 1 / -1;
+}
+/* The footer is one line: the count truncates, the time never wraps. */
+.library-grid:not(.library-list) .library-board-card > .library-card-meta {
+  min-width: 0;
+  white-space: nowrap;
+}
+.library-grid:not(.library-list) .library-board-card > .library-card-meta > :first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.library-grid:not(.library-list) .library-board-card > .library-card-meta > .library-card-when {
+  flex: 0 0 auto;
 }
 /* 5. The boards grid is the same reading order by the simpler means: its
       cards are one height (a picture of fixed size and a line of facts), so
