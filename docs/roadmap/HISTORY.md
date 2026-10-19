@@ -51014,3 +51014,6 @@ From WHITEBOARD_PLAN "The draw.io programme", section 2 (Text tab), built by the
 1304. **The owner, 2026-10-18, verbatim.** "also make suee there is a way to reshow the get started menu button"
      **Fixed (Get started commit).** Ways back were one (Customise, shown only while hidden); now three: Customise, the hide notice's Show again and the palette's Show Get started, all `getStartedShow` in dashboard.js (first-run.js is lazy and never loads while hidden). Driven in Chromium: hidden 0 children, Show again 1, palette from Notes 1 and on the Dashboard.
 
+1309. **The owner, 2026-10-19, verbatim** (screenshot: the Agent popup over a board, "/" typed in its box, no command menu, only the starter rows). "the popup agent doesnt have the / command popup like chat"
+     **Fixed (agent slash commit).** `command-palette-input` is an editor surface of its own context, "agent": the registry's rows (`chatSlashRows` with the popup's box and `cmdPaletteAsk`). Driven in Chromium: "/" showed 18 command rows (before: none); "/rece", Enter, Enter answered "/recent" in the popup.
+

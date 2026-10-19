@@ -48,6 +48,9 @@ const EDITOR_SURFACES = {
   //: (every chat product the user compared this to has one). Its commands are
   //: chat's own: attach, web, plan, skills, mode. See `chatCommands`.
   "chat-input": "chat",
+  //: The Agent popup's box (INBOX 1309, the owner: "the popup agent doesnt
+  //: have the / command popup like chat"): the same commands, sent here.
+  "command-palette-input": "agent",
   //: The skill editor's steps box (DOCUMENTS_PLAN Phase 8c). The plan gives
   //: it the "/" menu and nothing else: it is a list of instructions, not note
   //: text, so it stays a plain textarea with no Live view and no engine, and
@@ -595,22 +598,22 @@ async function editorInsertBoardObject(textarea) {
 //: one row sends `/help`. A command that takes words fills the box with its
 //: name and waits for them; one that takes none runs.
 const chatSlash = { list: null };
-function chatSlashRows(afterPress) {
+function chatSlashRows(afterPress, boxId = "chat-input", send = sendChatMessage) {
   if (chatSlash.list === null) {
     chatSlash.list = [];
     apiJson("/chat/commands").then((r) => { chatSlash.list = r.commands || []; if (editorMenuState.trigger) editorRefreshMenu(); }).catch(() => { chatSlash.list = null; });
   }
   if (!chatSlash.list.length) {
-    return [{ id: "chat-commands", group: "Commands", icon: "ph:terminal", label: "Commands", hint: "exact answers, no AI", keywords: ["command", "slash", "help"], run: afterPress(() => sendChatMessage("/help")) }];
+    return [{ id: "chat-commands", group: "Commands", icon: "ph:terminal", label: "Commands", hint: "exact answers, no AI", keywords: ["command", "slash", "help"], run: afterPress(() => send("/help")) }];
   }
   const fill = (name) => {
-    const box = $("chat-input");
+    const box = $(boxId);
     box.value = `/${name} `;
     box.focus();
   };
   return chatSlash.list.map((c) => ({
     id: `chat-cmd-${c.name}`, group: "Commands", icon: "ph:terminal", label: c.usage, hint: c.summary.replace(/\.$/, ""), keywords: [c.name, "command", "slash"],
-    run: afterPress(() => (/[[<]/.test(c.usage) ? fill(c.name) : sendChatMessage(`/${c.name}`))),
+    run: afterPress(() => (/[[<]/.test(c.usage) ? fill(c.name) : send(`/${c.name}`))),
   }));
 }
 
@@ -672,6 +675,17 @@ function chatCommands() {
     { id: "chat-mode-agent", group: "Mode", icon: "ph:strategy", label: "Agent mode", hint: "let it act on the notebook", keywords: ["agent", "mode", "tools", "act"], run: mode("agent") },
     { id: "chat-mode-chat", group: "Mode", icon: "ph:sparkle", label: "Ask mode", hint: "answer only", keywords: ["ask", "chat", "mode", "answer"], run: mode("chat") },
   ];
+}
+
+//: **What "/" offers in the Agent popup** (INBOX 1309): the commands only,
+//: run through the popup's own turn (`cmdPaletteAsk`, which streams through
+//: the same `/chat/stream` that answers a typed command).
+function agentCommands() {
+  const afterPress = (fn) => () => {
+    if (!editorMenuState.pressing) return fn();
+    document.addEventListener("mouseup", () => setTimeout(fn), { once: true, capture: true });
+  };
+  return chatSlashRows(afterPress, "command-palette-input", (text) => cmdPaletteAsk(text));
 }
 
 //: **What "/" offers in a skill's steps box** (DOCUMENTS_PLAN Phase 8c: "the
@@ -959,6 +973,7 @@ const EDITOR_CONTEXT_ROWS = {};
 
 function editorCommands(context) {
   if (context === "chat") return chatCommands();
+  if (context === "agent") return agentCommands();
   if (context === "skill") return skillCommands();
   const keep = EDITOR_CONTEXT_ROWS[context];
   if (keep) return editorBlockRows("note").filter((row) => keep.includes(row.id));
@@ -1590,7 +1605,7 @@ function editorOpenMenu(textarea, trigger) {
 //: they are what only this menu has; every other row is a button on the
 //: dock as well. The first command sat at 443 px in a 384 px menu.
 function editorBareSlashRows(context, recent, grouped) {
-  const lead = context === "chat" ? grouped.filter((row) => row.group === "Commands") : [];
+  const lead = context === "chat" || context === "agent" ? grouped.filter((row) => row.group === "Commands") : [];
   return [...lead, ...recent, ...grouped.filter((row) => !lead.includes(row))];
 }
 

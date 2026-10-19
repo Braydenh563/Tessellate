@@ -2653,9 +2653,9 @@ def _slash_commands_topic() -> dict:
     listed = " ".join(f"{usage}: {summary}" for _, usage, summary, _ in TABLE)
     return {
         "id": "slash-commands",
-        "keywords": ("slash commands", "slash command", "commands", "exact answers", "chat commands", "type a command"),
+        "keywords": ("slash commands", "slash command", "commands", "exact answers", "chat commands", "type a command", "agent popup commands"),
         "body": (
-            "Type a command in the chat box for an exact answer from your notes, with no AI. "
+            "Type a command in the chat box or the Agent popup's box for an exact answer from your notes, with no AI. "
             f"{listed} Typing / opens a menu with a row for each command; one that takes words "
             "fills the box with its name and waits for them. Asking in plain words "
             "(\"which notes have no tags\") runs the same command. A note named "

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Agent popup: typing / opens the same command menu as Chat (18 commands), and a chosen command answers in the popup (INBOX 1309).
 - Sketch pad: a stroke no longer brings up the selected-text menu over the ink; the pad's press is ink, never a text selection (INBOX 1303).
 - Get started: hiding it now offers Show again in its notice, and the palette (Ctrl+K) has Show Get started, beside Customise's row; each brings back the card and its button and opens the Dashboard (INBOX 1304).
 - Icon toggles and the hardware line (INBOX 904 B58, B67): the Documents width, dim and typewriter toggles now swap their glyph when pressed (the others in the app already did or show a pressed fill; the sweep `scratchpad/ui-sweeps/iconstate.js` lists the rest), and the Suggested downloads hardware line names the processor cores; a lowered memory correction caps the memory shown as free.
