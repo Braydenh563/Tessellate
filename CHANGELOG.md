@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Search: the suggestions under a search box now also close when the page or results behind them scroll (INBOX 1330); Escape and a click outside already did.
 - Boards and maps: Library cards with a snapshot keep their layout again: the icon and title share one row and the title ends in an ellipsis, the snapshot fills its box with no grey bands, and the footer stays on one line (INBOX 1331).
 - Boards and maps: deleting a board for good finds its thumbnail from the uploads folder, so the notes layer no longer imports the API layer (CodeQL cyclic import).
 - Launcher: the starting splash has minimise and close buttons in its top right corner; close cancels the launch (INBOX 1320).

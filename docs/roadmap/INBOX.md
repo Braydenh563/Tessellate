@@ -34,6 +34,9 @@ with its owner named in the entry.
 
 ## Open items
 
+1330. **The owner, 2026-10-19, verbatim.** "can you make the suggested searches popup in the find anything a little easier to close?? like maybe add an x close button in the corner or do smth else like make it close on scroll or smth"
+     **Fixed (lib1330).** Escape and a click outside (blur) already closed it; scrolling the page or results behind now closes it too (own scroll and the 400 ms after a keystroke excepted). No x: measured at 1440 and 390 touch, Escape, outside click and results scroll each take it from shown to hidden, its own scroll leaves it shown. `tests/test_search_suggest_close.py`.
+
 1331. **The owner, 2026-10-19, verbatim.** "the library boards and maps subtab is completely screwed with the new thumbnail additions (for the header and top of cards)" / "its messy and same for the bottom as well".
      **Fixed (lib1331).** The grid rule that spans the picture named `svg` only, so the snapshot `<img>` sat in the title's track (title 24px wide at x=311). Now `.board-minimap` spans, the title ellipsises (269px at x=42), the snapshot is `object-fit: cover` in the SVG's box (294x164, no bands), the footer is one line with the time `nowrap`. Measured at 1440 and 390, light and dark; pinned by `tests/test_library_board_card.py`.
 
