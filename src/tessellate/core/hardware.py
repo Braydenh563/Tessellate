@@ -209,10 +209,14 @@ def profile(override: dict | None) -> dict:
     detected_vram = max(separate) if separate else None
     ram = override.get("ram_gb") or detected_ram
     vram = override["vram_gb"] if "vram_gb" in override else detected_vram
+    free = free_memory_gb()
+    if free and ram:
+        free = min(free, float(ram))  # a lowered correction cannot leave more free than exists
     return {
         "ram_gb": float(ram) if ram else None,
         "detected_ram_gb": detected_ram,
-        "free_ram_gb": free_memory_gb(),
+        "free_ram_gb": free,
+        "cpu_cores": os.cpu_count() or None,
         "vram_gb": float(vram) if vram else None,
         "detected_vram_gb": detected_vram,
         "gpus": gpus,
