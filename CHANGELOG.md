@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Mind maps: a map too big to fit opens with its first topics at the top-left of the canvas instead of its root in the middle with the rest off the bottom-right, and each board remembers its own pan and zoom for the session (owner, 2026-10-19; INBOX 1340).
 - Statistics: a failed open, range change or question offers Try again.
 - Keyboard: the first Tab after the app loads or unlocks lands on "Skip to content" again, not the Local chip halfway along the top bar.
 - Statistics: the Ask box reads "in July", "last month" and "in sept 2025" through the shared date reader, and a tile shows its hover look on keyboard focus too.

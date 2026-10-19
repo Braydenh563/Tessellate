@@ -2512,10 +2512,78 @@ function wbFrameMapOnOpen() {
   wbZoomToFit({ animate: false });
   if (d3.zoomTransform(container).k >= WB_MAP_OPEN_MIN_SCALE) return;
   const root = wbMapIndex().roots[0];
-  //: `minScale: 1`, and `wbCenterOn` takes the larger of that and the current
-  //: zoom: the fit just above left the canvas at something illegible, so this
-  //: is the one call that has to be allowed to zoom back in.
-  if (root) wbCenterOn(wbItemBBox("object", root), { animate: false, minScale: 1 });
+  const bounds = wbContentBounds();
+  if (!root || !bounds) return;
+  //: Not a fit any more: a panel opening must not refit this view back to the
+  //: illegible one (`wbRefitIfFitted` did exactly that 50ms after open on a
+  //: wide window, so the same map opened at 0.4 there and at 1:1 on a narrow
+  //: one).
+  wbFit.on = false;
+  const target = wbMapOpenTarget(bounds, wbItemBBox("object", root), wbFreeArea(container), 1);
+  d3.select(container).call(wbZoom.transform, d3.zoomIdentity.translate(target.x, target.y).scale(target.k));
+}
+
+//: **Where a map too big to fit opens at 1:1.** Owner, 2026-10-19: "when I go
+//: onto the mindmap it doesnt focus me on the content and puts me down and to
+//: the right where nothing is." The old fallback centred the root in the free
+//: area, which for a map that grows right and down from its root (every
+//: import, every ladder) leaves the top-left half of the screen empty and the
+//: topics off the bottom-right. Per axis: start the view at the content's own
+//: edge, so the empty space is on the far side; if that would push the root
+//: out of view (a root in the middle of a radial map), centre on the root
+//: instead.
+function wbMapOpenTarget(bounds, rootBox, free, k, pad = 48) {
+  const axis = (lo, rLo, rHi, a0, a1) => {
+    const span = (a1 - a0) / k;
+    let start = lo - pad / k;
+    if (rLo < start || rHi > start + span) start = (rLo + rHi) / 2 - span / 2;
+    return a0 - start * k;
+  };
+  return {
+    k,
+    x: axis(bounds.minX, rootBox.minX, rootBox.maxX, free.left, free.right),
+    y: axis(bounds.minY, rootBox.minY, rootBox.maxY, free.top, free.bottom),
+  };
+}
+
+//: **Each board keeps its own view for the session.** Boards and maps share
+//: one d3 camera, so opening a second board used to inherit the first one's
+//: pan and zoom, which on a map read as "nowhere". The view is remembered per
+//: board id on the way out and put back on the way in, but only if some of the
+//: content would be on screen with it; otherwise the board is framed afresh.
+const wbBoardViews = new Map();
+
+function wbRememberBoardView() {
+  const id = window.currentBoardId;
+  const container = document.getElementById("whiteboard-container");
+  if (id == null || !container || !container.clientWidth || typeof wbZoom === "undefined") return;
+  const t = d3.zoomTransform(container);
+  wbBoardViews.set(id, { x: t.x, y: t.y, k: t.k });
+}
+
+/** Does any of the content land inside the free area under this view? */
+function wbViewShowsContent(view, bounds, free) {
+  if (!view || !bounds) return false;
+  const x0 = view.x + view.k * bounds.minX, x1 = view.x + view.k * bounds.maxX;
+  const y0 = view.y + view.k * bounds.minY, y1 = view.y + view.k * bounds.maxY;
+  return x1 > free.left && x0 < free.right && y1 > free.top && y0 < free.bottom;
+}
+
+/** Put a board's remembered view back, or frame it when it has none to give. */
+function wbRestoreOrFrameBoard(boardId) {
+  const container = document.getElementById("whiteboard-container");
+  if (!container) return;
+  const saved = boardId == null ? null : wbBoardViews.get(boardId);
+  const bounds = wbContentBounds();
+  const free = wbFreeArea(container);
+  if (saved && wbViewShowsContent(saved, bounds, free)) {
+    wbFit.on = false;
+    d3.select(container).call(wbZoom.transform, d3.zoomIdentity.translate(saved.x, saved.y).scale(saved.k));
+    return;
+  }
+  if (wbIsMap()) return wbFrameMapOnOpen();
+  const current = d3.zoomTransform(container);
+  if (bounds && !wbViewShowsContent(current, bounds, free)) wbZoomToFit({ animate: false });
 }
 
 /** Centre the viewport on one board-space rectangle, keeping the current zoom. */
@@ -22006,6 +22074,7 @@ function wbShowCanvasView() {
 }
 
 function wbShowBoardsLanding() {
+  wbRememberBoardView();
   // First, because the boards list lives inside the element full screen
   // pins to the viewport, see `wbLeaveFullscreen` for what that looked
   // like when it was left on.
@@ -22389,6 +22458,7 @@ function wbLeaveFullscreen() {
 
 // Jump to the real whiteboard canvas with a specific board loaded.
 async function openWhiteboardBoard(boardId) {
+  wbRememberBoardView();
   switchTab("library");
   const wbSubtab = document.querySelector('#library-subtabs button[data-target="library-view-whiteboard"]');
   wbSubtab?.click();
@@ -22409,10 +22479,8 @@ async function openWhiteboardBoard(boardId) {
   //: Rendered now rather than on the next frame, because the framing below
   //: measures the nodes it is about to fit (a map node is `height: auto`, so
   //: its real size only exists once it is in the document).
-  if (wbIsMap()) {
-    renderWhiteboardNow();
-    wbFrameMapOnOpen();
-  }
+  if (wbIsMap()) renderWhiteboardNow();
+  wbRestoreOrFrameBoard(boardId ?? null);
   //: **A board is a place, so opening one is a navigation.** Asked as part of
   //: "is everythign wired to the nav history and universal undo/redo": it was
   //: not. `switchTab("library")` above records "library", and then opening
