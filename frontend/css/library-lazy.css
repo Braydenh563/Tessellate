@@ -4850,20 +4850,27 @@ button.ghost.doc-template-choice.wb-template-choice {
    directly ("area select... missing"). A real SVG element in board space,
    appended/removed by the marquee's own pointerdown/pointerup, not a fixed
    part of any template. */
-/* Smart alignment guides while dragging, asked for directly ("draw.io and
-   Microsoft PowerPoint have... dotted alignment rule guides"). Colour is
-   set per-line by `wbShowAlignmentGuides` (edge/center/spacing each get
-   their own, user-alterable colour, see `WB_ALIGN_GUIDE_COLORS`), so this
-   rule deliberately leaves `stroke` unset: an SVG presentation attribute
-   only wins over an *unset* CSS property, not a set one, so a `stroke` here
-   would silently override every line to one colour again. Every other
-   whiteboard overlay (anchor hints, selection outline, marquee) uses the
-   app's own `--accent` instead: a guide line stays deliberately distinct
-   from that so it still reads as a momentary "you're aligned" signal. */
+/* Smart alignment guides while dragging (draw.io and PowerPoint's dotted
+   rules). The theme's own error, accent and warn inks (red, blue, amber, each tuned per theme); a colour the owner
+   picked is written as an inline style by `wbShowAlignmentGuides`, which
+   wins over these classes. The stroke is non-scaling, so it is 1.5px at any
+   zoom. */
 .wb-align-guide-line {
   stroke-width: 1.5;
   stroke-dasharray: 4 3;
+  vector-effect: non-scaling-stroke;
   pointer-events: none;
+}
+.wb-align-guide-edge { stroke: var(--error); }
+.wb-align-guide-center { stroke: var(--accent-text); }
+.wb-align-guide-spacing { stroke: var(--warn); }
+/* Distance badge on an equal-gap guide: the kind's ink as the plate, the
+   page's background as the digits, a constant screen size. */
+.wb-align-guide-label rect { fill: var(--warn); }
+.wb-align-guide-label text {
+  fill: var(--bg);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
 }
 /* The size beside a box being drawn or resized ("120 x 80", WHITEBOARD_PLAN
    E4): the text's own ink on a plate, a constant screen size (the group is

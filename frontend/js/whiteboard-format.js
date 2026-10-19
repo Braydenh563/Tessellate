@@ -198,7 +198,16 @@ function wbFmtLinkKey(entries) {
 }
 
 function wbFmtLinkRatio(entries) {
-  return wbFmtState.links.get(wbFmtLinkKey(entries))?.ratio || 0;
+  const stored = wbFmtState.links.get(wbFmtLinkKey(entries))?.ratio;
+  if (stored) return stored;
+  //: A shape that keeps its proportions as a property carries its link with
+  //: it: the ratio is the one it has now.
+  const [only] = entries;
+  if (entries.length === 1 && only.bbox && wbKeepsRatio(only.kind, only.item)) {
+    const h = only.bbox.maxY - only.bbox.minY;
+    return h > 0 ? (only.bbox.maxX - only.bbox.minX) / h : 0;
+  }
+  return 0;
 }
 
 function wbFmtToggleLink() {
@@ -206,6 +215,14 @@ function wbFmtToggleLink() {
   const box = wbFmtBox(entries);
   if (!box) return;
   const key = wbFmtLinkKey(entries);
+  //: One object or drawn shape: the link is its own saved property, so the
+  //: corner handles keep the ratio too, without Shift.
+  const [only] = entries;
+  if (entries.length === 1 && (only.kind === "object" || only.kind === "sketch")) {
+    wbFmtState.links.delete(key);
+    wbSetKeepRatio(only.kind, only.item, !wbKeepsRatio(only.kind, only.item)).then(wbFmtShowLink);
+    return;
+  }
   if (wbFmtState.links.has(key)) wbFmtState.links.delete(key);
   else if (box.maxY > box.minY) wbFmtState.links.set(key, { ratio: (box.maxX - box.minX) / (box.maxY - box.minY) });
   wbFmtShowLink();

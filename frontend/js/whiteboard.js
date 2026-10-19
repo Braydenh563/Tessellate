@@ -872,7 +872,24 @@ function wbSnap(value, bypass) {
 //: modelled on. Independent per axis: an X-axis snap and a Y-axis snap can
 //: both fire on the same frame (a corner aligning with another item's
 //: corner), each drawing its own guide line.
-const WB_ALIGN_SNAP_PX = 6; // board units: matches WB_GRID_SPACING's own order of magnitude
+//: Screen pixels, not board units: `wbAlignTol` divides by the zoom, so the
+//: pull is the same distance under the pointer at 20% and at 400%.
+const WB_ALIGN_SNAP_PX = 6;
+function wbAlignTol() {
+  const container = document.getElementById("whiteboard-container");
+  const k = container ? d3.zoomTransform(container).k : 1;
+  return WB_ALIGN_SNAP_PX / (k || 1);
+}
+
+//: A box's axis-aligned bounds once rotated about its centre, so a tilted
+//: card or object aligns by the edges it shows. Pure (node-tested).
+function wbRotatedBounds(x, y, w, h, deg) {
+  if (!deg) return { x, y, w, h };
+  const rad = (deg * Math.PI) / 180;
+  const cos = Math.abs(Math.cos(rad)), sin = Math.abs(Math.sin(rad));
+  const rw = w * cos + h * sin, rh = w * sin + h * cos;
+  return { x: x + w / 2 - rw / 2, y: y + h / 2 - rh / 2, w: rw, h: rh };
+}
 
 //: **The other items' boxes, gathered once per gesture, not once per pointer
 //: move** (INBOX 114, "laggy to drag and pan", three passes unattributed).
@@ -899,7 +916,12 @@ function wbGuideBoxes(excludeKeys) {
       if (excludeKeys && excludeKeys.has(wbMultiKey(kind, item.id))) continue;
       if (wbItemHidden(kind, item)) continue;
       const box = wbItemBBox(kind, item);
-      if (box) boxes.push(box);
+      if (!box) continue;
+      const deg = wbItemRotation(kind, item);
+      if (deg) {
+        const r = wbRotatedBounds(box.minX, box.minY, box.maxX - box.minX, box.maxY - box.minY, deg);
+        boxes.push({ minX: r.x, minY: r.y, maxX: r.x + r.w, maxY: r.y + r.h });
+      } else boxes.push(box);
     }
   }
   //: **The drawn shapes too** (wb-phase2 step 4): a flowchart's boxes are
@@ -993,7 +1015,7 @@ function wbDragExcludeKeys(d, kind) {
   return new Set([wbMultiKey(kind, d.id), ...d._bulkOrigin.keys()]);
 }
 
-function wbAlignmentGuides(excludeKeys, x, y, w, h) {
+function wbAlignmentGuides(excludeKeys, x, y, w, h, tol = WB_ALIGN_SNAP_PX) {
   const dragged = { left: x, centerX: x + w / 2, right: x + w, top: y, centerY: y + h / 2, bottom: y + h };
   let bestX = null, bestY = null;
   const others = wbGuideBoxes(excludeKeys);
@@ -1005,22 +1027,45 @@ function wbAlignmentGuides(excludeKeys, x, y, w, h) {
       };
       for (const edge of ["left", "centerX", "right"]) {
         const delta = other[edge] - dragged[edge];
-        if (Math.abs(delta) <= WB_ALIGN_SNAP_PX && (!bestX || Math.abs(delta) < Math.abs(bestX.delta))) {
+        if (Math.abs(delta) <= tol && (!bestX || Math.abs(delta) < Math.abs(bestX.delta))) {
           bestX = { delta, at: other[edge], y1: Math.min(dragged.top, other.top), y2: Math.max(dragged.bottom, other.bottom), kind: edge === "centerX" ? "center" : "edge" };
         }
       }
       for (const edge of ["top", "centerY", "bottom"]) {
         const delta = other[edge] - dragged[edge];
-        if (Math.abs(delta) <= WB_ALIGN_SNAP_PX && (!bestY || Math.abs(delta) < Math.abs(bestY.delta))) {
+        if (Math.abs(delta) <= tol && (!bestY || Math.abs(delta) < Math.abs(bestY.delta))) {
           bestY = { delta, at: other[edge], x1: Math.min(dragged.left, other.left), x2: Math.max(dragged.right, other.right), kind: edge === "centerY" ? "center" : "edge" };
         }
       }
     }
   }
+  //: **The line spans every box that shares it** (Figma, Miro), not only the
+  //: nearest one: a second pass over the boxes, run only on a frame that
+  //: snapped, extends the line across each box whose edge or centre sits on
+  //: it and across the dragged box as it lands.
   const guideLines = [];
-  if (bestX) guideLines.push({ x1: bestX.at, y1: bestX.y1 - 20, x2: bestX.at, y2: bestX.y2 + 20, kind: bestX.kind });
-  if (bestY) guideLines.push({ x1: bestY.x1 - 20, y1: bestY.at, x2: bestY.x2 + 20, y2: bestY.at, kind: bestY.kind });
-  let dx = bestX ? bestX.delta : 0, dy = bestY ? bestY.delta : 0;
+  const dx0 = bestX ? bestX.delta : 0, dy0 = bestY ? bestY.delta : 0;
+  if (bestX) {
+    let y1 = Math.min(bestX.y1, dragged.top + dy0), y2 = Math.max(bestX.y2, dragged.bottom + dy0);
+    for (const box of others) {
+      if (Math.abs(box.minX - bestX.at) < 0.5 || Math.abs(box.maxX - bestX.at) < 0.5 || Math.abs((box.minX + box.maxX) / 2 - bestX.at) < 0.5) {
+        y1 = Math.min(y1, box.minY);
+        y2 = Math.max(y2, box.maxY);
+      }
+    }
+    guideLines.push({ x1: bestX.at, y1: y1 - 12, x2: bestX.at, y2: y2 + 12, kind: bestX.kind });
+  }
+  if (bestY) {
+    let x1 = Math.min(bestY.x1, dragged.left + dx0), x2 = Math.max(bestY.x2, dragged.right + dx0);
+    for (const box of others) {
+      if (Math.abs(box.minY - bestY.at) < 0.5 || Math.abs(box.maxY - bestY.at) < 0.5 || Math.abs((box.minY + box.maxY) / 2 - bestY.at) < 0.5) {
+        x1 = Math.min(x1, box.minX);
+        x2 = Math.max(x2, box.maxX);
+      }
+    }
+    guideLines.push({ x1: x1 - 12, y1: bestY.at, x2: x2 + 12, y2: bestY.at, kind: bestY.kind });
+  }
+  let dx = dx0, dy = dy0;
 
   // Equal-spacing guides ("same spacing", asked for directly): only tried on
   // an axis the edge/center snap above didn't already claim, so a card never
@@ -1030,11 +1075,11 @@ function wbAlignmentGuides(excludeKeys, x, y, w, h) {
   // O(n) per drag frame like the alignment pass above it, not O(n^2).
   if (!bestX) {
     const rowMates = others.filter((b) => b.minY < dragged.bottom && b.maxY > dragged.top);
-    const left = rowMates.filter((b) => b.maxX <= dragged.left + WB_ALIGN_SNAP_PX).sort((a, b) => b.maxX - a.maxX)[0];
-    const right = rowMates.filter((b) => b.minX >= dragged.right - WB_ALIGN_SNAP_PX).sort((a, b) => a.minX - b.minX)[0];
+    const left = rowMates.filter((b) => b.maxX <= dragged.left + tol).sort((a, b) => b.maxX - a.maxX)[0];
+    const right = rowMates.filter((b) => b.minX >= dragged.right - tol).sort((a, b) => a.minX - b.minX)[0];
     if (left && right) {
       const gapLeft = dragged.left - left.maxX, gapRight = right.minX - dragged.right;
-      if (gapLeft >= 0 && gapRight >= 0 && Math.abs(gapLeft - gapRight) <= WB_ALIGN_SNAP_PX) {
+      if (gapLeft >= 0 && gapRight >= 0 && Math.abs(gapLeft - gapRight) <= tol) {
         const avgGap = (gapLeft + gapRight) / 2;
         dx = left.maxX + avgGap - dragged.left;
         const midY = (Math.max(left.minY, dragged.top) + Math.min(left.maxY, dragged.bottom)) / 2;
@@ -1047,7 +1092,7 @@ function wbAlignmentGuides(excludeKeys, x, y, w, h) {
     //: keeps to its own neighbour, so the third box of a row lands where the
     //: first two set the rhythm.
     if (!guideLines.some((l) => l.kind === "spacing" && l.y1 === l.y2)) {
-      const series = wbSpacingSeries(rowMates, dragged, "x");
+      const series = wbSpacingSeries(rowMates, dragged, "x", tol);
       if (series) {
         dx = series.delta;
         guideLines.push(...series.lines);
@@ -1056,11 +1101,11 @@ function wbAlignmentGuides(excludeKeys, x, y, w, h) {
   }
   if (!bestY) {
     const colMates = others.filter((b) => b.minX < dragged.right && b.maxX > dragged.left);
-    const above = colMates.filter((b) => b.maxY <= dragged.top + WB_ALIGN_SNAP_PX).sort((a, b) => b.maxY - a.maxY)[0];
-    const below = colMates.filter((b) => b.minY >= dragged.bottom - WB_ALIGN_SNAP_PX).sort((a, b) => a.minY - b.minY)[0];
+    const above = colMates.filter((b) => b.maxY <= dragged.top + tol).sort((a, b) => b.maxY - a.maxY)[0];
+    const below = colMates.filter((b) => b.minY >= dragged.bottom - tol).sort((a, b) => a.minY - b.minY)[0];
     if (above && below) {
       const gapAbove = dragged.top - above.maxY, gapBelow = below.minY - dragged.bottom;
-      if (gapAbove >= 0 && gapBelow >= 0 && Math.abs(gapAbove - gapBelow) <= WB_ALIGN_SNAP_PX) {
+      if (gapAbove >= 0 && gapBelow >= 0 && Math.abs(gapAbove - gapBelow) <= tol) {
         const avgGap = (gapAbove + gapBelow) / 2;
         dy = above.maxY + avgGap - dragged.top;
         const midX = (Math.max(above.minX, dragged.left) + Math.min(above.maxX, dragged.right)) / 2;
@@ -1069,7 +1114,7 @@ function wbAlignmentGuides(excludeKeys, x, y, w, h) {
       }
     }
     if (!guideLines.some((l) => l.kind === "spacing" && l.x1 === l.x2)) {
-      const series = wbSpacingSeries(colMates, dragged, "y");
+      const series = wbSpacingSeries(colMates, dragged, "y", tol);
       if (series) {
         dy = series.delta;
         guideLines.push(...series.lines);
@@ -1084,7 +1129,7 @@ function wbAlignmentGuides(excludeKeys, x, y, w, h) {
 //: gap from it to its nearest neighbour on one side is within snapping of the
 //: gap that neighbour keeps to the next one out, the move that makes the two
 //: equal and the two spacing marks. Pure (node-tested).
-function wbSpacingSeries(mates, dragged, axis) {
+function wbSpacingSeries(mates, dragged, axis, tol = WB_ALIGN_SNAP_PX) {
   const lo = axis === "x" ? "minX" : "minY", hi = axis === "x" ? "maxX" : "maxY";
   const dLo = axis === "x" ? dragged.left : dragged.top, dHi = axis === "x" ? dragged.right : dragged.bottom;
   const cross = (b) => (axis === "x"
@@ -1096,8 +1141,8 @@ function wbSpacingSeries(mates, dragged, axis) {
   let best = null;
   for (const side of [-1, 1]) {
     const near = side < 0
-      ? mates.filter((b) => b[hi] <= dLo + WB_ALIGN_SNAP_PX).sort((a, b) => b[hi] - a[hi])[0]
-      : mates.filter((b) => b[lo] >= dHi - WB_ALIGN_SNAP_PX).sort((a, b) => a[lo] - b[lo])[0];
+      ? mates.filter((b) => b[hi] <= dLo + tol).sort((a, b) => b[hi] - a[hi])[0]
+      : mates.filter((b) => b[lo] >= dHi - tol).sort((a, b) => a[lo] - b[lo])[0];
     if (!near) continue;
     const far = side < 0
       ? mates.filter((b) => b !== near && b[hi] <= near[lo]).sort((a, b) => b[hi] - a[hi])[0]
@@ -1105,7 +1150,7 @@ function wbSpacingSeries(mates, dragged, axis) {
     if (!far) continue;
     const gap = side < 0 ? near[lo] - far[hi] : far[lo] - near[hi];
     const mine = side < 0 ? dLo - near[hi] : near[lo] - dHi;
-    if (gap < 0 || mine < 0 || Math.abs(mine - gap) > WB_ALIGN_SNAP_PX) continue;
+    if (gap < 0 || mine < 0 || Math.abs(mine - gap) > tol) continue;
     const delta = side < 0 ? gap - mine : mine - gap;
     if (best && Math.abs(delta) >= Math.abs(best.delta)) continue;
     const at = cross(near);
@@ -1126,7 +1171,7 @@ function wbSpacingSeries(mates, dragged, axis) {
 //: card's content height (`fit`) for its bottom edge. `box` is {x, y, w, h},
 //: `edges` the moving sides ("se", "w"). Pure apart from `wbGuideBoxes`
 //: (node-tested in tests/test_wb_resize_guides.py).
-function wbResizeGuides(excludeKeys, box, edges, { fit = null, grid = 0, min = 1 } = {}) {
+function wbResizeGuides(excludeKeys, box, edges, { fit = null, grid = 0, min = 1, tol = WB_ALIGN_SNAP_PX } = {}) {
   const others = wbGuideBoxes(excludeKeys);
   const out = { x: box.x, y: box.y, w: box.w, h: box.h, guideLines: [] };
   const axis = (horizontal) => {
@@ -1141,7 +1186,7 @@ function wbResizeGuides(excludeKeys, box, edges, { fit = null, grid = 0, min = 1
     let best = null;
     const offer = (target, line) => {
       const delta = target - moving;
-      if (Math.abs(delta) > WB_ALIGN_SNAP_PX || (best && Math.abs(delta) >= Math.abs(best.delta))) return;
+      if (Math.abs(delta) > tol || (best && Math.abs(delta) >= Math.abs(best.delta))) return;
       if (Math.abs(target - fixed) < min) return;
       best = { delta, target, line };
     };
@@ -1218,7 +1263,7 @@ function wbGuidedResize(kind, d, handle, start, width, height, { off = false, fi
     h: height,
   };
   const snapped = off ? { ...box, guideLines: [] } : wbResizeGuides(new Set([wbMultiKey(kind, d.id)]), box, handle, {
-    fit, grid: wbSnapOn() ? WB_GRID_SPACING : 0, min: WB_OBJECT_MIN_SIZE,
+    fit, grid: wbSnapOn() ? WB_GRID_SPACING : 0, min: WB_OBJECT_MIN_SIZE, tol: wbAlignTol(),
   });
   wbShowAlignmentGuides(snapped.guideLines);
   wbShowSizeReadout(snapped);
@@ -1242,7 +1287,7 @@ function wbDrawOutSnap(sx, sy, x, y, event, centred = false) {
   }
   const edges = (centred || dx >= 0 ? "e" : "w") + (centred || dy >= 0 ? "s" : "n");
   const snapped = event.altKey ? { ...box, guideLines: [] } : wbResizeGuides(null, box, edges, {
-    grid: wbSnapOn() ? WB_GRID_SPACING : 0, min: 1,
+    grid: wbSnapOn() ? WB_GRID_SPACING : 0, min: 1, tol: wbAlignTol(),
   });
   wbShowAlignmentGuides(snapped.guideLines);
   wbShowSizeReadout(snapped);
@@ -1260,14 +1305,16 @@ function wbDrawOutSnap(sx, sy, x, y, event, centred = false) {
 //: Overridable per the direct ask ("colours should be alterable"); the
 //: picker lives in the whiteboard's own shape-menu dropdown rather than a
 //: new top menu bar, see HISTORY.md for why that redesign is deferred.
-const WB_ALIGN_GUIDE_COLORS = { edge: "#ff00ff", center: "#00c8ff", spacing: "#3ddc84" };
+//: The defaults live in CSS (`.wb-align-guide-<kind>`, one ink per theme, so
+//: each passes 3:1 on the canvas in light and dark); only a colour the owner
+//: picked is written here, and it wins over the class.
 function wbAlignGuideColor(kind) {
-  return prefs.get(`wb-guide-color-${kind}`, null) || WB_ALIGN_GUIDE_COLORS[kind] || WB_ALIGN_GUIDE_COLORS.edge;
+  return prefs.get(`wb-guide-color-${kind}`, null) || "";
 }
 
-//: Draws (or clears) the dashed guide lines `wbAlignmentGuides` found: 
-//: shared by every drag handler that uses it, same reasoning as
-//: `wbShowAnchorHints`'s own shared group.
+//: Draws (or clears) the guide lines `wbAlignmentGuides` found. A "spacing"
+//: line also gets its length as a label at a constant screen size (Figma's
+//: distance badges), so an equal-gap guide says what the gap is.
 function wbShowAlignmentGuides(lines) {
   const zoomGroup = document.getElementById("wb-zoom-group");
   if (!zoomGroup) return;
@@ -1278,16 +1325,43 @@ function wbShowAlignmentGuides(lines) {
     group.setAttribute("pointer-events", "none");
     zoomGroup.appendChild(group);
   }
-  group.innerHTML = "";
+  group.replaceChildren();
+  if (!lines.length) return;
+  const ns = "http://www.w3.org/2000/svg";
+  const container = document.getElementById("whiteboard-container");
+  const k = (container && d3.zoomTransform(container).k) || 1;
   for (const line of lines) {
-    const el = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    const kind = line.kind || "edge";
+    const el = document.createElementNS(ns, "line");
     el.setAttribute("x1", line.x1);
     el.setAttribute("y1", line.y1);
     el.setAttribute("x2", line.x2);
     el.setAttribute("y2", line.y2);
-    el.setAttribute("class", `wb-align-guide-line wb-align-guide-${line.kind || "edge"}`);
-    el.setAttribute("stroke", wbAlignGuideColor(line.kind || "edge"));
+    el.setAttribute("class", `wb-align-guide-line wb-align-guide-${kind}`);
+    const picked = wbAlignGuideColor(kind);
+    if (picked) el.style.stroke = picked;
     group.appendChild(el);
+    if (kind !== "spacing") continue;
+    const length = Math.round(Math.hypot(line.x2 - line.x1, line.y2 - line.y1));
+    if (length * k < 22) continue; // a label wider than its gap is noise
+    const label = document.createElementNS(ns, "g");
+    label.setAttribute("class", "wb-align-guide-label");
+    label.setAttribute("transform", `translate(${(line.x1 + line.x2) / 2} ${(line.y1 + line.y2) / 2}) scale(${1 / k})`);
+    const words = String(length);
+    const width = words.length * 7 + 10;
+    const plate = document.createElementNS(ns, "rect");
+    plate.setAttribute("x", String(-width / 2));
+    plate.setAttribute("y", "-9");
+    plate.setAttribute("width", String(width));
+    plate.setAttribute("height", "18");
+    plate.setAttribute("rx", "4");
+    if (picked) plate.style.fill = picked;
+    const text = document.createElementNS(ns, "text");
+    text.setAttribute("text-anchor", "middle");
+    text.setAttribute("dominant-baseline", "central");
+    text.textContent = words;
+    label.append(plate, text);
+    group.appendChild(label);
   }
 }
 
@@ -4331,29 +4405,50 @@ function wbPushMoveBatch(entries) {
 // Alignment tools: asked for directly ("alignment tools... missing"), only
 // meaningful for two or more selected items. Aligns to the selection's own
 // overall bounding box, the same reference every other drawing app uses.
+//: **A key object** (draw.io, Figma "align to key object"): one item of the
+//: selection the others line up to, which itself stays put. Set with the
+//: "Align to this one" command; it holds while it is part of the selection and
+//: clears the moment it is not, so a stale key never moves the wrong thing.
+let wbKeyObject = null;
+
+function wbSetKeyObject() {
+  const key = wbSelectedItem ? wbMultiKey(wbSelectedItem.kind, wbSelectedItem.id) : null;
+  if (!key || !wbMultiSelection.has(key) || wbMultiSelection.size < 2) {
+    toast("Select two or more items, with the one to line up to selected last.");
+    return;
+  }
+  wbKeyObject = wbKeyObject === key ? null : key;
+  toast(wbKeyObject ? "Align commands now line up to this item and leave it where it is." : "Align commands use the whole selection again.");
+}
+
+//: The reference box and the entries that move. Pure (node-tested): with a
+//: key in the selection its own box is the reference and it is left out;
+//: otherwise the selection's outer box, as before.
+function wbAlignReference(entries, keyId) {
+  const key = keyId ? entries.find((e) => `${e.kind}:${e.id}` === keyId) : null;
+  if (key) return { box: key.bbox, moving: entries.filter((e) => e !== key) };
+  return {
+    box: {
+      minX: Math.min(...entries.map((e) => e.bbox.minX)), maxX: Math.max(...entries.map((e) => e.bbox.maxX)),
+      minY: Math.min(...entries.map((e) => e.bbox.minY)), maxY: Math.max(...entries.map((e) => e.bbox.maxY)),
+    },
+    moving: entries,
+  };
+}
+
 async function wbAlignSelection(edge) {
   const entries = wbSelectionEntries();
   if (entries.length < 2) {
     toast("Select two or more items to align them.");
     return;
   }
-  let target;
-  if (edge === "left") target = Math.min(...entries.map((e) => e.bbox.minX));
-  else if (edge === "right") target = Math.max(...entries.map((e) => e.bbox.maxX));
-  else if (edge === "top") target = Math.min(...entries.map((e) => e.bbox.minY));
-  else if (edge === "bottom") target = Math.max(...entries.map((e) => e.bbox.maxY));
-  else if (edge === "hcenter") {
-    const minX = Math.min(...entries.map((e) => e.bbox.minX));
-    const maxX = Math.max(...entries.map((e) => e.bbox.maxX));
-    target = (minX + maxX) / 2;
-  } else if (edge === "vcenter") {
-    const minY = Math.min(...entries.map((e) => e.bbox.minY));
-    const maxY = Math.max(...entries.map((e) => e.bbox.maxY));
-    target = (minY + maxY) / 2;
-  }
+  if (wbKeyObject && !entries.some((e) => `${e.kind}:${e.id}` === wbKeyObject)) wbKeyObject = null;
+  const { box, moving } = wbAlignReference(entries, wbKeyObject);
+  const target = { left: box.minX, right: box.maxX, top: box.minY, bottom: box.maxY,
+    hcenter: (box.minX + box.maxX) / 2, vcenter: (box.minY + box.maxY) / 2 }[edge];
 
   const pushed = [];
-  for (const e of entries) {
+  for (const e of moving) {
     let dx = 0, dy = 0;
     if (edge === "left") dx = target - e.bbox.minX;
     else if (edge === "right") dx = target - e.bbox.maxX;
@@ -9985,6 +10080,28 @@ async function wbSetLocked(entries, on) {
   }
   wbPushMoveBatch(undo);
   return undo.length;
+}
+
+//: **A shape's own "keep proportions"** (draw.io, Figma): stored in the
+//: item's data blob, so a corner drag holds the ratio without Shift, and it
+//: travels with the shape through undo, copy and export. Cards size from
+//: their text and have no data blob, so only objects and drawn shapes take it.
+function wbKeepsRatio(kind, item) {
+  if (!item) return false;
+  const data = kind === "object" ? item.data : kind === "sketch" ? wbSketchData(item) : null;
+  return Boolean(data && data.keep_ratio);
+}
+
+async function wbSetKeepRatio(kind, item, on) {
+  if (kind === "object") {
+    const data = { ...item.data };
+    if (on) data.keep_ratio = true;
+    else delete data.keep_ratio;
+    item.data = data;
+    await wbSaveObject(item);
+  } else if (kind === "sketch") {
+    await wbSaveSketchProps(item, { keep_ratio: on || undefined });
+  }
 }
 
 async function wbLockSelection() {
@@ -19042,7 +19159,7 @@ function wbDrawSketchHandles(sketch, { outlineOnly = false } = {}) {
             // 30px on screen, where the card's own grip moved the full 60).
             rawDX += event.dx;
             rawDY += event.dy;
-            const t = wbSketchResizeTransform(bbox, handle, rawDX, rawDY, event.sourceEvent.shiftKey, event.sourceEvent.altKey);
+            const t = wbSketchResizeTransform(bbox, handle, rawDX, rawDY, event.sourceEvent.shiftKey || wbKeepsRatio("sketch", sketch), event.sourceEvent.altKey);
             const newD = wbTransformPathD(parsed.d, t);
             document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-path`)?.setAttribute("d", newD);
             document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-hitbox`)?.setAttribute("d", newD);
@@ -19385,7 +19502,7 @@ function renderWhiteboard() {
             h: origin.maxY - origin.minY,
           };
           const snap = wbAlignmentGuides(
-            wbDragExcludeKeys(d, "sketch"), box.x, box.y, box.w, box.h
+            wbDragExcludeKeys(d, "sketch"), box.x, box.y, box.w, box.h, wbAlignTol()
           );
           if (lock !== "y") dx += snap.dx;
           if (lock !== "x") dy += snap.dy;
@@ -20602,12 +20719,14 @@ function renderWbObjects(canvas) {
       //: one is. Either way the delta lands on `d`, and `wbApplyBulkMove`
       //: below carries the rest of the selection by the same amount.
       const group = wbBulkGroupBox(d, "object");
+      const own = wbRotatedBounds(d.x, d.y, d.width, d.height, wbItemRotation("object", d));
       const { dx, dy, guideLines } = wbAlignmentGuides(
         wbDragExcludeKeys(d, "object"),
-        group ? group.x : d.x,
-        group ? group.y : d.y,
-        group ? group.w : d.width,
-        group ? group.h : d.height
+        group ? group.x : own.x,
+        group ? group.y : own.y,
+        group ? group.w : own.w,
+        group ? group.h : own.h,
+        wbAlignTol()
       );
       if (lock !== "y") d.x += dx;
       if (lock !== "x") d.y += dy;
@@ -20799,7 +20918,7 @@ function renderWbObjects(canvas) {
         start.dx += event.dx / transform.k;
         start.dy += event.dy / transform.k;
         const box = wbResizeBox(start, handle, start.dx, start.dy,
-          event.sourceEvent.shiftKey, event.sourceEvent.altKey, WB_OBJECT_MIN_SIZE);
+          event.sourceEvent.shiftKey || wbKeepsRatio("object", d), event.sourceEvent.altKey, WB_OBJECT_MIN_SIZE);
         let newWidth = box.w, newHeight = box.h, newX = box.x, newY = box.y;
         if (!event.sourceEvent.shiftKey && !event.sourceEvent.altKey) {
           ({ width: newWidth, height: newHeight } = wbGuidedResize("object", d, handle, start, newWidth, newHeight, { off: false }));
@@ -21594,12 +21713,14 @@ function dragging(event, d) {
     if (!bypassSnap) {
       const w = d.width || WB_CARD_DEFAULT_SIZE.w, h = d.height || WB_CARD_DEFAULT_SIZE.h;
       const group = wbBulkGroupBox(d, "node");
+      const own = wbRotatedBounds(d.x, d.y, w, h, wbItemRotation("node", d));
       const { dx, dy, guideLines } = wbAlignmentGuides(
         wbDragExcludeKeys(d, "node"),
-        group ? group.x : d.x,
-        group ? group.y : d.y,
-        group ? group.w : w,
-        group ? group.h : h
+        group ? group.x : own.x,
+        group ? group.y : own.y,
+        group ? group.w : own.w,
+        group ? group.h : own.h,
+        wbAlignTol()
       );
       if (lock !== "y") d.x += dx;
       if (lock !== "x") d.y += dy;
