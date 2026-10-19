@@ -1803,10 +1803,27 @@ function renderAnswerGrounding(
     byNote.get(g.note_id).push(g.sentence);
     if (g.label && !labelFor.has(g.note_id)) labelFor.set(g.note_id, g.label);
   }
+  //: **One fold, shared by Ask and Chat** (this builder serves both): the
+  //: heading is the native `summary` toggle, open by default and remembered
+  //: per browser. The chip row is its body; the evidence button stays outside.
+  //: replyKit holds the fold's look, so Chat loads it here as Ask does.
+  ensureModule("replyKit").catch(() => {});
+  const fold = document.createElement("details");
+  fold.className = "agent-step grounding-fold";
+  fold.open = prefs.get("grounding-fold", "open") !== "closed";
+  fold.addEventListener("toggle", () => prefs.set("grounding-fold", fold.open ? "open" : "closed"));
+  const summary = document.createElement("summary");
+  summary.className = "fold-summary";
   const label = document.createElement("span");
   label.className = "muted answer-grounding-label";
   label.textContent = "Grounded in";
-  target.appendChild(label);
+  const count = document.createElement("span");
+  count.className = "muted grounding-count";
+  summary.append(label, count);
+  const body = document.createElement("div");
+  body.className = "grounding-body";
+  fold.append(summary, body);
+  target.appendChild(fold);
   const numberFor = citationNumbers(sentences, orderedSources);
   //: The records column numbered from the same map (INBOX 299): a fourth
   //: loop deriving "the same" order is how the first three came to disagree.
@@ -1815,6 +1832,7 @@ function renderAnswerGrounding(
   const chips = [...byNote.entries()].sort(
     (a, b) => (numberFor.get(a[0]) || 0) - (numberFor.get(b[0]) || 0)
   );
+  count.textContent = String(chips.length);
   for (const [noteId, forSentences] of chips) {
     const entry = byId.get(noteId);
     const n = numberFor.get(noteId) || 0;
@@ -1845,9 +1863,9 @@ function renderAnswerGrounding(
       const item = document.createElement("span");
       item.className = "answer-grounding-item";
       item.append(chip, groundingThumbs(pictures, n, pictureAlts));
-      target.appendChild(item);
+      body.appendChild(item);
     } else {
-      target.appendChild(chip);
+      body.appendChild(chip);
     }
   }
   const foot = document.createElement("div");

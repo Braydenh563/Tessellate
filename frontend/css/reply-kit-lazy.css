@@ -353,10 +353,56 @@ button.reply-by {
 }
 
 .answer-grounding-label {
-  flex-basis: 100%;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+/* The heading is the toggle (a native details, the Thinking fold's summary);
+   its body is the chip row. Ask and Chat share the one builder
+   (`renderAnswerGrounding`), so this is the one rule set. */
+.grounding-fold {
+  flex-basis: 100%;
+  min-width: 0;
+}
+
+.grounding-fold > .fold-summary {
+  gap: var(--space-2);
+}
+
+/* The one disclosure caret (DESIGN.md, "A disclosure marker"), drawn here
+   because this fold lives in a lazy sheet; same glyph, turn and timing. */
+.grounding-fold > .fold-summary::before {
+  content: "\e136"; /* ph-caret-down */
+  flex: none;
+  font-family: Phosphor, sans-serif;
+  font-size: 1em;
+  font-style: normal;
+  line-height: 1;
+  transform: rotate(-90deg);
+  transition: transform var(--ui-fast) var(--ease-out);
+}
+
+.grounding-fold[open] > .fold-summary::before {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grounding-fold > .fold-summary::before {
+    transition: none;
+  }
+}
+
+.grounding-count {
+  font-variant-numeric: tabular-nums;
+}
+
+.grounding-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
 }
 
 .answer-grounding-chip,

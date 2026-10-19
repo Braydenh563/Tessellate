@@ -2,7 +2,7 @@
 
 Generated 2026-10-19 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6200, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6160, test files 1317, tests 11720, plan headings 967.
+Counts: frontend functions 6200, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6160, test files 1317, tests 11722, plan headings 967.
 
 ## Frontend functions (6200)
 
@@ -327,14 +327,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `addInlineCitations` | frontend/js/capture-ask.js:1168 |
 | `announce` | frontend/js/capture-ask.js:823 |
-| `answerFigure` | frontend/js/capture-ask.js:1996 |
-| `answerObject` | frontend/js/capture-ask.js:2089 |
-| `askAsOf` | frontend/js/capture-ask.js:3363 |
-| `askNotesOnTheRight` | frontend/js/capture-ask.js:2213 |
+| `answerFigure` | frontend/js/capture-ask.js:2015 |
+| `answerObject` | frontend/js/capture-ask.js:2108 |
+| `askAsOf` | frontend/js/capture-ask.js:3382 |
+| `askNotesOnTheRight` | frontend/js/capture-ask.js:2232 |
 | `askOpenContext` | frontend/js/capture-ask.js:876 |
-| `askQuestion` | frontend/js/capture-ask.js:2934 |
-| `askStatusBusy` | frontend/js/capture-ask.js:2904 |
-| `askStatusText` | frontend/js/capture-ask.js:2889 |
+| `askQuestion` | frontend/js/capture-ask.js:2953 |
+| `askStatusBusy` | frontend/js/capture-ask.js:2923 |
+| `askStatusText` | frontend/js/capture-ask.js:2908 |
 | `captureCategoryChip` | frontend/js/capture-ask.js:500 |
 | `citationInsertionPoint` | frontend/js/capture-ask.js:1140 |
 | `citationKey` | frontend/js/capture-ask.js:1093 |
@@ -342,41 +342,41 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `citationNumbers` | frontend/js/capture-ask.js:1060 |
 | `citationPeekText` | frontend/js/capture-ask.js:1431 |
 | `citationTextIndex` | frontend/js/capture-ask.js:1107 |
-| `clearAskAnswerFoot` | frontend/js/capture-ask.js:2140 |
+| `clearAskAnswerFoot` | frontend/js/capture-ask.js:2159 |
 | `clearCaptureStatusOnInput` | frontend/js/capture-ask.js:570 |
 | `clearCaptureTagSuggestions` | frontend/js/capture-ask.js:487 |
 | `clearCitedPassage` | frontend/js/capture-ask.js:1641 |
 | `clickableResult` | frontend/js/capture-ask.js:1019 |
 | `closeCitationPeek` | frontend/js/capture-ask.js:1542 |
 | `collapseCitationRuns` | frontend/js/capture-ask.js:1235 |
-| `copyAnswer` | frontend/js/capture-ask.js:3295 |
+| `copyAnswer` | frontend/js/capture-ask.js:3314 |
 | `createDocumentNamed` | frontend/js/capture-ask.js:287 |
-| `drawAnswerPanels` | frontend/js/capture-ask.js:2265 |
-| `everyRowScored` | frontend/js/capture-ask.js:2425 |
+| `drawAnswerPanels` | frontend/js/capture-ask.js:2284 |
+| `everyRowScored` | frontend/js/capture-ask.js:2444 |
 | `evidenceBlock` | frontend/js/capture-ask.js:1399 |
-| `evidenceChecksOn` | frontend/js/capture-ask.js:1868 |
-| `evidenceRows` | frontend/js/capture-ask.js:1920 |
+| `evidenceChecksOn` | frontend/js/capture-ask.js:1887 |
+| `evidenceRows` | frontend/js/capture-ask.js:1939 |
 | `evidenceSignals` | frontend/js/capture-ask.js:1377 |
 | `evidenceSpan` | frontend/js/capture-ask.js:1370 |
-| `evidenceSwitchReset` | frontend/js/capture-ask.js:1880 |
-| `evidenceToggle` | frontend/js/capture-ask.js:1887 |
+| `evidenceSwitchReset` | frontend/js/capture-ask.js:1899 |
+| `evidenceToggle` | frontend/js/capture-ask.js:1906 |
 | `filedByText` | frontend/js/capture-ask.js:220 |
 | `filingOutcomeText` | frontend/js/capture-ask.js:181 |
-| `finishReply` | frontend/js/capture-ask.js:2272 |
+| `finishReply` | frontend/js/capture-ask.js:2291 |
 | `flashCategory` | frontend/js/capture-ask.js:989 |
 | `flashEntry` | frontend/js/capture-ask.js:885 |
 | `flashReminder` | frontend/js/capture-ask.js:963 |
 | `focusCaptureBox` | frontend/js/capture-ask.js:450 |
 | `groundingThumbs` | frontend/js/capture-ask.js:1732 |
 | `heldOffline` | frontend/js/capture-ask.js:584 |
-| `holdPictureTokens` | frontend/js/capture-ask.js:1990 |
-| `liveMarkdownRenderer` | frontend/js/capture-ask.js:2787 |
-| `loadAskHistoryBadge` | frontend/js/capture-ask.js:3327 |
+| `holdPictureTokens` | frontend/js/capture-ask.js:2009 |
+| `liveMarkdownRenderer` | frontend/js/capture-ask.js:2806 |
+| `loadAskHistoryBadge` | frontend/js/capture-ask.js:3346 |
 | `loadCaptureDocuments` | frontend/js/capture-ask.js:276 |
-| `loadSuggestions` | frontend/js/capture-ask.js:3301 |
-| `loadTemplates` | frontend/js/capture-ask.js:3396 |
-| `matchReasonBadge` | frontend/js/capture-ask.js:2429 |
-| `newChat` | frontend/js/capture-ask.js:2868 |
+| `loadSuggestions` | frontend/js/capture-ask.js:3320 |
+| `loadTemplates` | frontend/js/capture-ask.js:3415 |
+| `matchReasonBadge` | frontend/js/capture-ask.js:2448 |
+| `newChat` | frontend/js/capture-ask.js:2887 |
 | `notePictures` | frontend/js/capture-ask.js:1717 |
 | `noteSurfaceIfAny` | frontend/js/capture-ask.js:415 |
 | `noteTemplateForUse` | frontend/js/capture-ask.js:397 |
@@ -387,34 +387,34 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openDocumentFromNote` | frontend/js/capture-ask.js:419 |
 | `openNoteAtPassage` | frontend/js/capture-ask.js:958 |
 | `pictureItems` | frontend/js/capture-ask.js:1729 |
-| `placeAnswerFigures` | frontend/js/capture-ask.js:2031 |
+| `placeAnswerFigures` | frontend/js/capture-ask.js:2050 |
 | `placeResultBadge` | frontend/js/capture-ask.js:1014 |
 | `renderAnswerGrounding` | frontend/js/capture-ask.js:1767 |
 | `renderAnswerSupport` | frontend/js/capture-ask.js:1687 |
-| `renderAskAnswerFoot` | frontend/js/capture-ask.js:2159 |
-| `renderAskHint` | frontend/js/capture-ask.js:2240 |
-| `renderAskTrail` | frontend/js/capture-ask.js:2842 |
+| `renderAskAnswerFoot` | frontend/js/capture-ask.js:2178 |
+| `renderAskHint` | frontend/js/capture-ask.js:2259 |
+| `renderAskTrail` | frontend/js/capture-ask.js:2861 |
 | `renderCaptureDocumentAdder` | frontend/js/capture-ask.js:346 |
 | `renderCaptureDocuments` | frontend/js/capture-ask.js:308 |
 | `renderCaptureTagSuggestions` | frontend/js/capture-ask.js:516 |
-| `renderChatMeta` | frontend/js/capture-ask.js:2293 |
-| `renderEvidenceView` | frontend/js/capture-ask.js:1942 |
+| `renderChatMeta` | frontend/js/capture-ask.js:2312 |
+| `renderEvidenceView` | frontend/js/capture-ask.js:1961 |
 | `resetCaptureForm` | frontend/js/capture-ask.js:457 |
-| `retryAnswer` | frontend/js/capture-ask.js:3291 |
+| `retryAnswer` | frontend/js/capture-ask.js:3310 |
 | `saveEntry` | frontend/js/capture-ask.js:598 |
 | `saveEntryAsDraft` | frontend/js/capture-ask.js:723 |
 | `scheduleCaptureTagSuggestions` | frontend/js/capture-ask.js:544 |
 | `scheduleCitationPeek` | frontend/js/capture-ask.js:1412 |
 | `scheduleCitationPeekClose` | frontend/js/capture-ask.js:1423 |
 | `scrollEditingEntryIntoView` | frontend/js/capture-ask.js:847 |
-| `setAnsweredBy` | frontend/js/capture-ask.js:2284 |
-| `setAsking` | frontend/js/capture-ask.js:2828 |
+| `setAnsweredBy` | frontend/js/capture-ask.js:2303 |
+| `setAsking` | frontend/js/capture-ask.js:2847 |
 | `settleCaptureStatus` | frontend/js/capture-ask.js:125 |
-| `showAskAsOf` | frontend/js/capture-ask.js:3369 |
+| `showAskAsOf` | frontend/js/capture-ask.js:3388 |
 | `showCitedPassage` | frontend/js/capture-ask.js:1610 |
-| `stopAnswer` | frontend/js/capture-ask.js:2834 |
-| `streamChat` | frontend/js/capture-ask.js:2460 |
-| `streamChatEvents` | frontend/js/capture-ask.js:2503 |
+| `stopAnswer` | frontend/js/capture-ask.js:2853 |
+| `streamChat` | frontend/js/capture-ask.js:2479 |
+| `streamChatEvents` | frontend/js/capture-ask.js:2522 |
 | `watchFiling` | frontend/js/capture-ask.js:48 |
 | `withTitle` | frontend/js/capture-ask.js:435 |
 
@@ -1027,22 +1027,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `agentActivityNotice` | frontend/js/status.js:650 |
 | `agentActivityQuiet` | frontend/js/status.js:642 |
-| `agentModeAvailable` | frontend/js/status.js:2712 |
+| `agentModeAvailable` | frontend/js/status.js:2716 |
 | `aiIsOff` | frontend/js/status.js:1984 |
-| `aiOffGlyph` | frontend/js/status.js:2382 |
-| `aiOfflineDismissed` | frontend/js/status.js:2184 |
-| `aiOfflineNoticeHidden` | frontend/js/status.js:2180 |
-| `aiStatusState` | frontend/js/status.js:2269 |
+| `aiOffGlyph` | frontend/js/status.js:2386 |
+| `aiOfflineDismissed` | frontend/js/status.js:2188 |
+| `aiOfflineNoticeHidden` | frontend/js/status.js:2184 |
+| `aiStatusState` | frontend/js/status.js:2273 |
 | `announcedReminders` | frontend/js/status.js:42 |
 | `appStackIsNewer` | frontend/js/status.js:1534 |
 | `armReminderTimer` | frontend/js/status.js:507 |
 | `askNotificationPermission` | frontend/js/status.js:378 |
-| `backendLabel` | frontend/js/status.js:2775 |
+| `backendLabel` | frontend/js/status.js:2779 |
 | `boardHistoryActive` | frontend/js/status.js:1499 |
 | `checkDueReminders` | frontend/js/status.js:523 |
 | `closeModelGate` | frontend/js/status.js:2003 |
 | `closeNotifications` | frontend/js/status.js:358 |
-| `dismissAiOffline` | frontend/js/status.js:2192 |
+| `dismissAiOffline` | frontend/js/status.js:2196 |
 | `dismissToast` | frontend/js/status.js:892 |
 | `dismissedNotificationIds` | frontend/js/status.js:232 |
 | `forcedReadIds` | frontend/js/status.js:187 |
@@ -1054,25 +1054,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `isNotificationUnread` | frontend/js/status.js:211 |
 | `jobsRunning` | frontend/js/status.js:1837 |
 | `keepToastAction` | frontend/js/status.js:337 |
-| `lastAnswerLine` | frontend/js/status.js:2404 |
+| `lastAnswerLine` | frontend/js/status.js:2408 |
 | `loadMostUsed` | frontend/js/status.js:1707 |
 | `loadRecentQuestions` | frontend/js/status.js:1680 |
 | `lockFieldWants` | frontend/js/status.js:935 |
 | `noteDamagedNotebook` | frontend/js/status.js:1240 |
 | `noteServerDown` | frontend/js/status.js:1296 |
 | `noteServerUp` | frontend/js/status.js:1305 |
-| `noticeTaskTransitions` | frontend/js/status.js:3013 |
+| `noticeTaskTransitions` | frontend/js/status.js:3017 |
 | `noticeUnwatchedAnswer` | frontend/js/status.js:685 |
 | `notificationsMuted` | frontend/js/status.js:627 |
 | `notificationsReadAt` | frontend/js/status.js:138 |
 | `notify` | frontend/js/status.js:451 |
-| `nudgeEmbeddingProblem` | frontend/js/status.js:2447 |
+| `nudgeEmbeddingProblem` | frontend/js/status.js:2451 |
 | `offerUndo` | frontend/js/status.js:1441 |
 | `openLanPanel` | frontend/js/status.js:587 |
 | `openModelGate` | frontend/js/status.js:2013 |
 | `openModelOffer` | frontend/js/status.js:2020 |
-| `paintPrivacyChip` | frontend/js/status.js:3109 |
-| `paintStatusItem` | frontend/js/status.js:2501 |
+| `paintPrivacyChip` | frontend/js/status.js:3113 |
+| `paintStatusItem` | frontend/js/status.js:2505 |
 | `paintTitle` | frontend/js/status.js:484 |
 | `paintUndoDoor` | frontend/js/status.js:1630 |
 | `performRedo` | frontend/js/status.js:1555 |
@@ -1086,19 +1086,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `pushEntryPutUndo` | frontend/js/status.js:1474 |
 | `pushUndo` | frontend/js/status.js:1370 |
 | `recordNotification` | frontend/js/status.js:97 |
-| `refreshBackgroundTasks` | frontend/js/status.js:2931 |
+| `refreshBackgroundTasks` | frontend/js/status.js:2935 |
 | `refreshModelStatus` | frontend/js/status.js:1865 |
-| `refreshPrivacyChip` | frontend/js/status.js:3123 |
+| `refreshPrivacyChip` | frontend/js/status.js:3127 |
 | `rememberAnnounced` | frontend/js/status.js:50 |
 | `reminderNoticeKey` | frontend/js/status.js:228 |
 | `renderAgentActivityMode` | frontend/js/status.js:721 |
-| `renderAiOfflineNotice` | frontend/js/status.js:2207 |
-| `renderAiPill` | frontend/js/status.js:2412 |
-| `renderChatModeSeg` | frontend/js/status.js:2716 |
+| `renderAiOfflineNotice` | frontend/js/status.js:2211 |
+| `renderAiPill` | frontend/js/status.js:2416 |
+| `renderChatModeSeg` | frontend/js/status.js:2720 |
 | `renderNotifMuteToggle` | frontend/js/status.js:267 |
 | `renderNotificationBadge` | frontend/js/status.js:247 |
-| `renderSettings` | frontend/js/status.js:2786 |
-| `renderStatusBar` | frontend/js/status.js:2544 |
+| `renderSettings` | frontend/js/status.js:2790 |
+| `renderStatusBar` | frontend/js/status.js:2548 |
 | `renderUndoBar` | frontend/js/status.js:1615 |
 | `reopenAnswerPanel` | frontend/js/status.js:700 |
 | `resetStatusCadence` | frontend/js/status.js:1787 |
@@ -1106,7 +1106,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `sayChatModelChosen` | frontend/js/status.js:1750 |
 | `scheduleServerDownRetry` | frontend/js/status.js:1320 |
 | `scheduleUndoBar` | frontend/js/status.js:1607 |
-| `setChatMode` | frontend/js/status.js:2759 |
+| `setChatMode` | frontend/js/status.js:2763 |
 | `setForcedReadIds` | frontend/js/status.js:196 |
 | `setForcedUnreadIds` | frontend/js/status.js:165 |
 | `setTitleCount` | frontend/js/status.js:489 |
@@ -1114,17 +1114,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `settingsOpen` | frontend/js/status.js:1804 |
 | `settleNotification` | frontend/js/status.js:116 |
 | `settleUndoFromToast` | frontend/js/status.js:1462 |
-| `showAgentNoModelHint` | frontend/js/status.js:2754 |
+| `showAgentNoModelHint` | frontend/js/status.js:2758 |
 | `showServerDownBanner` | frontend/js/status.js:1279 |
-| `startPrivacyChip` | frontend/js/status.js:3133 |
+| `startPrivacyChip` | frontend/js/status.js:3137 |
 | `startReminderWatch` | frontend/js/status.js:594 |
 | `storedNotifications` | frontend/js/status.js:84 |
 | `surfaceHistory` | frontend/js/status.js:1516 |
-| `syncAgentPaletteAvailability` | frontend/js/status.js:2251 |
+| `syncAgentPaletteAvailability` | frontend/js/status.js:2255 |
 | `syncModelGatedControls` | frontend/js/status.js:2067 |
 | `syncNotifBlocked` | frontend/js/status.js:373 |
 | `taskEndingWords` | frontend/js/status.js:130 |
-| `taskKey` | frontend/js/status.js:2994 |
+| `taskKey` | frontend/js/status.js:2998 |
 | `toast` | frontend/js/status.js:1071 |
 | `toastAction` | frontend/js/status.js:1212 |
 | `toastActionButton` | frontend/js/status.js:1192 |
@@ -1140,7 +1140,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `toastProgress` | frontend/js/status.js:1147 |
 | `toastReduced` | frontend/js/status.js:851 |
 | `toastStack` | frontend/js/status.js:856 |
-| `toggleAiStatusPopup` | frontend/js/status.js:2686 |
+| `toggleAiStatusPopup` | frontend/js/status.js:2690 |
 | `toggleNotificationMute` | frontend/js/status.js:283 |
 | `unreadNotifications` | frontend/js/status.js:241 |
 | `voiceLine` | frontend/js/status.js:1065 |
@@ -10135,7 +10135,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/quick-access-lazy.css | 105 |
 | frontend/css/quickadd-lazy.css | 35 |
 | frontend/css/recovery-lazy.css | 115 |
-| frontend/css/reply-kit-lazy.css | 481 |
+| frontend/css/reply-kit-lazy.css | 527 |
 | frontend/css/reveal-lazy.css | 10 |
 | frontend/css/search-lazy.css | 153 |
 | frontend/css/settings-controls-lazy.css | 102 |
@@ -18480,7 +18480,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11720)
+## Tests (11722)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18538,7 +18538,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_ask_overview_brief.py | 5 |
 | tests/test_ask_records_voice.py | 4 |
 | tests/test_ask_sees_tags_and_files.py | 5 |
-| tests/test_ask_use_ai_714.py | 6 |
+| tests/test_ask_use_ai_714.py | 7 |
 | tests/test_ask_user.py | 18 |
 | tests/test_asset_cache_busting.py | 3 |
 | tests/test_asset_strip.py | 20 |
@@ -19000,7 +19000,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_greeting_compose.py | 5 |
 | tests/test_greeting_name.py | 9 |
 | tests/test_grounding.py | 28 |
-| tests/test_grounding_1323.py | 2 |
+| tests/test_grounding_1323.py | 3 |
 | tests/test_grounding_fixtures.py | 10 |
 | tests/test_guide_composed_787.py | 18 |
 | tests/test_guide_gaps.py | 3 |
