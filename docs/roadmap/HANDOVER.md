@@ -1,3 +1,5 @@
+> **Haiku for grunt work, the owner 2026-10-19 (INBOX 1312, standing):** "maybe assign haiku agents to go the grunt work and catalog everything, haiku must be used a lot for grunt work and repo exploring so that I can maximise usage and progress. make the agents use haiku for those tasks as well." Every brief tells the agent to hand searches, cataloguing, log and test-output reading and repo exploring to Haiku subagents (Agent tool, model haiku), keeping its own turns for implementation and judgement.
+>
 > **Tier and routing, the owner 2026-10-17 (supersedes every older agent-cap, model and Fable line below):** tier `max`. "use haiku for all the labour, sonnet for implemenbtation." Rungs, caps and the Fable opt-in rule are in CLAUDE.md sections 2.4 and 8; the lines below are history. Set `pro` here when the plan changes.
 >
 > **Agent cap, the owner 2026-10-11 09:20Z (superseded 2026-10-17):** "I wanna hard push for the rest of the open items, can you run 2-3 more agents??" Cap now seven at once (five Opus, two Sonnet); Sonnet where quality holds.

@@ -34,6 +34,21 @@ with its owner named in the entry.
 
 ## Open items
 
+1316. **The owner, 2026-10-19, verbatim.** "also the timeline side graph should scroll higher if I scroll to future dates on the timeline as well"
+     Owner: timeline agent (Sonnet), queued after the current three.
+
+1315. **The owner, 2026-10-19, verbatim.** "keep improving the composer and companions and atlas as well. just keep doing what youre doing. Im going to go and do some uni work now so Ill leave you to it.. leep using lean-workflow"
+     Standing: composer (CHAT_PLAN), companion and Atlas rows stay in the away queue after the bugs.
+
+1314. **The owner, 2026-10-19, verbatim.** "also I should mention the mobile view needs a bit of redesign and layout/nav reworking because it is annoing to use and the bottom nav bar just doesnt make sense with how it works and is layed out and is annoying to use. can you work on that?"
+     Owner: mobile agent (Opus, design), now. UI_MODERNISATION_PLAN phone phase.
+
+1313. **The owner, 2026-10-19, verbatim.** "can you make sure the whiteboard isnt missing any more features?? can you improve the alignment guides as well??"
+     Owner: whiteboard agent (Sonnet), now: alignment guides first, then WHITEBOARD_PLAN gap rows 3, 4, 5, 7, 8, 12, 13, 14.
+
+1312. **The owner, 2026-10-19, verbatim.** "maybe assign haiku agents to go the grunt work and catalog everything, haiku must be used a lot for grunt work and repo exploring so that I can maximise usage and progress. make the agents use haiku for those tasks as well."
+     Standing order, recorded in HANDOVER's owner notes; the catalogue is a Haiku agent rebuilding agent-remaining/OPEN.md.
+
 725. **The owner, 2026-10-06, verbatim**: "can you like maximise the application
      responses and sentence concatenation and responses?? I want it soooo good it is
      almost like a chat bot. make them something the world hasnt seen before like
