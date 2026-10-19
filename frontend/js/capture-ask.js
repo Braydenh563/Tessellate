@@ -3241,9 +3241,9 @@ async function askQuestion(preset) {
       ensureModule("askCompose").then(() => renderAskWhy(answerWhy)).catch(() => {});
       if (answerOffer) ensureModule("askCompose").then(() => digestOffer(answerBox, answerOffer)).catch(() => {});
       if (answerPanels.length) drawAnswerPanels(answerBox, answerPanels);
-      //: The meta is the options: `composed`, and `match_info` for each
-      //: record's reason (INBOX 1310, `replyRecordReasons`).
-      finishReply(answerBox, answerMeta || {});
+      //: `composed`, and `match_info` for each record's reason (INBOX 1310,
+      //: `replyRecordReasons`); only these, so a new meta key cannot steer it.
+      finishReply(answerBox, { composed: answerMeta?.composed, match_info: answerMeta?.match_info });
       //: Not awaited: it is a second model call, and the answer is already on
       //: screen. The same contract `offerFollowups` has in the Chat tab. An
       //: answer composed from the notes brings its own (INBOX 725), built

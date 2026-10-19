@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Whiteboard guides: the snap pull is a constant 6 screen pixels at any zoom (it was 6 board units, 1.5px zoomed out and 24px zoomed in), guide lines run across every item they line up with, equal-gap guides show their length, a tilted item aligns by the edges it shows, and the guide inks (the theme error, accent and warn) pass 6:1 or better in both themes (the old cyan was 1.96:1 on light) (INBOX 1313).
+- Dashboard: the Stats and Streak widgets have a Statistics button, as the heatmap does, and the Stats bar strip opens Statistics too (INBOX 1318).
 - Whiteboard: Ctrl+Enter while typing in a sticky starts the next one beside it, same paper and size (INBOX 1308).
 - Whiteboard: a C4 and architecture set in the library (person, software system, external system, container, database, component, boundary, relationship); each places as one group (INBOX 1308).
 - Notifications over the Graph: a toast is opaque under every look (it was the glass card at 0.55 alpha, so the map read through it) and stands above the zoom strip and legend instead of over them (INBOX 1306).

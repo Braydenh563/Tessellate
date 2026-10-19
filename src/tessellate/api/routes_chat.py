@@ -1756,8 +1756,11 @@ def _frame_matches(session: Session, question: str, notes: list[dict], match_inf
         EntryLink.source_entry_id.in_(ids), EntryLink.target_entry_id.in_(ids)
     )
     for a, b in rows:
-        linked[a].append(b)
-        linked[b].append(a)
+        #: Once each: two notes linked both ways are one link to the reader.
+        if b not in linked[a]:
+            linked[a].append(b)
+        if a not in linked[b]:
+            linked[b].append(a)
     for note in notes:
         note["linked_to"] = linked[note["id"]]
     for key, reason in composer_frame.reasons(question, notes, mode).items():

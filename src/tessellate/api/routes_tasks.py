@@ -984,6 +984,57 @@ def list_activity() -> dict:
 FINISHED_ROWS = 20
 
 
+def _finished_run_row(run: dict, report: dict | None) -> dict:
+    """One ledger run as a Running-tab row, with the report it left, if any."""
+    return {
+        "id": f"run:{run['run_id']}",
+        "kind": run["kind"],
+        "label": run["label"],
+        "title": run["title"],
+        "detail": run.get("detail", ""),
+        "outcome": run.get("outcome", "completed"),
+        "origin": jobruns.ORIGINS.get(run.get("origin", ""), ""),
+        "started": run.get("started"),
+        "finished": run.get("ended") or 0.0,
+        "duration_ms": run.get("duration_ms"),
+        "count": run.get("count", 1),
+        "run_id": run["run_id"],
+        "lines": run.get("lines") or [],
+        "report": report.get("report") if report else None,
+        "stoppable": False,
+        "queued": False,
+    }
+
+
+def _report_twin(rows: list[dict], extra: dict) -> dict | None:
+    """The reportless run row that the report job `extra` belongs to."""
+    return next(
+        (
+            row for row in rows
+            if not row.get("report") and row["kind"] == extra["kind"] and row["title"] == extra.get("title")
+            and abs((row.get("finished") or 0.0) - (extra.get("finished") or 0.0)) <= 5.0
+        ),
+        None,
+    )
+
+
+def _merge_report_jobs(rows: list[dict], reports: dict) -> None:
+    """A report job that kept no run of its own (an import opens its run
+    beside it) lends that run its report; one whose run has left the ring
+    is still a page to open."""
+    from tessellate.core import activity
+
+    for extra in activity.recent():
+        if not extra.get("report") or (extra.get("run_id") and extra["run_id"] not in reports):
+            continue
+        twin = _report_twin(rows, extra)
+        if twin is not None:
+            twin["report"] = extra["report"]
+            twin["detail"] = extra.get("detail") or twin["detail"]
+        else:
+            rows.append(extra)
+
+
 def finished_rows(now: float | None = None) -> list[dict]:
     """What ended in the last half hour (INBOX 805: "when they are finished
     as well"): every run in the ledger with its outcome, start, end, length
@@ -993,49 +1044,12 @@ def finished_rows(now: float | None = None) -> list[dict]:
     now = time.time() if now is None else now
     cutoff = now - activity.RECENT_SECONDS
     reports = {row.get("run_id"): row for row in activity.recent() if row.get("run_id")}
-    rows: list[dict] = []
-    for run in jobruns.finished():
-        ended = run.get("ended") or 0.0
-        if ended < cutoff:
-            continue
-        report = reports.pop(run["run_id"], None)
-        rows.append({
-            "id": f"run:{run['run_id']}",
-            "kind": run["kind"],
-            "label": run["label"],
-            "title": run["title"],
-            "detail": run.get("detail", ""),
-            "outcome": run.get("outcome", "completed"),
-            "origin": jobruns.ORIGINS.get(run.get("origin", ""), ""),
-            "started": run.get("started"),
-            "finished": ended,
-            "duration_ms": run.get("duration_ms"),
-            "count": run.get("count", 1),
-            "run_id": run["run_id"],
-            "lines": run.get("lines") or [],
-            "report": report.get("report") if report else None,
-            "stoppable": False,
-            "queued": False,
-        })
-    #: A report job that kept no run of its own (an import opens its run
-    #: beside it) lends that run its report; one whose run has left the ring
-    #: is still a page to open.
-    for extra in activity.recent():
-        if not extra.get("report") or (extra.get("run_id") and extra["run_id"] not in reports):
-            continue
-        twin = next(
-            (
-                row for row in rows
-                if not row.get("report") and row["kind"] == extra["kind"] and row["title"] == extra.get("title")
-                and abs((row.get("finished") or 0.0) - (extra.get("finished") or 0.0)) <= 5.0
-            ),
-            None,
-        )
-        if twin is not None:
-            twin["report"] = extra["report"]
-            twin["detail"] = extra.get("detail") or twin["detail"]
-        else:
-            rows.append(extra)
+    rows = [
+        _finished_run_row(run, reports.pop(run["run_id"], None))
+        for run in jobruns.finished()
+        if (run.get("ended") or 0.0) >= cutoff
+    ]
+    _merge_report_jobs(rows, reports)
     rows.sort(key=lambda row: row.get("finished") or 0.0, reverse=True)
     return rows[:FINISHED_ROWS]
 
