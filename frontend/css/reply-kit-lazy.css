@@ -393,10 +393,6 @@ button.reply-by {
   }
 }
 
-.grounding-count {
-  font-variant-numeric: tabular-nums;
-}
-
 .grounding-body {
   display: flex;
   flex-wrap: wrap;

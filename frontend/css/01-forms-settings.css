@@ -1343,6 +1343,7 @@ progress {
    44px on a phone beside 15px text, its list line 34px and 50px against a
    plain item's 22px (measured, doctaskbox.js). Drawn at the
    text's size, as the live view's box is. */
+input.md-task-inline:disabled,
 .md-task input:disabled {
   width: 1.1em;
   height: 1.1em;

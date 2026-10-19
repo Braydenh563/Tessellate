@@ -6,6 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Ask and Chat: the "Grounded in" block is one collapsible fold (the heading is the toggle, open by default, remembered per browser); Chat now loads the same look as Ask. The number in each source badge is the bare digit, centred in its circle (0.01 px off, was 1.8 px with the trailing period).
+- Use AI switch: draws its real state from the first status poll, not the 3 s preload (was drawn on for about 2.7 s over a model that was off, until clicked).
+- Chat answers: a link with no words (`[](#/notes/85)`) shows the note's name, `[ ]` and `[x]` in prose are the app's disabled checkbox at text size, and a line of only the app's own links ("Open your notes") is a row of small ghost buttons.
 - Notes from 600 to 820px wide: the "Your notes" sub-tab no longer sits under the sidebar's collapse toggle (the column keeps the rail clear; the tab starts at x 63 to 66, was 9.6 under a toggle ending at 51).
 - Focus rings no longer cut off by their container: the Statistics body, the manual's contents jumps and topic links, the Settings nav's last button and the phone More button (0 px cut each, was 3.5 to 4.5).
 - Statistics: a focused chart mark (a focusable SVG group) shows a 2px ring of its own, inside its slot.
