@@ -2,7 +2,7 @@
 
 Generated 2026-10-19 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6200, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6160, test files 1317, tests 11720, plan headings 967.
+Counts: frontend functions 6200, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6160, test files 1317, tests 11721, plan headings 967.
 
 ## Frontend functions (6200)
 
@@ -4526,9 +4526,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `codeFamilyFor` | frontend/js/lightbox-view.js:2406 |
-| `codeScanner` | frontend/js/lightbox-view.js:2387 |
-| `highlightCodeInto` | frontend/js/lightbox-view.js:2360 |
+| `codeFamilyFor` | frontend/js/lightbox-view.js:2410 |
+| `codeScanner` | frontend/js/lightbox-view.js:2391 |
+| `highlightCodeInto` | frontend/js/lightbox-view.js:2364 |
 | `openLightbox` | frontend/js/lightbox-view.js:33 |
 
 ### frontend/js/link-types.js (8)
@@ -18480,7 +18480,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11720)
+## Tests (11721)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19118,7 +19118,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_library_subtabs_hide_on_board.py | 2 |
 | tests/test_library_tab_leaves_board.py | 1 |
 | tests/test_library_visit_cost.py | 3 |
-| tests/test_lightbox.py | 20 |
+| tests/test_lightbox.py | 21 |
 | tests/test_like_escaping.py | 5 |
 | tests/test_line_clipboard.py | 5 |
 | tests/test_line_gutter_look.py | 7 |
@@ -20505,7 +20505,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1265 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:294 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:297 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4173 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

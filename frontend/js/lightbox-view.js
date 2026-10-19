@@ -495,6 +495,10 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     const pixels = isImg && img.naturalWidth && img.offsetWidth;
     zoomLabel.textContent = `${Math.round((pixels ? zoom / actualZoom() : zoom) * 100)}%`;
     fitBtn.setAttribute("aria-pressed", String(zoom === 1));
+    //: Pressed when the picture is already at actual size, so a press that
+    //: changes nothing (a picture smaller than the window, where fit is 1:1)
+    //: says why (owner 2026-10-19: "is that ratio button meant to do anything").
+    actualBtn.setAttribute("aria-pressed", String(Math.abs(zoom - actualZoom()) < 0.01));
     // Only grab-able once there is something to pan to.
     //: **Only when it is not already there** (INBOX 424f). `show()` sets the
     //: zoom back to fit for every picture, so paging through a gallery called
