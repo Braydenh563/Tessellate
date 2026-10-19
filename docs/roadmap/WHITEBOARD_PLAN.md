@@ -1672,5 +1672,3 @@ Owner: "stuff like that, dont stop there, find what is missing on the whiteboard
 1340. **The owner, 2026-10-19, verbatim.** "when I go between the mind map and whiteboard, should the board recenter on the main content?"
      Measured by code reading: a map refits on every open (`wbFrameMapOnOpen`, whiteboard.js:2516, `wbZoomToFit`); a board is not reframed and keeps whatever the shared camera (`wbZoom`, :170) last was, which may be the map's; no view is saved per board. For the next PR. Recommendation: each board and map remembers its own view (pan and zoom, saved with the board); returning restores it; fit to content only on first open, or when nothing would be on screen.
 
-1341. **The owner, 2026-10-19, verbatim** (screenshot, dark: the mind map's top bar, search, map, Edit, View, Board, Library, Format, full screen). "also the format button shouldnt be there on the mindmap as it is useless and empty"
-     For the next PR. Recommendation: Format is hidden on a map (wbIsMap) until it has something for a selected node to show; help surfaces updated in the same commit.

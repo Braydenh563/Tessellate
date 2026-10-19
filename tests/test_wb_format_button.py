@@ -21,3 +21,12 @@ def test_format_button_in_help():
     assert "top bar's Format button" in body
     cmds = (ROOT / "frontend/js/whiteboard-commands.js").read_text()
     assert "top bar button" in cmds
+
+
+def test_a_map_hides_the_format_button() -> None:
+    """The owner, 2026-10-19: on a map the Format panel was "useless and empty"."""
+    source = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    body = source[source.index("function wbSyncToolSurfaces(") :]
+    body = body[: body.index("\n}\n")]
+    assert 'const format = $("wb-format-btn");' in body
+    assert "format.hidden = isMap;" in body

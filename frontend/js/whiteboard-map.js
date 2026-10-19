@@ -6248,6 +6248,12 @@ function wbSyncToolSurfaces(isMap) {
   for (const section of document.querySelectorAll("#wb-tool-group [data-wb-surface], .wb-board-menu [data-wb-surface]")) {
     section.hidden = section.dataset.wbSurface === (isMap ? "board" : "map");
   }
+  //: The Format button too (the owner, 2026-10-19: "useless and empty" on a
+  //: map): a topic's look lives on its own toolbar, so the panel had nothing
+  //: to show. Its command is already board-only (`surface: "board"`).
+  const format = $("wb-format-btn");
+  if (format) format.hidden = isMap;
+  if (isMap && !$("wb-format")?.classList.contains("hidden")) window.wbFormatClose?.({ restoreFocus: false });
   wbSyncConnectWords(isMap);
   // A tool stays selected across a board switch, so opening a map while the
   // pen was active would leave the pen drawing on a surface whose own button

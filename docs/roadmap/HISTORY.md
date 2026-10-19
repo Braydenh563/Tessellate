@@ -51125,3 +51125,9 @@ From UI_MODERNISATION_PLAN Phase 11 item 1, both built:
 1329. **The owner, 2026-10-19, verbatim** (screenshot, dark: the Suggestions dialog on Links (12); the "Links (12)" select's top border is cut off under the "Suggestions" header). "the suggestions panel content  and probably other panels content get cut off at the top below the header and the suggestions panel needs a better redesign and restructuring"
      Owner: design agent (Opus), sugg1329: the clip in every dialog/panel with a sticky header, then the Suggestions redesign.
 
+1341. **The owner, 2026-10-19, verbatim** (screenshot, dark: the mind map's top bar, search, map, Edit, View, Board, Library, Format, full screen). "also the format button shouldnt be there on the mindmap as it is useless and empty"
+     **Fixed**: Format is hidden on a map (wbIsMap) until it has something for a selected node to show; help surfaces updated in the same commit.
+
+1343. **The owner, 2026-10-19, verbatim** (screenshot, dark: a document line "whats up :D" with "whats" underlined; the spelling menu: "whats is not in the dictionary", then wats, what, hats, whams, whets). "also I feel like this should have been picked up as "what's""
+     **Fixed**: a missing apostrophe (whats, thats, isnt, youre, im) is offered as the contraction first in the menu; never rewritten on its own, since an apostrophe is a style choice (`docSpellContraction`, documents.js).
+
