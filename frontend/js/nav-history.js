@@ -51,7 +51,7 @@ function navHistoryPlain(text, fallback) {
 
 //: The tab's own icon, read from its button so a renamed icon follows.
 function navHistoryTabIcon(tab) {
-  const own = { settings: "gear", documents: "file-text" }[tab];
+  const own = { settings: "gear", documents: "file-text", manual: "book-open-text", statistics: "chart-bar" }[tab];
   if (own) return own;
   const mark = document.querySelector(`#tab-bar button[data-tab="${tab}"] .tab-icon`);
   return ([...(mark?.classList || [])].find((name) => name.startsWith("ph-")) || "ph-squares-four").slice(3);

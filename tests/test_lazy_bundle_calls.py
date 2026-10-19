@@ -110,6 +110,10 @@ REACHED_AFTER_LOAD = {
     #: Back closing an open overlay (router-overlays.js): preloaded three seconds
     #: after boot; before that Back steps the tab history as it always did. A
     #: stand-in would return a promise, which is truthy, and swallow every Back.
+    #: The manual and Statistics entries (navigation.js `openHistoryEntry`): an
+    #: overlay can only be open once manual.js or statistics.js has fetched the
+    #: bundle (both ask for it), so the typeof check is true whenever it matters.
+    "overlayGo": "quickNote (carries router-overlays.js), fetched by manual.js and statistics.js when they open",
     "routerSettle": "quickNote (carries router-overlays.js), called in the .then of ensureModule('quickNote') in closeSettingsModal",
     "routerBackHook": "quickNote (carries router-overlays.js), preloaded 3 s after boot; until then Back is the tab history's, as before",
     #: Settings, About, Maintenance: settings.js's showSettingsSection calls it

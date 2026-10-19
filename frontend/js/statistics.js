@@ -74,7 +74,7 @@ const statsCard = { close: null };
 //: Month points open the Timeline at that month; a feature bar opens that
 //: feature, a tab or the palette command the ledger counted it under.
 async function statsGo(go) {
-  statsCard.close?.();
+  statsCard.close?.({ stay: true });
   try {
     await go();
   } catch {
@@ -405,11 +405,12 @@ function openStatistics() {
   help.dataset.helpFor = "stats-help";
   help.setAttribute("aria-controls", "stats-help");
   help.setAttribute("aria-expanded", "false");
-  const close = () => {
+  const close = (opts) => {
     statsCard.close = null;
     document.removeEventListener("keydown", onKey, true);
     overlay.remove();
     if (returnFocus?.isConnected) returnFocus.focus?.();
+    if (typeof overlayClosed === "function") overlayClosed("statistics", { stay: opts?.stay === true });
   };
   const onKey = (event) => {
     if (event.key !== "Escape" || document.querySelector("#stats-help:not(.hidden)")) return;
@@ -440,6 +441,8 @@ function openStatistics() {
   overlay.appendChild(card);
   document.body.appendChild(overlay);
   statsCard.close = close;
+  recordTabVisit("statistics");
+  ensureModule("quickNote");
   wireBackdropClose(overlay, close);
   document.addEventListener("keydown", onKey, true);
   initHelpToggles(card);
