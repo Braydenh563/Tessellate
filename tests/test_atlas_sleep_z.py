@@ -1,5 +1,5 @@
 """Lying asleep, the companion's Zs rise from its head, not from where a standing
-head would be (the owner, 2026-10-19). Browser half: `scratchpad/ui-sweeps/atlassleepz.js`
+head would be (the owner, 2026-10-19). Measured once in Chromium, each pose and variant, first z against the eyes
 (before: 85px above the eyes lying, 64px half down; after: about 40px in every pose)."""
 
 from pathlib import Path

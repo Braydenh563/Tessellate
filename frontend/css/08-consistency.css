@@ -6164,7 +6164,7 @@ body .chip.item-label,
 #nm-buddy:is(.nmb-sleep, .nmb-act-nap, .nmb-act-lie) .nm-buddy-z { display: block; }
 /* Lying down, the head drops to the side, so the Zs drop with it (the owner,
    2026-10-19: they rose "from where its head would be if it was standing").
-   Offsets measured by `scratchpad/ui-sweeps/atlassleepz.js`: the first z
+   Offsets measured in Chromium (2026-10-19): the first z
    sits about 30px right of and 40px above the eyes in every pose. */
 #nm-buddy[data-pose="lie"] .nm-buddy-z { translate: 0 46px; }
 #nm-buddy[data-pose="lie-2"] .nm-buddy-z { translate: -24px 25px; }
