@@ -35,6 +35,7 @@ import hashlib
 from datetime import date, datetime, timezone
 
 from sqlalchemy import func, select
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.orm import Session
 
 from tessellate.core import jobruns
@@ -104,6 +105,7 @@ def compute_scores(session: Session) -> int:
 
     existing = {row.entry_id: row for row in session.scalars(select(NoteScore)).all()}
     written = 0
+    fresh: list[dict] = []
     progress = jobruns.current("resurface")
     progress.say(f"Scoring {len(entries)} note{'' if len(entries) == 1 else 's'} for fading.")
     for index, entry in enumerate(entries):
@@ -115,15 +117,19 @@ def compute_scores(session: Session) -> int:
         age_days = (now - created).days if created is not None else 0
         link_count = links.get(entry.id, 0)
         access_count = int(entry.access_count or 0)
+        values = {
+            "score": score_for(age_days, link_count, access_count),
+            "age_days": max(0, age_days),
+            "link_count": link_count,
+            "access_count": access_count,
+            "computed_at": now,
+        }
         row = existing.get(entry.id)
         if row is None:
-            row = NoteScore(entry_id=entry.id)
-            session.add(row)
-        row.score = score_for(age_days, link_count, access_count)
-        row.age_days = max(0, age_days)
-        row.link_count = link_count
-        row.access_count = access_count
-        row.computed_at = now
+            fresh.append({"entry_id": entry.id, **values})
+        else:
+            for key, value in values.items():
+                setattr(row, key, value)
         written += 1
 
     # A note that has since been deleted keeps no row: this is a cache, and a
@@ -134,6 +140,19 @@ def compute_scores(session: Session) -> int:
         if entry_id not in live:
             session.delete(row)
     session.flush()
+    for start in range(0, len(fresh), 100):
+        chunk = fresh[start:start + 100]
+        # An upsert, not `session.add`: two requests that both find the table
+        # stale each read "no row yet" and both insert, and the second hit
+        # UNIQUE note_scores.entry_id (a 500 on `GET /resurface/near/{id}`).
+        # The later writer simply refreshes the row the earlier one made.
+        stmt = sqlite_insert(NoteScore).values(chunk)
+        session.execute(
+            stmt.on_conflict_do_update(
+                index_elements=[NoteScore.entry_id],
+                set_={col: getattr(stmt.excluded, col) for col in chunk[0] if col != "entry_id"},
+            )
+        )
     return written
 
 

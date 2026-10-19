@@ -9827,6 +9827,11 @@ header#top-bar {
   #doc-sidebar:not(.sidebar-sheet-open),
   #skills-sidebar:not(.sidebar-sheet-open) {
     overflow-y: hidden;
+    /* The parked sheet is 20rem wide with only the rail on screen, but its
+       box still took the pointer: at 800x700 elementFromPoint(54, 136) was
+       the aside and a click on the first Notes sub-tab (x 9.6 to 98.5) hit
+       it (UX audit 2026-10-19). Only the toggle below takes presses. */
+    pointer-events: none;
   }
   /* The toggle rides on the rail: pinned to the sheet's right edge at the
      inset the rail was measured from, so it lands centred on the strip that
@@ -9837,6 +9842,7 @@ header#top-bar {
   #skills-sidebar > .sidebar-collapse-toggle {
     right: var(--sidebar-toggle-inset);
     visibility: visible;
+    pointer-events: auto;
   }
   /* Skill logs' Clear sat 2.4px from the opener at 390 (INBOX 495): the
      opener is inset 8px here, not 16px, so the lane that clears it on a

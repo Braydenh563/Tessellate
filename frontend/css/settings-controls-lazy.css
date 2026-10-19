@@ -92,3 +92,11 @@
   flex: none;
   min-width: var(--target-min);
 }
+
+/* A backup row's origin label sits on three tints, like Skills' rows (the
+   rule for those is in 08-consistency.css): "Automatic daily backup" measured
+   4.27:1 in light, muted on rgb(219, 219, 221) (UX audit 2026-10-19). It takes
+   the ink. The warn label keeps its tone. */
+#backup-list > li .chip.item-label:not(.is-yours, .is-ok, .is-warn) {
+  color: var(--ink);
+}

@@ -32,7 +32,8 @@ function dashMapFeature(board) {
   button.type = "button";
   button.className = "dash-board-feature";
   const kind = board.type === "map" ? "map" : "board";
-  button.setAttribute("aria-label", `Open the ${kind} ${board.title}`);
+  //: No aria-label: the name is the visible caption (title and count, WCAG 2.5.3);
+  //: the tooltip says what a press does.
   button.title = `Open the ${kind} ${board.title}`;
   const svg = mapPreview(board, { size: "card" });
   svg.classList.add("dash-board-feature-map");

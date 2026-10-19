@@ -6,6 +6,14 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Focus rings no longer cut off by their container: the Statistics body, the manual's contents jumps and topic links, the Settings nav's last button and the phone More button (0 px cut each, was 3.5 to 4.5).
+- Statistics: a focused chart mark (a focusable SVG group) shows a 2px ring of its own, inside its slot.
+- Label in name (WCAG 2.5.3): Capture's Add to document opener is named by its visible words, and the Dashboard's featured board button by its caption (title and count) rather than "Open the map ...".
+- Settings > Data: a backup row's origin label ("Automatic daily backup") takes the ink instead of muted type on its tint (4.27:1 to above 4.5:1 in light).
+- Phone: the Back and Forward history menu opens below the header instead of above the viewport (top -304 to 54 at 390).
+- Notes list on a phone: a card whose facts are still too wide after folding to icons wraps to a second row instead of clipping its More actions button (li scrollWidth 418 to 358 at 390).
+- Notes at 800px: the parked sidebar sheet no longer takes clicks over the first sub-tab; only its toggle does (elementFromPoint(54, 136) was the aside, now the sub-tab).
+- Resurfacing: two requests scoring at once no longer 500 on UNIQUE note_scores.entry_id; new rows are upserted (GET /resurface/near/{id}).
 - Security: a phrase filter in the Notes list ("tagged work", "pinned", "connected to") no longer returns private notes or boards; a private note's tags are stored in plain text, so the filter could name it.
 - Agent popup: typing "/" shows the command menu again; it opened underneath the popup's overlay (z-index 60 against 2000), now above it like the other menus (INBOX 1333a).
 - Chat, Agent popup and Guide: the From your notes, Composer and From the help badges are buttons that open a note on hover, click or Enter saying the answer was written without an AI model, how to tell it from a model's, and how to turn one on (INBOX 1344).

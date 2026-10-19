@@ -339,3 +339,35 @@ def test_context_ranking_survives_vectors_of_another_dimension(session, fake_emb
     ids = [entry.id for entry in resurface.for_context(session, context_entry_id=anchor.id, limit=5)]
     assert same.id in ids
     assert odd.id in ids, "the shared tag still joins it"
+
+
+def test_scoring_survives_a_row_written_by_a_concurrent_request(session, monkeypatch):
+    """`GET /resurface/near/{id}` 500ed with UNIQUE note_scores.entry_id when
+    two requests both found the table stale: each read "no row yet", then both
+    inserted. A second session writes the row after this one has read the
+    existing rows and before it flushes."""
+    from tessellate.ai import resurface
+    from tessellate.core import deps
+    from tessellate.core.database import NoteScore
+    from tessellate.entry import manager
+    from sqlalchemy import select
+
+    entry = manager.create_entry(session, "a note two requests both score", tags=[])
+    session.commit()
+    real = resurface.score_for
+    fired = []
+
+    def racing(*args, **kwargs):
+        if not fired:
+            fired.append(1)
+            other = deps.get_db().session()
+            other.add(NoteScore(entry_id=entry.id, score=0.1))
+            other.commit()
+            other.close()
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(resurface, "score_for", racing)
+    resurface.compute_scores(session)
+    session.commit()
+    rows = session.scalars(select(NoteScore).where(NoteScore.entry_id == entry.id)).all()
+    assert len(rows) == 1

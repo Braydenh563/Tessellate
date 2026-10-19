@@ -372,7 +372,7 @@ function renderCaptureDocumentAdder() {
     }),
     group: "New",
   });
-  const adder = labelledMenu("ph:file-plus Add to document", items, "Add this note to a document", "ghost");
+  const adder = labelledMenu("ph:file-plus Add to document", items, "Add to document", "ghost");
   slot.replaceChildren(adder);
 }
 
