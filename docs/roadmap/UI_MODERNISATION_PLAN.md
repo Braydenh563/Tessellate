@@ -1587,3 +1587,10 @@ Rows: T1 and T2 (owner: voiceup, with V7's dialog work); T3 learnaudit; T4 gramm
 - Built 2026-10-19: the order rules gone; the four columns; More's sheet in a lazy file (`phone-more.js`) with pages, a hairline, then tools, the page in hand `aria-current`; the header menu named "App menu"; the active tab pressed again scrolls its page to the top (`tabPageScroller`); the coarse-pointer floor 44; the timeline under 380 (the existing 380 block in 10-responsive.css) wraps its year menu and lets the day well take the card's padding (44.5px days). Guide topic `phone-nav`. After: `phonemore.js`, `phonetabs.js`, `phone.js` (390, 360, dark) 0 findings.
 - Not verified: a real phone (safe-area insets resolve to 0 in headless Chromium); the smooth scroll-to-top under reduced motion on a device.
 
+## Placed from INBOX, 2026-10-19 (peek sidebar header, split button; next PR)
+
+1336. **The owner, 2026-10-19, verbatim** (screenshot, dark: the notes sidebar collapsed and hover-opened; the "Categories" header with the collapse chevron at the left, the filter and pin buttons crowded at the right, the pin focused and set apart from the filter). "also the categories notes sidebar header buttons lose their positioning when the sidebar is collapsed and temporarily hover opened"
+     For the next PR. Recommendation: the hover-opened (peek) sidebar keeps the docked header's layout; measure the button rects in both states and match them.
+
+1337. **The owner, 2026-10-19, verbatim** (screenshot, dark: a split button, "Save as note" in the accent fill, its dropdown chevron half in the neutral grey). "these buttons are not the same colour, should they be?"
+     For the next PR. Recommendation: yes; a split button's two halves share the primary fill, with a 1px divider (DESIGN.md split-button recipe, a lint if missing).

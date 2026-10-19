@@ -34,23 +34,11 @@ with its owner named in the entry.
 
 ## Open items
 
-1341. **The owner, 2026-10-19, verbatim** (screenshot, dark: the mind map's top bar, search, map, Edit, View, Board, Library, Format, full screen). "also the format button shouldnt be there on the mindmap as it is useless and empty"
-     For the next PR. Recommendation: Format is hidden on a map (wbIsMap) until it has something for a selected node to show; help surfaces updated in the same commit.
-
-1340. **The owner, 2026-10-19, verbatim.** "when I go between the mind map and whiteboard, should the board recenter on the main content?"
-     Measured by code reading: a map refits on every open (`wbFrameMapOnOpen`, whiteboard.js:2516, `wbZoomToFit`); a board is not reframed and keeps whatever the shared camera (`wbZoom`, :170) last was, which may be the map's; no view is saved per board. For the next PR. Recommendation: each board and map remembers its own view (pan and zoom, saved with the board); returning restores it; fit to content only on first open, or when nothing would be on screen.
-
 1339. **The owner, 2026-10-19, verbatim** (screenshot, dark: an Ask answer "You have ten notes about courses & study, 17 July to 15 October." whose theme paragraph reads "Your university notes share #university: your uni days this week are Tuesday, Cloud computing is the delivery of computing, I had three lectures for my cloud, ... and you linked your uni days this week are Tuesday to I had three lectures for my cloud.", while the dated lines below correctly say "On 17 July, your uni days the week of 13 July are Tuesday and Thursday."; Matching records cards beside it). "it is not this week anymore like said at the top of the composer"
      For the next PR. Recommendation: the theme summary and link phrases go through the same relative-time rewrite as the dated lines ("this week" in a 17 July note becomes "the week of 13 July"); the summary also reads as clipped title fragments joined by commas, so it should name the shared theme and two or three topics, not chain note openings.
 
 1338. **The owner, 2026-10-19, verbatim** (screenshot, dark: a "Use AI" switch, off, with a sparkle icon and a "?" button). "this button should be disabled when the ai isnt available"
      For the next PR. Recommendation: the switch is disabled with the reason as its description (no model set up) while no model is reachable, and comes back on its own when one is.
-
-1337. **The owner, 2026-10-19, verbatim** (screenshot, dark: a split button, "Save as note" in the accent fill, its dropdown chevron half in the neutral grey). "these buttons are not the same colour, should they be?"
-     For the next PR. Recommendation: yes; a split button's two halves share the primary fill, with a 1px divider (DESIGN.md split-button recipe, a lint if missing).
-
-1336. **The owner, 2026-10-19, verbatim** (screenshot, dark: the notes sidebar collapsed and hover-opened; the "Categories" header with the collapse chevron at the left, the filter and pin buttons crowded at the right, the pin focused and set apart from the filter). "also the categories notes sidebar header buttons lose their positioning when the sidebar is collapsed and temporarily hover opened"
-     For the next PR. Recommendation: the hover-opened (peek) sidebar keeps the docked header's layout; measure the button rects in both states and match them.
 
 1335. **The owner, 2026-10-19, verbatim.** "also the backwards global navigation and nav history didnt register me having the statistics panel open"
      For the next PR. Recommendation: opening Statistics pushes a nav history entry like the other panels, so Back closes it and the history list names it.
@@ -307,6 +295,7 @@ with its owner named in the entry.
 
 ## Placed (last 20, newest first)
 
+- 2026-10-19: 1340 (board and map views) and 1341 (Format on a map) placed in WHITEBOARD_PLAN; 1336 (peek sidebar header) and 1337 (split button halves) placed in UI_MODERNISATION_PLAN; all for the next PR.
 - 2026-10-12: 1299 (Ask digest grammar; Harper over composer output) placed in BACKLOG "Placed from INBOX, 2026-10-12" (CHAT_PLAN is at its cap); "every a week" and "Your the ... note" fixed now.
 - 2026-10-11: 899 ("dont notes also already work out timewords and time references?? can the composer and agents ... pull from those") sent to atlas; 900 ("click on the lan icon in the bototm bar and easily be able to toggle it on or off ... without having to restert") folded into 896; 901 (show more and less awkward on wide paragraphs, two screenshots) sent to tags89; 902 (companion physics, entries, organic movement, no jolts, Atlas behaviours, the expanded panel's hanging arms, the arm that rises on a click) sent to throw.
 - 2026-10-11: 898 ("make sure that the undo and redo are properly and completely universal") sent to undoall: every mutating request offers undo and redo through `pushUndo`, or sits on a shrinking exempt list. **Fixed d68f621c6, 466d4721a, 353d975b5.** The exempt list has no GAP left (89 to 0, the rest classed with a reason); a ratchet fails any step without a Redo; 21 live acts in Chromium (`scratchpad/ui-sweeps/undoall.js`) each undo and redo twice, which found and fixed Ctrl+Z walking a covered board's history and a several-shape step undoing twice.
