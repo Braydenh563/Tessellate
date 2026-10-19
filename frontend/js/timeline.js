@@ -1240,7 +1240,10 @@ async function renderTimelineDayStrip() {
     button.tabIndex = key === stop ? 0 : -1;
     if (key === today) button.setAttribute("aria-current", "date");
     const { long, label } = timelineDayLabel(key, has);
-    button.setAttribute("aria-label", label);
+    //: The visible words ("Tue 13") open the name (WCAG 2.5.3, OPEN 1400);
+    //: the long date follows for a screen reader.
+    const face = `${day.toLocaleDateString(undefined, { weekday: "short" })} ${day.getDate()}`;
+    button.setAttribute("aria-label", `${face}, ${label}`);
     button.title = has ? `Open the page for ${long}` : `Start the page for ${long}`;
     const name = document.createElement("span");
     name.className = "timeline-day-name";

@@ -441,7 +441,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 405 | A real word missing from both word lists can be mis-repaired; add it to common_words.py and LEFT_ALONE. | docs/roadmap/agent-remaining/OPEN.md:2234 | S | unassigned |
 | 406 | The asking-word nearest rule turns an all-caps token ("NASA") into "has" unless the whole text is capitals. | docs/roadmap/agent-remaining/OPEN.md:2235 | S | unassigned |
 | 407 | Readings guessed: "liks" (like), "mut" (must), "odf" (of), "ro" (or). Brief 90 is standing: each new prompt's typos join owner_typos.json. | docs/roadmap/agent-remaining/OPEN.md:2236 | S | unassigned |
-| 408 | Mechanical: the header's six buttons lose 0.5px of their ring at the window top; the Library active sub-tab's border is cut 2.3px at 390; the chat... | docs/roadmap/agent-remaining/OPEN.md:2275 | S | unassigned |
+| 408 | **Fixed 2026-10-19.** Mechanical: the header's six buttons lose 0.5px of their ring at the window top; the Library active sub-tab's border is cut 2.3px at 390; the chat... | docs/roadmap/agent-remaining/OPEN.md:2275 | S | unassigned |
 | 409 | "What do I know about X" still quotes one sentence unless its notes are tagged with the subject (the 725 and 741 evals pin it). | docs/roadmap/agent-remaining/OPEN.md:2440 | S | unassigned |
 | 410 | Single-note answers still end with "[your note, date]"; some next-question chips repeat the subject; an overview over more than 24 notes should say... | docs/roadmap/agent-remaining/OPEN.md:2441 | S | unassigned |
 | 411 | Send stays off the undo bar (Ctrl+Z in the composer is text undo); recommended as is. | docs/roadmap/agent-remaining/OPEN.md:2448 | S | unassigned |
@@ -1310,7 +1310,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 1275 | Link-label blur not reproduced headless; the re-raster after zoom is untested on a GPU compositor or the desktop webview. | docs/roadmap/agent-remaining/OPEN.md:2413 | S | unassigned |
 | 1276 | The sidebar's Comments, Linked from and Notes rows keep their old styling. | docs/roadmap/agent-remaining/OPEN.md:2434 | S | unassigned |
 | 1277 | After Undo the run, the per-write stack entries stay; a later Ctrl+Z re-runs an already applied inverse (harmless for pin, tag and edit).... | docs/roadmap/agent-remaining/OPEN.md:2517 | S | unassigned |
-| 1278 | Dashboard quick links overflow by 4 px at 1440 and 390 (#dash-quicklinks .launch-group). | docs/roadmap/agent-remaining/OPEN.md:2520 | S | unassigned |
+| 1278 | **Fixed 2026-10-19.** Dashboard quick links overflow by 4 px at 1440 and 390 (#dash-quicklinks .launch-group). | docs/roadmap/agent-remaining/OPEN.md:2520 | S | unassigned |
 | 1279 | The More sheet on a map is 59 to 62 rows at 390 (the table plus the map palette); grouped by hairlines but long. A search field or the palette's own... | docs/roadmap/agent-remaining/OPEN.md:2552 | S | unassigned |
 | 1280 | EntryLink rows are counted whole: a link to a binned or private note is still a link on the page (_notebook_block). | docs/roadmap/agent-remaining/OPEN.md:2568 | S | unassigned |
 | 1281 | The other search surfaces still do their own thing Closed. The account is in HISTORY.md, "OPEN.md rows closed, 2026-10-05 (the open-ledger pass)". | docs/roadmap/agent-remaining/OPEN.md:2693 | S | unassigned |
@@ -1432,7 +1432,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 1397 | settings-reset is in no help group (test_help_coverage.py). | docs/roadmap/agent-remaining/OPEN.md:2278 | S | unassigned |
 | 1398 | maplayouts.js "tree-left carries the branch bar" fails on base too (it measures the centre topic). | docs/roadmap/agent-remaining/OPEN.md:2294 | S | unassigned |
 | 1399 | The 14 browser-only appearance settings do not follow you to a second browser: decided (WORLD_CLASS 25f, placed 2026-10-11): mirror them all except... | docs/roadmap/agent-remaining/OPEN.md:2322 | S | unassigned |
-| 1400 | smallButton (app.js) names every worded button by its tooltip (WCAG 2.5.3); only the first-steps buttons are fixed. | docs/roadmap/agent-remaining/OPEN.md:2330 | S | unassigned |
+| 1400 | **Fixed 2026-10-19.** smallButton (app.js) names every worded button by its tooltip (WCAG 2.5.3); only the first-steps buttons are fixed. | docs/roadmap/agent-remaining/OPEN.md:2330 | S | unassigned |
 | 1401 | Most used in the sidebar keeps a binned note for up to 30 s (status.js cacheMs). | docs/roadmap/agent-remaining/OPEN.md:2331 | S | unassigned |
 | 1402 | The first-run queue (welcome, recovery key, updates) costs 3 acts before the dashboard. | docs/roadmap/agent-remaining/OPEN.md:2332 | S | unassigned |
 | 1403 | Still open from uipolish: the rows-view 28px meta button in a 24px line, the tool-confirm pair, lowering BOOT_CSS_CAP. | docs/roadmap/agent-remaining/OPEN.md:2341 | S | unassigned |
@@ -1467,7 +1467,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 1432 | Rule 14: the Health block stays in Settings, About (where it was built, PLAN B9) rather than its own section; reach is the palette's Health (1) and... | docs/roadmap/agent-remaining/OPEN.md:3525 | S | unassigned |
 | 1433 | Not reached by the sweep: right-click menus, keyboard-only acts (Tab for a branch), controls that open a picker and then need a second choice (note... | docs/roadmap/agent-remaining/OPEN.md:3552 | M | unassigned |
 | 1434 | #select-btn span.dock-word 40px and #notes-filter-menu span.dock-word 32px clipped at 320 to 1024: the labelled-to-icon collapse hides words by... | docs/roadmap/agent-remaining/OPEN.md:3556 | S | unassigned |
-| 1435 | button#notes-tidy.ghost.small 4px at every width; #tab-notes div.layout 4px at 320 to 1024. | docs/roadmap/agent-remaining/OPEN.md:3557 | S | unassigned |
+| 1435 | **Fixed 2026-10-19.** button#notes-tidy.ghost.small 4px at every width; #tab-notes div.layout 4px at 320 to 1024. | docs/roadmap/agent-remaining/OPEN.md:3557 | S | unassigned |
 | 1436 | Dashboard: 3 overflow and 1 clipped text at 320 and 390, 2 overflow at 820 and wider (selectors in the sweep output, not yet named here). | docs/roadmap/agent-remaining/OPEN.md:3558 | S | unassigned |
 | 1437 | Crawl: 55 destinations found from the dashboard (1, 14, 36, 3 and 1 at depths 0 to 4, crawl complete to depth 4), 1 deeper than 3, 16 with no palette... | docs/roadmap/agent-remaining/OPEN.md:3561 | M | unassigned |
 | 1438 | The crawl presses navigation-looking controls only and one item of each repeated list; a destination absent from it is "not found by the crawl", not... | docs/roadmap/agent-remaining/OPEN.md:3564 | M | unassigned |
@@ -1514,7 +1514,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 1479 | A "Copy diagnostics" button on the About page (versions, model, recent errors) for bug reports from test users. | docs/roadmap/WORLD_CLASS_PLAN.md:2375 | S | unassigned |
 | 1480 | The status bar's "." dot says what it means on hover and click. | docs/roadmap/WORLD_CLASS_PLAN.md:2377 | S | unassigned |
 | 1481 | Hierarchy in Settings. Section heads are the same weight as labels (in the Sonnet batch). | docs/roadmap/WORLD_CLASS_PLAN.md:2385 | S | unassigned |
-| 1482 | Empty states. The Chats sidebar's empty text is body size and grey on grey; empty states should use one recipe (icon, one line, one action). | docs/roadmap/WORLD_CLASS_PLAN.md:2389 | S | unassigned |
+| 1482 | **Already met 2026-10-19** (5.91:1 light, 7.96:1 dark, 13.6px `.empty-line`); only the icon-and-action recipe is design work. Empty states. The Chats sidebar's empty text is body size and grey on grey; empty states should use one recipe (icon, one line, one action). | docs/roadmap/WORLD_CLASS_PLAN.md:2389 | S | unassigned |
 | 1483 | "I pressed a restart button and it failed: {"[1007/230819.346:ERROR:ui\gfx\win\window_impl.cc:172] Failed to unregister class Chrome_WidgetWin_0.... | docs/roadmap/WORLD_CLASS_PLAN.md:3086 | M | unassigned |
 | 1484 | "Also I feel like we should reference all the vendored repos and libraries somewhere to give them credit." Recommendation: a credits list in Help... | docs/roadmap/WORLD_CLASS_PLAN.md:3115 | M | unassigned |
 | 1485 | 25f: the 14 appearance settings kept only in this browser do not follow the person to a second browser. Decision, taken: mirror them all to the... | docs/roadmap/WORLD_CLASS_PLAN.md:4192 | M | unassigned |

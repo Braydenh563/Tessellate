@@ -10392,6 +10392,14 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   padding-inline: var(--ring-room);
   margin-inline: calc(-1 * var(--ring-room));
 }
+/* The notes column keeps its ring room on the right as padding but no longer
+   takes it back out as a negative margin: that margin pushed the grid's
+   scrollable width 4px past its box (INBOX 1435: scrollWidth 1412 for 1408
+   at 1440, 1003 for 999 at 1024, 368 for 364 at 390). The cards end 4px
+   short of the grid's edge instead; the left edge is unchanged. */
+#tab-notes .layout > .tab-main {
+  margin-right: 0;
+}
 :is(.launch-row, .library-filters, #chat-suggest) {
   padding-block: var(--ring-room);
   margin-block: calc(-1 * var(--ring-room));
@@ -10406,6 +10414,15 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   #dash-quicklinks .launch-group > .launch-row {
     padding: 0;
     margin: 0;
+  }
+}
+/* Under 600 the strip scrolls and keeps its ring room as padding, but its
+   negative right margin pushed the group's scrollable width 4px past its box
+   (INBOX 1278: 368 for 364 at 390). Only the right margin is taken back; the
+   left edge is unchanged. */
+@media (max-width: 599.98px) {
+  #dash-quicklinks .launch-group > .launch-row {
+    margin-right: 0;
   }
 }
 /* **The chips' gap to what is below them** (INBOX 726, the owner: "no
@@ -10671,4 +10688,13 @@ html[data-other-device] [data-this-computer="hide"] {
 #settings-help .linklike,
 #settings-help li {
   transition: none;
+}
+/* **The header's rings fit the bar** (OPEN 408). The bar is 44px with 36px
+   controls, so a control's top is 3.5px from the window's edge, and the
+   2px ring at the 2px offset reached 0.5px past it (measured at 1440: ring
+   top -0.5 on the six right-hand buttons). A 1px offset puts the ring top at
+   +0.5. The tab strip keeps its own ring inside its well. */
+header#top-bar :is(.header-cluster, .notif-wrap, .header-controls) button:focus-visible,
+header#top-bar button.space-switcher-btn:focus-visible {
+  outline-offset: 1px;
 }

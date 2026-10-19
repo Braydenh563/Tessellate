@@ -8,6 +8,9 @@ below). Versioning is `0.x` while the app stabilises.
 ## [Unreleased]
 - Atlas: asleep lying down, its Zs rise from its head (about 40px above the eyes in every pose) instead of from where a standing head would be.
 - Timeline: the table view names a meeting "Meeting" in its Kind column (and in sort), and below 600px, where that column is hidden, the title starts with "Meeting: " (INBOX 341).
+- Accessibility: eight worded buttons (Local chip default, From library, Jump to latest, Dock the tools, the map ring's Add child, Add beside, More and Reverse) and the Timeline day strip now start their accessible name with the words on them (WCAG 2.5.3; OPEN 1400).
+- Header: the six right-hand buttons' keyboard ring no longer reaches past the window's top edge (offset 1px, ring top 0.5px; was -0.5px) (OPEN 408). The Library sub-tab rings were measured uncut.
+- Notes and Dashboard: the notes grid and the phone quick-links strip no longer scroll 4px sideways; their ring room is padding only, with no negative right margin (OPEN 1435, 1278).
 - Sidebar: the Categories collapse toggle sits on the head's row (8px lower, level with the filter button) while the collapsed sidebar is hover-opened.
 - Statistics: the Ask box answers "when did I write my first note" (also oldest, newest, latest, when did I start) with the date and title, its field and Ask button share one 32px height, and a Clear button empties the answer and the box.
 - Mind maps: a map too big to fit opens with its first topics at the top-left of the canvas instead of its root in the middle with the rest off the bottom-right, and each board remembers its own pan and zoom for the session (owner, 2026-10-19; INBOX 1340).

@@ -7589,7 +7589,8 @@ function wbSyncMapRadialAlt(alt) {
     if (!button) continue;
     button.classList.toggle("wb-map-radial-danger", alt);
     button.title = title;
-    button.setAttribute("aria-label", title.split(".")[0]);
+    //: The drawn word opens the name (WCAG 2.5.3, OPEN 1400).
+    button.setAttribute("aria-label", `${word}: ${title.split(".")[0]}`);
     //: The half of "how they work" that a label cannot carry: these two slots
     //: are two actions each, and the modifier that swaps them was only ever
     //: stated in a tooltip's second sentence. The ring's caption reads this.
