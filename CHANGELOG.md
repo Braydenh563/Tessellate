@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Boards and maps: Library cards with a snapshot keep their layout again: the icon and title share one row and the title ends in an ellipsis, the snapshot fills its box with no grey bands, and the footer stays on one line (INBOX 1331).
 - Boards and maps: deleting a board for good finds its thumbnail from the uploads folder, so the notes layer no longer imports the API layer (CodeQL cyclic import).
 - Launcher: the starting splash has minimise and close buttons in its top right corner; close cancels the launch (INBOX 1320).
 - Boards and maps: previews are now a real snapshot of the board, a 480px WebP (about 2 to 3 KB on the test boards) taken when edits settle or you leave the board, stored as a file, cached by the browser and used by the Library, Dashboard and chat cards; the drawn preview stays as the fallback (INBOX 1317).

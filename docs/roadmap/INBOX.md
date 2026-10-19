@@ -34,6 +34,9 @@ with its owner named in the entry.
 
 ## Open items
 
+1331. **The owner, 2026-10-19, verbatim.** "the library boards and maps subtab is completely screwed with the new thumbnail additions (for the header and top of cards)" / "its messy and same for the bottom as well".
+     **Fixed (lib1331).** The grid rule that spans the picture named `svg` only, so the snapshot `<img>` sat in the title's track (title 24px wide at x=311). Now `.board-minimap` spans, the title ellipsises (269px at x=42), the snapshot is `object-fit: cover` in the SVG's box (294x164, no bands), the footer is one line with the time `nowrap`. Measured at 1440 and 390, light and dark; pinned by `tests/test_library_board_card.py`.
+
 1325. **The owner, 2026-10-19, verbatim.** "should thumbnails be stores for documents in the document editor as well for the library page??"
      Recommendation (taken): no stored raster for documents. A board is a drawing, so only a picture tells boards apart; a document is text, and its Library row already shows a live 240-character opening (`routes_documents._preview`) that is current on every save, theme-correct and costs no writes. Instead: a page-shaped card (heading, first lines, first embedded image as the cover) drawn from data the list already has. Placed in DOCUMENTS_PLAN at the next step boundary.
 

@@ -4600,11 +4600,12 @@ summary:not(.icon-only):not(.icon-button) {
   aspect-ratio: 1 / 1;
   margin: 0;
 }
-/* The stored raster thumbnail (INBOX 1317) in the same box the SVG fills:
-   `contain` letterboxes it as `meet` does, and the board's own ground is in
-   the picture, so it needs no paper of its own. */
+/* The stored raster thumbnail (INBOX 1317) in the same box the SVG fills.
+   `cover` fills the box edge to edge: `contain` left grey bands above and
+   below any board that is not the box's 100:56 shape (INBOX 1331), and the
+   board's own ground is in the picture, so it needs no paper of its own. */
 img.board-minimap {
-  object-fit: contain;
+  object-fit: cover;
   border-radius: var(--radius-sm);
   background: var(--chip-bg);
 }
