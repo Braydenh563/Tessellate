@@ -51042,3 +51042,11 @@ From WHITEBOARD_PLAN "The draw.io programme", section 2 (Text tab), built by the
      Follow-up, verbatim (screenshot): "but that whole top row slightly overflows on the top border of the sidebar"
      **Fixed** 2026-10-19: the toggle is first in flow and sticky in the Notes sidebar; measured at 1440x900 toggle y17, heading y17, scrolled 200px still y17 (was y9, and y-191 scrolled); right inset 17px matches the left. tests/test_sidebar_head_1311.py.
 
+1307. **The owner, 2026-10-19, verbatim.** "cna you add more element and template options for the wireframes, and other diagrams?? also multi shap templates should grouped or semi grouped so if I resize or move, parts of them arent left separate. also there should be a property link option in the arrange tab where the width and height are so I can choose to change width or height and it will either only change that one property or it will keep them at their ratios when they were linked."
+     Owner: the whiteboard agent (WHITEBOARD_PLAN, with B25): more wireframe and diagram elements and templates; a multi-shape template lands grouped; a W/H link toggle in Arrange that keeps the ratio when on.
+     **Fixed** 2026-10-19 (surfaces agent, 81e8485, e40e222): W/H chain in Arrange keeps the ratio at link time; multi-part elements place as one group; wireframe 12 to 19 elements, UML 14 to 23, ERD 10 to 14, flowchart 13 to 16, templates 20 to 24; Select similar. tests/test_wb_size_link_and_groups.py, test_board_library_diagram_sets.py.
+
+1308. **The owner, 2026-10-19, verbatim** (after 1307). "stuff like that, dont stop[ there, find what is missing on the whiteboard, mindmap and documents editor and add them"
+     Owner: the surfaces agent (with 1307): a gap audit of whiteboard, mind map and documents against draw.io, Miro, Excalidraw, XMind and Obsidian/Notion, the gaps ranked, the small and medium ones built.
+     **Fixed** 2026-10-19 (surfaces agent, e40e222): gap lists placed in WHITEBOARD_PLAN, MINDMAP_PLAN and DOCUMENTS_PLAN 'Placed from INBOX, 2026-10-19'; built Select similar and Sort branches A to Z / Z to A; next S items in agent-remaining/surfaces-1019.md.
+
