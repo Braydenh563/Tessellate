@@ -18,6 +18,10 @@ finish-up: 60% weekly (owner)
 - [x] INBOX 1316 timeline strip rises into future dates
 - [x] Merge wb1313 (guides, Format button 1322a)
 - [ ] (running) mobile1314 (Opus): mobile nav redesign
-- [ ] (running) atlas1322 (Sonnet): Atlas micro behaviours, juggling stars
+- [x] atlas1322 merged (micro behaviours, stars under reduced motion)
 - [ ] (running) composer1324 (Sonnet): Ask AI link accuracy, composer quality across roles
-- [ ] Next: thumbnails 1317, statistics 1319, chat queue 1321, splash (UI plan), OPEN.md Haiku catalogue
+- [x] INBOX 1321 chat queue
+- [x] INBOX 1319 part: Statistics fit and scroll
+- [x] CodeQL thread (unnecessary lambda) fixed and resolved
+- [ ] (running) thumbs1317 (Sonnet)
+- [ ] Next: statistics 1319 interactivity and stats chat, splash (UI plan), OPEN.md Haiku catalogue
