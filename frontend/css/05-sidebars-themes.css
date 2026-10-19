@@ -844,7 +844,11 @@ button.map-chip:focus-visible {
   position: fixed;
   top: -9999px;
   left: -9999px;
-  z-index: 60;
+  /* Above the Agent popup's overlay (2000, 07-whiteboard-misc.css), which
+     hid this menu while the commands still worked (INBOX 1333a:
+     elementFromPoint on the open menu returned the popup's intro text).
+     2550 is the tier `.action-menu-escaped` uses for the same reason. */
+  z-index: 2550;
   display: flex;
   align-items: stretch;
   max-width: calc(100vw - var(--space-9));
