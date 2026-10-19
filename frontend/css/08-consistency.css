@@ -9073,10 +9073,18 @@ input[type="file"]:active::file-selector-button {
    where it always was, inside the card's padding, while sticky measures from
    the scrollport edge. The ground is the opaque modal surface, not the card's
    glass, so rows never show through (the glass-off list stays as it is: no
-   blur is added). Replaces the shortcuts card's own copy of this rule. */
+   blur is added). Replaces the shortcuts card's own copy of this rule.
+   **`top` is the same negative step as the margin** (INBOX 1329, the owner:
+   "the suggestions panel content and probably other panels content get cut
+   off at the top below the header"): a sticky box's insets are measured
+   from the scroller's padding edge deflated by its padding, so `top: 0`
+   pinned the head a card-pad below where it rests and it covered the first
+   16px of every dialog's content at scroll 0 (Statistics 16px over its
+   first row, Suggestions 8px over its list, Settings 3px, Features 8px;
+   the sidebar head already had the matching inset). */
 .modal-card > .dialog-head {
   position: sticky;
-  top: 0;
+  top: calc(-1 * var(--card-pad-y));
   z-index: 1;
   margin-top: calc(-1 * var(--card-pad-y));
   padding-top: var(--card-pad-y);

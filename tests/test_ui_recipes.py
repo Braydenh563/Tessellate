@@ -1368,6 +1368,28 @@ def test_every_selection_bar_is_one_sticky_recipe() -> None:
     )
 
 
+def test_a_sticky_head_pulled_into_the_padding_pins_where_it_rests() -> None:
+    """INBOX 1329: a sticky head that takes back its scroller's padding with
+    a negative top margin must pin at the same negative inset. Sticky insets
+    are measured from the scroller's content edge, so `top: 0` held every
+    dialog head a card-pad below its rest position, over the first 16px of
+    the content (Statistics, Suggestions, Settings, Features: 16, 8, 3, 8px
+    measured with Playwright). The sidebar head had it right."""
+    bad = []
+    for path in CSS:
+        for selector, body in _rules(path.read_text(encoding="utf-8")):
+            if not re.search(r"position:\s*sticky", body):
+                continue
+            pull = re.search(r"margin-(?:top|block-start):\s*calc\(-1 \* ([^;]+)\);", body)
+            if not pull:
+                continue
+            top = re.search(r"(?<![-\w])(?:top|inset-block-start):\s*([^;]+);", body)
+            want = f"calc(-1 * {pull.group(1).strip()})"
+            if not top or top.group(1).strip() != want:
+                bad.append(f"{path.name}: {selector.splitlines()[-1].strip()} (top {top.group(1) if top else 'unset'}, want {want})")
+    assert not bad, "sticky head pinned below its rest position:\n" + "\n".join(bad)
+
+
 def test_a_viewport_popup_leaves_the_surfaces_that_can_blur() -> None:
     """DESIGN.md's recipe index: a popup placed in window coordinates lives in
     the window's own frame, and proves it landed there.
@@ -5845,7 +5867,7 @@ def test_a_modal_cards_dialog_head_is_sticky_on_an_opaque_surface() -> None:
     css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
     start = css.index(".modal-card > .dialog-head {")
     block = css[start : css.index("}", start)]
-    assert "position: sticky;" in block and "top: 0;" in block
+    assert "position: sticky;" in block and "top: calc(-1 * var(--card-pad-y));" in block
     assert "background: var(--modal-bg-opaque);" in block
 
 
