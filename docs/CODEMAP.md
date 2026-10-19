@@ -2,7 +2,7 @@
 
 Generated 2026-10-19 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6207, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6181, test files 1320, tests 11742, plan headings 967.
+Counts: frontend functions 6207, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6182, test files 1321, tests 11745, plan headings 967.
 
 ## Frontend functions (6207)
 
@@ -10778,7 +10778,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (6181)
+## Backend modules (6182)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -12398,27 +12398,28 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `start_pull` | src/tessellate/ai/model_manager.py:1052 |
 | `start_reindex` | src/tessellate/ai/model_manager.py:881 |
 
-### src/tessellate/ai/needle_provider.py (17)
+### src/tessellate/ai/needle_provider.py (18)
 
 | Name | File:line |
 |---|---|
-| `NeedleProvider` | src/tessellate/ai/needle_provider.py:323 |
+| `NeedleProvider` | src/tessellate/ai/needle_provider.py:345 |
 | `_Engine` | src/tessellate/ai/needle_provider.py:109 |
-| `_calls_before` | src/tessellate/ai/needle_provider.py:290 |
-| `_cleaned_arguments` | src/tessellate/ai/needle_provider.py:256 |
-| `_cleaned_calls` | src/tessellate/ai/needle_provider.py:238 |
+| `_calls_before` | src/tessellate/ai/needle_provider.py:312 |
+| `_cleaned_arguments` | src/tessellate/ai/needle_provider.py:278 |
+| `_cleaned_calls` | src/tessellate/ai/needle_provider.py:260 |
 | `_date_fact` | src/tessellate/ai/needle_provider.py:202 |
 | `_folder` | src/tessellate/ai/needle_provider.py:98 |
 | `_get_engine` | src/tessellate/ai/needle_provider.py:169 |
 | `_load_library` | src/tessellate/ai/needle_provider.py:104 |
-| `_names_a_tool` | src/tessellate/ai/needle_provider.py:229 |
-| `_said_by_one` | src/tessellate/ai/needle_provider.py:309 |
-| `_said_by_tools` | src/tessellate/ai/needle_provider.py:269 |
+| `_names_a_tool` | src/tessellate/ai/needle_provider.py:251 |
+| `_said_by_one` | src/tessellate/ai/needle_provider.py:331 |
+| `_said_by_tools` | src/tessellate/ai/needle_provider.py:291 |
 | `_text` | src/tessellate/ai/needle_provider.py:191 |
 | `library_name` | src/tessellate/ai/needle_provider.py:89 |
 | `loaded` | src/tessellate/ai/needle_provider.py:180 |
-| `request_of` | src/tessellate/ai/needle_provider.py:223 |
+| `request_of` | src/tessellate/ai/needle_provider.py:245 |
 | `reset_for_tests` | src/tessellate/ai/needle_provider.py:186 |
+| `shortlist` | src/tessellate/ai/needle_provider.py:218 |
 
 ### src/tessellate/ai/neighbours.py (3)
 
@@ -18513,7 +18514,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11742)
+## Tests (11745)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19274,6 +19275,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_nav_history_seed.py | 2 |
 | tests/test_nav_overlay_entries.py | 6 |
 | tests/test_needle_provider.py | 17 |
+| tests/test_needle_shortlist.py | 3 |
 | tests/test_neighbours_1018.py | 9 |
 | tests/test_nested_interactive.py | 11 |
 | tests/test_new_document_opens_new.py | 6 |
