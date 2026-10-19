@@ -223,3 +223,17 @@ def test_the_no_model_badge_opens_a_help_popover_1344():
     assert "Use AI" in kit[kit.index("function replyByHelpPanel(") :].split("\n}\n", 1)[0]
     css = (ROOT / "frontend" / "css" / "reply-kit-lazy.css").read_text(encoding="utf-8")
     assert "button.reply-by" in css
+
+
+def test_the_slash_menu_clears_the_agent_popup_overlay_1333a():
+    """INBOX 1333a: "the / command menu doesnt appear" in the Agent popup.
+    Measured in Chromium (1440x900): the menu opened (19 rows, 610x386 at
+    480,235) but sat at z-index 60 under the popup's overlay (2000), and
+    `elementFromPoint` on it returned `.command-palette-intro`. The menu is
+    the one Chat uses (`agentCommands` -> `chatSlashRows`), so the fix is its
+    layer, not a second menu."""
+    css = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
+    rule = css[css.index("\n.editor-menu {") :].split("}", 1)[0]
+    assert "z-index: 2550;" in rule
+    overlay = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    assert "z-index: 2000;" in overlay
