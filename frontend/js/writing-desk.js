@@ -327,7 +327,9 @@ function draftSaveMenuInit() {
   const opener = wrap.querySelector(":scope > button");
   if (opener) {
     opener.id = "draft-save-menu";
-    opener.classList.remove("icon-only");
+    //: Filled like the half beside it (INBOX 1337: kebabMenu's opener is
+    //: ghost, which left the caret grey beside an accent "Save as note").
+    opener.classList.remove("icon-only", "ghost");
     opener.classList.add("split-button-caret");
     setLabel(opener, "ph:caret-down");
     opener.title = "More ways to save";

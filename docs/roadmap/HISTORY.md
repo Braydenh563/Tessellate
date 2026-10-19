@@ -51131,3 +51131,6 @@ From UI_MODERNISATION_PLAN Phase 11 item 1, both built:
 1343. **The owner, 2026-10-19, verbatim** (screenshot, dark: a document line "whats up :D" with "whats" underlined; the spelling menu: "whats is not in the dictionary", then wats, what, hats, whams, whets). "also I feel like this should have been picked up as "what's""
      **Fixed**: a missing apostrophe (whats, thats, isnt, youre, im) is offered as the contraction first in the menu; never rewritten on its own, since an apostrophe is a style choice (`docSpellContraction`, documents.js).
 
+1337. **The owner, 2026-10-19, verbatim** (screenshot, dark: a split button, "Save as note" in the accent fill, its dropdown chevron half in the neutral grey). "these buttons are not the same colour, should they be?"
+     **Fixed**: the caret dropped kebabMenu's ghost class, so both halves are the accent fill (measured: both oklab(0.452 -0.015 -0.168); the caret was transparent).
+
