@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: turning a frame by its grip now turns everything wholly inside it about the frame's centre (each item's centre is carried round and its own rotation gains the same angle), in one Undo step; Ctrl turns the frame alone. The grip's tooltip says so.
 - Notes from 600 to 820px wide: the "Your notes" sub-tab no longer sits under the sidebar's collapse toggle (the column keeps the rail clear; the tab starts at x 63 to 66, was 9.6 under a toggle ending at 51).
 - Focus rings no longer cut off by their container: the Statistics body, the manual's contents jumps and topic links, the Settings nav's last button and the phone More button (0 px cut each, was 3.5 to 4.5).
 - Statistics: a focused chart mark (a focusable SVG group) shows a 2px ring of its own, inside its slot.
