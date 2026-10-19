@@ -1514,7 +1514,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 1479 | A "Copy diagnostics" button on the About page (versions, model, recent errors) for bug reports from test users. | docs/roadmap/WORLD_CLASS_PLAN.md:2375 | S | unassigned |
 | 1480 | The status bar's "." dot says what it means on hover and click. | docs/roadmap/WORLD_CLASS_PLAN.md:2377 | S | unassigned |
 | 1481 | Hierarchy in Settings. Section heads are the same weight as labels (in the Sonnet batch). | docs/roadmap/WORLD_CLASS_PLAN.md:2385 | S | unassigned |
-| 1482 | Empty states. The Chats sidebar's empty text is body size and grey on grey; empty states should use one recipe (icon, one line, one action). | docs/roadmap/WORLD_CLASS_PLAN.md:2389 | S | unassigned |
+| 1482 | **Already met 2026-10-19** (5.91:1 light, 7.96:1 dark, 13.6px `.empty-line`); only the icon-and-action recipe is design work. Empty states. The Chats sidebar's empty text is body size and grey on grey; empty states should use one recipe (icon, one line, one action). | docs/roadmap/WORLD_CLASS_PLAN.md:2389 | S | unassigned |
 | 1483 | "I pressed a restart button and it failed: {"[1007/230819.346:ERROR:ui\gfx\win\window_impl.cc:172] Failed to unregister class Chrome_WidgetWin_0.... | docs/roadmap/WORLD_CLASS_PLAN.md:3086 | M | unassigned |
 | 1484 | "Also I feel like we should reference all the vendored repos and libraries somewhere to give them credit." Recommendation: a credits list in Help... | docs/roadmap/WORLD_CLASS_PLAN.md:3115 | M | unassigned |
 | 1485 | 25f: the 14 appearance settings kept only in this browser do not follow the person to a second browser. Decision, taken: mirror them all to the... | docs/roadmap/WORLD_CLASS_PLAN.md:4192 | M | unassigned |

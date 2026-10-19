@@ -81,3 +81,25 @@ def test_1400_the_timeline_day_strip_name_opens_with_its_face() -> None:
 
     js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "timeline.js").read_text(encoding="utf-8")
     assert 'button.setAttribute("aria-label", `${face}, ${label}`)' in js
+
+
+def test_1482_empty_chats_line_uses_the_empty_line_recipe() -> None:
+    """Measured at 1440 (pixel-checked bg): 5.91:1 light (102,100,95 on 255), 7.96:1 dark (181,179,173 on 30,30,28), 13.6px."""
+    from pathlib import Path
+
+    html = (Path(__file__).resolve().parents[1] / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert re.search(r'<p id="conv-empty" class="muted empty-line">', html)
+    css = (CSS_DIR / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    body = _rules(css, ".empty-line")[0]
+    assert "var(--muted)" in body and "var(--text-md)" in body
+
+
+def test_587_restyled_dropdown_openers_stay_tabbable_buttons() -> None:
+    """Sweep at 1440 over 7 tabs: 7 openers, 0 with tabindex < 0, 5 open on Enter and move on ArrowDown
+    (the two others are date and time pickers; Chat's model list had one option on a fresh install)."""
+    from pathlib import Path
+
+    js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "sheets-selects.js").read_text(encoding="utf-8")
+    assert 'opener.type = "button";' in js
+    assert "opener.tabIndex" not in js and "opener.setAttribute(\"tabindex\"" not in js
+    assert "function focusSelect(select)" in js
