@@ -8,6 +8,8 @@ below). Versioning is `0.x` while the app stabilises.
 ## [Unreleased]
 - Timeline: the density strip's window rises as the feed scrolls into future dates; its span reaches the newest row and the week ahead, and the strip is drawn by the lazy labels file (INBOX 1316).
 - Chat and Ask: "Grounded in" is a source list: a quiet heading over bordered source cards with number badges and pictures inside their card, and a note's front matter no longer shows as its title (INBOX 1323).
+- Whiteboard: a Format button beside Library in the top bar toggles the Format panel (empty state when nothing is selected); help and the command row name it (INBOX 1322a).
+- Whiteboard guides: the snap pull is a constant 6 screen pixels at any zoom (it was 6 board units, 1.5px zoomed out and 24px zoomed in), guide lines run across every item they line up with, equal-gap guides show their length, a tilted item aligns by the edges it shows, and the guide inks (the theme error, accent and warn) pass 6:1 or better in both themes (the old cyan was 1.96:1 on light) (INBOX 1313).
 - Dashboard: the Stats and Streak widgets have a Statistics button, as the heatmap does, and the Stats bar strip opens Statistics too (INBOX 1318).
 - Whiteboard: Ctrl+Enter while typing in a sticky starts the next one beside it, same paper and size (INBOX 1308).
 - Whiteboard: a C4 and architecture set in the library (person, software system, external system, container, database, component, boundary, relationship); each places as one group (INBOX 1308).

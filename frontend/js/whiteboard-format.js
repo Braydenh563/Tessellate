@@ -198,7 +198,16 @@ function wbFmtLinkKey(entries) {
 }
 
 function wbFmtLinkRatio(entries) {
-  return wbFmtState.links.get(wbFmtLinkKey(entries))?.ratio || 0;
+  const stored = wbFmtState.links.get(wbFmtLinkKey(entries))?.ratio;
+  if (stored) return stored;
+  //: A shape that keeps its proportions as a property carries its link with
+  //: it: the ratio is the one it has now.
+  const [only] = entries;
+  if (entries.length === 1 && only.bbox && wbKeepsRatio(only.kind, only.item)) {
+    const h = only.bbox.maxY - only.bbox.minY;
+    return h > 0 ? (only.bbox.maxX - only.bbox.minX) / h : 0;
+  }
+  return 0;
 }
 
 function wbFmtToggleLink() {
@@ -206,6 +215,14 @@ function wbFmtToggleLink() {
   const box = wbFmtBox(entries);
   if (!box) return;
   const key = wbFmtLinkKey(entries);
+  //: One object or drawn shape: the link is its own saved property, so the
+  //: corner handles keep the ratio too, without Shift.
+  const [only] = entries;
+  if (entries.length === 1 && (only.kind === "object" || only.kind === "sketch")) {
+    wbFmtState.links.delete(key);
+    wbSetKeepRatio(only.kind, only.item, !wbKeepsRatio(only.kind, only.item)).then(wbFmtShowLink);
+    return;
+  }
   if (wbFmtState.links.has(key)) wbFmtState.links.delete(key);
   else if (box.maxY > box.minY) wbFmtState.links.set(key, { ratio: (box.maxX - box.minX) / (box.maxY - box.minY) });
   wbFmtShowLink();
@@ -362,6 +379,7 @@ function wbFormatOpen(tab = null, { focus = true } = {}) {
   } catch {
     /* a private window: the panel still opens, it is just not remembered */
   }
+  wbFmtMarkButton(true);
   wbFormatSync();
   if (focus) panel.querySelector(`[data-format-tab="${wbFmtState.fmtTab}"]`)?.focus();
 }
@@ -371,12 +389,21 @@ function wbFormatClose({ restoreFocus = true } = {}) {
   if (!panel || panel.classList.contains("hidden")) return;
   const hadFocus = panel.contains(document.activeElement);
   panel.classList.add("hidden");
+  wbFmtMarkButton(false);
   try {
     prefs.remove(WB_FMT_KEY);
   } catch {
     /* nothing to forget */
   }
   if (restoreFocus && hadFocus) document.getElementById("whiteboard-container")?.focus({ preventScroll: true });
+}
+
+//: The top bar's Format button mirrors the panel, as Library's does.
+function wbFmtMarkButton(on) {
+  const btn = document.getElementById("wb-format-btn");
+  if (!btn) return;
+  btn.classList.toggle("is-on", on);
+  btn.setAttribute("aria-pressed", String(on));
 }
 
 function wbFormatToggle(tab = null) {
@@ -741,6 +768,7 @@ onDomReady(() => {
   }
   const on = (id, type, fn) => document.getElementById(id)?.addEventListener(type, fn);
   on("wb-format-close", "click", () => wbFormatClose());
+  on("wb-format-btn", "click", () => wbFormatToggle());
   panel.addEventListener("click", (e) => {
     const tab = e.target.closest("[data-format-tab]");
     if (tab) {

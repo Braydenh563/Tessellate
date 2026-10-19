@@ -38,7 +38,7 @@ with its owner named in the entry.
      Owner: composer agent (Sonnet, then an Opus review): the "Ask AI" quick link's wording when no model is set and the composer answers; then CHAT_PLAN composer rows across every role.
 
 1322. **The owner, 2026-10-19, verbatim.** "and can you make it easier to access the format panel like with this library button in the whiteboard top bar button? also atlas needs to have its animations and expressions improved behaviours, even micro behaviours and movements, small movement adjustments, more variety, the juggling stars dont animate at all." (screenshot: the whiteboard top bar, Insert, Edit, Arrange, View, Board menus, then a Library button)
-     Owner: (a) Format button beside Library in the whiteboard bar, wb1313 agent; (b) Atlas micro behaviours, expression variety and the juggling stars animation, atlas1322 agent (Sonnet).
+     Owner: (a) Format button beside Library in the whiteboard bar: built (wb1313, 47c713a); (b) Atlas micro behaviours, expression variety and the juggling stars animation, atlas1322 agent (Sonnet).
 
 1321. **The owner, 2026-10-19, verbatim.** "and I cant type in the chat bar while it is generating, I want to be able to queue messages, and edit or delete/bring back queued messages as well to the chat bar for resending"
      Owner: chat-queue agent (Sonnet), queued: the box stays editable while a reply streams; Enter queues; queued messages show as chips above the box with edit, delete and "back to the box"; they send in order when the reply ends; CHAT_PLAN row.
@@ -58,7 +58,7 @@ with its owner named in the entry.
 1314. **The owner, 2026-10-19, verbatim.** "also I should mention the mobile view needs a bit of redesign and layout/nav reworking because it is annoing to use and the bottom nav bar just doesnt make sense with how it works and is layed out and is annoying to use. can you work on that?"
      Owner: mobile agent (Opus, design), now. UI_MODERNISATION_PLAN phone phase.
 
-1313. **The owner, 2026-10-19, verbatim.** "can you make sure the whiteboard isnt missing any more features?? can you improve the alignment guides as well??"
+1313. **Part fixed** (alignment guides, Align to this one, keep-proportions link: wb1313 015bd02; WHITEBOARD_PLAN rows 3, 4, 5, 7, 8, 12 to 14 open). **The owner, 2026-10-19, verbatim.** "can you make sure the whiteboard isnt missing any more features?? can you improve the alignment guides as well??"
      Owner: whiteboard agent (Sonnet), now: alignment guides first, then WHITEBOARD_PLAN gap rows 3, 4, 5, 7, 8, 12, 13, 14.
 
 1312. **The owner, 2026-10-19, verbatim.** "maybe assign haiku agents to go the grunt work and catalog everything, haiku must be used a lot for grunt work and repo exploring so that I can maximise usage and progress. make the agents use haiku for those tasks as well."

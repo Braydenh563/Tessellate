@@ -170,6 +170,7 @@ const WB_COMMANDS = [
   { id: "align-top", group: "Arrange", icon: "ph:align-top", label: "Align top edges", menu: "Top edges", keys: "", surface: "board", needs: "two", run: () => wbAlignSelection("top") },
   { id: "align-vcenter", group: "Arrange", icon: "ph:align-center-vertical", label: "Align centres vertically", menu: "Centres, vertically", keys: "", surface: "board", needs: "two", run: () => wbAlignSelection("vcenter") },
   { id: "align-bottom", group: "Arrange", icon: "ph:align-bottom", label: "Align bottom edges", menu: "Bottom edges", keys: "", surface: "board", needs: "two", run: () => wbAlignSelection("bottom") },
+  { id: "key-object", group: "Arrange", icon: "ph:push-pin", label: "Align to this one (key object)", menu: "Align to this one", keys: "", surface: "board", needs: "two", run: () => wbSetKeyObject() },
   { id: "distribute-h", group: "Arrange", icon: "ph:columns", label: "Distribute evenly, left to right", menu: "Evenly, left to right", keys: "", surface: "board", needs: "three", run: () => wbDistributeSelection("horizontal") },
   { id: "distribute-v", group: "Arrange", icon: "ph:rows", label: "Distribute evenly, top to bottom", menu: "Evenly, top to bottom", keys: "", surface: "board", needs: "three", run: () => wbDistributeSelection("vertical") },
   { id: "same-width", group: "Arrange", icon: "ph:arrows-out-line-horizontal", label: "Same width as the widest", menu: "Same width", keys: "", surface: "board", needs: "two", run: () => wbSameSizeSelection("width") },
@@ -218,7 +219,7 @@ const WB_COMMANDS = [
   { id: "tool-delete", group: "Tools", icon: "ph:trash", label: "Delete tool", keys: "X", surface: "board", run: wbTool("delete") },
   // View
   { id: "import-diagram", group: "Insert", icon: "ph:flow-arrow", label: "Import a Mermaid diagram, a draw.io file or a board SVG", menu: "Mermaid, draw.io or board SVG…", keys: "", surface: "board", run: () => wbOpenImportDialog() },
-  { id: "format-panel", group: "View", icon: "ph:sliders-horizontal", label: "Format panel", keys: "Ctrl+Shift+P", surface: "board", run: () => wbFormatToggle() },
+  { id: "format-panel", group: "View", icon: "ph:sliders-horizontal", label: "Format panel (top bar button)", keys: "Ctrl+Shift+P", surface: "board", run: () => wbFormatToggle() },
   { id: "zoom-in", group: "View", icon: "ph:magnifying-glass-plus", label: "Zoom in", keys: "Ctrl+=", surface: "both", run: wbClickId("wb-zoom-in") },
   { id: "zoom-out", group: "View", icon: "ph:magnifying-glass-minus", label: "Zoom out", keys: "Ctrl+-", surface: "both", run: wbClickId("wb-zoom-out") },
   { id: "zoom-100", group: "View", icon: "ph:magnifying-glass", label: "Zoom to 100%", keys: "Ctrl+0", surface: "both", run: wbClickId("wb-zoom-actual") },

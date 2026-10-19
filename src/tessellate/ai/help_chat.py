@@ -1383,13 +1383,13 @@ HELP_TOPICS.extend(
             ),
             "body": (
                 (
-                    "Whiteboard selection and menus. Selection: Shift+click adds, Ctrl+A selects all, Ctrl+D "
+                    "Whiteboard selection: Shift+click adds, Ctrl+A selects all, Ctrl+D "
                     "duplicates, Alt and drag copies as you drag, Ctrl+V pastes at the pointer, the arrows "
                     "nudge (Shift for further), Shift and drag keeps to one axis, Shift and a corner keeps "
                     "proportions, Alt resizes from the centre; a move, resize or box drawn out shows guides "
-                    "and its size (Alt: none), [ and ] move one step back or forward, Ctrl+[ and Ctrl+] to "
+                    "and its size, with gaps in numbers (Alt: none); [ and ] move one step back or forward, Ctrl+[ and Ctrl+] to "
                     "the back or front, Ctrl+G groups, Ctrl+Shift+G ungroups, Ctrl+Alt+C and Ctrl+Alt+V copy "
-                    "and paste a style, Delete (or a drop on the bin) removes, Esc cancels a drag or goes to "
+                    "and paste a style, Delete (or a bin drop) removes, Esc cancels a drag or goes to "
                     "Select. Double-click empty board for a text box, double-click a closed shape (or select "
                     "it and press Enter) to write in it, right-click (or hold on touch) for the menu, double-"
                     "click a line to bend it, and select a connector and press Label in its bar (or Enter) to"
@@ -1525,7 +1525,7 @@ HELP_TOPICS.extend(
                 "line jumps", "line jump", "crossing lines", "lines cross", "hop over",
             ),
             "body": (
-                "Ctrl+Shift+P on a board (or Format panel in the selection's More menu, or View) opens "
+                "The top bar's Format button, Ctrl+Shift+P or View > Format panel opens "
                 "the Format panel on the right, with three tabs. Style: line colour, width and pattern, "
                 "your own dashes (a dash and a gap in line widths, like 8 4), rounded corners, flow (dashes that move), "
                 "fill (a gradient or hatch, dots or zigzag instead of solid), opacity, shadow, and for a connector its line shape (curved, straight or elbow), "
