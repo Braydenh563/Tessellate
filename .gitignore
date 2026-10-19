@@ -33,3 +33,5 @@ uploads/
 # Playwright probe screenshots (scratchpad/ui-sweeps write here when SCRATCH is unset)
 shots/
 .gate/
+.claude/work-order.count
+.claude/work-order.last

@@ -14,3 +14,5 @@ date | item | type | rung | rework | note
 2026-10-18 | WHITEBOARD_PLAN draw.io steps (whiteboard-1018) | feature | sonnet | 1 | 
 2026-10-18 | MINDMAP_PLAN expand and study note (mindmap-1018) | feature | sonnet | 0 | 
 2026-10-18 | Security review of the branch and its five fixes | security | sonnet | 0 | 
+2026-10-19 | INBOX 1311 sidebar toggle + boot budget | ui | opus | 1 | 
+2026-10-19 | C4 library set | feature | opus | 0 | 
