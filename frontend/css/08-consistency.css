@@ -6162,6 +6162,15 @@ body .chip.item-label,
   line-height: 1;
 }
 #nm-buddy:is(.nmb-sleep, .nmb-act-nap, .nmb-act-lie) .nm-buddy-z { display: block; }
+/* Lying down, the head drops to the side, so the Zs drop with it (the owner,
+   2026-10-19: they rose "from where its head would be if it was standing").
+   Offsets measured by `scratchpad/ui-sweeps/atlassleepz.js`: the first z
+   sits about 30px right of and 40px above the eyes in every pose. */
+#nm-buddy[data-pose="lie"] .nm-buddy-z { translate: 0 46px; }
+#nm-buddy[data-pose="lie-2"] .nm-buddy-z { translate: -24px 25px; }
+#nm-buddy[data-pose="lie-1"] .nm-buddy-z { translate: -24px 0; }
+#nm-buddy[data-pose="lie-2"][data-atlas-variant="1"] .nm-buddy-z { translate: 22px 25px; }
+#nm-buddy[data-pose="lie-1"][data-atlas-variant="1"] .nm-buddy-z { translate: 22px 0; }
 /* The three z's (avatars.js), each its own drift; the second and third
    smaller and larger, so they read as a trail. */
 .nm-buddy-z i {
