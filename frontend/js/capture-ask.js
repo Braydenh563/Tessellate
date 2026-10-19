@@ -3357,6 +3357,14 @@ for (const type of ["focusin", "input", "click"]) {
 //: answer switch). The Ask scope it sets stays here: `askQuestion` reads it.
 let askScope = null;
 
+//: "Ask all notes" lives here, not in the lazy view, so it works whenever the
+//: scope line shows (INBOX 430).
+$("ask-scope-clear").onclick = () => {
+  askScope = null;
+  $("ask-scope").classList.add("hidden");
+  $("question").focus();
+};
+
 //: Time travel on Ask (WORLD_CLASS_PLAN I5, row 23): the day the next answer
 //: reads the notebook as of, or null. Only while the line is showing, so
 //: "Back to now" needs nothing else to undo.
