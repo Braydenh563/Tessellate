@@ -79,7 +79,7 @@
 
 .stats-week-row {
   display: grid;
-  grid-template-columns: minmax(7rem, 1fr) auto;
+  grid-template-columns: minmax(7rem, 1fr) auto auto;
   column-gap: var(--space-3);
   align-items: baseline;
 }
@@ -87,6 +87,7 @@
 .stats-week-value {
   font-variant-numeric: tabular-nums;
   text-align: end;
+  grid-column: -2 / -1;
 }
 
 .stats-week-change {
@@ -122,4 +123,148 @@
   padding: var(--space-3);
   border-radius: var(--radius-md);
   background: var(--surface-2);
+}
+
+/* The Statistics charts answer the pointer and the keyboard (INBOX 1319;
+   ask-chart.js `askChartWire`): a point or bar is one `.ask-chart-pt` with a
+   transparent hit area the height of its slot, a tooltip with the exact
+   value, and a ring where the arrow keys have put the focus. */
+.stats-chart {
+  position: relative;
+}
+
+.ask-chart-pt {
+  cursor: pointer;
+  outline: none;
+}
+
+.ask-chart-hit {
+  fill: transparent;
+}
+
+.ask-chart-pt:hover .ask-chart-hit,
+.ask-chart-pt:focus .ask-chart-hit {
+  fill: var(--accent-soft);
+}
+
+.ask-chart-pt:focus-visible .ask-chart-hit {
+  stroke: var(--accent-text);
+  stroke-width: 2;
+}
+
+.ask-chart-pt:hover .ask-chart-dot,
+.ask-chart-pt:focus .ask-chart-dot {
+  r: 5;
+}
+
+.ask-chart-tip {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  box-shadow: var(--shadow-md);
+  color: var(--text);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Counts that open what they count, the growth chart's range, and the week
+   rows' small lines (INBOX 1319). A tile that opens something is a button in
+   the tile's tone, lifted under the pointer; it keeps the focus ring. */
+button.stats-tile {
+  border: 0;
+  font: inherit;
+  color: inherit;
+  text-align: start;
+  cursor: default;
+}
+
+button.stats-tile.is-link {
+  cursor: pointer;
+}
+
+button.stats-tile.is-link:hover {
+  background: var(--surface-3);
+}
+
+.stats-range {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.stats-spark {
+  align-self: center;
+}
+
+.stats-spark-last,
+.stats-spark-this {
+  fill: none;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.stats-spark-last {
+  stroke: var(--muted);
+  opacity: 0.55;
+}
+
+.stats-spark-this {
+  stroke: var(--accent);
+}
+
+.stats-spark-dot {
+  fill: var(--accent);
+}
+
+/* Ask about your statistics: a label, a box with its button, three starters
+   and the counted answer (INBOX 1319; the Guide's pattern, compact). The
+   answer is a tone, not a second bordered pane. */
+.stats-ask {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.stats-ask-label {
+  font-weight: 600;
+}
+
+.stats-ask-row {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.stats-ask-row > input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.stats-ask-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.stats-ask-answer {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+}
+
+.stats-ask-text {
+  margin: 0;
+}
+
+.stats-ask-facts {
+  margin: var(--space-2) 0 0;
+  padding-inline-start: var(--space-5);
+  font-size: var(--text-sm);
 }

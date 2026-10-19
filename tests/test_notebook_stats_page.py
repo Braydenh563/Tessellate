@@ -190,3 +190,46 @@ def test_words_added_to_older_notes_by_edits_are_counted_apart(client):
     # the edit made last week is last week's.
     assert week["this"]["edited_words"] == 2
     assert week["last"]["edited_words"] == 2
+
+
+def test_the_growth_range_is_three_months_a_year_or_all(client):
+    """INBOX 1319: the growth chart's range is a server parameter."""
+    with _session() as session:
+        _note(session, "old", created=datetime(2024, 5, 9, tzinfo=timezone.utc))
+        _note(session, "march", created=datetime(2026, 3, 9, tzinfo=timezone.utc))
+        _note(session, "october", created=datetime(2026, 10, 2, tzinfo=timezone.utc))
+        session.commit()
+        three = notebook_stats.page(session, NOW, {}, growth="3")["notebook"]["growth"]
+        year = notebook_stats.page(session, NOW, {})["notebook"]["growth"]
+        everything = notebook_stats.page(session, NOW, {}, growth="all")["notebook"]["growth"]
+    assert [row["label"] for row in three] == ["2026-08", "2026-09", "2026-10"]
+    assert len(year) == 12
+    assert everything[0]["label"] == "2024-05" and everything[-1]["label"] == "2026-10"
+    assert sum(row["value"] for row in everything) == 3 and len(everything) == 30
+
+
+def test_the_route_takes_the_growth_range_and_rejects_others(client):
+    client.post("/entries", json={"content": "hello there"})
+    assert len(client.get("/statistics?growth=3").json()["notebook"]["growth"]) == 3
+    assert len(client.get("/statistics?growth=all").json()["notebook"]["growth"]) >= 1
+    assert len(client.get("/statistics").json()["notebook"]["growth"]) == 12
+    assert client.get("/statistics?growth=7").status_code == 422
+
+
+def test_the_week_carries_a_count_per_day_for_both_weeks(client):
+    """The sparkline under each week row: fourteen days, last week's Monday first."""
+    monday = datetime(2026, 10, 12, 9, 0, tzinfo=timezone.utc)
+    with _session() as session:
+        _note(session, "a b c", created=monday)
+        _note(session, "d e", created=monday)
+        _note(session, "f", created=monday - timedelta(days=6))
+        ticked = Reminder(text="t", due_at=NOW)
+        session.add(ticked)
+        session.flush()
+        ticked.done_at = monday - timedelta(days=2)
+        session.commit()
+        daily = notebook_stats.page(session, NOW, {})["week"]["daily"]
+    assert daily["start"] == "2026-10-05"
+    assert len(daily["notes"]) == len(daily["words"]) == len(daily["reminders_done"]) == 14
+    assert daily["notes"][1] == 1 and daily["notes"][7] == 2 and sum(daily["notes"]) == 3
+    assert daily["words"][7] == 5 and daily["reminders_done"][5] == 1

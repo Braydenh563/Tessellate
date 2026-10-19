@@ -57,19 +57,50 @@ function askChartLabel(chart, label) {
   return label.length > 12 ? `${label.slice(0, 11)}…` : label;
 }
 
-function askChartSvg(chart) {
+//: The words for one mark, spoken and shown: the period in full and the exact
+//: value ("March 2026: 12 notes"). `chart.unit` is [one, many] for a count of
+//: something other than notes (the Statistics page's feature uses).
+function askChartTipText(chart, row) {
+  let when = row.label;
+  if (chart.by === "month") {
+    const [y, m] = row.label.split("-").map(Number);
+    when = new Date(y, m - 1, 1).toLocaleDateString(undefined, { month: "long", year: "numeric" });
+  } else if (chart.by === "day" || chart.by === "week") {
+    when = new Date(`${row.label}T00:00:00`).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
+  }
+  const [one, many] = chart.unit || ["note", "notes"];
+  return `${when}: ${row.value.toLocaleString()} ${row.value === 1 ? one : many}`;
+}
+
+//: Which mark an arrow key lands on; the ends stop rather than wrap.
+function askChartStep(index, key, count) {
+  if (key === "ArrowRight" || key === "ArrowDown") return Math.min(count - 1, index + 1);
+  if (key === "ArrowLeft" || key === "ArrowUp") return Math.max(0, index - 1);
+  if (key === "Home") return 0;
+  if (key === "End") return count - 1;
+  return index;
+}
+
+//: A chart that follows its card draws at the card's width, so the text keeps
+//: its size instead of scaling with the picture.
+function askChartWidth(measured) {
+  if (!measured) return ASK_CHART_W;
+  return Math.max(320, Math.min(1400, Math.round(measured)));
+}
+
+function askChartSvg(chart, width = ASK_CHART_W) {
   const rows = chart.rows;
   const max = Math.max(1, ...rows.map((r) => r.value));
   const ticks = askChartTicks(max);
   const top = ticks[ticks.length - 1] || 1;
   const { top: pt, right: pr, bottom: pb, left: pl } = ASK_CHART_PAD;
-  const plotW = ASK_CHART_W - pl - pr;
+  const plotW = width - pl - pr;
   const plotH = ASK_CHART_H - pt - pb;
   const y = (value) => pt + plotH - (value / top) * plotH;
-  const svg = askChartSvgEl("svg", { viewBox: `0 0 ${ASK_CHART_W} ${ASK_CHART_H}`, class: "ask-chart-svg", role: "img" });
+  const svg = askChartSvgEl("svg", { viewBox: `0 0 ${width} ${ASK_CHART_H}`, class: "ask-chart-svg", role: chart.interactive ? "group" : "img" });
   svg.setAttribute("aria-label", `${chart.title}, as a ${chart.kind === "bar" ? "bar" : "line"} chart; the table below has the numbers`);
   for (const tick of ticks) {
-    svg.appendChild(askChartSvgEl("line", { x1: pl, x2: ASK_CHART_W - pr, y1: y(tick), y2: y(tick), class: "ask-chart-grid" }));
+    svg.appendChild(askChartSvgEl("line", { x1: pl, x2: width - pr, y1: y(tick), y2: y(tick), class: "ask-chart-grid" }));
     const text = askChartSvgEl("text", { x: pl - 6, y: y(tick) + 4, "text-anchor": "end", class: "ask-chart-axis" });
     text.textContent = askChartTickLabel(tick);
     svg.appendChild(text);
@@ -78,6 +109,12 @@ function askChartSvg(chart) {
   //: Every label when they fit, else every nth: a label per day of a month
   //: is thirty words on top of each other.
   const every = Math.max(1, Math.ceil(rows.length / Math.floor(plotW / 54)));
+  const isBar = chart.kind === "bar";
+  const barW = Math.max(2, Math.min(48, slot * 0.7));
+  if (!isBar) {
+    const points = rows.map((row, i) => `${(pl + slot * i + slot / 2).toFixed(1)},${y(row.value).toFixed(1)}`).join(" ");
+    svg.appendChild(askChartSvgEl("polyline", { points, class: "ask-chart-line" }));
+  }
   rows.forEach((row, i) => {
     const cx = pl + slot * i + slot / 2;
     if (i % every === 0) {
@@ -85,26 +122,28 @@ function askChartSvg(chart) {
       text.textContent = askChartLabel(chart, row.label);
       svg.appendChild(text);
     }
-    if (chart.kind === "bar") {
-      const w = Math.max(2, Math.min(48, slot * 0.7));
-      const bar = askChartSvgEl("rect", { x: cx - w / 2, y: y(row.value), width: w, height: Math.max(0, pt + plotH - y(row.value)), rx: 3, class: "ask-chart-bar" });
+    const mark = isBar
+      ? askChartSvgEl("rect", { x: cx - barW / 2, y: y(row.value), width: barW, height: Math.max(0, pt + plotH - y(row.value)), rx: 3, class: "ask-chart-bar" })
+      : askChartSvgEl("circle", { cx, cy: y(row.value), r: rows.length > 40 ? 1.5 : 3, class: "ask-chart-dot" });
+    if (!chart.interactive) {
       const tip = askChartSvgEl("title");
       tip.textContent = `${row.label}: ${row.value}`;
-      bar.appendChild(tip);
-      svg.appendChild(bar);
+      mark.appendChild(tip);
+      svg.appendChild(mark);
+      return;
     }
-  });
-  if (chart.kind !== "bar") {
-    const points = rows.map((row, i) => `${(pl + slot * i + slot / 2).toFixed(1)},${y(row.value).toFixed(1)}`).join(" ");
-    svg.appendChild(askChartSvgEl("polyline", { points, class: "ask-chart-line" }));
-    rows.forEach((row, i) => {
-      const dot = askChartSvgEl("circle", { cx: pl + slot * i + slot / 2, cy: y(row.value), r: rows.length > 40 ? 1.5 : 3, class: "ask-chart-dot" });
-      const tip = askChartSvgEl("title");
-      tip.textContent = `${row.label}: ${row.value}`;
-      dot.appendChild(tip);
-      svg.appendChild(dot);
+    //: One group per mark: a transparent hit area the whole height of its slot
+    //: (a 3-unit dot is not a target), the mark, and the roving tab stop.
+    const group = askChartSvgEl("g", {
+      class: "ask-chart-pt",
+      tabindex: i === 0 ? 0 : -1,
+      role: chart.onPick ? "button" : "img",
+      "aria-label": askChartTipText(chart, row),
+      "data-i": i,
     });
-  }
+    group.append(askChartSvgEl("rect", { x: cx - slot / 2, y: pt, width: slot, height: plotH, class: "ask-chart-hit" }), mark);
+    svg.appendChild(group);
+  });
   return svg;
 }
 
@@ -146,8 +185,9 @@ async function askChartPng(svg, title) {
       copies[i].setAttribute(prop, style.getPropertyValue(prop));
     }
   });
+  const wide = svg.viewBox.baseVal.width || ASK_CHART_W;
   clone.setAttribute("xmlns", SVG_NS);
-  clone.setAttribute("width", ASK_CHART_W * 2);
+  clone.setAttribute("width", wide * 2);
   clone.setAttribute("height", ASK_CHART_H * 2);
   const url = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(clone)], { type: "image/svg+xml;charset=utf-8" }));
   try {
@@ -158,7 +198,7 @@ async function askChartPng(svg, title) {
       img.src = url;
     });
     const canvas = document.createElement("canvas");
-    canvas.width = ASK_CHART_W * 2;
+    canvas.width = wide * 2;
     canvas.height = ASK_CHART_H * 2;
     const ctx = canvas.getContext("2d");
     //: A flat card colour per theme, as the graph's PNG does: the page's own
@@ -213,9 +253,84 @@ function drawAskChart(host, chart) {
   else total.textContent = source[0].toUpperCase() + source.slice(1);
   const svg = askChartSvg(chart);
   const save = smallButton("ph:download-simple Save as PNG", "Save this chart as a picture", () =>
-    askChartPng(svg, chart.title).catch((error) => toast(error.message, true))
+    askChartPng(host.querySelector(".ask-chart-svg"), chart.title).catch((error) => toast(error.message, true))
   );
   head.append(title, total, save);
   host.replaceChildren(head, svg, askChartTable(chart));
   host.classList.remove("hidden");
+  if (chart.interactive) askChartWire(host, chart);
+}
+
+//: The Statistics page's charts (`chart.interactive`): a tooltip with the
+//: period and exact value under the pointer or the keyboard's focus, arrow
+//: keys between marks, a click or Enter handing the row to `chart.onPick`,
+//: and a redraw at the card's width as it resizes.
+function askChartWire(host, chart) {
+  const tip = document.createElement("div");
+  tip.className = "ask-chart-tip hidden";
+  tip.setAttribute("aria-hidden", "true");
+  host.appendChild(tip);
+  const show = (group) => {
+    tip.textContent = group.getAttribute("aria-label");
+    tip.classList.remove("hidden");
+    const at = group.getBoundingClientRect();
+    const box = host.getBoundingClientRect();
+    const half = tip.offsetWidth / 2;
+    const mid = at.left + at.width / 2 - box.left;
+    tip.style.left = `${Math.max(half, Math.min(box.width - half, mid))}px`;
+    tip.style.top = `${at.top - box.top + at.height * 0.25}px`;
+  };
+  const hide = () => tip.classList.add("hidden");
+  const groupOf = (event) => event.target.closest?.(".ask-chart-pt");
+  const pick = (group) => chart.onPick?.(chart.rows[Number(group.dataset.i)], Number(group.dataset.i));
+  host.addEventListener("pointerover", (event) => {
+    const group = groupOf(event);
+    if (group) show(group);
+  });
+  host.addEventListener("pointerout", (event) => {
+    if (groupOf(event)) hide();
+  });
+  host.addEventListener("focusin", (event) => {
+    const group = groupOf(event);
+    if (group) show(group);
+  });
+  host.addEventListener("focusout", hide);
+  host.addEventListener("click", (event) => {
+    const group = groupOf(event);
+    if (group) pick(group);
+  });
+  host.addEventListener("keydown", (event) => {
+    const group = groupOf(event);
+    if (!group) return;
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      pick(group);
+      return;
+    }
+    const from = Number(group.dataset.i);
+    const to = askChartStep(from, event.key, chart.rows.length);
+    if (to === from && !["Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    const marks = [...host.querySelectorAll(".ask-chart-pt")];
+    marks.forEach((mark, i) => mark.setAttribute("tabindex", i === to ? "0" : "-1"));
+    marks[to].focus();
+  });
+  let drawn = ASK_CHART_W;
+  const observer = new ResizeObserver(() => {
+    //: Fires once while the host is still detached (it is built before it is
+    //: placed): not a reason to stop watching.
+    if (!host.isConnected) return;
+    const old = host.querySelector(".ask-chart-svg");
+    const measured = old ? old.getBoundingClientRect().width : 0;
+    if (!measured) return;
+    const width = askChartWidth(measured);
+    if (Math.abs(width - drawn) < 8) return;
+    drawn = width;
+    const keep = old.contains(document.activeElement) ? document.activeElement.dataset.i : null;
+    const next = askChartSvg(chart, width);
+    old.replaceWith(next);
+    hide();
+    if (keep != null) next.querySelector(`.ask-chart-pt[data-i="${keep}"]`)?.focus();
+  });
+  observer.observe(host);
 }

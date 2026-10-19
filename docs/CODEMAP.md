@@ -2,9 +2,9 @@
 
 Generated 2026-10-19 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6172, frontend ids 2537, CSS sections 496, backend routes 616, backend modules 6128, test files 1303, tests 11628, plan headings 962.
+Counts: frontend functions 6186, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6145, test files 1305, tests 11648, plan headings 962.
 
-## Frontend functions (6172)
+## Frontend functions (6186)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -2377,19 +2377,23 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `scrollPaletteToActive` | frontend/js/app-palette.js:762 |
 | `utilityPaletteRows` | frontend/js/app-palette.js:284 |
 
-### frontend/js/ask-chart.js (9)
+### frontend/js/ask-chart.js (13)
 
 | Name | File:line |
 |---|---|
 | `askChartLabel` | frontend/js/ask-chart.js:49 |
-| `askChartPng` | frontend/js/ask-chart.js:139 |
-| `askChartSvg` | frontend/js/ask-chart.js:60 |
+| `askChartPng` | frontend/js/ask-chart.js:178 |
+| `askChartStep` | frontend/js/ask-chart.js:76 |
+| `askChartSvg` | frontend/js/ask-chart.js:91 |
 | `askChartSvgEl` | frontend/js/ask-chart.js:23 |
-| `askChartTable` | frontend/js/ask-chart.js:111 |
+| `askChartTable` | frontend/js/ask-chart.js:150 |
 | `askChartTickLabel` | frontend/js/ask-chart.js:45 |
 | `askChartTicks` | frontend/js/ask-chart.js:33 |
-| `drawAskChart` | frontend/js/ask-chart.js:198 |
-| `renderAskChart` | frontend/js/ask-chart.js:182 |
+| `askChartTipText` | frontend/js/ask-chart.js:63 |
+| `askChartWidth` | frontend/js/ask-chart.js:86 |
+| `askChartWire` | frontend/js/ask-chart.js:268 |
+| `drawAskChart` | frontend/js/ask-chart.js:238 |
+| `renderAskChart` | frontend/js/ask-chart.js:222 |
 
 ### frontend/js/ask-compose.js (19)
 
@@ -5448,24 +5452,34 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `sketchStart` | frontend/js/sketch-pad.js:148 |
 | `sketchTogglePalette` | frontend/js/sketch-pad.js:122 |
 
-### frontend/js/statistics.js (14)
+### frontend/js/statistics.js (24)
 
 | Name | File:line |
 |---|---|
-| `openStatistics` | frontend/js/statistics.js:183 |
-| `paintStatistics` | frontend/js/statistics.js:164 |
-| `renderWeekWidget` | frontend/js/statistics.js:248 |
-| `statsChange` | frontend/js/statistics.js:66 |
-| `statsChart` | frontend/js/statistics.js:53 |
-| `statsDay` | frontend/js/statistics.js:60 |
-| `statsNotebookSection` | frontend/js/statistics.js:117 |
-| `statsRemindersSection` | frontend/js/statistics.js:135 |
-| `statsSection` | frontend/js/statistics.js:30 |
+| `openStatistics` | frontend/js/statistics.js:385 |
+| `paintStatistics` | frontend/js/statistics.js:365 |
+| `renderWeekWidget` | frontend/js/statistics.js:452 |
+| `statsAskBox` | frontend/js/statistics.js:296 |
+| `statsChange` | frontend/js/statistics.js:121 |
+| `statsChart` | frontend/js/statistics.js:61 |
+| `statsDay` | frontend/js/statistics.js:115 |
+| `statsGo` | frontend/js/statistics.js:76 |
+| `statsGrowthChart` | frontend/js/statistics.js:205 |
+| `statsNotebookSection` | frontend/js/statistics.js:233 |
+| `statsOpenFeature` | frontend/js/statistics.js:107 |
+| `statsOpenLooseEnds` | frontend/js/statistics.js:92 |
+| `statsOpenMonth` | frontend/js/statistics.js:100 |
+| `statsOpenReminders` | frontend/js/statistics.js:87 |
+| `statsOpenTab` | frontend/js/statistics.js:85 |
+| `statsRangeControl` | frontend/js/statistics.js:211 |
+| `statsRemindersSection` | frontend/js/statistics.js:253 |
+| `statsSection` | frontend/js/statistics.js:37 |
+| `statsSpark` | frontend/js/statistics.js:131 |
 | `statsTile` | frontend/js/statistics.js:17 |
-| `statsTiles` | frontend/js/statistics.js:45 |
-| `statsUnused` | frontend/js/statistics.js:106 |
-| `statsUsageSection` | frontend/js/statistics.js:141 |
-| `statsWeekCard` | frontend/js/statistics.js:74 |
+| `statsTiles` | frontend/js/statistics.js:52 |
+| `statsUnused` | frontend/js/statistics.js:188 |
+| `statsUsageSection` | frontend/js/statistics.js:260 |
+| `statsWeekCard` | frontend/js/statistics.js:149 |
 
 ### frontend/js/status-panels.js (4)
 
@@ -10117,9 +10131,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/timeline-calendar-lazy.css | 292 |
 | frontend/css/timeline-ticks-lazy.css | 42 |
 | frontend/css/usage-lazy.css | 34 |
-| frontend/css/utilities-lazy.css | 125 |
+| frontend/css/utilities-lazy.css | 270 |
 
-## Backend routes (616)
+## Backend routes (617)
 
 `@router.<method>(`, `@<name>_router.<method>(` and `@app.<method>(` decorators in `src/tessellate/api/*.py`, sorted by path. The line is the decorator's.
 
@@ -10546,7 +10560,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/spaces/{space_id}/move-notes` | POST | `move_notes_to_space` | src/tessellate/api/routes_spaces.py:462 |
 | `/spec` | GET | `model_spec` | src/tessellate/api/routes_models.py:525 |
 | `/start` | POST | `start` | src/tessellate/api/routes_captions.py:96 |
-| `/statistics` | GET | `statistics` | src/tessellate/api/routes_statistics.py:24 |
+| `/statistics` | GET | `statistics` | src/tessellate/api/routes_statistics.py:25 |
+| `/statistics/ask` | POST | `ask_statistics` | src/tessellate/api/routes_statistics.py:39 |
 | `/stats` | GET | `ask_history_stats` | src/tessellate/api/routes_ask_history.py:84 |
 | `/stats` | GET | `stats` | src/tessellate/api/routes_insights.py:33 |
 | `/stats` | GET | `stats` | src/tessellate/api/routes_search.py:162 |
@@ -10742,7 +10757,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (6128)
+## Backend modules (6145)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -12035,8 +12050,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2588 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2690 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2597 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2699 |
 
 ### src/tessellate/ai/inbox.py (7)
 
@@ -12386,7 +12401,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `pick` | src/tessellate/ai/neighbours.py:42 |
 | `reads_whole` | src/tessellate/ai/neighbours.py:25 |
 
-### src/tessellate/ai/notebook_stats.py (41)
+### src/tessellate/ai/notebook_stats.py (43)
 
 | Name | File:line |
 |---|---|
@@ -12400,15 +12415,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_despell` | src/tessellate/ai/notebook_stats.py:172 |
 | `_document_count` | src/tessellate/ai/notebook_stats.py:403 |
 | `_general_stats` | src/tessellate/ai/notebook_stats.py:720 |
+| `_growth_keys` | src/tessellate/ai/notebook_stats.py:806 |
 | `_longest_notes` | src/tessellate/ai/notebook_stats.py:552 |
 | `_month_keys` | src/tessellate/ai/notebook_stats.py:791 |
 | `_most_linked` | src/tessellate/ai/notebook_stats.py:412 |
 | `_note_count` | src/tessellate/ai/notebook_stats.py:394 |
-| `_notebook_block` | src/tessellate/ai/notebook_stats.py:800 |
+| `_notebook_block` | src/tessellate/ai/notebook_stats.py:817 |
 | `_orphans` | src/tessellate/ai/notebook_stats.py:446 |
 | `_plural` | src/tessellate/ai/notebook_stats.py:92 |
 | `_recent_count` | src/tessellate/ai/notebook_stats.py:504 |
-| `_reminder_block` | src/tessellate/ai/notebook_stats.py:844 |
+| `_reminder_block` | src/tessellate/ai/notebook_stats.py:864 |
 | `_span_words` | src/tessellate/ai/notebook_stats.py:765 |
 | `_stale_notes` | src/tessellate/ai/notebook_stats.py:585 |
 | `_tag_count` | src/tessellate/ai/notebook_stats.py:375 |
@@ -12420,17 +12436,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_transposition_of` | src/tessellate/ai/notebook_stats.py:154 |
 | `_untagged` | src/tessellate/ai/notebook_stats.py:364 |
 | `_visible` | src/tessellate/ai/notebook_stats.py:70 |
-| `_week_counts` | src/tessellate/ai/notebook_stats.py:904 |
+| `_week_counts` | src/tessellate/ai/notebook_stats.py:924 |
+| `_week_daily` | src/tessellate/ai/notebook_stats.py:942 |
 | `_whole_notebook` | src/tessellate/ai/notebook_stats.py:280 |
 | `_window` | src/tessellate/ai/notebook_stats.py:481 |
 | `_word_count` | src/tessellate/ai/notebook_stats.py:530 |
 | `_words` | src/tessellate/ai/notebook_stats.py:787 |
-| `_words_added_by_edits` | src/tessellate/ai/notebook_stats.py:866 |
+| `_words_added_by_edits` | src/tessellate/ai/notebook_stats.py:886 |
 | `answer` | src/tessellate/ai/notebook_stats.py:224 |
 | `looks_like_a_question_about_the_notebook` | src/tessellate/ai/notebook_stats.py:205 |
-| `page` | src/tessellate/ai/notebook_stats.py:935 |
-| `week_review` | src/tessellate/ai/notebook_stats.py:922 |
-| `week_start` | src/tessellate/ai/notebook_stats.py:859 |
+| `page` | src/tessellate/ai/notebook_stats.py:982 |
+| `week_review` | src/tessellate/ai/notebook_stats.py:968 |
+| `week_start` | src/tessellate/ai/notebook_stats.py:879 |
 
 ### src/tessellate/ai/offers.py (13)
 
@@ -13213,6 +13230,24 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_vectors` | src/tessellate/ai/starter_acts.py:291 |
 | `events` | src/tessellate/ai/starter_acts.py:90 |
 | `read` | src/tessellate/ai/starter_acts.py:58 |
+
+### src/tessellate/ai/stats_ask.py (13)
+
+| Name | File:line |
+|---|---|
+| `_compare` | src/tessellate/ai/stats_ask.py:122 |
+| `_feature` | src/tessellate/ai/stats_ask.py:100 |
+| `_midnight` | src/tessellate/ai/stats_ask.py:56 |
+| `_month_count` | src/tessellate/ai/stats_ask.py:84 |
+| `_month_start` | src/tessellate/ai/stats_ask.py:60 |
+| `_name` | src/tessellate/ai/stats_ask.py:71 |
+| `_named_month` | src/tessellate/ai/stats_ask.py:75 |
+| `_next_month` | src/tessellate/ai/stats_ask.py:67 |
+| `_period` | src/tessellate/ai/stats_ask.py:118 |
+| `_span` | src/tessellate/ai/stats_ask.py:46 |
+| `_summary` | src/tessellate/ai/stats_ask.py:155 |
+| `_usage` | src/tessellate/ai/stats_ask.py:107 |
+| `ask` | src/tessellate/ai/stats_ask.py:189 |
 
 ### src/tessellate/ai/supersede.py (15)
 
@@ -15598,11 +15633,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `restore_space` | src/tessellate/api/routes_spaces.py:183 |
 | `update_space` | src/tessellate/api/routes_spaces.py:85 |
 
-### src/tessellate/api/routes_statistics.py (1)
+### src/tessellate/api/routes_statistics.py (3)
 
 | Name | File:line |
 |---|---|
-| `statistics` | src/tessellate/api/routes_statistics.py:25 |
+| `AskBody` | src/tessellate/api/routes_statistics.py:35 |
+| `ask_statistics` | src/tessellate/api/routes_statistics.py:40 |
+| `statistics` | src/tessellate/api/routes_statistics.py:26 |
 
 ### src/tessellate/api/routes_tags.py (15)
 
@@ -18414,7 +18451,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11628)
+## Tests (11648)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19214,7 +19251,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_notebook_access.py | 21 |
 | tests/test_notebook_stats.py | 23 |
 | tests/test_notebook_stats_chat.py | 2 |
-| tests/test_notebook_stats_page.py | 11 |
+| tests/test_notebook_stats_page.py | 14 |
 | tests/test_notes_extras_api.py | 26 |
 | tests/test_notes_rail.py | 7 |
 | tests/test_notes_rows_719.py | 8 |
@@ -19480,7 +19517,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_static_compression.py | 6 |
 | tests/test_static_freshness.py | 5 |
 | tests/test_static_precompressed.py | 7 |
+| tests/test_statistics_ask_1319.py | 9 |
 | tests/test_stats_fit_1319.py | 1 |
+| tests/test_stats_interactive_1319.py | 8 |
 | tests/test_status_bar_fit.py | 4 |
 | tests/test_status_bar_grammar.py | 5 |
 | tests/test_stop_discards_write.py | 5 |
@@ -20425,7 +20464,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1265 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:284 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:281 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4173 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
