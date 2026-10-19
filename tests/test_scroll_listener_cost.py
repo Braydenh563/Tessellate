@@ -84,3 +84,21 @@ def test_open_toolbar_menus_are_kept_by_their_toggle_not_looked_for():
     assert "TOOLBAR_MENUS = document.getElementsByClassName" not in src
     assert "OPEN_TOOLBAR_MENUS.add(details)" in src
     assert "OPEN_TOOLBAR_MENUS.delete(details)" in src
+
+
+def test_the_feature_model_rows_are_rebuilt_only_when_they_change():
+    """While Settings is open the status poll answers every three seconds,
+    and every answer rebuilt each feature-model row and its enhanced select
+    (recorded during a 40-step scroll of Help: 20 row replacements and 34
+    menu rebuilds), changing the page under whatever was being scrolled.
+    The drawing also left the boot scripts for the lazy Settings file
+    (eager gzip total 320,584 to 320,045)."""
+    rows = _body("settings-controls.js", "function renderFeatureModelRows(status) {")
+    assert "list.dataset.sig === sig" in rows
+    assert rows.index("list.dataset.sig === sig") < rows.index("list.replaceChildren()")
+    eager = _body("ai-tools.js", "function renderFeatureModels(status) {")
+    assert "replaceChildren" not in eager
+    assert "renderFeatureModelRows(status)" in eager
+    # A refused change redraws, so its select does not keep the choice.
+    apply = _body("ai-tools.js", "async function applyFeatureModel(key, name) {")
+    assert 'dataset.sig = ""' in apply

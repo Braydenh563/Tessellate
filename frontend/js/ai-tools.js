@@ -529,6 +529,9 @@ function featureModelChoiceLabel(name) {
 
 async function applyFeatureModel(key, name) {
   const row = featureModelRow(key);
+  //: Drawn again whatever the answer: a refused change leaves its select on
+  //: the choice, and the rows are only rebuilt when something moved.
+  $("feature-models-list").dataset.sig = "";
   try {
     await api("/models/feature-model", {
       method: "POST",
@@ -552,91 +555,10 @@ function renderFeatureModels(status) {
   featureModelNames = (status.installed_models || []).map((m) => m.name);
   featureModelFollow = status.feature_model_follow || featureModelFollow;
   syncFeatureModelSelects();
-  const list = $("feature-models-list");
-  if (!list) return;
-  list.replaceChildren();
-  list.removeAttribute("aria-busy");
-  for (const row of featureModelRows) {
-    const line = document.createElement("div");
-    line.className = "feature-model-row";
-    line.dataset.feature = row.key;
-    //: Read by the stylesheet, which tints the state line of a row that is on
-    //: a model of its own: the list's only job is to make those findable.
-    line.dataset.overridden = row.overridden ? "1" : "0";
-
-    const name = document.createElement("div");
-    name.className = "feature-model-name";
-    const label = document.createElement("span");
-    label.className = "feature-model-label";
-    label.textContent = row.label;
-    const state = document.createElement("span");
-    state.className = "feature-model-state";
-    state.textContent = featureModelState(row);
-    state.title = row.note || "";
-    name.append(label, state);
-
-    const select = document.createElement("select");
-    select.setAttribute("aria-label", `Model for ${row.label}`);
-    select.title = `Model for ${row.label}`;
-    //: The "inherited" option names what it inherits, so the list can be read
-    //: without opening anything: every row says which model it is on. The two
-    //: "Same as ..." options (INBOX 430) are the sentinels themselves, so
-    //: picking one round-trips to `applyFeatureModel` unchanged and the
-    //: backend stores the sentinel, not a name that would go stale the next
-    //: time that role's model changes.
-    let savedValue = "";
-    if (row.override_kind === "model") savedValue = row.override_value;
-    else if (row.override_kind === "chat") savedValue = featureModelFollow.chat;
-    else if (row.override_kind === "utility") savedValue = featureModelFollow.utility;
-    fillModelSelect(
-      select,
-      featureModelNames,
-      [
-        { value: "", label: `Inherited: ${row.inherits}` },
-        { value: featureModelFollow.chat, label: "Same as chat model" },
-        { value: featureModelFollow.utility, label: "Same as utility model" },
-      ],
-      savedValue
-    );
-    select.addEventListener("change", () => applyFeatureModel(row.key, select.value));
-
-    //: Disabled until the row is overridden, because a reset on a row that is
-    //: already on its default is a control that does nothing when pressed.
-    const reset = smallButton(
-      "ph:arrow-counter-clockwise",
-      row.overridden
-        ? `Reset ${row.label} to the model it inherits`
-        : `${row.label} is already on the model it inherits`,
-      () => applyFeatureModel(row.key, "")
-    );
-    //: Named, because `enhanceSelect` wraps the select beside it in a shell
-    //: with a button of its own: "the first button in the row" stopped being
-    //: this one the moment the select was enhanced.
-    reset.classList.add("icon-only", "feature-model-reset");
-    reset.disabled = !row.overridden;
-
-    line.append(name, select, reset);
-    list.appendChild(line);
-  }
-
-  const count = Number(status.feature_models_overridden || 0);
-  const reset = $("feature-models-reset");
-  const note = $("feature-models-reset-note");
-  if (reset) {
-    //: The mass reset says how many it would clear and does nothing when the
-    //: answer is none, rather than reporting success over a no-op.
-    reset.disabled = count === 0;
-    reset.title = count
-      ? `Hand ${count === 1 ? "one feature" : `${count} features`} back to the model they inherit`
-      : "No feature has a model of its own yet";
-  }
-  if (note) {
-    note.textContent = count === 0
-      ? "No feature has a model of its own yet."
-      : count === 1
-        ? "One feature is on a model of its own."
-        : `${count} features are on models of their own.`;
-  }
+  //: The rows themselves are Settings' own, drawn by settings-controls.js:
+  //: `renderSettings` runs only while the window is open, and the window
+  //: awaits that file before it shows.
+  renderFeatureModelRows(status);
 }
 
 

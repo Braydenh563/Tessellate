@@ -3508,18 +3508,30 @@ function libraryImagesFingerprint(rows) {
 // Image Gallery is the visible sub-tab (started/stopped by the sub-tab
 // click handler below); skips a poll while a caption or rename field is
 // mid-edit so a silent re-render can't wipe out unsaved typing.
+//:
+//: **Not a fixed six seconds.** Each look fetches every page of `/media` and
+//: `/files/gallery`, and a caption may never come (no vision model). The
+//: jobs stream (`/jobs/stream`, routes_tasks.py) does carry captions, but
+//: only Settings, Running jobs opens it (chat-tasks.js), and a second held
+//: stream for the gallery is more than this needs. So a hidden window is
+//: not looked at, and each look that changed nothing doubles the wait, to a
+//: minute; a change puts it back to six seconds.
 let libraryImagesPollTimer = null;
 function startLibraryImagesPoll() {
   stopLibraryImagesPoll();
-  libraryImagesPollTimer = setInterval(() => {
-    if (document.querySelector(".library-image-caption-input, .library-image-rename-input")) {
-      return;
+  const poll = (libraryImagesPollTimer = { idle: 0 });
+  const look = async () => {
+    if (!document.hidden && !document.querySelector(".library-image-caption-input, .library-image-rename-input")) {
+      const before = libraryImagesSignature;
+      await renderLibraryImagesGallery({ ifUnchanged: "skip" });
+      poll.idle = libraryImagesSignature === before ? poll.idle + 1 : 0;
     }
-    renderLibraryImagesGallery({ ifUnchanged: "skip" });
-  }, 6000);
+    if (libraryImagesPollTimer === poll) poll.id = setTimeout(look, Math.min(6000 * 2 ** poll.idle, 60000));
+  };
+  poll.id = setTimeout(look, 6000);
 }
 function stopLibraryImagesPoll() {
-  if (libraryImagesPollTimer) clearInterval(libraryImagesPollTimer);
+  clearTimeout(libraryImagesPollTimer?.id);
   libraryImagesPollTimer = null;
 }
 

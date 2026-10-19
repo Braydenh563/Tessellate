@@ -124,7 +124,11 @@ REACHED_AFTER_LOAD = {
     "ensureSettingsFoldAll": "settingsControls, the Settings window awaits it before any pane is shown",
     "renderSmallModelAuto":"settingsControls, paints itself at the end of the file; later renders re-label",
     #: The history row's Logs button: it sits in Settings, whose window loads settingsControls first.
-    "openTaskLog": "settingsControls, the Settings window awaits it before any row in it can be pressed",
+    #: The per-feature model rows: `renderSettings` (status.js) runs only while
+    #: the Settings window is open, and openSettingsModal awaits settingsControls
+    #: before it shows.
+    "renderFeatureModelRows": "settingsControls, drawn only by renderSettings, which runs while the window that awaited it is open",
+    "openTaskLog":"settingsControls, the Settings window awaits it before any row in it can be pressed",
     #: Background jobs, Report: the click awaits ensureModule('appImport') first.
     "openImportReport": "appImport, called after `await ensureModule('appImport')` in the Report button's click",
     #: Connections, opened in the .then of lazyScript('/js/connections.js') at its three callers.
