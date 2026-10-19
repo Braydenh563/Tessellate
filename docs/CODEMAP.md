@@ -2,7 +2,7 @@
 
 Generated 2026-10-19 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6143, frontend ids 2536, CSS sections 496, backend routes 613, backend modules 6069, test files 1289, tests 11546, plan headings 961.
+Counts: frontend functions 6143, frontend ids 2536, CSS sections 496, backend routes 613, backend modules 6069, test files 1289, tests 11547, plan headings 961.
 
 ## Frontend functions (6143)
 
@@ -18302,7 +18302,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11546)
+## Tests (11547)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18409,7 +18409,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_board_history.py | 14 |
 | tests/test_board_kind_switch.py | 5 |
 | tests/test_board_library.py | 22 |
-| tests/test_board_library_diagram_sets.py | 8 |
+| tests/test_board_library_diagram_sets.py | 9 |
 | tests/test_board_modified_time.py | 8 |
 | tests/test_board_named_layers.py | 4 |
 | tests/test_board_pan_layers.py | 2 |

@@ -1643,7 +1643,7 @@ Owner: "stuff like that, dont stop there, find what is missing on the whiteboard
 7. Dimension and measure lines with a live length - M.
 8. Text that shrinks to fit its shape (draw.io "autosize" is grow only) - M.
 9. BPMN set: task, event, gateway, data object - M.
-10. C4 and architecture set: person, system, container, boundary - S.
+10. C4 and architecture set: person, system, container, boundary - S, built (8 elements, `c4.json`).
 11. Cloud and network icon sets, drawn here (no draw.io files) - M.
 12. Org chart: a tree layout command for a board's boxes and connectors - M.
 13. Crop a picture to a shape (circle, rounded) - M.

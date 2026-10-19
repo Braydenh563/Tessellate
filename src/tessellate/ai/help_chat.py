@@ -1478,8 +1478,8 @@ HELP_TOPICS.extend(
                 "holding the selection; its eye and lock act on all of it. Tinted rows are selected on the board "
                 "(the head counts them; Clear drops them), and a frame lists what it holds under its row. A locked item shows a lock when the pointer "
                 "is on it; right-click it to unlock it. The Library holds "
-                "built-in sets (General shapes, Flowchart, UML, Entity relationship, Wireframe, Arrows, Frames (a frame, a timeline lane and swimlanes in rows or columns) "
-                "and 1,530 icons drawn as shapes), five draw.io sets (196 shapes "
+                "built-in sets (General shapes, Flowchart, UML, Entity relationship, Wireframe, C4, Arrows, Frames (a frame, a timeline lane and swimlanes in rows or columns) "
+                "and 1,530 icons), five draw.io sets (196 shapes "
                 "with their own connection points), then Favourites, Recent and your own "
                 "libraries; the search field finds any of them by name or tag. Click a tile or press Enter "
                 "to place it in the middle of the view, drag it and it lands held where you grabbed it, or Shift+Enter to place "
@@ -1495,7 +1495,7 @@ HELP_TOPICS.extend(
                 "saved branch", "import library", "export library", "save as template", "board template",
                 "templates in the library", "save my own shape", "save a shape to the library",
                 "save a board as a template", "board as a template", "uml", "class diagram", "erd",
-                "entity relationship", "crow's foot", "wireframe",
+                "entity relationship", "crow's foot", "wireframe", "c4", "architecture diagram",
             ),
             "body": (
                 "Saving to the library. To save your own: select things and press "

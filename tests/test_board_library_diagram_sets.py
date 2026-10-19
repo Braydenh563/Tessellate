@@ -1,4 +1,4 @@
-"""The UML, entity relationship and wireframe sets and their three templates
+"""The UML, entity relationship, wireframe and C4 sets and their three templates
 (WHITEBOARD_PLAN, INBOX 1300 C04). Drawn here, nothing from draw.io."""
 
 from __future__ import annotations
@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 
 LIB = Path(__file__).resolve().parents[1] / "frontend" / "board-library"
-SETS = {"uml": 23, "erd": 14, "wireframe": 19}
+SETS = {"uml": 23, "erd": 14, "wireframe": 19, "c4": 8}
 TEMPLATES = {"uml-class", "erd", "wireframe"}
 
 
@@ -98,3 +98,13 @@ def test_swimlanes_are_in_the_flowchart_set_with_a_search_keyword():
     assert index["flowchart"]["count"] == len(items)
     assert {"swimlane-h2", "swimlane-h3", "swimlane-v3"} <= set(items)
     assert all("swimlane" in items[k]["tags"] for k in ("swimlane-h2", "swimlane-h3", "swimlane-v3"))
+
+
+def test_the_c4_set_places_through_the_route(ai_client):
+    """WHITEBOARD_PLAN gap row 10 (INBOX 1308): person, systems, containers, boundary."""
+    board = ai_client.post("/whiteboard/boards", json={"name": "Context"}).json()
+    placed = ai_client.post(f"/whiteboard/boards/{board['id']}/place", json={"builtin": "c4/person", "x": 0, "y": 0})
+    assert placed.status_code == 201, placed.text
+    assert len({s["group_id"] for s in placed.json()["sketches"]}) == 1, "head and body move as one"
+    keys = {e["key"] for e in _load("c4")["items"]}
+    assert {"person", "software-system", "container", "container-database", "boundary", "external-system"} <= keys

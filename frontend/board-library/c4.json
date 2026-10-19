@@ -1,0 +1,366 @@
+{
+ "format": "memorymap-library-set",
+ "version": 1,
+ "key": "c4",
+ "name": "C4 and architecture",
+ "items": [
+  {
+   "key": "person",
+   "kind": "element",
+   "name": "Person",
+   "tags": [
+    "person",
+    "user",
+    "actor",
+    "c4",
+    "customer"
+   ],
+   "payload": {
+    "box": {
+     "w": 140,
+     "h": 150
+    },
+    "items": [
+     {
+      "key": "head",
+      "kind": "sketch",
+      "data": {
+       "d": "M 44 28 A 26 26 0 1 1 96 28 A 26 26 0 1 1 44 28 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.2
+      },
+      "z": 6
+     },
+     {
+      "key": "body",
+      "kind": "sketch",
+      "data": {
+       "d": "M 16 58 L 124 58 A 16 16 0 0 1 140 74 L 140 134 A 16 16 0 0 1 124 150 L 16 150 A 16 16 0 0 1 0 134 L 0 74 A 16 16 0 0 1 16 58 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.2,
+       "label": "Person\nA user of the system.",
+       "label_area": {
+        "x": 0.05,
+        "y": 0.08,
+        "w": 0.9,
+        "h": 0.84
+       }
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "software-system",
+   "kind": "element",
+   "name": "Software system",
+   "tags": [
+    "system",
+    "c4",
+    "software",
+    "context"
+   ],
+   "payload": {
+    "box": {
+     "w": 200,
+     "h": 120
+    },
+    "items": [
+     {
+      "key": "s",
+      "kind": "sketch",
+      "data": {
+       "d": "M 8 0 L 192 0 A 8 8 0 0 1 200 8 L 200 112 A 8 8 0 0 1 192 120 L 8 120 A 8 8 0 0 1 0 112 L 0 8 A 8 8 0 0 1 8 0 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.2,
+       "label": "Software system\n[Software System]\nWhat it does.",
+       "label_area": {
+        "x": 0.05,
+        "y": 0.08,
+        "w": 0.9,
+        "h": 0.84
+       },
+       "label_bold": true
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "external-system",
+   "kind": "element",
+   "name": "External system",
+   "tags": [
+    "external",
+    "third party",
+    "c4",
+    "system"
+   ],
+   "payload": {
+    "box": {
+     "w": 200,
+     "h": 120
+    },
+    "items": [
+     {
+      "key": "s",
+      "kind": "sketch",
+      "data": {
+       "d": "M 8 0 L 192 0 A 8 8 0 0 1 200 8 L 200 112 A 8 8 0 0 1 192 120 L 8 120 A 8 8 0 0 1 0 112 L 0 8 A 8 8 0 0 1 8 0 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.06,
+       "label": "External system\n[Software System]\nOutside your control.",
+       "label_area": {
+        "x": 0.05,
+        "y": 0.08,
+        "w": 0.9,
+        "h": 0.84
+       }
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "container",
+   "kind": "element",
+   "name": "Container",
+   "tags": [
+    "container",
+    "app",
+    "service",
+    "c4",
+    "api"
+   ],
+   "payload": {
+    "box": {
+     "w": 200,
+     "h": 120
+    },
+    "items": [
+     {
+      "key": "s",
+      "kind": "sketch",
+      "data": {
+       "d": "M 8 0 L 192 0 A 8 8 0 0 1 200 8 L 200 112 A 8 8 0 0 1 192 120 L 8 120 A 8 8 0 0 1 0 112 L 0 8 A 8 8 0 0 1 8 0 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.14,
+       "label": "Container\n[Container: tech]\nWhat it does.",
+       "label_area": {
+        "x": 0.05,
+        "y": 0.08,
+        "w": 0.9,
+        "h": 0.84
+       },
+       "label_bold": true
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "container-database",
+   "kind": "element",
+   "name": "Database container",
+   "tags": [
+    "database",
+    "store",
+    "c4",
+    "container",
+    "db"
+   ],
+   "payload": {
+    "box": {
+     "w": 180,
+     "h": 130
+    },
+    "items": [
+     {
+      "key": "s",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 18 A 90 18 0 0 1 180 18 L 180 112 A 90 18 0 0 1 0 112 Z M 0 18 A 90 18 0 0 0 180 18",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.14,
+       "label": "Database\n[Container: SQL]\nWhat it stores.",
+       "label_area": {
+        "x": 0.05,
+        "y": 0.28,
+        "w": 0.9,
+        "h": 0.66
+       }
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "component",
+   "kind": "element",
+   "name": "Component",
+   "tags": [
+    "component",
+    "module",
+    "c4",
+    "class"
+   ],
+   "payload": {
+    "box": {
+     "w": 180,
+     "h": 100
+    },
+    "items": [
+     {
+      "key": "s",
+      "kind": "sketch",
+      "data": {
+       "d": "M 6 0 L 174 0 A 6 6 0 0 1 180 6 L 180 94 A 6 6 0 0 1 174 100 L 6 100 A 6 6 0 0 1 0 94 L 0 6 A 6 6 0 0 1 6 0 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.1,
+       "label": "Component\n[Component: tech]",
+       "label_area": {
+        "x": 0.05,
+        "y": 0.08,
+        "w": 0.9,
+        "h": 0.84
+       }
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "boundary",
+   "kind": "element",
+   "name": "System boundary",
+   "tags": [
+    "boundary",
+    "scope",
+    "c4",
+    "group",
+    "enterprise"
+   ],
+   "payload": {
+    "box": {
+     "w": 360,
+     "h": 240
+    },
+    "items": [
+     {
+      "key": "s",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 360 0 L 360 240 L 0 240 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "label": "Boundary [Software System]",
+       "label_area": {
+        "x": 0.02,
+        "y": 0.86,
+        "w": 0.96,
+        "h": 0.12
+       },
+       "dash": "dashed",
+       "label_align": "left",
+       "label_valign": "bottom"
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "relationship",
+   "kind": "element",
+   "name": "Relationship",
+   "tags": [
+    "relationship",
+    "uses",
+    "arrow",
+    "c4",
+    "call"
+   ],
+   "payload": {
+    "box": {
+     "w": 200,
+     "h": 40
+    },
+    "items": [
+     {
+      "key": "line",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 32 L 192 32 M 182 26 L 192 32 L 182 38",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "dash": "dashed"
+      },
+      "z": 5
+     },
+     {
+      "key": "label",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 200 0 L 200 24 L 0 24 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0,
+       "noStroke": true,
+       "label": "Uses [HTTPS]",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1
+       }
+      },
+      "z": 6
+     }
+    ],
+    "links": []
+   }
+  }
+ ]
+}
