@@ -128,7 +128,6 @@
  "src/tessellate/api/routes_categories.py::_ai_groups": 26,
  "src/tessellate/api/routes_categories.py::propose_split": 19,
  "src/tessellate/api/routes_chat.py::_media_readings": 16,
- "src/tessellate/api/routes_chat.py::_prepare": 52,
  "src/tessellate/api/routes_chat.py::chat": 20,
  "src/tessellate/api/routes_conversations.py::_hydrate_attachments": 46,
  "src/tessellate/api/routes_conversations.py::_turn_messages": 23,
