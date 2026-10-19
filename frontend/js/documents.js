@@ -14424,6 +14424,16 @@ try {
 //: The class goes on the tab rather than on each pane so Split's two halves
 //: can never disagree, and it is remembered because it is a preference about
 //: how you read, not a place you are.
+//: A toggle shows its state in its glyph, not only in a fill (INBOX 904 B58:
+//: "clicking an icon button to toggle smth doesn't change the icon's" look).
+//: Keeps `ph-lead` on a menu row's icon.
+function docToggleIcon(button, on, onIcon, offIcon) {
+  const icon = button?.querySelector("i.ph");
+  if (!icon) return;
+  const lead = icon.classList.contains("ph-lead") ? " ph-lead" : "";
+  icon.className = `ph ${on ? onIcon : offIcon}${lead}`;
+}
+
 const DOC_WIDTH_KEY = "doc-full-width";
 
 function applyDocWidth(wide) {
@@ -14439,6 +14449,7 @@ function applyDocWidth(wide) {
   for (const button of [$("doc-width-toggle"), $("doc-width-menu")]) {
     if (!button) continue;
     button.setAttribute("aria-pressed", String(wide));
+    docToggleIcon(button, wide, "ph-arrows-in-line-horizontal", "ph-arrows-out-line-horizontal");
     button.title = title;
     button.setAttribute("aria-label", title);
   }
@@ -14559,6 +14570,7 @@ function applyDocDim(on) {
   const button = $("doc-dim-others");
   if (button) {
     button.setAttribute("aria-pressed", String(on));
+    docToggleIcon(button, on, "ph-drop-half-bottom", "ph-drop-half");
     button.title = on
       ? "Show the whole document again"
       : "Fade everything except the paragraph the caret is in";
@@ -14576,6 +14588,7 @@ function applyDocTypewriter(on) {
   const button = $("doc-typewriter");
   if (button) {
     button.setAttribute("aria-pressed", String(on));
+    docToggleIcon(button, on, "ph-arrows-in-line-vertical", "ph-arrows-down-up");
     button.title = on
       ? "Let the page scroll the way it normally does"
       : "Keep the line you are typing on in the middle of the pane";
