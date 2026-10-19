@@ -34,6 +34,9 @@ with its owner named in the entry.
 
 ## Open items
 
+1339. **The owner, 2026-10-19, verbatim** (screenshot, dark: an Ask answer "You have ten notes about courses & study, 17 July to 15 October." whose theme paragraph reads "Your university notes share #university: your uni days this week are Tuesday, Cloud computing is the delivery of computing, I had three lectures for my cloud, ... and you linked your uni days this week are Tuesday to I had three lectures for my cloud.", while the dated lines below correctly say "On 17 July, your uni days the week of 13 July are Tuesday and Thursday."; Matching records cards beside it). "it is not this week anymore like said at the top of the composer"
+     For the next PR. Recommendation: the theme summary and link phrases go through the same relative-time rewrite as the dated lines ("this week" in a 17 July note becomes "the week of 13 July"); the summary also reads as clipped title fragments joined by commas, so it should name the shared theme and two or three topics, not chain note openings.
+
 1338. **The owner, 2026-10-19, verbatim** (screenshot, dark: a "Use AI" switch, off, with a sparkle icon and a "?" button). "this button should be disabled when the ai isnt available"
      For the next PR. Recommendation: the switch is disabled with the reason as its description (no model set up) while no model is reachable, and comes back on its own when one is.
 
