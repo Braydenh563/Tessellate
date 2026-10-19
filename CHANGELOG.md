@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Atlas: small behaviours on a randomised clock (atlas-micro.js, lazy): glances at the pointer or the focused field, head tilts, weight shifts, ear flicks, slow or doubled blinks and short passing expressions (curious, focused, pleased, drowsy, startled), weighted by typing, idle time and the hour; none under reduced motion or while it is busy (INBOX 1322b).
 - Atlas juggle: under reduced motion (system or app) the stars no longer sit dead still; each pulses its opacity while the act lasts (INBOX 1322b). Awake and full-motion it already threw them, 42 px of travel in 2 s measured.
 - Dashboard: the Stats and Streak widgets have a Statistics button, as the heatmap does, and the Stats bar strip opens Statistics too (INBOX 1318).
 - Whiteboard: Ctrl+Enter while typing in a sticky starts the next one beside it, same paper and size (INBOX 1308).

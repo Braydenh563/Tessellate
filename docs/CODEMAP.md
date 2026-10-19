@@ -2,9 +2,9 @@
 
 Generated 2026-10-19 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6150, frontend ids 2536, CSS sections 496, backend routes 613, backend modules 6112, test files 1292, tests 11571, plan headings 961.
+Counts: frontend functions 6158, frontend ids 2536, CSS sections 496, backend routes 613, backend modules 6112, test files 1293, tests 11577, plan headings 961.
 
-## Frontend functions (6150)
+## Frontend functions (6158)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -2455,6 +2455,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasTailShape` | frontend/js/atlas-life.js:115 |
 | `atlasTailUnrest` | frontend/js/atlas-life.js:381 |
 
+### frontend/js/atlas-micro.js (8)
+
+| Name | File:line |
+|---|---|
+| `atlasMicroDo` | frontend/js/atlas-micro.js:76 |
+| `atlasMicroGap` | frontend/js/atlas-micro.js:27 |
+| `atlasMicroGlance` | frontend/js/atlas-micro.js:61 |
+| `atlasMicroMay` | frontend/js/atlas-micro.js:50 |
+| `atlasMicroPick` | frontend/js/atlas-micro.js:31 |
+| `atlasMicroPlay` | frontend/js/atlas-micro.js:58 |
+| `atlasMicroStart` | frontend/js/atlas-micro.js:130 |
+| `atlasMicroTick` | frontend/js/atlas-micro.js:118 |
+
 ### frontend/js/atlas-motion.js (17)
 
 | Name | File:line |
@@ -2463,19 +2476,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasBlinkMay` | frontend/js/atlas-motion.js:30 |
 | `atlasBlinkStart` | frontend/js/atlas-motion.js:58 |
 | `atlasBlinkTick` | frontend/js/atlas-motion.js:45 |
-| `atlasLowerState` | frontend/js/atlas-motion.js:91 |
-| `atlasMotionOK` | frontend/js/atlas-motion.js:109 |
-| `atlasRigAttach` | frontend/js/atlas-motion.js:116 |
-| `atlasRigFrame` | frontend/js/atlas-motion.js:365 |
-| `atlasRigGesture` | frontend/js/atlas-motion.js:177 |
-| `atlasRigRead` | frontend/js/atlas-motion.js:150 |
-| `atlasRigSpring` | frontend/js/atlas-motion.js:202 |
-| `atlasRigWake` | frontend/js/atlas-motion.js:215 |
-| `atlasStarsFade` | frontend/js/atlas-motion.js:355 |
-| `atlasTossAt` | frontend/js/atlas-motion.js:247 |
-| `atlasTossBob` | frontend/js/atlas-motion.js:261 |
-| `atlasTossDraw` | frontend/js/atlas-motion.js:324 |
-| `atlasTossState` | frontend/js/atlas-motion.js:269 |
+| `atlasLowerState` | frontend/js/atlas-motion.js:94 |
+| `atlasMotionOK` | frontend/js/atlas-motion.js:112 |
+| `atlasRigAttach` | frontend/js/atlas-motion.js:119 |
+| `atlasRigFrame` | frontend/js/atlas-motion.js:368 |
+| `atlasRigGesture` | frontend/js/atlas-motion.js:180 |
+| `atlasRigRead` | frontend/js/atlas-motion.js:153 |
+| `atlasRigSpring` | frontend/js/atlas-motion.js:205 |
+| `atlasRigWake` | frontend/js/atlas-motion.js:218 |
+| `atlasStarsFade` | frontend/js/atlas-motion.js:358 |
+| `atlasTossAt` | frontend/js/atlas-motion.js:250 |
+| `atlasTossBob` | frontend/js/atlas-motion.js:264 |
+| `atlasTossDraw` | frontend/js/atlas-motion.js:327 |
+| `atlasTossState` | frontend/js/atlas-motion.js:272 |
 
 ### frontend/js/attach-to.js (4)
 
@@ -18357,7 +18370,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11571)
+## Tests (11577)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18423,6 +18436,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_breath_687.py | 4 |
 | tests/test_atlas_frame_reads.py | 5 |
 | tests/test_atlas_lids_1301.py | 5 |
+| tests/test_atlas_micro.py | 6 |
 | tests/test_atlas_shape.py | 51 |
 | tests/test_atlas_stars.py | 7 |
 | tests/test_atlas_suggest_shape.py | 2 |

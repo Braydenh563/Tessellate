@@ -57,6 +57,9 @@ function atlasBlinkTick() {
 }
 function atlasBlinkStart() {
   if (!atlasState.blinkTimer) atlasState.blinkTimer = setTimeout(atlasBlinkTick, 1800);
+  //: The small behaviours are a file of their own (atlas-micro.js), fetched once.
+  if (typeof atlasMicroStart === "function") atlasMicroStart();
+  else if (!atlasState.microLoad) atlasState.microLoad = lazyScript("/js/atlas-micro.js").then((ok) => ok && atlasMicroStart());
 }//: **The rig: limbs that move like limbs** (INBOX 554, 564; the owner: "fix
 //: how the arms connect to the atlas bodies and how they are used in
 //: transitions between places and positions ... animate everything to be
