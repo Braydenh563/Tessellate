@@ -388,6 +388,13 @@ def understand(question: str, now: datetime | date | None = None, locale: str | 
             remainder = (remainder[:start] + " " + remainder[end:]).strip()
 
     subject = _strip_scaffolding(remainder)
+    #: **A window that has not happened yet filters nothing**: no note was
+    #: written next month, so "my running plan for next month" found no notes
+    #: while a half marathon plan sat in the notebook (1324). The subject
+    #: searches; the date stays in the question for the composer to read.
+    if since is not None and since > today and not operator_dates and _has_content(subject):
+        since = until = None
+        phrase = ""
     # Nothing left but filler once the date came out: the question was *only*
     # about time. Say so, so the caller lists the range instead of ranking
     # noise: "what did I save last week" has no subject to be similar to.

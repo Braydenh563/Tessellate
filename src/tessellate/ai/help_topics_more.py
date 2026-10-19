@@ -83,6 +83,21 @@ MORE_TOPICS: list[dict] = [
         "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
     },
     {
+        "id": "what-is-atlas",
+        "keywords": (
+            "what is atlas", "who is atlas", "what does atlas do", "what can atlas do", "about atlas",
+            "meet atlas", "atlas assistant",
+        ),
+        "body": (
+            "Atlas is the assistant inside Tessellate. It answers questions from your notes and cites them, "
+            "files new notes, sets reminders, finds, tags, moves and links notes (a change that cannot be "
+            "taken back waits for your Confirm), and opens the part of the app you name. Ask lives in Notes, "
+            "Chat has its own tab, and Ctrl+Shift+A opens it over any tab. With no model connected it "
+            "answers from your notes by itself."
+        ),
+        "badge": {"label": "Chat", "tab": "chat"},
+    },
+    {
         "id": "atlas-look",
         "keywords": (
             "atlas look", "atlas style", "classic globe", "globe", "atlas character",
@@ -2088,6 +2103,7 @@ TOPIC_META: dict[str, dict] = {
         "Open Settings, Appearance, Atlas and faces.", "Pick who it is under Corner companion.", "Right-click it on the page for its menu; Ctrl+Shift+Y shows or hides it.")},
     "image-viewer": {"title": "The picture and PDF viewer", "path": "Library, open a picture or PDF"},
     "companion-throw": {"title": "Throwing the companion", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
+    "what-is-atlas": {"title": "What Atlas does", "path": "The Chat tab, or Ctrl+Shift+A over any tab"},
     "atlas-look": {"title": "How Atlas looks", "path": "Settings, Appearance, Atlas and faces, Atlas style and Atlas look"},
     "faces": {"title": "Generated faces", "path": "Settings, Appearance, Atlas and faces"},
     "profile": {"title": "Your profile", "path": "Settings, Profile"},
@@ -2251,7 +2267,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "statusbar", "companion", "companion-throw", "atlas-look", "faces",
     )),
     ("Models and the AI", (
-        "models", "model-downloads", "model-bench", "tools-setting", "autonomous", "websearch",
+        "models", "what-is-atlas", "model-downloads", "model-bench", "tools-setting", "autonomous", "websearch",
         "search-index", "packages",
     )),
     ("Privacy and your data", (

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer, no model (INBOX 1324, 1315): Ask answers a find with the matching notes instead of sending it to Chat; "how many notes do I have about work" gives the figure; "list my recipes" lists the tag; "last week" and "next month" no longer drop or empty a subject; "knives" finds "Knife sharpening"; "delete everything" is answered with the safe way; reminders asked for "this week" are that week's, without a false Heads up; the Guide answers "can I use this offline" and "what does Atlas do"; compare questions name Porto and Lisbon as typed and a heading is named without its hash. 40-question grade: 23 to 32 fully good (scratchpad/composer1324-grades.md).
 - Dashboard: the Ask AI quick link is now Ask your notes, since it answers from your notes with or without a model running.
 - Timeline: the density strip's window rises as the feed scrolls into future dates; its span reaches the newest row and the week ahead, and the strip is drawn by the lazy labels file (INBOX 1316).
 - Chat and Ask: "Grounded in" is a source list: a quiet heading over bordered source cards with number badges and pictures inside their card, and a note's front matter no longer shows as its title (INBOX 1323).

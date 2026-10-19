@@ -534,6 +534,8 @@ HELP_TOPICS: list[dict] = [
         "id": "privacy",
         "keywords": ("private note", "encrypt", "password", "lock", "security", "offline", "online", "internet", "cloud", "telemetry", "tracking", "local chip"),
         "body": (
+            "Yes, it works offline: Tessellate runs on this computer and needs no account or "
+            "internet, and with no model connected it still answers from your notes. "
             "Private notes are encrypted at rest with a key derived from your "
             "unlock password. The app binds to localhost, has no account or "
             "telemetry, and nothing leaves your machine unless you explicitly "

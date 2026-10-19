@@ -159,7 +159,8 @@ def _found_notes(lead: str, notes: list[dict], total: int, empty: str, more_at: 
         return empty, "", _chips(("Open your notes", NOTES))
     rows = [_note_row(n) for n in notes[:limit]]
     shown = min(len(notes), limit)
-    more = f" Here are the first {count_noun(shown, 'note').split(' ', 1)[0]}." if total > shown and " of " not in lead else ""
+    first = "Here is the closest one." if shown == 1 else f"Here are the first {count_noun(shown, 'note').split(' ', 1)[0]}."
+    more = f" {first}" if total > shown and " of " not in lead else ""
     chips = [("Open it" if len(notes) == 1 else "Open the first one", note_at(notes[0].get("id") or notes[0].get("note_id")))]
     if total > shown:
         chips.append(("Show all notes", more_at))
@@ -388,10 +389,29 @@ def _get_document(result: dict, args: dict) -> Said:
 
 def _reminders(result: dict, args: dict) -> Said:
     rows = [r for r in result.get("reminders") or [] if isinstance(r, dict) and (args.get("include_done") or not r.get("done"))]
+    #: "what reminders do I have this week": only that window's, said as it
+    #: (1324: all ten were listed under "this week").
+    within = args.get("within")
+    if within:
+        phrase, start, end = within
+        rows = [r for r in rows if _due_day(r.get("due_at")) is not None and start <= _due_day(r.get("due_at")) <= end]
+        if not rows:
+            return f"You have no reminders {phrase}.", "", _chips(("Open Reminders", REMINDERS))
+        table = _table(["Reminder", "When"], [[r.get("text"), _when(r.get("due_at"))] for r in rows[:12]])
+        return f"You have {count_noun(len(rows), 'reminder')} {phrase}.", table, _chips(("Open Reminders", REMINDERS))
     if not rows:
         return "You have no reminders waiting.", "", _chips(("Open Reminders", REMINDERS))
     table = _table(["Reminder", "When"], [[r.get("text"), _when(r.get("due_at"))] for r in rows[:12]])
     return f"You have {count_noun(len(rows), 'reminder')} waiting.", table, _chips(("Open Reminders", REMINDERS))
+
+
+def _due_day(value: object):  # noqa: ANN202
+    from datetime import datetime
+
+    try:
+        return datetime.fromisoformat(str(value)).date()
+    except ValueError:
+        return None
 
 
 def _skills(result: dict, args: dict) -> Said:

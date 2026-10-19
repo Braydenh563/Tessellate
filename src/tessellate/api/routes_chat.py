@@ -21,7 +21,7 @@ import time
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 from dataclasses import replace as with_changes
-from datetime import date, timezone
+from datetime import date, timedelta, timezone
 from itertools import chain
 from pathlib import Path
 from typing import Annotated, Literal
@@ -1520,6 +1520,15 @@ def _recall_window(session: Session, question: str, found: _Found) -> None:
     if asked.kind == "recall" and asked.window:
         found.entries = search_manager.entries_between(session, asked.window[0], asked.window[1])
         found.mode, found.connected_ids, found.match_info, found.when_phrase = "window", set(), {}, asked.window_phrase
+    elif asked.window and found.entries:
+        #: **A subject inside a window keeps the window** (1324): "what did I
+        #: write about sourdough last week" was answered with sourdough notes
+        #: from six weeks, under a header that said "last week". The notes
+        #: inside the window are the answer when there are any.
+        inside = [e for e in found.entries if e.created_at and asked.window[0] <= e.created_at.date() <= asked.window[1]]
+        if inside:
+            found.entries = inside
+            found.when_phrase = found.when_phrase or asked.window_phrase
 
 
 def _search_notes(session: Session, question: str, found: _Found, attached: list, as_of, locale: str | None) -> None:  # noqa: ANN001
@@ -2389,6 +2398,19 @@ def _tool_read_events(req: _StreamRequest, notes: list | None = None) -> list[di
             if isinstance(result, dict) and result.get("total_matching"):
                 said = tool_say.say("list_notes", result, args, now.date())
                 return [{"type": "answer", "delta": said["text"]}]
+    counted = composer_lists.counted_filing(asked)
+    if counted is not None:
+        #: "how many notes do I have about work": a figure, not a quote.
+        for args in ({"category": counted}, {"tag": counted}) if counted else ({},):
+            result = agent_tools.execute_tool(req.session, "count_notes", args)
+            if isinstance(result, dict) and (result.get("total") or result.get("count")) and not result.get("error"):
+                total = int(result.get("total") or result.get("count") or 0)
+                where = f" in {args['category'][:1].upper() + args['category'][1:]}" if "category" in args and counted else (f" tagged {args['tag']}" if counted else "")
+                lead = f"You have {total} note{'' if total == 1 else 's'}{where}."
+                per = result.get("by_category") or {}
+                if not counted and len(per) > 1:
+                    lead += " Per category: " + ", ".join(f"{k} {v}" for k, v in sorted(per.items(), key=lambda kv: -int(kv[1]))[:6]) + "."
+                return [{"type": "answer", "delta": lead}]
     got = reading.read(asked, now=now)
     if got.tool not in act_registry.NO_MODEL_READS or got.intent in act_registry.ACTS:
         return []
@@ -2398,7 +2420,17 @@ def _tool_read_events(req: _StreamRequest, notes: list | None = None) -> list[di
     drawn = realise.tool_answer(got.tool, result, now.date())
     #: Said with its links to what it lists and the place to open
     #: (`tool_say`); a chart, when the counts make one, stands for the table.
-    said = tool_say.say(got.tool, result, {}, now.date())
+    say_args: dict = {}
+    if got.tool == "list_reminders":
+        window = composer.plan(asked, now.date())
+        if window.window and window.window_phrase:
+            start, end = window.window
+            if window.window_phrase == "this week":
+                #: A recall window stops at today; what is due runs to Sunday.
+                end = max(end, start - timedelta(days=start.weekday()) + timedelta(days=6))
+            say_args["within"] = (window.window_phrase, start, end)
+            drawn = None
+    said = tool_say.say(got.tool, result, say_args, now.date())
     chart = drawn["chart"] if drawn else None
     parts = (said["lead"], "" if chart else said["body"], said["chips"])
     out = [{"type": "answer", "delta": "\n\n".join(p for p in parts if p)}]
@@ -3042,7 +3074,7 @@ def _act_events(req: _StreamRequest, prepared: dict) -> Iterator[dict]:
     object that is not one note is asked about, never guessed. Ask is a
     client too: it names the act it read and says where it is done."""
     parsed = acts.parse(req.question, user_now(deps.get_config()))
-    if req.body.notes_only:
+    if req.body.notes_only and (parsed or {}).get("intent") != "find":
         yield {"type": "answer", "delta": acts.ask_line(parsed)}
         return
     if parsed is None:
@@ -3089,12 +3121,36 @@ def _forced_notes(req: _StreamRequest, follow: object) -> bool:
     to the agent's question, a follow-up, and, in Ask, "list my work notes"
     (an act in Chat, the question it is here: the listing is the answer,
     CHAT_PLAN Phase 6 P12)."""
-    return bool(req.body.answering_agent or follow is not None or (req.body.notes_only and composer_lists.kind(req.question) is not None))
+    if req.body.answering_agent or follow is not None:
+        return True
+    if not req.body.notes_only:
+        return False
+    if composer_lists.kind(req.question) is not None:
+        return True
+    #: "summarise my gym notes": a look-up, and Ask is where look-ups are
+    #: answered, so it is read as the question it is (1324). A find is
+    #: listed in `_act_events`.
+    parsed = acts.parse(req.question, user_now(deps.get_config()))
+    return bool(parsed and parsed["intent"] == "summarise")
+
+
+#: "delete everything", "wipe all my notes": a request the app never does in
+#: one step, answered with the way it can be done (1324: it was answered with
+#: a quote of the first notes that said "everything").
+_BULK_DELETE = re.compile(
+    r"^(?:please |pls )?(?:delete|erase|wipe|remove|clear|bin|trash)(?: out)? (?:everything|all(?: of)?(?: (?:my|the))?(?: notes| entries| data| stuff)?|every note|my (?:whole )?notebook)[?.!]*$",
+    re.I,
+)
 
 
 def _first_events(req: _StreamRequest, prepared: dict, ollama_running: bool, tools_only: bool) -> Iterator[dict]:
     """The turn's events before the agent is asked: an act, a starter the
     engine answers with no model, or the plain answer."""
+    if _BULK_DELETE.match(" ".join((req.question or "").split())):
+        return iter([{"type": "answer", "delta": (
+            "I will not delete everything in one go. Name one note instead, for example “delete the boiler note”: "
+            "it waits for your Confirm, and Undo brings it back."
+        )}])
     if prepared["intent"] == intent.ACT:
         return _act_events(req, prepared)
     starter = _starter_read(req, ollama_running or tools_only)
@@ -3306,7 +3362,7 @@ def _checks_grounding(prepared: dict, agentic: bool, composing: bool, conversati
     numbers are counts of rows, in no note, and "Heads up: I could not find
     96 in your notes" under "You have 96 notes" was the check misreading it
     (Brief 89)."""
-    return not agentic and not composing and not conversational and prepared["stats"] is None
+    return not agentic and not composing and not conversational and prepared["stats"] is None and not prepared.get("tool_read")
 
 
 def _engine_answers(req: _StreamRequest, prepared: dict) -> bool:

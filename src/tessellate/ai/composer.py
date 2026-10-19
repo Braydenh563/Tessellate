@@ -565,12 +565,19 @@ def _stem(word: str) -> str:
     return _stem_plain(variants.canonical(word.lower()))
 
 
+#: Plurals whose singular ends in f or fe: "find notes about knives" must meet
+#: "Knife sharpening" (grading round 1324).
+_F_PLURALS = {"knives": "knife", "wives": "wife", "shelves": "shelf", "loaves": "loaf", "leaves": "leaf", "halves": "half", "calves": "calf"}
+
+
 def _stem_plain(word: str) -> str:
     """`_stem` without the spelling key: what the import-time tables use, so
     importing the composer never loads the English list."""
     w = word.lower()
     if w in _NOT_PLURAL:
         return w
+    if w in _F_PLURALS:
+        return _F_PLURALS[w]
     for suffix, keep, least in (("ies", "y", 4), ("ing", "", 3), ("ed", "", 4), ("es", "", 3), ("s", "", 3)):
         if w.endswith(suffix) and len(w) - len(suffix) >= least:
             if suffix == "s" and w.endswith(("ss", "us", "is")):
@@ -693,12 +700,19 @@ _COMPARE_SIDES = (*composer_tables.EXTRA_COMPARE_SIDES, *_COMPARE_SIDES)
 _COMPARE_EXTRA = re.compile(composer_tables.COMPARE_SHAPE_EXTRA, re.I)
 
 
+def _bare_side(side: str) -> str:
+    """One side of a comparison without the noun that names the notes:
+    "Lisbon notes" is Lisbon (1324)."""
+    side = side.strip(" ,")
+    return re.sub(r"\s+(?:notes?|entries)$", "", side, flags=re.I).strip(" ,") or side
+
+
 def compare_sides(question: str) -> tuple[str, str] | None:
     """The two things a comparison names, as typed: ("Lisbon", "Porto")."""
     for pattern in _COMPARE_SIDES:
         match = pattern.search(rephrase(question))
         if match:
-            a, b = match.group("a").strip(" ,"), match.group("b").strip(" ,")
+            a, b = (_bare_side(match.group(k)) for k in ("a", "b"))
             if subject_terms(a) and subject_terms(b):
                 return a, b
     return None
