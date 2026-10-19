@@ -441,3 +441,33 @@ button.answer-grounding-thumb:is(:focus-visible, :has(:focus-visible)) {
 .answer-grounding-chip > .ph-lead {
   display: none;
 }
+
+/* The chat's queue (INBOX 1321, `chatQueuePaint`): one quiet row per
+   message waiting, above the box, its words cut to one line. */
+.chat-queue {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0 0 var(--space-2);
+  padding: 0;
+  list-style: none;
+}
+
+.chat-queue-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding-inline-start: var(--space-3);
+  border: 1px dashed var(--divider);
+  border-radius: var(--radius-md);
+  background: var(--card);
+}
+
+.chat-queue-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+}

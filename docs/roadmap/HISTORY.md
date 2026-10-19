@@ -51064,3 +51064,6 @@ From WHITEBOARD_PLAN "The draw.io programme", section 2 (Text tab), built by the
 1316. **Fixed.** **The owner, 2026-10-19, verbatim.** "also the timeline side graph should scroll higher if I scroll to future dates on the timeline as well"
      Owner: timeline agent (Sonnet), queued after the current three.
 
+1321. **Fixed.** **The owner, 2026-10-19, verbatim.** "and I cant type in the chat bar while it is generating, I want to be able to queue messages, and edit or delete/bring back queued messages as well to the chat bar for resending"
+     Owner: chat-queue agent (Sonnet), queued: the box stays editable while a reply streams; Enter queues; queued messages show as chips above the box with edit, delete and "back to the box"; they send in order when the reply ends; CHAT_PLAN row.
+

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat: the box stays open while an answer streams; Enter queues the message above the box, with Edit (back into the box) and Remove, and the queue sends in order as each answer ends; Stop holds it (INBOX 1321).
 - Statistics: the page is wider and taller, and only its body scrolls, so the title and close stay in view (INBOX 1319, part).
 - Timeline: the density strip's window rises as the feed scrolls into future dates; its span reaches the newest row and the week ahead, and the strip is drawn by the lazy labels file (INBOX 1316).
 - Chat and Ask: "Grounded in" is a source list: a quiet heading over bordered source cards with number badges and pictures inside their card, and a note's front matter no longer shows as its title (INBOX 1323).

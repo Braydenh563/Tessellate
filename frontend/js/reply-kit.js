@@ -917,3 +917,47 @@ function replyNoteCard(id, name) {
   card.addEventListener("click", () => openNoteAtPassage(id, ""));
   return card;
 }
+
+//: **The chat's queue** (INBOX 1321, `sendChatMessage`): each message sent
+//: while an answer streams, above the box, with Edit (back into the box,
+//: out of the queue) and Remove. They go in order as each answer ends.
+function chatQueuePaint() {
+  const input = $("chat-input");
+  const row = input.parentElement;
+  let list = document.querySelector(".chat-queue");
+  if (!chatQueue.length) {
+    list?.remove();
+    return;
+  }
+  if (!list) {
+    list = document.createElement("ul");
+    list.className = "chat-queue";
+    list.setAttribute("aria-label", "Queued messages");
+    row.parentElement.insertBefore(list, row);
+  }
+  list.replaceChildren(
+    ...chatQueue.map((text, i) => {
+      const li = document.createElement("li");
+      li.className = "chat-queue-item";
+      const words = document.createElement("span");
+      words.className = "chat-queue-text";
+      words.textContent = text;
+      words.title = text;
+      const edit = smallButton("ph:pencil-simple", "Edit: back into the box", () => {
+        chatQueue.splice(i, 1);
+        input.value = input.value.trim() ? `${text}\n${input.value}` : text;
+        input.dispatchEvent(new Event("input"));
+        input.focus();
+        chatQueuePaint();
+      });
+      const remove = smallButton("ph:x", "Remove from the queue", () => {
+        chatQueue.splice(i, 1);
+        chatQueuePaint();
+        input.focus();
+      });
+      for (const b of [edit, remove]) b.classList.add("icon-only");
+      li.append(words, edit, remove);
+      return li;
+    })
+  );
+}

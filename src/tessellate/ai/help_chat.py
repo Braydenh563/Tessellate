@@ -1934,11 +1934,12 @@ HELP_TOPICS.extend(
                 "context window", "export the chat", "stop the answer", "stop an answer",
                 "source mark", "numbers in an answer", "numbered", "citation number",
                 "footnote", "evidence", "show the evidence", "square brackets", "note name in an answer", "supported", "unsupported",
-                "from your notes", "why this source",
+                "from your notes", "why this source", "queue", "queued message",
             ),
             "body": (
                 "Chat keys and controls. Enter sends, Shift+Enter starts a new "
                 "line; Escape or Ctrl+. stops the answer, Ctrl+Shift+O starts a new chat, "
+                "and one sent mid-answer queues above the box (Edit, Remove). "
                 "Ctrl+Shift+G turns agent mode on or off, Ctrl+Shift+P clips a note "
                 "to your next question, and Ctrl+Shift+A opens the same agent over "
                 "any tab. Typing / in the box opens the chat menu: attach a note, a "
@@ -1951,8 +1952,7 @@ HELP_TOPICS.extend(
                 "question, regenerate from here, save it as a note or read it "
                 "aloud. The header can fork the conversation, compress the earlier "
                 "messages (Undo goes back), show how full the model's context is "
-                "(press it for what fills it, Compact earlier messages and Change "
-                "the window, the size set in Settings, Models), "
+                "(press it for what fills it, Compact and Change the window), "
                 "switch the model, and export the chat as Markdown. A numbered "
                 "source mark in an answer shows a preview of its note on hover or "
                 "focus (the passage it came from, whether it supports the sentence "
