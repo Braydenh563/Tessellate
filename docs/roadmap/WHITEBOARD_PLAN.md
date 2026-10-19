@@ -1649,3 +1649,10 @@ Owner: "stuff like that, dont stop there, find what is missing on the whiteboard
 13. Crop a picture to a shape (circle, rounded) - M.
 14. Voting dots and a timer for workshops (Miro) - M.
 15. Text along a path - L.
+
+## Placed from INBOX, 2026-10-19 (wb1327)
+
+- INBOX 1332. **The owner, 2026-10-19, verbatim.** "im wondering if instead I should change the right click pan on the whiteboard and mind map to left click to make it more intuitive??" then "shouldnt it be kept consistent tho for learnabilioty?"
+     Then: "maybe it csn be togglable bu=y the user??" A Settings choice, "Left-drag on empty canvas: Pan / Select", default Pan, one setting for both surfaces.
+     Decision (taken): left-drag on empty canvas pans on both the whiteboard and the mind map; box select moves to Shift+drag; right, middle and Space drags keep panning. Owner: whiteboard agent wb1327, item 5.
+

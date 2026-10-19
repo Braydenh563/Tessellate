@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Statistics: a failed open, range change or question offers Try again.
 - Keyboard: the first Tab after the app loads or unlocks lands on "Skip to content" again, not the Local chip halfway along the top bar.
 - Statistics: the Ask box reads "in July", "last month" and "in sept 2025" through the shared date reader, and a tile shows its hover look on keyboard focus too.
 - Boards and maps: deleting a board for good finds its thumbnail from the uploads folder, so the notes layer no longer imports the API layer (CodeQL cyclic import).

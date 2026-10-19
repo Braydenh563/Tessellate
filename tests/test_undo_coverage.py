@@ -446,6 +446,8 @@ def uncovered() -> dict[str, list[int]]:
 
 
 EXEMPT: dict[str, str] = {
+    "statistics.js:ask": "read: a counted answer to a question about the notebook (readOnly); nothing is written",
+    "whiteboard-interchange.js:wbThumbFlush": "board: stores the board's preview picture, rebuilt from the board itself; nothing of the person's changes",
     "documents-prose.js:docLinkOfferAsk": "read: asks which note names the text mentions; applying an offer is an editor change, undone by the editor's own history",
     "lan-watch.js:lanAnswerDevice": "auth: a sign-in decision for a device; Other devices lists it again to remove",
     "lan-watch.js:lanDismissSwitchedOff": "settings: dismisses a notice; nothing of the person's is changed",

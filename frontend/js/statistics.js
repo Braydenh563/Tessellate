@@ -78,7 +78,7 @@ async function statsGo(go) {
   try {
     await go();
   } catch {
-    toast("Couldn't open that.", true);
+    toast("Couldn't open that.", true, { action: ["Try again", () => statsGo(go)] });
   }
 }
 
@@ -223,7 +223,7 @@ function statsRangeControl(holder, book) {
       const data = await apiJson(`/statistics?growth=${encodeURIComponent(select.value)}`, { silent: true });
       holder.replaceChildren(statsGrowthChart(data.notebook));
     } catch {
-      toast("Couldn't change the range.", true);
+      toast("Couldn't change the range.", true, { action: ["Try again", () => select.dispatchEvent(new Event("change"))] });
     }
   });
   label.append(text, select);
@@ -341,7 +341,7 @@ function statsAskBox() {
       }
       answer.classList.remove("hidden");
     } catch {
-      toast("Couldn't answer that.", true);
+      toast("Couldn't answer that.", true, { action: ["Try again", () => ask(text)] });
     } finally {
       send.disabled = false;
     }
