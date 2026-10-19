@@ -51134,3 +51134,7 @@ From UI_MODERNISATION_PLAN Phase 11 item 1, both built:
 1337. **The owner, 2026-10-19, verbatim** (screenshot, dark: a split button, "Save as note" in the accent fill, its dropdown chevron half in the neutral grey). "these buttons are not the same colour, should they be?"
      **Fixed**: the caret dropped kebabMenu's ghost class, so both halves are the accent fill (measured: both oklab(0.452 -0.015 -0.168); the caret was transparent).
 
+1336. **The owner, 2026-10-19, verbatim** (screenshot, dark: the notes sidebar collapsed and hover-opened; the "Categories" header with the collapse chevron at the left, the filter and pin buttons crowded at the right, the pin focused and set apart from the filter). "also the categories notes sidebar header buttons lose their positioning when the sidebar is collapsed and temporarily hover opened"
+     For the next PR. Recommendation: the hover-opened (peek) sidebar keeps the docked header's layout; measure the button rects in both states and match them.
+     **Fixed**: the peek sidebar keeps the docked sticky header rule, so the collapse toggle sits at top 77px in both states (was 69px in peek, 8px above the filter).
+

@@ -1589,8 +1589,5 @@ Rows: T1 and T2 (owner: voiceup, with V7's dialog work); T3 learnaudit; T4 gramm
 
 ## Placed from INBOX, 2026-10-19 (peek sidebar header, split button; next PR)
 
-1336. **The owner, 2026-10-19, verbatim** (screenshot, dark: the notes sidebar collapsed and hover-opened; the "Categories" header with the collapse chevron at the left, the filter and pin buttons crowded at the right, the pin focused and set apart from the filter). "also the categories notes sidebar header buttons lose their positioning when the sidebar is collapsed and temporarily hover opened"
-     For the next PR. Recommendation: the hover-opened (peek) sidebar keeps the docked header's layout; measure the button rects in both states and match them.
-
 1344. **The owner, 2026-10-19, verbatim** (screenshot, dark: a chat answer's head, the Atlas avatar, "Atlas", and a grey "Composer" badge). "can you also add a hover/click tooltip popup with a disclaimer and description for the composer message badge to inform the user how it isnt an ai and give some details?? maybe find some other ways to make it clear as well"
      Next: the badge opens a `data-help-for` popover (hover and click) saying the answer was written without an AI model, from your notes' own words and the app's counts, how to tell it apart, and how to turn on a model; the same on "From your notes"; consider a one-line note under the first composer answer of a session.
