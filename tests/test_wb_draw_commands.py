@@ -23,6 +23,7 @@ WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
 ROWS = {
     "select-shapes": ("Edit", "wbSelectAllOfKind"),
     "select-connectors": ("Edit", "wbSelectAllOfKind"),
+    "select-similar": ("Edit", "wbSelectSimilar"),
     "turn-90": ("Arrange", "wbTurnSelection"),
     "remove-from-group": ("Arrange", "wbRemoveFromGroup"),
     "copy-size": ("Edit", "wbCopySize"),

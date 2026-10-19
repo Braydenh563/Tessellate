@@ -1499,6 +1499,29 @@ async function wbMapMoveAmongSiblings(id, dir) {
   return true;
 }
 
+//: **Sort a topic's branches** (XMind's "Sort", MindManager's "Sort
+//: subtopics"): its children reordered by their words, A to Z or Z to A,
+//: numbers read as numbers, so "Step 2" comes before "Step 10". The same
+//: `data.order` key the move keys write, so the outline and the exports
+//: agree; one Undo step (the name is in `WB_RECORDED`).
+async function wbMapSortChildren(id, dir = 1) {
+  const index = wbMapIndex();
+  const kids = index.childrenOf.get(id) || [];
+  if (kids.length < 2) {
+    toast("This topic needs at least two branches to sort.");
+    return false;
+  }
+  const word = (o) => String(wbMapLabel(o) || "");
+  const sorted = [...kids].sort((x, y) => dir * word(x).localeCompare(word(y), undefined, { numeric: true, sensitivity: "base" }) || x.id - y.id);
+  sorted.forEach((kid, at) => { kid.data = { ...kid.data, order: at + 1 }; });
+  await Promise.all(sorted.map((kid) => wbSaveObject(kid)));
+  if (wbMapLayout() === "free") toast("Sorted in the outline. This map's layout is Free, so the canvas stays as it is.");
+  else await wbMapTidyBranch(id);
+  renderWhiteboardNow();
+  wbAnnounce(`Branches sorted ${dir > 0 ? "A to Z" : "Z to A"}.`);
+  return true;
+}
+
 //: Every node reachable from `id`, itself first, deepest last. Seen-guarded
 //: for the ring case above; every walk in this section goes through it.
 function wbMapSubtree(index, id) {

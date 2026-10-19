@@ -1348,7 +1348,7 @@ HELP_TOPICS.extend(
                 "lasso", "highlighter", "eraser", "connector", "snap to grid",
                 "snap", "grid", "pan", "zoom", "zoom to fit",
                 "board overview", "find a card", "find and replace", "replace all", "whole word", "regular expression", "pattern", "tool",
-                "select all shapes", "select all connectors", "turn 90 degrees", "remove from group", "copy size", "paste size", "reverse a connector", "auto size",
+                "select all shapes", "select all connectors", "select similar", "turn 90 degrees", "remove from group", "copy size", "paste size", "reverse a connector", "auto size",
             ),
             "body": (
                 "Whiteboard keys (Library, Boards & maps; Ctrl+Shift+B opens it). "
@@ -1362,7 +1362,7 @@ HELP_TOPICS.extend(
                 "zooms too, Space and drag pans, so does the middle or right mouse button held down (a plain right-click still opens the board menu), a drag to an edge pans, Ctrl+= and Ctrl+- zoom, "
                 "Ctrl+0 is 100%, Shift+1 fits all, Shift+N shows the "
                 "overview, / or Ctrl+F finds (with Whole word and Pattern buttons), Ctrl+H replaces, and Tab walks the board's "
-                "items. Ctrl+K also finds select all shapes or connectors, turn 90 degrees, remove from "
+                "items. Ctrl+K also finds select all shapes or connectors, select similar (every item of the same kind, fill and line colour as the selected one), turn 90 degrees, remove from "
                 "the group, copy and paste the size, grow to fit the words, reverse a connector and clear its bends. "
                 "Selection, menus and presenting are in Whiteboard selection and menus."
             ),
@@ -1532,11 +1532,10 @@ HELP_TOPICS.extend(
                 "sharp peak, of a size you set), a gap to stop short of the shape at each end, its two ends (twenty-one marks, from the Tessellate end through open, "
                 "filled, stealth, half and double arrows, circles and diamonds to a cross, a bar and a crow's foot, "
                 "each small, medium or large; a plain line takes them too) and where its label sits. Text: font (default, serif, monospace, wide sans, handwritten), size, colour, bold, italic, underline, strikethrough, "
-                "alignment and vertical place of a text box or a shape's words; Clear text formatting and larger or smaller text are in the command palette. Arrange: X, Y, width, height and "
+                "alignment and vertical place of a text box or a shape's words; Clear text formatting and larger or smaller text are in the command palette. Arrange: X, Y, width, height (a chain button links them at their present ratio) and "
                 "angle as numbers, flip, and the order, align, spacing, group and lock buttons. With "
                 "several items selected it shows what they share, and a value they differ on reads Mixed. Every "
-                "change is one undo step. Reset style (right-click menu, ... menu "
-                "or Ctrl+K) puts colour, fill, line and text back to the defaults, its words, place and ends kept. "
+                "change is one undo step. Reset style (right-click menu or Ctrl+K) puts colour, fill, line and text back to the defaults. "
                 "Colours are in Fill, border and recent colours. Bends, connection points and imports are in Connector bends and importing."
             ),
             "badge": {"label": "Library", "tab": "library"},
@@ -1583,7 +1582,7 @@ HELP_TOPICS.extend(
                 "resize a topic", "topic size", "bigger topic", "text size on a topic", "topic bar", "topic toolbar",
                 "several topics", "select several topics", "many topics at once", "bold several topics", "fold several branches",
                 "show levels", "fold to a level", "only the first levels", "collapse to level",
-                "summarise this branch", "summarize this branch", "summary of a branch",
+                "summarise this branch", "summarize this branch", "summary of a branch", "sort branches", "sort a topic's branches", "alphabetical branches",
             ),
             "body": (
                 "Mind map keys (a map lives in the Library under Boards and "
@@ -1615,7 +1614,7 @@ HELP_TOPICS.extend(
                 "the right-click menu act on all of them: colour, bold, tasks, "
                 "fold, and a summary when they share a parent. A topic's menu "
                 "has Summarise this branch: a few sentences about everything "
-                "under it go into the topic's note, yours to change or keep."
+                "under it go into the topic's note, yours to change or keep. Ctrl+K finds Sort branches."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

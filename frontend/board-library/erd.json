@@ -503,6 +503,257 @@
     ],
     "links": []
    }
+  },
+  {
+   "key": "associative-entity",
+   "kind": "element",
+   "name": "Associative entity",
+   "tags": [
+    "associative",
+    "junction",
+    "link table",
+    "entity",
+    "many to many"
+   ],
+   "payload": {
+    "box": {
+     "w": 200,
+     "h": 120
+    },
+    "items": [
+     {
+      "key": "e",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 200 0 L 200 120 L 0 120 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label": "Enrolment",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 0.3
+       },
+       "label_bold": true
+      },
+      "z": 5
+     },
+     {
+      "key": "e_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 36 L 200 36",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0
+      },
+      "z": 5
+     },
+     {
+      "key": "e_k",
+      "kind": "sketch",
+      "data": {
+       "d": "M 6 40 L 50 40 L 50 116 L 6 116 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0,
+       "label": "PK\nFK\nFK",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     },
+     {
+      "key": "e_n",
+      "kind": "sketch",
+      "data": {
+       "d": "M 44 40 L 194 40 L 194 116 L 44 116 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0,
+       "label": "id\nstudent_id\ncourse_id",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "many-to-one",
+   "kind": "element",
+   "name": "Many to one",
+   "tags": [
+    "relationship",
+    "crow's foot",
+    "cardinality",
+    "n:1",
+    "line"
+   ],
+   "payload": {
+    "box": {
+     "w": 180,
+     "h": 30
+    },
+    "items": [
+     {
+      "key": "r",
+      "kind": "sketch",
+      "data": {
+       "d": "M 180 15 L 0 15 M 166 3 L 166 27 M 158 3 L 158 27 M 30 15 L 0 3 M 30 15 L 0 15 M 30 15 L 0 27 M 40 3 L 40 27",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "one-to-zero-or-one",
+   "kind": "element",
+   "name": "One to zero or one",
+   "tags": [
+    "relationship",
+    "optional",
+    "cardinality",
+    "0..1",
+    "line"
+   ],
+   "payload": {
+    "box": {
+     "w": 180,
+     "h": 30
+    },
+    "items": [
+     {
+      "key": "r",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 15 L 144 15 M 156 15 L 180 15 M 14 3 L 14 27 M 22 3 L 22 27 M 134 3 L 134 27 M 144 15 A 6 6 0 1 0 156 15 A 6 6 0 1 0 144 15 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "view",
+   "kind": "element",
+   "name": "View",
+   "tags": [
+    "view",
+    "table",
+    "virtual",
+    "query",
+    "entity"
+   ],
+   "payload": {
+    "box": {
+     "w": 200,
+     "h": 110
+    },
+    "items": [
+     {
+      "key": "v",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 200 0 L 200 110 L 0 110 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.04,
+       "label": "customer_orders",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 0.3273
+       },
+       "label_bold": true,
+       "dash": "dashed"
+      },
+      "z": 5
+     },
+     {
+      "key": "v_d",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 36 L 200 36",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0
+      },
+      "z": 5
+     },
+     {
+      "key": "v_n",
+      "kind": "sketch",
+      "data": {
+       "d": "M 6 40 L 194 40 L 194 106 L 6 106 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.0,
+       "label": "customer_id\norder_total\nlast_order",
+       "label_area": {
+        "x": 0.03,
+        "y": 0.05,
+        "w": 0.94,
+        "h": 0.9
+       },
+       "noStroke": true,
+       "label_align": "left",
+       "label_valign": "top",
+       "label_size": 13
+      },
+      "z": 6
+     }
+    ],
+    "links": []
+   }
   }
  ]
 }

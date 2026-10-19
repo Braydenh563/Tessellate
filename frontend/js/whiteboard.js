@@ -5628,6 +5628,27 @@ function wbSelectAllOfKind(which) {
   wbAnnounce(`${pairs.length} ${which === "connectors" ? "connectors" : "shapes"} selected.`);
 }
 
+//: "Select similar" (Excalidraw and Miro both have it, draw.io only by
+//: style): every item of the same kind with the same fill and line colour as
+//: the first one selected, so a board's blue shapes can be recoloured at once.
+function wbSelectSimilar() {
+  const [ref] = wbFmtEntries();
+  if (!ref) {
+    toast("Select an item first.");
+    return;
+  }
+  const kind = wbFmtKind(ref);
+  const same = (entry) => wbFmtKind(entry) === kind
+    && wbFmtValue(entry, "fill") === wbFmtValue(ref, "fill") && wbFmtValue(entry, "stroke") === wbFmtValue(ref, "stroke");
+  const pairs = wbSelectableItems().filter(([k, item]) => same({ kind: k, id: item.id, item }));
+  if (pairs.length < 2) {
+    toast("Nothing else looks like it.");
+    return;
+  }
+  wbSelectExactly(pairs);
+  wbAnnounce(`${pairs.length} similar items selected.`);
+}
+
 //: Everything a selection can hold: what a link can join, plus pictures.
 //: Select all read `wbLinkCandidates`, which leaves an image object out
 //: because a link cannot land on one, so Ctrl+A then Delete left every
@@ -22698,7 +22719,7 @@ const WB_RECORDED = [
   "wbMapAddRootAt", "wbMapAddReference", "wbMapDuplicateTopic", "wbMapClearToOneTopic",
   "wbMapToggleCollapse", "wbMapCopyBranch", "wbMapRemoveKeepingBranch", "wbMapSever",
   "wbMapReverseCrossLink", "wbMapCrossLinkToBranch", "wbMapCutCrossLink", "wbMapReverseEdge",
-  "wbMapSetLayout", "wbMapInsertBetween", "wbMapOutdent", "wbMapMoveAmongSiblings",
+  "wbMapSetLayout", "wbMapInsertBetween", "wbMapOutdent", "wbMapMoveAmongSiblings", "wbMapSortChildren",
   "wbMapTidy", "wbGroupSelection", "wbUngroupSelection",
   "wbPasteCopiedStyle", "wbMapUseLookForLevel", "wbArrangeMindMap", "wbMindMapAddCard", "wbBucketFillSketch", "wbFitToText",
 ];

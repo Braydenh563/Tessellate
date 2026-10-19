@@ -27,3 +27,12 @@ def test_a_placed_multi_part_element_is_one_group(ai_client) -> None:
     assert len(placed["sketches"]) == 4 and len(ids) == 1 and None not in ids
     single = ai_client.post(f"/whiteboard/boards/{board['id']}/place", json={"builtin": "flowchart/decision", "x": 0, "y": 0}).json()
     assert single["sketches"][0]["group_id"] is None
+
+
+def test_sort_branches_is_a_recorded_map_command() -> None:
+    cmd = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
+    board = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    for row in ("sort-az", "sort-za"):
+        line = next(x for x in cmd.splitlines() if f'{{ id: "{row}"' in x)
+        assert 'surface: "map"' in line and 'needs: "topic"' in line and "wbMapSortChildren" in line
+    assert '"wbMapSortChildren"' in board, "one Undo step: the name is in WB_RECORDED"
