@@ -1396,7 +1396,7 @@ HELP_TOPICS.extend(
                     "Select. Double-click empty board for a text box, double-click a closed shape (or select "
                     "it and press Enter) to write in it, right-click (or hold on touch) for the menu, double-"
                     "click a line to bend it, and select a connector and press Label in its bar (or Enter) to"
-                    " label it. A frame's title drags it and what is inside it (Ctrl: the frame alone); a click on a panel's body or a frame's edge selects it, and its top handle turns it; its "
+                    " label it. A frame's title drags it and what is inside it (Ctrl: the frame alone); a click on a panel's body or a frame's edge selects it, and its top handle turns it (a frame's handle turns what is inside it too; Ctrl: the frame alone); its "
                     "menu exports it or fits it to its contents, and a double-click on a resize "
                     "handle fits that edge to what it holds. Ctrl+Shift+L "
                     "locks the selection; Unlock is on the board's right-click menu. Right-click an item, "
