@@ -12,6 +12,8 @@ below). Versioning is `0.x` while the app stabilises.
 - Sidebar: the Categories collapse toggle sits on the head's row (8px lower, level with the filter button) while the collapsed sidebar is hover-opened.
 - Statistics: the Ask box answers "when did I write my first note" (also oldest, newest, latest, when did I start) with the date and title, its field and Ask button share one 32px height, and a Clear button empties the answer and the box.
 - Mind maps: a map too big to fit opens with its first topics at the top-left of the canvas instead of its root in the middle with the rest off the bottom-right, and each board remembers its own pan and zoom for the session (owner, 2026-10-19; INBOX 1340).
+- Manual: Find anything and the palette have Open the manual (it can be a dashboard quick link), Settings, Help, The manual topic opens the manual itself, and the Guide's text names its More actions menu.
+- Navigation: the manual and Statistics are places in the history list (Back closes them, the list names them), and the current row no longer shrinks when the list scrolls (INBOX 1335).
 - Statistics: a failed open, range change or question offers Try again.
 - Keyboard: the first Tab after the app loads or unlocks lands on "Skip to content" again, not the Local chip halfway along the top bar.
 - Statistics: the Ask box reads "in July", "last month" and "in sept 2025" through the shared date reader, and a tile shows its hover look on keyboard focus too.

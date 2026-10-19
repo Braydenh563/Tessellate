@@ -142,3 +142,13 @@
   background: var(--error-soft);
   color: var(--error);
 }
+
+/* **No row gives up height when the list scrolls** (the owner, 2026-10-19:
+   "this nav history location item is crushed"). The menu is a column with a
+   max-height, and the current row is a bare div with `overflow: hidden`, so
+   its automatic minimum height is zero and the column shrank it to 32px
+   against the others' 52.5px, clipping the subtitle (scrollHeight 42). Every
+   child keeps its own height; the menu scrolls instead. */
+.nav-history-menu > * {
+  flex: none;
+}

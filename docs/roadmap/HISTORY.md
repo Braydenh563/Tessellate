@@ -51138,3 +51138,6 @@ From UI_MODERNISATION_PLAN Phase 11 item 1, both built:
      For the next PR. Recommendation: the hover-opened (peek) sidebar keeps the docked header's layout; measure the button rects in both states and match them.
      **Fixed**: the peek sidebar keeps the docked sticky header rule, so the collapse toggle sits at top 77px in both states (was 69px in peek, 8px above the filter).
 
+1335. **Fixed 6c5cc17** (the manual and Statistics each push a history entry, so the list names them and Back closes them; the current row was 32px against 52.5px and is now 52.5px). **The owner, 2026-10-19, verbatim.** "also the backwards global navigation and nav history didnt register me having the statistics panel open"
+     For the next PR. Recommendation: opening Statistics pushes a nav history entry like the other panels, so Back closes it and the history list names it.
+

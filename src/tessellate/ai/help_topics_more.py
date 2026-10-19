@@ -988,8 +988,10 @@ MORE_TOPICS: list[dict] = [
             "print the help", "read all the help", "every help topic", "help page",
         ),
         "body": (
-            "The manual is every topic Atlas answers from, on one page: Settings, "
-            "Help, Open the manual, or Open the manual in the Guide's ... menu. "
+            "The manual is every topic Atlas answers from, on one page: Ctrl+K or "
+            "Find anything, Open the manual; Settings, Help, Open the manual; or "
+            "Open the manual in the Guide's More actions menu. It can also sit on "
+            "the dashboard as a quick link (Quick access, Customise). "
             "The contents on the left jump to a group, the search box keeps only "
             "the topics that hold every word you type or what the words mean "
             "(\"trash\" keeps the bin's topic), those whose name holds them "

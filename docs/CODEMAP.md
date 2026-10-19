@@ -2,9 +2,9 @@
 
 Generated 2026-10-19 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6195, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6158, test files 1314, tests 11685, plan headings 967.
+Counts: frontend functions 6197, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6158, test files 1316, tests 11694, plan headings 967.
 
-## Frontend functions (6195)
+## Frontend functions (6197)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -881,58 +881,58 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `activeNotesSection` | frontend/js/navigation.js:2247 |
+| `activeNotesSection` | frontend/js/navigation.js:2248 |
 | `arrowNavTarget` | frontend/js/navigation.js:201 |
-| `backgroundWriteFailed` | frontend/js/navigation.js:1763 |
-| `chatMessagesEl` | frontend/js/navigation.js:2393 |
-| `chatMidStream` | frontend/js/navigation.js:1713 |
+| `backgroundWriteFailed` | frontend/js/navigation.js:1764 |
+| `chatMessagesEl` | frontend/js/navigation.js:2394 |
+| `chatMidStream` | frontend/js/navigation.js:1714 |
 | `closeNavHistoryMenu` | frontend/js/navigation.js:845 |
-| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1734 |
-| `coversAFormPrimary` | frontend/js/navigation.js:2552 |
+| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1735 |
+| `coversAFormPrimary` | frontend/js/navigation.js:2553 |
 | `entryLabel` | frontend/js/navigation.js:943 |
-| `formPrimaryButtons` | frontend/js/navigation.js:2513 |
+| `formPrimaryButtons` | frontend/js/navigation.js:2514 |
 | `goToTabHistory` | frontend/js/navigation.js:1034 |
-| `hasUnsavedWork` | frontend/js/navigation.js:1692 |
-| `initNotesSubtabs` | frontend/js/navigation.js:2307 |
-| `initScrollTopButton` | frontend/js/navigation.js:2572 |
-| `insideClosedDetails` | frontend/js/navigation.js:1528 |
-| `loadSurface` | frontend/js/navigation.js:1276 |
-| `measureSpacingPx` | frontend/js/navigation.js:2543 |
-| `menuOfOpener` | frontend/js/navigation.js:1550 |
-| `menuRowsOf` | frontend/js/navigation.js:1535 |
+| `hasUnsavedWork` | frontend/js/navigation.js:1693 |
+| `initNotesSubtabs` | frontend/js/navigation.js:2308 |
+| `initScrollTopButton` | frontend/js/navigation.js:2573 |
+| `insideClosedDetails` | frontend/js/navigation.js:1529 |
+| `loadSurface` | frontend/js/navigation.js:1277 |
+| `measureSpacingPx` | frontend/js/navigation.js:2544 |
+| `menuOfOpener` | frontend/js/navigation.js:1551 |
+| `menuRowsOf` | frontend/js/navigation.js:1536 |
 | `openHistoryEntry` | frontend/js/navigation.js:1094 |
 | `openNavHistoryMenu` | frontend/js/navigation.js:865 |
 | `openRowMenu` | frontend/js/navigation.js:144 |
 | `openSelectionScope` | frontend/js/navigation.js:307 |
 | `paintTabHistory` | frontend/js/navigation.js:892 |
-| `placeDockMenuInWindow` | frontend/js/navigation.js:1347 |
-| `positionScrollTopForNested` | frontend/js/navigation.js:2415 |
+| `placeDockMenuInWindow` | frontend/js/navigation.js:1348 |
+| `positionScrollTopForNested` | frontend/js/navigation.js:2416 |
 | `recordTabVisit` | frontend/js/navigation.js:980 |
 | `renderMarkdown` | frontend/js/navigation.js:355 |
-| `resetNavigationForNewSession` | frontend/js/navigation.js:2209 |
-| `resetNavigationToDefaults` | frontend/js/navigation.js:2228 |
+| `resetNavigationForNewSession` | frontend/js/navigation.js:2210 |
+| `resetNavigationToDefaults` | frontend/js/navigation.js:2229 |
 | `restoreSettingsScroll` | frontend/js/navigation.js:1081 |
 | `revealTab` | frontend/js/navigation.js:775 |
 | `rowMenuAtEvent` | frontend/js/navigation.js:123 |
-| `scrollTopTargetEl` | frontend/js/navigation.js:2397 |
-| `scrollingPage` | frontend/js/navigation.js:2346 |
-| `showNotesSection` | frontend/js/navigation.js:2252 |
-| `spacingPx` | frontend/js/navigation.js:2536 |
+| `scrollTopTargetEl` | frontend/js/navigation.js:2398 |
+| `scrollingPage` | frontend/js/navigation.js:2347 |
+| `showNotesSection` | frontend/js/navigation.js:2253 |
+| `spacingPx` | frontend/js/navigation.js:2537 |
 | `stepTabHistory` | frontend/js/navigation.js:1024 |
-| `stripMarkdownPreview` | frontend/js/navigation.js:2136 |
-| `surfaceFailed` | frontend/js/navigation.js:1207 |
-| `surfaceRecovered` | frontend/js/navigation.js:1254 |
-| `switchTab` | frontend/js/navigation.js:1812 |
-| `syncScrollLock` | frontend/js/navigation.js:2727 |
+| `stripMarkdownPreview` | frontend/js/navigation.js:2137 |
+| `surfaceFailed` | frontend/js/navigation.js:1208 |
+| `surfaceRecovered` | frontend/js/navigation.js:1255 |
+| `switchTab` | frontend/js/navigation.js:1813 |
+| `syncScrollLock` | frontend/js/navigation.js:2728 |
 | `tabLabel` | frontend/js/navigation.js:931 |
-| `tabPlaceholder` | frontend/js/navigation.js:2072 |
-| `tabSkeletonBar` | frontend/js/navigation.js:2053 |
-| `tabSkeletonDock` | frontend/js/navigation.js:2063 |
-| `tabSkeletonPiece` | frontend/js/navigation.js:2042 |
-| `usageCount` | frontend/js/navigation.js:1773 |
-| `usageFeatureName` | frontend/js/navigation.js:1769 |
-| `usageFlush` | frontend/js/navigation.js:1777 |
-| `watchDockMenuPlacement` | frontend/js/navigation.js:1409 |
+| `tabPlaceholder` | frontend/js/navigation.js:2073 |
+| `tabSkeletonBar` | frontend/js/navigation.js:2054 |
+| `tabSkeletonDock` | frontend/js/navigation.js:2064 |
+| `tabSkeletonPiece` | frontend/js/navigation.js:2043 |
+| `usageCount` | frontend/js/navigation.js:1774 |
+| `usageFeatureName` | frontend/js/navigation.js:1770 |
+| `usageFlush` | frontend/js/navigation.js:1778 |
+| `watchDockMenuPlacement` | frontend/js/navigation.js:1410 |
 | `wireLongPress` | frontend/js/navigation.js:24 |
 
 ### frontend/js/router.js (12)
@@ -978,10 +978,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `markPrefsDirty` | frontend/js/settings-panes.js:1028 |
 | `markPrefsSaved` | frontend/js/settings-panes.js:1044 |
 | `nudgeZoom` | frontend/js/settings-panes.js:1191 |
-| `paletteAbouts` | frontend/js/settings-panes.js:1559 |
+| `paletteAbouts` | frontend/js/settings-panes.js:1560 |
 | `paletteCommands` | frontend/js/settings-panes.js:1283 |
-| `paletteKeys` | frontend/js/settings-panes.js:1545 |
-| `paletteRowParts` | frontend/js/settings-panes.js:1570 |
+| `paletteKeys` | frontend/js/settings-panes.js:1546 |
+| `paletteRowParts` | frontend/js/settings-panes.js:1571 |
 | `refitComposer` | frontend/js/settings-panes.js:269 |
 | `renderAccount` | frontend/js/settings-panes.js:488 |
 | `renderAutonomousSettings` | frontend/js/settings-panes.js:799 |
@@ -5039,33 +5039,35 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `foldedText` | frontend/js/reveal-targets.js:622 |
-| `markNotePassage` | frontend/js/reveal-targets.js:651 |
-| `notePassageFor` | frontend/js/reveal-targets.js:610 |
-| `packagesNoticeOpen` | frontend/js/reveal-targets.js:678 |
-| `packagesNoticeTarget` | frontend/js/reveal-targets.js:665 |
-| `passageRange` | frontend/js/reveal-targets.js:637 |
+| `foldedText` | frontend/js/reveal-targets.js:624 |
+| `markNotePassage` | frontend/js/reveal-targets.js:653 |
+| `notePassageFor` | frontend/js/reveal-targets.js:612 |
+| `packagesNoticeOpen` | frontend/js/reveal-targets.js:680 |
+| `packagesNoticeTarget` | frontend/js/reveal-targets.js:667 |
+| `passageRange` | frontend/js/reveal-targets.js:639 |
 | `revealBoard` | frontend/js/reveal-targets.js:155 |
-| `revealBoardsGallery` | frontend/js/reveal-targets.js:527 |
+| `revealBoardsGallery` | frontend/js/reveal-targets.js:529 |
 | `revealDashWidget` | frontend/js/reveal-targets.js:174 |
 | `revealDetails` | frontend/js/reveal-targets.js:65 |
 | `revealDocument` | frontend/js/reveal-targets.js:145 |
 | `revealEntryMenu` | frontend/js/reveal-targets.js:82 |
-| `revealFeature` | frontend/js/reveal-targets.js:540 |
+| `revealFeature` | frontend/js/reveal-targets.js:542 |
 | `revealGraphOptions` | frontend/js/reveal-targets.js:135 |
-| `revealLibrarySub` | frontend/js/reveal-targets.js:536 |
+| `revealLibrarySub` | frontend/js/reveal-targets.js:538 |
 | `revealQuery` | frontend/js/reveal-targets.js:72 |
 | `revealStrip` | frontend/js/reveal-targets.js:127 |
 | `revealSubmenuFor` | frontend/js/reveal-targets.js:109 |
 | `revealWait` | frontend/js/reveal-targets.js:45 |
 
-### frontend/js/router-overlays.js (3)
+### frontend/js/router-overlays.js (5)
 
 | Name | File:line |
 |---|---|
-| `routerBackHook` | frontend/js/router-overlays.js:69 |
-| `routerCloseTopOverlay` | frontend/js/router-overlays.js:17 |
-| `routerSettle` | frontend/js/router-overlays.js:95 |
+| `overlayClosed` | frontend/js/router-overlays.js:134 |
+| `overlayGo` | frontend/js/router-overlays.js:142 |
+| `routerBackHook` | frontend/js/router-overlays.js:72 |
+| `routerCloseTopOverlay` | frontend/js/router-overlays.js:20 |
+| `routerSettle` | frontend/js/router-overlays.js:100 |
 
 ### frontend/js/run-core.js (10)
 
@@ -5301,20 +5303,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `findSettings` | frontend/js/settings-find.js:113 |
-| `helpAlternation` | frontend/js/settings-find.js:606 |
-| `helpApplySearch` | frontend/js/settings-find.js:726 |
-| `helpEmphasis` | frontend/js/settings-find.js:612 |
-| `helpFill` | frontend/js/settings-find.js:633 |
-| `helpMarks` | frontend/js/settings-find.js:646 |
-| `helpMatches` | frontend/js/settings-find.js:710 |
-| `helpQueryTerms` | frontend/js/settings-find.js:702 |
-| `helpSearchBind` | frontend/js/settings-find.js:783 |
+| `helpAlternation` | frontend/js/settings-find.js:608 |
+| `helpApplySearch` | frontend/js/settings-find.js:728 |
+| `helpEmphasis` | frontend/js/settings-find.js:614 |
+| `helpFill` | frontend/js/settings-find.js:635 |
+| `helpMarks` | frontend/js/settings-find.js:648 |
+| `helpMatches` | frontend/js/settings-find.js:712 |
+| `helpQueryTerms` | frontend/js/settings-find.js:704 |
+| `helpSearchBind` | frontend/js/settings-find.js:785 |
 | `helpTopicLink` | frontend/js/settings-find.js:575 |
-| `helpTopicPaint` | frontend/js/settings-find.js:660 |
-| `helpTopicRow` | frontend/js/settings-find.js:674 |
+| `helpTopicPaint` | frontend/js/settings-find.js:662 |
+| `helpTopicRow` | frontend/js/settings-find.js:676 |
 | `openSettingRow` | frontend/js/settings-find.js:179 |
-| `renderCredits` | frontend/js/settings-find.js:806 |
-| `renderHelpTopics` | frontend/js/settings-find.js:854 |
+| `renderCredits` | frontend/js/settings-find.js:808 |
+| `renderHelpTopics` | frontend/js/settings-find.js:856 |
 | `renderSettingResults` | frontend/js/settings-find.js:226 |
 | `settingNearAdd` | frontend/js/settings-find.js:241 |
 | `settingQueryAlts` | frontend/js/settings-find.js:101 |
@@ -5462,7 +5464,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `openStatistics` | frontend/js/statistics.js:400 |
 | `paintStatistics` | frontend/js/statistics.js:380 |
-| `renderWeekWidget` | frontend/js/statistics.js:467 |
+| `renderWeekWidget` | frontend/js/statistics.js:470 |
 | `statsAskBox` | frontend/js/statistics.js:296 |
 | `statsChange` | frontend/js/statistics.js:121 |
 | `statsChart` | frontend/js/statistics.js:61 |
@@ -10124,7 +10126,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/manual-lazy.css | 153 |
 | frontend/css/meetings-lazy.css | 543 |
 | frontend/css/motion-still.css | 94 |
-| frontend/css/nav-history-lazy.css | 144 |
+| frontend/css/nav-history-lazy.css | 154 |
 | frontend/css/offline-split-lazy.css | 63 |
 | frontend/css/questions-lazy.css | 102 |
 | frontend/css/quick-access-lazy.css | 105 |
@@ -12063,8 +12065,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2597 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2699 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2599 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2701 |
 
 ### src/tessellate/ai/inbox.py (7)
 
@@ -18473,7 +18475,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11685)
+## Tests (11694)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19144,6 +19146,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_maintenance.py | 19 |
 | tests/test_make_plan.py | 21 |
 | tests/test_manage_lists_504.py | 5 |
+| tests/test_manual_entry_points.py | 3 |
 | tests/test_manual_parity.py | 9 |
 | tests/test_map_actions_clear_of_label.py | 1 |
 | tests/test_map_add_speed.py | 6 |
@@ -19232,6 +19235,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_native_imports.py | 12 |
 | tests/test_nav_history_rows.py | 10 |
 | tests/test_nav_history_seed.py | 2 |
+| tests/test_nav_overlay_entries.py | 6 |
 | tests/test_needle_provider.py | 17 |
 | tests/test_neighbours_1018.py | 9 |
 | tests/test_nested_interactive.py | 11 |
@@ -20495,7 +20499,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1265 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:296 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:293 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4173 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

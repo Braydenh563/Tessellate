@@ -1501,6 +1501,7 @@ function paletteCommands() {
     { label: "ph:list-checks Settings → Background tasks", reveal: "settings:tasks", about: "What the app is working on while you write." },
     { label: "ph:heartbeat Health", reveal: "settings:about", keywords: "integrity check last backup last error data folder size status storage disk space files", about: "How the notebook is: last backup, last error, what is running, size, integrity." },
     { label: "ph:chart-bar Statistics", quick: "statistics", keywords: "stats numbers counts usage week review growth", about: "Your notebook, reminders and usage, counted, with this week against last.", act: () => openStatistics() },
+    { label: "ph:book-open-text Open the manual", reveal: "manual" },
     //: The small tools (Brief 89, UI_MODERNISATION utilities rows 2 to 4):
     //: "timer 10 minutes" and "insert template ..." also build their own rows
     //: from the words (`utilityPaletteRows`, app-palette.js).

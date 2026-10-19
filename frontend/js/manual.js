@@ -147,6 +147,7 @@ async function openManual(topicId = "") {
   lazyScript("/css/manual-lazy.css");
   //: The search box's meaning layer (Brief 94), in the page before the box is.
   await lazyScript("/js/meaning.js");
+  await ensureModule("quickNote");
   let listing;
   try {
     listing = await apiJson("/help/topics");
@@ -169,11 +170,12 @@ async function openManual(topicId = "") {
     event.stopPropagation();
     manualOpen.close?.();
   };
-  manualOpen.close = () => {
+  manualOpen.close = (opts) => {
     document.removeEventListener("keydown", onKey, true);
     overlay.remove();
     manualOpen.close = null;
     if (returnFocus?.isConnected) returnFocus.focus?.();
+    if (typeof overlayClosed === "function") overlayClosed("Manual", { stay: opts?.stay === true });
   };
   const head = dialogHead("Manual", () => manualOpen.close?.());
   const print = smallButton("ph:printer", "Print the manual (what is shown)", () => {
@@ -213,7 +215,7 @@ async function openManual(topicId = "") {
   body.append(parts.contents, parts.topics);
   card.append(head, about, field, count, body);
   card.addEventListener("click", (event) => {
-    if (event.target.closest("[data-goto-tab], [data-goto-section]")) manualOpen.close?.();
+    if (event.target.closest("[data-goto-tab], [data-goto-section]")) manualOpen.close?.({ stay: true });
   });
   search.addEventListener("input", () => manualFilter(parts, search.value, count, empty));
   manualFilter(parts, "", count, empty);
@@ -221,6 +223,7 @@ async function openManual(topicId = "") {
   wireBackdropClose(overlay, () => manualOpen.close?.());
   document.addEventListener("keydown", onKey, true);
   document.body.appendChild(overlay);
+  recordTabVisit("Manual");
   const target = topicId && document.getElementById(`manual-${topicId}`);
   if (target) {
     parts.topics.scrollTop = target.offsetTop;

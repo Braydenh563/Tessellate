@@ -156,6 +156,7 @@ function featureCatalog() {
       { name: "Unfinished", desc: "Notes with checklist items still waiting to be ticked.", reveal: "widget-unfinished" },
       { name: "Writing pace", desc: "How many words you have written each day this fortnight.", reveal: "widget-pace" },
       { name: "Activity heatmap", desc: "A year of capture activity at a glance.", reveal: "widget-heatmap" },
+      { name: "The manual", desc: "Every help topic on one page, to search or print.", reveal: "manual" },
       { name: "Statistics", desc: "Your notebook, reminders and usage, counted, with this week against last.", reveal: "statistics" },
       { name: "This week", desc: "Notes made, words written and reminders done, against last week.", reveal: "widget-week" },
       { name: "Streaks", desc: "How many days in a row you've captured something.", reveal: "widget-streak" },

@@ -52,6 +52,7 @@ SCRIPTS = (
     "library.js",
     "dashboard.js",
     "settings.js",
+    "manual.js",
     "editor.js",
     "timeline.js",
     "palette.js",
