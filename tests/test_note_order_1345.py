@@ -66,7 +66,7 @@ def test_the_reader(question, expected):
 
 @pytest.mark.parametrize(
     "question",
-    ["my first note about Harbor", "notes from last week", "the last note on dentist", "what is in my notes", "how many notes do I have"],
+    ["my first note about Harbor", "notes from last week", "What did I write last month?", "the last note on dentist", "what is in my notes", "how many notes do I have"],
 )
 def test_other_questions_are_left_alone(question):
     assert note_order.read(question) is None

@@ -12434,15 +12434,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Ask` | src/tessellate/ai/note_order.py:37 |
-| `_live` | src/tessellate/ai/note_order.py:60 |
-| `_ordinal` | src/tessellate/ai/note_order.py:76 |
-| `_which` | src/tessellate/ai/note_order.py:81 |
-| `count` | src/tessellate/ai/note_order.py:66 |
-| `date_in_words` | src/tessellate/ai/note_order.py:87 |
-| `nth` | src/tessellate/ai/note_order.py:70 |
-| `read` | src/tessellate/ai/note_order.py:44 |
-| `say` | src/tessellate/ai/note_order.py:93 |
+| `Ask` | src/tessellate/ai/note_order.py:38 |
+| `_live` | src/tessellate/ai/note_order.py:61 |
+| `_ordinal` | src/tessellate/ai/note_order.py:77 |
+| `_which` | src/tessellate/ai/note_order.py:82 |
+| `count` | src/tessellate/ai/note_order.py:67 |
+| `date_in_words` | src/tessellate/ai/note_order.py:88 |
+| `nth` | src/tessellate/ai/note_order.py:71 |
+| `read` | src/tessellate/ai/note_order.py:45 |
+| `say` | src/tessellate/ai/note_order.py:94 |
 
 ### src/tessellate/ai/notebook_stats.py (45)
 
@@ -12525,13 +12525,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `OllamaClient` | src/tessellate/ai/ollama_client.py:189 |
-| `_is_down` | src/tessellate/ai/ollama_client.py:170 |
-| `_is_refusal` | src/tessellate/ai/ollama_client.py:185 |
-| `_mark_down` | src/tessellate/ai/ollama_client.py:162 |
-| `_mark_up` | src/tessellate/ai/ollama_client.py:166 |
-| `_note_failure` | src/tessellate/ai/ollama_client.py:180 |
-| `describe_http_error` | src/tessellate/ai/ollama_client.py:64 |
+| `OllamaClient` | src/tessellate/ai/ollama_client.py:188 |
+| `_is_down` | src/tessellate/ai/ollama_client.py:169 |
+| `_is_refusal` | src/tessellate/ai/ollama_client.py:184 |
+| `_mark_down` | src/tessellate/ai/ollama_client.py:161 |
+| `_mark_up` | src/tessellate/ai/ollama_client.py:165 |
+| `_note_failure` | src/tessellate/ai/ollama_client.py:179 |
+| `describe_http_error` | src/tessellate/ai/ollama_client.py:63 |
 
 ### src/tessellate/ai/openai_client.py (2)
 
@@ -12662,13 +12662,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `OffHostRedirect` | src/tessellate/ai/provider_http.py:37 |
-| `_address` | src/tessellate/ai/provider_http.py:42 |
-| `_guarded` | src/tessellate/ai/provider_http.py:70 |
-| `delete` | src/tessellate/ai/provider_http.py:87 |
-| `get` | src/tessellate/ai/provider_http.py:79 |
-| `post` | src/tessellate/ai/provider_http.py:83 |
-| `refuse_off_host_redirect` | src/tessellate/ai/provider_http.py:52 |
+| `OffHostRedirect` | src/tessellate/ai/provider_http.py:41 |
+| `_address` | src/tessellate/ai/provider_http.py:46 |
+| `_guarded` | src/tessellate/ai/provider_http.py:74 |
+| `delete` | src/tessellate/ai/provider_http.py:91 |
+| `get` | src/tessellate/ai/provider_http.py:83 |
+| `post` | src/tessellate/ai/provider_http.py:87 |
+| `refuse_off_host_redirect` | src/tessellate/ai/provider_http.py:56 |
 
 ### src/tessellate/ai/question_noise.py (31)
 
@@ -20418,7 +20418,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E2 · The complexity of the AI path is where the next bug will be, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:653 |
 | E3 · Model calls are scattered across request handlers, background threads and module singletons, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:666 |
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:561 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:563 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4267 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
@@ -20451,7 +20451,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Harper (Automattic) | docs/roadmap/ANALYSIS.md:1783 |
 | Headroom: evaluated, not adopted | docs/roadmap/BACKLOG.md:710 |
 | How far each plan actually is (honest, as of 2026-10-03) | docs/roadmap/HANDOVER.md:338 |
-| How to proceed after PR 149 (the owner asked, 2026-09-14) | docs/roadmap/HANDOVER.md:515 |
+| How to proceed after PR 149 (the owner asked, 2026-09-14) | docs/roadmap/HANDOVER.md:517 |
 | How to proceed after PR 149 (written 2026-09-14; the live order is CLAUDE.md standing order 1 and HANDOVER's Now line) | docs/ROADMAP.md:295 |
 | How to read the evidence in here | docs/roadmap/MODERNISATION_AUDIT.md:23 |
 | How to work on this repo | docs/ROADMAP.md:364 |
@@ -20544,7 +20544,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1265 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:297 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:294 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4173 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

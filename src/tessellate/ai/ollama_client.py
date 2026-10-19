@@ -17,7 +17,6 @@ from __future__ import annotations
 import json
 import time
 
-import requests as _rq
 from collections.abc import Iterator
 
 # `requests` with redirects held to the configured address (§12, S6).
@@ -183,7 +182,7 @@ def _note_failure(base_url: str, exc: BaseException) -> None:
 
 
 def _is_refusal(exc: BaseException) -> bool:
-    return isinstance(exc, (_rq.ConnectionError, _rq.ConnectTimeout)) and not isinstance(exc, _rq.ReadTimeout)
+    return isinstance(exc, (requests.RefusedError, requests.ConnectTimeout)) and not isinstance(exc, requests.ReadTimeout)
 
 
 class OllamaClient(Provider):

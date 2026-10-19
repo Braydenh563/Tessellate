@@ -1563,11 +1563,11 @@ def reevaluate_entry(entry_id: int, session: Session = Depends(get_session)) -> 
         else:
             refiling.fail("No filing model or embeddings were available.")
     except Exception as exc:
-        if isinstance(exc, (OllamaError, ConnectionError)):
-            #: One line: a model that is off (connection refused) is a state, not a bug.
-            logger.info("re-evaluation's filing step skipped: %s", exc)
-        else:
-            logger.warning("re-evaluation's filing step failed", exc_info=True)
+        #: One line: a model that is off (connection refused) is a state, not a bug.
+        logger.warning(
+            "re-evaluation's filing step failed: %s", exc,
+            exc_info=not isinstance(exc, (OllamaError, ConnectionError)),
+        )
         filed_by = None  # AI down, keep the note exactly as it was
         refiling.fail("The filing step stopped before it finished. The log has the reason.")
     finally:

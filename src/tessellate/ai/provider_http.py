@@ -27,9 +27,13 @@ from __future__ import annotations
 from urllib.parse import urljoin, urlsplit
 
 import requests
-from requests import HTTPError, RequestException, Response
+from requests import ConnectTimeout, HTTPError, ReadTimeout, RequestException, Response
+from requests import ConnectionError as RefusedError
 
-__all__ = ["HTTPError", "OffHostRedirect", "RequestException", "Response", "delete", "get", "post"]
+__all__ = [
+    "ConnectTimeout", "HTTPError", "OffHostRedirect", "ReadTimeout", "RefusedError", "RequestException", "Response",
+    "delete", "get", "post",
+]
 
 _DEFAULT_PORTS = {"http": 80, "https": 443}
 

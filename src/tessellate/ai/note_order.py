@@ -31,7 +31,8 @@ _AFTER = re.compile(r"\b(?:about|mention(?:s|ing)?|tagged|on|with|titled|called|
 
 _ORDINAL = re.compile(rf"\b{_NTH}\s+(?P<back>{_BACK}\s+)?{_NOUN}")
 _END = re.compile(rf"\b(?P<end>oldest|earliest|{_BACK}|first)\s+{_NOUN}")
-_DID = re.compile(r"\bwhat (?:did|have) i (?:write|wrote|make|made|add|save|put down)\s+(?P<end>first|last)\b")
+#: Only at the end: "what did I write last month" asks about a time, not an order.
+_DID = re.compile(r"\bwhat (?:did|have) i (?:write|wrote|make|made|add|save|put down)\s+(?P<end>first|last)\s*[?.!]*$")
 
 
 class Ask(NamedTuple):
