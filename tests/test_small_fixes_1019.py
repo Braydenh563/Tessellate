@@ -103,3 +103,13 @@ def test_587_restyled_dropdown_openers_stay_tabbable_buttons() -> None:
     assert 'opener.type = "button";' in js
     assert "opener.tabIndex" not in js and "opener.setAttribute(\"tabindex\"" not in js
     assert "function focusSelect(select)" in js
+
+
+def test_the_tablet_band_keeps_the_notes_sub_tabs_clear_of_the_rail_toggle() -> None:
+    """At 800 the collapse toggle (x 7 to 51) sat over "Your notes" (x 9.6): the
+    rail clearance lost to the notes column's id-selector ring room. Measured
+    after: the sub-tab starts at x 63 to 66 from 600 to 800, and 599 is unchanged."""
+    css = (CSS_DIR / "sidebar-folds-lazy.css").read_text(encoding="utf-8")
+    band = css.split("@media (min-width: 600px) and (max-width: 819.98px)", 1)[1]
+    body = _rules(band, "#tab-notes .sidebar-panel ~ .tab-main")
+    assert body and "var(--target-min)" in body[0] and "--sidebar-toggle-inset" in body[0]

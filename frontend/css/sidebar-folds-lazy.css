@@ -16,3 +16,13 @@
   color: var(--muted);
   font-size: var(--text-md);
 }
+/* The rail clearance (`.sidebar-panel ~ *`, 07-whiteboard-misc.css) lost to
+   the notes column's ring room (08-consistency.css, an id selector), so at
+   800 the collapse toggle (x 7 to 51) sat over the "Your notes" sub-tab
+   (x 9.6). Same specificity, a later sheet; here because boot CSS is at its
+   cap. Below 600 there is no rail. */
+@media (min-width: 600px) and (max-width: 819.98px) {
+  #tab-notes .sidebar-panel ~ .tab-main {
+    padding-left: calc(max(var(--sidebar-toggle-size), var(--target-min)) + 2 * var(--sidebar-toggle-inset));
+  }
+}
