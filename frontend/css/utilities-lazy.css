@@ -79,7 +79,7 @@
 
 .stats-week-row {
   display: grid;
-  grid-template-columns: minmax(7rem, 1fr) auto;
+  grid-template-columns: minmax(7rem, 1fr) auto auto;
   column-gap: var(--space-3);
   align-items: baseline;
 }
@@ -87,6 +87,7 @@
 .stats-week-value {
   font-variant-numeric: tabular-nums;
   text-align: end;
+  grid-column: -2 / -1;
 }
 
 .stats-week-change {
@@ -170,4 +171,55 @@
   white-space: nowrap;
   pointer-events: none;
   z-index: 2;
+}
+
+/* Counts that open what they count, the growth chart's range, and the week
+   rows' small lines (INBOX 1319). A tile that opens something is a button in
+   the tile's tone, lifted under the pointer; it keeps the focus ring. */
+button.stats-tile {
+  border: 0;
+  font: inherit;
+  color: inherit;
+  text-align: start;
+  cursor: default;
+}
+
+button.stats-tile.is-link {
+  cursor: pointer;
+}
+
+button.stats-tile.is-link:hover {
+  background: var(--surface-3);
+}
+
+.stats-range {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.stats-spark {
+  align-self: center;
+}
+
+.stats-spark-last,
+.stats-spark-this {
+  fill: none;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.stats-spark-last {
+  stroke: var(--muted);
+  opacity: 0.55;
+}
+
+.stats-spark-this {
+  stroke: var(--accent);
+}
+
+.stats-spark-dot {
+  fill: var(--accent);
 }

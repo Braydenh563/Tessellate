@@ -96,3 +96,22 @@ def test_a_click_acts_and_the_card_closes_first():
     assert "timelineJumpToDay" in _fn(STATS, "statsOpenMonth")
     assert "switchTab" in _fn(STATS, "statsOpenFeature")
     assert "onPick: statsOpenMonth" in STATS
+
+
+def test_tiles_open_what_they_count_and_the_range_asks_the_server():
+    tile = _fn(STATS, "statsTile")
+    assert '"button"' in tile and "statsGo(go)" in tile
+    notebook = _fn(STATS, "statsNotebookSection")
+    for tab in ('statsOpenTab("notes")', 'statsOpenTab("library")', 'statsOpenTab("graph")', "statsOpenLooseEnds"):
+        assert tab in notebook
+    reminders = _fn(STATS, "statsRemindersSection")
+    assert 'open("all")' in reminders and 'open("done")' in reminders and 'open("open")' in reminders
+    ranges = _fn(STATS, "statsRangeControl")
+    assert "/statistics?growth=" in ranges and 'select.id = "stats-range"' in ranges
+    assert all(f'["{v}"' in STATS for v in ("12", "3", "all"))
+
+
+def test_each_week_row_has_a_small_line_of_its_days():
+    week = _fn(STATS, "statsWeekCard")
+    assert "statsSpark(" in week and "week.daily" in week
+    assert ".stats-spark-this" in CSS and ".stats-spark-last" in CSS

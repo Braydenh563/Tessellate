@@ -14,9 +14,16 @@
 
 const STATS_USAGE_TOP = 8;
 
-function statsTile(value, label) {
-  const tile = document.createElement("div");
+function statsTile(value, label, go) {
+  //: A tile that can open what it counts is a button; one that cannot stays a block.
+  const tile = document.createElement(go ? "button" : "div");
   tile.className = "stats-tile";
+  if (go) {
+    tile.type = "button";
+    tile.classList.add("is-link");
+    tile.title = `Open ${label}`;
+    tile.addEventListener("click", () => statsGo(go));
+  }
   const number = document.createElement("strong");
   number.className = "stats-tile-value";
   number.textContent = Number(value || 0).toLocaleString();
@@ -45,8 +52,9 @@ function statsSection(title, about) {
 function statsTiles(pairs) {
   const grid = document.createElement("div");
   grid.className = "stats-tiles";
-  //: [value, "note", "notes"]: the one form a count of 1 takes.
-  for (const [value, one, many = one] of pairs) grid.appendChild(statsTile(value, value === 1 ? one : many));
+  //: [value, "note", "notes", go]: the one form a count of 1 takes, and
+  //: where a click on the tile goes (none: the tile only counts).
+  for (const [value, one, many = one, go] of pairs) grid.appendChild(statsTile(value, value === 1 ? one : many, go));
   return grid;
 }
 
@@ -72,6 +80,21 @@ async function statsGo(go) {
   } catch {
     toast("Couldn't open that.", true);
   }
+}
+
+const statsOpenTab = (tab) => () => switchTab(tab);
+
+async function statsOpenReminders(filter) {
+  await switchTab("reminders");
+  document.querySelector(`#reminder-filter [data-filter="${filter}"]`)?.click();
+}
+
+async function statsOpenLooseEnds() {
+  await switchTab("dashboard");
+  await new Promise((resolve) => setTimeout(resolve, 400));
+  const card = document.querySelector('.dash-widget[data-widget="orphans"]:not(.dash-hidden)');
+  if (card) card.scrollIntoView({ block: "center" });
+  else toast("Loose ends isn't on your Dashboard. Add it from Widgets.");
 }
 
 function statsOpenMonth(row) {
@@ -101,6 +124,26 @@ function statsChange(now, before) {
   return now > before ? `${diff} more than last week` : `${diff} fewer than last week`;
 }
 
+//: This week against last, day by day: last week's seven days as a quiet
+//: line, this week's so far on top in the accent, both from the week's first
+//: day so the two are read against each other. Said in words beside it, so
+//: it is a picture only.
+function statsSpark(values, days) {
+  const w = 84;
+  const h = 22;
+  const top = Math.max(1, ...values);
+  const line = (part, cls) => {
+    const points = part.map((v, i) => `${(2 + (i * (w - 4)) / 6).toFixed(1)},${(h - 2 - (v / top) * (h - 4)).toFixed(1)}`).join(" ");
+    return askChartSvgEl("polyline", { points, class: cls });
+  };
+  const svg = askChartSvgEl("svg", { viewBox: `0 0 ${w} ${h}`, width: w, height: h, class: "stats-spark", "aria-hidden": "true" });
+  svg.append(line(values.slice(0, 7), "stats-spark-last"), line(values.slice(7, 7 + days), "stats-spark-this"));
+  //: A dot on today, so a week that has only just begun still shows where it is.
+  const now = values[6 + days];
+  svg.appendChild(askChartSvgEl("circle", { cx: 2 + ((days - 1) * (w - 4)) / 6, cy: h - 2 - ((now || 0) / top) * (h - 4), r: 2.25, class: "stats-spark-dot" }));
+  return svg;
+}
+
 //: Screen Time's weekly report: each line one count, this week so far
 //: against the whole of last week, both weeks named.
 function statsWeekCard(week) {
@@ -126,7 +169,14 @@ function statsWeekCard(week) {
     const change = document.createElement("span");
     change.className = "muted stats-week-change";
     change.textContent = `${statsChange(now, before)} (${before.toLocaleString()})`;
-    li.append(name, value, change);
+    const daily = week.daily && week.daily[key];
+    if (daily) {
+      //: Days of this week so far: Monday on the clock to the week's last counted day.
+      const days = Math.max(1, Math.round((new Date(`${week.this.end}T00:00:00`) - new Date(`${week.this.start}T00:00:00`)) / 864e5) + 1);
+      li.append(name, statsSpark(daily, Math.min(7, days)), value, change);
+    } else {
+      li.append(name, value, change);
+    }
     list.appendChild(li);
   }
   card.append(span, list);
@@ -146,27 +196,64 @@ async function statsUnused(usage, asOf) {
   return { labels, unused };
 }
 
+const STATS_RANGES = [
+  ["12", "The last year", "the last year"],
+  ["3", "The last 3 months", "the last 3 months"],
+  ["all", "Since the first note", "since the first note"],
+];
+
+function statsGrowthChart(book) {
+  const total = book.growth.reduce((sum, row) => sum + row.value, 0);
+  const words = (STATS_RANGES.find(([value]) => value === book.growth_range) || STATS_RANGES[0])[2];
+  return statsChart({ title: `Notes made per month, ${words}`, kind: "line", by: "month", rows: book.growth, total, onPick: statsOpenMonth });
+}
+
+function statsRangeControl(holder, book) {
+  const label = document.createElement("label");
+  label.className = "stats-range";
+  const text = document.createElement("span");
+  text.className = "muted text-sm";
+  text.textContent = "Range";
+  const select = document.createElement("select");
+  select.id = "stats-range";
+  for (const [value, name] of STATS_RANGES) select.add(new Option(name, value));
+  select.value = book.growth_range || "12";
+  select.addEventListener("change", async () => {
+    try {
+      const data = await apiJson(`/statistics?growth=${encodeURIComponent(select.value)}`, { silent: true });
+      holder.replaceChildren(statsGrowthChart(data.notebook));
+    } catch {
+      toast("Couldn't change the range.", true);
+    }
+  });
+  label.append(text, select);
+  return label;
+}
+
 function statsNotebookSection(book) {
-  const section = statsSection("Notebook", "What is in it, and how it grew.");
+  const section = statsSection("Notebook", "What is in it, and how it grew. Click a count to open what it counts.");
   section.appendChild(
     statsTiles([
-      [book.notes, "note", "notes"],
+      [book.notes, "note", "notes", statsOpenTab("notes")],
       [book.words, "word", "words"],
-      [book.tags, "tag", "tags"],
-      [book.categories, "category", "categories"],
-      [book.documents, "document", "documents"],
-      [book.links, "link", "links"],
-      [book.orphans, "note with no link", "notes with no link"],
+      [book.tags, "tag", "tags", statsOpenTab("notes")],
+      [book.categories, "category", "categories", statsOpenTab("notes")],
+      [book.documents, "document", "documents", statsOpenTab("library")],
+      [book.links, "link", "links", statsOpenTab("graph")],
+      [book.orphans, "note with no link", "notes with no link", statsOpenLooseEnds],
     ])
   );
-  const total = book.growth.reduce((sum, row) => sum + row.value, 0);
-  section.appendChild(statsChart({ title: "Notes made per month, the last year", kind: "line", by: "month", rows: book.growth, total, onPick: statsOpenMonth }));
+  const holder = document.createElement("div");
+  holder.className = "stats-growth";
+  holder.appendChild(statsGrowthChart(book));
+  section.append(statsRangeControl(holder, book), holder);
   return section;
 }
 
 function statsRemindersSection(rem) {
-  const section = statsSection("Reminders", "Made, ticked off, and past their time.");
-  section.appendChild(statsTiles([[rem.made, "made"], [rem.done, "done"], [rem.open, "open"], [rem.late, "late"]]));
+  const section = statsSection("Reminders", "Made, ticked off, and past their time. Click a count to open them.");
+  const open = (filter) => () => statsOpenReminders(filter);
+  section.appendChild(statsTiles([[rem.made, "made", "made", open("all")], [rem.done, "done", "done", open("done")], [rem.open, "open", "open", open("open")], [rem.late, "late", "late", open("open")]]));
   return section;
 }
 
@@ -267,7 +354,7 @@ function openStatistics() {
   helpBody.setAttribute("aria-label", "About statistics");
   const helpText = document.createElement("p");
   helpText.textContent =
-    "Every number here is counted from your notes, reminders and this computer's usage counts, with no model. Private and binned notes are left out. This week runs from Monday on your clock; words written are the words in the notes made that week; a reminder counts as done in the week it was ticked off. Hover or focus a point or bar for its exact value, use the arrow keys to move between them, and click or press Enter to open it: a month opens the Timeline there, a feature bar opens that feature. Usage is counted on this computer and never leaves it.";
+    "Every number here is counted from your notes, reminders and this computer's usage counts, with no model. Private and binned notes are left out. This week runs from Monday on your clock; words written are the words in the notes made that week; a reminder counts as done in the week it was ticked off. Hover or focus a point or bar for its exact value, use the arrow keys to move between them, and click or press Enter to open it: a month opens the Timeline there, a feature bar opens that feature. The counts open what they count, the range picks how far back the growth chart goes, and the small line beside each week row is this week's days against last week's. Usage is counted on this computer and never leaves it.";
   helpBody.appendChild(helpText);
   const body = document.createElement("div");
   body.className = "stats-body";

@@ -10,7 +10,7 @@ would need an event from every write to stay true.
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from tessellate.ai import notebook_stats
@@ -22,6 +22,10 @@ router = APIRouter(tags=["statistics"])
 
 
 @router.get("/statistics")
-def statistics(session: Session = Depends(get_session)) -> dict:
+def statistics(
+    #: The growth chart's range (the page's 3 months, 1 year, all control).
+    growth: str = Query("12", pattern="^(3|12|all)$"),
+    session: Session = Depends(get_session),
+) -> dict:
     config = deps.get_config()
-    return notebook_stats.page(session, user_now(config), usage.summary(config.data_dir, []), week_first_day(config))
+    return notebook_stats.page(session, user_now(config), usage.summary(config.data_dir, []), week_first_day(config), growth)

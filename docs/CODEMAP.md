@@ -2,9 +2,9 @@
 
 Generated 2026-10-19 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6176, frontend ids 2537, CSS sections 496, backend routes 613, backend modules 6115, test files 1302, tests 11623, plan headings 961.
+Counts: frontend functions 6182, frontend ids 2537, CSS sections 496, backend routes 613, backend modules 6117, test files 1302, tests 11628, plan headings 961.
 
-## Frontend functions (6176)
+## Frontend functions (6182)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -5446,27 +5446,33 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `sketchStart` | frontend/js/sketch-pad.js:148 |
 | `sketchTogglePalette` | frontend/js/sketch-pad.js:122 |
 
-### frontend/js/statistics.js (17)
+### frontend/js/statistics.js (23)
 
 | Name | File:line |
 |---|---|
-| `openStatistics` | frontend/js/statistics.js:222 |
-| `paintStatistics` | frontend/js/statistics.js:203 |
-| `renderWeekWidget` | frontend/js/statistics.js:289 |
-| `statsChange` | frontend/js/statistics.js:98 |
-| `statsChart` | frontend/js/statistics.js:53 |
-| `statsDay` | frontend/js/statistics.js:92 |
-| `statsGo` | frontend/js/statistics.js:68 |
-| `statsNotebookSection` | frontend/js/statistics.js:149 |
-| `statsOpenFeature` | frontend/js/statistics.js:84 |
-| `statsOpenMonth` | frontend/js/statistics.js:77 |
-| `statsRemindersSection` | frontend/js/statistics.js:167 |
-| `statsSection` | frontend/js/statistics.js:30 |
+| `openStatistics` | frontend/js/statistics.js:309 |
+| `paintStatistics` | frontend/js/statistics.js:290 |
+| `renderWeekWidget` | frontend/js/statistics.js:376 |
+| `statsChange` | frontend/js/statistics.js:121 |
+| `statsChart` | frontend/js/statistics.js:61 |
+| `statsDay` | frontend/js/statistics.js:115 |
+| `statsGo` | frontend/js/statistics.js:76 |
+| `statsGrowthChart` | frontend/js/statistics.js:205 |
+| `statsNotebookSection` | frontend/js/statistics.js:233 |
+| `statsOpenFeature` | frontend/js/statistics.js:107 |
+| `statsOpenLooseEnds` | frontend/js/statistics.js:92 |
+| `statsOpenMonth` | frontend/js/statistics.js:100 |
+| `statsOpenReminders` | frontend/js/statistics.js:87 |
+| `statsOpenTab` | frontend/js/statistics.js:85 |
+| `statsRangeControl` | frontend/js/statistics.js:211 |
+| `statsRemindersSection` | frontend/js/statistics.js:253 |
+| `statsSection` | frontend/js/statistics.js:37 |
+| `statsSpark` | frontend/js/statistics.js:131 |
 | `statsTile` | frontend/js/statistics.js:17 |
-| `statsTiles` | frontend/js/statistics.js:45 |
-| `statsUnused` | frontend/js/statistics.js:138 |
-| `statsUsageSection` | frontend/js/statistics.js:173 |
-| `statsWeekCard` | frontend/js/statistics.js:106 |
+| `statsTiles` | frontend/js/statistics.js:52 |
+| `statsUnused` | frontend/js/statistics.js:188 |
+| `statsUsageSection` | frontend/js/statistics.js:260 |
+| `statsWeekCard` | frontend/js/statistics.js:149 |
 
 ### frontend/js/status-panels.js (4)
 
@@ -10116,7 +10122,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/timeline-calendar-lazy.css | 292 |
 | frontend/css/timeline-ticks-lazy.css | 42 |
 | frontend/css/usage-lazy.css | 34 |
-| frontend/css/utilities-lazy.css | 173 |
+| frontend/css/utilities-lazy.css | 225 |
 
 ## Backend routes (613)
 
@@ -10738,7 +10744,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (6115)
+## Backend modules (6117)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -12031,8 +12037,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2569 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2671 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2572 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2674 |
 
 ### src/tessellate/ai/inbox.py (7)
 
@@ -12382,7 +12388,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `pick` | src/tessellate/ai/neighbours.py:42 |
 | `reads_whole` | src/tessellate/ai/neighbours.py:25 |
 
-### src/tessellate/ai/notebook_stats.py (41)
+### src/tessellate/ai/notebook_stats.py (43)
 
 | Name | File:line |
 |---|---|
@@ -12396,15 +12402,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_despell` | src/tessellate/ai/notebook_stats.py:172 |
 | `_document_count` | src/tessellate/ai/notebook_stats.py:403 |
 | `_general_stats` | src/tessellate/ai/notebook_stats.py:720 |
+| `_growth_keys` | src/tessellate/ai/notebook_stats.py:806 |
 | `_longest_notes` | src/tessellate/ai/notebook_stats.py:552 |
 | `_month_keys` | src/tessellate/ai/notebook_stats.py:791 |
 | `_most_linked` | src/tessellate/ai/notebook_stats.py:412 |
 | `_note_count` | src/tessellate/ai/notebook_stats.py:394 |
-| `_notebook_block` | src/tessellate/ai/notebook_stats.py:800 |
+| `_notebook_block` | src/tessellate/ai/notebook_stats.py:817 |
 | `_orphans` | src/tessellate/ai/notebook_stats.py:446 |
 | `_plural` | src/tessellate/ai/notebook_stats.py:92 |
 | `_recent_count` | src/tessellate/ai/notebook_stats.py:504 |
-| `_reminder_block` | src/tessellate/ai/notebook_stats.py:844 |
+| `_reminder_block` | src/tessellate/ai/notebook_stats.py:864 |
 | `_span_words` | src/tessellate/ai/notebook_stats.py:765 |
 | `_stale_notes` | src/tessellate/ai/notebook_stats.py:585 |
 | `_tag_count` | src/tessellate/ai/notebook_stats.py:375 |
@@ -12416,17 +12423,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_transposition_of` | src/tessellate/ai/notebook_stats.py:154 |
 | `_untagged` | src/tessellate/ai/notebook_stats.py:364 |
 | `_visible` | src/tessellate/ai/notebook_stats.py:70 |
-| `_week_counts` | src/tessellate/ai/notebook_stats.py:904 |
+| `_week_counts` | src/tessellate/ai/notebook_stats.py:924 |
+| `_week_daily` | src/tessellate/ai/notebook_stats.py:942 |
 | `_whole_notebook` | src/tessellate/ai/notebook_stats.py:280 |
 | `_window` | src/tessellate/ai/notebook_stats.py:481 |
 | `_word_count` | src/tessellate/ai/notebook_stats.py:530 |
 | `_words` | src/tessellate/ai/notebook_stats.py:787 |
-| `_words_added_by_edits` | src/tessellate/ai/notebook_stats.py:866 |
+| `_words_added_by_edits` | src/tessellate/ai/notebook_stats.py:886 |
 | `answer` | src/tessellate/ai/notebook_stats.py:224 |
 | `looks_like_a_question_about_the_notebook` | src/tessellate/ai/notebook_stats.py:205 |
-| `page` | src/tessellate/ai/notebook_stats.py:935 |
-| `week_review` | src/tessellate/ai/notebook_stats.py:922 |
-| `week_start` | src/tessellate/ai/notebook_stats.py:859 |
+| `page` | src/tessellate/ai/notebook_stats.py:982 |
+| `week_review` | src/tessellate/ai/notebook_stats.py:968 |
+| `week_start` | src/tessellate/ai/notebook_stats.py:879 |
 
 ### src/tessellate/ai/offers.py (13)
 
@@ -18392,7 +18400,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11623)
+## Tests (11628)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19191,7 +19199,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_notebook_access.py | 21 |
 | tests/test_notebook_stats.py | 23 |
 | tests/test_notebook_stats_chat.py | 2 |
-| tests/test_notebook_stats_page.py | 11 |
+| tests/test_notebook_stats_page.py | 14 |
 | tests/test_notes_extras_api.py | 26 |
 | tests/test_notes_rail.py | 7 |
 | tests/test_notes_rows_719.py | 8 |
@@ -19457,7 +19465,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_static_freshness.py | 5 |
 | tests/test_static_precompressed.py | 7 |
 | tests/test_stats_fit_1319.py | 1 |
-| tests/test_stats_interactive_1319.py | 6 |
+| tests/test_stats_interactive_1319.py | 8 |
 | tests/test_status_bar_fit.py | 4 |
 | tests/test_status_bar_grammar.py | 5 |
 | tests/test_stop_discards_write.py | 5 |

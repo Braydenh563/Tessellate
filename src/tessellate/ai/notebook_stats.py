@@ -797,22 +797,41 @@ def _month_keys(now: datetime, months: int = GROWTH_MONTHS) -> list[str]:
     return keys[::-1]
 
 
-def _notebook_block(session: Session, now: datetime) -> dict:
+#: The growth chart's range: the last 3 months, the last year, or since the
+#: first note (capped, so a decade of notes is still one chart).
+GROWTH_RANGES = ("3", "12", "all")
+GROWTH_ALL_MAX = 240
+
+
+def _growth_keys(now: datetime, growth: str, made: list[str]) -> list[str]:
+    if growth != "all":
+        return _month_keys(now, int(growth))
+    first = min(made, default=None)
+    if first is None:
+        return _month_keys(now, 3)
+    year, month = int(first[:4]), int(first[5:])
+    span = (now.year - year) * 12 + now.month - month + 1
+    return _month_keys(now, max(3, min(GROWTH_ALL_MAX, span)))
+
+
+def _notebook_block(session: Session, now: datetime, growth_range: str = "12") -> dict:
     """Notes, words, tags and growth from one pass over the live notes; the
     other counts are one aggregate query each."""
     zone = now.tzinfo
     rows = session.execute(_visible(select(Entry.content, Entry.tags, Entry.created_at))).all()
-    keys = _month_keys(now)
-    growth = dict.fromkeys(keys, 0)
     tags: set[str] = set()
     words = 0
+    made: list[str] = []
     for content, raw, created in rows:
         words += _words(content)
         tags.update(_tags_of(raw))
         if created is not None:
-            key = (created.astimezone(zone) if created.tzinfo else created).strftime("%Y-%m")
-            if key in growth:
-                growth[key] += 1
+            made.append((created.astimezone(zone) if created.tzinfo else created).strftime("%Y-%m"))
+    keys = _growth_keys(now, growth_range, made)
+    growth = dict.fromkeys(keys, 0)
+    for key in made:
+        if key in growth:
+            growth[key] += 1
     #: A link counts only between two counted notes: a link to a binned or
     #: private one would say that hidden note is joined to something.
     near, far = aliased(Entry), aliased(Entry)
@@ -838,6 +857,7 @@ def _notebook_block(session: Session, now: datetime) -> dict:
         "links": session.scalar(select(func.count()).select_from(visible_link.subquery())) or 0,
         "orphans": session.scalar(_visible(select(func.count(Entry.id)).where(~linked))) or 0,
         "growth": [{"label": key, "value": growth[key]} for key in keys],
+        "growth_range": growth_range,
     }
 
 
@@ -919,6 +939,32 @@ def _week_counts(session: Session, start: datetime, end: datetime) -> dict:
     }
 
 
+def _week_daily(session: Session, start: datetime, end: datetime) -> dict:
+    """Notes, words and reminders done for each of the fourteen days from
+    `start` (last week's first day) to `end`, for the sparkline under each
+    week row. Days still to come count zero. One query for the notes, one
+    for the ticks."""
+    zone = start.tzinfo
+    days = (end - start).days
+    a, b = start.astimezone(utcnow().tzinfo), end.astimezone(utcnow().tzinfo)
+    notes, words, done = [0] * days, [0] * days, [0] * days
+
+    def slot(stamp: datetime) -> int:
+        local = stamp.astimezone(zone) if stamp.tzinfo else stamp
+        return (local.date() - start.date()).days
+
+    for content, created in session.execute(
+        _visible(select(Entry.content, Entry.created_at)).where(Entry.created_at >= a, Entry.created_at < b)
+    ):
+        if 0 <= (i := slot(created)) < days:
+            notes[i] += 1
+            words[i] += _words(content)
+    for (ticked,) in session.execute(select(Reminder.done_at).where(Reminder.done_at >= a, Reminder.done_at < b)):
+        if 0 <= (i := slot(ticked)) < days:
+            done[i] += 1
+    return {"start": start.date().isoformat(), "notes": notes, "words": words, "reminders_done": done}
+
+
 def week_review(session: Session, now: datetime, first_day: int = 0) -> dict:
     """This week so far against the whole of last week (Screen Time's shape):
     notes made, words written in them, reminders ticked off. "Done" is when
@@ -929,15 +975,16 @@ def week_review(session: Session, now: datetime, first_day: int = 0) -> dict:
     return {
         "this": _week_counts(session, this, now + timedelta(seconds=1)),
         "last": _week_counts(session, last, this),
+        "daily": _week_daily(session, last, this + timedelta(days=7)),
     }
 
 
-def page(session: Session, now: datetime, usage_summary: dict, first_day: int = 0) -> dict:
+def page(session: Session, now: datetime, usage_summary: dict, first_day: int = 0, growth: str = "12") -> dict:
     """Everything the Statistics page draws, in one answer."""
     features = list(usage_summary.get("features") or [])[:USAGE_ROWS]
     return {
         "as_of": now.isoformat(),
-        "notebook": _notebook_block(session, now),
+        "notebook": _notebook_block(session, now, growth),
         "reminders": _reminder_block(session, now),
         "week": week_review(session, now, first_day),
         "usage": {
