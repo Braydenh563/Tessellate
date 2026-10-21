@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tessellate"
-version = "0.6.0"
+version = "0.6.01"
 description = "Tessellate: a 100% offline, local-first AI notebook"
 readme = "README.md"
 requires-python = ">=3.11"

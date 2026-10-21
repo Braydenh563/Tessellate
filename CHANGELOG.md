@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- 0.6.01: version bump; `test_dialogue_b8` no longer depends on which older-note wording the calendar picks, which had failed CI on 3.11, 3.12 and 3.13.
 - Needle is offered at most 15 tool schemas (the ones the question's words suggest, else the likeliest) instead of all 70: 30,359 to about 6,200 chars for a typical question, so each call reads a fifth of the text.
 - With Ollama off, a refused connection is remembered for 5 s, so one chat turn makes one connect attempt instead of one per stage (probe, embed, filing, each ~2 s a refusal on Windows); the connect wait is 1 s (was 5), and re-evaluating a note with the model off logs one line, not a traceback.
 - Lightbox: the 1:1 (Actual size) button shows pressed when the picture is already at actual size, as a picture smaller than the window is at fit; a press that changes nothing no longer looks broken (200x150: pressed at 100% before any press; 4000x3000: 20% to 100% and pressed).

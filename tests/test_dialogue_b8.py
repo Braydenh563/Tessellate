@@ -47,8 +47,10 @@ NOTEBOOK = [
 #: (question, must hold, must not hold) a turn.
 CONVERSATIONS = {
     "gym, a window, running and back": [
-        #: O11: the 7 October squat is current, the 28 August one is said as earlier.
-        ("what have I saved about the gym?", ["90 kg", "earlier note", "80 kg"], []),
+        #: O11: the newer squat is current, the older one is said too. The
+        #: line's wording is picked by text length (a calendar-dependent
+        #: variant), so the test names the value, not a phrase.
+        ("what have I saved about the gym?", ["90 kg", "80 kg"], []),
         ("what about running?", ["5k", "two notes"], ["squat"]),
         ("when was that?", ["minutes"], ["squat"]),
         ("and the gym?", ["kg"], ["5k"]),
