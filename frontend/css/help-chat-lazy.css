@@ -30,3 +30,9 @@
   gap: var(--space-2);
   margin-top: var(--space-2);
 }
+
+/* Clear of the status bar: the corner card covered the Guide button there, so
+   a second press on it hit the card and the panel could not be toggled shut. */
+.sheet-overlay.sheet-corner {
+  padding-bottom: var(--status-bar-h);
+}

@@ -1,6 +1,6 @@
 # Code map
 
-Generated 2026-10-19 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
+Generated 2026-10-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
 Counts: frontend functions 6208, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6182, test files 1321, tests 11748, plan headings 967.
 
@@ -1265,10 +1265,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `addAtlasLine` | frontend/js/wiring.js:211 |
 | `applyPendingChatTitle` | frontend/js/wiring.js:744 |
-| `applyPlanMode` | frontend/js/wiring.js:1453 |
+| `applyPlanMode` | frontend/js/wiring.js:1459 |
 | `askAtlasAbout` | frontend/js/wiring.js:200 |
 | `chatRecallStep` | frontend/js/wiring.js:804 |
-| `clearDueNudges` | frontend/js/wiring.js:1731 |
+| `clearDueNudges` | frontend/js/wiring.js:1737 |
 | `closeGlobalFind` | frontend/js/wiring.js:630 |
 | `dashboardGreetingPersona` | frontend/js/wiring.js:909 |
 | `escapeForFind` | frontend/js/wiring.js:408 |
@@ -1277,26 +1277,26 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `globalFindShowActive` | frontend/js/wiring.js:549 |
 | `globalFindStep` | frontend/js/wiring.js:562 |
 | `globalFindWalkableRoot` | frontend/js/wiring.js:441 |
-| `initGraphOptionFolds` | frontend/js/wiring.js:1026 |
+| `initGraphOptionFolds` | frontend/js/wiring.js:1032 |
 | `initHelpToggles` | frontend/js/wiring.js:220 |
 | `noteSourceOn` | frontend/js/wiring.js:875 |
-| `nudgeDueShown` | frontend/js/wiring.js:1735 |
+| `nudgeDueShown` | frontend/js/wiring.js:1741 |
 | `openGlobalFind` | frontend/js/wiring.js:568 |
-| `openReminderCompose` | frontend/js/wiring.js:1631 |
+| `openReminderCompose` | frontend/js/wiring.js:1637 |
 | `paintDashboardPersonaMark` | frontend/js/wiring.js:915 |
 | `reflectOnlineState` | frontend/js/wiring.js:16 |
 | `renameCurrentConversation` | frontend/js/wiring.js:717 |
-| `renderPlanToggle` | frontend/js/wiring.js:1440 |
-| `renderWebSearchToggle` | frontend/js/wiring.js:1396 |
-| `setFullscreenSurface` | frontend/js/wiring.js:1263 |
-| `setGraphOptionsOpen` | frontend/js/wiring.js:1047 |
+| `renderPlanToggle` | frontend/js/wiring.js:1446 |
+| `renderWebSearchToggle` | frontend/js/wiring.js:1402 |
+| `setFullscreenSurface` | frontend/js/wiring.js:1269 |
+| `setGraphOptionsOpen` | frontend/js/wiring.js:1053 |
 | `setNoteSource` | frontend/js/wiring.js:890 |
 | `settingsSectionContaining` | frontend/js/wiring.js:454 |
-| `startNewNote` | frontend/js/wiring.js:1319 |
+| `startNewNote` | frontend/js/wiring.js:1325 |
 | `syncNoteSourceButtons` | frontend/js/wiring.js:883 |
-| `timelineSelectableRows` | frontend/js/wiring.js:1371 |
-| `toggleSelectAllRows` | frontend/js/wiring.js:1357 |
-| `watchFullscreenSurface` | frontend/js/wiring.js:1269 |
+| `timelineSelectableRows` | frontend/js/wiring.js:1377 |
+| `toggleSelectAllRows` | frontend/js/wiring.js:1363 |
+| `watchFullscreenSurface` | frontend/js/wiring.js:1275 |
 
 ### frontend/js/settings-wiring.js (44)
 
@@ -10127,7 +10127,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 123 |
 | frontend/css/graph-lazy.css | 443 |
-| frontend/css/help-chat-lazy.css | 32 |
+| frontend/css/help-chat-lazy.css | 38 |
 | frontend/css/icon-picker.css | 121 |
 | frontend/css/improve-lazy.css | 110 |
 | frontend/css/inbox-lazy.css | 306 |
