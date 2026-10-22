@@ -405,6 +405,19 @@
      the form above it. Reported live. */
   margin: var(--space-5) 0 var(--space-4);
 }
+.reminder-edit-fields {
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+.reminder-edit-fields > :is(input, select) {
+  height: var(--control-h);
+  margin: 0;
+  width: auto;
+}
+.inline-action > .row:last-child {
+  gap: var(--space-2);
+}
 .inline-action p {
   margin: 0.25rem 0;
 }
