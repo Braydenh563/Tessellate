@@ -23,6 +23,11 @@ Composer and Guide
 - Web search with no model needs SearXNG on 127.0.0.1:8888, which was not running (log in the doc); offer to start it or say how.
 - Analyse a page in the web panel: key points, section list with jump links.
 
+Lint debt (from the 0.6.1 CI log)
+- `complexity.yml` runs `ruff check src --select C901,PERF --exit-zero`, so it always passes and lists about 100 findings (C901 over 15, PERF401/403/101/102) as red annotations. Decide: a tracked cleanup (worst first: `docx_to_markdown` 55, `_optimization_pass` 37, `build_tree` 35, `provider.extract_text_tool_calls` 31, `relations.recognise` 31), or drop `--exit-zero` behind a baseline.
+- `_start_tray` went 20 to 23 with the tray start-up logging: split menu building from start-up. Test on Windows.
+- Reminder edit form: the time field keeps its bottom margin and may sit about 0.2rem high against the selects; the boot JS cap left no room (588,400 gz; fixed by moving a boot surface lazy).
+
 Shell
 - More-actions button on notes half off the corner under half width; Settings, Models blank bar at the top; a blank bar at the bottom; chat suggestions fade with no wrap; companion hard to throw and scrolls the page; a half-window, part-window and phone pass over the whole app; button styles in the Skills and Sources rows look out of place.
 - A desktop companion (pet) outside the window, as ChatGPT desktop's: quick open, new note, reminders.
