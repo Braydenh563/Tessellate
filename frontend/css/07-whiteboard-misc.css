@@ -11850,16 +11850,3 @@ button.finder-row:is(:focus-visible, :has(:focus-visible)) {
 .wb-import-about {
   margin: 0 0 var(--space-2);
 }
-
-/* **Drag-selecting on the board never highlights page text** (0.6.01 bug
-   list: "drag select on the whiteboard highlights text on other elements").
-   The marquee is not a text selection, so the browser's own selection
-   ran under it across every card and label. Text being edited keeps it. */
-#wb-canvas-view {
-  user-select: none;
-  -webkit-user-select: none;
-}
-#wb-canvas-view :is(input, textarea, [contenteditable="true"], [contenteditable=""], [contenteditable="plaintext-only"]) {
-  user-select: text;
-  -webkit-user-select: text;
-}
