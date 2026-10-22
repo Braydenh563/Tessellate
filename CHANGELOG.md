@@ -12,6 +12,7 @@ below). Versioning is `0.x` while the app stabilises.
 - The Guide panel closes when you press outside it (it stays open for presses in its own menus, '?' popovers and dialogs, and on its opener).
 - The Skills list: rows no longer wrap and touch. "(edits notes)" is a group heading (Yours or Built-in, read only or edits notes) instead of a suffix on every name, and option rows have one minimum height.
 - Whiteboard: a drag on the board (marquee, move, resize) no longer selects text on cards, labels and panels; text being edited keeps its selection.
+- Reminders: the edit form's time, priority, repeat and alert fields share one height with a gap between them, and wrap.
 - CI: `test_dialogue_b8` no longer depends on the day's date (the older-note line is chosen by the reply's length, which moves with "7 October" against "11 October").
 - Windows: the system tray icon is decoded before its thread starts and a failure to start it is logged ("system tray icon failed to start"), so a bad icon or backend no longer leaves a window that hides on close with nothing to bring it back. A new tray line in the log reads "system tray icon shown".
 - Whiteboard: drag-selecting on the board no longer highlights text on other elements; the colour popup keeps its place when you switch between Fill and Border.

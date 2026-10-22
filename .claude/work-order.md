@@ -1,5 +1,5 @@
 mode: ship
-status: active
+status: stopped (no commit in 60 minutes)
 pr: 194
 max-continues: 40
 max-idle-minutes: 60
