@@ -2154,9 +2154,10 @@ def _start_tray(
                     message="Image was not the expected size",
                     category=UserWarning,
                 )
-                image = Image.open(icon_path)
-        except OSError as exc:
+                image = Image.open(icon_path).convert("RGBA")  # decode now, not inside the tray thread
+        except Exception as exc:  # noqa: BLE001  # Pillow raises ValueError/SyntaxError on a bad .ico too
             logger.warning("couldn't load %s for the tray icon: %s", icon_path, exc)
+            image = None
     if image is None:
         # A flat brand-blue square rather than no icon at all, pystray
         # requires a real image, and a missing tray icon reads as "the app
@@ -2426,7 +2427,21 @@ def _start_tray(
         "Tessellate",
         pystray.Menu(*menu_items),
     )
-    threading.Thread(target=icon.run, daemon=True).start()
+
+    def _run_tray() -> None:
+        # A daemon thread swallows its own exceptions, so a tray that failed
+        # to appear (bad backend, icon error) left no trace in the log and
+        # the window then hid on close with nothing to bring it back.
+        def _ready(icon_) -> None:
+            icon_.visible = True
+            logger.info("system tray icon shown")
+
+        try:
+            icon.run(setup=_ready)
+        except Exception:  # noqa: BLE001
+            logger.exception("system tray icon failed to start")
+
+    threading.Thread(target=_run_tray, daemon=True).start()
     return icon
 
 

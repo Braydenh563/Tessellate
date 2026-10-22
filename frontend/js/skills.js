@@ -398,7 +398,7 @@ function fillSkillSelect(select) {
       // notebook" marker has to be a word. It was an emoji, and then briefly a
       // `ph:` marker: which would have rendered as the literal text
       // "ph:gear" in the list, since setLabel has no element to build into.
-      option.textContent = skill.name + (skill.changes ? "  (edits notes)" : "");
+      option.textContent = skill.name + (skill.changes ? "  (edits)" : "");
       option.title = skillSummary(skill);
       //: Phase E, decision 2: measured below the bar on a small model, so
       //: shown with why rather than offered and hoped.
