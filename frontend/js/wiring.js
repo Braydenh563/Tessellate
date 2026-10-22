@@ -949,13 +949,7 @@ $("status-agent")?.addEventListener("click", () => toggleAgentPalette());
 //: settings.js owns the Guide sheet and loads after this file, so the lookup
 //: is deferred to the click rather than taken now. The same shape the phone's
 //: More sheet already uses for the same function.
-//: A second press closes it: the sheet is modeless, so the button that opened
-//: it stays reachable and "does nothing" was the report when it only refocused.
 $("status-guide")?.addEventListener("click", () => {
-  if (document.querySelector('[data-sheet="guide"]') && typeof helpChatSheetClose === "function") {
-    helpChatSheetClose();
-    return;
-  }
   openHelpChat();
 });
 

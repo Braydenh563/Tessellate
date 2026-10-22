@@ -1473,11 +1473,13 @@ function reminderEditForm(reminder) {
       loadReminders();
     })
   );
-  //: The three selects and the time were loose in the box, touching and at
-  //: two heights (the owner: "arent the same height and have no gaps").
   const fields = document.createElement("div");
-  fields.className = "row reminder-edit-fields";
-  fields.append(dueInput, prioritySelect, recurringSelect, alertSelect);
+  fields.className = "row";
+  fields.style.flexWrap = "wrap";
+  for (const field of [dueInput, prioritySelect, recurringSelect, alertSelect]) {
+    field.style.height = "var(--control-h)";
+    fields.append(field);
+  }
   wrap.append(textInput, fields, row);
   //: Enter saves and Escape cancels, from any field in the form: the two
   //: keys every inline editor answers. Only the buttons did before.

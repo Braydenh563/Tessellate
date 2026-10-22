@@ -108,12 +108,6 @@ function docIdeFoldAll(unfold) {
   return unfold ? CM.language.unfoldAll(view) : CM.language.foldAll(view);
 }
 
-//: Problems is a tab of the panel now (D8, documents-code.js); this is the
-//: command's name for it, kept for the palette row and older sweeps.
-function docIdeProblems() {
-  return docPanelToggle("problems");
-}
-
 function docIdeToggleMinimap(on) {
   if (docFileType().previewable) return false;
   const next = on === undefined ? !docToolPref("codeMinimap", false) : Boolean(on);

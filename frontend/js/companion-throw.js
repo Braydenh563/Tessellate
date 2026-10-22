@@ -146,13 +146,6 @@ function companionThrowUp(s, n, world, rand) {
   return m;
 }
 
-//: A whole throw at once, pure (the tests'; the browser runs it a frame at a time).
-function companionThrowRun(start, world, k, base, rand, dt = 16) {
-  let s = { rot: 0, t: 0, on: null, rest: false, tried: {}, ...start };
-  for (let i = 0; i < 2000 && !s.rest; i += 1) s = companionThrowStep(s, dt, world, k, base, rand);
-  return s;
-}
-
 //: Where the drop looks for its place: a climb's is the top of the edge it
 //: caught, everything else's where it stopped.
 function companionThrowAt(s) {

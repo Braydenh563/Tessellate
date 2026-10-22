@@ -371,10 +371,6 @@ select {
    sitting flush against the edge of the list with no breathing room. */
 select option {
   padding: var(--space-2) var(--space-3);
-  /* One height per row: a wrapped option otherwise touches its neighbour
-     (the Skills list, with "(needs a model)" on the longest names). */
-  line-height: 1.4;
-  min-height: 2rem;
 }
 /* Firefox draws its own focus ring inside the control on top of the painted
    arrow otherwise. */

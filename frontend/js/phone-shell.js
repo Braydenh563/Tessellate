@@ -1389,7 +1389,6 @@ function openSheet({ label, sub = "", name, build, variant = "", modal = true, r
     if (settled) return;
     settled = true;
     document.removeEventListener("keydown", onKey, true);
-    document.removeEventListener("pointerdown", onOutsidePress, true);
     onClose?.();
     returnFocus?.focus?.();
     //: **The way out** (OPEN.md, after the menus got theirs): a sheet used to
@@ -1454,26 +1453,12 @@ function openSheet({ label, sub = "", name, build, variant = "", modal = true, r
     close();
   };
 
-  //: **A press outside closes a modeless sheet** (INBOX, "can't click off the
-  //: guide panel to close it"). Its scrim is absent so the press still reaches
-  //: the app; this only adds the close. Presses inside the card, in a menu or
-  //: '?' popover it opened, in another dialog, or on its opener are not
-  //: "outside": the opener's own click would otherwise close and reopen it.
-  const onOutsidePress = (event) => {
-    const target = event.target instanceof Element ? event.target : null;
-    if (!target || card.contains(target) || returnFocus?.contains?.(target)) return;
-    //: `#status-guide` toggles the Guide itself (a second press closes it).
-    if (target.closest("#status-guide, .action-menu, .help-popover, .modal-overlay, [role='menu'], [role='dialog']")) return;
-    close();
-  };
-
   closeButton.addEventListener("click", close);
   build(card, close);
 
   overlay.appendChild(card);
   wireBackdropClose(overlay, close);
   document.addEventListener("keydown", onKey, true);
-  if (modeless) document.addEventListener("pointerdown", onOutsidePress, true);
   document.body.appendChild(overlay);
   //: A '?' a sheet builds is wired here, once, for every sheet: the
   //: boot-time pass over the page ran before it existed, and the Suggestions
