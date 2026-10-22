@@ -383,22 +383,29 @@ function fillSkillSelect(select) {
   placeholder.textContent = "Activate a skill…";
   select.appendChild(placeholder);
 
-  const groups = { builtin: [], mine: [] };
+  //: **The "edits notes" marker is a group, not a suffix** (the owner: the
+  //: items "clash visually with each other"). Appended to the name it wrapped
+  //: the longest names onto a second line, so rows had two heights and
+  //: touched; a group label says it once and every row is one line.
+  const groups = { mine: [], "mine-edit": [], builtin: [], "builtin-edit": [] };
   for (const skill of allSkills()) {
-    groups[skill.builtin ? "builtin" : "mine"].push(skill);
+    groups[`${skill.builtin ? "builtin" : "mine"}${skill.changes ? "-edit" : ""}`].push(skill);
   }
-  for (const [key, title] of [["mine", "Yours"], ["builtin", "Built-in"]]) {
+  for (const [key, title] of [
+    ["mine", "Yours, read only"],
+    ["mine-edit", "Yours, edits notes"],
+    ["builtin", "Built-in, read only"],
+    ["builtin-edit", "Built-in, edits notes"],
+  ]) {
     if (!groups[key].length) continue;
     const group = document.createElement("optgroup");
     group.label = title;
     for (const skill of groups[key]) {
       const option = document.createElement("option");
       option.value = skill.name;
-      // An <option> cannot contain an element, so the "this one changes your
-      // notebook" marker has to be a word. It was an emoji, and then briefly a
-      // `ph:` marker: which would have rendered as the literal text
-      // "ph:gear" in the list, since setLabel has no element to build into.
-      option.textContent = skill.name + (skill.changes ? "  (edits notes)" : "");
+      // An <option> cannot contain an element, so any marker has to be a
+      // word (an emoji, then a `ph:` name, both went wrong here before).
+      option.textContent = skill.name;
       option.title = skillSummary(skill);
       //: Phase E, decision 2: measured below the bar on a small model, so
       //: shown with why rather than offered and hoped.

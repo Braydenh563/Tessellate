@@ -12913,6 +12913,18 @@ async function initWhiteboard() {
   wbInitialized = true;
   
   const container = d3.select("#whiteboard-container");
+  //: **A drag on the board never selects page text** (the owner: "drag select
+  //: on the whiteboard highlights text on other elements"). Board text is
+  //: `user-select: none` until it is being edited, but a marquee, a move or a
+  //: resize that crosses a label, a card body, a map topic or the panels over
+  //: the board still started a native text selection. Refused here for
+  //: everything but a field or an element being edited; a drag that began in
+  //: an editable box keeps its selection.
+  document.getElementById("whiteboard-container")?.addEventListener("selectstart", (event) => {
+    const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+    if (target?.closest("input, textarea, [contenteditable='true'], [contenteditable=''], .wb-text-editing")) return;
+    event.preventDefault();
+  });
   //: **Middle button: the pan, and nothing else** (INBOX 167: "when I push
   //: down my middle scroll wheel on my mouse to pan the whiteboard, it is
   //: very glitch and jittery"). On Windows, Chromium and Edge start their

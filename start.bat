@@ -812,6 +812,11 @@ if defined MM_DESKTOP (
     set "MM_DESKTOP="
   ) else (
     call :status !MM_STEP_WINDOW! "Desktop window" "Ready" "done"
+    REM  The tray icon (Open / Quit) is what lets a hidden window be reopened
+    REM  or the app be closed, so it is installed with the window. Best effort:
+    REM  without it the window just closes for real on the X button.
+    "%VENV_PY%" -m pip install --quiet --timeout 5 --retries 0 pystray Pillow
+    if errorlevel 1 echo  !ESC![1;33m[!]!ESC![0m pystray or Pillow would not install - no system tray icon this run.
   )
 )
 

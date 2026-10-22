@@ -1,6 +1,6 @@
 """Tessellate: a 100% offline, local-first AI notebook."""
 
-__version__ = "0.6.0"
+__version__ = "0.6.1"
 
 #: Where a support bundle goes (the owner, 2026-09-14: "suggest that they
 #: download the support bundle and send it to my email ... even open the

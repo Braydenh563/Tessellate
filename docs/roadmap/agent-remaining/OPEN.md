@@ -1,5 +1,33 @@
 # OPEN: everything still open from the agent files, in one place
 
+## From the 22-10 bug doc (owner, not fixed in 0.6.1)
+
+Whiteboard
+- Format bar (Fill / Border / Width / ends / order row): the two rows clash at a half window; a line and an arrow cannot be turned into each other from the bar (setting End to None should make it a line, a mark an arrow; check `wbFmtKind` and `wbSketchTakesCaps`, reproduce first).
+- Fill sub-tab in the popup moves the popup to the top left.
+- Frame upright (double-click the rotate node) resets the frame but not its contents.
+- Emojis do not scale with their box; the size numbers show on draw but not on resize; anchors and selection border lag the resize until release.
+
+Documents and CodeMirror
+- Hide all Harper/edit suggestions temporarily, plus a list of dismissed ones to restore.
+- Read mode: tick list checkboxes; comfortable width too narrow in full screen.
+- Full screen: the selection toolbar and meatball do not appear; top layout at half width; overflow at the top under half width.
+- History popup clashes, needs a redesign. Highlight colour: picking blue on yellow text should switch colour, not show markdown; the highlight dropdown does not close on an outside press.
+- Line-number gutter too wide at this size; wrapped lines should hang-indent; table meatball overflows and the + sits far off; the slash menu should close on an outside press and remove its slash.
+
+Composer and Guide
+- Aware of the screen and recent actions; varied, shorter, warmer replies with a closing line or next step; length adjustable; personas disabled when no model.
+- Ask tab replies are identical across notes and list dates and links instead of answering; redesign Ask at half width.
+- Open-ended requests ("open a note") should ask what, with similar-action suggestions by lexical and cosine similarity when an action is not understood.
+- Reminders magic add failed on "remind me to do my tax return when I get home tonight, probably around 7pm"; the edit buttons differ in height and have no gap.
+- Web search with no model needs SearXNG on 127.0.0.1:8888, which was not running (log in the doc); offer to start it or say how.
+- Analyse a page in the web panel: key points, section list with jump links.
+
+Shell
+- More-actions button on notes half off the corner under half width; Settings, Models blank bar at the top; a blank bar at the bottom; chat suggestions fade with no wrap; companion hard to throw and scrolls the page; a half-window, part-window and phone pass over the whole app; button styles in the Skills and Sources rows look out of place.
+- A desktop companion (pet) outside the window, as ChatGPT desktop's: quick open, new note, reminders.
+- Custom domain instead of localhost: see the owner's answer in the 0.6.1 PR; not built.
+
 ## Everything open, 2026-10-11
 
 One list of all open work, built 2026-10-11 by the ledger agent from INBOX, every agent-remaining file (head and unmerged branches), SESSION_BRIEFS, the nine plans, ROADMAP and BACKLOG. Nothing was fixed. Rows run owner first (running, then queued), then unassigned in batch order, so the batch ranges below are id ranges.
