@@ -48,7 +48,9 @@ NOTEBOOK = [
 CONVERSATIONS = {
     "gym, a window, running and back": [
         #: O11: the 7 October squat is current, the 28 August one is said as earlier.
-        ("what have I saved about the gym?", ["90 kg", "earlier note", "80 kg"], []),
+        #: The older line is one of eight wordings picked by a date-derived seed, so
+        #: only "80 kg" (the older value) is asserted, not the word "earlier note".
+        ("what have I saved about the gym?", ["90 kg", "80 kg"], []),
         ("what about running?", ["5k", "two notes"], ["squat"]),
         ("when was that?", ["minutes"], ["squat"]),
         ("and the gym?", ["kg"], ["5k"]),
