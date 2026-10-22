@@ -435,9 +435,9 @@
   border-top: 1px solid var(--border);
 }
 
-/* A toast over the map stands above its zoom strip and legend (INBOX 1306): the strip is 4 buttons tall, 12rem clears it. */
+/* A toast over the map stays on the bottom edge and steps left of the zoom strip (INBOX 1306, then the owner 2026-10-22: a 12rem lift put it halfway up the screen). */
 @media (min-width: 600px) {
   :root body:has(#tab-graph:not(.hidden)) #toast-box {
-    bottom: calc(var(--status-bar-h) + 12rem);
+    right: calc(var(--space-4) + 4.5rem);
   }
 }

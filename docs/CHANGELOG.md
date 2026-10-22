@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Toasts on the Graph tab stay on the bottom edge and sit left of the zoom strip, instead of being lifted halfway up the screen.
 
 ## [0.6.1] - 2026-10-22
 - The system tray icon now appears when Tessellate is started from `start.bat` / `start-desktop.bat`: the launcher installed the window (`pywebview`) but not `pystray` and `Pillow`, so the tray, and with it Open and Quit, silently never started on a source install. Both are now installed with the window; if they cannot be, the launcher says so.
