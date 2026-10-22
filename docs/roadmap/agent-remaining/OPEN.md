@@ -3680,3 +3680,16 @@ Closed (see HISTORY, "OPEN.md rows closed, 2026-10-17"): row 464 and the time-re
 - A `before:tuesday` search operator is an owner decision (which side of the day it excludes).
 - chat-agent.js result box budget line (row 243) is blocked by the eager-script gzip caps.
 
+
+## Left by the 0.6.01 bug-document pass (2026-10-22)
+
+Source: the owner's "Tessellate bugs" document (34 screenshots). Fixed in the patch: tray start/log hardening, whiteboard drag-select highlighting, Fill/Border popup placement, skills menu tag. Not verified on a real Windows desktop: the tray icon (could be in the taskbar overflow ^ if it did start). Open, none built:
+
+- Composer: aware of recent activity (what you were writing or viewing) with varied, kinder replies and a suggested next step; answers that stay on the question and differ per note in Ask; a length setting; personas off when no model is connected.
+- Composer: web search with SearXNG down gives only a failure line; a clarify-first flow for open asks ("open a note"); alternative actions by lexical and cosine similarity when nothing matches.
+- Reminders magic add: "remind me to do my tax return when I get home tonight, probably around 7pm" must parse (task, tonight, about 7pm). Edit reminder buttons: equal heights and a gap.
+- Composer analysing pages in the web panel (key points, highlights, a linked section list).
+- Whiteboard: frame contents stay rotated when the frame's rotate handle is double-clicked to reset; emojis do not scale with their box; the dimensions label is missing while resizing; anchors and selection borders lag a resize until release.
+- Documents: hide Harper suggestions temporarily and a list of dismissed ones; checkboxes clickable in read mode, wider comfortable width in full screen; selection toolbar and meatball missing in full screen; highlight colour switching on already-highlighted text, and the highlight menu not closing on an outside click; slash menu closing on an outside click and removing its slash; line-number gutter too wide and wrapped lines not indented in the live view; table meatball overflow and far-off plus button; history popup redesign; layout at half width (top of full screen, Ask tab, notes more-actions button half off the edge, blank bar at the bottom, blank bar at the top of Settings, Models page).
+- Chat suggestions fade out on the right instead of wrapping; button styles look out of place (redesign pass); companion hard to throw and scrolls the page; an on-desktop companion avatar (quick open, new note, reminders) as in ChatGPT desktop pets.
+- Custom domain: see the answer in the thread; documented in INSTALL for Docker only.

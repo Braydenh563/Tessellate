@@ -8,6 +8,14 @@
 
 # HANDOVER
 
+## 0.6.01 bug-document pass (2026-10-22, branch claude/project-thread-ol5yuv)
+
+- Done: tray start hardening (icon decoded up front, startup failure logged), whiteboard drag-select no longer highlights page text, Fill/Border colour popup keeps its place, skills menu "(edits)" tag. Not verified on a real Windows desktop.
+- Open: the whole bug list is in `agent-remaining/OPEN.md`, "Left by the 0.6.01 bug-document pass". The tray icon may be in the taskbar overflow (^) on Windows 11.
+- Custom domain: not built in; reverse proxy with TLS plus `TESSELLATE_ALLOWED_HOSTS` (Docker docs only).
+- Version number and CI fixes are owned by the threads on claude/project-thread-iv24e6; expect conflicts on the version files.
+- Usage stopped at 93% weekly (self-stop 85%).
+
 ## Morning summary (away run 2026-10-18b, branch claude/magical-feynman-7bgj7j, PR 192, 0.6.0)
 
 - Done: INBOX 1300 C01 to C44 (resolved to HISTORY) and 1301 D1 to D8; C30 lightbox redesign; UX audit 1 to 12; undo/redo race; palette lexical rows; phone hero height; splat reach; composer prose openers (composer6); backup rows show what made them and verified (805 part); framed Atlas kept inside (743 tail); 13 complexity splits, 241 to 228 over 15 (1298 part); CodeQL ReDoS fixed; dark contrast on whiteboard and map measured clean (uxfix4). Released as 0.6.0; PR title and description updated.

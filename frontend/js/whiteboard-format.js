@@ -1663,6 +1663,10 @@ async function wbOpenColourMenu(input) {
     return;
   }
   const menu = wbColourMenu();
+  //: Fill and Border tabs reopen the menu on the other field, which can be a
+  //: hidden well with no box; placing against it threw the panel to the
+  //: top left. The field it was open on keeps the anchor in that case.
+  const prevOpener = menu.classList.contains("hidden") ? null : menu._escapedOpener;
   wbStopEyedrop();
   wbColourState.input = input;
   const name = wbColourName(input);
@@ -1789,7 +1793,8 @@ async function wbOpenColourMenu(input) {
   menu.classList.remove("hidden");
   input.setAttribute("aria-expanded", "true");
   input.classList.add("wb-colour-target");
-  placeEscapedMenu(menu, input);
+  const anchorBox = input.getBoundingClientRect();
+  placeEscapedMenu(menu, anchorBox.width || anchorBox.height || !prevOpener ? input : prevOpener);
   (menu.querySelector('[role="radio"][tabindex="0"]') || menu.querySelector("button"))?.focus({ preventScroll: true });
 }
 

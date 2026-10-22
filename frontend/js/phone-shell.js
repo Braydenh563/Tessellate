@@ -1462,7 +1462,8 @@ function openSheet({ label, sub = "", name, build, variant = "", modal = true, r
   const onOutsidePress = (event) => {
     const target = event.target instanceof Element ? event.target : null;
     if (!target || card.contains(target) || returnFocus?.contains?.(target)) return;
-    if (target.closest(".action-menu, .help-popover, .modal-overlay, [role='menu'], [role='dialog']")) return;
+    //: `#status-guide` toggles the Guide itself (a second press closes it).
+    if (target.closest("#status-guide, .action-menu, .help-popover, .modal-overlay, [role='menu'], [role='dialog']")) return;
     close();
   };
 
