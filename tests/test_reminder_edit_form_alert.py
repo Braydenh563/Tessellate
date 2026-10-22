@@ -25,7 +25,9 @@ def test_the_form_has_an_alert_select_with_a_no_alert_choice():
     form = _form()
     assert 'alertSelect.title = "Alert"' in form
     assert '[0, "No alert"]' in form
-    assert "wrap.append(textInput, dueInput, prioritySelect, recurringSelect, alertSelect, row)" in form
+    #: The alert select sits with the other fields (one row of equal height), then the buttons.
+    assert "[dueInput, prioritySelect, recurringSelect, alertSelect]" in form
+    assert "wrap.append(textInput, fields, row)" in form
 
 
 def test_save_sends_the_alert_and_undo_puts_the_old_one_back():

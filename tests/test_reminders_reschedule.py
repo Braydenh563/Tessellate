@@ -82,4 +82,4 @@ def test_the_edit_forms_alert_is_set_and_cleared_through_the_same_put(client):
     form = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "shell-reminders.js").read_text(encoding="utf-8")
     body = form[form.index("function reminderEditForm("):form.index("async function reminderPutUndoably(")]
     assert "alert_minutes: Number(alertSelect.value)" in body and "alert_minutes: alertNow" in body
-    assert "recurringSelect, alertSelect, row" in body
+    assert "recurringSelect, alertSelect]" in body and "wrap.append(textInput, fields, row)" in body

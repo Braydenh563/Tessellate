@@ -383,22 +383,15 @@ function fillSkillSelect(select) {
   placeholder.textContent = "Activate a skill…";
   select.appendChild(placeholder);
 
-  const groups = { builtin: [], mine: [] };
-  for (const skill of allSkills()) {
-    groups[skill.builtin ? "builtin" : "mine"].push(skill);
-  }
-  for (const [key, title] of [["mine", "Yours"], ["builtin", "Built-in"]]) {
-    if (!groups[key].length) continue;
+  //: "Edits notes" is a group, not a suffix: a suffix wrapped long names onto two lines.
+  const groups = {};
+  for (const skill of allSkills()) (groups[`${skill.builtin ? "Built-in" : "Yours"}, ${skill.changes ? "edits notes" : "read only"}`] ||= []).push(skill);
+  for (const [key, list] of Object.entries(groups).sort()) {
     const group = document.createElement("optgroup");
-    group.label = title;
-    for (const skill of groups[key]) {
+    group.label = key;
+    for (const skill of list) {
       const option = document.createElement("option");
-      option.value = skill.name;
-      // An <option> cannot contain an element, so the "this one changes your
-      // notebook" marker has to be a word. It was an emoji, and then briefly a
-      // `ph:` marker: which would have rendered as the literal text
-      // "ph:gear" in the list, since setLabel has no element to build into.
-      option.textContent = skill.name + (skill.changes ? "  (edits notes)" : "");
+      option.value = option.textContent = skill.name;
       option.title = skillSummary(skill);
       //: Phase E, decision 2: measured below the bar on a small model, so
       //: shown with why rather than offered and hoped.

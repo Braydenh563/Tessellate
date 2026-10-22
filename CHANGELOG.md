@@ -6,6 +6,17 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+
+## [0.6.1] - 2026-10-22
+- The system tray icon now appears when Tessellate is started from `start.bat` / `start-desktop.bat`: the launcher installed the window (`pywebview`) but not `pystray` and `Pillow`, so the tray, and with it Open and Quit, silently never started on a source install. Both are now installed with the window; if they cannot be, the launcher says so.
+- The Guide panel closes when you press outside it (it stays open for presses in its own menus, '?' popovers and dialogs, and on its opener).
+- The Skills list: rows no longer wrap and touch. "(edits notes)" is a group heading (Yours or Built-in, read only or edits notes) instead of a suffix on every name, and option rows have one minimum height.
+- Whiteboard: a drag on the board (marquee, move, resize) no longer selects text on cards, labels and panels; text being edited keeps its selection.
+- Reminders: the edit form's time, priority, repeat and alert fields share one height with a gap between them, and wrap.
+- CI: `test_dialogue_b8` no longer depends on the day's date (the older-note line is chosen by the reply's length, which moves with "7 October" against "11 October").
+- Windows: the system tray icon is decoded before its thread starts and a failure to start it is logged ("system tray icon failed to start"), so a bad icon or backend no longer leaves a window that hides on close with nothing to bring it back. A new tray line in the log reads "system tray icon shown".
+- Whiteboard: drag-selecting on the board no longer highlights text on other elements; the colour popup keeps its place when you switch between Fill and Border.
+- Guide: its corner panel no longer covers the status-bar Guide button, and a second press on that button closes the panel (the press used to land on the card and do nothing).
 - Needle is offered at most 15 tool schemas (the ones the question's words suggest, else the likeliest) instead of all 70: 30,359 to about 6,200 chars for a typical question, so each call reads a fifth of the text.
 - With Ollama off, a refused connection is remembered for 5 s, so one chat turn makes one connect attempt instead of one per stage (probe, embed, filing, each ~2 s a refusal on Windows); the connect wait is 1 s (was 5), and re-evaluating a note with the model off logs one line, not a traceback.
 - Lightbox: the 1:1 (Actual size) button shows pressed when the picture is already at actual size, as a picture smaller than the window is at fit; a press that changes nothing no longer looks broken (200x150: pressed at 100% before any press; 4000x3000: 20% to 100% and pressed).

@@ -1,10 +1,10 @@
 # Code map
 
-Generated 2026-10-19 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
+Generated 2026-10-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6208, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6182, test files 1321, tests 11748, plan headings 967.
+Counts: frontend functions 6206, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6182, test files 1321, tests 11748, plan headings 968.
 
-## Frontend functions (6208)
+## Frontend functions (6206)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -725,79 +725,79 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `allSkills` | frontend/js/skills.js:28 |
-| `appendToolRow` | frontend/js/skills.js:962 |
-| `applyToolFilter` | frontend/js/skills.js:1026 |
+| `appendToolRow` | frontend/js/skills.js:955 |
+| `applyToolFilter` | frontend/js/skills.js:1019 |
 | `askSkillInputs` | frontend/js/skills.js:226 |
-| `batchArchive` | frontend/js/skills.js:1395 |
-| `batchDelete` | frontend/js/skills.js:1438 |
-| `batchEach` | frontend/js/skills.js:1362 |
-| `batchExport` | frontend/js/skills.js:1432 |
-| `batchFavourite` | frontend/js/skills.js:1389 |
-| `batchMove` | frontend/js/skills.js:1340 |
-| `batchNoun` | frontend/js/skills.js:1385 |
-| `batchPublish` | frontend/js/skills.js:1406 |
-| `batchPut` | frontend/js/skills.js:1381 |
-| `batchSelection` | frontend/js/skills.js:1334 |
-| `batchTag` | frontend/js/skills.js:1354 |
-| `blobToBase64` | frontend/js/skills.js:1147 |
-| `buildSkillsPanel` | frontend/js/skills.js:436 |
+| `batchArchive` | frontend/js/skills.js:1388 |
+| `batchDelete` | frontend/js/skills.js:1431 |
+| `batchEach` | frontend/js/skills.js:1355 |
+| `batchExport` | frontend/js/skills.js:1425 |
+| `batchFavourite` | frontend/js/skills.js:1382 |
+| `batchMove` | frontend/js/skills.js:1333 |
+| `batchNoun` | frontend/js/skills.js:1378 |
+| `batchPublish` | frontend/js/skills.js:1399 |
+| `batchPut` | frontend/js/skills.js:1374 |
+| `batchSelection` | frontend/js/skills.js:1327 |
+| `batchTag` | frontend/js/skills.js:1347 |
+| `blobToBase64` | frontend/js/skills.js:1140 |
+| `buildSkillsPanel` | frontend/js/skills.js:429 |
 | `customSkills` | frontend/js/skills.js:35 |
-| `desktopShell` | frontend/js/skills.js:1096 |
-| `downloadBlob` | frontend/js/skills.js:1179 |
-| `downloadFromApi` | frontend/js/skills.js:1163 |
-| `downloadJson` | frontend/js/skills.js:1062 |
-| `enterSelectMode` | frontend/js/skills.js:1306 |
-| `exitSelectMode` | frontend/js/skills.js:1324 |
-| `fillBatchCategories` | frontend/js/skills.js:1279 |
-| `fillBatchMore` | frontend/js/skills.js:1412 |
+| `desktopShell` | frontend/js/skills.js:1089 |
+| `downloadBlob` | frontend/js/skills.js:1172 |
+| `downloadFromApi` | frontend/js/skills.js:1156 |
+| `downloadJson` | frontend/js/skills.js:1055 |
+| `enterSelectMode` | frontend/js/skills.js:1299 |
+| `exitSelectMode` | frontend/js/skills.js:1317 |
+| `fillBatchCategories` | frontend/js/skills.js:1272 |
+| `fillBatchMore` | frontend/js/skills.js:1405 |
 | `fillSkillSelect` | frontend/js/skills.js:378 |
-| `healthFacts` | frontend/js/skills.js:1086 |
+| `healthFacts` | frontend/js/skills.js:1079 |
 | `inputsToText` | frontend/js/skills.js:49 |
 | `loadChatSkills` | frontend/js/skills.js:308 |
 | `loadSkills` | frontend/js/skills.js:19 |
-| `looksLikeAnAgentRequest` | frontend/js/skills.js:619 |
-| `markOtherDevice` | frontend/js/skills.js:1112 |
-| `onOtherDevice` | frontend/js/skills.js:1129 |
-| `refuseOnOtherDevice` | frontend/js/skills.js:1137 |
-| `renderChatNudge` | frontend/js/skills.js:662 |
-| `renderRunBudget` | frontend/js/skills.js:890 |
-| `renderSkillFolderLine` | frontend/js/skills.js:831 |
-| `renderSkillSettings` | frontend/js/skills.js:814 |
+| `looksLikeAnAgentRequest` | frontend/js/skills.js:612 |
+| `markOtherDevice` | frontend/js/skills.js:1105 |
+| `onOtherDevice` | frontend/js/skills.js:1122 |
+| `refuseOnOtherDevice` | frontend/js/skills.js:1130 |
+| `renderChatNudge` | frontend/js/skills.js:655 |
+| `renderRunBudget` | frontend/js/skills.js:883 |
+| `renderSkillFolderLine` | frontend/js/skills.js:824 |
+| `renderSkillSettings` | frontend/js/skills.js:807 |
 | `renderSkillToolPicker` | frontend/js/skills.js:88 |
 | `renderSkillVerifyPicker` | frontend/js/skills.js:116 |
-| `renderSmallModelMode` | frontend/js/skills.js:878 |
-| `renderToolFocus` | frontend/js/skills.js:852 |
-| `renderToolSettings` | frontend/js/skills.js:919 |
-| `resetChatNudge` | frontend/js/skills.js:730 |
+| `renderSmallModelMode` | frontend/js/skills.js:871 |
+| `renderToolFocus` | frontend/js/skills.js:845 |
+| `renderToolSettings` | frontend/js/skills.js:912 |
+| `resetChatNudge` | frontend/js/skills.js:723 |
 | `runSkill` | frontend/js/skills.js:159 |
-| `saveFile` | frontend/js/skills.js:1195 |
-| `saveSkillList` | frontend/js/skills.js:748 |
-| `saveToolSwitch` | frontend/js/skills.js:901 |
+| `saveFile` | frontend/js/skills.js:1188 |
+| `saveSkillList` | frontend/js/skills.js:741 |
+| `saveToolSwitch` | frontend/js/skills.js:894 |
 | `setSkillVerify` | frontend/js/skills.js:136 |
-| `skillMatchingDraft` | frontend/js/skills.js:629 |
-| `skillPacePill` | frontend/js/skills.js:517 |
-| `skillRow` | frontend/js/skills.js:758 |
-| `skillSummary` | frontend/js/skills.js:735 |
+| `skillMatchingDraft` | frontend/js/skills.js:622 |
+| `skillPacePill` | frontend/js/skills.js:510 |
+| `skillRow` | frontend/js/skills.js:751 |
+| `skillSummary` | frontend/js/skills.js:728 |
 | `startEditingSkill` | frontend/js/skills.js:55 |
 | `startPlannedRun` | frontend/js/skills.js:171 |
 | `startSkill` | frontend/js/skills.js:176 |
 | `stepsToText` | frontend/js/skills.js:45 |
 | `stopEditingSkill` | frontend/js/skills.js:73 |
 | `syncSkillVerifyRow` | frontend/js/skills.js:151 |
-| `updateBatchCount` | frontend/js/skills.js:1255 |
+| `updateBatchCount` | frontend/js/skills.js:1248 |
 
 ### frontend/js/shell-reminders.js (49)
 
 | Name | File:line |
 |---|---|
-| `addReminder` | frontend/js/shell-reminders.js:1518 |
-| `buildSelect` | frontend/js/shell-reminders.js:1707 |
+| `addReminder` | frontend/js/shell-reminders.js:1525 |
+| `buildSelect` | frontend/js/shell-reminders.js:1714 |
 | `clearDoneReminders` | frontend/js/shell-reminders.js:975 |
 | `clipText` | frontend/js/shell-reminders.js:757 |
-| `curtainShell` | frontend/js/shell-reminders.js:1669 |
-| `defaultDueValue` | frontend/js/shell-reminders.js:1580 |
+| `curtainShell` | frontend/js/shell-reminders.js:1676 |
+| `defaultDueValue` | frontend/js/shell-reminders.js:1587 |
 | `glideStrip` | frontend/js/shell-reminders.js:296 |
-| `liftLockScreen` | frontend/js/shell-reminders.js:1690 |
+| `liftLockScreen` | frontend/js/shell-reminders.js:1697 |
 | `loadReminders` | frontend/js/shell-reminders.js:828 |
 | `markScrollEdge` | frontend/js/shell-reminders.js:438 |
 | `markTabBarRecede` | frontend/js/shell-reminders.js:513 |
@@ -806,14 +806,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `onScrollEdge` | frontend/js/shell-reminders.js:545 |
 | `paginateDoneReminders` | frontend/js/shell-reminders.js:924 |
 | `presetDate` | frontend/js/shell-reminders.js:1245 |
-| `refreshMediaSession` | frontend/js/shell-reminders.js:1633 |
+| `refreshMediaSession` | frontend/js/shell-reminders.js:1640 |
 | `refreshReminderDefaults` | frontend/js/shell-reminders.js:1377 |
 | `relativeWhen` | frontend/js/shell-reminders.js:1212 |
 | `reminderComposeIsPristine` | frontend/js/shell-reminders.js:1365 |
 | `reminderEditForm` | frontend/js/shell-reminders.js:1409 |
 | `reminderItem` | frontend/js/shell-reminders.js:1015 |
-| `reminderMadeUndo` | frontend/js/shell-reminders.js:1509 |
-| `reminderPutUndoably` | frontend/js/shell-reminders.js:1497 |
+| `reminderMadeUndo` | frontend/js/shell-reminders.js:1516 |
+| `reminderPutUndoably` | frontend/js/shell-reminders.js:1504 |
 | `reminderTarget` | frontend/js/shell-reminders.js:1193 |
 | `revealActiveTab` | frontend/js/shell-reminders.js:256 |
 | `safeMdSlice` | frontend/js/shell-reminders.js:671 |
@@ -2689,23 +2689,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkViewerNear` | frontend/js/companion-menu.js:473 |
 | `openNameMarkViewer` | frontend/js/companion-menu.js:30 |
 
-### frontend/js/companion-throw.js (13)
+### frontend/js/companion-throw.js (12)
 
 | Name | File:line |
 |---|---|
-| `companionThrowAt` | frontend/js/companion-throw.js:158 |
-| `companionThrowClimb` | frontend/js/companion-throw.js:285 |
-| `companionThrowFlat` | frontend/js/companion-throw.js:269 |
+| `companionThrowAt` | frontend/js/companion-throw.js:151 |
+| `companionThrowClimb` | frontend/js/companion-throw.js:278 |
+| `companionThrowFlat` | frontend/js/companion-throw.js:262 |
 | `companionThrowRng` | frontend/js/companion-throw.js:44 |
-| `companionThrowRun` | frontend/js/companion-throw.js:150 |
-| `companionThrowSettle` | frontend/js/companion-throw.js:174 |
-| `companionThrowSettleSoon` | frontend/js/companion-throw.js:296 |
+| `companionThrowSettle` | frontend/js/companion-throw.js:167 |
+| `companionThrowSettleSoon` | frontend/js/companion-throw.js:289 |
 | `companionThrowSide` | frontend/js/companion-throw.js:70 |
 | `companionThrowSlide` | frontend/js/companion-throw.js:107 |
 | `companionThrowStep` | frontend/js/companion-throw.js:60 |
 | `companionThrowUp` | frontend/js/companion-throw.js:127 |
 | `companionThrowWrapOn` | frontend/js/companion-throw.js:89 |
-| `nameMarkBuddyThrow` | frontend/js/companion-throw.js:184 |
+| `nameMarkBuddyThrow` | frontend/js/companion-throw.js:177 |
 
 ### frontend/js/connections.js (6)
 
@@ -2990,41 +2989,40 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docSnippetsRender` | frontend/js/documents-codekit.js:362 |
 | `docSnippetsShow` | frontend/js/documents-codekit.js:357 |
 
-### frontend/js/documents-ide.js (31)
+### frontend/js/documents-ide.js (30)
 
 | Name | File:line |
 |---|---|
-| `docIdeChordEnd` | frontend/js/documents-ide.js:340 |
-| `docIdeChordStart` | frontend/js/documents-ide.js:333 |
+| `docIdeChordEnd` | frontend/js/documents-ide.js:334 |
+| `docIdeChordStart` | frontend/js/documents-ide.js:327 |
 | `docIdeChunks` | frontend/js/documents-ide.js:85 |
-| `docIdeCloseKeys` | frontend/js/documents-ide.js:655 |
-| `docIdeCloseSplit` | frontend/js/documents-ide.js:473 |
+| `docIdeCloseKeys` | frontend/js/documents-ide.js:649 |
+| `docIdeCloseSplit` | frontend/js/documents-ide.js:467 |
 | `docIdeCodeView` | frontend/js/documents-ide.js:100 |
-| `docIdeCompareMenu` | frontend/js/documents-ide.js:129 |
-| `docIdeCompareWith` | frontend/js/documents-ide.js:156 |
+| `docIdeCompareMenu` | frontend/js/documents-ide.js:123 |
+| `docIdeCompareWith` | frontend/js/documents-ide.js:150 |
 | `docIdeExtensions` | frontend/js/documents-ide.js:25 |
 | `docIdeFoldAll` | frontend/js/documents-ide.js:104 |
-| `docIdeKeydown` | frontend/js/documents-ide.js:308 |
-| `docIdeKeysOverlay` | frontend/js/documents-ide.js:510 |
-| `docIdeOpenKeys` | frontend/js/documents-ide.js:643 |
-| `docIdeOpenPalette` | frontend/js/documents-ide.js:381 |
-| `docIdeProblems` | frontend/js/documents-ide.js:113 |
+| `docIdeKeydown` | frontend/js/documents-ide.js:302 |
+| `docIdeKeysOverlay` | frontend/js/documents-ide.js:504 |
+| `docIdeOpenKeys` | frontend/js/documents-ide.js:637 |
+| `docIdeOpenPalette` | frontend/js/documents-ide.js:375 |
 | `docIdeReconfigure` | frontend/js/documents-ide.js:77 |
-| `docIdeRenderKeys` | frontend/js/documents-ide.js:586 |
-| `docIdeRevertAtCaret` | frontend/js/documents-ide.js:175 |
+| `docIdeRenderKeys` | frontend/js/documents-ide.js:580 |
+| `docIdeRevertAtCaret` | frontend/js/documents-ide.js:169 |
 | `docIdeRevertSpec` | frontend/js/documents-ide.js:93 |
-| `docIdeRunApply` | frontend/js/documents-ide.js:229 |
-| `docIdeRunGrip` | frontend/js/documents-ide.js:241 |
-| `docIdeRunHeights` | frontend/js/documents-ide.js:204 |
-| `docIdeRunSaveHeight` | frontend/js/documents-ide.js:215 |
-| `docIdeRunSavedHeight` | frontend/js/documents-ide.js:224 |
+| `docIdeRunApply` | frontend/js/documents-ide.js:223 |
+| `docIdeRunGrip` | frontend/js/documents-ide.js:235 |
+| `docIdeRunHeights` | frontend/js/documents-ide.js:198 |
+| `docIdeRunSaveHeight` | frontend/js/documents-ide.js:209 |
+| `docIdeRunSavedHeight` | frontend/js/documents-ide.js:218 |
 | `docIdeSlot` | frontend/js/documents-ide.js:33 |
-| `docIdeSplitFollow` | frontend/js/documents-ide.js:489 |
-| `docIdeSplitTools` | frontend/js/documents-ide.js:394 |
-| `docIdeStopCompare` | frontend/js/documents-ide.js:167 |
-| `docIdeToggleMinimap` | frontend/js/documents-ide.js:117 |
-| `docIdeToggleSplit` | frontend/js/documents-ide.js:414 |
-| `formatDocHistoryWhen` | frontend/js/documents-ide.js:151 |
+| `docIdeSplitFollow` | frontend/js/documents-ide.js:483 |
+| `docIdeSplitTools` | frontend/js/documents-ide.js:388 |
+| `docIdeStopCompare` | frontend/js/documents-ide.js:161 |
+| `docIdeToggleMinimap` | frontend/js/documents-ide.js:111 |
+| `docIdeToggleSplit` | frontend/js/documents-ide.js:408 |
+| `formatDocHistoryWhen` | frontend/js/documents-ide.js:145 |
 
 ### frontend/js/documents-prose.js (70)
 
@@ -4179,8 +4177,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `askAtlas` | frontend/js/help-chat.js:762 |
-| `assistantHeadRow` | frontend/js/help-chat.js:911 |
-| `atlasStartersFor` | frontend/js/help-chat.js:896 |
+| `assistantHeadRow` | frontend/js/help-chat.js:915 |
+| `atlasStartersFor` | frontend/js/help-chat.js:900 |
 | `fillAskBox` | frontend/js/help-chat.js:740 |
 | `guideFirstControl` | frontend/js/help-chat.js:134 |
 | `guideLand` | frontend/js/help-chat.js:139 |
@@ -5933,7 +5931,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbHexOf` | frontend/js/whiteboard-format.js:1519 |
 | `wbInsertTable` | frontend/js/whiteboard-format.js:1339 |
 | `wbOpenColourMenu` | frontend/js/whiteboard-format.js:1660 |
-| `wbOpenPaperMenu` | frontend/js/whiteboard-format.js:1799 |
+| `wbOpenPaperMenu` | frontend/js/whiteboard-format.js:1804 |
 | `wbPaintTable` | frontend/js/whiteboard-format.js:1318 |
 | `wbPasteSize` | frontend/js/whiteboard-format.js:1073 |
 | `wbRecentColours` | frontend/js/whiteboard-format.js:1497 |
@@ -5945,13 +5943,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbRoughProbe` | frontend/js/whiteboard-format.js:1216 |
 | `wbRoughRandom` | frontend/js/whiteboard-format.js:1205 |
 | `wbRoughSpline` | frontend/js/whiteboard-format.js:1231 |
-| `wbSampleColour` | frontend/js/whiteboard-format.js:1865 |
+| `wbSampleColour` | frontend/js/whiteboard-format.js:1870 |
 | `wbSetColourField` | frontend/js/whiteboard-format.js:1559 |
 | `wbSetLinkRoute` | frontend/js/whiteboard-format.js:349 |
 | `wbSetTable` | frontend/js/whiteboard-format.js:1353 |
-| `wbStartEyedrop` | frontend/js/whiteboard-format.js:1841 |
+| `wbStartEyedrop` | frontend/js/whiteboard-format.js:1846 |
 | `wbStepFontSize` | frontend/js/whiteboard-format.js:991 |
-| `wbStopEyedrop` | frontend/js/whiteboard-format.js:1854 |
+| `wbStopEyedrop` | frontend/js/whiteboard-format.js:1859 |
 | `wbTableCells` | frontend/js/whiteboard-format.js:1296 |
 | `wbTableMenuRows` | frontend/js/whiteboard-format.js:1442 |
 | `wbTableReshape` | frontend/js/whiteboard-format.js:1416 |
@@ -10127,12 +10125,12 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 123 |
 | frontend/css/graph-lazy.css | 443 |
-| frontend/css/help-chat-lazy.css | 32 |
+| frontend/css/help-chat-lazy.css | 38 |
 | frontend/css/icon-picker.css | 121 |
 | frontend/css/improve-lazy.css | 110 |
 | frontend/css/inbox-lazy.css | 306 |
 | frontend/css/lan-lazy.css | 131 |
-| frontend/css/library-lazy.css | 6413 |
+| frontend/css/library-lazy.css | 6420 |
 | frontend/css/lightbox-lazy.css | 427 |
 | frontend/css/manual-lazy.css | 161 |
 | frontend/css/meetings-lazy.css | 543 |
@@ -10798,7 +10796,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_boot_and_swap` | src/tessellate/__main__.py:999 |
 | `_bootloader_splash` | src/tessellate/__main__.py:652 |
 | `_bring_forward` | src/tessellate/__main__.py:1660 |
-| `_capture` | src/tessellate/__main__.py:2620 |
+| `_capture` | src/tessellate/__main__.py:2635 |
 | `_claim_notebook` | src/tessellate/__main__.py:978 |
 | `_close_bootloader_splash` | src/tessellate/__main__.py:690 |
 | `_close_launch_splash` | src/tessellate/__main__.py:749 |
@@ -10806,7 +10804,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_desktop_port` | src/tessellate/__main__.py:922 |
 | `_ensure_std_streams` | src/tessellate/__main__.py:423 |
 | `_existing_instance` | src/tessellate/__main__.py:1671 |
-| `_export_markdown` | src/tessellate/__main__.py:2459 |
+| `_export_markdown` | src/tessellate/__main__.py:2474 |
 | `_finish_splash_start_step` | src/tessellate/__main__.py:778 |
 | `_focus_window` | src/tessellate/__main__.py:1052 |
 | `_get_console_hwnd` | src/tessellate/__main__.py:1084 |
@@ -10815,20 +10813,20 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_mark_start_step_done` | src/tessellate/__main__.py:848 |
 | `_maybe_relaunch_hidden` | src/tessellate/__main__.py:1296 |
 | `_open_window_onto` | src/tessellate/__main__.py:1717 |
-| `_password_exists` | src/tessellate/__main__.py:2498 |
+| `_password_exists` | src/tessellate/__main__.py:2513 |
 | `_port_from_env` | src/tessellate/__main__.py:35 |
 | `_port_holder` | src/tessellate/__main__.py:864 |
 | `_push_status_to_window` | src/tessellate/__main__.py:831 |
 | `_pythonw_path` | src/tessellate/__main__.py:1102 |
 | `_recolour_loading_page` | src/tessellate/__main__.py:325 |
 | `_relaunch_argv` | src/tessellate/__main__.py:1208 |
-| `_repair_install` | src/tessellate/__main__.py:2581 |
+| `_repair_install` | src/tessellate/__main__.py:2596 |
 | `_replace_process` | src/tessellate/__main__.py:1536 |
-| `_reset_password` | src/tessellate/__main__.py:2511 |
+| `_reset_password` | src/tessellate/__main__.py:2526 |
 | `_run_desktop` | src/tessellate/__main__.py:1744 |
-| `_run_mcp` | src/tessellate/__main__.py:2433 |
+| `_run_mcp` | src/tessellate/__main__.py:2448 |
 | `_run_server` | src/tessellate/__main__.py:450 |
-| `_run_server_holding_lock` | src/tessellate/__main__.py:2746 |
+| `_run_server_holding_lock` | src/tessellate/__main__.py:2761 |
 | `_serve_with_lan` | src/tessellate/__main__.py:531 |
 | `_serves_this_notebook` | src/tessellate/__main__.py:905 |
 | `_spawn_desktop` | src/tessellate/__main__.py:1113 |
@@ -10845,7 +10843,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_warn_webview2_missing` | src/tessellate/__main__.py:1626 |
 | `_webview2_runtime_missing` | src/tessellate/__main__.py:1562 |
 | `_window_class_name` | src/tessellate/__main__.py:1435 |
-| `main` | src/tessellate/__main__.py:2638 |
+| `main` | src/tessellate/__main__.py:2653 |
 | `restart_app` | src/tessellate/__main__.py:1257 |
 | `restart_in_console_mode` | src/tessellate/__main__.py:1185 |
 
@@ -19843,7 +19841,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_xmind_import.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |
 
-## Plan headings (967)
+## Plan headings (968)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -19853,6 +19851,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 0. Performance and "not device heavy" (cross-cutting, first) | docs/roadmap/PLAN.md:26 |
 | 0. The diagnosis in one page | docs/roadmap/WORLD_CLASS_PLAN.md:25 |
 | 0. The operating protocol (read every session, it is short) | docs/roadmap/SESSION_BRIEFS.md:17 |
+| 0.6.01 bug-document pass (2026-10-22, branch claude/project-thread-ol5yuv) | docs/roadmap/HANDOVER.md:11 |
 | 1. Format panel, Style tab | docs/roadmap/WHITEBOARD_PLAN.md:976 |
 | 1. Live log console (started, not finished) | docs/roadmap/BACKLOG.md:32 |
 | 1. Research read, 2026-10-10, and what each changes here | docs/roadmap/CHAT_PLAN.md:1580 |
@@ -20016,7 +20015,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 20. A model per feature (asked for directly, 2026-09-21) | docs/roadmap/WORLD_CLASS_PLAN.md:2213 |
 | 20. Backend | docs/roadmap/BACKLOG.md:1294 |
 | 20. The 2026-10-05 feature audit: decisions | docs/roadmap/DOCUMENTS_PLAN.md:1049 |
-| 2026-09-08, the third night: read this block first, whoever you are | docs/roadmap/HANDOVER.md:50 |
+| 2026-09-08, the third night: read this block first, whoever you are | docs/roadmap/HANDOVER.md:58 |
 | 21. Every failure names its way out (INBOX 272 part 1, 2026-09-21) | docs/roadmap/WORLD_CLASS_PLAN.md:2283 |
 | 21. Skills: rebuilt; what is left | docs/roadmap/BACKLOG.md:1430 |
 | 21. The code editor against VS Code, and writing checks everywhere (INBOX 646) | docs/roadmap/DOCUMENTS_PLAN.md:435 |
@@ -20418,14 +20417,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E2 · The complexity of the AI path is where the next bug will be, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:653 |
 | E3 · Model calls are scattered across request handlers, background threads and module singletons, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:666 |
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:563 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:573 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4267 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
 | F1 · Boot is ~1 s and tab switches are ~10–50 ms. The app is not slow; it is *heavy*: Medium | docs/roadmap/MODERNISATION_AUDIT.md:687 |
 | F2 · Fourteen requests in sixty idle seconds, from three separate timers, High | docs/roadmap/MODERNISATION_AUDIT.md:708 |
 | F3 · List rendering is solved; list *fetching* is not, Medium | docs/roadmap/MODERNISATION_AUDIT.md:733 |
-| Fable's working notes for Opus (2026-09-09 05:10 UTC) | docs/roadmap/HANDOVER.md:202 |
+| Fable's working notes for Opus (2026-09-09 05:10 UTC) | docs/roadmap/HANDOVER.md:210 |
 | Found by an agent while measuring something else (2026-09-08, graph) | docs/roadmap/CHAT_PLAN.md:604 |
 | G. Mobile and responsive | docs/roadmap/MODERNISATION_AUDIT.md:743 |
 | G. Test-suite gaps | docs/roadmap/AUDIT.md:123 |
@@ -20450,8 +20449,8 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Harness robustness, 2026-10-04 (INBOX 527) | docs/roadmap/AGENT_SKILLS_REFORM.md:202 |
 | Harper (Automattic) | docs/roadmap/ANALYSIS.md:1783 |
 | Headroom: evaluated, not adopted | docs/roadmap/BACKLOG.md:710 |
-| How far each plan actually is (honest, as of 2026-10-03) | docs/roadmap/HANDOVER.md:338 |
-| How to proceed after PR 149 (the owner asked, 2026-09-14) | docs/roadmap/HANDOVER.md:517 |
+| How far each plan actually is (honest, as of 2026-10-03) | docs/roadmap/HANDOVER.md:346 |
+| How to proceed after PR 149 (the owner asked, 2026-09-14) | docs/roadmap/HANDOVER.md:527 |
 | How to proceed after PR 149 (written 2026-09-14; the live order is CLAUDE.md standing order 1 and HANDOVER's Now line) | docs/ROADMAP.md:295 |
 | How to read the evidence in here | docs/roadmap/MODERNISATION_AUDIT.md:23 |
 | How to work on this repo | docs/ROADMAP.md:364 |
@@ -20469,7 +20468,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/CHAT_PLAN.md:939 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1473 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3117 |
-| If Opus is the orchestrator (no Fable available) | docs/roadmap/HANDOVER.md:60 |
+| If Opus is the orchestrator (no Fable available) | docs/roadmap/HANDOVER.md:68 |
 | Image notes and the Library, against photocraft and lightcraft | docs/roadmap/ANALYSIS.md:3955 |
 | Is its backend better designed? No: and it says so about itself | docs/roadmap/ANALYSIS.md:810 |
 | KnowNote (MrSibe) | docs/roadmap/ANALYSIS.md:1932 |
@@ -20478,7 +20477,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Looked at and deliberately not taken | docs/roadmap/ANALYSIS.md:713 |
 | Looked at and not recommended | docs/roadmap/ANALYSIS.md:882 |
 | Mind map, against designcraft's canvas and MINDMAP_PLAN's references | docs/roadmap/ANALYSIS.md:3769 |
-| Morning summary (away run 2026-10-18b, branch claude/magical-feynman-7bgj7j, PR 192, 0.6.0) | docs/roadmap/HANDOVER.md:11 |
+| Morning summary (away run 2026-10-18b, branch claude/magical-feynman-7bgj7j, PR 192, 0.6.0) | docs/roadmap/HANDOVER.md:19 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:344 |
 | Next: weeks 5–8: "a small model can finish a job, and so can the app" | docs/roadmap/MODERNISATION_AUDIT.md:1049 |
@@ -20493,7 +20492,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1360 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4385 |
 | PDF viewer and OCR workspace, against pdfcraft | docs/roadmap/ANALYSIS.md:3922 |
-| PR 144 is done when (the owner's checklist, 2026-09-09 05:30 UTC) | docs/roadmap/HANDOVER.md:99 |
+| PR 144 is done when (the owner's checklist, 2026-09-09 05:30 UTC) | docs/roadmap/HANDOVER.md:107 |
 | Parity matrix, 2026-10-10 | docs/roadmap/ANALYSIS.md:3703 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:677 |
 | Phase 0: the bridge: click an underline, see suggestions (1 session) | docs/roadmap/DOCUMENTS_PLAN.md:167 |
@@ -20694,9 +20693,9 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Six repositories read for Tessellate, 2026-09-20 | docs/roadmap/ANALYSIS.md:1760 |
 | Sources | docs/roadmap/MINDMAP_PLAN.md:280 |
 | Speech, four projects read by name, and what this app already does | docs/roadmap/ANALYSIS.md:3102 |
-| Standing orders for this session (whoever the model is) | docs/roadmap/HANDOVER.md:274 |
+| Standing orders for this session (whoever the model is) | docs/roadmap/HANDOVER.md:282 |
 | Start of the next PR (the owner, 2026-10-12, "log everything I've mentioned") | docs/roadmap/BACKLOG.md:4308 |
-| State of the branch (`claude/notes-flow-rebuild`, PR #162) | docs/roadmap/HANDOVER.md:358 |
+| State of the branch (`claude/notes-flow-rebuild`, PR #162) | docs/roadmap/HANDOVER.md:366 |
 | Steps | docs/roadmap/UI_MODERNISATION_PLAN.md:1077 |
 | Steps | docs/roadmap/WORLD_CLASS_PLAN.md:1524 |
 | Still open | docs/roadmap/WORLD_CLASS_PLAN.md:2260 |

@@ -1473,7 +1473,14 @@ function reminderEditForm(reminder) {
       loadReminders();
     })
   );
-  wrap.append(textInput, dueInput, prioritySelect, recurringSelect, alertSelect, row);
+  const fields = document.createElement("div");
+  fields.className = "row";
+  fields.style.flexWrap = "wrap";
+  for (const field of [dueInput, prioritySelect, recurringSelect, alertSelect]) {
+    field.style.height = "var(--control-h)";
+    fields.append(field);
+  }
+  wrap.append(textInput, fields, row);
   //: Enter saves and Escape cancels, from any field in the form: the two
   //: keys every inline editor answers. Only the buttons did before.
   wrap.addEventListener("keydown", (event) => {

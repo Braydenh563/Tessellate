@@ -31,28 +31,28 @@
        every later file's var() calls depend on. See
        tests/test_style_scale.py's STYLE_FILES for the list the design-token
        lint reads instead of a single style.css path. -->
-  <link rel="stylesheet" href="/css/00-tokens-shell.css?v=0.6.0">
-  <link rel="stylesheet" href="/css/01-forms-settings.css?v=0.6.0">
-  <link rel="stylesheet" href="/css/02-chat-graph.css?v=0.6.0">
+  <link rel="stylesheet" href="/css/00-tokens-shell.css?v=0.6.1">
+  <link rel="stylesheet" href="/css/01-forms-settings.css?v=0.6.1">
+  <link rel="stylesheet" href="/css/02-chat-graph.css?v=0.6.1">
   <!-- The reduced-motion blankets (the OS hint's, the manual switch's, Interface
        animations off): matched against no element unless the OS asks for calm
        or theme-boot.js / applyAppearance turn the media on (motion-still.css). -->
-  <link rel="stylesheet" href="/css/motion-still.css?v=0.6.0" media="(prefers-reduced-motion: reduce)" id="motion-still-sheet">
-  <link rel="stylesheet" href="/css/03-dashboard-widgets.css?v=0.6.0">
-  <link rel="stylesheet" href="/css/04-chat-dock-appearance.css?v=0.6.0">
-  <link rel="stylesheet" href="/css/05-sidebars-themes.css?v=0.6.0">
-  <link rel="stylesheet" href="/css/06-timeline-dialogs.css?v=0.6.0">
-  <link rel="stylesheet" href="/css/07-whiteboard-misc.css?v=0.6.0">
-  <link rel="stylesheet" href="/css/08-consistency.css?v=0.6.0">
+  <link rel="stylesheet" href="/css/motion-still.css?v=0.6.1" media="(prefers-reduced-motion: reduce)" id="motion-still-sheet">
+  <link rel="stylesheet" href="/css/03-dashboard-widgets.css?v=0.6.1">
+  <link rel="stylesheet" href="/css/04-chat-dock-appearance.css?v=0.6.1">
+  <link rel="stylesheet" href="/css/05-sidebars-themes.css?v=0.6.1">
+  <link rel="stylesheet" href="/css/06-timeline-dialogs.css?v=0.6.1">
+  <link rel="stylesheet" href="/css/07-whiteboard-misc.css?v=0.6.1">
+  <link rel="stylesheet" href="/css/08-consistency.css?v=0.6.1">
   <!-- The documents editor's own layout, last so it is the final word on the
        panes it lays out. CodeMirror's *internals* are styled from the theme
        object in documents.js instead: adopted stylesheets sort after document
        stylesheets, so a rule here could not override one of its own. -->
-  <link rel="stylesheet" href="/css/09-editor.css?v=0.6.0">
+  <link rel="stylesheet" href="/css/09-editor.css?v=0.6.1">
   <!-- Phases 9 and 10 of UI_MODERNISATION_PLAN: the tablet bands and the
        Liquid Glass adoptions. Last, so it wins ties on source order, and its
        own file so three agents can edit the stylesheets at once. -->
-  <link rel="stylesheet" href="/css/10-responsive.css?v=0.6.0">
+  <link rel="stylesheet" href="/css/10-responsive.css?v=0.6.1">
   <!-- **Its own file, not an inline block, and that is the point.** The CSP
        allows inline scripts only by sha256 hash, and `create_app` computes
        those hashes from index.html **once at startup**. A server still
@@ -62,7 +62,7 @@
        the loading screen". A guard that exists to report a broken boot must
        not itself be the thing that breaks, and `script-src 'self'` covers a
        same-origin file unconditionally. -->
-  <script src="/js/boot-guard.js?v=0.6.0"></script>
+  <script src="/js/boot-guard.js?v=0.6.1"></script>
   <!-- **Its own file for the same reason boot-guard.js is**, and this one
        was reported: "[browser/csp] blocked script-src-elem: inline". The
        policy has no `'unsafe-inline'`, so an inline block has to be named by
@@ -78,7 +78,7 @@
        class rather than one more of its causes. It stays a plain synchronous
        script element in the head, so it still runs before first paint and the
        anti-flash guarantee is unchanged. -->
-  <script src="/js/theme-boot.js?v=0.6.0"></script>
+  <script src="/js/theme-boot.js?v=0.6.1"></script>
 </head>
 <body>
   <!-- The very first thing in <body>, on purpose: painted before any data
@@ -15178,42 +15178,42 @@ Link to another note with [[its first few words]]."></textarea>
        kick-offs, initNotesSubtabs() and initAuth(), are the last lines of
        spaces-find.js for that reason. agent-activity.js (split first) runs
        after all of them. -->
-  <script src="/js/app.js?v=0.6.0"></script>
-  <script src="/js/prefs.js?v=0.6.0"></script>
-  <script src="/js/store.js?v=0.6.0"></script>
-  <script src="/js/lazy-entries.js?v=0.6.0"></script>
-  <script src="/js/note-cards.js?v=0.6.0"></script>
-  <script src="/js/menus.js?v=0.6.0"></script>
-  <script src="/js/lightbox.js?v=0.6.0"></script>
-  <script src="/js/selection.js?v=0.6.0"></script>
-  <script src="/js/notes-list.js?v=0.6.0"></script>
-  <script src="/js/capture-ask.js?v=0.6.0"></script>
-  <script src="/js/chat.js?v=0.6.0"></script>
-  <script src="/js/chat-agent.js?v=0.6.0"></script>
-  <script src="/js/chat-attach.js?v=0.6.0"></script>
-  <script src="/js/sheets-selects.js?v=0.6.0"></script>
-  <script src="/js/skills.js?v=0.6.0"></script>
-  <script src="/js/shell-reminders.js?v=0.6.0"></script>
-  <script src="/js/markdown.js?v=0.6.0"></script>
-  <script src="/js/navigation.js?v=0.6.0"></script>
-  <script src="/js/router.js?v=0.6.0"></script>
-  <script src="/js/settings-panes.js?v=0.6.0"></script>
-  <script src="/js/media.js?v=0.6.0"></script>
-  <script src="/js/status.js?v=0.6.0"></script>
-  <script src="/js/ai-tools.js?v=0.6.0"></script>
-  <script src="/js/phone-shell.js?v=0.6.0"></script>
-  <script src="/js/wiring.js?v=0.6.0"></script>
-  <script src="/js/settings-wiring.js?v=0.6.0"></script>
-  <script src="/js/spaces-find.js?v=0.6.0"></script>
-  <script src="/js/agent-activity.js?v=0.6.0"></script>
+  <script src="/js/app.js?v=0.6.1"></script>
+  <script src="/js/prefs.js?v=0.6.1"></script>
+  <script src="/js/store.js?v=0.6.1"></script>
+  <script src="/js/lazy-entries.js?v=0.6.1"></script>
+  <script src="/js/note-cards.js?v=0.6.1"></script>
+  <script src="/js/menus.js?v=0.6.1"></script>
+  <script src="/js/lightbox.js?v=0.6.1"></script>
+  <script src="/js/selection.js?v=0.6.1"></script>
+  <script src="/js/notes-list.js?v=0.6.1"></script>
+  <script src="/js/capture-ask.js?v=0.6.1"></script>
+  <script src="/js/chat.js?v=0.6.1"></script>
+  <script src="/js/chat-agent.js?v=0.6.1"></script>
+  <script src="/js/chat-attach.js?v=0.6.1"></script>
+  <script src="/js/sheets-selects.js?v=0.6.1"></script>
+  <script src="/js/skills.js?v=0.6.1"></script>
+  <script src="/js/shell-reminders.js?v=0.6.1"></script>
+  <script src="/js/markdown.js?v=0.6.1"></script>
+  <script src="/js/navigation.js?v=0.6.1"></script>
+  <script src="/js/router.js?v=0.6.1"></script>
+  <script src="/js/settings-panes.js?v=0.6.1"></script>
+  <script src="/js/media.js?v=0.6.1"></script>
+  <script src="/js/status.js?v=0.6.1"></script>
+  <script src="/js/ai-tools.js?v=0.6.1"></script>
+  <script src="/js/phone-shell.js?v=0.6.1"></script>
+  <script src="/js/wiring.js?v=0.6.1"></script>
+  <script src="/js/settings-wiring.js?v=0.6.1"></script>
+  <script src="/js/spaces-find.js?v=0.6.1"></script>
+  <script src="/js/agent-activity.js?v=0.6.1"></script>
   <!-- Generated faces (`nameMood`, `nameMark`): split out of app.js on
        2026-09-24 when they took the gzipped app.js over its size bound. Only
        declarations at top level, and it must load before any boot file that
        paints a face, so it sits straight after app.js. -->
-  <script src="/js/avatars.js?v=0.6.0"></script>
+  <script src="/js/avatars.js?v=0.6.1"></script>
   <!-- Atlas, the assistant's own character (`atlasDraw`, its moods): after
        avatars.js, whose `registerCharacter` it answers through. -->
-  <script src="/js/atlas.js?v=0.6.0"></script>
+  <script src="/js/atlas.js?v=0.6.1"></script>
   <!-- The editor layer: the "/" command menu, the block frames it inserts, and
        the caret-anchored popup the document editor's [[ autocomplete uses.
        Loaded after app.js, and it stays at boot: every cross-file call it
@@ -15224,8 +15224,8 @@ Link to another note with [[its first few words]]."></textarea>
        arrived, and the two that could run sooner (`applyMarkdown`,
        `docEventFromCm`) are on app.js's stand-in list and its typeof-guard
        list respectively. -->
-  <script src="/js/rich-picker.js?v=0.6.0"></script>
-  <script src="/js/editor.js?v=0.6.0"></script>
+  <script src="/js/rich-picker.js?v=0.6.1"></script>
+  <script src="/js/editor.js?v=0.6.1"></script>
   <!-- Dashboard: widgets, masonry packing, the generative-art widget (§88.3
        of the app.js-split plan). Loaded after app.js and shares its global
        scope; every cross-file call happens at runtime (inside a function or
@@ -15237,7 +15237,7 @@ Link to another note with [[its first few words]]."></textarea>
        closure) moved here along with the functions they call, the same fix
        documents.js made for `initDocSidebarTabs()`, see dashboard.js's own
        header for the full explanation. -->
-  <script src="/js/dashboard.js?v=0.6.0"></script>
+  <script src="/js/dashboard.js?v=0.6.1"></script>
   <!-- Timeline: the feed, the table view, the density scrubber, the kind
        chips and the daily page (split out of app.js on 2026-09-23, when the
        gzipped app.js crossed test_static_compression.py's bound a third
@@ -15250,13 +15250,13 @@ Link to another note with [[its first few words]]."></textarea>
        added, so this position is not load-bearing; it sits before
        settings.js because settings.js's tail is the one that must run last.
        See timeline.js's own header for what stayed in app.js and why. -->
-  <script src="/js/timeline.js?v=0.6.0"></script>
+  <script src="/js/timeline.js?v=0.6.1"></script>
   <!-- Popup agent (Ctrl+K): split out of app.js on 2026-09-24, when the
        gzipped app.js crossed test_static_compression.py's bound a fourth
        time. Same terms as timeline.js above: its top-level lines only read
        what the files before it define, and app.js calls into it only from
        functions and listeners. See palette.js's own header. -->
-  <script src="/js/palette.js?v=0.6.0"></script>
+  <script src="/js/palette.js?v=0.6.1"></script>
   <!-- Settings: the modal shell, the logs console, and appearance (theme,
        accent, curated palettes, saved looks, the generative background
        preview): §88.3 of the app.js-split plan, the fourth and LAST file.
@@ -15278,8 +15278,8 @@ Link to another note with [[its first few words]]."></textarea>
        hazards this ordering fixes. -->
   <!-- The background art's styles (BG_ART_BUILDERS). Before settings.js,
        whose own tail starts the art; this file only defines. -->
-  <script src="/js/bg-art.js?v=0.6.0"></script>
-  <script src="/js/settings.js?v=0.6.0"></script>
+  <script src="/js/bg-art.js?v=0.6.1"></script>
+  <script src="/js/settings.js?v=0.6.1"></script>
   <!-- The guided tour (tour.js) is a lazy bundle (`tour` in LAZY_MODULES,
        app.js): `openTour` and `renderTourReplay` are stand-ins that fetch it
        the first time a tour starts or Settings, Help is shown. -->

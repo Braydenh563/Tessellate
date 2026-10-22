@@ -793,11 +793,9 @@ let helpChatSheetClose = null;
 function openHelpChat() {
   const group = $("help-chat-group");
   if (!group) return null;
-  //: Already open: put the caret back in the field rather than stacking a
-  //: second sheet over the first, which is what two entry points into one
-  //: surface otherwise produce.
+  //: Already open: a second press (the status button) closes it rather than stacking a second sheet.
   if (document.querySelector('[data-sheet="guide"]')) {
-    $("help-chat-input")?.focus();
+    helpChatSheetClose?.();
     return null;
   }
   helpChatHome = { parent: group.parentNode, next: group.nextSibling };
@@ -873,9 +871,15 @@ function openHelpChat() {
       if (helpChatHome) helpChatHome.parent.insertBefore(group, helpChatHome.next);
       helpChatHome = null;
       helpChatSheetClose = null;
+      document.removeEventListener("pointerdown", awayPress, true);
     },
   });
   helpChatSheetClose = close;
+  //: A press outside closes the Guide (its sheet is modeless); its opener, menus and popovers do not count.
+  function awayPress({ target }) {
+    if (!target.closest?.(".sheet-card, #status-guide, .action-menu, .help-popover, [role='menu'], [role='dialog']")) close();
+  }
+  if (document.querySelector('[data-sheet="guide"].sheet-modeless')) document.addEventListener("pointerdown", awayPress, true);
   //: **After `openSheet` returns, not inside its `build`.** `build` is handed
   //: the card before the card is in the document, so both of these looked the
   //: chat up by id and found nothing: the starters survived only because they

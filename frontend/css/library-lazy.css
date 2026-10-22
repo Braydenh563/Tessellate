@@ -6411,3 +6411,10 @@ input[type="color"].wb-mixed {
 .wb-lib-peek-name {
   overflow-wrap: anywhere;
 }
+
+#wb-canvas-view {
+  user-select: none;
+}
+#wb-canvas-view :is(input, textarea, [contenteditable]) {
+  user-select: text;
+}
