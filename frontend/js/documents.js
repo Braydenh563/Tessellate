@@ -14057,6 +14057,7 @@ function noteSurfaceExtensions(CM, host, options) {
     CM.view.placeholder(host.placeholder || ""),
     //: This app's chords first, so Ctrl+B is bold in a note for the same
     //: reason it is bold in a document.
+    docRedoChord(CM),
     CM.view.keymap.of([
       //: The host's own keys first (Phase 8c): a box whose Enter means "done"
       //: says so on the element, and a table row cannot carry a closure over
@@ -21837,6 +21838,24 @@ function docCmHighlight(CM) {
   return docCmHighlightCache;
 }
 
+//: **Ctrl+Shift+Z is redo, whatever the key reports.** With Caps Lock on, or
+//: from a script, Shift+Z arrives as `key: "z"` with `shiftKey` set, and the
+//: engine's keymap looks the chord up without Shift for a letter, so it found
+//: Mod-z and undid a second step while the Redo button's tooltip promised the
+//: opposite (dogfood round 1, item 1). A key binding cannot see the event, so
+//: this is a DOM handler at the highest precedence.
+function docRedoChord(CM) {
+  return CM.state.Prec.highest(CM.view.EditorView.domEventHandlers({
+    keydown: (event, view) => {
+      if (!(event.ctrlKey || event.metaKey) || !event.shiftKey || event.altKey) return false;
+      if (event.key.toLowerCase() !== "z") return false;
+      event.preventDefault();
+      CM.commands.redo(view);
+      return true;
+    },
+  }));
+}
+
 //: The chords the fallback textarea's own `keydown` handler carries, as a
 //: keymap instead. They cannot simply be re-attached to CodeMirror's DOM: it
 //: is a contenteditable with its own key handling and its own IME support, so
@@ -22032,6 +22051,7 @@ function docCmExtensions(CM) {
     CM.view.placeholder(docPlaceholderText || ""),
     //: This app's chords first, then CodeMirror's own defaults, so a binding
     //: the editor already had wins over the library's.
+    docRedoChord(CM),
     CM.view.keymap.of([
       ...docCmKeymap(CM),
       ...CM.search.searchKeymap,

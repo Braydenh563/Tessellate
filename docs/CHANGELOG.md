@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents and notes: Ctrl+Shift+Z redoes even when Caps Lock is on (it undid a second step, because the editor read the chord as plain Ctrl+Z).
 - Ask: at 600 to 820px the header buttons (Use AI, History, New chat) shrink and wrap inside the card instead of running 26px past its right edge.
 - Documents: at a 600px window the dock's eight controls fit one row (tight gap and Edit/Read padding) instead of wrapping the more menu to a third row. Companion: it no longer lets the page scroll under a touch drag (touch-action none), so a throw is not cancelled by the browser.
 - Chat: under 600px the welcome's suggested questions wrap to the column instead of scrolling sideways with a fading edge. Ask: at half width the box loses the lone sparkle line and the model picker takes the full row.
