@@ -2,5 +2,6 @@
 
 
 - done: ea3ce26 localhost guard
-- done: backup_copy_dir, update_beta (this commit)
-- next: unlock throttle keys IPv6 by /64, routes_auth.py `_client_key`
+- done: e5067eb backup_copy_dir, update_beta
+- done: throttle /64 (this commit)
+- next: lancert.ensure re-tightens CA key perms; SECURITY.md section

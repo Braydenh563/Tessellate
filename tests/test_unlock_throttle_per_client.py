@@ -93,3 +93,28 @@ def test_the_client_table_stays_bounded(app, monkeypatch):
     for n in range(12):
         _from(app, f"10.0.1.{n}").post("/auth/unlock", json={"password": "wrong"})
     assert len(routes_auth._failed_by_client) <= 5
+
+
+def test_addresses_in_one_ipv6_64_share_one_bucket(app):
+    """lansec-1025: a device on the Wi-Fi picks any address in the network's
+    /64 for itself (privacy addresses do exactly that), so keyed by the full
+    address a guesser earned five free tries per address. An IPv6 client is
+    keyed by its /64, and an IPv4 address in IPv6 clothing by the IPv4 one."""
+    _setup(app)
+    for n in range(routes_auth._FAILURE_ALLOWANCE + 1):
+        _from(app, f"2001:db8:1:2::{n + 1:x}").post("/auth/unlock", json={"password": "wrong guess"})
+    assert list(routes_auth._failed_by_client) == ["2001:db8:1:2::/64"]
+    routes_auth._failed_by_client["2001:db8:1:2::/64"].extend([time.time()] * 5)
+    fresh = _from(app, "2001:db8:1:2:aaaa:bbbb:cccc:dddd")
+    assert fresh.post("/auth/unlock", json={"password": "the owner"}).status_code == 429
+    # Another network's /64 is another client: not throttled (a new device
+    # is then held for this computer's Allow, a 403 of its own).
+    assert _from(app, "2001:db8:9:9::1").post("/auth/unlock", json={"password": "the owner"}).status_code != 429
+    assert "2001:db8:9:9::/64" not in routes_auth._failed_by_client
+
+
+def test_a_mapped_ipv4_client_is_its_ipv4_address():
+    assert routes_auth._bucket("::ffff:192.168.1.50") == "192.168.1.50"
+    assert routes_auth._bucket("192.168.1.50") == "192.168.1.50"
+    assert routes_auth._bucket("fe80::1%eth0") == "fe80::/64"
+    assert routes_auth._bucket("testclient") == "testclient"
