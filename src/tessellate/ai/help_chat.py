@@ -526,7 +526,12 @@ HELP_TOPICS: list[dict] = [
             "page under its title, cited by its address. The pages are in the "
             "Web results fold under the answer: each with its site and one "
             "line; press a title to read the page there, as text, with Back to "
-            "results, or the arrow beside it to open it in your browser."
+            "results, or the arrow beside it to open it in your browser. "
+            "Paste a link and ask to read it: with web search on and no model "
+            "the page is fetched and told back as its main points, key terms "
+            "and sections; with it off you are told so and given the setting. "
+            "If the search service (SearXNG) is not running, the reply says so "
+            "and opens Settings, Web search, where it can be started."
         ),
         "badge": {"label": "Web search", "section": "websearch"},
     },
