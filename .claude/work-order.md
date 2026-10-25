@@ -9,5 +9,8 @@ stop: owner's 25% weekly usage line
 - [ ] INBOX 1350: phone/LAN security review + fixes (Opus agent)
 - [x] INBOX 1350: custom domain write-up + smallest safe build
 - [ ] INBOX 1350 + OPEN Shell rows: half-window sweep of every surface, fixes
+- [ ] INBOX 1351: dogfood rounds (blind-tester as a uni student, no model, per surface) then fix agent; repeat until a round finds under 3
+- [ ] INBOX 1351: battery: idle CPU and wakeups with no model, cut polling and timers
+- [ ] Composer round 3 (after composer2)
 - [ ] Second rounds: whiteboard/mindmap draw.io gaps, document editor upgrades, composer expansion
 - [ ] Remaining INBOX items (18), then OPEN.md by impact
