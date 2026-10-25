@@ -580,7 +580,7 @@ function saveWhatIsInFront() {
 
 //: Item 9: a key within 1.5 s of typing in an editor is not a command. The
 //: document editor stops its letters at its host and sets this itself.
-let typingBurstAt = 0;
+const typingBurst = { at: 0 };
 
 document.addEventListener("keydown", (e) => {
   // **Before anything else.** A locked notebook answers no shortcut, not a
@@ -743,8 +743,8 @@ document.addEventListener("keydown", (e) => {
   //: letters.
   const singleKeys = singleKeysOn();
   const now = performance.now();
-  if (typing) typingBurstAt = now;
-  const burst = !typing && e.key.length === 1 && now - typingBurstAt < 1500 && (typingBurstAt = now);
+  if (typing) typingBurst.at = now;
+  const burst = !typing && e.key.length === 1 && now - typingBurst.at < 1500 && (typingBurst.at = now);
   //: `boardOwns`: a key the open board answers itself (`wbOwnsChord`), such
   //: as a letter typed while a new map topic is still being made.
   const boardOwns = typeof wbOwnsChord === "function" && wbOwnsChord(e);

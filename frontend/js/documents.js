@@ -22343,7 +22343,7 @@ function docGuardGlobalShortcuts(host) {
   host.addEventListener("keydown", (event) => {
     if (event.ctrlKey || event.metaKey || event.altKey) return;
     if (event.key.length !== 1) return;
-    typingBurstAt = performance.now();
+    typingBurst.at = performance.now();
     event.stopPropagation();
   });
 }
