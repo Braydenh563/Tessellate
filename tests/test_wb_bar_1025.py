@@ -61,3 +61,12 @@ def test_a_wrapped_bar_is_a_panel_without_a_leading_hairline() -> None:
     assert "wb-context-wrapped" in _function(BOARD, "wbUpdateSelectionBar")
     assert ".wb-context.wb-context-wrapped {" in CSS
     assert ".wb-context .wb-context-group.wb-row-start:not(.hidden) {" in CSS
+
+
+def test_a_colour_tab_keeps_the_panel_where_it_is() -> None:
+    """The 22-10 bug doc: the Fill tab moved the popup (310px left from the
+    rail's ink to the tool's fill, or to 8,4 against a hidden well);
+    scratchpad/ui-sweeps/wb1025-colourtabs.js: 0px for every pair."""
+    body = _function(FORMAT, "wbOpenColourMenu")
+    assert "keepAt" in body and "partner.fillEl === input || partner.borderEl === input" in body
+    assert "prevOpener" not in body

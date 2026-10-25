@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: switching between the Fill and Border tabs of the colour popup keeps the popup where it is (it jumped 310px, or to the top left when the other colour's well was hidden, as for "Fill for new shapes" with a shape selected).
 - Whiteboard: Group and Ungroup are never offered together: one group selected offers Ungroup, anything else of two or more offers Group (merging what is grouped), on the selection bar, the Arrange menu, the right-click menu and the command palette alike.
 - Whiteboard: a line given an End mark stays a line in the Format panel, so its Start and End rows stay and setting End back to None makes it a plain line again; the selection bar hides the size of an end with no mark (a line's bar 913 to 700px wide at 1440), and a bar that wraps at half width takes panel corners with no divider at the start of a row (three rows to two at 720).
 - Whiteboard: double-clicking a turned frame's rotate grip stands up what it holds as well as the frame, in one Undo step (Ctrl stands up the frame alone).

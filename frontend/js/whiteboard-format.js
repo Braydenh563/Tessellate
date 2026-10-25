@@ -1668,10 +1668,19 @@ async function wbOpenColourMenu(input) {
     return;
   }
   const menu = wbColourMenu();
-  //: Fill and Border tabs reopen the menu on the other field, which can be a
-  //: hidden well with no box; placing against it threw the panel to the
-  //: top left. The field it was open on keeps the anchor in that case.
-  const prevOpener = menu.classList.contains("hidden") ? null : menu._escapedOpener;
+  //: **A Fill or Border tab keeps the panel where it is** (the 22-10 bug doc,
+  //: "it moved the popup panel"). The tabs reopen the menu on the other
+  //: field, and placing it against that field moved it: 310px left from the
+  //: rail's ink to the tool's fill, and to the top left when the other well
+  //: had no box (wb1025-colourtabs.js). The 0.6.1 fallback only caught the
+  //: second case. A press on some other well still places it there.
+  const open = !menu.classList.contains("hidden");
+  const partner = open && wbColourState.input ? wbColourPairOf(wbColourState.input) : null;
+  const own = input.getBoundingClientRect();
+  //: And a field with no box (hidden with its group) never anchors it: that
+  //: is a panel at 0,0.
+  const keepAt = open && ((partner && (partner.fillEl === input || partner.borderEl === input)) || !(own.width || own.height))
+    ? menu.getBoundingClientRect() : null;
   wbStopEyedrop();
   wbColourState.input = input;
   const name = wbColourName(input);
@@ -1798,8 +1807,15 @@ async function wbOpenColourMenu(input) {
   menu.classList.remove("hidden");
   input.setAttribute("aria-expanded", "true");
   input.classList.add("wb-colour-target");
-  const anchorBox = input.getBoundingClientRect();
-  placeEscapedMenu(menu, anchorBox.width || anchorBox.height || !prevOpener ? input : prevOpener);
+  if (keepAt) {
+    //: The same corner, pulled back inside the window if the other field's
+    //: rows made the panel taller.
+    const box = menu.getBoundingClientRect();
+    menu.style.left = `${Math.round(Math.max(8, Math.min(keepAt.left, window.innerWidth - 8 - box.width)))}px`;
+    menu.style.top = `${Math.round(Math.max(8, Math.min(keepAt.top, window.innerHeight - 8 - box.height)))}px`;
+  } else {
+    placeEscapedMenu(menu, input);
+  }
   (menu.querySelector('[role="radio"][tabindex="0"]') || menu.querySelector("button"))?.focus({ preventScroll: true });
 }
 

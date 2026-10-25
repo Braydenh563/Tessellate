@@ -2,7 +2,7 @@
 
 Generated 2026-10-25 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6206, frontend ids 2537, CSS sections 497, backend routes 617, backend modules 6182, test files 1322, tests 11755, plan headings 968.
+Counts: frontend functions 6206, frontend ids 2537, CSS sections 497, backend routes 617, backend modules 6182, test files 1322, tests 11756, plan headings 968.
 
 ## Frontend functions (6206)
 
@@ -5931,7 +5931,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbHexOf` | frontend/js/whiteboard-format.js:1524 |
 | `wbInsertTable` | frontend/js/whiteboard-format.js:1344 |
 | `wbOpenColourMenu` | frontend/js/whiteboard-format.js:1665 |
-| `wbOpenPaperMenu` | frontend/js/whiteboard-format.js:1809 |
+| `wbOpenPaperMenu` | frontend/js/whiteboard-format.js:1825 |
 | `wbPaintTable` | frontend/js/whiteboard-format.js:1323 |
 | `wbPasteSize` | frontend/js/whiteboard-format.js:1078 |
 | `wbRecentColours` | frontend/js/whiteboard-format.js:1502 |
@@ -5943,13 +5943,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbRoughProbe` | frontend/js/whiteboard-format.js:1221 |
 | `wbRoughRandom` | frontend/js/whiteboard-format.js:1210 |
 | `wbRoughSpline` | frontend/js/whiteboard-format.js:1236 |
-| `wbSampleColour` | frontend/js/whiteboard-format.js:1875 |
+| `wbSampleColour` | frontend/js/whiteboard-format.js:1891 |
 | `wbSetColourField` | frontend/js/whiteboard-format.js:1564 |
 | `wbSetLinkRoute` | frontend/js/whiteboard-format.js:354 |
 | `wbSetTable` | frontend/js/whiteboard-format.js:1358 |
-| `wbStartEyedrop` | frontend/js/whiteboard-format.js:1851 |
+| `wbStartEyedrop` | frontend/js/whiteboard-format.js:1867 |
 | `wbStepFontSize` | frontend/js/whiteboard-format.js:996 |
-| `wbStopEyedrop` | frontend/js/whiteboard-format.js:1864 |
+| `wbStopEyedrop` | frontend/js/whiteboard-format.js:1880 |
 | `wbTableCells` | frontend/js/whiteboard-format.js:1301 |
 | `wbTableMenuRows` | frontend/js/whiteboard-format.js:1447 |
 | `wbTableReshape` | frontend/js/whiteboard-format.js:1421 |
@@ -18514,7 +18514,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11755)
+## Tests (11756)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19745,7 +19745,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_voice_tables.py | 5 |
 | tests/test_wb_anchor_hints_clear.py | 3 |
 | tests/test_wb_audit_keys.py | 23 |
-| tests/test_wb_bar_1025.py | 3 |
+| tests/test_wb_bar_1025.py | 4 |
 | tests/test_wb_clone_grips_follow.py | 7 |
 | tests/test_wb_colour.py | 6 |
 | tests/test_wb_commands.py | 7 |
