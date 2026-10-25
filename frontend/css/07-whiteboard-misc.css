@@ -4049,9 +4049,11 @@ button.icon-button:not(.ghost):not(.active):not(.status-item):not(.tool-btn):not
   color: var(--error);
 }
 /* A disclosure row reads as a control at rest, not only under the pointer.
-   Not the answer folds (`.fold-summary`: Sources, Grounded in, Why this answer,
-   Thinking), which sit in a card that already frames them and are flat. */
-summary:not(.icon-only):not(.icon-button):not(.fold-summary) {
+   Not the answer folds (`.fold-summary`: Grounded in, Why this answer,
+   Thinking; `.chat-sources-summary`: Sources), which sit in a card that
+   already frames them and are flat: Sources was the one boxed pill among
+   them (INBOX 1350, "feels out of place"). */
+summary:not(.icon-only):not(.icon-button):not(.fold-summary, .chat-sources-summary) {
   /* `button.ghost`'s quiet recipe (01-forms-settings.css): a faint tint and
      the measured hairline, grey only under the pointer. */
   background: var(--btn-quiet-bg);

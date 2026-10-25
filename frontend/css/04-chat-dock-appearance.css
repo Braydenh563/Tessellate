@@ -3931,8 +3931,12 @@ span > .chip {
   gap: var(--space-1);
   min-width: 0;
   /* Room for the kebab, reserved rather than taken - or a long title runs
-     underneath it instead of wrapping clear of it. */
-  padding-right: var(--space-9);
+     underneath it instead of wrapping clear of it. The kebab is a target
+     (44px under a coarse pointer) set `--space-3` in from the row's edge, so
+     the reserve is its width plus that inset and a gap, less the row's own
+     padding: a flat `--space-9` left the 44px one 7px over the meta line at
+     420 (halfwindow.js). */
+  padding-right: max(var(--space-9), calc(var(--target-min) + var(--space-3) + var(--space-2) - var(--space-5)));
 }
 
 .doc-list-title {
