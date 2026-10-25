@@ -18,7 +18,7 @@ FOCUS_CSS = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(enc
 
 def test_suggestions_can_be_hidden_and_dismissed_ones_restored():
     assert "function docProseSetHidden(" in DOCS_JS
-    assert "if (docProseHidden) docProseFound = [];" in DOCS_JS
+    assert "if (docProse.hidden) docProseFound = [];" in DOCS_JS
     assert "docProseIgnored.delete(row.key)" in DOCS_JS
 
 
@@ -34,7 +34,7 @@ def test_read_view_tasks_are_wired_to_their_source_lines():
 
 
 def test_full_screen_popups_stack_above_the_page():
-    m = re.search(r"body\.doc-focus-on :is\(([^)]*)\)\s*\{\s*--doc-focus-layer:\s*(\d+)", LAZY_CSS)
+    m = re.search(r":root\[data-fullscreen~=\"documents\"\] :is\(([^)]*)\)\s*\{\s*--doc-focus-layer:\s*(\d+)", LAZY_CSS)
     assert m, "the focus-mode stacking rule is gone"
     assert int(m.group(2)) >= 1000  # equal to the page (1000) and later in the DOM
     for name in (".selection-bar", ".editor-menu", ".doc-block-bar"):

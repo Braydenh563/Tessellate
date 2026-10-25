@@ -254,7 +254,7 @@ async function analyseWebPage() {
       jump.textContent = section.title;
       jump.addEventListener("click", () => {
         const heading = $("web-reader-text").querySelectorAll(".reader-heading")[section.n];
-        if (heading) heading.scrollIntoView({ block: "start", behavior: "smooth" });
+        if (heading) heading.scrollIntoView({ block: "start", behavior: reducedMotionWanted() ? "auto" : "smooth" });
       });
       li.appendChild(jump);
       list.appendChild(li);

@@ -381,12 +381,8 @@ const DOC_VIEW_VERSION_KEY = "doc-view-mode-v";
 const DOC_VIEW_VERSION = "2";
 function docViewMigrate() {
   if (prefs.has(DOC_VIEW_VERSION_KEY)) return;
-  try {
-    window.localStorage.removeItem(DOC_VIEW_KEY);
-    window.localStorage.setItem(DOC_VIEW_VERSION_KEY, DOC_VIEW_VERSION);
-  } catch {
-    // blocked site data: nothing stored, nothing to reset
-  }
+  prefs.remove(DOC_VIEW_KEY);
+  prefs.set(DOC_VIEW_VERSION_KEY, DOC_VIEW_VERSION);
 }
 
 //: The view a markdown document opens in when it is not holding one: the
@@ -14905,10 +14901,6 @@ function toggleDocFocus(force) {
   if (!tab) return;
   const on = typeof force === "boolean" ? force : !tab.classList.contains("doc-focus");
   tab.classList.toggle("doc-focus", on);
-  // Mirrored on body for the popups that live outside the tab: a
-  // `body:has(#tab-documents.doc-focus)` rule re-checked on every DOM change
-  // and tripled a 500-object board's open time.
-  document.body.classList.toggle("doc-focus-on", on);
   tab.classList.remove("doc-focus-idle");
   try {
     if (on) sessionStorage.setItem(DOC_FOCUS_KEY, "1");
@@ -17044,9 +17036,8 @@ let docProseFound = [];
 //: "Hide all suggestions for now": the marks, the count and the list go quiet
 //: for this sitting without touching the Settings switch or the dismissed
 //: list. Not stored, like a dismissal, so it can never be forgotten about.
-let docProseHidden = false;
+const docProse = { hidden: false, panelView: "list" };
 //: "list" is the suggestions, "dismissed" is the ones put away in this document.
-let docProsePanelView = "list";
 
 function renderDocProse() {
   const chip = $("doc-prose");
@@ -17065,9 +17056,9 @@ function renderDocProse() {
   docProseFound = isCode
     ? docCodeSpellFindings(text)
     : docProseExtras(text, docProseFindings(text)).concat(docAiFindings(text)).sort((a, b) => a.start - b.start);
-  if (docProseHidden) docProseFound = [];
+  if (docProse.hidden) docProseFound = [];
   chip.hidden = isCode;
-  count.textContent = docProseHidden
+  count.textContent = docProse.hidden
     ? "Suggestions hidden"
     : docProseFound.length
       ? `${docProseFound.length} suggestion${docProseFound.length === 1 ? "" : "s"}`
@@ -17189,15 +17180,15 @@ function docProseHeader() {
   const more = kebabMenu([
     makeMenuItem("ph:sparkle Check with AI", "Read for what the rules can't catch", () => docAiReview()),
     makeMenuItem(
-      docProseHidden ? "ph:eye Show suggestions" : "ph:eye-slash Hide all suggestions",
-      docProseHidden ? "Underline and list suggestions again" : "Hide every underline and the list until you show them again",
-      () => docProseSetHidden(!docProseHidden)
+      docProse.hidden ? "ph:eye Show suggestions" : "ph:eye-slash Hide all suggestions",
+      docProse.hidden ? "Underline and list suggestions again" : "Hide every underline and the list until you show them again",
+      () => docProseSetHidden(!docProse.hidden)
     ),
     makeMenuItem(
       `ph:arrow-counter-clockwise Dismissed (${docProseDismissed().length})`,
       "The suggestions you put away in this document, to bring back",
       () => {
-        docProsePanelView = "dismissed";
+        docProse.panelView = "dismissed";
         renderDocProsePanel();
       }
     ),
@@ -17223,8 +17214,8 @@ function docProseHeader() {
 }
 
 function docProseSetHidden(hidden) {
-  docProseHidden = hidden;
-  docProsePanelView = "list";
+  docProse.hidden = hidden;
+  docProse.panelView = "list";
   renderDocProse();
   renderDocProsePanel();
 }
@@ -17252,13 +17243,13 @@ function docProseSideView() {
   const line = document.createElement("p");
   line.className = "muted doc-prose-side-line";
   wrap.appendChild(line);
-  if (docProsePanelView === "dismissed") {
+  if (docProse.panelView === "dismissed") {
     const rows = docProseDismissed();
     line.textContent = rows.length
       ? "Put away in this document. Restore one to see it again."
       : "Nothing dismissed in this document.";
     const back = smallButton("ph:arrow-left Back", "Back to the suggestions", () => {
-      docProsePanelView = "list";
+      docProse.panelView = "list";
       renderDocProsePanel();
     });
     back.classList.add("ghost");
@@ -17273,7 +17264,7 @@ function docProseSideView() {
       word.title = `${row.rule}: ${row.text}`;
       const restore = smallButton("ph:arrow-counter-clockwise Restore", `Show “${row.text}” again`, () => {
         docProseIgnored.delete(row.key);
-        if (docProseDismissed().length === 0) docProsePanelView = "list";
+        if (docProseDismissed().length === 0) docProse.panelView = "list";
         renderDocProse();
         renderDocProsePanel();
       });
@@ -17333,7 +17324,7 @@ function renderDocProsePanel() {
   //: "there's no close x button." A panel whose only exit is the control that
   //: opened it is a panel you have to remember how to leave, and the empty
   //: state was the one view where that was most likely.
-  if (docProseHidden || docProsePanelView === "dismissed") {
+  if (docProse.hidden || docProse.panelView === "dismissed") {
     panel.appendChild(docProseHeader());
     panel.appendChild(docProseSideView());
     return;

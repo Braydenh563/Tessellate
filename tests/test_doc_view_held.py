@@ -77,6 +77,8 @@ globalThis.window = {{
 const prefs = {{
   get: (k, f) => (k in store ? store[k] : f),
   has: (k) => k in store,
+  set: (k, v) => (store[k] = String(v)),
+  remove: (k) => delete store[k],
 }};
 const DOC_VIEW_KEY = "doc-view-mode";
 const DOC_VIEW_VERSION_KEY = "doc-view-mode-v";
