@@ -2,7 +2,7 @@
 
 Generated 2026-10-25 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6230, frontend ids 2539, CSS sections 497, backend routes 618, backend modules 6394, test files 1337, tests 11915, plan headings 968.
+Counts: frontend functions 6230, frontend ids 2539, CSS sections 497, backend routes 618, backend modules 6394, test files 1337, tests 11916, plan headings 968.
 
 ## Frontend functions (6230)
 
@@ -229,11 +229,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `categoryMenuItems` | frontend/js/notes-list.js:2766 |
 | `clearSkeletons` | frontend/js/notes-list.js:2832 |
 | `compareCategoryNames` | frontend/js/notes-list.js:2722 |
-| `dockConnectionsInRail` | frontend/js/notes-list.js:3597 |
+| `dockConnectionsInRail` | frontend/js/notes-list.js:3602 |
 | `engineQueryIds` | frontend/js/notes-list.js:194 |
-| `ensureCardCounts` | frontend/js/notes-list.js:3288 |
-| `ensureMapChipsFor` | frontend/js/notes-list.js:3330 |
-| `ensureOneCardCount` | frontend/js/notes-list.js:3292 |
+| `ensureCardCounts` | frontend/js/notes-list.js:3293 |
+| `ensureMapChipsFor` | frontend/js/notes-list.js:3335 |
+| `ensureOneCardCount` | frontend/js/notes-list.js:3297 |
 | `entryListItems` | frontend/js/notes-list.js:2421 |
 | `entryListOrder` | frontend/js/notes-list.js:3004 |
 | `entryNeedsReview` | frontend/js/notes-list.js:225 |
@@ -268,15 +268,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `noteQueryIsEmpty` | frontend/js/notes-list.js:343 |
 | `noteSemanticLoaded` | frontend/js/notes-list.js:377 |
 | `noteSortName` | frontend/js/notes-list.js:1793 |
-| `noteTopicChip` | frontend/js/notes-list.js:3218 |
-| `notesRailFocusSubject` | frontend/js/notes-list.js:3590 |
-| `notesRailHiddenByChoice` | frontend/js/notes-list.js:3417 |
-| `notesRailNearGroup` | frontend/js/notes-list.js:3561 |
-| `notesRailSync` | frontend/js/notes-list.js:3428 |
-| `notesRailWanted` | frontend/js/notes-list.js:3445 |
-| `nudgeReviewQueue` | frontend/js/notes-list.js:3341 |
-| `nudgeUntaggedNotes` | frontend/js/notes-list.js:3362 |
-| `offerWikiRename` | frontend/js/notes-list.js:3681 |
+| `noteTopicChip` | frontend/js/notes-list.js:3223 |
+| `notesRailFocusSubject` | frontend/js/notes-list.js:3595 |
+| `notesRailHiddenByChoice` | frontend/js/notes-list.js:3422 |
+| `notesRailNearGroup` | frontend/js/notes-list.js:3566 |
+| `notesRailSync` | frontend/js/notes-list.js:3433 |
+| `notesRailWanted` | frontend/js/notes-list.js:3450 |
+| `nudgeReviewQueue` | frontend/js/notes-list.js:3346 |
+| `nudgeUntaggedNotes` | frontend/js/notes-list.js:3367 |
+| `offerWikiRename` | frontend/js/notes-list.js:3686 |
 | `openNoteEditor` | frontend/js/notes-list.js:76 |
 | `orderedNotesForCurrentView` | frontend/js/notes-list.js:1993 |
 | `paginateNotesForDisplay` | frontend/js/notes-list.js:1959 |
@@ -285,35 +285,35 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `parseNoteQuery` | frontend/js/notes-list.js:247 |
 | `propQuery` | frontend/js/notes-list.js:2215 |
 | `readableUrl` | frontend/js/notes-list.js:893 |
-| `referenceCountChip` | frontend/js/notes-list.js:3147 |
-| `referenceCountText` | frontend/js/notes-list.js:3135 |
+| `referenceCountChip` | frontend/js/notes-list.js:3152 |
+| `referenceCountText` | frontend/js/notes-list.js:3140 |
 | `refreshEntries` | frontend/js/notes-list.js:3012 |
 | `refreshNoteSearchWhy` | frontend/js/notes-list.js:1751 |
-| `reminderCountChip` | frontend/js/notes-list.js:3190 |
+| `reminderCountChip` | frontend/js/notes-list.js:3195 |
 | `renderEntries` | frontend/js/notes-list.js:2260 |
 | `renderIncrementally` | frontend/js/notes-list.js:1864 |
 | `renderInlineMarkdown` | frontend/js/notes-list.js:910 |
 | `renderNoteInline` | frontend/js/notes-list.js:1562 |
 | `renderNoteText` | frontend/js/notes-list.js:1431 |
-| `renderNotesRail` | frontend/js/notes-list.js:3464 |
+| `renderNotesRail` | frontend/js/notes-list.js:3469 |
 | `renderSidebar` | frontend/js/notes-list.js:2553 |
 | `resolveCategoryChoice` | frontend/js/notes-list.js:127 |
 | `resolveNotePage` | frontend/js/notes-list.js:2033 |
 | `resolveWikiTarget` | frontend/js/notes-list.js:1321 |
 | `safeHref` | frontend/js/notes-list.js:843 |
 | `scheduleEntriesProgress` | frontend/js/notes-list.js:2871 |
-| `scheduleNotesRail` | frontend/js/notes-list.js:3440 |
+| `scheduleNotesRail` | frontend/js/notes-list.js:3445 |
 | `searchHighlightTerms` | frontend/js/notes-list.js:1723 |
-| `setNotesRailHidden` | frontend/js/notes-list.js:3603 |
+| `setNotesRailHidden` | frontend/js/notes-list.js:3608 |
 | `setNotesViewMode` | frontend/js/notes-list.js:2116 |
 | `showEntrySkeletons` | frontend/js/notes-list.js:2803 |
 | `showNotesFilter` | frontend/js/notes-list.js:236 |
 | `showSkeletons` | frontend/js/notes-list.js:2821 |
 | `sortEntries` | frontend/js/notes-list.js:1797 |
-| `syncNotesRailToggle` | frontend/js/notes-list.js:3453 |
+| `syncNotesRailToggle` | frontend/js/notes-list.js:3458 |
 | `toggleExpandAllRows` | frontend/js/notes-list.js:2105 |
 | `toggleRowExpanded` | frontend/js/notes-list.js:2138 |
-| `topicRepeatsTag` | frontend/js/notes-list.js:3212 |
+| `topicRepeatsTag` | frontend/js/notes-list.js:3217 |
 | `unlatex` | frontend/js/notes-list.js:761 |
 | `updateExpandAllButton` | frontend/js/notes-list.js:2085 |
 | `whyThisResultChip` | frontend/js/notes-list.js:1735 |
@@ -18819,7 +18819,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11915)
+## Tests (11916)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19217,7 +19217,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_entity_merge_undo.py | 3 |
 | tests/test_entity_page_private.py | 2 |
 | tests/test_entries_by_ids.py | 4 |
-| tests/test_entries_changes.py | 8 |
+| tests/test_entries_changes.py | 9 |
 | tests/test_entries_keyset_paging.py | 4 |
 | tests/test_entry_bookmarks.py | 7 |
 | tests/test_entry_edited_at.py | 4 |
