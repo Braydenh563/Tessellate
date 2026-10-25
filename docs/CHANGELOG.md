@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: the Suggestions menu can hide every underline and the list for now, and a Dismissed list brings back suggestions you put away in the document.
 - Toasts on the Graph tab stay on the bottom edge and sit left of the zoom strip, instead of being lifted halfway up the screen.
 
 ## [0.6.1] - 2026-10-22

@@ -16887,6 +16887,12 @@ function docCodeSpellFindings(text) {
 }
 
 let docProseFound = [];
+//: "Hide all suggestions for now": the marks, the count and the list go quiet
+//: for this sitting without touching the Settings switch or the dismissed
+//: list. Not stored, like a dismissal, so it can never be forgotten about.
+let docProseHidden = false;
+//: "list" is the suggestions, "dismissed" is the ones put away in this document.
+let docProsePanelView = "list";
 
 function renderDocProse() {
   const chip = $("doc-prose");
@@ -16905,10 +16911,13 @@ function renderDocProse() {
   docProseFound = isCode
     ? docCodeSpellFindings(text)
     : docProseExtras(text, docProseFindings(text)).concat(docAiFindings(text)).sort((a, b) => a.start - b.start);
+  if (docProseHidden) docProseFound = [];
   chip.hidden = isCode;
-  count.textContent = docProseFound.length
-    ? `${docProseFound.length} suggestion${docProseFound.length === 1 ? "" : "s"}`
-    : "No suggestions";
+  count.textContent = docProseHidden
+    ? "Suggestions hidden"
+    : docProseFound.length
+      ? `${docProseFound.length} suggestion${docProseFound.length === 1 ? "" : "s"}`
+      : "No suggestions";
   chip.classList.toggle("has-findings", docProseFound.length > 0);
   docFocusSyncProse();
   //: A fresh set of findings means a fresh set of marks. The engine is told
@@ -17025,6 +17034,19 @@ function docProseHeader() {
   const right = docProseDockSide() === "right";
   const more = kebabMenu([
     makeMenuItem("ph:sparkle Check with AI", "Read for what the rules can't catch", () => docAiReview()),
+    makeMenuItem(
+      docProseHidden ? "ph:eye Show suggestions" : "ph:eye-slash Hide all suggestions",
+      docProseHidden ? "Underline and list suggestions again" : "Hide every underline and the list until you show them again",
+      () => docProseSetHidden(!docProseHidden)
+    ),
+    makeMenuItem(
+      `ph:arrow-counter-clockwise Dismissed (${docProseDismissed().length})`,
+      "The suggestions you put away in this document, to bring back",
+      () => {
+        docProsePanelView = "dismissed";
+        renderDocProsePanel();
+      }
+    ),
     makeMenuItem("ph:book-open-text Dictionary", "The words you have told this to accept", () => openDocDictionary()),
     //: Where the panel sits (`applyDocProseDock`); not offered where there is
     //: no choice (a narrow window, focus mode's side panel).
@@ -17044,6 +17066,83 @@ function docProseHeader() {
   tools.appendChild(tool("ph:x", "Close the suggestions", () => closeDocProsePanel(), "icon-only doc-prose-close"));
   head.appendChild(tools);
   return head;
+}
+
+function docProseSetHidden(hidden) {
+  docProseHidden = hidden;
+  docProsePanelView = "list";
+  renderDocProse();
+  renderDocProsePanel();
+}
+
+//: The keys in `docProseIgnored` that belong to this document, as rows.
+//: A key is `<doc>:<rule>:<text>`; the first two parts hold no colon.
+function docProseDismissed() {
+  const scope = `${currentDoc && currentDoc.id ? currentDoc.id : "unsaved"}:`;
+  const rows = [];
+  for (const key of docProseIgnored) {
+    if (!key.startsWith(scope)) continue;
+    const rest = key.slice(scope.length);
+    const cut = rest.indexOf(":");
+    if (cut < 0) continue;
+    rows.push({ key, rule: rest.slice(0, cut), text: rest.slice(cut + 1) });
+  }
+  return rows;
+}
+
+//: What the panel shows instead of the list: the hidden notice, or the
+//: dismissed list with a Restore on each row.
+function docProseSideView() {
+  const wrap = document.createElement("div");
+  wrap.className = "doc-prose-side";
+  const line = document.createElement("p");
+  line.className = "muted doc-prose-side-line";
+  wrap.appendChild(line);
+  if (docProsePanelView === "dismissed") {
+    const rows = docProseDismissed();
+    line.textContent = rows.length
+      ? "Put away in this document. Restore one to see it again."
+      : "Nothing dismissed in this document.";
+    const back = smallButton("ph:arrow-left Back", "Back to the suggestions", () => {
+      docProsePanelView = "list";
+      renderDocProsePanel();
+    });
+    back.classList.add("ghost");
+    const list = document.createElement("ul");
+    list.className = "doc-prose-dismissed";
+    for (const row of rows) {
+      const item = document.createElement("li");
+      item.className = "row doc-prose-dismissed-row";
+      const word = document.createElement("span");
+      word.className = "doc-prose-dismissed-text";
+      word.textContent = row.text;
+      word.title = `${row.rule}: ${row.text}`;
+      const restore = smallButton("ph:arrow-counter-clockwise Restore", `Show “${row.text}” again`, () => {
+        docProseIgnored.delete(row.key);
+        if (docProseDismissed().length === 0) docProsePanelView = "list";
+        renderDocProse();
+        renderDocProsePanel();
+      });
+      restore.classList.add("ghost");
+      item.append(word, restore);
+      list.appendChild(item);
+    }
+    wrap.append(back, list);
+    if (rows.length > 1) {
+      const all = smallButton("ph:arrow-counter-clockwise Restore all", "Show every dismissed suggestion again", () => {
+        for (const row of rows) docProseIgnored.delete(row.key);
+        renderDocProse();
+        renderDocProsePanel();
+      });
+      all.classList.add("ghost");
+      wrap.appendChild(all);
+    }
+    return wrap;
+  }
+  line.textContent = "Suggestions are hidden. The underlines and this list are off until you show them.";
+  const show = smallButton("ph:eye Show suggestions", "Underline and list suggestions again", () => docProseSetHidden(false));
+  wrap.appendChild(show);
+  return wrap;
 }
 
 function closeDocProsePanel() {
@@ -17080,6 +17179,11 @@ function renderDocProsePanel() {
   //: "there's no close x button." A panel whose only exit is the control that
   //: opened it is a panel you have to remember how to leave, and the empty
   //: state was the one view where that was most likely.
+  if (docProseHidden || docProsePanelView === "dismissed") {
+    panel.appendChild(docProseHeader());
+    panel.appendChild(docProseSideView());
+    return;
+  }
   const aiStatus = docAiCheckStatus();
   if (!docProseFound.length) {
     panel.appendChild(docProseHeader());
