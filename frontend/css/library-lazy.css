@@ -6699,3 +6699,19 @@ input[type="color"].wb-mixed {
     flex: 0 0 min(15rem, 44%);
   }
 }
+
+/* --- the context bar's folded groups (`wbFoldContextBar`) ----------------
+   The groups a narrow bar moves into its "..." menu keep their controls and
+   lose the bar's hairline grammar: in the menu they are rows of one section. */
+.wb-context-overflow {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--divider);
+}
+.wb-context-overflow > .wb-context-group:not(.hidden) {
+  border-left: 0;
+  padding-left: 0;
+  margin-left: 0;
+}

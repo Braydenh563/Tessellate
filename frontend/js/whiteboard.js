@@ -6288,6 +6288,50 @@ function wbRenderRelease() {
 //: 60ms, 2,100 elements, on every Tab at 301 topics). Placed two frames on
 //: instead, after the editor, from the same selection.
 
+//: **A bar that would wrap folds its least-used groups into More** (the
+//: wb ledger, 10-25: two rows at 720, where the controls are 44px for a
+//: finger). draw.io and Figma do the same: the row stays one row, and the
+//: order pair, the dash pattern and the arrange runs (last first) move into
+//: the "..." menu's own section, the same controls with the same handlers.
+//: Every placement puts them back first, so a wider window or a smaller
+//: selection gets them on the bar again.
+const WB_CTX_FOLD = { order: ["order", "stroke", "arrange", "caps", "route"], home: new Map() };
+
+function wbFoldContextBar(bar) {
+  const menu = document.getElementById("wb-context-menu");
+  const more = wbContextMoreWrap();
+  if (!menu || !more) return;
+  let shelf = document.getElementById("wb-context-overflow");
+  if (shelf) {
+    //: Back where each was: its old neighbour, or that one's, when the
+    //: neighbour was folded too.
+    for (const g of [...shelf.children].reverse()) {
+      let ref = WB_CTX_FOLD.home.get(g);
+      while (ref && ref.parentElement !== bar) ref = WB_CTX_FOLD.home.get(ref);
+      bar.insertBefore(g, ref || more.closest(".wb-context-group"));
+    }
+    shelf.classList.add("hidden");
+  }
+  if (bar.offsetHeight <= 60 || more.classList.contains("hidden")) return;
+  if (!shelf) {
+    shelf = document.createElement("div");
+    shelf.id = "wb-context-overflow";
+    shelf.className = "wb-menu-section wb-context-overflow";
+    shelf.setAttribute("role", "group");
+    shelf.setAttribute("aria-label", "More controls for this selection");
+    menu.insertBefore(shelf, menu.firstChild);
+  }
+  const visible = (name) => [...bar.querySelectorAll(`:scope > .wb-context-group[data-wb-ctx="${name}"]:not(.hidden)`)].reverse();
+  for (const name of WB_CTX_FOLD.order) {
+    for (const g of visible(name)) {
+      if (bar.offsetHeight <= 60) return;
+      WB_CTX_FOLD.home.set(g, g.nextElementSibling);
+      shelf.insertBefore(g, shelf.firstChild);
+      shelf.classList.remove("hidden");
+    }
+  }
+}
+
 //: What a pan keeps of the selection bar's measurements: a pan moves the
 //: canvas, not the bar, the host or the top bar, so one measure serves every
 //: frame until the pan ends (a zoom frame asks the same). Cleared by any
@@ -6440,6 +6484,7 @@ function wbUpdateSelectionBar(panning = false) {
   //: "the two rows clash at a half window").
   if (!held && active.id === "wb-context") {
     active.classList.remove("wb-context-wrapped");
+    wbFoldContextBar(active);
     const groups = [...active.querySelectorAll(":scope > .wb-context-group:not(.hidden)")];
     for (const g of groups) g.classList.remove("wb-row-start");
     const wrapped = active.offsetHeight > 60;

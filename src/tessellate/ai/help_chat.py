@@ -318,7 +318,9 @@ HELP_TOPICS: list[dict] = [
             "dock, and refits when one opens or closes until you pan or zoom "
             "yourself. Drag an item to move it, or type its X and Y in the "
             "Format panel; the context bar over a selection, or the Format "
-            "panel, changes its colour, line and words. Draw a link between "
+            "panel, changes its colour, line and words; on a narrow window "
+            "the bar keeps one row and moves its order, dash and arrange "
+            "buttons into its More menu. Draw a link between "
             "cards with the connector (C), from one card to the other."
         ),
         "badge": {"label": "Library", "tab": "library"},

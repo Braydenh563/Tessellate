@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: the selection bar stays one row on a narrow window: when it would wrap, its order pair, dash pattern and arrange runs (then ends and line shape) move into its More menu as the same controls, and back when there is room (measured at 720: a shape bar 102px to 54px tall, a line bar 102 to 54, a multi-selection 102 to 54; 1440 unchanged at 38).
 - Ask: "How long is the train from Lisbon to Porto?" is answered from the notes again rather than read as a word count of the Trains note ("how long is" counts only this/my/the note, document or text, or quoted text); a reading time no longer says "a under a min".
 - Battery: the note-changes ask goes from every 15 s to every 30 s after four empty answers in a row, and back at once on a change or when the tab returns.
 - Battery: the companion's perch check is one armed timer (10 s idle, 1.5 s after input or a toast, none in a hidden window) instead of a 1.5 s interval, and the app's marks hold still after two minutes without input unless one is showing work.
