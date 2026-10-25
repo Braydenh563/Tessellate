@@ -6,6 +6,13 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Mind map: a new topic made with Tab or Enter is brought into view when it would land outside the free canvas (the arrow keys' rule, now one helper); at 1280 the seventh Tab child's right edge was 1319 past a 1280 window, now every new topic's rect is inside it.
+- Whiteboard: dragging a shape by its edge moves it; only a press within 6px of a connection point (the distance the dot lights at, was 9 to press and 10 to light) draws a connector. Measured: a press 8px from the top-middle point moved the shape 100 to 160 with no new connector (it drew an arrow before).
+- Whiteboard: a toast stands above the bottom dock instead of over its right end (the toast box follows the dock top; measured at 700 and 1280 the toast bottom is 6 and 6px above the dock top, it was 53 and 60px below it).
+- Whiteboard: between 600 and 819px the bottom dock wraps to two rows like the 820 to 1100 band instead of scrolling a 927px row in 683px, so Undo, Redo and every tool are on screen (measured at 700: scrollWidth 927 to 683 = clientWidth).
+- Whiteboard: an arrow drawn with the Arrow tool from or to a shape, card or topic (on it or within 10px of its edge) is a connector bound to it: it follows the shape when moved and its head meets the border instead of ending inside; a pen stroke is never a target.
+- Whiteboard: the Circle tool is drawn corner to corner like the Rectangle (it grew from the press as a centre-radius, so its top could hide under the toolbar); Shift still makes a circle, away from the press.
+- Mind map: the creation toast says Ctrl+Enter adds the sibling while a name is being typed (plain Enter there is a line break, the owner's 2026-10-10 ask), so Enter in the editor no longer contradicts it.
 - Library: at 420px a document row's ⋯ no longer sits 7px over the meta line (the row reserves the kebab's own width), and Recordings' title keeps its width with the Captions, help and Record controls wrapping to the row below instead of running under the heading.
 - Chat and Ask: the Sources fold's summary is a flat row like the other answer folds (it was the one boxed pill, 33px tall with a border and tint, next to flat 27px rows), and Grounded in reads in sentence case at the same size as Why this answer instead of a small uppercase label.
 - Search: a typo is corrected to a word your notes use ("lecure 5" now says "showing results for lecture 5"), not to the index's stem ("lectur 5").

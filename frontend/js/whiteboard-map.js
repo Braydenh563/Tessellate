@@ -4438,6 +4438,7 @@ async function wbMapAddChild(parentId, { order = null } = {}) {
     renderWhiteboardNow();
     selectWbItem("object", created.id);
     wbMapEditNode(created.id, { now: true });
+    wbMapRevealTopic(created);
   } finally {
     wbRenderRelease();
     wbSyncMapEdgeHandles();
@@ -5004,17 +5005,29 @@ function wbMapNavigate(id, key) {
   // the key having done nothing, so the scroll has to happen; recentring on
   // every arrow instead makes the whole map lurch under you while you are
   // simply walking a branch you can already see, which is worse than either.
-  const el = document.querySelector(`.wb-object[data-id="${target.id}"]`);
-  const container = document.getElementById("whiteboard-container");
-  if (el && container) {
-    const node = el.getBoundingClientRect();
-    const view = container.getBoundingClientRect();
-    const offScreen = node.left < view.left || node.right > view.right
-      || node.top < view.top || node.bottom > view.bottom;
-    const box = offScreen ? wbItemBBox("object", target) : null;
-    if (box) wbCenterOn(box, { animate: true });
-  }
+  wbMapRevealTopic(target);
   return true;
+}
+
+//: Does a client rectangle reach outside the one it should sit in.
+function wbRectEscapes(node, view) {
+  return node.left < view.left || node.right > view.right || node.top < view.top || node.bottom > view.bottom;
+}
+
+//: **Bring a topic into view, only when it is out of it** (the arrow keys'
+//: rule above, and a new topic's: dogfood 2026-10-25 item 12, where Tab put a
+//: child at x~1265 past the window's edge and the view stayed). Measured
+//: against the canvas the board's own chrome leaves free, not the whole
+//: container, so a topic under the top bar or the dock counts as hidden.
+function wbMapRevealTopic(item) {
+  const el = document.querySelector(`.wb-object[data-id="${item.id}"]`);
+  const container = document.getElementById("whiteboard-container");
+  if (!el || !container) return false;
+  const free = typeof wbVisibleCanvasRect === "function" ? wbVisibleCanvasRect() : container.getBoundingClientRect();
+  if (!wbRectEscapes(el.getBoundingClientRect(), free)) return false;
+  const box = wbItemBBox("object", item);
+  if (box) wbCenterOn(box, { animate: true });
+  return Boolean(box);
 }
 
 //: F2 / double-click: rename in place, through the same two functions a text

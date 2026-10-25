@@ -10281,6 +10281,25 @@ header#top-bar {
     flex-wrap: nowrap;
   }
 }
+/* **600 to 819: wrap, do not scroll** (dogfood 2026-10-25 item 11). The strip
+   above is right for a phone's 600 and under, where the tools live in a sheet,
+   but at 700 it held 927px in 683: Undo and Redo sat at x=786 past the window
+   edge with no cue that a row scrolled. From 820 up the same dock already
+   wraps to two rows; this band does the same, edge to edge, so every tool and
+   Undo are on screen and `scrollWidth` equals `clientWidth`. */
+@media (min-width: 600px) and (max-width: 819.98px) {
+  .whiteboard-floating-panel.bottom-center:not([data-dock="side"]) {
+    flex-wrap: wrap;
+    overflow: visible;
+    justify-content: center;
+  }
+  .whiteboard-floating-panel.bottom-center:not([data-dock="side"]) .wb-tool-group {
+    flex: 0 1 auto;
+    min-width: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
 /* --- the dashboard's quick actions stop wrapping --------------------------
    Measured at 390: `.dash-quicklinks` was **459px tall for two children**.
    Each child is a labelled row of shortcut buttons, and at 390 each row wrapped

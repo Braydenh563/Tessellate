@@ -1295,29 +1295,25 @@ function wbGuidedResize(kind, d, handle, start, width, height, { off = false, fi
 
 //: **A box drawn out from a press snaps its moving corner** (E4): the
 //: corner under the pointer goes through the edge guides, and the size shows
-//: beside it. `centred` is a box grown about the press (the ellipse). Alt
-//: draws without snapping, as a move does; Shift (a square) is left alone.
-function wbDrawOutSnap(sx, sy, x, y, event, centred = false) {
+//: beside it. Every closed shape is drawn corner to corner, the ellipse
+//: included (dogfood 2026-10-25 item 7: a circle grown from its centre
+//: put its top under the toolbar and felt unlike the rectangle). Alt draws
+//: without snapping, as a move does; Shift (a square) is left alone.
+function wbDrawOutSnap(sx, sy, x, y, event) {
   const dx = x - sx, dy = y - sy;
-  const box = centred
-    ? { x: sx - Math.abs(dx), y: sy - Math.abs(dy), w: Math.abs(dx) * 2, h: Math.abs(dy) * 2 }
-    : { x: Math.min(sx, x), y: Math.min(sy, y), w: Math.abs(dx), h: Math.abs(dy) };
+  const box = { x: Math.min(sx, x), y: Math.min(sy, y), w: Math.abs(dx), h: Math.abs(dy) };
   if (event.shiftKey) {
     const side = Math.max(box.w, box.h);
     wbShowAlignmentGuides([]);
     wbShowSizeReadout({ ...box, w: side, h: side });
     return [x, y];
   }
-  const edges = (centred || dx >= 0 ? "e" : "w") + (centred || dy >= 0 ? "s" : "n");
+  const edges = (dx >= 0 ? "e" : "w") + (dy >= 0 ? "s" : "n");
   const snapped = event.altKey ? { ...box, guideLines: [] } : wbResizeGuides(null, box, edges, {
     grid: wbSnapOn() ? WB_GRID_SPACING : 0, min: 1, tol: wbAlignTol(),
   });
   wbShowAlignmentGuides(snapped.guideLines);
   wbShowSizeReadout(snapped);
-  if (centred) {
-    const rx = snapped.x + snapped.w - sx, ry = snapped.y + snapped.h - sy;
-    return [sx + Math.sign(dx || 1) * rx, sy + Math.sign(dy || 1) * ry];
-  }
   return [edges.includes("e") ? snapped.x + snapped.w : snapped.x, edges.includes("s") ? snapped.y + snapped.h : snapped.y];
 }
 
@@ -1806,6 +1802,16 @@ function wbShapeDims(dx, dy, shiftHeld) {
   if (!shiftHeld) return { w, h };
   const s = Math.max(w, h);
   return { w: s, h: s };
+}
+
+//: The ellipse drawn corner to corner: its bounding box is the one the
+//: rectangle would get from the same two points, so both tools share one drag
+//: model. Shift makes it a circle, grown away from the press.
+function wbEllipseDrawD(sx, sy, x, y, shiftHeld) {
+  const { w, h } = wbShapeDims(x - sx, y - sy, shiftHeld);
+  const left = x >= sx ? sx : sx - w, top = y >= sy ? sy : sy - h;
+  const rx = w / 2, ry = h / 2;
+  return `M ${left} ${top + ry} a ${rx} ${ry} 0 1 0 ${w} 0 a ${rx} ${ry} 0 1 0 ${-w} 0`;
 }
 
 function wbArrowHeadPath(tipX, tipY, approachAngle, headLen) {
@@ -3792,12 +3798,55 @@ function wbLinkCandidates(excludeKind, excludeId) {
 //: are rotated as the connection points and borders constantly flicker", 
 //: the pointer crossed in and out of the unrotated box while visibly over
 //: (or off) the rotated card, so the hints came and went with every move.
-function wbPointInItem(kind, item, x, y) {
+function wbPointInItem(kind, item, x, y, tol = 0) {
   const box = wbItemBBox(kind, item);
   if (!box) return false;
   const rot = wbItemRotation(kind, item);
   const p = rot ? wbRotatePoint({ x, y }, wbBoxCenter(box), -rot) : { x, y };
-  return p.x >= box.minX && p.x <= box.maxX && p.y >= box.minY && p.y <= box.maxY;
+  return p.x >= box.minX - tol && p.x <= box.maxX + tol && p.y >= box.minY - tol && p.y <= box.maxY + tol;
+}
+
+//: **What an Arrow-tool end binds to** (dogfood 2026-10-25 item 6). A
+//: closed shape, a card or a map topic under the point, or within `tol` board
+//: units of its edge: an arrow ended on a shape's border sat a pixel outside
+//: its box and stayed a loose path that did not follow the shape. Pen
+//: strokes and lines are never a target (a scribble is not a thing to join).
+function wbArrowCandidateAt(x, y, tol) {
+  const candidates = wbLinkCandidates().reverse();
+  for (const [kind, item] of candidates) {
+    if (kind === "sketch" && !wbSketchIsClosedShape(item)) continue;
+    if (wbPointInItem(kind, item, x, y, tol)) return [kind, item];
+  }
+  return null;
+}
+
+//: The Arrow tool's stroke as a bound connector, or null when neither end is
+//: on anything (then it stays the free path it always was). A bound end keeps
+//: the shape id and, near one of its connection points, that point; away from
+//: them it floats and resolves to the shape's edge facing the other end, so
+//: the head meets the border rather than ending inside the shape. A shape
+//: that is moved, resized or turned drags the arrow with it, as a port-drawn
+//: connector does. Both ends on one shape stay a free arrow.
+function wbBoundArrowData(sx, sy, x, y, tol, blob) {
+  const from = wbArrowCandidateAt(sx, sy, tol);
+  const to = wbArrowCandidateAt(x, y, tol);
+  if (!from && !to) return null;
+  if (from && to && from[0] === to[0] && from[1].id === to[1].id) return null;
+  const data = { type: "link-straight", color: blob.color, width: blob.width };
+  for (const key of ["dash", "noStroke", "startCap", "endCap"]) if (blob[key] !== undefined) data[key] = blob[key];
+  const end = (hit, px, py, name) => {
+    if (!hit) {
+      data[`${name}Point`] = { x: Math.round(px), y: Math.round(py) };
+      return;
+    }
+    data[`${name}Id`] = hit[1].id;
+    if (hit[0] !== "node") data[`${name}Kind`] = hit[0];
+    const anchor = wbNearestAnchor(hit[0], hit[1], px, py, tol * 1.6);
+    if (anchor) data[`${name}Anchor`] = anchor;
+  };
+  end(from, sx, sy, "source");
+  end(to, x, y, "target");
+  return data;
 }
 
 function wbLinkCandidateAt(x, y, excludeKind, excludeId) {
@@ -4425,6 +4474,14 @@ function wbGapEnds(sPt, tPt, gap, { chord = false, via = null } = {}) {
 //: than a silent hit-test, draw.io shows the same thing on hover. The
 //: nearest one to the live pointer (if within snapping range) renders larger
 //: and filled, so "this is where it'll land" is visible before release.
+//: **How close a press must be to a connection point to draw from it**, in
+//: screen px, and the same distance at which the point lights up under the
+//: pointer, so the dot that grows is the one a drag leaves from. It was 9
+//: to press and 10 to light: eight points on a shape's outline covered most
+//: of its edge, and grabbing the edge to move the shape drew an arrow instead
+//: (dogfood 2026-10-25). The dot is 4px across in its resting size.
+const WB_PORT_HIT_PX = 6;
+
 function wbShowAnchorHints(kind, item, nearAnchor) {
   // The overlay layer, not the base SVG's own `#wb-zoom-group`, cards
   // render in an HTML layer *above* that SVG (see `#wb-overlay-layer`'s own
@@ -14877,6 +14934,28 @@ async function initWhiteboard() {
     });
   }
 
+  //: **Toasts stand above the bottom dock** (dogfood 2026-10-25 item 22: a
+  //: "Created" toast sat over the dock's right end for six seconds at 1280
+  //: and over most of it at 700). The dock's height changes with the window
+  //: (46px on one row, 101 on two), so the toast box's `bottom` is set from
+  //: where the dock's top really is. Cleared whenever the dock is hidden
+  //: (another tab, the board closed), docked at the side, or the window is a
+  //: phone's (under 600, whose toasts have their own place), which leaves
+  //: the stylesheet's placement as it was.
+  if (toolsPanel && typeof ResizeObserver === "function") {
+    const liftToasts = () => {
+      const toastBox = document.getElementById("toast-box");
+      if (!toastBox) return;
+      const box = toolsPanel.getBoundingClientRect();
+      const low = box.width > 0 && toolsPanel.dataset.dock !== "side" && window.innerWidth >= 600
+        && box.top > window.innerHeight / 2;
+      toastBox.style.bottom = low ? `calc(${Math.round(window.innerHeight - box.top)}px + var(--space-2))` : "";
+    };
+    new ResizeObserver(liftToasts).observe(toolsPanel);
+    window.addEventListener("resize", liftToasts);
+    liftToasts();
+  }
+
   // **The ink swatch on the rail is the drawing colour** (WHITEBOARD_PLAN.md
   // decision 1). It was a row in the properties drawer as well until Phase 2
   // removed that drawer; one control for one setting, on the surface that
@@ -16222,7 +16301,7 @@ async function initWhiteboard() {
       return;
     }
     [port.kind, port.item] = hit;
-    wbShowAnchorHints(hit[0], hit[1], wbNearestAnchor(hit[0], hit[1], x, y, 10 / zoomK()));
+    wbShowAnchorHints(hit[0], hit[1], wbNearestAnchor(hit[0], hit[1], x, y, WB_PORT_HIT_PX / zoomK()));
   }
   const portEnd = () => {
     port.drag?.path?.remove();
@@ -16244,7 +16323,7 @@ async function initWhiteboard() {
     //: was a connector from its middle at a flat 9px).
     const box = wbItemBBox(port.kind, port.item);
     const side = box ? Math.min(box.maxX - box.minX, box.maxY - box.minY) * zoomK() : 0;
-    const anchor = wbNearestAnchor(port.kind, port.item, x, y, Math.min(9, side * 0.2) / zoomK());
+    const anchor = wbNearestAnchor(port.kind, port.item, x, y, Math.min(WB_PORT_HIT_PX, side * 0.2) / zoomK());
     if (!anchor) return;
     //: Before d3-drag's mousedown: a pointerdown's default prevented is
     //: the mouse events it would have made, so the item does not move.
@@ -16719,7 +16798,7 @@ async function initWhiteboard() {
     let [x, y] = getLogicalMouse(e);
     const tool = window.currentTool;
     if (tool !== "draw" && tool !== "highlighter" && tool !== "line" && tool !== "arrow") {
-      [x, y] = wbDrawOutSnap(currentDrawData[0][0], currentDrawData[0][1], x, y, e, tool === "circle");
+      [x, y] = wbDrawOutSnap(currentDrawData[0][0], currentDrawData[0][1], x, y, e);
     }
     
     if (window.currentTool === "draw" || window.currentTool === "highlighter") {
@@ -16759,8 +16838,7 @@ async function initWhiteboard() {
         const { w, h } = wbShapeDims(x - sx, y - sy, e.shiftKey);
         currentDrawPath.setAttribute("d", `M ${mx} ${my} h ${w} v ${h} h ${-w} Z`);
       } else if (window.currentTool === "circle") {
-        const { w: rx, h: ry } = wbShapeDims(x - sx, y - sy, e.shiftKey);
-        currentDrawPath.setAttribute("d", `M ${sx - rx} ${sy} a ${rx} ${ry} 0 1 0 ${rx * 2} 0 a ${rx} ${ry} 0 1 0 ${-rx * 2} 0`);
+        currentDrawPath.setAttribute("d", wbEllipseDrawD(sx, sy, x, y, e.shiftKey));
       } else if (window.currentTool === "triangle") {
         // Asked for directly ("more types of shapes"). Plain `L` commands,
         // same as the pen/line tools, no new command type for
@@ -16845,8 +16923,10 @@ async function initWhiteboard() {
         blob.fillOpacity = window.currentFillOpacity / 100;
       }
     }
+    //: An arrow that starts or ends on a shape is a connector bound to it.
+    const bound = window.currentTool === "arrow" ? wbBoundArrowData(sx, sy, x, y, 10 / zoomK(), blob) : null;
     const sketchData = {
-      data: JSON.stringify(blob),
+      data: JSON.stringify(bound || blob),
       x: 0,
       y: 0,
       z: 5,
@@ -17446,7 +17526,7 @@ async function wbCreateBlankBoard(name, kind) {
       //: instead: the visible canvas size is neither constant nor known
       //: until it is actually measured).
       if (root) wbCenterOn(wbItemBBox("object", root), { animate: false });
-      toast(`Mind map "${board.title}" created: Tab adds a branch, Enter a sibling.`);
+      toast(`Mind map "${board.title}" created: Tab adds a branch, Enter a sibling. While typing a name, Ctrl+Enter adds the sibling.`);
     } else {
       toast(`Board "${board.title}" created.`);
     }
