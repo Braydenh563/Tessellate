@@ -77,3 +77,19 @@ console.log(JSON.stringify([
         "a ++green|x++ b",
         "a ==pink|plain== b",
     ]
+
+
+def test_toolbar_menus_and_the_slash_menu_answer_an_outside_press():
+    assert 'document.querySelectorAll("details.doc-toolbar-menu[open]")' in DOCS_JS
+    assert 'editorTokenAt(textarea, "/")' in DOCS_JS
+    assert 'editorSplice(textarea, bare.start, bare.start + 1, "")' in DOCS_JS
+
+
+def test_list_markers_are_a_fixed_hanging_indent():
+    # Measured in the browser (probe: first-line words vs the wrapped line, 1280, 700 and 420):
+    # bullets, numbers and tasks all start the words at the hang (0px apart; 11px, 9px and 4px before).
+    assert '".cm-md-li-bullet": { display: "inline-block", width: "1.6em" }' in DOCS_JS
+    assert '".cm-md-li-num": { display: "inline-block", minWidth: "1.6em" }' in DOCS_JS
+    css = (ROOT / "frontend" / "css" / "09-editor.css").read_text(encoding="utf-8")
+    hit = css[css.index(".cm-md-task-hit {") :]
+    assert "width: 1.6em;" in hit[: hit.index("}")]

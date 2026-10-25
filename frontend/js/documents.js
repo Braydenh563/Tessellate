@@ -232,6 +232,37 @@ document.addEventListener("click", (event) => {
   menu.open = false;
 });
 
+//: The formatting strip's menus (Highlight, Insert, the note strips' copies)
+//: shut on a press anywhere outside them, the editor included: `<details>`
+//: has no outside-press of its own and the click rule above is for the dock's
+//: kebab, so a menu opened over the page stayed open while you typed
+//: ("the highlight dropdown does not close on an outside press"). Capture,
+//: because the editor's own mousedown handling stops the event bubbling. The
+//: colour sheets are lists on `<body>`; a press in one is not outside.
+//: The slash menu, pressed away from: a bare "/" that opened it is not text
+//: the writer meant, so it comes back out. Capture, because the menu's own
+//: outside-press (editor.js) closes it and forgets the box before this runs.
+//: One with a word after it stays.
+document.addEventListener(
+  "mousedown",
+  (event) => {
+    const { open, textarea, trigger } = editorMenuState;
+    if (!open || trigger !== "/" || !textarea || $("editor-menu")?.contains(event.target)) return;
+    const bare = editorTokenAt(textarea, "/");
+    if (bare && !bare.fragment) setTimeout(() => editorSplice(textarea, bare.start, bare.start + 1, ""), 0);
+  },
+  true
+);
+document.addEventListener(
+  "pointerdown",
+  (event) => {
+    const open = document.querySelectorAll("details.doc-toolbar-menu[open]");
+    if (!open.length || event.target.closest?.(".select-menu, .action-menu")) return;
+    for (const menu of open) if (!menu.contains(event.target)) menu.open = false;
+  },
+  true
+);
+
 //: **Five download rows into one** (INBOX 262, the owner: "I want to combine
 //: the "download as" options in it into a sub menu in that dropdown ... like
 //: the ones in the meatball dropdowns in the your notes page").
@@ -8830,6 +8861,12 @@ function docLivePlugin(CM) {
                 widget: new DocTaskWidget(/[xX]/.test(marker), node.from, node.to),
               }).range(node.from, node.to)
             );
+            //: The space after `]` goes with the dash's: a space's width is the
+            //: font's, so it left the first line's words 0.35em past the
+            //: list's hanging indent and a wrapped line fell back under the
+            //: box. With it hidden the box (a fixed 1.6em, `.cm-md-task-hit`) is the
+            //: whole 1.6em lead, and the wrap lines up under the words.
+            if (doc.sliceString(node.to, node.to + 1) === " ") ranges.push(hidden.range(node.to, node.to + 1));
             return false;
           }
           //: **Lists, which the live view drew as plain text.** Measured
@@ -8900,6 +8937,15 @@ function docLivePlugin(CM) {
                 ranges.push(
                   Decoration.replace({ widget: new DocBulletWidget() }).range(from, to)
                 );
+                //: The space after it goes: the bullet is a fixed 1.6em box, so
+                //: the first line's words start exactly where a wrapped line's
+                //: do (a space is the font's width, which left them 11px apart).
+                if (doc.sliceString(to, to + 1) === " ") ranges.push(hidden.range(to, to + 1));
+              } else if (/^\d+[.)]$/.test(mark[1]) && !touched(line.from, line.to)) {
+                //: A number and its space share a box at least 1.6em wide, so a
+                //: short number's wrap lines up as the bullet's does.
+                const space = doc.sliceString(to, to + 1) === " " ? 1 : 0;
+                ranges.push(Decoration.mark({ class: "cm-md-li-mark cm-md-li-num" }).range(from, to + space));
               } else {
                 ranges.push(Decoration.mark({ class: "cm-md-li-mark" }).range(from, to));
               }
@@ -21292,6 +21338,8 @@ function docCmTheme(CM) {
       //: than the punctuation, and left in the document so it can be
       //: selected, deleted and typed over like any other character.
       ".cm-md-li-mark": { color: "var(--muted)" },
+      ".cm-md-li-bullet": { display: "inline-block", width: "1.6em" },
+      ".cm-md-li-num": { display: "inline-block", minWidth: "1.6em" },
       //: **A quotation's bar has to be seen to do its job** (17c). It was
       //: `--border`, a 10% ink that composites to 1.2:1 on the page, so a
       //: quotation read as a paragraph set in grey. Half the muted ink is a
@@ -21497,7 +21545,7 @@ function docCmTheme(CM) {
       //: muted ink, because it is part of the same control.
       ".cm-md-callout-fold": { fontSize: "0.9em", opacity: "0.8" },
       ".cm-md-callout-label [data-doc-callout-fold]": { cursor: "pointer" },
-      ".cm-md-task-hit": { marginRight: "0.4em", cursor: "pointer" },
+      ".cm-md-task-hit": { cursor: "pointer" },
       ".cm-md-image": { maxWidth: "100%", borderRadius: "var(--radius-sm)" },
       ".cm-md-image-under": { display: "block", marginTop: "var(--space-2)" },
 
