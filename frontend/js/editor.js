@@ -2288,7 +2288,7 @@ async function offerToCreateWikiTarget(name) {
 
     const doc = await apiJson("/documents", {
       method: "POST",
-      body: JSON.stringify({ title: wanted, content: `# ${wanted}\n\n` }),
+      body: JSON.stringify({ title: wanted, content: "" }),
     });
     // Keep the resolver's cache honest, or the link stays unresolved until
     // something else happens to refetch documents.

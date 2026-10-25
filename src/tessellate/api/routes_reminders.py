@@ -485,6 +485,15 @@ def create_reminder(body: ReminderCreate, session: Session = Depends(get_session
         document = session.get(Document, body.document_id)
         if document is None or getattr(document, "deleted_at", None) is not None:
             raise HTTPException(status_code=404, detail="That document could not be found.")
+    twin = session.scalar(
+        select(Reminder.id)
+        .where(
+            func.lower(func.trim(Reminder.text)) == body.text.strip().lower(),
+            Reminder.due_at == body.due_at,
+            Reminder.done.is_(False),
+        )
+        .limit(1)
+    )
     reminder = Reminder(
         text=body.text,
         due_at=body.due_at,
@@ -499,7 +508,7 @@ def create_reminder(body: ReminderCreate, session: Session = Depends(get_session
     session.flush()
     log_action(session, "created", "reminder", reminder.id, body.text[:80])
     session.commit()
-    return _to_out(session, reminder)
+    return {**_to_out(session, reminder), "duplicate": twin is not None}
 
 
 class WhenBody(BaseModel):

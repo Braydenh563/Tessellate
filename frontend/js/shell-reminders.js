@@ -1090,8 +1090,8 @@ function reminderItem(reminder, label) {
 
   const due = document.createElement("span");
   due.className = "entry-date";
-  due.textContent = relativeWhen(reminder.due_at); // "in 2 hours" / "3 days ago"
-  due.title = whenText(reminder.due_at); // exact on hover
+  //: The day and clock, then how far off ("Fri, Oct 30, 5:00 PM · in 5 days"): a bare "in 5 days" said nothing about which day.
+  due.textContent = `${parseServerTime(reminder.due_at)?.toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })} · ${relativeWhen(reminder.due_at)}`;
   row.appendChild(due);
 
   const actions = document.createElement("span");
@@ -1213,28 +1213,12 @@ function relativeWhen(iso) {
   const when = parseServerTime(iso);
   if (!when) return "";
   const diff = when.getTime() - Date.now();
-  const future = diff >= 0;
   const mins = Math.abs(diff) / 60000;
-  if (mins < 0.75) return future ? "now" : "just now";
-  let value;
-  let unit;
-  if (mins < 60) {
-    value = Math.round(mins);
-    unit = "minute";
-  } else if (mins / 60 < 24) {
-    value = Math.round(mins / 60);
-    unit = "hour";
-  } else if (mins / 60 / 24 < 7) {
-    value = Math.round(mins / 60 / 24);
-    unit = "day";
-  } else if (mins / 60 / 24 < 60) {
-    value = Math.round(mins / 60 / 24 / 7);
-    unit = "week";
-  } else {
-    return when.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
-  }
+  if (mins < 0.75) return diff >= 0 ? "now" : "just now";
+  const [amount, unit] = mins < 60 ? [mins, "minute"] : mins < 1440 ? [mins / 60, "hour"] : mins < 10080 ? [mins / 1440, "day"] : mins < 86400 ? [mins / 10080, "week"] : [mins / 43200, "month"];
+  const value = Math.round(amount);
   const label = `${value} ${unit}${value === 1 ? "" : "s"}`;
-  return future ? `in ${label}` : `${label} ago`;
+  return diff >= 0 ? `in ${label}` : `${label} ago`;
 }
 
 // Convert an ISO timestamp to the value a <input type=datetime-local> wants.

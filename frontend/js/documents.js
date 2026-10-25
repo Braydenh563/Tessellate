@@ -16259,7 +16259,10 @@ function docToolbarMarksAt(CM, state) {
   //: Bold reads as off at the exact moment a writer is still typing the word.
   //: Asking for the node on the left is what makes "keep typing in bold" and
   //: "the button says bold" the same answer.
-  let node = syntaxTree(state).resolveInner(state.selection.main.head, -1);
+  const head = state.selection.main.head;
+  //: A blank line is inside nothing: resolving left of it lands in the item above.
+  if (!state.doc.lineAt(head).text.trim()) return marks;
+  let node = syntaxTree(state).resolveInner(head, -1);
   while (node) {
     const mark = DOC_TOOLBAR_MARKS[node.name];
     if (mark) marks.add(mark);

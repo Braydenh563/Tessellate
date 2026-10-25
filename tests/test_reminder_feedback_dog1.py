@@ -22,4 +22,4 @@ def test_empty_add_and_missing_day_give_feedback():
 def test_far_dates_are_not_the_ambiguous_locale_short_form():
     text = (JS / "shell-reminders.js").read_text(encoding="utf-8")
     body = text[text.index("function relativeWhen"):text.index("function relativeWhen") + 1400]
-    assert 'unit = "week"' in body and "when.toLocaleDateString()" not in body
+    assert '"week"' in body and "when.toLocaleDateString()" not in body
