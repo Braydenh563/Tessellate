@@ -50,6 +50,11 @@ _LEFT = re.compile(
     r"|what\s+(?:do|should)\s+i\s+(?:still\s+)?(?:have|need)\s+to\s+(?:do|finish|get done|tick off)"
     r"|(?:show|list|give)\s+(?:me\s+)?(?:all\s+)?(?:my\s+)?(?:open|unfinished|outstanding|remaining|unticked)\s+(?:tasks|items|to-?dos|checklists?|checklist items))\W*$", re.I)
 _WHEN_IS = re.compile(rf"^{_LEAD}when(?:'s|’s| is| are| was)\s+(?:my |the |our |this |that )?(?P<t>.+?)\W*$", re.I)
+#: The other ways to ask when a thing is: "what date is my exam", "when do I
+#: have my exam", "what day is the lab".
+_WHEN_IS_ALT = re.compile(
+    rf"^{_LEAD}(?:what (?:date|day|time)(?:'s| is| are| was)(?: it)?(?: for)?|when (?:do|did|will|shall) (?:i|we) (?:have|sit|take|do)|when am i (?:sitting|having|taking|doing))"
+    r"\s+(?:my |the |our |this |that )?(?P<t>.+?)\W*$", re.I)
 _SPAN_WORDS = re.compile(r"\b(?:the )?(?:next|coming|following) (\d{1,2}|few|couple of) days?\b|\bnext (\d{1,2}) days\b|\bthe rest of (?:the|this) week\b|\brest of (?:the|this) week\b", re.I)
 _FILLER_STEMS = frozenset(study.stem(w) for w in (
     "what whats is are do have got any anything due deadlines deadline coming up upcoming on my plate the this next week today tomorrow "
@@ -475,8 +480,11 @@ def _when_is(ctx: Ctx, subject: str) -> Reply | None:
     when = f"{_name(due.date(), today)} at {due:%H:%M}"
     lines = [pick(ctx.seed, "whenhead", PHRASES["when_head"]).format(what=str(mine[0].get("text") or "").strip(), when=when)]
     far = today + timedelta(days=900)
-    found, _o = events(ctx, today - timedelta(days=30), far)
-    seen = next((e for e in found if e.kind == "note" and wanted <= _stems(e.text + " " + e.title)), None)
+    #: The note's own sentence, not the merged list: `_merge` folds a note
+    #: line that matches its reminder into one, which would hide the note
+    #: ("Exam on 12 November, hall B" beside the reminder "Exam").
+    found = note_events(ctx, today - timedelta(days=30), far)
+    seen = next((e for e in found if wanted <= _stems(e.text + " " + e.title)), None)
     if seen is not None:
         lines.append(pick(ctx.seed, "whennote", PHRASES["when_note"]).format(title=seen.title, id=seen.note_id, text=seen.text))
     return Reply("\n\n".join(lines))
@@ -492,7 +500,7 @@ def answer(ctx: Ctx) -> Reply | None:
     until = _UNTIL.match(text)
     if until:
         return _until(ctx, until.group("t"))
-    when = _WHEN_IS.match(text)
+    when = _WHEN_IS.match(text) or _WHEN_IS_ALT.match(text)
     if when and (reply := _when_is(ctx, when.group("t"))):
         return reply
     plan = _PLAN.match(text)
