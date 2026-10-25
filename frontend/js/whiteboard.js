@@ -2500,6 +2500,30 @@ function wbZoomToFit({ animate = true, padding = 64, bounds = wbContentBounds(),
     .call(wbZoom.transform, target);
 }
 
+//: **Zoom steps (Ctrl+=, Ctrl+-, the zoom buttons) keep one point still**
+//: (the owner, 2026-10-26: "does control +/- zoom in on the selection?"). The
+//: selection's centre when something is selected, else the pointer when it is
+//: over the board, else the view's centre. One read of the pointer per step,
+//: none per frame.
+function wbZoomAnchor({ usePointer = true } = {}) {
+  const container = document.getElementById("whiteboard-container");
+  const rect = container.getBoundingClientRect();
+  const t = d3.zoomTransform(container);
+  const bounds = wbSelectionBounds();
+  if (bounds) return [t.applyX(bounds.minX + bounds.width / 2), t.applyY(bounds.minY + bounds.height / 2)];
+  const p = usePointer ? wbPointerClient : null;
+  if (p && p.clientX >= rect.left && p.clientX <= rect.right && p.clientY >= rect.top && p.clientY <= rect.bottom) {
+    return [p.clientX - rect.left, p.clientY - rect.top];
+  }
+  return [rect.width / 2, rect.height / 2];
+}
+
+function wbZoomStep(factor, { duration = 160, usePointer = true } = {}) {
+  const container = document.getElementById("whiteboard-container");
+  if (!container) return;
+  d3.select(container).transition().duration(duration).call(wbZoom.scaleBy, factor, wbZoomAnchor({ usePointer }));
+}
+
 //: **Zoom to the selection** (Shift+2, draw.io's and Figma's key): the
 //: selected items fill the free canvas, magnified up to 2x so one small
 //: shape is readable, never past it.
@@ -13490,8 +13514,8 @@ async function initWhiteboard() {
   }
   
   // Toolbar hooks
-  document.getElementById("wb-zoom-in").addEventListener("click", () => container.transition().call(wbZoom.scaleBy, 1.2));
-  document.getElementById("wb-zoom-out").addEventListener("click", () => container.transition().call(wbZoom.scaleBy, 0.8));
+  document.getElementById("wb-zoom-in").addEventListener("click", () => wbZoomStep(1.2, { duration: 250, usePointer: false }));
+  document.getElementById("wb-zoom-out").addEventListener("click", () => wbZoomStep(0.8, { duration: 250, usePointer: false }));
   // Was `wbZoom.transform(d3.zoomIdentity)`, a reset to 100% at the origin,
   // under a button labelled "Fit to Screen". See `wbZoomToFit`.
   document.getElementById("wb-zoom-fit").addEventListener("click", () => wbZoomToFit());
@@ -15748,12 +15772,12 @@ async function initWhiteboard() {
       }
       if (e.code === "Equal" || e.code === "NumpadAdd") {
         e.preventDefault();
-        camera.transition().duration(160).call(wbZoom.scaleBy, 1.2);
+        wbZoomStep(1.2);
         return;
       }
       if (e.code === "Minus" || e.code === "NumpadSubtract") {
         e.preventDefault();
-        camera.transition().duration(160).call(wbZoom.scaleBy, 0.8);
+        wbZoomStep(0.8);
         return;
       }
     }
