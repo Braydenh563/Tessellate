@@ -2202,6 +2202,7 @@ TOPIC_META: dict[str, dict] = {
     "board-templates": {"title": "Board and map templates", "path": "Library tab, Boards & maps, New, From a template"},
     "board-format": {"title": "The board's Format panel", "path": "A board, Ctrl+Shift+P or the selection's More menu"},
     "board-connectors": {"title": "Connector bends, connection points and importing diagrams", "path": "A board, Insert, Mermaid, draw.io or board SVG"},
+    "board-diagram-tools": {"title": "Diagram tools: zoom to the selection and tidy as a tree", "path": "A board, Arrange, View, or a selection's More"},
     "mind-map-controls": {"title": "Mind map keys and controls", "path": "Library tab, Boards & maps"},
     "documents-controls": {"title": "Document editor keys and controls", "path": "Library tab, Documents"},
     "documents-features": {"title": "Document editor features", "path": "Library tab, Documents"},
@@ -2281,7 +2282,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
-        "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
+        "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-diagram-tools", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
         "board-comments", "sticky-notes",
         "mind-map-structure", "mind-map-callouts", "board-current-layer", "board-hand-drawn", "board-tables", "board-edit-data", "board-colours",
     )),

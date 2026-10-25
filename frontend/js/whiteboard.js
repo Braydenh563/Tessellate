@@ -4724,6 +4724,81 @@ async function wbArrangeGridSelection(columns) {
   wbPushMoveBatch(pushed);
 }
 
+//: The connectors with both ends in `entries`, as `[from, to]` member keys
+//: (`kind:id`), in the direction each was drawn.
+function wbTidyEdges(entries) {
+  const keys = new Set(entries.map((e) => `${e.kind}:${e.id}`));
+  const edges = [];
+  for (const sketch of wbState.sketches) {
+    let p;
+    try {
+      p = JSON.parse(sketch.data);
+    } catch {
+      continue;
+    }
+    if (!p?.type?.startsWith("link-")) continue;
+    const from = `${p.sourceKind || "node"}:${p.sourceId}`, to = `${p.targetKind || "node"}:${p.targetId}`;
+    if (from !== to && keys.has(from) && keys.has(to)) edges.push([from, to]);
+  }
+  return edges;
+}
+
+//: **Tidy as a tree** (draw.io Arrange > Layout > Vertical or Horizontal
+//: tree): the selected boxes in ranks along the connectors between them, top
+//: to bottom (`down`) or left to right. A box no connector points into is a
+//: root; siblings keep the order they had on the board, each box is centred in
+//: a cell the size of the largest, and the whole tree keeps the selection's
+//: top-left corner. One move batch, so Undo takes it all back.
+async function wbTidySelection(direction = "down") {
+  const entries = wbSelectionEntries();
+  const edges = wbTidyEdges(entries);
+  if (entries.length < 2 || !edges.length) {
+    toast("Select two or more shapes and the connectors between them to tidy them.");
+    return;
+  }
+  const down = direction === "down";
+  const byKey = new Map(entries.map((e) => [`${e.kind}:${e.id}`, e]));
+  const along = (key) => (down ? byKey.get(key).bbox.minX : byKey.get(key).bbox.minY);
+  const out = new Map(), into = new Map();
+  for (const [from, to] of edges) {
+    if (!out.has(from)) out.set(from, []);
+    out.get(from).push(to);
+    into.set(to, (into.get(to) || 0) + 1);
+  }
+  // Roots first, then anything a cycle left unreached, each in board order.
+  const order = [...byKey.keys()].sort((a, b) => along(a) - along(b));
+  const seen = new Set();
+  const build = (key) => {
+    seen.add(key);
+    const kids = (out.get(key) || []).filter((k) => !seen.has(k)).sort((a, b) => along(a) - along(b));
+    kids.forEach((k) => seen.add(k));
+    return { key, children: kids.map(build) };
+  };
+  const forest = [];
+  for (const key of [...order.filter((k) => !into.has(k)), ...order]) if (!seen.has(key)) forest.push(build(key));
+  const width = Math.max(...entries.map((e) => e.bbox.maxX - e.bbox.minX));
+  const height = Math.max(...entries.map((e) => e.bbox.maxY - e.bbox.minY));
+  const gap = WB_PASTE_STICKY.gap;
+  const [breadth, rank] = down ? [width + gap * 2, height + gap * 3] : [height + gap * 2, width + gap * 3];
+  const laid = d3.tree().nodeSize([breadth, rank])(d3.hierarchy({ children: forest }));
+  const points = laid.descendants().filter((n) => n.depth > 0);
+  const low = Math.min(...points.map((n) => n.x));
+  const left = Math.min(...entries.map((e) => e.bbox.minX));
+  const top = Math.min(...entries.map((e) => e.bbox.minY));
+  const pushed = [];
+  for (const n of points) {
+    const e = byKey.get(n.data.key);
+    const cellX = down ? n.x - low : (n.depth - 1) * rank;
+    const cellY = down ? (n.depth - 1) * rank : n.x - low;
+    const dx = left + cellX + (width - (e.bbox.maxX - e.bbox.minX)) / 2 - e.bbox.minX;
+    const dy = top + cellY + (height - (e.bbox.maxY - e.bbox.minY)) / 2 - e.bbox.minY;
+    if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) continue;
+    pushed.push(await wbMoveItemBy(e.kind, e.id, e.item, dx, dy));
+  }
+  wbPushMoveBatch(pushed);
+  toast(`Tidied ${entries.length} items as a tree.`);
+}
+
 //: **Same size**, the third of WHITEBOARD_PLAN decision 3's eleven arrange
 //: actions and the one that had no function at all. Every selected item takes
 //: the largest one's width (or height); the largest rather than the
@@ -5180,7 +5255,7 @@ const WB_CONTEXT_CONTROLS = {
   // A note card: its look comes from the note, so what it offers is where it
   // sits and what it can become.
   note: { bar: ["order"], more: ["more-mindmap", "more-notes"] },
-  multi: { bar: ["arrange", "order"], more: ["more-notes"] },
+  multi: { bar: ["arrange", "order"], more: ["more-tidy", "more-notes"] },
   //: Several topics on a map (INBOX 617, `wbMapMultiTopics`): the map's own
   //: verbs, never the board's arrange and order, which fight the layout.
   mapmulti: { bar: ["mapmulti"], more: [] },
@@ -5189,7 +5264,7 @@ const WB_CONTEXT_CONTROLS = {
 //: Every group and menu section the table can name, so hiding "everything
 //: else" never has to list them.
 const WB_CONTEXT_GROUPS = ["tool", "ink", "route", "caps", "stroke", "fill", "paper", "text", "arrange", "order", "mapmulti"];
-const WB_CONTEXT_MENU_SECTIONS = ["more-style", "more-card", "more-guides", "more-notes", "more-mindmap"];
+const WB_CONTEXT_MENU_SECTIONS = ["more-style", "more-card", "more-guides", "more-notes", "more-mindmap", "more-tidy"];
 
 //: Which row of the table a selection reads. Returns null when the bar has
 //: nothing to say, which is what closes it.
@@ -5337,6 +5412,8 @@ function wbFillContextBar() {
     // pure shapes has no "notes-in-context".
     const hasNoteCard = wbSelectionEntries().some((e) => e.kind === "node");
     document.querySelector('#wb-context-menu [data-wb-ctx="more-notes"]')?.classList.toggle("hidden", !hasNoteCard);
+    //: Tidy only once the selection holds a connector to lay out along.
+    document.querySelector('#wb-context-menu [data-wb-ctx="more-tidy"]')?.classList.toggle("hidden", !wbTidyEdges(wbSelectionEntries()).length);
     delete bar.dataset.wbAnchor;
     return null;
   }
@@ -8676,7 +8753,7 @@ function wbBuildContextMenu(kind) {
   //: map: a topic's place in a tree is its order (FEAT-17).
   if (!wbIsMap()) {
     subItem("Arrange", (sub) => {
-      for (const id of ["group", "ungroup", "lock", "flip-h", "flip-v"]) {
+      for (const id of ["group", "ungroup", "lock", "flip-h", "flip-v", "tidy-down", "tidy-right"]) {
         const row = wbCommandMenuRow(id);
         if (row) sub(...row);
       }

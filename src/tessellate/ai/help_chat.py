@@ -1624,6 +1624,21 @@ HELP_TOPICS.extend(
             "badge": {"label": "Library", "tab": "library"},
         },
         {
+            "id": "board-diagram-tools",
+            "keywords": (
+                "tidy a diagram", "tree layout", "lay out as a tree", "auto layout", "layout a flowchart",
+                "zoom to selection", "zoom to the selection", "zoom to fit the selection", "shift+2",
+            ),
+            "body": (
+                "Diagram tools on a board. Shift+2 (or View, Zoom to the selection) frames what is selected, "
+                "up to twice its size. Tidy as a tree, in Arrange, the selection's More and the right-click "
+                "Arrange, lays the selected shapes out along the connectors between them, top to bottom or "
+                "left to right: a shape no connector points into is a root, siblings keep their order, and "
+                "one Undo takes it back. It is offered once the selection holds a connector."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
             "id": "mind-map-controls",
             "keywords": (
                 "cross-link", "cross link", "outdent", "fold", "unfold", "radial",
