@@ -2,9 +2,9 @@
 
 Generated 2026-10-25 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6229, frontend ids 2539, CSS sections 497, backend routes 618, backend modules 6393, test files 1338, tests 11918, plan headings 968.
+Counts: frontend functions 6231, frontend ids 2539, CSS sections 497, backend routes 618, backend modules 6394, test files 1338, tests 11922, plan headings 968.
 
-## Frontend functions (6229)
+## Frontend functions (6231)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -229,11 +229,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `categoryMenuItems` | frontend/js/notes-list.js:2766 |
 | `clearSkeletons` | frontend/js/notes-list.js:2832 |
 | `compareCategoryNames` | frontend/js/notes-list.js:2722 |
-| `dockConnectionsInRail` | frontend/js/notes-list.js:3597 |
+| `dockConnectionsInRail` | frontend/js/notes-list.js:3602 |
 | `engineQueryIds` | frontend/js/notes-list.js:194 |
-| `ensureCardCounts` | frontend/js/notes-list.js:3288 |
-| `ensureMapChipsFor` | frontend/js/notes-list.js:3330 |
-| `ensureOneCardCount` | frontend/js/notes-list.js:3292 |
+| `ensureCardCounts` | frontend/js/notes-list.js:3293 |
+| `ensureMapChipsFor` | frontend/js/notes-list.js:3335 |
+| `ensureOneCardCount` | frontend/js/notes-list.js:3297 |
 | `entryListItems` | frontend/js/notes-list.js:2421 |
 | `entryListOrder` | frontend/js/notes-list.js:3004 |
 | `entryNeedsReview` | frontend/js/notes-list.js:225 |
@@ -268,15 +268,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `noteQueryIsEmpty` | frontend/js/notes-list.js:343 |
 | `noteSemanticLoaded` | frontend/js/notes-list.js:377 |
 | `noteSortName` | frontend/js/notes-list.js:1793 |
-| `noteTopicChip` | frontend/js/notes-list.js:3218 |
-| `notesRailFocusSubject` | frontend/js/notes-list.js:3590 |
-| `notesRailHiddenByChoice` | frontend/js/notes-list.js:3417 |
-| `notesRailNearGroup` | frontend/js/notes-list.js:3561 |
-| `notesRailSync` | frontend/js/notes-list.js:3428 |
-| `notesRailWanted` | frontend/js/notes-list.js:3445 |
-| `nudgeReviewQueue` | frontend/js/notes-list.js:3341 |
-| `nudgeUntaggedNotes` | frontend/js/notes-list.js:3362 |
-| `offerWikiRename` | frontend/js/notes-list.js:3681 |
+| `noteTopicChip` | frontend/js/notes-list.js:3223 |
+| `notesRailFocusSubject` | frontend/js/notes-list.js:3595 |
+| `notesRailHiddenByChoice` | frontend/js/notes-list.js:3422 |
+| `notesRailNearGroup` | frontend/js/notes-list.js:3566 |
+| `notesRailSync` | frontend/js/notes-list.js:3433 |
+| `notesRailWanted` | frontend/js/notes-list.js:3450 |
+| `nudgeReviewQueue` | frontend/js/notes-list.js:3346 |
+| `nudgeUntaggedNotes` | frontend/js/notes-list.js:3367 |
+| `offerWikiRename` | frontend/js/notes-list.js:3686 |
 | `openNoteEditor` | frontend/js/notes-list.js:76 |
 | `orderedNotesForCurrentView` | frontend/js/notes-list.js:1993 |
 | `paginateNotesForDisplay` | frontend/js/notes-list.js:1959 |
@@ -285,35 +285,35 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `parseNoteQuery` | frontend/js/notes-list.js:247 |
 | `propQuery` | frontend/js/notes-list.js:2215 |
 | `readableUrl` | frontend/js/notes-list.js:893 |
-| `referenceCountChip` | frontend/js/notes-list.js:3147 |
-| `referenceCountText` | frontend/js/notes-list.js:3135 |
+| `referenceCountChip` | frontend/js/notes-list.js:3152 |
+| `referenceCountText` | frontend/js/notes-list.js:3140 |
 | `refreshEntries` | frontend/js/notes-list.js:3012 |
 | `refreshNoteSearchWhy` | frontend/js/notes-list.js:1751 |
-| `reminderCountChip` | frontend/js/notes-list.js:3190 |
+| `reminderCountChip` | frontend/js/notes-list.js:3195 |
 | `renderEntries` | frontend/js/notes-list.js:2260 |
 | `renderIncrementally` | frontend/js/notes-list.js:1864 |
 | `renderInlineMarkdown` | frontend/js/notes-list.js:910 |
 | `renderNoteInline` | frontend/js/notes-list.js:1562 |
 | `renderNoteText` | frontend/js/notes-list.js:1431 |
-| `renderNotesRail` | frontend/js/notes-list.js:3464 |
+| `renderNotesRail` | frontend/js/notes-list.js:3469 |
 | `renderSidebar` | frontend/js/notes-list.js:2553 |
 | `resolveCategoryChoice` | frontend/js/notes-list.js:127 |
 | `resolveNotePage` | frontend/js/notes-list.js:2033 |
 | `resolveWikiTarget` | frontend/js/notes-list.js:1321 |
 | `safeHref` | frontend/js/notes-list.js:843 |
 | `scheduleEntriesProgress` | frontend/js/notes-list.js:2871 |
-| `scheduleNotesRail` | frontend/js/notes-list.js:3440 |
+| `scheduleNotesRail` | frontend/js/notes-list.js:3445 |
 | `searchHighlightTerms` | frontend/js/notes-list.js:1723 |
-| `setNotesRailHidden` | frontend/js/notes-list.js:3603 |
+| `setNotesRailHidden` | frontend/js/notes-list.js:3608 |
 | `setNotesViewMode` | frontend/js/notes-list.js:2116 |
 | `showEntrySkeletons` | frontend/js/notes-list.js:2803 |
 | `showNotesFilter` | frontend/js/notes-list.js:236 |
 | `showSkeletons` | frontend/js/notes-list.js:2821 |
 | `sortEntries` | frontend/js/notes-list.js:1797 |
-| `syncNotesRailToggle` | frontend/js/notes-list.js:3453 |
+| `syncNotesRailToggle` | frontend/js/notes-list.js:3458 |
 | `toggleExpandAllRows` | frontend/js/notes-list.js:2105 |
 | `toggleRowExpanded` | frontend/js/notes-list.js:2138 |
-| `topicRepeatsTag` | frontend/js/notes-list.js:3212 |
+| `topicRepeatsTag` | frontend/js/notes-list.js:3217 |
 | `unlatex` | frontend/js/notes-list.js:761 |
 | `updateExpandAllButton` | frontend/js/notes-list.js:2085 |
 | `whyThisResultChip` | frontend/js/notes-list.js:1735 |
@@ -1027,108 +1027,108 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `agentActivityNotice` | frontend/js/status.js:650 |
 | `agentActivityQuiet` | frontend/js/status.js:642 |
-| `agentModeAvailable` | frontend/js/status.js:2713 |
-| `aiIsOff` | frontend/js/status.js:1984 |
-| `aiOffGlyph` | frontend/js/status.js:2383 |
-| `aiOfflineDismissed` | frontend/js/status.js:2185 |
-| `aiOfflineNoticeHidden` | frontend/js/status.js:2181 |
-| `aiStatusState` | frontend/js/status.js:2270 |
+| `agentModeAvailable` | frontend/js/status.js:2714 |
+| `aiIsOff` | frontend/js/status.js:1985 |
+| `aiOffGlyph` | frontend/js/status.js:2384 |
+| `aiOfflineDismissed` | frontend/js/status.js:2186 |
+| `aiOfflineNoticeHidden` | frontend/js/status.js:2182 |
+| `aiStatusState` | frontend/js/status.js:2271 |
 | `announcedReminders` | frontend/js/status.js:42 |
-| `appStackIsNewer` | frontend/js/status.js:1534 |
+| `appStackIsNewer` | frontend/js/status.js:1535 |
 | `armReminderTimer` | frontend/js/status.js:507 |
 | `askNotificationPermission` | frontend/js/status.js:378 |
-| `backendLabel` | frontend/js/status.js:2776 |
-| `boardHistoryActive` | frontend/js/status.js:1499 |
+| `backendLabel` | frontend/js/status.js:2777 |
+| `boardHistoryActive` | frontend/js/status.js:1500 |
 | `checkDueReminders` | frontend/js/status.js:523 |
-| `closeModelGate` | frontend/js/status.js:2003 |
+| `closeModelGate` | frontend/js/status.js:2004 |
 | `closeNotifications` | frontend/js/status.js:358 |
-| `dismissAiOffline` | frontend/js/status.js:2193 |
+| `dismissAiOffline` | frontend/js/status.js:2194 |
 | `dismissToast` | frontend/js/status.js:892 |
 | `dismissedNotificationIds` | frontend/js/status.js:232 |
 | `forcedReadIds` | frontend/js/status.js:187 |
 | `forcedUnreadIds` | frontend/js/status.js:156 |
-| `insightLine` | frontend/js/status.js:1426 |
-| `insightSend` | frontend/js/status.js:1397 |
-| `insightVerdicts` | frontend/js/status.js:1403 |
-| `integrityWords` | frontend/js/status.js:1236 |
+| `insightLine` | frontend/js/status.js:1427 |
+| `insightSend` | frontend/js/status.js:1398 |
+| `insightVerdicts` | frontend/js/status.js:1404 |
+| `integrityWords` | frontend/js/status.js:1237 |
 | `isNotificationUnread` | frontend/js/status.js:211 |
-| `jobsRunning` | frontend/js/status.js:1837 |
+| `jobsRunning` | frontend/js/status.js:1838 |
 | `keepToastAction` | frontend/js/status.js:337 |
-| `lastAnswerLine` | frontend/js/status.js:2405 |
-| `loadMostUsed` | frontend/js/status.js:1707 |
-| `loadRecentQuestions` | frontend/js/status.js:1680 |
+| `lastAnswerLine` | frontend/js/status.js:2406 |
+| `loadMostUsed` | frontend/js/status.js:1708 |
+| `loadRecentQuestions` | frontend/js/status.js:1681 |
 | `lockFieldWants` | frontend/js/status.js:935 |
-| `noteDamagedNotebook` | frontend/js/status.js:1240 |
-| `noteServerDown` | frontend/js/status.js:1296 |
-| `noteServerUp` | frontend/js/status.js:1305 |
-| `noticeTaskTransitions` | frontend/js/status.js:3014 |
+| `noteDamagedNotebook` | frontend/js/status.js:1241 |
+| `noteServerDown` | frontend/js/status.js:1297 |
+| `noteServerUp` | frontend/js/status.js:1306 |
+| `noticeTaskTransitions` | frontend/js/status.js:3015 |
 | `noticeUnwatchedAnswer` | frontend/js/status.js:685 |
 | `notificationsMuted` | frontend/js/status.js:627 |
 | `notificationsReadAt` | frontend/js/status.js:138 |
 | `notify` | frontend/js/status.js:451 |
-| `nudgeEmbeddingProblem` | frontend/js/status.js:2448 |
-| `offerUndo` | frontend/js/status.js:1441 |
+| `nudgeEmbeddingProblem` | frontend/js/status.js:2449 |
+| `offerUndo` | frontend/js/status.js:1442 |
 | `openLanPanel` | frontend/js/status.js:587 |
-| `openModelGate` | frontend/js/status.js:2013 |
-| `openModelOffer` | frontend/js/status.js:2020 |
-| `paintPrivacyChip` | frontend/js/status.js:3110 |
-| `paintStatusItem` | frontend/js/status.js:2502 |
+| `openModelGate` | frontend/js/status.js:2014 |
+| `openModelOffer` | frontend/js/status.js:2021 |
+| `paintPrivacyChip` | frontend/js/status.js:3111 |
+| `paintStatusItem` | frontend/js/status.js:2503 |
 | `paintTitle` | frontend/js/status.js:484 |
-| `paintUndoDoor` | frontend/js/status.js:1630 |
-| `performRedo` | frontend/js/status.js:1555 |
-| `performRedoNow` | frontend/js/status.js:1584 |
-| `performUndo` | frontend/js/status.js:1549 |
-| `performUndoNow` | frontend/js/status.js:1561 |
+| `paintUndoDoor` | frontend/js/status.js:1631 |
+| `performRedo` | frontend/js/status.js:1556 |
+| `performRedoNow` | frontend/js/status.js:1585 |
+| `performUndo` | frontend/js/status.js:1550 |
+| `performUndoNow` | frontend/js/status.js:1562 |
 | `plainHttpError` | frontend/js/status.js:995 |
 | `playReminderChime` | frontend/js/status.js:417 |
-| `pollServerHealth` | frontend/js/status.js:1333 |
+| `pollServerHealth` | frontend/js/status.js:1334 |
 | `primeReminderAudio` | frontend/js/status.js:392 |
-| `pushEntryPutUndo` | frontend/js/status.js:1474 |
-| `pushUndo` | frontend/js/status.js:1370 |
+| `pushEntryPutUndo` | frontend/js/status.js:1475 |
+| `pushUndo` | frontend/js/status.js:1371 |
 | `recordNotification` | frontend/js/status.js:97 |
-| `refreshBackgroundTasks` | frontend/js/status.js:2932 |
-| `refreshModelStatus` | frontend/js/status.js:1865 |
-| `refreshPrivacyChip` | frontend/js/status.js:3124 |
+| `refreshBackgroundTasks` | frontend/js/status.js:2933 |
+| `refreshModelStatus` | frontend/js/status.js:1866 |
+| `refreshPrivacyChip` | frontend/js/status.js:3125 |
 | `rememberAnnounced` | frontend/js/status.js:50 |
 | `reminderNoticeKey` | frontend/js/status.js:228 |
 | `renderAgentActivityMode` | frontend/js/status.js:721 |
-| `renderAiOfflineNotice` | frontend/js/status.js:2208 |
-| `renderAiPill` | frontend/js/status.js:2413 |
-| `renderChatModeSeg` | frontend/js/status.js:2717 |
+| `renderAiOfflineNotice` | frontend/js/status.js:2209 |
+| `renderAiPill` | frontend/js/status.js:2414 |
+| `renderChatModeSeg` | frontend/js/status.js:2718 |
 | `renderNotifMuteToggle` | frontend/js/status.js:267 |
 | `renderNotificationBadge` | frontend/js/status.js:247 |
-| `renderSettings` | frontend/js/status.js:2787 |
-| `renderStatusBar` | frontend/js/status.js:2545 |
-| `renderUndoBar` | frontend/js/status.js:1615 |
+| `renderSettings` | frontend/js/status.js:2788 |
+| `renderStatusBar` | frontend/js/status.js:2546 |
+| `renderUndoBar` | frontend/js/status.js:1616 |
 | `reopenAnswerPanel` | frontend/js/status.js:700 |
-| `resetStatusCadence` | frontend/js/status.js:1787 |
-| `retryServerNow` | frontend/js/status.js:1346 |
-| `sayChatModelChosen` | frontend/js/status.js:1750 |
-| `scheduleServerDownRetry` | frontend/js/status.js:1320 |
-| `scheduleUndoBar` | frontend/js/status.js:1607 |
-| `setChatMode` | frontend/js/status.js:2760 |
+| `resetStatusCadence` | frontend/js/status.js:1788 |
+| `retryServerNow` | frontend/js/status.js:1347 |
+| `sayChatModelChosen` | frontend/js/status.js:1751 |
+| `scheduleServerDownRetry` | frontend/js/status.js:1321 |
+| `scheduleUndoBar` | frontend/js/status.js:1608 |
+| `setChatMode` | frontend/js/status.js:2761 |
 | `setForcedReadIds` | frontend/js/status.js:196 |
 | `setForcedUnreadIds` | frontend/js/status.js:165 |
 | `setTitleCount` | frontend/js/status.js:489 |
 | `setTitleView` | frontend/js/status.js:494 |
-| `settingsOpen` | frontend/js/status.js:1804 |
+| `settingsOpen` | frontend/js/status.js:1805 |
 | `settleNotification` | frontend/js/status.js:116 |
-| `settleUndoFromToast` | frontend/js/status.js:1462 |
-| `showAgentNoModelHint` | frontend/js/status.js:2755 |
-| `showServerDownBanner` | frontend/js/status.js:1279 |
-| `startPrivacyChip` | frontend/js/status.js:3134 |
+| `settleUndoFromToast` | frontend/js/status.js:1463 |
+| `showAgentNoModelHint` | frontend/js/status.js:2756 |
+| `showServerDownBanner` | frontend/js/status.js:1280 |
+| `startPrivacyChip` | frontend/js/status.js:3135 |
 | `startReminderWatch` | frontend/js/status.js:594 |
 | `storedNotifications` | frontend/js/status.js:84 |
-| `surfaceHistory` | frontend/js/status.js:1516 |
-| `syncAgentPaletteAvailability` | frontend/js/status.js:2252 |
-| `syncModelGatedControls` | frontend/js/status.js:2067 |
+| `surfaceHistory` | frontend/js/status.js:1517 |
+| `syncAgentPaletteAvailability` | frontend/js/status.js:2253 |
+| `syncModelGatedControls` | frontend/js/status.js:2068 |
 | `syncNotifBlocked` | frontend/js/status.js:373 |
 | `taskEndingWords` | frontend/js/status.js:130 |
-| `taskKey` | frontend/js/status.js:2995 |
+| `taskKey` | frontend/js/status.js:2996 |
 | `toast` | frontend/js/status.js:1071 |
-| `toastAction` | frontend/js/status.js:1212 |
-| `toastActionButton` | frontend/js/status.js:1192 |
-| `toastActions` | frontend/js/status.js:1183 |
+| `toastAction` | frontend/js/status.js:1213 |
+| `toastActionButton` | frontend/js/status.js:1193 |
+| `toastActions` | frontend/js/status.js:1184 |
 | `toastAtTop` | frontend/js/status.js:756 |
 | `toastCloseButton` | frontend/js/status.js:900 |
 | `toastHost` | frontend/js/status.js:964 |
@@ -1137,10 +1137,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `toastMark` | frontend/js/status.js:839 |
 | `toastMerge` | frontend/js/status.js:813 |
 | `toastName` | frontend/js/status.js:1059 |
-| `toastProgress` | frontend/js/status.js:1147 |
+| `toastProgress` | frontend/js/status.js:1148 |
 | `toastReduced` | frontend/js/status.js:851 |
 | `toastStack` | frontend/js/status.js:856 |
-| `toggleAiStatusPopup` | frontend/js/status.js:2687 |
+| `toggleAiStatusPopup` | frontend/js/status.js:2688 |
 | `toggleNotificationMute` | frontend/js/status.js:283 |
 | `unreadNotifications` | frontend/js/status.js:241 |
 | `voiceLine` | frontend/js/status.js:1065 |
@@ -1403,7 +1403,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `streamAgentLogs` | frontend/js/agent-activity.js:624 |
 | `verificationRow` | frontend/js/agent-activity.js:295 |
 
-### frontend/js/avatars.js (240)
+### frontend/js/avatars.js (242)
 
 | Name | File:line |
 |---|---|
@@ -1419,107 +1419,107 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameCharacterFigure` | frontend/js/avatars.js:3566 |
 | `nameCharacterHeld` | frontend/js/avatars.js:2534 |
 | `nameMark` | frontend/js/avatars.js:1450 |
-| `nameMarkBuddyAct` | frontend/js/avatars.js:6999 |
+| `nameMarkBuddyAct` | frontend/js/avatars.js:7020 |
 | `nameMarkBuddyActOff` | frontend/js/avatars.js:3320 |
 | `nameMarkBuddyActions` | frontend/js/avatars.js:3378 |
 | `nameMarkBuddyActivitiesOff` | frontend/js/avatars.js:3313 |
 | `nameMarkBuddyAdoptScroller` | frontend/js/avatars.js:5235 |
-| `nameMarkBuddyAim` | frontend/js/avatars.js:7195 |
+| `nameMarkBuddyAim` | frontend/js/avatars.js:7216 |
 | `nameMarkBuddyAnimProps` | frontend/js/avatars.js:5036 |
-| `nameMarkBuddyArrive` | frontend/js/avatars.js:6597 |
-| `nameMarkBuddyAsleep` | frontend/js/avatars.js:8056 |
-| `nameMarkBuddyAwake` | frontend/js/avatars.js:7969 |
+| `nameMarkBuddyArrive` | frontend/js/avatars.js:6618 |
+| `nameMarkBuddyAsleep` | frontend/js/avatars.js:8077 |
+| `nameMarkBuddyAwake` | frontend/js/avatars.js:7990 |
 | `nameMarkBuddyBand` | frontend/js/avatars.js:4769 |
-| `nameMarkBuddyBeat` | frontend/js/avatars.js:6451 |
-| `nameMarkBuddyBellErrand` | frontend/js/avatars.js:8469 |
-| `nameMarkBuddyBlend` | frontend/js/avatars.js:8083 |
+| `nameMarkBuddyBeat` | frontend/js/avatars.js:6472 |
+| `nameMarkBuddyBellErrand` | frontend/js/avatars.js:8490 |
+| `nameMarkBuddyBlend` | frontend/js/avatars.js:8104 |
 | `nameMarkBuddyBody` | frontend/js/avatars.js:3527 |
-| `nameMarkBuddyBoredom` | frontend/js/avatars.js:8185 |
-| `nameMarkBuddyBuild` | frontend/js/avatars.js:8848 |
+| `nameMarkBuddyBoredom` | frontend/js/avatars.js:8206 |
+| `nameMarkBuddyBuild` | frontend/js/avatars.js:8869 |
 | `nameMarkBuddyBurst` | frontend/js/avatars.js:6165 |
-| `nameMarkBuddyCallBack` | frontend/js/avatars.js:6974 |
-| `nameMarkBuddyCalmAllows` | frontend/js/avatars.js:8043 |
+| `nameMarkBuddyCallBack` | frontend/js/avatars.js:6995 |
+| `nameMarkBuddyCalmAllows` | frontend/js/avatars.js:8064 |
 | `nameMarkBuddyCanvasAt` | frontend/js/avatars.js:5287 |
 | `nameMarkBuddyCanvasScale` | frontend/js/avatars.js:5299 |
 | `nameMarkBuddyCanvasZoom` | frontend/js/avatars.js:5303 |
 | `nameMarkBuddyCatchUp` | frontend/js/avatars.js:4969 |
-| `nameMarkBuddyChatErrand` | frontend/js/avatars.js:8479 |
-| `nameMarkBuddyCheck` | frontend/js/avatars.js:6357 |
+| `nameMarkBuddyChatErrand` | frontend/js/avatars.js:8500 |
+| `nameMarkBuddyCheck` | frontend/js/avatars.js:6378 |
 | `nameMarkBuddyChoose` | frontend/js/avatars.js:4230 |
-| `nameMarkBuddyClickReaction` | frontend/js/avatars.js:8029 |
+| `nameMarkBuddyClickReaction` | frontend/js/avatars.js:8050 |
 | `nameMarkBuddyColours` | frontend/js/avatars.js:3512 |
-| `nameMarkBuddyContext` | frontend/js/avatars.js:8564 |
+| `nameMarkBuddyContext` | frontend/js/avatars.js:8585 |
 | `nameMarkBuddyCoverCheck` | frontend/js/avatars.js:6297 |
 | `nameMarkBuddyCoverPoint` | frontend/js/avatars.js:3888 |
 | `nameMarkBuddyCoverWatch` | frontend/js/avatars.js:6305 |
 | `nameMarkBuddyCovers` | frontend/js/avatars.js:3853 |
 | `nameMarkBuddyCrossfade` | frontend/js/avatars.js:5466 |
-| `nameMarkBuddyCue` | frontend/js/avatars.js:7762 |
-| `nameMarkBuddyCurlUp` | frontend/js/avatars.js:7290 |
-| `nameMarkBuddyCurtained` | frontend/js/avatars.js:6590 |
+| `nameMarkBuddyCue` | frontend/js/avatars.js:7783 |
+| `nameMarkBuddyCurlUp` | frontend/js/avatars.js:7311 |
+| `nameMarkBuddyCurtained` | frontend/js/avatars.js:6611 |
 | `nameMarkBuddyCustom` | frontend/js/avatars.js:352 |
-| `nameMarkBuddyDecide` | frontend/js/avatars.js:7362 |
+| `nameMarkBuddyDecide` | frontend/js/avatars.js:7383 |
 | `nameMarkBuddyDodge` | frontend/js/avatars.js:3693 |
-| `nameMarkBuddyDrift` | frontend/js/avatars.js:7630 |
+| `nameMarkBuddyDrift` | frontend/js/avatars.js:7651 |
 | `nameMarkBuddyDrop` | frontend/js/avatars.js:4481 |
-| `nameMarkBuddyEase` | frontend/js/avatars.js:8156 |
+| `nameMarkBuddyEase` | frontend/js/avatars.js:8177 |
 | `nameMarkBuddyEdges` | frontend/js/avatars.js:4014 |
 | `nameMarkBuddyEmote` | frontend/js/avatars.js:3330 |
-| `nameMarkBuddyEnter` | frontend/js/avatars.js:6699 |
-| `nameMarkBuddyErrand` | frontend/js/avatars.js:8451 |
-| `nameMarkBuddyExpress` | frontend/js/avatars.js:7542 |
-| `nameMarkBuddyFeel` | frontend/js/avatars.js:8004 |
+| `nameMarkBuddyEnter` | frontend/js/avatars.js:6720 |
+| `nameMarkBuddyErrand` | frontend/js/avatars.js:8472 |
+| `nameMarkBuddyExpress` | frontend/js/avatars.js:7563 |
+| `nameMarkBuddyFeel` | frontend/js/avatars.js:8025 |
 | `nameMarkBuddyFlies` | frontend/js/avatars.js:5449 |
 | `nameMarkBuddyFlightStep` | frontend/js/avatars.js:5885 |
 | `nameMarkBuddyFlip` | frontend/js/avatars.js:6089 |
 | `nameMarkBuddyFollow` | frontend/js/avatars.js:4850 |
 | `nameMarkBuddyFollowFrame` | frontend/js/avatars.js:5012 |
-| `nameMarkBuddyFrames` | frontend/js/avatars.js:7268 |
+| `nameMarkBuddyFrames` | frontend/js/avatars.js:7289 |
 | `nameMarkBuddyGait` | frontend/js/avatars.js:5439 |
-| `nameMarkBuddyGetUp` | frontend/js/avatars.js:7294 |
+| `nameMarkBuddyGetUp` | frontend/js/avatars.js:7315 |
 | `nameMarkBuddyGlue` | frontend/js/avatars.js:4800 |
 | `nameMarkBuddyGlueBand` | frontend/js/avatars.js:4837 |
 | `nameMarkBuddyGo` | frontend/js/avatars.js:5593 |
-| `nameMarkBuddyGone` | frontend/js/avatars.js:8728 |
-| `nameMarkBuddyHalt` | frontend/js/avatars.js:7310 |
-| `nameMarkBuddyHasAtlas` | frontend/js/avatars.js:7265 |
-| `nameMarkBuddyHeadAt` | frontend/js/avatars.js:8326 |
-| `nameMarkBuddyHide` | frontend/js/avatars.js:8767 |
-| `nameMarkBuddyHint` | frontend/js/avatars.js:9434 |
+| `nameMarkBuddyGone` | frontend/js/avatars.js:8749 |
+| `nameMarkBuddyHalt` | frontend/js/avatars.js:7331 |
+| `nameMarkBuddyHasAtlas` | frontend/js/avatars.js:7286 |
+| `nameMarkBuddyHeadAt` | frontend/js/avatars.js:8347 |
+| `nameMarkBuddyHide` | frontend/js/avatars.js:8788 |
+| `nameMarkBuddyHint` | frontend/js/avatars.js:9455 |
 | `nameMarkBuddyHits` | frontend/js/avatars.js:3835 |
-| `nameMarkBuddyHold` | frontend/js/avatars.js:7625 |
+| `nameMarkBuddyHold` | frontend/js/avatars.js:7646 |
 | `nameMarkBuddyHover` | frontend/js/avatars.js:5992 |
-| `nameMarkBuddyHoverReaction` | frontend/js/avatars.js:8177 |
+| `nameMarkBuddyHoverReaction` | frontend/js/avatars.js:8198 |
 | `nameMarkBuddyIndexReset` | frontend/js/avatars.js:3943 |
 | `nameMarkBuddyInsideCard` | frontend/js/avatars.js:4079 |
-| `nameMarkBuddyJoy` | frontend/js/avatars.js:7590 |
+| `nameMarkBuddyJoy` | frontend/js/avatars.js:7611 |
 | `nameMarkBuddyKeepCustom` | frontend/js/avatars.js:365 |
-| `nameMarkBuddyKeepFrame` | frontend/js/avatars.js:7301 |
+| `nameMarkBuddyKeepFrame` | frontend/js/avatars.js:7322 |
 | `nameMarkBuddyKeepSpots` | frontend/js/avatars.js:4345 |
 | `nameMarkBuddyKeepUp` | frontend/js/avatars.js:5007 |
-| `nameMarkBuddyLean` | frontend/js/avatars.js:8406 |
-| `nameMarkBuddyLeanSide` | frontend/js/avatars.js:8401 |
-| `nameMarkBuddyLeave` | frontend/js/avatars.js:6903 |
+| `nameMarkBuddyLean` | frontend/js/avatars.js:8427 |
+| `nameMarkBuddyLeanSide` | frontend/js/avatars.js:8422 |
+| `nameMarkBuddyLeave` | frontend/js/avatars.js:6924 |
 | `nameMarkBuddyLedges` | frontend/js/avatars.js:3625 |
 | `nameMarkBuddyLegsNow` | frontend/js/avatars.js:5308 |
-| `nameMarkBuddyLieDown` | frontend/js/avatars.js:7283 |
-| `nameMarkBuddyLieRoom` | frontend/js/avatars.js:7090 |
+| `nameMarkBuddyLieDown` | frontend/js/avatars.js:7304 |
+| `nameMarkBuddyLieRoom` | frontend/js/avatars.js:7111 |
 | `nameMarkBuddyLimbs` | frontend/js/avatars.js:5539 |
 | `nameMarkBuddyLockSync` | frontend/js/avatars.js:6289 |
-| `nameMarkBuddyLoud` | frontend/js/avatars.js:8048 |
+| `nameMarkBuddyLoud` | frontend/js/avatars.js:8069 |
 | `nameMarkBuddyMade` | frontend/js/avatars.js:2986 |
 | `nameMarkBuddyMakeHint` | frontend/js/avatars.js:3006 |
 | `nameMarkBuddyMakeIt` | frontend/js/avatars.js:2999 |
-| `nameMarkBuddyMenuOpen` | frontend/js/avatars.js:6447 |
+| `nameMarkBuddyMenuOpen` | frontend/js/avatars.js:6468 |
 | `nameMarkBuddyMotion` | frontend/js/avatars.js:3454 |
 | `nameMarkBuddyMotionApply` | frontend/js/avatars.js:3486 |
 | `nameMarkBuddyMoveTo` | frontend/js/avatars.js:5313 |
-| `nameMarkBuddyNameProps` | frontend/js/avatars.js:8535 |
-| `nameMarkBuddyNextSpot` | frontend/js/avatars.js:6570 |
+| `nameMarkBuddyNameProps` | frontend/js/avatars.js:8556 |
+| `nameMarkBuddyNextSpot` | frontend/js/avatars.js:6591 |
 | `nameMarkBuddyNoTravel` | frontend/js/avatars.js:3498 |
-| `nameMarkBuddyNoteOpen` | frontend/js/avatars.js:7737 |
-| `nameMarkBuddyNoteOpened` | frontend/js/avatars.js:7730 |
-| `nameMarkBuddyNotice` | frontend/js/avatars.js:8336 |
+| `nameMarkBuddyNoteOpen` | frontend/js/avatars.js:7758 |
+| `nameMarkBuddyNoteOpened` | frontend/js/avatars.js:7751 |
+| `nameMarkBuddyNotice` | frontend/js/avatars.js:8357 |
 | `nameMarkBuddyObstacles` | frontend/js/avatars.js:3634 |
 | `nameMarkBuddyOnBoard` | frontend/js/avatars.js:5296 |
 | `nameMarkBuddyOrigin` | frontend/js/avatars.js:3793 |
@@ -1530,18 +1530,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyPerchShown` | frontend/js/avatars.js:3617 |
 | `nameMarkBuddyPerches` | frontend/js/avatars.js:4178 |
 | `nameMarkBuddyPet` | frontend/js/avatars.js:6011 |
-| `nameMarkBuddyPickVariant` | frontend/js/avatars.js:7103 |
-| `nameMarkBuddyPointer` | frontend/js/avatars.js:8616 |
+| `nameMarkBuddyPickVariant` | frontend/js/avatars.js:7124 |
+| `nameMarkBuddyPointer` | frontend/js/avatars.js:8637 |
 | `nameMarkBuddyPoof` | frontend/js/avatars.js:6113 |
 | `nameMarkBuddyPopups` | frontend/js/avatars.js:3680 |
-| `nameMarkBuddyPout` | frontend/js/avatars.js:8167 |
-| `nameMarkBuddyPrewarm` | frontend/js/avatars.js:7612 |
+| `nameMarkBuddyPout` | frontend/js/avatars.js:8188 |
+| `nameMarkBuddyPrewarm` | frontend/js/avatars.js:7633 |
 | `nameMarkBuddyPut` | frontend/js/avatars.js:4544 |
-| `nameMarkBuddyQueuePlace` | frontend/js/avatars.js:6436 |
-| `nameMarkBuddyReact` | frontend/js/avatars.js:7666 |
-| `nameMarkBuddyRefit` | frontend/js/avatars.js:6925 |
-| `nameMarkBuddyRefitClear` | frontend/js/avatars.js:6960 |
-| `nameMarkBuddyRelease` | frontend/js/avatars.js:7327 |
+| `nameMarkBuddyQueuePlace` | frontend/js/avatars.js:6457 |
+| `nameMarkBuddyReact` | frontend/js/avatars.js:7687 |
+| `nameMarkBuddyRefit` | frontend/js/avatars.js:6946 |
+| `nameMarkBuddyRefitClear` | frontend/js/avatars.js:6981 |
+| `nameMarkBuddyRelease` | frontend/js/avatars.js:7348 |
 | `nameMarkBuddyReleaseVelocity` | frontend/js/avatars.js:5863 |
 | `nameMarkBuddyResetSize` | frontend/js/avatars.js:3763 |
 | `nameMarkBuddyRestore` | frontend/js/avatars.js:4392 |
@@ -1553,32 +1553,32 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyRubbed` | frontend/js/avatars.js:6056 |
 | `nameMarkBuddyScaleSaved` | frontend/js/avatars.js:3734 |
 | `nameMarkBuddyScaled` | frontend/js/avatars.js:3797 |
-| `nameMarkBuddyScene` | frontend/js/avatars.js:7155 |
-| `nameMarkBuddySchedule` | frontend/js/avatars.js:7345 |
-| `nameMarkBuddyScrollAgo` | frontend/js/avatars.js:8052 |
+| `nameMarkBuddyScene` | frontend/js/avatars.js:7176 |
+| `nameMarkBuddySchedule` | frontend/js/avatars.js:7366 |
+| `nameMarkBuddyScrollAgo` | frontend/js/avatars.js:8073 |
 | `nameMarkBuddyScroller` | frontend/js/avatars.js:4756 |
 | `nameMarkBuddyScrollsWith` | frontend/js/avatars.js:4825 |
 | `nameMarkBuddySeed` | frontend/js/avatars.js:2872 |
 | `nameMarkBuddySeen` | frontend/js/avatars.js:4735 |
 | `nameMarkBuddySelector` | frontend/js/avatars.js:4355 |
 | `nameMarkBuddySetSize` | frontend/js/avatars.js:3743 |
-| `nameMarkBuddySettle` | frontend/js/avatars.js:6630 |
+| `nameMarkBuddySettle` | frontend/js/avatars.js:6651 |
 | `nameMarkBuddyShape` | frontend/js/avatars.js:3804 |
 | `nameMarkBuddyShapeAt1` | frontend/js/avatars.js:3807 |
-| `nameMarkBuddyShowing` | frontend/js/avatars.js:8810 |
+| `nameMarkBuddyShowing` | frontend/js/avatars.js:8831 |
 | `nameMarkBuddyShown` | frontend/js/avatars.js:3603 |
-| `nameMarkBuddyShy` | frontend/js/avatars.js:8633 |
+| `nameMarkBuddyShy` | frontend/js/avatars.js:8654 |
 | `nameMarkBuddySizeSelect` | frontend/js/avatars.js:3772 |
-| `nameMarkBuddySound` | frontend/js/avatars.js:8542 |
+| `nameMarkBuddySound` | frontend/js/avatars.js:8563 |
 | `nameMarkBuddySpotFor` | frontend/js/avatars.js:4377 |
 | `nameMarkBuddySpots` | frontend/js/avatars.js:4336 |
 | `nameMarkBuddySquash` | frontend/js/avatars.js:5809 |
 | `nameMarkBuddyStances` | frontend/js/avatars.js:4160 |
 | `nameMarkBuddyStepAside` | frontend/js/avatars.js:4440 |
 | `nameMarkBuddyStill` | frontend/js/avatars.js:3495 |
-| `nameMarkBuddyStillGood` | frontend/js/avatars.js:6344 |
-| `nameMarkBuddyStir` | frontend/js/avatars.js:8296 |
-| `nameMarkBuddyStreak` | frontend/js/avatars.js:7715 |
+| `nameMarkBuddyStillGood` | frontend/js/avatars.js:6365 |
+| `nameMarkBuddyStir` | frontend/js/avatars.js:8317 |
+| `nameMarkBuddyStreak` | frontend/js/avatars.js:7736 |
 | `nameMarkBuddyStride` | frontend/js/avatars.js:5795 |
 | `nameMarkBuddyStrokes` | frontend/js/avatars.js:6029 |
 | `nameMarkBuddySupportSoon` | frontend/js/avatars.js:6252 |
@@ -1586,29 +1586,29 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddySurfaceWalk` | frontend/js/avatars.js:3952 |
 | `nameMarkBuddySway` | frontend/js/avatars.js:4559 |
 | `nameMarkBuddyTab` | frontend/js/avatars.js:3595 |
-| `nameMarkBuddyTabChanged` | frontend/js/avatars.js:6524 |
-| `nameMarkBuddyTabSide` | frontend/js/avatars.js:6560 |
+| `nameMarkBuddyTabChanged` | frontend/js/avatars.js:6545 |
+| `nameMarkBuddyTabSide` | frontend/js/avatars.js:6581 |
 | `nameMarkBuddyTempo` | frontend/js/avatars.js:5089 |
 | `nameMarkBuddyTextBoxes` | frontend/js/avatars.js:3908 |
 | `nameMarkBuddyThrowFeel` | frontend/js/avatars.js:5849 |
 | `nameMarkBuddyThrowLand` | frontend/js/avatars.js:5978 |
 | `nameMarkBuddyThrowSpot` | frontend/js/avatars.js:5962 |
-| `nameMarkBuddyTick` | frontend/js/avatars.js:7449 |
-| `nameMarkBuddyTilt` | frontend/js/avatars.js:7244 |
-| `nameMarkBuddyToggle` | frontend/js/avatars.js:8825 |
+| `nameMarkBuddyTick` | frontend/js/avatars.js:7470 |
+| `nameMarkBuddyTilt` | frontend/js/avatars.js:7265 |
+| `nameMarkBuddyToggle` | frontend/js/avatars.js:8846 |
 | `nameMarkBuddyToggles` | frontend/js/avatars.js:3324 |
 | `nameMarkBuddyTravel` | frontend/js/avatars.js:5583 |
 | `nameMarkBuddyUnheld` | frontend/js/avatars.js:4985 |
-| `nameMarkBuddyVary` | frontend/js/avatars.js:7124 |
-| `nameMarkBuddyViewChanged` | frontend/js/avatars.js:6486 |
-| `nameMarkBuddyWake` | frontend/js/avatars.js:8256 |
-| `nameMarkBuddyWander` | frontend/js/avatars.js:8198 |
-| `nameMarkBuddyWarmthAt` | frontend/js/avatars.js:8000 |
+| `nameMarkBuddyVary` | frontend/js/avatars.js:7145 |
+| `nameMarkBuddyViewChanged` | frontend/js/avatars.js:6507 |
+| `nameMarkBuddyWake` | frontend/js/avatars.js:8277 |
+| `nameMarkBuddyWander` | frontend/js/avatars.js:8219 |
+| `nameMarkBuddyWarmthAt` | frontend/js/avatars.js:8021 |
 | `nameMarkBuddyWatch` | frontend/js/avatars.js:5194 |
 | `nameMarkBuddyWay` | frontend/js/avatars.js:5576 |
 | `nameMarkBuddyWordsUnder` | frontend/js/avatars.js:4102 |
-| `nameMarkBuddyWork` | frontend/js/avatars.js:7855 |
-| `nameMarkBuddyWorkFor` | frontend/js/avatars.js:7851 |
+| `nameMarkBuddyWork` | frontend/js/avatars.js:7876 |
+| `nameMarkBuddyWorkFor` | frontend/js/avatars.js:7872 |
 | `nameMarkBuddyWorld` | frontend/js/avatars.js:5946 |
 | `nameMarkBuddyYoursObstacles` | frontend/js/avatars.js:4471 |
 | `nameMarkCompose` | frontend/js/avatars.js:1302 |
@@ -1638,13 +1638,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nmLineFor` | frontend/js/avatars.js:1710 |
 | `nmLuma` | frontend/js/avatars.js:1714 |
 | `nmMix` | frontend/js/avatars.js:1701 |
+| `nmbTick` | frontend/js/avatars.js:6348 |
+| `nmbTickArm` | frontend/js/avatars.js:6333 |
 | `ownNameMarkStyle` | frontend/js/avatars.js:327 |
 | `placeNameMarkBuddy` | frontend/js/avatars.js:6186 |
-| `queueNameMarkBuddyCheck` | frontend/js/avatars.js:6415 |
+| `queueNameMarkBuddyCheck` | frontend/js/avatars.js:6436 |
 | `registerCharacter` | frontend/js/avatars.js:1230 |
 | `repaintOwnFace` | frontend/js/avatars.js:2935 |
 | `setOwnNameMarkStyle` | frontend/js/avatars.js:294 |
-| `syncNameMarkBuddy` | frontend/js/avatars.js:9343 |
+| `syncNameMarkBuddy` | frontend/js/avatars.js:9364 |
 | `syncProfileLook` | frontend/js/avatars.js:3077 |
 | `watchNameMark` | frontend/js/avatars.js:1119 |
 
@@ -4242,25 +4244,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `lanAnswerDevice` | frontend/js/lan-watch.js:71 |
-| `lanDismissSwitchedOff` | frontend/js/lan-watch.js:148 |
-| `lanDrawPanel` | frontend/js/lan-watch.js:320 |
-| `lanFillPanel` | frontend/js/lan-watch.js:280 |
-| `lanLook` | frontend/js/lan-watch.js:166 |
-| `lanLookFromState` | frontend/js/lan-watch.js:196 |
-| `lanLookFromWatch` | frontend/js/lan-watch.js:184 |
-| `lanNoticeDevice` | frontend/js/lan-watch.js:81 |
-| `lanNoticeHeld` | frontend/js/lan-watch.js:110 |
-| `lanNoticeSwitchedOff` | frontend/js/lan-watch.js:130 |
-| `lanOpenPanel` | frontend/js/lan-watch.js:261 |
-| `lanOpenSheet` | frontend/js/lan-watch.js:246 |
-| `lanPaintIcon` | frontend/js/lan-watch.js:207 |
-| `lanPanelHeading` | frontend/js/lan-watch.js:313 |
-| `lanPanelLine` | frontend/js/lan-watch.js:306 |
-| `lanRefreshOpenPanel` | frontend/js/lan-watch.js:272 |
+| `lanAnswerDevice` | frontend/js/lan-watch.js:73 |
+| `lanDismissSwitchedOff` | frontend/js/lan-watch.js:150 |
+| `lanDrawPanel` | frontend/js/lan-watch.js:322 |
+| `lanFillPanel` | frontend/js/lan-watch.js:282 |
+| `lanLook` | frontend/js/lan-watch.js:168 |
+| `lanLookFromState` | frontend/js/lan-watch.js:198 |
+| `lanLookFromWatch` | frontend/js/lan-watch.js:186 |
+| `lanNoticeDevice` | frontend/js/lan-watch.js:83 |
+| `lanNoticeHeld` | frontend/js/lan-watch.js:112 |
+| `lanNoticeSwitchedOff` | frontend/js/lan-watch.js:132 |
+| `lanOpenPanel` | frontend/js/lan-watch.js:263 |
+| `lanOpenSheet` | frontend/js/lan-watch.js:248 |
+| `lanPaintIcon` | frontend/js/lan-watch.js:209 |
+| `lanPanelHeading` | frontend/js/lan-watch.js:315 |
+| `lanPanelLine` | frontend/js/lan-watch.js:308 |
+| `lanRefreshOpenPanel` | frontend/js/lan-watch.js:274 |
 | `lanWatch` | frontend/js/lan-watch.js:50 |
 | `lanWatchOnce` | frontend/js/lan-watch.js:22 |
-| `lanWirePanel` | frontend/js/lan-watch.js:222 |
+| `lanWirePanel` | frontend/js/lan-watch.js:224 |
 
 ### frontend/js/library-pick.js (2)
 
@@ -10224,7 +10226,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |  | POST | `create_type` | src/tessellate/api/routes_relations.py:76 |
 |  | POST | `start` | src/tessellate/api/routes_bench.py:200 |
 | `/` | GET | `get_whiteboard_state` | src/tessellate/api/routes_whiteboard.py:939 |
-| `/account` | GET | `account` | src/tessellate/api/routes_auth.py:1459 |
+| `/account` | GET | `account` | src/tessellate/api/routes_auth.py:1458 |
 | `/activity` | GET | `list_activity` | src/tessellate/api/routes_tasks.py:976 |
 | `/activity/{job_id:path}/stop` | POST | `stop_activity` | src/tessellate/api/routes_tasks.py:1057 |
 | `/all` | GET | `ranked` | src/tessellate/api/routes_resurface.py:119 |
@@ -10283,7 +10285,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/bulk` | POST | `bulk_action` | src/tessellate/api/routes_learned.py:282 |
 | `/bulk` | POST | `bulk_edit_tags` | src/tessellate/api/routes_tags.py:104 |
 | `/capabilities` | GET | `capabilities` | src/tessellate/api/routes_capabilities.py:77 |
-| `/change-password` | POST | `change_password` | src/tessellate/api/routes_auth.py:1499 |
+| `/change-password` | POST | `change_password` | src/tessellate/api/routes_auth.py:1498 |
 | `/changelog` | GET | `changelog` | src/tessellate/api/app.py:1477 |
 | `/changes` | GET | `entry_changes` | src/tessellate/api/routes_entries.py:2570 |
 | `/charts/question` | POST | `chart_for_question` | src/tessellate/api/routes_vision.py:390 |
@@ -10435,7 +10437,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/jobs/stream` | GET | `jobs_stream` | src/tessellate/api/routes_tasks.py:647 |
 | `/jobs/{job_id}/cancel` | POST | `cancel_job` | src/tessellate/api/routes_tasks.py:625 |
 | `/lan-access` | GET | `lan_access` | src/tessellate/api/routes_auth.py:1116 |
-| `/lan-access` | POST | `set_lan_access` | src/tessellate/api/routes_auth.py:1353 |
+| `/lan-access` | POST | `set_lan_access` | src/tessellate/api/routes_auth.py:1352 |
 | `/lan-certificate` | POST | `regenerate_lan_certificate` | src/tessellate/api/routes_auth.py:1143 |
 | `/lan-certificate.pem` | GET | `download_lan_certificate` | src/tessellate/api/routes_auth.py:1122 |
 | `/lan-devices/{device_id}` | DELETE | `forget_device` | src/tessellate/api/routes_auth.py:1304 |
@@ -10447,7 +10449,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/lan-notice/dismiss` | POST | `dismiss_lan_notice` | src/tessellate/api/routes_auth.py:1254 |
 | `/lan-options` | POST | `set_lan_option` | src/tessellate/api/routes_auth.py:1262 |
 | `/lan-qr.svg` | GET | `lan_qr` | src/tessellate/api/routes_privacy.py:132 |
-| `/lan-watch` | GET | `lan_watch` | src/tessellate/api/routes_auth.py:1321 |
+| `/lan-watch` | GET | `lan_watch` | src/tessellate/api/routes_auth.py:1322 |
 | `/latest` | GET | `latest` | src/tessellate/api/routes_night.py:84 |
 | `/library` | GET | `library` | src/tessellate/api/routes_library.py:1081 |
 | `/link-offers` | POST | `document_link_offers` | src/tessellate/api/routes_documents.py:334 |
@@ -10456,8 +10458,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/link-suggestions` | GET | `link_suggestions` | src/tessellate/api/routes_entries.py:1787 |
 | `/link-suggestions/reasons` | POST | `link_suggestion_reasons` | src/tessellate/api/routes_entries.py:2170 |
 | `/links/backfill-reasons` | POST | `backfill_link_reasons` | src/tessellate/api/routes_entries.py:2218 |
-| `/lock` | POST | `lock` | src/tessellate/api/routes_auth.py:1421 |
-| `/lock-all` | POST | `lock_all` | src/tessellate/api/routes_auth.py:2032 |
+| `/lock` | POST | `lock` | src/tessellate/api/routes_auth.py:1420 |
+| `/lock-all` | POST | `lock_all` | src/tessellate/api/routes_auth.py:2031 |
 | `/logs` | DELETE | `clear_server_logs` | src/tessellate/api/routes_settings.py:2309 |
 | `/logs` | GET | `server_logs` | src/tessellate/api/routes_settings.py:2226 |
 | `/logs/client` | POST | `record_client_error` | src/tessellate/api/routes_settings.py:2245 |
@@ -10530,8 +10532,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/password-on-open` | POST | `set_password_on_open` | src/tessellate/api/routes_auth.py:1027 |
 | `/patterns` | GET | `patterns` | src/tessellate/api/routes_insights.py:404 |
 | `/personas/suggest-thinking-words` | POST | `suggest_persona_thinking_words` | src/tessellate/api/routes_settings.py:189 |
-| `/pin` | POST | `set_pin` | src/tessellate/api/routes_auth.py:1607 |
-| `/pin/forget` | POST | `forget_pin` | src/tessellate/api/routes_auth.py:1650 |
+| `/pin` | POST | `set_pin` | src/tessellate/api/routes_auth.py:1606 |
+| `/pin/forget` | POST | `forget_pin` | src/tessellate/api/routes_auth.py:1649 |
 | `/preferences` | GET | `get_preferences` | src/tessellate/api/routes_settings.py:753 |
 | `/preferences` | PUT | `update_preferences` | src/tessellate/api/routes_settings.py:1131 |
 | `/preferences/defaults` | GET | `get_preference_defaults` | src/tessellate/api/routes_settings.py:1155 |
@@ -10574,21 +10576,21 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/recordings/{recording_id}/transcript` | GET | `read_transcript` | src/tessellate/api/routes_recordings.py:380 |
 | `/recordings/{recording_id}/transcript.srt` | GET | `transcript_srt` | src/tessellate/api/routes_recordings.py:435 |
 | `/recordings/{recording_id}/transcript.vtt` | GET | `transcript_vtt` | src/tessellate/api/routes_recordings.py:440 |
-| `/recover` | POST | `recover` | src/tessellate/api/routes_auth.py:1952 |
-| `/recovery-key` | POST | `make_recovery_key` | src/tessellate/api/routes_auth.py:1875 |
-| `/recovery-key/save` | POST | `save_recovery_key` | src/tessellate/api/routes_auth.py:1922 |
+| `/recover` | POST | `recover` | src/tessellate/api/routes_auth.py:1951 |
+| `/recovery-key` | POST | `make_recovery_key` | src/tessellate/api/routes_auth.py:1874 |
+| `/recovery-key/save` | POST | `save_recovery_key` | src/tessellate/api/routes_auth.py:1921 |
 | `/recycle-bin/empty` | POST | `empty_recycle_bin` | src/tessellate/api/routes_settings.py:1999 |
 | `/reference-counts` | GET | `entry_reference_counts` | src/tessellate/api/routes_entries.py:2632 |
 | `/reindex` | POST | `rebuild_search_index` | src/tessellate/api/routes_models.py:1028 |
 | `/releases` | GET | `list_releases` | src/tessellate/api/routes_update.py:601 |
 | `/rename` | POST | `rename_tag` | src/tessellate/api/routes_tags.py:76 |
-| `/reset` | POST | `reset` | src/tessellate/api/routes_auth.py:2006 |
+| `/reset` | POST | `reset` | src/tessellate/api/routes_auth.py:2005 |
 | `/restore` | POST | `restore_ask_turns` | src/tessellate/api/routes_ask_history.py:230 |
 | `/restore` | POST | `restore_conversation` | src/tessellate/api/routes_conversations.py:994 |
 | `/restore` | POST | `restore_tags` | src/tessellate/api/routes_tags.py:110 |
 | `/review-queue` | GET | `review_queue` | src/tessellate/api/routes_vision.py:83 |
 | `/review-queue/{entry_id}/accept` | POST | `accept_filing` | src/tessellate/api/routes_vision.py:94 |
-| `/rotate-vault-key` | POST | `rotate_vault_key` | src/tessellate/api/routes_auth.py:1670 |
+| `/rotate-vault-key` | POST | `rotate_vault_key` | src/tessellate/api/routes_auth.py:1669 |
 | `/run` | POST | `run_now` | src/tessellate/api/routes_night.py:50 |
 | `/runs/{run_id}/facts` | GET | `run_facts` | src/tessellate/api/routes_night.py:92 |
 | `/sample-notebook` | DELETE | `remove_sample_notebook` | src/tessellate/api/routes_help.py:153 |
@@ -10810,7 +10812,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (6393)
+## Backend modules (6394)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14411,24 +14413,24 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `ChangePasswordBody` | src/tessellate/api/routes_auth.py:1452 |
-| `ForgetPinBody` | src/tessellate/api/routes_auth.py:1589 |
+| `ChangePasswordBody` | src/tessellate/api/routes_auth.py:1451 |
+| `ForgetPinBody` | src/tessellate/api/routes_auth.py:1588 |
 | `LanAccessBody` | src/tessellate/api/routes_auth.py:1067 |
 | `LanOptionBody` | src/tessellate/api/routes_auth.py:1181 |
 | `LanPasswordBody` | src/tessellate/api/routes_auth.py:1177 |
 | `PasswordBody` | src/tessellate/api/routes_auth.py:519 |
 | `PasswordOnOpenBody` | src/tessellate/api/routes_auth.py:1022 |
-| `PinBody` | src/tessellate/api/routes_auth.py:1584 |
-| `RecoverBody` | src/tessellate/api/routes_auth.py:1847 |
-| `RecoveryKeyBody` | src/tessellate/api/routes_auth.py:1843 |
-| `ResetBody` | src/tessellate/api/routes_auth.py:1852 |
-| `RotateVaultKeyBody` | src/tessellate/api/routes_auth.py:1666 |
-| `SaveRecoveryKeyBody` | src/tessellate/api/routes_auth.py:1913 |
+| `PinBody` | src/tessellate/api/routes_auth.py:1583 |
+| `RecoverBody` | src/tessellate/api/routes_auth.py:1846 |
+| `RecoveryKeyBody` | src/tessellate/api/routes_auth.py:1842 |
+| `ResetBody` | src/tessellate/api/routes_auth.py:1851 |
+| `RotateVaultKeyBody` | src/tessellate/api/routes_auth.py:1665 |
+| `SaveRecoveryKeyBody` | src/tessellate/api/routes_auth.py:1912 |
 | `VaultScope` | src/tessellate/api/routes_auth.py:116 |
 | `_auto_session_allowed` | src/tessellate/api/routes_auth.py:253 |
 | `_bcrypt_input` | src/tessellate/api/routes_auth.py:439 |
 | `_bucket` | src/tessellate/api/routes_auth.py:355 |
-| `_check_current_password` | src/tessellate/api/routes_auth.py:1593 |
+| `_check_current_password` | src/tessellate/api/routes_auth.py:1592 |
 | `_check_password_for_lan` | src/tessellate/api/routes_auth.py:1162 |
 | `_clear_unlock_failures` | src/tessellate/api/routes_auth.py:334 |
 | `_client_key` | src/tessellate/api/routes_auth.py:342 |
@@ -14437,7 +14439,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_device_cookie` | src/tessellate/api/routes_auth.py:743 |
 | `_device_must_wait` | src/tessellate/api/routes_auth.py:772 |
 | `_end_network_sessions` | src/tessellate/api/routes_auth.py:730 |
-| `_end_sessions_and_issue` | src/tessellate/api/routes_auth.py:1864 |
+| `_end_sessions_and_issue` | src/tessellate/api/routes_auth.py:1863 |
 | `_forget_dead_tickets` | src/tessellate/api/routes_auth.py:167 |
 | `_from_the_network` | src/tessellate/api/routes_auth.py:761 |
 | `_from_this_computer` | src/tessellate/api/routes_auth.py:229 |
@@ -14446,17 +14448,17 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_hash_password` | src/tessellate/api/routes_auth.py:452 |
 | `_hold_new_device` | src/tessellate/api/routes_auth.py:783 |
 | `_is_loopback_address` | src/tessellate/api/routes_auth.py:218 |
-| `_iso` | src/tessellate/api/routes_auth.py:1495 |
+| `_iso` | src/tessellate/api/routes_auth.py:1494 |
 | `_issue_token` | src/tessellate/api/routes_auth.py:656 |
 | `_lan_state` | src/tessellate/api/routes_auth.py:1072 |
 | `_new_password_problem` | src/tessellate/api/routes_auth.py:481 |
 | `_no_password_yet` | src/tessellate/api/routes_auth.py:570 |
-| `_notebook_has_password_now` | src/tessellate/api/routes_auth.py:2043 |
+| `_notebook_has_password_now` | src/tessellate/api/routes_auth.py:2042 |
 | `_password_matches` | src/tessellate/api/routes_auth.py:456 |
 | `_password_set` | src/tessellate/api/routes_auth.py:546 |
 | `_pin_binding` | src/tessellate/api/routes_auth.py:812 |
 | `_refuse_if_throttled` | src/tessellate/api/routes_auth.py:384 |
-| `_refuse_unless_this_computer` | src/tessellate/api/routes_auth.py:1856 |
+| `_refuse_unless_this_computer` | src/tessellate/api/routes_auth.py:1855 |
 | `_require_this_computer` | src/tessellate/api/routes_auth.py:1187 |
 | `_revoke_media` | src/tessellate/api/routes_auth.py:283 |
 | `_set_device_cookie` | src/tessellate/api/routes_auth.py:748 |
@@ -14466,37 +14468,37 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_unlock_succeeded` | src/tessellate/api/routes_auth.py:415 |
 | `_unlock_with_pin` | src/tessellate/api/routes_auth.py:819 |
 | `_wait_left` | src/tessellate/api/routes_auth.py:373 |
-| `account` | src/tessellate/api/routes_auth.py:1460 |
+| `account` | src/tessellate/api/routes_auth.py:1459 |
 | `allow_this_network` | src/tessellate/api/routes_auth.py:1195 |
 | `answer_device` | src/tessellate/api/routes_auth.py:1284 |
 | `auto_session` | src/tessellate/api/routes_auth.py:940 |
-| `change_password` | src/tessellate/api/routes_auth.py:1500 |
+| `change_password` | src/tessellate/api/routes_auth.py:1499 |
 | `dismiss_lan_notice` | src/tessellate/api/routes_auth.py:1255 |
 | `download_lan_certificate` | src/tessellate/api/routes_auth.py:1123 |
 | `end_every_session` | src/tessellate/api/routes_auth.py:632 |
 | `forget_device` | src/tessellate/api/routes_auth.py:1305 |
 | `forget_network` | src/tessellate/api/routes_auth.py:1215 |
-| `forget_pin` | src/tessellate/api/routes_auth.py:1651 |
+| `forget_pin` | src/tessellate/api/routes_auth.py:1650 |
 | `lan_access` | src/tessellate/api/routes_auth.py:1117 |
-| `lan_watch` | src/tessellate/api/routes_auth.py:1322 |
-| `lock` | src/tessellate/api/routes_auth.py:1422 |
-| `lock_all` | src/tessellate/api/routes_auth.py:2033 |
-| `make_recovery_key` | src/tessellate/api/routes_auth.py:1876 |
+| `lan_watch` | src/tessellate/api/routes_auth.py:1323 |
+| `lock` | src/tessellate/api/routes_auth.py:1421 |
+| `lock_all` | src/tessellate/api/routes_auth.py:2032 |
+| `make_recovery_key` | src/tessellate/api/routes_auth.py:1875 |
 | `media_session` | src/tessellate/api/routes_auth.py:927 |
 | `notebook_open` | src/tessellate/api/routes_auth.py:559 |
 | `password_on_open` | src/tessellate/api/routes_auth.py:213 |
 | `password_warning` | src/tessellate/api/routes_auth.py:488 |
-| `recover` | src/tessellate/api/routes_auth.py:1953 |
+| `recover` | src/tessellate/api/routes_auth.py:1952 |
 | `regenerate_lan_certificate` | src/tessellate/api/routes_auth.py:1144 |
 | `require_unlock` | src/tessellate/api/routes_auth.py:592 |
 | `require_unlock_media` | src/tessellate/api/routes_auth.py:606 |
-| `reset` | src/tessellate/api/routes_auth.py:2007 |
-| `rotate_vault_key` | src/tessellate/api/routes_auth.py:1671 |
-| `save_recovery_key` | src/tessellate/api/routes_auth.py:1923 |
-| `set_lan_access` | src/tessellate/api/routes_auth.py:1354 |
+| `reset` | src/tessellate/api/routes_auth.py:2006 |
+| `rotate_vault_key` | src/tessellate/api/routes_auth.py:1670 |
+| `save_recovery_key` | src/tessellate/api/routes_auth.py:1922 |
+| `set_lan_access` | src/tessellate/api/routes_auth.py:1353 |
 | `set_lan_option` | src/tessellate/api/routes_auth.py:1263 |
 | `set_password_on_open` | src/tessellate/api/routes_auth.py:1028 |
-| `set_pin` | src/tessellate/api/routes_auth.py:1608 |
+| `set_pin` | src/tessellate/api/routes_auth.py:1607 |
 | `setup` | src/tessellate/api/routes_auth.py:691 |
 | `status` | src/tessellate/api/routes_auth.py:664 |
 | `trust_network` | src/tessellate/api/routes_auth.py:1226 |
@@ -17285,62 +17287,63 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `refresh_own_prefixes` | src/tessellate/core/lanserve.py:126 |
 | `serve` | src/tessellate/core/lanserve.py:352 |
 
-### src/tessellate/core/lantrust.py (52)
+### src/tessellate/core/lantrust.py (53)
 
 | Name | File:line |
 |---|---|
-| `_bump` | src/tessellate/core/lantrust.py:72 |
-| `_entry` | src/tessellate/core/lantrust.py:185 |
-| `_expire` | src/tessellate/core/lantrust.py:590 |
-| `_group_of` | src/tessellate/core/lantrust.py:336 |
-| `_listed_row` | src/tessellate/core/lantrust.py:360 |
-| `_move_to_trusted` | src/tessellate/core/lantrust.py:400 |
-| `_named` | src/tessellate/core/lantrust.py:344 |
-| `_network_groups` | src/tessellate/core/lantrust.py:348 |
-| `_note_untrusted` | src/tessellate/core/lantrust.py:209 |
-| `_now_text` | src/tessellate/core/lantrust.py:138 |
-| `_one_network` | src/tessellate/core/lantrust.py:323 |
-| `_online` | src/tessellate/core/lantrust.py:225 |
-| `_path` | src/tessellate/core/lantrust.py:85 |
-| `_remember` | src/tessellate/core/lantrust.py:197 |
-| `_same` | src/tessellate/core/lantrust.py:177 |
-| `_stopped_trusting` | src/tessellate/core/lantrust.py:145 |
-| `allow_current` | src/tessellate/core/lantrust.py:309 |
-| `clear_switched_off` | src/tessellate/core/lantrust.py:508 |
-| `current_network` | src/tessellate/core/lantrust.py:270 |
-| `decide` | src/tessellate/core/lantrust.py:625 |
-| `device_hash` | src/tessellate/core/lantrust.py:537 |
-| `device_known` | src/tessellate/core/lantrust.py:543 |
-| `device_name` | src/tessellate/core/lantrust.py:567 |
-| `devices` | src/tessellate/core/lantrust.py:670 |
-| `evaluate` | src/tessellate/core/lantrust.py:152 |
-| `forget_device` | src/tessellate/core/lantrust.py:677 |
-| `forget_network` | src/tessellate/core/lantrust.py:384 |
-| `hold` | src/tessellate/core/lantrust.py:595 |
-| `is_open` | src/tessellate/core/lantrust.py:266 |
-| `listed` | src/tessellate/core/lantrust.py:376 |
-| `load` | src/tessellate/core/lantrust.py:89 |
-| `mark_switched_off` | src/tessellate/core/lantrust.py:500 |
-| `mark_turned_on` | src/tessellate/core/lantrust.py:485 |
-| `network_for_display` | src/tessellate/core/lantrust.py:277 |
-| `note_used` | src/tessellate/core/lantrust.py:468 |
-| `pending` | src/tessellate/core/lantrust.py:615 |
-| `persist_use` | src/tessellate/core/lantrust.py:474 |
-| `plain_address` | src/tessellate/core/lantrust.py:548 |
-| `refresh` | src/tessellate/core/lantrust.py:239 |
-| `remember_current` | src/tessellate/core/lantrust.py:294 |
-| `reset_for_tests` | src/tessellate/core/lantrust.py:690 |
-| `save` | src/tessellate/core/lantrust.py:126 |
-| `set_flag` | src/tessellate/core/lantrust.py:524 |
-| `settle` | src/tessellate/core/lantrust.py:663 |
-| `status` | src/tessellate/core/lantrust.py:285 |
-| `touch_device` | src/tessellate/core/lantrust.py:554 |
-| `touch_version` | src/tessellate/core/lantrust.py:517 |
-| `trust_network` | src/tessellate/core/lantrust.py:417 |
-| `untrust_network` | src/tessellate/core/lantrust.py:435 |
-| `unused_since` | src/tessellate/core/lantrust.py:496 |
-| `version` | src/tessellate/core/lantrust.py:78 |
-| `wait_decision` | src/tessellate/core/lantrust.py:645 |
+| `_bump` | src/tessellate/core/lantrust.py:76 |
+| `_entry` | src/tessellate/core/lantrust.py:210 |
+| `_expire` | src/tessellate/core/lantrust.py:615 |
+| `_group_of` | src/tessellate/core/lantrust.py:361 |
+| `_listed_row` | src/tessellate/core/lantrust.py:385 |
+| `_move_to_trusted` | src/tessellate/core/lantrust.py:425 |
+| `_named` | src/tessellate/core/lantrust.py:369 |
+| `_network_groups` | src/tessellate/core/lantrust.py:373 |
+| `_note_untrusted` | src/tessellate/core/lantrust.py:234 |
+| `_now_text` | src/tessellate/core/lantrust.py:163 |
+| `_one_network` | src/tessellate/core/lantrust.py:348 |
+| `_online` | src/tessellate/core/lantrust.py:250 |
+| `_path` | src/tessellate/core/lantrust.py:110 |
+| `_remember` | src/tessellate/core/lantrust.py:222 |
+| `_same` | src/tessellate/core/lantrust.py:202 |
+| `_stopped_trusting` | src/tessellate/core/lantrust.py:170 |
+| `allow_current` | src/tessellate/core/lantrust.py:334 |
+| `clear_switched_off` | src/tessellate/core/lantrust.py:533 |
+| `current_network` | src/tessellate/core/lantrust.py:295 |
+| `decide` | src/tessellate/core/lantrust.py:650 |
+| `device_hash` | src/tessellate/core/lantrust.py:562 |
+| `device_known` | src/tessellate/core/lantrust.py:568 |
+| `device_name` | src/tessellate/core/lantrust.py:592 |
+| `devices` | src/tessellate/core/lantrust.py:695 |
+| `evaluate` | src/tessellate/core/lantrust.py:177 |
+| `forget_device` | src/tessellate/core/lantrust.py:702 |
+| `forget_network` | src/tessellate/core/lantrust.py:409 |
+| `hold` | src/tessellate/core/lantrust.py:620 |
+| `is_open` | src/tessellate/core/lantrust.py:291 |
+| `listed` | src/tessellate/core/lantrust.py:401 |
+| `load` | src/tessellate/core/lantrust.py:114 |
+| `mark_switched_off` | src/tessellate/core/lantrust.py:525 |
+| `mark_turned_on` | src/tessellate/core/lantrust.py:510 |
+| `network_for_display` | src/tessellate/core/lantrust.py:302 |
+| `note_used` | src/tessellate/core/lantrust.py:493 |
+| `pending` | src/tessellate/core/lantrust.py:640 |
+| `persist_use` | src/tessellate/core/lantrust.py:499 |
+| `plain_address` | src/tessellate/core/lantrust.py:573 |
+| `refresh` | src/tessellate/core/lantrust.py:264 |
+| `remember_current` | src/tessellate/core/lantrust.py:319 |
+| `reset_for_tests` | src/tessellate/core/lantrust.py:715 |
+| `save` | src/tessellate/core/lantrust.py:151 |
+| `set_flag` | src/tessellate/core/lantrust.py:549 |
+| `settle` | src/tessellate/core/lantrust.py:688 |
+| `status` | src/tessellate/core/lantrust.py:310 |
+| `touch_device` | src/tessellate/core/lantrust.py:579 |
+| `touch_version` | src/tessellate/core/lantrust.py:542 |
+| `trust_network` | src/tessellate/core/lantrust.py:442 |
+| `untrust_network` | src/tessellate/core/lantrust.py:460 |
+| `unused_since` | src/tessellate/core/lantrust.py:521 |
+| `version` | src/tessellate/core/lantrust.py:103 |
+| `wait_decision` | src/tessellate/core/lantrust.py:670 |
+| `wait_version_change` | src/tessellate/core/lantrust.py:85 |
 
 ### src/tessellate/core/launch_status.py (7)
 
@@ -18817,7 +18820,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11918)
+## Tests (11922)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19007,7 +19010,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_companion_board_layer.py | 3 |
 | tests/test_companion_body.py | 10 |
 | tests/test_companion_mind.py | 8 |
-| tests/test_companion_motion.py | 104 |
+| tests/test_companion_motion.py | 105 |
 | tests/test_companion_path.py | 9 |
 | tests/test_companion_peek_travel.py | 2 |
 | tests/test_companion_perch.py | 3 |
@@ -19215,7 +19218,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_entity_merge_undo.py | 3 |
 | tests/test_entity_page_private.py | 2 |
 | tests/test_entries_by_ids.py | 4 |
-| tests/test_entries_changes.py | 8 |
+| tests/test_entries_changes.py | 9 |
 | tests/test_entries_keyset_paging.py | 4 |
 | tests/test_entry_bookmarks.py | 7 |
 | tests/test_entry_edited_at.py | 4 |
@@ -19431,7 +19434,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_keyword_context.py | 8 |
 | tests/test_keyword_search.py | 22 |
 | tests/test_label_in_name_1345.py | 3 |
-| tests/test_lan.py | 124 |
+| tests/test_lan.py | 126 |
 | tests/test_launch_splash.py | 24 |
 | tests/test_launch_status.py | 25 |
 | tests/test_launcher_scripts.py | 95 |

@@ -37,6 +37,7 @@ defaults, which are the closed ones.
 
 from __future__ import annotations
 
+import asyncio
 import contextlib
 import hashlib
 import json
@@ -67,12 +68,36 @@ _gate: dict = {"open": False, "reason": "off", "network": None, "checked": 0.0}
 _run: dict[str, dict | None] = {"allowance": None}
 _pending: dict[str, dict] = {}
 _version = 0
+#: Event-loop waiters (`wait_version_change`), woken by `_bump` rather than
+#: polling: a watch held open for 25 s used to wake 50 times to ask "yet?".
+_waiters: set[tuple[asyncio.AbstractEventLoop, asyncio.Event]] = set()
 
 
 def _bump() -> None:
     global _version
     _version += 1
     _changed.notify_all()
+    for loop, event in list(_waiters):
+        with contextlib.suppress(RuntimeError):  # that loop has closed
+            loop.call_soon_threadsafe(event.set)
+
+
+async def wait_version_change(since: int, timeout: float) -> bool:
+    """Wait for `version()` to differ from `since`, up to `timeout` seconds.
+    True when it changed. One wake per change, none while idle."""
+    if _version != since:
+        return True
+    entry = (asyncio.get_running_loop(), asyncio.Event())
+    with _lock:
+        _waiters.add(entry)
+    try:
+        if _version == since:  # a bump between the check and the add
+            with contextlib.suppress(asyncio.TimeoutError):
+                await asyncio.wait_for(entry[1].wait(), timeout)
+        return _version != since
+    finally:
+        with _lock:
+            _waiters.discard(entry)
 
 
 def version() -> int:

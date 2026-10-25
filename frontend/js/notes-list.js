@@ -3066,11 +3066,11 @@ async function refreshEntries(ids) {
 //: under the person's cursor. `seen` drops an id already refreshed at the
 //: same `updated_at` (the server's stamp overlaps by two seconds).
 const NOTE_CHANGES_MS = 15_000;
-const noteChanges = { since: "", seen: new Map(), timer: 0, busy: false };
+const noteChanges = { since: "", seen: new Map(), timer: 0, busy: false, quiet: 0 };
 async function followNoteChanges() {
   clearTimeout(noteChanges.timer);
   if (document.hidden) return;
-  noteChanges.timer = setTimeout(followNoteChanges, noteChanges.since ? NOTE_CHANGES_MS : 2000);
+  noteChanges.timer = setTimeout(followNoteChanges, noteChanges.since ? NOTE_CHANGES_MS * (noteChanges.quiet >= 4 ? 2 : 1) : 2000);
   //: The first stamp is taken as soon as there is a session, before the list
   //: has finished loading, so a change made while it loads is not missed.
   if (noteChanges.busy || !authToken() || (noteChanges.since && !entriesComplete)) return;
@@ -3085,6 +3085,8 @@ async function followNoteChanges() {
     const ids = body.ids.filter((id) => id !== editingId && noteChanges.seen.get(id) !== body.stamps[id]);
     if (noteChanges.seen.size > 500) noteChanges.seen.clear();
     for (const id of body.ids) noteChanges.seen.set(id, body.stamps[id]);
+    //: Battery: four empty answers in a row slow the ask to 30 s; a change or a return to the tab restores 15 s.
+    noteChanges.quiet = body.ids.length ? 0 : noteChanges.quiet + 1;
     if (!ids.length) return;
     await refreshEntries(ids);
     if (typeof refreshNotePage === "function") refreshNotePage(ids);
@@ -3094,7 +3096,10 @@ async function followNoteChanges() {
     noteChanges.busy = false;
   }
 }
-document.addEventListener("visibilitychange", followNoteChanges);
+document.addEventListener("visibilitychange", () => {
+  noteChanges.quiet = 0;
+  followNoteChanges();
+});
 followNoteChanges();
 
 //: **What the note list needs to draw a `[[map]]` as a map chip**, fetched

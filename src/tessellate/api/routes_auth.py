@@ -1316,6 +1316,7 @@ def forget_device(device_id: str, request: Request, config: ConfigManager = Depe
 
 
 WATCH_SECONDS = 25.0
+WATCH_SLICE_SECONDS = 5.0
 
 
 @router.get("/lan-watch", dependencies=[Depends(require_unlock)])
@@ -1323,14 +1324,12 @@ async def lan_watch(request: Request, since: int = -1, config: ConfigManager = D
     """This computer's window waits here for a device to ask, or the network
     to change, so its notice comes at once rather than at the next poll. No
     thread is held while it waits."""
-    import asyncio
-
     _require_this_computer(request)
     deadline = time.monotonic() + WATCH_SECONDS
-    while lantrust.version() == since and time.monotonic() < deadline:
-        if await request.is_disconnected():
+    #: Woken by the change itself; the slices only let a closed tab end the wait.
+    while time.monotonic() < deadline and not await request.is_disconnected():
+        if await lantrust.wait_version_change(since, min(WATCH_SLICE_SECONDS, deadline - time.monotonic())):
             break
-        await asyncio.sleep(0.5)
     trust = lantrust.status()
     serving = not netbind.is_loopback_bind() and trust["reason"] != "off"
     return {

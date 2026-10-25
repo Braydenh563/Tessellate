@@ -3130,9 +3130,9 @@ button.answer-figure-open {
   }
 }
 
-/* Off screen, held where it is (`watchEmblemVisibility`). Last, and as
+/* Off screen (`watchEmblemVisibility`) or two minutes idle (`nmbTick`, :root.is-idle), held where it is. Last, and as
    specific as the rules above, so it wins over their shorthand. */
-:root:not([data-motion="reduced"]):not([data-ui-motion="off"]) .emblem-art.is-paused:not(.is-still) :is(.emblem-float, .emblem-shadow-breathe, .emblem-rise, .emblem-cell-c, .emblem-shadow) {
+:root:not([data-motion="reduced"]):not([data-ui-motion="off"]) :is(.emblem-art.is-paused, .is-idle .emblem-art:not(.is-busy)):not(.is-still) :is(.emblem-float, .emblem-shadow-breathe, .emblem-rise, .emblem-cell-c, .emblem-shadow) {
   animation-play-state: paused;
 }
 

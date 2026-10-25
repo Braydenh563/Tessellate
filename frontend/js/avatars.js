@@ -6325,19 +6325,40 @@ if (typeof MutationObserver === "function" && document.getElementById("lock-over
 //: case the page changed by itself; never in a hidden window or under the
 //: lock.
 const NMB_CHECK_IDLE_MS = 10000;
+//: Armed, not polled (battery, INBOX 1351): one timer that sleeps the full
+//: idle span and shortens only for input or a toast; none in a hidden window.
+const NMB_IDLE_MARK_MS = 120000;
+let nmbTickTimer = 0;
+let nmbInputAt = Date.now();
+function nmbTickArm(ms) {
+  clearTimeout(nmbTickTimer);
+  nmbTickTimer = document.hidden ? 0 : setTimeout(nmbTick, ms);
+}
 for (const type of ["pointerdown", "keydown", "wheel", "resize"]) {
   (type === "resize" ? window : document).addEventListener(type, () => {
+    if (type !== "resize") {
+      nmbInputAt = Date.now();
+      document.documentElement.classList.remove("is-idle");
+    }
+    if (!nmb.checkDue) nmbTickArm(1500);
     nmb.checkDue = true;
   }, { passive: true, capture: true });
 }
-setInterval(() => {
-  if (document.hidden || nmb.away || !document.getElementById("nm-buddy") || nameMarkBuddyCurtained()) return;
+document.addEventListener("visibilitychange", () => nmbTickArm(1500));
+function nmbTick() {
   const now = Date.now();
-  if (!nmb.checkDue && !document.querySelector("#toast-box > :not(.hidden)") && now - (nmb.checkedAt || 0) < NMB_CHECK_IDLE_MS) return;
-  nmb.checkDue = false;
-  nmb.checkedAt = now;
-  queueNameMarkBuddyCheck();
-}, 1500);
+  //: Two minutes without input: the marks hold still (CSS `.is-idle`).
+  document.documentElement.classList.toggle("is-idle", now - nmbInputAt > NMB_IDLE_MARK_MS);
+  const toasting = !!document.querySelector("#toast-box > :not(.hidden)");
+  if (!(nmb.away || !document.getElementById("nm-buddy") || nameMarkBuddyCurtained())
+      && (nmb.checkDue || toasting || now - (nmb.checkedAt || 0) >= NMB_CHECK_IDLE_MS)) {
+    nmb.checkDue = false;
+    nmb.checkedAt = now;
+    queueNameMarkBuddyCheck();
+  }
+  nmbTickArm(nmb.checkDue || toasting ? 1500 : NMB_CHECK_IDLE_MS);
+}
+nmbTickArm(1500);
 
 //: Where it is now still does: on screen, not lost, not held off its
 //: panel, not over a control, and on something.
