@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Search: a typo is corrected to a word your notes use ("lecure 5" now says "showing results for lecture 5"), not to the index's stem ("lectur 5").
 - Notes and Library: a note card no longer prints the ## of its headings, and a Library card preview drops a code fence's ``` and language word instead of showing "`py print(1) `".
 - Documents: Read mode no longer draws the title a second time above the text, and hides the formatting toolbar (it stayed live over a page you cannot edit).
 - Documents and notes: a formatting toolbar menu (Insert, Highlight) closes once an item is chosen instead of staying open over the result.

@@ -274,8 +274,24 @@ def _corrected_terms(session: Session, terms: list[str]) -> list[str]:
             continue
         near = [w for w in vocabulary if abs(len(w) - len(term)) <= 2]
         close = difflib.get_close_matches(term, near, n=1, cutoff=CORRECT_CUTOFF)
-        corrected.append(close[0] if close else term)
+        # The vocabulary holds porter stems ("lectur"), which no one wrote; the
+        # correction offered, and searched, is a word a note really uses.
+        real = _word_for_stem(session, close[0], term) if close else None
+        corrected.append(real or term)
     return corrected
+
+
+def _word_for_stem(session: Session, stem: str, typed: str) -> str | None:
+    """A whole word from a note that starts with `stem`, the one
+    nearest the typed word; None when no note holds one."""
+    rows = session.execute(
+        text("SELECT content FROM entries WHERE content LIKE :p LIMIT 40"),
+        {"p": f"%{stem}%"},
+    ).all()
+    found = re.compile(rf"\b{re.escape(stem)}\w*", re.IGNORECASE)
+    words = {m.lower() for row in rows for m in found.findall(row.content or "")}
+    nearest = difflib.get_close_matches(typed, sorted(words), n=1, cutoff=0)
+    return nearest[0] if nearest else None
 
 
 #: The stopword list and the term splitter both moved to `search/query.py`,
