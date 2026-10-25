@@ -31,6 +31,8 @@ _CHECK = re.compile(r"^\s*[-*+]\s+\[([ xX])\]\s+(.+)$")
 _SENTENCE_END = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9*\"“(\[])")
 _MARKUP = re.compile(r"(\*\*|__|\*|`)")
 _FOOTNOTE = re.compile(r"\[\^[^\]\n]*\]|<sup>[^<]{0,6}</sup>")
+#: A list marker with nothing after it ("-", "* ", "3."): an empty bullet.
+_MARKER_ONLY = re.compile(r"^\s*(?:[-*+•]+|\d{1,2}[.)])\s*$")
 _FOOTNOTE_LINE = re.compile(r"^\s*\[\^[^\]]+\]:")
 _LINK = re.compile(r"\[\[([^\]|]+)(?:\|([^\]]+))?\]\]|\[([^\]]+)\]\([^)]*\)")
 _BOLD = re.compile(r"\*\*([^*\n]{2,60})\*\*|__([^_\n]{2,60})__")
@@ -96,18 +98,63 @@ class Section:
         return "\n".join(self.lines).strip()
 
 
-def sections(content: str) -> list[Section]:
-    """The note split at its headings; text before the first is level 0."""
-    out = [Section(0, "")]
+#: A line that is code whatever its fence: an assignment or a call. Alone it
+#: could be an equation in a maths note, so only a run of two is dropped.
+_CODEY = re.compile(r"^\s*(?:[A-Za-z_][\w.]*(?:\[[^\]]*\])?\s*(?:[-+*/%]?=|\+\+|--)\s*\S.*|[A-Za-z_][\w.]*\(.*\)\s*;?|(?:def|class|import|from|return|for|while|if|elif|else|print|const|let|var|function|#include)\b[^.]*[:;{(]\s*)$")
+_FENCE = re.compile(r"^\s*(?:>\s*)*(?:```|~~~)")
+_LIST_LINE = re.compile(r"^\s*(?:[-*+]|\d{1,2}[.)])\s")
+
+
+def _drop_code(lines: list[str]) -> list[str]:
+    """`lines` without code: fenced (``` or ~~~), indented after a blank line,
+    or a run of two lines that read as statements."""
+    kept: list[str] = []
     fenced = False
-    for line in (content or "").splitlines():
-        if line.strip().startswith("```"):
+    prev_blank, prev_list, in_indent = True, False, False
+    for line in lines:
+        if _FENCE.match(line):
             fenced = not fenced
-            continue  # code is not prose: a fence is never a sentence to quiz or summarise
-        found = None if fenced else _HEADING.match(line)
+            continue
+        if fenced:
+            continue
+        blank = not line.strip()
+        indented = line.startswith(("    ", "\t")) and not blank
+        in_indent = indented and (in_indent or (prev_blank and not prev_list))
+        if in_indent:
+            continue
+        if not blank:
+            prev_list = bool(_LIST_LINE.match(line)) or (prev_list and line.startswith((" ", "\t")))
+        prev_blank = blank
+        kept.append(line)
+    return _drop_statement_runs(kept)
+
+
+def _drop_statement_runs(lines: list[str]) -> list[str]:
+    """Two or more adjacent lines that each read as a statement are code
+    pasted without a fence; one alone is left (an equation)."""
+    out: list[str] = []
+    run: list[str] = []
+    for line in [*lines, ""]:
+        if line.strip() and _CODEY.match(line) and not line.rstrip().endswith((".", "?", "!")):
+            run.append(line)
+            continue
+        if len(run) == 1:
+            out += run
+        run = []
+        out.append(line)
+    return out[:-1]
+
+
+def sections(content: str) -> list[Section]:
+    """The note split at its headings; text before the first is level 0.
+    Code is not prose: a fence, an indented block or a pasted run of
+    statements is never a sentence to quiz or summarise."""
+    out = [Section(0, "")]
+    for line in _drop_code((content or "").splitlines()):
+        found = _HEADING.match(line)
         if found:
             out.append(Section(len(found.group(1)), clean(found.group(2))))
-        elif not fenced:
+        else:
             out[-1].lines.append(line)
     return [s for s in out if s.title or s.text]
 
@@ -122,7 +169,7 @@ def title_of(content: str) -> str:
 
 def _prose(para: str) -> str:
     """The prose lines of a paragraph, or "" when it is a list or a table."""
-    lines = [_FOOTNOTE.sub("", ln.strip()) for ln in para.splitlines() if ln.strip() and not _FOOTNOTE_LINE.match(ln)]
+    lines = [_FOOTNOTE.sub("", ln.strip()) for ln in para.splitlines() if ln.strip() and not _FOOTNOTE_LINE.match(ln) and not _MARKER_ONLY.match(ln)]
     if not lines or all(_BULLET.match(ln) or _CHECK.match(ln) or ln.startswith("|") for ln in lines):
         return ""
     return " ".join(ln for ln in lines if not (_BULLET.match(ln) or _CHECK.match(ln) or ln.startswith(("|", ">", "```"))))

@@ -141,7 +141,9 @@ def category_notes(topic: str, ctx: Ctx, limit: int = 6) -> list[dict]:
     wanted = re.sub(r"^(?:my|the|all)\s+|\s+notes?$", "", wanted).strip()
     if not wanted:
         return []
-    return [n for n in ctx.notes if str(n.get("category") or "").lower() == wanted][:limit]
+    #: "my lecture notes" is the category "Lecture notes" as well as "Lecture".
+    names = {wanted, f"{wanted} notes"}
+    return [n for n in ctx.notes if str(n.get("category") or "").lower() in names][:limit]
 
 
 def _link(note: dict) -> str:
@@ -271,6 +273,12 @@ def _summary_text(ctx: Ctx, notes: list[dict], parts: list, level: int) -> str:
 
 
 def _summary(ctx: Ctx, topic: str, level: int) -> Reply | None:
+    #: A category by name ("summarise my lecture notes" for the category
+    #: "Lecture notes") is all of its notes, not the one whose title has the
+    #: word; a note titled exactly as asked still wins.
+    named = category_notes(topic, ctx, limit=8)
+    if len(named) > 1 and not any(_title(n).lower() == (topic or "").strip().lower() for n in ctx.notes):
+        return _summaries(ctx, named)
     notes, reply = _target(ctx, topic, "Summarise", "summarise", strict=True)
     if not notes:
         return reply

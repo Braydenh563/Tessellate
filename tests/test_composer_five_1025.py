@@ -85,14 +85,6 @@ def test_item3_no_false_grounding_warning(ask, q):
     assert "Heads up" not in ask(q, notes_only=False), q
 
 
-def test_item4_summary_covers_all_and_sorts_code(ask):
-    said = ask("summarise my lecture notes")
-    print(said)
-    assert "print(atp)" not in said and "atp = 2" not in said, said
-    assert "\n-\n" not in said and not said.rstrip().endswith("-"), said
-    assert "WW1" in said or "Alliances" in said, said
-
-
 def test_item3_computed_dates_times_and_reminder_fields_are_not_claims():
     import json
 
@@ -119,3 +111,47 @@ def test_item3_a_model_dates_answer_gets_no_heads_up_through_the_route(ai_client
     fake_ollama.librarian_reply = "It was 50 days ago, on Tuesday 1 September 2026, 7 weeks and 1 day back."
     said = _ask(ai_client, "how long ago was 1 september", use_tools=False)["text"]
     assert "Heads up" not in said, said
+
+
+#: The same Biology note as a student really types it: the code pasted three
+#: ways (tilde fence, indented, bare lines), a to-do list, and an empty bullet.
+BIO_CODE_VARIANTS = {
+    "tilde": "~~~python\natp = 2 + 2 + 32\nprint(atp)\n~~~\n",
+    "indented": "    atp = 2 + 2 + 32\n    print(atp)\n",
+    "bare": "atp = 2 + 2 + 32\nprint(atp)\n",
+    "quoted": "> ```python\n> atp = 2 + 2 + 32\n> print(atp)\n> ```\n",
+}
+
+
+@pytest.mark.parametrize("variant", sorted(BIO_CODE_VARIANTS))
+def test_item4_pasted_code_is_never_summarised_and_no_stray_dash(variant):
+    from tessellate.ai import study
+
+    note = (
+        "# Biology 101: Cell respiration\n\nCell respiration releases energy from glucose. Glycolysis makes 2 ATP.\n\n"
+        "## To do\n\n- [ ] Read chapter 4\n- [ ] Revise the Krebs cycle\n\n"
+        + BIO_CODE_VARIANTS[variant]
+        + "\n-\n\n## Electron transport\n\nThe electron transport chain makes about 32 ATP.\n\n- \n"
+    )
+    for level in (-1, 0, 1):
+        flat = " ".join(" ".join(s) for _t, s in study.summary(note, level))
+        assert "atp =" not in flat.lower() and "print(" not in flat, (variant, level, flat)
+        assert not any(p.strip(" -*+") == "" for _t, s in study.summary(note, level) for p in s), (variant, level)
+        assert " - " not in " " + flat + " " or "- " not in flat.replace("Points: ", ""), (variant, level, flat)
+    assert "Glycolysis" in flat and "electron transport" in flat.lower()
+
+
+def test_item4_a_maths_equation_on_its_own_line_is_kept():
+    from tessellate.ai import study
+
+    note = "# Maths: Problem set 5\n\nIntegration by parts splits an integral in two.\n\nu dv = uv - v du\n\nThe sign flips when you swap them.\n"
+    assert "uv" in " ".join(" ".join(s) for _t, s in study.summary(note, 1))
+
+
+def test_item4_summarise_my_lecture_notes_covers_every_note_in_that_category(ask):
+    said = ask("summarise my lecture notes")
+    assert "#/notes/1)" in said and "#/notes/2)" in said and "#/notes/3)" not in said, said
+    assert "Cell respiration" in said and "Causes of WW1" in said, said
+    assert "Problem set 5" not in said, said
+    assert "print(atp)" not in said and "atp = 2" not in said, said
+    assert not said.rstrip().endswith("-"), said

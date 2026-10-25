@@ -2,7 +2,7 @@
 
 Generated 2026-10-25 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6236, frontend ids 2539, CSS sections 497, backend routes 618, backend modules 6449, test files 1345, tests 11990, plan headings 968.
+Counts: frontend functions 6236, frontend ids 2539, CSS sections 497, backend routes 618, backend modules 6451, test files 1345, tests 11992, plan headings 968.
 
 ## Frontend functions (6236)
 
@@ -10817,7 +10817,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (6449)
+## Backend modules (6451)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -11863,38 +11863,38 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `Ctx` | src/tessellate/ai/composer_study.py:67 |
 | `Reply` | src/tessellate/ai/composer_study.py:91 |
-| `_asked_question` | src/tessellate/ai/composer_study.py:454 |
+| `_asked_question` | src/tessellate/ai/composer_study.py:462 |
 | `_body_matches` | src/tessellate/ai/composer_study.py:110 |
-| `_category_flashcards` | src/tessellate/ai/composer_study.py:340 |
-| `_continue_quiz` | src/tessellate/ai/composer_study.py:500 |
-| `_deck` | src/tessellate/ai/composer_study.py:394 |
-| `_finish` | src/tessellate/ai/composer_study.py:538 |
-| `_flashcards` | src/tessellate/ai/composer_study.py:360 |
-| `_header` | src/tessellate/ai/composer_study.py:402 |
-| `_last_header` | src/tessellate/ai/composer_study.py:447 |
-| `_link` | src/tessellate/ai/composer_study.py:147 |
-| `_newest_with_cards` | src/tessellate/ai/composer_study.py:151 |
-| `_nothing_named` | src/tessellate/ai/composer_study.py:177 |
-| `_off_topic` | src/tessellate/ai/composer_study.py:488 |
-| `_pooled_deck` | src/tessellate/ai/composer_study.py:327 |
-| `_quiz_command` | src/tessellate/ai/composer_study.py:471 |
-| `_quiz_note` | src/tessellate/ai/composer_study.py:406 |
-| `_quiz_place` | src/tessellate/ai/composer_study.py:459 |
-| `_split_n` | src/tessellate/ai/composer_study.py:186 |
-| `_start_quiz` | src/tessellate/ai/composer_study.py:418 |
-| `_summaries` | src/tessellate/ai/composer_study.py:285 |
-| `_summary` | src/tessellate/ai/composer_study.py:273 |
-| `_summary_text` | src/tessellate/ai/composer_study.py:256 |
-| `_target` | src/tessellate/ai/composer_study.py:239 |
-| `_terms` | src/tessellate/ai/composer_study.py:296 |
+| `_category_flashcards` | src/tessellate/ai/composer_study.py:348 |
+| `_continue_quiz` | src/tessellate/ai/composer_study.py:508 |
+| `_deck` | src/tessellate/ai/composer_study.py:402 |
+| `_finish` | src/tessellate/ai/composer_study.py:546 |
+| `_flashcards` | src/tessellate/ai/composer_study.py:368 |
+| `_header` | src/tessellate/ai/composer_study.py:410 |
+| `_last_header` | src/tessellate/ai/composer_study.py:455 |
+| `_link` | src/tessellate/ai/composer_study.py:149 |
+| `_newest_with_cards` | src/tessellate/ai/composer_study.py:153 |
+| `_nothing_named` | src/tessellate/ai/composer_study.py:179 |
+| `_off_topic` | src/tessellate/ai/composer_study.py:496 |
+| `_pooled_deck` | src/tessellate/ai/composer_study.py:335 |
+| `_quiz_command` | src/tessellate/ai/composer_study.py:479 |
+| `_quiz_note` | src/tessellate/ai/composer_study.py:414 |
+| `_quiz_place` | src/tessellate/ai/composer_study.py:467 |
+| `_split_n` | src/tessellate/ai/composer_study.py:188 |
+| `_start_quiz` | src/tessellate/ai/composer_study.py:426 |
+| `_summaries` | src/tessellate/ai/composer_study.py:293 |
+| `_summary` | src/tessellate/ai/composer_study.py:275 |
+| `_summary_text` | src/tessellate/ai/composer_study.py:258 |
+| `_target` | src/tessellate/ai/composer_study.py:241 |
+| `_terms` | src/tessellate/ai/composer_study.py:304 |
 | `_title` | src/tessellate/ai/composer_study.py:106 |
-| `_which_note` | src/tessellate/ai/composer_study.py:161 |
-| `answer` | src/tessellate/ai/composer_study.py:215 |
+| `_which_note` | src/tessellate/ai/composer_study.py:163 |
+| `answer` | src/tessellate/ai/composer_study.py:217 |
 | `category_notes` | src/tessellate/ai/composer_study.py:137 |
-| `deck_text` | src/tessellate/ai/composer_study.py:316 |
-| `deck_text_titled` | src/tessellate/ai/composer_study.py:320 |
-| `match` | src/tessellate/ai/composer_study.py:195 |
-| `open_named` | src/tessellate/ai/composer_study.py:553 |
+| `deck_text` | src/tessellate/ai/composer_study.py:324 |
+| `deck_text_titled` | src/tessellate/ai/composer_study.py:328 |
+| `match` | src/tessellate/ai/composer_study.py:197 |
+| `open_named` | src/tessellate/ai/composer_study.py:561 |
 | `pick` | src/tessellate/ai/composer_study.py:97 |
 | `topic_notes` | src/tessellate/ai/composer_study.py:120 |
 
@@ -13613,44 +13613,46 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_usage` | src/tessellate/ai/stats_ask.py:131 |
 | `ask` | src/tessellate/ai/stats_ask.py:213 |
 
-### src/tessellate/ai/study.py (34)
+### src/tessellate/ai/study.py (36)
 
 | Name | File:line |
 |---|---|
-| `Card` | src/tessellate/ai/study.py:151 |
-| `Section` | src/tessellate/ai/study.py:89 |
-| `_answer_text` | src/tessellate/ai/study.py:183 |
-| `_colon_cards` | src/tessellate/ai/study.py:253 |
-| `_define_cards` | src/tessellate/ai/study.py:208 |
-| `_define_frame` | src/tessellate/ai/study.py:221 |
-| `_definition` | src/tessellate/ai/study.py:188 |
-| `_gap_card` | src/tessellate/ai/study.py:226 |
-| `_grade_list` | src/tessellate/ai/study.py:402 |
-| `_list_card` | src/tessellate/ai/study.py:240 |
-| `_pick` | src/tessellate/ai/study.py:159 |
-| `_picks` | src/tessellate/ai/study.py:374 |
-| `_prose` | src/tessellate/ai/study.py:123 |
-| `_section_cards` | src/tessellate/ai/study.py:266 |
-| `_share` | src/tessellate/ai/study.py:428 |
-| `_term_ok` | src/tessellate/ai/study.py:174 |
-| `_terms_of` | src/tessellate/ai/study.py:329 |
-| `_trim_term` | src/tessellate/ai/study.py:168 |
-| `_word_forms` | src/tessellate/ai/study.py:398 |
-| `bullets` | src/tessellate/ai/study.py:140 |
-| `cards` | src/tessellate/ai/study.py:284 |
-| `clean` | src/tessellate/ai/study.py:60 |
-| `content_stems` | src/tessellate/ai/study.py:77 |
-| `generic_head` | src/tessellate/ai/study.py:320 |
-| `grade` | src/tessellate/ai/study.py:407 |
-| `hint` | src/tessellate/ai/study.py:433 |
-| `key_terms` | src/tessellate/ai/study.py:344 |
-| `open_tasks` | src/tessellate/ai/study.py:144 |
-| `ordered` | src/tessellate/ai/study.py:299 |
-| `sections` | src/tessellate/ai/study.py:99 |
-| `sentences` | src/tessellate/ai/study.py:131 |
-| `stem` | src/tessellate/ai/study.py:67 |
-| `summary` | src/tessellate/ai/study.py:388 |
-| `title_of` | src/tessellate/ai/study.py:115 |
+| `Card` | src/tessellate/ai/study.py:198 |
+| `Section` | src/tessellate/ai/study.py:91 |
+| `_answer_text` | src/tessellate/ai/study.py:230 |
+| `_colon_cards` | src/tessellate/ai/study.py:300 |
+| `_define_cards` | src/tessellate/ai/study.py:255 |
+| `_define_frame` | src/tessellate/ai/study.py:268 |
+| `_definition` | src/tessellate/ai/study.py:235 |
+| `_drop_code` | src/tessellate/ai/study.py:108 |
+| `_drop_statement_runs` | src/tessellate/ai/study.py:132 |
+| `_gap_card` | src/tessellate/ai/study.py:273 |
+| `_grade_list` | src/tessellate/ai/study.py:449 |
+| `_list_card` | src/tessellate/ai/study.py:287 |
+| `_pick` | src/tessellate/ai/study.py:206 |
+| `_picks` | src/tessellate/ai/study.py:421 |
+| `_prose` | src/tessellate/ai/study.py:170 |
+| `_section_cards` | src/tessellate/ai/study.py:313 |
+| `_share` | src/tessellate/ai/study.py:475 |
+| `_term_ok` | src/tessellate/ai/study.py:221 |
+| `_terms_of` | src/tessellate/ai/study.py:376 |
+| `_trim_term` | src/tessellate/ai/study.py:215 |
+| `_word_forms` | src/tessellate/ai/study.py:445 |
+| `bullets` | src/tessellate/ai/study.py:187 |
+| `cards` | src/tessellate/ai/study.py:331 |
+| `clean` | src/tessellate/ai/study.py:62 |
+| `content_stems` | src/tessellate/ai/study.py:79 |
+| `generic_head` | src/tessellate/ai/study.py:367 |
+| `grade` | src/tessellate/ai/study.py:454 |
+| `hint` | src/tessellate/ai/study.py:480 |
+| `key_terms` | src/tessellate/ai/study.py:391 |
+| `open_tasks` | src/tessellate/ai/study.py:191 |
+| `ordered` | src/tessellate/ai/study.py:346 |
+| `sections` | src/tessellate/ai/study.py:148 |
+| `sentences` | src/tessellate/ai/study.py:178 |
+| `stem` | src/tessellate/ai/study.py:69 |
+| `summary` | src/tessellate/ai/study.py:435 |
+| `title_of` | src/tessellate/ai/study.py:162 |
 
 ### src/tessellate/ai/supersede.py (15)
 
@@ -18895,7 +18897,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11990)
+## Tests (11992)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19112,7 +19114,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_dog2_1025.py | 16 |
 | tests/test_composer_eval_725.py | 6 |
 | tests/test_composer_eval_741.py | 6 |
-| tests/test_composer_five_1025.py | 7 |
+| tests/test_composer_five_1025.py | 9 |
 | tests/test_composer_form_1301.py | 13 |
 | tests/test_composer_four_1025.py | 16 |
 | tests/test_composer_grammar.py | 3 |
