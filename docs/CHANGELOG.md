@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: between 600 and 819px the bottom dock wraps to two rows like the 820 to 1100 band instead of scrolling a 927px row in 683px, so Undo, Redo and every tool are on screen (measured at 700: scrollWidth 927 to 683 = clientWidth).
 - Whiteboard: an arrow drawn with the Arrow tool from or to a shape, card or topic (on it or within 10px of its edge) is a connector bound to it: it follows the shape when moved and its head meets the border instead of ending inside; a pen stroke is never a target.
 - Whiteboard: the Circle tool is drawn corner to corner like the Rectangle (it grew from the press as a centre-radius, so its top could hide under the toolbar); Shift still makes a circle, away from the press.
 - Mind map: the creation toast says Ctrl+Enter adds the sibling while a name is being typed (plain Enter there is a line break, the owner's 2026-10-10 ask), so Enter in the editor no longer contradicts it.

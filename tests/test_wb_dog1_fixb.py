@@ -113,3 +113,14 @@ def test_arrow_on_empty_board_or_within_one_shape_stays_free():
 def test_only_the_arrow_tool_binds_and_pen_strokes_are_never_targets():
     assert 'window.currentTool === "arrow" ? wbBoundArrowData(' in WB
     assert "!wbSketchIsClosedShape(item)) continue" in _function("wbArrowCandidateAt")
+
+
+def test_bottom_dock_wraps_between_600_and_819_instead_of_scrolling():
+    # 927px of tools in a 683px dock left Undo past the window edge (item 11).
+    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    start = css.index(
+        "@media (min-width: 600px) and (max-width: 819.98px) {\n  .whiteboard-floating-panel.bottom-center:not"
+    )
+    band = css[start : css.index("\n}\n", css.index(".wb-tool-group {", start)) + 3]
+    assert "flex-wrap: wrap;" in band and "overflow: visible;" in band
+    assert "min-width: 0;" in band, "the group must be allowed to shrink or it never wraps"
