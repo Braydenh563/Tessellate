@@ -888,7 +888,10 @@ HELP_TOPICS: list[dict] = [
             "category the sidebar is filtered to; \"summarise Travel\" reads "
             "every note in that category. With a note open, \"what's left to "
             "do?\", \"when is the deadline?\" and \"who is involved?\" are "
-            "answered from that note alone, in a line or two of its own words."
+            "answered from that note alone, in a line or two of its own words. "
+            "A request with no direction (\"do something cool\", \"open a note\") "
+            "gets a question back with choices you can press; an instruction "
+            "the app does not understand is matched to the closest things it can do."
         ),
         "badge": {"label": "Chat", "tab": "chat"},
     },

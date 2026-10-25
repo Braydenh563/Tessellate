@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- With no model, an open request ("do smth cool", "open a note") now asks what you meant and offers choices to press (your newest notes, things worth trying), and an instruction the app does not understand is matched to the closest actions it has (by shared words, and by meaning when the embedder runs) instead of searching your notes for its words.
 - Ask with a note open answers about that note: "What's left to do?", "When is the deadline?" and "Who is involved?" give the open note's own open tasks, dated sentences or names in a line or two, different for every note, instead of one notebook-wide reply; "Summarise this" names the note instead of "untitled".
 - Toasts on the Graph tab stay on the bottom edge and sit left of the zoom strip, instead of being lifted halfway up the screen.
 

@@ -33,7 +33,7 @@ from sqlalchemy import or_, select
 from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
-from tessellate.ai import budget as run_budget, capability, composer, composer_digest, composer_frame, composer_open, composer_lists, find_it, glossary, list_pool, neighbours, personal, phrasing, verdicts, toolwords, vocative, why
+from tessellate.ai import budget as run_budget, capability, composer, composer_digest, composer_frame, composer_open, composer_suggest, composer_lists, find_it, glossary, list_pool, neighbours, personal, phrasing, verdicts, toolwords, vocative, why
 from tessellate.ai import (
     acts,
     agent,
@@ -2615,6 +2615,26 @@ def _app_said(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list
     return None
 
 
+def _suggest_events(found: dict) -> list[dict]:
+    events: list[dict] = [{"type": "answer", "delta": found["text"]}]
+    if found["asks"]:
+        events.append({"type": "offer", "offer": {"kind": "ask", "label": "", "asks": found["asks"]}})
+    return events
+
+
+def _newest_titles(session: Session, count: int = 4) -> list[str]:
+    """The names of the newest notes, newest first, for a choice to open one."""
+    from tessellate.ai.tools._common import _visible
+
+    rows = session.query(Entry.content).filter(*_visible()).order_by(Entry.created_at.desc()).limit(count * 3).all()
+    titles: list[str] = []
+    for (content,) in rows:
+        title = composer._title(str(content or ""))[0].strip()
+        if title and title not in titles:
+            titles.append(title[:60])
+    return titles[:count]
+
+
 #: The stats kinds that ask about the notebook as a whole, which carry the
 #: Statistics panel of cards (INBOX 1300 C06).
 _STATS_PANEL_KINDS = {"overview", "coverage"}
@@ -2823,6 +2843,11 @@ def _no_notes_events(req: _StreamRequest, ollama_running: bool) -> list:
     # An attached image and "no matching notes" are unrelated: retrieval never
     # sees the image, so an empty search result must not stand in for "there's
     # nothing to look at" (same fix as `librarian.answer`'s own guard).
+    unknown = None if req.images_raw else composer_suggest.unknown_action(
+        req.question or "", _newest_titles(req.session), embed=_composer_embed(), seed=_reply_seed(req)[1])
+    if unknown is not None and not ollama_running:
+        #: An instruction nothing understood is not a search for its words.
+        return _suggest_events(unknown)
     events: list = [{"type": "answer", "delta": _no_notes_line(req, ollama_running)}]
     # …but the notebook is more than its notes. See `_related_elsewhere`: a
     # question answered by a document, a saved chat or a reminder used to end
@@ -2956,6 +2981,11 @@ def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
     #: The open note said it holds none ("This note does not give a date"): a
     #: finished answer, not a miss to send to the web or to "general knowledge".
     said_none = str(result.get("shape") or "").startswith("open_")
+    if not result["grounding"] and not said_none and not follow and not ollama_running and not req.images_raw:
+        unknown = composer_suggest.unknown_action(
+            req.question or "", _newest_titles(req.session), embed=_composer_embed(), seed=_reply_seed(req)[1])
+        if unknown is not None:
+            return _suggest_events(unknown)
     if not result["grounding"] and not said_none and not ollama_running and _web_allowed(req):
         web = _web_answer(req, follow.question if follow else req.question)
         if web:
@@ -3220,6 +3250,9 @@ def _first_events(req: _StreamRequest, prepared: dict, ollama_running: bool, too
             "I will not delete everything in one go. Name one note instead, for example “delete the boiler note”: "
             "it waits for your Confirm, and Undo brings it back."
         )}])
+    if not req.images_raw and composer_suggest.open_ended(req.question or "") and _app_answers(req, ollama_running):
+        #: "do smth cool", "open a note": ask what was meant, with choices.
+        return iter(_suggest_events(composer_suggest.reply(req.question, _newest_titles(req.session), seed=_reply_seed(req)[1])))
     if prepared["intent"] == intent.ACT:
         return _act_events(req, prepared)
     starter = _starter_read(req, ollama_running or tools_only)
