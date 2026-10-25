@@ -37,8 +37,8 @@ def _function(source: str, name: str) -> str:
     [
         ([None, None], True, False),
         (["g1", "g1"], False, True),
-        (["g1", None], True, True),
-        (["g1", "g2"], True, True),
+        (["g1", None], True, False),
+        (["g1", "g2"], True, False),
         ([None], False, False),
     ],
 )
@@ -75,3 +75,16 @@ def test_the_panel_numbers_follow_a_drag_while_it_is_held() -> None:
     assert 'addEventListener("pointermove", wbFormatLiveSoon' in FORMAT, "a held move or resize must refresh x/y/w/h"
     # A group's live sketch path is part of its box mid-resize.
     assert "_liveD" in _function(BOARD, "wbItemBBox")
+
+
+def test_menus_and_palette_offer_one_of_group_and_ungroup() -> None:
+    """The owner, 10-25: "the group and ungroup button show at the same time".
+    The Arrange menu, the right-click menu and the palette read the bar's rule
+    (scratchpad/ui-sweeps/wb1025-bar.js measures all four)."""
+    commands = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert 'id: "group",' in commands and 'needs: "groupable"' in commands
+    assert 'needs: "ungroupable"' in commands
+    assert "groupable: () => wbGroupButtonState(" in commands
+    assert 'data-wb-cmd="group" data-wb-either' in html and 'data-wb-cmd="ungroup" data-wb-either' in html
+    assert "[data-wb-either]" in _function(commands, "wbSyncCommandRows")

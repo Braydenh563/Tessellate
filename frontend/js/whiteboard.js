@@ -2180,7 +2180,10 @@ async function wbGroupSelection() {
 function wbGroupButtonState(items) {
   const ids = items.map((i) => i.group_id || null);
   const oneGroup = ids.length > 0 && ids[0] !== null && ids.every((g) => g === ids[0]);
-  return { canGroup: ids.length > 1 && !oneGroup, canUngroup: ids.some(Boolean) };
+  //: One or the other, never both (the owner, 10-25: "the group and ungroup
+  //: button show at the same time"): a selection that is exactly one group
+  //: ungroups; anything else of two or more groups (merging what is grouped).
+  return { canGroup: ids.length > 1 && !oneGroup, canUngroup: oneGroup };
 }
 
 function wbSyncGroupButtons() {

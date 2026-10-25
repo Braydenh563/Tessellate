@@ -76,6 +76,10 @@ const wbCommandNeeds = {
     return Boolean(parsed?.points?.length || parsed?.bend);
   }),
   grouped: () => wbFmtEntries().some((e) => e.item.group_id),
+  //: The bar's own rule (`wbGroupButtonState`), so the menus, the palette and
+  //: the bar never offer both.
+  groupable: () => wbGroupButtonState(wbSelectionEntries().map((e) => e.item)).canGroup,
+  ungroupable: () => wbGroupButtonState(wbSelectionEntries().map((e) => e.item)).canUngroup,
   sizeCopied: () => wbFmtState.sizeClip !== null && wbCommandSelectionCount() > 0,
   topic: () => Boolean(wbSelectedMapNode()),
   notetopic: () => wbMapIsNoteTopic(wbSelectedMapNode()),
@@ -175,8 +179,8 @@ const WB_COMMANDS = [
   { id: "distribute-v", group: "Arrange", icon: "ph:rows", label: "Distribute evenly, top to bottom", menu: "Evenly, top to bottom", keys: "", surface: "board", needs: "three", run: () => wbDistributeSelection("vertical") },
   { id: "same-width", group: "Arrange", icon: "ph:arrows-out-line-horizontal", label: "Same width as the widest", menu: "Same width", keys: "", surface: "board", needs: "two", run: () => wbSameSizeSelection("width") },
   { id: "same-height", group: "Arrange", icon: "ph:arrows-out-line-vertical", label: "Same height as the tallest", menu: "Same height", keys: "", surface: "board", needs: "two", run: () => wbSameSizeSelection("height") },
-  { id: "group", group: "Arrange", icon: "ph:link", label: "Group", keys: "Ctrl+G", surface: "board", needs: "two", run: () => wbGroupSelection() },
-  { id: "ungroup", group: "Arrange", icon: "ph:link-break", label: "Ungroup", keys: "Ctrl+Shift+G", surface: "board", needs: "selection", run: () => wbUngroupSelection() },
+  { id: "group", group: "Arrange", icon: "ph:link", label: "Group", keys: "Ctrl+G", surface: "board", needs: "groupable", run: () => wbGroupSelection() },
+  { id: "ungroup", group: "Arrange", icon: "ph:link-break", label: "Ungroup", keys: "Ctrl+Shift+G", surface: "board", needs: "ungroupable", run: () => wbUngroupSelection() },
   { id: "remove-from-group", group: "Arrange", icon: "ph:link-break", label: "Remove from the group", keys: "", surface: "board", needs: "grouped", run: () => wbRemoveFromGroup() },
   { id: "turn-90", group: "Arrange", icon: "ph:arrow-clockwise", label: "Turn 90 degrees", keys: "", surface: "board", needs: "selection", run: () => wbTurnSelection(90) },
   { id: "order-forward", group: "Arrange", icon: "ph:arrow-up", label: "Bring forward", keys: "]", surface: "board", needs: "selection", run: () => wbStepSelectionZOrder(1) },
@@ -279,6 +283,8 @@ function wbRunCommand(id) {
       selection: "Select something first.",
       one: "Select one item first.",
       two: "Select two or more items first.",
+      groupable: "Select two or more items that are not already one group first.",
+      ungroupable: "Select a group first.",
       three: "Select three or more items first.",
       shape: "Select one closed shape or one connector first.",
       link: "Select one connector first.",
@@ -406,6 +412,14 @@ function wbSyncCommandRows(menu) {
     const applies = wbCommandApplies(WB_COMMAND_BY_ID.get(row.dataset.wbCmd));
     row.setAttribute("aria-disabled", applies ? "false" : "true");
     row.classList.toggle("is-muted", !applies);
+  }
+  //: **Rows that are one or the other** (`data-wb-either`, Group and
+  //: Ungroup): only the one that applies is shown; when neither does, the
+  //: first stays, greyed, so the menu still says the action exists.
+  const pair = [...menu.querySelectorAll("[data-wb-either]")];
+  if (pair.length) {
+    const live = pair.filter((row) => row.getAttribute("aria-disabled") === "false");
+    pair.forEach((row, i) => { row.hidden = live.length ? !live.includes(row) : i > 0; });
   }
 }
 
