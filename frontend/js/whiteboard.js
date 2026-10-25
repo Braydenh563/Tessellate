@@ -19327,6 +19327,40 @@ function wbDrawSketchHandles(sketch, { outlineOnly = false } = {}) {
 
   if (outlineOnly) return;
 
+  //: **The box and the grips follow a resize while it happens**, with the
+  //: size beside them, as a card's do (the 22-10 bug doc: "Shape anchor
+  //: points and selection borders don't resize with the user's" drag). They
+  //: were drawn once from the old bbox and only moved on the release render.
+  const placeGrips = (bb) => {
+    const node = group.node();
+    const box = node.querySelector(".wb-sketch-selection-box");
+    box.setAttribute("x", bb.minX - 2);
+    box.setAttribute("y", bb.minY - 2);
+    box.setAttribute("width", (bb.maxX - bb.minX) + 4);
+    box.setAttribute("height", (bb.maxY - bb.minY) + 4);
+    for (const grip of node.querySelectorAll(".wb-sketch-resize-handle")) {
+      const h = grip.dataset.handle;
+      grip.setAttribute("x", (h.includes("w") ? bb.minX : h.includes("e") ? bb.maxX : (bb.minX + bb.maxX) / 2) - 5);
+      grip.setAttribute("y", (h.includes("n") ? bb.minY : h.includes("s") ? bb.maxY : (bb.minY + bb.maxY) / 2) - 5);
+    }
+    const midX = (bb.minX + bb.maxX) / 2;
+    const origin = `${midX}px ${bb.minY}px`;
+    const stem = node.querySelector(".wb-rotate-handle-stem");
+    if (stem) {
+      stem.setAttribute("x1", midX);
+      stem.setAttribute("x2", midX);
+      stem.setAttribute("y1", bb.minY);
+      stem.setAttribute("y2", bb.minY - 28);
+      stem.style.transformOrigin = origin;
+    }
+    const turn = node.querySelector(".wb-sketch-rotate-handle");
+    if (turn) {
+      turn.setAttribute("cx", midX);
+      turn.setAttribute("cy", bb.minY - 28);
+      turn.style.transformOrigin = origin;
+    }
+  };
+
   for (const handle of ["nw", "n", "ne", "e", "se", "s", "sw", "w"]) {
     const hx = handle.includes("w") ? bbox.minX : handle.includes("e") ? bbox.maxX : (bbox.minX + bbox.maxX) / 2;
     const hy = handle.includes("n") ? bbox.minY : handle.includes("s") ? bbox.maxY : (bbox.minY + bbox.maxY) / 2;
@@ -19376,8 +19410,15 @@ function wbDrawSketchHandles(sketch, { outlineOnly = false } = {}) {
             wbLayoutShapeLabel(document.querySelector(`.sketch-group[data-id="${sketch.id}"]`));
             sketch._liveD = newD; // read at drag end, without waiting for a full render
             wbFollowLiveShape(sketch, newD);
+            const live = wbPathBBox(newD);
+            if (live) {
+              placeGrips(live);
+              wbShowAlignmentGuides([]);
+              wbShowSizeReadout({ x: live.minX, y: live.minY, w: live.maxX - live.minX, h: live.maxY - live.minY });
+            }
           })
           .on("end", async () => {
+            wbClearAlignmentGuides();
             wbFollowLiveShape(sketch, null);
             const before = sketch._resizeUndoBefore;
             delete sketch._resizeUndoBefore;
@@ -21143,6 +21184,10 @@ function renderWbObjects(canvas) {
         el.style("width", `${d.width}px`)
           .style("height", `${d.height}px`)
           .style("transform", wbItemTransform(d));
+        //: A sticker's glyph is its box (decision 44), so it grows with the
+        //: grip, not on the next render (the 22-10 bug doc: "Emojis don't
+        //: size or scale with its borders").
+        if (d.data?.sticker) el.select(".wb-text-content").style("font-size", `${wbStickerSize(d)}px`);
         //: **The lines and the clone arrows follow a resize as they follow a
         //: move** (INBOX 746's "the arrows dont resize either"). The box a
         //: link aims at is read from the measured size the last render
@@ -21164,6 +21209,10 @@ function renderWbObjects(canvas) {
         if (cancelled || (before && before.width === d.width && before.height === d.height)) return;
         await wbSaveObject(d);
         if (before) wbPushUndo({ action: "move", kind: "object", id: d.id, before });
+        //: The save repaints nothing, and what a box draws from its size (a
+        //: sticker's glyph, a frame's title, a table's grid) waited for some
+        //: later render to catch up.
+        wbScheduleRender();
       });
   }
 
