@@ -139,6 +139,9 @@ def test_the_client_sends_the_screen_with_ask_and_the_guide():
 
     js = Path(__file__).resolve().parents[1] / "frontend" / "js"
     ask = (js / "capture-ask.js").read_text(encoding="utf-8")
-    assert "function screenContext(" in ask and 'body.screen = screenContext(notesOnly ? "ask" : "")' in ask
-    assert "undoStack.slice(-3)" in ask
-    assert "actions: screenContext().actions" in (js / "help-chat.js").read_text(encoding="utf-8")
+    assert 'body.screen = await screenContext(notesOnly ? "ask" : "")' in ask
+    lazy = (js / "screen-context.js").read_text(encoding="utf-8")
+    assert "function screenContext(" in lazy and "undoStack.slice(-3)" in lazy
+    entries = (js / "lazy-entries.js").read_text(encoding="utf-8")
+    assert 'screenContext: ["/js/screen-context.js"]' in entries and 'screenContext: ["screenContext"]' in entries
+    assert "actions: (await screenContext()).actions" in (js / "help-chat.js").read_text(encoding="utf-8")

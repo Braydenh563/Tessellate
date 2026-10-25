@@ -403,7 +403,7 @@ async function submitHelpChatQuestion(question) {
         history: helpChatHistory,
         tab: agentCurrentTab(),
         context: helpChatOnScreenHelp(),
-        actions: screenContext().actions,
+        actions: (await screenContext()).actions,
       },
     });
     const content = result?.content || "Sorry, I couldn't answer that.";
