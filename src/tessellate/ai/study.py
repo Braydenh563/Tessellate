@@ -103,10 +103,11 @@ def sections(content: str) -> list[Section]:
     for line in (content or "").splitlines():
         if line.strip().startswith("```"):
             fenced = not fenced
+            continue  # code is not prose: a fence is never a sentence to quiz or summarise
         found = None if fenced else _HEADING.match(line)
         if found:
             out.append(Section(len(found.group(1)), clean(found.group(2))))
-        else:
+        elif not fenced:
             out[-1].lines.append(line)
     return [s for s in out if s.title or s.text]
 
@@ -273,7 +274,7 @@ def _section_cards(sec: Section, where: str) -> list[Card]:
         gap = None if made else _gap_card(sentence, where)
         out += [gap] if gap else []
     out += [c for c in [_list_card(sec.title, bullets(sec.text), where)] if c]
-    if sec.level >= 2 and sents and not defined and len(clean(sents[0])) >= 24:
+    if sec.level >= 2 and sents and not defined and len(clean(sents[0])) >= 24 and not generic_head(sec.title):
         out.append(Card(_pick(sec.title.lower(), (
             f"What do your notes say about {sec.title}?", f"Explain {sec.title} in your own words.",
         )), _answer_text(sents[0]), "about", where))
@@ -313,6 +314,16 @@ def ordered(deck: list[Card], topic: str, limit: int = 8) -> list[Card]:
 # --- terms and summaries ---------------------------------------------------------
 
 _GENERIC_HEADS = frozenset({"summary", "notes", "overview", "introduction", "intro", "todo", "tasks", "agenda", "links", "references", "questions"})
+_GENERIC_SQUASHED = _GENERIC_HEADS | {"thingstodo", "checklist", "readinglist", "homework", "deadlines", "reminders", "ideas", "misc", "other", "later", "done", "inprogress", "backlog", "nextsteps", "actionitems", "resources"}
+
+
+def generic_head(title: str) -> bool:
+    """A heading that names a kind of list ("To do", "Next steps"), not a topic:
+    no "Explain To do in your own words" question is made from it."""
+    return re.sub(r"[^a-z]", "", (title or "").lower()) in _GENERIC_SQUASHED
+
+
+
 
 
 def _terms_of(sec: Section) -> list[tuple[str, str]]:
@@ -354,7 +365,7 @@ def key_terms(content: str, limit: int = 12) -> list[tuple[str, str]]:
             see(term, gloss)
     title = title_of(content).lower()
     for sec in secs:
-        if sec.level >= 2 and sec.title and sec.title.lower() not in _GENERIC_HEADS and sec.title.lower() != title:
+        if sec.level >= 2 and sec.title and not generic_head(sec.title) and sec.title.lower() != title:
             see(sec.title)
     ranked = sorted(order, key=lambda t: (-min(counts[t.lower()], 3), order.index(t)))
     return [(t, glosses[t.lower()]) for t in ranked[:limit]]
@@ -378,7 +389,7 @@ def summary(content: str, level: int = 0) -> list[tuple[str, list[str]]]:
     """(heading, sentences) per section. level -1 is one sentence a section
     and at most four sections, 0 the lead and the best second, 1 everything
     worth saying. Sentences are the note's own, with the markup kept."""
-    out = [(sec.title, picks) for sec in sections(content or "") if (picks := _picks(sec, level))]
+    out = [(sec.title, picks) for sec in sections(content or "") if (picks := [p for p in _picks(sec, level) if clean(p).strip(" -*+")])]
     return out[: 4 if level < 0 else 8 if level == 0 else 20]
 
 

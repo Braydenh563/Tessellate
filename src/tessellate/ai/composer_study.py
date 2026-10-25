@@ -21,6 +21,7 @@ import hashlib
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
+from itertools import zip_longest
 
 from tessellate.ai import study
 
@@ -131,6 +132,16 @@ def topic_notes(topic: str, ctx: Ctx, limit: int = 3) -> list[dict]:
         return exact[:1]
     titled = [n for n in ctx.notes if set(wanted) <= set(study.content_stems(_title(n)))]
     return titled[:limit] or _body_matches(wanted, ctx, limit)
+
+
+def category_notes(topic: str, ctx: Ctx, limit: int = 6) -> list[dict]:
+    """The notes filed under the category a topic names ("flashcards from
+    Uni"); empty when the topic is no category of the notebook."""
+    wanted = _FILLER.sub(" ", topic or "").strip(" ,").lower()
+    wanted = re.sub(r"^(?:my|the|all)\s+|\s+notes?$", "", wanted).strip()
+    if not wanted:
+        return []
+    return [n for n in ctx.notes if str(n.get("category") or "").lower() == wanted][:limit]
 
 
 def _link(note: dict) -> str:
@@ -303,13 +314,55 @@ def _terms(ctx: Ctx, topic: str, *, more: bool = False) -> Reply | None:
 
 
 def deck_text(note: dict, deck: list[study.Card]) -> str:
-    out = [f"# Flashcards: {_title(note)}", ""]
+    return deck_text_titled(_title(note), deck)
+
+
+def deck_text_titled(title: str, deck: list[study.Card]) -> str:
+    out = [f"# Flashcards: {title}", ""]
     for card in deck:
         out += [f"**Q:** {card.q}", f"**A:** {card.a}", ""]
     return "\n".join(out).rstrip() + "\n"
 
 
+def _pooled_deck(topic: str, group: list[dict]) -> list[study.Card]:
+    """A few of the best cards from each note of a category, interleaved so
+    no one note fills the deck."""
+    decks = []
+    for note in group:
+        cards = [c for c in study.cards(str(note.get("content") or "")) if c.kind != "pair"] or study.cards(str(note.get("content") or ""))
+        decks.append(study.ordered(cards, _title(note), limit=6))
+    out: list[study.Card] = []
+    for row in zip_longest(*decks):
+        out += [c for c in row if c is not None]
+    return out[:24]
+
+
+def _category_flashcards(ctx: Ctx, topic: str, group: list[dict]) -> Reply | None:
+    deck = _pooled_deck(topic, group)
+    if len(deck) < 2:
+        return None
+    name = str(group[0].get("category") or topic)
+    label = "Save these as a note"
+    shown = deck[:CARDS_SHOWN]
+    sources = "; ".join(_link(n) for n in group[:4])
+    lines = [pick(ctx.seed, "catflash", (
+        f"I made {len(deck)} flashcards from your {name} notes ({len(group)} of them). The first {len(shown)}:",
+        f"{len(deck)} cards across {len(group)} {name} notes, each in its note's own words. A few to start:",
+        f"Here are {len(deck)} flashcards from {name}, a few from every note. The first {len(shown)}:",
+    )), ""]
+    for card in shown:
+        lines += [f"**Q:** {card.q}", f"**A:** {card.a}", ""]
+    lines += [f"From: {sources}.", "", label]
+    return Reply("\n".join(lines), offer={"kind": "note", "label": label, "text": deck_text_titled(name, deck), "items": []},
+                 asks=[f"Quiz me on {_title(group[0])}"])
+
+
 def _flashcards(ctx: Ctx, topic: str) -> Reply:
+    group = category_notes(topic, ctx)
+    if len(group) >= 2:
+        pooled = _category_flashcards(ctx, topic, group)
+        if pooled:
+            return pooled
     notes, reply = _target(ctx, topic, "Make flashcards from", "make flashcards from", strict=False)
     if not notes:
         return reply or _which_note(ctx, "make flashcards from", "Make flashcards from")
@@ -373,13 +426,16 @@ def _start_quiz(ctx: Ctx, topic: str, count: int | None) -> Reply:
     if len(deck) < 2:
         return Reply(f"{_link(note)} has too little I can ask about: I look for definitions (“X is Y”, “Term: meaning”), bold terms, lists under headings and Q: / A: pairs. "
                      "Add a few and ask again.")
-    opener = pick(ctx.seed, "quizopen", (
+    opener = pick(ctx.seed, f"quizopen{rounds}", (
         f"Quiz on {_link(note)}, {len(deck)} questions, from your own notes.",
         f"Let's go: {len(deck)} questions from {_link(note)}.",
         f"{len(deck)} questions on {_link(note)}. Answer in your own words.",
+        f"Ready? {len(deck)} questions drawn from {_link(note)}.",
+        f"Here come {len(deck)} questions on {_link(note)}, all from what you wrote.",
+        f"Round {rounds} on {_link(note)}: {len(deck)} questions." if rounds > 1 else f"First round on {_link(note)}: {len(deck)} questions.",
     ))
     tip = "_Answer in your own words. Say “hint”, “skip” or “stop” at any time._"
-    return Reply(f"{opener}\n\n{_header(name, 1, len(deck), 0, 0, rounds)}\n\n{deck[0].q}\n\n{tip}")
+    return Reply(f"{opener}\n\n{_header(name, 1, len(deck), 0, 0, rounds)}\n\n{deck[0].q}\n\n{tip}", asks=QUIZ_CHIPS)
 
 
 _STOP = re.compile(r"^(?:stop|quit|end|exit|finish|enough|done|cancel|that'?s enough|i'?m done|no more|stop the quiz|end quiz|end the quiz|that will do)\W*$", re.I)
@@ -424,6 +480,23 @@ def _quiz_command(ctx: Ctx, reply: str, place: tuple) -> Reply | None:
     return None
 
 
+_REQUESTISH = re.compile(
+    r"^(?:ok(?:ay)?[, ]+|so[, ]+|and[, ]+|please[, ]+|thanks?(?: you)?[, ]+)*(?:what|how|why|when|where|who|which|tell|show|open|list|find|search|remind|add|create|make|write|give|can|could|would|will|please|"
+    r"thanks?|thank|hello|hi|hey|summari[sz]e|plan|quiz|flash|outline|compare|delete|set|turn|start|go|do you|are you|is there|i want|i need|i'd like|let'?s)\b", re.I)
+
+
+def _off_topic(reply: str, card: study.Card) -> bool:
+    """A message that is a request or a greeting and shares no word with the
+    question or its answer: not an attempt, so it ends the quiz."""
+    if not _REQUESTISH.match(reply) or _SKIP.match(reply) or _HINT.match(reply) or _STOP.match(reply) or _AGAIN.match(reply):
+        return False
+    said = reply.split(None, 1)[1] if " " in reply else ""  # the opening verb ("list") is the request, not the answer
+    return not set(study.content_stems(said)) & set(study.content_stems(f"{card.q} {card.a}"))
+
+
+QUIZ_CHIPS = ["Hint", "Skip", "Stop the quiz"]
+
+
 def _continue_quiz(ctx: Ctx) -> Reply | None:
     header = _last_header(ctx.last_answer)
     reply = " ".join((ctx.asked or ctx.question).split())
@@ -432,6 +505,8 @@ def _continue_quiz(ctx: Ctx) -> Reply | None:
     if reply.endswith("?") and len(reply.split()) >= 4 and not _AGAIN.match(reply):
         return None
     place = _quiz_place(ctx, header)
+    if place is not None and _off_topic(reply, place[-1]):
+        return None  # not an answer: the quiz ends and the older readers take the message
     if place is None:
         return Reply(pick(ctx.seed, "changed", (
             "Your notes changed since that question, so I have lost my place. Ask me to quiz you again and I will start fresh.",
@@ -450,7 +525,7 @@ def _continue_quiz(ctx: Ctx) -> Reply | None:
     done += 1
     if n >= len(deck):
         return _finish(ctx, topic, note, deck, score, done, lead=feedback)
-    return Reply(f"{feedback}\n\n{_header(topic, n + 1, total, score, done, rounds)}\n\n{deck[n].q}")
+    return Reply(f"{feedback}\n\n{_header(topic, n + 1, total, score, done, rounds)}\n\n{deck[n].q}", asks=QUIZ_CHIPS)
 
 
 _FEEDBACK = {

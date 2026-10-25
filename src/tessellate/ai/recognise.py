@@ -1840,6 +1840,36 @@ def dated_sentence(text: str) -> bool:
     return bool(_DATED_WIDE.search(text or ""))
 
 
+_SINCE_Q = re.compile(
+    r"^(?:(?:so|ok|okay|hey|please|pls|can you|could you|quick question|tell me)[, ]+)*"
+    r"(?:how (?:many|much) (?P<u>days|weeks|months)(?: (?:has it been|have passed|have gone by|has passed|ago was|ago is|ago did)| ago)?\s+(?:since|was|is)"
+    r"|(?P<u2>days|weeks|months) since|how long (?:has it been )?since|how long ago (?:was|is|did|were))"
+    r"\s+(?P<d>.+?)\W*$", re.I)
+
+
+def since_question(text: str) -> tuple[str, str] | None:
+    """(unit, the day as said) for "how many days since 1 october", "weeks
+    since the 3rd", "how long ago was 1 september"; None for anything else."""
+    found = _SINCE_Q.match(" ".join((text or "").split()))
+    if not found:
+        return None
+    return (found.group("u") or found.group("u2") or "days").lower(), found.group("d").strip()
+
+
+def states_its_date(text: str, now: datetime) -> bool:
+    """Whether the first date `text` reads as is written out (a month and a
+    day, or a numeric date), rather than counted from the day it was said on
+    ("Friday", "tomorrow", "the 21st"). Composer follow-ups use it to say how a
+    note's day was read."""
+    for span in recognise(text, now=now, tense="future"):
+        if span.rank == 0 and span.kind in ("date", "datetime"):
+            low = span.text.lower()
+            return bool(re.search(r"\d{4}-\d{2}-\d{2}|\d{1,2}[/.]\d{1,2}[/.]\d{2,4}", low)) or any(
+                m in low for m in _MONTHS if len(m) > 2
+            )
+    return False
+
+
 _DAY_OFFSET = re.compile(
     r"^(?P<in>in\s+)?(?P<n>\d{1,4}|a|an|one|two|three|four|five|six|seven|eight|nine|ten|twelve|a couple of|couple of|a few)\s+"
     r"(?P<u>days?|weeks?|fortnights?|months?|years?)\s*(?P<d>from now|from today|from|after|before|ago|since|later|earlier|hence|prior to|away)?\s*(?P<a>.*?)\W*$",
