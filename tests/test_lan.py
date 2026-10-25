@@ -2283,8 +2283,6 @@ def test_local_name_opens_a_localhost_name(monkeypatch):
 
 
 def test_the_watch_wakes_on_a_change_and_not_before():
-    import asyncio
-
     async def run():
         since = lantrust.version()
         waiting = asyncio.ensure_future(lantrust.wait_version_change(since, 5))
