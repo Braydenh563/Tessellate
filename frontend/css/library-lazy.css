@@ -6534,7 +6534,7 @@ input[type="color"].wb-mixed {
    a selection's bar was hit-tested as the heading line below it). Raised
    only while the mode is on. Equal to the page's 1000 and later in the DOM,
    so they paint over it. */
-body.doc-focus-on :is(.selection-bar, .editor-menu, .inline-ai, .doc-block-bar, #doc-suggest-menu, #doc-complete-list, .doc-table-grip-menu) {
+:root[data-fullscreen~="documents"] :is(.selection-bar, .editor-menu, .inline-ai, .doc-block-bar, #doc-suggest-menu, #doc-complete-list, .doc-table-grip-menu) {
   --doc-focus-layer: 1000;
   z-index: var(--doc-focus-layer);
 }
