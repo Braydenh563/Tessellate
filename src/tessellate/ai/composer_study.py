@@ -54,6 +54,7 @@ _TERMS = (
 )
 _SUMMARY = re.compile(
     rf"^{_LEAD}(?P<brief>briefly\s+|quickly\s+)?(?:summari[sz]e|sum up|recap|run through|run me through|go over|give me (?:a |an |the )?(?:quick |short |brief |rough )?(?:summary|recap|overview|rundown|run-?down|tl;?dr|gist)(?:\s+{_FROM})?|tl;?dr(?:\s+{_FROM})?|"
+    rf"what (?:did|have|do|was|were) (?:we|i|you) (?:cover|covered|learn|learnt|learned|study|studied|go over|discuss)(?:\s+(?:in|on|during|at|about))?|what(?:['’]?s| is| was) (?:covered|inside)(?:\s+(?:in|on))?|"
     rf"what(?:['’]?s| is) the (?:gist|summary|point|main idea)\s+{_FROM})\s*(?P<t>.*)$", re.I)
 
 _ASKED_ON = re.compile(r"\b(?:in|using)\s+(?:\d+|a few|some)\s+(?:bullet points?|bullets|sentences|lines|points)\.?$", re.I)
@@ -76,6 +77,7 @@ class Ctx:
     said: str = ""
     asked: str = ""
     reminders: list[dict] = field(default_factory=list)
+    ask: bool = False
     prefer_numbers: bool = True
 
     @property
@@ -111,7 +113,7 @@ def topic_notes(topic: str, ctx: Ctx, limit: int = 3) -> list[dict]:
     if not topic or _THIS.match(topic):
         opened = [n for n in ctx.notes if n.get("id") in ctx.open_ids]
         return opened[:limit]
-    wanted = study.content_stems(_TOPIC_NOISE.sub(" ", topic)) or study.content_stems(topic)
+    wanted = study.content_stems(_TOPIC_NOISE.sub(" ", topic))
     if not wanted:
         return []
     exact = [n for n in ctx.notes if _title(n).lower() == topic.lower()]
@@ -239,6 +241,9 @@ def _summary(ctx: Ctx, topic: str, level: int) -> Reply | None:
     notes, reply = _target(ctx, topic, "Summarise", "summarise", strict=True)
     if not notes:
         return reply
+    plural = bool(re.search(r"\bnotes\b", topic or "", re.I)) and len(notes) > 1 and not re.search(r"\bthis\b", topic or "", re.I)
+    if plural:
+        return _summaries(ctx, notes)
     note = notes[0]
     parts = study.summary(str(note.get("content") or ""), level)
     if not parts:
@@ -256,6 +261,17 @@ def _summary(ctx: Ctx, topic: str, level: int) -> Reply | None:
     all_parts = study.summary(str(note.get("content") or ""), 1)
     if level < 1 and sum(len(s) for _t, s in all_parts) > sentences:
         lines += ["", "Say “more” for the rest."]
+    return Reply("\n".join(lines))
+
+
+def _summaries(ctx: Ctx, notes: list[dict]) -> Reply:
+    """Several notes asked for together ("summarise my COMP2001 notes"): each
+    in a line or two, newest first, never the first one alone."""
+    lines = [pick(ctx.seed, "multihead", (f"{len(notes)} notes match. The short version of each:", f"Here are your {len(notes)} matching notes, one short paragraph each:")), ""]
+    for note in notes:
+        parts = study.summary(str(note.get("content") or ""), -1)
+        body = " ".join(" ".join(sents) for _t, sents in parts[:2]) or "Too little in it to summarise."
+        lines += [f"- {_link(note)}: {body}"]
     return Reply("\n".join(lines))
 
 
@@ -428,3 +444,24 @@ def _finish(ctx: Ctx, topic: str, note: dict, deck: list[study.Card], score: int
     else:
         lines.append(f"Quiz finished on {_link(note)}: you got {score} of {done} ({pct} percent). {verdict}".strip())
     return Reply("\n".join(lines), asks=[f"Quiz me on {topic}", f"Make flashcards from {topic}"])
+
+
+_OPEN = re.compile(r"^(?:ok(?:ay)?[, ]+|please[, ]+|can you |could you )*(?:open|show me|show|go to|take me to|pull up|bring up|jump to|find and open)\s+(?:my |the |all my |all the )?(?P<t>.+?)\W*$", re.I)
+_OPEN_NOT = re.compile(r"^(?:a new|new|a|an|settings?|chat|the chat|help|guide|the guide|tab|statistics|calendar|timeline|graph|reminders?|tasks?|whiteboard|board|map|the app|search|library|inbox|today)\b", re.I)
+
+
+def open_named(ctx: Ctx) -> Reply | None:
+    """Ask cannot open things itself, but it can point: "open my lecture
+    notes" is the links to the notes that name it."""
+    found = _OPEN.match(" ".join((ctx.asked or ctx.question or "").split()))
+    if not ctx.ask or not found:
+        return None
+    topic = found.group("t")
+    if _OPEN_NOT.match(topic) or re.match(r"^(?:it|that|this)\b", topic, re.I):
+        return None
+    notes = topic_notes(topic, ctx, limit=5)
+    if not notes:
+        return None
+    if len(notes) == 1:
+        return Reply(pick(ctx.seed, "openone", ("Here it is:", "Open it from here:", "This one:")) + f" {_link(notes[0])}")
+    return Reply(f"{len(notes)} notes match. Pick one:\n\n" + "\n".join(f"- {_link(n)}" for n in notes))

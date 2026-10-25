@@ -365,6 +365,11 @@ function qaSlotsOf(state) {
   }
   const given = allOn && qaIntent(state.reading, "remind") ? own.text : null;
   slots.title = typeof given === "string" && given.trim() ? given.trim() : rest.replace(/\s+/g, " ").replace(/^[\s,.;:-]+|[\s,.;:-]+$/g, "");
+  //: A day with no time is 09:00, said when it is saved (dog1 item 13).
+  if (state.surface === "reminder" && slots.date && !slots.time && !slots.seconds) {
+    slots.time = "09:00";
+    slots.defaultTime = true;
+  }
   slots.due = qaDue(slots);
   return slots;
 }
@@ -437,12 +442,17 @@ async function magicAddReminder() {
   const input = $("reminder-magic");
   const status = $("reminder-magic-status");
   const text = input.value.trim();
-  if (!text) return;
+  if (!text) {
+    status.classList.add("error");
+    status.textContent = "Type what to remind you of first, like “pay rent friday 9am”.";
+    input.focus();
+    return;
+  }
   status.classList.remove("error");
   quickAddAttach(input, "reminder", { after: $("reminder-magic-row") });
   const slots = await quickAddSlots(input);
   if (slots && quickAddAsk(input)) {
-    status.textContent = "";
+    status.textContent = qaMissing(qaFields.get(input));
     return;
   }
   setLabel(status, "ph:spin Adding…");
@@ -460,7 +470,7 @@ async function magicAddReminder() {
     input.value = "";
     quickAddClear(input);
     reminderMadeUndo(reminder);
-    status.textContent = `Added “${reminder.text}”: ${relativeWhen(reminder.due_at)}. Edit it below if needed.`;
+    status.textContent = `Added “${reminder.text}”: ${relativeWhen(reminder.due_at)}.${slots?.defaultTime ? " No time was given, so it is set for 09:00." : ""} Edit it below if needed.`;
     askNotificationPermission();
     loadReminders();
   } catch (error) {

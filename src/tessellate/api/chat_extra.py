@@ -29,11 +29,11 @@ def _reminders(session: Session) -> list[dict]:
 
 
 def events(session: Session, question: str, history: list[dict], *, now: datetime, seed: str, open_ids: list[int],
-           follow_kind: str = "", said: str = "", asked: str = "") -> list[dict] | None:
+           follow_kind: str = "", said: str = "", asked: str = "", ask: bool = False) -> list[dict] | None:
     """The answer events for a question this module reads, else None. A
     failure is logged and leaves the question to the older readers."""
     ctx = Ctx(question=question, notes=_notes(session), now=now, history=history, seed=seed, open_ids=open_ids,
-              follow_kind=follow_kind, said=said, asked=asked or question, reminders=_reminders(session))
+              follow_kind=follow_kind, said=said, asked=asked or question, ask=ask, reminders=_reminders(session))
     try:
         reply = composer_extra.answer(ctx)
     except Exception:  # noqa: BLE001  # the older readers answer

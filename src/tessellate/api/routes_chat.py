@@ -3393,7 +3393,7 @@ def _first_events(req: _StreamRequest, prepared: dict, ollama_running: bool, too
         found = chat_extra.events(
             req.session, follow.question if follow else req.question, req.history or [], now=user_now(deps.get_config()).replace(tzinfo=None),
             seed=_reply_seed(req)[1], open_ids=[i for i in [req.body.open_note_id, *req.body.note_ids] if i],
-            follow_kind=follow.kind if follow else "", said=follow.said if follow else "", asked=req.question,
+            follow_kind=follow.kind if follow else "", said=follow.said if follow else "", asked=req.body.question, ask=bool(req.body.notes_only),
         )
         if found is not None:
             return iter(found)

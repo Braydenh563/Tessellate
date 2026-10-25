@@ -43,7 +43,7 @@ def open_it(ctx: Ctx) -> Reply | None:
 
 
 def answer(ctx: Ctx) -> Reply | None:
-    opened = open_it(ctx)
+    opened = open_it(ctx) or composer_study.open_named(ctx)
     if opened:
         return opened
     if composer_study.match(_plain(ctx)) is not None:

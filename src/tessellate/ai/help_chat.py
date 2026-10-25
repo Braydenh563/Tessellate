@@ -518,6 +518,22 @@ HELP_TOPICS: list[dict] = [
         "badge": {"label": "Import & export", "section": "data"},
     },
     {
+        "id": "studyhelp",
+        "keywords": ("quiz me", "flashcards", "flash cards", "key terms", "summarise a note", "study help", "what is due", "plan my week", "revise", "study without a model"),
+        "body": (
+            "With no model running, Ask and Chat still help you study from your own notes. "
+            "Say “quiz me on lecture 5” for questions built from its definitions, bold terms and lists: "
+            "answer in your own words, and “hint”, “skip” or “stop” work at any time; the score is kept in the "
+            "conversation. “Make flashcards from this note” writes question and answer cards and offers to save "
+            "them as a note. “What are the key terms in lecture 5” lists them with the note's own definitions, and "
+            "“summarise lecture 5” gives a short section-by-section version (say “more” or “shorter”). "
+            "“What's due this week”, “plan my week” and “how long until the exam” read your reminders, the dates "
+            "your notes give and your open checklist items. It also works out percentages, marks needed, dates "
+            "(“what day is 3 weeks from friday”) and word counts, and defines common study terms your notes "
+            "do not cover. Every answer about a note is that note's own words."
+        ),
+    },
+    {
         "id": "websearch",
         "keywords": ("web search", "websearch", "internet search", "searxng", "search the web", "search online", "look it up online"),
         "body": (

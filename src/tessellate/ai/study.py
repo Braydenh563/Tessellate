@@ -30,6 +30,8 @@ _BULLET = re.compile(r"^\s*(?:[-*+]|\d{1,2}[.)])\s+(?!\[[ xX]\])(.+)$")
 _CHECK = re.compile(r"^\s*[-*+]\s+\[([ xX])\]\s+(.+)$")
 _SENTENCE_END = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9*\"“(\[])")
 _MARKUP = re.compile(r"(\*\*|__|\*|`)")
+_FOOTNOTE = re.compile(r"\[\^[^\]\n]*\]|<sup>[^<]{0,6}</sup>")
+_FOOTNOTE_LINE = re.compile(r"^\s*\[\^[^\]]+\]:")
 _LINK = re.compile(r"\[\[([^\]|]+)(?:\|([^\]]+))?\]\]|\[([^\]]+)\]\([^)]*\)")
 _BOLD = re.compile(r"\*\*([^*\n]{2,60})\*\*|__([^_\n]{2,60})__")
 _PRONOUNS = frozenset({
@@ -57,6 +59,7 @@ STOP = frozenset(
 
 def clean(text: str) -> str:
     """Plain words: links to their text, markup off, spaces folded."""
+    text = _FOOTNOTE.sub("", text or "")
     text = _LINK.sub(lambda m: m.group(2) or m.group(1) or m.group(3) or "", text or "")
     return " ".join(_MARKUP.sub("", text).split())
 
@@ -121,7 +124,7 @@ def sentences(text: str) -> list[str]:
     bullets and tables left out."""
     out: list[str] = []
     for para in re.split(r"\n\s*\n", text or ""):
-        lines = [ln.strip() for ln in para.splitlines() if ln.strip()]
+        lines = [_FOOTNOTE.sub("", ln.strip()) for ln in para.splitlines() if ln.strip() and not _FOOTNOTE_LINE.match(ln)]
         if not lines or all(_BULLET.match(ln) or _CHECK.match(ln) or ln.startswith("|") for ln in lines):
             continue
         prose = " ".join(ln for ln in lines if not (_BULLET.match(ln) or _CHECK.match(ln) or ln.startswith(("|", ">", "```"))))

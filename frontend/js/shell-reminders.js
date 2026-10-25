@@ -1227,8 +1227,11 @@ function relativeWhen(iso) {
   } else if (mins / 60 / 24 < 7) {
     value = Math.round(mins / 60 / 24);
     unit = "day";
+  } else if (mins / 60 / 24 < 60) {
+    value = Math.round(mins / 60 / 24 / 7);
+    unit = "week";
   } else {
-    return when.toLocaleDateString();
+    return when.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
   }
   const label = `${value} ${unit}${value === 1 ? "" : "s"}`;
   return future ? `in ${label}` : `${label} ago`;

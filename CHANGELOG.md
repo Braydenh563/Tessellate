@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Ask and Chat with no model: quiz me (graded loosely, score kept in the dialogue), flashcards you can save as a note, key terms, short section summaries, "what's due this week", "plan my week", "how long until the exam", mark-needed and percentage sums, date arithmetic, word counts, a small study glossary, "open it" and "open my lecture notes". Reminders: a day with no time is set for 09:00 and says so, an empty Add and a missing day are said, far dates read as weeks.
 - Ask: at 600 to 820px the header buttons (Use AI, History, New chat) shrink and wrap inside the card instead of running 26px past its right edge.
 - Documents: at a 600px window the dock's eight controls fit one row (tight gap and Edit/Read padding) instead of wrapping the more menu to a third row. Companion: it no longer lets the page scroll under a touch drag (touch-action none), so a throw is not cancelled by the browser.
 - Chat: under 600px the welcome's suggested questions wrap to the column instead of scrolling sideways with a fading edge. Ask: at half width the box loses the lone sparkle line and the model picker takes the full row.

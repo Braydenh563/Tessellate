@@ -38,6 +38,8 @@ NOTES = [
     (DATABASES, dt.datetime(2026, 10, 19, 9)),
     (TODO, dt.datetime(2026, 10, 18, 9)),
     ("# Dentist\n\nCheck-up booked for the 21st.", dt.datetime(2026, 10, 14, 9)),
+    ("# COMP2001 Assignment 2\n\nAssignment 2 is due Friday.\n\n## Method\n\nThe model weights[^1] are trained on lecture data.\n\n[^1]: A weight is a number the model learns.", dt.datetime(2026, 10, 21, 9, 50)),
+    ("# COMP2001 Lecture 3\n\n## Search\n\nBreadth first search visits the nearest nodes first.", dt.datetime(2026, 10, 21, 9, 55)),
 ]
 
 
@@ -49,6 +51,7 @@ def ask(client, session, monkeypatch):
         manager.create_entry(session, text, "Uni").created_at = when
     session.add(Reminder(text="Hand in the essay", due_at=dt.datetime(2026, 10, 23, 17, 0)))
     session.add(Reminder(text="Gym session", due_at=dt.datetime(2026, 10, 20, 7, 0)))
+    session.add(Reminder(text="Submit essay", due_at=dt.datetime(2026, 11, 3, 9, 0)))
     session.add(Reminder(text="Call the landlord", due_at=dt.datetime(2026, 10, 28, 12, 0)))
     session.commit()
 
@@ -251,7 +254,7 @@ def test_open_it_after_a_list(ask):
     first = ask("summarise lecture 6")
     history = [{"question": "summarise lecture 6", "answer": first}]
     said = ask("open it", history)
-    assert "#/notes/" in said
+    assert "#/notes/" in said, (first, said)
 
 
 def test_more_and_shorter_after_a_summary(ask):
@@ -261,3 +264,26 @@ def test_more_and_shorter_after_a_summary(ask):
     assert len(shorter) <= len(first) and "Scheduling" in shorter
     more = ask("more", history)
     assert "in more detail" in more
+
+
+def test_what_did_we_cover_is_a_summary(ask):
+    said = ask("what did we cover in lecture 5?")
+    assert "Scheduling" in said and "None of these notes" not in said and "lists seven" not in said
+
+
+def test_footnote_markers_are_not_glued_to_words(ask):
+    said = ask("summarise my COMP2001 notes")
+    assert "weights1" not in said and "[^1]" not in said
+    assert "COMP2001 Assignment 2" in said and "COMP2001 Lecture 3" in said
+    assert "all from today" not in said
+
+
+def test_due_this_week_has_no_trailing_no_matching_records(ask):
+    said = ask("what's due this week?")
+    assert "No matching records" not in said and "3 Nov" not in said and "Submit essay" not in said
+
+
+def test_ask_opens_notes_by_name(ask):
+    said = ask("open my lecture notes")
+    assert "#/notes/" in said and "say it in Chat" not in said
+    assert "COMP2001 Lecture 3" in ask("open comp2001 lecture 3")

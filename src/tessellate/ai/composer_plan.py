@@ -362,6 +362,8 @@ def answer(ctx: Ctx) -> Reply | None:
                 leftover -= _stems(phrase)
         if leftover:
             return None
+        if win is None and ctx.open_ids:
+            return None  # "what is the deadline?" with a note open is that note's (composer_open)
         if win is None:
             win = (today, today + timedelta(days=6), "the next 7 days")
         return _due(ctx, win)
