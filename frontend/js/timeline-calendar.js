@@ -225,8 +225,19 @@ function timelineCalDraw(box, span, first, last) {
     const pane = box.querySelector(".timeline-cal-hours");
     if (hour && pane) pane.scrollTop += hour.getBoundingClientRect().top - pane.getBoundingClientRect().top;
   }
+  //: A month taller than the pane opens with today's row in view, not clipped
+  //: at the fold with nothing to say there is more below.
+  if (span === "month" && timelineCal.painted !== drawn) requestAnimationFrame(() => timelineCalShowToday(box));
   timelineCal.painted = drawn;
   timelineCalRefocus(box);
+}
+
+function timelineCalShowToday(box) {
+  const today = box.querySelector(".timeline-cal-month .is-today");
+  const pane = box.closest(".timeline-scroll");
+  if (!today || !pane) return;
+  const over = today.getBoundingClientRect().bottom - pane.getBoundingClientRect().bottom;
+  if (over > 0) pane.scrollTop += over + 4;
 }
 
 //: A repaint rebuilds every button, so the focus is put back where it was:

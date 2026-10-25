@@ -2,9 +2,9 @@
 
 Generated 2026-10-25 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6231, frontend ids 2539, CSS sections 497, backend routes 618, backend modules 6394, test files 1338, tests 11922, plan headings 968.
+Counts: frontend functions 6232, frontend ids 2539, CSS sections 497, backend routes 618, backend modules 6394, test files 1339, tests 11923, plan headings 968.
 
-## Frontend functions (6231)
+## Frontend functions (6232)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -5638,55 +5638,56 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `timelineCalAddSave` | frontend/js/timeline-cal-add.js:153 |
 | `timelineCalAddStart` | frontend/js/timeline-cal-add.js:15 |
 
-### frontend/js/timeline-calendar.js (45)
+### frontend/js/timeline-calendar.js (46)
 
 | Name | File:line |
 |---|---|
 | `paintTimelineCalendar` | frontend/js/timeline-calendar.js:156 |
-| `timelineCalAdd` | frontend/js/timeline-calendar.js:749 |
-| `timelineCalCell` | frontend/js/timeline-calendar.js:375 |
-| `timelineCalCellHead` | frontend/js/timeline-calendar.js:467 |
+| `timelineCalAdd` | frontend/js/timeline-calendar.js:760 |
+| `timelineCalCell` | frontend/js/timeline-calendar.js:386 |
+| `timelineCalCellHead` | frontend/js/timeline-calendar.js:478 |
 | `timelineCalDate` | frontend/js/timeline-calendar.js:64 |
-| `timelineCalDayLabel` | frontend/js/timeline-calendar.js:332 |
+| `timelineCalDayLabel` | frontend/js/timeline-calendar.js:343 |
 | `timelineCalDays` | frontend/js/timeline-calendar.js:116 |
-| `timelineCalDots` | frontend/js/timeline-calendar.js:488 |
-| `timelineCalDragEnd` | frontend/js/timeline-calendar.js:785 |
-| `timelineCalDragOver` | frontend/js/timeline-calendar.js:773 |
-| `timelineCalDragStart` | frontend/js/timeline-calendar.js:764 |
+| `timelineCalDots` | frontend/js/timeline-calendar.js:499 |
+| `timelineCalDragEnd` | frontend/js/timeline-calendar.js:796 |
+| `timelineCalDragOver` | frontend/js/timeline-calendar.js:784 |
+| `timelineCalDragStart` | frontend/js/timeline-calendar.js:775 |
 | `timelineCalDraw` | frontend/js/timeline-calendar.js:194 |
-| `timelineCalDrop` | frontend/js/timeline-calendar.js:792 |
-| `timelineCalDropTarget` | frontend/js/timeline-calendar.js:760 |
+| `timelineCalDrop` | frontend/js/timeline-calendar.js:803 |
+| `timelineCalDropTarget` | frontend/js/timeline-calendar.js:771 |
 | `timelineCalFetch` | frontend/js/timeline-calendar.js:100 |
-| `timelineCalFill` | frontend/js/timeline-calendar.js:415 |
-| `timelineCalFit` | frontend/js/timeline-calendar.js:432 |
-| `timelineCalFocus` | frontend/js/timeline-calendar.js:730 |
-| `timelineCalGlyph` | frontend/js/timeline-calendar.js:513 |
-| `timelineCalHead` | frontend/js/timeline-calendar.js:255 |
-| `timelineCalItem` | frontend/js/timeline-calendar.js:522 |
-| `timelineCalKeyMove` | frontend/js/timeline-calendar.js:714 |
-| `timelineCalKeys` | frontend/js/timeline-calendar.js:688 |
-| `timelineCalMonth` | frontend/js/timeline-calendar.js:340 |
-| `timelineCalMore` | frontend/js/timeline-calendar.js:403 |
-| `timelineCalMount` | frontend/js/timeline-calendar.js:249 |
-| `timelineCalMove` | frontend/js/timeline-calendar.js:642 |
-| `timelineCalMovePage` | frontend/js/timeline-calendar.js:834 |
-| `timelineCalMoveReminder` | frontend/js/timeline-calendar.js:807 |
-| `timelineCalOpenDay` | frontend/js/timeline-calendar.js:619 |
-| `timelineCalOpenRow` | frontend/js/timeline-calendar.js:596 |
-| `timelineCalPick` | frontend/js/timeline-calendar.js:610 |
+| `timelineCalFill` | frontend/js/timeline-calendar.js:426 |
+| `timelineCalFit` | frontend/js/timeline-calendar.js:443 |
+| `timelineCalFocus` | frontend/js/timeline-calendar.js:741 |
+| `timelineCalGlyph` | frontend/js/timeline-calendar.js:524 |
+| `timelineCalHead` | frontend/js/timeline-calendar.js:266 |
+| `timelineCalItem` | frontend/js/timeline-calendar.js:533 |
+| `timelineCalKeyMove` | frontend/js/timeline-calendar.js:725 |
+| `timelineCalKeys` | frontend/js/timeline-calendar.js:699 |
+| `timelineCalMonth` | frontend/js/timeline-calendar.js:351 |
+| `timelineCalMore` | frontend/js/timeline-calendar.js:414 |
+| `timelineCalMount` | frontend/js/timeline-calendar.js:260 |
+| `timelineCalMove` | frontend/js/timeline-calendar.js:653 |
+| `timelineCalMovePage` | frontend/js/timeline-calendar.js:845 |
+| `timelineCalMoveReminder` | frontend/js/timeline-calendar.js:818 |
+| `timelineCalOpenDay` | frontend/js/timeline-calendar.js:630 |
+| `timelineCalOpenRow` | frontend/js/timeline-calendar.js:607 |
+| `timelineCalPick` | frontend/js/timeline-calendar.js:621 |
 | `timelineCalRange` | frontend/js/timeline-calendar.js:78 |
-| `timelineCalRefocus` | frontend/js/timeline-calendar.js:234 |
-| `timelineCalSetSpan` | frontend/js/timeline-calendar.js:588 |
+| `timelineCalRefocus` | frontend/js/timeline-calendar.js:245 |
+| `timelineCalSetSpan` | frontend/js/timeline-calendar.js:599 |
+| `timelineCalShowToday` | frontend/js/timeline-calendar.js:235 |
 | `timelineCalSpan` | frontend/js/timeline-calendar.js:70 |
-| `timelineCalSpanSeg` | frontend/js/timeline-calendar.js:304 |
-| `timelineCalStop` | frontend/js/timeline-calendar.js:367 |
-| `timelineCalTimed` | frontend/js/timeline-calendar.js:462 |
+| `timelineCalSpanSeg` | frontend/js/timeline-calendar.js:315 |
+| `timelineCalStop` | frontend/js/timeline-calendar.js:378 |
+| `timelineCalTimed` | frontend/js/timeline-calendar.js:473 |
 | `timelineCalUrl` | frontend/js/timeline-calendar.js:92 |
-| `timelineCalWeek` | frontend/js/timeline-calendar.js:541 |
-| `timelineCalWeekHead` | frontend/js/timeline-calendar.js:575 |
-| `timelineCalendarOn` | frontend/js/timeline-calendar.js:665 |
-| `timelineCalendarReminders` | frontend/js/timeline-calendar.js:677 |
-| `timelineCalendarToday` | frontend/js/timeline-calendar.js:656 |
+| `timelineCalWeek` | frontend/js/timeline-calendar.js:552 |
+| `timelineCalWeekHead` | frontend/js/timeline-calendar.js:586 |
+| `timelineCalendarOn` | frontend/js/timeline-calendar.js:676 |
+| `timelineCalendarReminders` | frontend/js/timeline-calendar.js:688 |
+| `timelineCalendarToday` | frontend/js/timeline-calendar.js:667 |
 
 ### frontend/js/timeline-detail.js (2)
 
@@ -18820,7 +18821,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11922)
+## Tests (11923)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19171,6 +19172,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_documents_undo_acts.py | 7 |
 | tests/test_docview.py | 28 |
 | tests/test_docview_import.py | 7 |
+| tests/test_dogfood_round2_ui.py | 1 |
 | tests/test_draft_links.py | 6 |
 | tests/test_drafts_api.py | 21 |
 | tests/test_due_in_ask_1018.py | 4 |
