@@ -38,7 +38,9 @@ def normalise_tags(tags: Iterable[object] | None) -> list[str]:
     for raw in tags or ():
         if raw is None:
             continue
-        tag = str(raw).strip()[:MAX_TAG_LENGTH].strip()
+        #: "#biology" is the tag "biology": the mark is how a tag is drawn and
+        #: written, not part of its name (it was stored as "##biology").
+        tag = str(raw).strip().lstrip("#").strip()[:MAX_TAG_LENGTH].strip()
         if not tag:
             continue
         key = tag.casefold()

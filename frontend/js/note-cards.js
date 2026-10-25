@@ -1606,7 +1606,7 @@ function entryItem(entry, options = {}) {
   const fillContent = () => renderNoteText(
     content,
     //: Heading hashes are source, not words (dogfood item 18).
-    (content.classList.contains("entry-clamped") ? body.replace(/\n[ \t\r]*(?:\n[ \t\r]*)+/g, "\n") : body).replace(/^#{1,6}[ \t]+/gm, ""),
+    (content.classList.contains("entry-clamped") ? body.replace(/\n[ \t\r]*(?:\n[ \t\r]*)+/g, "\n") : body).replace(/^#{1,6}[ \t]+/gm, "").replace(/^( *)-(?= \w)/gm, "$1•"),
     searchHighlightTerms()
   );
   fillContent();

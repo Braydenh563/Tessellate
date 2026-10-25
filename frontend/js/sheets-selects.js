@@ -2269,7 +2269,7 @@ async function loadChatSuggestions() {
   const label = document.createElement("span");
   label.className = "muted";
   //: UX-07: with no model a chip goes to Notes, Ask, and says so.
-  label.textContent = aiIsOff() ? "Try in Notes, Ask:" : "Try asking:";
+  label.textContent = aiIsOff() ? "Try in Ask:" : "Try asking:";
   box.appendChild(label);
   for (const question of picks) {
     //: No model: the chips go to Notes, Ask, like the dashboard's Ask tile

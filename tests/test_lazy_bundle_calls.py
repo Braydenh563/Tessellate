@@ -105,6 +105,7 @@ REACHED_AFTER_LOAD = {
     #: INBOX 1305: a far move asks for its path when `typeof companionPathPlan
     #: === "function"`; the mind's first tick fetches the bundle, and until
     #: it is here a far move walks.
+    "findSettings": "settingsUi, called by filterSettings only when renderSettingResults (same bundle) returned a count",
     "companionPathPlan": "companionMenu, fetched with the mind at the first tick; a far move walks until then (typeof check)",
     "nameMarkBuddyThrow": "companionThrow, fetched on the carry's first move; the release checks typeof and drops otherwise",
     #: Back closing an open overlay (router-overlays.js): preloaded three seconds

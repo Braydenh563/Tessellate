@@ -13799,6 +13799,27 @@ function mountEditorToolbarExtras(bar) {
   }
 }
 
+//: A toolbar is one Tab stop (dog2 item 21: Tab from the note title walked 16
+//: buttons before the editor). The focused control is the stop; Left and Right
+//: move between the visible ones.
+function wireToolbarRoving(bar) {
+  const all = () => [...bar.querySelectorAll("button, select, summary")];
+  const rove = (to) => all().forEach((el) => { el.tabIndex = el === to ? 0 : -1; });
+  rove(bar.querySelector("button"));
+  bar.addEventListener("focusin", (event) => {
+    if (all().includes(event.target)) rove(event.target);
+  });
+  bar.addEventListener("keydown", (event) => {
+    const step = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
+    if (!step || event.target.tagName === "SELECT") return;
+    const shown = all().filter((el) => !el.disabled && el.getClientRects().length);
+    const next = shown[shown.indexOf(event.target) + step];
+    if (!next) return;
+    event.preventDefault();
+    next.focus();
+  });
+}
+
 //: Wire one formatting strip to its textarea: mount the shared extras
 //: (Block menu, colours, …), then every `button[data-md]` and colour
 //: select. Split out of `initMarkdownToolbars` so the note edit form can
@@ -13808,6 +13829,7 @@ function mountEditorToolbarExtras(bar) {
 function wireMarkdownToolbar(bar) {
   const boxId = bar.dataset.mdTarget || "doc-content";
   mountEditorToolbarExtras(bar);
+  wireToolbarRoving(bar);
   //: **Delegated, not one listener per button.** The dropdown menus are
   //: built by the mount above and, in the note edit form, the whole strip
   //: is a *clone*: so per-button listeners covered whatever existed at
@@ -16259,7 +16281,10 @@ function docToolbarMarksAt(CM, state) {
   //: Bold reads as off at the exact moment a writer is still typing the word.
   //: Asking for the node on the left is what makes "keep typing in bold" and
   //: "the button says bold" the same answer.
-  let node = syntaxTree(state).resolveInner(state.selection.main.head, -1);
+  const head = state.selection.main.head;
+  //: A blank line is inside nothing: resolving left of it lands in the item above.
+  if (!state.doc.lineAt(head).text.trim()) return marks;
+  let node = syntaxTree(state).resolveInner(head, -1);
   while (node) {
     const mark = DOC_TOOLBAR_MARKS[node.name];
     if (mark) marks.add(mark);

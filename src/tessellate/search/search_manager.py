@@ -272,13 +272,29 @@ def _corrected_terms(session: Session, terms: list[str]) -> list[str]:
         if term in vocabulary:
             corrected.append(term)
             continue
-        near = [w for w in vocabulary if abs(len(w) - len(term)) <= 2]
-        close = difflib.get_close_matches(term, near, n=1, cutoff=CORRECT_CUTOFF)
+        close = _near_words(term, vocabulary)
         # The vocabulary holds porter stems ("lectur"), which no one wrote; the
         # correction offered, and searched, is a word a note really uses.
         real = _word_for_stem(session, close[0], term) if close else None
         corrected.append(real or term)
     return corrected
+
+
+def _near_words(term: str, vocabulary: list[str]) -> list[str]:
+    """The vocabulary word closest to a misspelt term, as a one-item list.
+
+    The vocabulary holds porter stems, which are shorter than the word typed
+    ("respir" for "respiraton"), so a stem is also compared with the typed
+    word cut to just past the stem's length."""
+    best, best_ratio = None, CORRECT_CUTOFF
+    for word in vocabulary:
+        if abs(len(word) - len(term)) > 2 and not (len(word) >= CORRECT_MIN_LEN and len(word) < len(term)):
+            continue
+        for typed in {term, term[: len(word) + 1]}:
+            ratio = difflib.SequenceMatcher(None, typed, word).ratio()
+            if ratio >= best_ratio:
+                best, best_ratio = word, ratio
+    return [best] if best else []
 
 
 def _word_for_stem(session: Session, stem: str, typed: str) -> str | None:

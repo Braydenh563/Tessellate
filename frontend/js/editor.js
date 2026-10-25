@@ -210,6 +210,8 @@ function editorHintPlaceholder(box) {
   //: has the room and reads better with the hint under the prompt; the chat
   //: bar is one row by design, and there the hint joins the sentence.
   const tall = (Number(box.getAttribute("rows")) || 1) > 2;
+  //: The joined hint is 492px of text: cut ("Press / for bl") in the box a 700px window leaves.
+  if (!tall && innerWidth < 800) return;
   const joined = tall
     ? (current ? `${current}\n${EDITOR_MENU_HINT}.` : `${EDITOR_MENU_HINT}.`)
     : (current ? `${current}  ${EDITOR_MENU_HINT}.` : `${EDITOR_MENU_HINT}.`);
@@ -2288,7 +2290,7 @@ async function offerToCreateWikiTarget(name) {
 
     const doc = await apiJson("/documents", {
       method: "POST",
-      body: JSON.stringify({ title: wanted, content: `# ${wanted}\n\n` }),
+      body: JSON.stringify({ title: wanted, content: "" }),
     });
     // Keep the resolver's cache honest, or the link stays unresolved until
     // something else happens to refetch documents.

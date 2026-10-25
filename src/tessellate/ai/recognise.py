@@ -747,7 +747,24 @@ def _reminder_words(text: str, spans: list) -> tuple[str, str]:
         rest = rest[:start] + " " + rest[end:]
     rest = strip_lead(re.sub(r"\s+", " ", rest).strip(" ,.;:-"))
     rest = _trim_dangling(rest)
+    if not any(s.kind == "recurrence" for s in spans):
+        rest = _keep_due_day(rest, [s.text for s in sorted(spans, key=lambda s: s.start) if _is_time_words(s, text)])
     return (rest or text.strip() or "Reminder"), priority
+
+
+_CLOCK_TAIL = re.compile(r"\s+(?:at\s+)?\d{1,2}(?::\d{2})?\s*(?:am|pm)$|\s+at\s+\d{1,2}(?::\d{2})?$|\s+\d{1,2}:\d{2}$", re.I)
+
+
+def _keep_due_day(rest: str, cut_words: list[str]) -> str:
+    """"Essay due friday 5pm" is "Essay due Friday", not "Essay due": a title that
+    ends on "due" has lost the day it was due when the time is cut out, so the
+    day word stays and only the clock goes."""
+    if not cut_words or not rest.lower().endswith(" due"):
+        return rest
+    day = _CLOCK_TAIL.sub("", cut_words[0].strip()).strip()
+    if not day or re.fullmatch(r"(?:at\s+)?\d{1,2}(?::\d{2})?\s*(?:am|pm)?", day, re.I) or day.lower().startswith("in "):
+        return rest
+    return f"{rest} {day[0].upper() + day[1:]}" if day[0].isalpha() else f"{rest} {day}"
 
 
 def parse_reminder_text(

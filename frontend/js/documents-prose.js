@@ -1763,6 +1763,14 @@ function docListEnter(line) {
   const step = indent.length >= 4 && indent.length % 4 === 0 ? 4 : 2;
   return line.slice(Math.min(step, indent.length));
 }
+//: **Ending a list leaves the blank line after it** (dog2 item 6). The empty
+//: item became an empty line directly under the last item, so a heading or a
+//: fence typed next sat flush against the list. `next` is `docListEnter`'s
+//: answer and `prev` the line above; only a top-level exit under a real line
+//: gets the extra newline, so the caret lands one line below a blank one.
+function docListExitText(next, prev) {
+  return next === "" && typeof prev === "string" && prev.trim() !== "" ? "\n" : next;
+}
 //: **Retyping "- " on an auto-bullet does not nest** (dogfood item 3). `before`
 //: is the line up to the caret with the dash already typed ("- -"), `typed`
 //: the space. Returns the line to keep ("- "), or null.
@@ -1946,8 +1954,9 @@ function docProsePairKeymap(CM, anyHost = false) {
       if (!range.empty || view.state.selection.ranges.length > 1) return false;
       const line = view.state.doc.lineAt(range.head);
       if (range.head !== line.to || docInCodeAt(CM, view.state, range.head, anyHost)) return false;
-      const next = docListEnter(line.text);
-      if (next === null) return false;
+      const exit = docListEnter(line.text);
+      if (exit === null) return false;
+      const next = docListExitText(exit, line.number > 1 ? view.state.doc.line(line.number - 1).text : null);
       view.dispatch({
         changes: { from: line.from, to: line.to, insert: next },
         selection: { anchor: line.from + next.length },

@@ -285,12 +285,16 @@ async function loadCaptureDocuments() {
 // Ask for a title and start an empty document. Shared by the capture box and
 // the note card's "Add to a document", so both offer the same thing.
 async function createDocumentNamed(suggestion = "") {
-  const title = await promptDialog("Title for the new document:", suggestion, { confirmLabel: "Create" });
+  const asking = promptDialog("Title for the new document:", suggestion, { confirmLabel: "Create" });
+  //: Create with nothing typed closed the dialog and said nothing (dog2 item
+  //: 15); `required` makes it say so (promptDialog checks the field's validity).
+  document.querySelector(".prompt-card input").required = true;
+  const title = await asking;
   if (!title) return null;
   try {
     const doc = await apiJson("/documents", {
       method: "POST",
-      body: JSON.stringify({ title, content: `# ${title}\n\n` }),
+      body: JSON.stringify({ title, content: "" }),
     });
     offerCreateUndo(doc);
     return doc; // the documents tab refetches on switch, so nothing to sync

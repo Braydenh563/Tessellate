@@ -625,12 +625,10 @@ function filterSettings(term) {
     : matches
       ? `${matches} section${matches === 1 ? "" : "s"}`
       : "Nothing matches that";
-  // One match is not ambiguous, so show it rather than making the user click
-  // the single remaining button.
-  if (matches === 1 && !settingsFound) {
-    const only = buttons.find((b) => !b.classList.contains("hidden"));
-    if (only) showSettingsSection(only.dataset.section);
-  }
+  // The first match is shown rather than leaving the pane on what it was
+  // (dog2 item 18: "phone" listed results over the Models pane).
+  const first = settingsFound ? findSettings(query, 1)[0]?.section : buttons.find((b) => !b.classList.contains("hidden"))?.dataset.section;
+  if (first) showSettingsSection(first);
 }
 
 function closeSettingsModal() {
