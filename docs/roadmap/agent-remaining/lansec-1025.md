@@ -4,5 +4,6 @@
 - done: ea3ce26 localhost guard
 - done: e5067eb backup_copy_dir, update_beta
 - done: 6ab3a1d throttle /64
-- done: CA key perms (this commit)
-- next: docs/SECURITY.md "Phone and other devices"
+- done: CA key perms
+- done: SECURITY.md section (this commit)
+- next: nothing; not verified on a real phone
