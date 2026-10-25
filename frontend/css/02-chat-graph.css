@@ -393,11 +393,16 @@
   border: 1px dashed var(--border);
   border-radius: var(--radius-lg);
 }
-.inline-action textarea {
-  margin-bottom: 0.4rem;
-}
+.inline-action textarea,
 .inline-action input {
-  margin-bottom: 0.4rem;
+  margin: 0 0 0.4rem;
+}
+.inline-action .row > input {
+  margin: 0;
+}
+.inline-action .select-opener {
+  height: var(--control-h);
+  padding-block: 0;
 }
 #reminder-presets {
   gap: var(--space-3);
@@ -995,6 +1000,7 @@ details.tool-chip[open] > .tool-chip-body {
      y=264, content height, vertically centred, with the map 192px of it.
      Stretching it explicitly is what makes `inset` mean what it reads as. */
   align-self: stretch;
+  height: auto;
   justify-self: stretch;
 }
 /* **The app chrome goes with it** (INBOX 29: "the top bar stays"). The card
