@@ -98,3 +98,20 @@ def test_tidy_as_a_tree_follows_the_connectors_and_shows_only_when_it_applies():
 
     body = next(t["body"] for t in help_chat.HELP_TOPICS if t["id"] == "board-diagram-tools")
     assert "Tidy as a tree" in body and "Shift+2" in body
+
+
+def test_change_the_shape_keeps_the_box_and_shows_only_for_a_closed_shape():
+    cmds = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    change = _function(WB, "wbChangeShapeKind")
+    # Drawn into the shape's present box, with the rest of its data spread in.
+    assert "wbPathBBox(parsed.d)" in change and "{ ...parsed, d: swap.d(" in change
+    assert 'wbPushUndo({ action: "move", kind: "sketch"' in change
+    assert "WB_FILLABLE_SHAPES.has(parsed.shape)" in _function(WB, "wbSwapTarget")
+    assert 'id: "change-shape"' in cmds and 'needs: "swappable"' in cmds
+    assert 'data-wb-ctx="more-shape" data-wb-cmd="change-shape"' in html
+    assert 'shape: { bar: ["ink", "stroke", "fill", "order"], more: ["more-shape", "more-style"] }' in WB
+    from tessellate.ai import help_chat
+
+    body = next(t["body"] for t in help_chat.HELP_TOPICS if t["id"] == "board-diagram-tools")
+    assert "Change the shape" in body

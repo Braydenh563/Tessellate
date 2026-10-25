@@ -1628,13 +1628,17 @@ HELP_TOPICS.extend(
             "keywords": (
                 "tidy a diagram", "tree layout", "lay out as a tree", "auto layout", "layout a flowchart",
                 "zoom to selection", "zoom to the selection", "zoom to fit the selection", "shift+2",
+                "change shape", "change the shape", "swap a shape", "turn a rectangle into", "replace shape",
             ),
             "body": (
                 "Diagram tools on a board. Shift+2 (or View, Zoom to the selection) frames what is selected, "
                 "up to twice its size. Tidy as a tree, in Arrange, the selection's More and the right-click "
                 "Arrange, lays the selected shapes out along the connectors between them, top to bottom or "
                 "left to right: a shape no connector points into is a root, siblings keep their order, and "
-                "one Undo takes it back. It is offered once the selection holds a connector."
+                "one Undo takes it back. It is offered once the selection holds a connector. Change the "
+                "shape…, in a closed shape's More, the right-click Arrange and Ctrl+K, turns it into another "
+                "kind (rectangle, ellipse, diamond, cylinder, cloud and the rest) in the same box, keeping "
+                "its text, colours, line and connectors."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

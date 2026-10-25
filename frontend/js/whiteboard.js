@@ -4799,6 +4799,58 @@ async function wbTidySelection(direction = "down") {
   toast(`Tidied ${entries.length} items as a tree.`);
 }
 
+//: **Change a shape's kind in place** (draw.io Edit > Edit style > shape,
+//: Excalidraw's shape switch): the four drawn kinds and the shape flyout's
+//: own, each drawn by the code that draws it from the tool, into the box the
+//: shape has now. Text, colours, line and its connectors (bound by id) stay.
+const WB_SHAPE_SWAPS = {
+  rect: { label: "Rectangle", icon: "ph:square", d: (x, y, w, h) => `M ${x} ${y} h ${w} v ${h} h ${-w} Z` },
+  circle: { label: "Ellipse", icon: "ph:circle", d: (x, y, w, h) => wbEllipseDrawD(x, y, x + w, y + h, false) },
+  triangle: { label: "Triangle", icon: "ph:triangle", d: (x, y, w, h) => `M ${x + w / 2} ${y} L ${x + w} ${y + h} L ${x} ${y + h} Z` },
+  diamond: { label: "Diamond", icon: "ph:diamond", d: (x, y, w, h) => `M ${x + w / 2} ${y} L ${x + w} ${y + h / 2} L ${x + w / 2} ${y + h} L ${x} ${y + h / 2} Z` },
+  ...Object.fromEntries(Object.entries(WB_MORE_SHAPES).filter(([k]) => k !== "shape-ellipse")),
+};
+
+//: The one selected closed shape, with its parsed data, or null.
+function wbSwapTarget() {
+  if (!wbSelectedItem || wbSelectedItem.kind !== "sketch" || wbMultiSelection.size > 1) return null;
+  const item = wbFindItem("sketch", wbSelectedItem.id);
+  const parsed = item ? wbSketchParsedData(item) : null;
+  return parsed && WB_FILLABLE_SHAPES.has(parsed.shape) ? { item, parsed } : null;
+}
+
+async function wbChangeShapeKind(kind) {
+  const target = wbSwapTarget(), swap = WB_SHAPE_SWAPS[kind];
+  if (!target || !swap) return;
+  const { item, parsed } = target;
+  const box = wbPathBBox(parsed.d);
+  const before = WB_KIND_INFO.sketch.payload(item);
+  const more = Boolean(WB_MORE_SHAPES[kind]);
+  const next = { ...parsed, d: swap.d(box.minX, box.minY, Math.max(box.width, 1), Math.max(box.height, 1)), shape: more ? "custom" : kind };
+  delete next.label_area;
+  delete next.shapeKind;
+  if (more) next.shapeKind = kind;
+  if (swap.area) next.label_area = swap.area;
+  item.data = JSON.stringify(next);
+  await wbSaveSketchProps(item, {});
+  wbPushUndo({ action: "move", kind: "sketch", id: item.id, before });
+  wbScheduleRender();
+  wbAnnounce(`Changed to ${swap.label.toLowerCase()}`);
+}
+
+//: The kinds as a menu at the More button (or the pointer), the current one
+//: left out.
+function wbOpenShapeSwapMenu(x, y) {
+  const target = wbSwapTarget();
+  if (!target) return;
+  const now = target.parsed.shapeKind || target.parsed.shape;
+  const items = Object.entries(WB_SHAPE_SWAPS)
+    .filter(([kind]) => kind !== now)
+    .map(([kind, swap]) => makeMenuItem(`${swap.icon} ${swap.label}`, `Change to ${swap.label.toLowerCase()}, keeping its text, colours and connectors`, () => wbChangeShapeKind(kind)));
+  const at = wbContextMoreWrap()?.getBoundingClientRect();
+  openMenuAtPoint(items, "Change the shape", x ?? (at ? at.left : 80), y ?? (at ? at.bottom + 4 : 80));
+}
+
 //: **Same size**, the third of WHITEBOARD_PLAN decision 3's eleven arrange
 //: actions and the one that had no function at all. Every selected item takes
 //: the largest one's width (or height); the largest rather than the
@@ -5248,7 +5300,7 @@ const WB_CONTEXT_CONTROLS = {
   // Nothing selected, a drawing tool held: what the next stroke will use.
   tool: { bar: ["tool"], more: ["more-style"] },
   line: { bar: ["ink", "caps", "stroke", "order"], more: ["more-style"] },
-  shape: { bar: ["ink", "stroke", "fill", "order"], more: ["more-style"] },
+  shape: { bar: ["ink", "stroke", "fill", "order"], more: ["more-shape", "more-style"] },
   link: { bar: ["ink", "route", "caps", "stroke"], more: ["more-style"] },
   text: { bar: ["ink", "text", "order"], more: ["more-style", "more-card"] },
   image: { bar: ["order"], more: ["more-style"] },
@@ -5264,7 +5316,7 @@ const WB_CONTEXT_CONTROLS = {
 //: Every group and menu section the table can name, so hiding "everything
 //: else" never has to list them.
 const WB_CONTEXT_GROUPS = ["tool", "ink", "route", "caps", "stroke", "fill", "paper", "text", "arrange", "order", "mapmulti"];
-const WB_CONTEXT_MENU_SECTIONS = ["more-style", "more-card", "more-guides", "more-notes", "more-mindmap", "more-tidy"];
+const WB_CONTEXT_MENU_SECTIONS = ["more-style", "more-card", "more-guides", "more-notes", "more-mindmap", "more-tidy", "more-shape"];
 
 //: Which row of the table a selection reads. Returns null when the bar has
 //: nothing to say, which is what closes it.
@@ -8753,7 +8805,7 @@ function wbBuildContextMenu(kind) {
   //: map: a topic's place in a tree is its order (FEAT-17).
   if (!wbIsMap()) {
     subItem("Arrange", (sub) => {
-      for (const id of ["group", "ungroup", "lock", "flip-h", "flip-v", "tidy-down", "tidy-right"]) {
+      for (const id of ["group", "ungroup", "lock", "flip-h", "flip-v", "change-shape", "tidy-down", "tidy-right"]) {
         const row = wbCommandMenuRow(id);
         if (row) sub(...row);
       }

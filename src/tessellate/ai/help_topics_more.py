@@ -2202,7 +2202,7 @@ TOPIC_META: dict[str, dict] = {
     "board-templates": {"title": "Board and map templates", "path": "Library tab, Boards & maps, New, From a template"},
     "board-format": {"title": "The board's Format panel", "path": "A board, Ctrl+Shift+P or the selection's More menu"},
     "board-connectors": {"title": "Connector bends, connection points and importing diagrams", "path": "A board, Insert, Mermaid, draw.io or board SVG"},
-    "board-diagram-tools": {"title": "Diagram tools: zoom to the selection and tidy as a tree", "path": "A board, Arrange, View, or a selection's More"},
+    "board-diagram-tools": {"title": "Diagram tools: zoom to the selection, tidy as a tree, change a shape", "path": "A board, Arrange, View, or a selection's More"},
     "mind-map-controls": {"title": "Mind map keys and controls", "path": "Library tab, Boards & maps"},
     "documents-controls": {"title": "Document editor keys and controls", "path": "Library tab, Documents"},
     "documents-features": {"title": "Document editor features", "path": "Library tab, Documents"},

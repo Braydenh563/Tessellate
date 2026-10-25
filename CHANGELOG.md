@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: Change the shape…, in a closed shape's More, the right-click Arrange and Ctrl+K, turns it into another kind in the same box, keeping its text, colours, line and connectors.
 - Whiteboard: Tidy as a tree, in Arrange and the selection's More, lays the selected shapes out along the connectors between them, top to bottom or left to right; it is offered only once the selection holds a connector, and one Undo takes it back.
 - Whiteboard: Shift+2, View and Ctrl+K zoom to the selection, magnified up to 2x and centred in the free canvas; with nothing selected it says so.
 - Whiteboard: a line drawn with the Line tool (L) from or to a shape, card or topic binds to it like an arrow and follows it when it moves, with the plain ends the tool draws (measured: a line from one shape to another stayed a loose path at 223 to 404 when the far shape moved 80 right; now bound to both, its far end follows the move).
