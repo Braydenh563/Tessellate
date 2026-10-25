@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import re
 
-from tessellate.ai import composer_calc, composer_follow, composer_plan, composer_study, composer_switch, composer_web
+from tessellate.ai import composer_calc, composer_follow, composer_notes, composer_plan, composer_study, composer_switch, composer_web
 from tessellate.ai.composer_study import Ctx, Reply
 
 _OPEN_IT = re.compile(
@@ -67,7 +67,7 @@ def answer(ctx: Ctx) -> Reply | None:
         return opened
     if composer_study.match(_plain(ctx)) is not None:
         return composer_study.answer(ctx)
-    return composer_follow.answer(ctx) or composer_plan.answer(ctx) or composer_calc.answer(ctx) or composer_study.answer(ctx)
+    return composer_follow.answer(ctx) or composer_notes.answer(ctx) or composer_plan.answer(ctx) or composer_calc.answer(ctx) or composer_study.answer(ctx)
 
 
 def _plain(ctx: Ctx) -> str:

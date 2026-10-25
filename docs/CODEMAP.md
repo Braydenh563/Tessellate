@@ -2,7 +2,7 @@
 
 Generated 2026-10-25 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6228, frontend ids 2539, CSS sections 497, backend routes 618, backend modules 6410, test files 1338, tests 11925, plan headings 968.
+Counts: frontend functions 6228, frontend ids 2539, CSS sections 497, backend routes 618, backend modules 6427, test files 1339, tests 11933, plan headings 968.
 
 ## Frontend functions (6228)
 
@@ -10809,7 +10809,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (6410)
+## Backend modules (6427)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -11736,6 +11736,28 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `mention_subject` | src/tessellate/ai/composer_lists.py:242 |
 | `window_of` | src/tessellate/ai/composer_lists.py:115 |
 
+### src/tessellate/ai/composer_notes.py (17)
+
+| Name | File:line |
+|---|---|
+| `_day` | src/tessellate/ai/composer_notes.py:85 |
+| `_heading_lines` | src/tessellate/ai/composer_notes.py:176 |
+| `_item` | src/tessellate/ai/composer_notes.py:129 |
+| `_link` | src/tessellate/ai/composer_notes.py:81 |
+| `_made` | src/tessellate/ai/composer_notes.py:112 |
+| `_matching` | src/tessellate/ai/composer_notes.py:117 |
+| `_nothing` | src/tessellate/ai/composer_notes.py:148 |
+| `_outline_lines` | src/tessellate/ai/composer_notes.py:194 |
+| `_outline_note` | src/tessellate/ai/composer_notes.py:185 |
+| `_plural` | src/tessellate/ai/composer_notes.py:77 |
+| `_read_recent` | src/tessellate/ai/composer_notes.py:137 |
+| `_sentence_with` | src/tessellate/ai/composer_notes.py:107 |
+| `_wanted` | src/tessellate/ai/composer_notes.py:103 |
+| `_window` | src/tessellate/ai/composer_notes.py:91 |
+| `answer` | src/tessellate/ai/composer_notes.py:221 |
+| `outline` | src/tessellate/ai/composer_notes.py:205 |
+| `recent` | src/tessellate/ai/composer_notes.py:157 |
+
 ### src/tessellate/ai/composer_open.py (10)
 
 | Name | File:line |
@@ -12272,41 +12294,41 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_of` | src/tessellate/ai/help_chat.py:2471 |
-| `_aware` | src/tessellate/ai/help_chat.py:3005 |
-| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2402 |
-| `_guide_lead` | src/tessellate/ai/help_chat.py:2919 |
-| `_guide_opening` | src/tessellate/ai/help_chat.py:2935 |
-| `_help_sentences` | src/tessellate/ai/help_chat.py:2902 |
-| `_keyword_in` | src/tessellate/ai/help_chat.py:2392 |
-| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2324 |
-| `_keyword_regex` | src/tessellate/ai/help_chat.py:2388 |
-| `_matching_topics` | src/tessellate/ai/help_chat.py:2521 |
-| `_meaning_topics` | src/tessellate/ai/help_chat.py:2601 |
-| `_normalise_keys` | src/tessellate/ai/help_chat.py:2347 |
-| `_place` | src/tessellate/ai/help_chat.py:2876 |
-| `_preference` | src/tessellate/ai/help_chat.py:2958 |
-| `_prompt_for` | src/tessellate/ai/help_chat.py:2749 |
-| `_read_as` | src/tessellate/ai/help_chat.py:3070 |
-| `_reading_topics` | src/tessellate/ai/help_chat.py:2493 |
-| `_repaired` | src/tessellate/ai/help_chat.py:2510 |
-| `_second_sentence` | src/tessellate/ai/help_chat.py:2906 |
-| `_state_line` | src/tessellate/ai/help_chat.py:2967 |
-| `_stated_lead` | src/tessellate/ai/help_chat.py:2976 |
-| `answer` | src/tessellate/ai/help_chat.py:3150 |
-| `answer_stream` | src/tessellate/ai/help_chat.py:3085 |
-| `badges_for` | src/tessellate/ai/help_chat.py:2689 |
-| `composed_answer` | src/tessellate/ai/help_chat.py:2987 |
-| `help_block_for` | src/tessellate/ai/help_chat.py:3231 |
-| `help_listing` | src/tessellate/ai/help_chat.py:2660 |
-| `help_sentences` | src/tessellate/ai/help_chat.py:2885 |
-| `names_app` | src/tessellate/ai/help_chat.py:3215 |
-| `offline_answer` | src/tessellate/ai/help_chat.py:3017 |
-| `social_reply` | src/tessellate/ai/help_chat.py:2849 |
-| `source_names` | src/tessellate/ai/help_chat.py:2656 |
-| `system_answer` | src/tessellate/ai/help_chat.py:2638 |
-| `topic_title` | src/tessellate/ai/help_chat.py:2624 |
-| `topics_for` | src/tessellate/ai/help_chat.py:2703 |
+| `_act_of` | src/tessellate/ai/help_chat.py:2472 |
+| `_aware` | src/tessellate/ai/help_chat.py:3006 |
+| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2403 |
+| `_guide_lead` | src/tessellate/ai/help_chat.py:2920 |
+| `_guide_opening` | src/tessellate/ai/help_chat.py:2936 |
+| `_help_sentences` | src/tessellate/ai/help_chat.py:2903 |
+| `_keyword_in` | src/tessellate/ai/help_chat.py:2393 |
+| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2325 |
+| `_keyword_regex` | src/tessellate/ai/help_chat.py:2389 |
+| `_matching_topics` | src/tessellate/ai/help_chat.py:2522 |
+| `_meaning_topics` | src/tessellate/ai/help_chat.py:2602 |
+| `_normalise_keys` | src/tessellate/ai/help_chat.py:2348 |
+| `_place` | src/tessellate/ai/help_chat.py:2877 |
+| `_preference` | src/tessellate/ai/help_chat.py:2959 |
+| `_prompt_for` | src/tessellate/ai/help_chat.py:2750 |
+| `_read_as` | src/tessellate/ai/help_chat.py:3071 |
+| `_reading_topics` | src/tessellate/ai/help_chat.py:2494 |
+| `_repaired` | src/tessellate/ai/help_chat.py:2511 |
+| `_second_sentence` | src/tessellate/ai/help_chat.py:2907 |
+| `_state_line` | src/tessellate/ai/help_chat.py:2968 |
+| `_stated_lead` | src/tessellate/ai/help_chat.py:2977 |
+| `answer` | src/tessellate/ai/help_chat.py:3151 |
+| `answer_stream` | src/tessellate/ai/help_chat.py:3086 |
+| `badges_for` | src/tessellate/ai/help_chat.py:2690 |
+| `composed_answer` | src/tessellate/ai/help_chat.py:2988 |
+| `help_block_for` | src/tessellate/ai/help_chat.py:3232 |
+| `help_listing` | src/tessellate/ai/help_chat.py:2661 |
+| `help_sentences` | src/tessellate/ai/help_chat.py:2886 |
+| `names_app` | src/tessellate/ai/help_chat.py:3216 |
+| `offline_answer` | src/tessellate/ai/help_chat.py:3018 |
+| `social_reply` | src/tessellate/ai/help_chat.py:2850 |
+| `source_names` | src/tessellate/ai/help_chat.py:2657 |
+| `system_answer` | src/tessellate/ai/help_chat.py:2639 |
+| `topic_title` | src/tessellate/ai/help_chat.py:2625 |
+| `topics_for` | src/tessellate/ai/help_chat.py:2704 |
 
 ### src/tessellate/ai/help_topics_more.py (2)
 
@@ -18843,7 +18865,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11925)
+## Tests (11933)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19064,6 +19086,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_labels_1018.py | 2 |
 | tests/test_composer_lists_1018.py | 22 |
 | tests/test_composer_long_question.py | 7 |
+| tests/test_composer_notes_1025.py | 8 |
 | tests/test_composer_open_2210.py | 14 |
 | tests/test_composer_overview_787.py | 18 |
 | tests/test_composer_owner_1017.py | 15 |

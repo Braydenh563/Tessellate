@@ -519,7 +519,7 @@ HELP_TOPICS: list[dict] = [
     },
     {
         "id": "studyhelp",
-        "keywords": ("quiz me", "flashcards", "flash cards", "key terms", "summarise a note", "study help", "what is due", "plan my week", "revise", "study without a model"),
+        "keywords": ("quiz me", "outline a note", "what did i write about", "flashcards", "flash cards", "key terms", "summarise a note", "study help", "what is due", "plan my week", "revise", "study without a model"),
         "body": (
             "With no model running, Ask and Chat still help you study from your own notes. "
             "Say “quiz me on lecture 5” for questions built from its definitions, bold terms and lists: "
@@ -531,6 +531,7 @@ HELP_TOPICS: list[dict] = [
             "your notes give and your open checklist items. It also works out percentages, marks needed, dates "
             "(“what day is 3 weeks from friday”) and word counts, and defines common study terms your notes "
             "do not cover. After a due or plan list, “the second one” and “why” explain a line and where it came from; "
+            "“What did I write about databases this week” lists that time's notes on a topic, dated, and “outline lecture 5” shows a note's headings with a word count each; "
             "after a reply that says a tool is off, “turn it on” links its switch (it never flips it for you). "
             "Every answer about a note is that note's own words."
         ),
