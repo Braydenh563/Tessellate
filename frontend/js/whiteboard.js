@@ -5299,11 +5299,11 @@ async function wbResetSelectedStyle() {
 const WB_CONTEXT_CONTROLS = {
   // Nothing selected, a drawing tool held: what the next stroke will use.
   tool: { bar: ["tool"], more: ["more-style"] },
-  line: { bar: ["ink", "caps", "stroke", "order"], more: ["more-style"] },
-  shape: { bar: ["ink", "stroke", "fill", "order"], more: ["more-shape", "more-style"] },
+  line: { bar: ["ink", "caps", "stroke", "order"], more: ["more-link", "more-style"] },
+  shape: { bar: ["ink", "stroke", "fill", "order"], more: ["more-link", "more-shape", "more-style"] },
   link: { bar: ["ink", "route", "caps", "stroke"], more: ["more-style"] },
-  text: { bar: ["ink", "text", "order"], more: ["more-style", "more-card"] },
-  image: { bar: ["order"], more: ["more-style"] },
+  text: { bar: ["ink", "text", "order"], more: ["more-link", "more-style", "more-card"] },
+  image: { bar: ["order"], more: ["more-link", "more-style"] },
   // A note card: its look comes from the note, so what it offers is where it
   // sits and what it can become.
   note: { bar: ["order"], more: ["more-mindmap", "more-notes"] },
@@ -5316,7 +5316,7 @@ const WB_CONTEXT_CONTROLS = {
 //: Every group and menu section the table can name, so hiding "everything
 //: else" never has to list them.
 const WB_CONTEXT_GROUPS = ["tool", "ink", "route", "caps", "stroke", "fill", "paper", "text", "arrange", "order", "mapmulti"];
-const WB_CONTEXT_MENU_SECTIONS = ["more-style", "more-card", "more-guides", "more-notes", "more-mindmap", "more-tidy", "more-shape"];
+const WB_CONTEXT_MENU_SECTIONS = ["more-style", "more-card", "more-guides", "more-notes", "more-mindmap", "more-tidy", "more-shape", "more-link"];
 
 //: Which row of the table a selection reads. Returns null when the bar has
 //: nothing to say, which is what closes it.
@@ -8788,6 +8788,9 @@ function wbBuildContextMenu(kind) {
       wbOpenComments(commentOn.kind, commentOn.id)
     );
   }
+  //: A shape's own link (draw.io Edit link): set, open or take off.
+  const linkRow = wbCommandMenuRow("item-link");
+  if (linkRow && commentOn) item(wbItemLink(commentOn.kind, commentItem) ? "Link: open, change or remove…" : "Link…", "Link this to a note or a web page", () => wbEditItemLink());
   //: A frame is an export scope (WHITEBOARD_PLAN decision 18).
   const frameOn = commentOn?.kind === "object" && commentItem?.kind === "frame" ? commentItem : null;
   if (frameOn) item("Fit to contents", "Snug the frame to what is inside it, with a margin all round", () => wbFrameFit(frameOn, "nesw"));
@@ -10746,11 +10749,153 @@ async function wbSetComments(kind, item, list) {
   wbPaintCommentMarks();
 }
 
+//: **A shape's own link** (draw.io Edit link): a web page (http or https) or
+//: a view of this app (a note's `#/notes/12`, or any pasted app link),
+//: stored as `link` in a shape's or a text box's data and opened from the
+//: mark on its top-left corner. A note card is a note already, so it has none.
+function wbTakesLink(kind, item) {
+  if (!item || kind === "node") return false;
+  if (kind === "sketch") return Boolean(wbSketchParsedData(item));
+  return !WB_MAP_KINDS.has(item.kind);
+}
+
+function wbItemLink(kind, item) {
+  if (!wbTakesLink(kind, item)) return "";
+  const link = kind === "sketch" ? wbSketchParsedData(item)?.link : item.data?.link;
+  return typeof link === "string" && (/^https?:\/\//i.test(link) || routeEntry(link)) ? link : "";
+}
+
+//: What a typed or pasted address becomes: an app link's hash, a web
+//: address (https:// added to a bare one), or "" for anything else.
+function wbLinkFromText(text) {
+  const value = String(text || "").trim();
+  const hash = appAddressHash(value) || (routeEntry(value) ? value : "");
+  if (hash) return hash;
+  if (/^https?:\/\/[^\s]+$/i.test(value)) return value;
+  return /^[\w-]+(\.[\w-]+)+(\/\S*)?$/.test(value) ? "https://" + value : "";
+}
+
+async function wbSetItemLink(kind, item, link) {
+  wbPushUndo({ action: "move", kind, id: item.id, before: WB_KIND_INFO[kind].payload(item) });
+  if (kind === "sketch") {
+    await wbSaveSketchProps(item, { link: link || undefined });
+  } else {
+    const data = { ...item.data };
+    if (link) data.link = link;
+    else delete data.link;
+    item.data = data;
+    await wbSaveObject(item);
+  }
+  wbPaintCommentMarks();
+}
+
+function wbOpenItemLink(link) {
+  if (link.startsWith("#/")) location.hash = link;
+  else window.open(link, "_blank", "noopener,noreferrer");
+}
+
+//: Link…: a note from the notebook's own picker, or an address typed or
+//: pasted; with a link already set, open it or take it off.
+function wbEditItemLink() {
+  const kind = wbSelectedItem?.kind, item = kind ? wbFindItem(kind, wbSelectedItem.id) : null;
+  if (!wbTakesLink(kind, item)) return;
+  const now = wbItemLink(kind, item);
+  const items = [
+    makeMenuItem("ph:note A note…", "Link this to one of your notes", async () => {
+      const entry = await pickEntryDialog("Link to a note");
+      if (entry) await wbSetItemLink(kind, item, routeHashFor("note", entry.id));
+    }),
+    makeMenuItem("ph:globe A web page or app link…", "Type or paste a web address, or an app link from Copy app link", async () => {
+      const typed = await promptDialog("Link to a web page or app link", now.startsWith("#/") ? "" : now);
+      if (typed === null || typed === undefined) return;
+      const link = wbLinkFromText(typed);
+      if (!link) {
+        toast("That is not a web address or an app link.");
+        return;
+      }
+      await wbSetItemLink(kind, item, link);
+    }),
+  ];
+  if (now) {
+    items.push(makeMenuItem("ph:arrow-square-out Open the link", now, () => wbOpenItemLink(now)));
+    items.push(makeMenuItem("ph:link-break Remove the link", "Take the link off; the shape stays", () => wbSetItemLink(kind, item, "")));
+  }
+  const at = wbContextMoreWrap()?.getBoundingClientRect();
+  openMenuAtPoint(items, "Link", at ? at.left : 80, at ? at.bottom + 4 : 80);
+}
+
+//: The link marks, in their own host beside the comment marks and painted
+//: with them: a pin at the item's top-left corner, the button up and left of
+//: it, clear of the resize grip.
+function wbPaintLinkMarks() {
+  const layer = document.getElementById("wb-html-layer");
+  if (!layer) return;
+  let host = document.getElementById("wb-link-marks");
+  const wanted = [];
+  for (const kind of ["object", "sketch"]) {
+    for (const item of wbState[WB_LIST_BY_KIND[kind]] || []) {
+      const link = wbItemLink(kind, item);
+      if (link) wanted.push([kind, item, link]);
+    }
+  }
+  if (!wanted.length) {
+    host?.replaceChildren();
+    return;
+  }
+  if (!host) {
+    host = document.createElement("div");
+    host.id = "wb-link-marks";
+    host.className = "wb-comment-marks";
+    layer.appendChild(host);
+  }
+  let top = 1;
+  for (const list of [wbState.nodes, wbState.objects]) for (const i of list || []) if (Number.isFinite(i.z)) top = Math.max(top, i.z);
+  host.style.zIndex = String(top + 1);
+  const old = new Map([...host.children].map((pin) => [pin.dataset.linkKey, pin]));
+  for (const [kind, item, link] of wanted) {
+    const key = wbMultiKey(kind, item.id);
+    const box = typeof item._liveD === "string" ? wbPathBBox(item._liveD) : wbItemBBox(kind, item);
+    if (!box) continue;
+    let pin = old.get(key);
+    old.delete(key);
+    if (!pin) {
+      pin = document.createElement("div");
+      pin.className = "wb-comment-pin";
+      pin.dataset.linkKey = key;
+      const mark = document.createElement("button");
+      mark.type = "button";
+      mark.className = "wb-link-mark";
+      const icon = document.createElement("i");
+      icon.setAttribute("aria-hidden", "true");
+      mark.appendChild(icon);
+      mark.addEventListener("pointerdown", (event) => event.stopPropagation());
+      mark.addEventListener("dblclick", (event) => event.stopPropagation());
+      mark.addEventListener("click", (event) => {
+        event.stopPropagation();
+        wbOpenItemLink(mark.dataset.link);
+      });
+      pin.appendChild(mark);
+      host.appendChild(pin);
+    }
+    const mark = pin.firstElementChild;
+    const inApp = link.startsWith("#/");
+    const words = inApp ? appAddressLabel(link) : link;
+    mark.dataset.link = link;
+    mark.firstElementChild.className = `ph ${inApp ? "ph-note" : "ph-arrow-square-out"}`;
+    mark.setAttribute("aria-label", `Open the link: ${words}`);
+    mark.title = words;
+    pin.style.left = `${box.minX}px`;
+    pin.style.top = `${box.minY}px`;
+  }
+  for (const pin of old.values()) pin.remove();
+}
+
 //: The marks, from state, after every render and every drag frame (the
 //: selection bar's frame, `wbQueueSelectionBar`). A zero-size pin at the
 //: item's top-right corner, scaled back to screen size like a grip, holds
 //: the button up and to the right of the corner, clear of the resize handle.
 function wbPaintCommentMarks() {
+  wbPaintLinkMarks();
   const layer = document.getElementById("wb-html-layer");
   if (!layer) return;
   //: A thread open on an item that is gone (deleted, another board) goes too.

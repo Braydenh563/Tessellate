@@ -110,8 +110,27 @@ def test_change_the_shape_keeps_the_box_and_shows_only_for_a_closed_shape():
     assert "WB_FILLABLE_SHAPES.has(parsed.shape)" in _function(WB, "wbSwapTarget")
     assert 'id: "change-shape"' in cmds and 'needs: "swappable"' in cmds
     assert 'data-wb-ctx="more-shape" data-wb-cmd="change-shape"' in html
-    assert 'shape: { bar: ["ink", "stroke", "fill", "order"], more: ["more-shape", "more-style"] }' in WB
+    assert 'shape: { bar: ["ink", "stroke", "fill", "order"], more: ["more-link", "more-shape", "more-style"] }' in WB
     from tessellate.ai import help_chat
 
     body = next(t["body"] for t in help_chat.HELP_TOPICS if t["id"] == "board-diagram-tools")
     assert "Change the shape" in body
+
+
+def test_a_shape_link_is_a_web_page_or_an_app_view_and_opens_from_its_mark():
+    cmds = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    # Only http(s) or a route the app opens is ever read back as a link.
+    read = _function(WB, "wbItemLink")
+    assert "/^https?:\\/\\//i.test(link) || routeEntry(link)" in read
+    assert 'kind === "node"' in _function(WB, "wbTakesLink")  # a note card is a note already
+    opener = _function(WB, "wbOpenItemLink")
+    assert 'location.hash = link' in opener and '"noopener,noreferrer"' in opener
+    assert "wbPaintLinkMarks();" in _function(WB, "wbPaintCommentMarks")
+    assert 'id: "item-link"' in cmds and 'needs: "linkable"' in cmds
+    assert 'data-wb-ctx="more-link" data-wb-cmd="item-link"' in html
+    assert ".wb-link-mark {" in LAZY_CSS
+    from tessellate.ai import help_chat
+
+    body = next(t["body"] for t in help_chat.HELP_TOPICS if t["id"] == "board-diagram-tools")
+    assert "Link…" in body
