@@ -2,7 +2,7 @@
 
 Generated 2026-10-25 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6217, frontend ids 2539, CSS sections 497, backend routes 618, backend modules 6231, test files 1330, tests 11827, plan headings 968.
+Counts: frontend functions 6217, frontend ids 2539, CSS sections 497, backend routes 618, backend modules 6231, test files 1330, tests 11828, plan headings 968.
 
 ## Frontend functions (6217)
 
@@ -11206,7 +11206,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `run` | src/tessellate/ai/commands.py:1134 |
 | `summarise_done` | src/tessellate/ai/commands.py:797 |
 
-### src/tessellate/ai/composer.py (178)
+### src/tessellate/ai/composer.py (179)
 
 | Name | File:line |
 |---|---|
@@ -11377,6 +11377,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `follow_on` | src/tessellate/ai/composer.py:2786 |
 | `help_line` | src/tessellate/ai/composer.py:3703 |
 | `length_wish` | src/tessellate/ai/composer.py:2281 |
+| `open_note_answer` | src/tessellate/ai/composer.py:4767 |
 | `phrase_options` | src/tessellate/ai/composer.py:343 |
 | `plan` | src/tessellate/ai/composer.py:3596 |
 | `read_note` | src/tessellate/ai/composer.py:965 |
@@ -11646,21 +11647,20 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `mention_subject` | src/tessellate/ai/composer_lists.py:242 |
 | `window_of` | src/tessellate/ai/composer_lists.py:115 |
 
-### src/tessellate/ai/composer_open.py (11)
+### src/tessellate/ai/composer_open.py (10)
 
 | Name | File:line |
 |---|---|
-| `_left` | src/tessellate/ai/composer_open.py:156 |
-| `_pick` | src/tessellate/ai/composer_open.py:118 |
-| `_quotes` | src/tessellate/ai/composer_open.py:149 |
-| `_say` | src/tessellate/ai/composer_open.py:145 |
-| `_terms` | src/tessellate/ai/composer_open.py:103 |
-| `_when` | src/tessellate/ai/composer_open.py:181 |
-| `_who` | src/tessellate/ai/composer_open.py:190 |
-| `answer` | src/tessellate/ai/composer_open.py:123 |
-| `composer_voice` | src/tessellate/ai/composer_open.py:139 |
-| `kind` | src/tessellate/ai/composer_open.py:93 |
-| `reads_note` | src/tessellate/ai/composer_open.py:108 |
+| `_left` | src/tessellate/ai/composer_open.py:139 |
+| `_pick` | src/tessellate/ai/composer_open.py:117 |
+| `_quotes` | src/tessellate/ai/composer_open.py:132 |
+| `_say` | src/tessellate/ai/composer_open.py:128 |
+| `_terms` | src/tessellate/ai/composer_open.py:102 |
+| `_when` | src/tessellate/ai/composer_open.py:164 |
+| `_who` | src/tessellate/ai/composer_open.py:173 |
+| `composer_voice` | src/tessellate/ai/composer_open.py:122 |
+| `kind` | src/tessellate/ai/composer_open.py:92 |
+| `reads_note` | src/tessellate/ai/composer_open.py:107 |
 
 ### src/tessellate/ai/composer_overview.py (13)
 
@@ -18603,7 +18603,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11827)
+## Tests (11828)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19562,7 +19562,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_release_smoke_step.py | 21 |
 | tests/test_reminder_audio_deferred.py | 2 |
 | tests/test_reminder_edit_form_alert.py | 3 |
-| tests/test_reminder_magic_hard_2210.py | 5 |
+| tests/test_reminder_magic_hard_2210.py | 6 |
 | tests/test_reminder_notifier.py | 14 |
 | tests/test_reminder_scoped_token.py | 16 |
 | tests/test_reminder_snooze_row34.py | 4 |
@@ -20642,7 +20642,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1265 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:297 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:300 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4173 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

@@ -2954,7 +2954,7 @@ def _open_note_answer(req: _StreamRequest, follow, current: list, today):  # noq
     if not composer_open.reads_note(req.question, current[0]):
         return None
     dialogue = composer.Dialogue.from_history(req.history)
-    return composer_open.answer(req.question, current[0], today=today, salt=dialogue.salt)
+    return composer.open_note_answer(req.question, current[0], today=today, salt=dialogue.salt)
 
 
 def _composed_result(req: _StreamRequest, prepared: dict) -> tuple:

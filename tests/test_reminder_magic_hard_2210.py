@@ -87,3 +87,16 @@ def test_the_edit_form_controls_share_one_height_and_no_margin():
     block = css.split(".inline-action .row > input {", 1)[1].split("}", 1)[0]
     assert "height: var(--control-h);" in css.split(".inline-action .select-opener {", 1)[1].split("}", 1)[0]
     assert "margin: 0;" in block
+
+
+def test_condition_and_hedge_patterns_stay_linear_on_long_whitespace():
+    """CodeQL 1795-1797: `\\s*` before a word and `[\\s,;]+` in a repeated
+    group backtracked over every start inside a run of tabs."""
+    import time
+
+    from tessellate.ai import reminder_parser
+
+    text = "x" + "\t" * 20000 + "y"
+    start = time.perf_counter()
+    reminder_parser.without_conditions(text)
+    assert time.perf_counter() - start < 0.5

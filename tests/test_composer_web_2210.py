@@ -9,6 +9,7 @@ analysed into key points, key terms and sections by the composer.
 
 from __future__ import annotations
 
+import re
 import pytest
 
 from tessellate.ai import composer_web, page_analysis
@@ -104,7 +105,7 @@ def test_a_link_with_web_off_says_what_is_needed_not_a_notes_search(client, sess
     out = _ask(client, "Read https://www.thesaurus.com/browse/happy and tell me about it", use_tools=True)
     text = out["text"]
     assert "web" in text.lower() and "off" in text.lower()
-    assert "thesaurus.com" in text
+    assert re.search(r"(?<![\w.])thesaurus\.com(?![\w.])", text)
     assert "don't see any mention" not in text and "closest note" not in text.lower()
 
 
@@ -116,7 +117,7 @@ def test_a_link_with_web_on_is_fetched_and_summarised(client, session, monkeypat
     assert seen == ["https://example.org/tides"]
     assert "Tides explained" in out["text"]
     assert "Spring tides come at new and full moon" in out["text"]
-    assert "example.org" in out["text"]
+    assert re.search(r"(?<![\w.])example\.org(?![\w.])", out["text"])
 
 
 def test_a_page_that_cannot_be_read_is_said_plainly(client, session, monkeypatch):

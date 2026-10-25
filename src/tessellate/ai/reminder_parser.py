@@ -238,12 +238,12 @@ def unhedged(text: str) -> str:
 #: "before bed"): not a clock, so it is not kept in the title. The reminder
 #: fires at the time said; the owner's example was "Do my tax return".
 _CONDITION = re.compile(
-    r"[,;]?\s*\b(?:when|once|as soon as|after)\s+(?:i|we)(?:'m|\u2019m|\s+am|\s+get|\s+got|\s+come|\s+came|\s+arrive|\s+arrived|\s+reach|\s+reached|\s+wake up)"
+    r"[,;]?(?<!\s)\s*\b(?:when|once|as soon as|after)\s+(?:i|we)(?:'m|\u2019m|\s+am|\s+get|\s+got|\s+come|\s+came|\s+arrive|\s+arrived|\s+reach|\s+reached|\s+wake up)"
     r"(?:\s+(?:back\s+)?(?:home|in|there|here|up|to work|to the office|at work|at home|in work|in the office|from work)|\s+back)?\b"
-    r"|[,;]?\s*\b(?:before bed|after work|after dinner|after lunch|after breakfast|when i wake up)\b",
+    r"|[,;]?(?<!\s)\s*\b(?:before bed|after work|after dinner|after lunch|after breakfast|when i wake up)\b",
     re.I,
 )
-_STRAY = re.compile(r"(?:[\s,;]+(?:probably|maybe|perhaps|possibly|around|about|roughly|approximately|say|later|then))+\s*$", re.I)
+_STRAY = re.compile(r"(?<![\s,;])(?:[\s,;]+(?:probably|maybe|perhaps|possibly|around|about|roughly|approximately|say|later|then))+\s*$", re.I)
 _LEAD_TO = re.compile(r"^\s*(?:to|that)\s+", re.I)
 _FORGET = re.compile(r"^(?:please\s+)?(?:don'?t|do not|dont) let me forget\s+(?:to |that |about )?|^(?:please\s+)?make sure (?:that )?i\s+", re.I)
 

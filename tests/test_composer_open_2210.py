@@ -12,7 +12,7 @@ from datetime import date
 
 import pytest
 
-from tessellate.ai import composer_open
+from tessellate.ai import composer, composer_open
 
 TODAY = date(2026, 10, 25)
 
@@ -65,7 +65,7 @@ def test_a_named_subject_is_not_this_note():
 
 
 def test_left_lists_only_the_open_tasks():
-    out = composer_open.answer("What's left to do?", PLAN, today=TODAY)
+    out = composer.open_note_answer("What's left to do?", PLAN, today=TODAY)
     assert out is not None
     assert "Store listing copy" in out["text"] and "Launch email" in out["text"]
     assert "Crash reporting" not in out["text"]
@@ -73,48 +73,48 @@ def test_left_lists_only_the_open_tasks():
 
 
 def test_the_same_question_differs_across_notes():
-    a = composer_open.answer("What's left to do?", PLAN, today=TODAY)["text"]
-    b = composer_open.answer("What's left to do?", TRIP, today=TODAY)["text"]
+    a = composer.open_note_answer("What's left to do?", PLAN, today=TODAY)["text"]
+    b = composer.open_note_answer("What's left to do?", TRIP, today=TODAY)["text"]
     assert a != b
     assert "tram pass" in b.lower()
 
 
 def test_when_gives_the_dated_sentence_not_every_date():
-    out = composer_open.answer("When is the deadline?", PLAN, today=TODAY)
+    out = composer.open_note_answer("When is the deadline?", PLAN, today=TODAY)
     assert "14th of next month" in out["text"]
     assert "Crash reporting" not in out["text"]
-    out = composer_open.answer("When is the deadline?", TRIP, today=TODAY)
+    out = composer.open_note_answer("When is the deadline?", TRIP, today=TODAY)
     assert "3 May" in out["text"]
 
 
 def test_who_names_the_people_the_note_holds():
-    out = composer_open.answer("Who is involved?", TRIP, today=TODAY)
+    out = composer.open_note_answer("Who is involved?", TRIP, today=TODAY)
     assert "Ana" in out["text"] and "Rui" in out["text"]
 
 
 def test_nothing_to_report_is_said_plainly():
-    out = composer_open.answer("What's left to do?", {"id": 3, "content": "# Idea\n\nA quiet note about clouds."}, today=TODAY)
+    out = composer.open_note_answer("What's left to do?", {"id": 3, "content": "# Idea\n\nA quiet note about clouds."}, today=TODAY)
     assert "nothing" in out["text"].lower() or "no " in out["text"].lower()
-    out = composer_open.answer("who is involved?", {"id": 3, "content": "# Idea\n\nA quiet note about clouds."}, today=TODAY)
+    out = composer.open_note_answer("who is involved?", {"id": 3, "content": "# Idea\n\nA quiet note about clouds."}, today=TODAY)
     assert "does not name anyone" in out["text"]
 
 
 def test_every_quote_is_the_notes_own_words():
-    out = composer_open.answer("What's left to do?", PLAN, today=TODAY)
+    out = composer.open_note_answer("What's left to do?", PLAN, today=TODAY)
     for row in out["grounding"]:
         assert row["sentence"].lower().rstrip(".") in PLAN["content"].lower()
         assert row["note_id"] == 1
 
 
 def test_the_opening_varies_with_the_salt():
-    openings = {composer_open.answer("What's left to do?", PLAN, today=TODAY, salt=str(i))["text"].split(":")[0] for i in range(12)}
+    openings = {composer.open_note_answer("What's left to do?", PLAN, today=TODAY, salt=str(i))["text"].split(":")[0] for i in range(12)}
     assert len(openings) >= 2
 
 
 def test_no_em_dash_or_exclamation():
     for q in ("What's left to do?", "When is the deadline?", "Who is involved?"):
         for note in (PLAN, TRIP):
-            text = composer_open.answer(q, note, today=TODAY)["text"]
+            text = composer.open_note_answer(q, note, today=TODAY)["text"]
             assert chr(0x2014) not in text and "!" not in text
 
 

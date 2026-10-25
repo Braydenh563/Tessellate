@@ -4762,3 +4762,17 @@ def _brief_text(view: NoteView, content: str, by_note: dict[int, list[Sentence]]
 
 
 act_registry.help_sentence = help_line
+
+
+def open_note_answer(question: str, note: dict, *, today: date, salt: str = "") -> dict | None:
+    """The open note's answer to `question` as a composer result, or None
+    when the question is not one of this module's kinds."""
+    ask = composer_open.kind(question)
+    if ask not in ("left", "when", "who"):
+        return None
+    view = read_note(note, 0)
+    if view is None:
+        return None
+    out = _fresh_answer([view], today, None, "", "", composer_open.composer_voice(), question)
+    {"left": composer_open._left, "when": composer_open._when, "who": composer_open._who}[ask](out, view, question, salt)
+    return _answer_dict(out, "open_" + ask, question, [], [view], [])

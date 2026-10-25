@@ -22,7 +22,6 @@ from __future__ import annotations
 
 import hashlib
 import re
-from datetime import date
 
 PHRASES: dict[str, str] = {
     "open_left_a1": "Still open here: ",
@@ -118,22 +117,6 @@ def reads_note(question: str, note: dict) -> bool:
 def _pick(options: list[str], question: str, salt: str) -> str:
     digest = hashlib.sha1(f"{question.strip().lower()}:{salt}".encode()).digest()
     return options[digest[0] % len(options)]
-
-
-def answer(question: str, note: dict, *, today: date, salt: str = "") -> dict | None:
-    """The open note's answer to `question` as a composer result, or None
-    when the question is not one of this module's kinds."""
-    from tessellate.ai import composer
-
-    ask = kind(question)
-    if ask not in ("left", "when", "who"):
-        return None
-    view = composer.read_note(note, 0)
-    if view is None:
-        return None
-    out = composer._fresh_answer([view], today, None, "", "", composer_voice(), question)
-    {"left": _left, "when": _when, "who": _who}[ask](out, view, question, salt)
-    return composer._answer_dict(out, "open_" + ask, question, [], [view], [])
 
 
 def composer_voice() -> str:
