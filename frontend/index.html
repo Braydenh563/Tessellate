@@ -13083,7 +13083,7 @@ Link to another note with [[its first few words]]."></textarea>
               <!-- Desktop only, the export folder's reason: a path on the server's own
                    disk. Checked on save (absolute, exists, writable, not the backups
                    folder itself); each backup is copied there after it is checked. -->
-              <div class="row hidden settings-row-spaced" id="backup-copy-row">
+              <div class="row hidden settings-row-spaced" id="backup-copy-row" data-this-computer>
                 <label for="pref-backup-copy-dir" class="muted">Also copy each backup to</label>
                 <input id="pref-backup-copy-dir" type="text" placeholder="Not set: backups stay on this computer">
                 <button id="pref-backup-copy-clear" class="ghost small" type="button">Clear</button>
@@ -14288,7 +14288,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <input type="checkbox" id="pref-update-channel-main">
                 <span>Follow the newest changes instead of finished releases</span>
               </label>
-              <label class="check-row">
+              <label class="check-row" data-this-computer>
                 <input type="checkbox" id="pref-update-beta">
                 <span>Also tell me about beta versions</span>
               </label>

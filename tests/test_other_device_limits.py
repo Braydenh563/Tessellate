@@ -162,6 +162,11 @@ def test_the_phone_cannot_write_a_file_into_the_exports_folder(phone, here):
     [
         ("searxng_url", "", "http://192.168.0.1:8080", None),
         ("export_save_dir", "", "/tmp", None),
+        #: lansec-1025: where every backup is copied on this computer. A phone
+        #: could name a UNC path (`\\\\host\\share`), which Windows opens over
+        #: SMB with the owner's NTLM sign-in, and copy the notebook there.
+        ("backup_copy_dir", "", "/tmp", None),
+        ("update_beta", False, True, False),
         ("update_channel", "stable", "main", None),
         ("show_console_on_startup", False, True, None),
         ("close_to_tray", False, True, None),
