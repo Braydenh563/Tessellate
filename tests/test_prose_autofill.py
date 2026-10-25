@@ -52,7 +52,7 @@ def run(calls: list) -> list:
         + "\nconst NOW = new Date(2026, 8, 24, 14, 5);\n"
         "const ctx = (extra) => ({ now: NOW, locale: 'en-GB', slug: mdHeadingId, ...extra });\n"
         "const fns = {docLorem, docFillTable, docFillSig, docSmartPunct, docPairInput, docPairBackspace,"
-        " docFillToken, docFillGhost, docListEnter, docBulletRetype, docFenceCloseIndent};\n"
+        " docFillToken, docFillGhost, docListEnter, docListExitText, docBulletRetype, docFenceCloseIndent};\n"
         "fns.toc = (text) => docFillToc(text, mdHeadingId);\n"
         "fns.date = (kind, locale) => docFillDate(kind, NOW, locale);\n"
         "fns.options = (before, after, extra) => docFillOptions(docFillToken(before, after), ctx(extra || {}))"
@@ -434,3 +434,16 @@ def test_smart_punctuation_is_a_preference_off_by_default(client) -> None:
     assert client.get("/preferences").json()["smart_punctuation"] is False
     assert client.put("/preferences", json={"smart_punctuation": True}).json()["smart_punctuation"] is True
     assert client.get("/preferences").json()["smart_punctuation"] is True
+
+
+@node
+def test_ending_a_list_leaves_the_blank_line_after_it() -> None:
+    under_item, under_blank, first_line, nested = run([
+        ["docListExitText", "", "- b"],
+        ["docListExitText", "", ""],
+        ["docListExitText", "", None],
+        ["docListExitText", "- ", "- b"],
+    ])
+    assert under_item == "\n", "dog2 item 6: a heading typed next must not sit flush against the list"
+    assert under_blank == "" and first_line == ""
+    assert nested == "- ", "stepping out one level keeps the bullet"

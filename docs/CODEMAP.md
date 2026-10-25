@@ -2,9 +2,9 @@
 
 Generated 2026-10-25 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6232, frontend ids 2539, CSS sections 497, backend routes 618, backend modules 6394, test files 1339, tests 11923, plan headings 968.
+Counts: frontend functions 6233, frontend ids 2539, CSS sections 497, backend routes 618, backend modules 6394, test files 1339, tests 11924, plan headings 968.
 
-## Frontend functions (6232)
+## Frontend functions (6233)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3025,15 +3025,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docIdeToggleSplit` | frontend/js/documents-ide.js:408 |
 | `formatDocHistoryWhen` | frontend/js/documents-ide.js:145 |
 
-### frontend/js/documents-prose.js (73)
+### frontend/js/documents-prose.js (74)
 
 | Name | File:line |
 |---|---|
 | `docAccessFindings` | frontend/js/documents-prose.js:783 |
-| `docBulletRetype` | frontend/js/documents-prose.js:1769 |
+| `docBulletRetype` | frontend/js/documents-prose.js:1777 |
 | `docEmojiList` | frontend/js/documents-prose.js:1527 |
 | `docEmojiMatches` | frontend/js/documents-prose.js:1540 |
-| `docFenceCloseIndent` | frontend/js/documents-prose.js:1778 |
+| `docFenceCloseIndent` | frontend/js/documents-prose.js:1786 |
 | `docFillDate` | frontend/js/documents-prose.js:1400 |
 | `docFillGhost` | frontend/js/documents-prose.js:1646 |
 | `docFillOptions` | frontend/js/documents-prose.js:1580 |
@@ -3049,7 +3049,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docGrammarOutside` | frontend/js/documents-prose.js:159 |
 | `docGrammarRequest` | frontend/js/documents-prose.js:233 |
 | `docGrammarWhy` | frontend/js/documents-prose.js:82 |
-| `docInCodeAt` | frontend/js/documents-prose.js:1813 |
+| `docInCodeAt` | frontend/js/documents-prose.js:1821 |
 | `docIsoDay` | frontend/js/documents-prose.js:1390 |
 | `docLinkOfferAsk` | frontend/js/documents-prose.js:310 |
 | `docLinkOfferCurrent` | frontend/js/documents-prose.js:347 |
@@ -3059,17 +3059,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docLinkOfferIgnoredNames` | frontend/js/documents-prose.js:265 |
 | `docLinkOfferRequest` | frontend/js/documents-prose.js:335 |
 | `docListEnter` | frontend/js/documents-prose.js:1756 |
-| `docListFenceExtensions` | frontend/js/documents-prose.js:1982 |
+| `docListExitText` | frontend/js/documents-prose.js:1771 |
+| `docListFenceExtensions` | frontend/js/documents-prose.js:1991 |
 | `docLorem` | frontend/js/documents-prose.js:1378 |
 | `docPairBackspace` | frontend/js/documents-prose.js:1741 |
 | `docPairInput` | frontend/js/documents-prose.js:1701 |
 | `docProseExtras` | frontend/js/documents-prose.js:360 |
-| `docProseFillExtensions` | frontend/js/documents-prose.js:2021 |
-| `docProseFillOn` | frontend/js/documents-prose.js:1799 |
-| `docProseGhostPlugin` | frontend/js/documents-prose.js:1894 |
-| `docProseGhostSet` | frontend/js/documents-prose.js:1879 |
-| `docProseInputHandler` | frontend/js/documents-prose.js:1827 |
-| `docProsePairKeymap` | frontend/js/documents-prose.js:1940 |
+| `docProseFillExtensions` | frontend/js/documents-prose.js:2030 |
+| `docProseFillOn` | frontend/js/documents-prose.js:1807 |
+| `docProseGhostPlugin` | frontend/js/documents-prose.js:1902 |
+| `docProseGhostSet` | frontend/js/documents-prose.js:1887 |
+| `docProseInputHandler` | frontend/js/documents-prose.js:1835 |
+| `docProsePairKeymap` | frontend/js/documents-prose.js:1948 |
 | `docProseRemap` | frontend/js/documents-prose.js:204 |
 | `docProseToolExtensions` | frontend/js/documents-prose.js:1313 |
 | `docReadAloudExtension` | frontend/js/documents-prose.js:1269 |
@@ -3079,7 +3080,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docReadAloudStop` | frontend/js/documents-prose.js:1247 |
 | `docReadAloudVoice` | frontend/js/documents-prose.js:1162 |
 | `docSmartPunct` | frontend/js/documents-prose.js:1663 |
-| `docSmartPunctOn` | frontend/js/documents-prose.js:1806 |
+| `docSmartPunctOn` | frontend/js/documents-prose.js:1814 |
 | `docSpeakable` | frontend/js/documents-prose.js:1105 |
 | `docSuggestActive` | frontend/js/documents-prose.js:859 |
 | `docSuggestAll` | frontend/js/documents-prose.js:1028 |
@@ -18821,7 +18822,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11923)
+## Tests (11924)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19740,7 +19741,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_prompt_prefix_stability.py | 4 |
 | tests/test_proofread_bounded.py | 3 |
 | tests/test_properties_never_in_previews.py | 13 |
-| tests/test_prose_autofill.py | 27 |
+| tests/test_prose_autofill.py | 28 |
 | tests/test_prose_tools.py | 20 |
 | tests/test_provider_redirects.py | 4 |
 | tests/test_provider_sockets.py | 9 |
