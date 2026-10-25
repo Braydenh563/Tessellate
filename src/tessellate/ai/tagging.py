@@ -55,6 +55,8 @@ TAG_PHRASE_VOTE = 0.2
 #: names in this many different phrases ("gym" and "squat" are Fitness; "eggs"
 #: alone is not Cooking).
 NEW_TOPIC_PHRASES = 2
+#: Topics too broad to be a tag beside a specific one.
+GENERIC_TOPICS = frozenset({"Education", "Learning", "Study"})
 #: The title and first line's words count this many times in the note.
 LEAD_WEIGHT = 2.0
 #: A tag on a note this one links to, or that links to it.
@@ -446,6 +448,10 @@ def new_topics(session: Session, content: str, taken: list[str]) -> list[str]:
     }
     if not named:
         return []
+    #: Every note in a student's notebook is "education": it is offered only
+    #: when the note names no subject of its own (Mathematics, Biology).
+    if any(topic not in GENERIC_TOPICS for topic in named):
+        named = {topic: n for topic, n in named.items() if topic not in GENERIC_TOPICS}
     with lexical_filing._corpus_lock:
         scope = lexical_filing._scope(session)
         used = {_key(tag) for doc in lexical_filing._corpus_for(session).docs.values() if scope(doc) for tag in doc.tags}

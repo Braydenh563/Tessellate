@@ -2,7 +2,7 @@
 
 Generated 2026-10-25 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6236, frontend ids 2539, CSS sections 497, backend routes 618, backend modules 6451, test files 1345, tests 11992, plan headings 968.
+Counts: frontend functions 6236, frontend ids 2539, CSS sections 497, backend routes 618, backend modules 6451, test files 1345, tests 11996, plan headings 968.
 
 ## Frontend functions (6236)
 
@@ -12482,47 +12482,47 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Candidate` | src/tessellate/ai/lexical_filing.py:374 |
-| `Decision` | src/tessellate/ai/lexical_filing.py:406 |
-| `LexicalMatch` | src/tessellate/ai/lexical_filing.py:139 |
-| `Proposal` | src/tessellate/ai/lexical_filing.py:392 |
-| `_Corpus` | src/tessellate/ai/lexical_filing.py:867 |
-| `_Doc` | src/tessellate/ai/lexical_filing.py:835 |
-| `_NoteRead` | src/tessellate/ai/lexical_filing.py:500 |
-| `_auto_file_sensitive` | src/tessellate/ai/lexical_filing.py:489 |
-| `_candidate_for` | src/tessellate/ai/lexical_filing.py:580 |
-| `_category_aggregates` | src/tessellate/ai/lexical_filing.py:782 |
-| `_category_sums` | src/tessellate/ai/lexical_filing.py:532 |
-| `_corpus_for` | src/tessellate/ai/lexical_filing.py:1039 |
-| `_corpus_view` | src/tessellate/ai/lexical_filing.py:550 |
-| `_cosine` | src/tessellate/ai/lexical_filing.py:452 |
-| `_file_if_clear` | src/tessellate/ai/lexical_filing.py:613 |
-| `_make_doc` | src/tessellate/ai/lexical_filing.py:1005 |
-| `_name_words` | src/tessellate/ai/lexical_filing.py:462 |
-| `_note_read` | src/tessellate/ai/lexical_filing.py:640 |
-| `_quote_list` | src/tessellate/ai/lexical_filing.py:421 |
-| `_scope` | src/tessellate/ai/lexical_filing.py:1105 |
-| `_scope_key` | src/tessellate/ai/lexical_filing.py:1117 |
-| `_tag_words` | src/tessellate/ai/lexical_filing.py:1001 |
-| `_tags` | src/tessellate/ai/lexical_filing.py:148 |
-| `_take_out_excluded` | src/tessellate/ai/lexical_filing.py:518 |
-| `_tally` | src/tessellate/ai/lexical_filing.py:252 |
-| `_taught_topics` | src/tessellate/ai/lexical_filing.py:565 |
-| `_why_line` | src/tessellate/ai/lexical_filing.py:428 |
-| `_with_proposal` | src/tessellate/ai/lexical_filing.py:752 |
-| `_word_counts` | src/tessellate/ai/lexical_filing.py:633 |
-| `category_profiles` | src/tessellate/ai/lexical_filing.py:682 |
-| `category_support` | src/tessellate/ai/lexical_filing.py:170 |
-| `clean` | src/tessellate/ai/lexical_filing.py:125 |
-| `decide` | src/tessellate/ai/lexical_filing.py:650 |
-| `forget_corpus` | src/tessellate/ai/lexical_filing.py:1123 |
-| `holds_sensitive` | src/tessellate/ai/lexical_filing.py:467 |
-| `lexical_category` | src/tessellate/ai/lexical_filing.py:156 |
-| `personal_lexicon` | src/tessellate/ai/lexical_filing.py:718 |
-| `suggest_categories` | src/tessellate/ai/lexical_filing.py:202 |
-| `suggest_categories_explained` | src/tessellate/ai/lexical_filing.py:212 |
+| `Candidate` | src/tessellate/ai/lexical_filing.py:384 |
+| `Decision` | src/tessellate/ai/lexical_filing.py:416 |
+| `LexicalMatch` | src/tessellate/ai/lexical_filing.py:149 |
+| `Proposal` | src/tessellate/ai/lexical_filing.py:402 |
+| `_Corpus` | src/tessellate/ai/lexical_filing.py:877 |
+| `_Doc` | src/tessellate/ai/lexical_filing.py:845 |
+| `_NoteRead` | src/tessellate/ai/lexical_filing.py:510 |
+| `_auto_file_sensitive` | src/tessellate/ai/lexical_filing.py:499 |
+| `_candidate_for` | src/tessellate/ai/lexical_filing.py:590 |
+| `_category_aggregates` | src/tessellate/ai/lexical_filing.py:792 |
+| `_category_sums` | src/tessellate/ai/lexical_filing.py:542 |
+| `_corpus_for` | src/tessellate/ai/lexical_filing.py:1049 |
+| `_corpus_view` | src/tessellate/ai/lexical_filing.py:560 |
+| `_cosine` | src/tessellate/ai/lexical_filing.py:462 |
+| `_file_if_clear` | src/tessellate/ai/lexical_filing.py:623 |
+| `_make_doc` | src/tessellate/ai/lexical_filing.py:1015 |
+| `_name_words` | src/tessellate/ai/lexical_filing.py:472 |
+| `_note_read` | src/tessellate/ai/lexical_filing.py:650 |
+| `_quote_list` | src/tessellate/ai/lexical_filing.py:431 |
+| `_scope` | src/tessellate/ai/lexical_filing.py:1115 |
+| `_scope_key` | src/tessellate/ai/lexical_filing.py:1127 |
+| `_tag_words` | src/tessellate/ai/lexical_filing.py:1011 |
+| `_tags` | src/tessellate/ai/lexical_filing.py:158 |
+| `_take_out_excluded` | src/tessellate/ai/lexical_filing.py:528 |
+| `_tally` | src/tessellate/ai/lexical_filing.py:262 |
+| `_taught_topics` | src/tessellate/ai/lexical_filing.py:575 |
+| `_why_line` | src/tessellate/ai/lexical_filing.py:438 |
+| `_with_proposal` | src/tessellate/ai/lexical_filing.py:762 |
+| `_word_counts` | src/tessellate/ai/lexical_filing.py:643 |
+| `category_profiles` | src/tessellate/ai/lexical_filing.py:692 |
+| `category_support` | src/tessellate/ai/lexical_filing.py:180 |
+| `clean` | src/tessellate/ai/lexical_filing.py:131 |
+| `decide` | src/tessellate/ai/lexical_filing.py:660 |
+| `forget_corpus` | src/tessellate/ai/lexical_filing.py:1133 |
+| `holds_sensitive` | src/tessellate/ai/lexical_filing.py:477 |
+| `lexical_category` | src/tessellate/ai/lexical_filing.py:166 |
+| `personal_lexicon` | src/tessellate/ai/lexical_filing.py:728 |
+| `suggest_categories` | src/tessellate/ai/lexical_filing.py:212 |
+| `suggest_categories_explained` | src/tessellate/ai/lexical_filing.py:222 |
 | `tokens` | src/tessellate/ai/lexical_filing.py:95 |
-| `topic_overlap` | src/tessellate/ai/lexical_filing.py:708 |
+| `topic_overlap` | src/tessellate/ai/lexical_filing.py:718 |
 
 ### src/tessellate/ai/librarian.py (34)
 
@@ -13678,40 +13678,40 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_Ask` | src/tessellate/ai/tagging.py:182 |
-| `_Vocab` | src/tessellate/ai/tagging.py:217 |
-| `_choose` | src/tessellate/ai/tagging.py:407 |
-| `_damp` | src/tessellate/ai/tagging.py:367 |
-| `_key` | src/tessellate/ai/tagging.py:211 |
-| `_link_votes` | src/tessellate/ai/tagging.py:312 |
-| `_name_vote` | src/tessellate/ai/tagging.py:276 |
-| `_name_votes` | src/tessellate/ai/tagging.py:291 |
-| `_neighbour_votes` | src/tessellate/ai/tagging.py:256 |
-| `_offered_again` | src/tessellate/ai/tagging.py:347 |
-| `_owns_topic` | src/tessellate/ai/tagging.py:269 |
-| `_purpose_grounds` | src/tessellate/ai/tagging.py:124 |
-| `_query_bag` | src/tessellate/ai/tagging.py:204 |
-| `_read` | src/tessellate/ai/tagging.py:193 |
-| `_rides_a_sibling` | src/tessellate/ai/tagging.py:301 |
-| `_said` | src/tessellate/ai/tagging.py:117 |
-| `_said_outright` | src/tessellate/ai/tagging.py:264 |
-| `_subsumed` | src/tessellate/ai/tagging.py:373 |
-| `_vocabulary` | src/tessellate/ai/tagging.py:233 |
-| `filled` | src/tessellate/ai/tagging.py:427 |
-| `grounded` | src/tessellate/ai/tagging.py:168 |
-| `grounded_keys` | src/tessellate/ai/tagging.py:422 |
-| `grounds` | src/tessellate/ai/tagging.py:135 |
-| `lead` | src/tessellate/ai/tagging.py:82 |
-| `merged` | src/tessellate/ai/tagging.py:457 |
-| `new_topics` | src/tessellate/ai/tagging.py:434 |
-| `offer_again` | src/tessellate/ai/tagging.py:357 |
-| `reason` | src/tessellate/ai/tagging.py:157 |
-| `stem` | src/tessellate/ai/tagging.py:92 |
-| `stems` | src/tessellate/ai/tagging.py:105 |
-| `suggest` | src/tessellate/ai/tagging.py:380 |
-| `tag_stems` | src/tessellate/ai/tagging.py:113 |
-| `tag_words` | src/tessellate/ai/tagging.py:109 |
-| `turned_down` | src/tessellate/ai/tagging.py:328 |
+| `_Ask` | src/tessellate/ai/tagging.py:184 |
+| `_Vocab` | src/tessellate/ai/tagging.py:219 |
+| `_choose` | src/tessellate/ai/tagging.py:409 |
+| `_damp` | src/tessellate/ai/tagging.py:369 |
+| `_key` | src/tessellate/ai/tagging.py:213 |
+| `_link_votes` | src/tessellate/ai/tagging.py:314 |
+| `_name_vote` | src/tessellate/ai/tagging.py:278 |
+| `_name_votes` | src/tessellate/ai/tagging.py:293 |
+| `_neighbour_votes` | src/tessellate/ai/tagging.py:258 |
+| `_offered_again` | src/tessellate/ai/tagging.py:349 |
+| `_owns_topic` | src/tessellate/ai/tagging.py:271 |
+| `_purpose_grounds` | src/tessellate/ai/tagging.py:126 |
+| `_query_bag` | src/tessellate/ai/tagging.py:206 |
+| `_read` | src/tessellate/ai/tagging.py:195 |
+| `_rides_a_sibling` | src/tessellate/ai/tagging.py:303 |
+| `_said` | src/tessellate/ai/tagging.py:119 |
+| `_said_outright` | src/tessellate/ai/tagging.py:266 |
+| `_subsumed` | src/tessellate/ai/tagging.py:375 |
+| `_vocabulary` | src/tessellate/ai/tagging.py:235 |
+| `filled` | src/tessellate/ai/tagging.py:429 |
+| `grounded` | src/tessellate/ai/tagging.py:170 |
+| `grounded_keys` | src/tessellate/ai/tagging.py:424 |
+| `grounds` | src/tessellate/ai/tagging.py:137 |
+| `lead` | src/tessellate/ai/tagging.py:84 |
+| `merged` | src/tessellate/ai/tagging.py:463 |
+| `new_topics` | src/tessellate/ai/tagging.py:436 |
+| `offer_again` | src/tessellate/ai/tagging.py:359 |
+| `reason` | src/tessellate/ai/tagging.py:159 |
+| `stem` | src/tessellate/ai/tagging.py:94 |
+| `stems` | src/tessellate/ai/tagging.py:107 |
+| `suggest` | src/tessellate/ai/tagging.py:382 |
+| `tag_stems` | src/tessellate/ai/tagging.py:115 |
+| `tag_words` | src/tessellate/ai/tagging.py:111 |
+| `turned_down` | src/tessellate/ai/tagging.py:330 |
 
 ### src/tessellate/ai/taxonomy.py (43)
 
@@ -18897,7 +18897,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11992)
+## Tests (11996)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19114,7 +19114,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_dog2_1025.py | 16 |
 | tests/test_composer_eval_725.py | 6 |
 | tests/test_composer_eval_741.py | 6 |
-| tests/test_composer_five_1025.py | 9 |
+| tests/test_composer_five_1025.py | 13 |
 | tests/test_composer_form_1301.py | 13 |
 | tests/test_composer_four_1025.py | 16 |
 | tests/test_composer_grammar.py | 3 |

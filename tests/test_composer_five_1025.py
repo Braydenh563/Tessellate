@@ -155,3 +155,34 @@ def test_item4_summarise_my_lecture_notes_covers_every_note_in_that_category(ask
     assert "Problem set 5" not in said, said
     assert "print(atp)" not in said and "atp = 2" not in said, said
     assert not said.rstrip().endswith("-"), said
+
+
+def test_item5_a_code_block_in_a_biology_note_is_not_software(session):
+    from tessellate.ai import tagging
+
+    manager.create_entry(session, BIO, "Lecture notes")
+    session.commit()
+    tags = [t.lower() for t in tagging.new_topics(session, BIO, [])]
+    assert "software" not in tags and "education" not in tags, tags
+
+
+def test_item5_a_maths_problem_set_is_mathematics_not_education(session):
+    from tessellate.ai import tagging
+
+    tags = [t.lower() for t in tagging.new_topics(session, MATHS, [])]
+    assert "mathematics" in tags and "education" not in tags and "learning" not in tags, tags
+
+
+def test_item5_education_is_kept_when_the_note_names_nothing_more_specific(session):
+    from tessellate.ai import tagging
+
+    note = "# Admin\n\nThe exam timetable is out. Remember the problem set deadline and the lecture room change."
+    assert "education" in [t.lower() for t in tagging.new_topics(session, note, [])]
+
+
+def test_item5_a_note_that_is_mostly_code_is_still_about_code():
+    from tessellate.ai import lexical_filing
+
+    code = "# Script\n\n```python\nimport numpy\ndef main():\n    print(numpy.zeros(3))\n    return 0\n```\n"
+    assert "numpy" in lexical_filing.clean(code)
+    assert "print" not in lexical_filing.clean(BIO) and "python" not in lexical_filing.clean(BIO)
