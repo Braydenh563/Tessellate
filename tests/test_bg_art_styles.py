@@ -183,9 +183,17 @@ def test_the_art_pauses_when_hidden_unfocused_or_covered():
     assert "noLoop()" in apply and "loop()" in apply and "is-paused" in apply
 
 
-def test_bg_art_loads_before_settings():
+def test_bg_art_is_a_lazy_bundle_settings_fetches():
+    """bg-art.js is 20 KB gzipped of boot code only a notebook with the art on
+    needs: settings.js fetches the `bgArt` bundle in `startBgArt` and in the
+    Appearance grid, and nothing at boot names its functions unguarded."""
     html = INDEX.read_text(encoding="utf-8")
-    assert html.index('src="/js/bg-art.js?v=') < html.index('src="/js/settings.js?v=')
+    assert 'src="/js/bg-art.js' not in html
+    entries = (FRONTEND / "js" / "lazy-entries.js").read_text(encoding="utf-8")
+    assert 'bgArt: ["/js/bg-art.js"]' in entries
+    settings = SETTINGS.read_text(encoding="utf-8")
+    assert 'typeof bgArtRun !== "function"' in settings and 'ensureModule("bgArt")' in settings
+    assert 'typeof BG_ART_COST === "undefined"' in settings
 
 
 def test_helixlabs_is_credited():
@@ -196,7 +204,9 @@ def test_helixlabs_is_credited():
 _GENOME_SCRIPT = r"""
 const fs = require("fs");
 const vm = require("vm");
-const src = fs.readFileSync(process.argv[2], "utf8");
+// bgLuma is boot code in settings.js; the lazy bg-art.js calls it.
+const luma = fs.readFileSync(process.argv[3], "utf8").match(/function bgLuma[\s\S]*?\n}\n/)[0];
+const src = luma + fs.readFileSync(process.argv[2], "utf8");
 const noop = () => {};
 const box = {
   document: { addEventListener: noop }, window: { addEventListener: noop },
@@ -236,7 +246,7 @@ def genome(tmp_path_factory):
     script = tmp_path_factory.mktemp("bgart") / "genome.js"
     script.write_text(_GENOME_SCRIPT, encoding="utf-8")
     out = subprocess.run(
-        [node, str(script), str(BG_ART)], capture_output=True, text=True, timeout=60, check=False
+        [node, str(script), str(BG_ART), str(SETTINGS)], capture_output=True, text=True, timeout=60, check=False
     )
     assert out.returncode == 0, out.stderr
     return json.loads(out.stdout)

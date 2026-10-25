@@ -17,6 +17,9 @@ Object.assign(LAZY_MODULES, {
   replyKit: ["/css/reply-kit-lazy.css", "/js/reply-kit.js"],
   //: The phone bar's More sheet (phone-more.js's header; INBOX 1314).
   phoneMore: ["/js/phone-more.js"],
+  //: The generative background's styles and runtime (bg-art.js, 20 KB gzipped):
+  //: only a notebook with the art on, or an open Appearance grid, needs them.
+  bgArt: ["/js/bg-art.js"],
 });
 installStandIns({
   settingsPanes: ["renderTasks", "renderTaskHistory", "renderHealthBlock", "renderSamplingRows", "renderPersonas", "savePersonaList"],

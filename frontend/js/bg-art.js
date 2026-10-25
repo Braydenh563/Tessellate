@@ -2,9 +2,10 @@
 // each style draws, and the runtime that mounts, pauses, stills and removes
 // it. settings.js decides *whether* and *how* (the setting, the motion and
 // performance rules, the intensity, the accent) and calls `bgArtRun` and
-// `bgArtHalt` here. This file loads before settings.js because settings.js's
+// `bgArtHalt` here. This file is fetched by settings.js, whose
 // own tail starts the art; nothing here runs at parse time except
-// definitions and three window listeners.
+// definitions and three window listeners. It is a lazy bundle (`bgArt`):
+// settings.js fetches it when the art is on or the Appearance grid draws.
 //
 // **Three kinds of style, cheapest first.**
 //
@@ -68,10 +69,7 @@
 let bgLumCap = 0;
 let bgLumFloor = 0;
 
-function bgLuma(rgb) {
-  const lin = (v) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
-  return 0.2126 * lin(rgb[0]) + 0.7152 * lin(rgb[1]) + 0.0722 * lin(rgb[2]);
-}
+// `bgLuma` is settings.js's (boot code needs it for the accent contrast).
 
 function bgCapRgb(rgb) {
   if (bgLumCap) {
