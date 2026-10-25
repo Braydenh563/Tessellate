@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: dragging a shape by its edge moves it; only a press within 6px of a connection point (the distance the dot lights at, was 9 to press and 10 to light) draws a connector. Measured: a press 8px from the top-middle point moved the shape 100 to 160 with no new connector (it drew an arrow before).
 - Whiteboard: a toast stands above the bottom dock instead of over its right end (the toast box follows the dock top; measured at 700 and 1280 the toast bottom is 6 and 6px above the dock top, it was 53 and 60px below it).
 - Whiteboard: between 600 and 819px the bottom dock wraps to two rows like the 820 to 1100 band instead of scrolling a 927px row in 683px, so Undo, Redo and every tool are on screen (measured at 700: scrollWidth 927 to 683 = clientWidth).
 - Whiteboard: an arrow drawn with the Arrow tool from or to a shape, card or topic (on it or within 10px of its edge) is a connector bound to it: it follows the shape when moved and its head meets the border instead of ending inside; a pen stroke is never a target.

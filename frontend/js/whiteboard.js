@@ -4474,6 +4474,14 @@ function wbGapEnds(sPt, tPt, gap, { chord = false, via = null } = {}) {
 //: than a silent hit-test, draw.io shows the same thing on hover. The
 //: nearest one to the live pointer (if within snapping range) renders larger
 //: and filled, so "this is where it'll land" is visible before release.
+//: **How close a press must be to a connection point to draw from it**, in
+//: screen px, and the same distance at which the point lights up under the
+//: pointer, so the dot that grows is the one a drag leaves from. It was 9
+//: to press and 10 to light: eight points on a shape's outline covered most
+//: of its edge, and grabbing the edge to move the shape drew an arrow instead
+//: (dogfood 2026-10-25). The dot is 4px across in its resting size.
+const WB_PORT_HIT_PX = 6;
+
 function wbShowAnchorHints(kind, item, nearAnchor) {
   // The overlay layer, not the base SVG's own `#wb-zoom-group`, cards
   // render in an HTML layer *above* that SVG (see `#wb-overlay-layer`'s own
@@ -16293,7 +16301,7 @@ async function initWhiteboard() {
       return;
     }
     [port.kind, port.item] = hit;
-    wbShowAnchorHints(hit[0], hit[1], wbNearestAnchor(hit[0], hit[1], x, y, 10 / zoomK()));
+    wbShowAnchorHints(hit[0], hit[1], wbNearestAnchor(hit[0], hit[1], x, y, WB_PORT_HIT_PX / zoomK()));
   }
   const portEnd = () => {
     port.drag?.path?.remove();
@@ -16315,7 +16323,7 @@ async function initWhiteboard() {
     //: was a connector from its middle at a flat 9px).
     const box = wbItemBBox(port.kind, port.item);
     const side = box ? Math.min(box.maxX - box.minX, box.maxY - box.minY) * zoomK() : 0;
-    const anchor = wbNearestAnchor(port.kind, port.item, x, y, Math.min(9, side * 0.2) / zoomK());
+    const anchor = wbNearestAnchor(port.kind, port.item, x, y, Math.min(WB_PORT_HIT_PX, side * 0.2) / zoomK());
     if (!anchor) return;
     //: Before d3-drag's mousedown: a pointerdown's default prevented is
     //: the mouse events it would have made, so the item does not move.

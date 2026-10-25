@@ -133,3 +133,12 @@ def test_toast_box_clears_the_bottom_dock():
     body = body[: body.index("    };")]
     assert "toastBox.style.bottom = low ?" in body and ': ""' in body
     assert 'dataset.dock !== "side"' in body and "innerWidth >= 600" in body
+
+
+def test_a_connection_point_lights_and_grabs_at_the_same_distance():
+    # Pressing 9px from a point drew an arrow while the dot lit at 10, so most
+    # of a shape's outline was a connector handle. One constant for both.
+    assert "const WB_PORT_HIT_PX = 6;" in WB
+    assert WB.count("WB_PORT_HIT_PX / zoomK()") == 1
+    assert "Math.min(WB_PORT_HIT_PX, side * 0.2) / zoomK()" in WB
+    assert "Math.min(9, side * 0.2)" not in WB
