@@ -18265,7 +18265,7 @@ function wbLayoutShapeLabel(groupEl) {
   const placed = wbShapeLabelPlace(groupEl, label);
   if (!placed) return;
   const { bbox, area } = placed;
-  const fontSize = parseFloat(getComputedStyle(label).fontSize) || 16;
+  const fontSize = label.dataset.fit ? wbFitShapeLabel(label, area) : parseFloat(getComputedStyle(label).fontSize) || 16;
   const lineHeight = fontSize * 1.25;
   //: The face and weight change the widths the wrap measures, so they key it.
   const key = `${label.__wbText}|${Math.round(area.w / 4)}|${fontSize}|${label.style.fontFamily}|${label.style.fontWeight}`;
@@ -18294,6 +18294,35 @@ function wbLayoutShapeLabel(groupEl) {
       : area.cy - block / 2;
   label.setAttribute("y", String(y));
   for (const span of label.children) span.setAttribute("x", String(x));
+}
+
+//: **Text that shrinks to fit its shape** (`label_fit`; draw.io's autosize
+//: only grows the box): from the size the text was given, a tenth smaller at
+//: a time until every line is as wide as the area and the block as tall, down
+//: to 6px, never larger than it was given. Kept on the element against the
+//: text and the area, so a render that changed neither measures nothing.
+function wbFitShapeLabel(label, area) {
+  label.style.fontSize = label.dataset.size || "";
+  const given = parseFloat(getComputedStyle(label).fontSize) || 16;
+  const key = `${label.__wbText}|${Math.round(area.w)}|${Math.round(area.h)}|${given}|${label.style.fontFamily}|${label.style.fontWeight}`;
+  if (label.__wbFit?.key !== key) {
+    let size = given;
+    for (;;) {
+      label.style.fontSize = `${size}px`;
+      const lines = wbWrapShapeLabel(label, label.__wbText, area.w, size);
+      const widest = Math.max(...lines.map((line) => {
+        label.textContent = line;
+        return label.getComputedTextLength();
+      }));
+      const fits = widest <= area.w + 0.5 && (!area.h || lines.length * size * 1.25 <= area.h + 0.5);
+      if (fits || size <= 6) break;
+      size = Math.max(6, Math.floor(size * 9) / 10);
+    }
+    label.__wbFit = { key, size };
+    label.__wbKey = null;
+  }
+  label.style.fontSize = `${label.__wbFit.size}px`;
+  return label.__wbFit.size;
 }
 
 //: A move is only a translation, so a drag frame moves the label by the
@@ -18498,6 +18527,9 @@ function wbPaintShapeLabel(groupEl, parsed, sketch) {
   label.__wbText = text;
   label.style.fill = parsed.label_color || wbShapeLabelInk(parsed) || "";
   label.style.fontSize = parsed.label_size ? `${parsed.label_size}px` : "";
+  label.dataset.size = label.style.fontSize;
+  if (parsed.label_fit) label.dataset.fit = "1";
+  else delete label.dataset.fit;
   label.style.fontWeight = parsed.label_bold ? "700" : "";
   label.style.fontStyle = parsed.label_italic ? "italic" : "";
   //: Underline and strikethrough, and a face by name (draw.io's Text tab;

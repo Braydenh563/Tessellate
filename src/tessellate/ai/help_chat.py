@@ -1629,7 +1629,7 @@ HELP_TOPICS.extend(
                 "tidy a diagram", "tree layout", "lay out as a tree", "auto layout", "layout a flowchart",
                 "zoom to selection", "zoom to the selection", "zoom to fit the selection", "shift+2",
                 "change shape", "change the shape", "swap a shape", "turn a rectangle into", "replace shape",
-                "link a shape", "link to a web page", "link a shape to a note", "hyperlink on a board", "open a shape's link",
+                "shrink to fit", "text too big for the shape", "fit the text", "text overflows the shape", "link a shape", "link to a web page", "link a shape to a note", "hyperlink on a board", "open a shape's link",
             ),
             "body": (
                 "Diagram tools on a board. Shift+2 (or View, Zoom to the selection) frames what is selected, "
@@ -1642,7 +1642,9 @@ HELP_TOPICS.extend(
                 "its text, colours, line and connectors. Link…, in a shape's, text box's or picture's More "
                 "and its right-click menu, links it to one of your notes or a web page (or an app link "
                 "from Copy app link); a small mark on its top-left corner opens it, a note in the app and "
-                "a page in a new tab, and the same Link… changes or removes it."
+                "a page in a new tab, and the same Link… changes or removes it. Fit, in the Format "
+                "panel's Text tab for a shape (or Ctrl+K, Shrink the text to fit), makes long words shrink "
+                "until they fit inside the shape, never past the size you gave them."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

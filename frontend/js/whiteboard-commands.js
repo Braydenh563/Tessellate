@@ -187,6 +187,7 @@ const WB_COMMANDS = [
   { id: "tidy-down", group: "Arrange", icon: "ph:tree-structure", label: "Tidy as a tree, top to bottom", menu: "Top to bottom", keys: "", surface: "board", needs: "tree", run: () => wbTidySelection("down") },
   { id: "tidy-right", group: "Arrange", icon: "ph:tree-view", label: "Tidy as a tree, left to right", menu: "Left to right", keys: "", surface: "board", needs: "tree", run: () => wbTidySelection("right") },
   { id: "change-shape", group: "Arrange", icon: "ph:shapes", label: "Change the shape to another kind…", menu: "Change the shape…", keys: "", surface: "board", needs: "swappable", run: () => wbOpenShapeSwapMenu() },
+  { id: "text-fit", group: "Edit", icon: "ph:arrows-in-simple", label: "Shrink the text to fit the shape (on or off)", keys: "", surface: "board", needs: "swappable", run: () => wbToggleLabelFit() },
   { id: "item-link", group: "Edit", icon: "ph:link-simple", label: "Link to a note or a web page…", menu: "Link…", keys: "", surface: "board", needs: "linkable", run: () => wbEditItemLink() },
   { id: "group", group: "Arrange", icon: "ph:link", label: "Group", keys: "Ctrl+G", surface: "board", needs: "groupable", run: () => wbGroupSelection() },
   { id: "ungroup", group: "Arrange", icon: "ph:link-break", label: "Ungroup", keys: "Ctrl+Shift+G", surface: "board", needs: "ungroupable", run: () => wbUngroupSelection() },

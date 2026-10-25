@@ -134,3 +134,20 @@ def test_a_shape_link_is_a_web_page_or_an_app_view_and_opens_from_its_mark():
 
     body = next(t["body"] for t in help_chat.HELP_TOPICS if t["id"] == "board-diagram-tools")
     assert "Link…" in body
+
+
+def test_text_shrinks_to_fit_a_shape_never_past_its_given_size():
+    fmt = (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    fit = _function(WB, "wbFitShapeLabel")
+    # It starts from the size given every time, so a bigger shape gives it back.
+    assert fit.index('label.style.fontSize = label.dataset.size || ""') < fit.index("let size = given")
+    assert "size <= 6" in fit and "widest <= area.w" in fit
+    assert "label.dataset.fit ? wbFitShapeLabel(label, area)" in _function(WB, "wbLayoutShapeLabel")
+    # Only a shape takes it, so the row never shows for a text box.
+    assert '"text", "fit", "geometry"' in fmt and fmt.count('"fit"') >= 2
+    assert 'data-fmt="fit"' in html and 'id="wb-fmt-fit"' in html
+    from tessellate.ai import help_chat
+
+    body = next(t["body"] for t in help_chat.HELP_TOPICS if t["id"] == "board-diagram-tools")
+    assert "shrink" in body and len(body) < 1900
