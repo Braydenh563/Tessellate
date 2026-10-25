@@ -347,20 +347,9 @@ Moved to HISTORY.md ("Moved from the plans, 2026-09-23", CHAT_PLAN.md): the
 fixtures, the passage-scored attribution, the low-support notice and its
 replay on a reopened turn, with every measurement.
 
-### Phase 2: one composer, bubbles, streaming: **built 2026-09-13**, see
-[HISTORY.md](HISTORY.md) "Moved from the plans, 2026-09-13". Gate green
-(`scratchpad/ui-sweeps/chatphase2.js`), with one gate line superseded by the
-owner's own later instructions and said so there.
+### Phase 2: one composer, bubbles, streaming: **built 2026-09-13**; see HISTORY.md "Moved from the plans, 2026-09-13".
 
-### Phase 3: Ask unified, popup agent: **built 2026-09-13**, see
-[HISTORY.md](HISTORY.md) "Moved from the plans, 2026-09-13". Decisions 8, 9,
-11 and 12. Gate green in both halves it has
-(`scratchpad/ui-sweeps/chatphase3.js` for the browser,
-`tests/test_ask_answer_object.py` for the transport). One gate line was
-superseded by the owner's own later instruction and re-run in that form: the
-starters are decision 9's twelve **plus the current tab's two** (INBOX 190,
-decision 14), so the sweep asserts 14 chips in 6 groups with the tab's own
-group first.
+### Phase 3: Ask unified, popup agent: **built 2026-09-13**, decisions 8, 9, 11 and 12; see HISTORY.md "Moved from the plans, 2026-09-13".
 
 ### Phase 4: skills that finish (one session; Brief 13)
 Decisions 10 and 10a to 10h. Built, 2026-09-12: see HISTORY.md, "Moved from
