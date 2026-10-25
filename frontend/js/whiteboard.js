@@ -3798,12 +3798,55 @@ function wbLinkCandidates(excludeKind, excludeId) {
 //: are rotated as the connection points and borders constantly flicker", 
 //: the pointer crossed in and out of the unrotated box while visibly over
 //: (or off) the rotated card, so the hints came and went with every move.
-function wbPointInItem(kind, item, x, y) {
+function wbPointInItem(kind, item, x, y, tol = 0) {
   const box = wbItemBBox(kind, item);
   if (!box) return false;
   const rot = wbItemRotation(kind, item);
   const p = rot ? wbRotatePoint({ x, y }, wbBoxCenter(box), -rot) : { x, y };
-  return p.x >= box.minX && p.x <= box.maxX && p.y >= box.minY && p.y <= box.maxY;
+  return p.x >= box.minX - tol && p.x <= box.maxX + tol && p.y >= box.minY - tol && p.y <= box.maxY + tol;
+}
+
+//: **What an Arrow-tool end binds to** (dogfood 2026-10-25 item 6). A
+//: closed shape, a card or a map topic under the point, or within `tol` board
+//: units of its edge: an arrow ended on a shape's border sat a pixel outside
+//: its box and stayed a loose path that did not follow the shape. Pen
+//: strokes and lines are never a target (a scribble is not a thing to join).
+function wbArrowCandidateAt(x, y, tol) {
+  const candidates = wbLinkCandidates().reverse();
+  for (const [kind, item] of candidates) {
+    if (kind === "sketch" && !wbSketchIsClosedShape(item)) continue;
+    if (wbPointInItem(kind, item, x, y, tol)) return [kind, item];
+  }
+  return null;
+}
+
+//: The Arrow tool's stroke as a bound connector, or null when neither end is
+//: on anything (then it stays the free path it always was). A bound end keeps
+//: the shape id and, near one of its connection points, that point; away from
+//: them it floats and resolves to the shape's edge facing the other end, so
+//: the head meets the border rather than ending inside the shape. A shape
+//: that is moved, resized or turned drags the arrow with it, as a port-drawn
+//: connector does. Both ends on one shape stay a free arrow.
+function wbBoundArrowData(sx, sy, x, y, tol, blob) {
+  const from = wbArrowCandidateAt(sx, sy, tol);
+  const to = wbArrowCandidateAt(x, y, tol);
+  if (!from && !to) return null;
+  if (from && to && from[0] === to[0] && from[1].id === to[1].id) return null;
+  const data = { type: "link-straight", color: blob.color, width: blob.width };
+  for (const key of ["dash", "noStroke", "startCap", "endCap"]) if (blob[key] !== undefined) data[key] = blob[key];
+  const end = (hit, px, py, name) => {
+    if (!hit) {
+      data[`${name}Point`] = { x: Math.round(px), y: Math.round(py) };
+      return;
+    }
+    data[`${name}Id`] = hit[1].id;
+    if (hit[0] !== "node") data[`${name}Kind`] = hit[0];
+    const anchor = wbNearestAnchor(hit[0], hit[1], px, py, tol * 1.6);
+    if (anchor) data[`${name}Anchor`] = anchor;
+  };
+  end(from, sx, sy, "source");
+  end(to, x, y, "target");
+  return data;
 }
 
 function wbLinkCandidateAt(x, y, excludeKind, excludeId) {
@@ -16850,8 +16893,10 @@ async function initWhiteboard() {
         blob.fillOpacity = window.currentFillOpacity / 100;
       }
     }
+    //: An arrow that starts or ends on a shape is a connector bound to it.
+    const bound = window.currentTool === "arrow" ? wbBoundArrowData(sx, sy, x, y, 10 / zoomK(), blob) : null;
     const sketchData = {
-      data: JSON.stringify(blob),
+      data: JSON.stringify(bound || blob),
       x: 0,
       y: 0,
       z: 5,

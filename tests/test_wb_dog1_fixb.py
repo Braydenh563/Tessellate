@@ -67,3 +67,49 @@ def test_ellipse_with_shift_is_a_circle_away_from_the_press():
 
 def test_draw_out_snap_has_no_centred_mode():
     assert "centred = false" not in _function("wbDrawOutSnap").split("{")[0]
+
+
+def _bound(expr: str, hits: dict):
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    stubs = (
+        f"const HITS = {json.dumps(hits)};"
+        "function wbArrowCandidateAt(x, y) { const h = HITS[x > 300 ? 'to' : 'from']; return h ? [h.kind, { id: h.id }] : null; }"
+        "function wbNearestAnchor() { return { x: 1, y: 0.5 }; }"
+    )
+    script = stubs + _function("wbBoundArrowData") + f"console.log(JSON.stringify({expr}));"
+    out = subprocess.run([node, "-e", script], capture_output=True, text=True, check=True)
+    return json.loads(out.stdout)
+
+
+BLOB = "{ color: '#123456', width: 3, endCap: 'arrow', startCap: 'none', dash: 'dashed' }"
+
+
+def test_arrow_ending_on_two_shapes_becomes_a_bound_connector():
+    data = _bound(
+        f"wbBoundArrowData(100, 100, 400, 100, 10, {BLOB})",
+        {"from": {"kind": "sketch", "id": 1}, "to": {"kind": "node", "id": 2}},
+    )
+    assert data["type"] == "link-straight"
+    assert (data["sourceId"], data["sourceKind"]) == (1, "sketch")
+    assert data["targetId"] == 2 and "targetKind" not in data
+    assert data["endCap"] == "arrow" and data["dash"] == "dashed" and data["color"] == "#123456"
+
+
+def test_arrow_with_one_free_end_keeps_that_end_as_a_point():
+    data = _bound(
+        f"wbBoundArrowData(100, 100, 400.4, 100, 10, {BLOB})", {"from": {"kind": "sketch", "id": 1}}
+    )
+    assert data["sourceId"] == 1 and data["targetPoint"] == {"x": 400, "y": 100}
+
+
+def test_arrow_on_empty_board_or_within_one_shape_stays_free():
+    assert _bound(f"wbBoundArrowData(100, 100, 400, 100, 10, {BLOB})", {}) is None
+    same = {"from": {"kind": "sketch", "id": 1}, "to": {"kind": "sketch", "id": 1}}
+    assert _bound(f"wbBoundArrowData(100, 100, 400, 100, 10, {BLOB})", same) is None
+
+
+def test_only_the_arrow_tool_binds_and_pen_strokes_are_never_targets():
+    assert 'window.currentTool === "arrow" ? wbBoundArrowData(' in WB
+    assert "!wbSketchIsClosedShape(item)) continue" in _function("wbArrowCandidateAt")
