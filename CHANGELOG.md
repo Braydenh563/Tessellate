@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: picking a highlight or text colour on already-coloured text switches the colour instead of nesting markdown.
+- Documents: task boxes can be ticked in Read view; in full screen the selection bar and block menus show above the page, the floating bar no longer overlaps the dock at narrow widths, and Read gets a wider page. The dock drops its button words and save state by its own width (a half-width window), so its row stays on one line.
 - Documents: the Suggestions menu can hide every underline and the list for now, and a Dismissed list brings back suggestions you put away in the document.
 - Toasts on the Graph tab stay on the bottom edge and sit left of the zoom strip, instead of being lifted halfway up the screen.
 

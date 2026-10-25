@@ -3821,6 +3821,72 @@ function renderDocPreview() {
   layerDocWikiLinks(preview);
   docLayerImageOptions(preview);
   docRenderMermaidIn(preview);
+  docWireReadTasks(preview, text);
+}
+
+//: **Tick a task in the Read view.** The renderer draws every task box
+//: disabled (it is shared with notes and chat, which have no source to write
+//: back to). Here the document is open, so the Nth box is matched to the Nth
+//: task line of the text, outside the properties and any code fence, and
+//: switched on only when the counts agree: a box that cannot be traced to its
+//: line stays as it was rather than ticking the wrong one.
+const DOC_READ_TASK = /^(\s*[-*+]\s+)\[([ xX])\](\s)/;
+
+function docTaskLines(text) {
+  const lines = String(text).split("\n");
+  const out = [];
+  let at = 0;
+  let fence = null;
+  let i = 0;
+  const fm = docFrontmatterParse(text);
+  if (fm) {
+    const cut = docFrontmatterStrip(text);
+    const skipped = text.length - cut.length;
+    while (at < skipped && i < lines.length) {
+      at += lines[i].length + 1;
+      i += 1;
+    }
+  }
+  for (; i < lines.length; i += 1) {
+    const line = lines[i];
+    const mark = line.match(/^\s*(```+|~~~+)/);
+    if (mark) {
+      if (!fence) fence = mark[1][0];
+      else if (mark[1][0] === fence) fence = null;
+    } else if (!fence && DOC_READ_TASK.test(line)) {
+      out.push({ from: at, line });
+    }
+    at += line.length + 1;
+  }
+  return out;
+}
+
+function docWireReadTasks(preview, text) {
+  const boxes = [...preview.querySelectorAll("li.md-task > input[type=checkbox]")];
+  if (!boxes.length) return;
+  const tasks = docTaskLines(text);
+  if (tasks.length !== boxes.length) return;
+  boxes.forEach((box, n) => {
+    box.disabled = false;
+    box.dataset.docTask = String(n);
+    box.setAttribute("aria-label", box.checked ? "Done" : "Not done");
+  });
+  if (preview.dataset.taskWired === "1") return;
+  preview.dataset.taskWired = "1";
+  preview.addEventListener("change", (event) => {
+    const box = event.target;
+    if (!(box instanceof HTMLInputElement) || box.dataset.docTask === undefined) return;
+    const surface = docSurface();
+    const task = docTaskLines(surface?.text ?? "")[Number(box.dataset.docTask)];
+    const match = task && task.line.match(DOC_READ_TASK);
+    if (!match) {
+      box.checked = !box.checked;
+      return;
+    }
+    const at = task.from + match[1].length + 1;
+    surface.replaceRange(at, at + 1, box.checked ? "x" : " ");
+    box.setAttribute("aria-label", box.checked ? "Done" : "Not done");
+  });
 }
 
 //: **The document, rendered, with its columns side by side.** `renderMarkdown`
@@ -13475,6 +13541,34 @@ docBoxEl().addEventListener("scroll", (event) => {
 // leaving "green" showing afterwards would claim a state that does not exist.
 const MD_COLOURS = ["yellow", "green", "blue", "pink", "purple", "orange", "red", "grey"];
 
+//: **A colour pick on text that is already coloured switches the colour.**
+//: Reported: blue picked on yellow text "shows markdown" (`==blue|==x====`).
+//: The mark around the selection, or the one the selection is exactly, is
+//: replaced rather than wrapped again. Yellow is the highlight's default and
+//: needs no prefix, so `==x==` says the same as `==yellow|x==`. Returns the
+//: range to replace, its text and where the selection goes after.
+function mdColourEdit(value, start, end, kind, colour) {
+  const mark = kind === "ink" ? "++" : "==";
+  const open = kind === "ink" ? `++${colour}|` : colour === "yellow" ? "==" : `==${colour}|`;
+  const picked = value.slice(start, end);
+  //: The marks on this line that the selection sits inside (or is): the whole
+  //: mark takes the new colour, whatever part of its words was selected.
+  const lineFrom = value.lastIndexOf("\n", start - 1) + 1;
+  const lineTo = value.indexOf("\n", end) === -1 ? value.length : value.indexOf("\n", end);
+  const marks = kind === "ink" ? /\+\+[a-z]+\|((?:(?!\+\+).)+)\+\+/g : /==(?:[a-z]+\|)?((?:(?!==).)+)==/g;
+  const line = value.slice(lineFrom, lineTo);
+  let hit;
+  while ((hit = marks.exec(line)) !== null) {
+    const from = lineFrom + hit.index;
+    const to = from + hit[0].length;
+    if (from <= start && end <= to) {
+      return { from, to, insert: open + hit[1] + mark, selFrom: from + open.length, selTo: from + open.length + hit[1].length };
+    }
+  }
+  const text = picked || (kind === "ink" ? "coloured text" : "highlighted");
+  return { from: start, to: end, insert: open + text + mark, selFrom: start + open.length, selTo: start + open.length + text.length };
+}
+
 //: **The rest of the Obsidian toolbar, built once and mounted into both
 //: editors.** Asked for by name (PKM-er/obsidian-editing-toolbar), for the
 //: notes composer *and* the documents editor, "both in what tools are there,
@@ -13659,17 +13753,10 @@ function wireMarkdownToolbar(bar) {
       if (!colour) return;
       const box = docSurfaceById(boxId);
       if (!box) return;
-      const { selectionStart: start, selectionEnd: end, value } = box;
-      const selected = value.slice(start, end) || (kind === "ink" ? "coloured text" : "highlighted");
-      // Yellow is the highlight's default, so it needs no colour prefix -
-      // and writing one would put `==yellow|x==` in the note where `==x==`
-      // says the same thing.
-      const open = kind === "ink"
-        ? `++${colour}|`
-        : colour === "yellow" ? "==" : `==${colour}|`;
-      const close = kind === "ink" ? "++" : "==";
-      box.value = value.slice(0, start) + open + selected + close + value.slice(end);
-      box.setSelectionRange(start + open.length, start + open.length + selected.length);
+      const edit = mdColourEdit(box.value, box.selectionStart, box.selectionEnd, kind, colour);
+      if (typeof box.replaceRange === "function") box.replaceRange(edit.from, edit.to, edit.insert);
+      else box.value = box.value.slice(0, edit.from) + edit.insert + box.value.slice(edit.to);
+      box.setSelectionRange(edit.selFrom, edit.selTo);
       finishMarkdownEdit(box, boxId);
     });
   }
