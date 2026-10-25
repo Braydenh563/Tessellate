@@ -868,7 +868,12 @@ const RECENT_DOCS_SHOWN = 8;
 function renderDocList() {
   const list = $("doc-list");
   list.replaceChildren();
-  const shown = docs.slice(0, RECENT_DOCS_SHOWN);
+  //: Last edited first, whatever order the list was fetched in: a save
+  //: moves the row to the top without a refetch.
+  const recent = [...docs].sort(
+    (a, b) => String(b.updated_at || "").localeCompare(String(a.updated_at || "")) || b.id - a.id
+  );
+  const shown = recent.slice(0, RECENT_DOCS_SHOWN);
   if (currentDoc && !shown.some((d) => d.id === currentDoc.id)) {
     const open = docs.find((d) => d.id === currentDoc.id);
     if (open) shown[shown.length - 1] = open;
@@ -1909,19 +1914,38 @@ function docTemplateFill(template) {
 //: maps, so a deleted one's number is not reused while a higher one exists.
 // DOC-UNTITLED-BEGIN
 function docUntitledName(titles) {
-  const pattern = /^untitled document (\d{1,6})$/i;
+  //: The bare "Untitled document" is number one; the next is "... 2".
+  const pattern = /^untitled document(?: (\d{1,6}))?$/i;
   let top = 0;
   for (const title of titles || []) {
     const match = pattern.exec(String(title || "").trim());
-    if (match) top = Math.max(top, Number(match[1]));
+    if (match) top = Math.max(top, match[1] ? Number(match[1]) : 1);
   }
-  return `Untitled document ${top + 1}`;
+  return top ? `Untitled document ${top + 1}` : "Untitled document";
 }
 // DOC-UNTITLED-END
 const docNextName = () => docUntitledName(docs.map((d) => d.title));
 
+//: **A blank document is not made until it is written in** (dog1-1025 item
+//: 16, decided): the editor opens empty and the first keystroke in the title
+//: or the text creates the row (`ensureDocumentExists`), so cancelling or
+//: walking away leaves nothing behind. A template has content, so it posts.
+async function startBlankDocument() {
+  const seq = ++docOpenSeq;
+  docRememberPositionNow();
+  if (docDirty) await saveDocument({ silent: true });
+  await ensureDocEditor();
+  if (seq !== docOpenSeq) return;
+  showNoDocument();
+  syncDocFileType({ prose: false });
+  docDirty = false;
+  renderDocList();
+  $("doc-title").focus();
+}
+
 async function createDocument(template = null) {
-  const body = template ? docTemplateFill(template) : { title: docNextName(), content: "" };
+  if (!template) return startBlankDocument();
+  const body = docTemplateFill(template);
   const doc = await apiJson("/documents", {
     method: "POST",
     body: JSON.stringify(body),

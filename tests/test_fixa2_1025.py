@@ -13,3 +13,25 @@ def test_capture_box_scrolls_inside_so_save_stays_in_view():
     # a stretched item too, and 30 lines pushed Save to y=981 at 800 high.
     assert "#capture .note-surface-stretch .cm-editor .cm-scroller" in LAZY_CSS
     assert "#capture .capture-commit-row {\n  position: sticky;" in LAZY_CSS
+
+
+DOCS_JS = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+
+
+def _body(head: str) -> str:
+    start = DOCS_JS.index(head)
+    return DOCS_JS[start : DOCS_JS.index("\n}\n", start)]
+
+
+def test_blank_new_document_makes_no_row_until_the_first_edit():
+    body = _body("async function createDocument(")
+    # The blank path returns before the POST; only a template posts.
+    assert body.index("startBlankDocument()") < body.index('apiJson("/documents"')
+    blank = _body("async function startBlankDocument(")
+    assert "/documents" not in blank, "a blank draft must not POST"
+    assert "showNoDocument()" in blank
+
+
+def test_document_sidebar_is_newest_edit_first():
+    body = _body("function renderDocList(")
+    assert "updated_at" in body and "sort(" in body
