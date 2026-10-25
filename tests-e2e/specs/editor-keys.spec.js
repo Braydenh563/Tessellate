@@ -181,3 +181,18 @@ test("Read mode shows the title once and no live formatting toolbar", async ({ p
   await expect(page.locator("#doc-toolbar")).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test("a note card shows heading words, not heading hashes", async ({ page }) => {
+  const errors = watchErrors(page);
+  await openApp(page);
+  const mark = `Hashfree${Date.now() % 100000}`;
+  await api(page, "/entries", { method: "POST", body: JSON.stringify({ content: `# Card title ${mark}\n\n## Sub heading ${mark}\n\nSome \`code\` words.` }) });
+  await openTab(page, "notes");
+  await page.fill("#note-search", mark);
+  const body = page.locator("#tab-notes .entry-content", { hasText: `Sub heading ${mark}` }).first();
+  await expect(body).toBeVisible();
+  const text = await body.innerText();
+  expect(text, "the card kept the ## of its heading").not.toMatch(/^\s*#/m);
+  expect(text).toContain(`Sub heading ${mark}`);
+  expect(errors).toEqual([]);
+});

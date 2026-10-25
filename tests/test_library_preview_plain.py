@@ -52,3 +52,10 @@ def test_a_long_run_of_blank_lines_or_whitespace_is_not_a_stall():
         started = time.perf_counter()
         _clip(text)
         assert time.perf_counter() - started < 1.0, repr(text[:12])
+
+
+def test_a_code_fence_marker_is_not_a_word():
+    # Dogfood round 1, item 18: the preview read "`py print(1) `".
+    text = "# Notes\n\n```py\nprint(1)\n```\n\nAfter"
+    assert _clip(text) == "Notes · print(1) After"
+    assert _clip("~~~\nx\n~~~") == "x"
