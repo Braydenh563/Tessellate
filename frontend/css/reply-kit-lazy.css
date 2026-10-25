@@ -370,6 +370,16 @@ button.reply-by {
   gap: var(--space-2);
 }
 
+/* The heading of this fold reads as its siblings' do (Why this answer,
+   Thinking): sentence case at the disclosure's size, not the small
+   uppercase label the same class gives a plain caption elsewhere. */
+.grounding-fold > .fold-summary.answer-grounding-label {
+  font-size: var(--text-sm);
+  font-weight: inherit;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
 /* The one disclosure caret (DESIGN.md, "A disclosure marker"), drawn here
    because this fold lives in a lazy sheet; same glyph, turn and timing. */
 .grounding-fold > .fold-summary::before {
