@@ -4933,6 +4933,11 @@ const WB_TOOL_SETTINGS = {
   highlighter: ["size"],
   line: ["size", "ends", "head", "dash"],
   arrow: ["size", "ends", "head", "dash"],
+  //: A link takes the rail's ink and its ends (dog2 item 13: drawn with the
+  //: Link tool it had no head and no way to ask for one). It shares the
+  //: Arrow tool's ends, which start at an end arrow.
+  "link-straight": ["ends", "head"],
+  "link-curved": ["ends", "head"],
   rect: ["size", "dash", "fill"],
   circle: ["size", "dash", "fill"],
   triangle: ["size", "dash", "fill"],
@@ -22332,7 +22337,8 @@ async function dragEndNode(event, d) {
        // source got at drag-start, `null` (nothing near enough) persists
        // as a free/floating end, same as the source's own case.
        const targetAnchor = wbNearestAnchor(targetKind, targetNode, mx, my);
-       const tool = (wbIsMap() && WB_MAP_KINDS.has(d.kind) && WB_MAP_KINDS.has(targetNode.kind)) ? wbMapCrossLinkType() : window.currentTool;
+       const crossLink = wbIsMap() && WB_MAP_KINDS.has(d.kind) && WB_MAP_KINDS.has(targetNode.kind);
+       const tool = crossLink ? wbMapCrossLinkType() : window.currentTool;
        const sketchData = {
          data: JSON.stringify({
             type: tool,
@@ -22343,6 +22349,9 @@ async function dragEndNode(event, d) {
             color: window.currentStrokeColor || "#ffffff",
             sourceAnchor: d.linkSourceAnchor || undefined,
             targetAnchor: targetAnchor || undefined,
+            //: A board link wears the held tool's ends; a map's cross-link
+            //: keeps the map's own look.
+            ...(crossLink ? {} : wbToolCaps()),
          }),
          x: 0, y: 0, z: 1,
          board_id: window.currentBoardId

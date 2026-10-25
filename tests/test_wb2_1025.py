@@ -59,3 +59,10 @@ def test_map_opens_with_its_root_clear_of_the_chrome():
     assert "if (saved && rootShown && wbViewShowsContent(" in restore
     reveal = _function(MAP, "wbMapRevealTopic")
     assert "wbCenterOn(fits ? both : box" in reveal
+
+
+def test_link_tool_draws_an_end_arrow_and_shows_its_ends():
+    # dog2 13: the Link tool's links carried no caps (no head), and its bar
+    # showed nothing; it now shares the Arrow tool's ends (default end).
+    assert '"link-straight": ["ends", "head"],' in WB and '"link-curved": ["ends", "head"],' in WB
+    assert "...(crossLink ? {} : wbToolCaps())," in WB

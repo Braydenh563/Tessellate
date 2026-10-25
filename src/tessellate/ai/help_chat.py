@@ -321,7 +321,9 @@ HELP_TOPICS: list[dict] = [
             "panel, changes its colour, line and words; on a narrow window "
             "the bar keeps one row and moves its order, dash and arrange "
             "buttons into its More menu. Draw a link between "
-            "cards with the connector (C), from one card to the other."
+            "cards with the connector (C), from one card to the other; it "
+            "ends in an arrow, and the bar over the rail sets its ends while "
+            "the tool is held."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },
