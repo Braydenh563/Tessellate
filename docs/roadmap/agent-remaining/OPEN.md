@@ -5,8 +5,8 @@
 Whiteboard
 - Format bar (Fill / Border / Width / ends / order row): the two rows clash at a half window; a line and an arrow cannot be turned into each other from the bar (setting End to None should make it a line, a mark an arrow; check `wbFmtKind` and `wbSketchTakesCaps`, reproduce first).
 - Fill sub-tab in the popup moves the popup to the top left.
-- Frame upright (double-click the rotate node) resets the frame but not its contents.
-- Emojis do not scale with their box; the size numbers show on draw but not on resize; anchors and selection border lag the resize until release.
+- **Fixed (frame upright commit, wb-1025).** Frame upright (double-click the rotate node) resets the frame but not its contents. (wb1025-frameup.js: 88/88 to 0/0, one Undo back.)
+- **Fixed b875a0d.** Emojis do not scale with their box; the size numbers show on draw but not on resize; anchors and selection border lag the resize until release. (wb1025-resize.js: glyph 46 to 154px in a 214px box; shape box 164 to 284 on a 280 path; readout shown.)
 
 Documents and CodeMirror
 - Hide all Harper/edit suggestions temporarily, plus a list of dismissed ones to restore.

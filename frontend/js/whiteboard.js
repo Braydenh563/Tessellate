@@ -15907,7 +15907,7 @@ async function initWhiteboard() {
     if (turn) {
       e.preventDefault();
       e.stopPropagation();
-      wbResetRotation(turn);
+      wbResetRotation(turn, e.ctrlKey || e.metaKey);
       return;
     }
     const handle = e.target.closest?.(".wb-resize-handle, .wb-map-resize-grip");
@@ -20510,15 +20510,31 @@ const WB_OBJECT_MIN_SIZE = 40;
 //: `turned` existed, or resized since (see the resize grip), has nothing to
 //: go back by, and says so rather than guessing. A group's grip is not here: a group has no angle of its own,
 //: only members that were each turned about its centre.
-async function wbResetRotation(grip) {
+async function wbResetRotation(grip, alone = false) {
   const el = grip.closest(".node-card, .wb-object");
   if (el) {
     const kind = el.classList.contains("node-card") ? "node" : "object";
     const item = (wbState[WB_LIST_BY_KIND[kind]] || []).find((i) => i.id === Number(el.dataset.id));
     if (!item || !item.rotation) return;
     const before = WB_KIND_INFO[kind].payload(item);
+    //: **A frame stood upright takes what it holds with it** (the 22-10 bug
+    //: doc: "if I double click the rotate" node the frame resets and its
+    //: contents stay turned). The same turn a drag of its grip makes, by
+    //: minus its angle, in one Undo step; Ctrl stands the frame up alone.
+    if (kind === "object" && item.kind === "frame") {
+      item._turnFrom = item.rotation;
+      item._turnOrigin = wbFrameTurnOrigin(item, alone);
+    }
     item.rotation = 0;
     el.style.transform = wbItemTransform(item);
+    if (item._turnOrigin) {
+      wbFrameTurnLive(item);
+      await wbSaveObject(item);
+      await wbFrameTurnEnd(item, { action: "move", kind, id: item.id, before });
+      wbScheduleRender();
+      return;
+    }
+    delete item._turnOrigin;
     if (kind === "node") await wbSaveNode(item);
     else await wbSaveObject(item);
     wbPushUndo({ action: "move", kind, id: item.id, before });

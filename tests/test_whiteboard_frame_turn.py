@@ -65,3 +65,13 @@ def test_a_point_turns_about_the_frame_centre() -> None:
 
 def test_no_new_top_level_state() -> None:
     assert not re.search(r"^(let|var) wbFrameTurn", WB, re.M)
+
+
+def test_standing_a_frame_upright_stands_up_what_it_holds() -> None:
+    """The 22-10 bug doc: the double-click reset the frame and left its contents
+    turned (scratchpad/ui-sweeps/wb1025-frameup.js: 88 and 88 to 0 and 0, one
+    Undo puts both back)."""
+    reset = _fn("wbResetRotation")
+    assert "wbFrameTurnOrigin(item, alone)" in reset
+    assert "wbFrameTurnLive(item)" in reset and "wbFrameTurnEnd(item," in reset
+    assert "wbResetRotation(turn, e.ctrlKey || e.metaKey)" in WB
