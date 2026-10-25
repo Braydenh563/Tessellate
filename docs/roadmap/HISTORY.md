@@ -51030,6 +51030,25 @@ From UI_MODERNISATION_PLAN Phase 11 item 1, both built:
      "title" of this item is the space switcher, which is the truer name for
      where you are. The AI dot lives in the status bar (§36D) and stays there.
 
+## Moved from the plans, 2026-10-25 (wb2)
+
+From WHITEBOARD_PLAN's "Gap audit against draw.io, 2026-10-25 (wb2)", all five built (sweeps in `scratchpad/ui-sweeps/wb2-*.js`; git log for each):
+
+Missing:
+1. Zoom to the selection (draw.io View, Figma Shift+2): Fit only frames everything. S. **Built** (2026-10-25).
+2. Tidy a diagram: a tree layout for the selected boxes and the connectors between them, top-down or left-right (draw.io Arrange > Layout; the 10-19 list's item 12). Only note cards had one (`wbArrangeMindMap`). M. **Built** (2026-10-25).
+3. Change a shape's kind in place, keeping its text, size, style and connectors (draw.io Edit style / replace): a rectangle in a flowchart becomes a decision diamond without redrawing. S. **Built** (2026-10-25).
+4. A shape's own link to a note or a web page, opened from the shape (draw.io Edit link; the 10-19 list's item 4). M. **Built** (2026-10-25).
+5. Text that shrinks to fit its shape (the 10-19 list's item 8; draw.io autosize only grows). M. **Built** (2026-10-25).
+
+From MINDMAP_PLAN's "Gap audit against XMind and MindNode, 2026-10-25 (wb2)", all three built:
+
+Missing, the three taken first:
+1. Reorder siblings by dragging (XMind, MindNode: a topic dragged between two of its siblings takes that place, with an insertion line). Here a drag in a laid-out map pins the topic where it is let go, so the order can only change by key. M. **Built** (2026-10-25).
+2. Export or copy one branch (the 10-19 list's item 9): Copy this branch as an outline (Markdown) and Export this branch as a picture, from the topic's Branch menu. S. **Built** (2026-10-25).
+3. Dim the rest while a branch is selected (the 10-19 list's item 14; XMind's focus mode, MindNode's "focus"): a View toggle that greys every topic outside the selected branch, lighter than Focus, which hides them. S. **Built** (2026-10-25).
+
+
 ## INBOX resolved, 2026-10-19
 
 1303. **The owner, 2026-10-18, verbatim** (screenshot: a dark rounded "..." square beside a pen stroke on the quick sketch canvas). "drawing on the quick sketch panel now constantly shows the popup highlight text meatball menu button"

@@ -1680,12 +1680,7 @@ The owner, 2026-10-25: "upgrade the whiteboard and mindmap; add the features dra
 
 Exists (no work): connector waypoints and elbow routing (`route`, Bend a line); line jumps at crossings (`jumps`); align, distribute, same size, align to a key object; equal spacing guides; z-order (forward, back, front, back of all); lock; duplicate (Ctrl+D) and copy-and-join arrows; copy, paste and reset style; connector labels; frames and swimlane stencils; layers; shape and icon search in the Library (`wb-lib-search`); grid snap toggle; export or copy the selection; flip; select similar; keep proportions; Edit data; find and replace; Mermaid and draw.io import.
 
-Missing:
-1. Zoom to the selection (draw.io View, Figma Shift+2): Fit only frames everything. S. **Build.**
-2. Tidy a diagram: a tree layout for the selected boxes and the connectors between them, top-down or left-right (draw.io Arrange > Layout; the 10-19 list's item 12). Only note cards had one (`wbArrangeMindMap`). M. **Build.**
-3. Change a shape's kind in place, keeping its text, size, style and connectors (draw.io Edit style / replace): a rectangle in a flowchart becomes a decision diamond without redrawing. S. **Build.**
-4. A shape's own link to a note or a web page, opened from the shape (draw.io Edit link; the 10-19 list's item 4). M. **Build.**
-5. Text that shrinks to fit its shape (the 10-19 list's item 8; draw.io autosize only grows). M. **Build.**
+Missing (items 1 to 5, zoom to the selection, tidy as a tree, change the shape, a shape's link and text that shrinks to fit, are built: HISTORY.md, "Moved from the plans, 2026-10-25 (wb2)"):
 6. Dimension lines with a live length (10-19 item 7). M.
 7. Crop a picture to a circle or rounded box (10-19 item 13). M.
 8. BPMN element set (10-19 item 9). M.
