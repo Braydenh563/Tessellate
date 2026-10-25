@@ -47,7 +47,9 @@ def test_group_buttons_follow_the_selection(groups: list, can_group: bool, can_u
     if not node:
         pytest.skip("node is not installed")
     items = [{"group_id": g} for g in groups]
-    script = _function(BOARD, "wbGroupButtonState") + f"\nconsole.log(JSON.stringify(wbGroupButtonState({json.dumps(items)})));\n"
+    # Groups nest now (INBOX 1354): the state reads the shared chain prefix.
+    helpers = "const WB_GROUP_SEP = \">\";\n" + _function(BOARD, "wbGroupChain") + _function(BOARD, "wbCommonGroupPrefix")
+    script = helpers + _function(BOARD, "wbGroupButtonState") + f"\nconsole.log(JSON.stringify(wbGroupButtonState({json.dumps(items)})));\n"
     out = subprocess.run([node, "-e", script], capture_output=True, text=True, check=True)
     assert json.loads(out.stdout.strip()) == {"canGroup": can_group, "canUngroup": can_ungroup}
 

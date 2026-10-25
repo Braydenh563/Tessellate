@@ -38,9 +38,19 @@ Sweeps: `scratchpad/ui-sweeps/paint1026-audit.js` (board, 1440), `paint1026-sket
 | 20 | Pad | `[` and `]` change the size | no | low |
 | 21 | Pad | Fit: 1440 card 900 wide, one row, no overflow | pass | ok |
 
+## INBOX 1354 (the owner's second message, ranked first)
+
+1. Interaction feel: handle hit areas, drag threshold, rotate snapping, double-click to edit. Open.
+2. Popup and context bars stretching to the full width: cap, fold into "...". Open.
+3. Group and Ungroup one state-aware control: measured already one-or-other on the context bar, the right-click menu and Arrange (`paint1026-groups.js`). Kept, now chain-aware.
+4. Nested groups. Built (below).
+5. Control consistency across the three surfaces. Open (map strip 28/32 heights, gap 8).
+
 ## Built
 
-(each row: what, commit, sweep with numbers)
+| What | Commit | Sweep, numbers |
+| --- | --- | --- |
+| Nested groups: chain `group_id`, click selects outermost, double-click drills, Ungroup one level, one Undo step each, paste keeps nesting, layers by outermost group | (this step) | `paint1026-groups.js` 19/19 at 1280 (before: flat, ungroup of outer cleared all 7, no Undo entry); group walk 0.074 ms per click on 507 items; whole click 7.7 ms, the highlight's (unchanged) |
 
 ## Remaining
 

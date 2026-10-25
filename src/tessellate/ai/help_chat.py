@@ -1420,6 +1420,7 @@ HELP_TOPICS.extend(
                 "overview, / or Ctrl+F finds (with Whole word and Pattern buttons), Ctrl+H replaces, and Tab walks the board's "
                 "items. Ctrl+K also finds select all shapes or connectors, select similar (every item of the same kind, fill and line colour as the selected one), turn 90 degrees, remove from "
                 "the group, copy and paste the size, grow to fit the words, reverse a connector and clear its bends. "
+                "Groups nest; Ungroup takes one level off and a double-click goes in. "
                 "Selection, menus and presenting are in Whiteboard selection and menus."
             ),
             "badge": {"label": "Library", "tab": "library"},

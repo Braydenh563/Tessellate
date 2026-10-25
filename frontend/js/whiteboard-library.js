@@ -1635,7 +1635,8 @@ function wbLayerRows() {
     const groups = new Map();
     const top = [];
     for (const e of entries) {
-      const g = e.item.group_id;
+      //: One row per outermost group: a group inside it moves with it.
+      const g = wbTopGroup(e.item);
       if (g) {
         if (!groups.has(g)) {
           const head = { group: g, members: [] };
@@ -2050,7 +2051,7 @@ function wbLayerSelect(li, { zoom = true } = {}) {
     clearWbSelection();
     for (const kind of ["node", "object", "sketch"]) {
       for (const item of wbState[WB_LIST_BY_KIND[kind]] || []) {
-        if (item.group_id === li.dataset.group && !wbIsLocked(kind, item) && !wbItemHidden(kind, item)) wbMultiSelection.add(wbMultiKey(kind, item.id));
+        if (wbTopGroup(item) === li.dataset.group && !wbIsLocked(kind, item) && !wbItemHidden(kind, item)) wbMultiSelection.add(wbMultiKey(kind, item.id));
       }
     }
     wbApplySelectionHighlight();

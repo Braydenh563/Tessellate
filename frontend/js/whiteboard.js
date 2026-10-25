@@ -2158,38 +2158,111 @@ const wbMultiKey = (kind, id) => `${kind}:${id}`;
 // on every member's own `group_id` column, so clicking any one member later
 // reselects the whole set, the other half of this feature lives in
 // `wbHandleItemClick` below.
+//
+//: **Groups nest** (the owner, INBOX 1354: "if I have 7 items and group 5 but
+//: then highlight the grouped 5 and the other two can it group them all again
+//: and then if I ungroup them the 5 will also remain grouped?"). `group_id` is
+//: a chain, outermost first, joined by `>`: the 5 hold `outer>inner`, the 2
+//: hold `outer`. Grouping puts a new id in front; ungrouping takes the one the
+//: selection shares off. The column is 40 characters, so new ids are 6 and a
+//: chain is five deep at most; an old 36-character id is re-keyed short, on
+//: every member at once, the first time it is nested.
+const WB_GROUP_SEP = ">";
+const WB_GROUP_MAX_LEN = 40;
+
+function wbGroupChain(item) {
+  return item?.group_id ? String(item.group_id).split(WB_GROUP_SEP).filter(Boolean) : [];
+}
+
+function wbTopGroup(item) {
+  return wbGroupChain(item)[0] || null;
+}
+
+function wbNewGroupId() {
+  const bytes = crypto.getRandomValues ? crypto.getRandomValues(new Uint8Array(6)) : Array.from({ length: 6 }, () => Math.random() * 256);
+  return Array.from(bytes, (b) => "abcdefghijklmnopqrstuvwxyz0123456789"[b % 36]).join("");
+}
+
+//: The chain every item in `items` starts with (empty when they share none).
+function wbCommonGroupPrefix(items) {
+  const chains = items.map(wbGroupChain);
+  if (!chains.length) return [];
+  const prefix = [];
+  for (let i = 0; i < chains[0].length; i += 1) {
+    const seg = chains[0][i];
+    if (!chains.every((c) => c[i] === seg)) break;
+    prefix.push(seg);
+  }
+  return prefix;
+}
+
+//: Each board item whose chain starts with `prefix` (all of them for none).
+function wbItemsWithGroupPrefix(prefix) {
+  const out = [];
+  for (const [kind, list] of Object.entries(WB_LIST_BY_KIND)) {
+    for (const item of wbState[list] || []) {
+      const chain = wbGroupChain(item);
+      if (prefix.every((seg, i) => chain[i] === seg)) out.push({ kind, item });
+    }
+  }
+  return out;
+}
+
+function wbSaveGroupMember(kind, item) {
+  if (kind === "sketch") return wbSaveSketchProps(item, {});
+  if (kind === "node") return wbSaveNode(item);
+  return wbSaveObject(item);
+}
+
+//: An id too long to nest under (a 36-character one from before chains) is
+//: swapped for a short one on every item that carries it.
+async function wbShortenGroupIds(entries) {
+  const long = new Set();
+  for (const e of entries) for (const seg of wbGroupChain(e.item)) if (seg.length > 8) long.add(seg);
+  for (const seg of long) {
+    const short = wbNewGroupId();
+    for (const { kind, item } of wbItemsWithGroupPrefix([])) {
+      const chain = wbGroupChain(item);
+      if (!chain.includes(seg)) continue;
+      item.group_id = chain.map((c) => (c === seg ? short : c)).join(WB_GROUP_SEP);
+      await wbSaveGroupMember(kind, item);
+    }
+  }
+}
+
 async function wbGroupSelection() {
-  if (wbMultiSelection.size < 2) {
+  const entries = wbSelectionEntries();
+  if (entries.length < 2) {
     toast("Select more than one item to group them.");
     return;
   }
-  const groupId = crypto.randomUUID ? crypto.randomUUID() : `g${Date.now()}${Math.random().toString(36).slice(2)}`;
-  for (const key of wbMultiSelection) {
-    const sep = key.indexOf(":");
-    const kind = key.slice(0, sep), id = Number(key.slice(sep + 1));
-    const item = (wbState[WB_LIST_BY_KIND[kind]] || []).find((i) => i.id === id);
-    if (!item) continue;
-    item.group_id = groupId;
-    if (kind === "sketch") await wbSaveSketchProps(item, {});
-    else if (kind === "node") await wbSaveNode(item);
-    else await wbSaveObject(item);
-  }
-  toast("Grouped.");
+  const groupId = wbNewGroupId();
+  await wbRecordGesture(async () => {
+    await wbShortenGroupIds(entries);
+    const chains = entries.map((e) => [groupId, ...wbGroupChain(e.item)].join(WB_GROUP_SEP));
+    if (chains.some((c) => c.length > WB_GROUP_MAX_LEN)) {
+      toast("Groups nest five deep at most.");
+      return;
+    }
+    for (let i = 0; i < entries.length; i += 1) {
+      entries[i].item.group_id = chains[i];
+      await wbSaveGroupMember(entries[i].kind, entries[i].item);
+    }
+    toast("Grouped.");
+  });
   wbUpdateContextBar();
 }
 
 //: **Which of Group and Ungroup the selection can use** (B29: "the ungroup
 //: button on the popup tools doesn't change"). Both buttons stayed on the bar
 //: through every selection, so grouping changed nothing the eye could see.
-//: Group is offered unless the selection already is exactly one group;
-//: Ungroup only while some member belongs to one.
+//: One or the other, never both (the owner, 10-25: "the group and ungroup
+//: button show at the same time"): a selection that shares a group ungroups
+//: it; anything else of two or more groups (a group with loose items, or two
+//: groups, makes a group of groups).
 function wbGroupButtonState(items) {
-  const ids = items.map((i) => i.group_id || null);
-  const oneGroup = ids.length > 0 && ids[0] !== null && ids.every((g) => g === ids[0]);
-  //: One or the other, never both (the owner, 10-25: "the group and ungroup
-  //: button show at the same time"): a selection that is exactly one group
-  //: ungroups; anything else of two or more groups (merging what is grouped).
-  return { canGroup: ids.length > 1 && !oneGroup, canUngroup: oneGroup };
+  const shared = items.length > 0 && wbCommonGroupPrefix(items).length > 0;
+  return { canGroup: items.length > 1 && !shared, canUngroup: shared };
 }
 
 function wbSyncGroupButtons() {
@@ -2198,28 +2271,23 @@ function wbSyncGroupButtons() {
   document.getElementById("wb-multi-ungroup")?.classList.toggle("hidden", !state.canUngroup);
 }
 
-//: Clears `group_id` on every currently-selected member, the current
-//: selection is either a multi-selection built by hand, or (per
-//: `wbHandleItemClick`'s own group-select branch) already the whole group,
-//: since clicking any one grouped member selects all of it.
+//: Takes the innermost group the selection shares off each member, so the
+//: groups inside it stay groups. One Undo step.
 async function wbUngroupSelection() {
-  const keys = wbMultiSelection.size > 0
-    ? [...wbMultiSelection]
-    : wbSelectedItem ? [wbMultiKey(wbSelectedItem.kind, wbSelectedItem.id)] : [];
-  if (keys.length === 0) return;
-  let ungrouped = 0;
-  for (const key of keys) {
-    const sep = key.indexOf(":");
-    const kind = key.slice(0, sep), id = Number(key.slice(sep + 1));
-    const item = (wbState[WB_LIST_BY_KIND[kind]] || []).find((i) => i.id === id);
-    if (!item || !item.group_id) continue;
-    item.group_id = null;
-    ungrouped++;
-    if (kind === "sketch") await wbSaveSketchProps(item, {});
-    else if (kind === "node") await wbSaveNode(item);
-    else await wbSaveObject(item);
-  }
-  if (ungrouped) toast("Ungrouped.");
+  const lone = wbSelectedItem && (wbState[WB_LIST_BY_KIND[wbSelectedItem.kind]] || []).find((i) => i.id === wbSelectedItem.id);
+  const entries = wbMultiSelection.size ? wbSelectionEntries() : lone ? [{ kind: wbSelectedItem.kind, item: lone }] : [];
+  const prefix = wbCommonGroupPrefix(entries.map((e) => e.item));
+  if (!prefix.length) return;
+  const depth = prefix.length - 1;
+  await wbRecordGesture(async () => {
+    for (const { kind, item } of entries) {
+      const chain = wbGroupChain(item);
+      chain.splice(depth, 1);
+      item.group_id = chain.length ? chain.join(WB_GROUP_SEP) : null;
+      await wbSaveGroupMember(kind, item);
+    }
+  });
+  toast("Ungrouped.");
   wbUpdateContextBar();
 }
 
@@ -6782,24 +6850,51 @@ function wbHandleItemClick(kind, id, event) {
     wbApplySelectionHighlight();
     return;
   }
-  wbMultiSelection.clear();
   // A plain click on a *grouped* item selects the whole group, not just the
   // one thing clicked: the other half of Ctrl+G (`wbGroupSelection`).
   const item = (wbState[WB_LIST_BY_KIND[kind]] || []).find((i) => i.id === id);
-  if (item && item.group_id) {
-    for (const [memberKind, listName] of Object.entries(WB_LIST_BY_KIND)) {
-      for (const candidate of wbState[listName] || []) {
-        //: A locked member stays put while its group moves (decision 15).
-        if (candidate.group_id === item.group_id && !wbIsLocked(memberKind, candidate)) {
-          wbMultiSelection.add(wbMultiKey(memberKind, candidate.id));
-        }
-      }
-    }
-    wbSelectedItem = null;
-    wbApplySelectionHighlight();
+  const chain = wbGroupChain(item);
+  if (!chain.length) {
+    wbMultiSelection.clear();
+    selectWbItem(kind, id);
     return;
   }
-  selectWbItem(kind, id);
+  //: A click inside the group already selected keeps it (so a press to drag
+  //: does not climb back out); a double-click goes one group further in, and
+  //: past the innermost to the item itself (INBOX 1354).
+  const depth = wbSelectedGroupDepth(chain);
+  if (depth && !(event.detail >= 2)) return;
+  const want = depth ? depth + 1 : 1;
+  wbMultiSelection.clear();
+  if (want > chain.length) {
+    wbDrilledAt = performance.now();
+    selectWbItem(kind, id);
+    return;
+  }
+  if (depth) wbDrilledAt = performance.now();
+  for (const { kind: memberKind, item: candidate } of wbItemsWithGroupPrefix(chain.slice(0, want))) {
+    //: A locked member stays put while its group moves (decision 15).
+    if (!wbIsLocked(memberKind, candidate)) wbMultiSelection.add(wbMultiKey(memberKind, candidate.id));
+  }
+  wbSelectedItem = null;
+  wbApplySelectionHighlight();
+}
+
+//: How deep into `chain` the current selection is: n when it is exactly the
+//: unlocked members of the chain's first n ids, 0 otherwise.
+function wbSelectedGroupDepth(chain) {
+  if (!wbMultiSelection.size) return 0;
+  for (let n = chain.length; n >= 1; n -= 1) {
+    const members = wbItemsWithGroupPrefix(chain.slice(0, n)).filter((e) => !wbIsLocked(e.kind, e.item));
+    if (members.length === wbMultiSelection.size && members.every((e) => wbMultiSelection.has(wbMultiKey(e.kind, e.item.id)))) return n;
+  }
+  return 0;
+}
+
+//: The double-click that went into a group is not also an edit of the item.
+let wbDrilledAt = 0;
+function wbJustDrilled() {
+  return performance.now() - wbDrilledAt < 600;
 }
 
 //: Which `wbState` list a selection's item lives in, by kind, one place so
@@ -7628,11 +7723,13 @@ async function wbCreateCopies(items, dx, dy) {
       body.x = (body.x || 0) + dx;
       body.y = (body.y || 0) + dy;
     }
+    //: Each id in the chain gets its own fresh one, so a pasted group of
+    //: groups is still nested and never joins the original.
     if (body.group_id) {
-      if (!groups.has(body.group_id)) {
-        groups.set(body.group_id, crypto.randomUUID ? crypto.randomUUID() : `g${Date.now()}${Math.random().toString(36).slice(2)}`);
-      }
-      body.group_id = groups.get(body.group_id);
+      body.group_id = wbGroupChain(body).map((seg) => {
+        if (!groups.has(seg)) groups.set(seg, wbNewGroupId());
+        return groups.get(seg);
+      }).join(WB_GROUP_SEP);
     }
     const { base, list } = WB_KIND_INFO[kind];
     try {
@@ -20437,6 +20534,7 @@ function renderWhiteboard() {
       let parsed = null;
       try { parsed = JSON.parse(d.data); } catch { parsed = null; }
       //: A closed shape's double-click types into it (decision 12).
+      if (wbJustDrilled()) { event.stopPropagation(); return; }
       if (wbShapeLabelKind(parsed) && (window.currentTool === "select" || window.currentTool === "pan")) {
         event.stopPropagation();
         event.preventDefault();
@@ -22101,6 +22199,7 @@ function renderWbObjects(canvas) {
       });
       content.on("dblclick", function (event) {
         event.stopPropagation();
+        if (wbJustDrilled()) return;
         wbBeginTextEdit(this);
       });
     }
