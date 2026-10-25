@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Shortcuts: letters typed in the 1.5 s after typing in an editor no longer run the single-key shortcuts or the quick-nav chord, so a sentence typed after focus slips off the box cannot open Reminders and Settings.
 - Documents: in a table cell, Tab moves to the next cell even while a word is offered, instead of taking the guessed word.
 - Notes and documents: retyping "- " on an empty auto-bullet no longer nests it ("- - x"), Enter on an empty bullet ends the list in a note box, and a closing ``` fence goes back to the opening fence's indent instead of carrying the code's.
 - Documents and notes: Ctrl+B with nothing selected leaves the placeholder selected, so typing replaces it whole (it left the opening markers selected and ate them).

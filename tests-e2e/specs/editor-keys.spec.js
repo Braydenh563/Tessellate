@@ -115,3 +115,21 @@ test("table cell: Tab moves to the next cell even while a word is offered", asyn
   expect(await page.evaluate(() => { const s = docSurface(); return s.text.slice(s.selectionStart, s.selectionEnd); })).toBe("y");
   expect(errors).toEqual([]);
 });
+
+test("typing after focus slips off the editor does not run the quick-nav chord", async ({ page }) => {
+  const errors = watchErrors(page);
+  await openCaptureBox(page);
+  await page.keyboard.type("Al");
+  // Focus lost, as after a click on the page background or a closed popup.
+  await page.evaluate(() => document.activeElement.blur());
+  await page.keyboard.type("ts");
+  await page.waitForTimeout(300);
+  expect(await page.evaluate(() => settingsModalOpen()), "the letters opened Settings").toBe(false);
+  expect(await page.evaluate(() => !document.getElementById("tab-notes").classList.contains("hidden"))).toBe(true);
+  // A deliberate chord, once the typing has stopped, still works.
+  await page.waitForTimeout(1700);
+  await page.keyboard.press("t");
+  await page.keyboard.press("s");
+  await expect.poll(() => page.evaluate(() => settingsModalOpen())).toBe(true);
+  expect(errors).toEqual([]);
+});
