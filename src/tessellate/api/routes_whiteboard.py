@@ -1998,17 +1998,86 @@ def _card_preview_rows(db: Session, on) -> list[tuple]:  # noqa: ANN001
     return rows
 
 
+def _link_preview(data: dict, boxes: dict) -> tuple | None:
+    """A connector's preview row, from the centres of what it joins.
+
+    A link has no path of its own (the canvas computes it from its two ends
+    every render), so it fell through to the default box at the origin and
+    drew as a pen scribble (dog2 item 14: "a straight link draws as a wavy
+    squiggle"). Each end is the joined item's centre, or the free point it
+    stops at; an end that cannot be found leaves the link out rather than
+    drawing it somewhere it is not. `line-rise` is a line that climbs left to
+    right, since a box alone cannot say which diagonal it runs along, and
+    `line-flat` a level one (within 1 in 12), which the thumbnail's minimum
+    block height would otherwise tilt. An upright one is narrow as it is.
+    """
+    ends = []
+    for side in ("source", "target"):
+        point = data.get(f"{side}Point")
+        if isinstance(point, dict) and "x" in point and "y" in point:
+            try:
+                ends.append((float(point["x"]), float(point["y"])))
+                continue
+            except (TypeError, ValueError):
+                return None
+        box = boxes.get((data.get(f"{side}Kind") or "node", data.get(f"{side}Id")))
+        if box is None:
+            return None
+        ends.append((box[0] + box[2] / 2, box[1] + box[3] / 2))
+    (x1, y1), (x2, y2) = ends
+    colour = data.get("color")
+    colour = colour if isinstance(colour, str) and colour else None
+    dx, dy = abs(x2 - x1), abs(y2 - y1)
+    if dy < PREVIEW_SKETCH_MIN or dy * 12 < dx:
+        shape = "line-flat"
+    else:
+        shape = "line-rise" if (x2 - x1) * (y2 - y1) < 0 else "line"
+    return (
+        min(x1, x2),
+        min(y1, y2),
+        max(PREVIEW_SKETCH_MIN, abs(x2 - x1)),
+        max(PREVIEW_SKETCH_MIN, abs(y2 - y1)),
+        shape,
+        colour,
+    )
+
+
 def _sketch_preview_rows(db: Session, on) -> list[tuple]:  # noqa: ANN001
     """One preview row per drawn stroke on the board."""
     rows: list[tuple] = []
+    links: list[dict] = []
+    #: What a connector's ends can be joined to, by (kind, id): a card is
+    #: "node", as the canvas stores it.
+    boxes: dict = {}
+    for node in db.scalars(select(WhiteboardNode).where(on(WhiteboardNode))):
+        boxes[("node", node.id)] = (float(node.x), float(node.y), *_preview_size("card", node.width, node.height))
+    for obj in db.scalars(select(WhiteboardObject).where(on(WhiteboardObject))):
+        boxes[("object", obj.id)] = (
+            float(obj.x),
+            float(obj.y),
+            *_preview_size(obj.kind or "object", obj.width, obj.height),
+        )
     for sketch in db.scalars(select(WhiteboardSketch).where(on(WhiteboardSketch))):
+        try:
+            parsed = json.loads(sketch.data or "{}")
+        except (TypeError, ValueError):
+            parsed = {}
+        if isinstance(parsed, dict) and str(parsed.get("type") or "").startswith("link-"):
+            links.append(parsed)
+            continue
         #: **From the strokes, not from the row.** A sketch's `x`/`y` are 0 for
         #: every stroke the drawing tools make, with the path in absolute board
         #: coordinates, so reading them put every sketch on a board at the
         #: origin at one default size: eight of them measured as eight marks at
         #: one position and one size, which is INBOX 164's single squiggle.
         sx, sy, sw, sh, shape, colour = _sketch_preview(sketch)
+        boxes[("sketch", sketch.id)] = (sx, sy, sw, sh)
         rows.append((sx, sy, "sketch", "", colour, sw, sh, shape))
+    for data in links:
+        row = _link_preview(data, boxes)
+        if row is not None:
+            sx, sy, sw, sh, shape, colour = row
+            rows.append((sx, sy, "sketch", "", colour, sw, sh, shape))
     return rows
 
 
