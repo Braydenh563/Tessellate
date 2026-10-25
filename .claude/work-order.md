@@ -6,7 +6,7 @@ started: 2026-10-25 night
 stop: owner's 25% weekly usage line
 
 - [x] Merge wb, docs, composer agents; gate; push; open PR (PR 204)
-- [ ] INBOX 1350: phone/LAN security review + fixes (Opus agent)
+- [x] INBOX 1350: phone/LAN security review + fixes (lansec merged 99cb7a7)
 - [x] INBOX 1350: custom domain write-up + smallest safe build
 - [ ] INBOX 1350 + OPEN Shell rows: half-window sweep of every surface, fixes
 - [ ] INBOX 1351: dogfood rounds (blind-tester as a uni student, no model, per surface) then fix agent; repeat until a round finds under 3
