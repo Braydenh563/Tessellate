@@ -52,6 +52,8 @@ class AskBody(BaseModel):
     #: again in `help_chat.answer`.
     tab: str | None = Field(default=None, max_length=40)
     context: str | None = Field(default=None, max_length=help_chat.MAX_CONTEXT_CHARS)
+    #: The labels of the last few things done, newest last (composer awareness).
+    actions: list[str] = Field(default_factory=list, max_length=10)
 
 
 @router.get("/topics")
@@ -70,6 +72,7 @@ def ask(body: AskBody) -> dict:
         history=[turn.model_dump() for turn in body.history],
         tab=body.tab,
         context=body.context,
+        actions=body.actions,
     )
 
 
@@ -98,6 +101,7 @@ def ask_stream(body: AskBody) -> StreamingResponse:
             history=[turn.model_dump() for turn in body.history],
             tab=body.tab,
             context=body.context,
+            actions=body.actions,
         ):
             yield json.dumps(event) + "\n"
 

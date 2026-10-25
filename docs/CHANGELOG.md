@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer awareness: Ask, Chat and the Guide send the tab, the open document and the last three actions (local only), and a composed reply opens with what the app can see and ends with a pick-up-where-you-left-off step; a private note is never named.
 - Faster start: the generative background's styles (bg-art.js, 20 KB gzipped) load only when the art is on or the Appearance grid draws its previews, taking boot JS from 588,399 to 568,431 bytes gzipped.
 - A friendly local address: set `TESSELLATE_LOCAL_NAME=tessellate` and the launcher, window and tray open `http://tessellate.localhost:8000` instead of localhost. Browsers resolve `*.localhost` to this computer themselves, so it needs no DNS or admin rights; the rebinding guard accepts any `*.localhost` name.
 - Documents: the history dialog keeps its head to the title and close button; the filter and "Name this version" sit together in one row that wraps on a phone.

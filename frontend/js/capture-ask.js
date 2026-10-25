@@ -882,6 +882,17 @@ function askOpenContext() {
   return out;
 }
 
+//: Where the person is and what they just did, for the composer to pick up
+//: from (composer_aware.py): the tab, the open document's id and the undo
+//: stack's last three labels. Ids and verbs only; the server names a note or
+//: document, and never a private one. Sent with Ask, Chat and the Guide.
+function screenContext(tab = "") {
+  const out = { tab: tab || agentCurrentTab(), actions: undoStack.slice(-3).map((action) => action.label) };
+  const docsShowing = !$("tab-documents")?.classList.contains("hidden");
+  if (docsShowing && typeof currentDoc === "object" && currentDoc?.id) out.open_doc_id = currentDoc.id;
+  return out;
+}
+
 function flashEntry(id) {
   lastOpenedEntryId = id;
   switchTab("notes");
@@ -2579,6 +2590,7 @@ async function streamChatEvents({
   //: What is open (CHAT_PLAN B10), read by the server only for a question
   //: about "this" ("Summarise this"), never to change any other answer.
   Object.assign(body, askOpenContext());
+  body.screen = screenContext(notesOnly ? "ask" : "");
   //: Row 23: the notebook as it stood at the end of that day (`as_of`).
   if (asOf) body.as_of = asOf;
   // A reply to the agent's own question ("yes", "ok") reads as small talk to
