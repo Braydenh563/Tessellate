@@ -1679,9 +1679,12 @@ def test_nothing_runs_behind_the_lock_and_an_idle_page_is_not_polled() -> None:
     # touched, under the lock screen too, and Atlas's tail asked for a frame
     # sixty times a second at rest.
     poll = AV[AV.index("const NMB_CHECK_IDLE_MS") :]
-    poll = poll[: poll.index("}, 1500);")]
+    poll = poll[: poll.index("\nnmbTickArm(1500);\n")]
     assert "nameMarkBuddyCurtained()" in poll and "document.hidden" in poll
-    assert "!nmb.checkDue" in poll and "NMB_CHECK_IDLE_MS" in poll
+    assert "nmb.checkDue" in poll and "NMB_CHECK_IDLE_MS" in poll
+    # Battery (INBOX 1351): armed, not a fixed 1.5s interval; hidden arms nothing.
+    assert "setInterval" not in poll and "document.hidden ? 0 : setTimeout" in poll
+    assert "is-idle" in poll
     assert "nameMarkBuddyLockSync();" in _fn("nameMarkBuddyBuild")
     assert '"none"' in _fn("nameMarkBuddyLockSync")
     life = (ROOT / "frontend" / "js" / "atlas-life.js").read_text(encoding="utf-8")
@@ -1774,3 +1777,13 @@ def test_a_flight_frame_never_restyles_the_whole_figure():
     throw = frontend_text("companion-throw.js")
     assert avatars.count("nameMarkBuddySway(buddy,") + throw.count("nameMarkBuddySway(buddy,") >= 5
     assert 'setProperty("--nmb-sway"' not in throw
+
+
+def test_marks_hold_still_after_two_minutes_without_input_unless_busy() -> None:
+    # Battery (INBOX 1351): an infinite breathe keeps the compositor producing
+    # frames on a page nobody touches.
+    css = (ROOT / "frontend" / "css" / "03-dashboard-widgets.css").read_text(encoding="utf-8")
+    at = css.index(".is-idle .emblem-art")
+    rule = css[css.rindex("\n", 0, at) : css.index("{", at)]
+    assert ":not(.is-busy)" in rule and 'data-motion="reduced"' in rule
+    assert "NMB_IDLE_MARK_MS = 120000" in AV and 'classList.remove("is-idle")' in AV

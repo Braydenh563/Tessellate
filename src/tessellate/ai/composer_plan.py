@@ -106,6 +106,11 @@ def window(question: str, today: date) -> tuple[date, date, str] | None:
             start = max(span[0], today)
             if span[1] < today:
                 continue
+            # On a Saturday or Sunday "this week" cut at today is a day or
+            # two; a student asking on Sunday night means the next seven
+            # (dogfood 2026-10-25 round 2, item 4).
+            if phrase == "this week" and (span[1] - start).days <= 1:
+                return start, start + timedelta(days=6), phrase
             return start, span[1], phrase
     return None
 
@@ -261,20 +266,16 @@ def _range_words(start: date, end: date, said: str, today: date) -> str:
     return f"{_short(start)} to {_short(end)}"
 
 
-def _due(ctx: Ctx, win: tuple[date, date, str]) -> Reply:
+def _due(ctx: Ctx, win: tuple[date, date, str]) -> Reply | None:
     start, end, said = win
     today = ctx.now.date()
     found, overdue = events(ctx, start, end)
     span = _range_words(start, end, said, today)
     if not found and not overdue:
-        later = _next_after(ctx, end)
-        text = pick(ctx.seed, "dueempty", (
-            f"Nothing is dated for {span}: no reminder and no note gives a day in it.",
-            f"{span.capitalize() if not span[0].isupper() else span} looks clear. No reminder and no dated sentence in your notes falls there.",
-        ))
-        if later:
-            text += f" The next thing is {later.day and _long(later.day)}: {later.text}."
-        return Reply(text, asks=["Plan my week"])
+        # The reminders path answers an empty window: it names a waiting
+        # reminder outside it, or the next day the notes give
+        # (tests/test_due_in_ask_1018.py).
+        return None
     head = pick(ctx.seed, "duehead", (
         f"Coming up, {span}: {len(found)} thing{'s' if len(found) != 1 else ''}.",
         f"Here is what is due or dated for {span}, {len(found)} in all.",
@@ -283,12 +284,18 @@ def _due(ctx: Ctx, win: tuple[date, date, str]) -> Reply:
     lines = [head, *_grouped(found, today)]
     if overdue:
         lines += ["", "**Overdue**"] + [e.line(overdue=True) for e in overdue[:5]]
+    if (end - start).days >= 3:
+        lines += _next_reminder(ctx, end, found)
     return Reply("\n".join(lines), asks=["Plan my week"] if (end - start).days >= 3 else [])
 
 
-def _next_after(ctx: Ctx, end: date) -> Event | None:
-    found, _o = events(ctx, end + timedelta(days=1), end + timedelta(days=120))
-    return found[0] if found else None
+def _next_reminder(ctx: Ctx, end: date, found: list[Event]) -> list[str]:
+    """A week question never leaves out a waiting reminder that falls after it."""
+    if any(ev.kind == "reminder" for ev in found):
+        return []
+    later, _o = _reminder_events(ctx, end + timedelta(days=1), end + timedelta(days=3650))
+    return ["", f"Next reminder waiting: {later[0].text} ({_long(later[0].day)} {later[0].day.year})."] if later else []
+
 
 
 def _tasks(ctx: Ctx, limit: int = 8) -> list[tuple[str, dict]]:

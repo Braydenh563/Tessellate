@@ -223,6 +223,10 @@ CALC = [
     ("how many days between 1 november and 25 december", r"54 days", r""),
     ("how many words in lecture 5", r"Lecture 5: Operating systems\*\*\]\(#/notes/\d+\) has \d+ words", r""),
     ("word count of lecture 6", r"words", r""),
+    #: "How long is" a journey is a question for the notes, not a word count
+    #: (e2e ask-search: "How long is the train from Lisbon to Porto?").
+    ("how long is the train from Lisbon to Porto", r"", r"\d+ words|characters and about"),
+    ("how long is this note", r"", r"a under"),
     ('how many words in "the quick brown fox jumps"', r"5 words", r""),
     ("define hypothesis", r"testable prediction", r""),
     ("what does plagiarism mean", r"as your own", r""),

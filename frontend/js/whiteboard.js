@@ -13792,6 +13792,9 @@ async function initWhiteboard() {
         // CSS fallbacks stay in charge until there is a real size to use.
         if (box.height > 0) wbPanelMetricsRoot.style.setProperty(`--wb-h-${name}`, `${Math.round(box.height)}px`);
         if (box.width > 0) wbPanelMetricsRoot.style.setProperty(`--wb-w-${name}`, `${Math.round(box.width)}px`);
+        // One observer per panel: others that follow its size (the toasts
+        // above the dock) listen for this rather than adding their own.
+        panel.dispatchEvent(new Event("wb-panel-resize"));
       };
       publish();
       new ResizeObserver(publish).observe(panel);
@@ -14942,7 +14945,7 @@ async function initWhiteboard() {
   //: (another tab, the board closed), docked at the side, or the window is a
   //: phone's (under 600, whose toasts have their own place), which leaves
   //: the stylesheet's placement as it was.
-  if (toolsPanel && typeof ResizeObserver === "function") {
+  if (toolsPanel) {
     const liftToasts = () => {
       const toastBox = document.getElementById("toast-box");
       if (!toastBox) return;
@@ -14951,7 +14954,7 @@ async function initWhiteboard() {
         && box.top > window.innerHeight / 2;
       toastBox.style.bottom = low ? `calc(${Math.round(window.innerHeight - box.top)}px + var(--space-2))` : "";
     };
-    new ResizeObserver(liftToasts).observe(toolsPanel);
+    toolsPanel.addEventListener("wb-panel-resize", liftToasts);
     window.addEventListener("resize", liftToasts);
     liftToasts();
   }

@@ -35,9 +35,16 @@ def run(titles: list[str]) -> str:
     return subprocess.run([node, "-e", script], capture_output=True, text=True, check=True).stdout
 
 
-def test_first_document_is_number_one():
-    assert run([]) == "Untitled document 1"
-    assert run(["Meeting notes", "Untitled"]) == "Untitled document 1"
+def test_first_document_has_no_number():
+    assert run([]) == "Untitled document"
+    assert run(["Meeting notes", "Untitled"]) == "Untitled document"
+
+
+def test_second_document_is_number_two():
+    # dog1-1025 item 16: the bare name counts as number one.
+    assert run(["Untitled document"]) == "Untitled document 2"
+    assert run(["Untitled document", "Untitled document 2"]) == "Untitled document 3"
+    assert run(["Untitled document 1"]) == "Untitled document 2"
 
 
 def test_next_free_number_follows_the_highest():
@@ -50,4 +57,4 @@ def test_case_and_spacing_do_not_hide_a_number():
 
 def test_creation_paths_use_the_rule():
     text = DOCUMENTS_JS.read_text(encoding="utf-8")
-    assert text.count("docNextName()") >= 4, "blank create, template, first keystroke, empty title"
+    assert text.count("docNextName()") >= 3, "template, first keystroke, empty title (a blank draft names itself on first edit)"

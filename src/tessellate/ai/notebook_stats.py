@@ -230,39 +230,6 @@ def by_order(message: str, session: Session) -> StatAnswer | None:
     return None if placed is None else StatAnswer("note-order", note_order.say(session, placed)[0])
 
 
-#: Questions about the collection, first match wins, each (does it ask, what
-#: answers). Three tables because a named count and a windowed count sit
-#: between them, in this order.
-_FIRST_RULES = (
-    (lambda t: _asks(t, _TAG_WORDS, _MOST), lambda s: _top_tags(s)),
-    (lambda t: _asks(t, _CATEGORY_WORDS, _MOST), lambda s: _top_categories(s)),
-    (lambda t: _asks(t, r"untagged|no tags|without (?:a )?tags?|missing tags?"), lambda s: _untagged(s)),
-    (
-        lambda t: _asks(t, _COUNT, r"\bnotes?\b")
-        and re.search(r"\b(?:per|by|in each|for each|across)\s+(?:categor(?:y|ies)|folders?|spaces?)", t),
-        lambda s: _notes_per_category(s),
-    ),
-)
-_COUNT_RULES = (
-    (lambda t: _asks(t, _COUNT, _TAG_WORDS), lambda s: _tag_count(s)),
-    (lambda t: _asks(t, _COUNT, _CATEGORY_WORDS), lambda s: _category_count(s)),
-)
-#: Added with the spelling pass, because "improve" was the other half of the
-#: same request: each is a question about the collection, not about any note
-#: in it, which retrieval answers badly.
-_LATER_RULES = (
-    (lambda t: _asks(t, _COUNT, r"\bdocuments?\b"), lambda s: _document_count(s)),
-    (lambda t: _asks(t, r"\bmost linked|linked (?:to )?the most|best connected|most connect"), lambda s: _most_linked(s)),
-    (lambda t: _asks(t, r"orphan|unlinked|not linked|no links"), lambda s: _orphans(s)),
-    (lambda t: _asks(t, r"when do i|busiest|most active|what time|which day"), lambda s: _busiest(s)),
-    (lambda t: _asks(t, r"\b(?:write|wrote|written|writing)\b", r"\bmost\b", r"\babout\b"), lambda s: _top_subjects(s)),
-    (lambda t: _asks(t, r"\bwords?\b|word count|wordcount", r"\bhow many|\btotal|\bwritten|\bcount"), lambda s: _word_count(s)),
-    (lambda t: _asks(t, r"longest|biggest|largest", r"\bnotes?\b"), lambda s: _longest_notes(s)),
-    (lambda t: _asks(t, r"stale|forgotten|untouched|abandoned|haven.?t (?:looked|touched|opened|read)"), lambda s: _stale_notes(s)),
-    (lambda t: _asks(t, _TAG_WORDS, r"together|alongside|\bpairs?\b|combination|co-?occur"), lambda s: _tag_pairs(s)),
-)
-
-
 def answer_chat(message: str, session: Session) -> StatAnswer | None:
     """What the Chat counts: an ordinal question first, then the shape of the notebook."""
     return by_order(message, session) or answer(message, session)
@@ -1063,3 +1030,36 @@ def page(session: Session, now: datetime, usage_summary: dict, first_day: int = 
             "uses": sum(int(f.get("count") or 0) for f in features),
         },
     }
+
+
+#: Questions about the collection, first match wins, each (does it ask, what
+#: answers). Below the readers they name, so each is named directly. Three tables because a named count and a windowed count sit
+#: between them, in this order.
+_FIRST_RULES = (
+    (lambda t: _asks(t, _TAG_WORDS, _MOST), _top_tags),
+    (lambda t: _asks(t, _CATEGORY_WORDS, _MOST), _top_categories),
+    (lambda t: _asks(t, r"untagged|no tags|without (?:a )?tags?|missing tags?"), _untagged),
+    (
+        lambda t: _asks(t, _COUNT, r"\bnotes?\b")
+        and re.search(r"\b(?:per|by|in each|for each|across)\s+(?:categor(?:y|ies)|folders?|spaces?)", t),
+        _notes_per_category,
+    ),
+)
+_COUNT_RULES = (
+    (lambda t: _asks(t, _COUNT, _TAG_WORDS), _tag_count),
+    (lambda t: _asks(t, _COUNT, _CATEGORY_WORDS), _category_count),
+)
+#: Added with the spelling pass, because "improve" was the other half of the
+#: same request: each is a question about the collection, not about any note
+#: in it, which retrieval answers badly.
+_LATER_RULES = (
+    (lambda t: _asks(t, _COUNT, r"\bdocuments?\b"), _document_count),
+    (lambda t: _asks(t, r"\bmost linked|linked (?:to )?the most|best connected|most connect"), _most_linked),
+    (lambda t: _asks(t, r"orphan|unlinked|not linked|no links"), _orphans),
+    (lambda t: _asks(t, r"when do i|busiest|most active|what time|which day"), _busiest),
+    (lambda t: _asks(t, r"\b(?:write|wrote|written|writing)\b", r"\bmost\b", r"\babout\b"), _top_subjects),
+    (lambda t: _asks(t, r"\bwords?\b|word count|wordcount", r"\bhow many|\btotal|\bwritten|\bcount"), _word_count),
+    (lambda t: _asks(t, r"longest|biggest|largest", r"\bnotes?\b"), _longest_notes),
+    (lambda t: _asks(t, r"stale|forgotten|untouched|abandoned|haven.?t (?:looked|touched|opened|read)"), _stale_notes),
+    (lambda t: _asks(t, _TAG_WORDS, r"together|alongside|\bpairs?\b|combination|co-?occur"), _tag_pairs),
+)

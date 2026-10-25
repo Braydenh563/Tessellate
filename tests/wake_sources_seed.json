@@ -11,7 +11,7 @@
  "atlas.js::mutation-observer": 3,
  "atlas.js::raf": 3,
  "autocorrect.js::raf": 1,
- "avatars.js::interval": 2,
+ "avatars.js::interval": 1,
  "avatars.js::mutation-observer": 5,
  "avatars.js::raf": 8,
  "avatars.js::resize-observer": 2,

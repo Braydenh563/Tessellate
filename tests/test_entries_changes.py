@@ -108,3 +108,13 @@ def test_the_client_follows_changes_while_visible():
     assert "/entries/changes" in body
     assert "editingId" in body
     assert 'addEventListener("visibilitychange"' in source[start - 2000:start + 4000]
+
+
+def test_the_client_slows_down_after_four_empty_answers_and_stops_hidden():
+    """Battery (INBOX 1351): the ask is 15 s, 30 s after four empty answers,
+    restored by a change or by the tab coming back, and not made while hidden."""
+    source = (Path(__file__).resolve().parents[1] / "frontend/js/notes-list.js").read_text(encoding="utf-8")
+    body = source[source.index("async function followNoteChanges") :][:3000]
+    assert "if (document.hidden) return;" in body
+    assert "noteChanges.quiet >= 4 ? 2 : 1" in body and "noteChanges.quiet = body.ids.length ? 0" in body
+    assert "noteChanges.quiet = 0;" in body.split('addEventListener("visibilitychange"', 1)[1]

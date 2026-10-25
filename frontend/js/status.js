@@ -1084,6 +1084,7 @@ function toast(message, isError = false, { exempt = false, action = null } = {})
   }, 0);
   const box = toastHost();
   if (toastMerge(box, key, action?.[1] || null)) return;
+  if (typeof nmbTickArm === "function") nmbTickArm(300); // the perch check looks at a toast soon
   //: An error makes the companion jump (avatars.js).
   if (isError && typeof nameMarkBuddyCue === "function") nameMarkBuddyCue("startle", "error");
   const note = document.createElement("div");
