@@ -2,7 +2,7 @@
 
 Generated 2026-10-25 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6217, frontend ids 2539, CSS sections 497, backend routes 618, backend modules 6233, test files 1330, tests 11832, plan headings 968.
+Counts: frontend functions 6217, frontend ids 2539, CSS sections 497, backend routes 618, backend modules 6234, test files 1330, tests 11832, plan headings 968.
 
 ## Frontend functions (6217)
 
@@ -10793,7 +10793,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (6233)
+## Backend modules (6234)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -13061,7 +13061,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `explain_pair` | src/tessellate/ai/relations.py:230 |
 | `recognise` | src/tessellate/ai/relations.py:118 |
 
-### src/tessellate/ai/reminder_parser.py (12)
+### src/tessellate/ai/reminder_parser.py (13)
 
 | Name | File:line |
 |---|---|
@@ -13070,13 +13070,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_fallback` | src/tessellate/ai/reminder_parser.py:109 |
 | `_tidy` | src/tessellate/ai/reminder_parser.py:35 |
 | `_with_clock` | src/tessellate/ai/reminder_parser.py:45 |
+| `_without_trailing_hedges` | src/tessellate/ai/reminder_parser.py:252 |
 | `heard` | src/tessellate/ai/reminder_parser.py:221 |
 | `parse_relative` | src/tessellate/ai/reminder_parser.py:57 |
 | `parse_reminder` | src/tessellate/ai/reminder_parser.py:126 |
 | `read_by_rule` | src/tessellate/ai/reminder_parser.py:91 |
 | `unhedged` | src/tessellate/ai/reminder_parser.py:231 |
-| `without_conditions` | src/tessellate/ai/reminder_parser.py:251 |
-| `worded` | src/tessellate/ai/reminder_parser.py:261 |
+| `without_conditions` | src/tessellate/ai/reminder_parser.py:264 |
+| `worded` | src/tessellate/ai/reminder_parser.py:274 |
 
 ### src/tessellate/ai/resurface.py (12)
 

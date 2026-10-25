@@ -237,25 +237,38 @@ def unhedged(text: str) -> str:
 #: A place or a moment the sentence waits on ("when I get home", "once I'm in",
 #: "before bed"): not a clock, so it is not kept in the title. The reminder
 #: fires at the time said; the owner's example was "Do my tax return".
+#: Matched against words already joined by single spaces (`without_conditions`),
+#: so every gap is one literal space: nothing here can backtrack over a run of
+#: whitespace (CodeQL 1795-1797).
 _CONDITION = re.compile(
-    r"[,;]?(?<!\s)\s*\b(?:when|once|as soon as|after)\s+(?:i|we)(?:'m|\u2019m|\s+am|\s+get|\s+got|\s+come|\s+came|\s+arrive|\s+arrived|\s+reach|\s+reached|\s+wake up)"
-    r"(?:\s+(?:back\s+)?(?:home|in|there|here|up|to work|to the office|at work|at home|in work|in the office|from work)|\s+back)?\b"
-    r"|[,;]?(?<!\s)\s*\b(?:before bed|after work|after dinner|after lunch|after breakfast|when i wake up)\b",
+    r"(?:[,;] ?| |^)(?:when|once|as soon as|after) (?:i|we)(?:'m|\u2019m| am| get| got| come| came| arrive| arrived| reach| reached| wake up)"
+    r"(?: (?:back )?(?:home|in|there|here|up|to work|to the office|at work|at home|in work|in the office|from work)| back)?\b"
+    r"|(?:[,;] ?| |^)(?:before bed|after work|after dinner|after lunch|after breakfast|when i wake up)\b",
     re.I,
 )
-_STRAY = re.compile(r"(?<![\s,;])(?:[\s,;]+(?:probably|maybe|perhaps|possibly|around|about|roughly|approximately|say|later|then))+\s*$", re.I)
-_LEAD_TO = re.compile(r"^\s*(?:to|that)\s+", re.I)
+_HEDGES = frozenset({"probably", "maybe", "perhaps", "possibly", "around", "about", "roughly", "approximately", "say", "later", "then"})
+
+
+def _without_trailing_hedges(text: str) -> str:
+    """"..., probably around" off the end, word by word."""
+    words = text.split(" ")
+    while words and words[-1].strip(",;").lower() in _HEDGES | {""}:
+        words.pop()
+    return " ".join(words)
+
+
+_LEAD_TO = re.compile(r"^(?:to|that) ", re.I)
 _FORGET = re.compile(r"^(?:please\s+)?(?:don'?t|do not|dont) let me forget\s+(?:to |that |about )?|^(?:please\s+)?make sure (?:that )?i\s+", re.I)
 
 
 def without_conditions(text: str) -> str:
     """A reminder's words without the place or moment it waits on ("when I
     get home") and the hedges a cut time stranded."""
-    said = text
+    said = " ".join(text.split())
     if _CONDITION.search(said):
         said = _LEAD_TO.sub("", " ".join(_CONDITION.sub(" ", said).split()))
         said = _ASKING.sub("", said)
-    return _STRAY.sub("", said).replace(" ,", ",").strip(" ,;:")
+    return _without_trailing_hedges(said).replace(" ,", ",").strip(" ,;:")
 
 
 def worded(text: str) -> str:
