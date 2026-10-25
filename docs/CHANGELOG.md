@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Mind map: the creation toast says Ctrl+Enter adds the sibling while a name is being typed (plain Enter there is a line break, the owner's 2026-10-10 ask), so Enter in the editor no longer contradicts it.
 - Library: at 420px a document row's ⋯ no longer sits 7px over the meta line (the row reserves the kebab's own width), and Recordings' title keeps its width with the Captions, help and Record controls wrapping to the row below instead of running under the heading.
 - Chat and Ask: the Sources fold's summary is a flat row like the other answer folds (it was the one boxed pill, 33px tall with a border and tint, next to flat 27px rows), and Grounded in reads in sentence case at the same size as Why this answer instead of a small uppercase label.
 - Ask: at 600 to 820px the header buttons (Use AI, History, New chat) shrink and wrap inside the card instead of running 26px past its right edge.

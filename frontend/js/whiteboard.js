@@ -17446,7 +17446,7 @@ async function wbCreateBlankBoard(name, kind) {
       //: instead: the visible canvas size is neither constant nor known
       //: until it is actually measured).
       if (root) wbCenterOn(wbItemBBox("object", root), { animate: false });
-      toast(`Mind map "${board.title}" created: Tab adds a branch, Enter a sibling.`);
+      toast(`Mind map "${board.title}" created: Tab adds a branch, Enter a sibling. While typing a name, Ctrl+Enter adds the sibling.`);
     } else {
       toast(`Board "${board.title}" created.`);
     }
