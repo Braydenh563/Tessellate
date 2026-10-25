@@ -6328,16 +6328,15 @@ const NMB_CHECK_IDLE_MS = 10000;
 //: Armed, not polled (battery, INBOX 1351): one timer that sleeps the full
 //: idle span and shortens only for input or a toast; none in a hidden window.
 const NMB_IDLE_MARK_MS = 120000;
-let nmbTickTimer = 0;
-let nmbInputAt = Date.now();
+const nmbClock = { timer: 0, inputAt: Date.now() };
 function nmbTickArm(ms) {
-  clearTimeout(nmbTickTimer);
-  nmbTickTimer = document.hidden ? 0 : setTimeout(nmbTick, ms);
+  clearTimeout(nmbClock.timer);
+  nmbClock.timer = document.hidden ? 0 : setTimeout(nmbTick, ms);
 }
 for (const type of ["pointerdown", "keydown", "wheel", "resize"]) {
   (type === "resize" ? window : document).addEventListener(type, () => {
     if (type !== "resize") {
-      nmbInputAt = Date.now();
+      nmbClock.inputAt = Date.now();
       document.documentElement.classList.remove("is-idle");
     }
     if (!nmb.checkDue) nmbTickArm(1500);
@@ -6348,7 +6347,7 @@ document.addEventListener("visibilitychange", () => nmbTickArm(1500));
 function nmbTick() {
   const now = Date.now();
   //: Two minutes without input: the marks hold still (CSS `.is-idle`).
-  document.documentElement.classList.toggle("is-idle", now - nmbInputAt > NMB_IDLE_MARK_MS);
+  document.documentElement.classList.toggle("is-idle", now - nmbClock.inputAt > NMB_IDLE_MARK_MS);
   const toasting = !!document.querySelector("#toast-box > :not(.hidden)");
   if (!(nmb.away || !document.getElementById("nm-buddy") || nameMarkBuddyCurtained())
       && (nmb.checkDue || toasting || now - (nmb.checkedAt || 0) >= NMB_CHECK_IDLE_MS)) {
