@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Battery: the Other devices watch waits on the change itself (was 50 server wakes per 25 s request) and a hidden window asks nothing; idle server CPU and requests per 120 s in the report below the commit.
 - Mind map: a new topic made with Tab or Enter is brought into view when it would land outside the free canvas (the arrow keys' rule, now one helper); at 1280 the seventh Tab child's right edge was 1319 past a 1280 window, now every new topic's rect is inside it.
 - Whiteboard: dragging a shape by its edge moves it; only a press within 6px of a connection point (the distance the dot lights at, was 9 to press and 10 to light) draws a connector. Measured: a press 8px from the top-middle point moved the shape 100 to 160 with no new connector (it drew an arrow before).
 - Whiteboard: a toast stands above the bottom dock instead of over its right end (the toast box follows the dock top; measured at 700 and 1280 the toast bottom is 6 and 6px above the dock top, it was 53 and 60px below it).

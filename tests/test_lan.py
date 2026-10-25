@@ -2277,3 +2277,32 @@ def test_local_name_opens_a_localhost_name(monkeypatch):
     assert entry.page_host() == "tessellate.localhost"
     monkeypatch.setenv("TESSELLATE_LOCAL_NAME", "evil.example/x")
     assert entry.page_host() == "127.0.0.1"
+
+
+# --- idle cost (INBOX 1351): the watch waits on the change, not on a timer -----
+
+
+def test_the_watch_wakes_on_a_change_and_not_before():
+    import asyncio
+
+    async def run():
+        since = lantrust.version()
+        waiting = asyncio.ensure_future(lantrust.wait_version_change(since, 5))
+        await asyncio.sleep(0.05)
+        assert not waiting.done()
+        with lantrust._lock:
+            lantrust._bump()
+        assert await asyncio.wait_for(waiting, 1) is True
+        assert not lantrust._waiters
+        assert await lantrust.wait_version_change(lantrust.version(), 0.05) is False
+
+    asyncio.run(run())
+
+
+def test_the_watch_route_does_not_poll_and_the_window_pauses_when_hidden():
+    import inspect
+
+    from tessellate.api import routes_auth
+
+    assert "asyncio.sleep" not in inspect.getsource(routes_auth.lan_watch)
+    assert "document.hidden" in _js("lan-watch.js").split("async function lanWatch()", 1)[1]
