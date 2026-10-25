@@ -122,12 +122,22 @@ _QUOTED = re.compile(r"\"[^\"\n]*\"|“[^“”\n]*”")
 _BLOCKQUOTE = re.compile(r"^\s*>.*$", re.MULTILINE)
 
 
+#: A fenced code block (``` or ~~~): its identifiers and language name say
+#: nothing about the subject ("python" and "print" under a biology note made
+#: it #software).
+_FENCED = re.compile(r"^[ \t>]*(```|~~~)[^\n]*\n.*?(?:^[ \t>]*\1[^\n]*$|\Z)", re.MULTILINE | re.DOTALL)
+
+
 def clean(content: str) -> str:
     """The note's own words: no image address, no link target, no OCR
-    footer, and nothing in quotation marks or a blockquote (somebody else's
-    words) unless the quotation is most of the note: a pasted message, "From
-    the coach's email: ...", is what the note is about."""
+    footer, no fenced code, and nothing in quotation marks or a blockquote
+    (somebody else's words) unless the quotation is most of the note: a
+    pasted message, "From the coach's email: ...", is what the note is about.
+    Code is dropped unless it is most of the note, which is then about code."""
     out = _IMAGE.sub(" ", content or "")
+    prose = _FENCED.sub(" ", out)
+    if len(tokens(prose)) >= len(tokens(out)) - len(tokens(prose)):
+        out = prose
     out = _LINK.sub(r"\1", out)
     out = _BOILERPLATE.sub(" ", out)
     unquoted = _BLOCKQUOTE.sub(" ", _QUOTED.sub(" ", out))

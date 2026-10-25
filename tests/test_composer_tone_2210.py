@@ -76,7 +76,10 @@ def test_a_composed_answer_ends_with_a_next_step_from_recent_work(client, sessio
     out = _ask(client, "when is the dentist")
     text = out["text"]
     assert "Check-up booked for the 21st" in text
-    assert "Harbor launch plan" in text.splitlines()[-1]
+    #: The next step names a note the answer used, never the newest note when
+    #: that is about something else (composer5, item 1).
+    assert "Harbor launch plan" not in text
+    assert "Dentist" in text.splitlines()[-1]
 
 
 def test_quick_mode_is_shorter_than_detailed(client, session):

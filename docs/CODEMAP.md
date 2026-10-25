@@ -2,7 +2,7 @@
 
 Generated 2026-10-25 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6236, frontend ids 2539, CSS sections 497, backend routes 618, backend modules 6447, test files 1344, tests 11983, plan headings 968.
+Counts: frontend functions 6236, frontend ids 2539, CSS sections 497, backend routes 618, backend modules 6451, test files 1345, tests 11996, plan headings 968.
 
 ## Frontend functions (6236)
 
@@ -10304,11 +10304,11 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/code-snippets` | POST | `create_snippet` | src/tessellate/api/routes_code_snippets.py:89 |
 | `/code-snippets/{snippet_id}` | PUT | `update_snippet` | src/tessellate/api/routes_code_snippets.py:105 |
 | `/command` | GET | `capture_command` | src/tessellate/api/routes_usage.py:46 |
-| `/command/run` | POST | `run_command` | src/tessellate/api/routes_chat.py:3480 |
-| `/commands` | GET | `list_commands` | src/tessellate/api/routes_chat.py:4326 |
+| `/command/run` | POST | `run_command` | src/tessellate/api/routes_chat.py:3503 |
+| `/commands` | GET | `list_commands` | src/tessellate/api/routes_chat.py:4350 |
 | `/compose` | POST | `compose_draft` | src/tessellate/api/routes_drafts.py:75 |
 | `/compose/stream` | POST | `compose_draft_stream` | src/tessellate/api/routes_drafts.py:110 |
-| `/compress` | POST | `compress_history` | src/tessellate/api/routes_chat.py:4399 |
+| `/compress` | POST | `compress_history` | src/tessellate/api/routes_chat.py:4423 |
 | `/compute` | POST | `compute` | src/tessellate/api/routes_resurface.py:85 |
 | `/confirm` | POST | `confirm_insight` | src/tessellate/api/routes_insights.py:458 |
 | `/contents` | GET | `read_contents` | src/tessellate/api/routes_documents.py:526 |
@@ -10512,7 +10512,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/merges/dismiss` | POST | `dismiss_merge` | src/tessellate/api/routes_inbox.py:157 |
 | `/merges/{undo_id}/undo` | POST | `undo_merge_route` | src/tessellate/api/routes_entities.py:227 |
 | `/models/{size}` | DELETE | `remove_model` | src/tessellate/api/routes_voice.py:50 |
-| `/modes` | GET | `list_modes` | src/tessellate/api/routes_chat.py:4335 |
+| `/modes` | GET | `list_modes` | src/tessellate/api/routes_chat.py:4359 |
 | `/most-accessed` | GET | `most_accessed` | src/tessellate/api/routes_entries.py:2545 |
 | `/most-opened` | GET | `most_opened` | src/tessellate/api/routes_vision.py:112 |
 | `/move` | POST | `move_notes` | src/tessellate/api/routes_categories.py:161 |
@@ -10630,7 +10630,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/status` | GET | `status` | src/tessellate/api/routes_voice.py:31 |
 | `/stop` | POST | `stop` | src/tessellate/api/routes_bench.py:249 |
 | `/storage` | GET | `storage_location` | src/tessellate/api/routes_backups.py:43 |
-| `/stream` | POST | `chat_stream` | src/tessellate/api/routes_chat.py:4132 |
+| `/stream` | POST | `chat_stream` | src/tessellate/api/routes_chat.py:4156 |
 | `/suggest-category` | POST | `suggest_category_for_draft` | src/tessellate/api/routes_entries.py:1311 |
 | `/suggest-tags` | POST | `suggest_tags_for_draft` | src/tessellate/api/routes_entries.py:1339 |
 | `/suggested` | GET | `suggested` | src/tessellate/api/routes_models.py:627 |
@@ -10668,8 +10668,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/tidy-proposals/undismiss` | POST | `undismiss_tidy` | src/tessellate/api/routes_vision.py:261 |
 | `/title` | POST | `draft_title` | src/tessellate/api/routes_drafts.py:147 |
 | `/today-line` | GET | `today_line` | src/tessellate/api/routes_insights.py:416 |
-| `/tools` | GET | `list_tools` | src/tessellate/api/routes_chat.py:4356 |
-| `/tools/execute` | POST | `execute_confirmed_tool` | src/tessellate/api/routes_chat.py:4438 |
+| `/tools` | GET | `list_tools` | src/tessellate/api/routes_chat.py:4380 |
+| `/tools/execute` | POST | `execute_confirmed_tool` | src/tessellate/api/routes_chat.py:4462 |
 | `/topics` | GET | `topics` | src/tessellate/api/routes_help.py:59 |
 | `/transcribe` | POST | `transcribe` | src/tessellate/api/routes_voice.py:109 |
 | `/transcribe-meeting` | POST | `transcribe_meeting` | src/tessellate/api/routes_voice.py:116 |
@@ -10817,7 +10817,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (6447)
+## Backend modules (6451)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -11475,7 +11475,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `answer` | src/tessellate/ai/composer_calc.py:341 |
 | `glossary` | src/tessellate/ai/composer_calc.py:310 |
 
-### src/tessellate/ai/composer_digest.py (181)
+### src/tessellate/ai/composer_digest.py (182)
 
 | Name | File:line |
 |---|---|
@@ -11483,183 +11483,184 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_Capitals` | src/tessellate/ai/composer_digest.py:274 |
 | `_Out` | src/tessellate/ai/composer_digest.py:453 |
 | `_Phrases` | src/tessellate/ai/composer_digest.py:262 |
-| `_Sorted` | src/tessellate/ai/composer_digest.py:1742 |
+| `_Sorted` | src/tessellate/ai/composer_digest.py:1765 |
 | `_Split` | src/tessellate/ai/composer_digest.py:695 |
-| `_about` | src/tessellate/ai/composer_digest.py:2277 |
+| `_about` | src/tessellate/ai/composer_digest.py:2300 |
 | `_action_of` | src/tessellate/ai/composer_digest.py:721 |
-| `_against_aim` | src/tessellate/ai/composer_digest.py:2172 |
-| `_aliases` | src/tessellate/ai/composer_digest.py:2266 |
+| `_against_aim` | src/tessellate/ai/composer_digest.py:2195 |
+| `_aliases` | src/tessellate/ai/composer_digest.py:2289 |
 | `_all_headings` | src/tessellate/ai/composer_digest.py:1031 |
-| `_asked_about` | src/tessellate/ai/composer_digest.py:1502 |
-| `_begin` | src/tessellate/ai/composer_digest.py:2429 |
-| `_best` | src/tessellate/ai/composer_digest.py:2038 |
+| `_asked_about` | src/tessellate/ai/composer_digest.py:1525 |
+| `_begin` | src/tessellate/ai/composer_digest.py:2452 |
+| `_best` | src/tessellate/ai/composer_digest.py:2061 |
 | `_bodies_of` | src/tessellate/ai/composer_digest.py:1023 |
-| `_capital` | src/tessellate/ai/composer_digest.py:2988 |
+| `_capital` | src/tessellate/ai/composer_digest.py:3011 |
 | `_capitalised_inside` | src/tessellate/ai/composer_digest.py:491 |
 | `_clause` | src/tessellate/ai/composer_digest.py:1283 |
-| `_clause_cell` | src/tessellate/ai/composer_digest.py:2314 |
-| `_compare` | src/tessellate/ai/composer_digest.py:2353 |
-| `_compare_table` | src/tessellate/ai/composer_digest.py:2337 |
-| `_compared` | src/tessellate/ai/composer_digest.py:2447 |
-| `_compose_body` | src/tessellate/ai/composer_digest.py:2483 |
-| `_confirmed_first` | src/tessellate/ai/composer_digest.py:2671 |
+| `_clause_cell` | src/tessellate/ai/composer_digest.py:2337 |
+| `_compare` | src/tessellate/ai/composer_digest.py:2376 |
+| `_compare_table` | src/tessellate/ai/composer_digest.py:2360 |
+| `_compared` | src/tessellate/ai/composer_digest.py:2470 |
+| `_compose_body` | src/tessellate/ai/composer_digest.py:2506 |
+| `_confirmed_first` | src/tessellate/ai/composer_digest.py:2694 |
 | `_context_facts` | src/tessellate/ai/composer_digest.py:673 |
 | `_context_note` | src/tessellate/ai/composer_digest.py:668 |
-| `_count` | src/tessellate/ai/composer_digest.py:1513 |
-| `_count_offer` | src/tessellate/ai/composer_digest.py:2814 |
+| `_count` | src/tessellate/ai/composer_digest.py:1536 |
+| `_count_offer` | src/tessellate/ai/composer_digest.py:2837 |
 | `_cue_for` | src/tessellate/ai/composer_digest.py:740 |
 | `_dated_line` | src/tessellate/ai/composer_digest.py:995 |
 | `_day` | src/tessellate/ai/composer_digest.py:472 |
 | `_day_clause` | src/tessellate/ai/composer_digest.py:1206 |
 | `_days_apart` | src/tessellate/ai/composer_digest.py:1035 |
 | `_dictionary` | src/tessellate/ai/composer_digest.py:512 |
-| `_early` | src/tessellate/ai/composer_digest.py:2457 |
-| `_event` | src/tessellate/ai/composer_digest.py:1531 |
-| `_event_clause` | src/tessellate/ai/composer_digest.py:1567 |
-| `_event_lead` | src/tessellate/ai/composer_digest.py:2080 |
-| `_fact_offer` | src/tessellate/ai/composer_digest.py:2820 |
+| `_early` | src/tessellate/ai/composer_digest.py:2480 |
+| `_event` | src/tessellate/ai/composer_digest.py:1554 |
+| `_event_clause` | src/tessellate/ai/composer_digest.py:1590 |
+| `_event_lead` | src/tessellate/ai/composer_digest.py:2103 |
+| `_fact_offer` | src/tessellate/ai/composer_digest.py:2843 |
 | `_facts` | src/tessellate/ai/composer_digest.py:797 |
-| `_finish` | src/tessellate/ai/composer_digest.py:2504 |
-| `_first_said` | src/tessellate/ai/composer_digest.py:1768 |
-| `_framed` | src/tessellate/ai/composer_digest.py:1924 |
-| `_full_names` | src/tessellate/ai/composer_digest.py:2281 |
+| `_finish` | src/tessellate/ai/composer_digest.py:2527 |
+| `_first_said` | src/tessellate/ai/composer_digest.py:1791 |
+| `_framed` | src/tessellate/ai/composer_digest.py:1947 |
+| `_full_names` | src/tessellate/ai/composer_digest.py:2304 |
 | `_gap` | src/tessellate/ai/composer_digest.py:237 |
 | `_gap_on` | src/tessellate/ai/composer_digest.py:1118 |
-| `_gist` | src/tessellate/ai/composer_digest.py:1865 |
-| `_gist_kept` | src/tessellate/ai/composer_digest.py:1801 |
-| `_gist_tail` | src/tessellate/ai/composer_digest.py:1788 |
-| `_gists` | src/tessellate/ai/composer_digest.py:1886 |
-| `_gone_quiet` | src/tessellate/ai/composer_digest.py:2023 |
+| `_gist` | src/tessellate/ai/composer_digest.py:1888 |
+| `_gist_kept` | src/tessellate/ai/composer_digest.py:1824 |
+| `_gist_tail` | src/tessellate/ai/composer_digest.py:1811 |
+| `_gists` | src/tessellate/ai/composer_digest.py:1909 |
+| `_gone_quiet` | src/tessellate/ai/composer_digest.py:2046 |
 | `_group_by_label` | src/tessellate/ai/composer_digest.py:923 |
 | `_heading_line` | src/tessellate/ai/composer_digest.py:1011 |
 | `_heading_said` | src/tessellate/ai/composer_digest.py:1240 |
-| `_heading_sections` | src/tessellate/ai/composer_digest.py:1696 |
+| `_heading_sections` | src/tessellate/ai/composer_digest.py:1719 |
 | `_in_named` | src/tessellate/ai/composer_digest.py:831 |
 | `_join` | src/tessellate/ai/composer_digest.py:1357 |
-| `_kind_if_mine` | src/tessellate/ai/composer_digest.py:2540 |
-| `_kind_offer` | src/tessellate/ai/composer_digest.py:2844 |
-| `_lead_figure` | src/tessellate/ai/composer_digest.py:2941 |
-| `_leaning` | src/tessellate/ai/composer_digest.py:2296 |
-| `_left` | src/tessellate/ai/composer_digest.py:2906 |
+| `_kind_if_mine` | src/tessellate/ai/composer_digest.py:2563 |
+| `_kind_offer` | src/tessellate/ai/composer_digest.py:2867 |
+| `_lead_figure` | src/tessellate/ai/composer_digest.py:2964 |
+| `_leaning` | src/tessellate/ai/composer_digest.py:2319 |
+| `_left` | src/tessellate/ai/composer_digest.py:2929 |
 | `_left_out` | src/tessellate/ai/composer_digest.py:792 |
-| `_lift_table` | src/tessellate/ai/composer_digest.py:2855 |
-| `_likes_offer` | src/tessellate/ai/composer_digest.py:2800 |
+| `_lift_table` | src/tessellate/ai/composer_digest.py:2878 |
+| `_likes_offer` | src/tessellate/ai/composer_digest.py:2823 |
 | `_line_of` | src/tessellate/ai/composer_digest.py:1039 |
 | `_line_row` | src/tessellate/ai/composer_digest.py:1069 |
 | `_lines` | src/tessellate/ai/composer_digest.py:1079 |
-| `_listed` | src/tessellate/ai/composer_digest.py:1734 |
+| `_listed` | src/tessellate/ai/composer_digest.py:1757 |
 | `_lower_first` | src/tessellate/ai/composer_digest.py:523 |
-| `_measures` | src/tessellate/ai/composer_digest.py:1969 |
+| `_measures` | src/tessellate/ai/composer_digest.py:1992 |
 | `_members` | src/tessellate/ai/composer_digest.py:851 |
 | `_missing` | src/tessellate/ai/composer_digest.py:1433 |
-| `_more` | src/tessellate/ai/composer_digest.py:2929 |
-| `_named_as` | src/tessellate/ai/composer_digest.py:1722 |
+| `_more` | src/tessellate/ai/composer_digest.py:2952 |
+| `_named_as` | src/tessellate/ai/composer_digest.py:1745 |
 | `_named_category` | src/tessellate/ai/composer_digest.py:878 |
 | `_named_in` | src/tessellate/ai/composer_digest.py:839 |
-| `_narrate` | src/tessellate/ai/composer_digest.py:1603 |
-| `_narrated_line` | src/tessellate/ai/composer_digest.py:1590 |
+| `_narrate` | src/tessellate/ai/composer_digest.py:1626 |
+| `_narrated_line` | src/tessellate/ai/composer_digest.py:1613 |
 | `_next_gap` | src/tessellate/ai/composer_digest.py:1100 |
-| `_note_offer` | src/tessellate/ai/composer_digest.py:2796 |
+| `_note_offer` | src/tessellate/ai/composer_digest.py:2819 |
 | `_noted_sentence` | src/tessellate/ai/composer_digest.py:1268 |
-| `_numbered_sections` | src/tessellate/ai/composer_digest.py:1683 |
-| `_offer` | src/tessellate/ai/composer_digest.py:1444 |
+| `_numbered_sections` | src/tessellate/ai/composer_digest.py:1706 |
+| `_offer` | src/tessellate/ai/composer_digest.py:1464 |
+| `_on_topic` | src/tessellate/ai/composer_digest.py:1451 |
 | `_only_the_subject` | src/tessellate/ai/composer_digest.py:756 |
-| `_open_lists` | src/tessellate/ai/composer_digest.py:2876 |
-| `_opening_line` | src/tessellate/ai/composer_digest.py:1627 |
-| `_opinion_offer` | src/tessellate/ai/composer_digest.py:2808 |
-| `_opinion_rest` | src/tessellate/ai/composer_digest.py:2145 |
-| `_overview` | src/tessellate/ai/composer_digest.py:1947 |
-| `_overview_offer` | src/tessellate/ai/composer_digest.py:2828 |
-| `_overview_opening` | src/tessellate/ai/composer_digest.py:1904 |
+| `_open_lists` | src/tessellate/ai/composer_digest.py:2899 |
+| `_opening_line` | src/tessellate/ai/composer_digest.py:1650 |
+| `_opinion_offer` | src/tessellate/ai/composer_digest.py:2831 |
+| `_opinion_rest` | src/tessellate/ai/composer_digest.py:2168 |
+| `_overview` | src/tessellate/ai/composer_digest.py:1970 |
+| `_overview_offer` | src/tessellate/ai/composer_digest.py:2851 |
+| `_overview_opening` | src/tessellate/ai/composer_digest.py:1927 |
 | `_own_subject` | src/tessellate/ai/composer_digest.py:961 |
-| `_page_span` | src/tessellate/ai/composer_digest.py:3073 |
-| `_part_name` | src/tessellate/ai/composer_digest.py:1664 |
-| `_parts_said` | src/tessellate/ai/composer_digest.py:1675 |
+| `_page_span` | src/tessellate/ai/composer_digest.py:3096 |
+| `_part_name` | src/tessellate/ai/composer_digest.py:1687 |
+| `_parts_said` | src/tessellate/ai/composer_digest.py:1698 |
 | `_past` | src/tessellate/ai/composer_digest.py:1253 |
 | `_pattern` | src/tessellate/ai/composer_digest.py:1398 |
 | `_pick` | src/tessellate/ai/composer_digest.py:1234 |
-| `_pick_members` | src/tessellate/ai/composer_digest.py:2524 |
+| `_pick_members` | src/tessellate/ai/composer_digest.py:2547 |
 | `_picture_fact` | src/tessellate/ai/composer_digest.py:683 |
 | `_picture_of` | src/tessellate/ai/composer_digest.py:786 |
 | `_pieces_of` | src/tessellate/ai/composer_digest.py:731 |
 | `_pin` | src/tessellate/ai/composer_digest.py:574 |
-| `_plural` | src/tessellate/ai/composer_digest.py:1670 |
-| `_points_block` | src/tessellate/ai/composer_digest.py:2722 |
-| `_polish_out` | src/tessellate/ai/composer_digest.py:3018 |
+| `_plural` | src/tessellate/ai/composer_digest.py:1693 |
+| `_points_block` | src/tessellate/ai/composer_digest.py:2745 |
+| `_polish_out` | src/tessellate/ai/composer_digest.py:3041 |
 | `_pool` | src/tessellate/ai/composer_digest.py:826 |
-| `_progress` | src/tessellate/ai/composer_digest.py:1986 |
+| `_progress` | src/tessellate/ai/composer_digest.py:2009 |
 | `_prose` | src/tessellate/ai/composer_digest.py:1327 |
 | `_prose_opening` | src/tessellate/ai/composer_digest.py:1311 |
 | `_recent` | src/tessellate/ai/composer_digest.py:968 |
 | `_relate` | src/tessellate/ai/composer_digest.py:1383 |
 | `_reported` | src/tessellate/ai/composer_digest.py:1163 |
-| `_result` | src/tessellate/ai/composer_digest.py:3036 |
+| `_result` | src/tessellate/ai/composer_digest.py:3059 |
 | `_row` | src/tessellate/ai/composer_digest.py:1419 |
 | `_said_piece` | src/tessellate/ai/composer_digest.py:745 |
-| `_say_fact` | src/tessellate/ai/composer_digest.py:2058 |
-| `_say_insight` | src/tessellate/ai/composer_digest.py:2628 |
-| `_say_list` | src/tessellate/ai/composer_digest.py:2049 |
-| `_schedule` | src/tessellate/ai/composer_digest.py:1851 |
-| `_scope` | src/tessellate/ai/composer_digest.py:2516 |
-| `_scored_insights` | src/tessellate/ai/composer_digest.py:2600 |
+| `_say_fact` | src/tessellate/ai/composer_digest.py:2081 |
+| `_say_insight` | src/tessellate/ai/composer_digest.py:2651 |
+| `_say_list` | src/tessellate/ai/composer_digest.py:2072 |
+| `_schedule` | src/tessellate/ai/composer_digest.py:1874 |
+| `_scope` | src/tessellate/ai/composer_digest.py:2539 |
+| `_scored_insights` | src/tessellate/ai/composer_digest.py:2623 |
 | `_second_person` | src/tessellate/ai/composer_digest.py:543 |
-| `_second_said` | src/tessellate/ai/composer_digest.py:1776 |
-| `_sections` | src/tessellate/ai/composer_digest.py:1710 |
+| `_second_said` | src/tessellate/ai/composer_digest.py:1799 |
+| `_sections` | src/tessellate/ai/composer_digest.py:1733 |
 | `_sentence_facts` | src/tessellate/ai/composer_digest.py:765 |
 | `_shape` | src/tessellate/ai/composer_digest.py:1113 |
 | `_shared_tags` | src/tessellate/ai/composer_digest.py:869 |
-| `_side_cells` | src/tessellate/ai/composer_digest.py:2326 |
-| `_single` | src/tessellate/ai/composer_digest.py:2226 |
-| `_single_close` | src/tessellate/ai/composer_digest.py:2215 |
-| `_single_count` | src/tessellate/ai/composer_digest.py:2185 |
-| `_single_heading` | src/tessellate/ai/composer_digest.py:2199 |
-| `_single_opinion` | src/tessellate/ai/composer_digest.py:2158 |
-| `_single_when` | src/tessellate/ai/composer_digest.py:2129 |
-| `_sorted` | src/tessellate/ai/composer_digest.py:1751 |
+| `_side_cells` | src/tessellate/ai/composer_digest.py:2349 |
+| `_single` | src/tessellate/ai/composer_digest.py:2249 |
+| `_single_close` | src/tessellate/ai/composer_digest.py:2238 |
+| `_single_count` | src/tessellate/ai/composer_digest.py:2208 |
+| `_single_heading` | src/tessellate/ai/composer_digest.py:2222 |
+| `_single_opinion` | src/tessellate/ai/composer_digest.py:2181 |
+| `_single_when` | src/tessellate/ai/composer_digest.py:2152 |
+| `_sorted` | src/tessellate/ai/composer_digest.py:1774 |
 | `_span` | src/tessellate/ai/composer_digest.py:479 |
 | `_spans` | src/tessellate/ai/composer_digest.py:625 |
 | `_spans_at` | src/tessellate/ai/composer_digest.py:618 |
-| `_split_days` | src/tessellate/ai/composer_digest.py:1826 |
+| `_split_days` | src/tessellate/ai/composer_digest.py:1849 |
 | `_split_label` | src/tessellate/ai/composer_digest.py:706 |
-| `_split_shape` | src/tessellate/ai/composer_digest.py:1842 |
-| `_stands_for` | src/tessellate/ai/composer_digest.py:2384 |
-| `_states_it` | src/tessellate/ai/composer_digest.py:2371 |
-| `_still_ahead` | src/tessellate/ai/composer_digest.py:1486 |
-| `_still_open` | src/tessellate/ai/composer_digest.py:2892 |
-| `_sub_head` | src/tessellate/ai/composer_digest.py:1717 |
+| `_split_shape` | src/tessellate/ai/composer_digest.py:1865 |
+| `_stands_for` | src/tessellate/ai/composer_digest.py:2407 |
+| `_states_it` | src/tessellate/ai/composer_digest.py:2394 |
+| `_still_ahead` | src/tessellate/ai/composer_digest.py:1509 |
+| `_still_open` | src/tessellate/ai/composer_digest.py:2915 |
+| `_sub_head` | src/tessellate/ai/composer_digest.py:1740 |
 | `_subject` | src/tessellate/ai/composer_digest.py:822 |
-| `_task_of` | src/tessellate/ai/composer_digest.py:1470 |
-| `_this` | src/tessellate/ai/composer_digest.py:2744 |
-| `_this_category` | src/tessellate/ai/composer_digest.py:2734 |
-| `_this_note` | src/tessellate/ai/composer_digest.py:2704 |
+| `_task_of` | src/tessellate/ai/composer_digest.py:1493 |
+| `_this` | src/tessellate/ai/composer_digest.py:2767 |
+| `_this_category` | src/tessellate/ai/composer_digest.py:2757 |
+| `_this_note` | src/tessellate/ai/composer_digest.py:2727 |
 | `_tidy` | src/tessellate/ai/composer_digest.py:652 |
-| `_tie` | src/tessellate/ai/composer_digest.py:2761 |
-| `_tie_closing` | src/tessellate/ai/composer_digest.py:2534 |
-| `_title_said` | src/tessellate/ai/composer_digest.py:1810 |
+| `_tie` | src/tessellate/ai/composer_digest.py:2784 |
+| `_tie_closing` | src/tessellate/ai/composer_digest.py:2557 |
+| `_title_said` | src/tessellate/ai/composer_digest.py:1833 |
 | `_told_by_day` | src/tessellate/ai/composer_digest.py:943 |
-| `_told_lines` | src/tessellate/ai/composer_digest.py:1896 |
+| `_told_lines` | src/tessellate/ai/composer_digest.py:1919 |
 | `_topic` | src/tessellate/ai/composer_digest.py:898 |
 | `_topic_sides` | src/tessellate/ai/composer_digest.py:891 |
 | `_topic_typed` | src/tessellate/ai/composer_digest.py:883 |
 | `_unanswerable` | src/tessellate/ai/composer_digest.py:844 |
 | `_unfilled` | src/tessellate/ai/composer_digest.py:647 |
 | `_vary` | src/tessellate/ai/composer_digest.py:230 |
-| `_volunteer` | src/tessellate/ai/composer_digest.py:2645 |
-| `_weave_drift` | src/tessellate/ai/composer_digest.py:2686 |
-| `_week_written` | src/tessellate/ai/composer_digest.py:2011 |
-| `_when_now` | src/tessellate/ai/composer_digest.py:1546 |
-| `_who` | src/tessellate/ai/composer_digest.py:2246 |
-| `_woven` | src/tessellate/ai/composer_digest.py:1578 |
+| `_volunteer` | src/tessellate/ai/composer_digest.py:2668 |
+| `_weave_drift` | src/tessellate/ai/composer_digest.py:2709 |
+| `_week_written` | src/tessellate/ai/composer_digest.py:2034 |
+| `_when_now` | src/tessellate/ai/composer_digest.py:1569 |
+| `_who` | src/tessellate/ai/composer_digest.py:2269 |
+| `_woven` | src/tessellate/ai/composer_digest.py:1601 |
 | `about_this` | src/tessellate/ai/composer_digest.py:412 |
-| `all_said` | src/tessellate/ai/composer_digest.py:2405 |
-| `answer` | src/tessellate/ai/composer_digest.py:2551 |
-| `insight_bar` | src/tessellate/ai/composer_digest.py:2595 |
+| `all_said` | src/tessellate/ai/composer_digest.py:2428 |
+| `answer` | src/tessellate/ai/composer_digest.py:2574 |
+| `insight_bar` | src/tessellate/ai/composer_digest.py:2618 |
 | `kind_of` | src/tessellate/ai/composer_digest.py:428 |
 | `named_category` | src/tessellate/ai/composer_digest.py:417 |
-| `polish` | src/tessellate/ai/composer_digest.py:2998 |
+| `polish` | src/tessellate/ai/composer_digest.py:3021 |
 | `sample` | src/tessellate/ai/composer_digest.py:285 |
-| `web` | src/tessellate/ai/composer_digest.py:3086 |
-| `web_query` | src/tessellate/ai/composer_digest.py:3068 |
+| `web` | src/tessellate/ai/composer_digest.py:3109 |
+| `web_query` | src/tessellate/ai/composer_digest.py:3091 |
 
 ### src/tessellate/ai/composer_extra.py (4)
 
@@ -11815,40 +11816,40 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Event` | src/tessellate/ai/composer_plan.py:61 |
-| `_anchor` | src/tessellate/ai/composer_plan.py:142 |
-| `_busiest` | src/tessellate/ai/composer_plan.py:319 |
-| `_dated_lines` | src/tessellate/ai/composer_plan.py:164 |
-| `_days_away` | src/tessellate/ai/composer_plan.py:238 |
-| `_due` | src/tessellate/ai/composer_plan.py:275 |
-| `_due_reply` | src/tessellate/ai/composer_plan.py:390 |
-| `_grouped` | src/tessellate/ai/composer_plan.py:250 |
-| `_left` | src/tessellate/ai/composer_plan.py:446 |
-| `_long` | src/tessellate/ai/composer_plan.py:88 |
-| `_merge` | src/tessellate/ai/composer_plan.py:215 |
-| `_name` | src/tessellate/ai/composer_plan.py:80 |
-| `_next_reminder` | src/tessellate/ai/composer_plan.py:298 |
-| `_note_days` | src/tessellate/ai/composer_plan.py:178 |
-| `_note_events_of` | src/tessellate/ai/composer_plan.py:197 |
-| `_open_reminders` | src/tessellate/ai/composer_plan.py:435 |
-| `_open_tasks` | src/tessellate/ai/composer_plan.py:426 |
-| `_plain` | src/tessellate/ai/composer_plan.py:149 |
-| `_plan` | src/tessellate/ai/composer_plan.py:340 |
-| `_plan_window` | src/tessellate/ai/composer_plan.py:380 |
-| `_range_words` | src/tessellate/ai/composer_plan.py:267 |
-| `_reminder_events` | src/tessellate/ai/composer_plan.py:126 |
-| `_reminder_line` | src/tessellate/ai/composer_plan.py:440 |
-| `_sentence_day` | src/tessellate/ai/composer_plan.py:153 |
-| `_short` | src/tessellate/ai/composer_plan.py:92 |
-| `_stems` | src/tessellate/ai/composer_plan.py:211 |
-| `_task_lines` | src/tessellate/ai/composer_plan.py:325 |
-| `_tasks` | src/tessellate/ai/composer_plan.py:307 |
-| `_until` | src/tessellate/ai/composer_plan.py:361 |
-| `_when_is` | src/tessellate/ai/composer_plan.py:464 |
-| `answer` | src/tessellate/ai/composer_plan.py:485 |
-| `events` | src/tessellate/ai/composer_plan.py:231 |
-| `note_events` | src/tessellate/ai/composer_plan.py:202 |
-| `window` | src/tessellate/ai/composer_plan.py:96 |
+| `Event` | src/tessellate/ai/composer_plan.py:66 |
+| `_anchor` | src/tessellate/ai/composer_plan.py:147 |
+| `_busiest` | src/tessellate/ai/composer_plan.py:324 |
+| `_dated_lines` | src/tessellate/ai/composer_plan.py:169 |
+| `_days_away` | src/tessellate/ai/composer_plan.py:243 |
+| `_due` | src/tessellate/ai/composer_plan.py:280 |
+| `_due_reply` | src/tessellate/ai/composer_plan.py:395 |
+| `_grouped` | src/tessellate/ai/composer_plan.py:255 |
+| `_left` | src/tessellate/ai/composer_plan.py:451 |
+| `_long` | src/tessellate/ai/composer_plan.py:93 |
+| `_merge` | src/tessellate/ai/composer_plan.py:220 |
+| `_name` | src/tessellate/ai/composer_plan.py:85 |
+| `_next_reminder` | src/tessellate/ai/composer_plan.py:303 |
+| `_note_days` | src/tessellate/ai/composer_plan.py:183 |
+| `_note_events_of` | src/tessellate/ai/composer_plan.py:202 |
+| `_open_reminders` | src/tessellate/ai/composer_plan.py:440 |
+| `_open_tasks` | src/tessellate/ai/composer_plan.py:431 |
+| `_plain` | src/tessellate/ai/composer_plan.py:154 |
+| `_plan` | src/tessellate/ai/composer_plan.py:345 |
+| `_plan_window` | src/tessellate/ai/composer_plan.py:385 |
+| `_range_words` | src/tessellate/ai/composer_plan.py:272 |
+| `_reminder_events` | src/tessellate/ai/composer_plan.py:131 |
+| `_reminder_line` | src/tessellate/ai/composer_plan.py:445 |
+| `_sentence_day` | src/tessellate/ai/composer_plan.py:158 |
+| `_short` | src/tessellate/ai/composer_plan.py:97 |
+| `_stems` | src/tessellate/ai/composer_plan.py:216 |
+| `_task_lines` | src/tessellate/ai/composer_plan.py:330 |
+| `_tasks` | src/tessellate/ai/composer_plan.py:312 |
+| `_until` | src/tessellate/ai/composer_plan.py:366 |
+| `_when_is` | src/tessellate/ai/composer_plan.py:469 |
+| `answer` | src/tessellate/ai/composer_plan.py:493 |
+| `events` | src/tessellate/ai/composer_plan.py:236 |
+| `note_events` | src/tessellate/ai/composer_plan.py:207 |
+| `window` | src/tessellate/ai/composer_plan.py:101 |
 
 ### src/tessellate/ai/composer_replies.py (1)
 
@@ -11862,38 +11863,38 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `Ctx` | src/tessellate/ai/composer_study.py:67 |
 | `Reply` | src/tessellate/ai/composer_study.py:91 |
-| `_asked_question` | src/tessellate/ai/composer_study.py:454 |
+| `_asked_question` | src/tessellate/ai/composer_study.py:462 |
 | `_body_matches` | src/tessellate/ai/composer_study.py:110 |
-| `_category_flashcards` | src/tessellate/ai/composer_study.py:340 |
-| `_continue_quiz` | src/tessellate/ai/composer_study.py:500 |
-| `_deck` | src/tessellate/ai/composer_study.py:394 |
-| `_finish` | src/tessellate/ai/composer_study.py:538 |
-| `_flashcards` | src/tessellate/ai/composer_study.py:360 |
-| `_header` | src/tessellate/ai/composer_study.py:402 |
-| `_last_header` | src/tessellate/ai/composer_study.py:447 |
-| `_link` | src/tessellate/ai/composer_study.py:147 |
-| `_newest_with_cards` | src/tessellate/ai/composer_study.py:151 |
-| `_nothing_named` | src/tessellate/ai/composer_study.py:177 |
-| `_off_topic` | src/tessellate/ai/composer_study.py:488 |
-| `_pooled_deck` | src/tessellate/ai/composer_study.py:327 |
-| `_quiz_command` | src/tessellate/ai/composer_study.py:471 |
-| `_quiz_note` | src/tessellate/ai/composer_study.py:406 |
-| `_quiz_place` | src/tessellate/ai/composer_study.py:459 |
-| `_split_n` | src/tessellate/ai/composer_study.py:186 |
-| `_start_quiz` | src/tessellate/ai/composer_study.py:418 |
-| `_summaries` | src/tessellate/ai/composer_study.py:285 |
-| `_summary` | src/tessellate/ai/composer_study.py:273 |
-| `_summary_text` | src/tessellate/ai/composer_study.py:256 |
-| `_target` | src/tessellate/ai/composer_study.py:239 |
-| `_terms` | src/tessellate/ai/composer_study.py:296 |
+| `_category_flashcards` | src/tessellate/ai/composer_study.py:348 |
+| `_continue_quiz` | src/tessellate/ai/composer_study.py:508 |
+| `_deck` | src/tessellate/ai/composer_study.py:402 |
+| `_finish` | src/tessellate/ai/composer_study.py:546 |
+| `_flashcards` | src/tessellate/ai/composer_study.py:368 |
+| `_header` | src/tessellate/ai/composer_study.py:410 |
+| `_last_header` | src/tessellate/ai/composer_study.py:455 |
+| `_link` | src/tessellate/ai/composer_study.py:149 |
+| `_newest_with_cards` | src/tessellate/ai/composer_study.py:153 |
+| `_nothing_named` | src/tessellate/ai/composer_study.py:179 |
+| `_off_topic` | src/tessellate/ai/composer_study.py:496 |
+| `_pooled_deck` | src/tessellate/ai/composer_study.py:335 |
+| `_quiz_command` | src/tessellate/ai/composer_study.py:479 |
+| `_quiz_note` | src/tessellate/ai/composer_study.py:414 |
+| `_quiz_place` | src/tessellate/ai/composer_study.py:467 |
+| `_split_n` | src/tessellate/ai/composer_study.py:188 |
+| `_start_quiz` | src/tessellate/ai/composer_study.py:426 |
+| `_summaries` | src/tessellate/ai/composer_study.py:293 |
+| `_summary` | src/tessellate/ai/composer_study.py:275 |
+| `_summary_text` | src/tessellate/ai/composer_study.py:258 |
+| `_target` | src/tessellate/ai/composer_study.py:241 |
+| `_terms` | src/tessellate/ai/composer_study.py:304 |
 | `_title` | src/tessellate/ai/composer_study.py:106 |
-| `_which_note` | src/tessellate/ai/composer_study.py:161 |
-| `answer` | src/tessellate/ai/composer_study.py:215 |
+| `_which_note` | src/tessellate/ai/composer_study.py:163 |
+| `answer` | src/tessellate/ai/composer_study.py:217 |
 | `category_notes` | src/tessellate/ai/composer_study.py:137 |
-| `deck_text` | src/tessellate/ai/composer_study.py:316 |
-| `deck_text_titled` | src/tessellate/ai/composer_study.py:320 |
-| `match` | src/tessellate/ai/composer_study.py:195 |
-| `open_named` | src/tessellate/ai/composer_study.py:553 |
+| `deck_text` | src/tessellate/ai/composer_study.py:324 |
+| `deck_text_titled` | src/tessellate/ai/composer_study.py:328 |
+| `match` | src/tessellate/ai/composer_study.py:197 |
+| `open_named` | src/tessellate/ai/composer_study.py:561 |
 | `pick` | src/tessellate/ai/composer_study.py:97 |
 | `topic_notes` | src/tessellate/ai/composer_study.py:120 |
 
@@ -12481,47 +12482,47 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Candidate` | src/tessellate/ai/lexical_filing.py:374 |
-| `Decision` | src/tessellate/ai/lexical_filing.py:406 |
-| `LexicalMatch` | src/tessellate/ai/lexical_filing.py:139 |
-| `Proposal` | src/tessellate/ai/lexical_filing.py:392 |
-| `_Corpus` | src/tessellate/ai/lexical_filing.py:867 |
-| `_Doc` | src/tessellate/ai/lexical_filing.py:835 |
-| `_NoteRead` | src/tessellate/ai/lexical_filing.py:500 |
-| `_auto_file_sensitive` | src/tessellate/ai/lexical_filing.py:489 |
-| `_candidate_for` | src/tessellate/ai/lexical_filing.py:580 |
-| `_category_aggregates` | src/tessellate/ai/lexical_filing.py:782 |
-| `_category_sums` | src/tessellate/ai/lexical_filing.py:532 |
-| `_corpus_for` | src/tessellate/ai/lexical_filing.py:1039 |
-| `_corpus_view` | src/tessellate/ai/lexical_filing.py:550 |
-| `_cosine` | src/tessellate/ai/lexical_filing.py:452 |
-| `_file_if_clear` | src/tessellate/ai/lexical_filing.py:613 |
-| `_make_doc` | src/tessellate/ai/lexical_filing.py:1005 |
-| `_name_words` | src/tessellate/ai/lexical_filing.py:462 |
-| `_note_read` | src/tessellate/ai/lexical_filing.py:640 |
-| `_quote_list` | src/tessellate/ai/lexical_filing.py:421 |
-| `_scope` | src/tessellate/ai/lexical_filing.py:1105 |
-| `_scope_key` | src/tessellate/ai/lexical_filing.py:1117 |
-| `_tag_words` | src/tessellate/ai/lexical_filing.py:1001 |
-| `_tags` | src/tessellate/ai/lexical_filing.py:148 |
-| `_take_out_excluded` | src/tessellate/ai/lexical_filing.py:518 |
-| `_tally` | src/tessellate/ai/lexical_filing.py:252 |
-| `_taught_topics` | src/tessellate/ai/lexical_filing.py:565 |
-| `_why_line` | src/tessellate/ai/lexical_filing.py:428 |
-| `_with_proposal` | src/tessellate/ai/lexical_filing.py:752 |
-| `_word_counts` | src/tessellate/ai/lexical_filing.py:633 |
-| `category_profiles` | src/tessellate/ai/lexical_filing.py:682 |
-| `category_support` | src/tessellate/ai/lexical_filing.py:170 |
-| `clean` | src/tessellate/ai/lexical_filing.py:125 |
-| `decide` | src/tessellate/ai/lexical_filing.py:650 |
-| `forget_corpus` | src/tessellate/ai/lexical_filing.py:1123 |
-| `holds_sensitive` | src/tessellate/ai/lexical_filing.py:467 |
-| `lexical_category` | src/tessellate/ai/lexical_filing.py:156 |
-| `personal_lexicon` | src/tessellate/ai/lexical_filing.py:718 |
-| `suggest_categories` | src/tessellate/ai/lexical_filing.py:202 |
-| `suggest_categories_explained` | src/tessellate/ai/lexical_filing.py:212 |
+| `Candidate` | src/tessellate/ai/lexical_filing.py:384 |
+| `Decision` | src/tessellate/ai/lexical_filing.py:416 |
+| `LexicalMatch` | src/tessellate/ai/lexical_filing.py:149 |
+| `Proposal` | src/tessellate/ai/lexical_filing.py:402 |
+| `_Corpus` | src/tessellate/ai/lexical_filing.py:877 |
+| `_Doc` | src/tessellate/ai/lexical_filing.py:845 |
+| `_NoteRead` | src/tessellate/ai/lexical_filing.py:510 |
+| `_auto_file_sensitive` | src/tessellate/ai/lexical_filing.py:499 |
+| `_candidate_for` | src/tessellate/ai/lexical_filing.py:590 |
+| `_category_aggregates` | src/tessellate/ai/lexical_filing.py:792 |
+| `_category_sums` | src/tessellate/ai/lexical_filing.py:542 |
+| `_corpus_for` | src/tessellate/ai/lexical_filing.py:1049 |
+| `_corpus_view` | src/tessellate/ai/lexical_filing.py:560 |
+| `_cosine` | src/tessellate/ai/lexical_filing.py:462 |
+| `_file_if_clear` | src/tessellate/ai/lexical_filing.py:623 |
+| `_make_doc` | src/tessellate/ai/lexical_filing.py:1015 |
+| `_name_words` | src/tessellate/ai/lexical_filing.py:472 |
+| `_note_read` | src/tessellate/ai/lexical_filing.py:650 |
+| `_quote_list` | src/tessellate/ai/lexical_filing.py:431 |
+| `_scope` | src/tessellate/ai/lexical_filing.py:1115 |
+| `_scope_key` | src/tessellate/ai/lexical_filing.py:1127 |
+| `_tag_words` | src/tessellate/ai/lexical_filing.py:1011 |
+| `_tags` | src/tessellate/ai/lexical_filing.py:158 |
+| `_take_out_excluded` | src/tessellate/ai/lexical_filing.py:528 |
+| `_tally` | src/tessellate/ai/lexical_filing.py:262 |
+| `_taught_topics` | src/tessellate/ai/lexical_filing.py:575 |
+| `_why_line` | src/tessellate/ai/lexical_filing.py:438 |
+| `_with_proposal` | src/tessellate/ai/lexical_filing.py:762 |
+| `_word_counts` | src/tessellate/ai/lexical_filing.py:643 |
+| `category_profiles` | src/tessellate/ai/lexical_filing.py:692 |
+| `category_support` | src/tessellate/ai/lexical_filing.py:180 |
+| `clean` | src/tessellate/ai/lexical_filing.py:131 |
+| `decide` | src/tessellate/ai/lexical_filing.py:660 |
+| `forget_corpus` | src/tessellate/ai/lexical_filing.py:1133 |
+| `holds_sensitive` | src/tessellate/ai/lexical_filing.py:477 |
+| `lexical_category` | src/tessellate/ai/lexical_filing.py:166 |
+| `personal_lexicon` | src/tessellate/ai/lexical_filing.py:728 |
+| `suggest_categories` | src/tessellate/ai/lexical_filing.py:212 |
+| `suggest_categories_explained` | src/tessellate/ai/lexical_filing.py:222 |
 | `tokens` | src/tessellate/ai/lexical_filing.py:95 |
-| `topic_overlap` | src/tessellate/ai/lexical_filing.py:708 |
+| `topic_overlap` | src/tessellate/ai/lexical_filing.py:718 |
 
 ### src/tessellate/ai/librarian.py (34)
 
@@ -13494,11 +13495,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Sources` | src/tessellate/ai/source_check.py:72 |
-| `_number_key` | src/tessellate/ai/source_check.py:66 |
-| `heads_up` | src/tessellate/ai/source_check.py:158 |
-| `sources_from_messages` | src/tessellate/ai/source_check.py:102 |
-| `unbacked_claims` | src/tessellate/ai/source_check.py:117 |
+| `Sources` | src/tessellate/ai/source_check.py:89 |
+| `_number_key` | src/tessellate/ai/source_check.py:83 |
+| `heads_up` | src/tessellate/ai/source_check.py:182 |
+| `sources_from_messages` | src/tessellate/ai/source_check.py:123 |
+| `unbacked_claims` | src/tessellate/ai/source_check.py:139 |
 
 ### src/tessellate/ai/speakers.py (3)
 
@@ -13612,44 +13613,46 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_usage` | src/tessellate/ai/stats_ask.py:131 |
 | `ask` | src/tessellate/ai/stats_ask.py:213 |
 
-### src/tessellate/ai/study.py (34)
+### src/tessellate/ai/study.py (36)
 
 | Name | File:line |
 |---|---|
-| `Card` | src/tessellate/ai/study.py:151 |
-| `Section` | src/tessellate/ai/study.py:89 |
-| `_answer_text` | src/tessellate/ai/study.py:183 |
-| `_colon_cards` | src/tessellate/ai/study.py:253 |
-| `_define_cards` | src/tessellate/ai/study.py:208 |
-| `_define_frame` | src/tessellate/ai/study.py:221 |
-| `_definition` | src/tessellate/ai/study.py:188 |
-| `_gap_card` | src/tessellate/ai/study.py:226 |
-| `_grade_list` | src/tessellate/ai/study.py:402 |
-| `_list_card` | src/tessellate/ai/study.py:240 |
-| `_pick` | src/tessellate/ai/study.py:159 |
-| `_picks` | src/tessellate/ai/study.py:374 |
-| `_prose` | src/tessellate/ai/study.py:123 |
-| `_section_cards` | src/tessellate/ai/study.py:266 |
-| `_share` | src/tessellate/ai/study.py:428 |
-| `_term_ok` | src/tessellate/ai/study.py:174 |
-| `_terms_of` | src/tessellate/ai/study.py:329 |
-| `_trim_term` | src/tessellate/ai/study.py:168 |
-| `_word_forms` | src/tessellate/ai/study.py:398 |
-| `bullets` | src/tessellate/ai/study.py:140 |
-| `cards` | src/tessellate/ai/study.py:284 |
-| `clean` | src/tessellate/ai/study.py:60 |
-| `content_stems` | src/tessellate/ai/study.py:77 |
-| `generic_head` | src/tessellate/ai/study.py:320 |
-| `grade` | src/tessellate/ai/study.py:407 |
-| `hint` | src/tessellate/ai/study.py:433 |
-| `key_terms` | src/tessellate/ai/study.py:344 |
-| `open_tasks` | src/tessellate/ai/study.py:144 |
-| `ordered` | src/tessellate/ai/study.py:299 |
-| `sections` | src/tessellate/ai/study.py:99 |
-| `sentences` | src/tessellate/ai/study.py:131 |
-| `stem` | src/tessellate/ai/study.py:67 |
-| `summary` | src/tessellate/ai/study.py:388 |
-| `title_of` | src/tessellate/ai/study.py:115 |
+| `Card` | src/tessellate/ai/study.py:198 |
+| `Section` | src/tessellate/ai/study.py:91 |
+| `_answer_text` | src/tessellate/ai/study.py:230 |
+| `_colon_cards` | src/tessellate/ai/study.py:300 |
+| `_define_cards` | src/tessellate/ai/study.py:255 |
+| `_define_frame` | src/tessellate/ai/study.py:268 |
+| `_definition` | src/tessellate/ai/study.py:235 |
+| `_drop_code` | src/tessellate/ai/study.py:108 |
+| `_drop_statement_runs` | src/tessellate/ai/study.py:132 |
+| `_gap_card` | src/tessellate/ai/study.py:273 |
+| `_grade_list` | src/tessellate/ai/study.py:449 |
+| `_list_card` | src/tessellate/ai/study.py:287 |
+| `_pick` | src/tessellate/ai/study.py:206 |
+| `_picks` | src/tessellate/ai/study.py:421 |
+| `_prose` | src/tessellate/ai/study.py:170 |
+| `_section_cards` | src/tessellate/ai/study.py:313 |
+| `_share` | src/tessellate/ai/study.py:475 |
+| `_term_ok` | src/tessellate/ai/study.py:221 |
+| `_terms_of` | src/tessellate/ai/study.py:376 |
+| `_trim_term` | src/tessellate/ai/study.py:215 |
+| `_word_forms` | src/tessellate/ai/study.py:445 |
+| `bullets` | src/tessellate/ai/study.py:187 |
+| `cards` | src/tessellate/ai/study.py:331 |
+| `clean` | src/tessellate/ai/study.py:62 |
+| `content_stems` | src/tessellate/ai/study.py:79 |
+| `generic_head` | src/tessellate/ai/study.py:367 |
+| `grade` | src/tessellate/ai/study.py:454 |
+| `hint` | src/tessellate/ai/study.py:480 |
+| `key_terms` | src/tessellate/ai/study.py:391 |
+| `open_tasks` | src/tessellate/ai/study.py:191 |
+| `ordered` | src/tessellate/ai/study.py:346 |
+| `sections` | src/tessellate/ai/study.py:148 |
+| `sentences` | src/tessellate/ai/study.py:178 |
+| `stem` | src/tessellate/ai/study.py:69 |
+| `summary` | src/tessellate/ai/study.py:435 |
+| `title_of` | src/tessellate/ai/study.py:162 |
 
 ### src/tessellate/ai/supersede.py (15)
 
@@ -13675,40 +13678,40 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_Ask` | src/tessellate/ai/tagging.py:182 |
-| `_Vocab` | src/tessellate/ai/tagging.py:217 |
-| `_choose` | src/tessellate/ai/tagging.py:407 |
-| `_damp` | src/tessellate/ai/tagging.py:367 |
-| `_key` | src/tessellate/ai/tagging.py:211 |
-| `_link_votes` | src/tessellate/ai/tagging.py:312 |
-| `_name_vote` | src/tessellate/ai/tagging.py:276 |
-| `_name_votes` | src/tessellate/ai/tagging.py:291 |
-| `_neighbour_votes` | src/tessellate/ai/tagging.py:256 |
-| `_offered_again` | src/tessellate/ai/tagging.py:347 |
-| `_owns_topic` | src/tessellate/ai/tagging.py:269 |
-| `_purpose_grounds` | src/tessellate/ai/tagging.py:124 |
-| `_query_bag` | src/tessellate/ai/tagging.py:204 |
-| `_read` | src/tessellate/ai/tagging.py:193 |
-| `_rides_a_sibling` | src/tessellate/ai/tagging.py:301 |
-| `_said` | src/tessellate/ai/tagging.py:117 |
-| `_said_outright` | src/tessellate/ai/tagging.py:264 |
-| `_subsumed` | src/tessellate/ai/tagging.py:373 |
-| `_vocabulary` | src/tessellate/ai/tagging.py:233 |
-| `filled` | src/tessellate/ai/tagging.py:427 |
-| `grounded` | src/tessellate/ai/tagging.py:168 |
-| `grounded_keys` | src/tessellate/ai/tagging.py:422 |
-| `grounds` | src/tessellate/ai/tagging.py:135 |
-| `lead` | src/tessellate/ai/tagging.py:82 |
-| `merged` | src/tessellate/ai/tagging.py:457 |
-| `new_topics` | src/tessellate/ai/tagging.py:434 |
-| `offer_again` | src/tessellate/ai/tagging.py:357 |
-| `reason` | src/tessellate/ai/tagging.py:157 |
-| `stem` | src/tessellate/ai/tagging.py:92 |
-| `stems` | src/tessellate/ai/tagging.py:105 |
-| `suggest` | src/tessellate/ai/tagging.py:380 |
-| `tag_stems` | src/tessellate/ai/tagging.py:113 |
-| `tag_words` | src/tessellate/ai/tagging.py:109 |
-| `turned_down` | src/tessellate/ai/tagging.py:328 |
+| `_Ask` | src/tessellate/ai/tagging.py:184 |
+| `_Vocab` | src/tessellate/ai/tagging.py:219 |
+| `_choose` | src/tessellate/ai/tagging.py:409 |
+| `_damp` | src/tessellate/ai/tagging.py:369 |
+| `_key` | src/tessellate/ai/tagging.py:213 |
+| `_link_votes` | src/tessellate/ai/tagging.py:314 |
+| `_name_vote` | src/tessellate/ai/tagging.py:278 |
+| `_name_votes` | src/tessellate/ai/tagging.py:293 |
+| `_neighbour_votes` | src/tessellate/ai/tagging.py:258 |
+| `_offered_again` | src/tessellate/ai/tagging.py:349 |
+| `_owns_topic` | src/tessellate/ai/tagging.py:271 |
+| `_purpose_grounds` | src/tessellate/ai/tagging.py:126 |
+| `_query_bag` | src/tessellate/ai/tagging.py:206 |
+| `_read` | src/tessellate/ai/tagging.py:195 |
+| `_rides_a_sibling` | src/tessellate/ai/tagging.py:303 |
+| `_said` | src/tessellate/ai/tagging.py:119 |
+| `_said_outright` | src/tessellate/ai/tagging.py:266 |
+| `_subsumed` | src/tessellate/ai/tagging.py:375 |
+| `_vocabulary` | src/tessellate/ai/tagging.py:235 |
+| `filled` | src/tessellate/ai/tagging.py:429 |
+| `grounded` | src/tessellate/ai/tagging.py:170 |
+| `grounded_keys` | src/tessellate/ai/tagging.py:424 |
+| `grounds` | src/tessellate/ai/tagging.py:137 |
+| `lead` | src/tessellate/ai/tagging.py:84 |
+| `merged` | src/tessellate/ai/tagging.py:463 |
+| `new_topics` | src/tessellate/ai/tagging.py:436 |
+| `offer_again` | src/tessellate/ai/tagging.py:359 |
+| `reason` | src/tessellate/ai/tagging.py:159 |
+| `stem` | src/tessellate/ai/tagging.py:94 |
+| `stems` | src/tessellate/ai/tagging.py:107 |
+| `suggest` | src/tessellate/ai/tagging.py:382 |
+| `tag_stems` | src/tessellate/ai/tagging.py:115 |
+| `tag_words` | src/tessellate/ai/tagging.py:111 |
+| `turned_down` | src/tessellate/ai/tagging.py:330 |
 
 ### src/tessellate/ai/taxonomy.py (43)
 
@@ -14276,16 +14279,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `Finding` | src/tessellate/ai/validate.py:58 |
-| `_app_sentences` | src/tessellate/ai/validate.py:171 |
-| `_measures_by_sentence` | src/tessellate/ai/validate.py:99 |
-| `_title_of` | src/tessellate/ai/validate.py:166 |
-| `_values` | src/tessellate/ai/validate.py:89 |
-| `check_model_answer` | src/tessellate/ai/validate.py:234 |
-| `computed_rule` | src/tessellate/ai/validate.py:193 |
-| `grounding_marks` | src/tessellate/ai/validate.py:75 |
-| `maxims` | src/tessellate/ai/validate.py:114 |
-| `report` | src/tessellate/ai/validate.py:224 |
-| `slots_missing` | src/tessellate/ai/validate.py:216 |
+| `_app_sentences` | src/tessellate/ai/validate.py:173 |
+| `_measures_by_sentence` | src/tessellate/ai/validate.py:101 |
+| `_title_of` | src/tessellate/ai/validate.py:168 |
+| `_values` | src/tessellate/ai/validate.py:91 |
+| `check_model_answer` | src/tessellate/ai/validate.py:236 |
+| `computed_rule` | src/tessellate/ai/validate.py:195 |
+| `grounding_marks` | src/tessellate/ai/validate.py:77 |
+| `maxims` | src/tessellate/ai/validate.py:116 |
+| `report` | src/tessellate/ai/validate.py:226 |
+| `slots_missing` | src/tessellate/ai/validate.py:218 |
 | `source_check` | src/tessellate/ai/validate.py:70 |
 
 ### src/tessellate/ai/variants.py (8)
@@ -14765,37 +14768,37 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `set_category_colour` | src/tessellate/api/routes_categories.py:314 |
 | `split_category` | src/tessellate/api/routes_categories.py:184 |
 
-### src/tessellate/api/routes_chat.py (201)
+### src/tessellate/api/routes_chat.py (202)
 
 | Name | File:line |
 |---|---|
 | `ChatRequest` | src/tessellate/api/routes_chat.py:386 |
 | `ChatResponse` | src/tessellate/api/routes_chat.py:818 |
 | `ChatTurn` | src/tessellate/api/routes_chat.py:354 |
-| `CommandRunBody` | src/tessellate/api/routes_chat.py:3473 |
-| `CompressBody` | src/tessellate/api/routes_chat.py:4393 |
+| `CommandRunBody` | src/tessellate/api/routes_chat.py:3496 |
+| `CompressBody` | src/tessellate/api/routes_chat.py:4417 |
 | `FollowupBody` | src/tessellate/api/routes_chat.py:319 |
 | `PlanRun` | src/tessellate/api/routes_chat.py:363 |
 | `RememberBody` | src/tessellate/api/routes_chat.py:194 |
 | `ScreenBody` | src/tessellate/api/routes_chat.py:376 |
-| `ToolExecuteBody` | src/tessellate/api/routes_chat.py:4426 |
+| `ToolExecuteBody` | src/tessellate/api/routes_chat.py:4450 |
 | `_Found` | src/tessellate/api/routes_chat.py:1443 |
 | `_NoteCtx` | src/tessellate/api/routes_chat.py:1463 |
 | `_StreamRequest` | src/tessellate/api/routes_chat.py:2137 |
-| `_Turn` | src/tessellate/api/routes_chat.py:3692 |
+| `_Turn` | src/tessellate/api/routes_chat.py:3715 |
 | `_about` | src/tessellate/api/routes_chat.py:263 |
-| `_act_events` | src/tessellate/api/routes_chat.py:3327 |
-| `_act_planned_events` | src/tessellate/api/routes_chat.py:3351 |
-| `_address` | src/tessellate/api/routes_chat.py:4114 |
-| `_agent_events` | src/tessellate/api/routes_chat.py:3495 |
-| `_answer_lines` | src/tessellate/api/routes_chat.py:4255 |
+| `_act_events` | src/tessellate/api/routes_chat.py:3350 |
+| `_act_planned_events` | src/tessellate/api/routes_chat.py:3374 |
+| `_address` | src/tessellate/api/routes_chat.py:4138 |
+| `_agent_events` | src/tessellate/api/routes_chat.py:3518 |
+| `_answer_lines` | src/tessellate/api/routes_chat.py:4279 |
 | `_answer_voice` | src/tessellate/api/routes_chat.py:2192 |
 | `_app_answers` | src/tessellate/api/routes_chat.py:2537 |
-| `_app_first_events` | src/tessellate/api/routes_chat.py:3410 |
+| `_app_first_events` | src/tessellate/api/routes_chat.py:3433 |
 | `_app_said` | src/tessellate/api/routes_chat.py:2641 |
 | `_apply_open` | src/tessellate/api/routes_chat.py:574 |
 | `_apply_scope` | src/tessellate/api/routes_chat.py:544 |
-| `_asked` | src/tessellate/api/routes_chat.py:4100 |
+| `_asked` | src/tessellate/api/routes_chat.py:4124 |
 | `_asked_key` | src/tessellate/api/routes_chat.py:213 |
 | `_asks_capability` | src/tessellate/api/routes_chat.py:2530 |
 | `_assist` | src/tessellate/api/routes_chat.py:2243 |
@@ -14811,17 +14814,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_chat_model_sees_images` | src/tessellate/api/routes_chat.py:689 |
 | `_chat_payload` | src/tessellate/api/routes_chat.py:1756 |
 | `_chat_topic` | src/tessellate/api/routes_chat.py:3066 |
-| `_check_model_prose` | src/tessellate/api/routes_chat.py:3983 |
-| `_checks_grounding` | src/tessellate/api/routes_chat.py:3652 |
-| `_choose_events` | src/tessellate/api/routes_chat.py:3839 |
+| `_check_model_prose` | src/tessellate/api/routes_chat.py:4006 |
+| `_checks_grounding` | src/tessellate/api/routes_chat.py:3675 |
+| `_choose_events` | src/tessellate/api/routes_chat.py:3862 |
+| `_cited_titles` | src/tessellate/api/routes_chat.py:3091 |
 | `_compose_for` | src/tessellate/api/routes_chat.py:2966 |
 | `_composed` | src/tessellate/api/routes_chat.py:2185 |
-| `_composed_events` | src/tessellate/api/routes_chat.py:3110 |
+| `_composed_events` | src/tessellate/api/routes_chat.py:3133 |
 | `_composed_grounding_event` | src/tessellate/api/routes_chat.py:3025 |
-| `_composed_lines` | src/tessellate/api/routes_chat.py:4294 |
+| `_composed_lines` | src/tessellate/api/routes_chat.py:4318 |
 | `_composed_result` | src/tessellate/api/routes_chat.py:3006 |
 | `_composed_support` | src/tessellate/api/routes_chat.py:2369 |
-| `_composed_text` | src/tessellate/api/routes_chat.py:3140 |
+| `_composed_text` | src/tessellate/api/routes_chat.py:3163 |
 | `_composer_embed` | src/tessellate/api/routes_chat.py:2232 |
 | `_composer_voice` | src/tessellate/api/routes_chat.py:2213 |
 | `_computed_answer` | src/tessellate/api/routes_chat.py:1517 |
@@ -14834,8 +14838,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_detect_intent` | src/tessellate/api/routes_chat.py:1476 |
 | `_digest_for` | src/tessellate/api/routes_chat.py:2944 |
 | `_document_row` | src/tessellate/api/routes_chat.py:1692 |
-| `_engine_answers` | src/tessellate/api/routes_chat.py:3662 |
-| `_event` | src/tessellate/api/routes_chat.py:3721 |
+| `_engine_answers` | src/tessellate/api/routes_chat.py:3685 |
+| `_event` | src/tessellate/api/routes_chat.py:3744 |
 | `_exact_events` | src/tessellate/api/routes_chat.py:2765 |
 | `_feature_for` | src/tessellate/api/routes_chat.py:126 |
 | `_filed_or_counted_events` | src/tessellate/api/routes_chat.py:2470 |
@@ -14843,48 +14847,48 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_filed_under` | src/tessellate/api/routes_chat.py:1408 |
 | `_files_on` | src/tessellate/api/routes_chat.py:1243 |
 | `_fill` | src/tessellate/api/routes_chat.py:239 |
-| `_first_agent_event` | src/tessellate/api/routes_chat.py:3552 |
-| `_first_events` | src/tessellate/api/routes_chat.py:3434 |
-| `_fold_event` | src/tessellate/api/routes_chat.py:3886 |
-| `_follow_up` | src/tessellate/api/routes_chat.py:3631 |
-| `_forced_notes` | src/tessellate/api/routes_chat.py:3383 |
+| `_first_agent_event` | src/tessellate/api/routes_chat.py:3575 |
+| `_first_events` | src/tessellate/api/routes_chat.py:3457 |
+| `_fold_event` | src/tessellate/api/routes_chat.py:3909 |
+| `_follow_up` | src/tessellate/api/routes_chat.py:3654 |
+| `_forced_notes` | src/tessellate/api/routes_chat.py:3406 |
 | `_frame_matches` | src/tessellate/api/routes_chat.py:1790 |
 | `_from_records` | src/tessellate/api/routes_chat.py:1504 |
 | `_glossary` | src/tessellate/api/routes_chat.py:1322 |
-| `_ground_final` | src/tessellate/api/routes_chat.py:4010 |
+| `_ground_final` | src/tessellate/api/routes_chat.py:4034 |
 | `_grounding_candidates` | src/tessellate/api/routes_chat.py:853 |
-| `_guarded_slash_lines` | src/tessellate/api/routes_chat.py:4261 |
+| `_guarded_slash_lines` | src/tessellate/api/routes_chat.py:4285 |
 | `_help_events` | src/tessellate/api/routes_chat.py:2844 |
 | `_image_caption_context` | src/tessellate/api/routes_chat.py:702 |
 | `_in_full` | src/tessellate/api/routes_chat.py:2180 |
 | `_in_notes` | src/tessellate/api/routes_chat.py:2558 |
 | `_insight_level` | src/tessellate/api/routes_chat.py:2203 |
-| `_insight_memory` | src/tessellate/api/routes_chat.py:3315 |
-| `_interactive_lines` | src/tessellate/api/routes_chat.py:4222 |
-| `_is_composing` | src/tessellate/api/routes_chat.py:3762 |
+| `_insight_memory` | src/tessellate/api/routes_chat.py:3338 |
+| `_interactive_lines` | src/tessellate/api/routes_chat.py:4246 |
+| `_is_composing` | src/tessellate/api/routes_chat.py:3785 |
 | `_late_panel` | src/tessellate/api/routes_chat.py:2742 |
-| `_lines_for` | src/tessellate/api/routes_chat.py:4235 |
+| `_lines_for` | src/tessellate/api/routes_chat.py:4259 |
 | `_link_events` | src/tessellate/api/routes_chat.py:2679 |
-| `_lists_reminders` | src/tessellate/api/routes_chat.py:3605 |
-| `_live_grounder` | src/tessellate/api/routes_chat.py:3910 |
-| `_may_digest` | src/tessellate/api/routes_chat.py:3376 |
+| `_lists_reminders` | src/tessellate/api/routes_chat.py:3628 |
+| `_live_grounder` | src/tessellate/api/routes_chat.py:3933 |
+| `_may_digest` | src/tessellate/api/routes_chat.py:3399 |
 | `_meaning_loading` | src/tessellate/api/routes_chat.py:2219 |
 | `_media_readings` | src/tessellate/api/routes_chat.py:1179 |
-| `_meta_event` | src/tessellate/api/routes_chat.py:3816 |
-| `_missed_events` | src/tessellate/api/routes_chat.py:3154 |
-| `_model_stream_events` | src/tessellate/api/routes_chat.py:3219 |
+| `_meta_event` | src/tessellate/api/routes_chat.py:3839 |
+| `_missed_events` | src/tessellate/api/routes_chat.py:3177 |
+| `_model_stream_events` | src/tessellate/api/routes_chat.py:3242 |
 | `_mostly_pictures` | src/tessellate/api/routes_chat.py:1129 |
 | `_newest_titles` | src/tessellate/api/routes_chat.py:2700 |
 | `_newest_word` | src/tessellate/api/routes_chat.py:2607 |
-| `_no_model_events` | src/tessellate/api/routes_chat.py:3171 |
+| `_no_model_events` | src/tessellate/api/routes_chat.py:3194 |
 | `_no_notes_events` | src/tessellate/api/routes_chat.py:2924 |
 | `_no_notes_line` | src/tessellate/api/routes_chat.py:2784 |
 | `_note_content` | src/tessellate/api/routes_chat.py:1632 |
 | `_note_dates` | src/tessellate/api/routes_chat.py:1137 |
-| `_note_kind` | src/tessellate/api/routes_chat.py:3876 |
-| `_note_tool_read` | src/tessellate/api/routes_chat.py:3620 |
+| `_note_kind` | src/tessellate/api/routes_chat.py:3899 |
+| `_note_tool_read` | src/tessellate/api/routes_chat.py:3643 |
 | `_notes_answer_due` | src/tessellate/api/routes_chat.py:2417 |
-| `_notes_messages` | src/tessellate/api/routes_chat.py:3189 |
+| `_notes_messages` | src/tessellate/api/routes_chat.py:3212 |
 | `_nothing_open` | src/tessellate/api/routes_chat.py:604 |
 | `_offer_events` | src/tessellate/api/routes_chat.py:2661 |
 | `_one_line` | src/tessellate/api/routes_chat.py:1174 |
@@ -14894,17 +14898,17 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_picture_alts` | src/tessellate/api/routes_chat.py:1085 |
 | `_picture_notes` | src/tessellate/api/routes_chat.py:1426 |
 | `_picture_sizes` | src/tessellate/api/routes_chat.py:1112 |
-| `_plain_events` | src/tessellate/api/routes_chat.py:3277 |
-| `_plan_turn` | src/tessellate/api/routes_chat.py:3788 |
+| `_plain_events` | src/tessellate/api/routes_chat.py:3300 |
+| `_plan_turn` | src/tessellate/api/routes_chat.py:3811 |
 | `_prepare` | src/tessellate/api/routes_chat.py:1819 |
-| `_prime_model_notes` | src/tessellate/api/routes_chat.py:3805 |
+| `_prime_model_notes` | src/tessellate/api/routes_chat.py:3828 |
 | `_raw_results` | src/tessellate/api/routes_chat.py:1744 |
 | `_recall_window` | src/tessellate/api/routes_chat.py:1535 |
 | `_recent_questions` | src/tessellate/api/routes_chat.py:136 |
-| `_refuse_failed` | src/tessellate/api/routes_chat.py:4467 |
+| `_refuse_failed` | src/tessellate/api/routes_chat.py:4491 |
 | `_related_elsewhere` | src/tessellate/api/routes_chat.py:2047 |
 | `_related_sentence` | src/tessellate/api/routes_chat.py:2915 |
-| `_relay_events` | src/tessellate/api/routes_chat.py:3924 |
+| `_relay_events` | src/tessellate/api/routes_chat.py:3947 |
 | `_reminder_window` | src/tessellate/api/routes_chat.py:2477 |
 | `_reply_seed` | src/tessellate/api/routes_chat.py:2577 |
 | `_resolve_chat_images` | src/tessellate/api/routes_chat.py:649 |
@@ -14914,61 +14918,61 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_resolve_skill` | src/tessellate/api/routes_chat.py:763 |
 | `_retrieve_for` | src/tessellate/api/routes_chat.py:1590 |
 | `_rewind_as_of` | src/tessellate/api/routes_chat.py:1604 |
-| `_run_title` | src/tessellate/api/routes_chat.py:4241 |
+| `_run_title` | src/tessellate/api/routes_chat.py:4265 |
 | `_save_ask_turn` | src/tessellate/api/routes_chat.py:1997 |
 | `_search_notes` | src/tessellate/api/routes_chat.py:1571 |
 | `_search_service` | src/tessellate/api/routes_chat.py:2669 |
-| `_searched_question` | src/tessellate/api/routes_chat.py:3644 |
-| `_settle_turn` | src/tessellate/api/routes_chat.py:4043 |
-| `_skill_lines` | src/tessellate/api/routes_chat.py:4304 |
-| `_slash_lines` | src/tessellate/api/routes_chat.py:4275 |
+| `_searched_question` | src/tessellate/api/routes_chat.py:3667 |
+| `_settle_turn` | src/tessellate/api/routes_chat.py:4067 |
+| `_skill_lines` | src/tessellate/api/routes_chat.py:4328 |
+| `_slash_lines` | src/tessellate/api/routes_chat.py:4299 |
 | `_small_model_mode` | src/tessellate/api/routes_chat.py:742 |
 | `_small_talk_events` | src/tessellate/api/routes_chat.py:2856 |
 | `_social_reply` | src/tessellate/api/routes_chat.py:2587 |
-| `_spoken_act` | src/tessellate/api/routes_chat.py:3590 |
-| `_starter_events` | src/tessellate/api/routes_chat.py:3464 |
-| `_starter_read` | src/tessellate/api/routes_chat.py:3456 |
+| `_spoken_act` | src/tessellate/api/routes_chat.py:3613 |
+| `_starter_events` | src/tessellate/api/routes_chat.py:3487 |
+| `_starter_read` | src/tessellate/api/routes_chat.py:3479 |
 | `_stats_chart` | src/tessellate/api/routes_chat.py:2407 |
 | `_stats_events` | src/tessellate/api/routes_chat.py:2750 |
 | `_stats_out` | src/tessellate/api/routes_chat.py:1735 |
-| `_stoppable` | src/tessellate/api/routes_chat.py:4216 |
-| `_stream_lines` | src/tessellate/api/routes_chat.py:4060 |
-| `_stream_prepare` | src/tessellate/api/routes_chat.py:3725 |
+| `_stoppable` | src/tessellate/api/routes_chat.py:4240 |
+| `_stream_lines` | src/tessellate/api/routes_chat.py:4084 |
+| `_stream_prepare` | src/tessellate/api/routes_chat.py:3748 |
 | `_suggest_events` | src/tessellate/api/routes_chat.py:2693 |
 | `_time_words` | src/tessellate/api/routes_chat.py:1157 |
 | `_tool_read_events` | src/tessellate/api/routes_chat.py:2489 |
-| `_tools_provider` | src/tessellate/api/routes_chat.py:3677 |
-| `_trim_answer` | src/tessellate/api/routes_chat.py:3965 |
-| `_verdicts` | src/tessellate/api/routes_chat.py:3305 |
+| `_tools_provider` | src/tessellate/api/routes_chat.py:3700 |
+| `_trim_answer` | src/tessellate/api/routes_chat.py:3988 |
+| `_verdicts` | src/tessellate/api/routes_chat.py:3328 |
 | `_web_allowed` | src/tessellate/api/routes_chat.py:2309 |
 | `_web_answer` | src/tessellate/api/routes_chat.py:2340 |
 | `_web_events` | src/tessellate/api/routes_chat.py:2380 |
 | `_web_first` | src/tessellate/api/routes_chat.py:2303 |
 | `_web_pages` | src/tessellate/api/routes_chat.py:2319 |
-| `_why` | src/tessellate/api/routes_chat.py:4082 |
+| `_why` | src/tessellate/api/routes_chat.py:4106 |
 | `_widened` | src/tessellate/api/routes_chat.py:1333 |
-| `_will_answer` | src/tessellate/api/routes_chat.py:3775 |
+| `_will_answer` | src/tessellate/api/routes_chat.py:3798 |
 | `_with_each_side` | src/tessellate/api/routes_chat.py:1554 |
 | `_with_lapsed` | src/tessellate/api/routes_chat.py:2830 |
 | `_with_neighbours` | src/tessellate/api/routes_chat.py:1366 |
-| `_with_next_step` | src/tessellate/api/routes_chat.py:3091 |
+| `_with_next_step` | src/tessellate/api/routes_chat.py:3112 |
 | `_with_older` | src/tessellate/api/routes_chat.py:2816 |
 | `_with_open` | src/tessellate/api/routes_chat.py:1387 |
 | `_worked_kind` | src/tessellate/api/routes_chat.py:2736 |
 | `_worked_out` | src/tessellate/api/routes_chat.py:1488 |
 | `chat` | src/tessellate/api/routes_chat.py:1875 |
 | `chat_followups` | src/tessellate/api/routes_chat.py:333 |
-| `chat_stream` | src/tessellate/api/routes_chat.py:4133 |
-| `compress_history` | src/tessellate/api/routes_chat.py:4400 |
-| `execute_confirmed_tool` | src/tessellate/api/routes_chat.py:4439 |
+| `chat_stream` | src/tessellate/api/routes_chat.py:4157 |
+| `compress_history` | src/tessellate/api/routes_chat.py:4424 |
+| `execute_confirmed_tool` | src/tessellate/api/routes_chat.py:4463 |
 | `forget_recent_question` | src/tessellate/api/routes_chat.py:187 |
-| `list_commands` | src/tessellate/api/routes_chat.py:4327 |
-| `list_modes` | src/tessellate/api/routes_chat.py:4336 |
-| `list_tools` | src/tessellate/api/routes_chat.py:4357 |
+| `list_commands` | src/tessellate/api/routes_chat.py:4351 |
+| `list_modes` | src/tessellate/api/routes_chat.py:4360 |
+| `list_tools` | src/tessellate/api/routes_chat.py:4381 |
 | `recent_questions` | src/tessellate/api/routes_chat.py:181 |
 | `remember_recent_question` | src/tessellate/api/routes_chat.py:199 |
 | `reply_panel` | src/tessellate/api/routes_chat.py:2718 |
-| `run_command` | src/tessellate/api/routes_chat.py:3481 |
+| `run_command` | src/tessellate/api/routes_chat.py:3504 |
 | `suggestions` | src/tessellate/api/routes_chat.py:286 |
 
 ### src/tessellate/api/routes_code_assist.py (2)
@@ -18893,7 +18897,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11983)
+## Tests (11996)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19110,6 +19114,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_dog2_1025.py | 16 |
 | tests/test_composer_eval_725.py | 6 |
 | tests/test_composer_eval_741.py | 6 |
+| tests/test_composer_five_1025.py | 13 |
 | tests/test_composer_form_1301.py | 13 |
 | tests/test_composer_four_1025.py | 16 |
 | tests/test_composer_grammar.py | 3 |

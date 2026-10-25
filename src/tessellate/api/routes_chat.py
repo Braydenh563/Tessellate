@@ -3088,7 +3088,28 @@ def _awareness(req: _StreamRequest) -> composer_aware.Awareness:
     )
 
 
-def _with_next_step(text: str, size: str, req: _StreamRequest) -> str:
+def _cited_titles(session: Session, result: dict) -> list[str]:
+    """The titles of the notes an answer drew on, in the order it cited them."""
+    from tessellate.ai.tools._common import _visible
+
+    ids: list[int] = []
+    for row in result.get("grounding") or []:
+        try:
+            nid = int(row.get("note_id"))
+        except (TypeError, ValueError):
+            continue
+        if nid not in ids:
+            ids.append(nid)
+    titles: list[str] = []
+    for nid in ids[:3]:
+        row = session.query(Entry.content).filter(Entry.id == nid, *_visible()).first()
+        title = composer._title(str(row[0] or ""))[0].strip()[:60] if row else ""
+        if title:
+            titles.append(title)
+    return titles
+
+
+def _with_next_step(text: str, size: str, req: _StreamRequest, cited: list[str] | None = None) -> str:
     """The closing line (`composer_aware.closing` when the screen is known,
     else `composer_tone.closing`), left off by Quick and by an answer that
     already ends in a question or an offer to press."""
@@ -3100,7 +3121,9 @@ def _with_next_step(text: str, size: str, req: _StreamRequest) -> str:
     seed = f"{seed}:{req.question}"
     #: An answer scoped to the open note or category does not close on the
     #: notebook's newest note, which may be about something else entirely.
-    newest = [] if req.body.note_ids else _newest_titles(req.session, 1)
+    #: Nor on a note the answer never used ("what caused ww1" ended with an
+    #: offer to open the Biology note): a closer names a note the answer cited.
+    newest = [] if req.body.note_ids else (cited if cited is not None else _newest_titles(req.session, 1))[:1]
     line = (composer_aware.closing(_awareness(req), seed, recent) if req.body.screen else "") or composer_tone.closing(
         recent=newest, seed=seed, avoid=recent
     )
@@ -3147,7 +3170,7 @@ def _composed_text(req: _StreamRequest, prepared: dict, result: dict, follow, *,
         text += "\n\n" + composer_digest.PHRASES["meaning_loading"]
     size = composer_tone.length(_resolve_mode(req.body.mode))
     if not follow and ((result["grounding"] and not said_none) or (said_none and req.body.screen)):
-        text = _with_next_step(composer_tone.fit(text, size), size, req)
+        text = _with_next_step(composer_tone.fit(text, size), size, req, _cited_titles(req.session, result))
     return text
 
 
@@ -4000,6 +4023,7 @@ def _check_model_prose(req: _StreamRequest, prepared: dict, t: _Turn) -> Iterato
             user_now(deps.get_config()).strftime("%A %d %B %Y %H:%M"),
             *(str(n.get("content") or "") for n in [*prepared["notes"], *(prepared.get("model_notes") or [])]),
         ],
+        question=req.question or "",
     )
     if t.model_checks["unbacked"]:
         heads = source_check.heads_up(t.model_checks["unbacked"])

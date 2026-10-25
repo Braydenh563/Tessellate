@@ -67,9 +67,11 @@ class Finding:
 # --- source check and grounding --------------------------------------------------
 
 
-def source_check(answer: str, sources: list[str]) -> list[str]:
-    """The numbers and names in `answer` that none of `sources` contains."""
-    return _source_check.unbacked_claims(answer or "", _source_check.Sources([s for s in sources if s]))
+def source_check(answer: str, sources: list[str], question: str = "") -> list[str]:
+    """The numbers and names in `answer` that none of `sources` contains. A
+    `question` about a date, a time or a reminder lets the answer's own
+    computed figures through (`source_check.Sources`)."""
+    return _source_check.unbacked_claims(answer or "", _source_check.Sources([s for s in sources if s], question))
 
 
 def grounding_marks(answer: str, rows: list[dict]) -> dict:
@@ -231,11 +233,11 @@ def report(result: dict, question: str = "", notes: list[dict] | None = None) ->
     }
 
 
-def check_model_answer(answer: str, sources: list[str], rows: list[dict] | None = None) -> dict:
+def check_model_answer(answer: str, sources: list[str], rows: list[dict] | None = None, question: str = "") -> dict:
     """The same checks on a model's answer, which has no parts: its numbers and
     names against what it drew on, its grounding, and the manner rules that
     read text alone. {"unbacked", "support", "findings", "ok"}."""
-    unbacked = source_check(answer, sources)
+    unbacked = source_check(answer, sources, question)
     findings = [Finding("quality", "not in the sources", claim) for claim in unbacked]
     if _SHOUT.search(answer or ""):
         findings.append(Finding("manner", "exclamation or Oops", (answer or "")[:60]))

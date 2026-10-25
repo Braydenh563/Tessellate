@@ -1441,18 +1441,41 @@ def _missing(members: list[composer.NoteView]) -> str:
     return ""
 
 
-def _offer(facts: list[Fact]) -> dict | None:
+#: A question about what is open or due, where any to-do is on topic.
+_ABOUT_TASKS = re.compile(r"\b(?:to ?do|left|remaining|outstanding|need|should|must|due|deadline|homework|tasks?|remind\w*)\b", re.I)
+
+
+_ABOUT_TIME = re.compile(r"\b(?:when|what (?:day|time|date))\b", re.I)
+
+
+def _on_topic(action: str, asked: str) -> bool:
+    """Whether a to-do is what the question is about: it asks what is open or
+    due, or asks when something happens that the to-do names ("when is the
+    tutor meeting" offers "ask the tutor on Thursday"). A definition
+    ("what is the Krebs cycle") offers nothing, even beside a to-do on it."""
+    if _ABOUT_TASKS.search(asked):
+        return True
+    if not _ABOUT_TIME.search(asked):
+        return False
+    words = {composer._stem(w) for w in re.findall(r"[a-z]{4,}", action.lower())}
+    return bool(words & {composer._stem(w) for w in re.findall(r"[a-z]{4,}", asked.lower())})
+
+
+def _offer(facts: list[Fact], asked: str | None = None) -> dict | None:
     """One thing to do next, from the notes' own to-dos: the one with a day
-    first ("ask the tutor on Thursday"), then something still to book."""
+    first ("ask the tutor on Thursday"), then something still to book. With
+    `asked`, only a to-do the question is about (`_on_topic`)."""
     #: A day in a to-do is the note's day ("ask the tutor on Thursday",
     #: written 4 August, was 6 August): one gone by is not offered for this
     #: Thursday (the owner, 2026-10-11: relative time resolved everywhere).
     actions = [_asked_about(_still_ahead(a, f.view.written), f.body) for f in facts if (a := _task_of(f))]
+    if asked is not None:
+        actions = [a for a in actions if _on_topic(a, asked)]
     actions.sort(key=lambda a: not any(s.kind in ("date", "datetime") for s in _spans(a, None)))
     if not actions:
         for f in facts:
             still = _STILL_TO.search(f.sentence.text)
-            if still:
+            if still and (asked is None or _on_topic(f"{still.group(2)} {still.group(1)}", asked)):
                 actions.append(f"{still.group(2).lower()} the {still.group(1).lower()}")
     if not actions:
         return None
@@ -2509,7 +2532,7 @@ def _finish(out: _Out, kind: str, asked: str, members: list, facts: list[Fact], 
     elif kind in ("overview", "likes"):
         _confirmed_first(out, asked, members, learned)
         _volunteer(out, asked, members, notes, today, insight, learned)
-    out.offer = out.offer or _offer(facts) or _kind_offer(kind, asked, members, facts, today, out)
+    out.offer = out.offer or _offer(facts, asked) or _kind_offer(kind, asked, members, facts, today, out)
     return _result(out, kind, asked)
 
 
