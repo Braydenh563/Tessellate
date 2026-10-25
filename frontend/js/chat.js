@@ -1841,7 +1841,10 @@ function personaOptions() {
     select.appendChild(option);
   }
   // Also surface the active persona's description on the closed select itself.
-  select.title = describe(active);
+  //: While no model runs the gate (`syncModelGatedControls`) has put the reason
+  //: in the title; the description waits in `enabledTitle` for its return.
+  if (select.dataset.enabledTitle !== undefined) select.dataset.enabledTitle = describe(active);
+  else select.title = describe(active);
   // The full prompt, not the hover excerpt: the preview panel exists precisely so
   // the instructions the model is given aren't a 200-character preview.
   const fullPrompt = (name) =>
@@ -1857,7 +1860,8 @@ function personaOptions() {
   //: persona's mark sits beside it and follows the choice.
   fillPersonaMark($("persona-select-mark"), select.value);
   select.onchange = () => {
-    select.title = describe(select.value);
+    if (select.dataset.enabledTitle !== undefined) select.dataset.enabledTitle = describe(select.value);
+    else select.title = describe(select.value);
     showPrompt(select.value);
     fillPersonaMark($("persona-select-mark"), select.value);
   };

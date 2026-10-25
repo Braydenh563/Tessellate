@@ -1,0 +1,13 @@
+# composer2-1025 (branch agent/composer2-1025; round 2 after composer-1025)
+
+
+- done 67ef381: Ask with a note open answers about that note (item 1). next: none.
+- done f6c7600: open-ended requests and unknown actions offer choices (item 2). next: none.
+- done 33f7a0b: pasted link read, failing web search named (item 3). next: SearXNG start button.
+- done 133c589: reminders magic add hard phrasings, edit form heights (item 5); web reader Analyse this page (item 6). next: none.
+- done 7072808: closing next-step line, Length picker, persona help (item 4). next: awareness of the screen; persona picker disabled with no model (frontend/js/chat.js personaOptions; boot JS cap 588400 has 1 byte of room, move code to a lazy file first); Ask tab half-width redesign.
+- done (item 1): bg-art.js lazy, boot JS 588,399 to 568,431 gz, DCL median ~1040ms to ~925ms, JS transfer 892,780 to 872,812 bytes. next: item 2 composer awareness (chat.js/ask client context + composer).
+- done (item 2): composer_aware.py, screen on /chat/stream, actions on /help/ask, tests/test_composer_aware_1025.py. next: item 3 persona picker disabled with no model (frontend/js/chat.js personaOptions).
+- done (item 3): persona-select data-needs-model; test_persona_gate_1025.py. next: item 4 web search down: Docker one-liner (composer_web.py done unstaged, help websearch topic), item 5.
+- done (item 4): composer_web.search_down Docker one-liner + not-set-up wording, Guide websearch topic. next: item 5 phrasings (tests/test_composer_phrasings_1025.py, stashed while item 4 commits): category counts, compare retrieval + sides, define, phrase variants.
+- done (item 5): category/tag counts, per-category listing, compare both sides, define noise, seeded only-note variants; tests/test_composer_phrasings_1025.py (36 rows). next: nothing in the brief; Ask tab half-width redesign belongs to shell.

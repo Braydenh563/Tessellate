@@ -46,11 +46,20 @@ def fit(text: str, size: str) -> str:
     return lead or text
 
 
-def closing(*, recent: list[str], seed: str) -> str:
-    """One next-step line from the newest note's title, or empty with no notes."""
+def closing(*, recent: list[str], seed: str, avoid: tuple[str, ...] | list[str] = ()) -> str:
+    """One next-step line from the newest note's title, or empty with no notes.
+
+    `avoid` is the last replies of this conversation: a wording any of them
+    already holds is passed over for the next, and when every wording has been
+    said lately the closing is left off rather than repeated."""
     titles = [t for t in recent if t]
     if not titles:
         return ""
     title = titles[0]
-    key = hashlib.sha256(f"{seed}:{title}".encode()).digest()[0]
-    return PHRASES[_ORDER[key % len(_ORDER)]].replace("{t}", title)
+    start = hashlib.sha256(f"{seed}:{title}".encode()).digest()[0]
+    said = "\n".join(avoid)
+    for step in range(len(_ORDER)):
+        line = PHRASES[_ORDER[(start + step) % len(_ORDER)]].replace("{t}", title)
+        if line not in said:
+            return line
+    return ""

@@ -140,6 +140,7 @@ HELP_TOPICS: list[dict] = [
             "picks who answers: off, the answer is From your notes, quoted from your "
             "notes' own sentences with no AI, and it is the answer when no model runs, "
             "in Ask and in Chat. "
+            "They also see your tab and last actions, locally. "
             "Sums, conversions (at the dated rates named), the time and days "
             "until a date are worked out, model or not; \"what did I do last "
             "week\" lists that week's notes; short follow-ups (and last week?, "
@@ -533,7 +534,11 @@ HELP_TOPICS: list[dict] = [
             "the page is fetched and told back as its main points, key terms "
             "and sections; with it off you are told so and given the setting. "
             "If the search service (SearXNG) is not running, the reply says so "
-            "and opens Settings, Web search, where it can be started. In the "
+            "and opens Settings, Web search, where it can be started. To start it "
+            "yourself with Docker, run: docker run -d --name searxng -p 8888:8080 "
+            "-v searxng:/etc/searxng searxng/searxng, then press Auto-detect there. "
+            "With SearXNG chosen and no address saved, the reply says web search is "
+            "not set up and links the same setting. In the "
             "reader, Analyse this page lists the page's key points, marks its "
             "key terms in the text and lists its sections, each a link to its "
             "heading; it runs on this device and sends nothing out."
@@ -2977,6 +2982,18 @@ def composed_answer(question: str, topics: list[dict]) -> str:
     return "\n\n".join(lines)
 
 
+def _aware(reply: dict, question: str, tab: str | None, actions: list[str] | None) -> dict:
+    """A composed Guide reply ends with where the person was and what they
+    could ask next (`composer_aware`, local only). Nothing is added when the
+    client sent no actions: a bare tab is already what the topics use."""
+    from tessellate.ai import composer_aware
+
+    if not actions or reply.get("greeting"):
+        return reply
+    line = composer_aware.closing(composer_aware.build(tab=tab, actions=actions), seed=question.lower())
+    return {**reply, "content": f"{reply['content']}\n\n{line}"} if line else reply
+
+
 def offline_answer(
     question: str,
     tab: str | None = None,
@@ -3052,6 +3069,7 @@ def answer_stream(
     history: list[dict] | None = None,
     tab: str | None = None,
     context: str | None = None,
+    actions: list[str] | None = None,
 ) -> Iterator[dict]:
     """The same turn, streamed.
 
@@ -3076,7 +3094,7 @@ def answer_stream(
         #: Not a canned apology: the app's own help text for what was asked,
         #: with the same chips and sources an answered turn carries. See
         #: `offline_answer`.
-        offline = offline_answer(question, tab, context)
+        offline = _aware(offline_answer(question, tab, context), question, tab, actions)
         yield {"type": "delta", "text": offline["content"]}
         #: `composed`: no model wrote it, so it arrives with the app's reveal
         #: (INBOX 1300 C28, `replyReveal` in reply-kit.js).
@@ -3116,6 +3134,7 @@ def answer(
     history: list[dict] | None = None,
     tab: str | None = None,
     context: str | None = None,
+    actions: list[str] | None = None,
 ) -> dict:
     """One turn of the help chat.
 
@@ -3129,7 +3148,7 @@ def answer(
     if not question:
         return {"content": "", "badges": [], "sources": []}
     if not ollama.is_running():
-        return {**offline_answer(question, tab, context), "composed": True}
+        return {**_aware(offline_answer(question, tab, context), question, tab, actions), "composed": True}
 
     messages, topics = _prompt_for(question, history, tab, context)
     #: Still `"quick"`, not `GUIDE_MODE`: this is the one-shot fallback, taken

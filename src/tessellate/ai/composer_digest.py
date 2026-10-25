@@ -151,6 +151,17 @@ _BASE = {
 #: times running (B6).
 VOICES: dict[str, dict[str, str | tuple[str, ...]]] = {
     "natural": {
+        #: Chosen by the question's own number (`_SEEDED`), so the same
+        #: closing line is not under every answer ("responses are exactly the
+        #: same", the owner, 2026-10-25).
+        "only_note": ("It's your only note on that so far.",
+                      "That is the only note you have on it so far.",
+                      "So far this is your only note on it.",
+                      "You have just the one note on that so far."),
+        "only_one": ("It's your only note on {topic} so far.",
+                     "That is the only note you have on {topic} so far.",
+                     "So far this is your only note on {topic}.",
+                     "You have just the one note on {topic} so far."),
         "overview": ("You have {count} about {topic}, {span}.",
                      "There are {count} about {topic}, {span}.",
                      "{Count} about {topic}, {span}.",
@@ -243,6 +254,11 @@ def _gap(days: int) -> str:
     return f"about {realise.count_word(months)} months" if months < 12 else "over a year"
 
 
+#: Phrases worded by the question as well as the turn: the same question says
+#: the same thing, a different one does not.
+_SEEDED = frozenset({"only_note", "only_one"})
+
+
 class _Phrases(dict):
     """`PHRASES[key]` in the voice of the answer being written; a capital
     `{Count}` or `{Topic}` in a phrase is that value with a capital letter."""
@@ -250,7 +266,8 @@ class _Phrases(dict):
     def __getitem__(self, key: str) -> str:
         said = VOICES.get(_VOICE.get(), {}).get(key) or _BASE[key]
         if isinstance(said, tuple):
-            said = said[_TURN.get() % len(said)]
+            at = _SEED.get() + _TURN.get() if key in _SEEDED else _TURN.get()
+            said = said[at % len(said)]
         return _Capitals(said)
 
 
@@ -2532,6 +2549,11 @@ def answer(
     if not asked:
         return None
     kind = kind_of(asked)
+    #: "Lisbon vs Porto", "how does A differ from B": two things named, so the
+    #: composer's side-by-side answers it; a digest of the best note would
+    #: say one side and drop the other.
+    if kind != "compare" and composer.compare_sides(asked):
+        return None
     views, wants_context = _scope(question, asked, notes, today, voice, turn, known)
     if not views:
         return None

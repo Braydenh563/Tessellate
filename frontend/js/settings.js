@@ -2076,6 +2076,12 @@ function hexToRgbParts(hex) {
 // mode's ink, so a pick that already reads is returned as it is.
 const ACCENT_MIN_RATIO = 4.5;
 
+//: Relative luminance of an [r, g, b] triple; bg-art.js (lazy) uses it too.
+function bgLuma(rgb) {
+  const lin = (v) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+  return 0.2126 * lin(rgb[0]) + 0.7152 * lin(rgb[1]) + 0.0722 * lin(rgb[2]);
+}
+
 function hexRatio(a, b) {
   const lum = (hex) => {
     const parts = hexToRgbParts(hex);
@@ -2661,6 +2667,10 @@ function renderProgressMotionHint() {
 function renderBgStyleHint() {
   const hint = $("bg-style-hint");
   if (!hint) return;
+  if (typeof bgArtStrains !== "function") {
+    ensureModule("bgArt").then((ok) => ok && renderBgStyleHint());
+    return;
+  }
   const style = bgArtStyle();
   let text = "";
   if ((style === "microbes" || style === "mycelium")) {
@@ -2881,7 +2891,8 @@ function resetAppearance() {
 // one in Preferences now. A no-op for every other style and when nothing
 // changed.
 function bgArtRefreshSeed() {
-  if (bgArtSeedUsed === null || !bgArtOn()) return;
+  //: bg-art.js not fetched: nothing has been drawn from a seed.
+  if (typeof bgArtSeedUsed === "undefined" || bgArtSeedUsed === null || !bgArtOn()) return;
   if (bgArtSeedUsed !== bgArtSeedText()) startBgArt();
 }
 
@@ -2890,7 +2901,8 @@ function bgArtOn() {
 }
 
 function stopBgArt() {
-  bgArtHalt();
+  //: Nothing to halt until bg-art.js has been fetched.
+  if (typeof bgArtHalt === "function") bgArtHalt();
 }
 
 // Which generative background to paint. Persisted like the other
@@ -2918,6 +2930,10 @@ const BG_ART_INFO = {
 function renderBgStyleGrid() {
   const grid = $("bg-art-style");
   if (!grid) return;
+  if (typeof BG_ART_COST === "undefined") {
+    ensureModule("bgArt").then((ok) => ok && renderBgStyleGrid());
+    return;
+  }
   if (!grid.childElementCount) {
     const order = [...BG_ART_STYLES].sort((a, b) => BG_ART_COST[a] - BG_ART_COST[b]);
     for (const name of order) {
@@ -3038,6 +3054,10 @@ function startBgArt() {
     perfModeOn() ||
     batteryModeOn() ||
     (bgMotion !== "moving" && reducedMotionWanted());
+  if (typeof bgArtRun !== "function") {
+    ensureModule("bgArt").then((ok) => ok && startBgArt());
+    return;
+  }
   const bgStyle = bgArtStyle();
   //: No p5: the art draws on its own canvas (bg-art.js), so it mounts at
   //: once, including the one boot-time call to this function that used to

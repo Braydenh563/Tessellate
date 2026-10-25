@@ -2579,6 +2579,7 @@ async function streamChatEvents({
   //: What is open (CHAT_PLAN B10), read by the server only for a question
   //: about "this" ("Summarise this"), never to change any other answer.
   Object.assign(body, askOpenContext());
+  body.screen = await screenContext(notesOnly ? "ask" : "");
   //: Row 23: the notebook as it stood at the end of that day (`as_of`).
   if (asOf) body.as_of = asOf;
   // A reply to the agent's own question ("yes", "ok") reads as small talk to

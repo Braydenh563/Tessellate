@@ -55,6 +55,8 @@ STYLE = re.compile(r'<link[^>]*rel="stylesheet"[^>]*href="(/[^"?]+)(?:\?[^"]*)?"
 #: note-edit-panels.js: 588,354, so the cap is back below 589,100.
 #: 2026-10-10, bootdiet: `featureCatalog` moved to app-features.js (lazy, with the
 #: palette bundle), after Brief 80 took the boot to 588,728; measured 582,849.
+#: 2026-10-25, composer2: bg-art.js (20 KB) became the lazy `bgArt` bundle,
+#: boot measured 568,431, so about 20 KB of room; the cap is unchanged.
 BOOT_JS_CAP = 588_400
 #: 2026-10-10 INBOX 767: the no-model notice's row and phone grid cost 58
 #: gzipped bytes, paid for by the blank lines of 08-consistency.css (61), so

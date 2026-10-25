@@ -3239,7 +3239,8 @@ Link to another note with [[its first few words]]."></textarea>
                     <span class="muted">Persona</span>
                     <span class="persona-picker">
                       <span id="persona-select-mark" class="persona-mark" aria-hidden="true"></span>
-                      <select id="persona-select" class="small-select" aria-label="Persona"></select>
+                      <select id="persona-select" class="small-select" aria-label="Persona"
+                        data-needs-model="A persona is a prompt for a model, so it changes nothing until one is connected"></select>
                     </span>
                   </label>
                   <!-- You could pick a persona but never see what it actually
@@ -15285,9 +15286,9 @@ Link to another note with [[its first few words]]."></textarea>
        event-listener closure: see this file's own header for the full
        account of what moved, what stayed in app.js and why, and the two
        hazards this ordering fixes. -->
-  <!-- The background art's styles (BG_ART_BUILDERS). Before settings.js,
-       whose own tail starts the art; this file only defines. -->
-  <script src="/js/bg-art.js?v=0.6.1"></script>
+  <!-- The background art's styles (bg-art.js) are a lazy bundle (`bgArt` in
+       lazy-entries.js): settings.js's `startBgArt` fetches them when the art
+       is on, and the Appearance grid when it draws its previews. -->
   <script src="/js/settings.js?v=0.6.1"></script>
   <!-- The guided tour (tour.js) is a lazy bundle (`tour` in LAZY_MODULES,
        app.js): `openTour` and `renderTourReplay` are stand-ins that fetch it

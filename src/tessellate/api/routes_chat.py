@@ -33,7 +33,7 @@ from sqlalchemy import or_, select
 from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
-from tessellate.ai import budget as run_budget, capability, composer, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, neighbours, personal, phrasing, verdicts, toolwords, vocative, why
+from tessellate.ai import budget as run_budget, capability, composer, composer_aware, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, neighbours, personal, phrasing, verdicts, toolwords, vocative, why
 from tessellate.ai import (
     acts,
     agent,
@@ -372,6 +372,16 @@ class PlanRun(BaseModel):
     steps: list[str] = Field(min_length=1, max_length=skills.MAX_STEPS)
 
 
+class ScreenBody(BaseModel):
+    """What the person is looking at and just did, sent small and local with an
+    Ask, Chat or Guide request (`ai/composer_aware.py`). Ids, not names: the
+    server names a note or document only when it is a plain one."""
+
+    tab: str | None = Field(default=None, max_length=40)
+    open_doc_id: int | None = None
+    actions: list[str] = Field(default_factory=list, max_length=10)
+
+
 class ChatRequest(BaseModel):
     question: str = Field(min_length=1)
     #: Answer from the notebook as it stood at the end of this day
@@ -526,6 +536,8 @@ class ChatRequest(BaseModel):
     #: th retry, so an answer composed from the notes is worded anew rather
     #: than repeated word for word. 0 for a first ask.
     attempt: int = Field(default=0, ge=0, le=10_000)
+    #: The screen and the last few actions (composer awareness, 2026-10-25).
+    screen: ScreenBody | None = None
 
 
 def _apply_scope(session: Session, body: ChatRequest) -> None:
@@ -1538,6 +1550,23 @@ def _recall_window(session: Session, question: str, found: _Found) -> None:
             found.when_phrase = found.when_phrase or asked.window_phrase
 
 
+def _with_each_side(session: Session, question: str, entries: list, locale: str | None) -> list:  # noqa: ANN001
+    """A comparison needs both things in hand: a search for "Lisbon vs Porto"
+    can fill its few slots with one side, so each side is searched on its own
+    and the best of each is added."""
+    sides = composer.compare_sides(question)
+    if not sides:
+        return entries
+    merged = list(entries)
+    seen = {e.id for e in merged}
+    for side in sides:
+        for entry in search_manager.retrieve_detailed(session, side, deps.get_embeddings(), limit=3, locale=locale).entries:
+            if entry.id not in seen:
+                seen.add(entry.id)
+                merged.append(entry)
+    return merged
+
+
 def _search_notes(session: Session, question: str, found: _Found, attached: list, as_of, locale: str | None) -> None:  # noqa: ANN001
     #: Searched with the person's own abbreviations spelt out ("what's due in
     #: CC" also finds the notes that say Cloud Computing, B7).
@@ -1547,6 +1576,7 @@ def _search_notes(session: Session, question: str, found: _Found, attached: list
         locale=locale,
     )
     entries = _with_neighbours(session, question, _widened(session, question, hit.entries, scope=hit.category), scope=hit.category)
+    entries = _with_each_side(session, question, entries, locale)
     found.entries = list_pool.pool(session, question, entries)
     found.mode = hit.mode
     found.connected_ids = hit.connected_ids
@@ -2553,7 +2583,7 @@ def _social_reply(req: _StreamRequest, prepared: dict) -> str:
     three replies (the owner: "can it have more varied responses??")."""
     recent, seed = _reply_seed(req)
     last = (req.history or [{}])[-1] if req.history else {}
-    return composer.social(
+    said = composer.social(
         req.question,
         prepared["intent"],
         str(last.get("answer") or ""),
@@ -2563,6 +2593,9 @@ def _social_reply(req: _StreamRequest, prepared: dict) -> str:
         seed=seed,
         invite=_newest_word(req.session),
     )
+    #: A hello also says what the app can see (composer awareness).
+    sees = composer_aware.opening(_awareness(req), seed) if req.body.screen else ""
+    return f"{said}\n\n{sees}" if sees else said
 
 
 def _newest_word(session: Session) -> str:
@@ -2862,7 +2895,14 @@ def _conversational_messages(req: _StreamRequest, prepared: dict, ollama_running
         mode=req.mode,
         images=req.images,
         #: Decision 75: the capability line reaches the model as a fact.
-        context=_capability_answer(req, ollama_running) if _asks_capability(req, prepared) else "",
+        context="\n".join(
+            part
+            for part in (
+                _capability_answer(req, ollama_running) if _asks_capability(req, prepared) else "",
+                composer_aware.model_context(_awareness(req)) if req.body.screen else "",
+            )
+            if part
+        ),
     )
 
 
@@ -3001,12 +3041,57 @@ def _composed_grounding_event(req: _StreamRequest, result: dict) -> dict:
     }
 
 
+def _open_title(session: Session, body: ChatRequest) -> str:
+    """The title of the plain note or document open, "" for anything else: a
+    private, binned or board note is never named (composer_aware's rule)."""
+    from tessellate.ai.tools._common import _visible
+
+    if body.screen and body.screen.open_doc_id:
+        doc = session.query(Document.title).filter(Document.id == body.screen.open_doc_id, Document.deleted_at.is_(None)).first()
+        if doc and str(doc[0] or "").strip():
+            return str(doc[0]).strip()
+    if body.open_note_id:
+        row = session.query(Entry.content).filter(Entry.id == body.open_note_id, *_visible()).first()
+        if row:
+            return composer._title(str(row[0] or ""))[0].strip()[:60]
+    return ""
+
+
+def _chat_topic(history: list[dict]) -> str:
+    """What the last question in this chat was about: its first search term of
+    four letters or more, or ""."""
+    from tessellate.search import query as query_understanding
+
+    for turn in reversed(history or []):
+        for term in query_understanding.search_terms(str(turn.get("question") or "")[:200]):
+            if len(term) >= 4 and term.isalpha():
+                return term
+    return ""
+
+
+def _awareness(req: _StreamRequest) -> composer_aware.Awareness:
+    screen = req.body.screen
+    return composer_aware.build(
+        tab=screen.tab if screen else None,
+        open_title=_open_title(req.session, req.body) if (screen or req.body.open_note_id) else "",
+        actions=screen.actions if screen else None,
+        topic=_chat_topic(req.history),
+    )
+
+
 def _with_next_step(text: str, size: str, req: _StreamRequest) -> str:
-    """The closing line (`composer_tone.closing`), left off by Quick and by an
-    answer that already ends in a question or an offer to press."""
+    """The closing line (`composer_aware.closing` when the screen is known,
+    else `composer_tone.closing`), left off by Quick and by an answer that
+    already ends in a question or an offer to press."""
     if size == "short" or text.rstrip().endswith("?"):
         return text
-    line = composer_tone.closing(recent=_newest_titles(req.session, 1), seed=_reply_seed(req)[1])
+    recent, seed = _reply_seed(req)
+    #: Seeded by the question too, so two questions in one chat do not end in
+    #: the same line, and a line the last replies already hold is passed over.
+    seed = f"{seed}:{req.question}"
+    line = (composer_aware.closing(_awareness(req), seed, recent) if req.body.screen else "") or composer_tone.closing(
+        recent=_newest_titles(req.session, 1), seed=seed, avoid=recent
+    )
     return f"{text}\n\n{line}" if line else text
 
 
@@ -3045,7 +3130,7 @@ def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
     if not result["grounding"] and not said_none and prepared.get("meaning_loading"):
         text += "\n\n" + composer_digest.PHRASES["meaning_loading"]
     size = composer_tone.length(_resolve_mode(req.body.mode))
-    if result["grounding"] and not follow and not said_none:
+    if not follow and ((result["grounding"] and not said_none) or (said_none and req.body.screen)):
         text = _with_next_step(composer_tone.fit(text, size), size, req)
     text = _with_older(text, older, result)
     text = _with_lapsed(text, current, result, req)

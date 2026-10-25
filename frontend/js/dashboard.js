@@ -2739,7 +2739,7 @@ async function startArt(holder) {
       //: minutes (bg-art.js stamps every input), and goes on at the next
       //: one. Traced idle on the Dashboard: 600 p5 frames and 204ms of
       //: script every ten seconds, for a drift no one was watching.
-      if (!reduceMotion && !glide && !fade && performance.now() - bgArtLastInput > BG_ART_IDLE_MS) {
+      if (!reduceMotion && !glide && !fade && typeof bgArtLastInput === "number" && performance.now() - bgArtLastInput > BG_ART_IDLE_MS) {
         p.noLoop();
         //: Stamped, so a listener left over from an earlier rest does nothing.
         const rested = (p.rested = performance.now());

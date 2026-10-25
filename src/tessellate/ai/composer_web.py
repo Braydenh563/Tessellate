@@ -78,15 +78,37 @@ def unreadable(url: str, reason: str) -> dict:
     }
 
 
+#: The one line that starts the search service. Settings, Web search shows the
+#: same command, and the Guide's web search topic repeats it.
+DOCKER_ONE_LINER = "docker run -d --name searxng -p 8888:8080 -v searxng:/etc/searxng searxng/searxng"
+START_STEPS = (
+    "To start one with Docker, run:\n\n```\n" + DOCKER_ONE_LINER + "\n```\n\n"
+    "then press Auto-detect in Settings, Web search."
+)
+
+
 def search_down(reason: str, searxng_url: str, provider: str) -> dict:
-    """A web search that could not run, in plain words with the switch."""
+    """A web search that could not run, in plain words with the switch.
+
+    With SearXNG chosen and no address saved it is not "down": it was never set
+    up, and the reply says so rather than naming a service that does not exist."""
+    offer = {"kind": "open", "surface": "settings:websearch", "label": SETTINGS_LABEL}
+    if provider == "searxng" and not searxng_url:
+        return {
+            "text": (
+                "Web search is not set up yet: SearXNG is chosen as the provider, but no search service address is saved. "
+                "Your notes did not hold an answer either.\n\n" + START_STEPS + "\n\n" + SETTINGS_LABEL
+            ),
+            "offer": offer,
+        }
     where = f" at {searxng_url}" if searxng_url else ""
     return {
         "text": (
             f"I tried to search the web, but the search service{where} is not answering ({reason.rstrip('.')}). "
-            "Your notes did not hold an answer either. Start it or pick another provider in Settings, Web search, then ask again.\n\n" + SETTINGS_LABEL
+            "Your notes did not hold an answer either. Start it or pick another provider in Settings, Web search, then ask again.\n\n"
+            + START_STEPS + "\n\n" + SETTINGS_LABEL
         ),
-        "offer": {"kind": "open", "surface": "settings:websearch", "label": SETTINGS_LABEL},
+        "offer": offer,
     }
 
 
