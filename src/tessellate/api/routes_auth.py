@@ -246,7 +246,8 @@ def _from_this_computer(request: Request) -> bool:
         return False
     if any(name in request.headers for name in _FORWARDING_HEADERS):
         return False
-    return (request.url.hostname or "") in _LOOPBACK_HOSTS
+    hostname = request.url.hostname or ""
+    return hostname in _LOOPBACK_HOSTS or (bool(hostname) and hostname == netbind.local_name())
 
 
 def _auto_session_allowed(request: Request, session: Session, config: ConfigManager) -> bool:
