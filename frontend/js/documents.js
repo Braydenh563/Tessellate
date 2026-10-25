@@ -13806,6 +13806,10 @@ function wireMarkdownToolbar(bar) {
     const button = event.target.closest("button[data-md]");
     if (!button || !bar.contains(button)) return;
     applyMarkdown(button.dataset.md, boxId);
+    //: A menu row does one thing and is finished: the Insert menu stayed open
+    //: over the table it had just made (dogfood round 1, item 15).
+    const menu = button.closest("details.doc-toolbar-menu");
+    if (menu) menu.open = false;
   });
   for (const select of bar.querySelectorAll("select[data-md-colour]")) {
     const kind = select.dataset.mdColour;

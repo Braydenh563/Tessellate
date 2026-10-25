@@ -151,3 +151,17 @@ test("at 700px wide the formatting toolbar is one row, not seven", async ({ page
   expect(await bar.getAttribute("data-toolbar-mode")).toBeNull();
   expect(errors).toEqual([]);
 });
+
+test("toolbar menus close after an item is chosen", async ({ page }) => {
+  const errors = watchErrors(page);
+  await openNewDoc(page, "Hello");
+  await page.keyboard.press("Control+Shift+X");
+  const summary = page.locator('#doc-toolbar summary[aria-label^="Insert"]:visible').first();
+  const menu = summary.locator("xpath=..");
+  await summary.click();
+  await expect(menu).toHaveAttribute("open", "");
+  await menu.locator('button[data-md="table"]').click();
+  expect(await docText(page)).toContain("| Column | Column | Column |");
+  await expect(menu, "the Insert menu stayed open after Table").not.toHaveAttribute("open", "");
+  expect(errors).toEqual([]);
+});

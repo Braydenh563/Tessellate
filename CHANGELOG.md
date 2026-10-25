@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents and notes: a formatting toolbar menu (Insert, Highlight) closes once an item is chosen instead of staying open over the result.
 - Documents and notes: in a window 760px wide or less the formatting toolbar defaults to one row with a More menu (59px) instead of wrapping to seven (143px at 700px); the Use one row / Expand toggle still wins.
 - Shortcuts: letters typed in the 1.5 s after typing in an editor no longer run the single-key shortcuts or the quick-nav chord, so a sentence typed after focus slips off the box cannot open Reminders and Settings.
 - Documents: in a table cell, Tab moves to the next cell even while a word is offered, instead of taking the guessed word.
