@@ -40,7 +40,7 @@ def test_note_row_end_cluster_is_in_the_flow_under_600():
 def test_answer_folds_are_flat_not_boxed_buttons():
     """Sources, Grounded in and Why this answer sit in a framed card: no resting box."""
     text = _css("07-whiteboard-misc.css")
-    assert ":not(.fold-summary) {" in text
+    assert ":not(.fold-summary, .chat-sources-summary) {" in text
 
 
 def test_chat_suggestions_wrap_under_600_instead_of_fading():
