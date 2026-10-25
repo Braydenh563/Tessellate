@@ -124,3 +124,12 @@ def test_bottom_dock_wraps_between_600_and_819_instead_of_scrolling():
     band = css[start : css.index("\n}\n", css.index(".wb-tool-group {", start)) + 3]
     assert "flex-wrap: wrap;" in band and "overflow: visible;" in band
     assert "min-width: 0;" in band, "the group must be allowed to shrink or it never wraps"
+
+
+def test_toast_box_clears_the_bottom_dock():
+    # Item 22: the toast box's bottom follows the dock's top, and is given back
+    # (empty string) when the dock is hidden, at the side, or the window a phone's.
+    body = WB[WB.index("const liftToasts = () => {") :]
+    body = body[: body.index("    };")]
+    assert "toastBox.style.bottom = low ?" in body and ': ""' in body
+    assert 'dataset.dock !== "side"' in body and "innerWidth >= 600" in body

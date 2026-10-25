@@ -14926,6 +14926,28 @@ async function initWhiteboard() {
     });
   }
 
+  //: **Toasts stand above the bottom dock** (dogfood 2026-10-25 item 22: a
+  //: "Created" toast sat over the dock's right end for six seconds at 1280
+  //: and over most of it at 700). The dock's height changes with the window
+  //: (46px on one row, 101 on two), so the toast box's `bottom` is set from
+  //: where the dock's top really is. Cleared whenever the dock is hidden
+  //: (another tab, the board closed), docked at the side, or the window is a
+  //: phone's (under 600, whose toasts have their own place), which leaves
+  //: the stylesheet's placement as it was.
+  if (toolsPanel && typeof ResizeObserver === "function") {
+    const liftToasts = () => {
+      const toastBox = document.getElementById("toast-box");
+      if (!toastBox) return;
+      const box = toolsPanel.getBoundingClientRect();
+      const low = box.width > 0 && toolsPanel.dataset.dock !== "side" && window.innerWidth >= 600
+        && box.top > window.innerHeight / 2;
+      toastBox.style.bottom = low ? `calc(${Math.round(window.innerHeight - box.top)}px + var(--space-2))` : "";
+    };
+    new ResizeObserver(liftToasts).observe(toolsPanel);
+    window.addEventListener("resize", liftToasts);
+    liftToasts();
+  }
+
   // **The ink swatch on the rail is the drawing colour** (WHITEBOARD_PLAN.md
   // decision 1). It was a row in the properties drawer as well until Phase 2
   // removed that drawer; one control for one setting, on the surface that
