@@ -38,7 +38,7 @@ _QUIZ = (
     re.compile(rf"^{_LEAD}(?:quiz|test|question|drill|grill|examine|check)\s+(?:me|us)\b\s*(?:{_FROM}\s+)?(?P<t>.*)$", re.I),
     re.compile(rf"^{_LEAD}(?:(?:do|start|have|give me|run|begin|make me|set me|ask me|get me|create|generate|write)\s+)?(?:a|an|another|some|one more|(?P<n>\d{{1,2}}))?\s*(?:quick\s+|short\s+|little\s+|practice\s+|mini\s+)?(?:quiz(?:zes)?|practice questions?|practice test|test questions?|exam questions?|revision questions?|questions)\s*(?:{_FROM}\s+(?P<t>.*))?$", re.I),
     re.compile(rf"^{_LEAD}(?:test my knowledge|check my knowledge|check what i know|see what i know)\s*(?:{_FROM}\s+)?(?P<t>.*)$", re.I),
-    re.compile(rf"^(?:help me |let's |lets |i need to |i have to |i want to |time to |i should )(?:revise|study|cram|practi[sc]e|review for)\s+(?P<t>.+)$", re.I),
+    re.compile(r"^(?:help me |let's |lets |i need to |i have to |i want to |time to |i should )(?:revise|study|cram|practi[sc]e|review for)\s+(?P<t>.+)$", re.I),
     re.compile(rf"^{_LEAD}(?:can i|could i|may i) (?:get|have|do) (?:a|an) (?:quick |short )?quiz\s*(?:{_FROM}\s+(?P<t>.*))?$", re.I),
 )
 _FLASH = (
@@ -57,6 +57,7 @@ _SUMMARY = re.compile(
     rf"what (?:did|have|do|was|were) (?:we|i|you) (?:cover|covered|learn|learnt|learned|study|studied|go over|discuss)(?:\s+(?:in|on|during|at|about))?|what(?:['’]?s| is| was) (?:covered|inside)(?:\s+(?:in|on))?|"
     rf"what(?:['’]?s| is) the (?:gist|summary|point|main idea)\s+{_FROM})\s*(?P<t>.*)$", re.I)
 
+_WHOLE_NOTEBOOK = re.compile(r"^(?:all |every |each )?(?:of )?(?:my |the )?(?:notes|notebook|everything|stuff)$", re.I)
 _ASKED_ON = re.compile(r"\b(?:in|using)\s+(?:\d+|a few|some)\s+(?:bullet points?|bullets|sentences|lines|points)\.?$", re.I)
 _FILLER = re.compile(r"\b(?:please|pls|thanks|thank you|for me|now)\b|[?.!]+$", re.I)
 
@@ -231,6 +232,9 @@ def _target(ctx: Ctx, topic: str, verb: str, what: str, *, strict: bool) -> tupl
     if notes:
         return notes, None
     cleaned = _FILLER.sub(" ", topic or "").strip(" ,")
+    if strict and _WHOLE_NOTEBOOK.match(cleaned):
+        #: "an overview of my notes" is the notebook's, which the digest reads.
+        return None, None
     if not cleaned or _THIS.match(cleaned):
         return None, _which_note(ctx, what, verb)
     if strict:

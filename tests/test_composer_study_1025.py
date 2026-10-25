@@ -122,15 +122,9 @@ def test_quiz_walks_through_the_dialogue(ask):
     history: list[dict] = []
     first = ask("quiz me on lecture 5 with 3 questions", history)
     assert "question 1 of 3" in first
-    scored = 0
-    for turn in range(3):
-        question = first.split("\n\n")[-2] if turn == 0 else last.split("\n\n")[-1]
-        history.append({"question": "x", "answer": first if turn == 0 else last})
-        # the right answer is whatever the note says: ask for a skip to read it, then answer it back
-        skipped = ask("skip", history)
-        assert re.search(r"Skipped|answer", skipped) or "No problem" in skipped, skipped
-        history.append({"question": "skip", "answer": skipped})
-        break
+    history.append({"question": "quiz me on lecture 5 with 3 questions", "answer": first})
+    skipped = ask("skip", history)
+    assert re.search(r"Skipped|answer", skipped) or "No problem" in skipped, skipped
     assert "question 2 of 3" in skipped
     assert "score 1 of 1" not in skipped  # a skip scores nothing
     assert "score" not in skipped.split("**Quiz on")[1] or "score 0 of 1" in skipped
@@ -287,3 +281,13 @@ def test_ask_opens_notes_by_name(ask):
     said = ask("open my lecture notes")
     assert "#/notes/" in said and "say it in Chat" not in said
     assert "COMP2001 Lecture 3" in ask("open comp2001 lecture 3")
+
+
+def test_start_it_after_the_search_service_is_down(ask):
+    down = "I tried to search the web, but the search service is not answering. Start it or pick another provider in Settings, Web search."
+    said = ask("start it", [{"question": "who won the 1998 world cup", "answer": down}])
+    assert "docker run" in said and "Auto-detect" in said and "not start it for you" in said
+
+
+def test_start_it_without_a_search_context_is_left_alone(ask):
+    assert "docker run" not in ask("start it", [{"question": "hi", "answer": "Hello there."}])

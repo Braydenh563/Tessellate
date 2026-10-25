@@ -24,11 +24,11 @@ from __future__ import annotations
 import functools
 import json
 import re
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, time
 from pathlib import Path
 
 from tessellate.ai import arithmetic, recognise, study, utilities
-from tessellate.ai.composer_study import Ctx, Reply, pick, topic_notes
+from tessellate.ai.composer_study import Ctx, Reply, topic_notes
 
 _NUM = r"(-?\d+(?:[.,]\d+)?)"
 _LEAD = r"^(?:(?:so|ok|okay|hey|please|pls|can you|could you|quick question|tell me)[, ]+)*"

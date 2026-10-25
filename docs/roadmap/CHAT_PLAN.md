@@ -836,7 +836,6 @@ quality held or better.
 29. **The blind test is both**: a fixed sample notebook on every build, and
     the owner and a few friends rating on their own notebooks now and then.
 
-
 ## Placed from the owner's list, 2026-10-10
 
 Entries are the owner's words, then the recommendation. Bugs come first, then design requests, then ideas.
@@ -1867,6 +1866,7 @@ more"; volunteered insight "should be togglable and also dynamic".
     measured gate.
 75. **Model up: it leads, the composer's facts are only labelled context (a test per surface); model down: the composer covers every act** (the owner, 2026-10-11, HANDOVER).
 76. **The engine is Atlas's assistant; Atlas is the model (the owner, 2026-10-17, INBOX 904 B10; amends decision 36).** With no model the composer says it is Atlas's assistant ("I'm Atlas's assistant"), never "I'm Atlas", and says that to talk to Atlas itself a model must be connected (Settings, Models). The capability rundown is composed, not stored (`capability.overview`): an opening that names who is speaking, three groups by default, one line for "briefly", six for "everything", what a model adds, one thing to try; each part has several phrasings and none repeats the last reply. A test message ("test", "testing 123", "is this thing on") is acknowledged as one (`intent.is_test`, social kind `test`); keys pressed at random ("asdkjhfgs", "jkjkjkjk") are said to be that, never taken for a nickname (`intent.is_mash`).
+77. **No model, the Composer studies, plans and counts too (the owner, 2026-10-25, INBOX 1351).** `ai/study.py`, `composer_study.py`, `composer_plan.py`, `composer_calc.py` and `composer_extra.py` answer quiz, flashcards, key terms, section summaries, what is due, plan my week, percentages, date arithmetic, word counts and a small glossary, every clause a note's own words or a measured value. A quiz keeps its state in the dialogue, never the server. "Summarise this" and a named category stay with the digest. "Start it" after a web-search-down reply gives the Docker line and opens the setting; the app never runs Docker. The Ask "You asked:" line stays removed (it repeats the box; `tests/test_composer_form_1301.py`).
 
 | # | Idea | Gate |
 | --- | --- | --- |

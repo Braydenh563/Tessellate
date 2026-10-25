@@ -340,7 +340,7 @@ def _until(ctx: Ctx, subject: str) -> Reply | None:
     if ev is None:
         return None
     days = (ev.day - today).days
-    source = f" From your reminder." if ev.kind == "reminder" else f" From {('[' + ev.title + '](#/notes/' + str(ev.note_id) + ')') if ev.title else 'your note'}."
+    source = " From your reminder." if ev.kind == "reminder" else f" From {('[' + ev.title + '](#/notes/' + str(ev.note_id) + ')') if ev.title else 'your note'}."
     lead = pick(ctx.seed, "until", (
         f"{subject.strip().capitalize()} is {_days_away(days)} away, on {_long(ev.day)}." if days > 1 else f"{subject.strip().capitalize()} is {_days_away(days)}, {_long(ev.day)}.",
         f"{_long(ev.day).capitalize()} is when it falls, which is {_days_away(days)} from today." if days > 1 else f"That falls {_days_away(days)}: {_long(ev.day)}.",

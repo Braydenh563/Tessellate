@@ -7,12 +7,13 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import composer_extra
+from tessellate.ai import composer_digest, composer_extra
 from tessellate.ai.composer_study import Ctx
 from tessellate.ai.tools._common import _visible
-from tessellate.core.database import Entry, Reminder
+from tessellate.core.database import Category, Entry, Reminder
 
 NOTE_LIMIT = 400
 log = logging.getLogger("tessellate.chat")
@@ -32,6 +33,12 @@ def events(session: Session, question: str, history: list[dict], *, now: datetim
            follow_kind: str = "", said: str = "", asked: str = "", ask: bool = False) -> list[dict] | None:
     """The answer events for a question this module reads, else None. A
     failure is logged and leaves the question to the older readers."""
+    #: "Summarise this" and "summarise Travel" read the open note or a whole
+    #: category, which the digest does better than a title match here.
+    if composer_digest.about_this(question) or composer_digest.named_category(
+        question, list(session.execute(select(Category.name)).scalars())
+    ):
+        return None
     ctx = Ctx(question=question, notes=_notes(session), now=now, history=history, seed=seed, open_ids=open_ids,
               follow_kind=follow_kind, said=said, asked=asked or question, ask=ask, reminders=_reminders(session))
     try:

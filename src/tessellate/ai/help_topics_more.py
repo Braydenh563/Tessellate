@@ -2172,6 +2172,7 @@ TOPIC_META: dict[str, dict] = {
     "document-history": {"title": "A document's history", "path": "A document's ... menu, History"},
     "writing-checks": {"title": "Spelling, grammar and wording", "path": "The document editor"},
     "notebook-questions": {"title": "Questions about your notebook", "path": "Chat tab, or Ask on the Notes tab"},
+    "studyhelp": {"title": "Study help with no model", "path": "Chat tab, or Ask on the Notes tab"},
     "contradictions": {"title": "Notes that disagree", "path": "Dashboard tab"},
     "write-with-atlas": {"title": "Writing room", "path": "Notes tab, Writing room"},
     "search": {"title": "Searching everything", "path": "Ctrl+P, or the dashboard's search box"},
@@ -2272,7 +2273,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "tags-categories", "filing", "suggested-tags", "tag-manager", "manage-categories", "tidy",
     )),
     ("Asking Atlas", (
-        "ask-chat", "answers-from-notes", "chat-controls", "slash-commands", "chat-acts", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions",
+        "ask-chat", "answers-from-notes", "chat-controls", "slash-commands", "chat-acts", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (

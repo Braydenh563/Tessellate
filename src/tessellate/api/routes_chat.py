@@ -3090,8 +3090,11 @@ def _with_next_step(text: str, size: str, req: _StreamRequest) -> str:
     #: Seeded by the question too, so two questions in one chat do not end in
     #: the same line, and a line the last replies already hold is passed over.
     seed = f"{seed}:{req.question}"
+    #: An answer scoped to the open note or category does not close on the
+    #: notebook's newest note, which may be about something else entirely.
+    newest = [] if req.body.note_ids else _newest_titles(req.session, 1)
     line = (composer_aware.closing(_awareness(req), seed, recent) if req.body.screen else "") or composer_tone.closing(
-        recent=_newest_titles(req.session, 1), seed=seed, avoid=recent
+        recent=newest, seed=seed, avoid=recent
     )
     return f"{text}\n\n{line}" if line else text
 

@@ -2241,52 +2241,62 @@ def _missing(out: _Answer, terms: list[str], views: list[NoteView]) -> None:
     out.t("stop")
 
 
-def _compare(out: _Answer, sides: tuple[str, str], views: list[NoteView], meaning_for) -> bool:  # noqa: ANN001
-    """A line that counts each side, each side its own short list, then what
-    speaks of both."""
-    a_terms, b_terms = subject_terms(sides[0]), subject_terms(sides[1])
-    a_stems, b_stems = {_stem(t) for t in a_terms}, {_stem(t) for t in b_terms}
-    #: A note named for a side belongs to it even when its sentences never
-    #: repeat the name ("Trip to Lisbon": "Flights booked for 3 December"),
-    #: and a sentence in the other side's note that mentions this side is
-    #: still the other side's.
-    a_own = [v for v in views if (a_stems - b_stems) & {_stem(w) for w in v.title_words}]
-    b_own = [v for v in views if (b_stems - a_stems) & {_stem(w) for w in v.title_words}]
-    if set(map(id, a_own)) & set(map(id, b_own)):
-        a_own = b_own = []
-    a_pick = select("compare", a_terms, a_own or views, limit=6, meaning=meaning_for(a_terms))
-    b_pick = select("compare", b_terms, b_own or views, limit=6, meaning=meaning_for(b_terms))
+def _own_notes(own_stems: set[str], other_stems: set[str], views: list[NoteView]) -> list[NoteView]:
+    return [v for v in views if (own_stems - other_stems) & {_stem(w) for w in v.title_words}]
+
+
+def _side_picks(sides: tuple[str, str], views: list[NoteView], meaning_for):  # noqa: ANN001, ANN202
+    """Each side's sentences as (terms, stems, own notes, picks); a note named
+    for a side belongs to it even when its sentences never repeat the name
+    ("Trip to Lisbon": "Flights booked for 3 December"), and a sentence in the
+    other side's note that mentions this side is still the other side's."""
+    terms = [subject_terms(label) for label in sides]
+    stems = [{_stem(t) for t in ts} for ts in terms]
+    own = [_own_notes(stems[0], stems[1], views), _own_notes(stems[1], stems[0], views)]
+    if set(map(id, own[0])) & set(map(id, own[1])):
+        own = [[], []]
+    picks = [select("compare", terms[i], own[i] or views, limit=6, meaning=meaning_for(terms[i])) for i in (0, 1)]
     #: A note the person named is read from its top, not by which of its
     #: sentences repeat the name.
-    a_pick = [s for v in a_own for s in v.sentences[:3]] or a_pick
-    b_pick = [s for v in b_own for s in v.sentences[:3]] or b_pick
-    both = [s for s in a_pick if b_stems & set(s.words)][:2]
-    a_only = [s for s in a_pick if a_own or not (b_stems & set(s.words))][:3]
-    b_only = [s for s in b_pick if b_own or not (a_stems & set(s.words))][:3]
-    if not (a_only or b_only):
-        return False
-    counts = [len({s.note_id for s in picks}) for picks in (a_only, b_only)]
+    picks = [[s for v in own[i] for s in v.sentences[:3]] or picks[i] for i in (0, 1)]
+    return terms, stems, own, picks
+
+
+def _compare_lead(out: _Answer, sides: tuple[str, str], counts: list[int]) -> None:
     out.t(_unlike_before(out, ["of_found", "across_found"])[0])
     for i, (label, n) in enumerate(zip(sides, counts)):
         if i:
             out.t("and")
         out.m(out.count(n)).t("mentions_one" if n == 1 else "mention_many").asked(label)
+
+
+def _compare(out: _Answer, sides: tuple[str, str], views: list[NoteView], meaning_for) -> bool:  # noqa: ANN001
+    """A line that counts each side, each side its own short list, then what
+    speaks of both."""
+    terms, stems, own, picks = _side_picks(sides, views, meaning_for)
+    a_only = [s for s in picks[0] if own[0] or not (stems[1] & set(s.words))][:3]
+    b_only = [s for s in picks[1] if own[1] or not (stems[0] & set(s.words))][:3]
+    #: What speaks of both is not a line already said under a side.
+    both = [s for s in picks[0] if stems[1] & set(s.words) and s not in a_only and s not in b_only][:2]
+    if not (a_only or b_only):
+        return False
+    _compare_lead(out, sides, [len({s.note_id for s in side}) for side in (a_only, b_only)])
     #: The lead names only what follows (probe P15): no "Here is what
     #: each says." before the two headings that say it.
     out.t("stop")
-    for label, picks, side_terms in ((sides[0], a_only, a_terms), (sides[1], b_only, b_terms)):
+    for label, side, side_terms in ((sides[0], a_only, terms[0]), (sides[1], b_only, terms[1])):
         out.t("para", "bold").asked(label).t("bold")
         #: The lead said each side's count ("one mentions Lisbon and two
         #: mention Porto"); the heading does not say it again (decision 52).
-        if not picks:
+        if not side:
             out.t("line").t("side_none")
             continue
-        for s in picks:
+        for s in side:
             out.t("line").item(s, side_terms).cite(out.views[s.note_id], again=True)
     if both:
         out.t("para", "bold", "both", "bold")
         for s in both:
-            out.t("line").item(s, a_terms + b_terms).cite(out.views[s.note_id], again=True)
+            out.t("line").item(s, terms[0] + terms[1]).cite(out.views[s.note_id], again=True)
     return True
 
 
@@ -3630,14 +3640,8 @@ def _planned_text(question: str | None) -> str:
     return (question or "")[:PLAN_CHARS]
 
 
-def plan(question: str, today: date | None = None, *, recent: bool = False, embed=None) -> Plan:  # noqa: ANN001
-    """The query plan for `question` on `today` (the person's own day), read
-    from its first `PLAN_CHARS` characters."""
-    question = _planned_text(question)
-    today = today or date.today()
-    utility = utilities.kind_of(question)
-    shape = "recent" if recent else classify(question, embed)
-    terms = subject_terms(question)
+def _plan_constraints(question: str, terms: list[str]) -> tuple[dict, list[str], str | None]:
+    """The tags and source kind a question names, and its terms without them."""
     constraints: dict = {}
     tags = [a or b for a, b in _TAGGED.findall(question or "")]
     if tags:
@@ -3651,6 +3655,32 @@ def plan(question: str, today: date | None = None, *, recent: bool = False, embe
             break
     if source_kind:
         constraints["source_kind"] = source_kind
+    return constraints, terms, source_kind
+
+
+def _plan_kind(question: str, utility: str | None, shape: str, spanned: bool, has_terms: bool) -> str:
+    if utility and utility != "until_note":
+        return "utility"
+    if spanned and not has_terms and (_RECALL.search(question or "") or shape in ("what", "recent", "list")):
+        return "recall"
+    if _INSIGHT.search(question or ""):
+        return "insight"
+    if _RECOMMEND.search(question or ""):
+        return "recommendation"
+    if shape == "explain":
+        return "why" if _WHY.match(rephrase(question)) else "how"
+    return _SHAPE_KIND.get(shape, "fact")
+
+
+def plan(question: str, today: date | None = None, *, recent: bool = False, embed=None) -> Plan:  # noqa: ANN001
+    """The query plan for `question` on `today` (the person's own day), read
+    from its first `PLAN_CHARS` characters."""
+    question = _planned_text(question)
+    today = today or date.today()
+    utility = utilities.kind_of(question)
+    shape = "recent" if recent else classify(question, embed)
+    terms = subject_terms(question)
+    constraints, terms, source_kind = _plan_constraints(question, terms)
     phrase = _time_phrase(question)
     span = when_words.span(phrase, today, "past") if phrase else None
     if span and span[0] > today:
@@ -3662,18 +3692,7 @@ def plan(question: str, today: date | None = None, *, recent: bool = False, embe
         terms = [t for t in terms if t.lower() not in said]
         if _RECALL.search(question or ""):
             terms = [t for t in terms if t.lower() not in _RECALL_VERBS]
-    if utility and utility != "until_note":
-        kind = "utility"
-    elif span and not terms and (_RECALL.search(question or "") or shape in ("what", "recent", "list")):
-        kind = "recall"
-    elif _INSIGHT.search(question or ""):
-        kind = "insight"
-    elif _RECOMMEND.search(question or ""):
-        kind = "recommendation"
-    elif shape == "explain":
-        kind = "why" if _WHY.match(rephrase(question)) else "how"
-    else:
-        kind = _SHAPE_KIND.get(shape, "fact")
+    kind = _plan_kind(question, utility, shape, bool(span), bool(terms))
     return Plan(
         kind=kind,
         shape=shape,

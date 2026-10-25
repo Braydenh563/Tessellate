@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import re
 
-from tessellate.ai import composer_calc, composer_plan, composer_study
+from tessellate.ai import composer_calc, composer_plan, composer_study, composer_web
 from tessellate.ai.composer_study import Ctx, Reply
 
 _OPEN_IT = re.compile(
@@ -42,8 +42,27 @@ def open_it(ctx: Ctx) -> Reply | None:
     return Reply(f"{lead} [**{title}**](#/notes/{ident})")
 
 
+_START_IT = re.compile(
+    r"^(?:ok(?:ay)?[, ]+|please[, ]+|can you |could you |how do i |how can i |how to )*"
+    r"(?:start|turn on|switch on|enable|run|launch|set up|fix)\s+(?:it|that|this|the search(?: service)?|searxng|web search)(?:\s+(?:up|on))?\s*(?:please|for me|now)?\W*$", re.I)
+_SEARCH_DOWN = re.compile(r"searxng|web search|search service", re.I)
+
+
+def start_it(ctx: Ctx) -> Reply | None:
+    """"Start it" after a reply that said the search service is off: the one
+    Docker line to run and the setting that finds it. Never runs Docker."""
+    if not _START_IT.match(" ".join((ctx.asked or ctx.question or "").split())):
+        return None
+    if not _SEARCH_DOWN.search(ctx.last_answer or "") and not re.search(r"searxng|web search", ctx.question, re.I):
+        return None
+    return Reply(
+        "I can not start it for you, it runs outside this app. " + composer_web.START_STEPS + "\n\n" + composer_web.SETTINGS_LABEL,
+        offer={"kind": "open", "surface": "settings:websearch", "label": composer_web.SETTINGS_LABEL},
+    )
+
+
 def answer(ctx: Ctx) -> Reply | None:
-    opened = open_it(ctx) or composer_study.open_named(ctx)
+    opened = open_it(ctx) or start_it(ctx) or composer_study.open_named(ctx)
     if opened:
         return opened
     if composer_study.match(_plain(ctx)) is not None:

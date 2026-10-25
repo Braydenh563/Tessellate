@@ -230,6 +230,39 @@ def by_order(message: str, session: Session) -> StatAnswer | None:
     return None if placed is None else StatAnswer("note-order", note_order.say(session, placed)[0])
 
 
+#: Questions about the collection, first match wins, each (does it ask, what
+#: answers). Three tables because a named count and a windowed count sit
+#: between them, in this order.
+_FIRST_RULES = (
+    (lambda t: _asks(t, _TAG_WORDS, _MOST), lambda s: _top_tags(s)),
+    (lambda t: _asks(t, _CATEGORY_WORDS, _MOST), lambda s: _top_categories(s)),
+    (lambda t: _asks(t, r"untagged|no tags|without (?:a )?tags?|missing tags?"), lambda s: _untagged(s)),
+    (
+        lambda t: _asks(t, _COUNT, r"\bnotes?\b")
+        and re.search(r"\b(?:per|by|in each|for each|across)\s+(?:categor(?:y|ies)|folders?|spaces?)", t),
+        lambda s: _notes_per_category(s),
+    ),
+)
+_COUNT_RULES = (
+    (lambda t: _asks(t, _COUNT, _TAG_WORDS), lambda s: _tag_count(s)),
+    (lambda t: _asks(t, _COUNT, _CATEGORY_WORDS), lambda s: _category_count(s)),
+)
+#: Added with the spelling pass, because "improve" was the other half of the
+#: same request: each is a question about the collection, not about any note
+#: in it, which retrieval answers badly.
+_LATER_RULES = (
+    (lambda t: _asks(t, _COUNT, r"\bdocuments?\b"), lambda s: _document_count(s)),
+    (lambda t: _asks(t, r"\bmost linked|linked (?:to )?the most|best connected|most connect"), lambda s: _most_linked(s)),
+    (lambda t: _asks(t, r"orphan|unlinked|not linked|no links"), lambda s: _orphans(s)),
+    (lambda t: _asks(t, r"when do i|busiest|most active|what time|which day"), lambda s: _busiest(s)),
+    (lambda t: _asks(t, r"\b(?:write|wrote|written|writing)\b", r"\bmost\b", r"\babout\b"), lambda s: _top_subjects(s)),
+    (lambda t: _asks(t, r"\bwords?\b|word count|wordcount", r"\bhow many|\btotal|\bwritten|\bcount"), lambda s: _word_count(s)),
+    (lambda t: _asks(t, r"longest|biggest|largest", r"\bnotes?\b"), lambda s: _longest_notes(s)),
+    (lambda t: _asks(t, r"stale|forgotten|untouched|abandoned|haven.?t (?:looked|touched|opened|read)"), lambda s: _stale_notes(s)),
+    (lambda t: _asks(t, _TAG_WORDS, r"together|alongside|\bpairs?\b|combination|co-?occur"), lambda s: _tag_pairs(s)),
+)
+
+
 def answer_chat(message: str, session: Session) -> StatAnswer | None:
     """What the Chat counts: an ordinal question first, then the shape of the notebook."""
     return by_order(message, session) or answer(message, session)
@@ -243,22 +276,16 @@ def answer(message: str, session: Session) -> StatAnswer | None:
     if not text or not looks_like_a_question_about_the_notebook(text):
         return None
 
-    if _asks(text, _TAG_WORDS, _MOST):
-        return _top_tags(session)
-    if _asks(text, _CATEGORY_WORDS, _MOST):
-        return _top_categories(session)
-    if _asks(text, r"untagged|no tags|without (?:a )?tags?|missing tags?"):
-        return _untagged(session)
-    if _asks(text, _COUNT, r"\bnotes?\b") and re.search(r"\b(?:per|by|in each|for each|across)\s+(?:categor(?:y|ies)|folders?|spaces?)", text):
-        return _notes_per_category(session)
+    for ask, reader in _FIRST_RULES:
+        if ask(text):
+            return reader(session)
     if re.search(_COUNT, text) and re.search(r"\bnotes?\b", text):
         named = _named_count(text, session)
         if named is not None:
             return named
-    if _asks(text, _COUNT, _TAG_WORDS):
-        return _tag_count(session)
-    if _asks(text, _COUNT, _CATEGORY_WORDS):
-        return _category_count(session)
+    for ask, reader in _COUNT_RULES:
+        if ask(text):
+            return reader(session)
     #: "How many notes are about Harbor" counts the notes on a subject, which
     #: retrieval finds and the composer counts ("At least four of your notes
     #: mention Harbor"); answering it "You have 77 notes" dropped the subject
@@ -272,28 +299,9 @@ def answer(message: str, session: Session) -> StatAnswer | None:
         return _recent_count(session, window)
     if _asks(text, _COUNT, r"\bnotes?\b") and not _SUBJECT_AFTER.search(text):
         return _note_count(session)
-    if _asks(text, _COUNT, r"\bdocuments?\b"):
-        return _document_count(session)
-    if _asks(text, r"\bmost linked|linked (?:to )?the most|best connected|most connect"):
-        return _most_linked(session)
-    if _asks(text, r"orphan|unlinked|not linked|no links"):
-        return _orphans(session)
-    if _asks(text, r"when do i|busiest|most active|what time|which day"):
-        return _busiest(session)
-    #: --- added with the spelling pass, because "improve" was the other half
-    #: of the same request. Each one is a question people ask about a notebook
-    #: that retrieval answers badly for the same reason the rest do: it is a
-    #: question about the collection, not about any note in it.
-    if _asks(text, r"\b(?:write|wrote|written|writing)\b", r"\bmost\b", r"\babout\b"):
-        return _top_subjects(session)
-    if _asks(text, r"\bwords?\b|word count|wordcount", r"\bhow many|\btotal|\bwritten|\bcount"):
-        return _word_count(session)
-    if _asks(text, r"longest|biggest|largest", r"\bnotes?\b"):
-        return _longest_notes(session)
-    if _asks(text, r"stale|forgotten|untouched|abandoned|haven.?t (?:looked|touched|opened|read)"):
-        return _stale_notes(session)
-    if _asks(text, _TAG_WORDS, r"together|alongside|\bpairs?\b|combination|co-?occur"):
-        return _tag_pairs(session)
+    for ask, reader in _LATER_RULES:
+        if ask(text):
+            return reader(session)
     return _whole_notebook(text, session)
 
 

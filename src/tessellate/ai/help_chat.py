@@ -532,6 +532,7 @@ HELP_TOPICS: list[dict] = [
             "(“what day is 3 weeks from friday”) and word counts, and defines common study terms your notes "
             "do not cover. Every answer about a note is that note's own words."
         ),
+        "badge": {"label": "Chat", "tab": "chat"},
     },
     {
         "id": "websearch",
