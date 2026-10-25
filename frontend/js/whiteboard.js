@@ -2431,11 +2431,10 @@ function wbRefitIfFitted() {
  * Never zooms *in* past 1: `scaleExtent` allows 4x, but magnifying two cards
  * until they fill a 1440px window is not what anyone means by "fit".
  */
-function wbZoomToFit({ animate = true, padding = 64 } = {}) {
+function wbZoomToFit({ animate = true, padding = 64, bounds = wbContentBounds(), maxScale = 1, refit = true } = {}) {
   const container = document.getElementById("whiteboard-container");
   if (!container) return;
   const sel = d3.select(container);
-  const bounds = wbContentBounds();
   if (!bounds) {
     // An empty board genuinely has nothing to fit, and the origin at 100% is
     // where the first card will land, so that is the honest destination.
@@ -2446,17 +2445,19 @@ function wbZoomToFit({ animate = true, padding = 64 } = {}) {
   const k = Math.max(
     0.1,
     Math.min(
-      1,
+      maxScale,
       (free.right - free.left - padding * 2) / Math.max(bounds.width, 1),
       (free.bottom - free.top - padding * 2) / Math.max(bounds.height, 1),
     ),
   );
-  const cx = (bounds.minX + bounds.maxX) / 2;
-  const cy = (bounds.minY + bounds.maxY) / 2;
+  const cx = bounds.minX + bounds.width / 2;
+  const cy = bounds.minY + bounds.height / 2;
   const target = d3.zoomIdentity
     .translate((free.left + free.right) / 2 - k * cx, (free.top + free.bottom) / 2 - k * cy)
     .scale(k);
-  wbFit.on = true;
+  //: Only Fit everything keeps fitting while the board settles; a zoom to
+  //: the selection is a place, and the next layout must not pull it back out.
+  wbFit.on = refit;
   wbFit.target = target;
   wbFit.until = Date.now() + (animate ? 600 : 100);
   if (!animate) {
@@ -2497,6 +2498,18 @@ function wbZoomToFit({ animate = true, padding = 64 } = {}) {
     .on("end.cullhold", release)
     .on("interrupt.cullhold", release)
     .call(wbZoom.transform, target);
+}
+
+//: **Zoom to the selection** (Shift+2, draw.io's and Figma's key): the
+//: selected items fill the free canvas, magnified up to 2x so one small
+//: shape is readable, never past it.
+function wbZoomToSelection() {
+  const bounds = wbSelectionBounds();
+  if (!bounds) {
+    toast("Select something to zoom to.");
+    return;
+  }
+  wbZoomToFit({ bounds, padding: 32, maxScale: 2, refit: false });
 }
 
 //: A fit tighter than this is a map you cannot read: the nodes are there, the
@@ -15461,6 +15474,11 @@ async function initWhiteboard() {
     if (e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey && e.code === "Digit1") {
       e.preventDefault();
       wbZoomToFit();
+      return;
+    }
+    if (e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey && e.code === "Digit2") {
+      e.preventDefault();
+      wbZoomToSelection();
       return;
     }
     //: Alt+1 to 9 on a map: show that many levels (`wbMapFoldToLevel`).

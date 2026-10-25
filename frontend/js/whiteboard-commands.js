@@ -234,6 +234,7 @@ const WB_COMMANDS = [
   { id: "zoom-out", group: "View", icon: "ph:magnifying-glass-minus", label: "Zoom out", keys: "Ctrl+-", surface: "both", run: wbClickId("wb-zoom-out") },
   { id: "zoom-100", group: "View", icon: "ph:magnifying-glass", label: "Zoom to 100%", keys: "Ctrl+0", surface: "both", run: wbClickId("wb-zoom-actual") },
   { id: "zoom-fit", group: "View", icon: "ph:frame-corners", label: "Fit everything", keys: "Shift+1", surface: "both", run: () => wbZoomToFit() },
+  { id: "zoom-selection", group: "View", icon: "ph:selection", label: "Zoom to the selection", keys: "Shift+2", surface: "both", needs: "selection", run: () => wbZoomToSelection() },
   { id: "overview", group: "View", icon: "ph:map-trifold", label: "Board overview", keys: "Shift+N", surface: "both", run: () => wbToggleNavigator() },
   //: The View menu's background, grid and colour rows (row 9), each pressing
   //: or setting the menu's own control, so the two cannot disagree.

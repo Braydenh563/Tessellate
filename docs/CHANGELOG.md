@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: Shift+2, View and Ctrl+K zoom to the selection, magnified up to 2x and centred in the free canvas; with nothing selected it says so.
 - Whiteboard: a line drawn with the Line tool (L) from or to a shape, card or topic binds to it like an arrow and follows it when it moves, with the plain ends the tool draws (measured: a line from one shape to another stayed a loose path at 223 to 404 when the far shape moved 80 right; now bound to both, its far end follows the move).
 - Library: a board's preview draws a connector as a line from one joined item's centre to the other's (level, upright, rising or falling as on the board) instead of a pen scribble at the board's corner; a link whose end is gone is left out (measured: a straight link between two shapes previewed as a three-hump path at the origin, now a level line between them).
 - Whiteboard: the Link tool (C, Shift+C) draws its link with an end arrow, and holding it shows the arrowhead ends and mark on the bar over the rail (shared with the Arrow tool); a mind map's cross-link keeps the map's own look (measured: a link drawn with C had no caps and a one-segment path, now endCap arrow and a drawn head; the held-tool bar was closed, now shows ends and head and no size).

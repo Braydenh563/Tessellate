@@ -66,3 +66,15 @@ def test_link_tool_draws_an_end_arrow_and_shows_its_ends():
     # showed nothing; it now shares the Arrow tool's ends (default end).
     assert '"link-straight": ["ends", "head"],' in WB and '"link-curved": ["ends", "head"],' in WB
     assert "...(crossLink ? {} : wbToolCaps())," in WB
+
+
+def test_zoom_to_the_selection_is_a_key_a_command_and_a_view_row():
+    cmds = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    zoom = _function(WB, "wbZoomToSelection")
+    assert "wbSelectionBounds()" in zoom and "refit: false" in zoom and "maxScale: 2" in zoom
+    assert 'e.code === "Digit2"' in WB
+    assert 'id: "zoom-selection"' in cmds and 'needs: "selection"' in cmds.split('id: "zoom-selection"')[1].split("\n")[0]
+    assert 'data-wb-cmd="zoom-selection"' in html
+    # Fit everything keeps its refit; the selection zoom must not inherit it.
+    assert "wbFit.on = refit;" in _function(WB, "wbZoomToFit")
