@@ -135,7 +135,8 @@ def _purpose_grounds(tag: str, content: str) -> list[str]:
 
 
 def grounds(
-    tag: str, content: str, hits: dict[str, list[str]] | None = None, note_stems: set[str] | None = None
+    tag: str, content: str, hits: dict[str, list[str]] | None = None, note_stems: set[str] | None = None,
+    own: str | None = None,
 ) -> list[str]:
     """What in `content` backs `tag`, or [] when nothing does (decision 5: a
     tag is never proposed on a note that contains none of its words). Every
@@ -144,7 +145,8 @@ def grounds(
     its neighbours share: that vote was the Study bug."""
     from tessellate.ai import taxonomy
 
-    own = clean(content)
+    #: `own`: the cleaned text, once per note when many tags are weighed.
+    own = clean(content) if own is None else own
     words = tag_words(tag)
     note_stems = stems(tokens(own)) if note_stems is None else note_stems
     if words and all(stem(word) in note_stems for word in words):
@@ -177,7 +179,7 @@ def grounded(content: str, tags: list[str], limit: int = TAG_LIMIT) -> list[str]
     own = clean(content)
     hits = taxonomy.topic_hits(own)
     note_stems = stems(tokens(own))
-    return [tag for tag in tags if grounds(tag, content, hits, note_stems)][:limit]
+    return [tag for tag in tags if grounds(tag, content, hits, note_stems, own)][:limit]
 
 
 @dataclass

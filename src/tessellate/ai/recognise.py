@@ -212,6 +212,29 @@ _MONTH_DAY = re.compile(r"\b([a-z]+)\s+(\d{1,2})(?:st|nd|rd|th)?\b")
 _WEEKDAY = re.compile(r"\b(?:(this|on|next|coming)\s+)?(" + "|".join(_WEEKDAYS) + r")\b")
 
 
+#: A question whose answer the app works out (a span, a countdown, a weekday):
+#: the figures in such a reply are computed, not quoted from a note.
+_COMPUTED = re.compile(
+    r"\b(?:how (?:long|many (?:days?|weeks?|months?|years?|hours?|minutes?)|far|soon)|ago|until|till|since|countdown|"
+    r"what (?:day|date) (?:is|was|will)|days? (?:between|from|after|before))\b",
+    re.IGNORECASE,
+)
+
+
+def asks_computed(question: str) -> bool:
+    return bool(_COMPUTED.search(question))
+
+
+#: A stamp as a tool result prints it, "2026-10-30T17:00:00".
+_ISO_STAMP = re.compile(r"(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2}))?)?")
+
+
+def iso_figures(text: str) -> list[str]:
+    """Every figure inside the ISO stamps of `text`: "2026-10-30T17:00" holds
+    2026, 10, 30, 17 and 00, which the source check counts as said."""
+    return [part for found in _ISO_STAMP.finditer(text) for part in found.groups() if part]
+
+
 def _iso(text: str, now: datetime) -> datetime | None:
     if _ISO_DATE.fullmatch(text):
         return None  # a date alone is a day, read by `_day` with its 9:00
