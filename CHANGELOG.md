@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Blind-test round 2 (dog2-1025): the Timeline month scrolls today into view; a list exit keeps its blank line before a heading; reminder rows show the day and clock with the relative time; a day-only quick add holds its day for the time answer and says when it left a phrase out; a duplicate reminder is flagged; an empty document title is refused and no longer doubles as an H1; a leading # is dropped from tags; no phantom inherited model in Chat; a settings search opens its first match; the chat hint is dropped under 800px; note cards show bullets; a typo in a long word finds its stem; a formatting toolbar is one Tab stop.
 - Ask: "How long is the train from Lisbon to Porto?" is answered from the notes again rather than read as a word count of the Trains note ("how long is" counts only this/my/the note, document or text, or quoted text); a reading time no longer says "a under a min".
 - Battery: the note-changes ask goes from every 15 s to every 30 s after four empty answers in a row, and back at once on a change or when the tab returns.
 - Battery: the companion's perch check is one armed timer (10 s idle, 1.5 s after input or a toast, none in a hidden window) instead of a 1.5 s interval, and the app's marks hold still after two minutes without input unless one is showing work.

@@ -63,3 +63,33 @@ def test_a_leading_hash_is_not_part_of_a_tag():
     from tessellate.entry.tagnames import normalise_tags
 
     assert normalise_tags(["#biology", "##Chem", "  # spaced", "#", "Biology"]) == ["biology", "Chem", "spaced"]
+
+
+def test_chat_with_no_model_does_not_name_one_or_send_you_to_notes_ask():
+    # 17: "Inherited: llama3.2 (not connected)" and "Try in Notes, Ask:".
+    assert '"No model connected"' in (JS / "ai-tools.js").read_text()
+    assert "(not connected)`" not in (JS / "ai-tools.js").read_text()
+    assert '"Try in Ask:"' in (JS / "sheets-selects.js").read_text()
+
+
+def test_settings_search_opens_the_first_match():
+    # 18: "phone" listed results while the pane stayed on Models.
+    src = (JS / "settings.js").read_text()
+    assert "findSettings(query, 1)[0]?.section" in src
+
+
+def test_chat_hint_is_left_off_a_one_row_box_in_a_narrow_window():
+    # 20: at 700px "Press / for blocks and commands." was cut to "Press / for bl".
+    assert "innerWidth < 800" in (JS / "editor.js").read_text()
+
+
+def test_a_formatting_toolbar_is_one_tab_stop():
+    # 21: Tab from the note title walked every toolbar button before the editor.
+    src = (JS / "documents.js").read_text()
+    assert "function wireToolbarRoving" in src
+    assert "wireToolbarRoving(bar);" in src.split("function wireMarkdownToolbar")[1][:400]
+
+
+def test_note_cards_show_list_markers_as_bullets_not_dashes():
+    # 9: "- item" lines showed as raw text in the notes list.
+    assert '"$1•"' in (JS / "note-cards.js").read_text()

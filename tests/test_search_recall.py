@@ -39,3 +39,18 @@ def test_keyword_only_stays_keyword_only(ai_client):
     ai_client.post("/entries", json={"content": "buy milk and eggs on the way home"})
     reply = ai_client.get("/search", params={"q": "shopping", "hybrid": "false"})
     assert reply.json()["hits"] == []
+
+
+def test_a_typo_in_a_long_word_finds_its_stem(client):
+    # dog2-1025 item 11: "respiraton" found nothing because the index holds
+    # the stem "respir", too far from the typed word for difflib's 0.8.
+    note = client.post("/entries", json={"content": "Cells release energy by respiration"}).json()["id"]
+    for typed in ("respiraton", "respirtion"):
+        assert note in _found(client, typed), typed
+
+
+def test_no_model_means_no_similar_meaning_label(client):
+    # dog2-1025 item 11: the label with no embedding model behind it.
+    client.post("/entries", json={"content": "Cells release energy by respiration"})
+    reply = client.get("/search", params={"q": "respiration"})
+    assert all("similar meaning" not in hit["explain"] for hit in reply.json()["hits"])
