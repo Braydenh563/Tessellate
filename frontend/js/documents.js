@@ -18002,6 +18002,14 @@ function docCompleteKeydown(event, box) {
   //: and "type lorem and press enter" is the ask it exists for. Escape, then
   //: Enter, is still a plain new line.
   const chosen = docCompleteMatches[docCompleteIndex];
+  //: **In a table cell Tab moves to the next cell, never takes the word**
+  //: (dogfood round 1, item 8: Tab in a cell typed "Cost" accepted the guessed
+  //: "algorithmsCost" instead of leaving the cell). The popup closes, and the
+  //: table's own Tab handler right after this one answers the key.
+  if (event.key === "Tab" && docTableContext(box)) {
+    hideDocComplete();
+    return false;
+  }
   if (event.key === "Tab" || (event.key === "Enter" && chosen?.fill && !event.shiftKey && !event.ctrlKey && !event.metaKey && !event.altKey)) {
     event.preventDefault();
     applyDocComplete(box, chosen);

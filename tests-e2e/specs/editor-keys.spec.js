@@ -102,4 +102,16 @@ test("note box: a closing fence goes back to the opening fence's indent", async 
   expect(errors).toEqual([]);
 });
 
-test("
+test("table cell: Tab moves to the next cell even while a word is offered", async ({ page }) => {
+  const errors = watchErrors(page);
+  const body = "algorithms are taught here\n\n| a | b |\n| --- | --- |\n|  | y |\n";
+  await openNewDoc(page, body);
+  await page.evaluate((at) => docSurface().setSelection(at), body.indexOf("|  | y") + 2);
+  await page.keyboard.type("alg");
+  await expect(page.locator("#doc-complete-list")).toBeVisible();
+  await page.keyboard.press("Tab");
+  const text = await docText(page);
+  expect(text, "Tab took the offered word instead of leaving the cell").toBe(body.replace("|  | y", "| alg | y"));
+  expect(await page.evaluate(() => { const s = docSurface(); return s.text.slice(s.selectionStart, s.selectionEnd); })).toBe("y");
+  expect(errors).toEqual([]);
+});

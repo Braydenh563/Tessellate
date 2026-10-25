@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: in a table cell, Tab moves to the next cell even while a word is offered, instead of taking the guessed word.
 - Notes and documents: retyping "- " on an empty auto-bullet no longer nests it ("- - x"), Enter on an empty bullet ends the list in a note box, and a closing ``` fence goes back to the opening fence's indent instead of carrying the code's.
 - Documents and notes: Ctrl+B with nothing selected leaves the placeholder selected, so typing replaces it whole (it left the opening markers selected and ate them).
 - Documents and notes: Ctrl+Shift+Z redoes even when Caps Lock is on (it undid a second step, because the editor read the chord as plain Ctrl+Z).
