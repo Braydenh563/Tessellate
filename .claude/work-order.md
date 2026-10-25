@@ -1,5 +1,5 @@
 mode: continue
-status: active
+status: stopped (waiting on agents; reactivate on their reports)
 max-continues: 40
 max-idle-minutes: 90
 started: 2026-10-25 night
