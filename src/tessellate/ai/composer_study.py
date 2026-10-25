@@ -23,6 +23,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from itertools import zip_longest
 
+from tessellate.ai import composer_compose as compose
 from tessellate.ai import study
 
 QUIZ_LENGTH = 6
@@ -81,6 +82,14 @@ class Ctx:
     reminders: list[dict] = field(default_factory=list)
     ask: bool = False
     prefer_numbers: bool = True
+    voice: str = "natural"
+
+    @property
+    def mood(self) -> compose.Mood:
+        """The turn's mood for the composition layer: the person's words,
+        the voice, the chat's seed and what the last replies said."""
+        said = [str(h.get("answer") or "") for h in self.history[-4:]]
+        return compose.mood_of(self.asked or self.question, voice=self.voice, seed=self.seed, said=said)
 
     @property
     def last_answer(self) -> str:
@@ -164,22 +173,15 @@ def _which_note(ctx: Ctx, what: str, verb: str) -> Reply:
     near = _newest_with_cards(ctx) or ctx.notes[:3]
     names = [_title(n) for n in near if _title(n)]
     if not names:
-        return Reply(pick(ctx.seed, "nonotes", (
-            "There is no note to work from yet. Write a few lines of notes, then ask again.",
-            "Your notebook has nothing I can study from yet.",
-        )))
-    text = pick(ctx.seed, "which", (
-        f"Which note should I {what}? Open one and ask again, or name it.",
-        f"I need a note to {what}. Name one, or open it first.",
-        f"Which note do you want to {what}? Open it, or say its name.",
-    ))
+        return Reply(compose.say("study_nonotes", ctx.mood))
+    text = compose.say("study_which", ctx.mood, what=what)
     return Reply(text + "\n\nA few that have enough to work with: " + "; ".join(f"“{n}”" for n in names) + ".", asks=[f"{verb} {n}" for n in names])
 
 
 def _nothing_named(ctx: Ctx, topic: str, verb: str) -> Reply:
     near = _newest_with_cards(ctx)
     names = [_title(n) for n in near if _title(n)]
-    text = f"I did not find a note about “{topic.strip(' .?')}”."
+    text = compose.frame("study_nothing_named", ctx.mood, topic=topic.strip(" .?"))
     if names:
         text += " These have material to work with: " + "; ".join(f"“{n}”" for n in names) + "."
     return Reply(text, asks=[f"{verb} {n}" for n in names])
@@ -257,9 +259,7 @@ def _target(ctx: Ctx, topic: str, verb: str, what: str, *, strict: bool) -> tupl
 
 def _summary_text(ctx: Ctx, notes: list[dict], parts: list, level: int) -> str:
     note = notes[0]
-    head = pick(ctx.seed, "sumhead", (
-        f"The short version of {_link(note)}:", f"Here is {_link(note)} in short:", f"{_link(note)}, boiled down:",
-    )) if level <= 0 else f"{_link(note)} in more detail:"
+    head = compose.head("study_summary", ctx.mood, link=_link(note)) if level <= 0 else f"{_link(note)} in more detail:"
     lines = [head, ""]
     for title, sents in parts:
         title = "" if title == _title(note) else title
@@ -312,9 +312,7 @@ def _terms(ctx: Ctx, topic: str, *, more: bool = False) -> Reply | None:
     if not found:
         return Reply(f"{_link(note)} has no bold words, definitions or section names I could take for terms." if not more
                      else "That was every term I could find.")
-    head = pick(ctx.seed, "termhead", (
-        f"Key terms in {_link(note)}:", f"The terms {_link(note)} leans on:", f"What {_link(note)} defines or stresses:",
-    ))
+    head = compose.head("study_terms", ctx.mood, link=_link(note))
     lines = [head, ""] + [f"- **{t}**" + (f": {g}" if g else "") for t, g in found]
     if not more and len(study.key_terms(str(note.get("content") or ""), limit=24)) > len(found):
         lines += ["", "Say “more” for the rest."]

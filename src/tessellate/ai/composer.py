@@ -3522,9 +3522,14 @@ def social(
     kind = social_kind(message, intent)
     line = _social_line(message, kind, previous, last_question, voice, recent, seed)
     if invite and kind in _INVITE_KINDS and "“" not in line and not line.endswith("?"):
-        said = "professional" if composer_tables.voice_of(voice) == "professional" else "natural"
-        line = f"{line} {_pick(f'{message}|{invite}', f'invite:{seed}', list(INVITES[said])).format(subject=invite)}"
+        line = f"{line} {invitation(message, invite, voice, seed)}"
     return line
+
+
+def invitation(message: str, subject: str, voice: str, seed: str) -> str:
+    """The invitation built on a word of the newest note (`INVITES`)."""
+    said = "professional" if composer_tables.voice_of(voice) == "professional" else "natural"
+    return _pick(f"{message}|{subject}", f"invite:{seed}", list(INVITES[said])).format(subject=subject)
 
 
 def _social_line(message: str, kind: str, previous: str, last_question: str, voice: str, recent, seed: str) -> str:  # noqa: ANN001

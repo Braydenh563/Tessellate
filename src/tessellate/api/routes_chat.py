@@ -2584,11 +2584,32 @@ def _reply_seed(req: _StreamRequest) -> tuple[list[str], str]:
     return recent, f"{salt}:{date.today().isoformat()}:{req.body.attempt}"
 
 
+def _welcome(req: _StreamRequest, seed: str, recent: list[str]) -> str:
+    """The composed welcome for a hello (CHAT_PLAN 1353), or empty when the
+    day's numbers cannot be read (the stored greetings answer then)."""
+    try:
+        return chat_extra.welcome_line(
+            req.session, user_now(deps.get_config()).replace(tzinfo=None), question=req.question,
+            voice=_answer_voice(), seed=seed, said=recent,
+        )
+    except Exception:  # noqa: BLE001  # the stored greetings answer
+        logging.getLogger("tessellate.chat").exception("chat: the composed welcome failed")
+        return ""
+
+
 def _social_reply(req: _StreamRequest, prepared: dict) -> str:
     """The app's own reply to small talk (INBOX 741), never echoing the last
     three replies (the owner: "can it have more varied responses??")."""
     recent, seed = _reply_seed(req)
     last = (req.history or [{}])[-1] if req.history else {}
+    if composer.social_kind(req.question, prepared["intent"]) in ("greeting", "morning"):
+        #: A hello is answered with a welcome built from the day (CHAT_PLAN 1353).
+        welcome = _welcome(req, seed, recent)
+        if welcome:
+            sees = composer_aware.opening(_awareness(req), seed) if req.body.screen else ""
+            invite = _newest_word(req.session)
+            asks = composer.invitation(req.question, invite, _composer_voice(), seed) if invite else ""
+            return "\n\n".join(p for p in (" ".join(p for p in (welcome, asks) if p), sees) if p)
     said = composer.social(
         req.question,
         prepared["intent"],
@@ -3442,6 +3463,7 @@ def _app_first_events(req: _StreamRequest, follow, ollama_running: bool) -> list
             req.session, follow.question if follow else req.question, req.history or [], now=user_now(deps.get_config()).replace(tzinfo=None),
             seed=_reply_seed(req)[1], open_ids=[i for i in [req.body.open_note_id, *req.body.note_ids] if i],
             follow_kind=follow.kind if follow else "", said=follow.said if follow else "", asked=req.body.question, ask=bool(req.body.notes_only),
+            voice=_answer_voice(),
         )
         if found is not None:
             return found

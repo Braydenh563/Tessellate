@@ -256,7 +256,7 @@ def test_no_fitting_tool_says_so_in_one_line(fake_engine):
         "any", [{"role": "user", "content": "tell me a joke"}], TOOLS
     )
     assert reply["tool_calls"] == []
-    assert "model server" in reply["content"]
+    assert "model" in reply["content"] and "reminders" in reply["content"]  # the composer words it (CHAT_PLAN 1353)
 
 
 def test_after_the_tools_ran_their_results_are_the_answer(fake_engine):

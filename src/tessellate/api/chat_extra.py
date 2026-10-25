@@ -34,7 +34,7 @@ def _reminders(session: Session) -> list[dict]:
 
 
 def events(session: Session, question: str, history: list[dict], *, now: datetime, seed: str, open_ids: list[int],
-           follow_kind: str = "", said: str = "", asked: str = "", ask: bool = False) -> list[dict] | None:
+           follow_kind: str = "", said: str = "", asked: str = "", ask: bool = False, voice: str = "natural") -> list[dict] | None:
     """The answer events for a question this module reads, else None. A
     failure is logged and leaves the question to the older readers."""
     #: "Summarise this" and "summarise Travel" read the open note or a whole
@@ -44,7 +44,7 @@ def events(session: Session, question: str, history: list[dict], *, now: datetim
     ):
         return None
     ctx = Ctx(question=question, notes=_notes(session), now=now, history=history, seed=seed, open_ids=open_ids,
-              follow_kind=follow_kind, said=said, asked=asked or question, ask=ask, reminders=_reminders(session))
+              follow_kind=follow_kind, said=said, asked=asked or question, ask=ask, reminders=_reminders(session), voice=voice)
     try:
         reply = composer_extra.answer(ctx)
     except Exception:  # noqa: BLE001  # the older readers answer
@@ -58,3 +58,23 @@ def events(session: Session, question: str, history: list[dict], *, now: datetim
     elif reply.asks:
         out.append({"type": "offer", "offer": {"kind": "ask", "label": "", "asks": reply.asks}})
     return out
+
+
+def welcome_line(session: Session, now: datetime, *, question: str = "", voice: str = "natural", seed: str = "", said: list[str] | None = None) -> str:
+    """The composed welcome (CHAT_PLAN 1353): the time of day, the reminders
+    due today, the title of the last note and the writing streak, built by the
+    composition layer in the person's voice. A failure to count anything
+    leaves that clause out; it never fails the greeting."""
+    from tessellate.ai import composer_compose, greeting_compose, study
+
+    notes = _notes(session)[:1]
+    try:
+        facts = greeting_compose.gather(session, now)
+    except Exception:  # noqa: BLE001  # the clause is left out
+        log.exception("welcome: the notebook's numbers failed")
+        facts = greeting_compose.NotebookFacts(total=len(notes))
+    today = now.date()
+    due = sum(1 for r in _reminders(session) if hasattr(r["due_at"], "date") and r["due_at"].date() == today)
+    last = study.title_of(notes[0]["content"]) if notes else ""
+    mood = composer_compose.mood_of(question, voice=voice, seed=seed, said=said or [], intent="welcome")
+    return composer_compose.welcome(mood, hour=now.hour, due=due, last=last[:60], streak=facts.streak, notes=facts.total or len(notes))
