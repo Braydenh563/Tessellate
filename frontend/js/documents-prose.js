@@ -1763,23 +1763,18 @@ function docListEnter(line) {
   const step = indent.length >= 4 && indent.length % 4 === 0 ? 4 : 2;
   return line.slice(Math.min(step, indent.length));
 }
-//: **Typing "- " on an empty auto-bullet does not nest.** Enter continues a
-//: list ("- "), and a writer who types the dash themselves then got "- - x"
-//: and a staircase (dogfood round 1, item 3). `before` is the line up to the
-//: caret with the typed dash already in it ("- -"), `typed` the space just
-//: pressed. Returns the line to keep ("- ") or null when this is not that case.
+//: **Retyping "- " on an auto-bullet does not nest** (dogfood item 3). `before`
+//: is the line up to the caret with the dash already typed ("- -"), `typed`
+//: the space. Returns the line to keep ("- "), or null.
 function docBulletRetype(before, typed) {
   if (typed !== " ") return null;
   const m = /^(\s*)([-*+]) [-*+]$/.exec(before);
   return m ? `${m[1]}${m[2]} ` : null;
 }
 
-//: **A closing fence goes back to the opening fence's indent.** Enter keeps the
-//: previous line's indent, so code typed at four spaces dragged the closing
-//: ``` and every line after it to four (dogfood round 1, item 4). `above` is
-//: the lines before the current one, `line` the current line as typed. Returns
-//: the indent the line should have, or null when it is not a closing fence or
-//: already sits right.
+//: **A closing fence goes back to the opening fence's indent** (dogfood item
+//: 4: Enter kept the code's indent). `above` is the lines before, `line` the
+//: current one. Returns the indent it should have, or null.
 function docFenceCloseIndent(above, line) {
   const close = /^(\s*)(`{3,}|~{3,})$/.exec(line);
   if (!close) return null;
@@ -1942,15 +1937,15 @@ function docProseGhostPlugin(CM) {
 
 //: Backspace in an empty pair, and Enter on an empty list item, ahead of the
 //: editor's own.
-function docProsePairKeymap(CM) {
+function docProsePairKeymap(CM, anyHost = false) {
   return CM.state.Prec.high(CM.view.keymap.of([{
     key: "Enter",
     run: (view) => {
-      if (!docProseFillOn() || docFileType().ext !== "md") return false;
+      if (!anyHost && (!docProseFillOn() || docFileType().ext !== "md")) return false;
       const range = view.state.selection.main;
       if (!range.empty || view.state.selection.ranges.length > 1) return false;
       const line = view.state.doc.lineAt(range.head);
-      if (range.head !== line.to || docInCodeAt(CM, view.state, range.head)) return false;
+      if (range.head !== line.to || docInCodeAt(CM, view.state, range.head, anyHost)) return false;
       const next = docListEnter(line.text);
       if (next === null) return false;
       view.dispatch({
@@ -1980,11 +1975,10 @@ function docProsePairKeymap(CM) {
   }]));
 }
 
-//: **List and fence typing, for the document and for every note box.** Not
-//: behind `docProseFillOn` (a note has no file type) and not behind the code
-//: guard for the fence, because a fence being closed is by definition inside
-//: the unclosed block the parse sees. Enter on an empty item ends the list in
-//: notes as it does in documents (`docProsePairKeymap` is the document's).
+//: **List and fence typing, for documents and note boxes.** A note has no file
+//: type, and a fence being closed is inside the block the parse sees as open,
+//: so neither guard applies. Enter on an empty item is the document's own
+//: (`docProsePairKeymap`); notes get it here.
 function docListFenceExtensions(CM, inDocument) {
   //: A document only in markdown; a note box always (it has no file type).
   const on = () => !inDocument || (docProseFillOn() && docFileType().ext === "md");
@@ -2020,24 +2014,7 @@ function docListFenceExtensions(CM, inDocument) {
     }
     return false;
   });
-  const enter = CM.state.Prec.high(CM.view.keymap.of([{
-    key: "Enter",
-    run: (view) => {
-      const range = view.state.selection.main;
-      if (!range.empty || view.state.selection.ranges.length > 1) return false;
-      const line = view.state.doc.lineAt(range.head);
-      if (range.head !== line.to || docInCodeAt(CM, view.state, range.head, true)) return false;
-      const next = docListEnter(line.text);
-      if (next === null) return false;
-      view.dispatch({
-        changes: { from: line.from, to: line.to, insert: next },
-        selection: { anchor: line.from + next.length },
-        userEvent: "input",
-      });
-      return true;
-    },
-  }]));
-  return inDocument ? [input] : [input, enter];
+  return inDocument ? [input] : [input, docProsePairKeymap(CM, true)];
 }
 
 //: Everything above, as one set of extensions for `docProseToolExtensions`.

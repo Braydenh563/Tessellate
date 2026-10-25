@@ -587,13 +587,9 @@ function cmSurface(view, meta = null) {
     get value() { return this.text; },
     set value(next) { this.text = next; },
     get selectionStart() { return view.state.selection.main.from; },
-    //: **A textarea's rule, not a plain assignment**: moving one end past the
-    //: other drags the other end with it. Without it, `box.value = ...`
-    //: (which leaves the caret at the old spot) then `selectionStart = 12`,
-    //: `selectionEnd = 21` built the range 12..10 first, which the view
-    //: stores as 10..12, and the second write then kept that 10: Ctrl+B on
-    //: nothing selected left `**bold text` selected, so typing ate the opening
-    //: markers (dogfood round 1, item 2).
+    //: A textarea's rule: moving one end past the other drags it along.
+    //: Without it start=12 then end=21 built 12..10, stored as 10..12, and
+    //: Ctrl+B on nothing left `**bold text` selected (dogfood item 2).
     set selectionStart(at) { this.setSelection(at, Math.max(at, this.selectionEnd)); },
     get selectionEnd() { return view.state.selection.main.to; },
     set selectionEnd(at) { this.setSelection(Math.min(at, this.selectionStart), at); },
@@ -13806,8 +13802,7 @@ function wireMarkdownToolbar(bar) {
     const button = event.target.closest("button[data-md]");
     if (!button || !bar.contains(button)) return;
     applyMarkdown(button.dataset.md, boxId);
-    //: A menu row does one thing and is finished: the Insert menu stayed open
-    //: over the table it had just made (dogfood round 1, item 15).
+    //: A menu row is finished once chosen (dogfood item 15).
     const menu = button.closest("details.doc-toolbar-menu");
     if (menu) menu.open = false;
   });
@@ -15381,10 +15376,8 @@ function docToolbarMode() {
       return "wrap";
     }
     if (stored === "row" || stored === "wrap") return stored;
-    //: **No choice made, and the window is narrow: one row.** Wrapped, the 29
-    //: controls took seven rows (143 px) at 700 px wide and left 214 px of
-    //: editor; one row with the More menu is 59 px and leaves 298 (dogfood
-    //: round 1, item 10). A choice made with the toggle always wins.
+    //: No stored choice and a narrow window: one row (143 px wrapped, 59 px
+    //: here at 700 px wide; dogfood item 10). The toggle always wins.
     return window.matchMedia?.(DOC_TOOLBAR_NARROW)?.matches ? "row" : "wrap";
   } catch {
     return "wrap"; // private mode: the safe shape, since it never clips
@@ -15392,8 +15385,6 @@ function docToolbarMode() {
 }
 
 const DOC_TOOLBAR_NARROW = "(max-width: 760px)";
-//: Crossing the line re-applies the default, so a window dragged narrower
-//: folds the strip and wider unfolds it, unless a choice is stored.
 window.matchMedia?.(DOC_TOOLBAR_NARROW)?.addEventListener?.("change", () => applyDocToolbarMode(docToolbarMode()));
 
 function applyDocToolbarMode(mode) {
@@ -18016,10 +18007,7 @@ function docCompleteKeydown(event, box) {
   //: and "type lorem and press enter" is the ask it exists for. Escape, then
   //: Enter, is still a plain new line.
   const chosen = docCompleteMatches[docCompleteIndex];
-  //: **In a table cell Tab moves to the next cell, never takes the word**
-  //: (dogfood round 1, item 8: Tab in a cell typed "Cost" accepted the guessed
-  //: "algorithmsCost" instead of leaving the cell). The popup closes, and the
-  //: table's own Tab handler right after this one answers the key.
+  //: In a table cell Tab moves cells and never takes a word (dogfood item 8).
   if (event.key === "Tab" && docTableContext(box)) {
     hideDocComplete();
     return false;
@@ -21870,12 +21858,9 @@ function docCmHighlight(CM) {
   return docCmHighlightCache;
 }
 
-//: **Ctrl+Shift+Z is redo, whatever the key reports.** With Caps Lock on, or
-//: from a script, Shift+Z arrives as `key: "z"` with `shiftKey` set, and the
-//: engine's keymap looks the chord up without Shift for a letter, so it found
-//: Mod-z and undid a second step while the Redo button's tooltip promised the
-//: opposite (dogfood round 1, item 1). A key binding cannot see the event, so
-//: this is a DOM handler at the highest precedence.
+//: **Ctrl+Shift+Z is redo, whatever the key reports.** Shift+Z arrives as
+//: `key: "z"` with Caps Lock on, and the keymap then matched Mod-z (undo):
+//: dogfood item 1. A binding cannot see the event, so a DOM handler.
 function docRedoChord(CM) {
   return CM.state.Prec.highest(CM.view.EditorView.domEventHandlers({
     keydown: (event, view) => {
@@ -22365,6 +22350,7 @@ function docGuardGlobalShortcuts(host) {
   host.addEventListener("keydown", (event) => {
     if (event.ctrlKey || event.metaKey || event.altKey) return;
     if (event.key.length !== 1) return;
+    typingBurstAt = performance.now();
     event.stopPropagation();
   });
 }

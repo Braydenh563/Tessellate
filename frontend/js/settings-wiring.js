@@ -578,22 +578,9 @@ function saveWhatIsInFront() {
   return;
 }
 
-//: When the last printable key was typed in an editor (item 9, below).
-let typingBurstAt = -Infinity;
-const TYPING_BURST_MS = 1500;
-//: Capture phase, because the editors stop their own letters at their host
-//: (`docGuardGlobalShortcuts`), so a bubbling listener never hears them.
-document.addEventListener(
-  "keydown",
-  (e) => {
-    if (e.key.length !== 1 || e.ctrlKey || e.metaKey || e.altKey) return;
-    const el = document.activeElement;
-    if (["INPUT", "TEXTAREA", "SELECT"].includes(el && el.tagName) || Boolean(el && el.isContentEditable)) {
-      typingBurstAt = performance.now();
-    }
-  },
-  true
-);
+//: Item 9: a key within 1.5 s of typing in an editor is not a command. The
+//: document editor stops its letters at its host and sets this itself.
+let typingBurstAt = 0;
 
 document.addEventListener("keydown", (e) => {
   // **Before anything else.** A locked notebook answers no shortcut, not a
@@ -755,17 +742,9 @@ document.addEventListener("keydown", (e) => {
   //: Single-key shortcuts can be turned off (WCAG 2.1.4): speech input types
   //: letters.
   const singleKeys = singleKeysOn();
-  //: **A burst of typing is not a command.** Typing "Algo..." after focus
-  //: slipped off the editor (a click on the page, a closed popup) read "t",
-  //: "e"... as the quick-nav chord and the Reminders and Settings tabs opened
-  //: under the writer (dogfood round 1, item 9). A printable key typed in an
-  //: editor starts a 1.5 s window in which the bare keys and the chord leave
-  //: the keyboard alone, and a key swallowed in that window extends it, so a
-  //: sentence typed without a caret stays a sentence.
-  const printable = e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey;
-  const nowAt = performance.now();
-  const burst = !typing && printable && nowAt - typingBurstAt < TYPING_BURST_MS;
-  if (burst) typingBurstAt = nowAt;
+  const now = performance.now();
+  if (typing) typingBurstAt = now;
+  const burst = !typing && e.key.length === 1 && now - typingBurstAt < 1500 && (typingBurstAt = now);
   //: `boardOwns`: a key the open board answers itself (`wbOwnsChord`), such
   //: as a letter typed while a new map topic is still being made.
   const boardOwns = typeof wbOwnsChord === "function" && wbOwnsChord(e);
