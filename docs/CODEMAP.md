@@ -2,7 +2,7 @@
 
 Generated 2026-10-25 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6214, frontend ids 2537, CSS sections 497, backend routes 617, backend modules 6185, test files 1323, tests 11772, plan headings 968.
+Counts: frontend functions 6214, frontend ids 2537, CSS sections 497, backend routes 617, backend modules 6185, test files 1323, tests 11773, plan headings 968.
 
 ## Frontend functions (6214)
 
@@ -16959,8 +16959,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `missing_names` | src/tessellate/core/lancert.py:378 |
 | `paths` | src/tessellate/core/lancert.py:94 |
 | `read` | src/tessellate/core/lancert.py:163 |
-| `reload` | src/tessellate/core/lancert.py:425 |
-| `set_live_context` | src/tessellate/core/lancert.py:420 |
+| `reload` | src/tessellate/core/lancert.py:430 |
+| `set_live_context` | src/tessellate/core/lancert.py:425 |
 
 ### src/tessellate/core/lanlive.py (9)
 
@@ -18525,7 +18525,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11772)
+## Tests (11773)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19130,7 +19130,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_keyword_context.py | 8 |
 | tests/test_keyword_search.py | 22 |
 | tests/test_label_in_name_1345.py | 3 |
-| tests/test_lan.py | 123 |
+| tests/test_lan.py | 124 |
 | tests/test_launch_splash.py | 24 |
 | tests/test_launch_status.py | 25 |
 | tests/test_launcher_scripts.py | 95 |

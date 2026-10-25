@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Security: the LAN certificate folder and the authority's private key are made private again (0700, 0600) at every start, not only when first made.
 - Security: wrong-password waits key an IPv6 device by its /64 network, so a device on the Wi-Fi cannot dodge them by making up new addresses.
 - Security: a phone can no longer set where backups are copied on the computer (a UNC path there sent the owner's Windows sign-in over SMB) or switch on beta updates; Settings dims both rows on another device.
 - Security: the rebinding guard accepts only the configured `TESSELLATE_LOCAL_NAME` `.localhost` name, and only on a request that arrived on this computer's loopback, never any other `*.localhost` name or one from the network; that name now counts as this computer for sign-in-off and the PIN.

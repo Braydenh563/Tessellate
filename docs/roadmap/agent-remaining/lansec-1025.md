@@ -3,5 +3,6 @@
 
 - done: ea3ce26 localhost guard
 - done: e5067eb backup_copy_dir, update_beta
-- done: throttle /64 (this commit)
-- next: lancert.ensure re-tightens CA key perms; SECURITY.md section
+- done: 6ab3a1d throttle /64
+- done: CA key perms (this commit)
+- next: docs/SECURITY.md "Phone and other devices"

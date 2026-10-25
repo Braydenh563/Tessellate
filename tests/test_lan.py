@@ -1730,6 +1730,21 @@ def test_the_authority_vouches_only_for_this_network(tmp_path):
 
 
 @pytest.mark.usefixtures("_no_live_listener")
+def test_a_reused_authority_key_is_made_private_again(tmp_path):
+    """lansec-1025: `ensure` re-tightened the server key on every start but
+    not the authority's key or the folder, so a copy loosened by a restore,
+    a sync tool or an older build stayed readable while it was reused."""
+    lancert.ensure(tmp_path, NAMES)
+    folder = lancert.paths(tmp_path)[0].parent
+    _ca, ca_key = lancert.authority_paths(tmp_path)
+    os.chmod(ca_key, 0o644)
+    os.chmod(folder, 0o755)
+    lancert.ensure(tmp_path, NAMES)
+    assert stat.S_IMODE(os.stat(ca_key).st_mode) == 0o600
+    assert stat.S_IMODE(os.stat(folder).st_mode) == 0o700
+
+
+@pytest.mark.usefixtures("_no_live_listener")
 def test_a_new_private_address_keeps_the_authority_the_phone_trusts(tmp_path):
     first = lancert.ensure(tmp_path, ["localhost", "192.168.1.9"])
     second = lancert.ensure(tmp_path, ["localhost", "192.168.1.9", "192.168.1.77"])
