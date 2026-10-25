@@ -151,3 +151,25 @@ def test_text_shrinks_to_fit_a_shape_never_past_its_given_size():
 
     body = next(t["body"] for t in help_chat.HELP_TOPICS if t["id"] == "board-diagram-tools")
     assert "shrink" in body and len(body) < 1900
+
+
+def test_a_topic_dropped_between_siblings_takes_that_place():
+    slot = _function(MAP, "wbMapSiblingSlotAt")
+    # Only the layouts that stack siblings; Free and radial keep the drag a pin.
+    assert '"tree-right": "y"' in MAP and "free" not in MAP[MAP.index("const WB_MAP_SLOT_AXIS"):MAP.index("function wbMapSiblingSlotAt")]
+    assert "if (!parent || !axis) return null;" in slot
+    # The place it already has is no move.
+    assert "return null;\n  const gap" in slot
+    drop = _function(MAP, "wbMapDropAmongSiblings")
+    # It loses its pin, takes the key, and the branch is laid out again: one Undo.
+    assert "pinned: _pin" in drop and "order: slot.key" in drop
+    assert "wbMapTidy({ onlyBranch: wbMapTidyBranchScope(slot.parentId)" in drop
+    assert drop.count("wbPushUndo(") == 1
+    assert "wbMapShowSlotCue(null);" in _function(MAP, "wbMapClearDropTarget")
+    # A topic under the pointer is a transplant first; Ctrl and a group drag never reorder.
+    assert "d._dropTarget || d._dragAlone || d._bulkOrigin ? null : wbMapSiblingSlotAt(" in WB
+    assert ".wb-map-slot-cue {" in LAZY_CSS
+    from tessellate.ai import help_chat
+
+    body = next(t["body"] for t in help_chat.HELP_TOPICS if t["id"] == "mind-maps")
+    assert "between two of its siblings" in body

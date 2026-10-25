@@ -2820,6 +2820,90 @@ function wbMapDropTargetAt(d, clientX, clientY) {
   return null;
 }
 
+//: **Reorder by dragging** (XMind, MindNode): a topic let go between two of
+//: its siblings, in a layout that stacks them, takes that place, shown while
+//: it is held by a line across the gap. The axis the siblings run along, per
+//: layout; the rest (radial, Free, the column layouts) keep the drag a pin.
+const WB_MAP_SLOT_AXIS = { "tree-right": "y", "tree-left": "y", "tree-both": "y", "logic-right": "y", "tree-down": "x", org: "x" };
+
+//: The gap among its siblings the pointer is in, or null: off the siblings'
+//: band, a trunk, or the place it already has.
+function wbMapSiblingSlotAt(d, clientX, clientY) {
+  if (!wbIsMap() || !WB_MAP_KINDS.has(d.kind)) return null;
+  const index = wbMapIndex();
+  const node = index.byId.get(d.id);
+  const parent = node && index.byId.get(node.parent_id);
+  const layout = node?._bl || wbMapLayout();
+  const axis = WB_MAP_SLOT_AXIS[layout];
+  if (!parent || !axis) return null;
+  const [bx, by] = wbClientToBoard(clientX, clientY);
+  const point = { x: bx, y: by };
+  const box = (o) => ({ ...wbMapNodeSize(o), x: o.x, y: o.y });
+  const hidden = wbMapConcealed(index);
+  const pc = box(parent).x + box(parent).w / 2;
+  const showing = wbMapSiblingsOf(index, node).filter((o) => !hidden.has(o.id));
+  //: Both sides of a trunk are one list; the side the pointer is on is the one meant.
+  const side = layout === "tree-both" ? showing.filter((o) => o.id === node.id || (o.x + box(o).w / 2 < pc) === (bx < pc)) : showing;
+  const [along, size, cross, span] = axis === "y" ? ["y", "h", "x", "w"] : ["x", "w", "y", "h"];
+  //: In the order they are drawn, which a laid-out branch shares with its keys.
+  //: The dragged one counts from where it was picked up.
+  const home = (o) => (o !== node ? o[along] : (along === "y" ? d._dragOriginY : d._dragOriginX) ?? o[along]);
+  side.sort((p, q) => home(p) - home(q));
+  const others = side.filter((o) => o.id !== node.id);
+  if (!others.length) return null;
+  const lo = Math.min(...others.map((o) => o[cross])), hi = Math.max(...others.map((o) => o[cross] + box(o)[span]));
+  const first = others[0], last = others[others.length - 1];
+  const reach = Math.max(...others.map((o) => box(o)[size]));
+  if (point[cross] < lo - 24 || point[cross] > hi + 24) return null;
+  if (point[along] < first[along] - reach || point[along] > last[along] + box(last)[size] + reach) return null;
+  const at = others.filter((o) => o[along] + box(o)[size] / 2 < point[along]).length;
+  const before = others[at - 1] || null, after = others[at] || null;
+  const mine = side.indexOf(node);
+  if ((side[mine - 1] || null) === before && (side[mine + 1] || null) === after) return null;
+  const gap = before && after ? (before[along] + box(before)[size] + after[along]) / 2
+    : before ? before[along] + box(before)[size] + 8 : after[along] - 8;
+  const line = axis === "y" ? { x1: lo, y1: gap, x2: hi, y2: gap } : { x1: gap, y1: lo, x2: gap, y2: hi };
+  return { parentId: parent.id, key: wbMapKeyBetween(before, after), line };
+}
+
+//: The line across the gap, in the overlay so it draws over the topics.
+function wbMapShowSlotCue(slot) {
+  let cue = document.getElementById("wb-map-slot-cue");
+  if (!slot) {
+    cue?.remove();
+    return;
+  }
+  if (!cue) {
+    cue = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    cue.id = "wb-map-slot-cue";
+    cue.setAttribute("class", "wb-map-slot-cue");
+    cue.setAttribute("pointer-events", "none");
+    document.getElementById("wb-overlay-zoom-group")?.appendChild(cue);
+  }
+  for (const [k, v] of Object.entries(slot.line)) cue.setAttribute(k, String(v));
+}
+
+//: The drop: the topic takes the slot's key, loses a pin it had (it was
+//: placed by the layout now), and the branch is laid out again, all one Undo
+//: step from where the drag picked it up (`origins`).
+async function wbMapDropAmongSiblings(d, slot, origins) {
+  const index = wbMapIndex();
+  const before = new Map(index.nodes.map((o) => [o.id, WB_KIND_INFO.object.payload(o)]));
+  for (const [id, at] of origins) Object.assign(before.get(id) || {}, at);
+  const { pinned: _pin, ...rest } = d.data || {};
+  d.data = { ...rest, order: slot.key };
+  await wbSaveObject(d);
+  await wbMapTidy({ onlyBranch: wbMapTidyBranchScope(slot.parentId), quiet: true });
+  renderWhiteboardNow();
+  const entries = [];
+  for (const obj of wbMapIndex().nodes) {
+    const was = before.get(obj.id);
+    if (was && (was.x !== obj.x || was.y !== obj.y || was.data !== obj.data)) entries.push({ action: "move", kind: "object", id: obj.id, before: was });
+  }
+  if (entries.length) wbPushUndo(entries.length === 1 ? entries[0] : { action: "batch", entries });
+  wbAnnounce("Moved to that place among its siblings.");
+}
+
 //: The highlight, and the one place it is cleared. A class rather than an
 //: inline style: the CSP rejects `style=` and a drop cue that silently did
 //: nothing is the fourth shape CLAUDE.md §6 lists.
@@ -2834,6 +2918,7 @@ function wbMapShowDropTarget(id) {
 }
 
 function wbMapClearDropTarget() {
+  wbMapShowSlotCue(null);
   if (wbMapDropTargetId == null) return;
   document.querySelector(`.wb-object[data-id="${wbMapDropTargetId}"]`)
     ?.classList.remove("wb-map-drop-target");

@@ -6750,3 +6750,12 @@ input[type="color"].wb-mixed {
     min-height: var(--target-min);
   }
 }
+
+/* Reorder by dragging (wb2): the line across the gap a held topic would
+   take among its siblings, in the accent, the drop target's own cue colour. */
+.wb-map-slot-cue {
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}

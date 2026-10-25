@@ -1887,3 +1887,16 @@ Read from the code against XMind, MindManager and Miro mind maps. Sizes S, M, L;
 
 1342. **The owner, 2026-10-19, verbatim.** "also the mindmap links will always connect only to the top or bottom of nodes, never the sides, should they?"
      Measured by code reading: `wbMapEdgeAnchors` (whiteboard-map.js:3224) uses the sides for tree-right, tree-left, tree-both and logic-right, and top and bottom for tree-down and org. For radial and free it picks the axis per edge, comparing top-left corners; a check of that rule shows a child beside its parent already gets a side edge, so the corner comparison is not the cause. Reproduce on the owner's map first (layout, `child._bl` branch layouts, and whether `wbMapEdgePathD` honours `horizontal`).
+
+## Gap audit against XMind and MindNode, 2026-10-25 (wb2)
+
+The owner, 2026-10-25: "upgrade the whiteboard and mindmap". Read from the code (`whiteboard-map.js`'s menus, `WB_COMMANDS`, the import route) against XMind 2024 and MindNode 2024, starting from the brief's five; the 10-19 list above stays as it is, with its item 2 struck below.
+
+Exists (no work): fold or unfold one branch (C), show N levels (Alt+1 to 9, Alt+1 is XMind's Collapse all), Open every folded branch; focus on a branch (with depth steps and Esc); topic notes (a note behind a topic, callouts, labels); relationships (cross-links, labelled); move among siblings by key (Ctrl+Shift+arrows); insert a parent (Ctrl+Enter); sort branches; boundaries and summaries; present and study; `.xmind` import as well as export (`_parse_xmind`, so the 10-19 list's item 2 is built).
+
+Missing, the three taken first:
+1. Reorder siblings by dragging (XMind, MindNode: a topic dragged between two of its siblings takes that place, with an insertion line). Here a drag in a laid-out map pins the topic where it is let go, so the order can only change by key. M. **Build.**
+2. Export or copy one branch (the 10-19 list's item 9): Copy this branch as an outline (Markdown) and Export this branch as a picture, from the topic's Branch menu. S. **Build.**
+3. Dim the rest while a branch is selected (the 10-19 list's item 14; XMind's focus mode, MindNode's "focus"): a View toggle that greys every topic outside the selected branch, lighter than Focus, which hides them. S. **Build.**
+
+Left: search inside topics' notes (10-19 item 13), rainbow every level (item 10), a legend (item 11), audio notes (item 4), Gantt (item 3).

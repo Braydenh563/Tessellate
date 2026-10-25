@@ -1339,7 +1339,7 @@ HELP_TOPICS.extend(
         {
             "id": "mind-maps",
             "keywords": (
-                "mind map", "mindmap", "mind-map", "branch", "child topic", "brainstorm",
+                "mind map", "mindmap", "mind-map", "branch", "child topic", "brainstorm", "drag to reorder", "reorder by dragging",
                 "branch colours", "branch colors", "map font", "map theme", "palette",
                 "from the library", "point a topic at a note", "link a note to a topic", "reference node",
                 "make a mind map", "map from a note",
@@ -1353,7 +1353,8 @@ HELP_TOPICS.extend(
                 "Make a mind map of this chat do the same for the answer or the whole "
                 "conversation. Tab adds a child, Enter a sibling, and dragging a topic "
                 "onto another moves its whole branch (onto Drop here to delete, at "
-                "the foot, deletes the topic and its branch). Right-click a topic for the "
+                "the foot, deletes the topic and its branch); let go between two of "
+                "its siblings, at the line that shows, and it takes that place. Right-click a topic for the "
                 "ring of actions, where Cross-link joins any two topics. View, How this "
                 "map looks sets its branch colours (eight palettes, classic first), its "
                 "font, its spacing (Compact, Normal or Roomy) and the look every topic follows "

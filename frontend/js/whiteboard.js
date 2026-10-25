@@ -21609,6 +21609,10 @@ function renderWbObjects(canvas) {
     if (source && wbIsMap() && WB_MAP_KINDS.has(d.kind)) {
       d._dropTarget = wbMapDropTargetAt(d, source.clientX, source.clientY);
       wbMapShowDropTarget(d._dropTarget?.id ?? null);
+      //: Not over a topic: a gap among its siblings, where the layout stacks
+      //: them. One topic only: a group drag stays a placement.
+      d._siblingSlot = d._dropTarget || d._dragAlone || d._bulkOrigin ? null : wbMapSiblingSlotAt(d, source.clientX, source.clientY);
+      wbMapShowSlotCue(d._siblingSlot);
     }
   }
   async function objDragEnd(event, d) {
@@ -21633,6 +21637,8 @@ function renderWbObjects(canvas) {
     //: it replaces the ordinary save below entirely (`/move` is the only
     //: endpoint that may write `parent_id`, and it re-lays the branch after).
     const dropTarget = d._dropTarget;
+    const slot = d._siblingSlot;
+    delete d._siblingSlot;
     const alone = d._dragAlone;
     delete d._dropTarget;
     delete d._dragAlone;
@@ -21656,6 +21662,16 @@ function renderWbObjects(canvas) {
       delete d._moveUndoBefore;
       if (bulkOrigin) await wbSaveBulkMove(bulkOrigin);
       await wbMapTransplant(d, dropTarget.id, alone, { before });
+      return;
+    }
+    if (slot) {
+      const origins = new Map();
+      if (d._moveUndoBefore) origins.set(d.id, { x: d._moveUndoBefore.x, y: d._moveUndoBefore.y });
+      for (const entry of bulkOrigin?.values() || []) {
+        if (entry.kind === "object" && !origins.has(entry.id)) origins.set(entry.id, { x: entry.x, y: entry.y });
+      }
+      delete d._moveUndoBefore;
+      await wbMapDropAmongSiblings(d, slot, origins);
       return;
     }
     const moveBefore = d._moveUndoBefore;
