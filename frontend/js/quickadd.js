@@ -365,11 +365,6 @@ function qaSlotsOf(state) {
   }
   const given = allOn && qaIntent(state.reading, "remind") ? own.text : null;
   slots.title = typeof given === "string" && given.trim() ? given.trim() : rest.replace(/\s+/g, " ").replace(/^[\s,.;:-]+|[\s,.;:-]+$/g, "");
-  //: A day with no time is 09:00, said when it is saved (dog1 item 13).
-  if (state.surface === "reminder" && slots.date && !slots.time && !slots.seconds) {
-    slots.time = "09:00";
-    slots.defaultTime = true;
-  }
   slots.due = qaDue(slots);
   return slots;
 }
@@ -444,7 +439,7 @@ async function magicAddReminder() {
   const text = input.value.trim();
   if (!text) {
     status.classList.add("error");
-    status.textContent = "Type what to remind you of first, like “pay rent friday 9am”.";
+    status.textContent = "Type what to remind you of first, like “pay rent on the 1st at 9am”.";
     input.focus();
     return;
   }
@@ -470,7 +465,7 @@ async function magicAddReminder() {
     input.value = "";
     quickAddClear(input);
     reminderMadeUndo(reminder);
-    status.textContent = `Added “${reminder.text}”: ${relativeWhen(reminder.due_at)}.${slots?.defaultTime ? " No time was given, so it is set for 09:00." : ""} Edit it below if needed.`;
+    status.textContent = `Added “${reminder.text}”: ${relativeWhen(reminder.due_at)}. Edit it below if needed.`;
     askNotificationPermission();
     loadReminders();
   } catch (error) {
