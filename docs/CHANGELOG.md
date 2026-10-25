@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Settings: a pane whose only heading the jump list already shows (Models at half width) no longer leaves a blank bordered bar; Documents: in focus mode on a phone the thumb bar sits on the bottom edge instead of 56px above a blank band.
 - Documents: a stored editor view from before this version is reset to Live once, so the Live default shows; a view you pick afterwards is kept.
 - A friendly local address: set `TESSELLATE_LOCAL_NAME=tessellate` and the launcher, window and tray open `http://tessellate.localhost:8000` instead of localhost. Browsers resolve `*.localhost` to this computer themselves, so it needs no DNS or admin rights; the rebinding guard accepts any `*.localhost` name.
 - Documents: the history dialog keeps its head to the title and close button; the filter and "Name this version" sit together in one row that wraps on a phone.

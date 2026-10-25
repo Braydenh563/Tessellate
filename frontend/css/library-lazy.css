@@ -6570,3 +6570,13 @@ body:has(#tab-documents.doc-focus) :is(.selection-bar, .editor-menu, .inline-ai,
   justify-content: space-between;
   gap: var(--space-2);
 }
+
+/* **Focus mode owns the bottom edge.** The thumb bar stood a tab bar's height
+   above the bottom for the tabs, which focus mode draws over, leaving a blank
+   56px band under it (owner, 22-10, "the bottom has become a blank bar";
+   measured 566x758: bar 647 to 700, page to 758). */
+@media (max-width: 599.98px) {
+  #tab-documents.doc-focus .doc-phone-bar {
+    bottom: max(env(safe-area-inset-bottom, 0px), env(keyboard-inset-height, 0px), var(--keyboard-inset));
+  }
+}

@@ -2,7 +2,7 @@
 
 Generated 2026-10-25 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6213, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6183, test files 1322, tests 11760, plan headings 968.
+Counts: frontend functions 6213, frontend ids 2537, CSS sections 496, backend routes 617, backend modules 6183, test files 1323, tests 11762, plan headings 968.
 
 ## Frontend functions (6213)
 
@@ -10137,7 +10137,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/improve-lazy.css | 110 |
 | frontend/css/inbox-lazy.css | 306 |
 | frontend/css/lan-lazy.css | 131 |
-| frontend/css/library-lazy.css | 6572 |
+| frontend/css/library-lazy.css | 6582 |
 | frontend/css/lightbox-lazy.css | 427 |
 | frontend/css/manual-lazy.css | 161 |
 | frontend/css/meetings-lazy.css | 543 |
@@ -10151,7 +10151,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/reply-kit-lazy.css | 523 |
 | frontend/css/reveal-lazy.css | 10 |
 | frontend/css/search-lazy.css | 153 |
-| frontend/css/settings-controls-lazy.css | 102 |
+| frontend/css/settings-controls-lazy.css | 110 |
 | frontend/css/settings-data-lazy.css | 60 |
 | frontend/css/sidebar-folds-lazy.css | 28 |
 | frontend/css/tidy-lazy.css | 333 |
@@ -18521,7 +18521,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11760)
+## Tests (11762)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19561,6 +19561,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_settings_switch_divider.py | 2 |
 | tests/test_settings_weight.py | 3 |
 | tests/test_share_target.py | 3 |
+| tests/test_shell_halfwindow.py | 2 |
 | tests/test_shortcut_chip_pencil.py | 3 |
 | tests/test_shortcut_hints.py | 9 |
 | tests/test_sidebar_head_1311.py | 2 |
