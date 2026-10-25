@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: resizing a group selection carries each shape's own outline, the connectors touching its members and a size readout live, as a single item's resize does; turning a group carries connectors to shapes and the shapes' outlines too (measured: outlines, readout and a link to a member followed mid-drag, 1/5 checks before, 5/5 after).
 - Whiteboard: turning a shape by its grip turns its selection box and grip with it, so the box holds the shape and the grip stays under the pointer (measured at 45 degrees on a 200x60 shape: box 204x64 around a 184x184 turn before, 190x189 holding it after; grip 44px from the pointer before, under it after).
 - Whiteboard: the selection bar stays one row on a narrow window: when it would wrap, its order pair, dash pattern and arrange runs (then ends and line shape) move into its More menu as the same controls, and back when there is room (measured at 720: a shape bar 102px to 54px tall, a line bar 102 to 54, a multi-selection 102 to 54; 1440 unchanged at 38).
 - Ask: "How long is the train from Lisbon to Porto?" is answered from the notes again rather than read as a word count of the Trains note ("how long is" counts only this/my/the note, document or text, or quoted text); a reading time no longer says "a under a min".

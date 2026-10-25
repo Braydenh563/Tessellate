@@ -34,3 +34,15 @@ def test_sketch_rotate_turns_its_selection_box_live():
     handles = _function(WB, "wbDrawSketchHandles")
     assert "group.attr(\"transform\", `rotate(${currentAngle} ${centerX} ${centerY})`)" in handles
     assert 'rotateLiveD = null;\n            group.attr("transform", null);' in handles
+
+
+def test_group_resize_carries_member_outlines_links_and_readout():
+    multi = _function(WB, "wbRenderMultiSelectionHandles")
+    assert "wbFollowMultiOutline(row.entry.item.id, newD)" in multi
+    assert "if (sizeLinks.length) wbUpdateLinkedSketches(null, sizeLinks)" in multi
+    assert "wbShowSizeReadout({ x: live.minX" in multi
+    # The turn follows links to shapes too, not only to cards.
+    assert "spinLinks = wbMultiLiveLinks(rows)" in multi
+    # The follow path is dropped on save and on Escape, never left behind.
+    assert "delete row.entry.item._dragLiveD" in _function(WB, "wbSaveMultiSnapshot")
+    assert "delete item._dragLiveD" in _function(WB, "wbRestoreMultiSnapshot")

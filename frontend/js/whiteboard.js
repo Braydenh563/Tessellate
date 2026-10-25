@@ -19108,6 +19108,7 @@ function wbRestoreMultiSnapshot(rows) {
     const item = row.entry.item;
     if (row.entry.kind === "sketch") {
       delete item._liveD;
+      delete item._dragLiveD;
       const selector = `.sketch-group[data-id="${item.id}"]`;
       document.querySelector(`${selector} .sketch-path`)?.setAttribute("d", row.d);
       document.querySelector(`${selector} .sketch-hitbox`)?.setAttribute("d", row.d);
@@ -19116,6 +19117,29 @@ function wbRestoreMultiSnapshot(rows) {
     }
     wbRestoreBox(row.entry.kind, item, row.before);
   }
+}
+
+//: **What follows a group's resize or turn live** (the wb ledger, 10-25):
+//: every connector touching a member, once (a link between two members is one
+//: path), and each shape member's own outline, which is drawn in the board
+//: layer apart from the group's box and stayed at the old size until release.
+function wbMultiLiveLinks(rows) {
+  const index = wbLinkSketchIndex();
+  return [...new Set(rows.flatMap((r) => wbLinkedSketchesFor(r.entry.item.id, r.entry.kind, index)))];
+}
+
+function wbMultiMemberOutline(id) {
+  return document.querySelector(`#wb-zoom-group .wb-sketch-handle-group[data-sketch-id="${id}"]`);
+}
+
+function wbFollowMultiOutline(id, liveD) {
+  const box = wbMultiMemberOutline(id)?.querySelector(".wb-sketch-selection-box");
+  const bb = liveD ? wbPathBBox(liveD) : null;
+  if (!box || !bb) return;
+  box.setAttribute("x", bb.minX - 2);
+  box.setAttribute("y", bb.minY - 2);
+  box.setAttribute("width", (bb.maxX - bb.minX) + 4);
+  box.setAttribute("height", (bb.maxY - bb.minY) + 4);
 }
 
 //: Saving a whole group, one write at a time. Each write is the item's whole
@@ -19131,6 +19155,7 @@ async function wbSaveMultiSnapshot(rows) {
     if (row.entry.kind === "sketch") {
       const live = row.entry.item._liveD;
       delete row.entry.item._liveD;
+      delete row.entry.item._dragLiveD;
       if (live) await wbSaveSketchD(row.entry.item, live);
     } else if (row.entry.kind === "node") {
       await wbSaveNode(row.entry.item);
@@ -19259,7 +19284,7 @@ function wbRenderMultiSelectionHandles() {
   //: start rather than read back off the items, which would compound each
   //: frame's rounding into a shape that drifts while you hold the mouse
   //: still, the accumulation bug the single-shape handles document.
-  let start = null;
+  let start = null, sizeLinks = [];
   let groupGesture = null;
   for (const handle of ["nw", "n", "ne", "e", "se", "s", "sw", "w"]) {
     const hx = handle.includes("w") ? bbox.minX : handle.includes("e") ? bbox.maxX : (bbox.minX + bbox.maxX) / 2;
@@ -19279,8 +19304,13 @@ function wbRenderMultiSelectionHandles() {
             rawDY = 0;
             start = wbMultiSnapshot(boxes);
             const rows = start;
+            sizeLinks = wbMultiLiveLinks(rows);
+            const links = sizeLinks;
             groupGesture = wbBeginGesture(() => {
               wbRestoreMultiSnapshot(rows);
+              for (const row of rows) if (row.entry.kind === "sketch") wbFollowMultiOutline(row.entry.item.id, row.d);
+              if (links.length) wbUpdateLinkedSketches(null, links);
+              wbClearAlignmentGuides();
               layoutGroupChrome(bbox);
             });
           })
@@ -19312,6 +19342,8 @@ function wbRenderMultiSelectionHandles() {
                 document.querySelector(`${selector} .sketch-hitbox`)?.setAttribute("d", newD);
                 wbLayoutShapeLabel(document.querySelector(selector));
                 row.entry.item._liveD = newD;
+                row.entry.item._dragLiveD = newD;
+                wbFollowMultiOutline(row.entry.item.id, newD);
                 continue;
               }
               const item = row.entry.item;
@@ -19337,9 +19369,15 @@ function wbRenderMultiSelectionHandles() {
                 el.style.height = `${item.height}px`;
               }
             }
-            layoutGroupChrome(scaledBox(t));
+            if (sizeLinks.length) wbUpdateLinkedSketches(null, sizeLinks);
+            const live = scaledBox(t);
+            layoutGroupChrome(live);
+            //: The size beside the box, as a single item's resize shows it.
+            wbShowAlignmentGuides([]);
+            wbShowSizeReadout({ x: live.minX, y: live.minY, w: live.maxX - live.minX, h: live.maxY - live.minY });
           })
           .on("end", async () => {
+            wbClearAlignmentGuides();
             if (!start) return;
             const rows = start;
             start = null;
@@ -19382,11 +19420,14 @@ function wbRenderMultiSelectionHandles() {
           const rows = spin;
           //: Each link touching a turned card or box, once (a link between two
           //: selected items is one path), so its ends follow the turn live.
-          const index = wbLinkSketchIndex();
-          spinLinks = [...new Set(rows.filter((r) => r.entry.kind !== "sketch")
-            .flatMap((r) => wbLinkedSketchesFor(r.entry.item.id, r.entry.kind, index)))];
+          //: Shapes too: a turned shape's live path is `_dragLiveD`, which the
+          //: link's end reads, so a connector to a shape follows the turn.
+          spinLinks = wbMultiLiveLinks(rows);
+          const links = spinLinks;
           groupGesture = wbBeginGesture(() => {
             wbRestoreMultiSnapshot(rows);
+            for (const row of rows) wbMultiMemberOutline(row.entry.item.id)?.removeAttribute("transform");
+            if (links.length) wbUpdateLinkedSketches(null, links);
             group.attr("transform", null);
           });
         })
@@ -19407,6 +19448,9 @@ function wbRenderMultiSelectionHandles() {
               document.querySelector(`${selector} .sketch-hitbox`)?.setAttribute("d", newD);
               wbLayoutShapeLabel(document.querySelector(selector));
               row.entry.item._liveD = newD;
+              row.entry.item._dragLiveD = newD;
+              //: Its outline turns about the same centre as the group's box.
+              wbMultiMemberOutline(row.entry.item.id)?.setAttribute("transform", `rotate(${angle} ${centerX} ${centerY})`);
               continue;
             }
             const item = row.entry.item;
@@ -19508,7 +19552,8 @@ function wbDrawSketchHandles(sketch, { outlineOnly = false } = {}) {
 
   const group = d3.select("#wb-zoom-group")
     .append("g")
-    .attr("class", "wb-sketch-handle-group");
+    .attr("class", "wb-sketch-handle-group")
+    .attr("data-sketch-id", sketch.id);
 
   //: **One selection box for every kind** (WHITEBOARD_PLAN.md decision 6). A
   //: card and a text box wear a 1px `--accent` outline; a sketch wore a dashed
