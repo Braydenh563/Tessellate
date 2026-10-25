@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Web search that cannot run: the reply says how to start the search service (a one-line Docker command) and offers the setting; with SearXNG chosen and no address saved it says web search is not set up. The Guide's web search topic repeats the command.
 - The Persona picker in the chat dock is disabled, with its reason as the tooltip, while no model is connected, and comes back by itself when one answers.
 - Composer awareness: Ask, Chat and the Guide send the tab, the open document and the last three actions (local only), and a composed reply opens with what the app can see and ends with a pick-up-where-you-left-off step; a private note is never named.
 - Faster start: the generative background's styles (bg-art.js, 20 KB gzipped) load only when the art is on or the Appearance grid draws its previews, taking boot JS from 588,399 to 568,431 bytes gzipped.

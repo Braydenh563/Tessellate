@@ -2,7 +2,7 @@
 
 Generated 2026-10-25 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6218, frontend ids 2539, CSS sections 497, backend routes 618, backend modules 6246, test files 1331, tests 11847, plan headings 968.
+Counts: frontend functions 6218, frontend ids 2539, CSS sections 497, backend routes 618, backend modules 6246, test files 1331, tests 11850, plan headings 968.
 
 ## Frontend functions (6218)
 
@@ -11778,9 +11778,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `_host` | src/tessellate/ai/composer_web.py:59 |
-| `page_summary` | src/tessellate/ai/composer_web.py:93 |
+| `page_summary` | src/tessellate/ai/composer_web.py:115 |
 | `reads_link` | src/tessellate/ai/composer_web.py:45 |
-| `search_down` | src/tessellate/ai/composer_web.py:81 |
+| `search_down` | src/tessellate/ai/composer_web.py:90 |
 | `unreadable` | src/tessellate/ai/composer_web.py:74 |
 | `url_in` | src/tessellate/ai/composer_web.py:34 |
 | `web_off` | src/tessellate/ai/composer_web.py:63 |
@@ -12124,41 +12124,41 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_of` | src/tessellate/ai/help_chat.py:2447 |
-| `_aware` | src/tessellate/ai/help_chat.py:2981 |
-| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2378 |
-| `_guide_lead` | src/tessellate/ai/help_chat.py:2895 |
-| `_guide_opening` | src/tessellate/ai/help_chat.py:2911 |
-| `_help_sentences` | src/tessellate/ai/help_chat.py:2878 |
-| `_keyword_in` | src/tessellate/ai/help_chat.py:2368 |
-| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2300 |
-| `_keyword_regex` | src/tessellate/ai/help_chat.py:2364 |
-| `_matching_topics` | src/tessellate/ai/help_chat.py:2497 |
-| `_meaning_topics` | src/tessellate/ai/help_chat.py:2577 |
-| `_normalise_keys` | src/tessellate/ai/help_chat.py:2323 |
-| `_place` | src/tessellate/ai/help_chat.py:2852 |
-| `_preference` | src/tessellate/ai/help_chat.py:2934 |
-| `_prompt_for` | src/tessellate/ai/help_chat.py:2725 |
-| `_read_as` | src/tessellate/ai/help_chat.py:3046 |
-| `_reading_topics` | src/tessellate/ai/help_chat.py:2469 |
-| `_repaired` | src/tessellate/ai/help_chat.py:2486 |
-| `_second_sentence` | src/tessellate/ai/help_chat.py:2882 |
-| `_state_line` | src/tessellate/ai/help_chat.py:2943 |
-| `_stated_lead` | src/tessellate/ai/help_chat.py:2952 |
-| `answer` | src/tessellate/ai/help_chat.py:3126 |
-| `answer_stream` | src/tessellate/ai/help_chat.py:3061 |
-| `badges_for` | src/tessellate/ai/help_chat.py:2665 |
-| `composed_answer` | src/tessellate/ai/help_chat.py:2963 |
-| `help_block_for` | src/tessellate/ai/help_chat.py:3207 |
-| `help_listing` | src/tessellate/ai/help_chat.py:2636 |
-| `help_sentences` | src/tessellate/ai/help_chat.py:2861 |
-| `names_app` | src/tessellate/ai/help_chat.py:3191 |
-| `offline_answer` | src/tessellate/ai/help_chat.py:2993 |
-| `social_reply` | src/tessellate/ai/help_chat.py:2825 |
-| `source_names` | src/tessellate/ai/help_chat.py:2632 |
-| `system_answer` | src/tessellate/ai/help_chat.py:2614 |
-| `topic_title` | src/tessellate/ai/help_chat.py:2600 |
-| `topics_for` | src/tessellate/ai/help_chat.py:2679 |
+| `_act_of` | src/tessellate/ai/help_chat.py:2451 |
+| `_aware` | src/tessellate/ai/help_chat.py:2985 |
+| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2382 |
+| `_guide_lead` | src/tessellate/ai/help_chat.py:2899 |
+| `_guide_opening` | src/tessellate/ai/help_chat.py:2915 |
+| `_help_sentences` | src/tessellate/ai/help_chat.py:2882 |
+| `_keyword_in` | src/tessellate/ai/help_chat.py:2372 |
+| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2304 |
+| `_keyword_regex` | src/tessellate/ai/help_chat.py:2368 |
+| `_matching_topics` | src/tessellate/ai/help_chat.py:2501 |
+| `_meaning_topics` | src/tessellate/ai/help_chat.py:2581 |
+| `_normalise_keys` | src/tessellate/ai/help_chat.py:2327 |
+| `_place` | src/tessellate/ai/help_chat.py:2856 |
+| `_preference` | src/tessellate/ai/help_chat.py:2938 |
+| `_prompt_for` | src/tessellate/ai/help_chat.py:2729 |
+| `_read_as` | src/tessellate/ai/help_chat.py:3050 |
+| `_reading_topics` | src/tessellate/ai/help_chat.py:2473 |
+| `_repaired` | src/tessellate/ai/help_chat.py:2490 |
+| `_second_sentence` | src/tessellate/ai/help_chat.py:2886 |
+| `_state_line` | src/tessellate/ai/help_chat.py:2947 |
+| `_stated_lead` | src/tessellate/ai/help_chat.py:2956 |
+| `answer` | src/tessellate/ai/help_chat.py:3130 |
+| `answer_stream` | src/tessellate/ai/help_chat.py:3065 |
+| `badges_for` | src/tessellate/ai/help_chat.py:2669 |
+| `composed_answer` | src/tessellate/ai/help_chat.py:2967 |
+| `help_block_for` | src/tessellate/ai/help_chat.py:3211 |
+| `help_listing` | src/tessellate/ai/help_chat.py:2640 |
+| `help_sentences` | src/tessellate/ai/help_chat.py:2865 |
+| `names_app` | src/tessellate/ai/help_chat.py:3195 |
+| `offline_answer` | src/tessellate/ai/help_chat.py:2997 |
+| `social_reply` | src/tessellate/ai/help_chat.py:2829 |
+| `source_names` | src/tessellate/ai/help_chat.py:2636 |
+| `system_answer` | src/tessellate/ai/help_chat.py:2618 |
+| `topic_title` | src/tessellate/ai/help_chat.py:2604 |
+| `topics_for` | src/tessellate/ai/help_chat.py:2683 |
 
 ### src/tessellate/ai/help_topics_more.py (2)
 
@@ -18629,7 +18629,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11847)
+## Tests (11850)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -18863,7 +18863,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_voice.py | 10 |
 | tests/test_composer_voice_answers.py | 12 |
 | tests/test_composer_voice_turns.py | 12 |
-| tests/test_composer_web_2210.py | 9 |
+| tests/test_composer_web_2210.py | 12 |
 | tests/test_compress_chat_tool.py | 17 |
 | tests/test_compress_context.py | 9 |
 | tests/test_compression.py | 8 |

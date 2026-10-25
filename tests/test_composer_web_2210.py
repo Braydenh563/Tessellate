@@ -143,3 +143,23 @@ def test_a_search_that_cannot_run_names_the_service_and_the_setting(client, sess
     assert "search" in text.lower() and "8888" in text
     assert "settings" in text.lower()
     assert "general knowledge" not in text
+
+
+def test_a_down_service_says_how_to_start_it_and_offers_the_setting():
+    out = composer_web.search_down("connection refused", "http://127.0.0.1:8888", "auto")
+    assert composer_web.DOCKER_ONE_LINER in out["text"] and "Auto-detect" in out["text"]
+    assert out["offer"] == {"kind": "open", "surface": "settings:websearch", "label": composer_web.SETTINGS_LABEL}
+
+
+def test_web_search_that_was_never_set_up_says_so_and_links_the_setting():
+    out = composer_web.search_down("no address", "", "searxng")
+    assert "not set up" in out["text"] and "not answering" not in out["text"]
+    assert composer_web.DOCKER_ONE_LINER in out["text"]
+    assert out["offer"]["surface"] == "settings:websearch"
+
+
+def test_the_guide_repeats_the_one_liner():
+    from tessellate.ai import help_chat
+
+    body = next(t["body"] for t in help_chat.HELP_TOPICS if t["id"] == "websearch")
+    assert composer_web.DOCKER_ONE_LINER in body
