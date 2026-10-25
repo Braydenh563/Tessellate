@@ -50,7 +50,11 @@ from tessellate.api.routes_whiteboard import (
     MAP_REFERENCE_KINDS,
     MAP_TOPIC_KIND,
     MEDIA_URL_RE,
+    WhiteboardObjectBase,
     WhiteboardObjectData,
+    WhiteboardSketchBase,
+    _require_board,
+    _require_object_data,
     _board_settings,
     _object_state,
     _on_current_layer,
@@ -1109,6 +1113,101 @@ def place_library_item(board_id: int, body: PlaceBody, db: Session = Depends(get
         "name": entry_data.get("name"),
         "sketches": [{"id": s.id, "board_id": s.board_id, "data": s.data, "x": s.x, "y": s.y, "z": s.z, "group_id": s.group_id} for s in made["sketches"]],
         "objects": [_object_to_out(o).model_dump(mode="json") for o in made["objects"]],
+    }
+
+
+MAX_PASTE_ITEMS = 500
+
+
+class PasteItem(BaseModel):
+    """One copied thing. `key` is the client's name for it, so a copied link
+    can name the two ends (`src`, `dst`) without knowing their new ids."""
+
+    key: str = Field(min_length=1, max_length=40)
+    object: WhiteboardObjectBase | None = None
+    sketch: WhiteboardSketchBase | None = None
+    src: str | None = Field(default=None, max_length=40)
+    dst: str | None = Field(default=None, max_length=40)
+
+
+class PasteBody(BaseModel):
+    items: list[PasteItem] = Field(min_length=1, max_length=MAX_PASTE_ITEMS)
+
+
+@router.post("/whiteboard/boards/{board_id}/paste", status_code=201)
+def paste_board_items(board_id: int, body: PasteBody, db: Session = Depends(get_session)) -> dict:
+    """**A paste is one request** (WHITEBOARD_PLAN 1355): the copied objects
+    and sketches are made in one transaction, then each copied link is made
+    with its two ends pointed at the new rows, so a fifty-item paste is one
+    round trip rather than fifty and a link between copies stays a link.
+    `keys` maps each item's client key to its new kind and id."""
+    target = None if board_id == 0 else board_id
+    _require_board(db, target)
+    keys: dict[str, tuple[str, int]] = {}
+    made_objects, made_sketches = [], []
+
+    def add_object(item: PasteItem) -> None:
+        b = item.object
+        _require_object_data(b)
+        row = WhiteboardObject(
+            kind=b.kind, board_id=target, x=b.x, y=b.y, z=b.z, width=b.width, height=b.height,
+            rotation=b.rotation, group_id=b.group_id,
+            data=json.dumps(_on_current_layer(db, target, b.data.model_dump(mode="json", exclude_none=True)), separators=(",", ":")),
+        )
+        db.add(row)
+        db.flush()
+        keys[item.key] = ("object", row.id)
+        made_objects.append(row)
+
+    def add_sketch(item: PasteItem) -> None:
+        b = item.sketch
+        try:
+            parsed = json.loads(b.data)
+        except ValueError:
+            parsed = None
+        data = b.data
+        if isinstance(parsed, dict):
+            if item.src or item.dst:
+                for end, key in (("source", item.src), ("target", item.dst)):
+                    if key and key in keys:
+                        parsed[f"{end}Kind"], parsed[f"{end}Id"] = keys[key]
+            data = json.dumps(_on_current_layer(db, target, parsed))
+        row = WhiteboardSketch(board_id=target, data=data, x=b.x, y=b.y, z=b.z, group_id=b.group_id)
+        db.add(row)
+        db.flush()
+        keys[item.key] = ("sketch", row.id)
+        made_sketches.append(row)
+
+    # Links last: their ends have to exist before they can point at them.
+    for item in body.items:
+        if item.object and not (item.src or item.dst):
+            add_object(item)
+    for item in body.items:
+        if item.sketch and not (item.src or item.dst):
+            add_sketch(item)
+    for item in body.items:
+        if item.sketch and (item.src or item.dst):
+            add_sketch(item)
+    events.record(db, "placed", "board", board_id, "pasted items",
+                  payload={"after": {"sketches": [s.id for s in made_sketches], "objects": [o.id for o in made_objects]}})
+    for s in made_sketches:
+        events.record(db, "created", "whiteboard_sketch", s.id, f"drawing on board {board_id} (paste)",
+                      payload={"after": _sketch_state(s)})
+    for o in made_objects:
+        events.record(db, "created", "whiteboard_object", o.id, f"{o.kind} on board {board_id} (paste)",
+                      payload={"after": _object_state(o)})
+    db.commit()
+    for row in made_sketches + made_objects:
+        db.refresh(row)
+    for o in made_objects:
+        if o.kind == "image":
+            from tessellate.core import media_process
+
+            media_process.process_referenced_uploads(db, deps.get_config().data_dir / "media", o.data)
+    return {
+        "keys": {k: {"kind": v[0], "id": v[1]} for k, v in keys.items()},
+        "sketches": [{"id": s.id, "board_id": s.board_id, "data": s.data, "x": s.x, "y": s.y, "z": s.z, "group_id": s.group_id} for s in made_sketches],
+        "objects": [_object_to_out(o).model_dump(mode="json") for o in made_objects],
     }
 
 

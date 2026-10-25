@@ -5025,7 +5025,9 @@ function wbOwnsChord(e) {
   }
   //: Ctrl+Shift+G is Ungroup here (agent mode in the app); Ctrl+Shift+P is
   //: the Format panel here (clip a note in the app, decision 19).
-  return (e.ctrlKey || e.metaKey) && e.shiftKey && !e.altKey && ["g", "p"].includes(e.key.toLowerCase());
+  //: And Ctrl+Shift+V is Paste in place while the board holds a copy.
+  return (e.ctrlKey || e.metaKey) && e.shiftKey && !e.altKey
+    && (["g", "p"].includes(e.key.toLowerCase()) || (e.key.toLowerCase() === "v" && Boolean(wbClipboard)));
 }
 
 async function wbFlushNudge() {
@@ -7638,16 +7640,16 @@ async function wbDropCopies(befores) {
 //: copied whole is a new group, and a shape moves by its path, not its x/y
 //: (see `wbTransformPathD`: a sketch's own x/y do not place it).
 async function wbCreateCopies(items, dx, dy) {
-  const created = [];
   const groups = new Map();
-  for (const { kind, payload } of items) {
-    const body = { ...payload, board_id: window.currentBoardId };
+  const wire = items.map(({ kind, payload, key, src, dst }, i) => {
+    const body = { ...payload, board_id: window.currentBoardId ?? null };
     if (kind === "sketch") {
-      const parsed = wbSketchParsedData({ data: body.data });
-      if (parsed && (dx || dy)) {
-        parsed.d = wbTransformPathD(parsed.d, { dx, dy });
-        body.data = JSON.stringify(parsed);
+      const parsed = JSON.parse(body.data || "{}");
+      if (dx || dy) {
+        if (typeof parsed.d === "string") parsed.d = wbTransformPathD(parsed.d, { dx, dy });
+        else wbShiftLinkGeometry(parsed, dx, dy);
       }
+      body.data = JSON.stringify(parsed);
     } else {
       body.x = (body.x || 0) + dx;
       body.y = (body.y || 0) + dy;
@@ -7658,16 +7660,36 @@ async function wbCreateCopies(items, dx, dy) {
       }
       body.group_id = groups.get(body.group_id);
     }
-    const { base, list } = WB_KIND_INFO[kind];
-    try {
-      const made = await apiJson(base, { method: "POST", body: JSON.stringify(body) });
-      wbState[list].push(made);
-      created.push({ action: "create", kind, id: made.id });
-    } catch (err) {
-      toast(err.message || voiceLine("failed", { what: "make that copy" }), true);
-    }
+    const row = { key: key || `i${i}` };
+    if (kind === "sketch") Object.assign(row, { sketch: body, src: src || null, dst: dst || null });
+    else row.object = body;
+    return row;
+  });
+  //: One request for the whole paste (the server makes the rows in one
+  //: transaction and points each copied link at its new ends), where it was
+  //: one request per item: measured in WHITEBOARD_PLAN 1355.
+  let res;
+  try {
+    res = await apiJson(`/whiteboard/boards/${window.currentBoardId ?? 0}/paste`, { method: "POST", body: JSON.stringify({ items: wire }) });
+  } catch (err) {
+    toast(err.message || voiceLine("failed", { what: "make that copy" }), true);
+    return [];
   }
-  return created;
+  wbState.objects.push(...res.objects);
+  wbState.sketches.push(...res.sketches);
+  return [
+    ...res.objects.map((o) => ({ action: "create", kind: "object", id: o.id })),
+    ...res.sketches.map((o) => ({ action: "create", kind: "sketch", id: o.id })),
+  ];
+}
+
+//: A copied link carries its own free ends and bends in board units, so a
+//: moved copy moves them too (a path's `d` is moved by `wbTransformPathD`).
+function wbShiftLinkGeometry(parsed, dx, dy) {
+  for (const name of ["sourcePoint", "targetPoint"]) {
+    if (parsed[name]) parsed[name] = { x: parsed[name].x + dx, y: parsed[name].y + dy };
+  }
+  if (Array.isArray(parsed.points)) parsed.points = parsed.points.map((p) => ({ x: p.x + dx, y: p.y + dy }));
 }
 
 //: One undo step for a whole drag: the item under the pointer, the members
@@ -7846,23 +7868,49 @@ function wbCopyableSelection({ quiet = false } = {}) {
       })();
   if (entries.length === 0) return null;
   const items = [];
-  let cards = 0, links = 0;
+  const picked = [];
+  let cards = 0;
   const box = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
   for (const e of entries) {
     if (e.kind === "node") { cards++; continue; }
-    if (e.kind === "sketch" && !wbSketchParsedData(e.item)) { links++; continue; }
-    items.push({ kind: e.kind, payload: WB_KIND_INFO[e.kind].payload(e.item) });
+    if (e.kind === "sketch" && wbIsLinkSketch(e.item)) picked.push(e);
+    else items.push({ kind: e.kind, key: `${e.kind}:${e.id}`, payload: WB_KIND_INFO[e.kind].payload(e.item) });
     box.minX = Math.min(box.minX, e.bbox.minX);
     box.minY = Math.min(box.minY, e.bbox.minY);
     box.maxX = Math.max(box.maxX, e.bbox.maxX);
     box.maxY = Math.max(box.maxY, e.bbox.maxY);
   }
-  if (items.length === 0) {
+  const links = wbCopiedLinks(new Set(items.map((i) => i.key)), new Set(picked.map((e) => e.id)));
+  if (items.length + links.length === 0) {
     if (!quiet && cards) toast("A note card can't be copied: drag it, or drop the note again from the Library.");
-    else if (!quiet && links) toast("A link can't be copied: copy the things it connects instead.");
+    else if (!quiet && picked.length) toast("A link between things left behind can't be copied: copy the things it connects.");
     return null;
   }
-  return { items, box };
+  return { items: items.concat(links), things: items.length, box, board: window.currentBoardId ?? 0 };
+}
+
+function wbIsLinkSketch(sketch) {
+  return /"type"\s*:\s*"link-/.test(sketch.data || "");
+}
+
+//: The links that go with a copy: every link between two copied things (the
+//: owner, 2026-10-26: copying several things lost the links between them),
+//: and a selected link with one free end whose attached end is copied. A
+//: link to a thing left behind is dropped, not left pointing at the original.
+function wbCopiedLinks(have, selectedIds) {
+  const out = [];
+  for (const s of wbState.sketches || []) {
+    if (!wbIsLinkSketch(s)) continue;
+    let p;
+    try { p = JSON.parse(s.data); } catch { continue; }
+    const end = (side) => (p[`${side}Id`] == null ? null : `${p[`${side}Kind`] || "node"}:${p[`${side}Id`]}`);
+    const src = end("source"), dst = end("target");
+    const attached = [src, dst].filter(Boolean);
+    if (attached.some((k) => !have.has(k))) continue;
+    if (attached.length < 2 && !selectedIds.has(s.id)) continue;
+    out.push({ kind: "sketch", key: `sketch:${s.id}`, src, dst, payload: WB_KIND_INFO.sketch.payload(s) });
+  }
+  return out;
 }
 
 function wbCopySelection() {
@@ -7887,33 +7935,29 @@ function wbCopySelection() {
   } catch {
     // No async clipboard here.
   }
-  toast(copied.items.length > 1 ? `Copied ${copied.items.length} items.` : "Copied.");
+  toast(copied.things > 1 ? `Copied ${copied.things} items.` : "Copied.");
   return true;
 }
 
-//: Applied to both axes when a copy is not placed at the pointer (Ctrl+D,
-//: or a paste with the pointer off the canvas), so the copy lands visibly
-//: beside the original rather than exactly on top of it.
-const WB_PASTE_OFFSET = 24;
-
 //: Make `copied` on the board, centred on `at` (board units) when given,
-//: else offset from where it was copied; select what was made and record
-//: it as one undo step.
-async function wbPlaceCopies(copied, at) {
+//: else moved by `step` grid steps (0 is in place); select what was made
+//: and record it as one undo step.
+async function wbPlaceCopies(copied, at, step = 1) {
   if (!copied?.items.length) return [];
   const { box } = copied;
-  const dx = at ? at[0] - (box.minX + box.maxX) / 2 : WB_PASTE_OFFSET;
-  const dy = at ? at[1] - (box.minY + box.maxY) / 2 : WB_PASTE_OFFSET;
+  const dx = at ? at[0] - (box.minX + box.maxX) / 2 : step * WB_GRID_SPACING;
+  const dy = at ? at[1] - (box.minY + box.maxY) / 2 : step * WB_GRID_SPACING;
   const created = await wbCreateCopies(copied.items, dx, dy);
   if (created.length === 0) return created;
   wbPushDragUndo(created);
   wbSelectToolRef?.("select");
-  if (created.length === 1) {
-    selectWbItem(created[0].kind, created[0].id);
+  const things = created.filter((c) => !(c.kind === "sketch" && wbIsLinkSketch(wbFindItem("sketch", c.id) || {})));
+  if (things.length === 1) {
+    selectWbItem(things[0].kind, things[0].id);
   } else {
     wbSelectedItem = null;
     wbMultiSelection.clear();
-    for (const c of created) wbMultiSelection.add(wbMultiKey(c.kind, c.id));
+    for (const c of things) wbMultiSelection.add(wbMultiKey(c.kind, c.id));
     wbApplySelectionHighlight();
     wbUpdateSelectionBar();
   }
@@ -7921,9 +7965,19 @@ async function wbPlaceCopies(copied, at) {
   return created;
 }
 
-async function wbPasteClipboard(at = wbPointerOnBoard()) {
-  if (!wbClipboard) return;
-  await wbPlaceCopies(wbClipboard, at);
+//: **Paste steps one grid square each time** (the owner, 2026-10-26: copy,
+//: cut and paste with several things). The first paste on the board the
+//: copy came from lands one step down and right, the next two, and so on; on
+//: another board the first lands in place. Ctrl+Shift+V is always in place,
+//: and "Paste here" in the canvas menu goes to the pointer.
+async function wbPasteClipboard({ at = null, inPlace = false } = {}) {
+  const clip = wbClipboard;
+  if (!clip) return;
+  const here = window.currentBoardId ?? 0;
+  const seen = clip.pasted?.board === here ? clip.pasted.n : (clip.board === here ? 0 : -1);
+  const n = inPlace ? 0 : seen + 1;
+  if (!inPlace && !at) clip.pasted = { board: here, n };
+  await wbPlaceCopies(clip, at, n);
 }
 
 // --- Paste from other apps (FEAT-09) ----------------------------------------
@@ -8401,7 +8455,7 @@ async function wbDuplicateSelection() {
     return;
   }
   const copied = wbCopyableSelection();
-  if (copied) await wbPlaceCopies(copied, null);
+  if (copied) await wbPlaceCopies(copied, null, 1);
 }
 
 // Cut: ROADMAP §89.12, asked as a question alongside the context menu
@@ -15746,6 +15800,13 @@ async function initWhiteboard() {
       wbCutSelection();
       return;
     }
+    //: Ctrl+Shift+V: the board's copy again, exactly where it was. With
+    //: nothing copied here the browser's own plain-text paste goes on.
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === "v" && wbClipboard) {
+      e.preventDefault();
+      wbPasteClipboard({ inPlace: true });
+      return;
+    }
     if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === "v") {
       //: If no paste event arrives (a shell that keeps the clipboard to
       //: itself), the board's own clipboard is pasted as before.
@@ -16532,10 +16593,10 @@ async function initWhiteboard() {
     const camera = d3.select(containerEl);
     const items = [];
     if (wbClipboard) {
-      const count = wbClipboard.items.length;
+      const count = wbClipboard.things;
       items.push(makeMenuItem(
         count > 1 ? `ph:clipboard-text Paste ${count} items here` : "ph:clipboard-text Paste here",
-        "Ctrl+V pastes at the pointer", () => wbPasteClipboard([x, y])
+        "Ctrl+V pastes beside the original, Ctrl+Shift+V in place", () => wbPasteClipboard({ at: [x, y] })
       ));
     }
     items.push(

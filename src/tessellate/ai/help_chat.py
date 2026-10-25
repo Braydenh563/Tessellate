@@ -1439,7 +1439,7 @@ HELP_TOPICS.extend(
             "body": (
                 (
                     "Whiteboard selection: Shift+click adds, Ctrl+A selects all, Ctrl+D "
-                    "duplicates, Alt and drag copies as you drag, Ctrl+V pastes at the pointer, the arrows "
+                    "duplicates, Alt-drag copies, Ctrl+V pastes a step along (Ctrl+Shift+V in place), the arrows "
                     "nudge (Shift: further; Ctrl+Shift: resize), Shift+H and Shift+V flip, "
                     "Shift and drag keeps to one axis, Shift and a corner keeps "
                     "proportions, Alt resizes from the centre; a move, resize or box drawn out shows guides "

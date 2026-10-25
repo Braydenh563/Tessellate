@@ -121,6 +121,7 @@ const WB_COMMANDS = [
   { id: "copy", group: "Edit", icon: "ph:copy-simple", label: "Copy", keys: "Ctrl+C", surface: "board", needs: "selection", run: () => wbCopySelection() },
   { id: "cut", group: "Edit", icon: "ph:scissors", label: "Cut", keys: "Ctrl+X", surface: "board", needs: "selection", run: () => wbCutSelection() },
   { id: "paste", group: "Edit", icon: "ph:clipboard", label: "Paste", keys: "Ctrl+V", surface: "board", run: () => wbPasteClipboard() },
+  { id: "paste-in-place", group: "Edit", icon: "ph:clipboard", label: "Paste in place", keys: "Ctrl+Shift+V", surface: "board", run: () => wbPasteClipboard({ inPlace: true }) },
   { id: "duplicate", group: "Edit", icon: "ph:copy", label: "Duplicate", keys: "Ctrl+D", surface: "both", needs: "selection", run: () => wbDuplicateSelection() },
   { id: "delete", group: "Edit", icon: "ph:trash", label: "Delete", keys: "Del", surface: "both", needs: "selection", run: () => deleteWbSelection() },
   { id: "copy-style", group: "Edit", icon: "ph:eyedropper", label: "Copy style", keys: "Ctrl+Alt+C", surface: "board", needs: "one", run: () => wbCopySelectedStyle() },
