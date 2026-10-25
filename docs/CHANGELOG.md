@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- With no model, a composed answer ends with a line pointing at what to do next from your newest note ("I can see you've been working on ..."), worded differently from chat to chat; the dock's Length picker now applies to it (Quick keeps the first line only); a persona changes nothing without a model, and Help says so.
 - Web reader: Analyse this page lists the page's key points (its own sentences), marks its key terms in the text and lists its sections as links to their headings, with no model and nothing sent out; the reader's typography moved to a lazy stylesheet.
 - Reminders: Magic add reads hedged and conditional phrasings ("remind me to do my tax return when I get home tonight, probably around 7pm" is "Do my tax return" at 19:00), including a day part with a clock apart from it ("this evening, 6:30"); the edit form's time field and selects are now one height with no stray margin.
 - With no model, "Read <link> and tell me about it" fetches the page and tells back its main points, key terms and sections (when web search is on), or says web access is off with a button to its setting, instead of searching your notes for the link's words; a web search that cannot run (SearXNG not answering) now names the service and links Settings, Web search.

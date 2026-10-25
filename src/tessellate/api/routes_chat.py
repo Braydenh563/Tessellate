@@ -33,7 +33,7 @@ from sqlalchemy import or_, select
 from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
-from tessellate.ai import budget as run_budget, capability, composer, composer_digest, composer_frame, composer_open, composer_suggest, composer_web, composer_lists, find_it, glossary, list_pool, neighbours, personal, phrasing, verdicts, toolwords, vocative, why
+from tessellate.ai import budget as run_budget, capability, composer, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, neighbours, personal, phrasing, verdicts, toolwords, vocative, why
 from tessellate.ai import (
     acts,
     agent,
@@ -3001,6 +3001,15 @@ def _composed_grounding_event(req: _StreamRequest, result: dict) -> dict:
     }
 
 
+def _with_next_step(text: str, size: str, req: _StreamRequest) -> str:
+    """The closing line (`composer_tone.closing`), left off by Quick and by an
+    answer that already ends in a question or an offer to press."""
+    if size == "short" or text.rstrip().endswith("?"):
+        return text
+    line = composer_tone.closing(recent=_newest_titles(req.session, 1), seed=_reply_seed(req)[1])
+    return f"{text}\n\n{line}" if line else text
+
+
 def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list:
     """**A composed answer** (INBOX 688): the notes' own sentences, chosen
     by the question's shape and laid out as an answer, every clause a
@@ -3035,6 +3044,9 @@ def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
         text = personal.general_reply(_web_allowed(req))
     if not result["grounding"] and not said_none and prepared.get("meaning_loading"):
         text += "\n\n" + composer_digest.PHRASES["meaning_loading"]
+    size = composer_tone.length(_resolve_mode(req.body.mode))
+    if result["grounding"] and not follow and not said_none:
+        text = _with_next_step(composer_tone.fit(text, size), size, req)
     text = _with_older(text, older, result)
     text = _with_lapsed(text, current, result, req)
     events: list = [{"type": "answer", "delta": text}]
