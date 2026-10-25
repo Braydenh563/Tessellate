@@ -662,7 +662,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `startChatTimer` | frontend/js/chat-attach.js:2983 |
 | `stopChatTimer` | frontend/js/chat-attach.js:2992 |
 
-### frontend/js/sheets-selects.js (53)
+### frontend/js/sheets-selects.js (52)
 
 | Name | File:line |
 |---|---|
@@ -703,7 +703,6 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `personaDisplayName` | frontend/js/sheets-selects.js:2320 |
 | `personaNamesNow` | frontend/js/sheets-selects.js:2430 |
 | `relativeTime` | frontend/js/sheets-selects.js:1712 |
-| `renderDashboardPersonaSelect` | frontend/js/sheets-selects.js:2441 |
 | `replaceOpenToolbarMenus` | frontend/js/sheets-selects.js:1573 |
 | `resetWebPanelWidth` | frontend/js/sheets-selects.js:526 |
 | `rowActions` | frontend/js/sheets-selects.js:1204 |
@@ -4871,10 +4870,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `showOnboardingTurn` | frontend/js/onboarding.js:411 |
 | `whenFirstRunClear` | frontend/js/onboarding.js:342 |
 
-### frontend/js/personas-pane.js (2)
+### frontend/js/personas-pane.js (3)
 
 | Name | File:line |
 |---|---|
+| `renderDashboardPersonaSelect` | frontend/js/personas-pane.js:223 |
 | `renderPersonas` | frontend/js/personas-pane.js:12 |
 | `savePersonaList` | frontend/js/personas-pane.js:3 |
 

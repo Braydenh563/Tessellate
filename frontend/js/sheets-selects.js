@@ -2433,37 +2433,6 @@ function personaNamesNow() {
 }
 
 
-// A second, independent picker (asked for directly): the dashboard greeting
-// otherwise always spoke in whichever persona Chat had active, with no way
-// to give the notebook's own front page a different voice. "" means "no
-// override" and falls back to active_persona server-side, same clear-with-
-// empty-string convention display_name/dashboard_persona already share.
-function renderDashboardPersonaSelect(names) {
-  const select = $("dashboard-persona-select");
-  const current = (prefsCache && prefsCache.dashboard_persona) || "";
-  select.replaceChildren();
-  const sameAsChat = document.createElement("option");
-  sameAsChat.value = "";
-  sameAsChat.textContent = "Same as Chat";
-  select.appendChild(sameAsChat);
-  for (const name of names) {
-    const option = document.createElement("option");
-    option.value = name;
-    option.textContent = name;
-    select.appendChild(option);
-  }
-  //: A saved name that is no longer in the list (the built-in was
-  //: "Librarian" before it became Atlas; a custom persona can be deleted)
-  //: left the select with no selected option, which the enhanced opener
-  //: drew as an empty box with a chevron (the owner, 2026-09-14: "this
-  //: dashboard welcome message persona dropdown box is broken visually").
-  //: The old built-in reads as the new one; anything else unknown reads as
-  //: "Same as Chat", which is what the server falls back to as well.
-  const wanted = personaDisplayName(current) === current || current === "Librarian" ? personaDisplayName(current) : current;
-  select.value = names.includes(wanted) ? wanted : "";
-  paintDashboardPersonaMark();
-}
-
 //: "Same as Chat" follows Chat's picker, so its face does too.
 document.addEventListener("change", (event) => {
   if (event.target?.id === "persona-select") paintDashboardPersonaMark();
