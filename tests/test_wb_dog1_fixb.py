@@ -18,7 +18,11 @@ WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
 def test_new_map_toast_says_what_enter_does_while_typing():
     # Enter in a topic's editor is a line break (the owner, 2026-10-10), so the
     # creation toast must name the key that adds a sibling while typing.
-    assert "While typing a name, Ctrl+Enter adds the sibling." in WB
+    # dog2 item 12: the canvas keys first, then plainly what Enter does while
+    # typing (Ctrl+Enter on a selected topic inserts a parent, so it is named
+    # only for the editor).
+    assert "Tab adds a branch, Enter one beside it. While you type a name, Enter is a new line and Ctrl+Enter adds the one beside it." in WB
+    assert "Enter a sibling." not in WB
 
 
 def _function(name: str) -> str:

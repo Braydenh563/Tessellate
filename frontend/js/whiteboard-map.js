@@ -5026,8 +5026,21 @@ function wbMapRevealTopic(item) {
   const free = typeof wbVisibleCanvasRect === "function" ? wbVisibleCanvasRect() : container.getBoundingClientRect();
   if (!wbRectEscapes(el.getBoundingClientRect(), free)) return false;
   const box = wbItemBBox("object", item);
-  if (box) wbCenterOn(box, { animate: true });
-  return Boolean(box);
+  if (!box) return false;
+  //: With its parent when the two fit side by side (dog2 item 12): centring
+  //: the child alone slid the root under the left rail at 700, so the topic
+  //: you branched from left the screen as its child arrived.
+  const parentItem = item.parent_id != null ? (wbState.objects || []).find((o) => o.id === item.parent_id) : null;
+  const pBox = parentItem ? wbItemBBox("object", parentItem) : null;
+  const k = d3.zoomTransform(container).k || 1;
+  const area = wbFreeArea(container);
+  const both = pBox && {
+    minX: Math.min(box.minX, pBox.minX), minY: Math.min(box.minY, pBox.minY),
+    maxX: Math.max(box.maxX, pBox.maxX), maxY: Math.max(box.maxY, pBox.maxY),
+  };
+  const fits = both && (both.maxX - both.minX) * k <= area.right - area.left - 32 && (both.maxY - both.minY) * k <= area.bottom - area.top - 32;
+  wbCenterOn(fits ? both : box, { animate: true });
+  return true;
 }
 
 //: F2 / double-click: rename in place, through the same two functions a text

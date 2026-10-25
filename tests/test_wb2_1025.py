@@ -46,3 +46,16 @@ def test_group_resize_carries_member_outlines_links_and_readout():
     # The follow path is dropped on save and on Escape, never left behind.
     assert "delete row.entry.item._dragLiveD" in _function(WB, "wbSaveMultiSnapshot")
     assert "delete item._dragLiveD" in _function(WB, "wbRestoreMultiSnapshot")
+
+
+MAP = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+
+
+def test_map_opens_with_its_root_clear_of_the_chrome():
+    # dog2 12: a remembered view that hides the root is framed instead, and a
+    # new child is revealed together with its parent when the two fit.
+    restore = _function(WB, "wbRestoreOrFrameBoard")
+    assert "wbViewHoldsBox(saved, rootBox, free)" in restore
+    assert "if (saved && rootShown && wbViewShowsContent(" in restore
+    reveal = _function(MAP, "wbMapRevealTopic")
+    assert "wbCenterOn(fits ? both : box" in reveal

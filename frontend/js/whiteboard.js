@@ -2583,6 +2583,13 @@ function wbViewShowsContent(view, bounds, free) {
   return x1 > free.left && x0 < free.right && y1 > free.top && y0 < free.bottom;
 }
 
+//: Whether a view puts a whole board-space box inside the free canvas.
+function wbViewHoldsBox(view, box, free) {
+  const x0 = view.x + view.k * box.minX, x1 = view.x + view.k * box.maxX;
+  const y0 = view.y + view.k * box.minY, y1 = view.y + view.k * box.maxY;
+  return x0 >= free.left && x1 <= free.right && y0 >= free.top && y1 <= free.bottom;
+}
+
 /** Put a board's remembered view back, or frame it when it has none to give. */
 function wbRestoreOrFrameBoard(boardId) {
   const container = document.getElementById("whiteboard-container");
@@ -2590,7 +2597,14 @@ function wbRestoreOrFrameBoard(boardId) {
   const saved = boardId == null ? null : wbBoardViews.get(boardId);
   const bounds = wbContentBounds();
   const free = wbFreeArea(container);
-  if (saved && wbViewShowsContent(saved, bounds, free)) {
+  //: **A map's remembered view must show its centre topic clear of the
+  //: chrome** (dog2 item 12: at 700 the root opened 54px under the left rail,
+  //: the view kept from a Tab that had panned to its child). A board keeps
+  //: any view that shows some of it; a map whose root is hidden is framed.
+  const mapRoot = wbIsMap() ? wbMapIndex().roots[0] : null;
+  const rootBox = mapRoot ? wbItemBBox("object", mapRoot) : null;
+  const rootShown = !rootBox || (saved && wbViewHoldsBox(saved, rootBox, free));
+  if (saved && rootShown && wbViewShowsContent(saved, bounds, free)) {
     wbFit.on = false;
     d3.select(container).call(wbZoom.transform, d3.zoomIdentity.translate(saved.x, saved.y).scale(saved.k));
     return;
@@ -17571,7 +17585,7 @@ async function wbCreateBlankBoard(name, kind) {
       //: instead: the visible canvas size is neither constant nor known
       //: until it is actually measured).
       if (root) wbCenterOn(wbItemBBox("object", root), { animate: false });
-      toast(`Mind map "${board.title}" created: Tab adds a branch, Enter a sibling. While typing a name, Ctrl+Enter adds the sibling.`);
+      toast(`Mind map "${board.title}" created. Tab adds a branch, Enter one beside it. While you type a name, Enter is a new line and Ctrl+Enter adds the one beside it.`);
     } else {
       toast(`Board "${board.title}" created.`);
     }
@@ -23071,7 +23085,7 @@ async function createConceptMap() {
     //: Not animated: there is nothing to animate *from*, the board has just
     //: opened.
     if (placed) wbCenterOn(wbItemBBox("node", placed), { animate: false });
-    toast(`“${title}”: press Tab for a branch, Enter for a sibling.`);
+    toast(`“${title}”: Tab adds a branch, Enter one beside it. While you type a name, Enter is a new line and Ctrl+Enter adds the one beside it.`);
   } catch (err) {
     toast(err.message || voiceLine("failed", { what: "create that map" }), true);
   }
