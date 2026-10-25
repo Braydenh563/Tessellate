@@ -191,30 +191,42 @@ _TIME_FIRST = ("on ", "at ", "this ", "next ", "tomorrow", "today", "tonight", "
                "wednesday", "thursday", "friday", "saturday", "sunday")
 
 
-def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | None:
+_REMINDER_HEADS = (
+    "remind me", "set me a reminder", "set a reminder", "make a reminder", "add a reminder",
+    "create a reminder", "new reminder", "reminder", "don't let me forget", "dont let me forget", "do not let me forget",
+)
+
+
+def _reminder_head(text: str) -> tuple[str, str | None]:
+    """The text with a time said first moved last (where the time readers
+    look), and the reminder phrase it opens with, or None."""
     low = text.lower()
     cut = low.find(" remind me ")
     if 0 < cut <= 40 and low.startswith(_TIME_FIRST):
-        #: The time said first is said last, where the time readers look.
         text = f"{text[cut + 1:]} {text[:cut]}"
         low = text.lower()
-    head = None
-    for word in ("remind me", "set me a reminder", "set a reminder", "make a reminder",
-                 "add a reminder", "create a reminder", "new reminder", "reminder",
-                 "don't let me forget", "dont let me forget", "do not let me forget"):
-        if low == word or low.startswith(word + " ") or low.startswith(word + ":"):
-            head = word
-            break
+    head = next((w for w in _REMINDER_HEADS if low == w or low.startswith((w + " ", w + ":"))), None)
+    return text, head
+
+
+def _without_lead(text: str, leads: tuple[str, ...], *, once: bool = True) -> str:
+    for lead in leads:
+        if text.lower().startswith(lead):
+            text = text[len(lead):]
+            if once:
+                break
+    return text
+
+
+def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | None:
+    text, head = _reminder_head(text)
     if head is None:
         return None
     rest = text[len(head):].strip(" :,-")
     if head == "remind me" and _ASKING.match(rest):
         return None
     about = rest.lower().startswith("about ")
-    for lead in ("to ", "2 ", "about ", "that ", "for "):
-        if rest.lower().startswith(lead):
-            rest = rest[len(lead):]
-            break
+    rest = _without_lead(rest, ("to ", "2 ", "about ", "that ", "for "))
     if not rest:
         return None
     rest = reminder_parser.unhedged(rest)
@@ -229,9 +241,7 @@ def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | Non
         due, said, words = when.resolve("tomorrow", now), False, rest
     else:
         due, said, words = parsed["due_at"], True, parsed["text"]
-    for lead in ("to ", "about ", "that ", "for "):
-        if words.lower().startswith(lead):
-            words = words[len(lead):]
+    words = _without_lead(words, ("to ", "about ", "that ", "for "), once=False)
     said_words = words.strip(" ,.;:-")
     if rest[:1].islower():
         #: As typed: the time parser raises the first letter for the stored

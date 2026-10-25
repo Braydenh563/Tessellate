@@ -1,0 +1,478 @@
+[
+ {
+  "term": "abstract",
+  "meaning": "A short summary of a paper or report, usually 150 to 250 words, that states the question, method and main finding."
+ },
+ {
+  "term": "bibliography",
+  "meaning": "A list of every source you consulted for a piece of work, including ones you did not cite directly.",
+  "aliases": [
+   "reference list",
+   "references"
+  ]
+ },
+ {
+  "term": "citation",
+  "meaning": "A short note in the text that credits a source for an idea, quote or figure, pointing to its full entry in the reference list.",
+  "aliases": [
+   "cite",
+   "citing"
+  ]
+ },
+ {
+  "term": "plagiarism",
+  "meaning": "Presenting someone else's words, ideas or work as your own without crediting them."
+ },
+ {
+  "term": "paraphrase",
+  "meaning": "To restate a source's idea in your own words and sentence structure, still crediting the source.",
+  "aliases": [
+   "paraphrasing"
+  ]
+ },
+ {
+  "term": "thesis statement",
+  "meaning": "One or two sentences, usually at the end of the introduction, that state the main argument an essay will defend.",
+  "aliases": [
+   "thesis"
+  ]
+ },
+ {
+  "term": "hypothesis",
+  "meaning": "A testable prediction about what you expect to find, which an experiment or study is designed to support or refute.",
+  "aliases": [
+   "hypotheses"
+  ]
+ },
+ {
+  "term": "null hypothesis",
+  "meaning": "The default claim that there is no effect or difference, which a statistical test tries to reject.",
+  "aliases": [
+   "h0"
+  ]
+ },
+ {
+  "term": "p-value",
+  "meaning": "The probability of seeing results at least as extreme as yours if the null hypothesis were true. A small value (often below 0.05) is taken as evidence against it.",
+  "aliases": [
+   "p value",
+   "pvalue"
+  ]
+ },
+ {
+  "term": "mean",
+  "meaning": "The average: add the values up and divide by how many there are."
+ },
+ {
+  "term": "median",
+  "meaning": "The middle value when the numbers are put in order; with an even count, the mean of the two middle ones."
+ },
+ {
+  "term": "mode",
+  "meaning": "The value that appears most often in a set."
+ },
+ {
+  "term": "standard deviation",
+  "meaning": "A measure of how spread out values are around the mean. A small one means the values sit close to it.",
+  "aliases": [
+   "sd",
+   "std dev"
+  ]
+ },
+ {
+  "term": "variance",
+  "meaning": "The average of the squared distances from the mean; the square root of it is the standard deviation."
+ },
+ {
+  "term": "correlation",
+  "meaning": "A measure of how two variables move together, from -1 to 1. It does not show that one causes the other."
+ },
+ {
+  "term": "causation",
+  "meaning": "A relationship where a change in one thing produces a change in another, which needs more evidence than correlation."
+ },
+ {
+  "term": "qualitative",
+  "meaning": "Describing data in words, themes and experiences rather than numbers, such as interviews or open comments.",
+  "aliases": [
+   "qualitative data"
+  ]
+ },
+ {
+  "term": "quantitative",
+  "meaning": "Describing data as numbers that can be counted or measured, such as test scores or survey ratings.",
+  "aliases": [
+   "quantitative data"
+  ]
+ },
+ {
+  "term": "primary source",
+  "meaning": "Original evidence from the time or person you study, such as a diary, a dataset, an interview or a first report of an experiment.",
+  "aliases": [
+   "primary sources"
+  ]
+ },
+ {
+  "term": "secondary source",
+  "meaning": "A work that interprets or discusses primary sources, such as a textbook, a review article or a documentary.",
+  "aliases": [
+   "secondary sources"
+  ]
+ },
+ {
+  "term": "peer review",
+  "meaning": "Checking of a piece of research by independent experts in the field before it is published.",
+  "aliases": [
+   "peer reviewed",
+   "peer-reviewed"
+  ]
+ },
+ {
+  "term": "literature review",
+  "meaning": "A survey of what has already been written on a topic, showing what is known, what is disputed and where the gaps are.",
+  "aliases": [
+   "lit review"
+  ]
+ },
+ {
+  "term": "methodology",
+  "meaning": "The overall approach and reasoning behind how a study was done, and why those methods suit the question.",
+  "aliases": [
+   "methods"
+  ]
+ },
+ {
+  "term": "syllabus",
+  "meaning": "The outline of a course: its topics, readings, assessments and dates.",
+  "aliases": [
+   "syllabi"
+  ]
+ },
+ {
+  "term": "coursework",
+  "meaning": "Assessed work done during a course, such as essays, projects and labs, as opposed to a final exam.",
+  "aliases": [
+   "course work"
+  ]
+ },
+ {
+  "term": "formative assessment",
+  "meaning": "Work that gives feedback to help you improve and usually does not count toward your final grade.",
+  "aliases": [
+   "formative"
+  ]
+ },
+ {
+  "term": "summative assessment",
+  "meaning": "Work that measures what you have learned at the end of a unit and counts toward your final grade.",
+  "aliases": [
+   "summative"
+  ]
+ },
+ {
+  "term": "rubric",
+  "meaning": "A marking grid that lists the criteria a piece of work is judged on and what each level of performance looks like.",
+  "aliases": [
+   "marking criteria"
+  ]
+ },
+ {
+  "term": "learning outcomes",
+  "meaning": "The specific things a course says you should be able to do by the end of it.",
+  "aliases": [
+   "learning objectives",
+   "learning outcome"
+  ]
+ },
+ {
+  "term": "dissertation",
+  "meaning": "A long piece of independent research written to complete a degree, usually at final-year or postgraduate level.",
+  "aliases": [
+   "thesis paper"
+  ]
+ },
+ {
+  "term": "viva",
+  "meaning": "A spoken examination in which you answer questions about your own work, often for a dissertation or thesis.",
+  "aliases": [
+   "viva voce"
+  ]
+ },
+ {
+  "term": "seminar",
+  "meaning": "A small class built around discussion, where students present and debate material instead of listening to a lecture.",
+  "aliases": [
+   "seminars"
+  ]
+ },
+ {
+  "term": "tutorial",
+  "meaning": "A small-group or one-to-one session with a tutor, used to go through questions, problems or feedback.",
+  "aliases": [
+   "tutorials",
+   "tute"
+  ]
+ },
+ {
+  "term": "gpa",
+  "meaning": "Grade point average: the mean of your grades converted to points and weighted by credit.",
+  "aliases": [
+   "grade point average"
+  ]
+ },
+ {
+  "term": "credit",
+  "meaning": "A unit that measures the workload of a course. A degree needs a set number of credits to be awarded.",
+  "aliases": [
+   "credits",
+   "credit points"
+  ]
+ },
+ {
+  "term": "extension",
+  "meaning": "Extra time to hand in an assignment, granted for a reason such as illness or a documented need.",
+  "aliases": [
+   "extensions"
+  ]
+ },
+ {
+  "term": "deferral",
+  "meaning": "Postponing an exam or assessment to a later sitting, usually with an approved reason.",
+  "aliases": [
+   "deferred exam"
+  ]
+ },
+ {
+  "term": "proofreading",
+  "meaning": "A final read for spelling, grammar, punctuation and formatting mistakes, after the content is settled.",
+  "aliases": [
+   "proofread"
+  ]
+ },
+ {
+  "term": "harvard referencing",
+  "meaning": "An author-date style: cite (Author, year) in the text and list full details alphabetically at the end.",
+  "aliases": [
+   "harvard"
+  ]
+ },
+ {
+  "term": "apa",
+  "meaning": "A referencing style from the American Psychological Association: author-date citations and a reference list, common in the social sciences.",
+  "aliases": [
+   "apa referencing",
+   "apa style"
+  ]
+ },
+ {
+  "term": "mla",
+  "meaning": "A referencing style from the Modern Language Association: author-page citations and a works-cited list, common in the humanities.",
+  "aliases": [
+   "mla referencing",
+   "mla style"
+  ]
+ },
+ {
+  "term": "pomodoro technique",
+  "meaning": "A study method of working in focused 25-minute blocks separated by 5-minute breaks, with a longer break after four.",
+  "aliases": [
+   "pomodoro"
+  ]
+ },
+ {
+  "term": "spaced repetition",
+  "meaning": "Reviewing material at increasing intervals, such as after a day, then three days, then a week, which fixes it in memory better than cramming.",
+  "aliases": [
+   "spaced practice"
+  ]
+ },
+ {
+  "term": "active recall",
+  "meaning": "Testing yourself from memory instead of rereading, for example with flashcards or practice questions.",
+  "aliases": [
+   "retrieval practice"
+  ]
+ },
+ {
+  "term": "feynman technique",
+  "meaning": "Learning by explaining an idea in plain words as if teaching a beginner, then going back to fill the gaps you found.",
+  "aliases": [
+   "feynman method"
+  ]
+ },
+ {
+  "term": "interleaving",
+  "meaning": "Mixing different topics or problem types in one study session rather than finishing one block at a time.",
+  "aliases": [
+   "interleaved practice"
+  ]
+ },
+ {
+  "term": "mnemonic",
+  "meaning": "A memory aid, such as a rhyme or an acronym, that makes a list or fact easier to recall.",
+  "aliases": [
+   "mnemonics"
+  ]
+ },
+ {
+  "term": "mind map",
+  "meaning": "A diagram with a central idea in the middle and related ideas branching out from it.",
+  "aliases": [
+   "mindmap",
+   "mind maps"
+  ]
+ },
+ {
+  "term": "cornell notes",
+  "meaning": "A note-taking layout with a narrow cue column on the left, the notes on the right and a summary at the bottom.",
+  "aliases": [
+   "cornell method"
+  ]
+ },
+ {
+  "term": "metacognition",
+  "meaning": "Thinking about your own thinking: noticing what you understand, what you do not, and how you learn best."
+ },
+ {
+  "term": "cramming",
+  "meaning": "Trying to learn a lot in a short time just before an exam; it works for the short term but is poor for lasting memory.",
+  "aliases": [
+   "cram"
+  ]
+ },
+ {
+  "term": "algorithm",
+  "meaning": "A finite, step-by-step procedure for solving a problem or doing a calculation.",
+  "aliases": [
+   "algorithms"
+  ]
+ },
+ {
+  "term": "variable",
+  "meaning": "A named place in a program that holds a value which can change; in maths, a symbol that stands for an unknown or changing number.",
+  "aliases": [
+   "variables"
+  ]
+ },
+ {
+  "term": "recursion",
+  "meaning": "When a function solves a problem by calling itself on a smaller version of it, until a base case stops it."
+ },
+ {
+  "term": "big o notation",
+  "meaning": "A way to describe how an algorithm's running time or memory grows as the input gets larger, such as O(n) or O(n squared).",
+  "aliases": [
+   "big o",
+   "big-o"
+  ]
+ },
+ {
+  "term": "api",
+  "meaning": "Application programming interface: a defined way for one program to ask another to do something or share data.",
+  "aliases": [
+   "apis"
+  ]
+ },
+ {
+  "term": "database",
+  "meaning": "An organised collection of data stored so it can be searched, updated and kept consistent.",
+  "aliases": [
+   "databases"
+  ]
+ },
+ {
+  "term": "primary key",
+  "meaning": "A column or set of columns that uniquely identifies each row in a database table.",
+  "aliases": [
+   "primary keys"
+  ]
+ },
+ {
+  "term": "derivative",
+  "meaning": "The rate at which a quantity changes: the slope of a function's graph at a point.",
+  "aliases": [
+   "derivatives"
+  ]
+ },
+ {
+  "term": "integral",
+  "meaning": "The accumulated total of a function over a range: the area under its graph.",
+  "aliases": [
+   "integrals"
+  ]
+ },
+ {
+  "term": "probability",
+  "meaning": "A number from 0 to 1 that says how likely an event is; 0 is impossible and 1 is certain."
+ },
+ {
+  "term": "opportunity cost",
+  "meaning": "What you give up by choosing one option over the next best one.",
+  "aliases": [
+   "opportunity costs"
+  ]
+ },
+ {
+  "term": "supply and demand",
+  "meaning": "The economic model in which price settles where the amount sellers offer equals the amount buyers want.",
+  "aliases": [
+   "supply demand"
+  ]
+ },
+ {
+  "term": "inflation",
+  "meaning": "A general rise in prices over time, which lowers what a unit of money can buy."
+ },
+ {
+  "term": "gdp",
+  "meaning": "Gross domestic product: the total value of goods and services a country produces in a period.",
+  "aliases": [
+   "gross domestic product"
+  ]
+ },
+ {
+  "term": "photosynthesis",
+  "meaning": "The process by which plants, algae and some bacteria use light, water and carbon dioxide to make sugar and release oxygen."
+ },
+ {
+  "term": "mitosis",
+  "meaning": "Cell division that produces two genetically identical cells, used for growth and repair."
+ },
+ {
+  "term": "meiosis",
+  "meaning": "Cell division that produces four cells with half the usual chromosomes, used to make eggs and sperm."
+ },
+ {
+  "term": "osmosis",
+  "meaning": "The movement of water across a partially permeable membrane from a weaker solution to a stronger one."
+ },
+ {
+  "term": "entropy",
+  "meaning": "A measure of disorder or of how spread out energy is; in a closed system it tends to increase."
+ },
+ {
+  "term": "catalyst",
+  "meaning": "A substance that speeds up a chemical reaction without being used up by it.",
+  "aliases": [
+   "catalysts"
+  ]
+ },
+ {
+  "term": "ethics",
+  "meaning": "The study of what is right and wrong, and the principles that guide a person's or a profession's conduct.",
+  "aliases": [
+   "ethical"
+  ]
+ },
+ {
+  "term": "epistemology",
+  "meaning": "The branch of philosophy that studies knowledge: what it is, how we get it and what justifies belief."
+ },
+ {
+  "term": "empirical",
+  "meaning": "Based on observation or experiment rather than theory alone.",
+  "aliases": [
+   "empiricism"
+  ]
+ }
+]

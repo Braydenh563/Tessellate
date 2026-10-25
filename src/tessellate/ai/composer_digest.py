@@ -2537,6 +2537,17 @@ def _tie_closing(out: _Out, asked: str, members: list, other: str, others: list)
     out.next.append(PHRASES["tie_chip"].format(topic=topic, category=other))
 
 
+def _kind_if_mine(asked: str) -> str | None:
+    """The question's kind, or None when the digest should not answer it: an
+    empty question, or two things named ("Lisbon vs Porto", "how does A differ
+    from B"), which the composer's side-by-side answers; a digest of the best
+    note would say one side and drop the other."""
+    if not asked:
+        return None
+    kind = kind_of(asked)
+    return None if kind != "compare" and composer.compare_sides(asked) else kind
+
+
 def answer(
     question: str, notes: list[dict], *, today: date | None = None, voice: str = "natural", turn: int = 0,
     insight: str = "one", learned=None, known=None,  # noqa: ANN001
@@ -2546,13 +2557,8 @@ def answer(
     command, nothing found): the caller then asks `composer.compose`."""
     today = today or date.today()
     asked = clean(question)
-    if not asked:
-        return None
-    kind = kind_of(asked)
-    #: "Lisbon vs Porto", "how does A differ from B": two things named, so the
-    #: composer's side-by-side answers it; a digest of the best note would
-    #: say one side and drop the other.
-    if kind != "compare" and composer.compare_sides(asked):
+    kind = _kind_if_mine(asked)
+    if kind is None:
         return None
     views, wants_context = _scope(question, asked, notes, today, voice, turn, known)
     if not views:

@@ -48,7 +48,7 @@ where = ["src"]
 
 # The taxonomy pack (ai/taxonomy.py) is JSON read from beside the module.
 [tool.setuptools.package-data]
-"tessellate.ai" = ["data/taxonomy/*.json", "data/skill_rates.json"]
+"tessellate.ai" = ["data/taxonomy/*.json", "data/skill_rates.json", "data/study_terms.json"]
 
 [tool.ruff]
 target-version = "py311"

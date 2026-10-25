@@ -64,6 +64,7 @@ from tessellate.ai.grounding import (
     support as grounding_support,
 )
 from tessellate.ai.ollama_client import OllamaError
+from tessellate.api import chat_extra
 from tessellate.api.schemas import EntryOut
 from tessellate.core import activity, deps, docview, model_gate
 from tessellate.core.database import (
@@ -3089,8 +3090,11 @@ def _with_next_step(text: str, size: str, req: _StreamRequest) -> str:
     #: Seeded by the question too, so two questions in one chat do not end in
     #: the same line, and a line the last replies already hold is passed over.
     seed = f"{seed}:{req.question}"
+    #: An answer scoped to the open note or category does not close on the
+    #: notebook's newest note, which may be about something else entirely.
+    newest = [] if req.body.note_ids else _newest_titles(req.session, 1)
     line = (composer_aware.closing(_awareness(req), seed, recent) if req.body.screen else "") or composer_tone.closing(
-        recent=_newest_titles(req.session, 1), seed=seed, avoid=recent
+        recent=newest, seed=seed, avoid=recent
     )
     return f"{text}\n\n{line}" if line else text
 
@@ -3111,33 +3115,49 @@ def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
     #: The open note said it holds none ("This note does not give a date"): a
     #: finished answer, not a miss to send to the web or to "general knowledge".
     said_none = str(result.get("shape") or "").startswith("open_")
-    if not result["grounding"] and not said_none and not follow and not ollama_running and not req.images_raw:
-        unknown = composer_suggest.unknown_action(
-            req.question or "", _newest_titles(req.session), embed=_composer_embed(), seed=_reply_seed(req)[1])
-        if unknown is not None:
-            return _suggest_events(unknown)
-    if not result["grounding"] and not said_none and not ollama_running and _web_allowed(req):
-        web = _web_answer(req, follow.question if follow else req.question)
-        if web:
-            return list(_web_events(*web))
-        if req.web_down:
-            return _offer_events(composer_web.search_down(req.web_down, *_search_service()))
-    text = result["text"]
-    if not result["grounding"] and not said_none and not follow and personal.general(req.question or ""):
-        #: "what's the capital of France": the world, not the notes, and
-        #: said so rather than "nothing in your notes about capital".
-        text = personal.general_reply(_web_allowed(req))
-    if not result["grounding"] and not said_none and prepared.get("meaning_loading"):
-        text += "\n\n" + composer_digest.PHRASES["meaning_loading"]
-    size = composer_tone.length(_resolve_mode(req.body.mode))
-    if not follow and ((result["grounding"] and not said_none) or (said_none and req.body.screen)):
-        text = _with_next_step(composer_tone.fit(text, size), size, req)
+    missed = not result["grounding"] and not said_none
+    if missed:
+        redirected = _missed_events(req, follow, ollama_running)
+        if redirected is not None:
+            return redirected
+    text = _composed_text(req, prepared, result, follow, missed=missed, said_none=said_none)
     text = _with_older(text, older, result)
     text = _with_lapsed(text, current, result, req)
     events: list = [{"type": "answer", "delta": text}]
     if result["grounding"]:
         events.append(_composed_grounding_event(req, result))
     return events
+
+
+def _composed_text(req: _StreamRequest, prepared: dict, result: dict, follow, *, missed: bool, said_none: bool) -> str:  # noqa: ANN001
+    text = result["text"]
+    if missed and not follow and personal.general(req.question or ""):
+        #: "what's the capital of France": the world, not the notes, and
+        #: said so rather than "nothing in your notes about capital".
+        text = personal.general_reply(_web_allowed(req))
+    if missed and prepared.get("meaning_loading"):
+        text += "\n\n" + composer_digest.PHRASES["meaning_loading"]
+    size = composer_tone.length(_resolve_mode(req.body.mode))
+    if not follow and ((result["grounding"] and not said_none) or (said_none and req.body.screen)):
+        text = _with_next_step(composer_tone.fit(text, size), size, req)
+    return text
+
+
+def _missed_events(req: _StreamRequest, follow, ollama_running: bool) -> list | None:  # noqa: ANN001
+    """The composer found nothing: ask what was meant (an unknown action), or
+    turn to the web when it is on; None leaves the composer's own words."""
+    if not follow and not ollama_running and not req.images_raw:
+        unknown = composer_suggest.unknown_action(
+            req.question or "", _newest_titles(req.session), embed=_composer_embed(), seed=_reply_seed(req)[1])
+        if unknown is not None:
+            return _suggest_events(unknown)
+    if not ollama_running and _web_allowed(req):
+        web = _web_answer(req, follow.question if follow else req.question)
+        if web:
+            return list(_web_events(*web))
+        if req.web_down:
+            return _offer_events(composer_web.search_down(req.web_down, *_search_service()))
+    return None
 
 
 def _no_model_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list | None:
@@ -3379,6 +3399,31 @@ _BULK_DELETE = re.compile(
 )
 
 
+def _app_first_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list[dict] | None:
+    """What the app's own engine says before an act or a note search, when it
+    answers this turn (no model, or From your notes): a study, plan or sum
+    reader, a pasted link, an open-ended ask. None leaves the turn to the rest."""
+    if req.images_raw or not _app_answers(req, ollama_running):
+        return None
+    question = req.question or ""
+    if not req.skill:
+        follow = prepared.get("follow_on")
+        found = chat_extra.events(
+            req.session, follow.question if follow else req.question, req.history or [], now=user_now(deps.get_config()).replace(tzinfo=None),
+            seed=_reply_seed(req)[1], open_ids=[i for i in [req.body.open_note_id, *req.body.note_ids] if i],
+            follow_kind=follow.kind if follow else "", said=follow.said if follow else "", asked=req.body.question, ask=bool(req.body.notes_only),
+        )
+        if found is not None:
+            return found
+    link = composer_web.url_in(question)
+    if link and composer_web.reads_link(question):
+        return _link_events(req, link)
+    if composer_suggest.open_ended(question):
+        #: "do smth cool", "open a note": ask what was meant, with choices.
+        return _suggest_events(composer_suggest.reply(req.question, _newest_titles(req.session), seed=_reply_seed(req)[1]))
+    return None
+
+
 def _first_events(req: _StreamRequest, prepared: dict, ollama_running: bool, tools_only: bool) -> Iterator[dict]:
     """The turn's events before the agent is asked: an act, a starter the
     engine answers with no model, or the plain answer."""
@@ -3387,12 +3432,9 @@ def _first_events(req: _StreamRequest, prepared: dict, ollama_running: bool, too
             "I will not delete everything in one go. Name one note instead, for example “delete the boiler note”: "
             "it waits for your Confirm, and Undo brings it back."
         )}])
-    link = composer_web.url_in(req.question or "")
-    if link and composer_web.reads_link(req.question or "") and not req.images_raw and _app_answers(req, ollama_running):
-        return iter(_link_events(req, link))
-    if not req.images_raw and composer_suggest.open_ended(req.question or "") and _app_answers(req, ollama_running):
-        #: "do smth cool", "open a note": ask what was meant, with choices.
-        return iter(_suggest_events(composer_suggest.reply(req.question, _newest_titles(req.session), seed=_reply_seed(req)[1])))
+    own = _app_first_events(req, prepared, ollama_running)
+    if own is not None:
+        return iter(own)
     if prepared["intent"] == intent.ACT:
         return _act_events(req, prepared)
     starter = _starter_read(req, ollama_running or tools_only)
