@@ -4695,6 +4695,27 @@ async function wbSizeItemTo(entry, dim, target, factor) {
   return { action: "move", kind, id, before };
 }
 
+//: The keyboard's resize (Ctrl+Shift+arrows): every selected item with a box
+//: of its own grows or shrinks by `dw` or `dh`, never under the smallest a
+//: grip allows, through `wbSizeItemTo` so it undoes as a move does.
+async function wbResizeSelectionBy(dw, dh) {
+  const dim = dw ? "width" : "height";
+  const delta = dw || dh;
+  const pushed = [];
+  for (const e of wbFmtEntries()) {
+    if (!e.bbox || wbIsLocked(e.kind, e.item) || (e.kind === "object" && WB_MAP_KINDS.has(e.item.kind))) continue;
+    if (e.kind === "sketch" && !["shape", "line", "arrow"].includes(wbFmtKind(e))) continue;
+    const size = dim === "width" ? e.bbox.maxX - e.bbox.minX : e.bbox.maxY - e.bbox.minY;
+    const from = e.kind === "sketch" ? size : e.item[dim] || size;
+    const target = Math.max(WB_OBJECT_MIN_SIZE, from + delta);
+    if (from <= 0 || Math.abs(target - from) < 0.5) continue;
+    const done = await wbSizeItemTo(e, dim, target, target / from);
+    if (done) pushed.push(done);
+  }
+  wbPushMoveBatch(pushed);
+  wbScheduleRender();
+}
+
 // Extract notes (BACKLOG.md §62): the selected note cards' own content IS
 // the "notes-in-context", their combined text is what gets split, and each
 // card is also passed as an explicit source so the new note(s) link back to
@@ -8520,7 +8541,7 @@ function wbBuildContextMenu(kind) {
   //: map: a topic's place in a tree is its order (FEAT-17).
   if (!wbIsMap()) {
     subItem("Arrange", (sub) => {
-      for (const id of ["group", "ungroup", "lock"]) {
+      for (const id of ["group", "ungroup", "lock", "flip-h", "flip-v"]) {
         const row = wbCommandMenuRow(id);
         if (row) sub(...row);
       }
@@ -15377,6 +15398,19 @@ async function initWhiteboard() {
       wbMindMapAddSibling(wbSelectedItem.id);
       return;
     }
+    //: **Ctrl+Shift+arrows resize** (draw.io's keys): right and down grow,
+    //: left and up shrink, by a grid cell with snap on, else 10, from the
+    //: top-left corner; one Undo per press.
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && !e.altKey && !wbIsMap()
+      && ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)
+      && (wbSelectedItem || wbMultiSelection.size > 0)) {
+      e.preventDefault();
+      const step = wbSnapOn() ? WB_GRID_SPACING : 10;
+      const dw = e.key === "ArrowRight" ? step : e.key === "ArrowLeft" ? -step : 0;
+      const dh = e.key === "ArrowDown" ? step : e.key === "ArrowUp" ? -step : 0;
+      wbResizeSelectionBy(dw, dh);
+      return;
+    }
     // Arrow-key nudge, asked for directly. Grid step while snap is on (the
     // nudge should land on the same grid a drag would), else 1px/10px, 
     // Shift for the bigger jump, the same convention a slider's own arrow
@@ -15438,6 +15472,13 @@ async function initWhiteboard() {
       return;
     }
     const letter = e.key.toLowerCase();
+    //: Shift+H and Shift+V flip what is selected (Figma's keys) when it can be
+    //: flipped; with nothing flippable they pick the hand and Select as before.
+    if (e.shiftKey && (letter === "h" || letter === "v") && wbCommandApplies(WB_COMMAND_BY_ID.get(`flip-${letter}`))) {
+      e.preventDefault();
+      wbRunCommand(`flip-${letter}`);
+      return;
+    }
     // Shift first: `e.key` for Shift+C is "C", which lower-cases onto the
     // unshifted tool, so reading the shift table second would make the two
     // connectors unreachable from each other.

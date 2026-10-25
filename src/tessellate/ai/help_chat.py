@@ -1376,7 +1376,7 @@ HELP_TOPICS.extend(
             "id": "whiteboard-selection",
             "keywords": (
                 "nudge", "align", "align shapes", "align on the whiteboard", "distribute", "bring forward", "send backward", "group",
-                "ungroup", "copy style", "paste style", "text in a shape", "label a shape",
+                "ungroup", "copy style", "paste style", "text in a shape", "label a shape", "flip a shape", "resize with the keys",
                 "frame", "frames", "section", "region", "lock a shape", "lock an item", "unlock all", "locked item",
                 "comment on a card", "comment on an item", "comments on the board", "comment thread",
                 "present", "presentation", "slides", "slideshow", "laser", "laser pointer",
@@ -1388,21 +1388,22 @@ HELP_TOPICS.extend(
                 (
                     "Whiteboard selection: Shift+click adds, Ctrl+A selects all, Ctrl+D "
                     "duplicates, Alt and drag copies as you drag, Ctrl+V pastes at the pointer, the arrows "
-                    "nudge (Shift for further), Shift and drag keeps to one axis, Shift and a corner keeps "
+                    "nudge (Shift: further; Ctrl+Shift: resize), Shift+H and Shift+V flip, "
+                    "Shift and drag keeps to one axis, Shift and a corner keeps "
                     "proportions, Alt resizes from the centre; a move, resize or box drawn out shows guides "
                     "and its size (Alt: none); [ and ] move one step back or forward, Ctrl+[ and Ctrl+] to "
                     "the back or front, Ctrl+G groups, Ctrl+Shift+G ungroups, Ctrl+Alt+C and Ctrl+Alt+V copy "
-                    "and paste a style, Delete (or a bin drop) removes, Esc cancels a drag or goes to "
-                    "Select. Double-click empty board for a text box, double-click a closed shape (or select "
+                    "and paste a style, Delete (or a bin drop) removes, Esc cancels a drag."
+                    " Double-click empty board for a text box, double-click a closed shape (or select "
                     "it and press Enter) to write in it, right-click (or hold on touch) for the menu, double-"
                     "click a line to bend it, and select a connector and press Label in its bar (or Enter) to"
                     " label it. A frame's title drags it and what is inside it, its top handle turns both (Ctrl: the frame alone); a click on a panel's body or a frame's edge selects it; its "
                     "menu exports it or fits it to its contents, and a double-click on a resize "
                     "handle fits that edge to what it holds. Ctrl+Shift+L "
                     "locks the selection; Unlock is on the board's right-click menu. Right-click an item, "
-                    "Comment…, starts a thread; its count reopens it. View, Present frames: one frame at a "
+                    "Comment…, starts a thread. View, Present frames: one frame at a "
                     "time; ? shows every key; Ctrl+K finds any board action by name. Menus: Insert, Edit, "
-                    "Arrange (align, distribute, size, order, group, lock), View (panels, background, grid, "
+                    "Arrange (align, distribute, size, flip, order, group, lock), View (panels, background, grid, "
                     "snap, zoom; full screen on a phone) and Board (rename, new, export, kind, clear, delete,"
                     " keys)."
                 )

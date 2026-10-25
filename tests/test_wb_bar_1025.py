@@ -70,3 +70,16 @@ def test_a_colour_tab_keeps_the_panel_where_it_is() -> None:
     body = _function(FORMAT, "wbOpenColourMenu")
     assert "keepAt" in body and "partner.fillEl === input || partner.borderEl === input" in body
     assert "prevOpener" not in body
+
+
+def test_drawio_resize_keys_and_flip_commands() -> None:
+    """draw.io gaps built 10-25 (scratchpad/ui-sweeps/wb1025-drawio.js): Ctrl+Shift+
+    arrows resize the selection; Flip is an Arrange command with Shift+H and
+    Shift+V, on the menu, the right-click menu and the palette."""
+    commands = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert 'id: "flip-h"' in commands and 'id: "flip-v"' in commands and "flippable:" in commands
+    assert 'data-wb-cmd="flip-h"' in html and 'data-wb-cmd="flip-v"' in html
+    assert '"flip-h", "flip-v"]' in BOARD
+    assert "wbResizeSelectionBy(dw, dh)" in BOARD and "async function wbResizeSelectionBy(" in BOARD
+    assert "wbRunCommand(`flip-${letter}`)" in BOARD

@@ -78,6 +78,7 @@ const wbCommandNeeds = {
   grouped: () => wbFmtEntries().some((e) => e.item.group_id),
   //: The bar's own rule (`wbGroupButtonState`), so the menus, the palette and
   //: the bar never offer both.
+  flippable: () => wbFmtEntries().some((e) => e.kind === "sketch" && ["shape", "line", "arrow"].includes(wbFmtKind(e)) && !wbIsLocked(e.kind, e.item)),
   groupable: () => wbGroupButtonState(wbSelectionEntries().map((e) => e.item)).canGroup,
   ungroupable: () => wbGroupButtonState(wbSelectionEntries().map((e) => e.item)).canUngroup,
   sizeCopied: () => wbFmtState.sizeClip !== null && wbCommandSelectionCount() > 0,
@@ -182,6 +183,10 @@ const WB_COMMANDS = [
   { id: "group", group: "Arrange", icon: "ph:link", label: "Group", keys: "Ctrl+G", surface: "board", needs: "groupable", run: () => wbGroupSelection() },
   { id: "ungroup", group: "Arrange", icon: "ph:link-break", label: "Ungroup", keys: "Ctrl+Shift+G", surface: "board", needs: "ungroupable", run: () => wbUngroupSelection() },
   { id: "remove-from-group", group: "Arrange", icon: "ph:link-break", label: "Remove from the group", keys: "", surface: "board", needs: "grouped", run: () => wbRemoveFromGroup() },
+  //: draw.io's Arrange, Flip (Figma's Shift+H and Shift+V): only in the
+  //: Format panel before, two presses deep.
+  { id: "flip-h", group: "Arrange", icon: "ph:flip-horizontal", label: "Flip left to right", keys: "Shift+H", surface: "board", needs: "flippable", run: () => wbFmtFlip("h") },
+  { id: "flip-v", group: "Arrange", icon: "ph:flip-vertical", label: "Flip top to bottom", keys: "Shift+V", surface: "board", needs: "flippable", run: () => wbFmtFlip("v") },
   { id: "turn-90", group: "Arrange", icon: "ph:arrow-clockwise", label: "Turn 90 degrees", keys: "", surface: "board", needs: "selection", run: () => wbTurnSelection(90) },
   { id: "order-forward", group: "Arrange", icon: "ph:arrow-up", label: "Bring forward", keys: "]", surface: "board", needs: "selection", run: () => wbStepSelectionZOrder(1) },
   { id: "order-backward", group: "Arrange", icon: "ph:arrow-down", label: "Send backward", keys: "[", surface: "board", needs: "selection", run: () => wbStepSelectionZOrder(-1) },
@@ -284,6 +289,7 @@ function wbRunCommand(id) {
       one: "Select one item first.",
       two: "Select two or more items first.",
       groupable: "Select two or more items that are not already one group first.",
+      flippable: "Select a drawn shape or line first.",
       ungroupable: "Select a group first.",
       three: "Select three or more items first.",
       shape: "Select one closed shape or one connector first.",
@@ -619,6 +625,7 @@ const WB_HELP_SECTIONS = [
     { cmd: "delete" },
     { icon: "ph:trash", label: "Delete by dropping on the target at the foot (a topic takes its branch)", keys: ["drag"] },
     { icon: "ph:arrows-out-cardinal", label: "Nudge, further", keys: ["arrows", "Shift+arrows"] },
+    { icon: "ph:arrows-out-simple", label: "Resize from the top-left corner", keys: ["Ctrl+Shift+arrows"] },
     { icon: "ph:x", label: "Cancel a drag, back to Select", keys: ["Esc"] },
     { icon: "ph:text-t", label: "A text box on the empty board", keys: ["double-click"] },
     { cmd: "text" },
@@ -627,7 +634,7 @@ const WB_HELP_SECTIONS = [
   ] },
   { title: "Arrange", surface: "board", rows: [
     { cmd: "order-forward" }, { cmd: "order-backward" }, { cmd: "order-front" }, { cmd: "order-back" },
-    { cmd: "group" }, { cmd: "ungroup" }, { cmd: "lock" },
+    { cmd: "group" }, { cmd: "ungroup" }, { cmd: "lock" }, { cmd: "flip-h" }, { cmd: "flip-v" },
     { icon: "ph:lock-simple-open", label: "Unlock everything", keys: ["Ctrl+Shift+L with nothing selected"] },
     { icon: "ph:arrows-left-right", label: "Keep to one axis", keys: ["Shift+drag"] },
     { icon: "ph:corners-out", label: "Keep proportions", keys: ["Shift+corner"] },
