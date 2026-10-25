@@ -40,11 +40,11 @@ TOOLS: tuple[Tool, ...] = (
     _t("ocr", "OCR workspace", r"\bocr\b|text from (?:a |the )?(?:picture|image|scan)|scanned", "reveal:page-reader",
        "reads the text out of a picture or PDF, page by page", "Library, OCR workspace"),
     _t("memory", "Memory", r"\bmemory\b|what it remembers", "settings:memory",
-       "keeps the facts you have told it so answers can use them", "Settings, Memory"),
+       "keeps the facts you have told it so answers can use them", "Settings, What it remembers"),
     _t("skills", "Skills", r"\bskills?\b", "settings:skills",
        "gives the assistant extra ways of working, one switch each", "Settings, Skills"),
     _t("tools", "Tool permissions", r"\btool permissions?\b|\bpermissions?\b", "settings:tools",
-       "chooses which tools the assistant may use and which ask first", "Settings, Tool permissions"),
+       "chooses which tools the assistant may use and which ask first", "Settings, Tools it can use"),
     _t("models", "A chat model", r"\b(?:chat )?model\b|\bollama\b|\bllm\b", "settings:models",
        "adds a local model for open-ended chat; the notes answers need none", "Settings, Models"),
 )

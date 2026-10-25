@@ -3785,8 +3785,9 @@ def _stream_prepare(req: _StreamRequest) -> dict:
 def _is_composing(prepared: dict, composed: bool, ollama_running: bool, tools_only: bool) -> bool:
     """A turn with no model, no tool fallback and notes to quote is composed in
     `_plain_events` whatever surface asked (INBOX 725): labelled so, and its
-    quotes are never trimmed or re-grounded."""
-    return composed or (
+    quotes are never trimmed or re-grounded. So is one the app's own reader
+    answered before any search (a plan, a countdown, the week's notes)."""
+    return composed or prepared.get("early_events") is not None or (
         not ollama_running
         and not tools_only
         and prepared["stats"] is None

@@ -43,6 +43,12 @@ PHRASES = {
         "{Span}, {topic} comes up in {n} note{s}:",
         "Here is what you saved on {topic} {span}, {n} in all:",
     ),
+    #: No topic: every note of the window ("what did I write this week").
+    "recent_any_head": (
+        "You wrote {n} note{s} in {span}:",
+        "{n} note{s} in {span}, newest first:",
+        "Here are your {n} note{s} in {span}:",
+    ),
     "recent_none": (
         "You did not write anything about {topic} {span}.",
         "No note {span} mentions {topic}.",
@@ -132,7 +138,7 @@ def _matching(ctx: Ctx, wanted: list[str], start: date, end: date) -> list[dict]
 
 def _item(note: dict, wanted: list[str]) -> str:
     content = str(note.get("content") or "")
-    line = _sentence_with(content, wanted)
+    line = re.sub(r"^#{1,6}\s+", "", _sentence_with(content, wanted) or "")
     title = study.title_of(content)
     body = f": {line}" if line and line.strip().lower() != title.strip().lower() else ""
     return f"- {_day(_made(note))}, [{title or 'Untitled'}](#/notes/{note['id']}){body}"
@@ -171,7 +177,7 @@ def recent(ctx: Ctx) -> Reply | None:
         # No topic and an empty window: composer.empty_window says where the notes are.
         return _nothing(ctx, wanted, span, shown) if wanted else None
     n = len(hits)
-    head = pick(ctx.seed, "nt-head", PHRASES["recent_head"]).format(
+    head = pick(ctx.seed, "nt-head", PHRASES["recent_head" if wanted else "recent_any_head"]).format(
         topic=shown, n=n, s=_plural(n), span=span, Span=span[:1].upper() + span[1:], v="s" if n == 1 else "")
     lines = [head, ""] + [_item(note, wanted) for note in hits[:MAX_LISTED]]
     if n > MAX_LISTED:
