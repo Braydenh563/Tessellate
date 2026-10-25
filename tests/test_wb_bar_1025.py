@@ -80,7 +80,7 @@ def test_drawio_resize_keys_and_flip_commands() -> None:
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert 'id: "flip-h"' in commands and 'id: "flip-v"' in commands and "flippable:" in commands
     assert 'data-wb-cmd="flip-h"' in html and 'data-wb-cmd="flip-v"' in html
-    assert '"flip-h", "flip-v"]' in BOARD
+    assert '"flip-h", "flip-v",' in BOARD  # the right-click Arrange list; later rows follow
     assert "wbResizeSelectionBy(dw, dh)" in BOARD and "async function wbResizeSelectionBy(" in BOARD
     assert "wbRunCommand(`flip-${letter}`)" in BOARD
 

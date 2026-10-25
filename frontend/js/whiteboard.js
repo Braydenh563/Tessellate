@@ -8670,6 +8670,12 @@ function wbBuildContextMenu(kind) {
       sub("Copy this branch", "This topic and everything under it, beside itself", () =>
         wbMapCopyBranch(mapNode.id)
       );
+      sub("Copy this branch as an outline", "Markdown, to paste into a note or another app", () =>
+        wbMapCopyBranchOutline(mapNode.id)
+      );
+      sub("Export this branch…", "A picture or PDF of this topic and everything under it", () =>
+        wbMapExportBranch(mapNode.id)
+      );
       if (!rooted) sub("Cut this topic free of its parent", "It becomes a trunk of its own", () =>
         wbMapSever(mapNode.id)
       );

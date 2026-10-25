@@ -26,5 +26,7 @@ def test_a_card_and_a_box_carry_their_links_round_as_they_turn():
 
 
 def test_a_turned_selection_carries_its_links_too():
-    assert re.search(r"spinLinks = \[\.\.\.new Set\(", WB)
+    # One list, each link once; resize and turn share it (wbMultiLiveLinks).
+    assert "spinLinks = wbMultiLiveLinks(rows);" in WB
+    assert re.search(r"return \[\.\.\.new Set\(rows\.flatMap", WB)
     assert "if (spinLinks.length) wbUpdateLinkedSketches(null, spinLinks);" in WB

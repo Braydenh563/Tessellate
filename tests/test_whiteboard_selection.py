@@ -167,7 +167,7 @@ def test_the_group_outline_follows_the_drag() -> None:
     body = WB[WB.index("function wbRenderMultiSelectionHandles()") :]
     body = body[: body.index("\nfunction wbRenderSketchHandles()")]
     assert "function layoutGroupChrome(box)" in body
-    assert "layoutGroupChrome(scaledBox(t));" in body
+    assert "const live = scaledBox(t);\n            layoutGroupChrome(live);" in body
     #: A rotation turns the outline with its contents rather than leaving a
     #: level box round a turned set, and is dropped before the render.
     assert 'group.attr("transform", `rotate(${angle} ${centerX} ${centerY})`);' in body

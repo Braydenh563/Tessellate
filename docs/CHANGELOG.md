@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Mind map: a topic's Branch menu (and Ctrl+K) copies that branch alone as a Markdown outline, or opens Export with only that branch selected.
 - Mind map: drag a topic between two of its siblings, in a layout that stacks them, and it takes that place; a line shows the gap while it is held, and one Undo puts it back.
 - Whiteboard: Fit, in the Format panel's Text tab for a shape (and Ctrl+K), shrinks long words until they fit inside the shape, never past the size they were given.
 - Whiteboard: Link…, in a shape's, text box's or picture's More and right-click menu, links it to a note or a web page; a mark on its top-left corner opens it (a note in the app, a page in a new tab).

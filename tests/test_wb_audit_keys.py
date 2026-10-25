@@ -111,9 +111,11 @@ HTML = (JS.parent / "index.html").read_text(encoding="utf-8")
 def test_the_tool_bar_shows_only_what_the_held_tool_reads():
     table = WB[WB.index("const WB_TOOL_SETTINGS = {") :]
     table = table[: table.index("};")]
-    # A link, the eraser, the sticky, the text box and the bucket read none.
-    for tool in ("link-straight", "eraser", "sticky", "text", "bucket"):
+    # The eraser, the sticky, the text box and the bucket read none. The Link
+    # tool reads its ends since it draws an end arrow (wb2, 2026-10-25).
+    for tool in ("eraser", "sticky", "text", "bucket"):
         assert f"{tool}:" not in table and f'"{tool}"' not in table
+    assert '"link-straight": ["ends", "head"]' in table
     assert 'draw: ["size", "dash"]' in table
     for setting in ("size", "ends", "dash", "fill"):
         assert f'data-wb-tool-setting="{setting}"' in HTML

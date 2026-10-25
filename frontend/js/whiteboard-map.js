@@ -4623,6 +4623,50 @@ function wbMapTreeMarkdown(roots, mapTitle) {
 }
 // MAP-DOC-END
 
+//: **One branch out of the map** (XMind's Copy as text, MindNode's export of
+//: a selection): the topic and everything under it as the same Markdown
+//: outline the whole map writes, the topic as its title. From the server's
+//: tree, so the order and the notes are the ones the exports use.
+async function wbMapCopyBranchOutline(id) {
+  const boardId = window.currentBoardId;
+  if (!boardId || id == null) return false;
+  let tree;
+  try {
+    tree = await apiJson(`/whiteboard/boards/${boardId}/tree`);
+  } catch (err) {
+    toast(err.message || voiceLine("failed", { what: "read this map" }), true);
+    return false;
+  }
+  const find = (list) => {
+    for (const n of list || []) {
+      if (n.id === id) return n;
+      const hit = find(n.children);
+      if (hit) return hit;
+    }
+    return null;
+  };
+  const node = find(tree.roots);
+  if (!node) return false;
+  const { title, body } = wbMapTreeMarkdown([node]);
+  const copied = await copyToClipboard(body ? `# ${title}\n\n${body}\n` : `# ${title}\n`);
+  if (copied) toast(`Copied “${title}” and its branch as an outline.`);
+  return copied;
+}
+
+//: The export dialog for this branch alone: the branch is the selection, so
+//: the picture formats take only it (the outline formats are the whole map's).
+function wbMapExportBranch(id) {
+  const index = wbMapIndex();
+  const hidden = wbMapConcealed(index);
+  const branch = wbMapSubtree(index, id).filter((o) => !hidden.has(o.id));
+  if (!branch.length) return;
+  clearWbSelection();
+  for (const o of branch) wbMultiSelection.add(wbMultiKey("object", o.id));
+  wbApplySelectionHighlight();
+  wbUpdateSelectionBar();
+  wbExportBoard();
+}
+
 //: The menu row and the palette row: written, saved as a new document that
 //: opens with a card of the map at its head (the board embed, so the
 //: document leads back to its map), and opened.
@@ -4691,6 +4735,8 @@ function mapPaletteCommands() {
     row("This topic", "ph:paint-bucket Paste style onto this topic", () => wbPasteCopiedStyle(), "Ctrl+Alt+V");
     row("This topic", "ph:stack Use this look for its level", () => wbMapUseLookForLevel(node.id));
     row("This topic", "ph:text-align-left Summarise this branch", () => wbMapSummariseBranch(node));
+    row("This topic", "ph:copy Copy this branch as an outline", () => wbMapCopyBranchOutline(node.id));
+    row("This topic", "ph:export Export this branch…", () => wbMapExportBranch(node.id));
     row("This topic", "ph:trash Delete the topic and its branch", () => wbMapDeleteSubtree(node.id), "Delete");
   }
   row("This map", "ph:plus-circle Add a top-level topic", () => wbMapAddChild(null));

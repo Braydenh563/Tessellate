@@ -1736,7 +1736,7 @@ HELP_TOPICS.extend(
                 "opml", "an opml outline", "import an opml", "freemind", "xmind", "import a map", "export a map", "map template", "map as a document",
                 "map the headings", "suggest branches", "branches from my notes", "grow the map",
                 "expand from my notes", "children from notes", "write a map as a document",
-                "import a mind map", "export a mind map",
+                "import a mind map", "export a mind map", "copy a branch as an outline", "export one branch", "export a branch",
             ),
             "body": (
                 "Mind map import and export. Start from a "
@@ -1753,7 +1753,10 @@ HELP_TOPICS.extend(
                 "OPML, FreeMind, XMind, Markdown or text as well as a picture, or write it as "
                 "a document (the board menu's Write as a document: branches "
                 "become headings, deeper topics lists, notes paragraphs); a "
-                "document's menu, Map the headings, goes the other way. With a "
+                "document's menu, Map the headings, goes the other way. One "
+                "branch alone: a topic's Branch menu, Copy this branch as an "
+                "outline (Markdown, ready to paste) or Export this branch… (a "
+                "picture or PDF of it). With a "
                 "map open, the command palette (Ctrl+K) lists the map's commands: "
                 "add, rename, fold, focus, tidy, layout, look, numbering, present "
                 "and export."
