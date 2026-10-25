@@ -773,6 +773,8 @@ function setDocView(mode) {
   $("doc-preview").classList.toggle("hidden", !docPreviewShowing());
   $("doc-panes").classList.toggle("split", docView === "split");
   $("doc-panes").classList.toggle("reading", docView === "rendered");
+  //: Nothing to format while reading (dogfood item 17); a code file never has the strip.
+  $("doc-toolbar")?.classList.toggle("hidden", docView === "rendered" || !type.previewable);
 
   if (docView !== "rendered" && !docViewState.held) lastEditView = docView;
   for (const button of document.querySelectorAll("#doc-view-seg [data-doc-view], #doc-view-menu [data-doc-view]")) {

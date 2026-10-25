@@ -165,3 +165,19 @@ test("toolbar menus close after an item is chosen", async ({ page }) => {
   await expect(menu, "the Insert menu stayed open after Table").not.toHaveAttribute("open", "");
   expect(errors).toEqual([]);
 });
+
+test("Read mode shows the title once and no live formatting toolbar", async ({ page }) => {
+  const errors = watchErrors(page);
+  await openNewDoc(page, "Some words here.");
+  await page.keyboard.press("Control+Shift+X");
+  await expect(page.locator("#doc-toolbar")).toBeVisible();
+  await page.evaluate(() => setDocView("rendered"));
+  await expect(page.locator("#doc-preview")).toBeVisible();
+  await expect(page.locator("#doc-toolbar"), "the edit toolbar stayed live in Read").toBeHidden();
+  const shown = await page.evaluate(() => [...document.querySelectorAll("#doc-preview h1")].filter((h) => h.offsetParent).length);
+  expect(shown, "the title is drawn again above the text").toBe(0);
+  await expect(page.locator("#doc-title")).toBeVisible();
+  await page.evaluate(() => setDocView("live"));
+  await expect(page.locator("#doc-toolbar")).toBeVisible();
+  expect(errors).toEqual([]);
+});
