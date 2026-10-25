@@ -117,7 +117,7 @@ def test_only_the_arrow_tool_binds_and_pen_strokes_are_never_targets():
 
 def test_bottom_dock_wraps_between_600_and_819_instead_of_scrolling():
     # 927px of tools in a 683px dock left Undo past the window edge (item 11).
-    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
     start = css.index(
         "@media (min-width: 600px) and (max-width: 819.98px) {\n  .whiteboard-floating-panel.bottom-center:not"
     )

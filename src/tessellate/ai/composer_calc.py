@@ -51,7 +51,7 @@ _DAYQ = re.compile(
     rf"{_LEAD}what(?:'s| is| was| will be| would be)? (?:the )?(?P<kind>day|date|weekday)(?: of the week)?"
     rf"(?: is| was| will it be| would it be| will| would| is it going to be)?(?: it| that)?\s*(?:in |on )?(?P<rest>.+?)\W*$", re.I)
 _BETWEEN = re.compile(rf"{_LEAD}(?:how many |how much )?(?P<unit>days|weeks|months|nights)?\s*(?:are there |is there |have i got |do i have )?(?:between|from)\s+(?P<a>.+?)\s+(?:and|to|until|till)\s+(?P<b>.+?)\W*$", re.I)
-_WORDS = re.compile(rf"{_LEAD}(?:how many (?:words|characters|letters|sentences)(?: are| is| long)?(?: there)?|what(?:'s| is) the (?:word|character) count|word count|char(?:acter)? count|how long is|how big is|count (?:the )?words)\s*(?:in|of|for|is|on)?\s*(?P<t>.*)$", re.I)
+_WORDS = re.compile(rf"{_LEAD}(?:how many (?:words|characters|letters|sentences)(?: are| is| long)?(?: there)?|what(?:'s| is) the (?:word|character) count|word count|char(?:acter)? count|how (?:long|big) is(?= (?:this|that|my|the) (?:note|doc(?:ument)?|text|essay|draft|page)\b| [\x22\u201c'])|count (?:the )?words)\s*(?:in|of|for|is|on)?\s*(?P<t>.*)$", re.I)
 _QUOTED = re.compile(r"[\"“](.+)[\"”]|:\s*(.{12,})$", re.S)
 _DEFINE = re.compile(
     rf"{_LEAD}(?:define\s+(?P<c>.+)|what does (?P<a>.+?) mean|(?:what(?:'s| is| are) (?:the )?(?:meaning|definition) of|meaning of|definition of)\s+(?P<d>.+)|"
@@ -214,7 +214,7 @@ def _note_count(ctx: Ctx, topic: str) -> Reply | None:
     words = counted["words"]
     return Reply(
         f"[**{study.title_of(body)}**](#/notes/{notes[0]['id']}) has {words} word{'s' if words != 1 else ''}, {counted['chars']} characters and about {sents} sentence{'s' if sents != 1 else ''}"
-        + (f", a {counted['read']}." if counted["read"] else ".")
+        + (f", {'' if counted['read'].startswith('under') else 'a '}{counted['read']}." if counted["read"] else ".")
     )
 
 
