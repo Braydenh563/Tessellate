@@ -379,6 +379,7 @@ _THIS = re.compile(
     r"(?:summari[sz]e|sum up|recap|give me the gist of|what(?:'s| is| are) the (?:gist|main points) of)"
     r"(?: (?:this|it|these|this note|the note|this page|this category|what(?:'s| is| i have) open))?"
     r"|what(?:'s| is) (?:this|it) about|what does (?:this|it) say|tl;? ?dr"
+    r"|what(?:'s| is) (?:the )?(?:main|key|big|core) (?:point|idea|takeaway)s?(?: of (?:this|it))?|(?:the )?(?:main|key) (?:points?|ideas?|takeaways?)|(?:key )?take-?aways?"
     r")(?: for me| please)?$",
     re.I,
 )
@@ -2674,7 +2675,9 @@ def _weave_drift(out: _Out, plan: str) -> bool:
 
 def _this_note(out: _Out, v, facts: list[Fact], names: set[str], today: date) -> None:  # noqa: ANN001
     """The open note: its facts under their labels."""
-    title = _tidy(str(v.note.get("title") or "")) or (facts[0].label if facts[0].label else "")
+    #: The heading `read_note` found: the note dict carries no `title` of its own
+    #: (the 22-10 bug doc: "Your untitled note of 25 October" over a titled note).
+    title = _tidy(str(v.note.get("title") or (v.title if v.titled else ""))) or (facts[0].label if facts[0].label else "")
     category = str(v.note.get("category") or "").strip()
     where = f", in {category}" if category and category.lower() != "uncategorised" else ""
     title = title.lower() if title and title not in names else title or "untitled"

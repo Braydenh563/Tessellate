@@ -886,7 +886,9 @@ HELP_TOPICS: list[dict] = [
             "and \"what does CC stand for?\" says which note told it. "
             "\"Summarise this\" sums up the note you have open, or the "
             "category the sidebar is filtered to; \"summarise Travel\" reads "
-            "every note in that category."
+            "every note in that category. With a note open, \"what's left to "
+            "do?\", \"when is the deadline?\" and \"who is involved?\" are "
+            "answered from that note alone, in a line or two of its own words."
         ),
         "badge": {"label": "Chat", "tab": "chat"},
     },

@@ -78,7 +78,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Any
 
-from tessellate.ai import act_registry, composer_ack, composer_overview, composer_parts, composer_replies, composer_tables, grounding, phrasing, question_noise, realise, spelling, utilities, variants
+from tessellate.ai import act_registry, composer_ack, composer_open, composer_overview, composer_parts, composer_replies, composer_tables, grounding, phrasing, question_noise, realise, spelling, utilities, variants
 from tessellate.ai import recognise as rec
 from tessellate.ai import when as when_words
 from tessellate.search import query as query_understanding
@@ -337,6 +337,7 @@ PHRASES: dict[str, str] = {
 PHRASES.update(composer_tables.OVERVIEW_PHRASES)
 PHRASES.update(composer_tables.EXTRA_PHRASES)
 PHRASES.update(composer_ack.PHRASES)
+PHRASES.update(composer_open.PHRASES)
 
 def phrase_options(key: str, voice: str | None = None) -> tuple[str, ...]:
     """Every wording of `key`: the original and the variants of `voice`, or of

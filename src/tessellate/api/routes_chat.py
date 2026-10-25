@@ -33,7 +33,7 @@ from sqlalchemy import or_, select
 from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
-from tessellate.ai import budget as run_budget, capability, composer, composer_digest, composer_frame, composer_lists, find_it, glossary, list_pool, neighbours, personal, phrasing, verdicts, toolwords, vocative, why
+from tessellate.ai import budget as run_budget, capability, composer, composer_digest, composer_frame, composer_open, composer_lists, find_it, glossary, list_pool, neighbours, personal, phrasing, verdicts, toolwords, vocative, why
 from tessellate.ai import (
     acts,
     agent,
@@ -572,6 +572,13 @@ def _apply_open(session: Session, body: ChatRequest) -> None:
             body.note_ids = [body.open_note_id]
         elif body.open_category:
             body.note_ids = _category_note_ids(session, body.open_category)
+    elif body.open_note_id and composer_open.kind(body.question):
+        #: "What's left to do?" with a note open is about that note (the
+        #: 22-10 bug doc: Ask gave one reply for every note), unless the
+        #: question names something the note does not hold.
+        opened = _attached_notes(session, [body.open_note_id])
+        if opened and composer_open.reads_note(body.question, {"content": opened[0].content}):
+            body.note_ids = [body.open_note_id]
     else:
         names = list(session.execute(select(Category.name)).scalars())
         named = composer_digest.named_category(body.question, names)
@@ -2877,6 +2884,18 @@ def _compose_for(req: _StreamRequest, prepared: dict, follow, current: list, tod
     )
 
 
+def _open_note_answer(req: _StreamRequest, follow, current: list, today):  # noqa: ANN001, ANN202
+    """The open note's own answer to "what's left", "when is it due", "who is
+    involved" (`ai/composer_open.py`): short, and different for every note."""
+    opened = req.body.open_note_id
+    if follow or not opened or len(current) != 1 or current[0].get("id") != opened:
+        return None
+    if not composer_open.reads_note(req.question, current[0]):
+        return None
+    dialogue = composer.Dialogue.from_history(req.history)
+    return composer_open.answer(req.question, current[0], today=today, salt=dialogue.salt)
+
+
 def _composed_result(req: _StreamRequest, prepared: dict) -> tuple:
     """The composer's result with the follow-up it answered, the notes it read
     and the older ones those replaced."""
@@ -2889,7 +2908,7 @@ def _composed_result(req: _StreamRequest, prepared: dict) -> tuple:
     today = user_now(deps.get_config()).date()
     #: O11: a newer note on the same thing is the current one.
     current, older = _current_notes(req, prepared["notes"])
-    result = _digest_for(req, prepared, follow, current, restated, today) or _compose_for(req, prepared, follow, current, today)
+    result = _open_note_answer(req, follow, current, today) or _digest_for(req, prepared, follow, current, restated, today) or _compose_for(req, prepared, follow, current, today)
     if follow is not None and follow.kind == "more" and not result.get("grounding"):
         #: Nothing left unsaid: say so, with how much there is (B8).
         result = composer_digest.all_said(follow.question, prepared["notes"], today=today) or result
@@ -2934,16 +2953,19 @@ def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
     word passages under an apology: the composer quotes whole sentences
     under the same rule. A running model still answers every Chat turn."""
     result, follow, current, older = _composed_result(req, prepared)
-    if not result["grounding"] and not ollama_running and _web_allowed(req):
+    #: The open note said it holds none ("This note does not give a date"): a
+    #: finished answer, not a miss to send to the web or to "general knowledge".
+    said_none = str(result.get("shape") or "").startswith("open_")
+    if not result["grounding"] and not said_none and not ollama_running and _web_allowed(req):
         web = _web_answer(req, follow.question if follow else req.question)
         if web:
             return list(_web_events(*web))
     text = result["text"]
-    if not result["grounding"] and not follow and personal.general(req.question or ""):
+    if not result["grounding"] and not said_none and not follow and personal.general(req.question or ""):
         #: "what's the capital of France": the world, not the notes, and
         #: said so rather than "nothing in your notes about capital".
         text = personal.general_reply(_web_allowed(req))
-    if not result["grounding"] and prepared.get("meaning_loading"):
+    if not result["grounding"] and not said_none and prepared.get("meaning_loading"):
         text += "\n\n" + composer_digest.PHRASES["meaning_loading"]
     text = _with_older(text, older, result)
     text = _with_lapsed(text, current, result, req)

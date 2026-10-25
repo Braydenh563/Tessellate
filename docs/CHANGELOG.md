@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Ask with a note open answers about that note: "What's left to do?", "When is the deadline?" and "Who is involved?" give the open note's own open tasks, dated sentences or names in a line or two, different for every note, instead of one notebook-wide reply; "Summarise this" names the note instead of "untitled".
 - Toasts on the Graph tab stay on the bottom edge and sit left of the zoom strip, instead of being lifted halfway up the screen.
 
 ## [0.6.1] - 2026-10-22
