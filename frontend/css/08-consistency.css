@@ -10712,3 +10712,17 @@ header#top-bar :is(.header-cluster, .notif-wrap, .header-controls) button:focus-
 header#top-bar button.space-switcher-btn:focus-visible {
   outline-offset: 1px;
 }
+
+/* Card chrome is not copy (dogfood): a drag across a grid of cards selected
+   every title, date and button (1,670 characters over five note cards). The
+   preview and the open note keep their text selectable. */
+.library-card,
+#entry-list li {
+  -webkit-user-select: none;
+  user-select: none;
+}
+.library-card-preview,
+#entry-list li .entry-content {
+  -webkit-user-select: text;
+  user-select: text;
+}

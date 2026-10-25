@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Notes and Library: dragging across a grid of cards no longer selects every title, date and button (card chrome is not selectable; the preview and the open note still are).
 - Settings: searching "phone" lists Other devices (the phone and network switch) before Microphone; a setting can carry its everyday word in data-synonyms without becoming a help topic.
 - Documents: New document makes nothing until you type in it (cancelling or walking away leaves no row), names run Untitled document, Untitled document 2, 3 with no duplicates, and the sidebar lists documents by last edit, newest first.
 - Notes: a long note in the capture box scrolls inside a capped box and the Save row sticks to the foot of the page, so Save no longer falls below the window past about 18 lines (Save bottom 981 to 738 at 1280x800 with 30 lines).
