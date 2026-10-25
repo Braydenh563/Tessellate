@@ -224,6 +224,18 @@ REM  relaunch below AND reach "python -m tessellate", which reads it in
 REM  __main__.py. One variable, two readers, no argument plumbing.
 set "TESSELLATE_PORT=!MM_PORT!"
 set "MM_URL=http://localhost:!MM_PORT!"
+REM  TESSELLATE_LOCAL_NAME=tessellate opens http://tessellate.localhost:PORT
+REM  instead: browsers resolve any *.localhost to this computer themselves, so
+REM  the name needs no DNS, hosts file or admin rights. A new name is a new
+REM  origin, so sign-in and per-browser settings start fresh once.
+if defined TESSELLATE_LOCAL_NAME (
+  echo !TESSELLATE_LOCAL_NAME!| findstr /r /x "[a-z0-9-][a-z0-9-]*" >nul 2>&1
+  if errorlevel 1 (
+    echo TESSELLATE_LOCAL_NAME takes letters, digits and hyphens; using localhost.
+  ) else (
+    set "MM_URL=http://!TESSELLATE_LOCAL_NAME!.localhost:!MM_PORT!"
+  )
+)
 
 if /i "!MM_ACTION!"=="help" (
   call :help

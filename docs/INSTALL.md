@@ -260,6 +260,16 @@ python -m tessellate --desktop   # the same app in its own window
 Without `pywebview`, `--desktop` falls back to a browser tab rather than
 failing.
 
+**A name instead of localhost.** Set `TESSELLATE_LOCAL_NAME=tessellate` and
+the launcher, window and tray open `http://tessellate.localhost:8000`.
+Browsers resolve every `*.localhost` name to this computer themselves, so it
+needs no DNS, hosts file or admin rights, and the rebinding guard accepts it.
+A new name is a new origin: sign in once, and per-browser settings (theme,
+panel widths) start from their defaults. Other devices keep the
+`https://<computer>.local:<port>` address Settings shows; a public domain
+needs a reverse proxy with TLS and `TESSELLATE_ALLOWED_HOSTS` (Docker
+section above).
+
 On first run you choose a password (bcrypt-hashed, kept on your machine). Then
 add a model: see [MODELS.md](MODELS.md).
 

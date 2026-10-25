@@ -619,6 +619,17 @@ def test_a_bracketed_ipv6_host_header_names_this_computer():
 
 
 @pytest.mark.usefixtures("_clean")
+def test_a_localhost_name_is_this_computer():
+    """`tessellate.localhost` is a friendly name with no DNS and no admin
+    rights: browsers resolve every `*.localhost` to loopback themselves
+    (RFC 6761), so no rebinding page can own one."""
+    assert netbind.host_allowed("tessellate.localhost:8000")
+    assert netbind.host_allowed("notes.tessellate.localhost")
+    assert not netbind.host_allowed("localhost.evil.example:8000")
+    assert not netbind.host_allowed("evillocalhost:8000")
+
+
+@pytest.mark.usefixtures("_clean")
 def test_turning_it_on_needs_the_current_password(client, app_state):
     headers = _setup(client)
     local = _local(client)
@@ -2203,3 +2214,14 @@ def test_a_phone_cannot_allow_the_network_it_is_on(trust_lan_app):
     assert refused.status_code == 403 and refused.json()["detail"] == REFUSAL
     assert lantrust.load(lantrust_dir(trust_lan_app))["networks"] == []
     assert _trust_here(trust_lan_app).post("/auth/lan-networks/allow", json={"current_password": PASSWORD}).status_code == 200
+
+
+def test_local_name_opens_a_localhost_name(monkeypatch):
+    from tessellate import __main__ as entry
+
+    monkeypatch.delenv("TESSELLATE_LOCAL_NAME", raising=False)
+    assert entry.page_host() == "127.0.0.1"
+    monkeypatch.setenv("TESSELLATE_LOCAL_NAME", "Tessellate")
+    assert entry.page_host() == "tessellate.localhost"
+    monkeypatch.setenv("TESSELLATE_LOCAL_NAME", "evil.example/x")
+    assert entry.page_host() == "127.0.0.1"

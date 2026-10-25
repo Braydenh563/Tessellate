@@ -178,6 +178,15 @@ fi
 # __main__.py. One variable, two readers, no argument plumbing.
 export TESSELLATE_PORT="$MM_PORT"
 MM_URL="http://localhost:$MM_PORT"
+# TESSELLATE_LOCAL_NAME=tessellate opens http://tessellate.localhost:PORT
+# instead: browsers resolve any *.localhost to this computer themselves, so
+# the name needs no DNS, hosts file or admin rights. A new name is a new
+# origin, so sign-in and per-browser settings start fresh once.
+case "${TESSELLATE_LOCAL_NAME:-}" in
+  "") ;;
+  *[!a-z0-9-]*) echo "TESSELLATE_LOCAL_NAME takes lower-case letters, digits and hyphens; using localhost." ;;
+  *) MM_URL="http://$TESSELLATE_LOCAL_NAME.localhost:$MM_PORT" ;;
+esac
 
 if [ "$MM_ACTION" = "help" ]; then
   mm_help

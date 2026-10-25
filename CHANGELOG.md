@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- A friendly local address: set `TESSELLATE_LOCAL_NAME=tessellate` and the launcher, window and tray open `http://tessellate.localhost:8000` instead of localhost. Browsers resolve `*.localhost` to this computer themselves, so it needs no DNS or admin rights; the rebinding guard accepts any `*.localhost` name.
 - Toasts on the Graph tab stay on the bottom edge and sit left of the zoom strip, instead of being lifted halfway up the screen.
 
 ## [0.6.1] - 2026-10-22

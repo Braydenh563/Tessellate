@@ -273,7 +273,9 @@ def host_allowed(host_header: str | None) -> bool:
         host = text[1:].split("]", 1)[0]
     else:
         host = text.rsplit(":", 1)[0] if text.count(":") == 1 else text
-    if host in _LOOPBACK_NAMES:
+    if host in _LOOPBACK_NAMES or host.endswith(".localhost"):
+        #: Browsers answer every `*.localhost` with loopback themselves (RFC
+        #: 6761), so `tessellate.localhost` is a name no rebinding page can own.
         return True
     try:
         ipaddress.ip_address(host.split("%", 1)[0])

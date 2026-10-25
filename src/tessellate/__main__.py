@@ -9,6 +9,7 @@
 import argparse
 import logging
 import os
+import re
 import sys
 import threading
 import time
@@ -30,6 +31,15 @@ if getattr(sys, "frozen", False):
 logger = logging.getLogger("tessellate.launcher")
 
 HOST = "127.0.0.1"  # local only: this is a private app
+
+
+def page_host() -> str:
+    """The name the window and browser open: `HOST`, or `<name>.localhost`
+    when `TESSELLATE_LOCAL_NAME` gives one. Browsers resolve every
+    `*.localhost` to loopback themselves (RFC 6761), so the friendly name
+    needs no DNS, hosts file or admin rights; the server still binds `HOST`."""
+    name = os.environ.get("TESSELLATE_LOCAL_NAME", "").strip().lower()
+    return f"{name}.localhost" if re.fullmatch(r"[a-z0-9-]{1,63}", name) else HOST
 
 
 def _port_from_env(raw: str | None = None) -> int:
@@ -1037,7 +1047,7 @@ def _boot_and_swap(window) -> None:
         # every launch 1.5s slower, and the missing splash it was aimed at is
         # the pre-Python one, which this page cannot be.
         _mark_start_step_done(window)
-        window.load_url(f"http://{HOST}:{PORT}")
+        window.load_url(f"http://{page_host()}:{PORT}")
         _focus_window(window)
     else:
         try:
@@ -1719,7 +1729,7 @@ def _open_window_onto(port: int) -> None:
     tray, no loading page (the server is already up). Shares the running
     window's storage, since the saved sign-in and theme belong to the one
     address both windows open. Closing it ends this process only."""
-    url = f"http://{HOST}:{port}"
+    url = f"http://{page_host()}:{port}"
     try:
         import webview
     except ImportError:
@@ -2646,7 +2656,7 @@ def _capture() -> int:
     if state != "live":
         print("Tessellate is not running on this notebook. Start it, then capture again.")
         return 1
-    webbrowser.open(f"http://{HOST}:{running.port}/capture.html", new=1)
+    webbrowser.open(f"http://{page_host()}:{running.port}/capture.html", new=1)
     return 0
 
 
@@ -2753,7 +2763,7 @@ def main() -> None:
             # One server per data directory in browser mode as well: the
             # launcher scripts already open a browser onto a copy on their
             # own port, and this covers a copy on another port.
-            print(f"Tessellate is already running on this notebook: http://{HOST}:{running.port}")
+            print(f"Tessellate is already running on this notebook: http://{page_host()}:{running.port}")
             return
         _run_server_holding_lock()
 
