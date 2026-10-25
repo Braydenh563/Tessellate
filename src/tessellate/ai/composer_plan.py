@@ -490,6 +490,11 @@ def _when_is(ctx: Ctx, subject: str) -> Reply | None:
     return Reply("\n\n".join(lines))
 
 
+def _when_reply(ctx: Ctx, text: str) -> Reply | None:
+    when = _WHEN_IS.match(text) or _WHEN_IS_ALT.match(text)
+    return _when_is(ctx, when.group("t")) if when else None
+
+
 def answer(ctx: Ctx) -> Reply | None:
     text = " ".join((ctx.question or "").split())
     if not text or len(text) > 200:
@@ -500,8 +505,7 @@ def answer(ctx: Ctx) -> Reply | None:
     until = _UNTIL.match(text)
     if until:
         return _until(ctx, until.group("t"))
-    when = _WHEN_IS.match(text) or _WHEN_IS_ALT.match(text)
-    if when and (reply := _when_is(ctx, when.group("t"))):
+    if (reply := _when_reply(ctx, text)) is not None:
         return reply
     plan = _PLAN.match(text)
     if plan:

@@ -2532,7 +2532,9 @@ def _finish(out: _Out, kind: str, asked: str, members: list, facts: list[Fact], 
     elif kind in ("overview", "likes"):
         _confirmed_first(out, asked, members, learned)
         _volunteer(out, asked, members, notes, today, insight, learned)
-    out.offer = out.offer or _offer(facts, asked) or _kind_offer(kind, asked, members, facts, today, out)
+    #: A fact answer ("what is the Krebs cycle") offers a to-do only when it is
+    #: about it; an overview of notes that hold an open task still offers it.
+    out.offer = out.offer or _offer(facts, asked if kind == "fact" else None) or _kind_offer(kind, asked, members, facts, today, out)
     return _result(out, kind, asked)
 
 

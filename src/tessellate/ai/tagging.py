@@ -433,12 +433,10 @@ def filled(session: Session, content: str, tags: list[str], have: list[str], lim
     return [*tags, *new_topics(session, content, [*have, *tags])[:room]] if room > 0 else tags
 
 
-def new_topics(session: Session, content: str, taken: list[str]) -> list[str]:
-    """Tags for the subjects `content` names (the pack's topics, in at least
-    `NEW_TOPIC_PHRASES` different phrases, most phrases first) that the
-    notebook has not used and `taken` does not hold: the new-tag suggestions
-    with no model to coin one. A sensitive subject (an illness, a debt) is
-    never offered as a tag the person did not choose."""
+def _named_topics(content: str) -> dict[str, int]:
+    """The pack's topics `content` names in enough different phrases, with
+    their phrase counts; a sensitive subject is left out, and so is a generic
+    one (Education) when the note names a subject of its own."""
     from tessellate.ai import taxonomy
 
     sensitive = taxonomy.sensitive_topics()
@@ -446,12 +444,22 @@ def new_topics(session: Session, content: str, taken: list[str]) -> list[str]:
         topic: len(set(phrases)) for topic, phrases in _read(content).hits.items()
         if topic not in sensitive and not re.search(r"[&/]", topic) and len(set(phrases)) >= NEW_TOPIC_PHRASES
     }
-    if not named:
-        return []
     #: Every note in a student's notebook is "education": it is offered only
     #: when the note names no subject of its own (Mathematics, Biology).
     if any(topic not in GENERIC_TOPICS for topic in named):
         named = {topic: n for topic, n in named.items() if topic not in GENERIC_TOPICS}
+    return named
+
+
+def new_topics(session: Session, content: str, taken: list[str]) -> list[str]:
+    """Tags for the subjects `content` names (the pack's topics, in at least
+    `NEW_TOPIC_PHRASES` different phrases, most phrases first) that the
+    notebook has not used and `taken` does not hold: the new-tag suggestions
+    with no model to coin one. A sensitive subject (an illness, a debt) is
+    never offered as a tag the person did not choose."""
+    named = _named_topics(content)
+    if not named:
+        return []
     with lexical_filing._corpus_lock:
         scope = lexical_filing._scope(session)
         used = {_key(tag) for doc in lexical_filing._corpus_for(session).docs.values() if scope(doc) for tag in doc.tags}

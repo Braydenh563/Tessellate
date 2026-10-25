@@ -174,9 +174,15 @@ def unbacked_claims(answer: str, sources: Sources) -> list[str]:
         run.append(word)
     if run:
         close()
-    if sources.computed:
-        found = [c for c in found if not all(_FIGURES.match(part) for part in c.split())]
-    return list(dict.fromkeys(found))
+    return _without_computed(list(dict.fromkeys(found)), sources)
+
+
+def _without_computed(found: list[str], sources: Sources) -> list[str]:
+    """`found` less the claims that are only figures, when the question asked
+    for a computed date or count."""
+    if not sources.computed:
+        return found
+    return [c for c in found if not all(_FIGURES.match(part) for part in c.split())]
 
 
 def heads_up(claims: list[str]) -> str:
