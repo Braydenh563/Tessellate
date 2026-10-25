@@ -5251,7 +5251,7 @@ body .chip.item-label,
 /* Over a popup (avatars.js, `nameMarkBuddyDodge`): faded out at once and
    kept from the pointer, so the popup is readable and usable that frame;
    it steps aside and fades back. Opacity only: the compositor's. */
-#nm-buddy { transition: opacity var(--motion-base) var(--ease-out); }
+#nm-buddy { transition: opacity var(--motion-base) var(--ease-out); touch-action: none; }
 #nm-buddy.nmb-dodge { opacity: 0.12; }
 /* Atlas's stances at rest (avatars.js, `NMB_STANCES`), eased in and out
    by the limbs' own transition. The arms turn about the shoulder: folded

@@ -53,3 +53,15 @@ def test_chat_suggestions_wrap_under_600_instead_of_fading():
 def test_ask_box_hides_the_lone_sparkle_and_the_model_picker_takes_the_row():
     assert ".ask-composer-icon {\n    display: none;" in _css("08-consistency.css")
     assert "max-width: none;" in _css("10-responsive.css").split("#ask .ask-header-actions > .select-shell:has(#ask-feature-model)", 1)[1].split("}", 1)[0]
+
+
+def test_documents_dock_closes_up_so_the_more_menu_stays_on_the_row():
+    text = _css("library-lazy.css")
+    block = text.split("dock's own share of a 44px target stays. */\n", 1)[1].split("\n}\n", 1)[0]
+    assert "column-gap: var(--space-1)" in block
+    assert ".doc-view-cluster .seg > button" in block
+
+
+def test_companion_blocks_browser_touch_scroll_so_a_drag_is_not_cancelled():
+    text = _css("08-consistency.css")
+    assert "#nm-buddy { transition: opacity var(--motion-base) var(--ease-out); touch-action: none; }" in text

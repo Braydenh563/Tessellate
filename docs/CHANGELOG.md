@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: at a 600px window the dock's eight controls fit one row (tight gap and Edit/Read padding) instead of wrapping the more menu to a third row. Companion: it no longer lets the page scroll under a touch drag (touch-action none), so a throw is not cancelled by the browser.
 - Chat: under 600px the welcome's suggested questions wrap to the column instead of scrolling sideways with a fading edge. Ask: at half width the box loses the lone sparkle line and the model picker takes the full row.
 - Chat and Ask: the Sources, Grounded in and Why this answer folds are flat rows with a hover ground instead of boxed buttons inside the answer card.
 - Notes: at half width and under, a note's more-actions button sits in the card's own meta line after its time, instead of on top of the time and hanging below the corner.

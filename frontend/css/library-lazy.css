@@ -6497,6 +6497,18 @@ input[type="color"].wb-mixed {
     margin: 0;
   }
 }
+/* **Eight controls at the 44px floor need 514px; a 600px window leaves the
+   dock 486.** The more menu wrapped to a third row of its own (measured at
+   600: dock 145px tall). The gap closes up to the tight step and the
+   dock's own share of a 44px target stays. */
+@container docdock (max-width: 819.98px) {
+  .doc-dock > .doc-actions {
+    column-gap: var(--space-1);
+  }
+  .doc-view-cluster .seg > button {
+    padding-inline: var(--space-2);
+  }
+}
 @container docdock (max-width: 599.98px) {
   .doc-dock-status {
     display: none;
