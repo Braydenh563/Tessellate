@@ -161,23 +161,30 @@ _HOWTO = (
 )
 
 
-def closing(aw: Awareness, seed: str) -> str:
+def closing(aw: Awareness, seed: str, avoid: tuple[str, ...] | list[str] = ()) -> str:
     """The "here's how you might do that" step: what you were doing, then one
-    thing to ask. "" when the app sees nothing to build on."""
+    thing to ask. "" when the app sees nothing to build on, or when every
+    wording has been said in the last replies (`avoid`)."""
     if not aw.known:
         return ""
-    lines: list[str] = []
-    if aw.open_title:
-        lines.append(_pick(_PICK_UP_OPEN, seed, "title").format(title=aw.open_title))
-    elif aw.actions:
-        lines.append(_pick(_PICK_UP, seed, "pick").format(did=_lower(aw.actions[0])))
-    elif aw.topic:
-        lines.append(_pick(_TOPIC, seed, "topic").format(topic=aw.topic))
+    said = "\n".join(avoid)
     tab_key = next((k for k, v in TAB_NAMES.items() if v == aw.tab), "")
     howto = TAB_HOWTO.get(tab_key, "")
-    if howto and not aw.open_title:
-        lines.append(_pick(_HOWTO, seed, "howto").format(howto=howto))
-    return " ".join(lines)
+    for step in range(4):
+        lines: list[str] = []
+        salted = f"{seed}:{step}"
+        if aw.open_title:
+            lines.append(_pick(_PICK_UP_OPEN, salted, "title").format(title=aw.open_title))
+        elif aw.actions:
+            lines.append(_pick(_PICK_UP, salted, "pick").format(did=_lower(aw.actions[0])))
+        elif aw.topic:
+            lines.append(_pick(_TOPIC, salted, "topic").format(topic=aw.topic))
+        if howto and not aw.open_title:
+            lines.append(_pick(_HOWTO, salted, "howto").format(howto=howto))
+        line = " ".join(lines)
+        if line and line not in said:
+            return line
+    return ""
 
 
 def model_context(aw: Awareness) -> str:

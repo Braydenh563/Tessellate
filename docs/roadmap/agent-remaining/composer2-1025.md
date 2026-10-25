@@ -10,3 +10,4 @@
 - done (item 2): composer_aware.py, screen on /chat/stream, actions on /help/ask, tests/test_composer_aware_1025.py. next: item 3 persona picker disabled with no model (frontend/js/chat.js personaOptions).
 - done (item 3): persona-select data-needs-model; test_persona_gate_1025.py. next: item 4 web search down: Docker one-liner (composer_web.py done unstaged, help websearch topic), item 5.
 - done (item 4): composer_web.search_down Docker one-liner + not-set-up wording, Guide websearch topic. next: item 5 phrasings (tests/test_composer_phrasings_1025.py, stashed while item 4 commits): category counts, compare retrieval + sides, define, phrase variants.
+- done (item 5): category/tag counts, per-category listing, compare both sides, define noise, seeded only-note variants; tests/test_composer_phrasings_1025.py (36 rows). next: nothing in the brief; Ask tab half-width redesign belongs to shell.

@@ -394,7 +394,7 @@ SHAPES = ("what", *(name for name, _ in _SHAPE_RULES), "recent")
 #: question wraps its subject in ("feel", "say") are here too, so the closing
 #: line never reports "feel" as a word no note mentions.
 _ASKING_WORDS = frozenset(
-    """about all any anything compare comparison difference differences
+    """about all any anything define defines definition meaning compare comparison difference differences
     between versus vs latest status progress update updates newest recent
     recently most current currently tell say says said know think thought
     feel felt get got go went make made want need like much many number
@@ -709,16 +709,37 @@ _COMPARE_EXTRA = re.compile(composer_tables.COMPARE_SHAPE_EXTRA, re.I)
 def _bare_side(side: str) -> str:
     """One side of a comparison without the noun that names the notes:
     "Lisbon notes" is Lisbon (1324)."""
-    side = side.strip(" ,")
+    side = re.sub(r"^(?:how (?:does|do|is|are) |what (?:does|do) )?(?:my )?(?:notes? )?(?:on |about )?", "", side.strip(" ,"), flags=re.I)
     return re.sub(r"\s+(?:notes?|entries)$", "", side, flags=re.I).strip(" ,") or side
+
+
+_SIDE_CONNECTOR = re.compile(r"\s(?:and|with|to|vs\.?|versus)\s", re.I)
+#: Strongest first: "Trip to Lisbon and Trip to Porto" splits at "and", the
+#: "to" belongs to the first trip's name.
+_SIDE_PRIORITY = (r"and", r"vs\.?", r"versus", r"with", r"to")
+
+
+def _clean_split(span: str) -> tuple[str, str] | None:
+    for word in _SIDE_PRIORITY:
+        hit = re.search(rf"\s{word}\s", span, re.I)
+        if hit and span[: hit.start()].strip() and span[hit.end():].strip():
+            return span[: hit.start()], span[hit.end():]
+    return None
 
 
 def compare_sides(question: str) -> tuple[str, str] | None:
     """The two things a comparison names, as typed: ("Lisbon", "Porto")."""
     for pattern in _COMPARE_SIDES:
-        match = pattern.search(rephrase(question))
+        text = rephrase(question)
+        match = pattern.search(text)
         if match:
-            a, b = (_bare_side(match.group(k)) for k in ("a", "b"))
+            raw_a, raw_b = match.group("a"), match.group("b")
+            if _SIDE_CONNECTOR.search(f" {raw_a} ") or _SIDE_CONNECTOR.search(f" {raw_b} "):
+                span = text[match.start("a"): match.end("b")]
+                clean = _clean_split(span.strip(" ?.!"))
+                if clean:
+                    raw_a, raw_b = clean
+            a, b = (_bare_side(s) for s in (raw_a, raw_b))
             if subject_terms(a) and subject_terms(b):
                 return a, b
     return None
@@ -2225,11 +2246,23 @@ def _compare(out: _Answer, sides: tuple[str, str], views: list[NoteView], meanin
     speaks of both."""
     a_terms, b_terms = subject_terms(sides[0]), subject_terms(sides[1])
     a_stems, b_stems = {_stem(t) for t in a_terms}, {_stem(t) for t in b_terms}
-    a_pick = select("compare", a_terms, views, limit=6, meaning=meaning_for(a_terms))
-    b_pick = select("compare", b_terms, views, limit=6, meaning=meaning_for(b_terms))
+    #: A note named for a side belongs to it even when its sentences never
+    #: repeat the name ("Trip to Lisbon": "Flights booked for 3 December"),
+    #: and a sentence in the other side's note that mentions this side is
+    #: still the other side's.
+    a_own = [v for v in views if (a_stems - b_stems) & {_stem(w) for w in v.title_words}]
+    b_own = [v for v in views if (b_stems - a_stems) & {_stem(w) for w in v.title_words}]
+    if set(map(id, a_own)) & set(map(id, b_own)):
+        a_own = b_own = []
+    a_pick = select("compare", a_terms, a_own or views, limit=6, meaning=meaning_for(a_terms))
+    b_pick = select("compare", b_terms, b_own or views, limit=6, meaning=meaning_for(b_terms))
+    #: A note the person named is read from its top, not by which of its
+    #: sentences repeat the name.
+    a_pick = [s for v in a_own for s in v.sentences[:3]] or a_pick
+    b_pick = [s for v in b_own for s in v.sentences[:3]] or b_pick
     both = [s for s in a_pick if b_stems & set(s.words)][:2]
-    a_only = [s for s in a_pick if not (b_stems & set(s.words))][:3]
-    b_only = [s for s in b_pick if not (a_stems & set(s.words))][:3]
+    a_only = [s for s in a_pick if a_own or not (b_stems & set(s.words))][:3]
+    b_only = [s for s in b_pick if b_own or not (a_stems & set(s.words))][:3]
     if not (a_only or b_only):
         return False
     counts = [len({s.note_id for s in picks}) for picks in (a_only, b_only)]
@@ -3545,9 +3578,13 @@ _SHAPE_KIND = {
 _WHY = re.compile(r"^\s*(?:why|how come|what (?:made|makes|caused|causes)|explain why)\b", re.I)
 _RECALL = re.compile(
     r"\bwhat (?:did|have|had) (?:i|we) (?:do|did|done|write|wrote|written|get up to|work on|worked on|note|noted|been up to)\b"
+    r"|\bwhat (?:did|have|had) (?:i|we) (?:add|added|save|saved|make|made|jot|jotted|capture|captured)\b"
+    r"|\banything (?:i|we) (?:added|saved|made|wrote|noted|jotted|did|captured)\b|\bdid (?:i|we) (?:add|write|save|make|note|jot) anything\b"
     r"|\bwhat happened\b|\bwhat was i (?:doing|up to)\b|\bwhat(?:'s| is| was) (?:been )?going on\b|\banything (?:new|happen)\b",
     re.I,
 )
+#: The verbs of such a question, which are not subjects to search for.
+_RECALL_VERBS = frozenset("add added save saved make made jot jotted capture captured anything write wrote note noted".split())
 _INSIGHT = re.compile(r"\b(?:patterns?|habits?|trends?|keeps? coming up|how often do i|what do i (?:keep|always))\b", re.I)
 _RECOMMEND = re.compile(r"^\s*(?:what|which) should (?:i|we)\b|^\s*should (?:i|we)\b|\brecommend|\bsuggest(?:ion)?s?\b", re.I)
 _TAGGED = re.compile(r"\b(?:tagged(?: with)?|with the tags?|under the tags?)\s+#?([\w-]{1,40})|(?<![\w&])#([A-Za-z][\w-]{0,39})", re.I)
@@ -3618,6 +3655,13 @@ def plan(question: str, today: date | None = None, *, recent: bool = False, embe
     span = when_words.span(phrase, today, "past") if phrase else None
     if span and span[0] > today:
         span = None
+    if span:
+        #: "what did I write on Monday": the day is the window, not a subject
+        #: to search the notes for (the phrase's own words, "monday", go).
+        said = set(phrase.lower().split())
+        terms = [t for t in terms if t.lower() not in said]
+        if _RECALL.search(question or ""):
+            terms = [t for t in terms if t.lower() not in _RECALL_VERBS]
     if utility and utility != "until_note":
         kind = "utility"
     elif span and not terms and (_RECALL.search(question or "") or shape in ("what", "recent", "list")):

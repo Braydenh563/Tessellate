@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer knows more and varies: counts per category or tag ("how many travel notes"), comparisons that read both named notes ("Lisbon vs Porto", "how does A differ from B"), "define X" no longer searches for the word define, and the closing "only note" line has four wordings chosen by the question. A 36-phrasing table pins it.
 - Web search that cannot run: the reply says how to start the search service (a one-line Docker command) and offers the setting; with SearXNG chosen and no address saved it says web search is not set up. The Guide's web search topic repeats the command.
 - The Persona picker in the chat dock is disabled, with its reason as the tooltip, while no model is connected, and comes back by itself when one answers.
 - Composer awareness: Ask, Chat and the Guide send the tab, the open document and the last three actions (local only), and a composed reply opens with what the app can see and ends with a pick-up-where-you-left-off step; a private note is never named.

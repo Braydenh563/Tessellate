@@ -1550,6 +1550,23 @@ def _recall_window(session: Session, question: str, found: _Found) -> None:
             found.when_phrase = found.when_phrase or asked.window_phrase
 
 
+def _with_each_side(session: Session, question: str, entries: list, locale: str | None) -> list:  # noqa: ANN001
+    """A comparison needs both things in hand: a search for "Lisbon vs Porto"
+    can fill its few slots with one side, so each side is searched on its own
+    and the best of each is added."""
+    sides = composer.compare_sides(question)
+    if not sides:
+        return entries
+    merged = list(entries)
+    seen = {e.id for e in merged}
+    for side in sides:
+        for entry in search_manager.retrieve_detailed(session, side, deps.get_embeddings(), limit=3, locale=locale).entries:
+            if entry.id not in seen:
+                seen.add(entry.id)
+                merged.append(entry)
+    return merged
+
+
 def _search_notes(session: Session, question: str, found: _Found, attached: list, as_of, locale: str | None) -> None:  # noqa: ANN001
     #: Searched with the person's own abbreviations spelt out ("what's due in
     #: CC" also finds the notes that say Cloud Computing, B7).
@@ -1559,6 +1576,7 @@ def _search_notes(session: Session, question: str, found: _Found, attached: list
         locale=locale,
     )
     entries = _with_neighbours(session, question, _widened(session, question, hit.entries, scope=hit.category), scope=hit.category)
+    entries = _with_each_side(session, question, entries, locale)
     found.entries = list_pool.pool(session, question, entries)
     found.mode = hit.mode
     found.connected_ids = hit.connected_ids
@@ -3067,8 +3085,13 @@ def _with_next_step(text: str, size: str, req: _StreamRequest) -> str:
     already ends in a question or an offer to press."""
     if size == "short" or text.rstrip().endswith("?"):
         return text
-    seed = _reply_seed(req)[1]
-    line = (composer_aware.closing(_awareness(req), seed) if req.body.screen else "") or composer_tone.closing(recent=_newest_titles(req.session, 1), seed=seed)
+    recent, seed = _reply_seed(req)
+    #: Seeded by the question too, so two questions in one chat do not end in
+    #: the same line, and a line the last replies already hold is passed over.
+    seed = f"{seed}:{req.question}"
+    line = (composer_aware.closing(_awareness(req), seed, recent) if req.body.screen else "") or composer_tone.closing(
+        recent=_newest_titles(req.session, 1), seed=seed, avoid=recent
+    )
     return f"{text}\n\n{line}" if line else text
 
 

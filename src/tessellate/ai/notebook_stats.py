@@ -249,6 +249,12 @@ def answer(message: str, session: Session) -> StatAnswer | None:
         return _top_categories(session)
     if _asks(text, r"untagged|no tags|without (?:a )?tags?|missing tags?"):
         return _untagged(session)
+    if _asks(text, _COUNT, r"\bnotes?\b") and re.search(r"\b(?:per|by|in each|for each|across)\s+(?:categor(?:y|ies)|folders?|spaces?)", text):
+        return _notes_per_category(session)
+    if re.search(_COUNT, text) and re.search(r"\bnotes?\b", text):
+        named = _named_count(text, session)
+        if named is not None:
+            return named
     if _asks(text, _COUNT, _TAG_WORDS):
         return _tag_count(session)
     if _asks(text, _COUNT, _CATEGORY_WORDS):
@@ -403,6 +409,48 @@ def _category_count(session: Session) -> StatAnswer:
         f"You have {_plural(total, 'category')}.".replace("categorys", "categories"),
         [{"label": "categories", "count": total}],
     )
+
+
+def _notes_per_category(session: Session) -> StatAnswer:
+    rows = session.execute(
+        _visible(
+            select(Category.name, func.count(Entry.id))
+            .join(Category, Category.id == Entry.category_id)
+            .group_by(Category.name)
+        ).order_by(func.count(Entry.id).desc(), Category.name)
+    ).all()
+    if not rows:
+        return StatAnswer("categories", "None of your notes are filed in a category yet.")
+    listed = ", ".join(f"{name} ({n})" for name, n in rows)
+    return StatAnswer(
+        "categories",
+        f"Notes per category: {listed}.",
+        [{"label": name, "count": n} for name, n in rows],
+    )
+
+
+def _named_count(text: str, session: Session) -> StatAnswer | None:
+    """"How many travel notes" / "how many notes are in Work": the count for
+    one category or tag the question names, or None when it names neither."""
+    names = session.execute(
+        _visible(
+            select(Category.name, func.count(Entry.id))
+            .join(Category, Category.id == Entry.category_id)
+            .group_by(Category.name)
+        )
+    ).all()
+    for name, n in sorted(names, key=lambda r: -len(r[0])):
+        if re.search(rf"(?<!\w){re.escape(name.lower())}(?!\w)", text):
+            return StatAnswer(
+                "category-count",
+                f"You have {_plural(n, 'note')} in {name}.",
+                [{"label": name, "count": n}],
+            )
+    counts = Counter(tag.lower() for raw in session.scalars(_visible(select(Entry.tags))).all() for tag in _tags_of(raw))
+    for tag, n in sorted(counts.items(), key=lambda r: -len(r[0])):
+        if re.search(rf"(?<!\w){re.escape(tag)}(?!\w)", text):
+            return StatAnswer("tag-count", f"{_plural(n, 'note')} are tagged {tag}.".replace("1 notes are", "1 note is"), [{"label": tag, "count": n}])
+    return None
 
 
 def _note_count(session: Session) -> StatAnswer:
