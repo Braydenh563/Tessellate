@@ -8585,28 +8585,22 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .chat-empty > p {
   max-width: 52ch;
 }
-/* On a phone the welcome is a narrow column and its questions stacked one to
-   a line, four lines under a scrollbar (measured at 390x844: 24px over). The
-   title leaves the corner '?' its room, and the questions become one row
-   that scrolls sideways, the pattern phone chat apps use for starters, with
-   the edge fading to say there is more. */
+/* On a phone the welcome is a narrow column. The title leaves the corner '?'
+   its room; the questions wrap to the column and each chip's own words wrap,
+   rather than the old one-row scroller whose edge faded a question away
+   (owner, 22-10: "chat suggestions fade off on the right side with no wrap"). */
 @media (max-width: 599.98px) {
   .chat-empty .empty-title {
     padding-inline: calc(var(--target-min) + var(--space-1));
-  }
-  .chat-empty #chat-suggest {
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    max-width: 100%;
-    overflow-x: auto;
-    scrollbar-width: none;
-    mask-image: linear-gradient(to right, #000 calc(100% - var(--space-6)), transparent);
   }
   .chat-empty #chat-suggest > .muted {
     display: none;
   }
   .chat-empty #chat-suggest > .chip {
-    flex: 0 0 auto;
+    max-width: 100%;
+    height: auto;
+    text-align: start;
+    white-space: normal;
   }
 }
 /* --- choice controls, the owner's 2026-09-24 pass (INBOX 409, 411) ---------
@@ -9503,6 +9497,11 @@ header#top-bar:has(.ai-status-wrap:hover, .ai-status:focus-visible, .ai-status-p
 @media (max-width: 599.98px) {
   .ask-composer {
     position: relative;
+  }
+  /* The sparkle stood alone on the box's first line (the field wrapped under
+     it); the placeholder already says what the box is. */
+  .ask-composer-icon {
+    display: none;
   }
   #ask-clear {
     position: absolute;

@@ -3936,11 +3936,6 @@ button.is-on {
   font-weight: 400;
   line-height: 1.3;
 }
-.start-footer {
-  font-size: var(--text-base);
-  max-width: 46rem;
-  margin: 0.4rem auto 0;
-}
 /* Keyboard focus on the map. The graph takes one tab stop and the arrows move
    between notes inside it; without a visible ring there is no way to tell
    which note you're on, which makes the whole thing unusable by keyboard even

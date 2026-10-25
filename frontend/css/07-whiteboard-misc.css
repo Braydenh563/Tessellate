@@ -4048,8 +4048,10 @@ button.icon-button:not(.ghost):not(.active):not(.status-item):not(.tool-btn):not
   background: var(--ghost-btn-bg-hover);
   color: var(--error);
 }
-/* A disclosure row reads as a control at rest, not only under the pointer. */
-summary:not(.icon-only):not(.icon-button) {
+/* A disclosure row reads as a control at rest, not only under the pointer.
+   Not the answer folds (`.fold-summary`: Sources, Grounded in, Why this answer,
+   Thinking), which sit in a card that already frames them and are flat. */
+summary:not(.icon-only):not(.icon-button):not(.fold-summary) {
   /* `button.ghost`'s quiet recipe (01-forms-settings.css): a faint tint and
      the measured hairline, grey only under the pointer. */
   background: var(--btn-quiet-bg);

@@ -6,6 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat: under 600px the welcome's suggested questions wrap to the column instead of scrolling sideways with a fading edge. Ask: at half width the box loses the lone sparkle line and the model picker takes the full row.
+- Chat and Ask: the Sources, Grounded in and Why this answer folds are flat rows with a hover ground instead of boxed buttons inside the answer card.
+- Notes: at half width and under, a note's more-actions button sits in the card's own meta line after its time, instead of on top of the time and hanging below the corner.
 - Settings: a pane whose only heading the jump list already shows (Models at half width) no longer leaves a blank bordered bar; Documents: in focus mode on a phone the thumb bar sits on the bottom edge instead of 56px above a blank band.
 - Documents: a stored editor view from before this version is reset to Live once, so the Live default shows; a view you pick afterwards is kept.
 - A friendly local address: set `TESSELLATE_LOCAL_NAME=tessellate` and the launcher, window and tray open `http://tessellate.localhost:8000` instead of localhost. Browsers resolve `*.localhost` to this computer themselves, so it needs no DNS or admin rights; the rebinding guard accepts any `*.localhost` name.
