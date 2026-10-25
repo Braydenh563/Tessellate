@@ -1738,7 +1738,7 @@ def test_a_reused_authority_key_is_made_private_again(tmp_path):
     folder = lancert.paths(tmp_path)[0].parent
     _ca, ca_key = lancert.authority_paths(tmp_path)
     os.chmod(ca_key, 0o700)
-    os.chmod(folder, 0o711)
+    os.chmod(folder, 0o500)
     lancert.ensure(tmp_path, NAMES)
     assert stat.S_IMODE(os.stat(ca_key).st_mode) == 0o600
     assert stat.S_IMODE(os.stat(folder).st_mode) == 0o700
