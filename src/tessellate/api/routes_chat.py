@@ -64,6 +64,7 @@ from tessellate.ai.grounding import (
     support as grounding_support,
 )
 from tessellate.ai.ollama_client import OllamaError
+from tessellate.api import chat_extra
 from tessellate.api.schemas import EntryOut
 from tessellate.core import activity, deps, docview, model_gate
 from tessellate.core.database import (
@@ -3387,6 +3388,15 @@ def _first_events(req: _StreamRequest, prepared: dict, ollama_running: bool, too
             "I will not delete everything in one go. Name one note instead, for example “delete the boiler note”: "
             "it waits for your Confirm, and Undo brings it back."
         )}])
+    if not req.images_raw and not req.skill and _app_answers(req, ollama_running):
+        follow = prepared.get("follow_on")
+        found = chat_extra.events(
+            req.session, follow.question if follow else req.question, req.history or [], now=user_now(deps.get_config()).replace(tzinfo=None),
+            seed=_reply_seed(req)[1], open_ids=[i for i in [req.body.open_note_id, *req.body.note_ids] if i],
+            follow_kind=follow.kind if follow else "", said=follow.said if follow else "", asked=req.question,
+        )
+        if found is not None:
+            return iter(found)
     link = composer_web.url_in(req.question or "")
     if link and composer_web.reads_link(req.question or "") and not req.images_raw and _app_answers(req, ollama_running):
         return iter(_link_events(req, link))
