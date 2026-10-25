@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Opening a 500-object board is back under its 170 ms budget: a full-screen documents rule keyed on `body:has(...)` was re-checked on every page change and tripled the open time; it is now a body class, and a lint keeps new `body:has` rules out.
 - A friendly local address: set `TESSELLATE_LOCAL_NAME=tessellate` and the launcher, window and tray open `http://tessellate.localhost:8000` instead of localhost. Browsers resolve `*.localhost` to this computer themselves, so it needs no DNS or admin rights; the rebinding guard accepts any `*.localhost` name.
 - Documents: the history dialog keeps its head to the title and close button; the filter and "Name this version" sit together in one row that wraps on a phone.
 - Documents: narrow editors get a tighter line-number gutter, and a table's meatball stays inside its row with the add-row plus just under the table.
