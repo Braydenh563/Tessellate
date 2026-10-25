@@ -10281,6 +10281,32 @@ header#top-bar {
     flex-wrap: nowrap;
   }
 }
+/* --- the dashboard's quick actions stop wrapping --------------------------
+   At 390 the two shortcut groups wrapped to 459px and pushed the first widget
+   below the fold; one scrolling row each, as the Notes and Library strips. */
+@media (max-width: 599.98px) {
+  .launch-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .launch-row::-webkit-scrollbar {
+    display: none;
+  }
+  .launch-row > * {
+    flex: 0 0 auto;
+  }
+  /* The "Start something" row is a grid elsewhere, so it is made a flex row
+     here to take the same scrolling. */
+  .launch-row-start {
+    display: flex;
+  }
+  /* Two whole tiles in the 364px row and the third's edge, the only cue that
+     sideways is a direction (libr-1011). */
+  .launch-row-start > * {
+    flex: 0 0 min(15rem, 44%);
+  }
+}
 /* --- the dashboard's greeting banner, on a phone --------------------------
    Measured at 390: the hero was 148px of the 844, and its three parts are an
    emblem, a greeting with a sub-line, and a live clock. The clock is the one
