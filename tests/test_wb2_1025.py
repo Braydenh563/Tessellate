@@ -188,3 +188,25 @@ def test_one_branch_copies_as_an_outline_and_exports_alone():
 
     body = next(t["body"] for t in help_chat.HELP_TOPICS if t["id"] == "mind-map-import-export")
     assert "Copy this branch as an outline" in body and "Export this branch" in body
+
+
+def test_dim_all_but_the_selected_branch():
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert 'id="wb-map-dim"' in html and "Dim all but the selected branch" in html
+    # State in a const object, per viewer; the marker filter wins when both are on.
+    assert "const wbMapDim = { on: false };" in MAP
+    lit = _function(MAP, "wbMapDimLit")
+    assert "wbMapSubtree(index, node.id)" in lit and "up.parent_id" in lit
+    paint = _function(MAP, "wbMapPaintMarkerFilter")
+    assert "const lit = on ? null : index && wbMapDimLit(index);" in paint
+    assert '.wb-map-edge[data-child]' in paint  # a line dims with its topic
+    assert "wbMapDim.on ||" in _function(MAP, "wbMapAfterRender")
+    # It follows the selection without a render.
+    assert "wbMapDim.on) wbMapPaintMarkerFilter();" in _function(WB, "wbApplySelectionHighlight")
+    assert '$("wb-map-dim")?.addEventListener("change"' in WB
+    cmds = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
+    assert 'id: "dim-branch"' in cmds
+    from tessellate.ai import help_chat
+
+    body = next(t["body"] for t in help_chat.HELP_TOPICS if t["id"] == "mind-map-features")
+    assert "Dim all but the selected branch" in body

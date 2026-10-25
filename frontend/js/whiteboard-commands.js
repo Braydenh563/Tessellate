@@ -164,6 +164,7 @@ const WB_COMMANDS = [
   { id: "insert-parent", group: "Item", icon: "ph:arrow-elbow-left-up", label: "Insert a parent topic", keys: "Ctrl+Enter", surface: "map", needs: "topic", run: () => wbMapInsertParent(wbSelectedMapNode()?.id) },
   { id: "sort-az", group: "Item", icon: "ph:sort-ascending", label: "Sort branches A to Z", keys: "", surface: "map", needs: "topic", run: () => wbMapSortChildren(wbSelectedMapNode()?.id, 1) },
   { id: "sort-za", group: "Item", icon: "ph:sort-descending", label: "Sort branches Z to A", keys: "", surface: "map", needs: "topic", run: () => wbMapSortChildren(wbSelectedMapNode()?.id, -1) },
+  { id: "dim-branch", group: "View", icon: "ph:circle-half", label: "Dim all but the selected branch", keys: "", surface: "map", run: () => wbMapSetDim(!wbMapDim.on) },
   { id: "copy-branch-outline", group: "Item", icon: "ph:copy", label: "Copy this branch as an outline", keys: "", surface: "map", needs: "topic", run: () => wbMapCopyBranchOutline(wbSelectedMapNode()?.id) },
   { id: "export-branch", group: "Item", icon: "ph:export", label: "Export this branch…", keys: "", surface: "map", needs: "topic", run: () => wbMapExportBranch(wbSelectedMapNode()?.id) },
   { id: "summarise-branch", group: "Item", icon: "ph:text-align-left", label: "Summarise this branch", keys: "", surface: "map", needs: "topic", run: () => wbMapSummariseBranch(wbSelectedMapNode()) },

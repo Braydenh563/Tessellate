@@ -8814,6 +8814,12 @@ function wbSyncMapChrome() {
     const row = numbered.closest(".wb-menu-row");
     if (row) row.hidden = !isMap;
   }
+  const dim = document.getElementById("wb-map-dim");
+  if (dim) {
+    dim.checked = Boolean(isMap && wbMapDim.on);
+    const row = dim.closest(".wb-menu-row");
+    if (row) row.hidden = !isMap;
+  }
   //: The group itself as well as its rows: on a board it held nothing but
   //: its own heading, a group of zero rows drawn between two that have some.
   const mapSection = document.getElementById("wb-view-map-section");
@@ -10081,6 +10087,31 @@ function wbMapSetMarkerFilter(key) {
 
 //: After every render (`wbMapAfterRender`): a class on each topic the filter
 //: leaves out, and the bar that says a filter is on.
+//: **Dim all but the selected branch** (MindNode's focus mode, the XMind and
+//: MindNode audit's item 3): the View menu's switch. The selected topic, all
+//: under it and the path up to its trunk stay lit; with nothing selected
+//: nothing is dimmed. The marker filter, when both are on, wins: it was
+//: asked for by name. Per viewer and per visit, not saved with the map.
+const wbMapDim = { on: false };
+
+function wbMapSetDim(on) {
+  wbMapDim.on = Boolean(on);
+  const box = document.getElementById("wb-map-dim");
+  if (box) box.checked = wbMapDim.on;
+  wbMapPaintMarkerFilter();
+  wbAnnounce(wbMapDim.on ? "Dimming all but the selected branch." : "Every branch lit again.");
+}
+
+//: The ids lit by the dimming, or null when it dims nothing.
+function wbMapDimLit(index) {
+  if (!wbMapDim.on || wbMultiSelection.size > 1) return null;
+  const node = typeof wbSelectedMapNode === "function" ? wbSelectedMapNode() : null;
+  if (!node || !index.byId.has(node.id)) return null;
+  const lit = new Set(wbMapSubtree(index, node.id).map((o) => o.id));
+  for (let up = index.byId.get(node.parent_id); up && !lit.has(up.id); up = index.byId.get(up.parent_id)) lit.add(up.id);
+  return lit;
+}
+
 function wbMapPaintMarkerFilter() {
   const bar = document.getElementById("wb-map-filter");
   const on = Boolean(wbMarkerUi.filter) && wbIsMap();
@@ -10094,21 +10125,30 @@ function wbMapPaintMarkerFilter() {
   }
   const container = document.getElementById("whiteboard-container");
   if (!container) return;
-  container.classList.toggle("wb-map-filtering", on);
-  if (!on) {
+  const index = wbIsMap() ? wbMapIndex() : null;
+  const lit = on ? null : index && wbMapDimLit(index);
+  container.classList.toggle("wb-map-filtering", on || Boolean(lit));
+  if (!on && !lit) {
     for (const el of container.querySelectorAll(".wb-map-filtered-out")) el.classList.remove("wb-map-filtered-out");
     return;
   }
-  for (const node of wbMapIndex().nodes) {
+  const out = (node) => (on ? !wbMapMarkerKeys(node.data).includes(wbMarkerUi.filter) : !lit.has(node.id));
+  for (const node of index.nodes) {
     const el = container.querySelector(`.wb-object[data-id="${node.id}"]`);
-    if (el) el.classList.toggle("wb-map-filtered-out", !wbMapMarkerKeys(node.data).includes(wbMarkerUi.filter));
+    if (el) el.classList.toggle("wb-map-filtered-out", out(node));
+  }
+  //: A line goes with the topic it leads into, so a lit branch is not tied
+  //: to the rest by full-strength lines.
+  for (const el of container.querySelectorAll(".wb-map-edge[data-child], .wb-map-edge-label[data-child]")) {
+    const node = index.byId.get(Number(el.dataset.child));
+    el.classList.toggle("wb-map-filtered-out", Boolean(node && out(node)));
   }
 }
 
 //: What follows every render of a map: the outline and the marker filter.
 function wbMapAfterRender() {
   wbOutlineSync();
-  if (wbMarkerUi.filter || document.getElementById("whiteboard-container")?.classList.contains("wb-map-filtering")) {
+  if (wbMarkerUi.filter || wbMapDim.on || document.getElementById("whiteboard-container")?.classList.contains("wb-map-filtering")) {
     wbMapPaintMarkerFilter();
   }
 }

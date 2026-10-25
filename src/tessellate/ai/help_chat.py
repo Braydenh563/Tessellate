@@ -1705,7 +1705,7 @@ HELP_TOPICS.extend(
                 "numbered topics", "outline numbers", "note on a topic", "note behind a topic",
                 "comment on a topic", "boundary", "summary topic", "summarise topics",
                 "mind map features", "layout picker", "present branches", "marker", "markers", "priority on a topic",
-                "flag a topic", "filter by marker", "map outline", "outline of the map",
+                "flag a topic", "filter by marker", "map outline", "outline of the map", "dim the rest", "dim all but", "highlight a branch",
             ),
             "body": (
                 "Mind map features. The layout picker: tree, radial, logic chart, "
@@ -1715,7 +1715,9 @@ HELP_TOPICS.extend(
                 "Present branches shows it branch by branch. A topic's menu, "
                 "Content, Markers sets a priority (1 to 5), how far along it is, a "
                 "flag, a due day and up to six icons; View, Filter by marker dims every topic "
-                "without the one you pick. The sidebar's Outline tab (View, "
+                "without the one you pick, and View, Dim all but the selected branch "
+                "dims everything outside the selected topic's branch and its path to "
+                "the centre, following the selection. The sidebar's Outline tab (View, "
                 "Outline) lists the map as an indented outline: F2 renames, "
                 "Shift+Enter adds a topic, Tab and Shift+Tab move it in and out a level. "
                 "A topic's menu makes "

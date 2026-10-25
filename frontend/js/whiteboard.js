@@ -5993,6 +5993,8 @@ function wbApplySelectionHighlight() {
   //: And the waypoint handle on the selected topic's own lines, which is the
   //: other control that follows the selection without a re-render.
   wbSyncMapEdgeHandles();
+  //: The dimmed rest follows the selected branch.
+  if (typeof wbMapDim !== "undefined" && wbMapDim.on) wbMapPaintMarkerFilter();
   //: A card and a text box keep their eight handles and their rotate grip as
   //: children, revealed by `.wb-selected`, so a *group* member is marked a
   //: second way and 07-whiteboard-misc.css hides the grips on that class. The
@@ -13589,6 +13591,7 @@ async function initWhiteboard() {
   $("wb-map-perspective")?.addEventListener("change", (e) => wbMapSetPerspective(e.target.value));
   $("wb-map-theme-item")?.addEventListener("click", wbMapThemeDialog);
   $("wb-map-numbered")?.addEventListener("change", (e) => wbMapSetNumbered(e.target.checked));
+  $("wb-map-dim")?.addEventListener("change", (e) => wbMapSetDim(e.target.checked));
   $("wb-map-stats-item")?.addEventListener("click", wbShowMapStats);
   $("wb-zoom-actual")?.addEventListener("click", () =>
     d3.select(document.getElementById("whiteboard-container")).transition().duration(160).call(wbZoom.scaleTo, 1)
