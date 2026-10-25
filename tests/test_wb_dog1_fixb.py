@@ -142,3 +142,32 @@ def test_a_connection_point_lights_and_grabs_at_the_same_distance():
     assert WB.count("WB_PORT_HIT_PX / zoomK()") == 1
     assert "Math.min(WB_PORT_HIT_PX, side * 0.2) / zoomK()" in WB
     assert "Math.min(9, side * 0.2)" not in WB
+
+
+MAP = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+
+
+def test_a_new_topic_is_brought_into_view_when_it_is_out_of_it():
+    # Item 12: Tab put a child at x~1265 and the view stayed.
+    add = MAP[MAP.index("async function wbMapAddChild(") :]
+    add = add[: add.index("\n}\n")]
+    assert "wbMapRevealTopic(created);" in add
+    # The arrow keys use the same helper, not a second copy of the rule.
+    nav = MAP[MAP.index("function wbMapNavigate(") :]
+    assert "wbMapRevealTopic(target);" in nav[: nav.index("\n}\n")]
+
+
+def test_rect_escape_check():
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    start = MAP.index("function wbRectEscapes(")
+    fn = MAP[start : MAP.index("\n}\n", start) + 3]
+    view = "{ left: 60, top: 100, right: 1260, bottom: 700 }"
+    script = fn + (
+        f"console.log(JSON.stringify([wbRectEscapes({{ left: 100, top: 200, right: 300, bottom: 240 }}, {view}),"
+        f" wbRectEscapes({{ left: 1119, top: 200, right: 1319, bottom: 240 }}, {view}),"
+        f" wbRectEscapes({{ left: 100, top: 59, right: 300, bottom: 103 }}, {view})]));"
+    )
+    out = subprocess.run([node, "-e", script], capture_output=True, text=True, check=True).stdout
+    assert json.loads(out) == [False, True, True]
