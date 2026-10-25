@@ -50,7 +50,7 @@ TOOLS: tuple[Tool, ...] = (
 )
 
 _ON = re.compile(
-    r"^(?:ok(?:ay)?[, ]+|please[, ]+|can you |could you |how do i |how can i |how to |i want to |i'?d like to |let'?s |lets )*"
+    r"^(?:ok(?:ay)?[, ]+|please[, ]+|can you |could you |how do i |how can i |how to |i want to |i'?d like to |let'?s )*"
     r"(?:turn|switch|flip|put|set|enable|activate)\s+(?P<a>(?:it|that|this|them)\s+(?:on|up)|on\s+(?:it|that|this)|on\s+(?P<t>.+?)|(?P<t2>.+?)\s+on|(?:it|that|this)|(?P<t3>.+?))"
     r"\s*(?:please|for me|now)?\W*$", re.I)
 _OFFISH = re.compile(r"\b(?:off|disabled|not (?:on|set up|enabled|installed)|turn (?:it |this )?on|switch(?:ed)? on|opt-?in|enable)\b", re.I)
