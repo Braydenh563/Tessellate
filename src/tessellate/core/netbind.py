@@ -264,8 +264,26 @@ def _own_names() -> set[str]:
     return {name, short, f"{short}.local"}
 
 
-def host_allowed(host_header: str | None) -> bool:
-    """Is this Host one that names this computer? (the rebinding guard)."""
+#: **The friendly local name** (`TESSELLATE_LOCAL_NAME=tessellate` opens
+#: `http://tessellate.localhost:PORT`). Browsers that follow RFC 6761 answer
+#: every `*.localhost` with loopback themselves; one that hands the lookup to
+#: the network's DNS would let a hostile resolver point `evil.localhost` at
+#: this computer's LAN address and rebind. So the guard accepts the one name
+#: configured, never any other `*.localhost`, and only on a request that
+#: arrived on loopback (lansec-1025).
+LOCAL_NAME_ENV = "TESSELLATE_LOCAL_NAME"
+
+
+def local_name() -> str:
+    """`<name>.localhost` for the configured name, or "" when none is set."""
+    name = os.environ.get(LOCAL_NAME_ENV, "").strip().lower()
+    return f"{name}.localhost" if re.fullmatch(r"[a-z0-9-]{1,63}", name) else ""
+
+
+def host_allowed(host_header: str | None, *, on_loopback: bool = False) -> bool:
+    """Is this Host one that names this computer? (the rebinding guard).
+    `on_loopback`: the request arrived on loopback, the only place the
+    friendly local name (`local_name`) is accepted."""
     if not host_header:
         return True  # HTTP/1.0 or a local tool: nothing to judge, nothing to rebind
     text = host_header.strip().lower()
@@ -273,10 +291,10 @@ def host_allowed(host_header: str | None) -> bool:
         host = text[1:].split("]", 1)[0]
     else:
         host = text.rsplit(":", 1)[0] if text.count(":") == 1 else text
-    if host in _LOOPBACK_NAMES or host.endswith(".localhost"):
-        #: Browsers answer every `*.localhost` with loopback themselves (RFC
-        #: 6761), so `tessellate.localhost` is a name no rebinding page can own.
+    if host in _LOOPBACK_NAMES:
         return True
+    if host.endswith(".localhost"):
+        return on_loopback and host == local_name()
     try:
         ipaddress.ip_address(host.split("%", 1)[0])
         return True

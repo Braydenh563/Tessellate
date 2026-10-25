@@ -619,14 +619,51 @@ def test_a_bracketed_ipv6_host_header_names_this_computer():
 
 
 @pytest.mark.usefixtures("_clean")
-def test_a_localhost_name_is_this_computer():
-    """`tessellate.localhost` is a friendly name with no DNS and no admin
-    rights: browsers resolve every `*.localhost` to loopback themselves
-    (RFC 6761), so no rebinding page can own one."""
-    assert netbind.host_allowed("tessellate.localhost:8000")
-    assert netbind.host_allowed("notes.tessellate.localhost")
-    assert not netbind.host_allowed("localhost.evil.example:8000")
-    assert not netbind.host_allowed("evillocalhost:8000")
+def test_a_localhost_name_is_this_computer_only_on_loopback(monkeypatch):
+    """`tessellate.localhost` is the friendly name `TESSELLATE_LOCAL_NAME`
+    gives (no DNS, no admin rights). Only that one name, and only on a
+    request that arrived on loopback (lansec-1025): a browser that sends a
+    `*.localhost` lookup to the network's DNS (a hostile cafe resolver) could
+    otherwise point `evil.localhost` at this computer's LAN address and
+    rebind, so off loopback, or under any other name, it is a 421."""
+    from tessellate.core import security
+
+    monkeypatch.setattr(security, "_notebook_has_password", lambda: True)
+    monkeypatch.delenv("TESSELLATE_LOCAL_NAME", raising=False)
+    assert not netbind.host_allowed("tessellate.localhost:8000", on_loopback=True)
+    monkeypatch.setenv("TESSELLATE_LOCAL_NAME", "Tessellate")
+    assert netbind.local_name() == "tessellate.localhost"
+    assert netbind.host_allowed("tessellate.localhost:8000", on_loopback=True)
+    assert not netbind.host_allowed("tessellate.localhost:8000")
+    assert not netbind.host_allowed("evil.localhost:8000", on_loopback=True)
+    assert not netbind.host_allowed("notes.tessellate.localhost", on_loopback=True)
+    assert not netbind.host_allowed("localhost.evil.example:8000", on_loopback=True)
+    assert not netbind.host_allowed("evillocalhost:8000", on_loopback=True)
+    assert _through_host_check(("127.0.0.1", 8000), "tessellate.localhost:8000") == (None, True)
+    assert _through_host_check(("::ffff:127.0.0.1", 8443), "tessellate.localhost:8443") == (None, True)
+    assert _through_host_check(("192.168.1.9", 8443), "tessellate.localhost:8443") == (421, False)
+    assert _through_host_check(("127.0.0.1", 8000), "evil.localhost:8000") == (421, False)
+    # The LAN port's plain-http redirect never sends a phone to a .localhost name.
+    from tessellate.core import lanserve
+
+    head = b"GET / HTTP/1.1\r\nHost: tessellate.localhost:8443\r\n\r\n"
+    assert lanserve.redirect_response(head, 8443).startswith(b"HTTP/1.1 400")
+
+
+@pytest.mark.usefixtures("_clean")
+def test_the_local_name_counts_as_this_computer(client, app_state, monkeypatch):
+    """Sign-in off, the friendly name gets its password-free session as
+    127.0.0.1 does; any other `*.localhost` name does not."""
+    from starlette.requests import Request
+
+    monkeypatch.setenv("TESSELLATE_LOCAL_NAME", "tessellate")
+
+    def request(host: str) -> Request:
+        return Request({"type": "http", "method": "GET", "path": "/", "headers": [(b"host", host.encode())],
+                        "client": ("127.0.0.1", 5000), "server": ("127.0.0.1", 8000), "scheme": "http"})
+
+    assert routes_auth._from_this_computer(request("tessellate.localhost:8000"))
+    assert not routes_auth._from_this_computer(request("evil.localhost:8000"))
 
 
 @pytest.mark.usefixtures("_clean")
@@ -1690,6 +1727,21 @@ def test_the_authority_vouches_only_for_this_network(tmp_path):
     assert not lancert._covers(ca, ["8.8.8.8"])
     for path in lancert.authority_paths(tmp_path):
         assert stat.S_IMODE(os.stat(path).st_mode) == 0o600, path
+
+
+@pytest.mark.usefixtures("_no_live_listener")
+def test_a_reused_authority_key_is_made_private_again(tmp_path):
+    """lansec-1025: `ensure` re-tightened the server key on every start but
+    not the authority's key or the folder, so a copy loosened by a restore,
+    a sync tool or an older build stayed readable while it was reused."""
+    lancert.ensure(tmp_path, NAMES)
+    folder = lancert.paths(tmp_path)[0].parent
+    _ca, ca_key = lancert.authority_paths(tmp_path)
+    os.chmod(ca_key, 0o644)
+    os.chmod(folder, 0o755)
+    lancert.ensure(tmp_path, NAMES)
+    assert stat.S_IMODE(os.stat(ca_key).st_mode) == 0o600
+    assert stat.S_IMODE(os.stat(folder).st_mode) == 0o700
 
 
 @pytest.mark.usefixtures("_no_live_listener")

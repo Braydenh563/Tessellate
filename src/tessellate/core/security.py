@@ -143,7 +143,10 @@ class HostCheckMiddleware:
                 if name == b"host":
                     host = value.decode("latin-1")
                     break
-            if (host is None and off_loopback) or (host is not None and not netbind.host_allowed(host)):
+            if (host is None and off_loopback) or (
+                host is not None
+                and not netbind.host_allowed(host, on_loopback=netbind.arrived_on_loopback(server))
+            ):
                 response = JSONResponse(
                     status_code=421,
                     content={"detail": "This address does not name this computer."},

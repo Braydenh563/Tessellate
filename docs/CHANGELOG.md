@@ -7,6 +7,11 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Opening a 500-object board is back under its 170 ms budget: a full-screen documents rule keyed on `body:has(...)` was re-checked on every page change and tripled the open time; it is now a body class, and a lint keeps new `body:has` rules out.
+- Security: docs/SECURITY.md has a "Phone and other devices" section saying plainly what LAN mode protects and what it does not (a lost phone still signed in, skipping the fingerprint check, a typed http address on a hostile network).
+- Security: the LAN certificate folder and the authority's private key are made private again (0700, 0600) at every start, not only when first made.
+- Security: wrong-password waits key an IPv6 device by its /64 network, so a device on the Wi-Fi cannot dodge them by making up new addresses.
+- Security: a phone can no longer set where backups are copied on the computer (a UNC path there sent the owner's Windows sign-in over SMB) or switch on beta updates; Settings dims both rows on another device.
+- Security: the rebinding guard accepts only the configured `TESSELLATE_LOCAL_NAME` `.localhost` name, and only on a request that arrived on this computer's loopback, never any other `*.localhost` name or one from the network; that name now counts as this computer for sign-in-off and the PIN.
 - A friendly local address: set `TESSELLATE_LOCAL_NAME=tessellate` and the launcher, window and tray open `http://tessellate.localhost:8000` instead of localhost. Browsers resolve `*.localhost` to this computer themselves, so it needs no DNS or admin rights; the rebinding guard accepts any `*.localhost` name.
 - Documents: the history dialog keeps its head to the title and close button; the filter and "Name this version" sit together in one row that wraps on a phone.
 - Documents: narrow editors get a tighter line-number gutter, and a table's meatball stays inside its row with the add-row plus just under the table.
