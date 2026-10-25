@@ -587,9 +587,16 @@ function cmSurface(view, meta = null) {
     get value() { return this.text; },
     set value(next) { this.text = next; },
     get selectionStart() { return view.state.selection.main.from; },
-    set selectionStart(at) { this.setSelection(at, this.selectionEnd); },
+    //: **A textarea's rule, not a plain assignment**: moving one end past the
+    //: other drags the other end with it. Without it, `box.value = ...`
+    //: (which leaves the caret at the old spot) then `selectionStart = 12`,
+    //: `selectionEnd = 21` built the range 12..10 first, which the view
+    //: stores as 10..12, and the second write then kept that 10: Ctrl+B on
+    //: nothing selected left `**bold text` selected, so typing ate the opening
+    //: markers (dogfood round 1, item 2).
+    set selectionStart(at) { this.setSelection(at, Math.max(at, this.selectionEnd)); },
     get selectionEnd() { return view.state.selection.main.to; },
-    set selectionEnd(at) { this.setSelection(this.selectionStart, at); },
+    set selectionEnd(at) { this.setSelection(Math.min(at, this.selectionStart), at); },
     get classList() { return view.dom.classList; },
     get dataset() { return view.dom.dataset; },
     get scrollTop() { return view.scrollDOM.scrollTop; },

@@ -4,7 +4,7 @@
 // does and reads the text back, because the faults lived between the keymap
 // and the surface adapter, where a unit test cannot see them.
 const { test, expect } = require("@playwright/test");
-const { watchErrors, openApp, api } = require("../helpers");
+const { watchErrors, openApp, openTab, api } = require("../helpers");
 
 async function openNewDoc(page, content = "Start.") {
   await openApp(page);
@@ -42,5 +42,17 @@ test("Ctrl+Shift+Z redoes in a document, as Ctrl+Y does", async ({ page }) => {
   await page.keyboard.press("Control+Shift+X");
   await page.locator('#tab-documents [data-md="redo"]').first().click();
   expect(await docText(page), "the toolbar Redo did nothing").toBe("Start. one\ntwo");
+  expect(errors).toEqual([]);
+});
+
+test("Ctrl+B with nothing selected leaves the placeholder selected, so typing replaces it whole", async ({ page }) => {
+  const errors = watchErrors(page);
+  await openNewDoc(page, "");
+  await page.keyboard.press("Control+b");
+  expect(await docText(page)).toBe("**bold text**");
+  const sel = await page.evaluate(() => [docSurface().selectionStart, docSurface().selectionEnd]);
+  expect(sel, "the selection should be the placeholder, not the opening markers").toEqual([2, 11]);
+  await page.keyboard.insertText("very important");
+  expect(await docText(page)).toBe("**very important**");
   expect(errors).toEqual([]);
 });
