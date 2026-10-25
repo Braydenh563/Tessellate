@@ -28,7 +28,7 @@ from datetime import date, datetime, time
 from pathlib import Path
 
 from tessellate.ai import arithmetic, recognise, study, utilities
-from tessellate.ai.composer_study import Ctx, Reply, topic_notes
+from tessellate.ai.composer_study import Ctx, Reply, pick, topic_notes
 
 _NUM = r"(-?\d+(?:[.,]\d+)?)"
 _LEAD = r"^(?:(?:so|ok|okay|hey|please|pls|can you|could you|quick question|tell me)[, ]+)*"
@@ -51,6 +51,10 @@ _DAYQ = re.compile(
     rf"{_LEAD}what(?:'s| is| was| will be| would be)? (?:the )?(?P<kind>day|date|weekday)(?: of the week)?"
     rf"(?: is| was| will it be| would it be| will| would| is it going to be)?(?: it| that)?\s*(?:in |on )?(?P<rest>.+?)\W*$", re.I)
 _BETWEEN = re.compile(rf"{_LEAD}(?:how many |how much )?(?P<unit>days|weeks|months|nights)?\s*(?:are there |is there |have i got |do i have )?(?:between|from)\s+(?P<a>.+?)\s+(?:and|to|until|till)\s+(?P<b>.+?)\W*$", re.I)
+_COUNTDOWN = re.compile(
+    rf"{_LEAD}(?:how (?:many|much) (?P<u>days|weeks|months|sleeps)(?: (?:are there|is there|do i have|have i got|are left|is left|left|to go|remain|remaining))?|how long|(?P<u2>days|weeks|months|sleeps)(?: left| to go)?)"
+    r"\s+(?:until|till|'til|before|to|to go until|left until|left till)\s+(?P<d>.+?)\W*$", re.I)
+_OFFSET_Q = re.compile(rf"{_LEAD}(?:what(?:'s| is| was)|when is|when was) (?P<rest>(?:\d+|a|an|one|two|three|four|five|six|seven|eight|nine|ten|twelve|a couple of|a few) (?:days?|weeks?|fortnights?|months?|years?) .+?)\W*$", re.I)
 _WORDS = re.compile(rf"{_LEAD}(?:how many (?:words|characters|letters|sentences)(?: are| is| long)?(?: there)?|what(?:'s| is) the (?:word|character) count|word count|char(?:acter)? count|how long is|how big is|count (?:the )?words)\s*(?:in|of|for|is|on)?\s*(?P<t>.*)$", re.I)
 _QUOTED = re.compile(r"[\"“](.+)[\"”]|:\s*(.{12,})$", re.S)
 _DEFINE = re.compile(
@@ -179,16 +183,93 @@ def _between(text: str, today: date) -> Reply | None:
     if a is None or b is None:
         return None
     low, high = sorted((a, b))
+    words = _gap_words(low, high, (found.group("unit") or "days").lower())
+    return _computed(f"From {_long(low)} to {_long(high)} is {words}.", f"the days from {_long(low)} to {_long(high)}")
+
+
+def _gap_words(low: date, high: date, unit: str) -> str:
+    """The gap between two days in the unit asked: days with their weeks,
+    weeks to a decimal, or whole months and the days left over."""
     days = (high - low).days
     weeks, rest = divmod(days, 7)
-    unit = (found.group("unit") or "days").lower()
-    words = f"{days} day{'s' if days != 1 else ''}" + (f" ({weeks} week{'s' if weeks != 1 else ''}" + (f" and {rest} day{'s' if rest != 1 else ''}" if rest else "") + ")" if days >= 14 else "")
-    if unit == "weeks":
-        words = f"{days / 7:.1f} weeks ({days} days)"
-    elif unit == "months":
+    if unit.startswith("week"):
+        return f"{days / 7:.1f} weeks ({days} days)"
+    if unit == "months":
         months = (high.year - low.year) * 12 + high.month - low.month - (1 if high.day < low.day else 0)
-        words = f"{months} month{'s' if months != 1 else ''} and {(high - recognise.shift_day(low, months, 'month', 1)).days} days ({days} days)"
-    return _computed(f"From {_long(low)} to {_long(high)} is {words}.", f"the days from {_long(low)} to {_long(high)}")
+        return f"{months} month{'s' if months != 1 else ''} and {(high - recognise.shift_day(low, months, 'month', 1)).days} days ({days} days)"
+    tail = f" ({weeks} week{'s' if weeks != 1 else ''}" + (f" and {rest} day{'s' if rest != 1 else ''}" if rest else "") + ")" if days >= 14 else ""
+    return f"{days} day{'s' if days != 1 else ''}{tail}"
+
+
+PHRASES = {
+    "until": (
+        "{when} is {words} away.",
+        "There are {words} until {when}.",
+        "{when} is {words} from today.",
+        "{words} to go until {when}.",
+    ),
+    "until_past": (
+        "{when} was {words} ago.",
+        "{when} has already passed, {words} ago.",
+        "That was {words} ago, on {when}.",
+    ),
+    "today": (
+        "{when} is today.",
+        "That is today, {when}.",
+    ),
+    "since": (
+        "It has been {words} since {when}.",
+        "{words} have passed since {when}.",
+        "{when} was {words} ago.",
+    ),
+    "since_future": (
+        "{when} has not happened yet: it is {words} away.",
+        "{when} is still ahead, {words} from today.",
+    ),
+}
+
+
+def _countdown_words(today: date, target: date, unit: str) -> str:
+    low, high = sorted((today, target))
+    return _gap_words(low, high, "days" if unit == "sleeps" else unit)
+
+
+def _countdown(text: str, today: date, seed: str) -> Reply | None:
+    """"How many days until 12 Dec", "weeks until christmas": the dates are
+    read by the recogniser; a subject it does not know (an exam) is left to
+    the notes."""
+    found = _COUNTDOWN.match(text)
+    if not found:
+        return None
+    unit = (found.group("u") or found.group("u2") or "days").lower()
+    target = _resolve(found.group("d"), today)
+    if target is None:
+        return None
+    key = "today" if target == today else "until" if target > today else "until_past"
+    words = _countdown_words(today, target, unit)
+    line = pick(seed, "cd", PHRASES[key]).format(when=_long(target), words=words)
+    return _computed(line, f"the days from today to {found.group('d').strip()}")
+
+
+def _since(text: str, today: date, seed: str) -> Reply | None:
+    asked = recognise.since_question(text)
+    if not asked:
+        return None
+    unit, phrase = asked
+    ago = recognise.days_since(phrase, datetime.combine(today, time(10)))
+    if ago is None:
+        return None
+    target = date.fromordinal(today.toordinal() - ago)
+    words = _countdown_words(today, target, unit)
+    line = pick(seed, "sn", PHRASES["since"]).format(when=_long(target), words=words)
+    return _computed(line, f"the days from {phrase} to today")
+
+
+def _offset_question(text: str, today: date) -> Reply | None:
+    """"What is 3 weeks before 12 dec": the recogniser's offset, no "day" word needed."""
+    found = _OFFSET_Q.match(text)
+    moved = recognise.day_offset(found["rest"].strip(), today) if found else None
+    return _offset_reply(moved, today) if moved else None
 
 
 # --- word counts and definitions ---------------------------------------------------------
@@ -272,4 +353,5 @@ def answer(ctx: Ctx) -> Reply | None:
     found = _RISE.match(text)
     if found:
         return _priced(found, up=True)
-    return _word_count(ctx, text) or _day_question(text, today) or _between(text, today) or _define(ctx, text)
+    return (_word_count(ctx, text) or _day_question(text, today) or _between(text, today) or _countdown(text, today, ctx.seed)
+            or _since(text, today, ctx.seed) or _offset_question(text, today) or _define(ctx, text))

@@ -529,7 +529,7 @@ HELP_TOPICS: list[dict] = [
             "“summarise lecture 5” gives a short section-by-section version (say “more” or “shorter”). "
             "“What's due this week”, “plan my week” and “how long until the exam” read your reminders, the dates "
             "your notes give and your open checklist items. It also works out percentages, marks needed, dates "
-            "(“what day is 3 weeks from friday”) and word counts, and defines common study terms your notes "
+            "(“what day is 3 weeks from friday”, “how many weeks until christmas”, “how many days since 1 october”) and word counts, and defines common study terms your notes "
             "do not cover. After a due or plan list, “the second one” and “why” explain a line and where it came from; "
             "“What did I write about databases this week” lists that time's notes on a topic, dated, and “outline lecture 5” shows a note's headings with a word count each; "
             "after a reply that says a tool is off, “turn it on” links its switch (it never flips it for you). "
