@@ -6569,6 +6569,8 @@ body:has(#tab-documents.doc-focus) :is(.selection-bar, .editor-menu, .inline-ai,
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
+}
+
 /* --- the board's context bar, wrapped (`wbUpdateSelectionBar`) ------------
    Two rows or more is a panel, not a pill: the pill's curve cut into the
    first and last rows, and a row's first group drops the hairline that only
