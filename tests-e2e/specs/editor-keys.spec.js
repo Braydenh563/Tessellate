@@ -56,3 +56,50 @@ test("Ctrl+B with nothing selected leaves the placeholder selected, so typing re
   expect(await docText(page)).toBe("**very important**");
   expect(errors).toEqual([]);
 });
+
+async function openCaptureBox(page) {
+  await openApp(page);
+  await openTab(page, "notes");
+  await page.click('#notes-subtabs [data-section="capture"]');
+  const live = page.locator('.cm-content[aria-label="New note"]');
+  await expect(page.locator("#entry-content")).toBeVisible();
+  // A click upgrades the textarea to the live editor, as it does for a person.
+  await page.locator("#entry-content").click();
+  await expect(live).toBeVisible();
+  await live.click();
+  return page.locator("#entry-content");
+}
+
+test("note box: Enter continues a bullet, retyping '- ' does not nest, a blank bullet ends the list", async ({ page }) => {
+  const errors = watchErrors(page);
+  const box = await openCaptureBox(page);
+  await page.keyboard.type("- one");
+  await page.keyboard.press("Enter");
+  await expect(box).toHaveValue("- one\n- ");
+  await page.keyboard.type("- ");
+  await expect(box, "typing '- ' on the auto-bullet nested it").toHaveValue("- one\n- ");
+  await page.keyboard.type("two");
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Enter");
+  await expect(box, "Enter on an empty bullet should end the list").toHaveValue("- one\n- two\n");
+  await page.keyboard.type("done");
+  await expect(box).toHaveValue("- one\n- two\ndone");
+  expect(errors).toEqual([]);
+});
+
+test("note box: a closing fence goes back to the opening fence's indent", async ({ page }) => {
+  const errors = watchErrors(page);
+  const box = await openCaptureBox(page);
+  await page.keyboard.type("```");
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Tab");
+  await page.keyboard.type("code");
+  await page.keyboard.press("Enter");
+  await page.keyboard.type("```");
+  await page.keyboard.press("Enter");
+  await page.keyboard.type("after");
+  await expect(box, "the fence and the line after it carried the code's indent").toHaveValue("```\n  code\n```\nafter");
+  expect(errors).toEqual([]);
+});
+
+test("

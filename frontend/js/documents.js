@@ -14037,6 +14037,9 @@ function noteSurfaceExtensions(CM, host, options) {
     host.noteReadOnlySlot.of(host.noteReadOnlyExtensions(host.readOnly)),
     //: The same whole-line copy and cut the document has (INBOX 652).
     CM.state.Prec.high(docLineClipboardExtension(CM)),
+    //: Bullets that do not nest when retyped, fences that close at their own
+    //: indent, Enter on an empty item ending the list (dogfood round 1).
+    docListFenceExtensions(CM, false),
     //: Grammar rides with the rendering: the note's own list (PROSE-TOOLS,
     //: `noteGrammarPlugin`).
     host.noteLiveSlot.of(noteSourceWanted() && NOTE_SOURCE_HOSTS.has(host.id) ? [] : live),
