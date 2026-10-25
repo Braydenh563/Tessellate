@@ -133,3 +133,21 @@ test("typing after focus slips off the editor does not run the quick-nav chord",
   await expect.poll(() => page.evaluate(() => settingsModalOpen())).toBe(true);
   expect(errors).toEqual([]);
 });
+
+test("at 700px wide the formatting toolbar is one row, not seven", async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.setViewportSize({ width: 700, height: 800 });
+  await openNewDoc(page, "Hello");
+  await page.keyboard.press("Control+Shift+X");
+  const bar = page.locator("#doc-toolbar");
+  await expect(bar).toBeVisible();
+  const height = (await bar.boundingBox()).height;
+  expect(height, `the toolbar wrapped to ${height}px`).toBeLessThan(80);
+  const editor = (await page.locator("#tab-documents .cm-scroller").first().boundingBox()).height;
+  expect(editor, "the editor was squeezed by the toolbar").toBeGreaterThan(260);
+  // A wide window keeps the expanded default.
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await expect.poll(async () => (await bar.boundingBox()).height).toBeGreaterThan(40);
+  expect(await bar.getAttribute("data-toolbar-mode")).toBeNull();
+  expect(errors).toEqual([]);
+});

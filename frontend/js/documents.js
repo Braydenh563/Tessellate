@@ -15376,11 +15376,21 @@ function docToolbarMode() {
       prefs.set(DOC_TOOLBAR_MODE_MIGRATED_KEY, "1");
       return "wrap";
     }
-    return stored === "row" ? "row" : "wrap";
+    if (stored === "row" || stored === "wrap") return stored;
+    //: **No choice made, and the window is narrow: one row.** Wrapped, the 29
+    //: controls took seven rows (143 px) at 700 px wide and left 214 px of
+    //: editor; one row with the More menu is 59 px and leaves 298 (dogfood
+    //: round 1, item 10). A choice made with the toggle always wins.
+    return window.matchMedia?.(DOC_TOOLBAR_NARROW)?.matches ? "row" : "wrap";
   } catch {
     return "wrap"; // private mode: the safe shape, since it never clips
   }
 }
+
+const DOC_TOOLBAR_NARROW = "(max-width: 760px)";
+//: Crossing the line re-applies the default, so a window dragged narrower
+//: folds the strip and wider unfolds it, unless a choice is stored.
+window.matchMedia?.(DOC_TOOLBAR_NARROW)?.addEventListener?.("change", () => applyDocToolbarMode(docToolbarMode()));
 
 function applyDocToolbarMode(mode) {
   const row = mode === "row";
