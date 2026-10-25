@@ -93,3 +93,12 @@ def test_list_markers_are_a_fixed_hanging_indent():
     css = (ROOT / "frontend" / "css" / "09-editor.css").read_text(encoding="utf-8")
     hit = css[css.index(".cm-md-task-hit {") :]
     assert "width: 1.6em;" in hit[: hit.index("}")]
+
+
+def test_narrow_gutter_and_table_menu_stay_compact():
+    # Measured: gutter 57px to 47px at 700; table menu 28px at 1280, 700 and 480 (44px before);
+    # add-row plus sits 2px under the table instead of far below.
+    css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    assert "@media (max-width: 819.98px)" in css and ".cm-lineNumbers .cm-gutterElement" in css
+    assert ".cm-editor .cm-md-table-menu > button" in css
+    assert "geo.box.bottom + 2" in DOCS_JS

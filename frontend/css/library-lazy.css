@@ -6530,3 +6530,33 @@ body:has(#tab-documents.doc-focus) :is(.selection-bar, .editor-menu, .inline-ai,
 #tab-documents.doc-focus > .doc-focus-bar .ghost.small {
   white-space: nowrap;
 }
+
+/* **The line-number gutter, tighter in a narrow editor.** Reported: "the line
+   numbers margin is taking up a lot of space" at half a screen. The numbers'
+   own padding (0.5rem and 0.6rem) and a 3ch floor, plus a 1.1em fold lane,
+   were 57px of a 585px editor (9.7%). Below 820 the padding halves, the
+   floor drops to 2ch (the gutter still grows to its widest number) and the
+   fold lane narrows. */
+@media (max-width: 819.98px) {
+  .doc-editor .cm-editor .cm-lineNumbers .cm-gutterElement {
+    padding: 0 var(--space-2) 0 var(--space-1);
+    min-width: 2ch;
+  }
+  .doc-editor .cm-editor .cm-foldGutter {
+    width: 0.9em;
+  }
+}
+
+/* **The table's meatball stays inside its row.** Reported: the button on the
+   right "is overflowing". Under 820 the app's touch floor made it 44px square
+   in a row 38px tall, so it hung below the row and past the table's edge
+   (measured at 700 and 480). It is the row's own height at most; the press
+   area is the row, which is what a finger needs. */
+.cm-editor .cm-md-table-menu > button,
+.cm-editor .cm-md-table-menu > summary {
+  width: 1.75rem;
+  height: 1.75rem;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+}

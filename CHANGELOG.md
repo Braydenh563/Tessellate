@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: narrow editors get a tighter line-number gutter, and a table's meatball stays inside its row with the add-row plus just under the table.
 - Documents (Live view): a wrapped line of a bullet, numbered or task item starts exactly under the item's first word, where it used to sit 4 to 11px off.
 - Documents: the formatting strip's menus (Highlight, Insert) close on a press outside them, and the slash menu takes its bare "/" back out when you press away.
 - Documents: picking a highlight or text colour on already-coloured text switches the colour instead of nesting markdown.

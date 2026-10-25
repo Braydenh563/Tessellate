@@ -6080,7 +6080,7 @@ function docTableGripsPlugin(CM) {
         const addCol = put("doc-table-add doc-table-add-col", "add-col", 0,
           { x: lastCol.x + lastCol.w - band, y: geo.box.top - band, w: band, h: band }, "Add a column at the end");
         const addRow = put("doc-table-add doc-table-add-row", "add-row", 0,
-          { x: geo.box.left, y: geo.box.bottom, w: band, h: band }, "Add a row at the end");
+          { x: geo.box.left, y: geo.box.bottom + 2, w: band, h: band }, "Add a row at the end");
         this.layer.appendChild(this.line);
       }
 
