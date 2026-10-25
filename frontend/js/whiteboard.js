@@ -19676,6 +19676,7 @@ function wbDrawSketchHandles(sketch, { outlineOnly = false } = {}) {
           sketch._rotateUndoBefore = WB_KIND_INFO.sketch.payload(sketch);
           sketch._gesture = wbBeginGesture(() => {
             rotateLiveD = null;
+            group.attr("transform", null);
             document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-path`)?.setAttribute("d", parsed.d);
             document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-hitbox`)?.setAttribute("d", parsed.d);
             wbLayoutShapeLabel(document.querySelector(`.sketch-group[data-id="${sketch.id}"]`));
@@ -19687,6 +19688,12 @@ function wbDrawSketchHandles(sketch, { outlineOnly = false } = {}) {
           const newD = wbTransformPathD(rotateOriginalD, { rotate: currentAngle, anchorX: centerX, anchorY: centerY });
           rotateLiveD = newD;
           rotateLiveAngle = currentAngle;
+          //: **The box turns with the shape** (the wb ledger, 10-25): it was
+          //: drawn once round the upright shape and stayed there while the
+          //: shape swung out of it. The whole handle group turns about the
+          //: same centre, as a card's outline does, and the grip stays under
+          //: the pointer; the release render draws the new shape's own box.
+          group.attr("transform", `rotate(${currentAngle} ${centerX} ${centerY})`);
           document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-path`)?.setAttribute("d", newD);
           document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-hitbox`)?.setAttribute("d", newD);
           wbLayoutShapeLabel(document.querySelector(`.sketch-group[data-id="${sketch.id}"]`));

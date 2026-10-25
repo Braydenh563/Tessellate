@@ -26,3 +26,11 @@ def test_context_bar_folds_into_more_before_it_wraps():
     assert fold.index("bar.insertBefore(g") < fold.index("bar.offsetHeight <= 60")
     assert 'order: ["order", "stroke", "arrange", "caps", "route"]' in WB
     assert ".wb-context-overflow > .wb-context-group:not(.hidden)" in LAZY_CSS
+
+
+def test_sketch_rotate_turns_its_selection_box_live():
+    # The handle group turns about the shape's centre on every frame (the box
+    # stayed upright round a shape swinging out of it), and Escape undoes it.
+    handles = _function(WB, "wbDrawSketchHandles")
+    assert "group.attr(\"transform\", `rotate(${currentAngle} ${centerX} ${centerY})`)" in handles
+    assert 'rotateLiveD = null;\n            group.attr("transform", null);' in handles
