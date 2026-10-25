@@ -1582,7 +1582,7 @@ HELP_TOPICS.extend(
                 "ring", "opml", "freemind", "colour by", "color by", "focus on a branch",
                 "tidy", "layout of the map", "duplicate a topic", "copy a topic",
                 "undo steps", "how many undo", "topic before", "topic after",
-                "move a topic", "reorder topics", "checkbox on a topic", "topic a task",
+                "move a topic", "reorder topics", "parent topic", "insert a parent", "checkbox on a topic", "topic a task",
                 "tick a topic", "number the branches", "numbered topics", "outline numbers", "note on a topic", "note behind a topic", "comment on a topic", "boundary", "summary topic", "summarise topics",
                 "resize a topic", "topic size", "bigger topic", "text size on a topic", "topic bar", "topic toolbar",
                 "several topics", "select several topics", "many topics at once", "bold several topics", "fold several branches",
@@ -1595,7 +1595,8 @@ HELP_TOPICS.extend(
                 "topic right after it and Shift+Enter right before it (what you "
                 "type next is the new topic's words), Ctrl+D copies it as the "
                 "next sibling, Ctrl+Shift and the arrows move it among its "
-                "siblings, Shift+Tab outdents it, the arrow keys walk the tree, "
+                "siblings, Shift+Tab outdents it, Ctrl+Enter gives it a new parent, "
+                "the arrow keys walk the tree, "
                 "F2 or double-click renames (while typing, Enter breaks the line, Esc "
                 "keeps the name, Tab or Ctrl+Enter adds the next topic, / and [[ add "
                 "links), Delete removes the topic and "
@@ -1611,9 +1612,8 @@ HELP_TOPICS.extend(
                 "branch; double-click a line to label it. A selected topic has "
                 "its bar above it: the colour, the text size (minus and plus "
                 "round the size it reads, S to XL), and Text, Shape and Branch "
-                "line, each a panel of rows: a small preview of each look you "
-                "press once, and a reset arrow that puts the topic back to "
-                "following the map. Drag the square on its bottom right corner to resize it; "
+                "line, each a panel of rows: a preview of each look, and a "
+                "reset arrow back to following the map. Drag the square on its bottom right corner to resize it; "
                 "hold Shift as you drag to scale its text with it. Pick several "
                 "topics (drag a box round them, or Shift-click) and the bar and "
                 "the right-click menu act on all of them: colour, bold, tasks, "

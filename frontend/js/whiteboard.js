@@ -8251,6 +8251,7 @@ function wbBuildContextMenu(kind) {
     subItem("Add", sub => {
       sub("A child topic", "Tab", () => wbMapAddChild(mapNode.id));
       sub("A topic beside this one", "Enter", () => wbMapAddSibling(mapNode.id));
+      if (!(rooted && wbMapLevels(index).get(mapNode.id) === 0)) sub("A parent topic", "Ctrl+Enter", () => wbMapInsertParent(mapNode.id));
       sub("From the library…", "Point a new child at a note, document, file or link", () =>
         wbMapAddReference(mapNode.id)
       );
@@ -15158,6 +15159,11 @@ async function initWhiteboard() {
       if (e.key === "Enter" && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
         wbMapAddSibling(mapNode.id, { above: e.shiftKey });
+        return;
+      }
+      if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey) {
+        e.preventDefault();
+        wbMapInsertParent(mapNode.id);
         return;
       }
       //: Ctrl+Shift+arrows move the topic among its siblings (§12.0's keys;

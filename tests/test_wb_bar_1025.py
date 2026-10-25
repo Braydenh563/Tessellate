@@ -83,3 +83,18 @@ def test_drawio_resize_keys_and_flip_commands() -> None:
     assert '"flip-h", "flip-v"]' in BOARD
     assert "wbResizeSelectionBy(dw, dh)" in BOARD and "async function wbResizeSelectionBy(" in BOARD
     assert "wbRunCommand(`flip-${letter}`)" in BOARD
+
+
+def test_ctrl_enter_inserts_a_parent_topic_in_one_undo_step() -> None:
+    """XMind's Insert parent topic, built 10-25 (scratchpad/ui-sweeps/
+    wb1025-mapparent.js: B under Root becomes New topic > B in B's place, one
+    Ctrl+Z returns it, the centre refuses). Undo runs a batch forwards, so the
+    reparent comes before the create's delete, or the branch goes with it."""
+    mind = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    commands = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
+    body = mind[mind.index("async function wbMapInsertParent("):]
+    body = body[: body.index("\n}\n")]
+    assert body.index('action: "reparent"') < body.index('history.push({ action: "create"')
+    assert "order: wbMapOrderKey(node)" in body and "wbUndoStack.pop()" in body
+    assert "wbMapInsertParent(mapNode.id);" in BOARD and 'sub("A parent topic", "Ctrl+Enter"' in BOARD
+    assert 'id: "insert-parent"' in commands and '{ cmd: "insert-parent" }' in commands

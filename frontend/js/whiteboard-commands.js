@@ -158,6 +158,7 @@ const WB_COMMANDS = [
   { id: "fold-level-1", group: "View", icon: "ph:list-dashes", label: "Show the trunks only", keys: "Alt+1", surface: "map", run: () => wbMapFoldToLevel(1) },
   { id: "fold-level-2", group: "View", icon: "ph:list-dashes", label: "Show two levels", keys: "Alt+2", surface: "map", run: () => wbMapFoldToLevel(2) },
   { id: "fold-level-3", group: "View", icon: "ph:list-dashes", label: "Show three levels", keys: "Alt+3", surface: "map", run: () => wbMapFoldToLevel(3) },
+  { id: "insert-parent", group: "Item", icon: "ph:arrow-elbow-left-up", label: "Insert a parent topic", keys: "Ctrl+Enter", surface: "map", needs: "topic", run: () => wbMapInsertParent(wbSelectedMapNode()?.id) },
   { id: "sort-az", group: "Item", icon: "ph:sort-ascending", label: "Sort branches A to Z", keys: "", surface: "map", needs: "topic", run: () => wbMapSortChildren(wbSelectedMapNode()?.id, 1) },
   { id: "sort-za", group: "Item", icon: "ph:sort-descending", label: "Sort branches Z to A", keys: "", surface: "map", needs: "topic", run: () => wbMapSortChildren(wbSelectedMapNode()?.id, -1) },
   { id: "summarise-branch", group: "Item", icon: "ph:text-align-left", label: "Summarise this branch", keys: "", surface: "map", needs: "topic", run: () => wbMapSummariseBranch(wbSelectedMapNode()) },
@@ -588,6 +589,7 @@ const WB_HELP_SECTIONS = [
   { title: "Mind map", surface: "map", rows: [
     { icon: "ph:plus", label: "Add a child, a topic beside it", keys: ["Tab", "Enter"] },
     { icon: "ph:arrow-left", label: "Outdent a branch", keys: ["Shift+Tab"] },
+    { cmd: "insert-parent" },
     { icon: "ph:arrows-out-cardinal", label: "Walk the tree", keys: ["arrows"] },
     { icon: "ph:pencil-simple", label: "Rename a topic", keys: ["F2", "double-click"] },
     { icon: "ph:trash", label: "Delete the topic and its branch", keys: ["Delete"] },

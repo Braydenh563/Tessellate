@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Mind map, from XMind: Ctrl+Enter on a selected topic inserts a parent topic in its place (the topic and its branch go under the new one, which opens for typing), also under the right-click Add menu and the command palette; one Ctrl+Z takes it back, and the centre has no parent to take.
 - Whiteboard, from draw.io: Ctrl+Shift and the arrows resize what is selected (right and down grow, left and up shrink, a grid cell with snap on, else 10), and Flip left to right and Flip top to bottom are in the Arrange menu, the right-click menu and the palette, with Shift+H and Shift+V (they were only in the Format panel).
 - Whiteboard: switching between the Fill and Border tabs of the colour popup keeps the popup where it is (it jumped 310px, or to the top left when the other colour's well was hidden, as for "Fill for new shapes" with a shape selected).
 - Whiteboard: Group and Ungroup are never offered together: one group selected offers Ungroup, anything else of two or more offers Group (merging what is grouped), on the selection bar, the Arrange menu, the right-click menu and the command palette alike.
