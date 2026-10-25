@@ -106,3 +106,22 @@ def test_each_grip_says_what_its_double_click_does() -> None:
     script = _function("wbResizeHandleTitle") + "console.log(JSON.stringify(['frame','image','text','shape'].map(wbResizeHandleTitle)));"
     frame, image, text, shape = _node(script)
     assert "fit this edge" in frame and "double-click" not in image and "fits the text" in text and text == shape
+
+
+def test_a_shape_resize_moves_its_grips_and_shows_its_size_live() -> None:
+    """The 22-10 bug doc: a shape's box and anchors stayed at the old size until
+    release, and its resize showed no "W x H" (scratchpad/ui-sweeps/wb1025-resize.js
+    measures both: selection box 164 to 284 wide against a 280 path)."""
+    body = _function("wbDrawSketchHandles")
+    drag = body[body.index('.attr("class", "wb-sketch-resize-handle")') :]
+    assert "placeGrips(live)" in drag
+    assert "wbShowSizeReadout(" in drag
+    assert "wbClearAlignmentGuides()" in drag
+
+
+def test_a_sticker_glyph_follows_its_box_during_the_resize() -> None:
+    """A sticker's glyph is its box; it stayed 46px in a 214px box after release."""
+    start = SOURCE.index("function resizeDrag(handle)")
+    drag = SOURCE[start : SOURCE.index("function objectRotateDrag()", start)]
+    assert "d.data?.sticker" in drag and "wbStickerSize(d)" in drag
+    assert "wbScheduleRender()" in drag[drag.index('.on("end"') :]

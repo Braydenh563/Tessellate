@@ -1994,7 +1994,12 @@ function wbShowCapSizes(caps) {
     const el = document.getElementById(`wb-prop-${which}size`);
     if (!el) continue;
     el.value = caps[`${which}Size`] || "m";
-    el.disabled = caps[`${which}Cap`] === "none";
+    const none = caps[`${which}Cap`] === "none";
+    el.disabled = none;
+    //: **No size for an end with no mark** (the 22-10 bug doc, the bar "too
+    //: long and wide"): a greyed "Medium" beside "None" said nothing and was
+    //: two of the line bar's widest controls. The size comes back with a mark.
+    (el.closest(".select-shell") || el).classList.toggle("hidden", none);
   }
 }
 
@@ -2175,7 +2180,10 @@ async function wbGroupSelection() {
 function wbGroupButtonState(items) {
   const ids = items.map((i) => i.group_id || null);
   const oneGroup = ids.length > 0 && ids[0] !== null && ids.every((g) => g === ids[0]);
-  return { canGroup: ids.length > 1 && !oneGroup, canUngroup: ids.some(Boolean) };
+  //: One or the other, never both (the owner, 10-25: "the group and ungroup
+  //: button show at the same time"): a selection that is exactly one group
+  //: ungroups; anything else of two or more groups (merging what is grouped).
+  return { canGroup: ids.length > 1 && !oneGroup, canUngroup: oneGroup };
 }
 
 function wbSyncGroupButtons() {
@@ -4687,6 +4695,27 @@ async function wbSizeItemTo(entry, dim, target, factor) {
   return { action: "move", kind, id, before };
 }
 
+//: The keyboard's resize (Ctrl+Shift+arrows): every selected item with a box
+//: of its own grows or shrinks by `dw` or `dh`, never under the smallest a
+//: grip allows, through `wbSizeItemTo` so it undoes as a move does.
+async function wbResizeSelectionBy(dw, dh) {
+  const dim = dw ? "width" : "height";
+  const delta = dw || dh;
+  const pushed = [];
+  for (const e of wbFmtEntries()) {
+    if (!e.bbox || wbIsLocked(e.kind, e.item) || (e.kind === "object" && WB_MAP_KINDS.has(e.item.kind))) continue;
+    if (e.kind === "sketch" && !["shape", "line", "arrow"].includes(wbFmtKind(e))) continue;
+    const size = dim === "width" ? e.bbox.maxX - e.bbox.minX : e.bbox.maxY - e.bbox.minY;
+    const from = e.kind === "sketch" ? size : e.item[dim] || size;
+    const target = Math.max(WB_OBJECT_MIN_SIZE, from + delta);
+    if (from <= 0 || Math.abs(target - from) < 0.5) continue;
+    const done = await wbSizeItemTo(e, dim, target, target / from);
+    if (done) pushed.push(done);
+  }
+  wbPushMoveBatch(pushed);
+  wbScheduleRender();
+}
+
 // Extract notes (BACKLOG.md §62): the selected note cards' own content IS
 // the "notes-in-context", their combined text is what gets split, and each
 // card is also passed as an explicit source so the new note(s) link back to
@@ -6349,6 +6378,22 @@ function wbUpdateSelectionBar(panning = false) {
   if (!mapNode) wbMapStripNodeId = null;
   if (mapNode && !panHeld) wbSyncMapStrip(mapNode);
   active.classList.remove("hidden");
+  //: A bar that wraps to a second row is a panel, not a pill: the pill's
+  //: radius cut the corners of its first and last rows (the 22-10 bug doc,
+  //: "the two rows clash at a half window").
+  if (!held && active.id === "wb-context") {
+    active.classList.remove("wb-context-wrapped");
+    const groups = [...active.querySelectorAll(":scope > .wb-context-group:not(.hidden)")];
+    for (const g of groups) g.classList.remove("wb-row-start");
+    const wrapped = active.offsetHeight > 60;
+    active.classList.toggle("wb-context-wrapped", wrapped);
+    //: And a row's first group loses the hairline that only separates it
+    //: from a group beside it (one layout read for all of them).
+    if (wrapped) {
+      const tops = groups.map((g) => g.offsetTop);
+      groups.forEach((g, i) => { if (i && tops[i] > tops[i - 1] + 2) g.classList.add("wb-row-start"); });
+    }
+  }
   const w = held ? held.w : active.offsetWidth;
   const h = held ? held.h : active.offsetHeight;
   // 44px above, not 10: the rotation handle sits 28px above a card or
@@ -8206,6 +8251,7 @@ function wbBuildContextMenu(kind) {
     subItem("Add", sub => {
       sub("A child topic", "Tab", () => wbMapAddChild(mapNode.id));
       sub("A topic beside this one", "Enter", () => wbMapAddSibling(mapNode.id));
+      if (!(rooted && wbMapLevels(index).get(mapNode.id) === 0)) sub("A parent topic", "Ctrl+Enter", () => wbMapInsertParent(mapNode.id));
       sub("From the library…", "Point a new child at a note, document, file or link", () =>
         wbMapAddReference(mapNode.id)
       );
@@ -8496,7 +8542,7 @@ function wbBuildContextMenu(kind) {
   //: map: a topic's place in a tree is its order (FEAT-17).
   if (!wbIsMap()) {
     subItem("Arrange", (sub) => {
-      for (const id of ["group", "ungroup", "lock"]) {
+      for (const id of ["group", "ungroup", "lock", "flip-h", "flip-v"]) {
         const row = wbCommandMenuRow(id);
         if (row) sub(...row);
       }
@@ -15115,6 +15161,11 @@ async function initWhiteboard() {
         wbMapAddSibling(mapNode.id, { above: e.shiftKey });
         return;
       }
+      if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey) {
+        e.preventDefault();
+        wbMapInsertParent(mapNode.id);
+        return;
+      }
       //: Ctrl+Shift+arrows move the topic among its siblings (§12.0's keys;
       //: missing until INBOX 445). Up and Left are earlier, Down and Right
       //: later, so the keys read the same in a tree laid out across.
@@ -15353,6 +15404,19 @@ async function initWhiteboard() {
       wbMindMapAddSibling(wbSelectedItem.id);
       return;
     }
+    //: **Ctrl+Shift+arrows resize** (draw.io's keys): right and down grow,
+    //: left and up shrink, by a grid cell with snap on, else 10, from the
+    //: top-left corner; one Undo per press.
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && !e.altKey && !wbIsMap()
+      && ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)
+      && (wbSelectedItem || wbMultiSelection.size > 0)) {
+      e.preventDefault();
+      const step = wbSnapOn() ? WB_GRID_SPACING : 10;
+      const dw = e.key === "ArrowRight" ? step : e.key === "ArrowLeft" ? -step : 0;
+      const dh = e.key === "ArrowDown" ? step : e.key === "ArrowUp" ? -step : 0;
+      wbResizeSelectionBy(dw, dh);
+      return;
+    }
     // Arrow-key nudge, asked for directly. Grid step while snap is on (the
     // nudge should land on the same grid a drag would), else 1px/10px, 
     // Shift for the bigger jump, the same convention a slider's own arrow
@@ -15414,6 +15478,13 @@ async function initWhiteboard() {
       return;
     }
     const letter = e.key.toLowerCase();
+    //: Shift+H and Shift+V flip what is selected (Figma's keys) when it can be
+    //: flipped; with nothing flippable they pick the hand and Select as before.
+    if (e.shiftKey && (letter === "h" || letter === "v") && wbCommandApplies(WB_COMMAND_BY_ID.get(`flip-${letter}`))) {
+      e.preventDefault();
+      wbRunCommand(`flip-${letter}`);
+      return;
+    }
     // Shift first: `e.key` for Shift+C is "C", which lower-cases onto the
     // unshifted tool, so reading the shift table second would make the two
     // connectors unreachable from each other.
@@ -15907,7 +15978,7 @@ async function initWhiteboard() {
     if (turn) {
       e.preventDefault();
       e.stopPropagation();
-      wbResetRotation(turn);
+      wbResetRotation(turn, e.ctrlKey || e.metaKey);
       return;
     }
     const handle = e.target.closest?.(".wb-resize-handle, .wb-map-resize-grip");
@@ -19327,6 +19398,40 @@ function wbDrawSketchHandles(sketch, { outlineOnly = false } = {}) {
 
   if (outlineOnly) return;
 
+  //: **The box and the grips follow a resize while it happens**, with the
+  //: size beside them, as a card's do (the 22-10 bug doc: "Shape anchor
+  //: points and selection borders don't resize with the user's" drag). They
+  //: were drawn once from the old bbox and only moved on the release render.
+  const placeGrips = (bb) => {
+    const node = group.node();
+    const box = node.querySelector(".wb-sketch-selection-box");
+    box.setAttribute("x", bb.minX - 2);
+    box.setAttribute("y", bb.minY - 2);
+    box.setAttribute("width", (bb.maxX - bb.minX) + 4);
+    box.setAttribute("height", (bb.maxY - bb.minY) + 4);
+    for (const grip of node.querySelectorAll(".wb-sketch-resize-handle")) {
+      const h = grip.dataset.handle;
+      grip.setAttribute("x", (h.includes("w") ? bb.minX : h.includes("e") ? bb.maxX : (bb.minX + bb.maxX) / 2) - 5);
+      grip.setAttribute("y", (h.includes("n") ? bb.minY : h.includes("s") ? bb.maxY : (bb.minY + bb.maxY) / 2) - 5);
+    }
+    const midX = (bb.minX + bb.maxX) / 2;
+    const origin = `${midX}px ${bb.minY}px`;
+    const stem = node.querySelector(".wb-rotate-handle-stem");
+    if (stem) {
+      stem.setAttribute("x1", midX);
+      stem.setAttribute("x2", midX);
+      stem.setAttribute("y1", bb.minY);
+      stem.setAttribute("y2", bb.minY - 28);
+      stem.style.transformOrigin = origin;
+    }
+    const turn = node.querySelector(".wb-sketch-rotate-handle");
+    if (turn) {
+      turn.setAttribute("cx", midX);
+      turn.setAttribute("cy", bb.minY - 28);
+      turn.style.transformOrigin = origin;
+    }
+  };
+
   for (const handle of ["nw", "n", "ne", "e", "se", "s", "sw", "w"]) {
     const hx = handle.includes("w") ? bbox.minX : handle.includes("e") ? bbox.maxX : (bbox.minX + bbox.maxX) / 2;
     const hy = handle.includes("n") ? bbox.minY : handle.includes("s") ? bbox.maxY : (bbox.minY + bbox.maxY) / 2;
@@ -19376,8 +19481,15 @@ function wbDrawSketchHandles(sketch, { outlineOnly = false } = {}) {
             wbLayoutShapeLabel(document.querySelector(`.sketch-group[data-id="${sketch.id}"]`));
             sketch._liveD = newD; // read at drag end, without waiting for a full render
             wbFollowLiveShape(sketch, newD);
+            const live = wbPathBBox(newD);
+            if (live) {
+              placeGrips(live);
+              wbShowAlignmentGuides([]);
+              wbShowSizeReadout({ x: live.minX, y: live.minY, w: live.maxX - live.minX, h: live.maxY - live.minY });
+            }
           })
           .on("end", async () => {
+            wbClearAlignmentGuides();
             wbFollowLiveShape(sketch, null);
             const before = sketch._resizeUndoBefore;
             delete sketch._resizeUndoBefore;
@@ -20469,15 +20581,31 @@ const WB_OBJECT_MIN_SIZE = 40;
 //: `turned` existed, or resized since (see the resize grip), has nothing to
 //: go back by, and says so rather than guessing. A group's grip is not here: a group has no angle of its own,
 //: only members that were each turned about its centre.
-async function wbResetRotation(grip) {
+async function wbResetRotation(grip, alone = false) {
   const el = grip.closest(".node-card, .wb-object");
   if (el) {
     const kind = el.classList.contains("node-card") ? "node" : "object";
     const item = (wbState[WB_LIST_BY_KIND[kind]] || []).find((i) => i.id === Number(el.dataset.id));
     if (!item || !item.rotation) return;
     const before = WB_KIND_INFO[kind].payload(item);
+    //: **A frame stood upright takes what it holds with it** (the 22-10 bug
+    //: doc: "if I double click the rotate" node the frame resets and its
+    //: contents stay turned). The same turn a drag of its grip makes, by
+    //: minus its angle, in one Undo step; Ctrl stands the frame up alone.
+    if (kind === "object" && item.kind === "frame") {
+      item._turnFrom = item.rotation;
+      item._turnOrigin = wbFrameTurnOrigin(item, alone);
+    }
     item.rotation = 0;
     el.style.transform = wbItemTransform(item);
+    if (item._turnOrigin) {
+      wbFrameTurnLive(item);
+      await wbSaveObject(item);
+      await wbFrameTurnEnd(item, { action: "move", kind, id: item.id, before });
+      wbScheduleRender();
+      return;
+    }
+    delete item._turnOrigin;
     if (kind === "node") await wbSaveNode(item);
     else await wbSaveObject(item);
     wbPushUndo({ action: "move", kind, id: item.id, before });
@@ -21143,6 +21271,10 @@ function renderWbObjects(canvas) {
         el.style("width", `${d.width}px`)
           .style("height", `${d.height}px`)
           .style("transform", wbItemTransform(d));
+        //: A sticker's glyph is its box (decision 44), so it grows with the
+        //: grip, not on the next render (the 22-10 bug doc: "Emojis don't
+        //: size or scale with its borders").
+        if (d.data?.sticker) el.select(".wb-text-content").style("font-size", `${wbStickerSize(d)}px`);
         //: **The lines and the clone arrows follow a resize as they follow a
         //: move** (INBOX 746's "the arrows dont resize either"). The box a
         //: link aims at is read from the measured size the last render
@@ -21164,6 +21296,10 @@ function renderWbObjects(canvas) {
         if (cancelled || (before && before.width === d.width && before.height === d.height)) return;
         await wbSaveObject(d);
         if (before) wbPushUndo({ action: "move", kind: "object", id: d.id, before });
+        //: The save repaints nothing, and what a box draws from its size (a
+        //: sticker's glyph, a frame's title, a table's grid) waited for some
+        //: later render to catch up.
+        wbScheduleRender();
       });
   }
 

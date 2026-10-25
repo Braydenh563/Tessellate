@@ -14,6 +14,13 @@ below). Versioning is `0.x` while the app stabilises.
 - Documents: picking a highlight or text colour on already-coloured text switches the colour instead of nesting markdown.
 - Documents: task boxes can be ticked in Read view; in full screen the selection bar and block menus show above the page, the floating bar no longer overlaps the dock at narrow widths, and Read gets a wider page. The dock drops its button words and save state by its own width (a half-width window), so its row stays on one line.
 - Documents: the Suggestions menu can hide every underline and the list for now, and a Dismissed list brings back suggestions you put away in the document.
+- Mind map, from XMind: Ctrl+Enter on a selected topic inserts a parent topic in its place (the topic and its branch go under the new one, which opens for typing), also under the right-click Add menu and the command palette; one Ctrl+Z takes it back, and the centre has no parent to take.
+- Whiteboard, from draw.io: Ctrl+Shift and the arrows resize what is selected (right and down grow, left and up shrink, a grid cell with snap on, else 10), and Flip left to right and Flip top to bottom are in the Arrange menu, the right-click menu and the palette, with Shift+H and Shift+V (they were only in the Format panel).
+- Whiteboard: switching between the Fill and Border tabs of the colour popup keeps the popup where it is (it jumped 310px, or to the top left when the other colour's well was hidden, as for "Fill for new shapes" with a shape selected).
+- Whiteboard: Group and Ungroup are never offered together: one group selected offers Ungroup, anything else of two or more offers Group (merging what is grouped), on the selection bar, the Arrange menu, the right-click menu and the command palette alike.
+- Whiteboard: a line given an End mark stays a line in the Format panel, so its Start and End rows stay and setting End back to None makes it a plain line again; the selection bar hides the size of an end with no mark (a line's bar 913 to 700px wide at 1440), and a bar that wraps at half width takes panel corners with no divider at the start of a row (three rows to two at 720).
+- Whiteboard: double-clicking a turned frame's rotate grip stands up what it holds as well as the frame, in one Undo step (Ctrl stands up the frame alone).
+- Whiteboard: an emoji sticker grows with its box while you resize it (it stayed at its old size, 46px in a 214px box), and a shape's selection box, grips and rotate handle follow a resize live with the "W x H" size beside them, as a box's do.
 - Toasts on the Graph tab stay on the bottom edge and sit left of the zoom strip, instead of being lifted halfway up the screen.
 
 ## [0.6.1] - 2026-10-22
