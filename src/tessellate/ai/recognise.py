@@ -710,7 +710,15 @@ def _reminder_instant(text: str, now: datetime, locale: str | None, tense: str, 
     #: The past (a timeline entry, "on 3 october") is the recogniser's
     #: reading; `resolve` reads only time to come.
     at = resolve(text, now, locale=locale) if tense == "future" else None
-    instant = next((s.value for s in spans if s.kind == "datetime"), None)
+    day_span = next((s for s in spans if s.kind == "datetime"), None)
+    instant = day_span.value if day_span is not None else None
+    #: "this evening, 6:30" and "tonight when I get back, say 7:30pm": a day
+    #: part (no digits) and a clock apart from it. The clock said is the time;
+    #: the day part only says which day.
+    if day_span is not None and not re.search(r"\d|noon|midnight", day_span.text):
+        clock = next((s for s in spans if s.kind == "time" and isinstance(s.value, time)), None)
+        if clock is not None:
+            instant = datetime.combine(instant.date(), clock.value)
     if instant is not None and (at is None or at.date() == instant.date()):
         at = instant
     at = _still_tonight(at, now, _part_alone(text)) or _known_day(spans, now)

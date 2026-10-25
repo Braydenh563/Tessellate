@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Web reader: Analyse this page lists the page's key points (its own sentences), marks its key terms in the text and lists its sections as links to their headings, with no model and nothing sent out; the reader's typography moved to a lazy stylesheet.
+- Reminders: Magic add reads hedged and conditional phrasings ("remind me to do my tax return when I get home tonight, probably around 7pm" is "Do my tax return" at 19:00), including a day part with a clock apart from it ("this evening, 6:30"); the edit form's time field and selects are now one height with no stray margin.
 - With no model, "Read <link> and tell me about it" fetches the page and tells back its main points, key terms and sections (when web search is on), or says web access is off with a button to its setting, instead of searching your notes for the link's words; a web search that cannot run (SearXNG not answering) now names the service and links Settings, Web search.
 - With no model, an open request ("do smth cool", "open a note") now asks what you meant and offers choices to press (your newest notes, things worth trying), and an instruction the app does not understand is matched to the closest actions it has (by shared words, and by meaning when the embedder runs) instead of searching your notes for its words.
 - Ask with a note open answers about that note: "What's left to do?", "When is the deadline?" and "Who is involved?" give the open note's own open tasks, dated sentences or names in a line or two, different for every note, instead of one notebook-wide reply; "Summarise this" names the note instead of "untitled".

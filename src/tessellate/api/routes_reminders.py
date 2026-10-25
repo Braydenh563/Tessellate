@@ -560,15 +560,10 @@ def magic_add_reminder(body: MagicAddBody, session: Session = Depends(get_sessio
     # principle 2 for a request that needs nothing but arithmetic.
     #: Read as the composer hears it (O8, INBOX 904 B03): "tmrw" is tomorrow,
     #: so the day is read, and the saved words are the task, put right.
-    text = reminder_parser.heard(body.text)
-    parsed = reminder_parser.parse_relative(text, local_now)
-    if parsed is None:
-        # Wall-clock phrases ("tomorrow at 5pm", "next Friday", "tonight") are
-        # read by `when` with no model too (audit 2026-10-05, UX-01): the model
-        # is only for what neither reader understands.
-        from tessellate.ai import when
-
-        parsed = when.parse_reminder_text(text, local_now)
+    #: Rules first (`reminder_parser.read_by_rule`): the sentence as heard,
+    #: the "in ..." reader, then the wall-clock reader; the model only for
+    #: what neither understands.
+    parsed = reminder_parser.read_by_rule(body.text, local_now)
     if parsed is None:
         if not ollama.is_running():
             raise HTTPException(

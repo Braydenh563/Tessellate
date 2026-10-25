@@ -210,7 +210,9 @@ HELP_TOPICS: list[dict] = [
         "body": (
             "The Reminders tab groups items into Overdue / Today / Upcoming / "
             "Done. Add a reminder at the top of the Reminders tab: type it in plain words on the "
-            "Magic add line and press the sparkle, or fill in Remind me to, the "
+            "Magic add line and press the sparkle (hedges such as \"probably "
+            "around 7pm\" are read as the time, and a place like \"when I get "
+            "home\" is left out of the title), or fill in Remind me to, the "
             "date and the time, then Add. Set a priority, snooze, edit inline, or make one recurring: "
             "\"every weekday\", \"every 2 weeks\", \"the last Friday of the month\", "
             "with an early alert such as \"1 day before\". "
@@ -531,7 +533,10 @@ HELP_TOPICS: list[dict] = [
             "the page is fetched and told back as its main points, key terms "
             "and sections; with it off you are told so and given the setting. "
             "If the search service (SearXNG) is not running, the reply says so "
-            "and opens Settings, Web search, where it can be started."
+            "and opens Settings, Web search, where it can be started. In the "
+            "reader, Analyse this page lists the page's key points, marks its "
+            "key terms in the text and lists its sections, each a link to its "
+            "heading; it runs on this device and sends nothing out."
         ),
         "badge": {"label": "Web search", "section": "websearch"},
     },
