@@ -128,3 +128,20 @@ def test_why_after_a_countdown_quotes_the_note(ask):
     first = ask("how long until the exam")
     said = ask("why", [{"question": "how long until the exam", "answer": first}])
     assert "Exam on 12 November" in said and "[Lecture 5: Operating systems](#/notes/1)" in said
+
+
+def test_flashcards_from_a_category_pool_its_notes(ask):
+    said = ask("make flashcards from Uni")
+    assert "Uni notes" in said or "from Uni" in said
+    assert said.count("**Q:**") == 4 and said.count("(#/notes/") >= 2
+    assert "Save these as a note" in said
+
+
+def test_flashcards_from_one_note_are_unchanged(ask):
+    said = ask("make flashcards from lecture 5")
+    assert "Lecture 5: Operating systems" in said and "Uni notes" not in said
+
+
+@pytest.mark.parametrize("q", ["flashcards from my Uni notes", "turn the uni notes into flashcards", "flash cards from uni"])
+def test_category_flashcard_wordings(ask, q):
+    assert "(#/notes/" in ask(q) and "**Q:**" in ask(q)

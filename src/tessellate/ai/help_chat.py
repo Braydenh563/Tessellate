@@ -524,7 +524,7 @@ HELP_TOPICS: list[dict] = [
             "With no model running, Ask and Chat still help you study from your own notes. "
             "Say “quiz me on lecture 5” for questions built from its definitions, bold terms and lists: "
             "answer in your own words, and “hint”, “skip” or “stop” work at any time; the score is kept in the "
-            "conversation. “Make flashcards from this note” writes question and answer cards and offers to save "
+            "conversation. “Make flashcards from this note” (or from a category such as “Uni”) writes question and answer cards and offers to save "
             "them as a note. “What are the key terms in lecture 5” lists them with the note's own definitions, and "
             "“summarise lecture 5” gives a short section-by-section version (say “more” or “shorter”). "
             "“What's due this week”, “plan my week” and “how long until the exam” read your reminders, the dates "

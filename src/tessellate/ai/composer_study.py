@@ -21,6 +21,7 @@ import hashlib
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
+from itertools import zip_longest
 
 from tessellate.ai import study
 
@@ -131,6 +132,16 @@ def topic_notes(topic: str, ctx: Ctx, limit: int = 3) -> list[dict]:
         return exact[:1]
     titled = [n for n in ctx.notes if set(wanted) <= set(study.content_stems(_title(n)))]
     return titled[:limit] or _body_matches(wanted, ctx, limit)
+
+
+def category_notes(topic: str, ctx: Ctx, limit: int = 6) -> list[dict]:
+    """The notes filed under the category a topic names ("flashcards from
+    Uni"); empty when the topic is no category of the notebook."""
+    wanted = _FILLER.sub(" ", topic or "").strip(" ,").lower()
+    wanted = re.sub(r"^(?:my|the|all)\s+|\s+notes?$", "", wanted).strip()
+    if not wanted:
+        return []
+    return [n for n in ctx.notes if str(n.get("category") or "").lower() == wanted][:limit]
 
 
 def _link(note: dict) -> str:
@@ -303,13 +314,55 @@ def _terms(ctx: Ctx, topic: str, *, more: bool = False) -> Reply | None:
 
 
 def deck_text(note: dict, deck: list[study.Card]) -> str:
-    out = [f"# Flashcards: {_title(note)}", ""]
+    return deck_text_titled(_title(note), deck)
+
+
+def deck_text_titled(title: str, deck: list[study.Card]) -> str:
+    out = [f"# Flashcards: {title}", ""]
     for card in deck:
         out += [f"**Q:** {card.q}", f"**A:** {card.a}", ""]
     return "\n".join(out).rstrip() + "\n"
 
 
+def _pooled_deck(topic: str, group: list[dict]) -> list[study.Card]:
+    """A few of the best cards from each note of a category, interleaved so
+    no one note fills the deck."""
+    decks = []
+    for note in group:
+        cards = [c for c in study.cards(str(note.get("content") or "")) if c.kind != "pair"] or study.cards(str(note.get("content") or ""))
+        decks.append(study.ordered(cards, _title(note), limit=6))
+    out: list[study.Card] = []
+    for row in zip_longest(*decks):
+        out += [c for c in row if c is not None]
+    return out[:24]
+
+
+def _category_flashcards(ctx: Ctx, topic: str, group: list[dict]) -> Reply | None:
+    deck = _pooled_deck(topic, group)
+    if len(deck) < 2:
+        return None
+    name = str(group[0].get("category") or topic)
+    label = "Save these as a note"
+    shown = deck[:CARDS_SHOWN]
+    sources = "; ".join(_link(n) for n in group[:4])
+    lines = [pick(ctx.seed, "catflash", (
+        f"I made {len(deck)} flashcards from your {name} notes ({len(group)} of them). The first {len(shown)}:",
+        f"{len(deck)} cards across {len(group)} {name} notes, each in its note's own words. A few to start:",
+        f"Here are {len(deck)} flashcards from {name}, a few from every note. The first {len(shown)}:",
+    )), ""]
+    for card in shown:
+        lines += [f"**Q:** {card.q}", f"**A:** {card.a}", ""]
+    lines += [f"From: {sources}.", "", label]
+    return Reply("\n".join(lines), offer={"kind": "note", "label": label, "text": deck_text_titled(name, deck), "items": []},
+                 asks=[f"Quiz me on {_title(group[0])}"])
+
+
 def _flashcards(ctx: Ctx, topic: str) -> Reply:
+    group = category_notes(topic, ctx)
+    if len(group) >= 2:
+        pooled = _category_flashcards(ctx, topic, group)
+        if pooled:
+            return pooled
     notes, reply = _target(ctx, topic, "Make flashcards from", "make flashcards from", strict=False)
     if not notes:
         return reply or _which_note(ctx, "make flashcards from", "Make flashcards from")
