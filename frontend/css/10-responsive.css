@@ -1038,6 +1038,11 @@ header#top-bar[data-scrolled="1"],
      beside "Timeline" ran 68px into the Options menu at 390). */
   .dock .dock-identity > .dock-chip {
     flex: 0 1000 auto;
+  }  /* A short title that the actions would crush ("Recordings" in 57px sat
+     under the Captions button at 420: halfwindow.js, 17x24 over) keeps its
+     own width, and the actions wrap to the row below instead. */
+  .dock[data-dock-name="library-recordings"]:has(.dock-find) .dock-identity {
+    min-width: max-content;
   }
 }
 /* --- a zone that cannot shrink says so, instead of spilling ---------------
