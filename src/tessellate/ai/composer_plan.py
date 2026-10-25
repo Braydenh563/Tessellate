@@ -485,7 +485,7 @@ def answer(ctx: Ctx) -> Reply | None:
     if not text or len(text) > 200:
         return None
     today = ctx.now.date()
-    if _LEFT.match(text):
+    if _LEFT.match(text) and not ctx.open_ids:  # with a note open, that note's own list (composer_open)
         return _left(ctx)
     until = _UNTIL.match(text)
     if until:

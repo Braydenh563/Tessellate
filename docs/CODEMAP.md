@@ -11749,21 +11749,21 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `_day` | src/tessellate/ai/composer_notes.py:89 |
-| `_heading_lines` | src/tessellate/ai/composer_notes.py:183 |
+| `_heading_lines` | src/tessellate/ai/composer_notes.py:184 |
 | `_item` | src/tessellate/ai/composer_notes.py:133 |
 | `_link` | src/tessellate/ai/composer_notes.py:85 |
 | `_made` | src/tessellate/ai/composer_notes.py:116 |
 | `_matching` | src/tessellate/ai/composer_notes.py:121 |
 | `_nothing` | src/tessellate/ai/composer_notes.py:155 |
-| `_outline_lines` | src/tessellate/ai/composer_notes.py:201 |
-| `_outline_note` | src/tessellate/ai/composer_notes.py:192 |
+| `_outline_lines` | src/tessellate/ai/composer_notes.py:202 |
+| `_outline_note` | src/tessellate/ai/composer_notes.py:193 |
 | `_plural` | src/tessellate/ai/composer_notes.py:81 |
 | `_read_recent` | src/tessellate/ai/composer_notes.py:141 |
 | `_sentence_with` | src/tessellate/ai/composer_notes.py:111 |
 | `_wanted` | src/tessellate/ai/composer_notes.py:107 |
 | `_window` | src/tessellate/ai/composer_notes.py:95 |
-| `answer` | src/tessellate/ai/composer_notes.py:228 |
-| `outline` | src/tessellate/ai/composer_notes.py:212 |
+| `answer` | src/tessellate/ai/composer_notes.py:229 |
+| `outline` | src/tessellate/ai/composer_notes.py:213 |
 | `recent` | src/tessellate/ai/composer_notes.py:164 |
 
 ### src/tessellate/ai/composer_open.py (10)

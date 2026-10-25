@@ -168,7 +168,8 @@ def recent(ctx: Ctx) -> Reply | None:
     wanted, start, end, span, shown = read
     hits = _matching(ctx, wanted, start, end)
     if not hits:
-        return _nothing(ctx, wanted, span, shown)
+        # No topic and an empty window: composer.empty_window says where the notes are.
+        return _nothing(ctx, wanted, span, shown) if wanted else None
     n = len(hits)
     head = pick(ctx.seed, "nt-head", PHRASES["recent_head"]).format(
         topic=shown, n=n, s=_plural(n), span=span, Span=span[:1].upper() + span[1:], v="s" if n == 1 else "")
