@@ -48,3 +48,48 @@ def test_default_view_is_live_and_shared_by_boot():
     assert '"live"' in body and "DOC_VIEW_KEY" in body
     text = DOCS_JS.read_text(encoding="utf-8")
     assert "setDocView(docDefaultView())" in text
+
+
+def test_stored_view_from_before_the_version_key_resets_to_live_once():
+    """A stored "source" from before the version key is dropped once; later choices stay."""
+    import json
+    import shutil
+    import subprocess
+
+    import pytest
+
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node not installed")
+    text = DOCS_JS.read_text(encoding="utf-8")
+    migrate = _function("docViewMigrate")
+    default = _function("docDefaultView")
+    script = f"""
+const store = {{ "doc-view-mode": "source" }};
+globalThis.window = {{
+  localStorage: {{
+    getItem: (k) => (k in store ? store[k] : null),
+    setItem: (k, v) => (store[k] = String(v)),
+    removeItem: (k) => delete store[k],
+  }},
+  matchMedia: () => ({{ matches: false }}),
+}};
+const prefs = {{
+  get: (k, f) => (k in store ? store[k] : f),
+  has: (k) => k in store,
+}};
+const DOC_VIEW_KEY = "doc-view-mode";
+const DOC_VIEW_VERSION_KEY = "doc-view-mode-v";
+const DOC_VIEW_VERSION = "2";
+{migrate}
+}}
+{default}
+}}
+const first = docDefaultView();
+store["doc-view-mode"] = "split";
+const second = docDefaultView();
+console.log(JSON.stringify([first, second]));
+"""
+    assert "DOC_VIEW_VERSION" in text
+    out = subprocess.run([node, "-e", script], capture_output=True, text=True, check=True).stdout
+    assert json.loads(out) == ["live", "split"]

@@ -100,3 +100,11 @@
 #backup-list > li .chip.item-label:not(.is-yours, .is-ok, .is-warn) {
   color: var(--ink);
 }
+
+/* The jump list says the pane's name, so the phone band hides the title
+   (`.jump-echo`). A pane whose dock held only that title was left a blank
+   bordered bar under the nav (Settings, Models at half width; the owner's
+   22-10 screenshot). With nothing left in it the dock goes too. */
+#settings-modal .settings-section > .dock:has(> .dock-identity > h3.jump-echo:only-child):not(:has(> :not(.dock-identity))) {
+  display: none;
+}

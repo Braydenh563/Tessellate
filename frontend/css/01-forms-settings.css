@@ -2864,6 +2864,20 @@ li.link-source {
 .ask-header-actions {
   gap: var(--space-3);
   align-items: center;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  min-width: 0;
+}
+#ask > .row.space-between {
+  flex-wrap: wrap;
+}
+/* `.card > .row.space-between > .row` pins a header's group to its content
+   width (0 0 auto), which let Ask's five controls run 26px past the card at
+   700. This group may shrink and wrap instead. */
+#ask > .row.space-between > .ask-header-actions {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 /* **Use AI** (INBOX 714): one compact switch row in the header's control group,
    on the app's pill-switch recipe (06-timeline-dialogs.css lists

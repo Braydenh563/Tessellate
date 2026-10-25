@@ -1523,7 +1523,10 @@ header#top-bar[data-scrolled="1"],
   }
   /* No auto margin: the time before it has one (08-consistency.css), and
      two in one row split the room, which moved the time on every card. */
-  #entry-list > li .entry-actions {
+  /* The end cluster (time and menu) is the meta line's last item, in the
+     flow: absolute against the meta line (the swipe's transform makes it the
+     containing block) it stood the ⋯ on the note's time. */
+  #entry-list > li :is(.entry-actions, .entry-meta-end) {
     position: static;
     margin-left: 0;
     background: none;
@@ -1531,6 +1534,13 @@ header#top-bar[data-scrolled="1"],
   }
   #entry-list > li .entry-actions > :not(.menu-wrap) {
     display: none;
+  }
+  /* The 44px touch floor made the menu button taller than the meta line it
+     sits in, so it hung 21px below the card's corner (owner, "half off the
+     corner"). It is the line's own height here, as the table meatball is. */
+  #entry-list > li .menu-wrap > button {
+    min-height: 0;
+    height: var(--control-h);
   }
   /* The list is the page: the card that framed it on a desktop is a second
      frame inside the window's own, and cost each row 33px of its width. */
@@ -2176,6 +2186,7 @@ header#top-bar[data-scrolled="1"],
     order: 9;
     flex: 1 1 100%;
     min-width: 0;
+    max-width: none;
   }
   /* Ask's Use AI switch (INBOX 688, 714) takes the first line with its '?':
      beside History it left the '?' stranded at the line's end and History

@@ -373,11 +373,28 @@ let docView = "source";
 //: markdown one restores the view the person actually chose.
 const docViewState = { held: false, tableGrips: null };
 
+//: One-time reset (owner, 2026-10-25: Live should be the default, but their
+//: browser held "source" from before). A view stored before this version key
+//: existed is dropped once, so Live shows; every choice made afterwards is
+//: kept, because the key is written in the same breath.
+const DOC_VIEW_VERSION_KEY = "doc-view-mode-v";
+const DOC_VIEW_VERSION = "2";
+function docViewMigrate() {
+  if (prefs.has(DOC_VIEW_VERSION_KEY)) return;
+  try {
+    window.localStorage.removeItem(DOC_VIEW_KEY);
+    window.localStorage.setItem(DOC_VIEW_VERSION_KEY, DOC_VIEW_VERSION);
+  } catch {
+    // blocked site data: nothing stored, nothing to reset
+  }
+}
+
 //: The view a markdown document opens in when it is not holding one: the
 //: stored choice, else Live (Rendered on a phone, Phase 11 item 6).
 function docDefaultView() {
   let stored = null;
   try {
+    docViewMigrate();
     stored = prefs.get(DOC_VIEW_KEY, null);
   } catch {
     stored = null;

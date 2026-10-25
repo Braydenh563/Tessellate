@@ -6,6 +6,13 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Ask: at 600 to 820px the header buttons (Use AI, History, New chat) shrink and wrap inside the card instead of running 26px past its right edge.
+- Documents: at a 600px window the dock's eight controls fit one row (tight gap and Edit/Read padding) instead of wrapping the more menu to a third row. Companion: it no longer lets the page scroll under a touch drag (touch-action none), so a throw is not cancelled by the browser.
+- Chat: under 600px the welcome's suggested questions wrap to the column instead of scrolling sideways with a fading edge. Ask: at half width the box loses the lone sparkle line and the model picker takes the full row.
+- Chat and Ask: the Sources, Grounded in and Why this answer folds are flat rows with a hover ground instead of boxed buttons inside the answer card.
+- Notes: at half width and under, a note's more-actions button sits in the card's own meta line after its time, instead of on top of the time and hanging below the corner.
+- Settings: a pane whose only heading the jump list already shows (Models at half width) no longer leaves a blank bordered bar; Documents: in focus mode on a phone the thumb bar sits on the bottom edge instead of 56px above a blank band.
+- Documents: a stored editor view from before this version is reset to Live once, so the Live default shows; a view you pick afterwards is kept.
 - Opening a 500-object board is back under its 170 ms budget: a full-screen documents rule keyed on `body:has(...)` was re-checked on every page change and tripled the open time; it is now a body class, and a lint keeps new `body:has` rules out.
 - Security: docs/SECURITY.md has a "Phone and other devices" section saying plainly what LAN mode protects and what it does not (a lost phone still signed in, skipping the fingerprint check, a typed http address on a hostile network).
 - Security: the LAN certificate folder and the authority's private key are made private again (0700, 0600) at every start, not only when first made.
