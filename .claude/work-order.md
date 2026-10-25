@@ -8,7 +8,7 @@ stop: owner's 25% weekly usage line
 - [x] Merge wb, docs, composer agents; gate; push; open PR (PR 204)
 - [x] INBOX 1350: phone/LAN security review + fixes (lansec merged 99cb7a7)
 - [x] INBOX 1350: custom domain write-up + smallest safe build
-- [ ] INBOX 1350 + OPEN Shell rows: half-window sweep of every surface, fixes
+- [~] INBOX 1350 + OPEN Shell rows: half-window sweep (shell merged e7ec76c; shell2 running)
 - [ ] INBOX 1351: dogfood rounds (blind-tester as a uni student, no model, per surface) then fix agent; repeat until a round finds under 3
 - [ ] INBOX 1351: battery: idle CPU and wakeups with no model, cut polling and timers
 - [ ] Composer round 3 (after composer2)
