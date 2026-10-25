@@ -3414,7 +3414,12 @@ Link to another note with [[its first few words]]."></textarea>
                    has bookmarks; a page worth reading twice belongs in them. -->
               <button id="web-reader-bookmark" class="ghost small icon-only" type="button"
                 aria-label="Bookmark" title="Keep this link in your bookmarks"><i class="ph ph-bookmark-simple" aria-hidden="true"></i></button>
+              <button id="web-reader-analyse" class="ghost small" type="button" aria-pressed="false"
+                title="Key points, key terms and sections of this page, read on this device"><i class="ph ph-list-magnifying-glass ph-lead" aria-hidden="true"></i> Analyse<span class="toolbar-word"> this page</span></button>
             </div>
+            <!-- The page's key points, terms and sections, filled by
+                 analyseWebPage (web-clip.js) from POST /websearch/analyse. -->
+            <div id="web-reader-analysis" class="web-reader-analysis hidden" aria-live="polite"></div>
             <div id="web-reader-text" class="web-reader-text"></div>
           </div>
         </aside>

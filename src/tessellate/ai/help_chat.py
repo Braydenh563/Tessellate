@@ -210,7 +210,9 @@ HELP_TOPICS: list[dict] = [
         "body": (
             "The Reminders tab groups items into Overdue / Today / Upcoming / "
             "Done. Add a reminder at the top of the Reminders tab: type it in plain words on the "
-            "Magic add line and press the sparkle, or fill in Remind me to, the "
+            "Magic add line and press the sparkle (hedges such as \"probably "
+            "around 7pm\" are read as the time, and a place like \"when I get "
+            "home\" is left out of the title), or fill in Remind me to, the "
             "date and the time, then Add. Set a priority, snooze, edit inline, or make one recurring: "
             "\"every weekday\", \"every 2 weeks\", \"the last Friday of the month\", "
             "with an early alert such as \"1 day before\". "
@@ -526,7 +528,15 @@ HELP_TOPICS: list[dict] = [
             "page under its title, cited by its address. The pages are in the "
             "Web results fold under the answer: each with its site and one "
             "line; press a title to read the page there, as text, with Back to "
-            "results, or the arrow beside it to open it in your browser."
+            "results, or the arrow beside it to open it in your browser. "
+            "Paste a link and ask to read it: with web search on and no model "
+            "the page is fetched and told back as its main points, key terms "
+            "and sections; with it off you are told so and given the setting. "
+            "If the search service (SearXNG) is not running, the reply says so "
+            "and opens Settings, Web search, where it can be started. In the "
+            "reader, Analyse this page lists the page's key points, marks its "
+            "key terms in the text and lists its sections, each a link to its "
+            "heading; it runs on this device and sends nothing out."
         ),
         "badge": {"label": "Web search", "section": "websearch"},
     },
@@ -888,7 +898,16 @@ HELP_TOPICS: list[dict] = [
             "and \"what does CC stand for?\" says which note told it. "
             "\"Summarise this\" sums up the note you have open, or the "
             "category the sidebar is filtered to; \"summarise Travel\" reads "
-            "every note in that category."
+            "every note in that category. With a note open, \"what's left to "
+            "do?\", \"when is the deadline?\" and \"who is involved?\" are "
+            "answered from that note alone, in a line or two of its own words. "
+            "A request with no direction (\"do something cool\", \"open a note\") "
+            "gets a question back with choices you can press; an instruction "
+            "the app does not understand is matched to the closest things it can do. "
+            "With no model running, an answer ends with a line pointing at what to do next, "
+            "from your newest note; the Length picker applies (Quick keeps the first line only, "
+            "Detailed keeps everything). A persona is an instruction for a model, so with no "
+            "model it changes nothing: the app answers in its own voice."
         ),
         "badge": {"label": "Chat", "tab": "chat"},
     },

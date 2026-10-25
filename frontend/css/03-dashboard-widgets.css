@@ -1487,68 +1487,6 @@ header#top-bar select,
   }
 }
 
-/* Reader view: article typography at a comfortable measure, and nothing
-   drawn round it. The measure is the documents page's (`--doc-measure`, in
-   `ch` so it counts characters of the face on screen). */
-.web-reader-text {
-  flex: 0 0 auto;
-  font-size: var(--text-lg);
-  line-height: 1.65;
-  color: var(--ink);
-}
-
-.web-reader-text p {
-  margin: 0 0 var(--space-5);
-}
-
-/* The page's own heading depth, preserved rather than flattened. The scale is
-   the rendered Markdown's (`.markdown-body .md-h*`), in `em` of the reader's
-   own size. */
-.web-reader-text .reader-heading {
-  margin: var(--space-7) 0 var(--space-2);
-  line-height: 1.3;
-  font-weight: 700;
-}
-
-.web-reader-text h3.reader-heading {
-  font-size: 1.25em;
-}
-
-.web-reader-text h4.reader-heading {
-  font-size: 1.1em;
-}
-
-.web-reader-text h5.reader-heading,
-.web-reader-text h6.reader-heading {
-  font-size: 1em;
-  color: var(--muted);
-}
-
-.web-reader-text ul {
-  margin: 0 0 var(--space-5);
-  padding-left: var(--space-7);
-}
-
-.web-reader-text li {
-  margin-bottom: var(--space-1);
-}
-
-.web-reader-text blockquote {
-  margin: var(--space-5) 0;
-  padding: var(--space-1) 0 var(--space-1) var(--space-6);
-  border-left: 3px solid var(--accent);
-  color: var(--muted);
-}
-
-.web-reader-text pre {
-  white-space: pre-wrap;
-  margin: 0 0 var(--space-5);
-  padding: var(--space-5);
-  background: var(--chip-bg);
-  border-radius: var(--radius-md);
-  font-size: var(--text-md);
-}
-
 /* --- dashboard quick links ------------------------------------------------- */
 /* A grid, not a wrapping flex row (§36D).
  *
