@@ -1188,8 +1188,6 @@
       <div class="dialog-head">
       <h2 class="dialog-head-title">Document history</h2>
       <span class="dialog-head-actions">
-        <button type="button" id="doc-history-name" class="ghost small dialog-head-btn"
-          title="Keep the text as it stands now under a name; the edits after it never fold into it"><i class="ph ph-bookmark-simple ph-lead" aria-hidden="true"></i> Name this version</button>
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="doc-history-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
     </div>
@@ -1200,13 +1198,17 @@
            made each version; a person looking for what the model did to their
            document should not have to read past their own edits to find it.
            Two choices, so it is the app's `.seg` rather than a select. -->
-      <div class="seg" id="doc-history-filter" role="group" aria-label="Which versions to show">
-        <button type="button" data-history-filter="all" aria-pressed="true"
-          title="Every version this document has had">All</button>
-        <button type="button" data-history-filter="named" aria-pressed="false"
-          title="Only the versions you named">Named</button>
-        <button type="button" data-history-filter="ai" aria-pressed="false"
-          title="Only the versions an AI edit replaced">AI edits</button>
+      <div class="doc-history-bar">
+        <div class="seg" id="doc-history-filter" role="group" aria-label="Which versions to show">
+          <button type="button" data-history-filter="all" aria-pressed="true"
+            title="Every version this document has had">All</button>
+          <button type="button" data-history-filter="named" aria-pressed="false"
+            title="Only the versions you named">Named</button>
+          <button type="button" data-history-filter="ai" aria-pressed="false"
+            title="Only the versions an AI edit replaced">AI edits</button>
+        </div>
+        <button type="button" id="doc-history-name" class="ghost small dialog-head-btn"
+          title="Keep the text as it stands now under a name; the edits after it never fold into it"><i class="ph ph-bookmark-simple ph-lead" aria-hidden="true"></i> Name this version</button>
       </div>
       <ul id="doc-history-list" class="doc-ai-history-list"></ul>
       <p id="doc-history-empty" class="muted empty-line hidden">Nothing yet: this document

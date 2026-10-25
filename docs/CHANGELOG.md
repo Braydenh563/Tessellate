@@ -7,6 +7,13 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - A friendly local address: set `TESSELLATE_LOCAL_NAME=tessellate` and the launcher, window and tray open `http://tessellate.localhost:8000` instead of localhost. Browsers resolve `*.localhost` to this computer themselves, so it needs no DNS or admin rights; the rebinding guard accepts any `*.localhost` name.
+- Documents: the history dialog keeps its head to the title and close button; the filter and "Name this version" sit together in one row that wraps on a phone.
+- Documents: narrow editors get a tighter line-number gutter, and a table's meatball stays inside its row with the add-row plus just under the table.
+- Documents (Live view): a wrapped line of a bullet, numbered or task item starts exactly under the item's first word, where it used to sit 4 to 11px off.
+- Documents: the formatting strip's menus (Highlight, Insert) close on a press outside them, and the slash menu takes its bare "/" back out when you press away.
+- Documents: picking a highlight or text colour on already-coloured text switches the colour instead of nesting markdown.
+- Documents: task boxes can be ticked in Read view; in full screen the selection bar and block menus show above the page, the floating bar no longer overlaps the dock at narrow widths, and Read gets a wider page. The dock drops its button words and save state by its own width (a half-width window), so its row stays on one line.
+- Documents: the Suggestions menu can hide every underline and the list for now, and a Dismissed list brings back suggestions you put away in the document.
 - Toasts on the Graph tab stay on the bottom edge and sit left of the zoom strip, instead of being lifted halfway up the screen.
 
 ## [0.6.1] - 2026-10-22

@@ -6418,3 +6418,155 @@ input[type="color"].wb-mixed {
 #wb-canvas-view :is(input, textarea, [contenteditable]) {
   user-select: text;
 }
+
+/* Hidden notice and the dismissed list: quiet rows, one Restore each. */
+.doc-prose-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+}
+.doc-prose-side-line {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+.doc-prose-dismissed {
+  align-self: stretch;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.doc-prose-dismissed-row {
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+  border-top: 1px solid var(--border);
+}
+.doc-prose-dismissed-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+}
+
+/* A task box in the Read view is pressable now (`docWireReadTasks`): drawn at
+   the text's size like the disabled one and the live view's, with the pointer
+   and the accent that say it can be pressed. The id outranks the global
+   checkbox floor, which would draw it 28px (44px on a phone). */
+#doc-preview .md-task > input[type="checkbox"]:not(:disabled) {
+  width: 1.1em;
+  height: 1.1em;
+  min-width: 0;
+  min-height: 0;
+  margin-block: 0;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+/* **The dock answers to its own width, not the window's.** Reported: the top of
+   the editor at half a screen, and in full screen with Tools on, wrapped the
+   ⋯ menu onto a row of its own and ran the title under the floating bar. The
+   phone rules (10-responsive.css) key on the window below 600, so a 700 window
+   with the sidebar open, or the same window in focus mode, got none of them.
+   The dock is the container; under 820px the actions drop their words (each
+   keeps its title and aria-label), the save state and its rule leave the row,
+   and the row stays one line. */
+.doc-dock {
+  container: docdock / inline-size;
+}
+@container docdock (max-width: 819.98px) {
+  .doc-ai-label,
+  .doc-actions > .doc-toolbar-sep {
+    display: none;
+  }
+  #doc-format-show > span {
+    display: none;
+  }
+  #doc-ai,
+  #doc-format-show,
+  #doc-code-snippets-open {
+    flex: 0 0 var(--target-min);
+    justify-content: center;
+    padding-inline: 0;
+  }
+  #doc-ai > .ph-lead,
+  #doc-format-show > .ph-lead,
+  #doc-code-snippets-open > .ph-lead {
+    margin: 0;
+  }
+}
+@container docdock (max-width: 599.98px) {
+  .doc-dock-status {
+    display: none;
+  }
+  .doc-back-label {
+    display: none;
+  }
+}
+
+/* **Read, full screen: a wider page.** Reported: "comfortable width too narrow
+   in full screen". The Read view's 72ch cap was measured at 736px inside a
+   1250px pane. With everything else gone the page can carry more; the
+   measure stays a measure (92ch, about 920px) rather than the pane, and the
+   page-width switch still releases it (`.doc-wide`). */
+#tab-documents.doc-focus:not(.doc-wide) #doc-preview:not(.doc-split-pane) {
+  max-width: 92ch;
+}
+
+/* **Full screen: what the page draws on `<body>` is drawn above the page.**
+   Reported: "in full screen the selection toolbar and meatball do not
+   appear". Focus mode is a fixed layer at z-index 1000 and these were built
+   for the ordinary page (55 to 61), so they opened underneath it (measured:
+   a selection's bar was hit-tested as the heading line below it). Raised
+   only while the mode is on. Equal to the page's 1000 and later in the DOM,
+   so they paint over it. */
+body:has(#tab-documents.doc-focus) :is(.selection-bar, .editor-menu, .inline-ai, .doc-block-bar, #doc-suggest-menu, #doc-complete-list, .doc-table-grip-menu) {
+  --doc-focus-layer: 1000;
+  z-index: var(--doc-focus-layer);
+}
+
+#tab-documents.doc-focus > .doc-focus-bar .ghost.small {
+  white-space: nowrap;
+}
+
+/* **The line-number gutter, tighter in a narrow editor.** Reported: "the line
+   numbers margin is taking up a lot of space" at half a screen. The numbers'
+   own padding (0.5rem and 0.6rem) and a 3ch floor, plus a 1.1em fold lane,
+   were 57px of a 585px editor (9.7%). Below 820 the padding halves, the
+   floor drops to 2ch (the gutter still grows to its widest number) and the
+   fold lane narrows. */
+@media (max-width: 819.98px) {
+  .doc-editor .cm-editor .cm-lineNumbers .cm-gutterElement {
+    padding: 0 var(--space-2) 0 var(--space-1);
+    min-width: 2ch;
+  }
+  .doc-editor .cm-editor .cm-foldGutter {
+    width: 0.9em;
+  }
+}
+
+/* **The table's meatball stays inside its row.** Reported: the button on the
+   right "is overflowing". Under 820 the app's touch floor made it 44px square
+   in a row 38px tall, so it hung below the row and past the table's edge
+   (measured at 700 and 480). It is the row's own height at most; the press
+   area is the row, which is what a finger needs. */
+.cm-editor .cm-md-table-menu > button,
+.cm-editor .cm-md-table-menu > summary {
+  width: 1.75rem;
+  height: 1.75rem;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+}
+
+/* History dialog: the filter and "Name this version" share one row under the
+   one-line description, so the head holds only the title and the close button. */
+.doc-history-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}

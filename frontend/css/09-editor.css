@@ -420,6 +420,8 @@
 .cm-md-task-hit {
   position: relative;
   display: inline-block;
+  /* The list's whole hanging indent, so a wrapped line sits under the words. */
+  width: 1.6em;
   line-height: 1;
   vertical-align: -0.15em;
   /* An inline-block is a block container, so it inherits the list line's
@@ -432,7 +434,7 @@
   content: "";
   position: absolute;
   top: 50%;
-  right: -0.4em;
+  right: 0;
   width: var(--target-min);
   height: 1.6em;
   transform: translateY(-50%);

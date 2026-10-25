@@ -232,6 +232,37 @@ document.addEventListener("click", (event) => {
   menu.open = false;
 });
 
+//: The formatting strip's menus (Highlight, Insert, the note strips' copies)
+//: shut on a press anywhere outside them, the editor included: `<details>`
+//: has no outside-press of its own and the click rule above is for the dock's
+//: kebab, so a menu opened over the page stayed open while you typed
+//: ("the highlight dropdown does not close on an outside press"). Capture,
+//: because the editor's own mousedown handling stops the event bubbling. The
+//: colour sheets are lists on `<body>`; a press in one is not outside.
+//: The slash menu, pressed away from: a bare "/" that opened it is not text
+//: the writer meant, so it comes back out. Capture, because the menu's own
+//: outside-press (editor.js) closes it and forgets the box before this runs.
+//: One with a word after it stays.
+document.addEventListener(
+  "mousedown",
+  (event) => {
+    const { open, textarea, trigger } = editorMenuState;
+    if (!open || trigger !== "/" || !textarea || $("editor-menu")?.contains(event.target)) return;
+    const bare = editorTokenAt(textarea, "/");
+    if (bare && !bare.fragment) setTimeout(() => editorSplice(textarea, bare.start, bare.start + 1, ""), 0);
+  },
+  true
+);
+document.addEventListener(
+  "pointerdown",
+  (event) => {
+    const open = document.querySelectorAll("details.doc-toolbar-menu[open]");
+    if (!open.length || event.target.closest?.(".select-menu, .action-menu")) return;
+    for (const menu of open) if (!menu.contains(event.target)) menu.open = false;
+  },
+  true
+);
+
 //: **Five download rows into one** (INBOX 262, the owner: "I want to combine
 //: the "download as" options in it into a sub menu in that dropdown ... like
 //: the ones in the meatball dropdowns in the your notes page").
@@ -3821,6 +3852,72 @@ function renderDocPreview() {
   layerDocWikiLinks(preview);
   docLayerImageOptions(preview);
   docRenderMermaidIn(preview);
+  docWireReadTasks(preview, text);
+}
+
+//: **Tick a task in the Read view.** The renderer draws every task box
+//: disabled (it is shared with notes and chat, which have no source to write
+//: back to). Here the document is open, so the Nth box is matched to the Nth
+//: task line of the text, outside the properties and any code fence, and
+//: switched on only when the counts agree: a box that cannot be traced to its
+//: line stays as it was rather than ticking the wrong one.
+const DOC_READ_TASK = /^(\s*[-*+]\s+)\[([ xX])\](\s)/;
+
+function docTaskLines(text) {
+  const lines = String(text).split("\n");
+  const out = [];
+  let at = 0;
+  let fence = null;
+  let i = 0;
+  const fm = docFrontmatterParse(text);
+  if (fm) {
+    const cut = docFrontmatterStrip(text);
+    const skipped = text.length - cut.length;
+    while (at < skipped && i < lines.length) {
+      at += lines[i].length + 1;
+      i += 1;
+    }
+  }
+  for (; i < lines.length; i += 1) {
+    const line = lines[i];
+    const mark = line.match(/^\s*(```+|~~~+)/);
+    if (mark) {
+      if (!fence) fence = mark[1][0];
+      else if (mark[1][0] === fence) fence = null;
+    } else if (!fence && DOC_READ_TASK.test(line)) {
+      out.push({ from: at, line });
+    }
+    at += line.length + 1;
+  }
+  return out;
+}
+
+function docWireReadTasks(preview, text) {
+  const boxes = [...preview.querySelectorAll("li.md-task > input[type=checkbox]")];
+  if (!boxes.length) return;
+  const tasks = docTaskLines(text);
+  if (tasks.length !== boxes.length) return;
+  boxes.forEach((box, n) => {
+    box.disabled = false;
+    box.dataset.docTask = String(n);
+    box.setAttribute("aria-label", box.checked ? "Done" : "Not done");
+  });
+  if (preview.dataset.taskWired === "1") return;
+  preview.dataset.taskWired = "1";
+  preview.addEventListener("change", (event) => {
+    const box = event.target;
+    if (!(box instanceof HTMLInputElement) || box.dataset.docTask === undefined) return;
+    const surface = docSurface();
+    const task = docTaskLines(surface?.text ?? "")[Number(box.dataset.docTask)];
+    const match = task && task.line.match(DOC_READ_TASK);
+    if (!match) {
+      box.checked = !box.checked;
+      return;
+    }
+    const at = task.from + match[1].length + 1;
+    surface.replaceRange(at, at + 1, box.checked ? "x" : " ");
+    box.setAttribute("aria-label", box.checked ? "Done" : "Not done");
+  });
 }
 
 //: **The document, rendered, with its columns side by side.** `renderMarkdown`
@@ -5983,7 +6080,7 @@ function docTableGripsPlugin(CM) {
         const addCol = put("doc-table-add doc-table-add-col", "add-col", 0,
           { x: lastCol.x + lastCol.w - band, y: geo.box.top - band, w: band, h: band }, "Add a column at the end");
         const addRow = put("doc-table-add doc-table-add-row", "add-row", 0,
-          { x: geo.box.left, y: geo.box.bottom, w: band, h: band }, "Add a row at the end");
+          { x: geo.box.left, y: geo.box.bottom + 2, w: band, h: band }, "Add a row at the end");
         this.layer.appendChild(this.line);
       }
 
@@ -8764,6 +8861,12 @@ function docLivePlugin(CM) {
                 widget: new DocTaskWidget(/[xX]/.test(marker), node.from, node.to),
               }).range(node.from, node.to)
             );
+            //: The space after `]` goes with the dash's: a space's width is the
+            //: font's, so it left the first line's words 0.35em past the
+            //: list's hanging indent and a wrapped line fell back under the
+            //: box. With it hidden the box (a fixed 1.6em, `.cm-md-task-hit`) is the
+            //: whole 1.6em lead, and the wrap lines up under the words.
+            if (doc.sliceString(node.to, node.to + 1) === " ") ranges.push(hidden.range(node.to, node.to + 1));
             return false;
           }
           //: **Lists, which the live view drew as plain text.** Measured
@@ -8834,6 +8937,15 @@ function docLivePlugin(CM) {
                 ranges.push(
                   Decoration.replace({ widget: new DocBulletWidget() }).range(from, to)
                 );
+                //: The space after it goes: the bullet is a fixed 1.6em box, so
+                //: the first line's words start exactly where a wrapped line's
+                //: do (a space is the font's width, which left them 11px apart).
+                if (doc.sliceString(to, to + 1) === " ") ranges.push(hidden.range(to, to + 1));
+              } else if (/^\d+[.)]$/.test(mark[1]) && !touched(line.from, line.to)) {
+                //: A number and its space share a box at least 1.6em wide, so a
+                //: short number's wrap lines up as the bullet's does.
+                const space = doc.sliceString(to, to + 1) === " " ? 1 : 0;
+                ranges.push(Decoration.mark({ class: "cm-md-li-mark cm-md-li-num" }).range(from, to + space));
               } else {
                 ranges.push(Decoration.mark({ class: "cm-md-li-mark" }).range(from, to));
               }
@@ -13475,6 +13587,34 @@ docBoxEl().addEventListener("scroll", (event) => {
 // leaving "green" showing afterwards would claim a state that does not exist.
 const MD_COLOURS = ["yellow", "green", "blue", "pink", "purple", "orange", "red", "grey"];
 
+//: **A colour pick on text that is already coloured switches the colour.**
+//: Reported: blue picked on yellow text "shows markdown" (`==blue|==x====`).
+//: The mark around the selection, or the one the selection is exactly, is
+//: replaced rather than wrapped again. Yellow is the highlight's default and
+//: needs no prefix, so `==x==` says the same as `==yellow|x==`. Returns the
+//: range to replace, its text and where the selection goes after.
+function mdColourEdit(value, start, end, kind, colour) {
+  const mark = kind === "ink" ? "++" : "==";
+  const open = kind === "ink" ? `++${colour}|` : colour === "yellow" ? "==" : `==${colour}|`;
+  const picked = value.slice(start, end);
+  //: The marks on this line that the selection sits inside (or is): the whole
+  //: mark takes the new colour, whatever part of its words was selected.
+  const lineFrom = value.lastIndexOf("\n", start - 1) + 1;
+  const lineTo = value.indexOf("\n", end) === -1 ? value.length : value.indexOf("\n", end);
+  const marks = kind === "ink" ? /\+\+[a-z]+\|((?:(?!\+\+).)+)\+\+/g : /==(?:[a-z]+\|)?((?:(?!==).)+)==/g;
+  const line = value.slice(lineFrom, lineTo);
+  let hit;
+  while ((hit = marks.exec(line)) !== null) {
+    const from = lineFrom + hit.index;
+    const to = from + hit[0].length;
+    if (from <= start && end <= to) {
+      return { from, to, insert: open + hit[1] + mark, selFrom: from + open.length, selTo: from + open.length + hit[1].length };
+    }
+  }
+  const text = picked || (kind === "ink" ? "coloured text" : "highlighted");
+  return { from: start, to: end, insert: open + text + mark, selFrom: start + open.length, selTo: start + open.length + text.length };
+}
+
 //: **The rest of the Obsidian toolbar, built once and mounted into both
 //: editors.** Asked for by name (PKM-er/obsidian-editing-toolbar), for the
 //: notes composer *and* the documents editor, "both in what tools are there,
@@ -13659,17 +13799,10 @@ function wireMarkdownToolbar(bar) {
       if (!colour) return;
       const box = docSurfaceById(boxId);
       if (!box) return;
-      const { selectionStart: start, selectionEnd: end, value } = box;
-      const selected = value.slice(start, end) || (kind === "ink" ? "coloured text" : "highlighted");
-      // Yellow is the highlight's default, so it needs no colour prefix -
-      // and writing one would put `==yellow|x==` in the note where `==x==`
-      // says the same thing.
-      const open = kind === "ink"
-        ? `++${colour}|`
-        : colour === "yellow" ? "==" : `==${colour}|`;
-      const close = kind === "ink" ? "++" : "==";
-      box.value = value.slice(0, start) + open + selected + close + value.slice(end);
-      box.setSelectionRange(start + open.length, start + open.length + selected.length);
+      const edit = mdColourEdit(box.value, box.selectionStart, box.selectionEnd, kind, colour);
+      if (typeof box.replaceRange === "function") box.replaceRange(edit.from, edit.to, edit.insert);
+      else box.value = box.value.slice(0, edit.from) + edit.insert + box.value.slice(edit.to);
+      box.setSelectionRange(edit.selFrom, edit.selTo);
       finishMarkdownEdit(box, boxId);
     });
   }
@@ -16887,6 +17020,12 @@ function docCodeSpellFindings(text) {
 }
 
 let docProseFound = [];
+//: "Hide all suggestions for now": the marks, the count and the list go quiet
+//: for this sitting without touching the Settings switch or the dismissed
+//: list. Not stored, like a dismissal, so it can never be forgotten about.
+let docProseHidden = false;
+//: "list" is the suggestions, "dismissed" is the ones put away in this document.
+let docProsePanelView = "list";
 
 function renderDocProse() {
   const chip = $("doc-prose");
@@ -16905,10 +17044,13 @@ function renderDocProse() {
   docProseFound = isCode
     ? docCodeSpellFindings(text)
     : docProseExtras(text, docProseFindings(text)).concat(docAiFindings(text)).sort((a, b) => a.start - b.start);
+  if (docProseHidden) docProseFound = [];
   chip.hidden = isCode;
-  count.textContent = docProseFound.length
-    ? `${docProseFound.length} suggestion${docProseFound.length === 1 ? "" : "s"}`
-    : "No suggestions";
+  count.textContent = docProseHidden
+    ? "Suggestions hidden"
+    : docProseFound.length
+      ? `${docProseFound.length} suggestion${docProseFound.length === 1 ? "" : "s"}`
+      : "No suggestions";
   chip.classList.toggle("has-findings", docProseFound.length > 0);
   docFocusSyncProse();
   //: A fresh set of findings means a fresh set of marks. The engine is told
@@ -17025,6 +17167,19 @@ function docProseHeader() {
   const right = docProseDockSide() === "right";
   const more = kebabMenu([
     makeMenuItem("ph:sparkle Check with AI", "Read for what the rules can't catch", () => docAiReview()),
+    makeMenuItem(
+      docProseHidden ? "ph:eye Show suggestions" : "ph:eye-slash Hide all suggestions",
+      docProseHidden ? "Underline and list suggestions again" : "Hide every underline and the list until you show them again",
+      () => docProseSetHidden(!docProseHidden)
+    ),
+    makeMenuItem(
+      `ph:arrow-counter-clockwise Dismissed (${docProseDismissed().length})`,
+      "The suggestions you put away in this document, to bring back",
+      () => {
+        docProsePanelView = "dismissed";
+        renderDocProsePanel();
+      }
+    ),
     makeMenuItem("ph:book-open-text Dictionary", "The words you have told this to accept", () => openDocDictionary()),
     //: Where the panel sits (`applyDocProseDock`); not offered where there is
     //: no choice (a narrow window, focus mode's side panel).
@@ -17044,6 +17199,83 @@ function docProseHeader() {
   tools.appendChild(tool("ph:x", "Close the suggestions", () => closeDocProsePanel(), "icon-only doc-prose-close"));
   head.appendChild(tools);
   return head;
+}
+
+function docProseSetHidden(hidden) {
+  docProseHidden = hidden;
+  docProsePanelView = "list";
+  renderDocProse();
+  renderDocProsePanel();
+}
+
+//: The keys in `docProseIgnored` that belong to this document, as rows.
+//: A key is `<doc>:<rule>:<text>`; the first two parts hold no colon.
+function docProseDismissed() {
+  const scope = `${currentDoc && currentDoc.id ? currentDoc.id : "unsaved"}:`;
+  const rows = [];
+  for (const key of docProseIgnored) {
+    if (!key.startsWith(scope)) continue;
+    const rest = key.slice(scope.length);
+    const cut = rest.indexOf(":");
+    if (cut < 0) continue;
+    rows.push({ key, rule: rest.slice(0, cut), text: rest.slice(cut + 1) });
+  }
+  return rows;
+}
+
+//: What the panel shows instead of the list: the hidden notice, or the
+//: dismissed list with a Restore on each row.
+function docProseSideView() {
+  const wrap = document.createElement("div");
+  wrap.className = "doc-prose-side";
+  const line = document.createElement("p");
+  line.className = "muted doc-prose-side-line";
+  wrap.appendChild(line);
+  if (docProsePanelView === "dismissed") {
+    const rows = docProseDismissed();
+    line.textContent = rows.length
+      ? "Put away in this document. Restore one to see it again."
+      : "Nothing dismissed in this document.";
+    const back = smallButton("ph:arrow-left Back", "Back to the suggestions", () => {
+      docProsePanelView = "list";
+      renderDocProsePanel();
+    });
+    back.classList.add("ghost");
+    const list = document.createElement("ul");
+    list.className = "doc-prose-dismissed";
+    for (const row of rows) {
+      const item = document.createElement("li");
+      item.className = "row doc-prose-dismissed-row";
+      const word = document.createElement("span");
+      word.className = "doc-prose-dismissed-text";
+      word.textContent = row.text;
+      word.title = `${row.rule}: ${row.text}`;
+      const restore = smallButton("ph:arrow-counter-clockwise Restore", `Show “${row.text}” again`, () => {
+        docProseIgnored.delete(row.key);
+        if (docProseDismissed().length === 0) docProsePanelView = "list";
+        renderDocProse();
+        renderDocProsePanel();
+      });
+      restore.classList.add("ghost");
+      item.append(word, restore);
+      list.appendChild(item);
+    }
+    wrap.append(back, list);
+    if (rows.length > 1) {
+      const all = smallButton("ph:arrow-counter-clockwise Restore all", "Show every dismissed suggestion again", () => {
+        for (const row of rows) docProseIgnored.delete(row.key);
+        renderDocProse();
+        renderDocProsePanel();
+      });
+      all.classList.add("ghost");
+      wrap.appendChild(all);
+    }
+    return wrap;
+  }
+  line.textContent = "Suggestions are hidden. The underlines and this list are off until you show them.";
+  const show = smallButton("ph:eye Show suggestions", "Underline and list suggestions again", () => docProseSetHidden(false));
+  wrap.appendChild(show);
+  return wrap;
 }
 
 function closeDocProsePanel() {
@@ -17080,6 +17312,11 @@ function renderDocProsePanel() {
   //: "there's no close x button." A panel whose only exit is the control that
   //: opened it is a panel you have to remember how to leave, and the empty
   //: state was the one view where that was most likely.
+  if (docProseHidden || docProsePanelView === "dismissed") {
+    panel.appendChild(docProseHeader());
+    panel.appendChild(docProseSideView());
+    return;
+  }
   const aiStatus = docAiCheckStatus();
   if (!docProseFound.length) {
     panel.appendChild(docProseHeader());
@@ -21101,6 +21338,8 @@ function docCmTheme(CM) {
       //: than the punctuation, and left in the document so it can be
       //: selected, deleted and typed over like any other character.
       ".cm-md-li-mark": { color: "var(--muted)" },
+      ".cm-md-li-bullet": { display: "inline-block", width: "1.6em" },
+      ".cm-md-li-num": { display: "inline-block", minWidth: "1.6em" },
       //: **A quotation's bar has to be seen to do its job** (17c). It was
       //: `--border`, a 10% ink that composites to 1.2:1 on the page, so a
       //: quotation read as a paragraph set in grey. Half the muted ink is a
@@ -21306,7 +21545,7 @@ function docCmTheme(CM) {
       //: muted ink, because it is part of the same control.
       ".cm-md-callout-fold": { fontSize: "0.9em", opacity: "0.8" },
       ".cm-md-callout-label [data-doc-callout-fold]": { cursor: "pointer" },
-      ".cm-md-task-hit": { marginRight: "0.4em", cursor: "pointer" },
+      ".cm-md-task-hit": { cursor: "pointer" },
       ".cm-md-image": { maxWidth: "100%", borderRadius: "var(--radius-sm)" },
       ".cm-md-image-under": { display: "block", marginTop: "var(--space-2)" },
 

@@ -9,11 +9,11 @@ Whiteboard
 - Emojis do not scale with their box; the size numbers show on draw but not on resize; anchors and selection border lag the resize until release.
 
 Documents and CodeMirror
-- Hide all Harper/edit suggestions temporarily, plus a list of dismissed ones to restore.
-- Read mode: tick list checkboxes; comfortable width too narrow in full screen.
-- Full screen: the selection toolbar and meatball do not appear; top layout at half width; overflow at the top under half width.
-- History popup clashes, needs a redesign. Highlight colour: picking blue on yellow text should switch colour, not show markdown; the highlight dropdown does not close on an outside press.
-- Line-number gutter too wide at this size; wrapped lines should hang-indent; table meatball overflows and the + sits far off; the slash menu should close on an outside press and remove its slash.
+- Hide all Harper/edit suggestions temporarily, plus a list of dismissed ones to restore. Fixed 134a7a4.
+- Read mode: tick list checkboxes; comfortable width too narrow in full screen. Fixed 3d5ccb4.
+- Full screen: the selection toolbar and meatball do not appear; top layout at half width; overflow at the top under half width. Fixed 3d5ccb4 (measured at 700 and 420).
+- History popup clashes, needs a redesign. Highlight colour: picking blue on yellow text should switch colour, not show markdown; the highlight dropdown does not close on an outside press. Fixed f4c2211 (history), 3d5ccb4 and 46ae317 (colour, dropdown).
+- Line-number gutter too wide at this size; wrapped lines should hang-indent; table meatball overflows and the + sits far off; the slash menu should close on an outside press and remove its slash. Fixed 745e5b1 (gutter, table), 46ae317 (hang indent, slash menu).
 
 Composer and Guide
 - Aware of the screen and recent actions; varied, shorter, warmer replies with a closing line or next step; length adjustable; personas disabled when no model.

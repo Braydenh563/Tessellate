@@ -5995,7 +5995,8 @@ button.connection-row:is(:hover, :focus-visible) {
   -webkit-backdrop-filter: none;
   max-width: none;
   margin: 0;
-  padding-block: calc(var(--control-h-lg) + 2 * var(--space-5)) 0;
+  /* Clears the bar (54px tall at the touch floor). */
+  padding-block: calc(2rem + max(var(--control-h-lg), var(--target-min))) 0;
 }
 /* The floating dock. A `.card.glass` pill, the recipe for a panel floating
    over a surface, parked at the top centre of the window. Hidden whenever the
@@ -6198,7 +6199,7 @@ button.connection-row:is(:hover, :focus-visible) {
 /* On a phone the floating dock is one line with no room for words: the
    toggles keep their icon, and their name is the `aria-label` and title
    they carry at every width. */
-@media (max-width: 599.98px) {
+@media (max-width: 819.98px) {
   /* Four toggles and the way out beside the facts is 29px more than a 390
      window holds at the desktop gap (INBOX 453 (1) added the fifth), so the
      pill tightens its gaps and its leading pad here. */
