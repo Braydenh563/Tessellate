@@ -697,14 +697,19 @@ body.printing-doc #doc-preview p,
     min-height: var(--target-min);
   }
 
-#doc-preview > .doc-preview-title {
+}
+
+/* The document's name is the title field above it at every width, so the
+   heading the renderer prepends is only for print and export (dogfood item
+   17: Read showed the title twice). */
+@media screen {
+  #doc-preview > .doc-preview-title {
     display: none;
   }
 
-#doc-preview > .doc-preview-title + * {
+  #doc-preview > .doc-preview-title + * {
     margin-top: 0;
   }
-
 }
 
 /* --- moved from the boot sheets (the boot CSS budget, test_boot_budget.py): rules only the Library

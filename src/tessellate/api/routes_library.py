@@ -80,6 +80,9 @@ ACTIVITY_DETAIL_CHARS = 400
 #: from a mid-sentence "##". Reported directly: a document's preview showed
 #: the raw `##`.
 _MD_BLOCK_MARKER = re.compile(r"^(?:#{1,6}\s+|>\s?)", re.MULTILINE)
+#: A code fence's own line (``` or ~~~ and its language): markers, not words.
+#: The code between the fences stays; the opening line's `py` went with it.
+_MD_FENCE = re.compile(r"^[ \t]*(?:`{3,}|~{3,})[^\n]*$", re.MULTILINE)
 
 #: The rest of what a one-line preview must not show (the owner, with a
 #: Library screenshot: "inline md characters show in the document
@@ -124,7 +127,7 @@ def _clip(text: str, limit: int = PREVIEW_CHARS) -> str:
     if len(text) > CLIP_WINDOW:
         end = text.rfind("\n", 0, CLIP_WINDOW)
         text = text[: end if end > limit else CLIP_WINDOW]
-    text = _MD_TABLE_RULE.sub("", text)
+    text = _MD_FENCE.sub("", _MD_TABLE_RULE.sub("", text))
     # Each line's own heading, quote or list marker goes as its kind is read,
     # and the blocks stay apart (`join_blocks`, INBOX 464): "oat milk · eggs",
     # not "oat milk eggs".

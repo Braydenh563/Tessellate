@@ -1763,6 +1763,35 @@ function docListEnter(line) {
   const step = indent.length >= 4 && indent.length % 4 === 0 ? 4 : 2;
   return line.slice(Math.min(step, indent.length));
 }
+//: **Retyping "- " on an auto-bullet does not nest** (dogfood item 3). `before`
+//: is the line up to the caret with the dash already typed ("- -"), `typed`
+//: the space. Returns the line to keep ("- "), or null.
+function docBulletRetype(before, typed) {
+  if (typed !== " ") return null;
+  const m = /^(\s*)([-*+]) [-*+]$/.exec(before);
+  return m ? `${m[1]}${m[2]} ` : null;
+}
+
+//: **A closing fence goes back to the opening fence's indent** (dogfood item
+//: 4: Enter kept the code's indent). `above` is the lines before, `line` the
+//: current one. Returns the indent it should have, or null.
+function docFenceCloseIndent(above, line) {
+  const close = /^(\s*)(`{3,}|~{3,})$/.exec(line);
+  if (!close) return null;
+  let open = null;
+  for (const text of above) {
+    const f = /^(\s*)(`{3,}|~{3,})(.*)$/.exec(text);
+    if (!f) continue;
+    if (!open) {
+      if (f[2][0] === "`" && f[3].includes("`")) continue;
+      open = { indent: f[1], ch: f[2][0], len: f[2].length };
+    } else if (f[2][0] === open.ch && f[2].length >= open.len && !f[3].trim()) {
+      open = null;
+    }
+  }
+  if (!open || close[2][0] !== open.ch || close[2].length < open.len) return null;
+  return close[1] === open.indent ? null : open.indent;
+}
 // PROSE-FILL-END
 
 //: Whether the open document is prose for these purposes: markdown and plain
@@ -1781,8 +1810,8 @@ function docSmartPunctOn() {
 //: Inside a fenced or indented code block, inline code or raw HTML, by the
 //: parse. The pure functions above see one line; this is the part only the
 //: tree knows.
-function docInCodeAt(CM, state, pos) {
-  if (docFileType().ext !== "md") return false;
+function docInCodeAt(CM, state, pos, anyHost = false) {
+  if (!anyHost && docFileType().ext !== "md") return false;
   let node = CM.language.syntaxTree(state).resolveInner(pos, -1);
   for (let k = 0; node && k < 6; node = node.parent, k += 1) {
     if (/^(FencedCode|CodeBlock|InlineCode|CodeText|HTMLBlock)$/.test(node.name)) return true;
@@ -1908,15 +1937,15 @@ function docProseGhostPlugin(CM) {
 
 //: Backspace in an empty pair, and Enter on an empty list item, ahead of the
 //: editor's own.
-function docProsePairKeymap(CM) {
+function docProsePairKeymap(CM, anyHost = false) {
   return CM.state.Prec.high(CM.view.keymap.of([{
     key: "Enter",
     run: (view) => {
-      if (!docProseFillOn() || docFileType().ext !== "md") return false;
+      if (!anyHost && (!docProseFillOn() || docFileType().ext !== "md")) return false;
       const range = view.state.selection.main;
       if (!range.empty || view.state.selection.ranges.length > 1) return false;
       const line = view.state.doc.lineAt(range.head);
-      if (range.head !== line.to || docInCodeAt(CM, view.state, range.head)) return false;
+      if (range.head !== line.to || docInCodeAt(CM, view.state, range.head, anyHost)) return false;
       const next = docListEnter(line.text);
       if (next === null) return false;
       view.dispatch({
@@ -1946,7 +1975,49 @@ function docProsePairKeymap(CM) {
   }]));
 }
 
+//: **List and fence typing, for documents and note boxes.** A note has no file
+//: type, and a fence being closed is inside the block the parse sees as open,
+//: so neither guard applies. Enter on an empty item is the document's own
+//: (`docProsePairKeymap`); notes get it here.
+function docListFenceExtensions(CM, inDocument) {
+  //: A document only in markdown; a note box always (it has no file type).
+  const on = () => !inDocument || (docProseFillOn() && docFileType().ext === "md");
+  const input = CM.view.EditorView.inputHandler.of((view, from, to, text) => {
+    if (view.composing || text.length !== 1 || !on()) return false;
+    const state = view.state;
+    if (state.selection.ranges.length > 1 || from !== to) return false;
+    const line = state.doc.lineAt(from);
+    if (to !== line.to) return false;
+    const before = line.text.slice(0, from - line.from);
+    const dup = docBulletRetype(before, text);
+    if (dup !== null && !docInCodeAt(CM, state, from, true)) {
+      view.dispatch({
+        changes: { from: line.from + dup.length, to: from },
+        selection: { anchor: line.from + dup.length },
+        userEvent: "input.type",
+      });
+      return true;
+    }
+    if (text === "`" || text === "~") {
+      const above = [];
+      for (let n = 1; n < line.number; n += 1) above.push(state.doc.line(n).text);
+      const indent = docFenceCloseIndent(above, before + text);
+      if (indent !== null) {
+        const lead = /^\s*/.exec(line.text)[0].length;
+        view.dispatch({
+          changes: [{ from: line.from, to: line.from + lead, insert: indent }, { from, insert: text }],
+          selection: { anchor: from + indent.length - lead + 1 },
+          userEvent: "input.type",
+        });
+        return true;
+      }
+    }
+    return false;
+  });
+  return inDocument ? [input] : [input, docProsePairKeymap(CM, true)];
+}
+
 //: Everything above, as one set of extensions for `docProseToolExtensions`.
 function docProseFillExtensions(CM) {
-  return [docProseInputHandler(CM), docProseGhostPlugin(CM), docProsePairKeymap(CM)];
+  return [docProseInputHandler(CM), docProseGhostPlugin(CM), docProsePairKeymap(CM), docListFenceExtensions(CM, true)];
 }

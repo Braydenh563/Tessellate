@@ -583,9 +583,12 @@ function cmSurface(view, meta = null) {
     get value() { return this.text; },
     set value(next) { this.text = next; },
     get selectionStart() { return view.state.selection.main.from; },
-    set selectionStart(at) { this.setSelection(at, this.selectionEnd); },
+    //: A textarea's rule: moving one end past the other drags it along.
+    //: Without it start=12 then end=21 built 12..10, stored as 10..12, and
+    //: Ctrl+B on nothing left `**bold text` selected (dogfood item 2).
+    set selectionStart(at) { this.setSelection(at, Math.max(at, this.selectionEnd)); },
     get selectionEnd() { return view.state.selection.main.to; },
-    set selectionEnd(at) { this.setSelection(this.selectionStart, at); },
+    set selectionEnd(at) { this.setSelection(Math.min(at, this.selectionStart), at); },
     get classList() { return view.dom.classList; },
     get dataset() { return view.dom.dataset; },
     get scrollTop() { return view.scrollDOM.scrollTop; },
@@ -766,6 +769,8 @@ function setDocView(mode) {
   $("doc-preview").classList.toggle("hidden", !docPreviewShowing());
   $("doc-panes").classList.toggle("split", docView === "split");
   $("doc-panes").classList.toggle("reading", docView === "rendered");
+  //: Nothing to format while reading (dogfood item 17); a code file never has the strip.
+  $("doc-toolbar")?.classList.toggle("hidden", docView === "rendered" || !type.previewable);
 
   if (docView !== "rendered" && !docViewState.held) lastEditView = docView;
   for (const button of document.querySelectorAll("#doc-view-seg [data-doc-view], #doc-view-menu [data-doc-view]")) {
@@ -13795,6 +13800,9 @@ function wireMarkdownToolbar(bar) {
     const button = event.target.closest("button[data-md]");
     if (!button || !bar.contains(button)) return;
     applyMarkdown(button.dataset.md, boxId);
+    //: A menu row is finished once chosen (dogfood item 15).
+    const menu = button.closest("details.doc-toolbar-menu");
+    if (menu) menu.open = false;
   });
   for (const select of bar.querySelectorAll("select[data-md-colour]")) {
     const kind = select.dataset.mdColour;
@@ -14026,6 +14034,9 @@ function noteSurfaceExtensions(CM, host, options) {
     host.noteReadOnlySlot.of(host.noteReadOnlyExtensions(host.readOnly)),
     //: The same whole-line copy and cut the document has (INBOX 652).
     CM.state.Prec.high(docLineClipboardExtension(CM)),
+    //: Bullets that do not nest when retyped, fences that close at their own
+    //: indent, Enter on an empty item ending the list (dogfood round 1).
+    docListFenceExtensions(CM, false),
     //: Grammar rides with the rendering: the note's own list (PROSE-TOOLS,
     //: `noteGrammarPlugin`).
     host.noteLiveSlot.of(noteSourceWanted() && NOTE_SOURCE_HOSTS.has(host.id) ? [] : live),
@@ -14053,6 +14064,7 @@ function noteSurfaceExtensions(CM, host, options) {
     CM.view.placeholder(host.placeholder || ""),
     //: This app's chords first, so Ctrl+B is bold in a note for the same
     //: reason it is bold in a document.
+    docRedoChord(CM),
     CM.view.keymap.of([
       //: The host's own keys first (Phase 8c): a box whose Enter means "done"
       //: says so on the element, and a table row cannot carry a closure over
@@ -15357,11 +15369,17 @@ function docToolbarMode() {
       prefs.set(DOC_TOOLBAR_MODE_MIGRATED_KEY, "1");
       return "wrap";
     }
-    return stored === "row" ? "row" : "wrap";
+    if (stored === "row" || stored === "wrap") return stored;
+    //: No stored choice and a narrow window: one row (143 px wrapped, 59 px
+    //: here at 700 px wide; dogfood item 10). The toggle always wins.
+    return window.matchMedia?.(DOC_TOOLBAR_NARROW)?.matches ? "row" : "wrap";
   } catch {
     return "wrap"; // private mode: the safe shape, since it never clips
   }
 }
+
+const DOC_TOOLBAR_NARROW = "(max-width: 760px)";
+window.matchMedia?.(DOC_TOOLBAR_NARROW)?.addEventListener?.("change", () => applyDocToolbarMode(docToolbarMode()));
 
 function applyDocToolbarMode(mode) {
   const row = mode === "row";
@@ -17982,6 +18000,11 @@ function docCompleteKeydown(event, box) {
   //: and "type lorem and press enter" is the ask it exists for. Escape, then
   //: Enter, is still a plain new line.
   const chosen = docCompleteMatches[docCompleteIndex];
+  //: In a table cell Tab moves cells and never takes a word (dogfood item 8).
+  if (event.key === "Tab" && docTableContext(box)) {
+    hideDocComplete();
+    return false;
+  }
   if (event.key === "Tab" || (event.key === "Enter" && chosen?.fill && !event.shiftKey && !event.ctrlKey && !event.metaKey && !event.altKey)) {
     event.preventDefault();
     applyDocComplete(box, chosen);
@@ -21828,6 +21851,21 @@ function docCmHighlight(CM) {
   return docCmHighlightCache;
 }
 
+//: **Ctrl+Shift+Z is redo, whatever the key reports.** Shift+Z arrives as
+//: `key: "z"` with Caps Lock on, and the keymap then matched Mod-z (undo):
+//: dogfood item 1. A binding cannot see the event, so a DOM handler.
+function docRedoChord(CM) {
+  return CM.state.Prec.highest(CM.view.EditorView.domEventHandlers({
+    keydown: (event, view) => {
+      if (!(event.ctrlKey || event.metaKey) || !event.shiftKey || event.altKey) return false;
+      if (event.key.toLowerCase() !== "z") return false;
+      event.preventDefault();
+      CM.commands.redo(view);
+      return true;
+    },
+  }));
+}
+
 //: The chords the fallback textarea's own `keydown` handler carries, as a
 //: keymap instead. They cannot simply be re-attached to CodeMirror's DOM: it
 //: is a contenteditable with its own key handling and its own IME support, so
@@ -22023,6 +22061,7 @@ function docCmExtensions(CM) {
     CM.view.placeholder(docPlaceholderText || ""),
     //: This app's chords first, then CodeMirror's own defaults, so a binding
     //: the editor already had wins over the library's.
+    docRedoChord(CM),
     CM.view.keymap.of([
       ...docCmKeymap(CM),
       ...CM.search.searchKeymap,
@@ -22304,6 +22343,7 @@ function docGuardGlobalShortcuts(host) {
   host.addEventListener("keydown", (event) => {
     if (event.ctrlKey || event.metaKey || event.altKey) return;
     if (event.key.length !== 1) return;
+    typingBurstAt = performance.now();
     event.stopPropagation();
   });
 }

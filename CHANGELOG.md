@@ -8,6 +8,16 @@ below). Versioning is `0.x` while the app stabilises.
 ## [Unreleased]
 - Library: at 420px a document row's ⋯ no longer sits 7px over the meta line (the row reserves the kebab's own width), and Recordings' title keeps its width with the Captions, help and Record controls wrapping to the row below instead of running under the heading.
 - Chat and Ask: the Sources fold's summary is a flat row like the other answer folds (it was the one boxed pill, 33px tall with a border and tint, next to flat 27px rows), and Grounded in reads in sentence case at the same size as Why this answer instead of a small uppercase label.
+- Search: a typo is corrected to a word your notes use ("lecure 5" now says "showing results for lecture 5"), not to the index's stem ("lectur 5").
+- Notes and Library: a note card no longer prints the ## of its headings, and a Library card preview drops a code fence's ``` and language word instead of showing "`py print(1) `".
+- Documents: Read mode no longer draws the title a second time above the text, and hides the formatting toolbar (it stayed live over a page you cannot edit).
+- Documents and notes: a formatting toolbar menu (Insert, Highlight) closes once an item is chosen instead of staying open over the result.
+- Documents and notes: in a window 760px wide or less the formatting toolbar defaults to one row with a More menu (59px) instead of wrapping to seven (143px at 700px); the Use one row / Expand toggle still wins.
+- Shortcuts: letters typed in the 1.5 s after typing in an editor no longer run the single-key shortcuts or the quick-nav chord, so a sentence typed after focus slips off the box cannot open Reminders and Settings.
+- Documents: in a table cell, Tab moves to the next cell even while a word is offered, instead of taking the guessed word.
+- Notes and documents: retyping "- " on an empty auto-bullet no longer nests it ("- - x"), Enter on an empty bullet ends the list in a note box, and a closing ``` fence goes back to the opening fence's indent instead of carrying the code's.
+- Documents and notes: Ctrl+B with nothing selected leaves the placeholder selected, so typing replaces it whole (it left the opening markers selected and ate them).
+- Documents and notes: Ctrl+Shift+Z redoes even when Caps Lock is on (it undid a second step, because the editor read the chord as plain Ctrl+Z).
 - Ask: at 600 to 820px the header buttons (Use AI, History, New chat) shrink and wrap inside the card instead of running 26px past its right edge.
 - Documents: at a 600px window the dock's eight controls fit one row (tight gap and Edit/Read padding) instead of wrapping the more menu to a third row. Companion: it no longer lets the page scroll under a touch drag (touch-action none), so a throw is not cancelled by the browser.
 - Chat: under 600px the welcome's suggested questions wrap to the column instead of scrolling sideways with a fading edge. Ask: at half width the box loses the lone sparkle line and the model picker takes the full row.

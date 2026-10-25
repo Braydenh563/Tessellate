@@ -52,7 +52,7 @@ def run(calls: list) -> list:
         + "\nconst NOW = new Date(2026, 8, 24, 14, 5);\n"
         "const ctx = (extra) => ({ now: NOW, locale: 'en-GB', slug: mdHeadingId, ...extra });\n"
         "const fns = {docLorem, docFillTable, docFillSig, docSmartPunct, docPairInput, docPairBackspace,"
-        " docFillToken, docFillGhost, docListEnter};\n"
+        " docFillToken, docFillGhost, docListEnter, docBulletRetype, docFenceCloseIndent};\n"
         "fns.toc = (text) => docFillToc(text, mdHeadingId);\n"
         "fns.date = (kind, locale) => docFillDate(kind, NOW, locale);\n"
         "fns.options = (before, after, extra) => docFillOptions(docFillToken(before, after), ctx(extra || {}))"
@@ -225,6 +225,40 @@ def test_enter_on_an_empty_item_ends_the_list_or_steps_out_a_level() -> None:
     assert top == "" and task == "" and numbered == ""
     assert nested == "- " and deep == "    - [ ] " and tab == "- "
     assert full is None and text is None, "an item with words in it continues as before"
+
+
+@node
+def test_retyping_a_dash_on_an_empty_bullet_does_not_nest() -> None:
+    plain, indented, star, other_key, filled, three = run([
+        ["docBulletRetype", "- -", " "],
+        ["docBulletRetype", "  - -", " "],
+        ["docBulletRetype", "* -", " "],
+        ["docBulletRetype", "- -", "x"],
+        ["docBulletRetype", "- a -", " "],
+        ["docBulletRetype", "- - -", " "],
+    ])
+    assert plain == "- " and indented == "  - " and star == "* "
+    assert other_key is None and filled is None, "only the space after a second dash collapses"
+    assert three is None, "a thematic break typed as '- - -' is left alone"
+
+
+@node
+def test_a_closing_fence_returns_to_the_opening_fence_indent() -> None:
+    drifted, fine, no_fence, closed_already, tilde, mismatch, info, inline = run([
+        ["docFenceCloseIndent", ["```", "    code"], "    ```"],
+        ["docFenceCloseIndent", ["```", "code"], "```"],
+        ["docFenceCloseIndent", ["text"], "    ```"],
+        ["docFenceCloseIndent", ["```", "x", "```", "text"], "    ```"],
+        ["docFenceCloseIndent", ["~~~", "    x"], "    ~~~"],
+        ["docFenceCloseIndent", ["~~~", "x"], "    ```"],
+        ["docFenceCloseIndent", ["```python", "    x"], "    ```"],
+        ["docFenceCloseIndent", ["use ```x``` here", "  y"], "    ```"],
+    ])
+    assert drifted == "" and fine is None and no_fence is None
+    assert closed_already is None, "a fence that opens a new block is not a closer"
+    assert tilde == "" and mismatch is None
+    assert info == "", "an opening fence may carry an info string"
+    assert inline is None
 
 
 # --- shortcodes ----------------------------------------------------------------

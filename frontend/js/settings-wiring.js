@@ -578,6 +578,10 @@ function saveWhatIsInFront() {
   return;
 }
 
+//: Item 9: a key within 1.5 s of typing in an editor is not a command. The
+//: document editor stops its letters at its host and sets this itself.
+let typingBurstAt = 0;
+
 document.addEventListener("keydown", (e) => {
   // **Before anything else.** A locked notebook answers no shortcut, not a
   // chorded one, not a bare one, not a tab jump. Typing is untouched: this
@@ -738,10 +742,13 @@ document.addEventListener("keydown", (e) => {
   //: Single-key shortcuts can be turned off (WCAG 2.1.4): speech input types
   //: letters.
   const singleKeys = singleKeysOn();
+  const now = performance.now();
+  if (typing) typingBurstAt = now;
+  const burst = !typing && e.key.length === 1 && now - typingBurstAt < 1500 && (typingBurstAt = now);
   //: `boardOwns`: a key the open board answers itself (`wbOwnsChord`), such
   //: as a letter typed while a new map topic is still being made.
   const boardOwns = typeof wbOwnsChord === "function" && wbOwnsChord(e);
-  if (!typing && !overlayOpen && singleKeys && !boardOwns) {
+  if (!typing && !burst && !overlayOpen && singleKeys && !boardOwns) {
     for (const [id, def] of Object.entries(shortcuts)) {
       const bare = !/\+/.test(def.keys);
       if (bare && matchesShortcut(e, def.keys)) {
@@ -765,7 +772,7 @@ document.addEventListener("keydown", (e) => {
   //:
   //: `typing` still wins over both: a chord that fired while you were
   //: filling in a settings field would eat the letter you meant to type.
-  if (!typing) {
+  if (!typing && !burst) {
     // The second half of the "m" then a letter chord, armed below. Checked
     // first so a stray letter within the window is consumed (matched or
     // not) rather than falling through and re-arming on a later "g".

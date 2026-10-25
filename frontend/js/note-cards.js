@@ -1605,7 +1605,8 @@ function entryItem(entry, options = {}) {
   const body = entry.title ? bodyWithoutTitleLine(entry.content) : stripFrontmatter(entry.content);
   const fillContent = () => renderNoteText(
     content,
-    content.classList.contains("entry-clamped") ? body.replace(/\n[ \t\r]*(?:\n[ \t\r]*)+/g, "\n") : body,
+    //: Heading hashes are source, not words (dogfood item 18).
+    (content.classList.contains("entry-clamped") ? body.replace(/\n[ \t\r]*(?:\n[ \t\r]*)+/g, "\n") : body).replace(/^#{1,6}[ \t]+/gm, ""),
     searchHighlightTerms()
   );
   fillContent();
