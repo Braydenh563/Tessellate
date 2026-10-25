@@ -102,3 +102,15 @@ def test_narrow_gutter_and_table_menu_stay_compact():
     assert "@media (max-width: 819.98px)" in css and ".cm-lineNumbers .cm-gutterElement" in css
     assert ".cm-editor .cm-md-table-menu > button" in css
     assert "geo.box.bottom + 2" in DOCS_JS
+
+
+def test_history_dialog_keeps_the_head_to_title_and_close():
+    # Measured at 1280, 700 and 420: no horizontal overflow (scrollWidth == clientWidth);
+    # the filter and "Name this version" share a row that wraps at 420.
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    dlg = html[html.index('id="doc-history-dialog"') :]
+    dlg = dlg[: dlg.index("</dialog>")]
+    head = dlg[: dlg.index("</div>")]
+    assert "doc-history-name" not in head
+    bar = dlg[dlg.index('class="doc-history-bar"') :]
+    assert "doc-history-filter" in bar and "doc-history-name" in bar
