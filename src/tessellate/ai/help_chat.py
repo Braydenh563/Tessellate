@@ -1406,7 +1406,7 @@ HELP_TOPICS.extend(
                 "Tools: V or S select, H hand, K lasso, P pen, M highlighter, E "
                 "eraser, B fill, L line, A arrow, R rectangle, O circle, G "
                 "triangle, D diamond, T text, N sticky note (Ctrl+Enter in one starts the next beside it), F frame, C connector (Shift+C "
-                "curved), I image, X delete. An arrow (A) that starts or ends on a shape, card or topic is a "
+                "curved), I image, X delete. An arrow (A) or a line (L) that starts or ends on a shape, card or topic is a "
                 "connector bound to it and follows it when it moves; the circle is dragged corner to corner like the rectangle. The Shapes button's flyout also has a rounded "
                 "rectangle, ellipse, hexagon, parallelogram, star, cylinder, cloud, speech "
                 "bubble and block arrow. Moving around: the wheel "

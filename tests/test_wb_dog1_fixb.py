@@ -114,8 +114,10 @@ def test_arrow_on_empty_board_or_within_one_shape_stays_free():
     assert _bound(f"wbBoundArrowData(100, 100, 400, 100, 10, {BLOB})", same) is None
 
 
-def test_only_the_arrow_tool_binds_and_pen_strokes_are_never_targets():
-    assert 'window.currentTool === "arrow" ? wbBoundArrowData(' in WB
+def test_only_the_arrow_and_line_tools_bind_and_pen_strokes_are_never_targets():
+    # The Line tool binds as well since wb2 (2026-10-25): a line between two
+    # shapes stayed a loose path that did not follow them.
+    assert 'window.currentTool === "arrow" || window.currentTool === "line" ? wbBoundArrowData(' in WB
     assert "!wbSketchIsClosedShape(item)) continue" in _function("wbArrowCandidateAt")
 
 

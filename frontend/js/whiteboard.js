@@ -16987,8 +16987,10 @@ async function initWhiteboard() {
         blob.fillOpacity = window.currentFillOpacity / 100;
       }
     }
-    //: An arrow that starts or ends on a shape is a connector bound to it.
-    const bound = window.currentTool === "arrow" ? wbBoundArrowData(sx, sy, x, y, 10 / zoomK(), blob) : null;
+    //: An arrow or a line that starts or ends on a shape is a connector bound
+    //: to it (the wb ledger, 10-25: the Line tool stayed a loose path). Its
+    //: ends are the tool's own, so a line binds with none.
+    const bound = window.currentTool === "arrow" || window.currentTool === "line" ? wbBoundArrowData(sx, sy, x, y, 10 / zoomK(), blob) : null;
     const sketchData = {
       data: JSON.stringify(bound || blob),
       x: 0,
