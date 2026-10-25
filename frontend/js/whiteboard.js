@@ -1295,29 +1295,25 @@ function wbGuidedResize(kind, d, handle, start, width, height, { off = false, fi
 
 //: **A box drawn out from a press snaps its moving corner** (E4): the
 //: corner under the pointer goes through the edge guides, and the size shows
-//: beside it. `centred` is a box grown about the press (the ellipse). Alt
-//: draws without snapping, as a move does; Shift (a square) is left alone.
-function wbDrawOutSnap(sx, sy, x, y, event, centred = false) {
+//: beside it. Every closed shape is drawn corner to corner, the ellipse
+//: included (dogfood 2026-10-25 item 7: a circle grown from its centre
+//: put its top under the toolbar and felt unlike the rectangle). Alt draws
+//: without snapping, as a move does; Shift (a square) is left alone.
+function wbDrawOutSnap(sx, sy, x, y, event) {
   const dx = x - sx, dy = y - sy;
-  const box = centred
-    ? { x: sx - Math.abs(dx), y: sy - Math.abs(dy), w: Math.abs(dx) * 2, h: Math.abs(dy) * 2 }
-    : { x: Math.min(sx, x), y: Math.min(sy, y), w: Math.abs(dx), h: Math.abs(dy) };
+  const box = { x: Math.min(sx, x), y: Math.min(sy, y), w: Math.abs(dx), h: Math.abs(dy) };
   if (event.shiftKey) {
     const side = Math.max(box.w, box.h);
     wbShowAlignmentGuides([]);
     wbShowSizeReadout({ ...box, w: side, h: side });
     return [x, y];
   }
-  const edges = (centred || dx >= 0 ? "e" : "w") + (centred || dy >= 0 ? "s" : "n");
+  const edges = (dx >= 0 ? "e" : "w") + (dy >= 0 ? "s" : "n");
   const snapped = event.altKey ? { ...box, guideLines: [] } : wbResizeGuides(null, box, edges, {
     grid: wbSnapOn() ? WB_GRID_SPACING : 0, min: 1, tol: wbAlignTol(),
   });
   wbShowAlignmentGuides(snapped.guideLines);
   wbShowSizeReadout(snapped);
-  if (centred) {
-    const rx = snapped.x + snapped.w - sx, ry = snapped.y + snapped.h - sy;
-    return [sx + Math.sign(dx || 1) * rx, sy + Math.sign(dy || 1) * ry];
-  }
   return [edges.includes("e") ? snapped.x + snapped.w : snapped.x, edges.includes("s") ? snapped.y + snapped.h : snapped.y];
 }
 
@@ -1806,6 +1802,16 @@ function wbShapeDims(dx, dy, shiftHeld) {
   if (!shiftHeld) return { w, h };
   const s = Math.max(w, h);
   return { w: s, h: s };
+}
+
+//: The ellipse drawn corner to corner: its bounding box is the one the
+//: rectangle would get from the same two points, so both tools share one drag
+//: model. Shift makes it a circle, grown away from the press.
+function wbEllipseDrawD(sx, sy, x, y, shiftHeld) {
+  const { w, h } = wbShapeDims(x - sx, y - sy, shiftHeld);
+  const left = x >= sx ? sx : sx - w, top = y >= sy ? sy : sy - h;
+  const rx = w / 2, ry = h / 2;
+  return `M ${left} ${top + ry} a ${rx} ${ry} 0 1 0 ${w} 0 a ${rx} ${ry} 0 1 0 ${-w} 0`;
 }
 
 function wbArrowHeadPath(tipX, tipY, approachAngle, headLen) {
@@ -16719,7 +16725,7 @@ async function initWhiteboard() {
     let [x, y] = getLogicalMouse(e);
     const tool = window.currentTool;
     if (tool !== "draw" && tool !== "highlighter" && tool !== "line" && tool !== "arrow") {
-      [x, y] = wbDrawOutSnap(currentDrawData[0][0], currentDrawData[0][1], x, y, e, tool === "circle");
+      [x, y] = wbDrawOutSnap(currentDrawData[0][0], currentDrawData[0][1], x, y, e);
     }
     
     if (window.currentTool === "draw" || window.currentTool === "highlighter") {
@@ -16759,8 +16765,7 @@ async function initWhiteboard() {
         const { w, h } = wbShapeDims(x - sx, y - sy, e.shiftKey);
         currentDrawPath.setAttribute("d", `M ${mx} ${my} h ${w} v ${h} h ${-w} Z`);
       } else if (window.currentTool === "circle") {
-        const { w: rx, h: ry } = wbShapeDims(x - sx, y - sy, e.shiftKey);
-        currentDrawPath.setAttribute("d", `M ${sx - rx} ${sy} a ${rx} ${ry} 0 1 0 ${rx * 2} 0 a ${rx} ${ry} 0 1 0 ${-rx * 2} 0`);
+        currentDrawPath.setAttribute("d", wbEllipseDrawD(sx, sy, x, y, e.shiftKey));
       } else if (window.currentTool === "triangle") {
         // Asked for directly ("more types of shapes"). Plain `L` commands,
         // same as the pen/line tools, no new command type for
