@@ -175,20 +175,23 @@ try {
 
   $form                 = New-Object System.Windows.Forms.Form
   $form.FormBorderStyle = "None"
-  $form.StartPosition   = "CenterScreen"
+  # Placed before it shows (the owner, 2026-10-26: "a little visual loading
+  # glitch on startup"): CenterScreen centred it on the whole screen and a
+  # Shown handler then moved it above the taskbar, a visible jump. Now it is
+  # centred in the working area of the screen under the pointer from the start.
+  $form.StartPosition   = "Manual"
   $form.Size            = New-Object System.Drawing.Size($WIDTH, $HEIGHT)
+  $area = [System.Windows.Forms.Screen]::FromPoint([System.Windows.Forms.Cursor]::Position).WorkingArea
+  $form.Location = New-Object System.Drawing.Point(
+    [int]($area.X + [Math]::Max(0, ($area.Width - $WIDTH) / 2)),
+    [int]($area.Y + [Math]::Max(0, ($area.Height - $HEIGHT) / 2)))
   $form.BackColor       = $bg
   $form.TopMost         = $true
   $form.ShowInTaskbar   = $true
   $form.Text            = "Starting Tessellate Notes"
-  # Centred in the working area (above the taskbar) at the size it keeps; on
-  # a screen shorter than the window its top stays on screen.
-  $form.Add_Shown({
-    $area = [System.Windows.Forms.Screen]::FromControl($form).WorkingArea
-    $left = [int]($area.X + [Math]::Max(0, ($area.Width - $form.Width) / 2))
-    $top  = [int]($area.Y + [Math]::Max(0, ($area.Height - $form.Height) / 2))
-    $form.Location = New-Object System.Drawing.Point($left, $top)
-  })
+  # Invisible until the first status read has filled the rows and the bar
+  # (the Shown handler below), so the first frame is never an empty card.
+  $form.Opacity         = 0
   $form.Region          = New-RoundRegion $WIDTH $HEIGHT 18
   # Double buffered (C38, the owner: "the splash popup flickers quite a bit").
   # `DoubleBuffered` is a protected property, so it is set through reflection;
@@ -716,7 +719,7 @@ try {
 
   $timer          = New-Object System.Windows.Forms.Timer
   $timer.Interval = 250
-  $timer.Add_Tick({
+  $refresh = {
     try {
       if ((Get-Date) -gt $deadline) { $form.Close(); return }
       if (-not (Test-Path -LiteralPath $StatusFile)) {
@@ -777,6 +780,13 @@ try {
       if ($failedStep.Count -gt 0) { Show-ErrorCard $failedStep[0] } else { Set-Layout }
     } catch {
     }
+  }
+  $timer.Add_Tick($refresh)
+  $form.Add_Shown({
+    & $refresh
+    $st.shown = $st.target
+    $barFill.Width = [int]([Math]::Max(4, $BAR_W * $st.shown))
+    $form.Opacity = 1
   })
   $timer.Start()
 
