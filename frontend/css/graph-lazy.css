@@ -59,15 +59,19 @@
   grid-area: name;
   min-width: 0;
 }
-/* The field is the height of the buttons beside it, so editing moves nothing. */
-.graph-topic-head > .graph-topic-rename {
+/* The field is the height of the buttons beside it, so editing moves nothing,
+   on the topic's card and in a note's panel (the owner, 2026-10-26: the field
+   stood twice the buttons' height there, the two not aligned or spaced). */
+.graph-topic-head > .graph-topic-rename,
+.graph-popup-topic > .graph-topic-rename {
   height: var(--control-h-dense);
   min-height: 0;
   margin: 0;
   box-sizing: border-box;
 }
 @media (pointer: coarse) {
-  .graph-topic-head > .graph-topic-rename {
+  .graph-topic-head > .graph-topic-rename,
+  .graph-popup-topic > .graph-topic-rename {
     align-self: stretch;
     height: auto;
   }
@@ -106,11 +110,18 @@
   flex-wrap: wrap;
 }
 
-/* A note's topic in its panel: the chip and its pencil on one line. */
+/* A note's topic in its panel: the chip and its pencil on one line; while
+   renaming, the field takes the row and Save and Cancel sit at its end. */
 .graph-popup-topic {
   display: flex;
   align-items: center;
   gap: var(--space-1);
+}
+.graph-popup-topic > .graph-topic-rename {
+  flex: 1 1 auto;
+}
+.graph-popup-topic > .graph-topic-tools {
+  flex: none;
 }
 
 /* A note's properties in its panel (INBOX 1300 C27): a section, the
