@@ -1090,7 +1090,7 @@ function reminderItem(reminder, label) {
 
   const due = document.createElement("span");
   due.className = "entry-date";
-  //: The day and clock, then how far off ("Fri, Oct 30, 5:00 PM · in 5 days"): a bare "in 5 days" said nothing about which day.
+  //: The day and clock, then how far off (dog2 item 8).
   due.textContent = `${parseServerTime(reminder.due_at)?.toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })} · ${relativeWhen(reminder.due_at)}`;
   row.appendChild(due);
 

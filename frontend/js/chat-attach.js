@@ -2551,9 +2551,7 @@ async function chatSendTurn(preset, opts = {}) {
       note.className = "muted";
       note.textContent = miss
         ? "Can't reach the app. Is it open?"
-        : "The model finished without writing anything. That usually means it ran " +
-          "out of context or the model is struggling with this question, try again, " +
-          "or rephrase it.";
+        : "The model wrote nothing. Try again, or ask it another way.";
       timeline.ensureAnswerBox().replaceChildren(note);
       // Retry and delete at minimum, so there's always a way forward.
       bubble.appendChild(

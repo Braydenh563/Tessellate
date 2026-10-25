@@ -443,7 +443,9 @@ def _reminder_line(r: dict, today: date) -> str:
     return f"- {str(r.get('text') or '').strip()} ({_short(due.date())}, {due:%H:%M}{late})"
 
 
-def _left(ctx: Ctx) -> Reply:
+def _left(ctx: Ctx) -> Reply | None:
+    if ctx.open_ids:
+        return None  # with a note open, that note's own list (composer_open)
     today = ctx.now.date()
     reminders, tasks = _open_reminders(ctx), _open_tasks(ctx)
     if not reminders and not tasks:
@@ -485,7 +487,7 @@ def answer(ctx: Ctx) -> Reply | None:
     if not text or len(text) > 200:
         return None
     today = ctx.now.date()
-    if _LEFT.match(text) and not ctx.open_ids:  # with a note open, that note's own list (composer_open)
+    if _LEFT.match(text):
         return _left(ctx)
     until = _UNTIL.match(text)
     if until:

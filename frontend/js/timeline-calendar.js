@@ -227,7 +227,7 @@ function timelineCalDraw(box, span, first, last) {
   }
   //: A month taller than the pane opens with today's row in view, not clipped
   //: at the fold with nothing to say there is more below.
-  if (span === "month" && timelineCal.painted !== drawn) requestAnimationFrame(() => timelineCalShowToday(box));
+  if (span === "month" && timelineCal.painted !== drawn) timelineCalShowToday(box);
   timelineCal.painted = drawn;
   timelineCalRefocus(box);
 }
