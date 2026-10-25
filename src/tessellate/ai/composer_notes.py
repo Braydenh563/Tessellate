@@ -24,6 +24,10 @@ _WROTE = re.compile(
     rf"^{_LEAD}(?:what|which notes?|anything|everything|all)\s+(?:(?:did|have|had|do)\s+(?:i|we)\s+)?"
     r"(?:write|wrote|written|note|noted|jot|jotted|save|saved|capture|captured|add|added|make|made|record|recorded|put down|type|typed)"
     r"(?:\s+down)?\s+(?:about|on|for|regarding|around|re)\s+(?P<t>.+?)\W*$", re.I)
+_WROTE_ANY = re.compile(
+    rf"^{_LEAD}(?:what|which notes?|anything)\s+(?:(?:did|have|had|do)\s+(?:i|we)\s+)?"
+    r"(?:write|wrote|written|note|noted|jot|jotted|save|saved|capture|captured|add|added|make|made|record|recorded|put down|type|typed)"
+    r"(?:\s+down)?\s+(?P<t>(?:in|on|during|over|from|since|for|this|last)\b.*?)\W*$", re.I)
 _NOTES_ON = re.compile(
     rf"^{_LEAD}(?:show|list|find|get|give)?\s*(?:me\s+)?(?:all\s+)?(?:my\s+)?(?:the\s+)?notes?\s+(?:i\s+(?:wrote|made|saved|took|jotted)\s+)?(?:about|on|for|regarding)\s+(?P<t>.+?)\W*$", re.I)
 _OUTLINE = re.compile(
@@ -137,11 +141,14 @@ def _item(note: dict, wanted: list[str]) -> str:
 def _read_recent(ctx: Ctx) -> tuple[list[str], date, date, str, str] | None:
     text = " ".join((ctx.asked or ctx.question or "").split())
     found = _WROTE.match(text) or _NOTES_ON.match(text)
-    window = _window(found.group("t"), ctx.now.date()) if found and len(text) <= 160 else None
+    any_topic = None if found else _WROTE_ANY.match(text)
+    window = _window((found or any_topic).group("t"), ctx.now.date()) if (found or any_topic) and len(text) <= 160 else None
     if window is None:
         return None
     start, end, said, topic = window
     wanted = _wanted(topic)
+    if any_topic and not wanted:
+        return [], start, end, said.strip(), "anything"  # no topic: every note of the window
     return (wanted, start, end, said.strip(), topic.strip() or "that") if wanted else None
 
 

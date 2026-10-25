@@ -44,6 +44,12 @@ _UNTIL = re.compile(
     r"^(?:so |and |hey |ok |okay )*(?:how (?:long|many days|many weeks|much time|far)(?: is it| is there| do i have| have i got| have we got| left)?(?: until| till| to| before| left until| left till)"
     r"|(?:days|weeks) (?:until|till|to|before|left until)|countdown (?:to|until|for)|time (?:until|till|left until|left before)|how soon is|how close is)\s+(?:my |the |our |this )?(?P<t>.+?)\W*$", re.I)
 
+_LEFT = re.compile(
+    rf"^{_LEAD}(?:what(?:'s| is| do i have| have i got| have i| else)?\s+(?:still\s+)?(?:left|outstanding|open|unfinished|incomplete|remaining|pending|undone)(?:\s+to\s+do)?"
+    r"|what(?:'s| is)?\s+(?:left\s+)?(?:on\s+)?(?:my\s+)?(?:to-?do|todo)(?:\s+list)?"
+    r"|what\s+(?:do|should)\s+i\s+(?:still\s+)?(?:have|need)\s+to\s+(?:do|finish|get done|tick off)"
+    r"|(?:show|list|give)\s+(?:me\s+)?(?:all\s+)?(?:my\s+)?(?:open|unfinished|outstanding|remaining|unticked)\s+(?:tasks|items|to-?dos|checklists?|checklist items))\W*$", re.I)
+_WHEN_IS = re.compile(rf"^{_LEAD}when(?:'s|’s| is| are| was)\s+(?:my |the |our |this |that )?(?P<t>.+?)\W*$", re.I)
 _SPAN_WORDS = re.compile(r"\b(?:the )?(?:next|coming|following) (\d{1,2}|few|couple of) days?\b|\bnext (\d{1,2}) days\b|\bthe rest of (?:the|this) week\b|\brest of (?:the|this) week\b", re.I)
 _FILLER_STEMS = frozenset(study.stem(w) for w in (
     "what whats is are do have got any anything due deadlines deadline coming up upcoming on my plate the this next week today tomorrow "
@@ -98,7 +104,7 @@ def window(question: str, today: date) -> tuple[date, date, str] | None:
             return today, end, "the rest of this week"
         raw = found.group(1) or found.group(2)
         n = 3 if raw == "few" else 2 if raw == "couple of" else int(raw)
-        return today, today + timedelta(days=n), f"the next {n} days"
+        return today, today + timedelta(days=n - 1), f"the next {n} days"
     phrases = when_words.find(low)
     for _s, _e, phrase in phrases:
         span = when_words.span(phrase, today, "future")
@@ -383,7 +389,7 @@ def _plan_window(text: str, said: str, today: date) -> tuple[date, date, str]:
 
 def _due_reply(ctx: Ctx, text: str, today: date) -> Reply | None:
     win = window(text, today)
-    leftover = {s for s in _stems(re.sub(r"[^\w\s']", " ", text)) if s not in _FILLER_STEMS}
+    leftover = {s for s in _stems(re.sub(r"[^\w\s']", " ", _SPAN_WORDS.sub(" ", text))) if s not in _FILLER_STEMS}
     if win is not None:
         for _s, _e, phrase in when_words.find(text.lower()):
             leftover -= _stems(phrase)
@@ -392,14 +398,101 @@ def _due_reply(ctx: Ctx, text: str, today: date) -> Reply | None:
     return _due(ctx, win or (today, today + timedelta(days=6), "the next 7 days"))
 
 
+# --- what is left ----------------------------------------------------------------------
+
+PHRASES = {
+    "left_head": (
+        "Here is what is still open: {r} and {t}.",
+        "Still to do, from your reminders and your checklists: {r} and {t}.",
+        "{r} and {t} are waiting.",
+        "What is left, as your notebook has it: {r} and {t}.",
+    ),
+    "left_none": (
+        "Nothing is open: no reminder waiting and no unticked checklist item in your notes.",
+        "You are clear. No reminder is waiting and every checklist item is ticked.",
+    ),
+    "when_head": (
+        "Your reminder for {what} is {when}.",
+        "{what} is on your reminders for {when}.",
+        "You set a reminder for {what}: {when}.",
+    ),
+    "when_note": (
+        "Your note [{title}](#/notes/{id}) says: “{text}”",
+        "[{title}](#/notes/{id}) has it too: “{text}”",
+    ),
+}
+
+
+def _open_tasks(ctx: Ctx, limit: int = 12) -> list[tuple[str, dict]]:
+    out: list[tuple[str, dict]] = []
+    for note in ctx.notes[:300]:
+        out += [(task, note) for task in study.open_tasks(str(note.get("content") or ""))]
+        if len(out) >= limit:
+            break
+    return out[:limit]
+
+
+def _open_reminders(ctx: Ctx) -> list[dict]:
+    rows = [r for r in ctx.reminders if isinstance(r.get("due_at"), datetime) and not r.get("done")]
+    return sorted(rows, key=lambda r: r["due_at"])
+
+
+def _reminder_line(r: dict, today: date) -> str:
+    due = r["due_at"]
+    late = ", overdue" if due.date() < today else ""
+    return f"- {str(r.get('text') or '').strip()} ({_short(due.date())}, {due:%H:%M}{late})"
+
+
+def _left(ctx: Ctx) -> Reply:
+    today = ctx.now.date()
+    reminders, tasks = _open_reminders(ctx), _open_tasks(ctx)
+    if not reminders and not tasks:
+        return Reply(pick(ctx.seed, "leftnone", PHRASES["left_none"]))
+    r = f"{len(reminders)} reminder{'s' if len(reminders) != 1 else ''}"
+    t = f"{len(tasks)} unticked checklist item{'s' if len(tasks) != 1 else ''}"
+    lines = [pick(ctx.seed, "lefthead", PHRASES["left_head"]).format(r=r, t=t)]
+    if reminders:
+        lines += ["", "**Reminders**"] + [_reminder_line(x, today) for x in reminders[:MAX_ITEMS]]
+    if tasks:
+        lines += ["", "**Open checklist items**"]
+        lines += [f"- {task} ([{study.title_of(str(note.get('content') or ''))}](#/notes/{note['id']}))" for task, note in tasks]
+    return Reply("\n".join(lines))
+
+
+def _when_is(ctx: Ctx, subject: str) -> Reply | None:
+    """"When is my exam": a reminder that names it first, then the note's own
+    sentence. Left to the notes' reader when no reminder does."""
+    wanted = _stems(subject) - _FILLER_STEMS
+    if not wanted:
+        return None
+    mine = [r for r in _open_reminders(ctx) if wanted <= _stems(str(r.get("text") or ""))]
+    if not mine:
+        return None
+    today = ctx.now.date()
+    due = mine[0]["due_at"]
+    when = f"{_name(due.date(), today)} at {due:%H:%M}"
+    lines = [pick(ctx.seed, "whenhead", PHRASES["when_head"]).format(what=str(mine[0].get("text") or "").strip(), when=when)]
+    far = today + timedelta(days=900)
+    found, _o = events(ctx, today - timedelta(days=30), far)
+    seen = next((e for e in found if e.kind == "note" and wanted <= _stems(e.text + " " + e.title)), None)
+    if seen is not None:
+        lines.append(pick(ctx.seed, "whennote", PHRASES["when_note"]).format(title=seen.title, id=seen.note_id, text=seen.text))
+    return Reply("\n\n".join(lines))
+
+
 def answer(ctx: Ctx) -> Reply | None:
     text = " ".join((ctx.question or "").split())
     if not text or len(text) > 200:
         return None
     today = ctx.now.date()
+    if _LEFT.match(text):
+        return _left(ctx)
     until = _UNTIL.match(text)
     if until:
         return _until(ctx, until.group("t"))
+    when = _WHEN_IS.match(text)
+    if when and (reply := _when_is(ctx, when.group("t"))):
+        return reply
     plan = _PLAN.match(text)
     if plan:
         return _plan(ctx, _plan_window(text, " ".join(g for g in plan.groups() if g) or "this week", today))

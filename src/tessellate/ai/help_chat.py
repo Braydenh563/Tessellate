@@ -522,12 +522,12 @@ HELP_TOPICS: list[dict] = [
         "keywords": ("quiz me", "outline a note", "what did i write about", "flashcards", "flash cards", "key terms", "summarise a note", "study help", "what is due", "plan my week", "revise", "study without a model"),
         "body": (
             "With no model running, Ask and Chat still help you study from your own notes. "
-            "Say “quiz me on lecture 5” for questions built from its definitions, bold terms and lists: "
+            "Say “quiz me on lecture 5” for questions built from its definitions, bold terms and lists (a request that is not an answer, or the Stop the quiz chip, ends it): "
             "answer in your own words, and “hint”, “skip” or “stop” work at any time; the score is kept in the "
             "conversation. “Make flashcards from this note” (or from a category such as “Uni”) writes question and answer cards and offers to save "
             "them as a note. “What are the key terms in lecture 5” lists them with the note's own definitions, and "
             "“summarise lecture 5” gives a short section-by-section version (say “more” or “shorter”). "
-            "“What's due this week”, “plan my week” and “how long until the exam” read your reminders, the dates "
+            "“What's due this week”, “what's left to do”, “plan my week”, “when is my exam” and “how long until the exam” read your reminders, the dates "
             "your notes give and your open checklist items. It also works out percentages, marks needed, dates "
             "(“what day is 3 weeks from friday”, “how many weeks until christmas”, “how many days since 1 october”) and word counts, and defines common study terms your notes "
             "do not cover. After a due or plan list, “the second one” and “why” explain a line and where it came from; "

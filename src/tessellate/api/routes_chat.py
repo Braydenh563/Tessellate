@@ -1828,6 +1828,7 @@ def _prepare(
     surface: str = ASK_SURFACE,
     as_of: "date | None" = None,
     locale: str | None = None,
+    skip_search: bool = False,
 ) -> dict:
     """The shared first half of both chat endpoints: retrieve entries,
     bump their usage counters, log the question, gather AI settings.
@@ -1843,8 +1844,12 @@ def _prepare(
     detected = _detect_intent(question, force_notes_intent, attached, attached_docs, attached_files, attached_boards)
     detected, stats = _computed_answer(session, question, detected, as_of, attached)
     found = _Found(detected=detected, stats=stats)
-    _retrieve_for(session, question, found, attached, attached_notes_only, as_of, locale)
-    _rewind_as_of(session, question, found, as_of, locale)
+    #: `skip_search`: the app's own reader has already answered this turn (a
+    #: plan, a countdown, a quiz), so the search and the hydration of every
+    #: hit (0.1 to 1 s on 300 notes) are not paid for an answer that ignores them.
+    if not skip_search:
+        _retrieve_for(session, question, found, attached, attached_notes_only, as_of, locale)
+        _rewind_as_of(session, question, found, as_of, locale)
     notes = _context_notes(session, found, attached, attached_docs, attached_files, attached_boards, as_of)
     #: Only the notes: a document or a file row has another table's id.
     _frame_matches(session, question, notes[: len(found.entries)], found.match_info, found.mode)
@@ -3060,12 +3065,15 @@ def _open_title(session: Session, body: ChatRequest) -> str:
 
 def _chat_topic(history: list[dict]) -> str:
     """What the last question in this chat was about: its first search term of
-    four letters or more, or ""."""
+    four letters or more that the answer to it also used, or "". A word the
+    answer never touched ("left", "write", "week") is the question's frame,
+    not its subject (blind test round 2, finding 2)."""
     from tessellate.search import query as query_understanding
 
     for turn in reversed(history or []):
+        answer = str(turn.get("answer") or "").lower()
         for term in query_understanding.search_terms(str(turn.get("question") or "")[:200]):
-            if len(term) >= 4 and term.isalpha():
+            if len(term) >= 4 and term.isalpha() and term.lower() in answer:
                 return term
     return ""
 
@@ -3399,7 +3407,7 @@ _BULK_DELETE = re.compile(
 )
 
 
-def _app_first_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list[dict] | None:
+def _app_first_events(req: _StreamRequest, follow, ollama_running: bool) -> list[dict] | None:  # noqa: ANN001
     """What the app's own engine says before an act or a note search, when it
     answers this turn (no model, or From your notes): a study, plan or sum
     reader, a pasted link, an open-ended ask. None leaves the turn to the rest."""
@@ -3407,7 +3415,6 @@ def _app_first_events(req: _StreamRequest, prepared: dict, ollama_running: bool)
         return None
     question = req.question or ""
     if not req.skill:
-        follow = prepared.get("follow_on")
         found = chat_extra.events(
             req.session, follow.question if follow else req.question, req.history or [], now=user_now(deps.get_config()).replace(tzinfo=None),
             seed=_reply_seed(req)[1], open_ids=[i for i in [req.body.open_note_id, *req.body.note_ids] if i],
@@ -3432,8 +3439,11 @@ def _first_events(req: _StreamRequest, prepared: dict, ollama_running: bool, too
             "I will not delete everything in one go. Name one note instead, for example “delete the boiler note”: "
             "it waits for your Confirm, and Undo brings it back."
         )}])
-    own = _app_first_events(req, prepared, ollama_running)
+    own = prepared.get("early_events")
     if own is not None:
+        #: The app's own reader wrote it (a plan, a countdown, a quiz): its
+        #: times and counts are worked here, so no note is expected to hold them.
+        prepared["app_first"] = True
         return iter(own)
     if prepared["intent"] == intent.ACT:
         return _act_events(req, prepared)
@@ -3646,7 +3656,7 @@ def _checks_grounding(prepared: dict, agentic: bool, composing: bool, conversati
     numbers are counts of rows, in no note, and "Heads up: I could not find
     96 in your notes" under "You have 96 notes" was the check misreading it
     (Brief 89)."""
-    return not agentic and not composing and not conversational and prepared["stats"] is None and not prepared.get("tool_read")
+    return not agentic and not composing and not conversational and prepared["stats"] is None and not prepared.get("tool_read") and not prepared.get("app_first")
 
 
 def _engine_answers(req: _StreamRequest, prepared: dict) -> bool:
@@ -3722,6 +3732,7 @@ def _stream_prepare(req: _StreamRequest) -> dict:
     only with a turn before it: a model reads the history itself, and the
     routing (`_composed`) is unchanged by it."""
     follow = _follow_up(req)
+    early = _app_first_events(req, follow, req.ollama.is_running())
     prepared = _prepare(
         req.session,
         _searched_question(req, follow),
@@ -3741,8 +3752,10 @@ def _stream_prepare(req: _StreamRequest) -> dict:
         surface=ASK_SURFACE if (req.body.notes_only or not req.use_tools) else AGENT_SURFACE,
         as_of=None if req.skill else req.body.as_of,
         locale=req.body.locale,
+        skip_search=early is not None,
     )
     prepared["follow_on"] = follow
+    prepared["early_events"] = early
     return prepared
 
 

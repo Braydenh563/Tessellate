@@ -1840,7 +1840,7 @@ async function chatSendTurn(preset, opts = {}) {
   let toolsUnsupportedEvent = null;
   // Whether the user pressed Stop. An empty answer they asked for needs no
   // explanation; one they didn't ask for does.
-  let stopped = false;
+  let miss, stopped = false;
   // Set when the agent ends its turn by handing the job to a saved skill.
   // The run can't start from inside the stream, this turn is still holding
   // the input box and the conversation, so it is remembered and started
@@ -2305,6 +2305,7 @@ async function chatSendTurn(preset, opts = {}) {
       //: (owner, 2026-10-17: the old fixed line said nothing). A message
       //: too long to be a sentence, or none, falls back to a line that still
       //: says what to do next.
+      miss = error instanceof TypeError;
       const said = String(error && error.message ? error.message : "").trim();
       timeline.failRunningStep(
         said && said.length <= 160 ? said : "The model stopped before it finished. Try again, or check Settings, Models."
@@ -2548,10 +2549,11 @@ async function chatSendTurn(preset, opts = {}) {
     if (!stopped && !handoff && !asked) {
       const note = document.createElement("p");
       note.className = "muted";
-      note.textContent =
-        "The model finished without writing anything. That usually means it ran " +
-        "out of context or the model is struggling with this question, try again, " +
-        "or rephrase it.";
+      note.textContent = miss
+        ? "Can't reach the app. Is it open?"
+        : "The model finished without writing anything. That usually means it ran " +
+          "out of context or the model is struggling with this question, try again, " +
+          "or rephrase it.";
       timeline.ensureAnswerBox().replaceChildren(note);
       // Retry and delete at minimum, so there's always a way forward.
       bubble.appendChild(
