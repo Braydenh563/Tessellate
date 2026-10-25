@@ -557,6 +557,24 @@ textarea.has-gutter {
   max-height: none;
 }
 
+/* The capture box is stretched too, but its footer (Save) must stay in view:
+   it scrolls inside a cap instead of growing (dogfood 21: 30 lines put Save
+   at y=981 on an 800px window). 45vh leaves room for the toolbar and the foot. */
+#capture .note-surface-stretch .cm-editor .cm-scroller {
+  max-height: min(22rem, 45vh);
+}
+
+/* The chrome above the box (toolbar, fields, wrapped rows at 700) can still
+   push the commit row past the window, so it also sticks to the foot of the
+   scrolling page: Save is always reachable. */
+#capture .capture-commit-row {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  background: var(--card);
+  padding-block: var(--space-2);
+}
+
 @media print {
 /* **The last of the chrome.** 05-sidebars-themes.css hides the tab bar, the
      sidebar, the dock and the toolbar; it was written for the PDF export and
