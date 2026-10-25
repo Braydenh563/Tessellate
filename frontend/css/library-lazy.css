@@ -6418,3 +6418,17 @@ input[type="color"].wb-mixed {
 #wb-canvas-view :is(input, textarea, [contenteditable]) {
   user-select: text;
 }
+
+/* --- the board's context bar, wrapped (`wbUpdateSelectionBar`) ------------
+   Two rows or more is a panel, not a pill: the pill's curve cut into the
+   first and last rows, and a row's first group drops the hairline that only
+   parts it from a group beside it (the 22-10 bug doc). Here rather than in
+   07-whiteboard-misc.css: the boot stylesheets are at their gzip budget. */
+.wb-context.wb-context-wrapped {
+  border-radius: var(--radius-lg);
+}
+/* Only the colour: taking the hairline's width away would let the group
+   climb back to the row above, which is how it was marked in the first place. */
+.wb-context .wb-context-group.wb-row-start:not(.hidden) {
+  border-left-color: transparent;
+}

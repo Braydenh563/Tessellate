@@ -66,8 +66,13 @@ function wbFmtKind(entry) {
   }
   if (String(parsed?.type || "").startsWith("link-")) return wbLinkTakesLabel(entry.item, parsed) ? "link" : null;
   if (typeof parsed?.d !== "string") return null;
+  //: Ends first (the 22-10 bug doc): a filled end mark closes its own
+  //: subpath with a Z, which `wbShapeLabelKind` read as a closed shape, so a
+  //: line given an End mark became a "shape" here, lost its Start and End
+  //: rows, and could not be turned back into a plain line.
+  if (wbSketchTakesCaps(parsed)) return "arrow";
   if (wbShapeLabelKind(parsed)) return "shape";
-  return wbSketchTakesCaps(parsed) ? "arrow" : "line";
+  return "line";
 }
 
 //: The fields each kind takes, by the `data-fmt` names in index.html.

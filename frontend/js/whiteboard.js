@@ -1994,7 +1994,12 @@ function wbShowCapSizes(caps) {
     const el = document.getElementById(`wb-prop-${which}size`);
     if (!el) continue;
     el.value = caps[`${which}Size`] || "m";
-    el.disabled = caps[`${which}Cap`] === "none";
+    const none = caps[`${which}Cap`] === "none";
+    el.disabled = none;
+    //: **No size for an end with no mark** (the 22-10 bug doc, the bar "too
+    //: long and wide"): a greyed "Medium" beside "None" said nothing and was
+    //: two of the line bar's widest controls. The size comes back with a mark.
+    (el.closest(".select-shell") || el).classList.toggle("hidden", none);
   }
 }
 
@@ -6349,6 +6354,22 @@ function wbUpdateSelectionBar(panning = false) {
   if (!mapNode) wbMapStripNodeId = null;
   if (mapNode && !panHeld) wbSyncMapStrip(mapNode);
   active.classList.remove("hidden");
+  //: A bar that wraps to a second row is a panel, not a pill: the pill's
+  //: radius cut the corners of its first and last rows (the 22-10 bug doc,
+  //: "the two rows clash at a half window").
+  if (!held && active.id === "wb-context") {
+    active.classList.remove("wb-context-wrapped");
+    const groups = [...active.querySelectorAll(":scope > .wb-context-group:not(.hidden)")];
+    for (const g of groups) g.classList.remove("wb-row-start");
+    const wrapped = active.offsetHeight > 60;
+    active.classList.toggle("wb-context-wrapped", wrapped);
+    //: And a row's first group loses the hairline that only separates it
+    //: from a group beside it (one layout read for all of them).
+    if (wrapped) {
+      const tops = groups.map((g) => g.offsetTop);
+      groups.forEach((g, i) => { if (i && tops[i] > tops[i - 1] + 2) g.classList.add("wb-row-start"); });
+    }
+  }
   const w = held ? held.w : active.offsetWidth;
   const h = held ? held.h : active.offsetHeight;
   // 44px above, not 10: the rotation handle sits 28px above a card or

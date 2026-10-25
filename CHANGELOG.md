@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: a line given an End mark stays a line in the Format panel, so its Start and End rows stay and setting End back to None makes it a plain line again; the selection bar hides the size of an end with no mark (a line's bar 913 to 700px wide at 1440), and a bar that wraps at half width takes panel corners with no divider at the start of a row (three rows to two at 720).
 - Whiteboard: double-clicking a turned frame's rotate grip stands up what it holds as well as the frame, in one Undo step (Ctrl stands up the frame alone).
 - Whiteboard: an emoji sticker grows with its box while you resize it (it stayed at its old size, 46px in a 214px box), and a shape's selection box, grips and rotate handle follow a resize live with the "W x H" size beside them, as a box's do.
 - Toasts on the Graph tab stay on the bottom edge and sit left of the zoom strip, instead of being lifted halfway up the screen.
