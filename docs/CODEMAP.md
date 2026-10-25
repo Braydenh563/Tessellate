@@ -2,7 +2,7 @@
 
 Generated 2026-10-25 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6224, frontend ids 2539, CSS sections 497, backend routes 618, backend modules 6254, test files 1335, tests 11879, plan headings 968.
+Counts: frontend functions 6224, frontend ids 2539, CSS sections 497, backend routes 618, backend modules 6254, test files 1335, tests 11880, plan headings 968.
 
 ## Frontend functions (6224)
 
@@ -5323,39 +5323,39 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `findSettings` | frontend/js/settings-find.js:113 |
-| `helpAlternation` | frontend/js/settings-find.js:613 |
-| `helpApplySearch` | frontend/js/settings-find.js:733 |
-| `helpEmphasis` | frontend/js/settings-find.js:619 |
-| `helpFill` | frontend/js/settings-find.js:640 |
-| `helpMarks` | frontend/js/settings-find.js:653 |
-| `helpMatches` | frontend/js/settings-find.js:717 |
-| `helpQueryTerms` | frontend/js/settings-find.js:709 |
-| `helpSearchBind` | frontend/js/settings-find.js:790 |
-| `helpTopicLink` | frontend/js/settings-find.js:580 |
-| `helpTopicPaint` | frontend/js/settings-find.js:667 |
-| `helpTopicRow` | frontend/js/settings-find.js:681 |
-| `openSettingRow` | frontend/js/settings-find.js:179 |
-| `renderCredits` | frontend/js/settings-find.js:813 |
-| `renderHelpTopics` | frontend/js/settings-find.js:861 |
-| `renderSettingResults` | frontend/js/settings-find.js:226 |
-| `settingNearAdd` | frontend/js/settings-find.js:241 |
+| `helpAlternation` | frontend/js/settings-find.js:618 |
+| `helpApplySearch` | frontend/js/settings-find.js:738 |
+| `helpEmphasis` | frontend/js/settings-find.js:624 |
+| `helpFill` | frontend/js/settings-find.js:645 |
+| `helpMarks` | frontend/js/settings-find.js:658 |
+| `helpMatches` | frontend/js/settings-find.js:722 |
+| `helpQueryTerms` | frontend/js/settings-find.js:714 |
+| `helpSearchBind` | frontend/js/settings-find.js:795 |
+| `helpTopicLink` | frontend/js/settings-find.js:585 |
+| `helpTopicPaint` | frontend/js/settings-find.js:672 |
+| `helpTopicRow` | frontend/js/settings-find.js:686 |
+| `openSettingRow` | frontend/js/settings-find.js:184 |
+| `renderCredits` | frontend/js/settings-find.js:818 |
+| `renderHelpTopics` | frontend/js/settings-find.js:866 |
+| `renderSettingResults` | frontend/js/settings-find.js:231 |
+| `settingNearAdd` | frontend/js/settings-find.js:246 |
 | `settingQueryAlts` | frontend/js/settings-find.js:101 |
-| `settingResultItem` | frontend/js/settings-find.js:209 |
-| `settingResultsKey` | frontend/js/settings-find.js:261 |
+| `settingResultItem` | frontend/js/settings-find.js:214 |
+| `settingResultsKey` | frontend/js/settings-find.js:266 |
 | `settingRowText` | frontend/js/settings-find.js:33 |
 | `settingRows` | frontend/js/settings-find.js:45 |
 | `settingVocab` | frontend/js/settings-find.js:89 |
-| `settingsIndexBuild` | frontend/js/settings-find.js:457 |
-| `settingsIndexClear` | frontend/js/settings-find.js:423 |
-| `settingsIndexGo` | frontend/js/settings-find.js:332 |
-| `settingsIndexHeads` | frontend/js/settings-find.js:293 |
-| `settingsIndexJump` | frontend/js/settings-find.js:432 |
-| `settingsIndexList` | frontend/js/settings-find.js:324 |
-| `settingsIndexMark` | frontend/js/settings-find.js:386 |
-| `settingsIndexOffset` | frontend/js/settings-find.js:318 |
-| `settingsIndexWatchSection` | frontend/js/settings-find.js:546 |
-| `settingsNavFollow` | frontend/js/settings-find.js:360 |
-| `settingsPaneTitleHead` | frontend/js/settings-find.js:310 |
+| `settingsIndexBuild` | frontend/js/settings-find.js:462 |
+| `settingsIndexClear` | frontend/js/settings-find.js:428 |
+| `settingsIndexGo` | frontend/js/settings-find.js:337 |
+| `settingsIndexHeads` | frontend/js/settings-find.js:298 |
+| `settingsIndexJump` | frontend/js/settings-find.js:437 |
+| `settingsIndexList` | frontend/js/settings-find.js:329 |
+| `settingsIndexMark` | frontend/js/settings-find.js:391 |
+| `settingsIndexOffset` | frontend/js/settings-find.js:323 |
+| `settingsIndexWatchSection` | frontend/js/settings-find.js:551 |
+| `settingsNavFollow` | frontend/js/settings-find.js:365 |
+| `settingsPaneTitleHead` | frontend/js/settings-find.js:315 |
 
 ### frontend/js/settings-health.js (2)
 
@@ -18643,7 +18643,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (11879)
+## Tests (11880)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19094,7 +19094,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_find_it.py | 8 |
 | tests/test_finder_star_790.py | 3 |
 | tests/test_first_run_472.py | 14 |
-| tests/test_fixa2_1025.py | 3 |
+| tests/test_fixa2_1025.py | 4 |
 | tests/test_flaw_class_lints.py | 2 |
 | tests/test_focus_timer.py | 5 |
 | tests/test_folder_roundtrip.py | 8 |

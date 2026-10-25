@@ -35,3 +35,12 @@ def test_blank_new_document_makes_no_row_until_the_first_edit():
 def test_document_sidebar_is_newest_edit_first():
     body = _body("function renderDocList(")
     assert "updated_at" in body and "sort(" in body
+
+
+def test_settings_search_phone_ranks_other_devices_first():
+    # Browser: scratchpad/ui-sweeps/settingsphone.js (findSettings("phone")[0]).
+    index = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert '<h3 data-synonyms="phone phones tablet lan wifi">Other devices</h3>' in index
+    find = (ROOT / "frontend" / "js" / "settings-find.js").read_text(encoding="utf-8")
+    assert "row.synonyms.includes(w)" in find
+

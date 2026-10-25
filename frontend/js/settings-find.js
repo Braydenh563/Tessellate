@@ -70,8 +70,8 @@ function settingRows() {
       //: the words a person types, not only by its title.
       //: The row's whole text too, its helper copy included: a setting is
       //: found by what it does ("battery"), not only by its label.
-      const haystack = `${text} ${el.textContent || ""} ${el.getAttribute("title") || ""} ${el.querySelector("input, select, textarea")?.getAttribute("aria-label") || ""} ${el.dataset.keys || ""} ${el.dataset.find || ""}`.toLowerCase();
-      rows.push({ section: name, sectionLabel, where, text, haystack, keys: el.dataset.keys || "", el, isHead: el.matches("h3, h4") });
+      const haystack = `${text} ${el.textContent || ""} ${el.getAttribute("title") || ""} ${el.querySelector("input, select, textarea")?.getAttribute("aria-label") || ""} ${el.dataset.keys || ""} ${el.dataset.find || ""} ${el.dataset.synonyms || ""}`.toLowerCase();
+      rows.push({ section: name, sectionLabel, where, text, haystack, keys: el.dataset.keys || "", synonyms: (el.dataset.synonyms || "").toLowerCase().split(/\s+/).filter(Boolean), el, isHead: el.matches("h3, h4") });
     }
   }
   return rows;
@@ -149,6 +149,11 @@ function findSettings(query, limit = 8) {
     const phrase = words.join(" ");
     if (row.keys.includes(phrase)) score += 3;
     else if (row.haystack.includes(phrase)) score += 1;
+    //: `data-synonyms` on a setting is the word people use for it ("phone"
+    //: for Other devices). A whole-word hit there outranks a query that only
+    //: sits inside another word ("phone" in "Microphone"). Not `data-keys`,
+    //: which would file the row among the help topics.
+    if (words.some((w) => row.synonyms.includes(w))) score += 5;
     scored.push({ row, score });
   }
   scored.sort((a, b) => b.score - a.score);

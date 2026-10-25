@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Settings: searching "phone" lists Other devices (the phone and network switch) before Microphone; a setting can carry its everyday word in data-synonyms without becoming a help topic.
 - Documents: New document makes nothing until you type in it (cancelling or walking away leaves no row), names run Untitled document, Untitled document 2, 3 with no duplicates, and the sidebar lists documents by last edit, newest first.
 - Notes: a long note in the capture box scrolls inside a capped box and the Save row sticks to the foot of the page, so Save no longer falls below the window past about 18 lines (Save bottom 981 to 738 at 1280x800 with 30 lines).
 - Library: at 420px a document row's ⋯ no longer sits 7px over the meta line (the row reserves the kebab's own width), and Recordings' title keeps its width with the Captions, help and Record controls wrapping to the row below instead of running under the heading.
