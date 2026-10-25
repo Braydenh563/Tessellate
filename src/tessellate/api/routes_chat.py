@@ -33,7 +33,7 @@ from sqlalchemy import or_, select
 from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
-from tessellate.ai import budget as run_budget, capability, composer, composer_digest, composer_frame, composer_lists, find_it, glossary, list_pool, neighbours, personal, phrasing, verdicts, toolwords, vocative, why
+from tessellate.ai import budget as run_budget, capability, composer, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, neighbours, personal, phrasing, verdicts, toolwords, vocative, why
 from tessellate.ai import (
     acts,
     agent,
@@ -572,6 +572,13 @@ def _apply_open(session: Session, body: ChatRequest) -> None:
             body.note_ids = [body.open_note_id]
         elif body.open_category:
             body.note_ids = _category_note_ids(session, body.open_category)
+    elif body.open_note_id and composer_open.kind(body.question):
+        #: "What's left to do?" with a note open is about that note (the
+        #: 22-10 bug doc: Ask gave one reply for every note), unless the
+        #: question names something the note does not hold.
+        opened = _attached_notes(session, [body.open_note_id])
+        if opened and composer_open.reads_note(body.question, {"content": opened[0].content}):
+            body.note_ids = [body.open_note_id]
     else:
         names = list(session.execute(select(Category.name)).scalars())
         named = composer_digest.named_category(body.question, names)
@@ -2129,6 +2136,9 @@ class _StreamRequest:
     #: The whole of a question longer than `composer.PLAN_CHARS`, which only the
     #: model and the saved turn read; `question` is what the app plans over.
     full_question: str | None = None
+    #: Why the web search could not run this turn ("" when it ran): the
+    #: reply then names the service and links its setting (`composer_web`).
+    web_down: str = ""
 
 
 def _in_full(req: _StreamRequest) -> str:
@@ -2305,6 +2315,7 @@ def _web_answer(req: _StreamRequest, question: str) -> tuple[dict, list[dict]] |
     except websearch.WebSearchError as exc:
         #: One line: a refused optional service (SearXNG not running) is not a bug.
         logging.getLogger("tessellate.chat").info("chat: web search failed for a composed answer: %s", exc)
+        req.web_down = str(exc)
         return None
     pages = _web_pages(websearch, results)
     if not pages:
@@ -2608,6 +2619,58 @@ def _app_said(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list
     return None
 
 
+def _offer_events(found: dict) -> list[dict]:
+    """A reply with the one button it offers (an `open` offer: the setting)."""
+    events: list[dict] = [{"type": "answer", "delta": found["text"]}]
+    if found.get("offer"):
+        events.append({"type": "offer", "offer": found["offer"]})
+    return events
+
+
+def _search_service() -> tuple[str, str]:
+    """(SearXNG address, provider) as Settings has them, for a failure's wording."""
+    from tessellate.search import websearch
+
+    try:
+        return websearch.settings_from(deps.get_config())
+    except Exception:  # noqa: BLE001  # an unreadable setting is no address
+        return "", ""
+
+
+def _link_events(req: _StreamRequest, url: str) -> list[dict]:
+    """A pasted link to be read (`composer_web`): fetched and told back when
+    web access is on, else the setting that allows it. Never a notes search."""
+    from tessellate.search import websearch
+
+    if not _web_allowed(req):
+        return _offer_events(composer_web.web_off(url))
+    try:
+        page = websearch.fetch_readable_cached(url)
+    except websearch.WebSearchError as exc:
+        return _offer_events(composer_web.unreadable(url, str(exc)))
+    return _offer_events(composer_web.page_summary(page, url))
+
+
+def _suggest_events(found: dict) -> list[dict]:
+    events: list[dict] = [{"type": "answer", "delta": found["text"]}]
+    if found["asks"]:
+        events.append({"type": "offer", "offer": {"kind": "ask", "label": "", "asks": found["asks"]}})
+    return events
+
+
+def _newest_titles(session: Session, count: int = 4) -> list[str]:
+    """The names of the newest notes, newest first, for a choice to open one."""
+    from tessellate.ai.tools._common import _visible
+
+    rows = session.query(Entry.content).filter(*_visible()).order_by(Entry.created_at.desc()).limit(count * 3).all()
+    titles: list[str] = []
+    for (content,) in rows:
+        title = composer._title(str(content or ""))[0].strip()
+        if title and title not in titles:
+            titles.append(title[:60])
+    return titles[:count]
+
+
 #: The stats kinds that ask about the notebook as a whole, which carry the
 #: Statistics panel of cards (INBOX 1300 C06).
 _STATS_PANEL_KINDS = {"overview", "coverage"}
@@ -2816,6 +2879,11 @@ def _no_notes_events(req: _StreamRequest, ollama_running: bool) -> list:
     # An attached image and "no matching notes" are unrelated: retrieval never
     # sees the image, so an empty search result must not stand in for "there's
     # nothing to look at" (same fix as `librarian.answer`'s own guard).
+    unknown = None if req.images_raw else composer_suggest.unknown_action(
+        req.question or "", _newest_titles(req.session), embed=_composer_embed(), seed=_reply_seed(req)[1])
+    if unknown is not None and not ollama_running:
+        #: An instruction nothing understood is not a search for its words.
+        return _suggest_events(unknown)
     events: list = [{"type": "answer", "delta": _no_notes_line(req, ollama_running)}]
     # …but the notebook is more than its notes. See `_related_elsewhere`: a
     # question answered by a document, a saved chat or a reminder used to end
@@ -2877,6 +2945,18 @@ def _compose_for(req: _StreamRequest, prepared: dict, follow, current: list, tod
     )
 
 
+def _open_note_answer(req: _StreamRequest, follow, current: list, today):  # noqa: ANN001, ANN202
+    """The open note's own answer to "what's left", "when is it due", "who is
+    involved" (`ai/composer_open.py`): short, and different for every note."""
+    opened = req.body.open_note_id
+    if follow or not opened or len(current) != 1 or current[0].get("id") != opened:
+        return None
+    if not composer_open.reads_note(req.question, current[0]):
+        return None
+    dialogue = composer.Dialogue.from_history(req.history)
+    return composer.open_note_answer(req.question, current[0], today=today, salt=dialogue.salt)
+
+
 def _composed_result(req: _StreamRequest, prepared: dict) -> tuple:
     """The composer's result with the follow-up it answered, the notes it read
     and the older ones those replaced."""
@@ -2889,7 +2969,7 @@ def _composed_result(req: _StreamRequest, prepared: dict) -> tuple:
     today = user_now(deps.get_config()).date()
     #: O11: a newer note on the same thing is the current one.
     current, older = _current_notes(req, prepared["notes"])
-    result = _digest_for(req, prepared, follow, current, restated, today) or _compose_for(req, prepared, follow, current, today)
+    result = _open_note_answer(req, follow, current, today) or _digest_for(req, prepared, follow, current, restated, today) or _compose_for(req, prepared, follow, current, today)
     if follow is not None and follow.kind == "more" and not result.get("grounding"):
         #: Nothing left unsaid: say so, with how much there is (B8).
         result = composer_digest.all_said(follow.question, prepared["notes"], today=today) or result
@@ -2921,6 +3001,15 @@ def _composed_grounding_event(req: _StreamRequest, result: dict) -> dict:
     }
 
 
+def _with_next_step(text: str, size: str, req: _StreamRequest) -> str:
+    """The closing line (`composer_tone.closing`), left off by Quick and by an
+    answer that already ends in a question or an offer to press."""
+    if size == "short" or text.rstrip().endswith("?"):
+        return text
+    line = composer_tone.closing(recent=_newest_titles(req.session, 1), seed=_reply_seed(req)[1])
+    return f"{text}\n\n{line}" if line else text
+
+
 def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list:
     """**A composed answer** (INBOX 688): the notes' own sentences, chosen
     by the question's shape and laid out as an answer, every clause a
@@ -2934,17 +3023,30 @@ def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
     word passages under an apology: the composer quotes whole sentences
     under the same rule. A running model still answers every Chat turn."""
     result, follow, current, older = _composed_result(req, prepared)
-    if not result["grounding"] and not ollama_running and _web_allowed(req):
+    #: The open note said it holds none ("This note does not give a date"): a
+    #: finished answer, not a miss to send to the web or to "general knowledge".
+    said_none = str(result.get("shape") or "").startswith("open_")
+    if not result["grounding"] and not said_none and not follow and not ollama_running and not req.images_raw:
+        unknown = composer_suggest.unknown_action(
+            req.question or "", _newest_titles(req.session), embed=_composer_embed(), seed=_reply_seed(req)[1])
+        if unknown is not None:
+            return _suggest_events(unknown)
+    if not result["grounding"] and not said_none and not ollama_running and _web_allowed(req):
         web = _web_answer(req, follow.question if follow else req.question)
         if web:
             return list(_web_events(*web))
+        if req.web_down:
+            return _offer_events(composer_web.search_down(req.web_down, *_search_service()))
     text = result["text"]
-    if not result["grounding"] and not follow and personal.general(req.question or ""):
+    if not result["grounding"] and not said_none and not follow and personal.general(req.question or ""):
         #: "what's the capital of France": the world, not the notes, and
         #: said so rather than "nothing in your notes about capital".
         text = personal.general_reply(_web_allowed(req))
-    if not result["grounding"] and prepared.get("meaning_loading"):
+    if not result["grounding"] and not said_none and prepared.get("meaning_loading"):
         text += "\n\n" + composer_digest.PHRASES["meaning_loading"]
+    size = composer_tone.length(_resolve_mode(req.body.mode))
+    if result["grounding"] and not follow and not said_none:
+        text = _with_next_step(composer_tone.fit(text, size), size, req)
     text = _with_older(text, older, result)
     text = _with_lapsed(text, current, result, req)
     events: list = [{"type": "answer", "delta": text}]
@@ -2962,6 +3064,8 @@ def _no_model_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
         web = _web_answer(req, req.question)
         if web:
             return list(_web_events(*web))
+        if req.web_down:
+            return _offer_events(composer_web.search_down(req.web_down, *_search_service()))
     if not prepared["notes"] and not req.images_raw:
         return _no_notes_events(req, ollama_running)
     if _composed(req, ollama_running) or not ollama_running:
@@ -3198,6 +3302,12 @@ def _first_events(req: _StreamRequest, prepared: dict, ollama_running: bool, too
             "I will not delete everything in one go. Name one note instead, for example “delete the boiler note”: "
             "it waits for your Confirm, and Undo brings it back."
         )}])
+    link = composer_web.url_in(req.question or "")
+    if link and composer_web.reads_link(req.question or "") and not req.images_raw and _app_answers(req, ollama_running):
+        return iter(_link_events(req, link))
+    if not req.images_raw and composer_suggest.open_ended(req.question or "") and _app_answers(req, ollama_running):
+        #: "do smth cool", "open a note": ask what was meant, with choices.
+        return iter(_suggest_events(composer_suggest.reply(req.question, _newest_titles(req.session), seed=_reply_seed(req)[1])))
     if prepared["intent"] == intent.ACT:
         return _act_events(req, prepared)
     starter = _starter_read(req, ollama_running or tools_only)

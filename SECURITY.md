@@ -31,6 +31,61 @@ ones your operating system already provides:
   snapshot or an unsealed backup is as sensitive as the database, so keep it
   somewhere you trust.
 
+## Phone and other devices
+
+Off by default. When you turn on "Allow other devices on this network"
+(Settings, Account & security, with your password), this is what holds:
+
+**Protected**
+
+- **Encrypted on the network, always.** Other devices reach a separate HTTPS
+  port (TLS 1.2 or newer). Plain http on that port only answers with a
+  redirect to https; the app itself is never served unencrypted off this
+  computer. The plain-http port stays on `127.0.0.1`.
+- **A certificate made on this computer.** A small certificate authority in
+  `lan-tls/` (folder 0700, keys 0600, re-checked at every start, never in a
+  backup) signs the server certificate. It is name-constrained to private
+  addresses, `.local` and this computer's own names, so even a stolen key
+  cannot vouch for a bank's site on a phone that trusts it. Settings and the
+  terminal show both SHA-256 fingerprints: compare them with what the phone
+  shows before you trust it.
+- **Only networks you allowed.** The port is open only on a network you
+  allowed from this computer, only to private or link-local addresses, and
+  it closes when the computer moves elsewhere or goes unused for 14 days.
+- **The password, and this computer's yes.** Every device signs in with the
+  password (eight characters or more before the switch turns on). A new
+  device is then held until you press Allow on this computer. Wrong
+  passwords earn growing waits per device (an IPv6 device by its /64, so it
+  cannot dodge them by changing address) and across all devices together.
+- **No browser tricks.** A page on another site cannot use your browser to
+  reach the app: the Host check refuses a name that is not this computer's
+  (the `TESSELLATE_LOCAL_NAME` `.localhost` name only from this computer
+  itself), the Origin check refuses requests another site caused, and the
+  session is a header, not a cookie. The one cookie, for pictures and files,
+  is `HttpOnly`, `SameSite=Strict` and `Secure` over https.
+- **The computer stays the computer's.** A device on the network reads and
+  writes notes. It cannot turn the network on, allow a network or a device,
+  change where files or backups land, point the app at another server,
+  install, update, restore, use the PIN or reset the password.
+
+**Not protected**
+
+- **A lost phone that is still signed in.** Its session lasts until it is
+  idle for your sign-in timeout (12 hours by default) and at most 7 days. On
+  this computer, Remove the device (Other devices) or choose Lock everywhere
+  now; changing the password also ends every other session.
+- **Someone who knows your password** and whose device you allowed. Private
+  notes open on a device that gave the password.
+- **Trusting the warning without comparing fingerprints.** The first visit
+  before the certificate is installed can be intercepted on a hostile
+  network; the fingerprint check is what tells you it was not.
+- **A typed `http://` address on a hostile network**, before the phone has
+  seen the app over https once: the redirect itself can be intercepted.
+  Open the `https://` address or the QR code Settings shows.
+- **A device with the password can still read everything it is shown**, and
+  can see that this notebook exists on the network (the version on
+  `/health`).
+
 ## Supported versions
 
 This is an actively developed `0.x` project. Security fixes land on `main` and

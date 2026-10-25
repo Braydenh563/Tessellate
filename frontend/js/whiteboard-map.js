@@ -4923,6 +4923,51 @@ async function wbMapOutdent(id) {
   }
 }
 
+//: **Ctrl+Enter: a parent topic** (XMind's Insert parent topic, which the map
+//: lacked): a new topic takes this one's place among its siblings and this
+//: one, with its branch, goes under it. The centre has no place to give up.
+//: One Undo step: the move, whatever the tidy shifted, and the create.
+async function wbMapInsertParent(id) {
+  const boardId = window.currentBoardId;
+  const index = wbMapIndex();
+  const node = index.byId.get(id);
+  if (!boardId || !node) return null;
+  const parentId = node.parent_id != null && index.byId.has(node.parent_id) ? node.parent_id : null;
+  if (parentId === null && wbMapLevels(index).get(id) === 0) {
+    toast("The centre has no parent: add a topic beside it instead.");
+    return null;
+  }
+  const rows = new Map(index.nodes.map((n) => [n.id, WB_KIND_INFO.object.payload(n)]));
+  const created = await wbMapCreateNode({ parentId });
+  if (!created) return null;
+  //: Folded into the batch below, so one Ctrl+Z takes both back.
+  if (wbUndoStack[wbUndoStack.length - 1]?.action === "create") wbUndoStack.pop();
+  created.data = { ...created.data, order: wbMapOrderKey(node) };
+  await wbSaveObject(created);
+  try {
+    const moved = await apiJson(`/whiteboard/boards/${boardId}/nodes/${id}/move`, {
+      method: "PUT",
+      body: JSON.stringify({ parent_id: created.id }),
+    });
+    Object.assign(node, moved);
+  } catch (err) {
+    toast(err.message || voiceLine("failed", { what: "move that topic" }), true);
+  }
+  await wbMapTidyBranch(parentId);
+  //: Undo runs these in order: the topic goes back before its new parent goes.
+  const history = [{ action: "reparent", kind: "object", id, parentId }];
+  for (const now of wbMapIndex().nodes) {
+    const row = rows.get(now.id);
+    if (row && (row.x !== now.x || row.y !== now.y)) history.push({ action: "move", kind: "object", id: now.id, before: row });
+  }
+  history.push({ action: "create", kind: "object", id: created.id });
+  wbPushUndo({ action: "batch", entries: history });
+  selectWbItem("object", created.id);
+  renderWhiteboardNow();
+  wbMapEditNode(created.id);
+  return created;
+}
+
 //: The arrows, in tree terms rather than screen terms: up/down are the
 //: siblings either side, left is the parent and right is the first child.
 //:

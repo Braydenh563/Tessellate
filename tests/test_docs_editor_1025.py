@@ -34,7 +34,7 @@ def test_read_view_tasks_are_wired_to_their_source_lines():
 
 
 def test_full_screen_popups_stack_above_the_page():
-    m = re.search(r"body:has\(#tab-documents\.doc-focus\) :is\(([^)]*)\)\s*\{\s*--doc-focus-layer:\s*(\d+)", LAZY_CSS)
+    m = re.search(r"body\.doc-focus-on :is\(([^)]*)\)\s*\{\s*--doc-focus-layer:\s*(\d+)", LAZY_CSS)
     assert m, "the focus-mode stacking rule is gone"
     assert int(m.group(2)) >= 1000  # equal to the page (1000) and later in the DOM
     for name in (".selection-bar", ".editor-menu", ".doc-block-bar"):

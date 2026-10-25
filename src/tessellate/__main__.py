@@ -9,7 +9,6 @@
 import argparse
 import logging
 import os
-import re
 import sys
 import threading
 import time
@@ -38,8 +37,9 @@ def page_host() -> str:
     when `TESSELLATE_LOCAL_NAME` gives one. Browsers resolve every
     `*.localhost` to loopback themselves (RFC 6761), so the friendly name
     needs no DNS, hosts file or admin rights; the server still binds `HOST`."""
-    name = os.environ.get("TESSELLATE_LOCAL_NAME", "").strip().lower()
-    return f"{name}.localhost" if re.fullmatch(r"[a-z0-9-]{1,63}", name) else HOST
+    from tessellate.core import netbind
+
+    return netbind.local_name() or HOST
 
 
 def _port_from_env(raw: str | None = None) -> int:

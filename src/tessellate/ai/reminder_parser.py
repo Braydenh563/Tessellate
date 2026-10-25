@@ -88,6 +88,24 @@ _SYSTEM = (
 )
 
 
+def read_by_rule(text: str, now: datetime) -> dict | None:
+    """Magic Add's reading with no model: the sentence as heard (misspellings
+    and hedges put right), by the "in ..." reader, then the wall-clock reader,
+    and the words made a task. None when no rule finds a time. The route and
+    the table of hard phrasings (`tests/test_reminder_magic_hard_2210.py`) both
+    read through this."""
+    from tessellate.ai import when
+
+    heard_text = heard(text)
+    parsed = parse_relative(heard_text, now)
+    if parsed is None:
+        parsed = when.parse_reminder_text(heard_text, now)
+    if parsed is None:
+        return None
+    parsed["text"] = worded(parsed["text"])
+    return parsed
+
+
 def _fallback(text: str, now: datetime) -> dict:
     due = (now + timedelta(days=1)).replace(hour=9, minute=0, second=0, microsecond=0)
     return {"text": text.strip() or "Reminder", "due_at": due, "priority": "normal"}
@@ -186,13 +204,71 @@ _TOO_VERB = re.compile(
 _CAL = re.compile(r"\b([Cc])al (mum|mom|dad|nan|nana|gran|grandma|grandad|him|her|them|back|the|[A-Z]\w*)\b")
 
 
+#: Hedges around a time ("probably around 7pm", "say 7:30", "at about 8"): the
+#: time is the same without them, and they strand in the title if left. Only
+#: "around/about/say" that sit right before a clock are dropped, so "remind me
+#: about 3 things" keeps its "about".
+_HEDGE = re.compile(r"\b(?:probably|maybe|perhaps|possibly|approximately|roughly)\b,?[ \t]*|\b(\w+)ish\b(?=\s*\d)", re.I)
+_APPROX = re.compile(
+    r"(?<=\bat )(?:around|about|approximately|roughly|say)\s+|(?<=\bby )(?:around|about|approximately|roughly|say)\s+|"
+    r"(?<=\bin )(?:about|around|approximately|roughly)\s+(?=\d|an? |half|one|two|three|four|five|six|seven|eight|nine|ten)|"
+    r"(?<=[,;] )(?:around|about|approximately|roughly|say)\s+(?=\d|noon\b|midnight\b|half\b|quarter\b)|"
+    r"(?<=\s)(?:around|about|approximately|roughly|say)\s+(?=\d{1,2}(?::\d{2})?\s*(?:am|pm|a\.m\.|p\.m\.)|\d{1,2}:\d{2}|noon\b|midnight\b|half past\b|quarter (?:past|to)\b)",
+    re.I,
+)
+
+
 def heard(text: str) -> str:
     """The sentence as the reminder readers should read it: misspellings
-    and shorthand put right ("tmrw" is tomorrow, so the day is read)."""
+    and shorthand put right ("tmrw" is tomorrow, so the day is read), and the
+    hedges around a time taken off."""
     from tessellate.ai import question_noise
 
     tidy = question_noise.tidy(text or "") or (text or "")
-    return question_noise.repair(tidy) or tidy
+    return unhedged(question_noise.repair(tidy) or tidy)
+
+
+def unhedged(text: str) -> str:
+    """`text` without the hedges around a time ("probably around 7pm" is 7pm)."""
+    said = _APPROX.sub("", _HEDGE.sub(lambda m: m.group(1) or "", text or ""))
+    return " ".join(said.split()).replace(" ,", ",")
+
+
+#: A place or a moment the sentence waits on ("when I get home", "once I'm in",
+#: "before bed"): not a clock, so it is not kept in the title. The reminder
+#: fires at the time said; the owner's example was "Do my tax return".
+#: Matched against words already joined by single spaces (`without_conditions`),
+#: so every gap is one literal space: nothing here can backtrack over a run of
+#: whitespace (CodeQL 1795-1797).
+_CONDITION = re.compile(
+    r"(?:[,;] ?| |^)(?:when|once|as soon as|after) (?:i|we)(?:'m|\u2019m| am| get| got| come| came| arrive| arrived| reach| reached| wake up)"
+    r"(?: (?:back )?(?:home|in|there|here|up|to work|to the office|at work|at home|in work|in the office|from work)| back)?\b"
+    r"|(?:[,;] ?| |^)(?:before bed|after work|after dinner|after lunch|after breakfast|when i wake up)\b",
+    re.I,
+)
+_HEDGES = frozenset({"probably", "maybe", "perhaps", "possibly", "around", "about", "roughly", "approximately", "say", "later", "then"})
+
+
+def _without_trailing_hedges(text: str) -> str:
+    """"..., probably around" off the end, word by word."""
+    words = text.split(" ")
+    while words and words[-1].strip(",;").lower() in _HEDGES | {""}:
+        words.pop()
+    return " ".join(words)
+
+
+_LEAD_TO = re.compile(r"^(?:to|that) ", re.I)
+_FORGET = re.compile(r"^(?:please\s+)?(?:don'?t|do not|dont) let me forget\s+(?:to |that |about )?|^(?:please\s+)?make sure (?:that )?i\s+", re.I)
+
+
+def without_conditions(text: str) -> str:
+    """A reminder's words without the place or moment it waits on ("when I
+    get home") and the hedges a cut time stranded."""
+    said = " ".join(text.split())
+    if _CONDITION.search(said):
+        said = _LEAD_TO.sub("", " ".join(_CONDITION.sub(" ", said).split()))
+        said = _ASKING.sub("", said)
+    return _without_trailing_hedges(said).replace(" ,", ",").strip(" ,;:")
 
 
 def worded(text: str) -> str:
@@ -203,7 +279,9 @@ def worded(text: str) -> str:
 
     said = " ".join((text or "").split())
     said = _TOO_VERB.sub(lambda m: f"to {m.group(1)}", said)
+    said = _FORGET.sub("", said)
     said = _ASKING.sub("", said)
+    said = without_conditions(said)
     said = _drop_please(said)
     said = _CAL.sub(lambda m: f"{m.group(1)}all {m.group(2)}", said)
     said = proofread.proofread(said)[0].strip(" ,;:")

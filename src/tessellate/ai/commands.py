@@ -217,7 +217,10 @@ def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | Non
             break
     if not rest:
         return None
+    rest = reminder_parser.unhedged(rest)
     parsed = reminder_parser.parse_relative(rest, now) or when.parse_reminder_text(rest, now, locale=locale)
+    if parsed is not None:
+        parsed = {**parsed, "text": reminder_parser.without_conditions(parsed["text"]) or parsed["text"]}
     if parsed is None:
         if about:
             # "Remind me about my trip" with no time is a question as often

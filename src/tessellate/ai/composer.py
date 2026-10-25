@@ -78,7 +78,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Any
 
-from tessellate.ai import act_registry, composer_ack, composer_overview, composer_parts, composer_replies, composer_tables, grounding, phrasing, question_noise, realise, spelling, utilities, variants
+from tessellate.ai import act_registry, composer_ack, composer_open, composer_overview, composer_parts, composer_replies, composer_tables, composer_tone, grounding, phrasing, question_noise, realise, spelling, utilities, variants
 from tessellate.ai import recognise as rec
 from tessellate.ai import when as when_words
 from tessellate.search import query as query_understanding
@@ -337,6 +337,8 @@ PHRASES: dict[str, str] = {
 PHRASES.update(composer_tables.OVERVIEW_PHRASES)
 PHRASES.update(composer_tables.EXTRA_PHRASES)
 PHRASES.update(composer_ack.PHRASES)
+PHRASES.update(composer_open.PHRASES)
+PHRASES.update(composer_tone.PHRASES)
 
 def phrase_options(key: str, voice: str | None = None) -> tuple[str, ...]:
     """Every wording of `key`: the original and the variants of `voice`, or of
@@ -4760,3 +4762,17 @@ def _brief_text(view: NoteView, content: str, by_note: dict[int, list[Sentence]]
 
 
 act_registry.help_sentence = help_line
+
+
+def open_note_answer(question: str, note: dict, *, today: date, salt: str = "") -> dict | None:
+    """The open note's answer to `question` as a composer result, or None
+    when the question is not one of this module's kinds."""
+    ask = composer_open.kind(question)
+    if ask not in ("left", "when", "who"):
+        return None
+    view = read_note(note, 0)
+    if view is None:
+        return None
+    out = _fresh_answer([view], today, None, "", "", composer_open.composer_voice(), question)
+    {"left": composer_open._left, "when": composer_open._when, "who": composer_open._who}[ask](out, view, question, salt)
+    return _answer_dict(out, "open_" + ask, question, [], [view], [])

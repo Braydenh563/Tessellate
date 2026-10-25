@@ -246,7 +246,8 @@ def _from_this_computer(request: Request) -> bool:
         return False
     if any(name in request.headers for name in _FORWARDING_HEADERS):
         return False
-    return (request.url.hostname or "") in _LOOPBACK_HOSTS
+    hostname = request.url.hostname or ""
+    return hostname in _LOOPBACK_HOSTS or (bool(hostname) and hostname == netbind.local_name())
 
 
 def _auto_session_allowed(request: Request, session: Session, config: ConfigManager) -> bool:
@@ -351,6 +352,24 @@ def _client_key(request: Request | None) -> str:
     return request.client.host or "unknown"
 
 
+def _bucket(client: str) -> str:
+    """The throttle's key for a client address (lansec-1025). An IPv6 device
+    chooses its own address inside the network's /64 (privacy addresses do
+    it hourly), so a guesser keyed by the full address earned five free
+    tries per address it made up: it is keyed by the /64. An IPv4 address
+    that arrived as `::ffff:a.b.c.d` is the IPv4 address."""
+    try:
+        address = ipaddress.ip_address(client.split("%", 1)[0])
+    except ValueError:
+        return client
+    mapped = getattr(address, "ipv4_mapped", None)
+    if mapped is not None:
+        return str(mapped)
+    if address.version == 6 and not address.is_loopback:
+        return str(ipaddress.ip_network(f"{address}/64", strict=False))
+    return str(address)
+
+
 def _wait_left(failures: list[float], allowance: int, now: float) -> float:
     """Seconds of wait this list of failures has earned, 0 when none."""
     if failures and now - failures[-1] > _FAILURE_WINDOW:
@@ -364,6 +383,7 @@ def _wait_left(failures: list[float], allowance: int, now: float) -> float:
 
 def _refuse_if_throttled(client: str = "unknown") -> None:
     """429 while inside the wait a run of wrong passwords has earned."""
+    client = _bucket(client)
     now = time.time()
     own = _failed_by_client.get(client)
     remaining = max(
@@ -383,6 +403,7 @@ def _refuse_if_throttled(client: str = "unknown") -> None:
 
 
 def _unlock_failed(client: str = "unknown") -> None:
+    client = _bucket(client)
     now = time.time()
     _failed_unlocks.append(now)
     _failed_by_client.setdefault(client, []).append(now)
@@ -392,6 +413,7 @@ def _unlock_failed(client: str = "unknown") -> None:
 
 
 def _unlock_succeeded(client: str = "unknown") -> None:
+    client = _bucket(client)
     # The global list too: whoever got the password right is the owner, and
     # a backstop that outlived the owner's own unlock would be the lockout
     # this change exists to remove. Other clients' own buckets are kept.

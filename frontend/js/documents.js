@@ -14905,6 +14905,10 @@ function toggleDocFocus(force) {
   if (!tab) return;
   const on = typeof force === "boolean" ? force : !tab.classList.contains("doc-focus");
   tab.classList.toggle("doc-focus", on);
+  // Mirrored on body for the popups that live outside the tab: a
+  // `body:has(#tab-documents.doc-focus)` rule re-checked on every DOM change
+  // and tripled a 500-object board's open time.
+  document.body.classList.toggle("doc-focus-on", on);
   tab.classList.remove("doc-focus-idle");
   try {
     if (on) sessionStorage.setItem(DOC_FOCUS_KEY, "1");

@@ -210,7 +210,9 @@ HELP_TOPICS: list[dict] = [
         "body": (
             "The Reminders tab groups items into Overdue / Today / Upcoming / "
             "Done. Add a reminder at the top of the Reminders tab: type it in plain words on the "
-            "Magic add line and press the sparkle, or fill in Remind me to, the "
+            "Magic add line and press the sparkle (hedges such as \"probably "
+            "around 7pm\" are read as the time, and a place like \"when I get "
+            "home\" is left out of the title), or fill in Remind me to, the "
             "date and the time, then Add. Set a priority, snooze, edit inline, or make one recurring: "
             "\"every weekday\", \"every 2 weeks\", \"the last Friday of the month\", "
             "with an early alert such as \"1 day before\". "
@@ -526,7 +528,15 @@ HELP_TOPICS: list[dict] = [
             "page under its title, cited by its address. The pages are in the "
             "Web results fold under the answer: each with its site and one "
             "line; press a title to read the page there, as text, with Back to "
-            "results, or the arrow beside it to open it in your browser."
+            "results, or the arrow beside it to open it in your browser. "
+            "Paste a link and ask to read it: with web search on and no model "
+            "the page is fetched and told back as its main points, key terms "
+            "and sections; with it off you are told so and given the setting. "
+            "If the search service (SearXNG) is not running, the reply says so "
+            "and opens Settings, Web search, where it can be started. In the "
+            "reader, Analyse this page lists the page's key points, marks its "
+            "key terms in the text and lists its sections, each a link to its "
+            "heading; it runs on this device and sends nothing out."
         ),
         "badge": {"label": "Web search", "section": "websearch"},
     },
@@ -888,7 +898,16 @@ HELP_TOPICS: list[dict] = [
             "and \"what does CC stand for?\" says which note told it. "
             "\"Summarise this\" sums up the note you have open, or the "
             "category the sidebar is filtered to; \"summarise Travel\" reads "
-            "every note in that category."
+            "every note in that category. With a note open, \"what's left to "
+            "do?\", \"when is the deadline?\" and \"who is involved?\" are "
+            "answered from that note alone, in a line or two of its own words. "
+            "A request with no direction (\"do something cool\", \"open a note\") "
+            "gets a question back with choices you can press; an instruction "
+            "the app does not understand is matched to the closest things it can do. "
+            "With no model running, an answer ends with a line pointing at what to do next, "
+            "from your newest note; the Length picker applies (Quick keeps the first line only, "
+            "Detailed keeps everything). A persona is an instruction for a model, so with no "
+            "model it changes nothing: the app answers in its own voice."
         ),
         "badge": {"label": "Chat", "tab": "chat"},
     },
@@ -1378,7 +1397,7 @@ HELP_TOPICS.extend(
             "id": "whiteboard-selection",
             "keywords": (
                 "nudge", "align", "align shapes", "align on the whiteboard", "distribute", "bring forward", "send backward", "group",
-                "ungroup", "copy style", "paste style", "text in a shape", "label a shape",
+                "ungroup", "copy style", "paste style", "text in a shape", "label a shape", "flip a shape", "resize with the keys",
                 "frame", "frames", "section", "region", "lock a shape", "lock an item", "unlock all", "locked item",
                 "comment on a card", "comment on an item", "comments on the board", "comment thread",
                 "present", "presentation", "slides", "slideshow", "laser", "laser pointer",
@@ -1390,21 +1409,22 @@ HELP_TOPICS.extend(
                 (
                     "Whiteboard selection: Shift+click adds, Ctrl+A selects all, Ctrl+D "
                     "duplicates, Alt and drag copies as you drag, Ctrl+V pastes at the pointer, the arrows "
-                    "nudge (Shift for further), Shift and drag keeps to one axis, Shift and a corner keeps "
+                    "nudge (Shift: further; Ctrl+Shift: resize), Shift+H and Shift+V flip, "
+                    "Shift and drag keeps to one axis, Shift and a corner keeps "
                     "proportions, Alt resizes from the centre; a move, resize or box drawn out shows guides "
                     "and its size (Alt: none); [ and ] move one step back or forward, Ctrl+[ and Ctrl+] to "
                     "the back or front, Ctrl+G groups, Ctrl+Shift+G ungroups, Ctrl+Alt+C and Ctrl+Alt+V copy "
-                    "and paste a style, Delete (or a bin drop) removes, Esc cancels a drag or goes to "
-                    "Select. Double-click empty board for a text box, double-click a closed shape (or select "
+                    "and paste a style, Delete (or a bin drop) removes, Esc cancels a drag."
+                    " Double-click empty board for a text box, double-click a closed shape (or select "
                     "it and press Enter) to write in it, right-click (or hold on touch) for the menu, double-"
                     "click a line to bend it, and select a connector and press Label in its bar (or Enter) to"
                     " label it. A frame's title drags it and what is inside it, its top handle turns both (Ctrl: the frame alone); a click on a panel's body or a frame's edge selects it; its "
                     "menu exports it or fits it to its contents, and a double-click on a resize "
                     "handle fits that edge to what it holds. Ctrl+Shift+L "
                     "locks the selection; Unlock is on the board's right-click menu. Right-click an item, "
-                    "Comment…, starts a thread; its count reopens it. View, Present frames: one frame at a "
+                    "Comment…, starts a thread. View, Present frames: one frame at a "
                     "time; ? shows every key; Ctrl+K finds any board action by name. Menus: Insert, Edit, "
-                    "Arrange (align, distribute, size, order, group, lock), View (panels, background, grid, "
+                    "Arrange (align, distribute, size, flip, order, group, lock), View (panels, background, grid, "
                     "snap, zoom; full screen on a phone) and Board (rename, new, export, kind, clear, delete,"
                     " keys)."
                 )
@@ -1583,7 +1603,7 @@ HELP_TOPICS.extend(
                 "ring", "opml", "freemind", "colour by", "color by", "focus on a branch",
                 "tidy", "layout of the map", "duplicate a topic", "copy a topic",
                 "undo steps", "how many undo", "topic before", "topic after",
-                "move a topic", "reorder topics", "checkbox on a topic", "topic a task",
+                "move a topic", "reorder topics", "parent topic", "insert a parent", "checkbox on a topic", "topic a task",
                 "tick a topic", "number the branches", "numbered topics", "outline numbers", "note on a topic", "note behind a topic", "comment on a topic", "boundary", "summary topic", "summarise topics",
                 "resize a topic", "topic size", "bigger topic", "text size on a topic", "topic bar", "topic toolbar",
                 "several topics", "select several topics", "many topics at once", "bold several topics", "fold several branches",
@@ -1596,7 +1616,8 @@ HELP_TOPICS.extend(
                 "topic right after it and Shift+Enter right before it (what you "
                 "type next is the new topic's words), Ctrl+D copies it as the "
                 "next sibling, Ctrl+Shift and the arrows move it among its "
-                "siblings, Shift+Tab outdents it, the arrow keys walk the tree, "
+                "siblings, Shift+Tab outdents it, Ctrl+Enter gives it a new parent, "
+                "the arrow keys walk the tree, "
                 "F2 or double-click renames (while typing, Enter breaks the line, Esc "
                 "keeps the name, Tab or Ctrl+Enter adds the next topic, / and [[ add "
                 "links), Delete removes the topic and "
@@ -1612,9 +1633,8 @@ HELP_TOPICS.extend(
                 "branch; double-click a line to label it. A selected topic has "
                 "its bar above it: the colour, the text size (minus and plus "
                 "round the size it reads, S to XL), and Text, Shape and Branch "
-                "line, each a panel of rows: a small preview of each look you "
-                "press once, and a reset arrow that puts the topic back to "
-                "following the map. Drag the square on its bottom right corner to resize it; "
+                "line, each a panel of rows: a preview of each look, and a "
+                "reset arrow back to following the map. Drag the square on its bottom right corner to resize it; "
                 "hold Shift as you drag to scale its text with it. Pick several "
                 "topics (drag a box round them, or Shift-click) and the bar and "
                 "the right-click menu act on all of them: colour, bold, tasks, "

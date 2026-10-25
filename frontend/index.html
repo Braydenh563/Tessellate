@@ -3414,7 +3414,12 @@ Link to another note with [[its first few words]]."></textarea>
                    has bookmarks; a page worth reading twice belongs in them. -->
               <button id="web-reader-bookmark" class="ghost small icon-only" type="button"
                 aria-label="Bookmark" title="Keep this link in your bookmarks"><i class="ph ph-bookmark-simple" aria-hidden="true"></i></button>
+              <button id="web-reader-analyse" class="ghost small" type="button" aria-pressed="false"
+                title="Key points, key terms and sections of this page, read on this device"><i class="ph ph-list-magnifying-glass ph-lead" aria-hidden="true"></i> Analyse<span class="toolbar-word"> this page</span></button>
             </div>
+            <!-- The page's key points, terms and sections, filled by
+                 analyseWebPage (web-clip.js) from POST /websearch/analyse. -->
+            <div id="web-reader-analysis" class="web-reader-analysis hidden" aria-live="polite"></div>
             <div id="web-reader-text" class="web-reader-text"></div>
           </div>
         </aside>
@@ -6733,11 +6738,13 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" class="wb-menu-item" data-wb-cmd="align-bottom"><i class="ph ph-align-bottom ph-lead" aria-hidden="true"></i><span>Bottom edges</span></button>
             </div>
             <div class="wb-menu-section">
-              <span class="wb-panel-group-label">Distribute and size</span>
+              <span class="wb-panel-group-label">Distribute, size and flip</span>
               <button type="button" class="wb-menu-item" data-wb-cmd="distribute-h"><i class="ph ph-columns ph-lead" aria-hidden="true"></i><span>Evenly, left to right</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="distribute-v"><i class="ph ph-rows ph-lead" aria-hidden="true"></i><span>Evenly, top to bottom</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="same-width"><i class="ph ph-arrows-out-line-horizontal ph-lead" aria-hidden="true"></i><span>Same width</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="same-height"><i class="ph ph-arrows-out-line-vertical ph-lead" aria-hidden="true"></i><span>Same height</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="flip-h"><i class="ph ph-flip-horizontal ph-lead" aria-hidden="true"></i><span>Flip left to right</span><kbd>Shift+H</kbd></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="flip-v"><i class="ph ph-flip-vertical ph-lead" aria-hidden="true"></i><span>Flip top to bottom</span><kbd>Shift+V</kbd></button>
             </div>
             <div class="wb-menu-section">
               <span class="wb-panel-group-label">Order</span>
@@ -6748,8 +6755,8 @@ Link to another note with [[its first few words]]."></textarea>
             </div>
             <div class="wb-menu-section">
               <span class="wb-panel-group-label">Group and lock</span>
-              <button type="button" class="wb-menu-item" data-wb-cmd="group"><i class="ph ph-link ph-lead" aria-hidden="true"></i><span>Group</span><kbd>Ctrl+G</kbd></button>
-              <button type="button" class="wb-menu-item" data-wb-cmd="ungroup"><i class="ph ph-link-break ph-lead" aria-hidden="true"></i><span>Ungroup</span><kbd>Ctrl+Shift+G</kbd></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="group" data-wb-either><i class="ph ph-link ph-lead" aria-hidden="true"></i><span>Group</span><kbd>Ctrl+G</kbd></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="ungroup" data-wb-either><i class="ph ph-link-break ph-lead" aria-hidden="true"></i><span>Ungroup</span><kbd>Ctrl+Shift+G</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="lock"><i class="ph ph-lock-simple ph-lead" aria-hidden="true"></i><span>Lock</span><kbd>Ctrl+Shift+L</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="unlock-all"><i class="ph ph-lock-simple-open ph-lead" aria-hidden="true"></i><span>Unlock all</span></button>
             </div>
@@ -13081,7 +13088,7 @@ Link to another note with [[its first few words]]."></textarea>
               <!-- Desktop only, the export folder's reason: a path on the server's own
                    disk. Checked on save (absolute, exists, writable, not the backups
                    folder itself); each backup is copied there after it is checked. -->
-              <div class="row hidden settings-row-spaced" id="backup-copy-row">
+              <div class="row hidden settings-row-spaced" id="backup-copy-row" data-this-computer>
                 <label for="pref-backup-copy-dir" class="muted">Also copy each backup to</label>
                 <input id="pref-backup-copy-dir" type="text" placeholder="Not set: backups stay on this computer">
                 <button id="pref-backup-copy-clear" class="ghost small" type="button">Clear</button>
@@ -14286,7 +14293,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <input type="checkbox" id="pref-update-channel-main">
                 <span>Follow the newest changes instead of finished releases</span>
               </label>
-              <label class="check-row">
+              <label class="check-row" data-this-computer>
                 <input type="checkbox" id="pref-update-beta">
                 <span>Also tell me about beta versions</span>
               </label>

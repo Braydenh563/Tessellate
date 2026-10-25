@@ -1026,9 +1026,13 @@ def _validated_context_windows(value: object) -> dict[str, int | None]:
 #: Another device may move one only the safe way (the value given), or not at
 #: all (None): the owner, 2026-10-11, "I need maximum trust ... proper
 #: security for the lan". `searxng_url` aims this computer at any address on
-#: its own network; `export_save_dir` picks where files land on its disk.
+#: its own network; `export_save_dir` picks where files land on its disk;
+#: `backup_copy_dir` where every backup is copied (on Windows a UNC path
+#: there is an SMB connection carrying the owner's sign-in, lansec-1025).
 _THIS_COMPUTER_PREFERENCES: dict[str, object] = {
     "export_save_dir": None,
+    "backup_copy_dir": None,
+    "update_beta": False,
     "searxng_url": None,
     "update_channel": None,
     "show_console_on_startup": None,

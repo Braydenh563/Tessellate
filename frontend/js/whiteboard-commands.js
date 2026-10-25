@@ -76,6 +76,11 @@ const wbCommandNeeds = {
     return Boolean(parsed?.points?.length || parsed?.bend);
   }),
   grouped: () => wbFmtEntries().some((e) => e.item.group_id),
+  //: The bar's own rule (`wbGroupButtonState`), so the menus, the palette and
+  //: the bar never offer both.
+  flippable: () => wbFmtEntries().some((e) => e.kind === "sketch" && ["shape", "line", "arrow"].includes(wbFmtKind(e)) && !wbIsLocked(e.kind, e.item)),
+  groupable: () => wbGroupButtonState(wbSelectionEntries().map((e) => e.item)).canGroup,
+  ungroupable: () => wbGroupButtonState(wbSelectionEntries().map((e) => e.item)).canUngroup,
   sizeCopied: () => wbFmtState.sizeClip !== null && wbCommandSelectionCount() > 0,
   topic: () => Boolean(wbSelectedMapNode()),
   notetopic: () => wbMapIsNoteTopic(wbSelectedMapNode()),
@@ -153,6 +158,7 @@ const WB_COMMANDS = [
   { id: "fold-level-1", group: "View", icon: "ph:list-dashes", label: "Show the trunks only", keys: "Alt+1", surface: "map", run: () => wbMapFoldToLevel(1) },
   { id: "fold-level-2", group: "View", icon: "ph:list-dashes", label: "Show two levels", keys: "Alt+2", surface: "map", run: () => wbMapFoldToLevel(2) },
   { id: "fold-level-3", group: "View", icon: "ph:list-dashes", label: "Show three levels", keys: "Alt+3", surface: "map", run: () => wbMapFoldToLevel(3) },
+  { id: "insert-parent", group: "Item", icon: "ph:arrow-elbow-left-up", label: "Insert a parent topic", keys: "Ctrl+Enter", surface: "map", needs: "topic", run: () => wbMapInsertParent(wbSelectedMapNode()?.id) },
   { id: "sort-az", group: "Item", icon: "ph:sort-ascending", label: "Sort branches A to Z", keys: "", surface: "map", needs: "topic", run: () => wbMapSortChildren(wbSelectedMapNode()?.id, 1) },
   { id: "sort-za", group: "Item", icon: "ph:sort-descending", label: "Sort branches Z to A", keys: "", surface: "map", needs: "topic", run: () => wbMapSortChildren(wbSelectedMapNode()?.id, -1) },
   { id: "summarise-branch", group: "Item", icon: "ph:text-align-left", label: "Summarise this branch", keys: "", surface: "map", needs: "topic", run: () => wbMapSummariseBranch(wbSelectedMapNode()) },
@@ -175,9 +181,13 @@ const WB_COMMANDS = [
   { id: "distribute-v", group: "Arrange", icon: "ph:rows", label: "Distribute evenly, top to bottom", menu: "Evenly, top to bottom", keys: "", surface: "board", needs: "three", run: () => wbDistributeSelection("vertical") },
   { id: "same-width", group: "Arrange", icon: "ph:arrows-out-line-horizontal", label: "Same width as the widest", menu: "Same width", keys: "", surface: "board", needs: "two", run: () => wbSameSizeSelection("width") },
   { id: "same-height", group: "Arrange", icon: "ph:arrows-out-line-vertical", label: "Same height as the tallest", menu: "Same height", keys: "", surface: "board", needs: "two", run: () => wbSameSizeSelection("height") },
-  { id: "group", group: "Arrange", icon: "ph:link", label: "Group", keys: "Ctrl+G", surface: "board", needs: "two", run: () => wbGroupSelection() },
-  { id: "ungroup", group: "Arrange", icon: "ph:link-break", label: "Ungroup", keys: "Ctrl+Shift+G", surface: "board", needs: "selection", run: () => wbUngroupSelection() },
+  { id: "group", group: "Arrange", icon: "ph:link", label: "Group", keys: "Ctrl+G", surface: "board", needs: "groupable", run: () => wbGroupSelection() },
+  { id: "ungroup", group: "Arrange", icon: "ph:link-break", label: "Ungroup", keys: "Ctrl+Shift+G", surface: "board", needs: "ungroupable", run: () => wbUngroupSelection() },
   { id: "remove-from-group", group: "Arrange", icon: "ph:link-break", label: "Remove from the group", keys: "", surface: "board", needs: "grouped", run: () => wbRemoveFromGroup() },
+  //: draw.io's Arrange, Flip (Figma's Shift+H and Shift+V): only in the
+  //: Format panel before, two presses deep.
+  { id: "flip-h", group: "Arrange", icon: "ph:flip-horizontal", label: "Flip left to right", keys: "Shift+H", surface: "board", needs: "flippable", run: () => wbFmtFlip("h") },
+  { id: "flip-v", group: "Arrange", icon: "ph:flip-vertical", label: "Flip top to bottom", keys: "Shift+V", surface: "board", needs: "flippable", run: () => wbFmtFlip("v") },
   { id: "turn-90", group: "Arrange", icon: "ph:arrow-clockwise", label: "Turn 90 degrees", keys: "", surface: "board", needs: "selection", run: () => wbTurnSelection(90) },
   { id: "order-forward", group: "Arrange", icon: "ph:arrow-up", label: "Bring forward", keys: "]", surface: "board", needs: "selection", run: () => wbStepSelectionZOrder(1) },
   { id: "order-backward", group: "Arrange", icon: "ph:arrow-down", label: "Send backward", keys: "[", surface: "board", needs: "selection", run: () => wbStepSelectionZOrder(-1) },
@@ -279,6 +289,9 @@ function wbRunCommand(id) {
       selection: "Select something first.",
       one: "Select one item first.",
       two: "Select two or more items first.",
+      groupable: "Select two or more items that are not already one group first.",
+      flippable: "Select a drawn shape or line first.",
+      ungroupable: "Select a group first.",
       three: "Select three or more items first.",
       shape: "Select one closed shape or one connector first.",
       link: "Select one connector first.",
@@ -406,6 +419,14 @@ function wbSyncCommandRows(menu) {
     const applies = wbCommandApplies(WB_COMMAND_BY_ID.get(row.dataset.wbCmd));
     row.setAttribute("aria-disabled", applies ? "false" : "true");
     row.classList.toggle("is-muted", !applies);
+  }
+  //: **Rows that are one or the other** (`data-wb-either`, Group and
+  //: Ungroup): only the one that applies is shown; when neither does, the
+  //: first stays, greyed, so the menu still says the action exists.
+  const pair = [...menu.querySelectorAll("[data-wb-either]")];
+  if (pair.length) {
+    const live = pair.filter((row) => row.getAttribute("aria-disabled") === "false");
+    pair.forEach((row, i) => { row.hidden = live.length ? !live.includes(row) : i > 0; });
   }
 }
 
@@ -568,6 +589,7 @@ const WB_HELP_SECTIONS = [
   { title: "Mind map", surface: "map", rows: [
     { icon: "ph:plus", label: "Add a child, a topic beside it", keys: ["Tab", "Enter"] },
     { icon: "ph:arrow-left", label: "Outdent a branch", keys: ["Shift+Tab"] },
+    { cmd: "insert-parent" },
     { icon: "ph:arrows-out-cardinal", label: "Walk the tree", keys: ["arrows"] },
     { icon: "ph:pencil-simple", label: "Rename a topic", keys: ["F2", "double-click"] },
     { icon: "ph:trash", label: "Delete the topic and its branch", keys: ["Delete"] },
@@ -605,6 +627,7 @@ const WB_HELP_SECTIONS = [
     { cmd: "delete" },
     { icon: "ph:trash", label: "Delete by dropping on the target at the foot (a topic takes its branch)", keys: ["drag"] },
     { icon: "ph:arrows-out-cardinal", label: "Nudge, further", keys: ["arrows", "Shift+arrows"] },
+    { icon: "ph:arrows-out-simple", label: "Resize from the top-left corner", keys: ["Ctrl+Shift+arrows"] },
     { icon: "ph:x", label: "Cancel a drag, back to Select", keys: ["Esc"] },
     { icon: "ph:text-t", label: "A text box on the empty board", keys: ["double-click"] },
     { cmd: "text" },
@@ -613,7 +636,7 @@ const WB_HELP_SECTIONS = [
   ] },
   { title: "Arrange", surface: "board", rows: [
     { cmd: "order-forward" }, { cmd: "order-backward" }, { cmd: "order-front" }, { cmd: "order-back" },
-    { cmd: "group" }, { cmd: "ungroup" }, { cmd: "lock" },
+    { cmd: "group" }, { cmd: "ungroup" }, { cmd: "lock" }, { cmd: "flip-h" }, { cmd: "flip-v" },
     { icon: "ph:lock-simple-open", label: "Unlock everything", keys: ["Ctrl+Shift+L with nothing selected"] },
     { icon: "ph:arrows-left-right", label: "Keep to one axis", keys: ["Shift+drag"] },
     { icon: "ph:corners-out", label: "Keep proportions", keys: ["Shift+corner"] },

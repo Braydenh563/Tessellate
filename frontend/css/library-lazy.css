@@ -6534,7 +6534,7 @@ input[type="color"].wb-mixed {
    a selection's bar was hit-tested as the heading line below it). Raised
    only while the mode is on. Equal to the page's 1000 and later in the DOM,
    so they paint over it. */
-body:has(#tab-documents.doc-focus) :is(.selection-bar, .editor-menu, .inline-ai, .doc-block-bar, #doc-suggest-menu, #doc-complete-list, .doc-table-grip-menu) {
+body.doc-focus-on :is(.selection-bar, .editor-menu, .inline-ai, .doc-block-bar, #doc-suggest-menu, #doc-complete-list, .doc-table-grip-menu) {
   --doc-focus-layer: 1000;
   z-index: var(--doc-focus-layer);
 }
@@ -6591,4 +6591,18 @@ body:has(#tab-documents.doc-focus) :is(.selection-bar, .editor-menu, .inline-ai,
   #tab-documents.doc-focus .doc-phone-bar {
     bottom: max(env(safe-area-inset-bottom, 0px), env(keyboard-inset-height, 0px), var(--keyboard-inset));
   }
+}
+
+/* --- the board's context bar, wrapped (`wbUpdateSelectionBar`) ------------
+   Two rows or more is a panel, not a pill: the pill's curve cut into the
+   first and last rows, and a row's first group drops the hairline that only
+   parts it from a group beside it (the 22-10 bug doc). Here rather than in
+   07-whiteboard-misc.css: the boot stylesheets are at their gzip budget. */
+.wb-context.wb-context-wrapped {
+  border-radius: var(--radius-lg);
+}
+/* Only the colour: taking the hairline's width away would let the group
+   climb back to the row above, which is how it was marked in the first place. */
+.wb-context .wb-context-group.wb-row-start:not(.hidden) {
+  border-left-color: transparent;
 }
