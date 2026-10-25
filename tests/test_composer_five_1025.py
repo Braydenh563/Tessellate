@@ -91,3 +91,31 @@ def test_item4_summary_covers_all_and_sorts_code(ask):
     assert "print(atp)" not in said and "atp = 2" not in said, said
     assert "\n-\n" not in said and not said.rstrip().endswith("-"), said
     assert "WW1" in said or "Alliances" in said, said
+
+
+def test_item3_computed_dates_times_and_reminder_fields_are_not_claims():
+    import json
+
+    from tessellate.ai.source_check import sources_from_messages, unbacked_claims
+
+    reminders = json.dumps([{"text": "Exam", "due_at": "2026-11-12T09:00:00"}, {"text": "Call the landlord", "due_at": "2026-10-30T17:00:00"}])
+    listed = [
+        {"role": "system", "content": "You are a notebook assistant."},
+        {"role": "user", "content": "what are my reminders"},
+        {"role": "tool", "content": reminders},
+    ]
+    sources = sources_from_messages(listed)
+    assert unbacked_claims("You have an Exam on 12 November at 09:00 and Call the landlord on 30 October at 17:00.", sources) == []
+    computed = sources_from_messages([{"role": "user", "content": "how long ago was 1 september"}])
+    assert unbacked_claims("It was 50 days ago, on Tuesday 1 September 2026, 7 weeks and 1 day back.", computed) == []
+    assert unbacked_claims("How long ago was it? About 14 days.", sources_from_messages([{"role": "user", "content": "hello"}])) == ["14"]
+    #: A name is still a claim even on a date question.
+    assert unbacked_claims("It was 50 days ago, when Robert Hughes called.", computed) == ["Robert Hughes"]
+
+
+def test_item3_a_model_dates_answer_gets_no_heads_up_through_the_route(ai_client, fake_ollama, session):
+    manager.create_entry(session, WW1, "Lecture notes")
+    session.commit()
+    fake_ollama.librarian_reply = "It was 50 days ago, on Tuesday 1 September 2026, 7 weeks and 1 day back."
+    said = _ask(ai_client, "how long ago was 1 september", use_tools=False)["text"]
+    assert "Heads up" not in said, said

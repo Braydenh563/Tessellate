@@ -4023,6 +4023,7 @@ def _check_model_prose(req: _StreamRequest, prepared: dict, t: _Turn) -> Iterato
             user_now(deps.get_config()).strftime("%A %d %B %Y %H:%M"),
             *(str(n.get("content") or "") for n in [*prepared["notes"], *(prepared.get("model_notes") or [])]),
         ],
+        question=req.question or "",
     )
     if t.model_checks["unbacked"]:
         heads = source_check.heads_up(t.model_checks["unbacked"])

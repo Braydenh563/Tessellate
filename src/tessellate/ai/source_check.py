@@ -63,6 +63,23 @@ _IGNORED = re.compile(
 _SENTENCE_START = re.compile(r"(?:^|[.!?:;]\s+|\n\s*(?:[-*+]|\d+[.)])?\s*|\(\s*|[\"“]\s*)$")
 
 
+#: A question whose answer is worked out from dates: how long ago, until when,
+#: what day. The figures in such an answer are computed (a day count, a
+#: weekday's date), so no note holds them and they are not claims to ground
+#: (composer5, item 3). "When is the plumber coming" is not one: a time the
+#: model gives there must still be in a note. A reminder's own fields come
+#: from its tool result, which `Sources` reads as ISO dates.
+_COMPUTED_QUESTION = re.compile(
+    r"\b(?:how (?:long|many (?:days?|weeks?|months?|years?|hours?|minutes?)|far|soon)|ago|until|till|since|countdown|"
+    r"what (?:day|date) (?:is|was|will)|days? (?:between|from|after|before))\b",
+    re.IGNORECASE,
+)
+#: A claim that is only figures: a day, a time, a date, a count.
+_FIGURES = re.compile(r"^[\d:/\-.,]+(?:st|nd|rd|th)?$")
+#: An ISO date or date and time, as a tool result prints a reminder's due time.
+_ISO = re.compile(r"(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2}))?)?")
+
+
 def _number_key(whole: str, fraction: str | None) -> str:
     whole = whole.replace(",", "").lstrip("0") or "0"
     fraction = (fraction or "").rstrip("0")
@@ -73,10 +90,14 @@ class Sources:
     """Everything an answer may draw on this turn: lower-cased text and the
     numbers in it, with each tool result's list lengths."""
 
-    def __init__(self, texts: list[str]):
+    def __init__(self, texts: list[str], question: str = ""):
+        self.computed = bool(_COMPUTED_QUESTION.search(question or ""))
         self.text = "\n".join(texts).lower()
         self.words = set(re.findall(r"[a-z][a-z'\-]*", self.text))
         self.numbers = {_number_key(w, f) for w, f in _NUMBER.findall(self.text)}
+        #: "2026-10-30T17:00:00" holds 30, 10 and 17 as their own figures.
+        for iso in _ISO.finditer(self.text):
+            self.numbers.update(_number_key(part, None) for part in iso.groups() if part)
         for word in self.words:
             month = _MONTH_ABBR.get(word[:3]) if word in _MONTHS or word in _MONTH_ABBR else None
             if month:
@@ -108,7 +129,8 @@ def sources_from_messages(messages: list[dict]) -> Sources:
         for m in messages[1:]
         if m.get("role") in ("user", "tool")
     ]
-    return Sources(texts)
+    asked = next((str(m.get("content") or "") for m in reversed(messages) if m.get("role") == "user"), "")
+    return Sources(texts, asked)
 
 
 _APP_LINK = re.compile(r"\[[^\]\n]{1,120}\]\(#/[^)\s]*\)")
@@ -152,6 +174,8 @@ def unbacked_claims(answer: str, sources: Sources) -> list[str]:
         run.append(word)
     if run:
         close()
+    if sources.computed:
+        found = [c for c in found if not all(_FIGURES.match(part) for part in c.split())]
     return list(dict.fromkeys(found))
 
 
