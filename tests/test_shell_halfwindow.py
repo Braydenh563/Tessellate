@@ -65,3 +65,9 @@ def test_documents_dock_closes_up_so_the_more_menu_stays_on_the_row():
 def test_companion_blocks_browser_touch_scroll_so_a_drag_is_not_cancelled():
     text = _css("08-consistency.css")
     assert "#nm-buddy { transition: opacity var(--motion-base) var(--ease-out); touch-action: none; }" in text
+
+
+def test_ask_header_group_shrinks_and_wraps_instead_of_running_past_the_card():
+    text = _css("01-forms-settings.css")
+    block = text.split("#ask > .row.space-between > .ask-header-actions {", 1)[1].split("}", 1)[0]
+    assert "flex: 1 1 auto" in block and "min-width: 0" in block
