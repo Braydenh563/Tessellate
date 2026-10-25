@@ -119,16 +119,20 @@ def title_of(content: str) -> str:
     return ""
 
 
+def _prose(para: str) -> str:
+    """The prose lines of a paragraph, or "" when it is a list or a table."""
+    lines = [_FOOTNOTE.sub("", ln.strip()) for ln in para.splitlines() if ln.strip() and not _FOOTNOTE_LINE.match(ln)]
+    if not lines or all(_BULLET.match(ln) or _CHECK.match(ln) or ln.startswith("|") for ln in lines):
+        return ""
+    return " ".join(ln for ln in lines if not (_BULLET.match(ln) or _CHECK.match(ln) or ln.startswith(("|", ">", "```"))))
+
+
 def sentences(text: str) -> list[str]:
     """Sentences of the prose in `text`, markup kept (bold is a signal), list
     bullets and tables left out."""
     out: list[str] = []
     for para in re.split(r"\n\s*\n", text or ""):
-        lines = [_FOOTNOTE.sub("", ln.strip()) for ln in para.splitlines() if ln.strip() and not _FOOTNOTE_LINE.match(ln)]
-        if not lines or all(_BULLET.match(ln) or _CHECK.match(ln) or ln.startswith("|") for ln in lines):
-            continue
-        prose = " ".join(ln for ln in lines if not (_BULLET.match(ln) or _CHECK.match(ln) or ln.startswith(("|", ">", "```"))))
-        out += [s.strip() for s in _SENTENCE_END.split(prose) if len(s.strip()) > 3]
+        out += [s.strip() for s in _SENTENCE_END.split(_prose(para)) if len(s.strip()) > 3]
     return out
 
 
@@ -245,42 +249,49 @@ def _list_card(heading: str, items: list[str], where: str) -> Card | None:
     return Card(q, "; ".join(items), "list", where, tuple(items))
 
 
+def _colon_cards(sec: Section, where: str) -> list[Card]:
+    out: list[Card] = []
+    for line in sec.text.splitlines():
+        colon = _COLON.match(line.strip())
+        if not colon or _QA.match(line):
+            continue
+        term, body = _trim_term(colon.group("term")), colon.group("body")
+        stressed = line.lstrip().startswith(("-", "*", "+")) or "**" in line
+        if _term_ok(term) and (stressed or body[0].islower()) and not re.match(r"^\d", body):
+            out.append(Card(_define_frame(term, "is"), _answer_text(body), "define", where))
+    return out
+
+
+def _section_cards(sec: Section, where: str) -> list[Card]:
+    out = _colon_cards(sec, where)
+    sents = sentences(sec.text)
+    defined = 0
+    for sentence in sents:
+        made = _define_cards(sentence, where)
+        out += made
+        defined += bool(made)
+        gap = None if made else _gap_card(sentence, where)
+        out += [gap] if gap else []
+    out += [c for c in [_list_card(sec.title, bullets(sec.text), where)] if c]
+    if sec.level >= 2 and sents and not defined and len(clean(sents[0])) >= 24:
+        out.append(Card(_pick(sec.title.lower(), (
+            f"What do your notes say about {sec.title}?", f"Explain {sec.title} in your own words.",
+        )), _answer_text(sents[0]), "about", where))
+    return out
+
+
 def cards(content: str) -> list[Card]:
     """Every question and answer the note holds, in the note's order."""
     out: list[Card] = []
     seen: set[str] = set()
-
-    def add(card: Card | None) -> None:
-        if card and card.q not in seen and card.a.strip():
-            seen.add(card.q)
-            out.append(card)
-
-    for m in _QA.finditer(content or ""):
-        add(Card(clean(m.group("q")), _answer_text(m.group("a")), "pair"))
+    found = [Card(clean(m.group("q")), _answer_text(m.group("a")), "pair") for m in _QA.finditer(content or "")]
     title = title_of(content)
     for sec in sections(content or ""):
-        where = sec.title or title
-        for line in sec.text.splitlines():
-            colon = _COLON.match(line.strip())
-            if colon and not _QA.match(line):
-                term, body = _trim_term(colon.group("term")), colon.group("body")
-                bold_or_bullet = line.lstrip().startswith(("-", "*", "+")) or "**" in line
-                if _term_ok(term) and (bold_or_bullet or body[0].islower()) and not re.match(r"^\d", body):
-                    add(Card(_define_frame(term, "is"), _answer_text(body), "define", where))
-        sents = sentences(sec.text)
-        defined = 0
-        for s in sents:
-            made = _define_cards(s, where)
-            for c in made:
-                add(c)
-            defined += bool(made)
-            if not made:
-                add(_gap_card(s, where))
-        add(_list_card(sec.title, bullets(sec.text), where))
-        if sec.level >= 2 and sents and not defined and len(clean(sents[0])) >= 24:
-            add(Card(_pick(sec.title.lower(), (
-                f"What do your notes say about {sec.title}?", f"Explain {sec.title} in your own words.",
-            )), _answer_text(sents[0]), "about", where))
+        found += _section_cards(sec, sec.title or title)
+    for card in found:
+        if card.q not in seen and card.a.strip():
+            seen.add(card.q)
+            out.append(card)
     return out
 
 
@@ -304,6 +315,21 @@ def ordered(deck: list[Card], topic: str, limit: int = 8) -> list[Card]:
 _GENERIC_HEADS = frozenset({"summary", "notes", "overview", "introduction", "intro", "todo", "tasks", "agenda", "links", "references", "questions"})
 
 
+def _terms_of(sec: Section) -> list[tuple[str, str]]:
+    """(term, gloss) for each definition and each stressed "Term: meaning" line of a section."""
+    out: list[tuple[str, str]] = []
+    for sentence in sentences(sec.text):
+        found = _definition(sentence)
+        if found:
+            out.append((found[0], _answer_text(re.split(r"[;:]|, (?:and|but|which|where)\b", found[2])[0])[:140].rstrip(" ,.")))
+    for line in sec.text.splitlines():
+        colon = _COLON.match(line.strip())
+        term = _trim_term(colon.group("term")) if colon else ""
+        if colon and _term_ok(term) and (line.lstrip().startswith(("-", "*", "+")) or "**" in line):
+            out.append((term, _answer_text(colon.group("body"))[:140].rstrip(" ,.")))
+    return out
+
+
 def key_terms(content: str, limit: int = 12) -> list[tuple[str, str]]:
     """(term, gloss) pairs: bold terms first (most repeated, then first seen),
     defined terms, then the headings. A gloss is the note's own definition,
@@ -315,60 +341,56 @@ def key_terms(content: str, limit: int = 12) -> list[tuple[str, str]]:
     def see(term: str, gloss: str = "") -> None:
         key = term.lower()
         if key not in glosses:
-            glosses[key] = gloss
             order.append(term)
-        elif gloss and not glosses[key]:
-            glosses[key] = gloss
+        glosses[key] = glosses.get(key) or gloss
         counts[key] = counts.get(key, 0) + 1
 
     for b in _BOLD.findall(content or ""):
-        term = clean(b[0] or b[1])
-        if _term_ok(term):
-            see(term)
-    for sec in sections(content or ""):
-        for s in sentences(sec.text):
-            found = _definition(s)
-            if found:
-                body = found[2]
-                see(found[0], _answer_text(re.split(r"[;:]|, (?:and|but|which|where)\b", body)[0])[:140].rstrip(" ,."))
-        for line in sec.text.splitlines():
-            colon = _COLON.match(line.strip())
-            if colon and _term_ok(_trim_term(colon.group("term"))) and (line.lstrip().startswith(("-", "*", "+")) or "**" in line):
-                see(_trim_term(colon.group("term")), _answer_text(colon.group("body"))[:140].rstrip(" ,."))
+        if _term_ok(clean(b[0] or b[1])):
+            see(clean(b[0] or b[1]))
+    secs = sections(content or "")
+    for sec in secs:
+        for term, gloss in _terms_of(sec):
+            see(term, gloss)
     title = title_of(content).lower()
-    for sec in sections(content or ""):
+    for sec in secs:
         if sec.level >= 2 and sec.title and sec.title.lower() not in _GENERIC_HEADS and sec.title.lower() != title:
             see(sec.title)
     ranked = sorted(order, key=lambda t: (-min(counts[t.lower()], 3), order.index(t)))
     return [(t, glosses[t.lower()]) for t in ranked[:limit]]
 
 
+def _picks(sec: Section, level: int) -> list[str]:
+    sents = sentences(sec.text)
+    picks = sents[:1]
+    if level >= 0:
+        picks += [x for x in sents[1:] if _BOLD.search(x) or re.search(r"\d", x) or _definition(x)][: (1 if level == 0 else 4)]
+    if level >= 1:
+        picks = list(dict.fromkeys(picks + sents[1:5]))
+    shown = 3 if level == 0 else 8
+    items = bullets(sec.text)
+    if items and level >= 0:
+        picks.append("Points: " + "; ".join(items[:shown]) + ("" if len(items) <= shown else f"; and {len(items) - shown} more"))
+    return picks
+
+
 def summary(content: str, level: int = 0) -> list[tuple[str, list[str]]]:
     """(heading, sentences) per section. level -1 is one sentence a section
     and at most four sections, 0 the lead and the best second, 1 everything
     worth saying. Sentences are the note's own, with the markup kept."""
-    out: list[tuple[str, list[str]]] = []
-    for sec in sections(content or ""):
-        sents = sentences(sec.text)
-        picks = sents[:1]
-        if level >= 0:
-            extra = [s for s in sents[1:] if _BOLD.search(s) or re.search(r"\d", s) or _definition(s)]
-            picks += extra[: (1 if level == 0 else 4)]
-        if level >= 1:
-            picks = list(dict.fromkeys(picks + sents[1:5]))
-        bl = bullets(sec.text)
-        if bl and level >= 0:
-            picks.append("Points: " + "; ".join(bl[: (3 if level == 0 else 8)]) + ("" if len(bl) <= (3 if level == 0 else 8) else f"; and {len(bl) - (3 if level == 0 else 8)} more"))
-        if picks:
-            out.append((sec.title, picks))
-    limit = 4 if level < 0 else 8 if level == 0 else 20
-    return out[:limit]
+    out = [(sec.title, picks) for sec in sections(content or "") if (picks := _picks(sec, level))]
+    return out[: 4 if level < 0 else 8 if level == 0 else 20]
 
 
 # --- grading ---------------------------------------------------------------------
 
 def _word_forms(text: str) -> set[str]:
     return {stem(w) for w in re.findall(r"[A-Za-z0-9][A-Za-z0-9'’-]*", clean(text)) if w.lower() not in STOP}
+
+
+def _grade_list(said: set[str], card: Card) -> str:
+    hit = sum(1 for item in card.items if _share(item, said) >= 0.5)
+    return "right" if hit >= max(1, round(len(card.items) * 0.6)) else "close" if hit else "wrong"
 
 
 def grade(reply: str, card: Card) -> str:
@@ -379,8 +401,7 @@ def grade(reply: str, card: Card) -> str:
     if not said:
         return "wrong"
     if card.kind == "list":
-        hit = sum(1 for item in card.items if _share(item, said) >= 0.5)
-        return "right" if hit >= max(1, round(len(card.items) * 0.6)) else "close" if hit else "wrong"
+        return _grade_list(said, card)
     asked = _word_forms(card.q)
     want = [s for s in content_stems(card.a) if s not in asked] or content_stems(card.a)
     if not want:

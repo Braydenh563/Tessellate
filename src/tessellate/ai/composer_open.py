@@ -23,6 +23,8 @@ from __future__ import annotations
 import hashlib
 import re
 
+from tessellate.ai import recognise
+
 PHRASES: dict[str, str] = {
     "open_left_a1": "Still open here: ",
     "open_left_a2": "What is left in this note: ",
@@ -69,13 +71,6 @@ _GENERIC = frozenset(
     "gist involved mentioned named people person me my i you we be get about any all".split()
 )
 
-_DATE = re.compile(
-    r"\b(?:today|tomorrow|tonight|yesterday|next (?:week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|this (?:week|month|weekend)|"
-    r"(?:mon|tues|wednes|thurs|fri|satur|sun)day|\d{1,2}(?:st|nd|rd|th)?(?: of)? (?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*|"
-    r"(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]* \d{1,2}(?:st|nd|rd|th)?|\d{1,2}[/.-]\d{1,2}(?:[/.-]\d{2,4})?|"
-    r"\d{4}-\d{2}-\d{2}|the \d{1,2}(?:st|nd|rd|th)|by (?:the )?end of|before (?:we|i) (?:go|leave)|deadline|due)\b",
-    re.I,
-)
 _DO = re.compile(
     r"\b(?:need to|needs to|have to|has to|must|should|remember to|don't forget|do not forget|todo|to do|next step|"
     r"book|buy|call|email|send|ask|check|finish|write|pay|order|renew|book|schedule|plan|prepare|fix)\b",
@@ -162,7 +157,7 @@ def _left(out, view, question: str, salt: str) -> None:  # noqa: ANN001
 
 
 def _when(out, view, question: str, salt: str) -> None:  # noqa: ANN001
-    said = [s for s in view.sentences if s.kind != "picture" and _DATE.search(s.text)][:2]
+    said = [s for s in view.sentences if s.kind != "picture" and recognise.dated_sentence(s.text)][:2]
     if not said:
         _say(out, "open_when_none")
         return

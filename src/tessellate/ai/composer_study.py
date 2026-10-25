@@ -105,23 +105,7 @@ def _title(note: dict) -> str:
     return study.title_of(str(note.get("content") or ""))
 
 
-def topic_notes(topic: str, ctx: Ctx, limit: int = 3) -> list[dict]:
-    """The notes a topic names: those whose title holds every word of it,
-    else those whose text does, best first. An empty topic, or "this note", is
-    the note that is open. Empty when nothing fits."""
-    topic = _FILLER.sub(" ", topic or "").strip(" ,")
-    if not topic or _THIS.match(topic):
-        opened = [n for n in ctx.notes if n.get("id") in ctx.open_ids]
-        return opened[:limit]
-    wanted = study.content_stems(_TOPIC_NOISE.sub(" ", topic))
-    if not wanted:
-        return []
-    exact = [n for n in ctx.notes if _title(n).lower() == topic.lower()]
-    if exact:
-        return exact[:1]
-    titled = [n for n in ctx.notes if set(wanted) <= set(study.content_stems(_title(n)))]
-    if titled:
-        return titled[:limit]
+def _body_matches(wanted: list[str], ctx: Ctx, limit: int) -> list[dict]:
     scored: list[tuple[int, int, dict]] = []
     for i, n in enumerate(ctx.notes):
         low = str(n.get("content") or "").lower()
@@ -129,6 +113,23 @@ def topic_notes(topic: str, ctx: Ctx, limit: int = 3) -> list[dict]:
             scored.append((-sum(low.count(w) for w in wanted), i, n))
     scored.sort(key=lambda row: row[:2])
     return [row[2] for row in scored[:limit]]
+
+
+def topic_notes(topic: str, ctx: Ctx, limit: int = 3) -> list[dict]:
+    """The notes a topic names: those whose title holds every word of it,
+    else those whose text does, best first. An empty topic, or "this note", is
+    the note that is open. Empty when nothing fits."""
+    topic = _FILLER.sub(" ", topic or "").strip(" ,")
+    if not topic or _THIS.match(topic):
+        return [n for n in ctx.notes if n.get("id") in ctx.open_ids][:limit]
+    wanted = study.content_stems(_TOPIC_NOISE.sub(" ", topic))
+    if not wanted:
+        return []
+    exact = [n for n in ctx.notes if _title(n).lower() == topic.lower()]
+    if exact:
+        return exact[:1]
+    titled = [n for n in ctx.notes if set(wanted) <= set(study.content_stems(_title(n)))]
+    return titled[:limit] or _body_matches(wanted, ctx, limit)
 
 
 def _link(note: dict) -> str:
@@ -237,17 +238,8 @@ def _target(ctx: Ctx, topic: str, verb: str, what: str, *, strict: bool) -> tupl
     return None, _nothing_named(ctx, topic, verb)
 
 
-def _summary(ctx: Ctx, topic: str, level: int) -> Reply | None:
-    notes, reply = _target(ctx, topic, "Summarise", "summarise", strict=True)
-    if not notes:
-        return reply
-    plural = bool(re.search(r"\bnotes\b", topic or "", re.I)) and len(notes) > 1 and not re.search(r"\bthis\b", topic or "", re.I)
-    if plural:
-        return _summaries(ctx, notes)
+def _summary_text(ctx: Ctx, notes: list[dict], parts: list, level: int) -> str:
     note = notes[0]
-    parts = study.summary(str(note.get("content") or ""), level)
-    if not parts:
-        return Reply(f"{_link(note)} has too little in it to summarise.")
     head = pick(ctx.seed, "sumhead", (
         f"The short version of {_link(note)}:", f"Here is {_link(note)} in short:", f"{_link(note)}, boiled down:",
     )) if level <= 0 else f"{_link(note)} in more detail:"
@@ -257,11 +249,22 @@ def _summary(ctx: Ctx, topic: str, level: int) -> Reply | None:
         lines.append("- " + (f"**{title}**: " if title else "") + " ".join(sents))
     if len(notes) > 1:
         lines += ["", "Other notes that match: " + "; ".join(_link(n) for n in notes[1:]) + "."]
-    sentences = sum(len(s) for _t, s in parts)
-    all_parts = study.summary(str(note.get("content") or ""), 1)
-    if level < 1 and sum(len(s) for _t, s in all_parts) > sentences:
+    more = sum(len(s) for _t, s in study.summary(str(note.get("content") or ""), 1)) > sum(len(s) for _t, s in parts)
+    if level < 1 and more:
         lines += ["", "Say “more” for the rest."]
-    return Reply("\n".join(lines))
+    return "\n".join(lines)
+
+
+def _summary(ctx: Ctx, topic: str, level: int) -> Reply | None:
+    notes, reply = _target(ctx, topic, "Summarise", "summarise", strict=True)
+    if not notes:
+        return reply
+    if re.search(r"\bnotes\b", topic or "", re.I) and len(notes) > 1 and not re.search(r"\bthis\b", topic or "", re.I):
+        return _summaries(ctx, notes)
+    parts = study.summary(str(notes[0].get("content") or ""), level)
+    if not parts:
+        return Reply(f"{_link(notes[0])} has too little in it to summarise.")
+    return Reply(_summary_text(ctx, notes, parts, level))
 
 
 def _summaries(ctx: Ctx, notes: list[dict]) -> Reply:
@@ -343,17 +346,22 @@ def _header(topic: str, n: int, total: int, score: int, done: int, rounds: int) 
     return f"**Quiz on {topic}** · question {n} of {total}" + (f" · score {score} of {done}" if done else "") + (f" · round {rounds}" if rounds > 1 else "")
 
 
-def _start_quiz(ctx: Ctx, topic: str, count: int | None) -> Reply:
+def _quiz_note(ctx: Ctx, topic: str) -> tuple[dict | None, Reply | None]:
     notes = topic_notes(topic, ctx, limit=1)
     cleaned = _FILLER.sub(" ", topic or "").strip(" ,")
     if not notes and (not cleaned or _THIS.match(cleaned)):
-        near = _newest_with_cards(ctx, count=1, need=3)
-        if not near:
-            return _which_note(ctx, "quiz you on", "Quiz me on")
-        notes = near
+        notes = _newest_with_cards(ctx, count=1, need=3)
+        if not notes:
+            return None, _which_note(ctx, "quiz you on", "Quiz me on")
     if not notes:
-        return _nothing_named(ctx, topic, "Quiz me on")
-    note = notes[0]
+        return None, _nothing_named(ctx, topic, "Quiz me on")
+    return notes[0], None
+
+
+def _start_quiz(ctx: Ctx, topic: str, count: int | None) -> Reply:
+    note, reply = _quiz_note(ctx, topic)
+    if note is None:
+        return reply
     name = _title(note)
     total = max(1, min(MAX_QUIZ, count or QUIZ_LENGTH))
     rounds = 1 + sum(1 for t in ctx.history if f"**Quiz on {name}**" in str(t.get("answer") or "") and "question 1 of" in str(t.get("answer") or ""))
@@ -388,27 +396,20 @@ def _asked_question(answer: str, header: re.Match) -> str:
     return rest.split("\n\n", 1)[0].strip()
 
 
-def _continue_quiz(ctx: Ctx) -> Reply | None:
-    header = _last_header(ctx.last_answer)
-    if header is None or not ctx.history:
-        return None
-    reply = " ".join((ctx.asked or ctx.question).split())
-    if not reply:
-        return None
-    if reply.endswith("?") and len(reply.split()) >= 4 and not _AGAIN.match(reply):
-        return None
+def _quiz_place(ctx: Ctx, header: re.Match) -> tuple | None:
+    """(topic, n, total, score, done, rounds, note, deck, card) for the question the last answer asked, or None when the notes changed."""
     topic, n, total = header.group("topic"), int(header.group("n")), int(header.group("total"))
-    score, done = int(header.group("score") or 0), int(header.group("done") or 0)
-    rounds = int(header.group("round") or 1)
+    score, done, rounds = int(header.group("score") or 0), int(header.group("done") or 0), int(header.group("round") or 1)
     note, deck = _deck(topic, ctx, total, rounds)
     asked = _asked_question(ctx.last_answer, header)
     index = next((i for i, c in enumerate(deck) if c.q == asked), None)
     if note is None or index is None:
-        return Reply(pick(ctx.seed, "changed", (
-            "Your notes changed since that question, so I have lost my place. Ask me to quiz you again and I will start fresh.",
-            "I can no longer find that question in your notes, they have changed. Say “quiz me” to start over.",
-        )))
-    card = deck[index]
+        return None
+    return topic, n, total, score, done, rounds, note, deck, deck[index]
+
+
+def _quiz_command(ctx: Ctx, reply: str, place: tuple) -> Reply | None:
+    topic, n, total, score, done, rounds, note, deck, card = place
     head = _header(topic, n, total, score, done, rounds)
     if _AGAIN.match(reply):
         return Reply(f"{head}\n\n{card.q}")
@@ -416,6 +417,26 @@ def _continue_quiz(ctx: Ctx) -> Reply | None:
         return Reply(f"Hint: {study.hint(card)}\n\n{head}\n\n{card.q}")
     if _STOP.match(reply):
         return _finish(ctx, topic, note, deck, score, done, stopped=True)
+    return None
+
+
+def _continue_quiz(ctx: Ctx) -> Reply | None:
+    header = _last_header(ctx.last_answer)
+    reply = " ".join((ctx.asked or ctx.question).split())
+    if header is None or not ctx.history or not reply:
+        return None
+    if reply.endswith("?") and len(reply.split()) >= 4 and not _AGAIN.match(reply):
+        return None
+    place = _quiz_place(ctx, header)
+    if place is None:
+        return Reply(pick(ctx.seed, "changed", (
+            "Your notes changed since that question, so I have lost my place. Ask me to quiz you again and I will start fresh.",
+            "I can no longer find that question in your notes, they have changed. Say “quiz me” to start over.",
+        )))
+    command = _quiz_command(ctx, reply, place)
+    if command:
+        return command
+    topic, n, total, score, done, rounds, note, deck, card = place
     if _SKIP.match(reply):
         verdict, feedback = "skip", pick(ctx.seed, f"skip{n}", ("Skipped. The answer: {a}", "No problem. It is: {a}", "The answer was: {a}")).format(a=card.a)
     else:

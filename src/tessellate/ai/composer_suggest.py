@@ -20,11 +20,14 @@ said about the notes except their names, which are the notes' own.
 from __future__ import annotations
 
 import hashlib
+import logging
 import math
 import re
 from dataclasses import dataclass
 
 from tessellate.ai import act_registry, composer_replies
+
+log = logging.getLogger(__name__)
 
 _FILLER = r"(?:please |pls |can you |could you |would you |go ahead and )*"
 _VAGUE = re.compile(
@@ -132,7 +135,7 @@ def closest(question: str, embed=None, limit: int = 3) -> list[Option]:  # noqa:
             for i, vec in enumerate(rest):
                 scores[i] += max(0.0, _cosine(query, vec))
         except Exception:  # noqa: BLE001  # no backend is a state: words alone
-            pass
+            log.debug("closest: no embedder, scoring by words alone", exc_info=True)
     ranked = sorted(zip(scores, range(len(rows))), key=lambda p: (-p[0], p[1]))
     return [Option(rows[i][0].intent, rows[i][0].label, rows[i][0].ask, round(s, 3)) for s, i in ranked[:limit] if s > 0]
 

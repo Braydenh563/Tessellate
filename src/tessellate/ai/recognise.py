@@ -705,20 +705,27 @@ def _known_day(spans: list, now: datetime) -> datetime | None:
     return datetime.combine(day, time(9), now.tzinfo) if day else None
 
 
+def _spoken_instant(spans: list) -> datetime | None:
+    """The datetime a sentence's own span names. "this evening, 6:30" and
+    "tonight when I get back, say 7:30pm": a day part (no digits) and a clock
+    apart from it. The clock said is the time; the day part only says which day."""
+    day_span = next((s for s in spans if s.kind == "datetime"), None)
+    if day_span is None:
+        return None
+    instant = day_span.value
+    if not re.search(r"\d|noon|midnight", day_span.text):
+        clock = next((s for s in spans if s.kind == "time" and isinstance(s.value, time)), None)
+        if clock is not None:
+            instant = datetime.combine(instant.date(), clock.value)
+    return instant
+
+
 def _reminder_instant(text: str, now: datetime, locale: str | None, tense: str, spans: list, repeat: Span | None) -> datetime | None:
     """When the sentence says the reminder is due, or None."""
     #: The past (a timeline entry, "on 3 october") is the recogniser's
     #: reading; `resolve` reads only time to come.
     at = resolve(text, now, locale=locale) if tense == "future" else None
-    day_span = next((s for s in spans if s.kind == "datetime"), None)
-    instant = day_span.value if day_span is not None else None
-    #: "this evening, 6:30" and "tonight when I get back, say 7:30pm": a day
-    #: part (no digits) and a clock apart from it. The clock said is the time;
-    #: the day part only says which day.
-    if day_span is not None and not re.search(r"\d|noon|midnight", day_span.text):
-        clock = next((s for s in spans if s.kind == "time" and isinstance(s.value, time)), None)
-        if clock is not None:
-            instant = datetime.combine(instant.date(), clock.value)
+    instant = _spoken_instant(spans)
     if instant is not None and (at is None or at.date() == instant.date()):
         at = instant
     at = _still_tonight(at, now, _part_alone(text)) or _known_day(spans, now)
@@ -1817,6 +1824,68 @@ def offset_question(text: str) -> tuple[str, str, bool] | None:
     if not found:
         return None
     return found.group(1), found.group(2), not (found.group(3) or "from").startswith("from")
+
+#: Any sentence that may carry a day, wider than `looks_dated`: abbreviated
+#: months and weekdays, "21st", "3/11", "due". A cheap test before the
+#: recogniser runs on it (notes are read by the hundred).
+_DATED_WIDE = re.compile(
+    r"\b(?:today|tomorrow|tonight|yesterday|next (?:week|month|year|[a-z]+day)|this (?:week|month|weekend)|weekend|"
+    r"(?:mon|tues?|wed(?:nes)?|thu(?:rs?)?|fri|sat(?:ur)?|sun)(?:day)?|\d{1,2}(?:st|nd|rd|th)\b(?: of)?(?: (?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*)?|"
+    r"(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.? \d{1,2}|\d{1,2} (?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*|"
+    r"\d{1,2}[/.-]\d{1,2}(?:[/.-]\d{2,4})?|\d{4}-\d{2}-\d{2}|by (?:the )?end of|before (?:we|i) (?:go|leave)|deadline|due)\b", re.I)
+
+
+def dated_sentence(text: str) -> bool:
+    """Whether a sentence may name a day or a deadline at all."""
+    return bool(_DATED_WIDE.search(text or ""))
+
+
+_DAY_OFFSET = re.compile(
+    r"^(?P<in>in\s+)?(?P<n>\d{1,4}|a|an|one|two|three|four|five|six|seven|eight|nine|ten|twelve|a couple of|couple of|a few)\s+"
+    r"(?P<u>days?|weeks?|fortnights?|months?|years?)\s*(?P<d>from now|from today|from|after|before|ago|since|later|earlier|hence|prior to|away)?\s*(?P<a>.*?)\W*$",
+    re.I)
+_BACKWARD = ("before", "ago", "earlier", "prior to")
+
+
+def shift_day(base: date, n: int, unit: str, sign: int) -> date:
+    """`base` moved n days, weeks, fortnights, months or years (a month's end
+    clamps: 31 January plus a month is 28 February)."""
+    unit = unit.lower().rstrip("s")
+    if unit in ("day", "week", "fortnight"):
+        return base + timedelta(days={"day": 1, "week": 7, "fortnight": 14}[unit] * n * sign)
+    index = base.year * 12 + base.month - 1 + n * (12 if unit == "year" else 1) * sign
+    year, month = divmod(index, 12)
+    month += 1
+    nxt = date(year + (month == 12), month % 12 + 1, 1)
+    return base.replace(year=year, month=month, day=min(base.day, (nxt - timedelta(days=1)).day))
+
+
+def _anchor_day(anchor: str, today: date) -> date | None:
+    if not anchor or anchor.lower() in ("now", "today"):
+        return today
+    got = resolve(anchor, datetime.combine(today, time(10)))
+    return got.date() if got else None
+
+
+def day_offset(text: str, today: date) -> dict | None:
+    """"3 weeks from friday", "100 days ago", "in 2 months", "2 weeks after 1
+    december": {"target", "base", "n", "unit", "sign", "anchor"}, else None.
+    Needs a direction word or a leading "in"; the anchor is read as a day."""
+    found = _DAY_OFFSET.match((text or "").strip())
+    if not found or not (found["in"] or found["d"]):
+        return None
+    n = _amount(found["n"])
+    direction = (found["d"] or "").lower()
+    anchor = found["a"].strip(" ,.?")
+    if n is None or (found["in"] and direction):
+        return None
+    base = _anchor_day(anchor, today)
+    if base is None:
+        return None
+    sign = -1 if direction in _BACKWARD else 1
+    return {"target": shift_day(base, n, found["u"], sign), "base": base, "n": n, "unit": found["u"].lower().rstrip("s"),
+            "sign": sign, "anchor": anchor, "said": direction or "in"}
+
 
 
 # --- the part of the day a note was about ------------------------------------------

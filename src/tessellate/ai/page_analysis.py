@@ -42,52 +42,67 @@ def _plain(text: str) -> str:
     return " ".join(re.sub(r"[`<>]|\*{1,2}", "", text).split())
 
 
-def analyse(blocks: list[dict]) -> dict:
-    """`{"key_points": [...], "terms": [...], "sections": [{"title", "level", "index"}]}`."""
+def _count(text: str, weight: int, counts: Counter, surface: dict[str, Counter]) -> None:
+    for word in _WORD.findall(text):
+        if word.lower() in _STOP:
+            continue
+        stem = _stem(word)
+        counts[stem] += weight
+        surface.setdefault(stem, Counter())[word.lower()] += 1
+
+
+def _scan(blocks: list[dict]) -> tuple[list[dict], list[tuple[int, str, bool]], Counter, dict[str, Counter]]:
+    """Headings, the sentences worth ranking (block index, text, first in its
+    block), and the weighted stem counts with their surface forms."""
     sections: list[dict] = []
-    units: list[tuple[int, str, bool]] = []  # (block index, sentence, first in its block)
+    units: list[tuple[int, str, bool]] = []
     counts: Counter = Counter()
     surface: dict[str, Counter] = {}
     for i, block in enumerate(blocks or []):
         text = _plain(str(block.get("text") or ""))
         if not text:
             continue
-        kind = block.get("type")
-        if kind == "heading":
+        heading = block.get("type") == "heading"
+        if heading:
             sections.append({"title": text[:120], "level": int(block.get("level") or 2), "index": i})
-            weight = 2
-        else:
-            weight = 1
-        for word in _WORD.findall(text):
-            if word.lower() in _STOP:
-                continue
-            stem = _stem(word)
-            counts[stem] += weight
-            surface.setdefault(stem, Counter())[word.lower()] += 1
-        if kind == "heading":
+        _count(text, 2 if heading else 1, counts, surface)
+        if heading:
             continue
         for n, sentence in enumerate(s.strip() for s in _SENTENCE.split(text)):
-            words = sentence.split()
-            if 7 <= len(words) <= 45 and 40 <= len(sentence) <= 280 and not _BOILERPLATE.search(sentence):
+            if 7 <= len(sentence.split()) <= 45 and 40 <= len(sentence) <= 280 and not _BOILERPLATE.search(sentence):
                 units.append((i, sentence, n == 0))
-    if not units:
-        return {"key_points": [], "terms": _terms(counts, surface), "sections": sections}
+    return sections, units, counts, surface
+
+
+def _stems(sentence: str, *, stop: bool) -> set[str]:
+    return {_stem(w) for w in _WORD.findall(sentence) if not (stop and w.lower() in _STOP)}
+
+
+def _choose(units: list[tuple[int, str, bool]], counts: Counter) -> list[str]:
+    """The top sentences by weighted stems, spread out, in page order."""
     #: A word that appears once says nothing about the page.
     weights = {stem: n for stem, n in counts.items() if n >= 2}
     scored = []
-    for order, (block, sentence, first) in enumerate(units):
-        stems = {_stem(w) for w in _WORD.findall(sentence) if w.lower() not in _STOP}
+    for order, (_block, sentence, first) in enumerate(units):
+        stems = _stems(sentence, stop=True)
         score = sum(weights.get(s, 0) for s in stems) / (len(stems) ** 0.5 or 1)
         scored.append((score * (1.25 if first else 1.0), order, sentence))
     chosen: list[tuple[int, str]] = []
-    for score, order, sentence in sorted(scored, key=lambda t: (-t[0], t[1])):
+    for _score, order, sentence in sorted(scored, key=lambda t: (-t[0], t[1])):
         if len(chosen) >= MAX_POINTS:
             break
-        words = {_stem(w) for w in _WORD.findall(sentence)}
-        if any(len(words & {_stem(w) for w in _WORD.findall(other)}) / max(len(words), 1) > 0.7 for _, other in chosen):
+        words = _stems(sentence, stop=False)
+        if any(len(words & _stems(other, stop=False)) / max(len(words), 1) > 0.7 for _, other in chosen):
             continue
         chosen.append((order, sentence))
-    return {"key_points": [s for _, s in sorted(chosen)], "terms": _terms(counts, surface), "sections": sections}
+    return [s for _, s in sorted(chosen)]
+
+
+def analyse(blocks: list[dict]) -> dict:
+    """`{"key_points": [...], "terms": [...], "sections": [{"title", "level", "index"}]}`."""
+    sections, units, counts, surface = _scan(blocks)
+    points = _choose(units, counts) if units else []
+    return {"key_points": points, "terms": _terms(counts, surface), "sections": sections}
 
 
 def _terms(counts: Counter, surface: dict[str, Counter]) -> list[str]:

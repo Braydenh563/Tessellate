@@ -22,10 +22,6 @@ from tessellate.ai import recognise, study
 from tessellate.ai import when as when_words
 from tessellate.ai.composer_study import Ctx, Reply, pick
 
-#: A sentence worth reading for a date at all; the recogniser only runs on these.
-_DATEISH = re.compile(
-    r"\d{1,2}(?:st|nd|rd|th)\b|\d{1,2}[/.-]\d{1,2}\b|\d{4}-\d\d-\d\d|\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\b|"
-    r"\b(?:mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun)[a-z]*\b|\b(?:today|tomorrow|tonight|next week|this week|next month|weekend)\b", re.I)
 _SENTENCE = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9*\"“(\[])")
 _DONE = re.compile(r"^\s*[-*+]\s+\[[xX]\]")
 #: Only these verbs of a sentence make it a thing to do or attend; "Went to
@@ -36,8 +32,8 @@ _LEAD = r"(?:(?:please|pls|can you|could you|hey|ok|okay|so|and|right)[, ]+)*"
 _DUE = re.compile(
     rf"^{_LEAD}(?:what(?:'s|’s| is| are| do i have| have i got| have i)?|which|any|anything|show me|show|list|tell me|give me|do i have|have i got|i need to know|check)?\W*"
     r"(?:\w+\W+){0,6}?(?:due|deadlines?|coming up|upcoming|on my plate|happening|scheduled|ahead|on the calendar|on the horizon|to hand in|to submit|to do)\b", re.I)
-_BUSY = re.compile(
-    rf"^{_LEAD}(?:what(?:'s|’s| is)|what do i have|what have i got|anything|am i busy|how busy am i|how busy is|what does)\s*(?:on|my|the)?\s*(?:\w+\s+){{0,2}}?(?:this|next|today|tomorrow|tonight|the week|my week|the weekend|week|weekend)", re.I)
+#: "what's on", "am I busy": only a question when a time window is also named (`window`).
+_BUSY = re.compile(rf"^{_LEAD}(?:what(?:'s|’s| is)|what do i have|what have i got|anything|am i busy|how busy am i|how busy is|what does)\b", re.I)
 _PLAN = re.compile(
     rf"^{_LEAD}(?:help me |can you |could you |let'?s |lets )?(?:plan|organi[sz]e|schedule|map out|sort out|prioriti[sz]e|structure|arrange|lay out)\s+(?:out\s+)?(?P<t>.*)$|"
     rf"^{_LEAD}what should i (?:do|work on|focus on|tackle|start with)(?P<s>.*)$|"
@@ -143,34 +139,45 @@ def _plain(sentence: str) -> str:
     return study.clean(re.sub(r"^\s*(?:[-*+]|\d{1,2}[.)])\s+(?:\[[ xX]\]\s*)?", "", sentence)).strip()
 
 
+def _sentence_day(sentence: str, anchor: datetime, start: date, end: date) -> date | None:
+    """The first day in [start, end] a sentence names, read against the day
+    its note was written."""
+    for span in recognise.recognise(sentence, now=anchor, tense="future"):
+        if span.rank or span.kind not in ("date", "datetime"):
+            continue
+        value = span.value
+        day = value.date() if isinstance(value, datetime) else value if isinstance(value, date) else None
+        if day is not None and start <= day <= end:
+            return day
+        if day is not None:
+            return None
+    return None
+
+
+def _dated_lines(content: str):  # noqa: ANN202
+    for line in content.splitlines():
+        if line.strip() and not _DONE.match(line) and recognise.dated_sentence(line) and not line.lstrip().startswith(("```", ">")):
+            yield from (s for s in _SENTENCE.split(line) if recognise.dated_sentence(s))
+
+
+def _note_events_of(note: dict, now: datetime, start: date, end: date) -> list[Event]:
+    content = str(note.get("content") or "")
+    anchor, title = _anchor(note, now), study.title_of(content)
+    out: list[Event] = []
+    for sentence in _dated_lines(content):
+        day = _sentence_day(sentence, anchor, start, end)
+        text = _plain(sentence.lstrip("# ") if sentence.strip().startswith("#") else sentence)
+        if day is not None and 3 <= len(text) <= 160:
+            out.append(Event(day, text, "note", note.get("id"), title))
+    return out
+
+
 def note_events(ctx: Ctx, start: date, end: date) -> list[Event]:
     """The dated sentences of the notes that fall in [start, end]."""
     out: list[Event] = []
     for note in ctx.notes[:400]:
-        content = str(note.get("content") or "")
-        if not _DATEISH.search(content):
-            continue
-        anchor = _anchor(note, ctx.now)
-        title = study.title_of(content)
-        for line in content.splitlines():
-            if not line.strip() or _DONE.match(line) or not _DATEISH.search(line) or line.lstrip().startswith(("```", ">")):
-                continue
-            for sentence in _SENTENCE.split(line):
-                if not _DATEISH.search(sentence):
-                    continue
-                for span in recognise.recognise(sentence, now=anchor, tense="future"):
-                    if span.rank or span.kind not in ("date", "datetime"):
-                        continue
-                    value = span.value
-                    day = value.date() if isinstance(value, datetime) else value if isinstance(value, date) else None
-                    if day is None or not (start <= day <= end):
-                        continue
-                    text = _plain(sentence)
-                    if re.match(r"^#+\s", sentence.strip()):
-                        text = _plain(sentence.lstrip("# "))
-                    if 3 <= len(text) <= 160:
-                        out.append(Event(day, text, "note", note.get("id"), title))
-                    break
+        if recognise.dated_sentence(str(note.get("content") or "")):
+            out += _note_events_of(note, ctx.now, start, end)
     return out
 
 
@@ -272,12 +279,33 @@ def _tasks(ctx: Ctx, limit: int = 8) -> list[tuple[str, dict]]:
     out: list[tuple[str, dict]] = []
     for note in ctx.notes[:40]:
         for task in study.open_tasks(str(note.get("content") or "")):
-            if _DATEISH.search(task) and any(not s.rank for s in recognise.recognise(task, now=_anchor(note, ctx.now), tense="future") if s.kind in ("date", "datetime")):
+            if recognise.dated_sentence(task) and any(not s.rank for s in recognise.recognise(task, now=_anchor(note, ctx.now), tense="future") if s.kind in ("date", "datetime")):
                 continue
             out.append((task, note))
             if len(out) >= limit:
                 return out
     return out
+
+
+def _busiest(found: list[Event], days: list[date], load: dict) -> str:
+    busiest = max(days, key=lambda d: (load[d], -days.index(d)))
+    free = [d for d in days if load[d] == 0 and d.weekday() < 5]
+    return f"Busiest day: {_long(busiest)} with {load[busiest]}." + (f" Free weekdays: {', '.join(f'{d:%A}' for d in free)}." if free else "")
+
+
+def _task_lines(tasks: list, days: list[date], load: dict) -> list[str]:
+    lines = ["", f"**Open tasks with no day ({len(tasks)})**"]
+    for task, note in tasks:
+        lines.append(f"- {task} ([{study.title_of(str(note.get('content') or ''))}](#/notes/{note['id']}))")
+    if len(days) > 1:
+        work = [d for d in days if d.weekday() < 5] or days
+        placed: list[str] = []
+        for task, _n in tasks[:4]:
+            day = min(work, key=lambda d: (load[d], d))
+            load[day] += 1
+            placed.append(f"{day:%A}: {task}")
+        lines += ["", "A way to spread them over the lighter days: " + "; ".join(placed) + "."]
+    return lines
 
 
 def _plan(ctx: Ctx, win: tuple[date, date, str]) -> Reply:
@@ -289,28 +317,13 @@ def _plan(ctx: Ctx, win: tuple[date, date, str]) -> Reply:
     load = {d: sum(1 for e in found if e.day == d) for d in days}
     span = _range_words(start, end, said, today)
     lines = [pick(ctx.seed, "planhead", (f"Your plan for {span}, from your reminders and notes.", f"Here is {span}, laid out from what you have saved.", f"{span.capitalize() if not span[0].isupper() else span}, as your notes and reminders have it."))]
-    if found:
-        lines += _grouped(found, today, limit=10)
-    else:
-        lines += ["", "Nothing is dated in that time."]
+    lines += _grouped(found, today, limit=10) if found else ["", "Nothing is dated in that time."]
     if overdue:
         lines += ["", "**Overdue**"] + [e.line(overdue=True) for e in overdue[:4]]
     if len(days) > 1 and found:
-        busiest = max(days, key=lambda d: (load[d], -days.index(d)))
-        free = [d for d in days if load[d] == 0 and d.weekday() < 5]
-        lines += ["", f"Busiest day: {_long(busiest)} with {load[busiest]}." + (f" Free weekdays: {', '.join(f'{d:%A}' for d in free)}." if free else "")]
+        lines += ["", _busiest(found, days, load)]
     if tasks:
-        lines += ["", f"**Open tasks with no day ({len(tasks)})**"]
-        work = [d for d in days if d.weekday() < 5] or days
-        placed: list[str] = []
-        for task, note in tasks:
-            lines.append(f"- {task} ([{study.title_of(str(note.get('content') or ''))}](#/notes/{note['id']}))")
-        if len(days) > 1:
-            for task, _n in tasks[:4]:
-                day = min(work, key=lambda d: (load[d], d))
-                load[day] += 1
-                placed.append(f"{day:%A}: {task}")
-            lines += ["", "A way to spread them over the lighter days: " + "; ".join(placed) + "."]
+        lines += _task_lines(tasks, days, load)
     elif not found and not overdue:
         lines += ["", "No open tasks either. A clear stretch."]
     return Reply("\n".join(lines), asks=["What's due next week"] if said == "this week" else [])
@@ -335,6 +348,27 @@ def _until(ctx: Ctx, subject: str) -> Reply | None:
     return Reply(f"{lead}{source}\n\n“{ev.text}”")
 
 
+def _plan_window(text: str, said: str, today: date) -> tuple[date, date, str]:
+    win = window(said, today) or window(text, today)
+    if win is not None:
+        return win
+    low = said.lower()
+    if any(w in low for w in ("day", "today", "first", "focus", "start")):
+        return today, today, "today"
+    return today, today + timedelta(days=6 - today.weekday()) if today.weekday() < 6 else today, "this week"
+
+
+def _due_reply(ctx: Ctx, text: str, today: date) -> Reply | None:
+    win = window(text, today)
+    leftover = {s for s in _stems(re.sub(r"[^\w\s']", " ", text)) if s not in _FILLER_STEMS}
+    if win is not None:
+        for _s, _e, phrase in when_words.find(text.lower()):
+            leftover -= _stems(phrase)
+    if leftover or (win is None and ctx.open_ids):
+        return None  # a subject, or "what is the deadline?" with a note open: the notes' (composer_open)
+    return _due(ctx, win or (today, today + timedelta(days=6), "the next 7 days"))
+
+
 def answer(ctx: Ctx) -> Reply | None:
     text = " ".join((ctx.question or "").split())
     if not text or len(text) > 200:
@@ -345,26 +379,7 @@ def answer(ctx: Ctx) -> Reply | None:
         return _until(ctx, until.group("t"))
     plan = _PLAN.match(text)
     if plan:
-        said = " ".join(g for g in plan.groups() if g) or "this week"
-        win = window(said, today) or window(text, today)
-        if win is None:
-            low = said.lower()
-            if "day" in low or "today" in low or "first" in low or "focus" in low or "start" in low:
-                win = (today, today, "today")
-            else:
-                win = (today, today + timedelta(days=6 - today.weekday()) if today.weekday() < 6 else today, "this week")
-        return _plan(ctx, win)
-    if _DUE.match(text) or _BUSY.match(text):
-        win = window(text, today)
-        leftover = {s for s in _stems(re.sub(r"[^\w\s']", " ", text)) if s not in _FILLER_STEMS}
-        if win is not None:
-            for _s, _e, phrase in when_words.find(text.lower()):
-                leftover -= _stems(phrase)
-        if leftover:
-            return None
-        if win is None and ctx.open_ids:
-            return None  # "what is the deadline?" with a note open is that note's (composer_open)
-        if win is None:
-            win = (today, today + timedelta(days=6), "the next 7 days")
-        return _due(ctx, win)
+        return _plan(ctx, _plan_window(text, " ".join(g for g in plan.groups() if g) or "this week", today))
+    if _DUE.match(text) or (_BUSY.match(text) and window(text, today) is not None):
+        return _due_reply(ctx, text, today)
     return None

@@ -47,14 +47,9 @@ _NEED = re.compile(
     rf"{_LEAD}(?:what|how much|how many|which)\b.*\b(?:need|require|have to (?:get|score|make)|must (?:get|score))\b.*?(?:to (?:get|reach|pass with|score|make|finish with|end with|hit)|for|so that i (?:get|have|end up with))\s*{_NUM}\s*%?\s*(?:overall|in total|total|for the (?:module|unit|course|class)|in the (?:module|unit|course|class)|final|on average)?"
     rf".*?(?:if|when|given|with|and)\s+(?:i(?:'ve| have| got| scored)?|my\b.*?\bis|so far)?\s*(?:got|scored|have|on|of|is)?\s*{_NUM}\s*%?\s*(?:so far|already)?.*?(?:worth|weighted|weighting|counts? for|which is|being|is)\s*{_NUM}\s*%", re.I)
 
-_UNIT = r"(?P<unit>days?|weeks?|fortnights?|months?|years?)"
-_AMOUNT = r"(?P<n>\d{1,4}|a|an|one|two|three|four|five|six|seven|eight|nine|ten|twelve|a couple of|couple of)"
-_WORD_N = {"a": 1, "an": 1, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10, "twelve": 12,
-           "a couple of": 2, "couple of": 2}
-_DAYDATE = re.compile(
-    rf"{_LEAD}what(?:'s| is| was| will be| would be)? (?:the )?(?P<kind>day|date|weekday)(?: of the week)?(?: is| was| will it be| would it be| will| would)?(?: it| that)?\s*(?:in |on )?"
-    rf"(?:{_AMOUNT}\s*{_UNIT}\s*(?P<dir>from now|from today|from|after|before|ago|since|later|earlier|hence|prior to|before|away)\s*(?P<anchor>.*)|(?P<abs>.+))\W*$", re.I)
-_DAYS_OF = re.compile(rf"{_LEAD}(?:what|which) (?P<kind>day|date)(?: of the week)?(?: will it be| is it going to be| would it be| is it| is| will be)? ?(?:in )?{_AMOUNT}\s*{_UNIT}(?: from now| from today| away| time)?\W*$", re.I)
+_DAYQ = re.compile(
+    rf"{_LEAD}what(?:'s| is| was| will be| would be)? (?:the )?(?P<kind>day|date|weekday)(?: of the week)?"
+    rf"(?: is| was| will it be| would it be| will| would| is it going to be)?(?: it| that)?\s*(?:in |on )?(?P<rest>.+?)\W*$", re.I)
 _BETWEEN = re.compile(rf"{_LEAD}(?:how many |how much )?(?P<unit>days|weeks|months|nights)?\s*(?:are there |is there |have i got |do i have )?(?:between|from)\s+(?P<a>.+?)\s+(?:and|to|until|till)\s+(?P<b>.+?)\W*$", re.I)
 _WORDS = re.compile(rf"{_LEAD}(?:how many (?:words|characters|letters|sentences)(?: are| is| long)?(?: there)?|what(?:'s| is) the (?:word|character) count|word count|char(?:acter)? count|how long is|how big is|count (?:the )?words)\s*(?:in|of|for|is|on)?\s*(?P<t>.*)$", re.I)
 _QUOTED = re.compile(r"[\"“](.+)[\"”]|:\s*(.{12,})$", re.S)
@@ -137,27 +132,11 @@ def _needed(match: re.Match) -> Reply | None:
 
 # --- dates ------------------------------------------------------------------------------
 
-def _shift(base: date, n: int, unit: str, sign: int) -> date:
-    unit = unit.rstrip("s")
-    if unit == "day":
-        return base + timedelta(days=sign * n)
-    if unit == "week":
-        return base + timedelta(weeks=sign * n)
-    if unit == "fortnight":
-        return base + timedelta(weeks=2 * sign * n)
-    months = n * (12 if unit == "year" else 1) * sign
-    index = base.year * 12 + base.month - 1 + months
-    year, month = divmod(index, 12)
-    month += 1
-    last = [31, 29 if year % 4 == 0 and (year % 100 or year % 400 == 0) else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month - 1]
-    return date(year, month, min(base.day, last))
-
-
 def _long(day: date) -> str:
     return f"{day:%A} {day.day} {day:%B %Y}"
 
 
-def _resolve(phrase: str, today: date, future: bool = True) -> date | None:
+def _resolve(phrase: str, today: date) -> date | None:
     phrase = phrase.strip(" ,.?")
     if not phrase or phrase in ("now", "today", "this day"):
         return today
@@ -165,39 +144,31 @@ def _resolve(phrase: str, today: date, future: bool = True) -> date | None:
     return got.date() if got else None
 
 
+def _offset_reply(moved: dict, today: date) -> Reply:
+    n, unit, target = moved["n"], moved["unit"], moved["target"]
+    what = f"{n} {unit}{'s' if n != 1 else ''}"
+    said, anchor = moved["said"], moved["anchor"]
+    own = said in ("ago", "from now", "from today", "hence", "later", "earlier", "in", "away") and not anchor
+    when = {"in": "from today", "hence": "from today", "away": "from today", "later": "from today"}.get(said, said) if own else f"{said} {anchor}"
+    based = f" ({_long(moved['base'])})" if anchor and anchor.lower() not in ("today", "now") else ""
+    verb = "was" if target < today else "is"
+    return _computed(f"{what.capitalize()} {when}{based} {verb} {_long(target)}.", f"{what} {'before' if moved['sign'] < 0 else 'after'} {_long(moved['base'])}")
+
+
 def _day_question(text: str, today: date) -> Reply | None:
-    found = _DAYS_OF.match(text)
-    if found:
-        n = _WORD_N.get(found.group("n").lower()) or int(found.group("n"))
-        unit = found.group("unit")
-        target = _shift(today, n, unit, 1)
-        return _computed(f"{n} {unit.rstrip('s')}{'s' if n != 1 else ''} from today is {_long(target)}.", f"{n} {unit} after {_long(today)}")
-    found = _DAYDATE.match(text)
+    found = _DAYQ.match(text)
     if not found:
         return None
-    if found.group("n"):
-        n = _WORD_N.get(found.group("n").lower()) or int(found.group("n"))
-        unit, direction = found.group("unit"), found.group("dir").lower()
-        anchor_text = (found.group("anchor") or "").strip(" ,.?")
-        base = _resolve(anchor_text, today) if anchor_text else today
-        if base is None:
-            return None
-        sign = -1 if direction in ("before", "ago", "earlier", "prior to") else 1
-        target = _shift(base, n, unit, sign)
-        what = f"{n} {unit.rstrip('s')}{'s' if n != 1 else ''}"
-        rel = {"ago": "ago", "from now": "from now", "from today": "from today", "hence": "from now", "later": "later", "earlier": "earlier"}.get(direction, direction)
-        anchor_words = f" {anchor_text}" if anchor_text and direction not in ("ago", "from now", "from today") else ""
-        tail = f" ({_long(base)})" if anchor_text and not recognise.resolve(anchor_text, datetime(2026, 1, 1)) is None and anchor_text.lower() not in ("today", "now") else ""
-        verb = "was" if target < today else "is"
-        return _computed(f"{what.capitalize()} {rel}{anchor_words}{tail} {verb} {_long(target)}.", f"{what} {'before' if sign < 0 else 'after'} {_long(base)}")
-    absolute = (found.group("abs") or "").strip(" ,.?")
-    if not absolute or re.search(r"\b(?:it|the time|my|your)\b", absolute, re.I) and absolute.lower() in ("it", "it today", "today?"):
+    rest = found["rest"].strip()
+    moved = recognise.day_offset(rest, today)
+    if moved:
+        return _offset_reply(moved, today)
+    if rest.lower() in ("it", "today", "now", "this"):
         return None
-    target = _resolve(absolute, today)
-    if target is None or absolute.lower() in ("today", "it"):
+    target = _resolve(rest, today)
+    if target is None:
         return None
-    verb = "was" if target < today else "is" if target > today else "is"
-    return _computed(f"{absolute.strip().capitalize()} {verb} {_long(target)}.", f"{absolute.strip()} as {_long(target)}")
+    return _computed(f"{rest.capitalize()} {'was' if target < today else 'is'} {_long(target)}.", f"{rest} as {_long(target)}")
 
 
 def _between(text: str, today: date) -> Reply | None:
@@ -216,36 +187,42 @@ def _between(text: str, today: date) -> Reply | None:
         words = f"{days / 7:.1f} weeks ({days} days)"
     elif unit == "months":
         months = (high.year - low.year) * 12 + high.month - low.month - (1 if high.day < low.day else 0)
-        words = f"{months} month{'s' if months != 1 else ''} and {(high - _shift(low, months, 'months', 1)).days} days ({days} days)"
+        words = f"{months} month{'s' if months != 1 else ''} and {(high - recognise.shift_day(low, months, 'month', 1)).days} days ({days} days)"
     return _computed(f"From {_long(low)} to {_long(high)} is {words}.", f"the days from {_long(low)} to {_long(high)}")
 
 
 # --- word counts and definitions ---------------------------------------------------------
 
-def _word_count(ctx: Ctx, text: str) -> Reply | None:
-    found = _WORDS.match(text)
-    if not found:
-        return None
-    topic = (found.group("t") or "").strip(" .?")
+def _pasted_count(text: str) -> Reply | None:
     quoted = _QUOTED.search(text)
-    if quoted and (quoted.group(1) or quoted.group(2)):
-        body = (quoted.group(1) or quoted.group(2)).strip()
-        words = len(body.split())
-        return _computed(f"That text has {words} word{'s' if words != 1 else ''} and {len(body)} characters, about {utilities.reading_time(words) or 'a few seconds'} to read.", "the text you gave")
+    body = ((quoted.group(1) or quoted.group(2)) if quoted else "") or ""
+    if not body.strip():
+        return None
+    words = len(body.split())
+    return _computed(f"That text has {words} word{'s' if words != 1 else ''} and {len(body)} characters, about {utilities.reading_time(words) or 'a few seconds'} to read.", "the text you gave")
+
+
+def _note_count(ctx: Ctx, topic: str) -> Reply | None:
     if re.match(r"^(?:my notes|all my notes|everything|the notebook|my notebook)$", topic, re.I) or not topic and not ctx.open_ids:
         return None
     notes = topic_notes(topic, ctx)
     if not notes:
         return None
-    note = notes[0]
-    body = str(note.get("content") or "")
+    body = str(notes[0].get("content") or "")
     counted = utilities.counts(body)
     sents = len(study.sentences(body))
-    title = study.title_of(body)
+    words = counted["words"]
     return Reply(
-        f"[**{title}**](#/notes/{note['id']}) has {counted['words']} word{'s' if counted['words'] != 1 else ''}, {counted['chars']} characters and about {sents} sentence{'s' if sents != 1 else ''}"
+        f"[**{study.title_of(body)}**](#/notes/{notes[0]['id']}) has {words} word{'s' if words != 1 else ''}, {counted['chars']} characters and about {sents} sentence{'s' if sents != 1 else ''}"
         + (f", a {counted['read']}." if counted["read"] else ".")
     )
+
+
+def _word_count(ctx: Ctx, text: str) -> Reply | None:
+    found = _WORDS.match(text)
+    if not found:
+        return None
+    return _pasted_count(text) or _note_count(ctx, (found.group("t") or "").strip(" .?"))
 
 
 @functools.lru_cache(maxsize=1)
