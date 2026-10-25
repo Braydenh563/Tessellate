@@ -139,18 +139,14 @@ def _plain(sentence: str) -> str:
     return study.clean(re.sub(r"^\s*(?:[-*+]|\d{1,2}[.)])\s+(?:\[[ xX]\]\s*)?", "", sentence)).strip()
 
 
-def _sentence_day(sentence: str, anchor: datetime, start: date, end: date) -> date | None:
-    """The first day in [start, end] a sentence names, read against the day
-    its note was written."""
+def _sentence_day(sentence: str, anchor: datetime) -> date | None:
+    """The day a sentence names, read against the day its note was written:
+    its first date, whichever window is asked about."""
     for span in recognise.recognise(sentence, now=anchor, tense="future"):
         if span.rank or span.kind not in ("date", "datetime"):
             continue
         value = span.value
-        day = value.date() if isinstance(value, datetime) else value if isinstance(value, date) else None
-        if day is not None and start <= day <= end:
-            return day
-        if day is not None:
-            return None
+        return value.date() if isinstance(value, datetime) else value if isinstance(value, date) else None
     return None
 
 
@@ -160,16 +156,36 @@ def _dated_lines(content: str):  # noqa: ANN202
             yield from (s for s in _SENTENCE.split(line) if recognise.dated_sentence(s))
 
 
-def _note_events_of(note: dict, now: datetime, start: date, end: date) -> list[Event]:
+#: Reading a note's dates costs the recogniser; the same note is asked about
+#: again by every plan, due and countdown turn. Keyed by the note's id, a hash
+#: of its text and the day it was written, so an edit is a new key. Holds the
+#: days of every dated sentence, whatever window is asked about later.
+_DAYS_CACHE: dict[tuple, tuple[tuple[date, str], ...]] = {}
+_CACHE_MAX = 1200
+
+
+def _note_days(note: dict, now: datetime) -> tuple[tuple[date, str], ...]:
     content = str(note.get("content") or "")
-    anchor, title = _anchor(note, now), study.title_of(content)
-    out: list[Event] = []
+    anchor = _anchor(note, now)
+    key = (note.get("id"), hash(content), anchor)
+    hit = _DAYS_CACHE.get(key)
+    if hit is not None:
+        return hit
+    found: list[tuple[date, str]] = []
     for sentence in _dated_lines(content):
-        day = _sentence_day(sentence, anchor, start, end)
+        day = _sentence_day(sentence, anchor)
         text = _plain(sentence.lstrip("# ") if sentence.strip().startswith("#") else sentence)
         if day is not None and 3 <= len(text) <= 160:
-            out.append(Event(day, text, "note", note.get("id"), title))
-    return out
+            found.append((day, text))
+    if len(_DAYS_CACHE) >= _CACHE_MAX:
+        _DAYS_CACHE.clear()
+    _DAYS_CACHE[key] = tuple(found)
+    return _DAYS_CACHE[key]
+
+
+def _note_events_of(note: dict, now: datetime, start: date, end: date) -> list[Event]:
+    title = study.title_of(str(note.get("content") or ""))
+    return [Event(day, text, "note", note.get("id"), title) for day, text in _note_days(note, now) if start <= day <= end]
 
 
 def note_events(ctx: Ctx, start: date, end: date) -> list[Event]:

@@ -530,7 +530,9 @@ HELP_TOPICS: list[dict] = [
             "“What's due this week”, “plan my week” and “how long until the exam” read your reminders, the dates "
             "your notes give and your open checklist items. It also works out percentages, marks needed, dates "
             "(“what day is 3 weeks from friday”) and word counts, and defines common study terms your notes "
-            "do not cover. Every answer about a note is that note's own words."
+            "do not cover. After a due or plan list, “the second one” and “why” explain a line and where it came from; "
+            "after a reply that says a tool is off, “turn it on” links its switch (it never flips it for you). "
+            "Every answer about a note is that note's own words."
         ),
         "badge": {"label": "Chat", "tab": "chat"},
     },

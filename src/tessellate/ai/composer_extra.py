@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import re
 
-from tessellate.ai import composer_calc, composer_plan, composer_study, composer_web
+from tessellate.ai import composer_calc, composer_follow, composer_plan, composer_study, composer_switch, composer_web
 from tessellate.ai.composer_study import Ctx, Reply
 
 _OPEN_IT = re.compile(
@@ -44,7 +44,7 @@ def open_it(ctx: Ctx) -> Reply | None:
 
 _START_IT = re.compile(
     r"^(?:ok(?:ay)?[, ]+|please[, ]+|can you |could you |how do i |how can i |how to )*"
-    r"(?:start|turn on|switch on|enable|run|launch|set up|fix)\s+(?:it|that|this|the search(?: service)?|searxng|web search)(?:\s+(?:up|on))?\s*(?:please|for me|now)?\W*$", re.I)
+    r"(?:(?:start|turn on|switch on|enable|run|launch|set up|fix)\s+(?:it|that|this|the search(?: service)?|searxng|web search)(?:\s+(?:up|on))?|(?:turn|switch) (?:it|that|this) on)\s*(?:please|for me|now)?\W*$", re.I)
 _SEARCH_DOWN = re.compile(r"searxng|web search|search service", re.I)
 
 
@@ -62,12 +62,12 @@ def start_it(ctx: Ctx) -> Reply | None:
 
 
 def answer(ctx: Ctx) -> Reply | None:
-    opened = open_it(ctx) or start_it(ctx) or composer_study.open_named(ctx)
+    opened = open_it(ctx) or start_it(ctx) or composer_switch.answer(ctx) or composer_study.open_named(ctx)
     if opened:
         return opened
     if composer_study.match(_plain(ctx)) is not None:
         return composer_study.answer(ctx)
-    return composer_plan.answer(ctx) or composer_calc.answer(ctx) or composer_study.answer(ctx)
+    return composer_follow.answer(ctx) or composer_plan.answer(ctx) or composer_calc.answer(ctx) or composer_study.answer(ctx)
 
 
 def _plain(ctx: Ctx) -> str:
