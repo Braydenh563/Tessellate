@@ -1316,7 +1316,7 @@ function openNotePicker() {
   panel.classList.remove("hidden");
   $("attach-note").setAttribute("aria-expanded", "true");
   renderNotePickerList();
-  if (window.matchMedia(PHONE_TABS).matches && typeof openSheet === "function") {
+  if (window.matchMedia(PHONE_TABS).matches) {
     const home = { parent: panel.parentElement, next: panel.nextSibling };
     //: The sheet's own head already carries a title and a Close; this
     //: panel's `.dialog-head` (built for the floating popover) would only
@@ -1867,7 +1867,7 @@ async function chatSendTurn(preset, opts = {}) {
   chatController = new AbortController();
   const controller = chatController;
   //: The app's mark lifts its cells while a turn runs (phone-shell.js).
-  if (typeof syncEmblemBusy === "function") syncEmblemBusy();
+  syncEmblemBusy();
   //: Atlas looks up to think while a turn runs (avatars.js).
   if (typeof setAtlasMood === "function") setAtlasMood("thinking");
 
@@ -2365,7 +2365,7 @@ async function chatSendTurn(preset, opts = {}) {
     if (chatController === controller) {
       chatController = null;
       stopChatTimer();
-      if (typeof syncEmblemBusy === "function") syncEmblemBusy();
+      syncEmblemBusy();
       // The turn is over: it is saved (or about to be) and a reload of this
       // thread will render it like any other. Re-attaching these nodes after
       // that point would show it twice.

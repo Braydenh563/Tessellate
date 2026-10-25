@@ -18,7 +18,11 @@ WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
 def test_new_map_toast_says_what_enter_does_while_typing():
     # Enter in a topic's editor is a line break (the owner, 2026-10-10), so the
     # creation toast must name the key that adds a sibling while typing.
-    assert "While typing a name, Ctrl+Enter adds the sibling." in WB
+    # dog2 item 12: the canvas keys first, then plainly what Enter does while
+    # typing (Ctrl+Enter on a selected topic inserts a parent, so it is named
+    # only for the editor).
+    assert "Tab adds a branch, Enter one beside it. While you type a name, Enter is a new line and Ctrl+Enter adds the one beside it." in WB
+    assert "Enter a sibling." not in WB
 
 
 def _function(name: str) -> str:
@@ -110,8 +114,10 @@ def test_arrow_on_empty_board_or_within_one_shape_stays_free():
     assert _bound(f"wbBoundArrowData(100, 100, 400, 100, 10, {BLOB})", same) is None
 
 
-def test_only_the_arrow_tool_binds_and_pen_strokes_are_never_targets():
-    assert 'window.currentTool === "arrow" ? wbBoundArrowData(' in WB
+def test_only_the_arrow_and_line_tools_bind_and_pen_strokes_are_never_targets():
+    # The Line tool binds as well since wb2 (2026-10-25): a line between two
+    # shapes stayed a loose path that did not follow them.
+    assert 'window.currentTool === "arrow" || window.currentTool === "line" ? wbBoundArrowData(' in WB
     assert "!wbSketchIsClosedShape(item)) continue" in _function("wbArrowCandidateAt")
 
 

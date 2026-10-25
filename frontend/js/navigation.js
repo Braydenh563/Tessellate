@@ -1036,7 +1036,7 @@ function recordTabVisit(name, section = null, title = "", { refine = false } = {
 //: mirroring it (`routerGo`, router.js), which answers with `popstate` and
 //: lands in `goToTabHistory` below; the stack walks on its own otherwise.
 function stepTabHistory(delta) {
-  if (typeof routerGo === "function" && routerGo(delta)) return;
+  if (routerGo(delta)) return;
   return goToTabHistory(tabHistory.index + delta);
 }
 
@@ -1049,7 +1049,7 @@ async function goToTabHistory(next, { fromBrowser = false } = {}) {
   if (next < 0 || next >= tabHistory.stack.length) return;
   //: A jump from the history menu is a walk through the browser's history
   //: too, for the same reason Back is (`stepTabHistory`).
-  if (!fromBrowser && typeof routerGo === "function" && routerGo(next - tabHistory.index)) return;
+  if (!fromBrowser && routerGo(next - tabHistory.index)) return;
   const entry = tabHistory.stack[next];
   const from = tabHistory.index;
   tabHistory.index = next;

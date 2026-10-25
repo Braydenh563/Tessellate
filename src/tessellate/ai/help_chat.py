@@ -318,8 +318,12 @@ HELP_TOPICS: list[dict] = [
             "dock, and refits when one opens or closes until you pan or zoom "
             "yourself. Drag an item to move it, or type its X and Y in the "
             "Format panel; the context bar over a selection, or the Format "
-            "panel, changes its colour, line and words. Draw a link between "
-            "cards with the connector (C), from one card to the other."
+            "panel, changes its colour, line and words; on a narrow window "
+            "the bar keeps one row and moves its order, dash and arrange "
+            "buttons into its More menu. Draw a link between "
+            "cards with the connector (C), from one card to the other; it "
+            "ends in an arrow, and the bar over the rail sets its ends while "
+            "the tool is held."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },
@@ -1338,7 +1342,7 @@ HELP_TOPICS.extend(
         {
             "id": "mind-maps",
             "keywords": (
-                "mind map", "mindmap", "mind-map", "branch", "child topic", "brainstorm",
+                "mind map", "mindmap", "mind-map", "branch", "child topic", "brainstorm", "drag to reorder", "reorder by dragging",
                 "branch colours", "branch colors", "map font", "map theme", "palette",
                 "from the library", "point a topic at a note", "link a note to a topic", "reference node",
                 "make a mind map", "map from a note",
@@ -1352,7 +1356,8 @@ HELP_TOPICS.extend(
                 "Make a mind map of this chat do the same for the answer or the whole "
                 "conversation. Tab adds a child, Enter a sibling, and dragging a topic "
                 "onto another moves its whole branch (onto Drop here to delete, at "
-                "the foot, deletes the topic and its branch). Right-click a topic for the "
+                "the foot, deletes the topic and its branch); let go between two of "
+                "its siblings, at the line that shows, and it takes that place. Right-click a topic for the "
                 "ring of actions, where Cross-link joins any two topics. View, How this "
                 "map looks sets its branch colours (eight palettes, classic first), its "
                 "font, its spacing (Compact, Normal or Roomy) and the look every topic follows "
@@ -1405,13 +1410,13 @@ HELP_TOPICS.extend(
                 "Tools: V or S select, H hand, K lasso, P pen, M highlighter, E "
                 "eraser, B fill, L line, A arrow, R rectangle, O circle, G "
                 "triangle, D diamond, T text, N sticky note (Ctrl+Enter in one starts the next beside it), F frame, C connector (Shift+C "
-                "curved), I image, X delete. An arrow (A) that starts or ends on a shape, card or topic is a "
+                "curved), I image, X delete. An arrow (A) or a line (L) that starts or ends on a shape, card or topic is a "
                 "connector bound to it and follows it when it moves; the circle is dragged corner to corner like the rectangle. The Shapes button's flyout also has a rounded "
                 "rectangle, ellipse, hexagon, parallelogram, star, cylinder, cloud, speech "
                 "bubble and block arrow. Moving around: the wheel "
                 "zooms about the pointer, two fingers on a trackpad pan, Shift+wheel pans sideways, a pinch "
                 "zooms too, Space and drag pans, so does the middle or right mouse button held down (a plain right-click still opens the board menu), a drag to an edge pans, Ctrl+= and Ctrl+- zoom, "
-                "Ctrl+0 is 100%, Shift+1 fits all, Shift+N shows the "
+                "Ctrl+0 is 100%, Shift+1 fits all, Shift+2 zooms to the selection (View has it too), Shift+N shows the "
                 "overview, / or Ctrl+F finds (with Whole word and Pattern buttons), Ctrl+H replaces, and Tab walks the board's "
                 "items. Ctrl+K also finds select all shapes or connectors, select similar (every item of the same kind, fill and line colour as the selected one), turn 90 degrees, remove from "
                 "the group, copy and paste the size, grow to fit the words, reverse a connector and clear its bends. "
@@ -1623,6 +1628,31 @@ HELP_TOPICS.extend(
             "badge": {"label": "Library", "tab": "library"},
         },
         {
+            "id": "board-diagram-tools",
+            "keywords": (
+                "tidy a diagram", "tree layout", "lay out as a tree", "auto layout", "layout a flowchart",
+                "zoom to selection", "zoom to the selection", "zoom to fit the selection", "shift+2",
+                "change shape", "change the shape", "swap a shape", "turn a rectangle into", "replace shape",
+                "shrink to fit", "text too big for the shape", "fit the text", "text overflows the shape", "link a shape", "link to a web page", "link a shape to a note", "hyperlink on a board", "open a shape's link",
+            ),
+            "body": (
+                "Diagram tools on a board. Shift+2 (or View, Zoom to the selection) frames what is selected, "
+                "up to twice its size. Tidy as a tree, in Arrange, the selection's More and the right-click "
+                "Arrange, lays the selected shapes out along the connectors between them, top to bottom or "
+                "left to right: a shape no connector points into is a root, siblings keep their order, and "
+                "one Undo takes it back. It is offered once the selection holds a connector. Change the "
+                "shape…, in a closed shape's More, the right-click Arrange and Ctrl+K, turns it into another "
+                "kind (rectangle, ellipse, diamond, cylinder, cloud and the rest) in the same box, keeping "
+                "its text, colours, line and connectors. Link…, in a shape's, text box's or picture's More "
+                "and its right-click menu, links it to one of your notes or a web page (or an app link "
+                "from Copy app link); a small mark on its top-left corner opens it, a note in the app and "
+                "a page in a new tab, and the same Link… changes or removes it. Fit, in the Format "
+                "panel's Text tab for a shape (or Ctrl+K, Shrink the text to fit), makes long words shrink "
+                "until they fit inside the shape, never past the size you gave them."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
             "id": "mind-map-controls",
             "keywords": (
                 "cross-link", "cross link", "outdent", "fold", "unfold", "radial",
@@ -1678,7 +1708,7 @@ HELP_TOPICS.extend(
                 "numbered topics", "outline numbers", "note on a topic", "note behind a topic",
                 "comment on a topic", "boundary", "summary topic", "summarise topics",
                 "mind map features", "layout picker", "present branches", "marker", "markers", "priority on a topic",
-                "flag a topic", "filter by marker", "map outline", "outline of the map",
+                "flag a topic", "filter by marker", "map outline", "outline of the map", "dim the rest", "dim all but", "highlight a branch",
             ),
             "body": (
                 "Mind map features. The layout picker: tree, radial, logic chart, "
@@ -1688,7 +1718,9 @@ HELP_TOPICS.extend(
                 "Present branches shows it branch by branch. A topic's menu, "
                 "Content, Markers sets a priority (1 to 5), how far along it is, a "
                 "flag, a due day and up to six icons; View, Filter by marker dims every topic "
-                "without the one you pick. The sidebar's Outline tab (View, "
+                "without the one you pick, and View, Dim all but the selected branch "
+                "dims everything outside the selected topic's branch and its path to "
+                "the centre, following the selection. The sidebar's Outline tab (View, "
                 "Outline) lists the map as an indented outline: F2 renames, "
                 "Shift+Enter adds a topic, Tab and Shift+Tab move it in and out a level. "
                 "A topic's menu makes "
@@ -1709,7 +1741,7 @@ HELP_TOPICS.extend(
                 "opml", "an opml outline", "import an opml", "freemind", "xmind", "import a map", "export a map", "map template", "map as a document",
                 "map the headings", "suggest branches", "branches from my notes", "grow the map",
                 "expand from my notes", "children from notes", "write a map as a document",
-                "import a mind map", "export a mind map",
+                "import a mind map", "export a mind map", "copy a branch as an outline", "export one branch", "export a branch",
             ),
             "body": (
                 "Mind map import and export. Start from a "
@@ -1726,7 +1758,10 @@ HELP_TOPICS.extend(
                 "OPML, FreeMind, XMind, Markdown or text as well as a picture, or write it as "
                 "a document (the board menu's Write as a document: branches "
                 "become headings, deeper topics lists, notes paragraphs); a "
-                "document's menu, Map the headings, goes the other way. With a "
+                "document's menu, Map the headings, goes the other way. One "
+                "branch alone: a topic's Branch menu, Copy this branch as an "
+                "outline (Markdown, ready to paste) or Export this branch… (a "
+                "picture or PDF of it). With a "
                 "map open, the command palette (Ctrl+K) lists the map's commands: "
                 "add, rename, fold, focus, tidy, layout, look, numbering, present "
                 "and export."

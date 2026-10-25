@@ -6748,6 +6748,11 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" class="wb-menu-item" data-wb-cmd="flip-v"><i class="ph ph-flip-vertical ph-lead" aria-hidden="true"></i><span>Flip top to bottom</span><kbd>Shift+V</kbd></button>
             </div>
             <div class="wb-menu-section">
+              <span class="wb-panel-group-label">Tidy as a tree (shapes and their connectors)</span>
+              <button type="button" class="wb-menu-item" data-wb-cmd="tidy-down"><i class="ph ph-tree-structure ph-lead" aria-hidden="true"></i><span>Top to bottom</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="tidy-right"><i class="ph ph-tree-view ph-lead" aria-hidden="true"></i><span>Left to right</span></button>
+            </div>
+            <div class="wb-menu-section">
               <span class="wb-panel-group-label">Order</span>
               <button type="button" class="wb-menu-item" data-wb-cmd="order-forward"><i class="ph ph-arrow-up ph-lead" aria-hidden="true"></i><span>Bring forward</span><kbd>]</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="order-backward"><i class="ph ph-arrow-down ph-lead" aria-hidden="true"></i><span>Send backward</span><kbd>[</kbd></button>
@@ -6796,6 +6801,7 @@ Link to another note with [[its first few words]]."></textarea>
                  and what is worth its key (Shift+1, Ctrl+0) is. -->
             <div class="wb-menu-section" role="group" aria-label="Zoom">
               <button type="button" class="wb-menu-item" data-wb-click="wb-zoom-fit"><i class="ph ph-frame-corners ph-lead" aria-hidden="true"></i><span>Fit everything</span><kbd>Shift+1</kbd></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="zoom-selection"><i class="ph ph-selection ph-lead" aria-hidden="true"></i><span>Zoom to the selection</span><kbd>Shift+2</kbd></button>
               <button type="button" class="wb-menu-item" id="wb-zoom-actual"><i class="ph ph-magnifying-glass ph-lead" aria-hidden="true"></i><span>Zoom to 100%</span><kbd>Ctrl+0</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-click="wb-fullscreen"><i class="ph ph-arrows-out ph-lead" aria-hidden="true"></i><span>Full screen</span><kbd>Esc leaves</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-fn="present" data-wb-surface="board" title="Show the board's frames one at a time, full screen"><i class="ph ph-presentation ph-lead" aria-hidden="true"></i><span>Present frames</span><kbd>arrows · Esc</kbd></button>
@@ -6848,6 +6854,7 @@ Link to another note with [[its first few words]]."></textarea>
               <!-- Numbered branches (MINDMAP_PLAN.md decision 17): a map-wide
                    on/off, the menu's own switch row, like the Panels group. -->
               <label class="wb-menu-row wb-snap-label" hidden title="Number every topic by its place in the outline: 1, 1.1, 1.2"><span><i class="ph ph-list-numbers ph-lead" aria-hidden="true"></i>Number the branches</span><input type="checkbox" id="wb-map-numbered"></label>
+              <label class="wb-menu-row wb-snap-label" hidden title="Dim every topic outside the selected topic's branch and the path to its trunk"><span><i class="ph ph-circle-half ph-lead" aria-hidden="true"></i>Dim all but the selected branch</span><input type="checkbox" id="wb-map-dim"></label>
               <button type="button" class="wb-menu-item" id="wb-map-theme-item" hidden><i class="ph ph-palette ph-lead" aria-hidden="true"></i><span>How this map looks</span></button>
               <button type="button" class="wb-menu-item" id="wb-map-expand-all" hidden><i class="ph ph-arrows-out-line-vertical ph-lead" aria-hidden="true"></i><span>Open every folded branch</span></button>
               <button type="button" class="wb-menu-item" id="wb-map-filter-item" data-wb-surface="map" hidden title="Dim every topic that does not carry one marker"><i class="ph ph-funnel ph-lead" aria-hidden="true"></i><span>Filter by marker…</span></button>
@@ -7387,7 +7394,7 @@ Link to another note with [[its first few words]]."></textarea>
           <span class="wb-context-label">Size</span>
           <input type="range" id="wb-stroke-width" aria-label="Line thickness" title="Pen / shape / eraser size" min="1" max="24" step="1" value="3">
         </label>
-        <select id="wb-arrow-style" aria-label="Arrowhead style" title="Arrowhead style: the Line and Arrow tools" data-wb-tool-setting="ends">
+        <select id="wb-arrow-style" aria-label="Arrowhead style" title="Arrowhead style: the Line, Arrow and Link tools" data-wb-tool-setting="ends">
           <option value="end">End</option>
           <option value="start">Start</option>
           <option value="both">Both ends</option>
@@ -7396,7 +7403,7 @@ Link to another note with [[its first few words]]."></textarea>
         <!-- Which mark those ends wear (the owner, 2026-10-11: "more arrow
              options"): the selection's own end list, copied in at start
              (`wbInitToolHead`), so the two can never offer different ends. -->
-        <select id="wb-arrow-head" aria-label="Arrowhead" title="Arrowhead: the mark the Line and Arrow tools put on their ends" data-wb-tool-setting="head"></select>
+        <select id="wb-arrow-head" aria-label="Arrowhead" title="Arrowhead: the mark the Line, Arrow and Link tools put on their ends" data-wb-tool-setting="head"></select>
         <select id="wb-stroke-style" aria-label="Line style" title="Line style" data-wb-tool-setting="dash">
           <option value="solid">Solid</option>
           <option value="dashed">Dashed</option>
@@ -7590,6 +7597,8 @@ Link to another note with [[its first few words]]."></textarea>
           <button type="button" class="ghost small icon-only wb-menu-toggle" data-wb-menu-toggle title="More, for this selection" aria-label="More, for this selection" aria-haspopup="true" aria-expanded="false" aria-controls="wb-context-menu"><i class="ph ph-dots-three" aria-hidden="true"></i></button>
           <div id="wb-context-menu" class="wb-board-menu wb-context-menu hidden" role="menu" aria-label="More">
             <button type="button" class="wb-menu-item" data-wb-cmd="format-panel"><i class="ph ph-sliders-horizontal ph-lead" aria-hidden="true"></i><span>Format panel</span><kbd>Ctrl+Shift+P</kbd></button>
+            <button type="button" class="wb-menu-item hidden" data-wb-ctx="more-link" data-wb-cmd="item-link"><i class="ph ph-link-simple ph-lead" aria-hidden="true"></i><span>Link…</span></button>
+            <button type="button" class="wb-menu-item hidden" data-wb-ctx="more-shape" data-wb-cmd="change-shape"><i class="ph ph-shapes ph-lead" aria-hidden="true"></i><span>Change the shape…</span></button>
             <div class="wb-menu-section" data-wb-ctx="more-style">
               <span class="wb-panel-group-label">Style</span>
               <div class="wb-menu-row" id="wb-copy-style-row">
@@ -7633,6 +7642,11 @@ Link to another note with [[its first few words]]."></textarea>
               <span class="wb-panel-group-label">Arrange as mind map</span>
               <button type="button" class="wb-menu-item" id="wb-mindmap-tree" title="Tree layout, root on the left"><i class="ph ph-tree ph-lead" aria-hidden="true"></i><span>Tree</span></button>
               <button type="button" class="wb-menu-item" id="wb-mindmap-radial" title="Radial layout, root at the centre"><i class="ph ph-target ph-lead" aria-hidden="true"></i><span>Radial</span></button>
+            </div>
+            <div class="wb-menu-section hidden" data-wb-ctx="more-tidy">
+              <span class="wb-panel-group-label">Tidy as a tree</span>
+              <button type="button" class="wb-menu-item" data-wb-cmd="tidy-down"><i class="ph ph-tree-structure ph-lead" aria-hidden="true"></i><span>Top to bottom</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="tidy-right"><i class="ph ph-tree-view ph-lead" aria-hidden="true"></i><span>Left to right</span></button>
             </div>
             <div class="wb-menu-section">
               <span class="wb-panel-group-label">This selection</span>
@@ -8127,6 +8141,11 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" id="wb-fmt-italic" class="ghost small icon-only" aria-pressed="false" title="Italic, the whole text" aria-label="Italic"><i class="ph ph-text-italic" aria-hidden="true"></i></button>
               <button type="button" id="wb-fmt-underline" class="ghost small icon-only" aria-pressed="false" title="Underline, the whole text" aria-label="Underline"><i class="ph ph-text-underline" aria-hidden="true"></i></button>
               <button type="button" id="wb-fmt-strike" class="ghost small icon-only" aria-pressed="false" title="Strikethrough, the whole text" aria-label="Strikethrough"><i class="ph ph-text-strikethrough" aria-hidden="true"></i></button>
+            </span>
+          </div>
+          <div class="wb-fmt-row" data-fmt="fit"><span class="wb-fmt-label">Fit</span>
+            <span class="wb-fmt-buttons">
+              <button type="button" id="wb-fmt-fit" class="ghost small icon-only" aria-pressed="false" title="Shrink the text to fit the shape" aria-label="Shrink the text to fit the shape"><i class="ph ph-arrows-in-simple" aria-hidden="true"></i></button>
             </span>
           </div>
           <div class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Align</span>

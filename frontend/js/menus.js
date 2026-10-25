@@ -1550,7 +1550,7 @@ function entryOverflowMenu(entry) {
   //: drift in one go.
   const opener = smallButton("ph:dots-three", "More actions", () => {
     // The phone's action sheet, as `kebabMenu` opens (`openKebabSheet`).
-    if (window.matchMedia(PHONE_ACTION_SHEET).matches && typeof openSheet === "function") {
+    if (window.matchMedia(PHONE_ACTION_SHEET).matches) {
       fillMenu();
       openKebabSheet(menu, opener, "Note actions");
       return;

@@ -333,7 +333,7 @@ function mapPreviewSketch(NS, x, y, w, h, shape, unit) {
     el.setAttribute("points", points.map(([px, py]) => `${r2(px)},${r2(py)}`).join(" "));
     return el;
   }
-  if (shape === "line" || shape === "arrow") {
+  if (shape === "line" || shape === "arrow" || shape === "line-flat" || shape === "line-rise") {
     //: Corner to corner, because that is the only thing the box knows: a
     //: line's box is its two ends, and which diagonal it runs along is not
     //: recoverable from a bounding box. The alternative, a horizontal rule
@@ -341,10 +341,12 @@ function mapPreviewSketch(NS, x, y, w, h, shape, unit) {
     //: line from the one on the board; this one is right for half of them and
     //: the right length for all of them.
     const el = make("line");
+    //: A link says which way it runs (`_link_preview`): level or climbing.
+    const f = shape == "line-flat" ? h / 2 : shape == "line-rise" ? h : 0;
     el.setAttribute("x1", String(r2(x)));
-    el.setAttribute("y1", String(r2(y)));
+    el.setAttribute("y1", String(r2(y + f)));
     el.setAttribute("x2", String(r2(x + w)));
-    el.setAttribute("y2", String(r2(y + h)));
+    el.setAttribute("y2", String(r2(y + h - f)));
     return el;
   }
   //: A pen or highlighter stroke: a scribble that fills the box it was drawn

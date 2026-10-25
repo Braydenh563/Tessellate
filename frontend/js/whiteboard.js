@@ -2431,11 +2431,10 @@ function wbRefitIfFitted() {
  * Never zooms *in* past 1: `scaleExtent` allows 4x, but magnifying two cards
  * until they fill a 1440px window is not what anyone means by "fit".
  */
-function wbZoomToFit({ animate = true, padding = 64 } = {}) {
+function wbZoomToFit({ animate = true, padding = 64, bounds = wbContentBounds(), maxScale = 1, refit = true } = {}) {
   const container = document.getElementById("whiteboard-container");
   if (!container) return;
   const sel = d3.select(container);
-  const bounds = wbContentBounds();
   if (!bounds) {
     // An empty board genuinely has nothing to fit, and the origin at 100% is
     // where the first card will land, so that is the honest destination.
@@ -2446,17 +2445,19 @@ function wbZoomToFit({ animate = true, padding = 64 } = {}) {
   const k = Math.max(
     0.1,
     Math.min(
-      1,
+      maxScale,
       (free.right - free.left - padding * 2) / Math.max(bounds.width, 1),
       (free.bottom - free.top - padding * 2) / Math.max(bounds.height, 1),
     ),
   );
-  const cx = (bounds.minX + bounds.maxX) / 2;
-  const cy = (bounds.minY + bounds.maxY) / 2;
+  const cx = bounds.minX + bounds.width / 2;
+  const cy = bounds.minY + bounds.height / 2;
   const target = d3.zoomIdentity
     .translate((free.left + free.right) / 2 - k * cx, (free.top + free.bottom) / 2 - k * cy)
     .scale(k);
-  wbFit.on = true;
+  //: Only Fit everything keeps fitting while the board settles; a zoom to
+  //: the selection is a place, and the next layout must not pull it back out.
+  wbFit.on = refit;
   wbFit.target = target;
   wbFit.until = Date.now() + (animate ? 600 : 100);
   if (!animate) {
@@ -2497,6 +2498,18 @@ function wbZoomToFit({ animate = true, padding = 64 } = {}) {
     .on("end.cullhold", release)
     .on("interrupt.cullhold", release)
     .call(wbZoom.transform, target);
+}
+
+//: **Zoom to the selection** (Shift+2, draw.io's and Figma's key): the
+//: selected items fill the free canvas, magnified up to 2x so one small
+//: shape is readable, never past it.
+function wbZoomToSelection() {
+  const bounds = wbSelectionBounds();
+  if (!bounds) {
+    toast("Select something to zoom to.");
+    return;
+  }
+  wbZoomToFit({ bounds, padding: 32, maxScale: 2, refit: false });
 }
 
 //: A fit tighter than this is a map you cannot read: the nodes are there, the
@@ -2583,6 +2596,13 @@ function wbViewShowsContent(view, bounds, free) {
   return x1 > free.left && x0 < free.right && y1 > free.top && y0 < free.bottom;
 }
 
+//: Whether a view puts a whole board-space box inside the free canvas.
+function wbViewHoldsBox(view, box, free) {
+  const x0 = view.x + view.k * box.minX, x1 = view.x + view.k * box.maxX;
+  const y0 = view.y + view.k * box.minY, y1 = view.y + view.k * box.maxY;
+  return x0 >= free.left && x1 <= free.right && y0 >= free.top && y1 <= free.bottom;
+}
+
 /** Put a board's remembered view back, or frame it when it has none to give. */
 function wbRestoreOrFrameBoard(boardId) {
   const container = document.getElementById("whiteboard-container");
@@ -2590,7 +2610,14 @@ function wbRestoreOrFrameBoard(boardId) {
   const saved = boardId == null ? null : wbBoardViews.get(boardId);
   const bounds = wbContentBounds();
   const free = wbFreeArea(container);
-  if (saved && wbViewShowsContent(saved, bounds, free)) {
+  //: **A map's remembered view must show its centre topic clear of the
+  //: chrome** (dog2 item 12: at 700 the root opened 54px under the left rail,
+  //: the view kept from a Tab that had panned to its child). A board keeps
+  //: any view that shows some of it; a map whose root is hidden is framed.
+  const mapRoot = wbIsMap() ? wbMapIndex().roots[0] : null;
+  const rootBox = mapRoot ? wbItemBBox("object", mapRoot) : null;
+  const rootShown = !rootBox || (saved && wbViewHoldsBox(saved, rootBox, free));
+  if (saved && rootShown && wbViewShowsContent(saved, bounds, free)) {
     wbFit.on = false;
     d3.select(container).call(wbZoom.transform, d3.zoomIdentity.translate(saved.x, saved.y).scale(saved.k));
     return;
@@ -4697,6 +4724,133 @@ async function wbArrangeGridSelection(columns) {
   wbPushMoveBatch(pushed);
 }
 
+//: The connectors with both ends in `entries`, as `[from, to]` member keys
+//: (`kind:id`), in the direction each was drawn.
+function wbTidyEdges(entries) {
+  const keys = new Set(entries.map((e) => `${e.kind}:${e.id}`));
+  const edges = [];
+  for (const sketch of wbState.sketches) {
+    let p;
+    try {
+      p = JSON.parse(sketch.data);
+    } catch {
+      continue;
+    }
+    if (!p?.type?.startsWith("link-")) continue;
+    const from = `${p.sourceKind || "node"}:${p.sourceId}`, to = `${p.targetKind || "node"}:${p.targetId}`;
+    if (from !== to && keys.has(from) && keys.has(to)) edges.push([from, to]);
+  }
+  return edges;
+}
+
+//: **Tidy as a tree** (draw.io Arrange > Layout > Vertical or Horizontal
+//: tree): the selected boxes in ranks along the connectors between them, top
+//: to bottom (`down`) or left to right. A box no connector points into is a
+//: root; siblings keep the order they had on the board, each box is centred in
+//: a cell the size of the largest, and the whole tree keeps the selection's
+//: top-left corner. One move batch, so Undo takes it all back.
+async function wbTidySelection(direction = "down") {
+  const entries = wbSelectionEntries();
+  const edges = wbTidyEdges(entries);
+  if (entries.length < 2 || !edges.length) {
+    toast("Select two or more shapes and the connectors between them to tidy them.");
+    return;
+  }
+  const down = direction === "down";
+  const byKey = new Map(entries.map((e) => [`${e.kind}:${e.id}`, e]));
+  const along = (key) => (down ? byKey.get(key).bbox.minX : byKey.get(key).bbox.minY);
+  const out = new Map(), into = new Map();
+  for (const [from, to] of edges) {
+    if (!out.has(from)) out.set(from, []);
+    out.get(from).push(to);
+    into.set(to, (into.get(to) || 0) + 1);
+  }
+  // Roots first, then anything a cycle left unreached, each in board order.
+  const order = [...byKey.keys()].sort((a, b) => along(a) - along(b));
+  const seen = new Set();
+  const build = (key) => {
+    seen.add(key);
+    const kids = (out.get(key) || []).filter((k) => !seen.has(k)).sort((a, b) => along(a) - along(b));
+    kids.forEach((k) => seen.add(k));
+    return { key, children: kids.map(build) };
+  };
+  const forest = [];
+  for (const key of [...order.filter((k) => !into.has(k)), ...order]) if (!seen.has(key)) forest.push(build(key));
+  const width = Math.max(...entries.map((e) => e.bbox.maxX - e.bbox.minX));
+  const height = Math.max(...entries.map((e) => e.bbox.maxY - e.bbox.minY));
+  const gap = WB_PASTE_STICKY.gap;
+  const [breadth, rank] = down ? [width + gap * 2, height + gap * 3] : [height + gap * 2, width + gap * 3];
+  const laid = d3.tree().nodeSize([breadth, rank])(d3.hierarchy({ children: forest }));
+  const points = laid.descendants().filter((n) => n.depth > 0);
+  const low = Math.min(...points.map((n) => n.x));
+  const left = Math.min(...entries.map((e) => e.bbox.minX));
+  const top = Math.min(...entries.map((e) => e.bbox.minY));
+  const pushed = [];
+  for (const n of points) {
+    const e = byKey.get(n.data.key);
+    const cellX = down ? n.x - low : (n.depth - 1) * rank;
+    const cellY = down ? (n.depth - 1) * rank : n.x - low;
+    const dx = left + cellX + (width - (e.bbox.maxX - e.bbox.minX)) / 2 - e.bbox.minX;
+    const dy = top + cellY + (height - (e.bbox.maxY - e.bbox.minY)) / 2 - e.bbox.minY;
+    if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) continue;
+    pushed.push(await wbMoveItemBy(e.kind, e.id, e.item, dx, dy));
+  }
+  wbPushMoveBatch(pushed);
+  toast(`Tidied ${entries.length} items as a tree.`);
+}
+
+//: **Change a shape's kind in place** (draw.io Edit > Edit style > shape,
+//: Excalidraw's shape switch): the four drawn kinds and the shape flyout's
+//: own, each drawn by the code that draws it from the tool, into the box the
+//: shape has now. Text, colours, line and its connectors (bound by id) stay.
+const WB_SHAPE_SWAPS = {
+  rect: { label: "Rectangle", icon: "ph:square", d: (x, y, w, h) => `M ${x} ${y} h ${w} v ${h} h ${-w} Z` },
+  circle: { label: "Ellipse", icon: "ph:circle", d: (x, y, w, h) => wbEllipseDrawD(x, y, x + w, y + h, false) },
+  triangle: { label: "Triangle", icon: "ph:triangle", d: (x, y, w, h) => `M ${x + w / 2} ${y} L ${x + w} ${y + h} L ${x} ${y + h} Z` },
+  diamond: { label: "Diamond", icon: "ph:diamond", d: (x, y, w, h) => `M ${x + w / 2} ${y} L ${x + w} ${y + h / 2} L ${x + w / 2} ${y + h} L ${x} ${y + h / 2} Z` },
+  ...Object.fromEntries(Object.entries(WB_MORE_SHAPES).filter(([k]) => k !== "shape-ellipse")),
+};
+
+//: The one selected closed shape, with its parsed data, or null.
+function wbSwapTarget() {
+  if (!wbSelectedItem || wbSelectedItem.kind !== "sketch" || wbMultiSelection.size > 1) return null;
+  const item = wbFindItem("sketch", wbSelectedItem.id);
+  const parsed = item ? wbSketchParsedData(item) : null;
+  return parsed && WB_FILLABLE_SHAPES.has(parsed.shape) ? { item, parsed } : null;
+}
+
+async function wbChangeShapeKind(kind) {
+  const target = wbSwapTarget(), swap = WB_SHAPE_SWAPS[kind];
+  if (!target || !swap) return;
+  const { item, parsed } = target;
+  const box = wbPathBBox(parsed.d);
+  const before = WB_KIND_INFO.sketch.payload(item);
+  const more = Boolean(WB_MORE_SHAPES[kind]);
+  const next = { ...parsed, d: swap.d(box.minX, box.minY, Math.max(box.width, 1), Math.max(box.height, 1)), shape: more ? "custom" : kind };
+  delete next.label_area;
+  delete next.shapeKind;
+  if (more) next.shapeKind = kind;
+  if (swap.area) next.label_area = swap.area;
+  item.data = JSON.stringify(next);
+  await wbSaveSketchProps(item, {});
+  wbPushUndo({ action: "move", kind: "sketch", id: item.id, before });
+  wbScheduleRender();
+  wbAnnounce(`Changed to ${swap.label.toLowerCase()}`);
+}
+
+//: The kinds as a menu at the More button (or the pointer), the current one
+//: left out.
+function wbOpenShapeSwapMenu(x, y) {
+  const target = wbSwapTarget();
+  if (!target) return;
+  const now = target.parsed.shapeKind || target.parsed.shape;
+  const items = Object.entries(WB_SHAPE_SWAPS)
+    .filter(([kind]) => kind !== now)
+    .map(([kind, swap]) => makeMenuItem(`${swap.icon} ${swap.label}`, `Change to ${swap.label.toLowerCase()}, keeping its text, colours and connectors`, () => wbChangeShapeKind(kind)));
+  const at = wbContextMoreWrap()?.getBoundingClientRect();
+  openMenuAtPoint(items, "Change the shape", x ?? (at ? at.left : 80), y ?? (at ? at.bottom + 4 : 80));
+}
+
 //: **Same size**, the third of WHITEBOARD_PLAN decision 3's eleven arrange
 //: actions and the one that had no function at all. Every selected item takes
 //: the largest one's width (or height); the largest rather than the
@@ -4919,6 +5073,11 @@ const WB_TOOL_SETTINGS = {
   highlighter: ["size"],
   line: ["size", "ends", "head", "dash"],
   arrow: ["size", "ends", "head", "dash"],
+  //: A link takes the rail's ink and its ends (dog2 item 13: drawn with the
+  //: Link tool it had no head and no way to ask for one). It shares the
+  //: Arrow tool's ends, which start at an end arrow.
+  "link-straight": ["ends", "head"],
+  "link-curved": ["ends", "head"],
   rect: ["size", "dash", "fill"],
   circle: ["size", "dash", "fill"],
   triangle: ["size", "dash", "fill"],
@@ -5140,15 +5299,15 @@ async function wbResetSelectedStyle() {
 const WB_CONTEXT_CONTROLS = {
   // Nothing selected, a drawing tool held: what the next stroke will use.
   tool: { bar: ["tool"], more: ["more-style"] },
-  line: { bar: ["ink", "caps", "stroke", "order"], more: ["more-style"] },
-  shape: { bar: ["ink", "stroke", "fill", "order"], more: ["more-style"] },
+  line: { bar: ["ink", "caps", "stroke", "order"], more: ["more-link", "more-style"] },
+  shape: { bar: ["ink", "stroke", "fill", "order"], more: ["more-link", "more-shape", "more-style"] },
   link: { bar: ["ink", "route", "caps", "stroke"], more: ["more-style"] },
-  text: { bar: ["ink", "text", "order"], more: ["more-style", "more-card"] },
-  image: { bar: ["order"], more: ["more-style"] },
+  text: { bar: ["ink", "text", "order"], more: ["more-link", "more-style", "more-card"] },
+  image: { bar: ["order"], more: ["more-link", "more-style"] },
   // A note card: its look comes from the note, so what it offers is where it
   // sits and what it can become.
   note: { bar: ["order"], more: ["more-mindmap", "more-notes"] },
-  multi: { bar: ["arrange", "order"], more: ["more-notes"] },
+  multi: { bar: ["arrange", "order"], more: ["more-tidy", "more-notes"] },
   //: Several topics on a map (INBOX 617, `wbMapMultiTopics`): the map's own
   //: verbs, never the board's arrange and order, which fight the layout.
   mapmulti: { bar: ["mapmulti"], more: [] },
@@ -5157,7 +5316,7 @@ const WB_CONTEXT_CONTROLS = {
 //: Every group and menu section the table can name, so hiding "everything
 //: else" never has to list them.
 const WB_CONTEXT_GROUPS = ["tool", "ink", "route", "caps", "stroke", "fill", "paper", "text", "arrange", "order", "mapmulti"];
-const WB_CONTEXT_MENU_SECTIONS = ["more-style", "more-card", "more-guides", "more-notes", "more-mindmap"];
+const WB_CONTEXT_MENU_SECTIONS = ["more-style", "more-card", "more-guides", "more-notes", "more-mindmap", "more-tidy", "more-shape", "more-link"];
 
 //: Which row of the table a selection reads. Returns null when the bar has
 //: nothing to say, which is what closes it.
@@ -5305,6 +5464,8 @@ function wbFillContextBar() {
     // pure shapes has no "notes-in-context".
     const hasNoteCard = wbSelectionEntries().some((e) => e.kind === "node");
     document.querySelector('#wb-context-menu [data-wb-ctx="more-notes"]')?.classList.toggle("hidden", !hasNoteCard);
+    //: Tidy only once the selection holds a connector to lay out along.
+    document.querySelector('#wb-context-menu [data-wb-ctx="more-tidy"]')?.classList.toggle("hidden", !wbTidyEdges(wbSelectionEntries()).length);
     delete bar.dataset.wbAnchor;
     return null;
   }
@@ -5832,6 +5993,8 @@ function wbApplySelectionHighlight() {
   //: And the waypoint handle on the selected topic's own lines, which is the
   //: other control that follows the selection without a re-render.
   wbSyncMapEdgeHandles();
+  //: The dimmed rest follows the selected branch.
+  if (typeof wbMapDim !== "undefined" && wbMapDim.on) wbMapPaintMarkerFilter();
   //: A card and a text box keep their eight handles and their rotate grip as
   //: children, revealed by `.wb-selected`, so a *group* member is marked a
   //: second way and 07-whiteboard-misc.css hides the grips on that class. The
@@ -6288,6 +6451,50 @@ function wbRenderRelease() {
 //: 60ms, 2,100 elements, on every Tab at 301 topics). Placed two frames on
 //: instead, after the editor, from the same selection.
 
+//: **A bar that would wrap folds its least-used groups into More** (the
+//: wb ledger, 10-25: two rows at 720, where the controls are 44px for a
+//: finger). draw.io and Figma do the same: the row stays one row, and the
+//: order pair, the dash pattern and the arrange runs (last first) move into
+//: the "..." menu's own section, the same controls with the same handlers.
+//: Every placement puts them back first, so a wider window or a smaller
+//: selection gets them on the bar again.
+const WB_CTX_FOLD = { order: ["order", "stroke", "arrange", "caps", "route"], home: new Map() };
+
+function wbFoldContextBar(bar) {
+  const menu = document.getElementById("wb-context-menu");
+  const more = wbContextMoreWrap();
+  if (!menu || !more) return;
+  let shelf = document.getElementById("wb-context-overflow");
+  if (shelf) {
+    //: Back where each was: its old neighbour, or that one's, when the
+    //: neighbour was folded too.
+    for (const g of [...shelf.children].reverse()) {
+      let ref = WB_CTX_FOLD.home.get(g);
+      while (ref && ref.parentElement !== bar) ref = WB_CTX_FOLD.home.get(ref);
+      bar.insertBefore(g, ref || more.closest(".wb-context-group"));
+    }
+    shelf.classList.add("hidden");
+  }
+  if (bar.offsetHeight <= 60 || more.classList.contains("hidden")) return;
+  if (!shelf) {
+    shelf = document.createElement("div");
+    shelf.id = "wb-context-overflow";
+    shelf.className = "wb-menu-section wb-context-overflow";
+    shelf.setAttribute("role", "group");
+    shelf.setAttribute("aria-label", "More controls for this selection");
+    menu.insertBefore(shelf, menu.firstChild);
+  }
+  const visible = (name) => [...bar.querySelectorAll(`:scope > .wb-context-group[data-wb-ctx="${name}"]:not(.hidden)`)].reverse();
+  for (const name of WB_CTX_FOLD.order) {
+    for (const g of visible(name)) {
+      if (bar.offsetHeight <= 60) return;
+      WB_CTX_FOLD.home.set(g, g.nextElementSibling);
+      shelf.insertBefore(g, shelf.firstChild);
+      shelf.classList.remove("hidden");
+    }
+  }
+}
+
 //: What a pan keeps of the selection bar's measurements: a pan moves the
 //: canvas, not the bar, the host or the top bar, so one measure serves every
 //: frame until the pan ends (a zoom frame asks the same). Cleared by any
@@ -6440,6 +6647,7 @@ function wbUpdateSelectionBar(panning = false) {
   //: "the two rows clash at a half window").
   if (!held && active.id === "wb-context") {
     active.classList.remove("wb-context-wrapped");
+    wbFoldContextBar(active);
     const groups = [...active.querySelectorAll(":scope > .wb-context-group:not(.hidden)")];
     for (const g of groups) g.classList.remove("wb-row-start");
     const wrapped = active.offsetHeight > 60;
@@ -8464,6 +8672,12 @@ function wbBuildContextMenu(kind) {
       sub("Copy this branch", "This topic and everything under it, beside itself", () =>
         wbMapCopyBranch(mapNode.id)
       );
+      sub("Copy this branch as an outline", "Markdown, to paste into a note or another app", () =>
+        wbMapCopyBranchOutline(mapNode.id)
+      );
+      sub("Export this branch…", "A picture or PDF of this topic and everything under it", () =>
+        wbMapExportBranch(mapNode.id)
+      );
       if (!rooted) sub("Cut this topic free of its parent", "It becomes a trunk of its own", () =>
         wbMapSever(mapNode.id)
       );
@@ -8582,6 +8796,9 @@ function wbBuildContextMenu(kind) {
       wbOpenComments(commentOn.kind, commentOn.id)
     );
   }
+  //: A shape's own link (draw.io Edit link): set, open or take off.
+  const linkRow = wbCommandMenuRow("item-link");
+  if (linkRow && commentOn) item(wbItemLink(commentOn.kind, commentItem) ? "Link: open, change or remove…" : "Link…", "Link this to a note or a web page", () => wbEditItemLink());
   //: A frame is an export scope (WHITEBOARD_PLAN decision 18).
   const frameOn = commentOn?.kind === "object" && commentItem?.kind === "frame" ? commentItem : null;
   if (frameOn) item("Fit to contents", "Snug the frame to what is inside it, with a margin all round", () => wbFrameFit(frameOn, "nesw"));
@@ -8599,7 +8816,7 @@ function wbBuildContextMenu(kind) {
   //: map: a topic's place in a tree is its order (FEAT-17).
   if (!wbIsMap()) {
     subItem("Arrange", (sub) => {
-      for (const id of ["group", "ungroup", "lock", "flip-h", "flip-v"]) {
+      for (const id of ["group", "ungroup", "lock", "flip-h", "flip-v", "change-shape", "tidy-down", "tidy-right"]) {
         const row = wbCommandMenuRow(id);
         if (row) sub(...row);
       }
@@ -10540,11 +10757,153 @@ async function wbSetComments(kind, item, list) {
   wbPaintCommentMarks();
 }
 
+//: **A shape's own link** (draw.io Edit link): a web page (http or https) or
+//: a view of this app (a note's `#/notes/12`, or any pasted app link),
+//: stored as `link` in a shape's or a text box's data and opened from the
+//: mark on its top-left corner. A note card is a note already, so it has none.
+function wbTakesLink(kind, item) {
+  if (!item || kind === "node") return false;
+  if (kind === "sketch") return Boolean(wbSketchParsedData(item));
+  return !WB_MAP_KINDS.has(item.kind);
+}
+
+function wbItemLink(kind, item) {
+  if (!wbTakesLink(kind, item)) return "";
+  const link = kind === "sketch" ? wbSketchParsedData(item)?.link : item.data?.link;
+  return typeof link === "string" && (/^https?:\/\//i.test(link) || routeEntry(link)) ? link : "";
+}
+
+//: What a typed or pasted address becomes: an app link's hash, a web
+//: address (https:// added to a bare one), or "" for anything else.
+function wbLinkFromText(text) {
+  const value = String(text || "").trim();
+  const hash = appAddressHash(value) || (routeEntry(value) ? value : "");
+  if (hash) return hash;
+  if (/^https?:\/\/[^\s]+$/i.test(value)) return value;
+  return /^[\w-]+(\.[\w-]+)+(\/\S*)?$/.test(value) ? "https://" + value : "";
+}
+
+async function wbSetItemLink(kind, item, link) {
+  wbPushUndo({ action: "move", kind, id: item.id, before: WB_KIND_INFO[kind].payload(item) });
+  if (kind === "sketch") {
+    await wbSaveSketchProps(item, { link: link || undefined });
+  } else {
+    const data = { ...item.data };
+    if (link) data.link = link;
+    else delete data.link;
+    item.data = data;
+    await wbSaveObject(item);
+  }
+  wbPaintCommentMarks();
+}
+
+function wbOpenItemLink(link) {
+  if (link.startsWith("#/")) location.hash = link;
+  else window.open(link, "_blank", "noopener,noreferrer");
+}
+
+//: Link…: a note from the notebook's own picker, or an address typed or
+//: pasted; with a link already set, open it or take it off.
+function wbEditItemLink() {
+  const kind = wbSelectedItem?.kind, item = kind ? wbFindItem(kind, wbSelectedItem.id) : null;
+  if (!wbTakesLink(kind, item)) return;
+  const now = wbItemLink(kind, item);
+  const items = [
+    makeMenuItem("ph:note A note…", "Link this to one of your notes", async () => {
+      const entry = await pickEntryDialog("Link to a note");
+      if (entry) await wbSetItemLink(kind, item, routeHashFor("note", entry.id));
+    }),
+    makeMenuItem("ph:globe A web page or app link…", "Type or paste a web address, or an app link from Copy app link", async () => {
+      const typed = await promptDialog("Link to a web page or app link", now.startsWith("#/") ? "" : now);
+      if (typed === null || typed === undefined) return;
+      const link = wbLinkFromText(typed);
+      if (!link) {
+        toast("That is not a web address or an app link.");
+        return;
+      }
+      await wbSetItemLink(kind, item, link);
+    }),
+  ];
+  if (now) {
+    items.push(makeMenuItem("ph:arrow-square-out Open the link", now, () => wbOpenItemLink(now)));
+    items.push(makeMenuItem("ph:link-break Remove the link", "Take the link off; the shape stays", () => wbSetItemLink(kind, item, "")));
+  }
+  const at = wbContextMoreWrap()?.getBoundingClientRect();
+  openMenuAtPoint(items, "Link", at ? at.left : 80, at ? at.bottom + 4 : 80);
+}
+
+//: The link marks, in their own host beside the comment marks and painted
+//: with them: a pin at the item's top-left corner, the button up and left of
+//: it, clear of the resize grip.
+function wbPaintLinkMarks() {
+  const layer = document.getElementById("wb-html-layer");
+  if (!layer) return;
+  let host = document.getElementById("wb-link-marks");
+  const wanted = [];
+  for (const kind of ["object", "sketch"]) {
+    for (const item of wbState[WB_LIST_BY_KIND[kind]] || []) {
+      const link = wbItemLink(kind, item);
+      if (link) wanted.push([kind, item, link]);
+    }
+  }
+  if (!wanted.length) {
+    host?.replaceChildren();
+    return;
+  }
+  if (!host) {
+    host = document.createElement("div");
+    host.id = "wb-link-marks";
+    host.className = "wb-comment-marks";
+    layer.appendChild(host);
+  }
+  let top = 1;
+  for (const list of [wbState.nodes, wbState.objects]) for (const i of list || []) if (Number.isFinite(i.z)) top = Math.max(top, i.z);
+  host.style.zIndex = String(top + 1);
+  const old = new Map([...host.children].map((pin) => [pin.dataset.linkKey, pin]));
+  for (const [kind, item, link] of wanted) {
+    const key = wbMultiKey(kind, item.id);
+    const box = typeof item._liveD === "string" ? wbPathBBox(item._liveD) : wbItemBBox(kind, item);
+    if (!box) continue;
+    let pin = old.get(key);
+    old.delete(key);
+    if (!pin) {
+      pin = document.createElement("div");
+      pin.className = "wb-comment-pin";
+      pin.dataset.linkKey = key;
+      const mark = document.createElement("button");
+      mark.type = "button";
+      mark.className = "wb-link-mark";
+      const icon = document.createElement("i");
+      icon.setAttribute("aria-hidden", "true");
+      mark.appendChild(icon);
+      mark.addEventListener("pointerdown", (event) => event.stopPropagation());
+      mark.addEventListener("dblclick", (event) => event.stopPropagation());
+      mark.addEventListener("click", (event) => {
+        event.stopPropagation();
+        wbOpenItemLink(mark.dataset.link);
+      });
+      pin.appendChild(mark);
+      host.appendChild(pin);
+    }
+    const mark = pin.firstElementChild;
+    const inApp = link.startsWith("#/");
+    const words = inApp ? appAddressLabel(link) : link;
+    mark.dataset.link = link;
+    mark.firstElementChild.className = `ph ${inApp ? "ph-note" : "ph-arrow-square-out"}`;
+    mark.setAttribute("aria-label", `Open the link: ${words}`);
+    mark.title = words;
+    pin.style.left = `${box.minX}px`;
+    pin.style.top = `${box.minY}px`;
+  }
+  for (const pin of old.values()) pin.remove();
+}
+
 //: The marks, from state, after every render and every drag frame (the
 //: selection bar's frame, `wbQueueSelectionBar`). A zero-size pin at the
 //: item's top-right corner, scaled back to screen size like a grip, holds
 //: the button up and to the right of the corner, clear of the resize handle.
 function wbPaintCommentMarks() {
+  wbPaintLinkMarks();
   const layer = document.getElementById("wb-html-layer");
   if (!layer) return;
   //: A thread open on an item that is gone (deleted, another board) goes too.
@@ -13232,6 +13591,7 @@ async function initWhiteboard() {
   $("wb-map-perspective")?.addEventListener("change", (e) => wbMapSetPerspective(e.target.value));
   $("wb-map-theme-item")?.addEventListener("click", wbMapThemeDialog);
   $("wb-map-numbered")?.addEventListener("change", (e) => wbMapSetNumbered(e.target.checked));
+  $("wb-map-dim")?.addEventListener("change", (e) => wbMapSetDim(e.target.checked));
   $("wb-map-stats-item")?.addEventListener("click", wbShowMapStats);
   $("wb-zoom-actual")?.addEventListener("click", () =>
     d3.select(document.getElementById("whiteboard-container")).transition().duration(160).call(wbZoom.scaleTo, 1)
@@ -15402,6 +15762,11 @@ async function initWhiteboard() {
       wbZoomToFit();
       return;
     }
+    if (e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey && e.code === "Digit2") {
+      e.preventDefault();
+      wbZoomToSelection();
+      return;
+    }
     //: Alt+1 to 9 on a map: show that many levels (`wbMapFoldToLevel`).
     if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && /^Digit[1-9]$/.test(e.code) && wbIsMap()) {
       e.preventDefault();
@@ -16926,8 +17291,10 @@ async function initWhiteboard() {
         blob.fillOpacity = window.currentFillOpacity / 100;
       }
     }
-    //: An arrow that starts or ends on a shape is a connector bound to it.
-    const bound = window.currentTool === "arrow" ? wbBoundArrowData(sx, sy, x, y, 10 / zoomK(), blob) : null;
+    //: An arrow or a line that starts or ends on a shape is a connector bound
+    //: to it (the wb ledger, 10-25: the Line tool stayed a loose path). Its
+    //: ends are the tool's own, so a line binds with none.
+    const bound = window.currentTool === "arrow" || window.currentTool === "line" ? wbBoundArrowData(sx, sy, x, y, 10 / zoomK(), blob) : null;
     const sketchData = {
       data: JSON.stringify(bound || blob),
       x: 0,
@@ -17529,7 +17896,7 @@ async function wbCreateBlankBoard(name, kind) {
       //: instead: the visible canvas size is neither constant nor known
       //: until it is actually measured).
       if (root) wbCenterOn(wbItemBBox("object", root), { animate: false });
-      toast(`Mind map "${board.title}" created: Tab adds a branch, Enter a sibling. While typing a name, Ctrl+Enter adds the sibling.`);
+      toast(`Mind map "${board.title}" created. Tab adds a branch, Enter one beside it. While you type a name, Enter is a new line and Ctrl+Enter adds the one beside it.`);
     } else {
       toast(`Board "${board.title}" created.`);
     }
@@ -17910,7 +18277,7 @@ function wbLayoutShapeLabel(groupEl) {
   const placed = wbShapeLabelPlace(groupEl, label);
   if (!placed) return;
   const { bbox, area } = placed;
-  const fontSize = parseFloat(getComputedStyle(label).fontSize) || 16;
+  const fontSize = label.dataset.fit ? wbFitShapeLabel(label, area) : parseFloat(getComputedStyle(label).fontSize) || 16;
   const lineHeight = fontSize * 1.25;
   //: The face and weight change the widths the wrap measures, so they key it.
   const key = `${label.__wbText}|${Math.round(area.w / 4)}|${fontSize}|${label.style.fontFamily}|${label.style.fontWeight}`;
@@ -17939,6 +18306,35 @@ function wbLayoutShapeLabel(groupEl) {
       : area.cy - block / 2;
   label.setAttribute("y", String(y));
   for (const span of label.children) span.setAttribute("x", String(x));
+}
+
+//: **Text that shrinks to fit its shape** (`label_fit`; draw.io's autosize
+//: only grows the box): from the size the text was given, a tenth smaller at
+//: a time until every line is as wide as the area and the block as tall, down
+//: to 6px, never larger than it was given. Kept on the element against the
+//: text and the area, so a render that changed neither measures nothing.
+function wbFitShapeLabel(label, area) {
+  label.style.fontSize = label.dataset.size || "";
+  const given = parseFloat(getComputedStyle(label).fontSize) || 16;
+  const key = `${label.__wbText}|${Math.round(area.w)}|${Math.round(area.h)}|${given}|${label.style.fontFamily}|${label.style.fontWeight}`;
+  if (label.__wbFit?.key !== key) {
+    let size = given;
+    for (;;) {
+      label.style.fontSize = `${size}px`;
+      const lines = wbWrapShapeLabel(label, label.__wbText, area.w, size);
+      const widest = Math.max(...lines.map((line) => {
+        label.textContent = line;
+        return label.getComputedTextLength();
+      }));
+      const fits = widest <= area.w + 0.5 && (!area.h || lines.length * size * 1.25 <= area.h + 0.5);
+      if (fits || size <= 6) break;
+      size = Math.max(6, Math.floor(size * 9) / 10);
+    }
+    label.__wbFit = { key, size };
+    label.__wbKey = null;
+  }
+  label.style.fontSize = `${label.__wbFit.size}px`;
+  return label.__wbFit.size;
 }
 
 //: A move is only a translation, so a drag frame moves the label by the
@@ -18143,6 +18539,9 @@ function wbPaintShapeLabel(groupEl, parsed, sketch) {
   label.__wbText = text;
   label.style.fill = parsed.label_color || wbShapeLabelInk(parsed) || "";
   label.style.fontSize = parsed.label_size ? `${parsed.label_size}px` : "";
+  label.dataset.size = label.style.fontSize;
+  if (parsed.label_fit) label.dataset.fit = "1";
+  else delete label.dataset.fit;
   label.style.fontWeight = parsed.label_bold ? "700" : "";
   label.style.fontStyle = parsed.label_italic ? "italic" : "";
   //: Underline and strikethrough, and a face by name (draw.io's Text tab;
@@ -19066,6 +19465,7 @@ function wbRestoreMultiSnapshot(rows) {
     const item = row.entry.item;
     if (row.entry.kind === "sketch") {
       delete item._liveD;
+      delete item._dragLiveD;
       const selector = `.sketch-group[data-id="${item.id}"]`;
       document.querySelector(`${selector} .sketch-path`)?.setAttribute("d", row.d);
       document.querySelector(`${selector} .sketch-hitbox`)?.setAttribute("d", row.d);
@@ -19074,6 +19474,29 @@ function wbRestoreMultiSnapshot(rows) {
     }
     wbRestoreBox(row.entry.kind, item, row.before);
   }
+}
+
+//: **What follows a group's resize or turn live** (the wb ledger, 10-25):
+//: every connector touching a member, once (a link between two members is one
+//: path), and each shape member's own outline, which is drawn in the board
+//: layer apart from the group's box and stayed at the old size until release.
+function wbMultiLiveLinks(rows) {
+  const index = wbLinkSketchIndex();
+  return [...new Set(rows.flatMap((r) => wbLinkedSketchesFor(r.entry.item.id, r.entry.kind, index)))];
+}
+
+function wbMultiMemberOutline(id) {
+  return document.querySelector(`#wb-zoom-group .wb-sketch-handle-group[data-sketch-id="${id}"]`);
+}
+
+function wbFollowMultiOutline(id, liveD) {
+  const box = wbMultiMemberOutline(id)?.querySelector(".wb-sketch-selection-box");
+  const bb = liveD ? wbPathBBox(liveD) : null;
+  if (!box || !bb) return;
+  box.setAttribute("x", bb.minX - 2);
+  box.setAttribute("y", bb.minY - 2);
+  box.setAttribute("width", (bb.maxX - bb.minX) + 4);
+  box.setAttribute("height", (bb.maxY - bb.minY) + 4);
 }
 
 //: Saving a whole group, one write at a time. Each write is the item's whole
@@ -19089,6 +19512,7 @@ async function wbSaveMultiSnapshot(rows) {
     if (row.entry.kind === "sketch") {
       const live = row.entry.item._liveD;
       delete row.entry.item._liveD;
+      delete row.entry.item._dragLiveD;
       if (live) await wbSaveSketchD(row.entry.item, live);
     } else if (row.entry.kind === "node") {
       await wbSaveNode(row.entry.item);
@@ -19217,7 +19641,7 @@ function wbRenderMultiSelectionHandles() {
   //: start rather than read back off the items, which would compound each
   //: frame's rounding into a shape that drifts while you hold the mouse
   //: still, the accumulation bug the single-shape handles document.
-  let start = null;
+  let start = null, sizeLinks = [];
   let groupGesture = null;
   for (const handle of ["nw", "n", "ne", "e", "se", "s", "sw", "w"]) {
     const hx = handle.includes("w") ? bbox.minX : handle.includes("e") ? bbox.maxX : (bbox.minX + bbox.maxX) / 2;
@@ -19237,8 +19661,13 @@ function wbRenderMultiSelectionHandles() {
             rawDY = 0;
             start = wbMultiSnapshot(boxes);
             const rows = start;
+            sizeLinks = wbMultiLiveLinks(rows);
+            const links = sizeLinks;
             groupGesture = wbBeginGesture(() => {
               wbRestoreMultiSnapshot(rows);
+              for (const row of rows) if (row.entry.kind === "sketch") wbFollowMultiOutline(row.entry.item.id, row.d);
+              if (links.length) wbUpdateLinkedSketches(null, links);
+              wbClearAlignmentGuides();
               layoutGroupChrome(bbox);
             });
           })
@@ -19270,6 +19699,8 @@ function wbRenderMultiSelectionHandles() {
                 document.querySelector(`${selector} .sketch-hitbox`)?.setAttribute("d", newD);
                 wbLayoutShapeLabel(document.querySelector(selector));
                 row.entry.item._liveD = newD;
+                row.entry.item._dragLiveD = newD;
+                wbFollowMultiOutline(row.entry.item.id, newD);
                 continue;
               }
               const item = row.entry.item;
@@ -19295,9 +19726,15 @@ function wbRenderMultiSelectionHandles() {
                 el.style.height = `${item.height}px`;
               }
             }
-            layoutGroupChrome(scaledBox(t));
+            if (sizeLinks.length) wbUpdateLinkedSketches(null, sizeLinks);
+            const live = scaledBox(t);
+            layoutGroupChrome(live);
+            //: The size beside the box, as a single item's resize shows it.
+            wbShowAlignmentGuides([]);
+            wbShowSizeReadout({ x: live.minX, y: live.minY, w: live.maxX - live.minX, h: live.maxY - live.minY });
           })
           .on("end", async () => {
+            wbClearAlignmentGuides();
             if (!start) return;
             const rows = start;
             start = null;
@@ -19340,11 +19777,14 @@ function wbRenderMultiSelectionHandles() {
           const rows = spin;
           //: Each link touching a turned card or box, once (a link between two
           //: selected items is one path), so its ends follow the turn live.
-          const index = wbLinkSketchIndex();
-          spinLinks = [...new Set(rows.filter((r) => r.entry.kind !== "sketch")
-            .flatMap((r) => wbLinkedSketchesFor(r.entry.item.id, r.entry.kind, index)))];
+          //: Shapes too: a turned shape's live path is `_dragLiveD`, which the
+          //: link's end reads, so a connector to a shape follows the turn.
+          spinLinks = wbMultiLiveLinks(rows);
+          const links = spinLinks;
           groupGesture = wbBeginGesture(() => {
             wbRestoreMultiSnapshot(rows);
+            for (const row of rows) wbMultiMemberOutline(row.entry.item.id)?.removeAttribute("transform");
+            if (links.length) wbUpdateLinkedSketches(null, links);
             group.attr("transform", null);
           });
         })
@@ -19365,6 +19805,9 @@ function wbRenderMultiSelectionHandles() {
               document.querySelector(`${selector} .sketch-hitbox`)?.setAttribute("d", newD);
               wbLayoutShapeLabel(document.querySelector(selector));
               row.entry.item._liveD = newD;
+              row.entry.item._dragLiveD = newD;
+              //: Its outline turns about the same centre as the group's box.
+              wbMultiMemberOutline(row.entry.item.id)?.setAttribute("transform", `rotate(${angle} ${centerX} ${centerY})`);
               continue;
             }
             const item = row.entry.item;
@@ -19466,7 +19909,8 @@ function wbDrawSketchHandles(sketch, { outlineOnly = false } = {}) {
 
   const group = d3.select("#wb-zoom-group")
     .append("g")
-    .attr("class", "wb-sketch-handle-group");
+    .attr("class", "wb-sketch-handle-group")
+    .attr("data-sketch-id", sketch.id);
 
   //: **One selection box for every kind** (WHITEBOARD_PLAN.md decision 6). A
   //: card and a text box wear a 1px `--accent` outline; a sketch wore a dashed
@@ -19634,6 +20078,7 @@ function wbDrawSketchHandles(sketch, { outlineOnly = false } = {}) {
           sketch._rotateUndoBefore = WB_KIND_INFO.sketch.payload(sketch);
           sketch._gesture = wbBeginGesture(() => {
             rotateLiveD = null;
+            group.attr("transform", null);
             document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-path`)?.setAttribute("d", parsed.d);
             document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-hitbox`)?.setAttribute("d", parsed.d);
             wbLayoutShapeLabel(document.querySelector(`.sketch-group[data-id="${sketch.id}"]`));
@@ -19645,6 +20090,12 @@ function wbDrawSketchHandles(sketch, { outlineOnly = false } = {}) {
           const newD = wbTransformPathD(rotateOriginalD, { rotate: currentAngle, anchorX: centerX, anchorY: centerY });
           rotateLiveD = newD;
           rotateLiveAngle = currentAngle;
+          //: **The box turns with the shape** (the wb ledger, 10-25): it was
+          //: drawn once round the upright shape and stayed there while the
+          //: shape swung out of it. The whole handle group turns about the
+          //: same centre, as a card's outline does, and the grip stays under
+          //: the pointer; the release render draws the new shape's own box.
+          group.attr("transform", `rotate(${currentAngle} ${centerX} ${centerY})`);
           document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-path`)?.setAttribute("d", newD);
           document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-hitbox`)?.setAttribute("d", newD);
           wbLayoutShapeLabel(document.querySelector(`.sketch-group[data-id="${sketch.id}"]`));
@@ -21170,6 +21621,10 @@ function renderWbObjects(canvas) {
     if (source && wbIsMap() && WB_MAP_KINDS.has(d.kind)) {
       d._dropTarget = wbMapDropTargetAt(d, source.clientX, source.clientY);
       wbMapShowDropTarget(d._dropTarget?.id ?? null);
+      //: Not over a topic: a gap among its siblings, where the layout stacks
+      //: them. One topic only: a group drag stays a placement.
+      d._siblingSlot = d._dropTarget || d._dragAlone || d._bulkOrigin ? null : wbMapSiblingSlotAt(d, source.clientX, source.clientY);
+      wbMapShowSlotCue(d._siblingSlot);
     }
   }
   async function objDragEnd(event, d) {
@@ -21194,6 +21649,8 @@ function renderWbObjects(canvas) {
     //: it replaces the ordinary save below entirely (`/move` is the only
     //: endpoint that may write `parent_id`, and it re-lays the branch after).
     const dropTarget = d._dropTarget;
+    const slot = d._siblingSlot;
+    delete d._siblingSlot;
     const alone = d._dragAlone;
     delete d._dropTarget;
     delete d._dragAlone;
@@ -21217,6 +21674,16 @@ function renderWbObjects(canvas) {
       delete d._moveUndoBefore;
       if (bulkOrigin) await wbSaveBulkMove(bulkOrigin);
       await wbMapTransplant(d, dropTarget.id, alone, { before });
+      return;
+    }
+    if (slot) {
+      const origins = new Map();
+      if (d._moveUndoBefore) origins.set(d.id, { x: d._moveUndoBefore.x, y: d._moveUndoBefore.y });
+      for (const entry of bulkOrigin?.values() || []) {
+        if (entry.kind === "object" && !origins.has(entry.id)) origins.set(entry.id, { x: entry.x, y: entry.y });
+      }
+      delete d._moveUndoBefore;
+      await wbMapDropAmongSiblings(d, slot, origins);
       return;
     }
     const moveBefore = d._moveUndoBefore;
@@ -22224,7 +22691,8 @@ async function dragEndNode(event, d) {
        // source got at drag-start, `null` (nothing near enough) persists
        // as a free/floating end, same as the source's own case.
        const targetAnchor = wbNearestAnchor(targetKind, targetNode, mx, my);
-       const tool = (wbIsMap() && WB_MAP_KINDS.has(d.kind) && WB_MAP_KINDS.has(targetNode.kind)) ? wbMapCrossLinkType() : window.currentTool;
+       const crossLink = wbIsMap() && WB_MAP_KINDS.has(d.kind) && WB_MAP_KINDS.has(targetNode.kind);
+       const tool = crossLink ? wbMapCrossLinkType() : window.currentTool;
        const sketchData = {
          data: JSON.stringify({
             type: tool,
@@ -22235,6 +22703,9 @@ async function dragEndNode(event, d) {
             color: window.currentStrokeColor || "#ffffff",
             sourceAnchor: d.linkSourceAnchor || undefined,
             targetAnchor: targetAnchor || undefined,
+            //: A board link wears the held tool's ends; a map's cross-link
+            //: keeps the map's own look.
+            ...(crossLink ? {} : wbToolCaps()),
          }),
          x: 0, y: 0, z: 1,
          board_id: window.currentBoardId
@@ -22977,7 +23448,7 @@ async function createConceptMap() {
     //: Not animated: there is nothing to animate *from*, the board has just
     //: opened.
     if (placed) wbCenterOn(wbItemBBox("node", placed), { animate: false });
-    toast(`“${title}”: press Tab for a branch, Enter for a sibling.`);
+    toast(`“${title}”: Tab adds a branch, Enter one beside it. While you type a name, Enter is a new line and Ctrl+Enter adds the one beside it.`);
   } catch (err) {
     toast(err.message || voiceLine("failed", { what: "create that map" }), true);
   }

@@ -1450,7 +1450,7 @@ function buildShortcutList(list) {
     list.appendChild(li);
   }
   //: Thirty-one rows: typed to (row 1643, `listFilter`).
-  if (typeof listFilter === "function") listFilter(list, { label: "Filter shortcuts" })?.refresh();
+  listFilter(list, { label: "Filter shortcuts" })?.refresh();
 }
 
 // While rebinding, this handler runs before everything else and swallows the

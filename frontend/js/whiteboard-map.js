@@ -2820,6 +2820,90 @@ function wbMapDropTargetAt(d, clientX, clientY) {
   return null;
 }
 
+//: **Reorder by dragging** (XMind, MindNode): a topic let go between two of
+//: its siblings, in a layout that stacks them, takes that place, shown while
+//: it is held by a line across the gap. The axis the siblings run along, per
+//: layout; the rest (radial, Free, the column layouts) keep the drag a pin.
+const WB_MAP_SLOT_AXIS = { "tree-right": "y", "tree-left": "y", "tree-both": "y", "logic-right": "y", "tree-down": "x", org: "x" };
+
+//: The gap among its siblings the pointer is in, or null: off the siblings'
+//: band, a trunk, or the place it already has.
+function wbMapSiblingSlotAt(d, clientX, clientY) {
+  if (!wbIsMap() || !WB_MAP_KINDS.has(d.kind)) return null;
+  const index = wbMapIndex();
+  const node = index.byId.get(d.id);
+  const parent = node && index.byId.get(node.parent_id);
+  const layout = node?._bl || wbMapLayout();
+  const axis = WB_MAP_SLOT_AXIS[layout];
+  if (!parent || !axis) return null;
+  const [bx, by] = wbClientToBoard(clientX, clientY);
+  const point = { x: bx, y: by };
+  const box = (o) => ({ ...wbMapNodeSize(o), x: o.x, y: o.y });
+  const hidden = wbMapConcealed(index);
+  const pc = box(parent).x + box(parent).w / 2;
+  const showing = wbMapSiblingsOf(index, node).filter((o) => !hidden.has(o.id));
+  //: Both sides of a trunk are one list; the side the pointer is on is the one meant.
+  const side = layout === "tree-both" ? showing.filter((o) => o.id === node.id || (o.x + box(o).w / 2 < pc) === (bx < pc)) : showing;
+  const [along, size, cross, span] = axis === "y" ? ["y", "h", "x", "w"] : ["x", "w", "y", "h"];
+  //: In the order they are drawn, which a laid-out branch shares with its keys.
+  //: The dragged one counts from where it was picked up.
+  const home = (o) => (o !== node ? o[along] : (along === "y" ? d._dragOriginY : d._dragOriginX) ?? o[along]);
+  side.sort((p, q) => home(p) - home(q));
+  const others = side.filter((o) => o.id !== node.id);
+  if (!others.length) return null;
+  const lo = Math.min(...others.map((o) => o[cross])), hi = Math.max(...others.map((o) => o[cross] + box(o)[span]));
+  const first = others[0], last = others[others.length - 1];
+  const reach = Math.max(...others.map((o) => box(o)[size]));
+  if (point[cross] < lo - 24 || point[cross] > hi + 24) return null;
+  if (point[along] < first[along] - reach || point[along] > last[along] + box(last)[size] + reach) return null;
+  const at = others.filter((o) => o[along] + box(o)[size] / 2 < point[along]).length;
+  const before = others[at - 1] || null, after = others[at] || null;
+  const mine = side.indexOf(node);
+  if ((side[mine - 1] || null) === before && (side[mine + 1] || null) === after) return null;
+  const gap = before && after ? (before[along] + box(before)[size] + after[along]) / 2
+    : before ? before[along] + box(before)[size] + 8 : after[along] - 8;
+  const line = axis === "y" ? { x1: lo, y1: gap, x2: hi, y2: gap } : { x1: gap, y1: lo, x2: gap, y2: hi };
+  return { parentId: parent.id, key: wbMapKeyBetween(before, after), line };
+}
+
+//: The line across the gap, in the overlay so it draws over the topics.
+function wbMapShowSlotCue(slot) {
+  let cue = document.getElementById("wb-map-slot-cue");
+  if (!slot) {
+    cue?.remove();
+    return;
+  }
+  if (!cue) {
+    cue = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    cue.id = "wb-map-slot-cue";
+    cue.setAttribute("class", "wb-map-slot-cue");
+    cue.setAttribute("pointer-events", "none");
+    document.getElementById("wb-overlay-zoom-group")?.appendChild(cue);
+  }
+  for (const [k, v] of Object.entries(slot.line)) cue.setAttribute(k, String(v));
+}
+
+//: The drop: the topic takes the slot's key, loses a pin it had (it was
+//: placed by the layout now), and the branch is laid out again, all one Undo
+//: step from where the drag picked it up (`origins`).
+async function wbMapDropAmongSiblings(d, slot, origins) {
+  const index = wbMapIndex();
+  const before = new Map(index.nodes.map((o) => [o.id, WB_KIND_INFO.object.payload(o)]));
+  for (const [id, at] of origins) Object.assign(before.get(id) || {}, at);
+  const { pinned: _pin, ...rest } = d.data || {};
+  d.data = { ...rest, order: slot.key };
+  await wbSaveObject(d);
+  await wbMapTidy({ onlyBranch: wbMapTidyBranchScope(slot.parentId), quiet: true });
+  renderWhiteboardNow();
+  const entries = [];
+  for (const obj of wbMapIndex().nodes) {
+    const was = before.get(obj.id);
+    if (was && (was.x !== obj.x || was.y !== obj.y || was.data !== obj.data)) entries.push({ action: "move", kind: "object", id: obj.id, before: was });
+  }
+  if (entries.length) wbPushUndo(entries.length === 1 ? entries[0] : { action: "batch", entries });
+  wbAnnounce("Moved to that place among its siblings.");
+}
+
 //: The highlight, and the one place it is cleared. A class rather than an
 //: inline style: the CSP rejects `style=` and a drop cue that silently did
 //: nothing is the fourth shape CLAUDE.md §6 lists.
@@ -2834,6 +2918,7 @@ function wbMapShowDropTarget(id) {
 }
 
 function wbMapClearDropTarget() {
+  wbMapShowSlotCue(null);
   if (wbMapDropTargetId == null) return;
   document.querySelector(`.wb-object[data-id="${wbMapDropTargetId}"]`)
     ?.classList.remove("wb-map-drop-target");
@@ -4538,6 +4623,50 @@ function wbMapTreeMarkdown(roots, mapTitle) {
 }
 // MAP-DOC-END
 
+//: **One branch out of the map** (XMind's Copy as text, MindNode's export of
+//: a selection): the topic and everything under it as the same Markdown
+//: outline the whole map writes, the topic as its title. From the server's
+//: tree, so the order and the notes are the ones the exports use.
+async function wbMapCopyBranchOutline(id) {
+  const boardId = window.currentBoardId;
+  if (!boardId || id == null) return false;
+  let tree;
+  try {
+    tree = await apiJson(`/whiteboard/boards/${boardId}/tree`);
+  } catch (err) {
+    toast(err.message || voiceLine("failed", { what: "read this map" }), true);
+    return false;
+  }
+  const find = (list) => {
+    for (const n of list || []) {
+      if (n.id === id) return n;
+      const hit = find(n.children);
+      if (hit) return hit;
+    }
+    return null;
+  };
+  const node = find(tree.roots);
+  if (!node) return false;
+  const { title, body } = wbMapTreeMarkdown([node]);
+  const copied = await copyToClipboard(body ? `# ${title}\n\n${body}\n` : `# ${title}\n`);
+  if (copied) toast(`Copied “${title}” and its branch as an outline.`);
+  return copied;
+}
+
+//: The export dialog for this branch alone: the branch is the selection, so
+//: the picture formats take only it (the outline formats are the whole map's).
+function wbMapExportBranch(id) {
+  const index = wbMapIndex();
+  const hidden = wbMapConcealed(index);
+  const branch = wbMapSubtree(index, id).filter((o) => !hidden.has(o.id));
+  if (!branch.length) return;
+  clearWbSelection();
+  for (const o of branch) wbMultiSelection.add(wbMultiKey("object", o.id));
+  wbApplySelectionHighlight();
+  wbUpdateSelectionBar();
+  wbExportBoard();
+}
+
 //: The menu row and the palette row: written, saved as a new document that
 //: opens with a card of the map at its head (the board embed, so the
 //: document leads back to its map), and opened.
@@ -4606,6 +4735,8 @@ function mapPaletteCommands() {
     row("This topic", "ph:paint-bucket Paste style onto this topic", () => wbPasteCopiedStyle(), "Ctrl+Alt+V");
     row("This topic", "ph:stack Use this look for its level", () => wbMapUseLookForLevel(node.id));
     row("This topic", "ph:text-align-left Summarise this branch", () => wbMapSummariseBranch(node));
+    row("This topic", "ph:copy Copy this branch as an outline", () => wbMapCopyBranchOutline(node.id));
+    row("This topic", "ph:export Export this branch…", () => wbMapExportBranch(node.id));
     row("This topic", "ph:trash Delete the topic and its branch", () => wbMapDeleteSubtree(node.id), "Delete");
   }
   row("This map", "ph:plus-circle Add a top-level topic", () => wbMapAddChild(null));
@@ -5026,8 +5157,21 @@ function wbMapRevealTopic(item) {
   const free = typeof wbVisibleCanvasRect === "function" ? wbVisibleCanvasRect() : container.getBoundingClientRect();
   if (!wbRectEscapes(el.getBoundingClientRect(), free)) return false;
   const box = wbItemBBox("object", item);
-  if (box) wbCenterOn(box, { animate: true });
-  return Boolean(box);
+  if (!box) return false;
+  //: With its parent when the two fit side by side (dog2 item 12): centring
+  //: the child alone slid the root under the left rail at 700, so the topic
+  //: you branched from left the screen as its child arrived.
+  const parentItem = item.parent_id != null ? (wbState.objects || []).find((o) => o.id === item.parent_id) : null;
+  const pBox = parentItem ? wbItemBBox("object", parentItem) : null;
+  const k = d3.zoomTransform(container).k || 1;
+  const area = wbFreeArea(container);
+  const both = pBox && {
+    minX: Math.min(box.minX, pBox.minX), minY: Math.min(box.minY, pBox.minY),
+    maxX: Math.max(box.maxX, pBox.maxX), maxY: Math.max(box.maxY, pBox.maxY),
+  };
+  const fits = both && (both.maxX - both.minX) * k <= area.right - area.left - 32 && (both.maxY - both.minY) * k <= area.bottom - area.top - 32;
+  wbCenterOn(fits ? both : box, { animate: true });
+  return true;
 }
 
 //: F2 / double-click: rename in place, through the same two functions a text
@@ -8670,6 +8814,12 @@ function wbSyncMapChrome() {
     const row = numbered.closest(".wb-menu-row");
     if (row) row.hidden = !isMap;
   }
+  const dim = document.getElementById("wb-map-dim");
+  if (dim) {
+    dim.checked = Boolean(isMap && wbMapDim.on);
+    const row = dim.closest(".wb-menu-row");
+    if (row) row.hidden = !isMap;
+  }
   //: The group itself as well as its rows: on a board it held nothing but
   //: its own heading, a group of zero rows drawn between two that have some.
   const mapSection = document.getElementById("wb-view-map-section");
@@ -9937,6 +10087,31 @@ function wbMapSetMarkerFilter(key) {
 
 //: After every render (`wbMapAfterRender`): a class on each topic the filter
 //: leaves out, and the bar that says a filter is on.
+//: **Dim all but the selected branch** (MindNode's focus mode, the XMind and
+//: MindNode audit's item 3): the View menu's switch. The selected topic, all
+//: under it and the path up to its trunk stay lit; with nothing selected
+//: nothing is dimmed. The marker filter, when both are on, wins: it was
+//: asked for by name. Per viewer and per visit, not saved with the map.
+const wbMapDim = { on: false };
+
+function wbMapSetDim(on) {
+  wbMapDim.on = Boolean(on);
+  const box = document.getElementById("wb-map-dim");
+  if (box) box.checked = wbMapDim.on;
+  wbMapPaintMarkerFilter();
+  wbAnnounce(wbMapDim.on ? "Dimming all but the selected branch." : "Every branch lit again.");
+}
+
+//: The ids lit by the dimming, or null when it dims nothing.
+function wbMapDimLit(index) {
+  if (!wbMapDim.on || wbMultiSelection.size > 1) return null;
+  const node = typeof wbSelectedMapNode === "function" ? wbSelectedMapNode() : null;
+  if (!node || !index.byId.has(node.id)) return null;
+  const lit = new Set(wbMapSubtree(index, node.id).map((o) => o.id));
+  for (let up = index.byId.get(node.parent_id); up && !lit.has(up.id); up = index.byId.get(up.parent_id)) lit.add(up.id);
+  return lit;
+}
+
 function wbMapPaintMarkerFilter() {
   const bar = document.getElementById("wb-map-filter");
   const on = Boolean(wbMarkerUi.filter) && wbIsMap();
@@ -9950,21 +10125,30 @@ function wbMapPaintMarkerFilter() {
   }
   const container = document.getElementById("whiteboard-container");
   if (!container) return;
-  container.classList.toggle("wb-map-filtering", on);
-  if (!on) {
+  const index = wbIsMap() ? wbMapIndex() : null;
+  const lit = on ? null : index && wbMapDimLit(index);
+  container.classList.toggle("wb-map-filtering", on || Boolean(lit));
+  if (!on && !lit) {
     for (const el of container.querySelectorAll(".wb-map-filtered-out")) el.classList.remove("wb-map-filtered-out");
     return;
   }
-  for (const node of wbMapIndex().nodes) {
+  const out = (node) => (on ? !wbMapMarkerKeys(node.data).includes(wbMarkerUi.filter) : !lit.has(node.id));
+  for (const node of index.nodes) {
     const el = container.querySelector(`.wb-object[data-id="${node.id}"]`);
-    if (el) el.classList.toggle("wb-map-filtered-out", !wbMapMarkerKeys(node.data).includes(wbMarkerUi.filter));
+    if (el) el.classList.toggle("wb-map-filtered-out", out(node));
+  }
+  //: A line goes with the topic it leads into, so a lit branch is not tied
+  //: to the rest by full-strength lines.
+  for (const el of container.querySelectorAll(".wb-map-edge[data-child], .wb-map-edge-label[data-child]")) {
+    const node = index.byId.get(Number(el.dataset.child));
+    el.classList.toggle("wb-map-filtered-out", Boolean(node && out(node)));
   }
 }
 
 //: What follows every render of a map: the outline and the marker filter.
 function wbMapAfterRender() {
   wbOutlineSync();
-  if (wbMarkerUi.filter || document.getElementById("whiteboard-container")?.classList.contains("wb-map-filtering")) {
+  if (wbMarkerUi.filter || wbMapDim.on || document.getElementById("whiteboard-container")?.classList.contains("wb-map-filtering")) {
     wbMapPaintMarkerFilter();
   }
 }

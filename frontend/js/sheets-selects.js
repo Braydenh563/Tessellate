@@ -1323,7 +1323,7 @@ function kebabMenu(items, ariaLabel, { vertical = false } = {}) {
   menu.setAttribute("role", "menu");
 
   const opener = smallButton(vertical ? "ph:dots-three-vertical" : "ph:dots-three", ariaLabel, () => {
-    if (window.matchMedia(PHONE_ACTION_SHEET).matches && typeof openSheet === "function") {
+    if (window.matchMedia(PHONE_ACTION_SHEET).matches) {
       openKebabSheet(menu, opener, ariaLabel);
       return;
     }

@@ -77,7 +77,7 @@ function wbFmtKind(entry) {
 
 //: The fields each kind takes, by the `data-fmt` names in index.html.
 const WB_FMT_FIELDS = {
-  shape: ["stroke", "width", "dash", "fill", "alpha", "shadow", "rough", "text", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "fillstyle", "gradient", "tip"],
+  shape: ["stroke", "width", "dash", "fill", "alpha", "shadow", "rough", "text", "fit", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "fillstyle", "gradient", "tip"],
   line: ["stroke", "width", "dash", "alpha", "shadow", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
   //: A straight line or arrow: a line that takes ends.
   arrow: ["stroke", "width", "dash", "caps", "alpha", "shadow", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
@@ -141,6 +141,7 @@ function wbFmtValue(entry, field) {
     case "italic": return Boolean(kind === "shape" ? s.label_italic : o.italic);
     case "underline": return Boolean(kind === "shape" ? s.label_underline : o.underline);
     case "strike": return Boolean(kind === "shape" ? s.label_strike : o.strike);
+    case "fit": return Boolean(s?.label_fit);
     case "font": return (kind === "shape" ? s.label_font : o.font_family) || "default";
     case "align": return (kind === "shape" ? s.label_align : o.align) || (kind === "shape" ? "center" : "left");
     //: Words in a shape sit in its middle and a text box's at its top unless
@@ -586,6 +587,7 @@ function wbFormatSync() {
     document.getElementById("wb-fmt-italic")?.setAttribute("aria-pressed", pressed("italic", true));
     document.getElementById("wb-fmt-underline")?.setAttribute("aria-pressed", pressed("underline", true));
     document.getElementById("wb-fmt-strike")?.setAttribute("aria-pressed", pressed("strike", true));
+    if (takes.has("fit")) document.getElementById("wb-fmt-fit")?.setAttribute("aria-pressed", pressed("fit", true));
     const fontField = document.getElementById("wb-fmt-font");
     if (fontField && document.activeElement !== fontField) wbFmtShowMixed(fontField, mixed("font"), wbFmtValue(first, "font"));
   }
@@ -942,6 +944,7 @@ onDomReady(() => {
       wbFmtApply("text", textPatch(shapeKey, objectKey, next || undefined), `${word} ${next ? "on" : "off"}.`);
     });
   }
+  on("wb-fmt-fit", "click", () => wbToggleLabelFit());
   on("wb-fmt-align", "click", (e) => {
     const button = e.target.closest("[data-align]");
     if (!button) return;
@@ -982,9 +985,17 @@ onDomReady(() => {
 //: text box is one step on the stack and an item with no text of its own is
 //: skipped.
 const WB_TEXT_LOOK_KEYS = {
-  shape: ["label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign"],
+  shape: ["label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign", "label_fit"],
   text: ["font_size", "color", "bold", "italic", "underline", "strike", "font_family", "align", "valign"],
 };
+
+//: Shrink to fit, on or off for every selected shape as one step: on unless
+//: every one of them already shrinks.
+function wbToggleLabelFit() {
+  const shapes = wbFmtEntries().filter((e) => wbFmtKind(e) === "shape");
+  const next = !shapes.length || !shapes.every((e) => wbFmtValue(e, "fit"));
+  return wbFmtApply("fit", () => ({ label_fit: next || undefined }), next ? "The text shrinks to fit the shape." : "The text keeps its size.");
+}
 
 function wbClearTextFormat() {
   return wbFmtApply("text", (entry, kind) => {

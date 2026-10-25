@@ -1673,3 +1673,16 @@ Owner: "stuff like that, dont stop there, find what is missing on the whiteboard
 1340. **The owner, 2026-10-19, verbatim.** "when I go between the mind map and whiteboard, should the board recenter on the main content?" **Built in memory for the session (not saved with the board), 2026-10-19:** `wbBoardViews`, `wbRestoreOrFrameBoard`; a map too big to fit opens at its content corner (`wbMapOpenTarget`); sweep `scratchpad/ui-sweeps/mapopenframe.js`. Saving the view with the board is still open.
      Measured by code reading: a map refits on every open (`wbFrameMapOnOpen`, whiteboard.js:2516, `wbZoomToFit`); a board is not reframed and keeps whatever the shared camera (`wbZoom`, :170) last was, which may be the map's; no view is saved per board. For the next PR. Recommendation: each board and map remembers its own view (pan and zoom, saved with the board); returning restores it; fit to content only on first open, or when nothing would be on screen.
 
+
+## Gap audit against draw.io, 2026-10-25 (wb2)
+
+The owner, 2026-10-25: "upgrade the whiteboard and mindmap; add the features draw.io and others have that the app doesn't". Read from the code (`WB_COMMANDS`, `WB_FMT_ROWS`, the Library panel) against draw.io's Arrange, Edit, View and Format menus; "exists" names where. The five marked "build" are the ones taken for a student's diagrams, in this order.
+
+Exists (no work): connector waypoints and elbow routing (`route`, Bend a line); line jumps at crossings (`jumps`); align, distribute, same size, align to a key object; equal spacing guides; z-order (forward, back, front, back of all); lock; duplicate (Ctrl+D) and copy-and-join arrows; copy, paste and reset style; connector labels; frames and swimlane stencils; layers; shape and icon search in the Library (`wb-lib-search`); grid snap toggle; export or copy the selection; flip; select similar; keep proportions; Edit data; find and replace; Mermaid and draw.io import.
+
+Missing (items 1 to 5, zoom to the selection, tidy as a tree, change the shape, a shape's link and text that shrinks to fit, are built: HISTORY.md, "Moved from the plans, 2026-10-25 (wb2)"):
+6. Dimension lines with a live length (10-19 item 7). M.
+7. Crop a picture to a circle or rounded box (10-19 item 13). M.
+8. BPMN element set (10-19 item 9). M.
+9. Pages inside one board (draw.io's page tabs); boards and frames stand in. L, not planned.
+10. Rulers and units. M, not planned for a student's board.
