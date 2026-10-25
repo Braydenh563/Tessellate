@@ -81,9 +81,11 @@ test("note box: Enter continues a bullet, retyping '- ' does not nest, a blank b
   await page.keyboard.type("two");
   await page.keyboard.press("Enter");
   await page.keyboard.press("Enter");
-  await expect(box, "Enter on an empty bullet should end the list").toHaveValue("- one\n- two\n");
+  // Ending the list leaves a blank line, so the next line is not read as part
+  // of the last bullet (dogfood 2026-10-25 round 2, item 6).
+  await expect(box, "Enter on an empty bullet should end the list").toHaveValue("- one\n- two\n\n");
   await page.keyboard.type("done");
-  await expect(box).toHaveValue("- one\n- two\ndone");
+  await expect(box).toHaveValue("- one\n- two\n\ndone");
   expect(errors).toEqual([]);
 });
 

@@ -87,5 +87,5 @@ test("Chat with no model answers from the notes and says what a model adds", asy
   await expect(page.locator("#tab-chat")).toContainText("Chat answers from your notes");
   await expect(page.locator('#chat-mode-seg [data-chat-mode="agent"]')).toBeDisabled();
   // And the empty state points at what does work without one.
-  await expect(page.locator("#chat-messages")).toContainText("Try in Notes, Ask");
+  await expect(page.locator("#chat-messages")).toContainText("Try in Ask");
 });
