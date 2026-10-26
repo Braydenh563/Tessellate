@@ -814,7 +814,9 @@ class NoteView:
         return self.note["id"]
 
 
-_HEADING = re.compile(r"^\s{0,3}#{1,6}\s+(.*)$")
+#: Spaces and tabs only, and the text must start with a non-space, so no two
+#: parts can share a run of whitespace (CodeQL: polynomial backtracking).
+_HEADING = re.compile(r"^[ \t]{0,3}#{1,6}[ \t]+(\S.*)?$")
 _ITEM = re.compile(r"^(\s*(?:[-*+]|\d{1,3}[.)])\s+)(\[[ xX]\]\s+)?")
 #: Where one sentence ends and the next begins: a stop (and the quote mark or
 #: bracket closing it), a space, and a capital or a digit. Misses some
@@ -874,7 +876,7 @@ def _title(content: str) -> tuple[str, int]:
     first = content if end == -1 else content[:end]
     heading = _HEADING.match(first)
     if heading:
-        name = _MARKS.sub("", heading.group(1)).strip().strip("#").strip()
+        name = _MARKS.sub("", heading.group(1) or "").strip().strip("#").strip()
         if name:
             return name, len(content) if end == -1 else end
     words = _MARKS.sub("", first.strip().lstrip("-*+> ")).split()
@@ -924,7 +926,33 @@ def _unit(view: NoteView, content: str, start: int, end: int, kind: str, done: b
 #: (INBOX 725, 7) and is introduced as one: "The picture in **Sketches**
 #: shows ...", never as the person's sentence.
 _PICTURES_HEAD = "[Pictures in this note"
-_PICTURE_LINE = re.compile(r"^\s*-\s+[^:\n]+:\s+(?:shows (?P<caption>.+?))?(?:;?\s*text in it: \"(?P<text>.+?)\")?\]?\s*$")
+_PICTURE_TEXT_LEAD = 'text in it: "'
+
+
+def _picture_groups(line: str) -> dict[str, tuple[str, int]] | None:
+    """The caption and the text one picture line holds, each with where it
+    starts in the line, or None for another line. Read by hand: a pattern for
+    it backtracks over runs of whitespace (CodeQL)."""
+    dash = len(line) - len(line.lstrip())
+    colon = line.find(":", dash)
+    if line[dash : dash + 1] != "-" or not line[dash + 1 : dash + 2].isspace() or colon < dash + 3:
+        return None
+    if not line[colon + 1 : colon + 2].isspace():
+        return None
+    at = colon + 1 + len(line[colon + 1 :]) - len(line[colon + 1 :].lstrip())
+    end = len(line.rstrip())
+    end -= line[:end].endswith("]")
+    rest, groups = line[at:end], {"caption": ("", 0), "text": ("", 0)}
+    lead = rest.find(_PICTURE_TEXT_LEAD) if rest.endswith('"') else -1
+    if lead != -1 and lead + len(_PICTURE_TEXT_LEAD) < len(rest) - 1:
+        groups["text"] = (rest[lead + len(_PICTURE_TEXT_LEAD) : -1], at + lead + len(_PICTURE_TEXT_LEAD))
+        rest = rest[:lead].rstrip()
+        rest = rest[:-1] if rest.endswith(";") else rest
+    if rest.startswith("shows ") and len(rest) > len("shows "):
+        groups["caption"] = (rest[len("shows ") :], at + len("shows "))
+    elif rest:
+        return None
+    return groups
 
 
 #: A captioning model's frame around what a picture shows ("The image
@@ -933,9 +961,24 @@ _PICTURE_LINE = re.compile(r"^\s*-\s+[^:\n]+:\s+(?:shows (?P<caption>.+?))?(?:;?
 _CAPTION_FRAME = re.compile(
     r"^(?:the|this)\s+(?:image|picture|photo|photograph|screenshot)\s+(?:contains|shows|depicts|is of|is)\s+(?=\S)", re.I
 )
-#: The lines of a picture's text as the route joins them (" / "), and a
-#: numbered list run into one line ("1. Offline search 2. Tags").
-_PICTURE_TEXT_BREAK = re.compile(r"\s+/\s+|\s+(?=\d{1,2}[.)]\s)")
+_LIST_NUMBER = re.compile(r"\d{1,2}[.)]\s")
+
+
+def _picture_text_breaks(text: str) -> list[tuple[int, int]]:
+    """Where a picture's text breaks into lines: a lone "/" with space each side
+    (the route joins its lines with " / "), and the space before a "2." of a
+    numbered list run into one line ("1. Offline search 2. Tags"). Found run by
+    run of whitespace: one pattern for both backtracks over the runs (CodeQL)."""
+    runs, breaks, cursor = [m.span() for m in re.finditer(r"\s+", text)], [], 0
+    for i, (start, end) in enumerate(runs):
+        if start < cursor:
+            continue
+        if text[end : end + 1] == "/" and i + 1 < len(runs) and runs[i + 1][0] == end + 1:
+            breaks.append((start, runs[i + 1][1]))
+            cursor = runs[i + 1][1]
+        elif _LIST_NUMBER.match(text[end : end + 4]):
+            breaks.append((start, end))
+    return breaks
 
 
 def _picture_spans(group: str, text: str) -> list[tuple[int, str]]:
@@ -945,28 +988,28 @@ def _picture_spans(group: str, text: str) -> list[tuple[int, str]]:
         frame = _CAPTION_FRAME.match(text)
         return [(frame.end() if frame else 0, text[frame.end():] if frame else text)]
     spans, cursor = [], 0
-    for brk in [*_PICTURE_TEXT_BREAK.finditer(text), None]:
-        end = brk.start() if brk else len(text)
+    for brk in [*_picture_text_breaks(text), None]:
+        end = brk[0] if brk else len(text)
         piece = text[cursor:end]
         lead = len(piece) - len(piece.lstrip())
         number = re.match(r"\d{1,2}[.)]\s+", piece[lead:])
         lead += number.end() if number else 0
         spans.append((cursor + lead, piece[lead:].strip()))
-        cursor = brk.end() if brk else end
+        cursor = brk[1] if brk else end
     return spans
 
 
 def _picture_units(view: NoteView, content: str, line_start: int, line: str) -> None:
-    match = _PICTURE_LINE.match(line.rstrip("\r\n"))
-    if not match:
+    groups = _picture_groups(line.rstrip("\r\n"))
+    if not groups:
         return
     for group, kind in (("caption", "picture"), ("text", "picture_text")):
-        whole = match.group(group) or ""
+        whole, at = groups[group]
         for offset, text in _picture_spans(group, whole):
             text = text.strip()
             if len(text.split()) < 2:
                 continue
-            start = line_start + match.start(group) + offset
+            start = line_start + at + offset
             words = _words(text)
             if words:
                 view.sentences.append(Sentence(view.id, view.rank, start, start + len(text), text, words, kind))
