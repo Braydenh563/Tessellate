@@ -2802,3 +2802,21 @@ def recognise(
         Span(c[2], raw[c[0]:c[1]], c[0], c[1], c[3], _read_as(c[2], c[3], c[4]), c[5]) for c in taken + alts
     ]
     return sorted(spans, key=lambda s: (s.start, s.rank))
+
+
+#: A day named in a dated note is that week's, not this one's (the owner,
+#: 2026-10-26: "it was due that friday, not this friday").
+_DAY_SHIFT = (
+    (re.compile(r"\b(?:on |this )?(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b"), r"that \1"),
+    (re.compile(r"\btonight\b"), "that night"), (re.compile(r"\btoday\b"), "that day"),
+    (re.compile(r"\btomorrow\b"), "the next day"), (re.compile(r"\bnext week\b"), "the week after"),
+    (re.compile(r"\bis due\b"), "was due"),
+)
+
+
+def as_of_then(text: str) -> str:
+    """`text`, a dated note's words, with its days said as of that note's
+    day ("due on Friday" to "due that Friday", "tonight" to "that night")."""
+    for pattern, repl in _DAY_SHIFT:
+        text = pattern.sub(repl, text)
+    return text

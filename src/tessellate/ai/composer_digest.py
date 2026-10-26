@@ -1187,20 +1187,10 @@ def _reported(body: str, i: int) -> str:
     return _REPORTS[i % len(_REPORTS)] + said
 
 
-#: A day named in a dated note is that week's, not this one's (the owner,
-#: 2026-10-26: "it was due that friday, not this friday").
-_DAY_SHIFT = (
-    (re.compile(r"\b(?:on |this )?(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b"), r"that \1"),
-    (re.compile(r"\btonight\b"), "that night"), (re.compile(r"\btoday\b"), "that day"),
-    (re.compile(r"\btomorrow\b"), "the next day"), (re.compile(r"\bnext week\b"), "the week after"),
-    (re.compile(r"\bis due\b"), "was due"),
-)
-
-
 def _backshift(said: str) -> str:
-    for pattern, repl in _BACKSHIFT + _DAY_SHIFT:
+    for pattern, repl in _BACKSHIFT:
         said = pattern.sub(repl, said)
-    return said
+    return recogniser.as_of_then(said)
 
 
 _PINNED = re.compile(r" \(you pinned this as true, [^)]+\)")
