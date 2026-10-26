@@ -15,6 +15,7 @@ can do, because those are handed a model that is already on disk.
 from __future__ import annotations
 
 import json
+import re
 import time
 
 from collections.abc import Iterator
@@ -194,7 +195,12 @@ class OllamaClient(Provider):
         timeout: float = 600.0,
         keep_alive: str = "30m",
     ) -> None:
-        self.base_url = base_url.rstrip("/")
+        #: "localhost" is tried as ::1 first, and Ollama listens on 127.0.0.1
+        #: only; Windows waits about two seconds before it gives up on the
+        #: refused ::1, past the 1 s connect wait, so a running Ollama read as
+        #: off (the owner, 2026-10-26: "I have ollama running but its still
+        #: saying I cant use the ai"). The IPv4 loopback is asked directly.
+        self.base_url = re.sub(r"^(https?://)localhost(?=[:/]|$)", r"\g<1>127.0.0.1", base_url.rstrip("/"), flags=re.I)
         # 120s used to be the default here and was too short by design, not
         # by accident: on modest hardware, loading a model bigger than about
         # 4B parameters into RAM/VRAM for the first time can take well past

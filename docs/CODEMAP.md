@@ -2,7 +2,7 @@
 
 Generated 2026-10-26 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6460, frontend ids 2543, CSS sections 503, backend routes 622, backend modules 6535, test files 1367, tests 12193, plan headings 972.
+Counts: frontend functions 6460, frontend ids 2543, CSS sections 503, backend routes 622, backend modules 6535, test files 1367, tests 12194, plan headings 972.
 
 ## Frontend functions (6460)
 
@@ -13121,13 +13121,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `OllamaClient` | src/tessellate/ai/ollama_client.py:188 |
-| `_is_down` | src/tessellate/ai/ollama_client.py:169 |
-| `_is_refusal` | src/tessellate/ai/ollama_client.py:184 |
-| `_mark_down` | src/tessellate/ai/ollama_client.py:161 |
-| `_mark_up` | src/tessellate/ai/ollama_client.py:165 |
-| `_note_failure` | src/tessellate/ai/ollama_client.py:179 |
-| `describe_http_error` | src/tessellate/ai/ollama_client.py:63 |
+| `OllamaClient` | src/tessellate/ai/ollama_client.py:189 |
+| `_is_down` | src/tessellate/ai/ollama_client.py:170 |
+| `_is_refusal` | src/tessellate/ai/ollama_client.py:185 |
+| `_mark_down` | src/tessellate/ai/ollama_client.py:162 |
+| `_mark_up` | src/tessellate/ai/ollama_client.py:166 |
+| `_note_failure` | src/tessellate/ai/ollama_client.py:180 |
+| `describe_http_error` | src/tessellate/ai/ollama_client.py:64 |
 
 ### src/tessellate/ai/openai_client.py (2)
 
@@ -19251,7 +19251,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12193)
+## Tests (12194)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20192,7 +20192,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_prose_tools.py | 20 |
 | tests/test_provider_redirects.py | 4 |
 | tests/test_provider_sockets.py | 9 |
-| tests/test_providers.py | 70 |
+| tests/test_providers.py | 71 |
 | tests/test_pwa_shell.py | 25 |
 | tests/test_python_host.py | 7 |
 | tests/test_qa_1005_polish.py | 10 |

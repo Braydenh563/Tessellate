@@ -28,6 +28,13 @@ from tessellate.ai import presets
 from tessellate.ai.ollama_client import OllamaClient
 
 
+@pytest.fixture(autouse=True)
+def _scratch_data_dir(tmp_path, monkeypatch):
+    """A request logs a job run under the data dir: a scratch one, never the repo's."""
+    monkeypatch.setenv("TESSELLATE_DATA_DIR", str(tmp_path))
+
+
+
 class _Client(OllamaClient):
     """An Ollama client whose capability answer we control."""
 

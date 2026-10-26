@@ -112,7 +112,7 @@ def test_the_calculator_is_one_sheet_reached_three_ways():
     conversions"."""
     kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
     assert "calculator: (event) => replyCalcPanel(event)" in kit
-    assert 'function openCalculator(input = "")' in kit and 'name: "calculator"' in kit and "openSheet({" in kit
+    assert 'function openCalculator(input = "", mode = "work")' in kit and 'name: "calculator"' in kit and "openSheet({" in kit
     #: Accessible: a live result, a keypad that is one Tab stop walked by the
     #: arrows, keys named for what they do, a mode switch that says which is on.
     assert 'out.setAttribute("aria-live", "polite")' in kit
@@ -123,8 +123,10 @@ def test_the_calculator_is_one_sheet_reached_three_ways():
     #: "/calc" alone opens it; the palette has a row with its line of help.
     assert "if (!event.input) requestAnimationFrame(() => openCalculator());" in kit
     panes = (JS / "settings-panes.js").read_text(encoding="utf-8")
-    row = next(line for line in panes.splitlines() if 'label: "ph:calculator Calculator"' in line)
-    assert "about:" in row and 'ensureModule("replyKit").then(() => openCalculator())' in row
+    #: The row now comes from the `POPUP_TOOLS` registry (K27), which the
+    #: palette, Features, the "/" menus and the Guide all read.
+    entry = panes[panes.index('id: "calculator", name: "Calculator"'):][:600]
+    assert "about:" in entry and 'ensureModule("replyKit").then(() => openCalculator())' in entry
 
 
 def test_a_note_a_reply_gives_is_previewed_on_every_surface():
