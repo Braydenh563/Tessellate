@@ -40,7 +40,7 @@ Sweeps: `scratchpad/ui-sweeps/paint1026-audit.js` (board, 1440), `paint1026-sket
 
 ## INBOX 1354 (the owner's second message, ranked first)
 
-1. Interaction feel: handle hit areas, drag threshold, rotate snapping, double-click to edit. Open.
+1. Interaction feel: handle hit areas, drag threshold, rotate snapping, double-click to edit. Built (below).
 2. Popup and context bars stretching to the full width: built (below).
 3. Group and Ungroup one state-aware control: measured already one-or-other on the context bar, the right-click menu and Arrange (`paint1026-groups.js`). Kept, now chain-aware.
 4. Nested groups. Built (below).
@@ -50,7 +50,8 @@ Sweeps: `scratchpad/ui-sweeps/paint1026-audit.js` (board, 1440), `paint1026-sket
 
 | What | Commit | Sweep, numbers |
 | --- | --- | --- |
-| Context bar capped at 40rem, fill and text fold last, fold planned from one measurement | (this step) | `paint1026-barwidth.js` 27/27 at 1280 and 960, 26/26 at 390 (before 25/27, 25/27, 24/26: line 700, arrow 851 of 1280; rect 2 rows, text 4 rows at 390). Bar open, 20-call mean: 390 line 153 to 51 ms, arrow 114 to 57, rect 77 to 59; 960 arrow 2.0 (unfolded, 776 wide) to 14.5; 1280 arrow 2.0 to 10.6 (it folds now). More menu 304 wide everywhere |
+| Context bar capped at 40rem, fill and text fold last, fold planned from one measurement | 05c9fce | `paint1026-barwidth.js` 27/27 at 1280 and 960, 26/26 at 390 (before 25/27, 25/27, 24/26: line 700, arrow 851 of 1280; rect 2 rows, text 4 rows at 390). Bar open, 20-call mean: 390 line 153 to 51 ms, arrow 114 to 57, rect 77 to 59; 960 arrow 2.0 (unfolded, 776 wide) to 14.5; 1280 arrow 2.0 to 10.6 (it folds now). More menu 304 wide everywhere |
+| Feel: 3px click slop (`WB_CLICK_SLOP`, also d3 `clickDistance`), grip hit area by transparent stroke and `::after` (12px mouse, 18px touch), magnetic quarter turns within 3 degrees, up arrow 42 to 56px, phone bar clears the grips, bar fold cached per fill | (this step) | `paint1026-feel.js` at zoom 1: 1280 5/9 to 9/9 (grip reach 5 and 6 to 10 and 11 px, a 2px slip moved it, turn to 88 gave 87 now 90; frames p95 16.7, no long tasks before or after). 390 2/9 to 8/9 (reach 5 and 0 to 12 and 14: the band covered the rotation grip; move p95 50 to 16.7 ms, long tasks 6 to 1; resize 50 to 33, 12 to 2; rotate 50 to 16.7, 11 to 1; CPU profile of a 30-move drag: fold plus bar 945 ms to 0) |
 | Nested groups: chain `group_id`, click selects outermost, double-click drills, Ungroup one level, one Undo step each, paste keeps nesting, layers by outermost group | 883fc62 | `paint1026-groups.js` 19/19 at 1280 (before: flat, ungroup of outer cleared all 7, no Undo entry); group walk 0.074 ms per click on 507 items; whole click 7.7 ms, the highlight's (unchanged) |
 
 ## Remaining

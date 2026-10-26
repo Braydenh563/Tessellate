@@ -6718,3 +6718,33 @@ input[type="color"].wb-mixed {
 .wb-context {
   max-width: min(40rem, calc(100% - var(--space-6)));
 }
+
+/* **A grip is easier to hit than to see** (the owner, INBOX 1354: rotating
+   and resizing are "very finicky"; measured a 10px square that a press 6px
+   from its centre missed). The SVG grips take a transparent stroke, which
+   hit-tests like paint; the HTML ones a pseudo-element past their edge. Both
+   are scaled with the grip, so the reach is screen pixels at every zoom:
+   11 from the centre with a mouse, 14 with a finger (a 28px target: more
+   would reach the rotate grip 28px above the top edge). */
+.wb-sketch-resize-handle,
+.wb-sketch-rotate-handle {
+  stroke: transparent;
+  stroke-width: 12px;
+}
+.wb-resize-handle::after,
+.wb-rotate-handle::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: var(--radius-pill);
+}
+@media (pointer: coarse) {
+  .wb-sketch-resize-handle,
+  .wb-sketch-rotate-handle {
+    stroke-width: 18px;
+  }
+  .wb-resize-handle::after,
+  .wb-rotate-handle::after {
+    inset: -9px;
+  }
+}

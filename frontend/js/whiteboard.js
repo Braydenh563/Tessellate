@@ -5507,6 +5507,7 @@ function wbUpdateContextBar() {
 //: over a selection it does not have.
 function wbFillContextBar() {
   const bar = document.getElementById("wb-context");
+  WB_CTX_FOLD.sig = null;
   if (!bar) return null;
   const show = (...ids) => ids.forEach((id) => document.getElementById(id)?.classList.remove("hidden"));
 
@@ -6529,7 +6530,7 @@ function wbRenderRelease() {
 //: The groups a wrapped bar folds into More, first to last. Fill and text go
 //: last: they are what a shape or a text box is selected for, but a phone's
 //: text bar was four rows tall without them (INBOX 1354, 198px at 390).
-const WB_CTX_FOLD = { order: ["order", "stroke", "arrange", "caps", "route", "fill", "text"], home: new Map() };
+const WB_CTX_FOLD = { order: ["order", "stroke", "arrange", "caps", "route", "fill", "text"], home: new Map(), sig: null, size: null };
 
 function wbFoldContextBar(bar) {
   const menu = document.getElementById("wb-context-menu");
@@ -6746,7 +6747,14 @@ function wbUpdateSelectionBar(panning = false) {
   //: A bar that wraps to a second row is a panel, not a pill: the pill's
   //: radius cut the corners of its first and last rows (the 22-10 bug doc,
   //: "the two rows clash at a half window").
-  if (!held && active.id === "wb-context") {
+  //: **Folded once per fill, not once per frame** (the owner, 10-26: "not
+  //: laggy"). A one-item drag places the bar every frame and refolded it
+  //: each time: at 390 the fold and the reads after it were 945 ms of a 30-move
+  //: drag, every frame a long task. The bar's groups change only when
+  //: `wbFillContextBar` runs (it clears `sig`) or the host's width does.
+  const foldSig = !held && active.id === "wb-context" ? `${panSig}:${Math.round(hostRect.width)}` : null;
+  const folded = foldSig && WB_CTX_FOLD.sig === foldSig ? WB_CTX_FOLD.size : null;
+  if (foldSig && !folded) {
     active.classList.remove("wb-context-wrapped");
     wbFoldContextBar(active);
     const groups = [...active.querySelectorAll(":scope > .wb-context-group:not(.hidden)")];
@@ -6760,16 +6768,17 @@ function wbUpdateSelectionBar(panning = false) {
       groups.forEach((g, i) => { if (i && tops[i] > tops[i - 1] + 2) g.classList.add("wb-row-start"); });
     }
   }
-  const w = held ? held.w : active.offsetWidth;
-  const h = held ? held.h : active.offsetHeight;
+  const w = held ? held.w : folded ? folded.w : active.offsetWidth;
+  const h = held ? held.h : folded ? folded.h : active.offsetHeight;
+  if (foldSig && !folded) Object.assign(WB_CTX_FOLD, { sig: foldSig, size: { w, h } });
   // 44px above, not 10: the rotation handle sits 28px above a card or
   // text box (`.wb-rotate-handle`, 12px tall), and a bar placed just over
   // the item covered it, reported: "I can't rotate objects because that
   // panel appears."
-  //: 58 while the clone arrows show: the top one stands past the rotation
-  //: handle (42px up, 8px tall), and the bar over it hid it (the owner,
+  //: 72 while the clone arrows show: the top one stands past the rotation
+  //: handle (56px up, 8px tall), and the bar over it hid it (the owner,
   //: 2026-10-10: "you cant even see the top one").
-  const gapAbove = document.getElementById("wb-clone-grips") ? 58 : 44, gapBelow = 10;
+  const gapAbove = document.getElementById("wb-clone-grips") ? 72 : 44, gapBelow = 10;
   //: Clear of the board's two side panels (the sidebar's rail on the left,
   //: the Format panel on the right), which stand over the canvas: a shape
   //: near the left edge put the bar's first controls under the rail.
@@ -6833,7 +6842,11 @@ function wbUpdateSelectionBar(panning = false) {
     //: top, as before.
     const rail = document.getElementById("wb-tool-group")?.getBoundingClientRect();
     const foot = (rail && rail.height ? rail.top - hostRect.top : rect.bottom - hostRect.top) - h - gapBelow;
-    const under = (at) => top < at + h && bottom > at;
+    //: The grips count as the selection (INBOX 1354, measured at 390: the
+    //: band ended 10px over a shape's top and covered its rotation grip and
+    //: up arrow, 28 and 56px above it, so a turn there was a press on the bar).
+    const gripsTop = top - gapAbove + 12;
+    const under = (at) => gripsTop < at + h && bottom > at;
     if (under(y) && foot > y && !under(foot)) {
       bar.dataset.wbAnchor = "bottom";
       y = foot;
@@ -7488,13 +7501,21 @@ const WB_TOUCH_SLOP = 8;
 //: pixels one of the event's units is: 1 for a card (screen pixels), the zoom
 //: scale for a shape (its drag measures in board units). Returns the movement
 //: to apply, or null while the finger is still inside the slop.
+//:
+//: **A mouse gets a slop too, of 3px** (the owner, INBOX 1354: moving and
+//: editing "is very finicky"). Without one, a click that slipped 2px moved
+//: the shape 2px and, because d3 then swallows the click, selected nothing.
+//: `WB_CLICK_SLOP` is the same distance given to the drags' `clickDistance`,
+//: so a press that moved less than it is a click and nothing else.
+const WB_CLICK_SLOP = 3;
+
 function wbTouchSlopStep(gesture, event, unit = 1, slop = WB_TOUCH_SLOP) {
   const { dx, dy } = event;
   const touch = String(event.sourceEvent?.type || "").startsWith("touch");
-  if (!gesture || !touch || gesture.slopDone) return { dx, dy };
+  if (!gesture || gesture.slopDone) return { dx, dy };
   gesture.slopX = (gesture.slopX || 0) + dx;
   gesture.slopY = (gesture.slopY || 0) + dy;
-  if (Math.hypot(gesture.slopX, gesture.slopY) * unit < slop) return null;
+  if (Math.hypot(gesture.slopX, gesture.slopY) * unit < (touch ? slop : WB_CLICK_SLOP)) return null;
   gesture.slopDone = true;
   return { dx: gesture.slopX, dy: gesture.slopY };
 }
@@ -8305,7 +8326,11 @@ const WB_CLONE_DIRS = {
 const WB_CLONE_GRIP_DIRS = ["up", "right", "down", "left"];
 //: How far out from each side the arrow's centre sits, in screen pixels: the
 //: grips are drawn one size to the hand at any zoom, so their distance is too.
-const WB_CLONE_GRIP_OUT = { up: 42, right: 22, down: 22, left: 22 };
+//: **The up arrow stands clear of the rotation grip** (INBOX 1354, rotating
+//: "is very finicky"): both are fixed screen distances above the box, the
+//: grip 28px, and at 42 the arrow took presses 10px from the grip's centre.
+//: At 56 the grip's 14px reach on a touch screen ends before the arrow.
+const WB_CLONE_GRIP_OUT = { up: 56, right: 22, down: 22, left: 22 };
 
 //: The one selected item clone-and-connect works on, or null.
 function wbCloneSource() {
@@ -10109,10 +10134,20 @@ function wbSketchAngleFromCenterDeg(boardCx, boardCy, sourceEvent, shiftSnap) {
   return wbAngleFromCenterDeg(screenCx, screenCy, sourceEvent.clientX, sourceEvent.clientY, shiftSnap);
 }
 
+//: A shape's drawn group, path and hit path, for a drag to write to.
+function wbSketchLiveEls(id) {
+  const g = document.querySelector(`.sketch-group[data-id="${id}"]`);
+  return { g, path: g?.querySelector(".sketch-path"), hit: g?.querySelector(".sketch-hitbox") };
+}
+
 function wbAngleFromCenterDeg(cx, cy, px, py, shiftSnap) {
   let deg = Math.atan2(py - cy, px - cx) * (180 / Math.PI) + 90;
   deg = ((deg % 360) + 360) % 360;
   if (shiftSnap) deg = Math.round(deg / 15) * 15 % 360;
+  //: **Upright and square are magnetic** (INBOX 1354, rotating "is very
+  //: finicky"): without Shift, an angle within 3 degrees of 0, 90, 180 or 270
+  //: lands on it, so a shape turned by eye to a quarter turn is one.
+  else if (Math.abs(deg - Math.round(deg / 90) * 90) < 3) deg = Math.round(deg / 90) * 90 % 360;
   return Math.round(deg);
 }
 
@@ -20191,7 +20226,7 @@ function wbDrawSketchHandles(sketch, { outlineOnly = false } = {}) {
   // rotation applied is exactly the pointer's own angle from vertical, the
   // same "the handle follows your cursor" feel `nodeRotateDrag` above
   // already established for cards.
-  let rotateOriginalD = null, rotateLiveD = null, rotateLiveAngle = 0;
+  let rotateOriginalD = null, rotateLiveD = null, rotateLiveAngle = 0, spinEls = null;
   const shapeGrip = group.append("circle")
     .attr("class", "wb-sketch-rotate-handle")
     // r 6, not 7: the card and text-box grip is 12px across
@@ -20226,12 +20261,15 @@ function wbDrawSketchHandles(sketch, { outlineOnly = false } = {}) {
           //: same centre, as a card's outline does, and the grip stays under
           //: the pointer; the release render draws the new shape's own box.
           group.attr("transform", `rotate(${currentAngle} ${centerX} ${centerY})`);
-          document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-path`)?.setAttribute("d", newD);
-          document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-hitbox`)?.setAttribute("d", newD);
-          wbLayoutShapeLabel(document.querySelector(`.sketch-group[data-id="${sketch.id}"]`));
+          //: Looked up on the first frame, not every frame.
+          spinEls ||= wbSketchLiveEls(sketch.id);
+          spinEls.path?.setAttribute("d", newD);
+          spinEls.hit?.setAttribute("d", newD);
+          wbLayoutShapeLabel(spinEls.g);
           wbFollowLiveShape(sketch, newD);
         })
         .on("end", async () => {
+          spinEls = null;
           wbFollowLiveShape(sketch, null);
           const before = sketch._rotateUndoBefore;
           delete sketch._rotateUndoBefore;
@@ -20408,6 +20446,7 @@ function renderWhiteboard() {
   // pan in particular, since the canvas's own zoom/pan drag needs an
   // unclaimed pointerdown to reach it.
   const sketchDrag = d3.drag()
+    .clickDistance(WB_CLICK_SLOP)
     .filter((event) => !wbIsSecondTouch(event) && !event.button && (window.currentTool === "select" || Boolean(window.currentTool?.startsWith("link-"))))
     .on("start", function (event, d) {
       event.sourceEvent.stopPropagation();
@@ -20971,6 +21010,7 @@ function renderWhiteboard() {
     .style("height", (d) => (d.height ? `${d.height}px` : ""))
     .style("z-index", d => d.z)
     .call(d3.drag()
+      .clickDistance(WB_CLICK_SLOP)
       // Reported directly: drawing over a note "just moves the note
       // instead" of drawing on it. Cards sit in `#wb-html-layer`, a sibling
       // painted on top of `#wb-svg-layer`, a pointerdown that lands on a
@@ -21993,6 +22033,7 @@ function renderWbObjects(canvas) {
     //: Not d3's default filter, which refuses a Ctrl press: Ctrl is how a
     //: frame is turned without what it holds.
     return d3.drag()
+      .clickDistance(WB_CLICK_SLOP)
       .filter((event) => !event.button)
       .on("start", (event, d) => {
         event.sourceEvent.stopPropagation();
