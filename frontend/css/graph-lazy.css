@@ -446,11 +446,13 @@
   border-top: 1px solid var(--border);
 }
 
-/* A toast over the map stays on the bottom edge and steps left of the zoom strip (INBOX 1306, then the owner 2026-10-22: a 12rem lift put it halfway up the screen). */
-@media (min-width: 600px) {
-  :root body:has(#tab-graph:not(.hidden)) #toast-box {
-    right: calc(var(--space-4) + 4.5rem);
-  }
+/* A toast over the map steps left of the zoom strip and, by `initGraphToastClearance`
+   (graph.js), stands above the legend row, so it covers neither (INBOX 1306,
+   then 1400: it met the legend row's box at 1440 and the zoom strip at 390).
+   A lift of 12rem was tried and put it halfway up the screen (the owner,
+   2026-10-22); this one is the legend row's own height. */
+:root body:has(#tab-graph:not(.hidden)) #toast-box {
+  right: calc(var(--space-4) + 4.5rem);
 }
 
 /* **The popups' Save stays in the panel's view** (INBOX 1357, "fix the class",

@@ -76,3 +76,17 @@ def test_the_guide_says_every_section_has_a_question_mark() -> None:
     topics = {t["id"]: t for t in help_chat.HELP_TOPICS} if hasattr(help_chat, "HELP_TOPICS") else {}
     body = topics.get("graph-options-help", {}).get("body", "") if topics else (ROOT / "src/tessellate/ai/help_chat.py").read_text(encoding="utf-8")
     assert "beside its name" in str(body)
+
+
+def test_a_toast_over_the_map_stands_above_the_legend_and_left_of_the_zoom() -> None:
+    """INBOX 1400: the toast met the legend row's box at 1440 and the zoom strip
+    at 390 (measured, `scratchpad` toast sweep: 0 intersections after, at 1440,
+    1024, 820 and 390). The graph lifts the toast box by the legend's distance from the
+    window's bottom (on the box, not a page property); the stylesheet steps it left."""
+    css = (ROOT / "frontend" / "css" / "graph-lazy.css").read_text(encoding="utf-8")
+    assert "right: calc(var(--space-4) + 4.5rem);" in css
+    js = (ROOT / "frontend" / "js" / "graph.js").read_text(encoding="utf-8")
+    body = js[js.index("function initGraphToastClearance()") :]
+    body = body[: body.index("\n}\n")]
+    assert "box.style.bottom" in body and "ResizeObserver" in body and '"resize"' in body
+    assert js.count("initGraphToastClearance();") == 2, "the clearance is wired on render and at load"
