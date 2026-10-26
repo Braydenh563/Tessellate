@@ -464,18 +464,37 @@
   background: var(--modal-bg);
 }
 
-/* **A fold's '?' sits in its head, before the chevron** (INBOX 1400): the
-   '?' takes the free space and the chevron follows it, the same place as View's
-   '?'. The row's own height, not the button's 2rem, so a head stays 39px. */
-#graph-options .graph-options-fold > summary > .graph-help-toggle,
+/* **A fold's '?' sits in its head, at the end** (INBOX 1400), the same place
+   as View's '?'. It is the wrapper's first child, beside the `<details>` and
+   not in its `<summary>` (a button inside a summary is a control inside a
+   control, axe's nested-interactive), laid over the room the summary keeps at
+   its end, so pressing it cannot toggle the fold. The row's own height, not
+   the button's 2rem, so a head stays 39px. The wrapper carries the hairline
+   the sibling rule gave the section, which no longer touches its neighbour. */
 #graph-options .dock-menu-section-head > .graph-help-toggle {
   margin-left: auto;
   flex: 0 0 auto;
   width: max(var(--control-h), var(--target-min));
   height: max(var(--control-h), var(--target-min));
 }
-#graph-options .graph-options-fold > summary:has(> .graph-help-toggle):not(.icon-only):not(.icon-button)::before {
-  margin-left: var(--space-2);
+#graph-options .graph-fold-wrap {
+  position: relative;
+  border-top: 1px solid var(--divider);
+}
+#graph-options .graph-fold-wrap + .dock-menu-section {
+  border-top: 1px solid var(--divider);
+}
+#graph-options .graph-fold-wrap > .graph-help-toggle {
+  position: absolute;
+  top: var(--space-1);
+  right: var(--space-6);
+  z-index: 1;
+  margin: 0;
+  width: max(var(--control-h), var(--target-min));
+  height: max(var(--control-h), var(--target-min));
+}
+#graph-options .graph-fold-wrap > details > summary:not(.icon-only):not(.icon-button) {
+  padding-inline-end: max(var(--control-h), var(--target-min));
 }
 
 /* **Actions that pair up share a row** (INBOX 1400): Trace with Legend, Suggest

@@ -4154,7 +4154,11 @@ Link to another note with [[its first few words]]."></textarea>
               </label>
             </div>
           </div>
-          <details class="dock-menu-section settings-fold graph-options-fold graph-physics"
+          <div class="graph-fold-wrap">
+            <button type="button" class="icon-only ghost small graph-help-toggle"
+            data-help-for="graph-physics-help" aria-controls="graph-physics-help" aria-expanded="false"
+            title="What the Physics controls do" aria-label="What the Physics controls do"><i class="ph ph-question" aria-hidden="true"></i></button>
+            <details class="dock-menu-section settings-fold graph-options-fold graph-physics"
             id="graph-physics">
             <!-- Every section head is the same now (INBOX 621, the owner: "the
                  settings dropdown in the graph tab" reads as vibe coded): the
@@ -4163,10 +4167,7 @@ Link to another note with [[its first few words]]."></textarea>
                  control and the one head of eight that held one; it is the
                  section's last row now, a menu row like the panel's other
                  actions (Trace, Legend, Suggest links, Reset). -->
-            <summary><span class="muted dock-menu-label" id="graph-physics-label">Physics</span>
-            <button type="button" class="icon-only ghost small graph-help-toggle"
-              data-help-for="graph-physics-help" aria-controls="graph-physics-help" aria-expanded="false"
-              title="What the Physics controls do" aria-label="What the Physics controls do"><i class="ph ph-question" aria-hidden="true"></i></button></summary>
+            <summary><span class="muted dock-menu-label" id="graph-physics-label">Physics</span></summary>
             <div class="help-body hidden" id="graph-physics-help" role="dialog" aria-label="What the Physics controls do">
               <p>These shape the Force layout; under Tree, Radial, Arc and Treemap they are dimmed.</p>
               <ul>
@@ -4216,8 +4217,8 @@ Link to another note with [[its first few words]]."></textarea>
               <i class="ph ph-shuffle ph-lead" aria-hidden="true"></i> Reshuffle layout
             </button>
           </details>
-          <details class="dock-menu-section settings-fold graph-options-fold" id="graph-toggle-group">
-            <summary><span class="muted dock-menu-label" id="graph-show-label">Show</span>
+          </div>
+          <div class="graph-fold-wrap">
             <!-- INBOX 183, the owner: "idk what entities are". The three
                    switches below add three kinds of node and only one of them
                    is a word this app has ever explained. Each row carries its
@@ -4226,9 +4227,11 @@ Link to another note with [[its first few words]]."></textarea>
                    `data-help-for` recipe is for (DESIGN.md, the recipe
                    index). The same sentence about an entity is in the legend
                    and in a node's own panel, so the three cannot drift. -->
-              <button type="button" class="icon-only ghost small graph-help-toggle"
-              data-help-for="graph-show-help" aria-controls="graph-show-help" aria-expanded="false"
-              title="What these add to the map" aria-label="What these add to the map"><i class="ph ph-question" aria-hidden="true"></i></button></summary>
+            <button type="button" class="icon-only ghost small graph-help-toggle"
+            data-help-for="graph-show-help" aria-controls="graph-show-help" aria-expanded="false"
+            title="What these add to the map" aria-label="What these add to the map"><i class="ph ph-question" aria-hidden="true"></i></button>
+            <details class="dock-menu-section settings-fold graph-options-fold" id="graph-toggle-group">
+            <summary><span class="muted dock-menu-label" id="graph-show-label">Show</span></summary>
             <div class="help-body hidden" id="graph-show-help" role="dialog"
               aria-label="What these add to the map">
               <p>
@@ -4304,13 +4307,15 @@ Link to another note with [[its first few words]]."></textarea>
               </label>
             </div>
           </details>
+          </div>
           <!-- How the map is drawn, folded like Physics: set once, then left
                (GRAPH_PLAN, "Decision made, 2026-10-04: a Display fold"). -->
-          <details class="dock-menu-section settings-fold graph-options-fold" id="graph-display">
-            <summary><span class="muted dock-menu-label" id="graph-display-label">Display</span>
+          <div class="graph-fold-wrap">
             <button type="button" class="icon-only ghost small graph-help-toggle"
-              data-help-for="graph-display-help" aria-controls="graph-display-help" aria-expanded="false"
-              title="What the Display controls do" aria-label="What the Display controls do"><i class="ph ph-question" aria-hidden="true"></i></button></summary>
+            data-help-for="graph-display-help" aria-controls="graph-display-help" aria-expanded="false"
+            title="What the Display controls do" aria-label="What the Display controls do"><i class="ph ph-question" aria-hidden="true"></i></button>
+            <details class="dock-menu-section settings-fold graph-options-fold" id="graph-display">
+            <summary><span class="muted dock-menu-label" id="graph-display-label">Display</span></summary>
             <div class="help-body hidden" id="graph-display-help" role="dialog" aria-label="What the Display controls do">
               <p>These change how the map is drawn, never what is on it.</p>
               <ul>
@@ -4361,14 +4366,16 @@ Link to another note with [[its first few words]]."></textarea>
                 title="How thick the lines are drawn">
             </div>
           </details>
+          </div>
           <!-- GRAPH_PLAN KG8: which kinds of link are drawn, and the notes a
                property names, lit. Chips built from what is on the map
                (`gcRenderFilterChips`, graph-canvas.js). -->
-          <details class="dock-menu-section settings-fold graph-options-fold" id="graph-filter-section">
-            <summary><span class="muted dock-menu-label" id="graph-filter-label">Filter</span>
+          <div class="graph-fold-wrap">
             <button type="button" class="icon-only ghost small graph-help-toggle"
-              data-help-for="graph-filter-help" aria-controls="graph-filter-help" aria-expanded="false"
-              title="What the Filter chips do" aria-label="What the Filter chips do"><i class="ph ph-question" aria-hidden="true"></i></button></summary>
+            data-help-for="graph-filter-help" aria-controls="graph-filter-help" aria-expanded="false"
+            title="What the Filter chips do" aria-label="What the Filter chips do"><i class="ph ph-question" aria-hidden="true"></i></button>
+            <details class="dock-menu-section settings-fold graph-options-fold" id="graph-filter-section">
+            <summary><span class="muted dock-menu-label" id="graph-filter-label">Filter</span></summary>
             <div class="help-body hidden" id="graph-filter-help" role="dialog" aria-label="What the Filter chips do">
               <p>Kinds of link: each chip is one kind of line on the map. Press it to hide that kind, and press it again to bring it back.</p>
               <p>Properties: each chip is a value some of your notes carry. Press it to light those notes and dim the rest; the lit chip is outlined, and pressing it again clears the light.</p>
@@ -4378,11 +4385,13 @@ Link to another note with [[its first few words]]."></textarea>
             <p class="muted graph-filter-head">Properties: press one to light its notes; the lit one is outlined</p>
             <div id="graph-prop-chips" class="library-filters graph-filter-chips" role="group" aria-label="Light the notes with a property"></div>
           </details>
-          <details class="dock-menu-section settings-fold graph-options-fold graph-temporal" id="graph-temporal">
-            <summary><span class="muted dock-menu-label" id="graph-time-heading">Time</span>
+          </div>
+          <div class="graph-fold-wrap">
             <button type="button" class="icon-only ghost small graph-help-toggle"
-              data-help-for="graph-time-help" aria-controls="graph-time-help" aria-expanded="false"
-              title="What the Time filter does" aria-label="What the Time filter does"><i class="ph ph-question" aria-hidden="true"></i></button></summary>
+            data-help-for="graph-time-help" aria-controls="graph-time-help" aria-expanded="false"
+            title="What the Time filter does" aria-label="What the Time filter does"><i class="ph ph-question" aria-hidden="true"></i></button>
+            <details class="dock-menu-section settings-fold graph-options-fold graph-temporal" id="graph-temporal">
+            <summary><span class="muted dock-menu-label" id="graph-time-heading">Time</span></summary>
             <div class="help-body hidden" id="graph-time-help" role="dialog" aria-label="What the Time filter does">
               <p>The slider hides every note made after the date it points at, so the map shows your notebook as it was then. All the way right shows everything.</p>
               <p>Play moves the slider forward from the start, so the notes appear in the order you made them.</p>
@@ -4399,6 +4408,7 @@ Link to another note with [[its first few words]]."></textarea>
                  must not be able to move the control it belongs to. -->
             <span id="graph-time-label" class="muted text-sm graph-time-label">All Time</span>
           </details>
+          </div>
           <!-- Moved out of the main toolbar strip: a corner position you set
                once and leave is exactly the "tuned once" shape this panel
                exists for, not a control you reach for while reading the map.
@@ -4416,11 +4426,12 @@ Link to another note with [[its first few words]]."></textarea>
                group is made and then lives in the legend, a corner is chosen
                and then stays chosen. Folded they cost a heading each instead
                of a heading plus a search box plus an empty-state sentence. -->
-          <details class="dock-menu-section settings-fold graph-options-fold" id="graph-groups-section">
-            <summary><span class="muted dock-menu-label" id="graph-groups-label">Groups</span>
+          <div class="graph-fold-wrap">
             <button type="button" class="icon-only ghost small graph-help-toggle"
-              data-help-for="graph-groups-help" aria-controls="graph-groups-help" aria-expanded="false"
-              title="What Groups do" aria-label="What Groups do"><i class="ph ph-question" aria-hidden="true"></i></button></summary>
+            data-help-for="graph-groups-help" aria-controls="graph-groups-help" aria-expanded="false"
+            title="What Groups do" aria-label="What Groups do"><i class="ph ph-question" aria-hidden="true"></i></button>
+            <details class="dock-menu-section settings-fold graph-options-fold" id="graph-groups-section">
+            <summary><span class="muted dock-menu-label" id="graph-groups-label">Groups</span></summary>
             <div class="help-body hidden" id="graph-groups-help" role="dialog" aria-label="What Groups do">
               <p>Type some words and press Add: every note that matches them takes one colour, and the group is listed in the legend. A note you write later that matches joins the group by itself.</p>
               <p>A group's colour wins over the Colour setting for its notes. Press the x beside a group to remove it; the notes go back to their usual colour.</p>
@@ -4440,12 +4451,14 @@ Link to another note with [[its first few words]]."></textarea>
             </div>
             <div id="graph-groups" class="graph-groups" role="list"></div>
           </details>
-          <details class="dock-menu-section settings-fold graph-options-fold"
-            id="graph-minimap-section">
-            <summary><span class="muted dock-menu-label" id="graph-minimap-label">Minimap</span>
+          </div>
+          <div class="graph-fold-wrap">
             <button type="button" class="icon-only ghost small graph-help-toggle"
-              data-help-for="graph-minimap-help" aria-controls="graph-minimap-help" aria-expanded="false"
-              title="What the Minimap does" aria-label="What the Minimap does"><i class="ph ph-question" aria-hidden="true"></i></button></summary>
+            data-help-for="graph-minimap-help" aria-controls="graph-minimap-help" aria-expanded="false"
+            title="What the Minimap does" aria-label="What the Minimap does"><i class="ph ph-question" aria-hidden="true"></i></button>
+            <details class="dock-menu-section settings-fold graph-options-fold"
+            id="graph-minimap-section">
+            <summary><span class="muted dock-menu-label" id="graph-minimap-label">Minimap</span></summary>
             <div class="help-body hidden" id="graph-minimap-help" role="dialog" aria-label="What the Minimap does">
               <p>The minimap is a small picture of the whole map in one corner, with a box for the part you are looking at. Click or drag on it to move the view.</p>
               <p>Position picks the corner, or Off hides it. Size makes it small or large.</p>
@@ -4470,6 +4483,7 @@ Link to another note with [[its first few words]]."></textarea>
               </select>
             </div>
           </details>
+          </div>
           <!-- The panel's two actions, on its last row (INBOX 407). Links
                had a section of its own holding a heading and one button
                whose words already said the same thing ("One row, one

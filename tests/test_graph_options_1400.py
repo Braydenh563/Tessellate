@@ -36,20 +36,28 @@ def _help_body(help_id: str) -> str:
 
 def test_every_options_section_has_a_question_mark_that_names_its_controls() -> None:
     for section, (help_id, names) in SECTIONS.items():
-        block = PANEL[PANEL.index(f'id="{section}"') :]
+        at = PANEL.index(f'id="{section}"')
+        # A fold's '?' is the first child of its wrapper, just before the `<details>`.
+        wrap = PANEL.rfind('<div class="graph-fold-wrap">', 0, at)
+        block = PANEL[wrap if 0 <= wrap and "<details" not in PANEL[wrap:at].replace("<details", "", 1) else at :]
         assert f'data-help-for="{help_id}"' in block[:3500], f"{section} has no '?' for {help_id}"
         body = _help_body(help_id)
         for name in names:
             assert name in body, f"{help_id} does not say what {name} does"
 
 
-def test_the_sections_that_are_set_once_are_folds_and_the_help_rides_in_the_summary() -> None:
+def test_the_sections_that_are_set_once_are_folds_and_the_help_rides_in_the_head_row() -> None:
+    """The '?' is the wrapper's first child, beside the fold's `<summary>` and not in it (a button
+    inside a summary is a control inside a control), and it is still drawn in the head, closed."""
     for section in ("graph-physics", "graph-toggle-group", "graph-display", "graph-filter-section", "graph-temporal", "graph-groups-section", "graph-minimap-section"):
         tag = re.search(rf"<details[^>]*id=\"{section}\"", PANEL)
         assert tag, f"{section} is not a fold, so the closed panel is taller than its cap"
-        summary = PANEL[PANEL.index(f'id="{section}"') :]
+        head = PANEL[: tag.start()]
+        head = head[head.rindex('<div class="graph-fold-wrap">') :]
+        assert "data-help-for" in head and "<details" not in head, f"{section}: the '?' belongs in the fold's head row, beside its summary"
+        summary = PANEL[tag.start() :]
         summary = summary[summary.index("<summary>") : summary.index("</summary>")]
-        assert "data-help-for" in summary, f"{section}: the '?' belongs in the fold's head, where it shows closed"
+        assert "data-help-for" not in summary, f"{section}: a '?' inside the summary is a control inside a control"
 
 
 def test_the_help_copy_follows_the_house_style() -> None:
@@ -88,5 +96,7 @@ def test_a_toast_over_the_map_stands_above_the_legend_and_left_of_the_zoom() -> 
     js = (ROOT / "frontend" / "js" / "graph.js").read_text(encoding="utf-8")
     body = js[js.index("function initGraphToastClearance()") :]
     body = body[: body.index("\n}\n")]
-    assert "box.style.bottom" in body and "ResizeObserver" in body and '"resize"' in body
+    # The legend row rides the popups' observer (`watchGraphPopupSize`): a second ResizeObserver
+    # in graph.js fails the wake-source ratchet (tests/test_frontend_wake_sources.py).
+    assert "box.style.bottom" in body and "watchGraphPopupSize(row, write)" in body and '"resize"' in body
     assert js.count("initGraphToastClearance();") == 2, "the clearance is wired on render and at load"
