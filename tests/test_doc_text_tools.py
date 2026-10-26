@@ -112,3 +112,11 @@ def test_text_size_and_line_spacing_are_menu_rows_with_prose_only_css():
     rules = re.findall(r"#tab-documents\.doc-(?:size|spacing)-\w+ [^{]*\{", css)
     assert len(rules) == 4 and all(":not(.doc-content-code)" in r for r in rules)
     assert "!important" not in css[css.index("Text size and line spacing for prose") :]
+
+
+def test_copy_as_formatted_text_writes_html_and_markdown_and_is_a_prose_command():
+    prose = PROSE.read_text(encoding="utf-8")
+    body = prose[prose.index("async function docCopyFormatted") :]
+    assert '"text/html"' in body and '"text/plain"' in body and "docExportClean(holder)" in body
+    row = re.search(r'\{ id: "copy-formatted",[^}]*\}', DOCUMENTS.read_text(encoding="utf-8"))
+    assert row and "prose: true" in row.group(0) and "docCopyFormatted()" in row.group(0)

@@ -2315,3 +2315,35 @@ function docRunTextTool(id) {
   docReplaceRange(box, from, to, next);
   box.setSelectionRange?.(from, from + next.length);
 }
+
+//: **Copy as formatted text.** A plain copy of a note puts Markdown on the
+//: clipboard, which Word, Gmail and Canvas paste as asterisks and hashes. This
+//: renders the selection (or the whole page) the way Read view does, strips
+//: what the HTML download strips, and puts both forms on the clipboard: the
+//: rich one for an editor that understands it, the Markdown for one that does
+//: not. Local images are not carried (their addresses mean nothing outside the
+//: app); the HTML download embeds them.
+async function docCopyFormatted() {
+  const box = docSurface();
+  if (!box) return;
+  const picked = box.selectionEnd > box.selectionStart ? box.text.slice(box.selectionStart, box.selectionEnd) : "";
+  const source = docCommentStrip(picked || box.text);
+  const holder = document.createElement("div");
+  renderMarkdown(holder, source);
+  docExportClean(holder);
+  for (const img of holder.querySelectorAll("img")) {
+    if (!/^(https?:|data:)/i.test(img.getAttribute("src") || "")) img.remove();
+  }
+  const html = holder.innerHTML;
+  try {
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        "text/html": new Blob([html], { type: "text/html" }),
+        "text/plain": new Blob([source], { type: "text/plain" }),
+      }),
+    ]);
+    toast(picked ? "Selection copied with its formatting." : "Document copied with its formatting.", "info");
+  } catch {
+    toast("The browser would not let the app write to the clipboard.", true);
+  }
+}

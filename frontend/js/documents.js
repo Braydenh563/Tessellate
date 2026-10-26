@@ -2838,6 +2838,8 @@ const DOC_COMMANDS = [
     run: () => docRunControl("doc-dim-others", "Dimming") },
   { id: "serif", icon: "ph:text-aa", label: "Serif reading face", keys: "none",
     run: () => docRunControl("doc-serif", "The serif face") },
+  { id: "copy-formatted", icon: "ph:copy", label: "Copy as formatted text, to paste into Word or an email", keys: "none", prose: true,
+    run: () => docCopyFormatted() },
   { id: "text-size", icon: "ph:text-aa", label: "Text size: small, medium or large", keys: "none", prose: true,
     run: () => docRunControl("doc-text-size", "Text size") },
   { id: "line-spacing", icon: "ph:arrows-vertical", label: "Line spacing: compact, comfortable or relaxed", keys: "none", prose: true,

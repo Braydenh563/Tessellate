@@ -1821,6 +1821,7 @@ HELP_TOPICS.extend(
                 "extract notes", "ai edit",
                 "serif", "full width", "document statistics", "reading ease",
                 "change case", "sort lines", "number headings", "insert date",
+                "copy as formatted text", "text size", "line spacing",
             ),
             "body": (
                 "Document editor features. Press the counts in the status bar "
@@ -1828,7 +1829,9 @@ HELP_TOPICS.extend(
                 "time, reading ease, the words you lean on). The command palette "
                 "(F1) changes the selection's case, sorts its lines or drops "
                 "duplicates, numbers the headings (1, 1.1) or takes the numbers "
-                "off, and inserts today's date or the time. The document's menus hold History "
+                "off, inserts today's date or the time, and copies the page or the "
+                "selection as formatted text to paste into Word or an email. "
+                "Text size and line spacing are rows in the document menu. The document's menus hold History "
                 "(every version, and a way back to any), Connections, Extract "
                 "notes, AI edit, a word goal, typewriter scrolling, dim all but "
                 "this paragraph, serif for reading and full width. With no model "
