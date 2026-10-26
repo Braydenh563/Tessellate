@@ -5541,7 +5541,9 @@ function initGraphToastClearance() {
     const lift = at.height > 0 ? Math.max(0, Math.round(window.innerHeight - at.top)) : 0;
     box.style.bottom = lift > 0 ? `${lift + 8}px` : "";
   };
-  if (typeof ResizeObserver !== "undefined") new ResizeObserver(write).observe(row);
+  //: The popups' observer (`watchGraphPopupSize`) calls `graphPlace` on any element it watches,
+  //: so the legend row rides it rather than owning a second observer.
+  watchGraphPopupSize(row, write);
   window.addEventListener("resize", write);
   write();
 }

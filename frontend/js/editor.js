@@ -72,6 +72,12 @@ const EDITOR_SURFACES = {
 //:
 //: Returns null, not "note", for anything that is not an editing surface, so
 //: callers can tell "not a surface" from "a note".
+//: Whether the open document is a code file (no rendered form). The one guard
+//: for documents.js's `docFileType`, which is not loaded until Documents opens.
+function editorDocIsCode() {
+  return typeof docFileType === "function" && !docFileType().previewable;
+}
+
 function editorSurfaceKind(box) {
   //: A surface, an element, or a node inside CodeMirror. The last of those is
   //: why this can no longer be a `instanceof HTMLTextAreaElement` check:
@@ -1692,7 +1698,7 @@ function editorHandleInput(textarea) {
   //: A code file's "/" is a comment or a path and "[[" is an index: neither
   //: opens a menu of headings and links (INBOX 1400 dogfood: a `//` comment
   //: at a line start raised "Heading 1" over a .sql file).
-  if (editorSurfaceFor(textarea)?.id === "doc-content" && typeof docFileType === "function" && !docFileType().previewable) return;
+  if (editorSurfaceFor(textarea)?.id === "doc-content" && editorDocIsCode()) return;
 
   if (editorMenuState.open && editorMenuState.textarea === textarea) {
     editorRefreshMenu();
@@ -1998,8 +2004,7 @@ function selectionBarShow(textarea) {
   //: where every one of them would write markdown into the code). A code
   //: document keeps the two actions that mean something there, ask Atlas and
   //: rewrite in place; the formatting eight and their rule are hidden.
-  const code = editorSurfaceKind(textarea) === "document"
-    && typeof docFileType === "function" && docFileType().previewable === false;
+  const code = editorSurfaceKind(textarea) === "document" && editorDocIsCode();
   for (const button of bar.querySelectorAll("[data-md], [data-turn], .selection-bar-rule")) button.hidden = code;
   const turn = bar.querySelector("[data-turn]");
   if (turn && !code) turn.hidden = typeof docTurnIntoMenu !== "function";
@@ -2563,7 +2568,7 @@ function inlineAiDescribeScope() {
 }
 
 function inlineAiIsCode() {
-  return inlineAiState.textarea?.id === "doc-content" && typeof docFileType === "function" && !docFileType().previewable;
+  return inlineAiState.textarea?.id === "doc-content" && editorDocIsCode();
 }
 
 //: **With no model the bar stays, disabled, with the reason** (DOCUMENTS_PLAN
