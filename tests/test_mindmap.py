@@ -20,6 +20,7 @@ why a test says which is which.
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
 
@@ -901,13 +902,51 @@ def test_a_core_idea_can_be_an_ellipse(client):
         json={
             "kind": node["kind"],
             "board_id": board["id"],
-            "data": {**node["data"], "shape": "cloud"},
+            "data": {**node["data"], "shape": "trapezoid"},
             "x": node["x"],
             "y": node["y"],
             "z": node["z"],
         },
     )
     assert refused.status_code == 422
+
+
+def test_k31_topic_shapes_and_pinned_line_sides_are_kept(client):
+    """K31, the owner: "more shape designs for the core idea nodes" and "more
+    say in which sides the connections come from and to". The four new shapes
+    and the two side fields round-trip through the tree; a side that is not
+    one of the four is refused, as an unknown shape is."""
+    board = _map(client, name="K31")
+    node = _node(client, board["id"], text="Core")
+
+    def put(**data):
+        return client.put(
+            f"/whiteboard/objects/{node['id']}",
+            json={"kind": node["kind"], "board_id": board["id"], "data": {**node["data"], **data},
+                  "x": node["x"], "y": node["y"], "z": node["z"]},
+        )
+
+    for shape in ("circle", "hexagon", "diamond", "cloud"):
+        assert put(shape=shape).status_code == 200, shape
+        root = client.get(f"/whiteboard/boards/{board['id']}/tree").json()["roots"][0]
+        assert root["style"]["shape"] == shape
+    assert put(edge_from="top", edge_to="left").status_code == 200
+    root = client.get(f"/whiteboard/boards/{board['id']}/tree").json()["roots"][0]
+    assert (root["style"]["edge_from"], root["style"]["edge_to"]) == ("top", "left")
+    assert put(edge_from="middle").status_code == 422
+
+
+def test_k31_the_map_line_style_picker_and_end_grips_are_wired():
+    """The picker beside the layout writes the theme's `edge_style` through
+    the undoable theme setter; the elbow keeps right-angled legs; the end
+    grips write `edge_from`/`edge_to` through the undoable node setter."""
+    root = Path(__file__).resolve().parents[1]
+    html = (root / "frontend" / "index.html").read_text(encoding="utf-8")
+    js = (root / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    assert '<select id="wb-map-link-style"' in html
+    assert "return wbMapSetTheme({ edge_style:" in js
+    assert "await wbMapSetNodeStyle(child, { [field]: side });" in js
+    assert "if (style === \"elbow\") return wbMapElbowD(wbMapElbowPoints(a, w));" in js
 
 
 def test_a_lines_thickness_and_arrowhead_are_kept_per_branch(client):

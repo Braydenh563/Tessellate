@@ -7177,6 +7177,15 @@ Link to another note with [[its first few words]]."></textarea>
           <option value="tree-table">Tree table</option>
           <option value="free">Free</option>
         </select>
+        <!-- The map's own line style (K31, the owner: "I have it on free mode,
+             but these lines arent straight"): the theme's `edge_style`, beside
+             the layout because the two are read together. A topic's own line
+             Shape in the strip still beats it. -->
+        <select id="wb-map-link-style" class="ghost small" aria-label="How this map's lines are drawn" title="How this map's lines are drawn" hidden>
+          <option value="curve">Curved lines</option>
+          <option value="straight">Straight lines</option>
+          <option value="elbow">Elbow lines</option>
+        </select>
         <button id="wb-map-tidy" class="ghost icon-button" type="button" title="Lay every unpinned node out again" aria-label="Lay every unpinned node out again" hidden><i class="ph ph-broom" aria-hidden="true"></i></button>
         </div>
       </div>
@@ -7819,6 +7828,10 @@ Link to another note with [[its first few words]]."></textarea>
                 <option value="pill">Pill</option>
                 <option value="rect">Box</option>
                 <option value="ellipse">Ellipse</option>
+                <option value="circle">Circle</option>
+                <option value="hexagon">Hexagon</option>
+                <option value="diamond">Diamond</option>
+                <option value="cloud">Cloud</option>
                 <option value="none">Plain</option>
               </select>
             </div>

@@ -135,7 +135,7 @@ MAP_THEME_FIELDS: dict[str, frozenset | type] = {
     "align": frozenset({"left", "center", "right"}),
     "bold": bool,
     "italic": bool,
-    "shape": frozenset({"pill", "rect", "ellipse", "none"}),
+    "shape": frozenset({"pill", "rect", "ellipse", "none", "circle", "hexagon", "diamond", "cloud"}),
     "spine": frozenset({"dashed", "none"}),
     "edge_style": frozenset({"curve", "elbow", "straight"}),
     "edge_dashed": bool,
@@ -166,7 +166,7 @@ MAP_LEVEL_FIELDS: dict[str, frozenset | type] = {
     "font_size": int,
     "bold": bool,
     "italic": bool,
-    "shape": frozenset({"pill", "rect", "ellipse", "none", "rounded"}),
+    "shape": frozenset({"pill", "rect", "ellipse", "none", "rounded", "circle", "hexagon", "diamond", "cloud"}),
     "spine": frozenset({"dashed", "none", "solid"}),
     "fill": frozenset({"solid", "tint", "none"}),
     "edge_width": frozenset({"thin", "thick", "normal"}),
@@ -472,13 +472,17 @@ class WhiteboardObjectData(BaseModel):
     #: four that can be had from a border-radius and a surface. Parallelogram,
     #: trapezoid, cloud and diamond want a clip-path that cuts into the box
     #: the label sits in, which at node size clips the label.
+    #: K31 (the owner: "more shape designs for the core idea nodes") added
+    #: `circle`, `hexagon`, `diamond` and `cloud` without that clip: the
+    #: shape is drawn behind the label and the label is held to its inner
+    #: box (library-lazy.css), so nothing is cut.
     #:
     #: `ellipse` arrived with the core node (item 177 names "rounded
     #: rectangle, pill, ellipse" as a core idea's own shape set) and is
     #: offered to every topic rather than only to a core one: a shape that
     #: appears and disappears from the picker depending on another toggle is
     #: a second rule to remember, and the three shapes are all just a radius.
-    shape: str | None = Field(default=None, pattern="^(pill|rect|ellipse|none|rounded)$")
+    shape: str | None = Field(default=None, pattern="^(pill|rect|ellipse|none|rounded|circle|hexagon|diamond|cloud)$")
     #: A topic's effect (MINDMAP_PLAN §14.4's topic effects): a soft shadow
     #: or a glow in its branch colour; `none` keeps one topic plain on a
     #: level that has one.
@@ -627,6 +631,13 @@ class WhiteboardObjectData(BaseModel):
     #: waypoint dragged past an anchor turns the curve back on itself, which
     #: is a shape nobody asks for and a tangle nobody can undo by dragging.
     edge_slide: float | None = Field(default=None, ge=-0.45, le=0.45)
+    #: **Which sides that line joins** (K31, the owner: "I want to be able to
+    #: have more say in which sides the connections come from and to"):
+    #: `edge_from` is the parent's side it leaves, `edge_to` this topic's side
+    #: it enters. Unset is Auto, the side the layout picks, so a map made
+    #: before these existed draws exactly as it did.
+    edge_from: str | None = Field(default=None, pattern="^(top|right|bottom|left)$")
+    edge_to: str | None = Field(default=None, pattern="^(top|right|bottom|left)$")
     #: **A picture in a topic** (MINDMAP_PLAN.md §12.1 item 2's fourth,
     #: Coggle's text/link/image/icon). The url of something already uploaded
     #: through `/media/upload`, which is the path a board image, a note
@@ -3581,6 +3592,8 @@ MAP_STYLE_FIELDS = (
     "edge_arrow",
     "edge_bend",
     "edge_slide",
+    "edge_from",
+    "edge_to",
     "image",
     "task",
     "note",
@@ -4604,6 +4617,8 @@ _FREEMIND_PRIVATE = {
     "edge_arrow": "_edge_arrow",
     "edge_bend": "_edge_bend",
     "edge_slide": "_edge_slide",
+    "edge_from": "_edge_from",
+    "edge_to": "_edge_to",
     "image": "_image",
     "align": "_align",
     #: A task (decision 15): FreeMind's built-in icons have a tick but no
@@ -4644,6 +4659,8 @@ _OPML_PRIVATE = {
     "edge_arrow": "_edge_arrow",
     "edge_bend": "_edge_bend",
     "edge_slide": "_edge_slide",
+    "edge_from": "_edge_from",
+    "edge_to": "_edge_to",
     "image": "_image",
     "task": "_task",
     #: `_note` is the spelling OmniOutliner and Workflowy already write, so
