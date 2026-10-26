@@ -2820,6 +2820,8 @@ const DOC_COMMANDS = [
     run: () => docBlockMoveCommand(-1) },
   { id: "move-block-down", icon: "ph:arrow-down", label: "Move the block at the caret down: a paragraph, list item, table or section", keys: "Alt+↓",
     run: () => docBlockMoveCommand(1) },
+  { id: "turn-into", icon: "ph:swap", label: "Turn into: paragraph, heading, list, to-do, quote, callout or code", keys: "none", prose: true,
+    run: () => docTurnIntoMenu() },
   { id: "ul", icon: "ph:list-bullets", label: "Bulleted list", keys: "Ctrl+Shift+8", run: () => applyMarkdown("ul") },
   { id: "ol", icon: "ph:list-numbers", label: "Numbered list", keys: "Ctrl+Shift+7", run: () => applyMarkdown("ol") },
   { id: "task", icon: "ph:check-square", label: "Task list", keys: "Ctrl+Shift+9", run: () => applyMarkdown("task") },
@@ -8153,11 +8155,17 @@ function docMathNodes(tokens, state) {
 //: objects so this can be tested without a browser and built with
 //: `createElementNS` in one.
 function docMathTree(tex, display = false) {
-  const kids = docMathNodes(docMathTokens(tex), { at: 0 });
+  //: `\tag{1}` is TeX's own equation number, taken off the formula and kept
+  //: beside the tree (`label`) for the display box to set at the right edge.
+  //: Display only: an inline formula has nowhere to put one.
+  const found = display ? /\\tag\*?\{([^{}]{1,24})\}/.exec(tex) : null;
+  const body = found ? tex.replace(found[0], "") : tex;
+  const kids = docMathNodes(docMathTokens(body), { at: 0 });
   return {
     tag: "math",
     attrs: { display: display ? "block" : "inline" },
     kids: [docMathRow(kids.length ? kids : [{ tag: "mtext", text: "" }])],
+    label: found ? found[1].trim() : "",
   };
 }
 
@@ -8192,7 +8200,17 @@ function docMathElement(node) {
 }
 
 function docMathRender(tex, display = false) {
-  return docMathElement(docMathTree(tex, display));
+  const tree = docMathTree(tex, display);
+  const math = docMathElement(tree);
+  if (!tree.label) return math;
+  //: A numbered equation: the formula centred, its number at the right edge.
+  const box = document.createElement("span");
+  box.className = "md-math-numbered";
+  const number = document.createElement("span");
+  number.className = "md-math-number";
+  number.textContent = `(${tree.label})`;
+  box.append(math, number);
+  return box;
 }
 
 //: The compartment decision 3 names: Live is this editor with the markdown
@@ -14012,6 +14030,7 @@ function openDocPhoneInsert() {
 }
 
 $("doc-phone-insert").addEventListener("click", openDocPhoneInsert);
+$("doc-phone-turn").addEventListener("click", (event) => docTurnIntoMenu("doc-content", event.currentTarget));
 
 // NOTE-SURFACE-BEGIN
 //: =========================================================================
