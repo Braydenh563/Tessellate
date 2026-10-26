@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: a canvas shown with no pointer event since no longer reads 16px left and 60px high (the paste chip, drops and pastes at any zoom or pan; 20 of 20 measured points off, now 0), because its cached origin is dropped when the canvas resizes and the chip reads it fresh.
 - Composer: the heading and picture-line readers no longer backtrack over long runs of tabs (CodeQL, 4 alerts).
 - Time words: seasons ("last summer", "in winter", "over the winter": June to August, December to February) and a week or half of a named month ("the first week of October", "the last week of September", "the second half of March") are read as dates, and "anything from September" asks what was written, not what is coming.
 - Chat: a window said twice in one question ("what did I write this week, I mean this week") is the same window, taken out once.

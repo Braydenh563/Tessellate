@@ -505,6 +505,13 @@ function wbCanvasOrigin() {
   return wbCanvasOriginCache;
 }
 
+//: The inverse, for a thing placed on screen at a board point (the paste
+//: chip). Pure, with `wbScreenToBoard`, so one round trip holds both.
+function wbBoardToScreen(x, y, origin, t) {
+  const s = origin.scale || 1;
+  return [origin.left + (x * t.k + t.x) * s, origin.top + (y * t.k + t.y) * s];
+}
+
 function wbClientToBoard(clientX, clientY) {
   return wbScreenToBoard(clientX, clientY, wbCanvasOrigin(), d3.zoomTransform(document.getElementById("whiteboard-container")));
 }
@@ -14783,6 +14790,13 @@ async function initWhiteboard() {
   //: moment first: the sidebar's width eases, and a refit per frame of it
   //: would chase it.
   if (typeof ResizeObserver !== "undefined") {
+    //: **A rect read while the canvas was hidden is dropped when it shows**
+    //: (wb5): the origin cache is cleared by pointer events, and a canvas
+    //: that appears, or a panel that opens beside it, sends none, so a paste
+    //: chip or drop read the board 16px left and 60px high (the library's
+    //: own padding and tab bar) until the pointer next moved.
+    const canvas = document.getElementById("whiteboard-container");
+    if (canvas) new ResizeObserver(wbClearCanvasRectCache).observe(canvas);
     let refitTimer = 0;
     const refit = () => {
       clearTimeout(refitTimer);

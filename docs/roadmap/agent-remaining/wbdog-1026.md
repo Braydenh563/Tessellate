@@ -17,9 +17,11 @@ Scripts live in the session scratchpad (`wbdog/`), not the repo. Student story a
 - Left (41 of 45 x 3 expectation checks): a drawing never paints over a card, so Bring to front on a shape, line or pen stroke under a card, or Send to back on a card over one, changes nothing seen, and a drawing made after a card lands under it. The drawings are one SVG layer under the card layer; interleaving them needs per-item layers.
 - done: c09eaed. next: move the fixed z writes in templates, Mermaid, draw.io, map and library inserts onto `wbStackNewZ` (whiteboard-interchange.js 790-1071, whiteboard-library.js 754, whiteboard-map.js 4662); decide whether drawings may interleave with cards (an owner decision, INBOX entry).
 
+## Done (wb5)
+- **`wbBoardToClient` 16px left, 60px high**: the cause was a stale origin cache (a rect read while the canvas was hidden, dropped only by pointer events), so `wbClientToBoard` was off the other way too. Measured at zoom 1, 0.5, 2 and two pans, canvas hidden and shown: 20 of 20 coordinates off before, 0 after; the canvas now clears the cache on resize, the chip reads fresh (tests/test_wb_board_to_client.py).
+
 ## Found, not fixed
 - Drawings and cards cannot interleave (above: 11 create, 15 front, 15 back of 45 pairs). A frame's 1.5px edge, in the card layer, paints over a drawing inside it.
-- `wbBoardToClient` read 16px left and 60px high of the item under it at 100% (the sweep maps through `#wb-zoom-group`'s screen matrix instead); it places the paste chip.
 - Templates, Mermaid and draw.io inserts, the map and the library still write fixed z values (1, 2, 5) for the items they make; the stack orders them, but they can land under what was there.
 - Per-corner radius on a shape (sketch) and shape label padding are not built (wb5-1026 row 2).
 - K24 Live view inside boxes: not built.

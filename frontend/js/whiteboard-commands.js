@@ -1118,11 +1118,11 @@ function wbPasteLook() {
   return { paper: WB_STICKY_PAPERS[0].value, root: WB_STICKY_PAPERS[4].value, ink: window.currentStrokeColor || "#888888" };
 }
 
+//: Read fresh, not from the drag cache: the chip is placed once, often with
+//: no pointer event since the canvas last moved (wb5: 16px left, 60px high).
 function wbBoardToClient(x, y) {
-  const origin = wbCanvasOrigin();
-  const t = d3.zoomTransform(document.getElementById("whiteboard-container"));
-  const s = origin.scale || 1;
-  return [origin.left + (x * t.k + t.x) * s, origin.top + (y * t.k + t.y) * s];
+  wbClearCanvasRectCache();
+  return wbBoardToScreen(x, y, wbCanvasOrigin(), d3.zoomTransform(document.getElementById("whiteboard-container")));
 }
 
 function wbPasteChipClose() {
