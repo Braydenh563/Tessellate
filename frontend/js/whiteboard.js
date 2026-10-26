@@ -9964,23 +9964,48 @@ function wbPaintTextContent(contentEl, d) {
   contentEl.textContent = raw;
 }
 
+//: A marker around `text[from, to)`, or taken off again when the run already
+//: wears it (so Bold twice is not `****`). Pure, so a test can run it: the
+//: old code did `raw.replace(pickedText, ...)`, which wrapped the FIRST
+//: occurrence of the picked words, not the ones selected ("the cat and the
+//: cat" with the second "cat" picked bolded the first).
+function wbWrapRange(text, from, to, marker) {
+  const n = marker.length;
+  const inner = text.slice(from, to);
+  if (inner.length > 2 * n && inner.startsWith(marker) && inner.endsWith(marker)) {
+    return { text: text.slice(0, from) + inner.slice(n, -n) + text.slice(to), from, to: to - 2 * n };
+  }
+  if (text.slice(Math.max(0, from - n), from) === marker && text.slice(to, to + n) === marker) {
+    return { text: text.slice(0, from - n) + inner + text.slice(to + n), from: from - n, to: to - n };
+  }
+  return { text: text.slice(0, from) + marker + inner + marker + text.slice(to), from: from + n, to: to + n };
+}
+
 //: Wrap the selection inside a text box (or the whole text, when nothing is
 //: selected) in a markdown marker, the formatting bar a text box never had.
+//: While the box is being typed in, the work is done on what is on screen
+//: through its editing surface (`insertText`, so Ctrl+Z holds), by offsets:
+//: the saved `content` is stale until blur, and the picked words may occur
+//: twice.
 function wbWrapTextSelection(marker) {
   const item = wbSelectedTextObjectOrNull();
   if (!item) return;
+  const el = document.querySelector(`.wb-object[data-id="${item.id}"] .wb-text-content`);
+  const surf = el && el.isContentEditable ? el.wbEditorSurface : null;
+  if (surf) {
+    const value = surf.text;
+    const { from, to } = surf.selection();
+    const whole = from === to;
+    const out = wbWrapRange(value, whole ? 0 : from, whole ? value.length : to, marker);
+    if (!value.trim() || out.text === value) return;
+    surf.value = out.text;
+    surf.setSelectionRange(out.from, out.to);
+    return;
+  }
   const before = WB_KIND_INFO.object.payload(item);
   wbPushUndo({ action: "move", kind: "object", id: item.id, before });
-  const el = document.querySelector(`.wb-object[data-id="${item.id}"] .wb-text-content`);
   const raw = item.data.content || "";
-  const sel = window.getSelection();
-  let next;
-  if (el && el.isContentEditable && sel && sel.rangeCount && !sel.isCollapsed && el.contains(sel.anchorNode)) {
-    const picked = sel.toString();
-    next = raw.replace(picked, `${marker}${picked}${marker}`);
-  } else {
-    next = raw.trim() ? `${marker}${raw}${marker}` : raw;
-  }
+  const next = raw.trim() ? wbWrapRange(raw, 0, raw.length, marker).text : raw;
   item.data = { ...item.data, content: next };
   wbSaveObject(item);
   wbScheduleRender();

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Board text: the Format panel's Bold and Italic wrap the words you selected, not the first place those words occur, work on text typed but not yet saved, and a second press takes the marks off again.
 - Spelling and grammar no longer mark the words of a link, code, addresses, file paths, email addresses or a unit after a number ("10-20 min" is not "minimum"); Settings, Writing, Check link text turns the link words back on (K11, K4b).
 - Grammar: list items, headings and table cells are never judged as long sentences; en dash ranges, the Oxford comma and abbreviation expanders are off; names are no longer misspelt; "your" for "you're" is caught. Fixture: 58 false positives on 77 clean lines became 0, and 33 of 33 planted errors are caught (K4).
 - Notes: a long note no longer pushes Save off the screen. The note edit form's box scrolls inside a cap (Save was 29px below a 900px window after 60 lines) and its foot stays pinned; the graph popups' Save and the chat edit boxes follow the same rule.
