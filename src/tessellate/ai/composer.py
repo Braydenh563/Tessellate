@@ -3905,6 +3905,15 @@ OVERVIEW_PER_THEME = 4
 _PERSON = re.compile(r"^[A-Z][\w'-]+$")
 
 
+def _with_matched(found: list[NoteView], views: list[NoteView]) -> tuple[list[NoteView], int]:
+    """K30: the records the search matched count too (by meaning, not only by
+    the category); with any, the count filed under it, for the lead (else 0)."""
+    matched = [v for v in views if v not in found and v.note.get("match_info")]
+    if not matched:
+        return found, 0
+    return sorted([*found, *matched], key=lambda v: v.rank), len(found)
+
+
 def _overview_answer(
     question: str, notes: list[dict], *, today: date, voice: str, said: str, prefer: str, dialogue: Dialogue | None = None,
 ) -> dict | None:
@@ -3923,18 +3932,13 @@ def _overview_answer(
     found = composer_overview.members(stems, views, _holds, head)
     if len(found) < 2 or not _overview_over_broad(question, stems, views):
         return None
-    #: K30: the records the search matched count too (by meaning, not only by
-    #: the category), and the lead says how many of them are filed under it.
-    filed = len(found)
-    matched = [v for v in views if v not in found and v.note.get("match_info")]
-    if matched:
-        found = sorted([*found, *matched], key=lambda v: v.rank)
+    found, filed = _with_matched(found, views)
     out = _Answer({v.id: v for v in views}, today)
     out.voice, out.question, out.subject = composer_tables.voice_of(voice), question, stems
     #: No joining words twice in a conversation (decision 25).
     out.used = set(dialogue.used) if dialogue is not None else set()
     themes = [] if _PERSON.match(subject) else composer_overview.themes(found, stems, _stem, views)
-    _overview_lead(out, question, subject, found, themes, filed if matched else 0)
+    _overview_lead(out, question, subject, found, themes, filed)
     shown = _overview_groups(out, found, themes, stems)
     _overview_links(out, found, themes, stems, views)
     if len(found) > shown:

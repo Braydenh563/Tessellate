@@ -80,7 +80,8 @@ def test_the_switch_keeps_the_stored_choice_and_names_the_cause_when_no_model_ru
 
 def test_the_switch_wears_the_pill_switch_recipe_and_the_chip_rules_are_gone():
     forms = _css("01-forms-settings.css")
-    assert "#ask-use-ai" not in forms and ".ask-ai-switch {" in forms
+    #: The switch's own rules are lazy with ask-compose.js (boot CSS cap).
+    assert "#ask-use-ai" not in forms and ".ask-ai-switch {" in _css("ask-compose-lazy.css")
     assert ".ask-use-ai" not in _css("06-timeline-dialogs.css")
     assert "#ask-use-ai" not in _css("10-responsive.css")
     assert ".ask-source-seg" not in _css("10-responsive.css")
