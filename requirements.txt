@@ -15,11 +15,11 @@
 # Regenerate it whenever you change this file.
 
 # Web server
-fastapi>=0.143.3,<1.0
+fastapi>=0.161.1,<1.0
 uvicorn[standard]>=0.54.0,<1.0
 
 # Database (SQLite via ORM)
-SQLAlchemy>=2.1.4,<3.0
+SQLAlchemy>=2.1.6,<3.0
 
 # Schema migrations for a real rename/drop — additive column changes still go
 # through DatabaseManager's own auto-migrator (core/database.py); this is the
@@ -45,7 +45,7 @@ tzdata>=2026.5
 requests>=2.34.2,<3.0      # talks to the local Ollama REST API
 numpy>=2.5.4,<3.0; python_version >= "3.12"  # vectors stored as raw float32 bytes
 numpy>=2.4.6,<3.0; python_version < "3.12"   # 2.5 needs Python 3.12; CI still runs 3.11
-sentence-transformers>=6.1.0,<7.0
+sentence-transformers>=6.2.0,<7.0
 
 # torch: on Windows, force the CPU-only build. The default Windows torch wheel
 # now ships Intel's torch_xpu.dll, which fails to load on many machines with
