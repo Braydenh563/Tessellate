@@ -21095,7 +21095,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Brief 3: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:74 |
 | Brief 43 (Opus, high; Sonnet medium for the fixes it names): the expert audit | docs/roadmap/SESSION_BRIEFS.md:168 |
 | Brief 43: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:167 |
-| Brief 44: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)"); part 2 is WHITEBOARD_PLAN's expansion row 5 and `agent-remaining/drawio-1010.md` | docs/roadmap/SESSION_BRIEFS.md:209 |
+| Brief 44: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)"); part 2 is WHITEBOARD_PLAN's expansion row 5 and `archive/agent-remaining/drawio-1010.md` | docs/roadmap/SESSION_BRIEFS.md:209 |
 | Brief 45 part 2 (Opus, high): structure and complexity, acted on | docs/roadmap/SESSION_BRIEFS.md:211 |
 | Brief 4: W1-3: glass as shell furniture, with an O(1) invariant | docs/roadmap/MODERNISATION_AUDIT.md:1243 |
 | Brief 4: built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:76 |

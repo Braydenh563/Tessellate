@@ -6,7 +6,7 @@ carrying the phrase. The reading is `entry/timewords.py` (the one reader a note
 is read by); this holds the whole path, save to row, so a change to either end
 cannot move a note off its day without a failure. A bare weekday after a past
 verb ("called mum on friday") is left out on purpose: it is an owner decision
-in docs/roadmap/agent-remaining/timeline-1018.md, not a measured gap.
+in docs/roadmap/archive/agent-remaining/timeline-1018.md, not a measured gap.
 """
 
 from __future__ import annotations

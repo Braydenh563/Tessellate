@@ -34,4 +34,4 @@ case; every reply family holds 8+ phrasings in both voices.
 10. **Tool names and ranking** (B48; BACKLOG "Composer ranks the tools the model is offered", "A tool to list the tools"): human names for tool calls ("Read note #65 in full" is fine; "Failed due to error" is not), a ranked toolbox, `list_tools`.
 11. **Facts change over time** (BACKLOG): a newer note supersedes an older one on the same fact; `ai/factgraph.py`.
 
-Write `docs/roadmap/agent-remaining/composer-1017-progress.md` (done: hash; next) after each commit. Do not edit CHANGELOG.md, INBOX.md or docs/CODEMAP.md by hand. Final report: five lines.
+Write `docs/roadmap/archive/agent-remaining/composer-1017-progress.md` (done: hash; next) after each commit. Do not edit CHANGELOG.md, INBOX.md or docs/CODEMAP.md by hand. Final report: five lines.

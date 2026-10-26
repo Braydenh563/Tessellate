@@ -2,7 +2,7 @@
 dark at 390 and 1440, then a Playwright probe of the Settings jump list).
 
 These read the source because the suite cannot see the DOM; the measurements
-are in docs/roadmap/agent-remaining/uxfix1-1018.md.
+are in docs/roadmap/archive/agent-remaining/uxfix1-1018.md.
 """
 
 import re

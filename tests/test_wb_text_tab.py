@@ -7,7 +7,7 @@ A text box keeps `underline`, `strike` and `font_family` on its object data
 (the schema must name them or Pydantic drops them silently, the lesson of
 `test_wb_valign.py`); a shape keeps `label_underline`, `label_strike` and
 `label_font` in its sketch data, which the server leaves opaque. Measured in
-the app by the sweep named in `agent-remaining/whiteboard-1018.md`."""
+the app by the sweep named in `archive/agent-remaining/whiteboard-1018.md`."""
 
 from pathlib import Path
 

@@ -1,6 +1,6 @@
 """Help and the Guide from the registry (CHAT_PLAN section 2, the help row):
 the probe's Guide table at 1.0 (the phone, two computers, encryption,
-deleting your data, sharing a note, filing; `agent-remaining/engine-probe-1010.md`),
+deleting your data, sharing a note, filing; `archive/agent-remaining/engine-probe-1010.md`),
 and the palette's act rows and help lines generated from `ai/acts.py`."""
 
 from __future__ import annotations
