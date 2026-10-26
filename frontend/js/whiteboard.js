@@ -5246,9 +5246,9 @@ async function wbPasteCopiedStyle() {
 //: map and level (`wbMapResetToBranch`'s keys). One undo step for the lot.
 const WB_SKETCH_RESET_KEYS = [
   "color", "width", "dash", "fill", "fillOpacity", "noStroke", "alpha", "shadow", "rough", "jumps", "round", "dashPattern", "flow", "gradient", "fillStyle", "jumpSize", "gapStart", "gapEnd",
-  "startCapSize", "endCapSize", "label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign",
+  "startCapSize", "endCapSize", "label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign", "label_lh", "label_ls",
 ];
-const WB_OBJECT_RESET_KEYS = ["color", "bg", "border_color", "font_size", "bold", "italic", "underline", "strike", "font_family", "align", "valign", "alpha", "shadow", "fold"];
+const WB_OBJECT_RESET_KEYS = ["color", "bg", "border_color", "font_size", "bold", "italic", "underline", "strike", "font_family", "align", "valign", "line_height", "letter_spacing", "alpha", "shadow", "fold"];
 
 //: The reset fields for one sketch, or null for a drawing with nothing to
 //: reset (a highlighter's look is its tool). A line whose ends are drawn in
@@ -18363,9 +18363,9 @@ function wbLayoutShapeLabel(groupEl) {
   if (!placed) return;
   const { bbox, area } = placed;
   const fontSize = label.dataset.fit ? wbFitShapeLabel(label, area) : parseFloat(getComputedStyle(label).fontSize) || 16;
-  const lineHeight = fontSize * 1.25;
-  //: The face and weight change the widths the wrap measures, so they key it.
-  const key = `${label.__wbText}|${Math.round(area.w / 4)}|${fontSize}|${label.style.fontFamily}|${label.style.fontWeight}`;
+  const lineHeight = fontSize * (Number(label.dataset.lh) || 1.25);
+  //: The face, weight and letter spacing change the widths the wrap measures, so they key it.
+  const key = `${label.__wbText}|${Math.round(area.w / 4)}|${fontSize}|${label.style.fontFamily}|${label.style.fontWeight}|${label.style.letterSpacing}`;
   if (label.__wbKey !== key) {
     label.__wbLines = wbWrapShapeLabel(label, label.__wbText, area.w, fontSize);
     label.__wbKey = key;
@@ -18598,6 +18598,14 @@ function wbSyncSketchTip(groupEl, parsed) {
   if (el.textContent !== tip) el.textContent = tip;
 }
 
+//: The label's line spacing (a multiple of its size; the layout reads it from
+//: `data-lh`) and letter spacing (inline, so an export keeps it).
+function wbPaintLabelSpacing(label, parsed) {
+  if (parsed.label_lh > 0) label.dataset.lh = String(parsed.label_lh);
+  else delete label.dataset.lh;
+  label.style.letterSpacing = parsed.label_ls ? `${parsed.label_ls}px` : "";
+}
+
 //: Adds, updates or removes a shape's label for one render.
 function wbPaintShapeLabel(groupEl, parsed, sketch) {
   const kind = wbShapeLabelKind(parsed);
@@ -18633,6 +18641,7 @@ function wbPaintShapeLabel(groupEl, parsed, sketch) {
   //: whiteboard-1018). Inline style, so the export's cloned SVG keeps them.
   label.style.textDecoration = [parsed.label_underline && "underline", parsed.label_strike && "line-through"].filter(Boolean).join(" ");
   label.style.fontFamily = WB_ITEM_FONTS[parsed.label_font] || "";
+  wbPaintLabelSpacing(label, parsed);
   const align = ["left", "right"].includes(parsed.label_align) ? parsed.label_align : "center";
   label.dataset.align = align;
   if (parsed.label_valign === "top" || parsed.label_valign === "bottom") label.dataset.valign = parsed.label_valign;
@@ -22329,6 +22338,8 @@ function renderWbObjects(canvas) {
       textEl.style("color", d.data.color || (d.data.bg && wbCoreInkFor(d.data.bg)) || "")
         .style("font-size", sticker ? `${wbStickerSize(d)}px` : d.data.font_size ? `${d.data.font_size}px` : "")
         .style("text-align", d.data.align || "")
+        .style("line-height", d.data.line_height || "")
+        .style("letter-spacing", d.data.letter_spacing ? `${d.data.letter_spacing}px` : "")
         .style("font-weight", d.data.bold ? "700" : "")
         .style("font-style", d.data.italic ? "italic" : "")
         .style("text-decoration", [d.data.underline && "underline", d.data.strike && "line-through"].filter(Boolean).join(" "))

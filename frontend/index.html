@@ -8057,6 +8057,7 @@ Link to another note with [[its first few words]]."></textarea>
           <div class="wb-fmt-row" data-fmt="fill"><span class="wb-fmt-label">Fill</span>
             <span class="wb-fmt-buttons"><label class="wb-snap-label" title="Filled"><input type="checkbox" id="wb-fmt-fill-on" aria-label="Filled"></label><input type="color" id="wb-fmt-fill" class="wb-color-picker" aria-label="Fill colour" title="Fill colour"></span>
           </div>
+          <label class="wb-fmt-row" data-fmt="fillstyle"><span class="wb-fmt-label">Fill opacity</span><span class="wb-fmt-buttons"><input type="range" id="wb-fmt-fillalpha" min="5" max="100" step="5" aria-label="Fill opacity" title="How solid the fill is; the line keeps its own"><output id="wb-fmt-fillalpha-out" for="wb-fmt-fillalpha" class="wb-fmt-out">100%</output></span></label>
           <label class="wb-fmt-row" data-fmt="fillstyle"><span class="wb-fmt-label">Fill style</span>
             <select id="wb-fmt-fillstyle" aria-label="Fill style" title="Fill the shape with lines or dots in its colour instead of a solid">
               <option value="solid">Solid</option>
@@ -8155,6 +8156,8 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" id="wb-fmt-fit" class="ghost small icon-only" aria-pressed="false" title="Shrink the text to fit the shape" aria-label="Shrink the text to fit the shape"><i class="ph ph-arrows-in-simple" aria-hidden="true"></i></button>
             </span>
           </div>
+          <label class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Line spacing</span><input type="number" id="wb-fmt-lh" min="0.8" max="3" step="0.05" placeholder="Auto" aria-label="Line spacing, as a multiple of the text size" title="Line spacing, as a multiple of the text size; empty is automatic"></label>
+          <label class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Letter spacing</span><input type="number" id="wb-fmt-ls" min="-5" max="30" step="0.5" placeholder="0" aria-label="Letter spacing in pixels" title="Space added between letters, in pixels; 0 is normal"></label>
           <div class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Align</span>
             <span id="wb-fmt-align" class="wb-fmt-buttons" role="group" aria-label="Text alignment">
               <button type="button" class="ghost small icon-only" data-align="left" aria-pressed="false" title="Align left" aria-label="Align left"><i class="ph ph-text-align-left" aria-hidden="true"></i></button>

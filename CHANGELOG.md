@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Board: Format panel, Text tab gains Line spacing and Letter spacing (a text box or a shape's words), and Style gains Fill opacity so a fill can be see-through while its line stays solid; each applies, undoes in one step and survives a reload.
 - Library: a Callouts and notes set (speech and thought bubbles, pointer callout, tip, warning, info, definition and example boxes, folded note, banner, tag, step marker, curly brace, highlight, quote), searchable with the rest.
 - Templates: 14 new board templates (Lecture notes, Revision plan, Essay outline, Timeline, Venn diagram, Brainstorm, Concept map, Study timetable, Habit tracker, Goal setting, Project plan, Reading list, Exam readiness, Daily plan) and 12 new mind map templates (Lecture notes, Revision plan, Exam preparation, Research project, Presentation, Group project, Personal goals, Daily routine, Career plan, Reading list, Healthy habits, Moving house); the New board picker has a search box and draws each row's picture only when the row is on screen.
 - Board: Arrange, Connect the selected joins two or more shapes in a line or all to the first one picked (facing sides, one undo step); the help now says a connector's end can be dragged onto another shape.
