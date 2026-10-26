@@ -5638,7 +5638,7 @@
   {
    "key": "concept",
    "kind": "element",
-   "name": "Concept map",
+   "name": "Mind map",
    "hint": "A main idea joined to its parts, causes and effects",
    "purpose": "learn",
    "tags": [

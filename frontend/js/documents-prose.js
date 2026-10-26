@@ -2171,8 +2171,8 @@ function docPlainText(text) {
     .replace(/^---\n[\s\S]*?\n---\n/, "")
     .replace(/(```|~~~)[\s\S]*?(\1|$)/g, " ")
     .replace(/%%[\s\S]*?%%/g, " ")
-    .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/!\[[^[\]\n]*\]\([^()\n]*\)/g, " ")
+    .replace(/\[([^[\]\n]*)\]\([^()\n]*\)/g, "$1")
     .replace(/https?:\/\/\S+/g, " ")
     .replace(/^\s{0,3}(#{1,6}|[-*+>]|\d+[.)])\s+(\[[ xX]\]\s+)?/gm, "")
     .replace(/[*_~`=|]+/g, " ");
@@ -2344,7 +2344,7 @@ async function docCopyFormatted() {
     ]);
     toast(picked ? "Selection copied with its formatting." : "Document copied with its formatting.", "info");
   } catch {
-    toast("The browser would not let the app write to the clipboard.", true);
+    toast("The browser would not let the app write to the clipboard.", "info");
   }
 }
 

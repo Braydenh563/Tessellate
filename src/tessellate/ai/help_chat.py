@@ -1504,7 +1504,7 @@ HELP_TOPICS.extend(
                 "Project brief, OKRs, SWOT analysis, Eisenhower matrix, Pros and cons, Lean canvas, 5 whys, "
                 "Fishbone, Flowchart, Class diagram, Entity relationship diagram (tables with crow's foot lines), "
                 "Wireframe page, Meeting notes, Retrospective, Study notes (Cornell), Mood board and User "
-                "journey map, and for study and home Lecture notes, Revision plan, Essay outline, Timeline, Venn diagram, Brainstorm, Concept map, Study timetable, Habit tracker, Goal setting, Project plan, Reading list, Exam readiness and Daily plan. Each frame is a tinted panel with its title and a hint inside its top; drag the "
+                "journey map, and for study and home Lecture notes, Revision plan, Essay outline, Timeline, Venn diagram, Brainstorm, Mind map, Study timetable, Habit tracker, Goal setting, Project plan, Reading list, Exam readiness and Daily plan. Each frame is a tinted panel with its title and a hint inside its top; drag the "
                 "title to move the frame and what is in it, double-click it to rename. A map's twenty-seven, "
                 "among them Lecture notes, Revision plan, Exam preparation, Research project, Presentation,  Brainstorm, Decision, Project plan, Cause and effect, Pros and cons, SWOT map, "
                 "Goal breakdown, Weekly review, Study topic, Book notes and Meeting, each drawn in its own "

@@ -6686,7 +6686,7 @@ input[type="color"].wb-mixed {
   border: 0;
   border-radius: var(--radius-md);
   background: var(--card);
-  color: var(--accent);
+  color: var(--accent-text);
   font-size: var(--text-xs);
   line-height: 1;
   box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--divider);

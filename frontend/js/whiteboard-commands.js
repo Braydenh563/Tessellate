@@ -1329,7 +1329,7 @@ async function wbPasteIntoShape() {
   const text = await wbPasteReadClipboard();
   const words = pasteClean(text || "");
   if (!words.trim()) {
-    toast(text === null ? "The browser would not let the app read the clipboard." : "Nothing on the clipboard to paste.", text === null);
+    toast(text === null ? "The browser would not let the app read the clipboard." : "Nothing on the clipboard to paste.", "info");
     return;
   }
   wbPushUndo({ action: "move", kind: "sketch", id: target.sketch.id, before: WB_KIND_INFO.sketch.payload(target.sketch) });

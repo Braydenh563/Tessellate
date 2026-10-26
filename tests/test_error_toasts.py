@@ -219,6 +219,9 @@ for _name, _messages in EXPECTED_RULE4.items():
 #: fault. Anything that passes `true` and is not a failed request's own
 #: `.message` has to appear here.
 FAULTS = {
+    'media.js': {
+        '"Couldn\'t open the sketch pad."': 'the pad\'s lazy script or stylesheet failed to load: a broken asset',
+    },
     'statistics.js': {
         '"Couldn\'t open that."': 'opening what a chart point or tile counts failed',
         '"Couldn\'t change the range."': 'the growth chart request for a new range failed',
