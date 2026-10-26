@@ -6751,7 +6751,7 @@ const WB_MAP_PICK_SHAPES = {
   diamond: [["path", { d: "M10 1.5L18.5 7 10 12.5 1.5 7z" }]],
   cloud: [["path", { d: "M6 12a3.5 3.5 0 0 1-.6-7 4.5 4.5 0 0 1 8.6-.6A3.5 3.5 0 1 1 15 12z" }]],
   chevron: [["path", { d: "M2 2.5h11.5l4.5 4.5-4.5 4.5H2z" }]],
-  underline: [["path", { d: "M3 5.5h8M2 11.5h16" }]],
+  underline: [["path", { d: "M4 6h9" }], ["path", { d: "M2 11h16", "stroke-width": 2.5 }]],
   plain: [["path", { d: "M4 5.5h12M4 8.5h8" }]],
   bar: [["rect", { x: 2, y: 2.5, width: 16, height: 9, rx: 2 }], ["path", { d: "M4 4.5v5", "stroke-width": 2.5 }]],
   "bar-dashed": [["rect", { x: 2, y: 2.5, width: 16, height: 9, rx: 2 }], ["path", { d: "M4 4v6", "stroke-width": 2.5, "stroke-dasharray": "1.6 1.4", "stroke-linecap": "butt" }]],
@@ -6829,7 +6829,11 @@ function wbMapIsFollow(option) {
 function wbMapPickRow(select) {
   const row = document.createElement("div");
   row.className = "wb-map-picks";
-  if (select.id === "wb-map-strip-icon") row.classList.add("is-grid");
+  //: A row of more than seven previews is a palette, six to a row like the
+  //: icon slot's: nine shapes in one run never wrapped and the last two (Cloud,
+  //: Plain) sat past the menu's edge, unreachable (measured at 1440: row
+  //: 306px in a 220px cell).
+  if (select.id === "wb-map-strip-icon" || select.options.length > 7) row.classList.add("is-grid");
   row.setAttribute("role", "group");
   row.setAttribute("aria-label", select.getAttribute("aria-label") || "");
   const press = (value) => {
