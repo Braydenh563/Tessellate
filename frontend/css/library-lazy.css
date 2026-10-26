@@ -5834,6 +5834,17 @@ button.ghost.doc-template-choice.wb-template-choice {
   padding-inline-end: var(--space-1);
 }
 
+/* An empty Ask: the well wears the error ink and the hint under it says why
+   (`docAssistEmptyAsk`). The focus ring keeps its shape, in the same ink. */
+.search-field.doc-assist-form:has([aria-invalid="true"]) {
+  border-color: var(--error);
+  outline-color: var(--error);
+}
+
+.doc-assist-hint {
+  margin: calc(-1 * var(--space-2)) 0 var(--space-3);
+}
+
 #doc-assist-send {
   flex: none;
   width: calc(var(--control-h) - 8px);

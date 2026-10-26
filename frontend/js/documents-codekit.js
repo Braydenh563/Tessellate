@@ -769,6 +769,27 @@ function docAssistAnswerArea() {
   return area;
 }
 
+//: **An empty Ask is answered at the field.** The line it used to write went
+//: into the answer area at the foot of the panel (measured at 1440x900: 530px
+//: below the field, on the window's last edge), which on a short window is
+//: off screen: the press looked like it did nothing. Now the field takes the
+//: focus, is marked invalid (the error ring, `aria-invalid`) and a line under
+//: it says why; typing clears all three.
+function docAssistEmptyAsk() {
+  const field = $("doc-assist-question");
+  field.setAttribute("aria-invalid", "true");
+  field.setAttribute("aria-describedby", "doc-assist-hint");
+  $("doc-assist-hint").classList.remove("hidden");
+  field.focus();
+}
+
+function docAssistClearHint() {
+  const field = $("doc-assist-question");
+  field.removeAttribute("aria-invalid");
+  field.removeAttribute("aria-describedby");
+  $("doc-assist-hint").classList.add("hidden");
+}
+
 function docAssistSay(text, { error = false } = {}) {
   const line = document.createElement("p");
   line.className = error ? "status error" : "muted text-sm";
@@ -810,7 +831,8 @@ async function docAssistAsk(action) {
   if (action === "fix" && docAssistModelOff()) return docAssistTool("quick_fix");
   if (action === "fix" && !diagnostic) return docAssistSay("No problem is underlined here. Put the caret on one, or ask a question below.");
   const question = action === "ask" ? $("doc-assist-question").value.trim() : "";
-  if (action === "ask" && !question) return docAssistSay("Type a question first.");
+  if (action === "ask" && !question) return docAssistEmptyAsk();
+  docAssistClearHint();
   const routed = action === "ask" && docAssistModelOff() ? docAssistRouteTool(question) : null;
   if (routed) {
     docAssistSay(`No model is connected, so the tools answered: ${DOC_ASSIST_TOOL_NAMES[routed.tool]}.`);
@@ -947,6 +969,7 @@ for (const button of document.querySelectorAll("#doc-code-assist [data-assist]")
 for (const button of document.querySelectorAll("#doc-code-assist [data-assist-tool]")) {
   button.addEventListener("click", () => docAssistTool(button.dataset.assistTool));
 }
+$("doc-assist-question").addEventListener("input", docAssistClearHint);
 $("doc-assist-form").addEventListener("submit", (event) => {
   event.preventDefault();
   docAssistAsk("ask");

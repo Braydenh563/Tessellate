@@ -5490,6 +5490,9 @@ Link to another note with [[its first few words]]."></textarea>
                     data-offline-placeholder="No model: format, run the tests, find where a name is used…">
                   <button type="submit" id="doc-assist-send" class="small accent icon-only" title="Ask (Enter)" aria-label="Ask"><i class="ph ph-paper-plane-right" aria-hidden="true"></i></button>
                 </form>
+                <!-- An empty Ask says so here, under the field it is about: the
+                     answer area is at the foot of the panel, below the fold. -->
+                <p id="doc-assist-hint" class="status error text-sm doc-assist-hint hidden" role="status">Type a question first.</p>
                 <div id="doc-assist-model-line" class="ai-offline-note notice hidden"
                   data-offline-line="Needs a model for Explain, Write tests, Refactor and free questions. Fix, the tools below and questions they answer work now."></div>
                 <div class="doc-assist-tools" role="group" aria-label="Tools that need no model">

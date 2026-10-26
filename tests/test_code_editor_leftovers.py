@@ -65,3 +65,26 @@ def test_the_status_bar_picks_the_code_line_the_way_the_chord_guard_does():
     # prose-like txt and csv, which keep their word counts.
     assert "!type.previewable" in _function(DOCS_JS, "docIsCodeFile")
     assert "previewable" in _function(DOCS_JS, "docProseChord")
+
+
+# --- 2. an empty Assistant prompt -------------------------------------------
+
+
+def test_an_empty_assistant_prompt_is_shown_at_the_field_not_far_below_it():
+    ask = _function(CODEKIT_JS, "docAssistAsk")
+    assert "docAssistEmptyAsk()" in ask
+    assert 'docAssistSay("Type a question first.")' not in ask
+    empty = _function(CODEKIT_JS, "docAssistEmptyAsk")
+    assert "focus()" in empty and 'aria-invalid' in empty and "doc-assist-hint" in empty
+    hint = re.search(r'<p id="doc-assist-hint"[^>]*>', INDEX)
+    assert hint, "the hint sits in the markup, under the field"
+    assert 'role="status"' in hint.group(0) and "hidden" in hint.group(0)
+    assert INDEX.index('id="doc-assist-form"') < INDEX.index('id="doc-assist-hint"') < INDEX.index('id="doc-assist-answer"')
+    # Typing clears it, so it never outlives the reason for it.
+    assert re.search(r'\$\("doc-assist-question"\)\.addEventListener\("input", docAssistClearHint\)', CODEKIT_JS)
+    assert "Type a question first." in INDEX
+
+
+def test_the_invalid_field_is_drawn_in_the_error_ink():
+    css = _css("library-lazy.css")
+    assert re.search(r'\.search-field\.doc-assist-form:has\(\[aria-invalid="true"\]\)[^{]*\{[^}]*--error', css)
