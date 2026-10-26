@@ -6835,3 +6835,28 @@ input[type="color"].wb-mixed {
   font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
 }
+
+/* Reading progress: in the Read view a hairline at the top of the page fills
+   as the page scrolls. Drawn by the scroll itself (a scroll-driven animation),
+   so no script runs per scroll; a webview without the feature shows no line. */
+@supports (animation-timeline: scroll()) {
+  #doc-panes.reading > #doc-preview::before {
+    content: "";
+    display: block;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    block-size: 2px;
+    margin: 0 0 -2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    animation: doc-read-progress linear both;
+    animation-timeline: scroll(nearest);
+  }
+  @keyframes doc-read-progress {
+    to {
+      transform: scaleX(1);
+    }
+  }
+}

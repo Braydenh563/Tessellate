@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: an equation can carry a number. `\tag{3}` inside display maths is set at the right edge as (3), and the Read view draws a thin progress line at the top of the page that fills as you scroll (0, 0.5, 1 at the top, middle and end at 1440, 720 and 390).
+- Documents: Turn into (Notion's block menu). The swap button on the selection bar, the phone formatting bar's new button and the Ctrl+K row open a menu that turns the block at the caret, or every line selected, into a paragraph, heading 1 to 3, bulleted, numbered or to-do list, quote, callout or code block, taking the old marker off first and as one undo step (docpaste.js at 1440, 720, 390, light and dark: 10 rows, 8 conversions correct, one Ctrl+Z restores, a caret inside a code fence is refused).
 - Documents paste: a spreadsheet copied with no HTML table (tab-separated rectangle, not tab-indented code) becomes a table at once, and the Paste options chip puts the text back; Paste special gains "matching the surrounding text" and "Markdown source" palette rows (docpaste.js: table true, indented code stays text, Paste special menu 7 to 8 rows).
 - Speed: opening the Documents list warms the editor in a spare moment (the editor bundle is evaluated and the grammar checker's files are fetched), not on a phone or Save-Data. Open to editable, 15 cold runs at 1440: median 258 ms to 134 ms.
 - Ask tab: the Ask button is 44px tall below 820 (was 36px beside 44px icon buttons).

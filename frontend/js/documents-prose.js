@@ -2848,3 +2848,78 @@ function docPasteSpecialMenu() {
     at ? at.bottom + 4 : window.innerHeight / 3
   );
 }
+
+//: **Turn into** (Notion's block menu): the block at the caret, or every line
+//: the selection touches, becomes a paragraph, heading, list, task, quote,
+//: callout or code block from one place. The markers come from `MD_ACTIONS`
+//: (the one table that decides what `#` and `- [ ]` mean); what this adds is
+//: the step the toolbar buttons lack, taking the old marker off first, so a
+//: heading turned into a list is a list and not `- ## text`. One edit, so
+//: one undo.
+const DOC_TURN_INTO = [
+  ["paragraph", "ph:text-t Paragraph"],
+  ["h1", "ph:text-h-one Heading 1"],
+  ["h2", "ph:text-h-two Heading 2"],
+  ["h3", "ph:text-h-three Heading 3"],
+  ["ul", "ph:list-bullets Bulleted list"],
+  ["ol", "ph:list-numbers Numbered list"],
+  ["task", "ph:check-square To-do list"],
+  ["quote", "ph:quotes Quote"],
+  ["callout", "ph:warning-circle Callout"],
+  ["codeblock", "ph:code-block Code block"],
+];
+const DOC_BLOCK_MARK = /^(\s*)(?:#{1,6} |[-*+] \[[ xX]\] |[-*+] |\d+[.)] |> \[![\w-]+\][+-]? ?|>+ ?)/;
+
+function docTurnIntoLines(lines, kind) {
+  const plain = lines.map((line) => line.replace(DOC_BLOCK_MARK, "$1"));
+  const spec = MD_ACTIONS[kind === "callout" ? "quote" : kind];
+  if (kind === "paragraph") return plain;
+  if (kind === "codeblock") return ["```", ...plain, "```"];
+  const marked = plain.map((line) => (line.trim() ? spec.line + line : line));
+  if (kind === "callout") {
+    const at = marked.findIndex((line) => line.trim());
+    //: The title line of `> [!note] `, taken from the callout row of the table.
+    if (at >= 0) marked[at] = MD_ACTIONS.callout.block + marked[at].slice(spec.line.length);
+    else marked.push(MD_ACTIONS.callout.block.trimEnd());
+  }
+  return marked;
+}
+
+function docTurnInto(kind, boxId = "doc-content") {
+  const box = docSurfaceById(boxId);
+  if (!box || !DOC_TURN_INTO.some(([id]) => id === kind)) return;
+  const { selectionStart: from, selectionEnd: to, value } = box;
+  const start = value.lastIndexOf("\n", from - 1) + 1;
+  const stop = value.indexOf("\n", to > from && value[to - 1] === "\n" ? to - 1 : to);
+  const end = stop === -1 ? value.length : stop;
+  const before = value.slice(0, start).split("\n").filter((line) => /^\s*(```|~~~)/.test(line)).length;
+  if (before % 2 || /^\s*(```|~~~)/.test(value.slice(start, end))) {
+    toast("Move out of the code block first.", "info");
+    return;
+  }
+  docUndoBreak();
+  const next = docTurnIntoLines(value.slice(start, end).split("\n"), kind).join("\n");
+  box.value = value.slice(0, start) + next + value.slice(end);
+  box.setSelectionRange(start, start + next.length);
+  finishMarkdownEdit(box, boxId);
+}
+
+//: The menu, from the app's pointer-menu recipe. Opened from the selection
+//: bar (under its button), the palette (at the caret) or the right-click menu.
+function docTurnIntoMenu(boxId = "doc-content", x = null, y = null) {
+  const box = docSurfaceById(boxId);
+  //: A button as the anchor: hung under it, or above it on the phone's foot bar.
+  if (x instanceof Element) {
+    const rect = x.getBoundingClientRect();
+    const foot = Boolean(x.closest(".doc-phone-bar"));
+    [x, y] = [rect.left, foot ? rect.top - 8 : rect.bottom + 4];
+  }
+  let at = null;
+  if (x == null && box?.view) at = box.view.coordsAtPos(box.view.state.selection.main.head);
+  openMenuAtPoint(
+    DOC_TURN_INTO.map(([id, label]) => ({ label, run: () => docTurnInto(id, boxId) })),
+    "Turn into",
+    x ?? (at ? at.left : window.innerWidth / 2),
+    y ?? (at ? at.bottom + 4 : window.innerHeight / 3)
+  );
+}

@@ -103,7 +103,10 @@ check("inline by default", docMathTree("x").attrs.display === "inline", docMathT
 check("display when asked", docMathTree("x", true).attrs.display === "block", "");
 
 // Nothing in this region may reach for the DOM.
-check("no inline styles", JSON.stringify(docMathTree("\\mathbf{a}")).includes("mathvariant"), "");
+// An equation number: \tag{n} leaves the formula and rides on the tree, display only.
+check("tag is taken off a display formula", sketch(docMathTree("a \\tag{1}", true)) === sketch(docMathTree("a", true)) && docMathTree("a \\tag{1}", true).label === "1", docMathTree("a \\tag{1}", true).label);
+check("no tag inline", docMathTree("a \\tag{1}", false).label === "", "");
+check("no inline styles",JSON.stringify(docMathTree("\\mathbf{a}")).includes("mathvariant"), "");
 
 // **What is math and what is a price.**
 const MATHS = ["x^2", "a+b", "\\frac{1}{2}", "E=mc^2", "\\pi r^2", "n_1"];

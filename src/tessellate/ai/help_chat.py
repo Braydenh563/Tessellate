@@ -1863,6 +1863,24 @@ HELP_TOPICS.extend(
             "badge": {"label": "Library", "tab": "library"},
         },
         {
+            "id": "documents-turn-into",
+            "keywords": (
+                "turn into", "turn a block into", "change a paragraph to a heading",
+                "convert block", "paragraph to heading", "paragraph to list",
+                "make this a quote", "make this a callout", "make this a to-do",
+            ),
+            "body": (
+                "Turn into changes the block at the caret, or every line you have "
+                "selected, to a paragraph, heading 1 to 3, bulleted, numbered or "
+                "to-do list, quote, callout or code block, taking the old marker "
+                "off first. Select text and press the swap button on the selection "
+                "bar, press Turn into on a phone's formatting bar, or choose Turn "
+                "into in the palette (Ctrl+K). One Ctrl+Z puts the block back. A "
+                "caret inside a code block is left alone."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
             "id": "documents-features",
             "keywords": (
                 "history of a document", "word goal", "typewriter", "footnote", "footnotes",

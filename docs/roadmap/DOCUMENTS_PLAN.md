@@ -1515,16 +1515,16 @@ Read from the code against Notion and Obsidian. Sizes S, M, L. Nothing here is b
 1. Video and audio embed from a link or a local file in a note (Notion "Embed", Obsidian `![[file.mp4]]`) - M.
 2. Citations: a reference list built from footnote-style keys (Obsidian citations plugin) - M.
 3. A block's own link (heading links exist in documents.js; a paragraph's does not, to verify) - S.
-4. "Turn into" is in documents.js; check it reaches lists, callouts and code from the bubble toolbar - S.
+4. Built 2026-10-26 (docs5-1026): see HISTORY.md, "Moved from the plans, 2026-10-26 (docs5-1026)".
 5. Synced blocks: one block shown in two notes, edited in either - L.
 6. A database view of notes by property (Notion, Obsidian Bases): table, board, calendar - L.
 7. Inline date and reminder mention that creates a reminder (Notion "@date") - S.
 8. Page cover and icon picker parity with Notion's gallery - S.
 9. Web clipper fields on a note's properties - M.
 10. Canvas block: a board embedded and editable in place - M.
-11. Equation numbering and cross-reference - S.
+11. Equation cross-reference (`\eqref`, a number that follows the equation); numbering by `\tag{n}` is built (HISTORY, docs5-1026) - S.
 12. Table: column sort, filter row, formulas - M.
-13. Reading mode: the note full width without chrome, with a progress line (check Focus mode first) - S. Remembered heading folds already exist (`docOutlineFoldStore`).
+13. Built 2026-10-26 (docs5-1026): the Read view takes a progress line; see HISTORY.md.
 14. Template variables exist (documents.js, documents-codekit.js); check they cover time and the cursor place - S.
 15. Export a note as a slide deck from its headings - M.
 
