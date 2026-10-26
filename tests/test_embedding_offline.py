@@ -167,3 +167,13 @@ def test_the_catalogue_carries_each_rows_state(client, tmp_path, monkeypatch):
     assert bge["state"] == "ready" and bge["downloaded"] is True and bge["on_disk"]
     other = next(row for model, row in rows.items() if model != "BAAI/bge-small-en-v1.5")
     assert other["state"] == "absent" and other["on_disk"] == ""
+
+
+def test_the_off_switch_stops_the_first_download(fake_st, monkeypatch):
+    """docs/PRIVACY.md: `TESSELLATE_NO_AUTO_INSTALL` stops the search model's
+    one-off fetch. An uncached model stays uncached and search uses keywords."""
+    monkeypatch.setenv("TESSELLATE_NO_AUTO_INSTALL", "1")
+    fake_st.local_works = False
+    with pytest.raises(embeddings.EmbeddingCacheBroken):
+        _service()._load_st_model()
+    assert fake_st.calls == [True]

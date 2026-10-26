@@ -911,6 +911,16 @@ class EmbeddingService:
             logger.info("embedding model loaded from local cache")
             return model
         except Exception as exc:  # noqa: BLE001  # not cached, stale or corrupt
+            #: **The off-switch for the one-off download** (docs/PRIVACY.md:
+            #: `TESSELLATE_NO_AUTO_INSTALL` stops the search model's first
+            #: fetch). Set, a note's first save on a machine without the model
+            #: made the Hub call anyway, so a suite run on a machine with no
+            #: cache (CI) reached huggingface.co from the first note any test
+            #: saved. Search uses keywords until the model is installed.
+            if os.environ.get("TESSELLATE_NO_AUTO_INSTALL"):
+                raise EmbeddingCacheBroken(
+                    "Search by meaning is not installed here and automatic downloads are switched off; search uses keywords."
+                ) from exc
             from tessellate.core import embedmodels
 
             health = embedmodels.cache_health(repo)

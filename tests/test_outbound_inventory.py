@@ -132,6 +132,12 @@ def _is_local(host: str) -> bool:
 def test_a_booted_app_reaches_nothing_beyond_this_computer(app_state, monkeypatch):
     """A fresh notebook, started and used: every connection attempt and every
     name lookup is recorded, and none may leave loopback."""
+    #: The search model's one-off download on a note's first save is the one
+    #: call a fresh machine makes unasked, and docs/PRIVACY.md names its
+    #: off-switch. Without the switch this test passed on a machine that had the
+    #: model cached and reached huggingface.co on one that had not (CI, 3.11 and
+    #: 3.12, 2026-10-26), whichever test ran first. It proves everything else.
+    monkeypatch.setenv("TESSELLATE_NO_AUTO_INSTALL", "1")
     attempts: list[str] = []
     real_connect = socket.socket.connect
     real_getaddrinfo = socket.getaddrinfo
