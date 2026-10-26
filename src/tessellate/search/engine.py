@@ -79,6 +79,8 @@ logger = logging.getLogger("tessellate.search.engine")
 #: `search_manager.graph_expansion` already makes by appending rather than
 #: interleaving its neighbours.
 WEIGHTS = {"bm25": 0.5, "cosine": 0.35, "graph": 0.15}
+#: The cosine a word match needs before its explanation also says "similar meaning".
+EXPLAIN_MEANING_MIN = 0.6
 
 #: How many FTS candidates go on to the expensive signals. Cosine over 200
 #: rows is one small matrix slice and the graph walk is two queries; over the
@@ -949,7 +951,9 @@ def _explain(scores: dict[str, float], row: dict, terms: list[str], hop: int | N
             said.append((scores["bm25"] * WEIGHTS["bm25"], "matched a tag"))
         else:
             said.append((scores["bm25"] * WEIGHTS["bm25"], "matched your words"))
-    if scores["cosine"] > 0:
+    #: Any two vectors have a cosine above zero, so a keyword hit would always
+    #: claim "similar meaning". With words already matched it takes a close vector.
+    if scores["cosine"] >= (EXPLAIN_MEANING_MIN if scores["bm25"] > 0 else 1e-9):
         said.append((scores["cosine"] * WEIGHTS["cosine"], "similar meaning"))
     if scores["graph"] > 0:
         said.append(

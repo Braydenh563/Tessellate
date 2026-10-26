@@ -1051,6 +1051,11 @@ function appendInlineRun(element, text, terms, compact, options) {
           placeholder.appendChild(dismiss);
           wrapper.replaceWith(placeholder);
         });
+        //: The blank lines before a picture on its own line are the
+        //: markdown's, not the note's: kept, they stacked on the wrapper's own
+        //: margin into a 33px gap under a sketch's caption (dog3-1026 row 15).
+        const before = element.lastChild?.lastChild || element.lastChild;
+        if (before?.nodeType === Node.TEXT_NODE) before.textContent = before.textContent.replace(/\s+$/, "");
         element.appendChild(wrapper);
       } else {
         element.appendChild(document.createTextNode(match[0]));
@@ -3532,15 +3537,19 @@ async function renderNotesRail() {
     return;
   }
   const shown = buildConnectionGroups(body, "entries", answer.links);
-  const nearItems = (answer.near && answer.near.items) || [];
+  //: Forgotten takes days: a note written minutes ago is not slipping away
+  //: (dog3-1026 row 14, "Forgotten" on notes seconds old).
+  const nearItems = ((answer.near && answer.near.items) || []).filter((item) => (item.age_days || 0) >= 3);
   if (nearItems.length) body.appendChild(notesRailNearGroup(nearItems));
   //: One chip, the panel head's one fact: how many things this note is
   //: joined to. The forgotten notes are suggestions, not connections, so they
   //: are not counted in it.
-  count.hidden = false;
   //: Unlinked mentions are offers, not links, so they are not counted.
   const linked = shown - (answer.links.mentions || []).length;
   count.textContent = linked === 1 ? "1 link" : `${linked} links`;
+  //: "0 links" over a list of suggestions read as a contradiction; the
+  //: empty line below says it once there is nothing at all (dog3-1026 row 14).
+  count.hidden = !linked;
   if (!shown && !nearItems.length) {
     const empty = document.createElement("p");
     empty.className = "muted notes-rail-note";

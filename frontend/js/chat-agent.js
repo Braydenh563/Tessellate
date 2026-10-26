@@ -2067,7 +2067,10 @@ function deactivateControls(root) {
   }
 }
 
-function chatSourcesFrom({ meta, toolEvents, touched }) {
+//: `grounded`: a composed answer's own note ids. The search hands the composer
+//: every hit, but the answer quotes one or two; "Sources: 4 notes" under "your
+//: only note" contradicted it (dog3-1026 row 10), so only those count.
+function chatSourcesFrom({ meta, toolEvents, touched, grounded }) {
   const seen = new Set();
   const sources = [];
   const add = (source) => {
@@ -2083,6 +2086,7 @@ function chatSourcesFrom({ meta, toolEvents, touched }) {
     return flat.length > 180 ? `${flat.slice(0, 180)}…` : flat;
   };
   for (const entry of meta?.raw_results || []) {
+    if (grounded?.size && !grounded.has(entry.id)) continue;
     const label = noteLabel(entry, 60);
     //: A note has no title, so its label *is* its opening words, which means
     //: the preview has to start where the label stopped, or the card prints

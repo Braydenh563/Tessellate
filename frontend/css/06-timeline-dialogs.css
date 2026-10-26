@@ -1217,6 +1217,11 @@
   margin: var(--space-3) calc(var(--space-2) * -1) 0;
   padding: 0;
 }
+/* A choice is read in full: at 390 five of the seven descriptions ended in
+   an ellipsis (dog3-1026 row 22), so here they wrap to a second line. */
+.library-create-list .rich-picker-about {
+  white-space: normal;
+}
 /* --- the Ask box explaining itself (§35A) ----------------------------------
    Shown when someone types a greeting into a box that searches notes. It is
    styled as a prompt, NOT as an answer or an error: the first version put a

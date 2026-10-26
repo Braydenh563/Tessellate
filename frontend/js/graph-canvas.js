@@ -5817,8 +5817,14 @@ function graphRenderStats(data, nodes, edges, colourMode, layoutKind) {
             : layoutKind === "treemap"
               ? "each category's area in proportion to its notes."
               : "";
+  //: Notes with nothing joined to them draw as loose dots with no word on
+  //: why (dog3-1026 row 17): say so, and say how to join two.
+  const unlinked = noteCount > 0 && !edges.some((edge) => edge.kind === "link" || edge.kind === "thread");
+  if (unlinked) parts.push("no links yet");
   line.textContent = parts.join(" · ");
-  line.title = shape;
+  line.title = unlinked
+    ? "No note is linked to another yet. Open a note's link button to join two, or select two notes here and press Link."
+    : shape;
   graphSyncLayoutChip(layoutKind);
 }
 

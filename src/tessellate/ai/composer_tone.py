@@ -47,4 +47,9 @@ def closing(*, recent: list[str], seed: str, avoid: tuple[str, ...] | list[str] 
     if not titles:
         return ""
     mood = compose.mood_of(question, voice=voice, seed=f"{seed}:{titles[0]}", said=list(avoid))
-    return compose.frame("close_next", mood, t=titles[0])
+    #: A note title is the person's opening words, often typed small; said back
+    #: inside quotes it opens with a capital like any title.
+    title = titles[0]
+    if title.split()[0].islower():  # "iPhone" keeps its own shape
+        title = title[:1].upper() + title[1:]
+    return compose.frame("close_next", mood, t=title)
