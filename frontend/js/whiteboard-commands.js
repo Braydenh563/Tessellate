@@ -646,6 +646,7 @@ const WB_HELP_SECTIONS = [
     { icon: "ph:clipboard", label: "Copy, paste at the pointer", keys: ["Ctrl+C", "Ctrl+V"] },
     { icon: "ph:clipboard-text", label: "Paste text from another app: a list becomes stickies", keys: ["Ctrl+V"] },
     { icon: "ph:note", label: "Next sticky beside this one, while typing in one", keys: ["Ctrl+Enter"] },
+    { icon: "ph:keyboard", label: "Place the held text, sticky or frame tool in the view, or edit the selected one", keys: ["Enter"] },
     { cmd: "cut" }, { cmd: "duplicate" },
     { icon: "ph:copy", label: "Copy as you drag", keys: ["Alt+drag"] },
     { cmd: "delete" },

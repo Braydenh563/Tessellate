@@ -10857,6 +10857,36 @@ function wbIsSticky(item) {
   return Boolean(data.sticky) || (data.border_color === "#e8d56a" && Boolean(data.bg));
 }
 
+//: **Enter, for someone with no pointer.** A text box, sticky or frame was
+//: only ever placed by a click, so N then Enter did nothing and a selected
+//: sticky could not be written in without a double-click (WCAG 2.1.1; Figma,
+//: tldraw and Excalidraw all take Enter). With a placing tool held, Enter
+//: drops the thing at the middle of the view; with one text box or sticky
+//: selected, Enter puts the caret at the end of its words. Returns whether it
+//: acted, so the key keeps its other meanings otherwise. Only from the
+//: canvas itself: a focused toolbar button's Enter is its own.
+function wbKeyboardEnter() {
+  const focus = document.activeElement;
+  if (focus && focus !== document.body && focus.id !== "whiteboard-container") return false;
+  const place = { text: wbCreateTextBox, sticky: wbCreateSticky, frame: wbCreateFrame }[window.currentTool];
+  if (place) {
+    const [x, y] = wbViewCentre();
+    place(x, y);
+    return true;
+  }
+  const lone = wbSelectedItem?.kind === "object" && wbMultiSelection.size <= 1 ? wbFindItem("object", wbSelectedItem.id) : null;
+  if (!lone || lone.kind !== "text" || lone.data?.sticker || wbIsLocked("object", lone)) return false;
+  const words = document.querySelector(`.wb-object[data-id="${lone.id}"] .wb-text-content`);
+  if (!words) return false;
+  wbBeginTextEdit(words);
+  const range = document.createRange();
+  range.selectNodeContents(words);
+  range.collapse(false);
+  window.getSelection()?.removeAllRanges();
+  window.getSelection()?.addRange(range);
+  return true;
+}
+
 async function wbCreateSticky(x, y, box = null, like = null) {
   const at = box || { x: x - 90, y: y - 70, w: 180, h: 140 };
   const paper = like?.data || {};
@@ -16353,6 +16383,10 @@ async function initWhiteboard() {
     if (e.key === "Tab" && wbSelectedItem?.kind === "node") {
       e.preventDefault();
       wbMindMapAddChild(wbSelectedItem.id);
+      return;
+    }
+    if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey && !wbIsMap() && wbKeyboardEnter()) {
+      e.preventDefault();
       return;
     }
     //: Enter on one selected shape types into it (decision 12; tldraw's key).

@@ -2297,7 +2297,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     ("Boards and maps", (
         "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-diagram-tools", "board-paste", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
         "board-comments", "sticky-notes",
-        "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-hand-drawn", "board-tables", "board-edit-data", "board-colours",
+        "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-keyboard-create", "board-hand-drawn", "board-tables", "board-edit-data", "board-colours",
     )),
     ("Library and files", (
         "library", "library-controls", "bookmarks", "web-clipper-bookmark", "contents", "library-skills",
@@ -2547,6 +2547,21 @@ MORE_TOPICS.extend([
         "badge": {"label": "Library", "tab": "library"},
     },
     {
+        "id": "board-keyboard-create",
+        "keywords": (
+            "keyboard only board", "make a sticky with the keyboard", "enter on a board",
+            "place a text box without a mouse", "edit a sticky with enter", "board without a mouse",
+        ),
+        "body": (
+            "Making and writing on a board without a pointer: press N, T or F to hold "
+            "the Sticky note, Text or Frame tool, then Enter to drop one in the middle "
+            "of the view. Tab walks the items; Enter on a selected "
+            "text box or sticky puts the caret at the end of its words, and Enter on a "
+            "selected shape writes in it. Escape leaves the words."
+        ),
+        "badge": {"label": "Library", "tab": "library"},
+    },
+    {
         "id": "board-hand-drawn",
         "keywords": (
             "hand-drawn", "hand drawn", "sketchy", "rough lines", "excalidraw look",
@@ -2628,6 +2643,7 @@ TOPIC_META.update({
     "board-tables": {"title": "Tables on a board", "path": "A board's Insert menu, Table"},
     "board-hand-drawn": {"title": "The hand-drawn look", "path": "A board's View menu, Hand-drawn look"},
     "board-current-layer": {"title": "The current layer", "path": "A board's sidebar, Layers"},
+    "board-keyboard-create": {"title": "Making and writing without a mouse", "path": "A board, Keys and controls"},
     "mind-map-structure": {"title": "A structure per branch", "path": "A map topic's menu, Structure"},
     "mind-map-lines": {"title": "Map line style, line ends and topic shapes", "path": "A map, Layout, the line style picker"},
     "mind-map-callouts": {"title": "Callouts, labels and stamps on a topic", "path": "A map topic's menu, Topic"},
