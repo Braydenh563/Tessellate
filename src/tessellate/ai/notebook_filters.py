@@ -176,13 +176,14 @@ def _keeps(narrowed: Narrowed, row: tuple, categories: dict, linked: set[int]) -
 
 def count(session: Session, narrowed: Narrowed, visible) -> tuple[str, list[dict]] | None:  # noqa: ANN001
     """The sentence and facts for a narrowed count, or None when nothing
-    narrows it. `visible` is the live-notes filter of `notebook_stats`."""
+    narrows it. `visible` is the live-notes filter of `notebook_stats`, which leaves
+    archived notes out unless it is told to keep them."""
     if not narrowed.active:
         return None
     categories = {c.id: c.name for c in session.scalars(select(Category))}
     body = Entry.content if narrowed.state == "checklist" else literal("")
     rows = session.execute(
-        visible(select(Entry.id, Entry.tags, Entry.category_id, Entry.created_at, Entry.pinned, Entry.archived_at, body))
+        visible(select(Entry.id, Entry.tags, Entry.category_id, Entry.created_at, Entry.pinned, Entry.archived_at, body), narrowed.state == "archived")
     ).all()
     tag_names = sorted({t for row in rows for t in _tags_of(row[1])}, key=str.lower)
     names = sorted({categories[row[2]] for row in rows if row[2] in categories})

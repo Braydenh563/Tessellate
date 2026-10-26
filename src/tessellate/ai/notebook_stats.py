@@ -68,8 +68,10 @@ class StatAnswer:
     offer: dict | None = None
 
 
-def _visible(query):
-    """Live notes only: binned and private notes are nobody's statistics.
+def _visible(query, archived: bool = False):
+    """Live notes only: binned and private notes are nobody's statistics, and
+    an archived note is in no count unless the question asks for archived
+    ones (`archived=True`, "how many archived notes").
 
     Private notes are excluded for the reason the rest of the app excludes
     them: a count that changes when a note is made private is a count that
@@ -77,9 +79,8 @@ def _visible(query):
     """
     #: `is_board` too: a mind map is an `Entry` whose text is its title, and
     #: "how many notes do I have" counted it (the Notes list does not).
-    return query.where(
-        Entry.deleted_at.is_(None), Entry.is_private.is_(False), Entry.is_board.is_(False)
-    )
+    query = query.where(Entry.deleted_at.is_(None), Entry.is_private.is_(False), Entry.is_board.is_(False))
+    return query if archived else query.where(Entry.archived_at.is_(None))
 
 
 def _tags_of(raw: str) -> list[str]:
@@ -486,7 +487,9 @@ def _board_count(session: Session, text: str) -> StatAnswer:
     whose settings say so)."""
     maps = bool(re.search(r"\bmaps?\b", text))
     rows = session.scalars(
-        select(Entry.board_settings).where(Entry.is_board.is_(True), Entry.deleted_at.is_(None), Entry.is_private.is_(False))
+        select(Entry.board_settings).where(
+            Entry.is_board.is_(True), Entry.deleted_at.is_(None), Entry.is_private.is_(False), Entry.archived_at.is_(None)
+        )
     ).all()
     total = sum(1 for raw in rows if ('"type": "map"' in (raw or "") or '"type":"map"' in (raw or "")) == maps)
     word = "mind map" if maps else "board"
