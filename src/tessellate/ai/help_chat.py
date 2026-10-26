@@ -655,7 +655,7 @@ HELP_TOPICS: list[dict] = [
             "first lines with Open. "
             "Library, Recordings searches names and transcripts (a hit shows its line; press it to play from there) and plays them "
             "at 0.5 to 2x with a playhead and the time; drag the waveform to "
-            "seek, press M to mark a moment with a comment, and Trim; a "
+            "seek, press M to mark a moment with a comment, Trim, and Download audio (in the more menu); a "
             "transcribed one lists its lines with their times (press one to "
             "play from it; a line's copy button copies it, Shift-click picks a run of "
             "lines, and the transcript's more menu copies the picked lines or all of "

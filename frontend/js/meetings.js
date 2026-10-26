@@ -2000,9 +2000,14 @@ function recordingTranscriptNow(list, segments, ms) {
   });
 }
 
+//: The file extension for a container name that is not one (an MP4 audio file
+//: is .m4a); webm, ogg and wav are their own.
+const RECORDING_EXTENSIONS = { mp4: "m4a" };
+
 function recordingMenu(rec) {
   const items = [
     makeMenuItem("ph:pencil-simple Rename", "Give this recording a name", () => renameRecording(rec)),
+    makeMenuItem("ph:download-simple Download audio", "Save the recording as an audio file", () => downloadFromApi(`/media/recordings/${rec.id}`, `${(rec.title || "recording").replace(/[^A-Za-z0-9._ -]/g, "_")}.${RECORDING_EXTENSIONS[meetingContainerName(rec.mime)] || meetingContainerName(rec.mime)}`)),
     makeMenuItem("ph:scissors Trim", "Keep part of it as a new recording; the original stays until the bin is emptied", () => openRecordingTrim(rec)),
   ];
   //: Always offered. It used to appear only when `voiceStatus` said the add-on

@@ -278,3 +278,11 @@ def test_the_library_search_reads_transcripts_and_shows_the_line():
     assert "&q=" in render
     assert "recording-match" in JS
     assert "playRecordingFrom(li, rec.match.start)" in JS
+
+
+def test_a_recording_can_be_downloaded_as_its_audio_file():
+    menu = JS.split("function recordingMenu(rec) {")[1].split("\n}\n")[0]
+    row = menu.split('"ph:download-simple Download audio"')[1].split("\n")[0]
+    assert "`/media/recordings/${rec.id}`" in row
+    assert "RECORDING_EXTENSIONS" in row
+    assert 'const RECORDING_EXTENSIONS = { mp4: "m4a" };' in JS

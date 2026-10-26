@@ -145,9 +145,9 @@ function syncDocFileType({ prose = true } = {}) {
   //: to prose, plain text or a CSV. The pair swap in one place, so a
   //: document never shows both or neither.
   $("doc-code-format")?.classList.toggle("hidden", type.previewable || ["txt", "csv"].includes(type.ext));
-  //: And the prose-only rows of the ⋯ menu: the image bundle and the Word file
-  //: (`docCodeExportRefused`) and the heading map, which reads `#` lines.
-  for (const id of ["doc-export-zip", "doc-export-docx", "doc-map-headings"]) $(id)?.classList.toggle("hidden", docIsCodeFile());
+  //: And the prose-only rows of the ⋯ menu: the image bundle, the Word file and
+  //: the print (`docCodeExportRefused`) and the heading map, which reads `#` lines.
+  for (const id of ["doc-export-zip", "doc-export-docx", "doc-export-pdf", "doc-map-headings"]) $(id)?.classList.toggle("hidden", docIsCodeFile());
   $("doc-code-run")?.classList.toggle("hidden", !docRunnable(type));
   docRunSyncAvailability(type);
   //: Wrapping and whitespace are about a file that does not wrap by itself:
@@ -12344,6 +12344,9 @@ function docPrintSetupDialog() {
 // engine would add a heavy dependency to produce a worse-looking result.
 async function exportDocumentPdf() {
   if (!currentDoc) return;
+  //: The page it prints is the rendered preview, which a code file does not
+  //: have: the sheet came out blank. Said, rather than printed empty.
+  if (docCodeExportRefused("Print or save as PDF")) return;
   const setup = await docPrintSetupDialog();
   if (!setup) return;
   docApplyPrintSetup(setup);

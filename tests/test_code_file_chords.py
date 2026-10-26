@@ -84,7 +84,7 @@ def test_a_code_files_exports_are_its_source_not_an_empty_page():
         body = source[source.index(name) :].split("\n}\n")[0]
         assert "docCodeExportRefused(" in body
     sync = source[source.index("function syncDocFileType(") :].split("\n}\n")[0]
-    assert '"doc-export-zip", "doc-export-docx", "doc-map-headings"' in sync
+    assert '"doc-export-zip", "doc-export-docx", "doc-export-pdf", "doc-map-headings"' in sync
 
 
 def test_an_export_name_keeps_a_code_files_extension():
