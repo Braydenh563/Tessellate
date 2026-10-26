@@ -10266,8 +10266,8 @@ function wbSelectionBarFit(bar, surface) {
     setLabel(list, "ph:list-bullets");
     list.addEventListener("mousedown", (event) => {
       event.preventDefault();
-      const target = typeof selectionBarState === "object" ? selectionBarState.textarea : null;
-      if (target && typeof applyMarkdown === "function") applyMarkdown("ul", target.id);
+      const target = selectionBarState.textarea;
+      if (target) applyMarkdown("ul", target.id);
     });
     bar.querySelector('[data-md="link"]')?.after(list);
   }

@@ -695,7 +695,7 @@ function docText() {
 function docSurfaceById(id) {
   if (id === "doc-content") return docSurface();
   //: A board box being typed in has no element id (whiteboard.js, K24).
-  const board = typeof wbEditorSurfaceById === "function" ? wbEditorSurfaceById(id) : null;
+  const board = wbEditorSurfaceById(id);
   if (board) return board;
   //: A note box that has mounted the engine (Phase 8) answers as its view for
   //: the same reason: the toolbar above it must write where the words are.
