@@ -51195,3 +51195,10 @@ From DOCUMENTS_PLAN, "Placed from INBOX, 2026-10-19", row 16 (the guided equatio
 - Guided typing (`mathEditorAuto`): `a/` a fraction with the caret in the denominator (the term before it, Word's rule), `^` and `_` a slot, a space or an operator out of a filled script, symbol names and `sqrt` after a space, `>=`, `!=`, `->`, `+-`, `=>`, `~=` one sign; Tab to the next empty slot or out of a filled one; Backspace straight after a change undoes it. A palette of seven groups (structures drawn by the renderer, Greek, operators, relations, arrows, sets and logic, calculus; 111 tiles) with a search; a live MathML preview; Inline or Display; written as one-line `$...$` or `$$...$$` (the Live view draws no formula over lines); the caret in an equation reopens it as Edit equation.
 - The renderer (`docMathStructure`, documents.js) draws `\begin{pmatrix|bmatrix|Bmatrix|vmatrix|Vmatrix|matrix|cases|aligned}`, `\binom`, `\vec`, `\hat`, `\bar`, `\overline`, `\tilde`, `\dot`, and TeX's spaces (`\,` had printed a comma).
 - Measured with `scratchpad/ui-sweeps/mathedit.js` at 1440, 720 (dark) and 390: 59 checks each in Notes, a document, Chat and Ask, panel inside the window with no sideways page scroll, a 2x2 matrix drawn as 4 cells in the Live view. Tests: `tests/test_math_editor.py`, `tests/test_doc_math.py`.
+
+
+## Ledger rows confirmed done, 2026-10-26
+
+Rows moved out of `agent-remaining/OPEN.md` after a check of CHANGELOG.md and HISTORY.md for each row's INBOX number or phrase. Only a row with a matching fix line moves.
+
+- Row 296 (INBOX 743 tail, welcome card): "recheck the welcome card" is done. Evidence: CHANGELOG.md line 303, "Welcome card: Atlas's swirl no longer paints past its holder (4 px at 390 before, 0 to 1 px after) ... (INBOX 743 tail)."

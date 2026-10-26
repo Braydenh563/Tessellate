@@ -367,7 +367,6 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 293 | The traceback check in the smoke step reads the app's whole output; a benign logged traceback on Windows would fail it. (from... | docs/roadmap/agent-remaining/OPEN.md:3323 | S | unassigned |
 | 294 | The installer's optional packages (owner, 2026-10-07: "there's no indicator for the optional packages install and I cant minimise or close the... | docs/roadmap/agent-remaining/OPEN.md:3324 | M | unassigned |
 | 295 | Brief 17 (launchers, splash): agent-remaining/OPEN.md:405 names the rest of Brief 17 as open. (from briefs-1010.md) | docs/roadmap/agent-remaining/OPEN.md:3447 | S | unassigned |
-| 296 | INBOX 743, "atlas goes out of the border": not reproduced (figure within 4 px of its svg, no oval frame drawn at this head); recheck the welcome card... | docs/roadmap/agent-remaining/OPEN.md:3509 | S | unassigned |
 | 297 | Rule 14: /health stays the launcher's open probe (instance_lock.py, __main__.py read it unauthenticated, and it answers on the LAN); the fields are... | docs/roadmap/agent-remaining/OPEN.md:3524 | M | unassigned |
 | 298 | .diff, .patch, .vb and .vbs are not in docview.CODE_SUFFIXES, so a Library import of one is refused (415); a Dockerfile has no suffix at all... | docs/roadmap/agent-remaining/OPEN.md:3536 | M | unassigned |
 | 299 | Documents: the status bar shows characters, words and reading time; lines (wc -l) are counted by textCounts but shown nowhere. "find with the same... | docs/roadmap/agent-remaining/OPEN.md:3607 | M | unassigned |
