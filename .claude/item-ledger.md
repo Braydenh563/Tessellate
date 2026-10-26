@@ -38,3 +38,5 @@ date | item | type | rung | rework | note
 2026-10-26 | composer round 5: archived lists, month+year word, label names | feature | sonnet | 0 | 
 2026-10-26 | graph round 5: line grid cleanup on big maps | ui | sonnet | 0 | 
 2026-10-26 | graph round 6: node grid, cached curves, step-off order | ui | sonnet | 0 | 
+2026-10-26 | OCR workbench O1-O3: page switch lag, whole-doc wait, overlay blink | perf | sonnet | 0 | 
+2026-10-26 | composer round 6: year words, since/before/until | feature | sonnet | 0 | 
