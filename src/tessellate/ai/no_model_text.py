@@ -26,7 +26,7 @@ SCRAP_WORDS = 4
 _HEADING_LEAD = re.compile(r"[ \t]{0,3}#{1,6}[ \t]+")
 _RULE = re.compile(r"^\s*(?:-{3,}|\*{3,}|_{3,})\s*$")
 _FENCE = re.compile(r"^\s*(```|~~~)")
-_MARK = re.compile(r"[-*+>]|\d+[.)]|\[[ xX]\]|#{1,6}")
+_MARK = re.compile(r"[-*+>]|\d{1,9}[.)]|\[[ xX]\]|#{1,6}")
 
 
 @dataclass
