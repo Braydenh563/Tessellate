@@ -1898,8 +1898,17 @@ def unpin_all_nodes(session: Session = Depends(get_session)) -> dict:
         .filter(Entry.is_deleted == False, Entry.graph_pin_x.is_not(None))  # noqa: E712
         .all()
     )
-    for entry in pinned:
-        entry.graph_pin_x = None
-        entry.graph_pin_y = None
+    held = (
+        session.query(Document)
+        .filter(Document.deleted_at.is_(None), Document.graph_pin_x.is_not(None))
+        .all()
+    )
+    # Every pin cleared, documents and nodes a filter hides included, so the
+    # Undo puts back exactly what this released (K9, K10).
+    released = [{"id": e.id, "x": e.graph_pin_x, "y": e.graph_pin_y} for e in pinned]
+    released += [{"id": f"document:{d.id}", "x": d.graph_pin_x, "y": d.graph_pin_y} for d in held]
+    for row in (*pinned, *held):
+        row.graph_pin_x = None
+        row.graph_pin_y = None
     session.commit()
-    return {"unpinned": len(pinned)}
+    return {"unpinned": len(released), "released": released}

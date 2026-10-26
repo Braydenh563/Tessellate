@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Graph: Unpin all and Reset release document pins too, and their Undo puts back every pin they released, including ones a filter hid.
 - Whiteboard: the size readout while drawing or resizing draws its digits in a readable pair; it was black on a dark plate.
 - Review fixes: persona voices match whole words and a formal persona reads the professional lines; "my work visa" and "since we added" questions can reach the web again; the topic summary builds its no-AI answer only when it is used; a chat question is capped at 20,000 characters.
 - CodeQL: the composer reads "Lisbon notes" as Lisbon by word steps, not a regex quadratic on a run of whitespace.

@@ -102,7 +102,8 @@ async function graphUnpinAllNow() {
   const result = await apiJson("/graph/unpin-all", { method: "POST" });
   graphHighlightIds = null;
   await renderGraph();
-  return { rows, count: result.unpinned };
+  //: The server's list covers what is off screen (a filter, a focus) too.
+  return { rows: result.released || rows, count: result.unpinned };
 }
 
 async function graphRestorePins(rows) {
@@ -6277,8 +6278,9 @@ async function graphResetToDefaults() {
     toast("The map is already on its default settings.");
     return;
   }
+  let released = pins;
   const reset = async () => {
-    if (pins.length) await graphUnpinAllNow().catch(() => null);
+    if (pins.length) released = (await graphUnpinAllNow().catch(() => null))?.rows || pins;
     graphApplySettings(GRAPH_DEFAULTS);
   };
   await reset();
@@ -6287,7 +6289,7 @@ async function graphResetToDefaults() {
     pins.length ? `Map settings reset, ${pins.length} pinned note${pins.length === 1 ? "" : "s"} released.` : "Map settings reset to defaults.",
     async () => {
       graphApplySettings(before);
-      await graphRestorePins(pins);
+      await graphRestorePins(released);
       toast("Map settings restored.");
     },
     reset

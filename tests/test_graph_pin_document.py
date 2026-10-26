@@ -71,4 +71,19 @@ def test_the_client_only_asks_for_pins_it_can_keep() -> None:
     assert "function graphPinSave(" in graph
     assert graph.count("`/graph/pin/${") == 1, "every pin write goes through the one helper"
     assert canvas.count("`/graph/pin/${") == 0
-    assert canvas.count("graphPinSave(") == 2
+    assert canvas.count("graphPinSave(") == 3  # drag, double-click, and the selection bar's Unpin (K10)
+
+
+def test_unpin_all_releases_documents_too_and_returns_what_it_released(client):
+    doc = _document(client)
+    note = client.post("/entries", json={"content": "Held note"}).json()
+    client.put("/graph/pins", json={"pins": [{"id": note["id"], "x": 3, "y": 4}, {"id": f"document:{doc}", "x": 5, "y": 6}]})
+    released = client.post("/graph/unpin-all")
+    assert released.status_code == 200, released.text
+    body = released.json()
+    assert body["unpinned"] == 2
+    assert {"id": f"document:{doc}", "x": 5, "y": 6} in body["released"]
+    assert _doc_node(client, doc).get("graph_pin_x") is None
+    # The Undo writes the same rows back.
+    restored = client.put("/graph/pins", json={"pins": body["released"]})
+    assert restored.json() == {"pinned": 2}
