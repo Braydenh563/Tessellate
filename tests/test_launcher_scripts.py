@@ -890,6 +890,14 @@ class TestTheWindowsSplash:
         assert '$_.State -eq "done"' in t
         assert "$pct = [int](($done * 100) / $total)" in t
 
+    def test_the_lockup_is_the_name_alone_centred_over_the_tagline(self):
+        """The owner, 2026-10-27: a small "notes" beside the name made the
+        lockup lopsided. The name is drawn alone, centred on the form."""
+        t = self.text
+        assert '"notes"' not in t and "$noteFont" not in t
+        assert "$x = ($WIDTH - $nameW) / 2" in t
+        assert "Starting Tessellate Notes" not in t
+
     def test_the_mark_is_decoded_before_the_window_is_shown(self):
         """The icon used to appear about a second after the window."""
         t = self.text

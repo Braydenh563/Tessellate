@@ -2,7 +2,7 @@
 
 <img src="frontend/icon-512.png" alt="Tessellate" width="120">
 
-# Tessellate <sub><sup>notes</sup></sub>
+# Tessellate
 
 <i>Your notes, pieced together</i><br>
 <sub>Formerly MemoryMap AI</sub>

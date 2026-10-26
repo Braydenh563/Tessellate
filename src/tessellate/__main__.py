@@ -112,9 +112,9 @@ _LOADING_HTML = """<!doctype html>
     gap: 18px; height: 100%; background: #12141c; color: #e7e9ee;
     font: 14px/1.4 -apple-system, "Segoe UI", system-ui, sans-serif;
   }
-  .mark { display: flex; align-items: center; gap: 12px; font-size: 18px; font-weight: 600; }
+  .mark { display: flex; flex-direction: column; align-items: center; gap: 10px; font-size: 18px; font-weight: 600; }
   .mark svg { width: 46px; height: 46px; display: block; }
-  .tagline { color: #9aa1ad; font-size: 12px; margin-top: -10px; }
+  .tagline { color: #9aa1ad; font-size: 12px; margin-top: -12px; }
   /* The step list, the same one scripts/splash.ps1 draws before this
      window exists, so the handoff from that window to this one looks
      like the same list carrying on rather than a restart. */
@@ -1741,7 +1741,7 @@ def _open_window_onto(port: int) -> None:
     from tessellate.core.config import resolved_data_dir
 
     window = webview.create_window(
-        "Tessellate Notes", url=url, width=1200, height=800, min_size=(420, 500), text_select=True
+        "Tessellate", url=url, width=1200, height=800, min_size=(420, 500), text_select=True
     )
     storage = resolved_data_dir() / "webview"
     storage.mkdir(parents=True, exist_ok=True)
@@ -1852,7 +1852,7 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
     _claim_notebook()
     _splash_status("Opening the window...")
     window = webview.create_window(
-        "Tessellate Notes",
+        "Tessellate",
         html=_loading_html(),
         width=1200,
         height=800,
