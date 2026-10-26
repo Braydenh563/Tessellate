@@ -172,5 +172,6 @@ def test_sketch_pad_never_draws_the_text_kebab():
     excluded = re.search(r'const SELECTION_POPUP_EXCLUDED =\s*"([^"]+)"', js).group(1)
     assert "#sketch-overlay" in excluded
     assert "#sketch-overlay" in re.search(r"function fieldSelection\(\)[\s\S]*?\n}", js).group(0)
-    start = re.search(r"function sketchStart\(event\) \{[\s\S]*?\n}", (Path(__file__).resolve().parents[1] / "frontend/js/sketch-pad.js").read_text(encoding="utf-8")).group(0)
-    assert "event.preventDefault()" in start
+    # The pad's press handler (inside its IIFE since the 10-26 rebuild).
+    start = re.search(r"function onDown\(e\) \{[\s\S]*?\n  \}", (Path(__file__).resolve().parents[1] / "frontend/js/sketch-pad.js").read_text(encoding="utf-8")).group(0)
+    assert "e.preventDefault()" in start

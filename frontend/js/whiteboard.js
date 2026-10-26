@@ -19,7 +19,7 @@
 // first.
 //
 // NOT included here: the "Quick Sketch" pad (`openSketch`/`closeSketch`/
-// `saveSketch`/`sketchPen`/... and the `#sketch-*` DOM ids), which stayed in
+// `saveSketch`, sketch-pad.js and its `.sp-*` markup), which stayed in
 // app.js. It looks related by name, the task that produced this split
 // flagged it explicitly for a call, but it is a separate, still-live Wave F
 // ("Platform") feature: a full-screen freehand pad that saves a PNG as a

@@ -1788,8 +1788,6 @@ for (const [id, key] of [["entry-title", "captureDraftTitle"], ["entry-tags", "c
 }
 
 $("sketch-btn").addEventListener("click", openSketch);
-$("sketch-close").addEventListener("click", closeSketch);
-$("sketch-save").addEventListener("click", saveSketch);
 // Wave H: dictation + read-aloud.
 $("mic-note").addEventListener("click", () =>
   toggleDictation($("mic-note"), $("entry-content"))

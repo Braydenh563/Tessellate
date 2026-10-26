@@ -78,8 +78,9 @@ ON_THE_GRAMMAR = {
     #: Library, Recordings (WORLD_CLASS_PLAN 28.5 row 6, Brief 80).
     "library-recordings",
     "library-skills",
-    #: The quick sketch pad's bar, inside its dialog (INBOX 839).
-    "sketch",
+    #: The quick sketch pad's bar left the markup in the 10-26 rebuild:
+    #: sketch-pad.js builds it, and test_sketch_pad.py plus the pad sweep
+    #: check it.
     "notes",
     "timeline",
     "reminders",

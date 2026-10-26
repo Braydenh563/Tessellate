@@ -667,36 +667,6 @@
 .row :is(h2, h3, h4).flush {
   margin: 0;
 }
-/* The pen swatches paint themselves from the colour they select, so the
-   value lives in one place per pen rather than two. */
-.sketch-color[data-color="#3b82f6"] {
-  background: #3b82f6;
-}
-/* Blue */
-.sketch-color[data-color="#ef4444"] {
-  background: #ef4444;
-}
-/* Red */
-.sketch-color[data-color="#22c55e"] {
-  background: #22c55e;
-}
-/* Green */
-.sketch-color[data-color="#eab308"] {
-  background: #eab308;
-}
-/* Yellow */
-.sketch-color[data-color="#a855f7"] {
-  background: #a855f7;
-}
-/* Purple */
-.sketch-color[data-color="#111827"] {
-  background: #111827;
-}
-/* Black */
-.sketch-color[data-color="#f9fafb"] {
-  background: #f9fafb;
-}
-/* White */
 /* The "N earlier records dropped" line above the log list. Styled as a
    caution rather than an error: the log is working, it is just not the whole
    story, and a red banner would read as a fault in the app being diagnosed. */
