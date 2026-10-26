@@ -2105,7 +2105,8 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
     def rank(f: Fact) -> tuple:
         words = set(f.sentence.words)
         hits = sum(1 for st in stems if composer._holds(st, words | f.view.filed_words | f.view.title_words))
-        return (bool(cue and cue.search(f.sentence.text)), hits, -f.sentence.order)
+        #: Between sources that say it equally well, the one the search ranked first.
+        return (bool(cue and cue.search(f.sentence.text)), hits, -f.view.rank, -f.sentence.order)
 
     return max(facts, key=rank) if facts else None
 
@@ -2183,8 +2184,19 @@ def _event_lead(out: _Out, lead: Fact, today: date) -> bool:
     return True
 
 
+class _WhenCue:
+    """What a "when" answer leads with: a habit's weekdays, or a sentence that
+    holds a day as the recogniser reads one ("Exam on 12 November", where the
+    old month pattern wanted "in November")."""
+
+    _DAYS = re.compile(r"\b(mon|tues|wednes|thurs|fri|satur|sun)days\b", re.I)
+
+    def search(self, text: str) -> bool:
+        return bool(self._DAYS.search(text)) or any(s.kind in ("date", "datetime", "range") for s in _spans(text, None))
+
+
 _SINGLE_CUES = {
-    "when": re.compile(r"\b(mon|tues|wednes|thurs|fri|satur|sun)days\b|\bin (jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*", re.I),
+    "when": _WhenCue(),
     "count": re.compile(r"\$\s?\d|\d"),
     "opinion": _RATING,
 }
