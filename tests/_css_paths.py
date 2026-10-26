@@ -114,6 +114,8 @@ CSS_FILES = [
     CSS_DIR / "sidebar-folds-lazy.css",
     #: The thrown companion's fates (companion-throw.js loads it, D6).
     CSS_DIR / "companion-throw-lazy.css",
+    #: The guided equation editor (lazy-entries.js `mathEditor`, DOCUMENTS_PLAN 16).
+    CSS_DIR / "math-editor-lazy.css",
 ]
 
 

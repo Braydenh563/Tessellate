@@ -22,6 +22,8 @@ Object.assign(LAZY_MODULES, {
   bgArt: ["/js/bg-art.js"],
   //: Ask, Chat and the Guide's screen context (screen-context.js's header).
   screenContext: ["/js/screen-context.js"],
+  //: The guided equation editor (math-editor.js's header; DOCUMENTS_PLAN 16).
+  mathEditor: ["/css/math-editor-lazy.css", "/js/math-editor.js"],
 });
 installStandIns({
   settingsPanes: ["renderTasks", "renderTaskHistory", "renderHealthBlock", "renderSamplingRows", "renderPersonas", "savePersonaList"],
@@ -32,4 +34,15 @@ installStandIns({
   dashLazy: ["renderOrphanNotesWidget", "renderNightWidget", "renderDayDigest", "dashPatternBit", "dashTodayLine"],
   phoneMore: ["openPhoneMoreSheet"],
   screenContext: ["screenContext"],
+  mathEditor: ["openMathEditor"],
+});
+//: Alt+= opens the equation editor, as in Word, in the boxes that write
+//: markdown and in the Ask box (math-editor.js).
+document.addEventListener("keydown", (event) => {
+  if (!event.altKey || event.ctrlKey || event.metaKey || event.code !== "Equal") return;
+  const box = event.target;
+  const kind = typeof editorSurfaceKind === "function" ? editorSurfaceKind(box) : null;
+  if (box?.id !== "question" && !["note", "document", "chat", "board"].includes(kind)) return;
+  event.preventDefault();
+  openMathEditor({ target: box });
 });

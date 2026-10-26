@@ -1,0 +1,108 @@
+/* math-editor-lazy.css: the guided equation editor (math-editor.js;
+   DOCUMENTS_PLAN row 16). Loaded with it (lazy-entries.js
+   `LAZY_MODULES.mathEditor`), never at boot.
+
+   The shell is the help popover's, as the icon picker's is, so this file only
+   lays out what is inside it: the mode, the TeX box, the preview, the search,
+   the palette scroller and the foot, in one column that fits a phone. */
+
+.math-editor.help-popover {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: min(34rem, calc(100vw - var(--space-6)));
+  max-height: min(44rem, calc(100vh - var(--space-8)));
+}
+
+/* Opened from a "/" row, a key or a closed menu: the middle of the window. */
+.math-editor.math-editor-centred {
+  left: 50%;
+  top: var(--space-8);
+  translate: -50% 0;
+}
+
+.math-editor-lede,
+.math-editor-empty {
+  margin: 0;
+  font-size: var(--text-xs);
+}
+
+/* The kind strip spans the panel under its head, as the icon picker's does. */
+.math-editor-mode {
+  align-self: stretch;
+}
+
+.math-editor-input {
+  width: 100%;
+  min-height: calc(var(--control-h) * 1.6);
+  resize: vertical;
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: var(--text-sm);
+}
+
+/* The live preview: the renderer's own MathML, centred, scrolling sideways
+   inside itself when a long formula would push the panel wider. */
+.math-editor-preview {
+  display: grid;
+  place-items: center;
+  min-height: calc(var(--control-h) * 1.6);
+  padding: var(--space-2) var(--space-3);
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-inner);
+  color: var(--text);
+  font-size: var(--text-lg);
+}
+
+.math-editor-list {
+  flex: 1 1 auto;
+  min-height: min(8rem, 30vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: var(--radius-inner);
+}
+
+/* A group's name, pinned while its tiles scroll, as the icon picker's are. */
+.math-editor-group {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: var(--space-2) 0 var(--space-1);
+  background: var(--modal-bg-opaque);
+  color: var(--muted);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.math-editor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(2.5rem, 1fr));
+  gap: var(--space-1);
+}
+
+/* Structures draw a whole formula, so their tiles are wider. */
+.math-editor-grid-wide {
+  grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr));
+}
+
+.math-editor .math-editor-tile {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: var(--target-min);
+  padding: var(--space-1);
+  overflow: hidden;
+  font-size: var(--text-base);
+}
+
+.math-editor-tile math {
+  pointer-events: none;
+}
+
+.math-editor-glyph {
+  line-height: 1;
+}
+
+.math-editor-foot {
+  margin: 0;
+}
