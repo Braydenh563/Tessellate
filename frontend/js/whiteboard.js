@@ -822,6 +822,7 @@ function wbSyncGridToTransform(transform) {
 //: `tests/test_wb_navigator_cost.py` keeps the two lists the same.
 const WB_INV_ZOOM_GRIPS = [
   ".wb-object-frame .wb-frame-title",
+  ".wb-map-edge-end",
   ".wb-comment-pin",
   ".wb-lock-pin",
   ".wb-resize-handle",
