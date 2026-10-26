@@ -18214,6 +18214,7 @@ async function createNewBoard(preset = null, { reveal = false } = {}) {
       });
       window.wbLastCreatedBoard = board;
       await openWhiteboardBoard(board.id);
+      if (board.type === "map") await wbMapTidyFresh();
       wbBoardMadeStep(board);
       wbZoomToFit({ animate: false });
       toast(`"${board.title}" started from a template.`);

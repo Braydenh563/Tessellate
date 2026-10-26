@@ -2491,7 +2491,7 @@ MORE_TOPICS.extend([
             "straight lines on a map", "map line style", "lines arent straight", "curved lines",
             "elbow lines", "which side a line leaves", "side of a topic", "line end side",
             "pin a line to a side", "topic shape", "hexagon topic", "diamond topic", "cloud topic",
-            "circle topic", "core idea shape",
+            "circle topic", "chevron topic", "underline topic", "core idea shape",
         ),
         "body": (
             "Beside a map's Layout picker, the line style picker draws every line "
@@ -2502,7 +2502,7 @@ MORE_TOPICS.extend([
             "layout, and it stays on that side when either topic moves. "
             "Double-click the dot, or the topic's menu, Lines, Line ends: back to "
             "Auto, to let the layout choose again. A topic's Box picker offers "
-            "Rounded, Pill, Box, Ellipse, Circle, Hexagon, Diamond, Cloud and "
+            "Rounded, Pill, Box, Ellipse, Circle, Hexagon, Diamond, Cloud, Chevron, Underline and "
             "Plain, the words kept inside the shape. Ctrl+Z undoes each change."
         ),
         "badge": {"label": "Library", "tab": "library"},

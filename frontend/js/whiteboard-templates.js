@@ -38,6 +38,39 @@ function wbThumbRound(v) {
   return Math.round(v * 10) / 10;
 }
 
+//: **How a template's topics are drawn, read from the template's own data**
+//: (K15, the owner: the Career plan preview showed a root box over four
+//: chevron topics, each with two bars, and the map it built was plain boxes).
+//: The root's shape is `payload.root.shape`, a branch's and a leaf's are their
+//: nodes' `data.shape`: the same values the map draws, so the picture and the
+//: built map cannot disagree. A saved branch that carries none is the default
+//: rounded card.
+function wbThumbLook(entry, branches) {
+  const first = branches[0] || {};
+  return {
+    root: entry?.payload?.root?.shape || "rounded",
+    branch: first.data?.shape || "rounded",
+    leaf: branches.find((b) => b.children?.length)?.children[0].data?.shape || "rounded",
+  };
+}
+
+//: One topic as the picture draws it, by its shape: the box shapes a card is
+//: (rounded, box, pill, ellipse), the phase arrow, the bar a word sits on
+//: (underline) and nothing but the word (plain, drawn as a dot).
+function wbThumbShapePart(shape, cx, cy, w, h) {
+  const R = wbThumbRound;
+  const x = cx - w / 2, y = cy - h / 2;
+  if (shape === "ellipse") return { tag: "ellipse", a: { cx: R(cx), cy: R(cy), rx: R(w / 2), ry: R(h / 2) } };
+  if (shape === "chevron") {
+    const tip = Math.min(2.5, w / 4);
+    return { tag: "path", a: { d: `M ${R(x)} ${R(y)} L ${R(x + w - tip)} ${R(y)} L ${R(x + w)} ${R(cy)} L ${R(x + w - tip)} ${R(y + h)} L ${R(x)} ${R(y + h)} Z` } };
+  }
+  if (shape === "underline") return { tag: "rect", a: { x: R(x), y: R(y + h - 1.2), width: R(w), height: 1.2, rx: 0.6 } };
+  if (shape === "none") return { tag: "circle", a: { cx: R(cx), cy: R(cy), r: 1.5 } };
+  const rx = shape === "pill" ? h / 2 : shape === "rect" ? 0 : Math.min(2, h / 2);
+  return { tag: "rect", a: { x: R(x), y: R(y), width: R(w), height: R(h), rx: R(rx) } };
+}
+
 //: **A map template's picture, drawn from its own tree** (the owner: "these
 //: all look the same"; every tile was one root and three branches). The
 //: branch count, each branch's children and the template's `shape` decide
@@ -52,6 +85,7 @@ function wbMapThumbSpec(entry) {
   const kids = branches.map((b) => Math.min(4, (b.children || []).length));
   const n = Math.max(1, branches.length);
   const shape = ["radial", "two-sided", "fishbone", "fork", "phases", "tiers"].includes(entry?.shape) ? entry.shape : "tree";
+  const look = wbThumbLook(entry, branches);
   const lines = [];
   const boxes = [];
   //: **Each branch wears its own colour** (a map's branches are coloured by
@@ -62,10 +96,13 @@ function wbMapThumbSpec(entry) {
   let hue = -1;
   const tone = (cls) => (hue < 0 ? cls : `${cls} wb-thumb-b${hue % 10}`);
   const line = (d) => lines.push({ tag: "path", cls: tone("wb-thumb-line"), a: { d } });
+  //: The shape a part is drawn in is its role's: the root's, a leaf's, or a
+  //: branch's.
+  const shapeOf = (cls) => (cls === "wb-thumb-root" ? look.root : cls.includes("leaf") ? look.leaf : look.branch);
   const box = (cx, cy, w, h, cls = "wb-thumb-node") => boxes.push({
-    tag: "rect", cls: cls === "wb-thumb-root" ? cls : tone(cls), a: { x: R(cx - w / 2), y: R(cy - h / 2), width: R(w), height: R(h), rx: R(Math.min(2, h / 2)) },
+    ...wbThumbShapePart(shapeOf(cls), cx, cy, w, h), cls: cls === "wb-thumb-root" ? cls : tone(cls),
   });
-  const leaf = (cx, cy) => boxes.push({ tag: "circle", cls: tone("wb-thumb-leaf"), a: { cx: R(cx), cy: R(cy), r: 1.5 } });
+  const leaf = (cx, cy) => box(cx, cy, 6, 2.6, look.leaf === "none" ? "wb-thumb-leaf" : "wb-thumb-leafbox");
   //: A stroke inside a box where its words would be, so a tier reads as labelled.
   const label = (cx, cy, w) => boxes.push({ tag: "path", cls: "wb-thumb-label", a: { d: `M ${R(cx - w / 2)} ${R(cy)} L ${R(cx + w / 2)} ${R(cy)}` } });
   if (!branches.length) {
@@ -151,10 +188,9 @@ function wbMapThumbSpec(entry) {
     line(`M 32 9.5 L 32 13 M ${R(centres[0])} 13 L ${R(centres[n - 1])} 13`);
     branches.forEach((_, i) => {
       hue = i;
-      const x = 2 + i * (w + 1.5), cx = centres[i];
+      const cx = centres[i];
       line(`M ${R(cx)} 13 L ${R(cx)} 17`);
-      const notch = i ? 2.5 : 0;
-      boxes.push({ tag: "path", cls: tone("wb-thumb-node"), a: { d: `M ${R(x)} 17 L ${R(x + w - 2.5)} 17 L ${R(x + w)} 21.5 L ${R(x + w - 2.5)} 26 L ${R(x)} 26 L ${R(x + notch)} 21.5 Z` } });
+      box(cx, 21.5, w, 9);
       for (let k = 0; k < kids[i]; k += 1) box(cx, 30 + k * 4, w * 0.6, 2.4, "wb-thumb-leafbox");
     });
     box(32, 6, 16, 7, "wb-thumb-root");

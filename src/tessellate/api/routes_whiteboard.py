@@ -135,7 +135,7 @@ MAP_THEME_FIELDS: dict[str, frozenset | type] = {
     "align": frozenset({"left", "center", "right"}),
     "bold": bool,
     "italic": bool,
-    "shape": frozenset({"pill", "rect", "ellipse", "none", "circle", "hexagon", "diamond", "cloud"}),
+    "shape": frozenset({"pill", "rect", "ellipse", "none", "circle", "hexagon", "diamond", "cloud", "chevron", "underline"}),
     "spine": frozenset({"dashed", "none"}),
     "edge_style": frozenset({"curve", "elbow", "straight"}),
     "edge_dashed": bool,
@@ -166,7 +166,7 @@ MAP_LEVEL_FIELDS: dict[str, frozenset | type] = {
     "font_size": int,
     "bold": bool,
     "italic": bool,
-    "shape": frozenset({"pill", "rect", "ellipse", "none", "rounded", "circle", "hexagon", "diamond", "cloud"}),
+    "shape": frozenset({"pill", "rect", "ellipse", "none", "rounded", "circle", "hexagon", "diamond", "cloud", "chevron", "underline"}),
     "spine": frozenset({"dashed", "none", "solid"}),
     "fill": frozenset({"solid", "tint", "none"}),
     "edge_width": frozenset({"thin", "thick", "normal"}),
@@ -482,7 +482,7 @@ class WhiteboardObjectData(BaseModel):
     #: offered to every topic rather than only to a core one: a shape that
     #: appears and disappears from the picker depending on another toggle is
     #: a second rule to remember, and the three shapes are all just a radius.
-    shape: str | None = Field(default=None, pattern="^(pill|rect|ellipse|none|rounded|circle|hexagon|diamond|cloud)$")
+    shape: str | None = Field(default=None, pattern="^(pill|rect|ellipse|none|rounded|circle|hexagon|diamond|cloud|chevron|underline)$")
     #: A topic's effect (MINDMAP_PLAN §14.4's topic effects): a soft shadow
     #: or a glow in its branch colour; `none` keeps one topic plain on a
     #: level that has one.

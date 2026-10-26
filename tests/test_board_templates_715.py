@@ -141,7 +141,7 @@ def test_no_two_map_pictures_are_the_same():
     template's own tree and shape, so no two produce the same drawing."""
     source = (JS / "whiteboard-templates.js").read_text(encoding="utf-8")
     maps = _set("maps")
-    out = json.loads(_node(source, ["wbThumbRound", "wbMapThumbSpec"], f"{json.dumps(maps)}.map((m) => wbMapThumbSpec(m))"))
+    out = json.loads(_node(source, ["wbThumbRound", "wbThumbLook", "wbThumbShapePart", "wbMapThumbSpec"], f"{json.dumps(maps)}.map((m) => wbMapThumbSpec(m))"))
     drawn = [json.dumps(spec["parts"]) for spec in out]
     assert len(set(drawn)) == len(drawn), [m["key"] for m, d in zip(maps, drawn) if drawn.count(d) > 1]
     # And the shapes are the ones asked for: a fishbone's spine, a radial's
@@ -161,7 +161,7 @@ def test_a_map_pictures_branches_wear_their_own_colours():
     root and the labels stay neutral; the colours live in library-lazy.css."""
     source = (JS / "whiteboard-templates.js").read_text(encoding="utf-8")
     maps = _set("maps")
-    out = json.loads(_node(source, ["wbThumbRound", "wbMapThumbSpec"], f"{json.dumps(maps)}.map((m) => wbMapThumbSpec(m))"))
+    out = json.loads(_node(source, ["wbThumbRound", "wbThumbLook", "wbThumbShapePart", "wbMapThumbSpec"], f"{json.dumps(maps)}.map((m) => wbMapThumbSpec(m))"))
     for entry, spec in zip(maps, out):
         tones = {c for p in spec["parts"] for c in p["cls"].split() if re.fullmatch(r"wb-thumb-b\d", c)}
         branches = len(entry.get("payload", {}).get("nodes", []))
