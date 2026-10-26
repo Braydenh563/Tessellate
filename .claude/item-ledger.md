@@ -27,3 +27,5 @@ date | item | type | rung | rework | note
 2026-10-19 | INBOX 1322b Atlas micro | ui | sonnet | 0 | 
 2026-10-19 | INBOX 1324 composer roles | feature | sonnet | 0 | 
 2026-10-19 | mobile1314 phone bar and More sheet | ui | opus | 0 | 
+2026-10-26 | composer round 3: state, tag, season, month-part counts | feature | sonnet | 0 | 
+2026-10-26 | CodeQL regex alerts in composer heading and picture readers | bugfix | opus | 1 | 
