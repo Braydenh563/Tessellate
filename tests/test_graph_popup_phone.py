@@ -3,7 +3,10 @@
 The owner: the buttons "wrap onto like 3 different rows when on phone", and
 "i have no clue what the buttons do as I cant hover over them". The row is one
 line of words plus a kebab where a finger is the pointer, and the icons-only
-row where a tooltip can be read. DOM behaviour is measured by
+row where a tooltip can be read. INBOX 1400 (the owner: the popups "could be
+improved", the tools "aren't really easy to understand") moved the intent:
+every width now has worded buttons and a kebab, four words where there is
+room (Open, Focus, Pin, Link), two on a phone. DOM behaviour is measured by
 `scratchpad/ui-sweeps/graphpopupphone.js`; these pin the source shape."""
 
 import re
@@ -25,20 +28,21 @@ def test_the_compact_row_is_two_worded_buttons_and_a_kebab() -> None:
     assert "GRAPH_POPUP_COMPACT" in GRAPH
     assert re.search(r'GRAPH_POPUP_COMPACT = "\(max-width: 599\.98px\), \(hover: none\)"', GRAPH)
     assert "kebabMenu(" in body, "the overflow is the app's one menu recipe"
-    assert 'new Set(["open", "link"])' in body, "one or two actions keep a button"
-    assert "ph:${a.icon} ${a.key" in body, "the shown buttons carry their word"
+    assert '["open", "link"]' in body, "on a phone two actions keep a button"
+    assert '["open", "focus", "pin", "link"]' in body, "with room, the four moves a map is for"
+    assert "ph:${a.icon} ${a.short || a.word}" in body, "the shown buttons carry their word"
 
 
 def test_every_action_has_a_word_and_a_title_in_one_list() -> None:
     body = _body("graphPopupActionList")
     keys = re.findall(r'key: "(\w+)"', body)
-    assert keys == ["open", "similar", "trace", "grow", "focus", "link", "remind", "favourite", "bin"]
-    assert len(re.findall(r"\bword:", body)) == 9 and len(re.findall(r"\btitle:", body)) == 9
+    assert keys == ["open", "similar", "trace", "grow", "focus", "pin", "link", "remind", "favourite", "bin"]
+    assert len(re.findall(r"\bword:", body)) == 10 and len(re.findall(r"\btitle:", body)) == 10
     assert "danger: true" in body, "the bin stays the red row"
 
 
 def test_the_compact_row_never_wraps() -> None:
-    rule = re.search(r"\.graph-popup-actions\.is-compact \{([^}]*)\}", CSS)
+    rule = re.search(r"\n\.graph-popup-actions \{([^}]*)\}", CSS)
     assert rule and "flex-wrap: nowrap" in rule.group(1)
 
 

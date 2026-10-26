@@ -376,6 +376,22 @@ const GC_EDGE_TINTED = { link: 0.55, thread: 0.6, entity: 0.55, document: 0.55 }
 //: kind's width and opacity (the line pass in `gcDraw`, INBOX 693).
 const GC_CROSS_WIDTH = 0.65;
 const GC_CROSS_ALPHA = 0.5;
+//: **A hub's spokes are straight and quiet** (INBOX 1400 and 1306, the owner:
+//: "a brown hub with many crossing edges", "feels very messy"). On the 36-note
+//: seed one note held 24 of 64 links and 39 of 64 crossings, its spokes drawn
+//: as 24 bows fanning across every cluster. A note is a hub at
+//: `gcHubSpokeMin` links (three times the map's mean, never under
+//: `GC_HUB_SPOKES`); its lines run straight, so they read as rays from one
+//: place, and a ray to another category is drawn at `GC_HUB_SPOKE_ALPHA` of
+//: the quiet bridge, until the pointer is on the hub or its far end.
+const GC_HUB_SPOKES = 8;
+const GC_HUB_SPOKE_ALPHA = 0.55;
+function gcHubSpokeMin(degrees) {
+  const list = Array.from(degrees || []).filter((d) => Number.isFinite(d));
+  if (!list.length) return Infinity;
+  const mean = list.reduce((a, b) => a + b, 0) / list.length;
+  return Math.max(GC_HUB_SPOKES, Math.ceil(mean * 3));
+}
 // GRAPH-SIM-BEGIN
 //: **Similarity is a backbone, not every pair** (INBOX 412, the owner: "when
 //: I tick similarity on the graph, this happens, is there a way to make it
@@ -851,7 +867,7 @@ function gcArrows(s = gcTab) {
 //: the edge keeps for its render. Every other caller gets a fresh point.
 function gcBowPoint(a, b, out = null, side = null) {
   const point = out || { x: 0, y: 0 };
-  if (a._straight || (a._cluster != null && a._cluster !== b._cluster)) {
+  if (a._straight || a._hub || b._hub || (a._cluster != null && a._cluster !== b._cluster)) {
     point.x = (a.x + b.x) / 2;
     point.y = (a.y + b.y) / 2;
     return point;
@@ -903,7 +919,7 @@ function gcEdgeLook(edge, a, b, simLo, simHi, epoch) {
     ((a._cluster != null && a._cluster !== b._cluster) ||
       (a._bridgeCat != null && b._bridgeCat != null && a._bridgeCat !== b._bridgeCat));
   edge._quietStyle = edge._cross
-    ? { ...style, width: style.width * GC_CROSS_WIDTH, alpha: style.alpha * GC_CROSS_ALPHA }
+    ? { ...style, width: style.width * GC_CROSS_WIDTH, alpha: style.alpha * GC_CROSS_ALPHA * (a._hub || b._hub ? GC_HUB_SPOKE_ALPHA : 1) }
     : style;
 }
 
@@ -5450,6 +5466,8 @@ async function renderGraphCanvas(s = gcTab) {
     node._bridgeCat = !s.tree && gcIsNote(node) ? node.category || "" : null;
     node._straight = Boolean(shape) && shape !== "organic";
   }
+  const hubMin = gcHubSpokeMin(nodes.filter((node) => !node.isGroup).map((node) => node._links));
+  for (const node of nodes) node._hub = !s.tree && !node.isGroup && node._links >= hubMin;
   //: Titles two notes or more share (INBOX 1300 C41, two "Ice Breakers:"
   //: with nothing to tell them apart): `gcLabelText` adds where each is.
   const titleCount = new Map();

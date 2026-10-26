@@ -2228,7 +2228,7 @@ TOPIC_META: dict[str, dict] = {
     "sticky-notes": {"title": "Sticky notes and text boxes", "path": "A board's tool dock, Add"},
     "callouts": {"title": "Callouts", "path": "Library tab, Documents"},
     "graph-controls": {"title": "Graph keys and controls", "path": "Graph tab"},
-    "graph-display": {"title": "More graph controls", "path": "Graph tab, the gear"},
+    "graph-display": {"title": "More graph controls", "path": "Graph tab, Options"},
     "properties": {"title": "Note properties and types", "path": "a note's ⋯, Properties; or the command palette, Note types"},
     "entities": {"title": "People and things", "path": "Graph tab, an entity; or the command palette, People and things"},
     "chat-controls": {"title": "Chat keys and controls", "path": "Chat tab"},

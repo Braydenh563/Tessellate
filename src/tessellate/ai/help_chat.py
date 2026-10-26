@@ -187,7 +187,7 @@ HELP_TOPICS: list[dict] = [
     },
     {
         "id": "graph",
-        "keywords": ("graph", "concept map", "mind map", "mindmap", "network", "connected to", "untouched since", "filter the graph"),
+        "keywords": ("graph", "concept map", "mind map", "mindmap", "network", "connected to", "untouched since", "filter the graph", "note panel", "node panel", "hub"),
         "body": (
             "The Graph tab shows notes as a force-directed map, links and threads "
             "drawn between them, plus optional AI similarity lines. Search "
@@ -199,7 +199,9 @@ HELP_TOPICS: list[dict] = [
             "The Graph's search box reads filters as well as words: "
             "\"connected to Harbor\", \"untouched since June\", \"tagged work\", "
             "\"pinned\", \"with pictures\", \"edited last week\"; any other "
-            "words still have to match."
+            "words still have to match. Click a note for its panel: Open, Focus, "
+            "Pin and Link are at its foot and the ⋯ holds the rest. A hub's lines "
+            "run straight and faint until you point at it."
         ),
         "badge": {"label": "Graph", "tab": "graph"},
     },
@@ -1982,7 +1984,7 @@ HELP_TOPICS.extend(
                     "click a legend colour to hide that category. Shift and drag on empty map boxes notes, "
                     "and the selection bar can Pin, Unpin, Tag, Link together, Unlink (all undoable with Ctrl+Z) or make"
                     " a Mind map of them, built from their links round the picked or most connected note, "
-                    "with Open on the notice that follows. Display options, the gear, opens with View: Layout"
+                    "with Open on the notice that follows. Options (the gear) opens with View: Layout"
                     " (Force, Tree, Radial, Arc or Treemap; the dock names a fixed one), "
                     "Shape (Organic, Clusters or Galaxy; the Force layout's own, dimmed under the others), Colour, Size, Trace, which "
                     "finds how two notes connect, and Legend, which hides the key. Then Physics (Unpin all, "
@@ -2013,7 +2015,7 @@ HELP_TOPICS.extend(
                 "note type", "colour by type",
             ),
             "body": (
-                "More graph controls, in the gear. Show adds Tags (a node per tag), "
+                "More graph controls, under Options. Show adds Tags (a node per tag), "
                 "Attachments (a node per file or picture) and Unwritten links: each "
                 "[[name]] no note answers to is a faint node, and clicking it writes "
                 "that note, named in its heading, linked from every note that named "

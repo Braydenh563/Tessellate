@@ -475,9 +475,24 @@ function tuning(params) {
     //: aspect, so the cloud comes out the map's shape; a landscape map keeps
     //: the pulls it had. Capped at 4x, past which a column of notes one
     //: node wide is not a map.
-    pullX: 0.015 * centreScale(nodes.length) * pull * portraitPull(),
-    pullY: 0.02 * centreScale(nodes.length) * pull,
+    pullX: 0.015 * centreScale(nodes.length) * pull * portraitPull() / Math.sqrt(landscapePull()),
+    pullY: 0.02 * centreScale(nodes.length) * pull * Math.sqrt(landscapePull()),
   };
+}
+
+//: **A landscape map gets a landscape layout too** (INBOX 1400, the owner:
+//: the force view "feels very messy"). The 430 rule shaped portrait only, so
+//: on a 1440x900 desktop the 36-note seed came out 0.48 of the canvas wide
+//: and 0.80 tall (`gm.js` in the 1026 remaining file): the fit was set by the
+//: height and the names had half the width to share. Here the y pull rises
+//: and the x pull falls by the same root, so the cloud's overall size holds
+//: and only its shape changes, aimed at the canvas's shape and capped at
+//: `LANDSCAPE_PULL_MAX` (past which a band of notes is not a map).
+const LANDSCAPE_PULL_MAX = 3;
+function landscapePull() {
+  const aspect = world && Number.isFinite(world.aspect) && world.aspect > 0 ? world.aspect : 1;
+  if (aspect >= 1) return 1;
+  return Math.min(LANDSCAPE_PULL_MAX, Math.max(1, (0.015 / 0.02) / (aspect * aspect)));
 }
 
 function portraitPull() {
