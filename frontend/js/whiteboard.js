@@ -19126,6 +19126,12 @@ function wbOpenSketchLabelEditor(sketch, parsed, { box, ink, multiline, max, nam
     const before = WB_KIND_INFO.sketch.payload(sketch);
     await wbSaveSketchProps(sketch, { label: text || undefined });
     wbPushUndo({ action: "move", kind: "sketch", id: sketch.id, before });
+    //: A shape's words that do not fit make the shape taller, as one step
+    //: with the words (the same grow as "Grow to fit the words").
+    if (text && wbShapeLabelKind(parsed) && !parsed.label_fit) {
+      renderWhiteboardNow();
+      await wbGrowShapeToLabel(sketch);
+    }
     wbScheduleRender();
     wbAnnounce(text ? said[0] : said[1]);
   };

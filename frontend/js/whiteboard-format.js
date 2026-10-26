@@ -1174,6 +1174,33 @@ function wbAutoSizeFactors(text, area) {
   return { sx: grow(text.w, area.w), sy: grow(text.h, area.h) };
 }
 
+//: One shape grown until its words fit (never shrinks), from its top-left
+//: corner, keeping its proportions: the words wrap to the shape's width, so
+//: growing only the height made a diamond 733px tall for one sentence; both
+//: sides grow by the root of what is missing and the fit is measured again
+//: (a few rounds at most). Returns whether it changed. Run by the command
+//: and, on its own, when a label is typed into a shape: 80 characters in a
+//: 100x60 rectangle used to be drawn 160px tall across the border.
+async function wbGrowShapeToLabel(sketch) {
+  let changed = false;
+  for (let round = 0; round < 4; round += 1) {
+    const group = document.querySelector(`.sketch-group[data-id="${sketch.id}"]`);
+    const label = group?.querySelector(":scope > .sketch-label");
+    const placed = label ? wbShapeLabelPlace(group, label) : null;
+    const parsed = wbSketchParsedData(sketch);
+    const bbox = parsed?.d ? wbPathBBox(parsed.d) : null;
+    if (!placed || !bbox) break;
+    const words = label.getBBox();
+    const { sx, sy } = wbAutoSizeFactors({ w: words.width, h: words.height }, placed.area);
+    if (sx === 1 && sy === 1) break;
+    const f = Math.max(sx, Math.sqrt(sy), 1.05);
+    await wbSaveSketchD(sketch, wbTransformPathD(parsed.d, { sx: f, sy: f, anchorX: bbox.minX, anchorY: bbox.minY }));
+    changed = true;
+    renderWhiteboardNow();
+  }
+  return changed;
+}
+
 //: Grow to fit: a shape taller (or wider, for one long word) until its words
 //: fit; a text box or a note card taller until its text does. Never shrinks.
 function wbAutoSizeSelection() {
@@ -1182,16 +1209,7 @@ function wbAutoSizeSelection() {
     for (const e of wbFmtEntries().filter((x) => !wbIsLocked(x.kind, x.item) && x.bbox)) {
       const kind = wbFmtKind(e);
       if (kind === "shape") {
-        const group = document.querySelector(`.sketch-group[data-id="${e.id}"]`);
-        const label = group?.querySelector(":scope > .sketch-label");
-        const placed = label ? wbShapeLabelPlace(group, label) : null;
-        if (!placed) continue;
-        const words = label.getBBox();
-        const { sx, sy } = wbAutoSizeFactors({ w: words.width, h: words.height }, placed.area);
-        const parsed = wbSketchParsedData(e.item);
-        if (sx === 1 && sy === 1) continue;
-        await wbSaveSketchD(e.item, wbTransformPathD(parsed.d, { sx, sy, anchorX: e.bbox.minX, anchorY: e.bbox.minY }));
-        grown += 1;
+        if (await wbGrowShapeToLabel(e.item)) grown += 1;
       } else if (kind === "text" || kind === "note") {
         const el = wbItemElement(e.kind, e.id);
         if (!el) continue;
