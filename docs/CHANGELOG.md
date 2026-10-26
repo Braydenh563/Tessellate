@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Settings: Extras no longer jumps when its package list arrives; its placeholders take the list's size.
 - Boards: an empty text box or sticky shows its typing caret again.
 - Start a timer and Start a stopwatch now show in Tools and features, the shortcuts dialog's Tools list and the "/" menus, not only the command palette.
 - Ask: under a model's answer a From your notes line opens the quoted answer to the same question beside it (one fetch, shut and opened again freely, not saved to Ask history), and what the composer says first (the personal digest, a place in the app) is drawn as a card above the AI text instead of being dropped.

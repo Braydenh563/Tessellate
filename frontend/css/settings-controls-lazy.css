@@ -116,3 +116,6 @@
 .shortcut-list .shortcut-key:is(:hover, :focus-visible) kbd {
   border-color: var(--accent);
 }
+
+/* An Extras skeleton is about a package row's height (K21). */
+.extras-list > .skeleton { height: calc(var(--control-h-lg) * 5.5); }

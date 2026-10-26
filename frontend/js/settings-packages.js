@@ -32,8 +32,10 @@ async function renderExtras() {
   if (!list) return;
   //: Skeleton rows until the catalogue answers (INBOX 596, the owner: "some
   //: skeleton loaders are missing"): only into an empty list, so the poll
-  //: that redraws it while a package installs never covers its rows.
-  showSkeletons(list, 3, "li");
+  //: that redraws it while a package installs never covers its rows. As
+  //: many as the catalogue had, each about a row's height, so the rows that
+  //: land do not push the page down (K21: 3 x 51px held 12 rows, 2163px).
+  showSkeletons(list, packagesUi.body?.extras.length || 12, "li");
   const body = await apiJson("/extras", { silent: true }).catch(() => null);
   clearSkeletons(list);
   if (!body) return;

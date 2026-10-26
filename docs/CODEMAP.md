@@ -5557,21 +5557,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `packagesBulk` | frontend/js/settings-packages.js:532 |
-| `packagesBulkFromBar` | frontend/js/settings-packages.js:580 |
-| `packagesCan` | frontend/js/settings-packages.js:191 |
-| `packagesInstallOne` | frontend/js/settings-packages.js:479 |
-| `packagesPost` | frontend/js/settings-packages.js:516 |
-| `packagesReinstallOne` | frontend/js/settings-packages.js:496 |
-| `packagesRemoveOne` | frontend/js/settings-packages.js:506 |
-| `packagesRenderBundles` | frontend/js/settings-packages.js:201 |
-| `packagesRow` | frontend/js/settings-packages.js:326 |
-| `packagesRowMenu` | frontend/js/settings-packages.js:454 |
-| `packagesStatusLine` | frontend/js/settings-packages.js:176 |
-| `packagesSyncBar` | frontend/js/settings-packages.js:559 |
+| `packagesBulk` | frontend/js/settings-packages.js:534 |
+| `packagesBulkFromBar` | frontend/js/settings-packages.js:582 |
+| `packagesCan` | frontend/js/settings-packages.js:193 |
+| `packagesInstallOne` | frontend/js/settings-packages.js:481 |
+| `packagesPost` | frontend/js/settings-packages.js:518 |
+| `packagesReinstallOne` | frontend/js/settings-packages.js:498 |
+| `packagesRemoveOne` | frontend/js/settings-packages.js:508 |
+| `packagesRenderBundles` | frontend/js/settings-packages.js:203 |
+| `packagesRow` | frontend/js/settings-packages.js:328 |
+| `packagesRowMenu` | frontend/js/settings-packages.js:456 |
+| `packagesStatusLine` | frontend/js/settings-packages.js:178 |
+| `packagesSyncBar` | frontend/js/settings-packages.js:561 |
 | `renderExtras` | frontend/js/settings-packages.js:30 |
-| `voiceModelsPaint` | frontend/js/settings-packages.js:99 |
-| `voiceModelsWire` | frontend/js/settings-packages.js:123 |
+| `voiceModelsPaint` | frontend/js/settings-packages.js:101 |
+| `voiceModelsWire` | frontend/js/settings-packages.js:125 |
 
 ### frontend/js/settings-rows.js (35)
 
@@ -10446,7 +10446,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/reply-kit-lazy.css | 533 |
 | frontend/css/reveal-lazy.css | 10 |
 | frontend/css/search-lazy.css | 153 |
-| frontend/css/settings-controls-lazy.css | 118 |
+| frontend/css/settings-controls-lazy.css | 121 |
 | frontend/css/settings-data-lazy.css | 60 |
 | frontend/css/sidebar-folds-lazy.css | 28 |
 | frontend/css/sketch-pad.css | 686 |
