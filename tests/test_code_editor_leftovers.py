@@ -121,3 +121,15 @@ def test_the_printed_code_is_monospaced_with_numbers_and_keeps_a_line_whole():
     assert text and text.group(0).count("monospace") == 1 and "ui-monospace" not in text.group(0)
     number = re.search(r"body\.printing-doc \.doc-code-print-no \{[^}]*\}", css)
     assert number and "text-align: right" in number.group(0) and "tabular-nums" in number.group(0)
+
+
+# --- 4. the recordings waveform ---------------------------------------------
+
+
+def test_the_recording_waveform_is_taller_than_a_touch_target_and_stays_on_tokens():
+    css = _css("meetings-lazy.css")
+    rule = re.search(r"\n\.recording-wave \{[^}]*\}", css).group(0)
+    assert "height: calc(var(--control-h-touch) * 1.6)" in rule
+    assert not re.search(r"height:\s*\d+px", rule)
+    phone = re.search(r"@media \(max-width: 599\.98px\) \{\s*\.recording-wave \{[^}]*\}", css)
+    assert phone and "calc(var(--control-h-touch) * 1.2)" in phone.group(0)
