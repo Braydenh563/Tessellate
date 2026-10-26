@@ -91,6 +91,20 @@ Q_COUNTS = [
     ("how many notes did I write in October", r"\b5 notes"),
 ]
 
+#: Class R, time windows said as a range, a span or a default (work list 5,
+#: through `ai/recognise.py` only). (question, must, never)
+R_WINDOWS = [
+    ("what did I do from Monday to Wednesday", r"(?=.*Gym routine)(?=.*Lecture 5)", r"Errands|Essay draft"),
+    ("what did I make from monday to wednesday", r"(?=.*Gym routine)(?=.*Lecture 5)", r"Errands"),
+    ("what did I write between 1 and 5 October", r"(?=.*Shakespeare essay)(?=.*Bubble tea)", r"Gym routine|Lecture 5"),
+    ("what did I do between 2 and 5 October?", r"(?=.*Shakespeare essay)(?=.*Bubble tea)", r"Gym routine"),
+    ("what did I do between March and May", r"March", r"Gym routine|Lecture 5"),
+    ("what did I do from March to May", r"March", r"Gym routine|Lecture 5"),
+    ("what did I do recently", r"(?=.*Lecture 5)(?=.*Errands)(?=.*7 to 21 October)", r"Bubble tea"),
+    ("what have I been up to lately", r"(?=.*Lecture 5)(?=.*Errands)(?=.*7 to 21 October)", r"Bubble tea"),
+    ("what did I do this weekend", r"Essay draft", r"Gym routine|Lecture 5"),
+]
+
 OPEN: set[str] = set()
 
 
@@ -101,6 +115,8 @@ def _cases():
         yield ("N", q, _HIER, _FLAT + "|" + NOT_FOUND)
     for q, must in P_SOURCE_RANK:
         yield ("P", q, must, NOT_FOUND)
+    for q, must, never in R_WINDOWS:
+        yield ("R", q, must, never + "|" + NOT_FOUND)
     for q, must in Q_COUNTS:
         yield ("Q", q, must, NOT_FOUND + r"|^The number you saved")
 

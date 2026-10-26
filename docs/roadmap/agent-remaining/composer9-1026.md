@@ -56,13 +56,13 @@ The fixes, each in the shared layer rather than for its case:
 - A map node or board card "Label: text" is its own text, not a heading (`composer_digest._node_split`; `tests/test_source_structure_1026.py`, 30 cases, 16 failing before). Found, not fixed: a map is read flat (parent and children as siblings, "lists four: service models, IaaS, PaaS and SaaS"); a board or map is not searched unless named ("tell me about IaaS" finds nothing).
 - Count wording (zero, one, many) in `ai/notebook_stats.py`: `_plural(0, ...)` is "no ...", agreement for one, and "Every note has a tag" where nothing is true of none; `tests/test_count_wording_1026.py` (17 questions x 0, 1, 3 notes; 27 of 60 failing before). Found, not fixed: "how many notes are not linked" answers the note count; "how many notes are tagged work" with no such tag answers the tag count.
 
-## Built (composer9 work list, this agent; tests/test_composer_classes_1026b.py, 40 cases, 0 passing before the fixes to 40 after)
+## Built (composer9 work list, this agent; tests/test_composer_classes_1026b.py, 49 cases; before the fixes M and N failed 11 of 14, R 8 of 9, Q 12 of 16 by probe; all 49 pass after)
 
 - 1 Sources: `routes_chat._matched_rows` puts boards, maps and documents whose words hold the question's topic words first-class in retrieval (the one search index, then every topic word checked in the text); `created_at` on board rows so supersede does not drop dated notes; `composer_digest._best` breaks ties by search rank. Classes M (9), P (3).
 - 2 Hierarchy: `Sentence.depth` and `ai/composer_tree.py` say a map or outline as parent: children (class N, 5).
 - 3 Counts: `ai/notebook_filters.py` (link state, tag, category, window; a missing tag or category named with the nearest) and boards/maps counts in `notebook_stats` (class Q, 16).
 - 4 Told by source: `routes_chat._told_sources` re-reads the earlier questions' grounding rows so "tell me more" skips by place, not wording (class O, 7); the "when" cue is the recogniser's, not a month pattern.
-- Found, not fixed: pinned, archived, checklist and reminder counts ("how many notes are pinned" answers the total); "how many work notes" with no such category answers the total; the stats windows read `utcnow()` while the app reads `user_now` (tests patch `notebook_stats.utcnow`); item 5 (ranges, seasons, "recently", "this weekend" past tense) not started.
+- Found, not fixed: pinned, archived, checklist and reminder counts ("how many notes are pinned" answers the total); "how many work notes" with no such category answers the total; the stats windows read `utcnow()` while the app reads `user_now` (tests patch `notebook_stats.utcnow`); item 5 built (ranges, "recently" 14 days, "this weekend" past; class R, 9 cases); seasons (spring, summer, needs a hemisphere from the locale), "first week of October" and "start of the month" not read.
 
 ## Remaining
 
