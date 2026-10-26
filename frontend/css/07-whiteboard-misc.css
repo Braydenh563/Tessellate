@@ -7442,9 +7442,16 @@ button.connection-row:is(:hover, :focus-visible) {
      - the rule in 06-timeline-dialogs.css said so already, but the
      edge-hugging `bottom` further up this file (same specificity, later)
      had silently won the cascade. Measured: dock/zoom overlap at 640px. */
-  /* No room for a zoom cluster above a full-width dock on a 480px-tall
-     window (it met the three-row top bar); zoom stays on Ctrl+wheel /
-     pinch and in the View menu's Zoom rows. */
+  .whiteboard-floating-panel.bottom-right {
+    bottom: calc(var(--space-2) + var(--wb-h-tools) + var(--space-3));
+  }
+}
+/* The zoom cluster rides above the full-width dock (06-timeline-dialogs.css);
+   only a window too short to clear the top bar drops it, where zoom stays on
+   Ctrl+wheel / pinch and in the View menu. It used to go at every width under
+   820px, so a half-screen window had no zoom level (measured: display none at
+   720x900 and 390x844). */
+@media (max-width: 819.98px) and (max-height: 520px) {
   .whiteboard-floating-panel.bottom-right {
     display: none;
   }

@@ -140,6 +140,42 @@ async function run(viewport) {
   await undo();
   check("one Undo takes the topic back", (await topics()) === t0, [t0, await topics()]);
 
+  // 9. Paste without comments: a commented object and a commented shape
+  await page.evaluate(async () => {
+    const obj = await apiJson("/whiteboard/objects", { method: "POST", body: JSON.stringify({ kind: "text", x: 40, y: 400, width: 200, height: 80, z: 3, board_id: window.currentBoardId, data: { content: "has a thread" } }) });
+    wbState.objects.push(obj);
+    const sk = await apiJson("/whiteboard/sketches", { method: "POST", body: JSON.stringify({ data: JSON.stringify({ d: "M 400 400 h 100 v 60 h -100 Z", shape: "rect", color: "#4a90d9", width: 2 }), x: 0, y: 0, z: 1, board_id: window.currentBoardId }) });
+    wbState.sketches.push(sk);
+    await wbSetComments("object", obj, [{ id: "c1", text: "note one", at: "2026-10-26" }]);
+    await wbSetComments("sketch", sk, [{ id: "c2", text: "note two", at: "2026-10-26" }]);
+    window.__cm = { o: obj.id, s: sk.id };
+    wbSelectExactly([["object", obj], ["sketch", sk]]);
+    wbCopySelection();
+  });
+  const threads = () => page.evaluate(() => {
+    const m = window.__cm;
+    const o = wbState.objects.filter((x) => x.id !== m.o && x.data?.content === "has a thread");
+    const s = wbState.sketches.filter((x) => x.id !== m.s && /h 100 v 60/.test(x.data));
+    return { o: o.map((x) => (x.data.comments || []).length), s: s.map((x) => (JSON.parse(x.data).comments || []).length) };
+  });
+  await page.evaluate(() => wbPasteClipboard({ noComments: true }));
+  await page.waitForTimeout(1200);
+  const bare = await threads();
+  check("Paste without comments drops the thread from an object and a shape", bare.o.length === 1 && bare.o[0] === 0 && bare.s.length === 1 && bare.s[0] === 0, bare);
+  await page.evaluate(() => wbPasteClipboard());
+  await page.waitForTimeout(1200);
+  const kept = await threads();
+  check("a plain paste keeps the threads", kept.o.length === 2 && kept.o[1] === 1 && kept.s.length === 2 && kept.s[1] === 1, kept);
+  check("the originals keep theirs", await page.evaluate(() => wbItemComments("object", wbFindItem("object", window.__cm.o)).length === 1 && wbItemComments("sketch", wbFindItem("sketch", window.__cm.s)).length === 1));
+
+  // 10. the zoom dock stays at half-screen widths and clears the tools row (it was display:none under 820px)
+  const dock = await page.evaluate(() => {
+    const lvl = document.getElementById("wb-zoom-level");
+    const p = lvl.closest(".whiteboard-floating-panel").getBoundingClientRect();
+    const t = document.querySelector(".whiteboard-floating-panel.bottom-center").getBoundingClientRect();
+    return { shown: p.width > 0 && /%$/.test(lvl.textContent), clear: p.bottom <= t.top + 0.5 || p.left >= t.right, inView: p.right <= innerWidth && p.left >= 0 };
+  });
+  check("the zoom level is shown and clears the tools row", dock.shown && dock.clear && dock.inView, dock);
   check("no console errors", errors.length === 0, errors);
   const ok = summary();
   await browser.close();
