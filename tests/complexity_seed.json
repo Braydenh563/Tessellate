@@ -37,7 +37,6 @@
  "src/tessellate/ai/docreader.py::read_document_and_store": 20,
  "src/tessellate/ai/embeddings.py::embedding_text": 17,
  "src/tessellate/ai/entities.py::undo_merge": 21,
- "src/tessellate/ai/extractor.py::build_extraction": 20,
  "src/tessellate/ai/factgraph.py::_units": 17,
  "src/tessellate/ai/facts.py::_Similar.nearest": 18,
  "src/tessellate/ai/facts.py::_pair_passes": 40,

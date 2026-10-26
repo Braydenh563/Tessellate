@@ -273,6 +273,52 @@ def _plain_split(text: str) -> list[ExtractedNote]:
     return [ExtractedNote(title=p.title, content=p.content) for p in no_model_text.split_notes(text, MAX_EXTRACT_NOTES)]
 
 
+def _split(text, embeddings, model_manager, ollama, ollama_running):  # noqa: ANN001, ANN202
+    """(the notes, the message): the model's split, or the plain cut by
+    headings and paragraphs when none runs or its split fails."""
+    if not ollama_running:
+        return _plain_split(text), offline_message()
+    try:
+        return merge_near_duplicates(propose_split(text, model_manager, ollama), embeddings), ""
+    except (OllamaError, ValueError) as exc:
+        logger.info("extraction split failed, falling back to the plain cut: %s", exc)
+        return _plain_split(text), SPLIT_FAILED_MESSAGE
+
+
+def _link(source: str, target: str, preview: str, reason: str, kind: str) -> dict:
+    return {"source_ref": source, "target_ref": target, "target_preview": preview, "reason": reason, "kind": kind}
+
+
+def _plain_links(notes: list[ExtractedNote], source_entries: list) -> list[dict]:
+    """The links that are true without a model: each part came from the
+    selected notes, and the parts are one text."""
+    links = [
+        _link(f"n{i}", f"existing:{entry.id}", _short_preview(entry.content), "Taken from this note's text", "source")
+        for i in range(len(notes))
+        for entry in source_entries
+    ]
+    links += [_link(f"n{i}", f"n{i + 1}", "", "Parts of the same text", "sibling") for i in range(len(notes) - 1)]
+    return links
+
+
+def _model_links(session, notes, source_entries, embeddings, model_manager, ollama) -> list[dict]:  # noqa: ANN001
+    links: list[dict] = []
+    exclude_ids = {e.id for e in source_entries}
+    for i, note in enumerate(notes):
+        ref = f"n{i}"
+        for entry in source_entries:
+            reason = _reason_for(note.content, entry.content, model_manager, ollama)
+            if reason is not None:
+                links.append(_link(ref, f"existing:{entry.id}", _short_preview(entry.content), reason, "source"))
+        for related in find_related(session, note.content, embeddings, model_manager, ollama, exclude_ids):
+            links.append(_link(ref, f"existing:{related['entry_id']}", related["preview"], related["reason"], "related"))
+    for i in range(len(notes) - 1):
+        reason = _reason_for(notes[i].content, notes[i + 1].content, model_manager, ollama)
+        if reason is not None:
+            links.append(_link(f"n{i}", f"n{i + 1}", "", reason, "sibling"))
+    return links
+
+
 def build_extraction(
     session: Session,
     text: str,
@@ -313,18 +359,7 @@ def build_extraction(
             source_entries.append(entry)
 
     ollama_running = ollama.is_running()
-    message = ""
-    if not ollama_running:
-        notes = _plain_split(text)
-        message = offline_message()
-    else:
-        try:
-            notes = propose_split(text, model_manager, ollama)
-            notes = merge_near_duplicates(notes, embeddings)
-        except (OllamaError, ValueError) as exc:
-            logger.info("extraction split failed, falling back to one note: %s", exc)
-            notes = _plain_split(text)
-            message = SPLIT_FAILED_MESSAGE
+    notes, message = _split(text, embeddings, model_manager, ollama, ollama_running)
 
     proposals = []
     for i, note in enumerate(notes):
@@ -341,63 +376,12 @@ def build_extraction(
             "filed_by": filed_by,
         })
 
-    links: list[dict] = []
     if message:
-        #: A plain split carries only links that are true without a model:
-        #: each part came from the selected notes, and the parts are one text.
-        for i, note in enumerate(notes):
-            for entry in source_entries:
-                links.append({
-                    "source_ref": f"n{i}",
-                    "target_ref": f"existing:{entry.id}",
-                    "target_preview": _short_preview(entry.content),
-                    "reason": "Taken from this note's text",
-                    "kind": "source",
-                })
-        for i in range(len(notes) - 1):
-            links.append({
-                "source_ref": f"n{i}",
-                "target_ref": f"n{i + 1}",
-                "target_preview": "",
-                "reason": "Parts of the same text",
-                "kind": "sibling",
-            })
+        links = _plain_links(notes, source_entries)
     elif ollama_running:
-        exclude_ids = {e.id for e in source_entries}
-        for i, note in enumerate(notes):
-            ref = f"n{i}"
-            for entry in source_entries:
-                reason = _reason_for(note.content, entry.content, model_manager, ollama)
-                if reason is None:
-                    continue
-                links.append({
-                    "source_ref": ref,
-                    "target_ref": f"existing:{entry.id}",
-                    "target_preview": _short_preview(entry.content),
-                    "reason": reason,
-                    "kind": "source",
-                })
-            for related in find_related(
-                session, note.content, embeddings, model_manager, ollama, exclude_ids
-            ):
-                links.append({
-                    "source_ref": ref,
-                    "target_ref": f"existing:{related['entry_id']}",
-                    "target_preview": related["preview"],
-                    "reason": related["reason"],
-                    "kind": "related",
-                })
-        for i in range(len(notes) - 1):
-            reason = _reason_for(notes[i].content, notes[i + 1].content, model_manager, ollama)
-            if reason is None:
-                continue
-            links.append({
-                "source_ref": f"n{i}",
-                "target_ref": f"n{i + 1}",
-                "target_preview": "",
-                "reason": reason,
-                "kind": "sibling",
-            })
+        links = _model_links(session, notes, source_entries, embeddings, model_manager, ollama)
+    else:
+        links = []
 
     return {
         "notes": proposals,

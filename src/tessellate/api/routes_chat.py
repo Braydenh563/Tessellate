@@ -1881,6 +1881,23 @@ def _frame_matches(session: Session, question: str, notes: list[dict], match_inf
         note["match_info"] = match_info.get(note["id"])
 
 
+def _named_rows(session: Session, question: str) -> list[dict]:
+    """A document, board or map the question names by title, read first as
+    itself (not as an attachment the person picked)."""
+    named_docs, named_boards = _named_sources(session, question)
+    boards = _attached_boards(session, named_boards)
+    for row in boards:
+        #: Said by its title and words, as a note is: the "Mind map: X (4
+        #: nodes...)" head is for a model, and the composer quoted it.
+        head, _, outline = row["content"].partition("\n\n")
+        row["content"] = f"# {head.split(': ', 1)[-1].splitlines()[0]}\n\n{outline}"
+    named = [_document_row(d) for d in named_docs] + boards
+    for row in named:
+        row["attached"] = False
+        row["named"] = True
+    return named
+
+
 def _prepare(
     session: Session,
     question: str,
@@ -1919,20 +1936,7 @@ def _prepare(
     #: Only the notes: a document or a file row has another table's id.
     _frame_matches(session, question, notes[: len(found.entries)], found.match_info, found.mode)
     if not (attached or attached_docs or attached_files or attached_boards or skip_search) and found.stats is None and as_of is None:
-        #: A document, board or map the question names by title is read first,
-        #: as itself (not as an attachment the person picked).
-        named_docs, named_boards = _named_sources(session, question)
-        boards = _attached_boards(session, named_boards)
-        for row in boards:
-            #: Said by its title and words, as a note is: the "Mind map: X (4
-            #: nodes...)" head is for a model, and the composer quoted it.
-            head, _, outline = row["content"].partition("\n\n")
-            row["content"] = f"# {head.split(': ', 1)[-1].splitlines()[0]}\n\n{outline}"
-        named = [_document_row(d) for d in named_docs] + boards
-        for row in named:
-            row["attached"] = False
-            row["named"] = True
-        notes = named + notes
+        notes = _named_rows(session, question) + notes
     config = deps.get_config()
 
     # Every entry this question surfaced counts as "used".

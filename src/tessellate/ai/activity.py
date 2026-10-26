@@ -72,36 +72,48 @@ class Asked:
     kinds: frozenset[str]
 
 
+def _window(text: str, today: date) -> tuple[str, tuple] | None:
+    """The first time phrase of the question and the span it names, if that
+    span has begun."""
+    found = when_words.find(text)
+    if not found:
+        return None
+    phrase = found[0][2]
+    span = when_words.span(phrase, today, "past")
+    return (phrase, span) if span and span[0] <= today else None
+
+
+def _kinds_named(rest: str) -> set[str] | None:
+    """The kinds the leftover words name, or None when a word is neither a
+    frame word nor a kind (a subject: not an own-activity question)."""
+    kinds: set[str] = set()
+    for word in re.findall(r"[a-z']+", rest.lower()):
+        if word in _FRAME:
+            continue
+        kind = next((k for k, pattern in _KINDS if pattern.match(word)), None)
+        if not kind:
+            return None
+        kinds.add(kind)
+    return kinds
+
+
 def read(question: str, today: date) -> Asked | None:
     """The window, the doing and the kinds of an own-activity question, or
     None when it is not one (no window, no doing, or a subject named)."""
     text = (question or "").strip()
     if not text or len(text) > 200 or not _OWN.search(text):
         return None
-    found = when_words.find(text)
-    if not found:
+    window = _window(text, today)
+    if window is None or not _PAST.search(text):
         return None
-    phrase = found[0][2]
-    span = when_words.span(phrase, today, "past")
-    if not span or span[0] > today:
-        return None
-    bare = text.replace(phrase, " ")
+    phrase, span = window
     #: The most specific doing wins: "what did I delete" is binned, not "did".
+    bare = text.replace(phrase, " ")
     verb = next((k for k, v in _VERBS if re.search(rf"\b(?:{v})\b", bare, re.I)), None)
     if verb is None:
         return None
-    if not _PAST.search(text):
-        return None
-    rest = re.sub(re.escape(phrase), " ", text, flags=re.I)
-    rest = _VERB.sub(" ", rest)
-    kinds: set[str] = set()
-    for word in re.findall(r"[a-z']+", rest.lower()):
-        if word in _FRAME:
-            continue
-        kind = next((k for k, pattern in _KINDS if pattern.match(word)), None)
-        if kind:
-            kinds.add(kind)
-            continue
+    kinds = _kinds_named(_VERB.sub(" ", re.sub(re.escape(phrase), " ", text, flags=re.I)))
+    if kinds is None:
         return None
     if verb == "done" and not kinds:
         kinds = {"reminder"}
@@ -145,20 +157,21 @@ def _link(kind: str, ident: int, title: str) -> str:
     return f"[**{title}**](#/{path}/{ident})" if path else f"**{title}**"
 
 
-def _events(session: Session, start: date, end: date, zone) -> list[tuple[datetime, str, str, str]]:  # noqa: ANN001
-    """(when, doing, kind, said) for every change inside the window, on the
-    person's clock. The rows are fetched a day wider each side (stored in
-    UTC) and cut to the window after the clock change."""
-    from tessellate.core.database import Document, Entry, Reminder
+_Event = tuple[datetime, str, str, str]
 
-    win_lo, win_hi = _bounds(start, end)
-    lo, hi = win_lo - timedelta(days=1), win_hi + timedelta(days=1)
 
-    def inside(at: datetime | None) -> datetime | None:
-        at = _local(at, zone)
-        return at if at is not None and win_lo <= at < win_hi else None
+def _made_edited(out: list[_Event], kind: str, said: str, made: datetime | None, edited: datetime | None) -> None:
+    """A made row, and an edited one when the edit is not the same day."""
+    if made:
+        out.append((made, "made", kind, said))
+    if edited and (not made or edited.date() != made.date()):
+        out.append((edited, "edited", kind, said))
 
-    out: list[tuple[datetime, str, str, str]] = []
+
+def _entry_events(session: Session, lo: datetime, hi: datetime, inside) -> list[_Event]:  # noqa: ANN001
+    from tessellate.core.database import Entry
+
+    out: list[_Event] = []
     entries = session.scalars(
         select(Entry).where(
             Entry.is_private == False,  # noqa: E712
@@ -172,13 +185,17 @@ def _events(session: Session, start: date, end: date, zone) -> list[tuple[dateti
     for entry in entries:
         kind, title = _entry_kind(entry), _title_of(entry.content)
         said = f"**{title}** (now in the bin)" if entry.is_deleted else _link(kind, entry.id, title)
-        made, edited, binned = inside(entry.created_at), inside(entry.edited_at), inside(entry.deleted_at)
-        if made:
-            out.append((made, "made", kind, said))
-        if edited and (not made or edited.date() != made.date()):
-            out.append((edited, "edited", kind, said))
+        _made_edited(out, kind, said, inside(entry.created_at), inside(entry.edited_at))
+        binned = inside(entry.deleted_at)
         if entry.is_deleted and binned:
             out.append((binned, "binned", kind, f"**{title}**"))
+    return out
+
+
+def _document_events(session: Session, lo: datetime, hi: datetime, inside) -> list[_Event]:  # noqa: ANN001
+    from tessellate.core.database import Document
+
+    out: list[_Event] = []
     documents = session.scalars(
         select(Document).where(
             ((Document.created_at >= lo) & (Document.created_at < hi))
@@ -188,15 +205,18 @@ def _events(session: Session, start: date, end: date, zone) -> list[tuple[dateti
     ).all()
     for doc in documents:
         title = (doc.title or "Untitled").strip()[:80]
-        gone = doc.deleted_at is not None
-        said = f"**{title}** (now in the bin)" if gone else _link("document", doc.id, title)
-        made, edited, binned = inside(doc.created_at), inside(doc.updated_at), inside(doc.deleted_at)
-        if made:
-            out.append((made, "made", "document", said))
-        if edited and (not made or edited.date() != made.date()):
-            out.append((edited, "edited", "document", said))
+        said = f"**{title}** (now in the bin)" if doc.deleted_at is not None else _link("document", doc.id, title)
+        _made_edited(out, "document", said, inside(doc.created_at), inside(doc.updated_at))
+        binned = inside(doc.deleted_at)
         if binned:
             out.append((binned, "binned", "document", f"**{title}**"))
+    return out
+
+
+def _reminder_events(session: Session, lo: datetime, hi: datetime, inside) -> list[_Event]:  # noqa: ANN001
+    from tessellate.core.database import Reminder
+
+    out: list[_Event] = []
     reminders = session.scalars(
         select(Reminder).where(
             ((Reminder.done_at >= lo) & (Reminder.done_at < hi)) | ((Reminder.created_at >= lo) & (Reminder.created_at < hi))
@@ -209,6 +229,25 @@ def _events(session: Session, start: date, end: date, zone) -> list[tuple[dateti
             out.append((done, "done", "reminder", text))
         if made and reminder.deleted_at is None:
             out.append((made, "made", "reminder", text))
+    return out
+
+
+def _events(session: Session, start: date, end: date, zone) -> list[_Event]:  # noqa: ANN001
+    """(when, doing, kind, said) for every change inside the window, on the
+    person's clock. The rows are fetched a day wider each side (stored in
+    UTC) and cut to the window after the clock change."""
+    win_lo, win_hi = _bounds(start, end)
+    lo, hi = win_lo - timedelta(days=1), win_hi + timedelta(days=1)
+
+    def inside(at: datetime | None) -> datetime | None:
+        at = _local(at, zone)
+        return at if at is not None and win_lo <= at < win_hi else None
+
+    out = [
+        *_entry_events(session, lo, hi, inside),
+        *_document_events(session, lo, hi, inside),
+        *_reminder_events(session, lo, hi, inside),
+    ]
     out.sort(key=lambda row: row[0], reverse=True)
     return out
 
@@ -299,6 +338,36 @@ def _summary(rows: list[tuple[datetime, str, str, str]]) -> str:
     return parts[0] if parts else ""
 
 
+def _by_day(rows: list[_Event]) -> dict[date, list[str]]:
+    by_day: dict[date, list[str]] = {}
+    for when_at, doing, kind, said in rows[:_LIMIT]:
+        by_day.setdefault(when_at.date(), []).append(_clause(doing, kind, said))
+    return by_day
+
+
+def _day_lines(by_day: dict[date, list[str]], today: date) -> list[str]:
+    return [f"- **{_day_words(day, today)}:** " + "; ".join(clauses) + "." for day, clauses in by_day.items()]
+
+
+def _filtered(rows: list[_Event], asked: Asked) -> list[_Event]:
+    if asked.verb in _DOING_WORDS:
+        rows = [r for r in rows if r[1] == asked.verb]
+    return [r for r in rows if r[2] in asked.kinds] if asked.kinds else rows
+
+
+def _head(asked: Asked, today: date) -> str:
+    when = _window_said(asked)
+    return f"{when[:1].upper()}{when[1:]}" + (f" ({_span(asked.start, asked.end, today)})" if asked.start != asked.end else "")
+
+
+def _recap_lines(rows: list[_Event], asked: Asked, today: date) -> list[str]:
+    by_day = _by_day(rows)
+    if asked.start == asked.end:
+        #: One day: the head already says which, so no day label per line.
+        return [f"- {clause[:1].upper()}{clause[1:]}." for clause in by_day.get(asked.start, [])]
+    return _day_lines(by_day, today)
+
+
 def answer(question: str, session: Session, now: datetime) -> notebook_stats.StatAnswer | None:
     """The activity recap, or None when `question` is not an own-activity
     question with a window."""
@@ -309,25 +378,10 @@ def answer(question: str, session: Session, now: datetime) -> notebook_stats.Sta
     asked = read(asked_text, today)
     if asked is None:
         return None
-    rows = _events(session, asked.start, asked.end, zone)
-    if asked.verb in _DOING_WORDS:
-        rows = [r for r in rows if r[1] == asked.verb]
-    if asked.kinds:
-        rows = [r for r in rows if r[2] in asked.kinds]
+    rows = _filtered(_events(session, asked.start, asked.end, zone), asked)
     if not rows:
         return notebook_stats.StatAnswer(kind="activity", text=_empty(asked, session, today, zone), facts=[])
-    when = _window_said(asked)
-    head = f"{when[:1].upper()}{when[1:]}" + (f" ({_span(asked.start, asked.end, today)})" if asked.start != asked.end else "")
-    lines = [f"{head} you {_summary(rows)}:"]
-    by_day: dict[date, list[str]] = {}
-    for when_at, doing, kind, said in rows[:_LIMIT]:
-        by_day.setdefault(when_at.date(), []).append(_clause(doing, kind, said))
-    if asked.start == asked.end:
-        #: One day: the head already says which, so no day label per line.
-        lines += [f"- {clause[:1].upper()}{clause[1:]}." for clause in by_day.get(asked.start, [])]
-    else:
-        for day, clauses in by_day.items():
-            lines.append(f"- **{_day_words(day, today)}:** " + "; ".join(clauses) + ".")
+    lines = [f"{_head(asked, today)} you {_summary(rows)}:", *_recap_lines(rows, asked, today)]
     if len(rows) > _LIMIT:
         lines.append(f"And {len(rows) - _LIMIT} more.")
     facts = [{"when": r[0].isoformat(), "doing": r[1], "kind": r[2], "what": r[3]} for r in rows[:_LIMIT]]
@@ -344,33 +398,11 @@ def _named(rows: list, today: date, zone) -> str:  # noqa: ANN001
     return "; ".join(said) + (f"; and {_n(more)} more" if more > 0 else "") + "."
 
 
-def week(session: Session, now: datetime) -> str:
-    """The weekly digest with no model (owner-1026b K3, the owner: "is it
-    possible to have the composer fill more roles the ai usually would?? like
-    the weekly digest"): the last seven days said from the rows, what is
-    overdue and coming, where the notes went, and the days themselves. Every
-    line is a count or a title, so it can be checked by opening it."""
-    from tessellate.core.database import Category, Entry, Reminder
+def _week_lean(session: Session, start: date, today: date, zone) -> str:  # noqa: ANN001
+    """Where most of the week's notes went, only when more than half went to
+    one category (and at least three were written); else ""."""
+    from tessellate.core.database import Category, Entry
 
-    today, zone = now.date(), now.tzinfo or timezone.utc
-    start = today - timedelta(days=6)
-    lines = ["From your notes, no AI."]
-    rows = _events(session, start, today, zone)
-    span = _span(start, today, today)
-    if rows:
-        lines.append(f"In the last 7 days ({span}) you {_summary(rows)}.")
-    else:
-        lines.append(f"Nothing was made, edited or binned in the last 7 days ({span}).")
-    open_ = session.scalars(
-        select(Reminder).where(Reminder.done == False, Reminder.deleted_at.is_(None)).order_by(Reminder.due_at)  # noqa: E712
-    ).all()
-    start_of_today = datetime.combine(today, time(0))
-    late = [r for r in open_ if _local(r.due_at, zone) < start_of_today]
-    coming = [r for r in open_ if start_of_today <= _local(r.due_at, zone) < start_of_today + timedelta(days=7)]
-    if late:
-        lines.append("Overdue: " + _named(late, today, zone))
-    if coming:
-        lines.append("Coming up this week: " + _named(coming, today, zone))
     lo, hi = _bounds(start, today)
     #: Fetched a day wider each side (stored in UTC), then cut on the
     #: person's clock, as `_events` does.
@@ -389,14 +421,47 @@ def week(session: Session, now: datetime) -> str:
     made = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))
     total = sum(n for _, n in made)
     if made and total >= 3 and made[0][1] * 2 > total:
-        #: Only a real lean is worth a line: more than half in one place.
-        lines.append(f"Most of the week's notes went to {made[0][0]} ({made[0][1]} of {total}).")
+        return f"Most of the week's notes went to {made[0][0]} ({made[0][1]} of {total})."
+    return ""
+
+
+def _week_reminders(session: Session, today: date, zone) -> list[str]:  # noqa: ANN001
+    """The overdue and coming-this-week lines."""
+    from tessellate.core.database import Reminder
+
+    open_ = session.scalars(
+        select(Reminder).where(Reminder.done == False, Reminder.deleted_at.is_(None)).order_by(Reminder.due_at)  # noqa: E712
+    ).all()
+    start_of_today = datetime.combine(today, time(0))
+    late = [r for r in open_ if _local(r.due_at, zone) < start_of_today]
+    coming = [r for r in open_ if start_of_today <= _local(r.due_at, zone) < start_of_today + timedelta(days=7)]
+    return ([f"Overdue: {_named(late, today, zone)}"] if late else []) + (
+        [f"Coming up this week: {_named(coming, today, zone)}"] if coming else []
+    )
+
+
+def week(session: Session, now: datetime) -> str:
+    """The weekly digest with no model (owner-1026b K3, the owner: "is it
+    possible to have the composer fill more roles the ai usually would?? like
+    the weekly digest"): the last seven days said from the rows, what is
+    overdue and coming, where the notes went, and the days themselves. Every
+    line is a count or a title, so it can be checked by opening it."""
+    today, zone = now.date(), now.tzinfo or timezone.utc
+    start = today - timedelta(days=6)
+    lines = ["From your notes, no AI."]
+    rows = _events(session, start, today, zone)
+    span = _span(start, today, today)
     if rows:
-        by_day: dict[date, list[str]] = {}
-        for when_at, doing, kind, said in rows[:_LIMIT]:
-            by_day.setdefault(when_at.date(), []).append(_clause(doing, kind, said))
+        lines.append(f"In the last 7 days ({span}) you {_summary(rows)}.")
+    else:
+        lines.append(f"Nothing was made, edited or binned in the last 7 days ({span}).")
+    lines += _week_reminders(session, today, zone)
+    lean = _week_lean(session, start, today, zone)
+    if lean:
+        lines.append(lean)
+    if rows:
         lines.append("")
-        lines += [f"- **{_day_words(day, today)}:** " + "; ".join(clauses) + "." for day, clauses in by_day.items()]
+        lines += _day_lines(_by_day(rows), today)
         if len(rows) > _LIMIT:
             lines.append(f"And {len(rows) - _LIMIT} more.")
     return "\n".join(lines[:1] + [""] + lines[1:])

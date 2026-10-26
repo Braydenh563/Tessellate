@@ -52,6 +52,27 @@ def _trim(words: list[str]) -> str:
     return title[:1].upper() + title[1:] if title else ""
 
 
+def _split_heading(draft: str) -> tuple[str, list[str]]:
+    """(the leading heading's text or "", the lines after it)."""
+    lines = (draft or "").replace("\r\n", "\n").replace("\r", "\n").split("\n")
+    for i, line in enumerate(lines):
+        if not line.strip():
+            continue
+        found = _HEADING.match(line)
+        return (found.group(1).strip(), lines[i + 1 :]) if found else ("", lines)
+    return "", lines
+
+
+def _first_line_title(lines: list[str]) -> str:
+    for line in lines:
+        first = _clean_line(line)
+        if first and len(first) >= 3 and not _RULE.match(line):
+            title = _trim(first.split())
+            if title:
+                return title
+    return ""
+
+
 def draft_title(draft: str) -> str:
     """A title from the draft's own words, or "" when there is nothing to name.
 
@@ -62,30 +83,14 @@ def draft_title(draft: str) -> str:
     """
     from tessellate.ai import composer_voice
 
-    lines = (draft or "").replace("\r\n", "\n").replace("\r", "\n").split("\n")
-    heading = ""
-    for i, line in enumerate(lines):
-        if not line.strip():
-            continue
-        found = _HEADING.match(line)
-        if found:
-            heading = found.group(1).strip()
-            lines = lines[i + 1 :]
-        break
+    heading, lines = _split_heading(draft)
     body = "\n".join(lines).strip()
-    title = composer_voice.title_for(_without_marks(body)) if body else ""
-    if not title:
-        for line in lines:
-            first = _clean_line(line)
-            words = first.split()
-            if words and len(first) >= 3 and not _RULE.match(line):
-                title = _trim(words)
-                if title:
-                    break
-    if not title:
-        title = _top_terms(body)
-    if not title and heading:
-        title = _trim(heading.split())
+    title = (
+        (composer_voice.title_for(_without_marks(body)) if body else "")
+        or _first_line_title(lines)
+        or _top_terms(body)
+        or (_trim(heading.split()) if heading else "")
+    )
     return title if len(title) >= 3 else ""
 
 
@@ -156,28 +161,26 @@ def _merge(chunks: list[str], lo: int) -> None:
     chunks[lo : lo + 2] = [chunks[lo] + "\n\n" + chunks[lo + 1]]
 
 
-def split_notes(text: str, limit: int) -> list[Part]:
-    """One part per heading, or per paragraph when the text has fewer than two
-    headings. A section keeps its heading as its first line (a note's title in
-    this app is its leading heading); scraps join the part beside them; more
-    parts than `limit` are merged, shortest pair first, never dropped."""
-    lines = (text or "").replace("\r\n", "\n").replace("\r", "\n").split("\n")
-    marks = _headings(lines)
+def _paragraph_chunks(lines: list[str]) -> list[str]:
+    """Blank-line blocks; a block that is only a heading leads the next one."""
     chunks: list[str] = []
-    if len(marks) >= 2:
-        edges = [0, *marks, len(lines)] if marks[0] > 0 else [*marks, len(lines)]
-        chunks = ["\n".join(_strip_rules(lines[a:b])).strip() for a, b in zip(edges, edges[1:])]
-    else:
-        bare_heading = False
-        for block in _blocks(lines):
-            body = "\n".join(block)
-            if bare_heading:
-                chunks[-1] += "\n\n" + body
-                bare_heading = False
-                continue
+    bare_heading = False
+    for block in _blocks(lines):
+        body = "\n".join(block)
+        if bare_heading:
+            chunks[-1] += "\n\n" + body
+        else:
             chunks.append(body)
-            bare_heading = len(block) == 1 and bool(_HEADING.match(block[0]))
-    chunks = [c for c in chunks if c.strip()]
+        bare_heading = not bare_heading and len(block) == 1 and bool(_HEADING.match(block[0]))
+    return chunks
+
+
+def _section_chunks(lines: list[str], marks: list[int]) -> list[str]:
+    edges = [0, *marks, len(lines)] if marks[0] > 0 else [*marks, len(lines)]
+    return ["\n".join(_strip_rules(lines[a:b])).strip() for a, b in zip(edges, edges[1:])]
+
+
+def _join_scraps(chunks: list[str]) -> None:
     i = 0
     while len(chunks) > 1 and i < len(chunks):
         if _count(chunks[i]) < SCRAP_WORDS:
@@ -185,6 +188,18 @@ def split_notes(text: str, limit: int) -> list[Part]:
             i = max(i - 1, 0)
         else:
             i += 1
+
+
+def split_notes(text: str, limit: int) -> list[Part]:
+    """One part per heading, or per paragraph when the text has fewer than two
+    headings. A section keeps its heading as its first line (a note's title in
+    this app is its leading heading); scraps join the part beside them; more
+    parts than `limit` are merged, shortest pair first, never dropped."""
+    lines = (text or "").replace("\r\n", "\n").replace("\r", "\n").split("\n")
+    marks = _headings(lines)
+    chunks = _section_chunks(lines, marks) if len(marks) >= 2 else _paragraph_chunks(lines)
+    chunks = [c for c in chunks if c.strip()]
+    _join_scraps(chunks)
     while len(chunks) > max(limit, 1):
         k = min(range(len(chunks) - 1), key=lambda j: _count(chunks[j]) + _count(chunks[j + 1]))
         _merge(chunks, k)
