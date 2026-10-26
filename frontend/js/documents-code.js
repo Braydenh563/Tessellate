@@ -6245,3 +6245,45 @@ function docOpenCodeFixes() {
   openMenuAtPoint(items, "Quick fixes", at.left, at.bottom);
   return true;
 }
+
+// -----------------------------------------------------------------------------
+// A code file's keys on the phone (INBOX 1400 dogfood)
+// -----------------------------------------------------------------------------
+//
+// A phone has no Tab key and buries the brackets two layers down, so a code
+// file could not be indented or closed off with touch alone, and the bar at
+// the thumb offered Bold, Italic and Heading for a Python file. The same bar
+// (`#doc-phone-bar`, which already rides above the keyboard) carries these
+// buttons instead of the markdown ones for a code file; `.doc-is-code` on the
+// tab picks the half that shows (10-responsive.css). Each is one editor step,
+// so Undo takes it back.
+
+//: A pair wraps the selection or, with none, lands with the caret inside.
+const DOC_CODE_KEY_PAIRS = new Set(["{}", "()", "[]", '""']);
+
+function docCodeKeyPress(key) {
+  if (key === "undo") return docUndo();
+  if (key === "redo") return docRedo();
+  const box = docSurface();
+  if (!box) return;
+  if (key === "tab" || key === "outdent") return indentDocSelection(box, key === "outdent");
+  const start = box.selectionStart;
+  const end = box.selectionEnd;
+  const pair = DOC_CODE_KEY_PAIRS.has(key);
+  const text = pair ? key[0] + box.value.slice(start, end) + key[1] : key;
+  docUndoBreak();
+  docReplaceRange(box, start, end, text);
+  const caret = pair && start === end ? start + 1 : start + text.length;
+  box.setSelectionRange(caret, caret);
+  box.focus();
+}
+
+//: Pressed, a key must not take the focus: the keyboard would close and the
+//: caret would go with it.
+$("doc-phone-bar")?.addEventListener("pointerdown", (event) => {
+  if (event.target.closest(".doc-code-key")) event.preventDefault();
+});
+$("doc-phone-bar")?.addEventListener("click", (event) => {
+  const button = event.target.closest(".doc-code-key");
+  if (button) docCodeKeyPress(button.dataset.codeKey);
+});

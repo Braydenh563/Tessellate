@@ -145,6 +145,9 @@ function syncDocFileType({ prose = true } = {}) {
   //: to prose, plain text or a CSV. The pair swap in one place, so a
   //: document never shows both or neither.
   $("doc-code-format")?.classList.toggle("hidden", type.previewable || ["txt", "csv"].includes(type.ext));
+  //: And the prose-only rows of the ⋯ menu: the image bundle, the Word file and
+  //: the print (`docCodeExportRefused`) and the heading map, which reads `#` lines.
+  for (const id of ["doc-export-zip", "doc-export-docx", "doc-export-pdf", "doc-map-headings"]) $(id)?.classList.toggle("hidden", docIsCodeFile());
   $("doc-code-run")?.classList.toggle("hidden", !docRunnable(type));
   docRunSyncAvailability(type);
   //: Wrapping and whitespace are about a file that does not wrap by itself:
@@ -2307,6 +2310,8 @@ function renderDocStats() {
   const button = $("doc-word-goal");
   const label = $("doc-goal-label");
   if (!button || !label) return;
+  //: A word-count goal is for writing: a code file has no use for one.
+  button.classList.toggle("hidden", docIsCodeFile());
   button.setAttribute("aria-pressed", String(goal > 0));
   button.classList.toggle("has-findings", goal > 0 && words >= goal);
   if (!goal) {
@@ -11705,7 +11710,9 @@ function wrapDocSelection(marker, placeholder = "", boxId = "doc-content") {
 //: written once more for the formats the browser builds itself, so a
 //: document is "Sleep-essay" as .md, .zip, .docx and .html alike.
 function docExportName(title, ext) {
-  const cleaned = String(title || "").replace(/[^\p{L}\p{N}_\s-]/gu, "").trim() || "document";
+  //: A code file's title is its file name ("app.py"): the dot stays, so the
+  //: download is "app.py.html" and not "apppy.html".
+  const cleaned = String(title || "").replace(/[^\p{L}\p{N}_\s.-]/gu, "").replace(/\.{2,}/g, ".").replace(/^\.+/, "").trim() || "document";
   return `${cleaned.replace(/[\s_]+/g, "-").slice(0, 60)}.${ext}`;
 }
 
@@ -11736,13 +11743,31 @@ async function downloadDocumentExport(path, fallbackName) {
   }
 }
 
+//: A code file: no rendered form, and not the plain text or CSV a Word file or
+//: an image bundle still makes sense for. Its Download as .py is the file.
+function docIsCodeFile() {
+  const type = docFileType();
+  return !type.previewable && !["txt", "csv"].includes(type.ext);
+}
+
+//: The prose exports (images bundle, Word) turn markdown into something; a
+//: code file has no markdown, so they say so rather than saving a mangled file
+//: (the palette reaches these through a button the menu has hidden).
+function docCodeExportRefused(what) {
+  if (!docIsCodeFile()) return false;
+  toast(`${what} is for writing. A code file downloads as itself: use Download as .${docFileType().ext}.`, "info");
+  return true;
+}
+
 function exportDocumentBundle() {
+  if (docCodeExportRefused("The image bundle")) return;
   return downloadDocumentExport("export.zip", "document.zip");
 }
 
 //: Written in the browser by documents-word.js (Brief 42), loaded on the
 //: first press: no server extra to install, so no 501.
 async function exportDocumentDocx() {
+  if (docCodeExportRefused("The Word export")) return;
   if (!(await lazyScript("/js/documents-word.js"))) return toast("The Word writer could not be loaded.", true, { action: ["Try again", exportDocumentDocx] });
   return docWordExport();
 }
@@ -12066,6 +12091,15 @@ async function docExportInlineImages(root) {
 async function exportDocumentHtml() {
   if (!currentDoc) return;
   const status = $("doc-status");
+  //: No rendered form means the preview is empty: the page came out as the
+  //: title line alone. The source goes in as preformatted text instead.
+  if (!docFileType().previewable) {
+    const source = docSurface()?.value ?? currentDoc.content ?? "";
+    const savedOn = `${currentDoc.title || "Untitled"} · exported ${new Date().toLocaleDateString()}`;
+    const html = docExportHtmlDocument(currentDoc.title, `<pre><code>${docExportEscape(source)}</code></pre>`, savedOn);
+    await saveFile(docExportName(currentDoc.title, "html"), new Blob([html], { type: "text/html" }));
+    return;
+  }
   //: The remarks travel as footnotes, exactly as they do in a PDF: a document
   //: handed to somebody carries what was said about it rather than dropping it
   //: silently. Set before `withDocPreviewShown`, which renders on the way in.
@@ -12324,6 +12358,9 @@ function docPrintSetupDialog() {
 // engine would add a heavy dependency to produce a worse-looking result.
 async function exportDocumentPdf() {
   if (!currentDoc) return;
+  //: The page it prints is the rendered preview, which a code file does not
+  //: have: the sheet came out blank. Said, rather than printed empty.
+  if (docCodeExportRefused("Print or save as PDF")) return;
   const setup = await docPrintSetupDialog();
   if (!setup) return;
   docApplyPrintSetup(setup);
@@ -22543,6 +22580,12 @@ function docRedoChord(CM) {
 //: a listener bolted onto it would fight the editor rather than extend it.
 //: Same behaviour and the same order (the shifted S before the plain one, for
 //: the reason that handler's own comment gives).
+function docProseChord(run) {
+  if (!docFileType().previewable) return false;
+  run();
+  return true;
+}
+
 function docCmKeymap(CM) {
   const surface = () => docSurface();
   return [
@@ -22590,28 +22633,34 @@ function docCmKeymap(CM) {
       },
     },
     { key: "Mod-/", run: () => { toggleDocComment(surface()); return true; } },
-    { key: "Mod-Shift-s", run: () => { wrapDocSelection("~~", "struck through"); return true; } },
+    //: The chords below write markdown syntax. In a code file they decline
+    //: (`docProseChord`), so Ctrl+B does not wrap a Python line in `**` and
+    //: the engine's own binding for the key answers instead.
+    { key: "Mod-Shift-s", run: () => docProseChord(() => { wrapDocSelection("~~", "struck through"); }) },
     { key: "Mod-s", run: () => { saveDocument(); return true; } },
-    { key: "Mod-b", run: () => { wrapDocSelection("**", "bold text"); return true; } },
-    { key: "Mod-i", run: () => { wrapDocSelection("*", "italic text"); return true; } },
+    { key: "Mod-b", run: () => docProseChord(() => { wrapDocSelection("**", "bold text"); }) },
+    { key: "Mod-i", run: () => docProseChord(() => { wrapDocSelection("*", "italic text"); }) },
     //: Underline, the one chord every word processor shares. CodeMirror binds
     //: Mod-u to "undo selection", which on a prose page just collapses the
     //: selection and reads as the key being dead.
-    { key: "Mod-u", run: () => { applyMarkdown("underline"); return true; } },
-    { key: "Mod-e", run: () => { wrapDocSelection("`"); return true; } },
-    { key: "Mod-1", run: () => { applyMarkdown("h1"); return true; } },
-    { key: "Mod-2", run: () => { applyMarkdown("h2"); return true; } },
-    { key: "Mod-3", run: () => { applyMarkdown("h3"); return true; } },
+    { key: "Mod-u", run: () => docProseChord(() => { applyMarkdown("underline"); }) },
+    { key: "Mod-e", run: () => docProseChord(() => { wrapDocSelection("`"); }) },
+    { key: "Mod-1", run: () => docProseChord(() => { applyMarkdown("h1"); }) },
+    { key: "Mod-2", run: () => docProseChord(() => { applyMarkdown("h2"); }) },
+    { key: "Mod-3", run: () => docProseChord(() => { applyMarkdown("h3"); }) },
     //: Google Docs' list chords; the base key is read, so Shift's `*` is 8.
-    { key: "Mod-Shift-8", run: () => { applyMarkdown("ul"); return true; } },
-    { key: "Mod-Shift-7", run: () => { applyMarkdown("ol"); return true; } },
-    { key: "Mod-Shift-9", run: () => { applyMarkdown("task"); return true; } },
+    { key: "Mod-Shift-8", run: () => docProseChord(() => { applyMarkdown("ul"); }) },
+    { key: "Mod-Shift-7", run: () => docProseChord(() => { applyMarkdown("ol"); }) },
+    { key: "Mod-Shift-9", run: () => docProseChord(() => { applyMarkdown("task"); }) },
     //: One gesture, one entry point: `toggleDocFindBar` opens the engine's
     //: panel here and the app's own bar on the fallback, so this binding does
     //: not have to know which is on screen.
     { key: "Mod-f", run: () => { toggleDocFindBar(true); return true; } },
     //: Ctrl+H is Replace in every word processor and editor; the panel is the
     //: same, with the cursor in its Replace field.
+    //: VS Code's Go to line. A code file only; CodeMirror's own binding for
+    //: the key (find next) stays for prose and on F3.
+    { key: "Mod-g", run: (view) => (docFileType().previewable ? false : CM.search.gotoLine(view)) },
     { key: "Mod-h", run: () => { toggleDocFindBar(true); docCmView?.dom.querySelector(".cm-search input[name=replace]")?.focus(); return true; } },
     //: Find in every document (INBOX 404), VS Code's search across files.
     { key: "Mod-Shift-f", run: () => docFindInDocuments() },

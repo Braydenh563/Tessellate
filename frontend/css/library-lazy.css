@@ -7104,3 +7104,82 @@ input[type="color"].wb-mixed {
 .wb-map-node[data-shape="cloud"] .wb-map-text {
   max-width: 56cqw;
 }
+
+/* Go to line (Ctrl+G in a code file) is the same chrome: CodeMirror's dialog
+   panel, the field and button above, a close x at its end. */
+.doc-editor .cm-goto-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  color: var(--text);
+}
+
+.doc-editor .cm-goto-line form {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.doc-editor .cm-goto-line .cm-textfield {
+  background: var(--input-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-3);
+  font: inherit;
+  min-width: 12ch;
+}
+
+.doc-editor .cm-goto-line .cm-textfield:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.doc-editor .cm-goto-line .cm-button {
+  background: var(--ghost-btn-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-3);
+  font: inherit;
+  cursor: pointer;
+}
+
+.doc-editor .cm-goto-line .cm-button:hover,
+.doc-editor .cm-goto-line .cm-button:is(:focus-visible, :has(:focus-visible)) {
+  background: var(--ghost-btn-bg-hover);
+}
+
+.doc-editor .cm-goto-line .cm-dialog-close {
+  min-width: var(--target-min);
+  min-height: var(--target-min);
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+@media (max-width: 599.98px) {
+  /* A code file's bar: the markdown buttons give way to Tab, undo and the
+     brackets (documents-code.js, `docCodeKeyPress`), and the row scrolls
+     sideways because seventeen 44px keys are wider than the phone. */
+  #tab-documents .doc-phone-bar > .doc-code-key {
+    display: none;
+  }
+  #tab-documents.doc-is-code .doc-phone-bar {
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+  #tab-documents.doc-is-code .doc-phone-bar > :not(.doc-code-key) {
+    display: none;
+  }
+  #tab-documents.doc-is-code .doc-phone-bar > .doc-code-key {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+  }
+}

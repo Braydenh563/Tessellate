@@ -60,6 +60,16 @@ def loads(stored: str | None) -> list[dict]:
         return []
 
 
+def first_match(stored: str | None, needle: str) -> dict | None:
+    """The first line with the words in it, as the library shows it under a
+    search: `{"start": ms, "text": line}`, or None when only the name matched."""
+    low = needle.lower()
+    for seg in loads(stored):
+        if low in seg["text"].lower():
+            return {"start": seg["start"], "text": seg["text"]}
+    return None
+
+
 def _stamp(ms: int, mark: str) -> str:
     hours, rest = divmod(ms, 3_600_000)
     minutes, rest = divmod(rest, 60_000)
