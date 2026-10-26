@@ -2,7 +2,7 @@
 
 Generated 2026-10-26 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6518, frontend ids 2549, CSS sections 504, backend routes 622, backend modules 6613, test files 1392, tests 12343, plan headings 976.
+Counts: frontend functions 6518, frontend ids 2549, CSS sections 504, backend routes 622, backend modules 6615, test files 1392, tests 12343, plan headings 976.
 
 ## Frontend functions (6518)
 
@@ -11132,7 +11132,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (6613)
+## Backend modules (6615)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -13146,28 +13146,30 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `pick` | src/tessellate/ai/neighbours.py:42 |
 | `reads_whole` | src/tessellate/ai/neighbours.py:25 |
 
-### src/tessellate/ai/no_model_text.py (18)
+### src/tessellate/ai/no_model_text.py (20)
 
 | Name | File:line |
 |---|---|
-| `Part` | src/tessellate/ai/no_model_text.py:30 |
-| `_blocks` | src/tessellate/ai/no_model_text.py:120 |
-| `_clean_line` | src/tessellate/ai/no_model_text.py:39 |
-| `_count` | src/tessellate/ai/no_model_text.py:35 |
-| `_first_line_title` | src/tessellate/ai/no_model_text.py:66 |
-| `_headings` | src/tessellate/ai/no_model_text.py:140 |
-| `_join_scraps` | src/tessellate/ai/no_model_text.py:183 |
-| `_merge` | src/tessellate/ai/no_model_text.py:160 |
-| `_paragraph_chunks` | src/tessellate/ai/no_model_text.py:164 |
-| `_part` | src/tessellate/ai/no_model_text.py:209 |
-| `_section_chunks` | src/tessellate/ai/no_model_text.py:178 |
-| `_split_heading` | src/tessellate/ai/no_model_text.py:55 |
-| `_strip_rules` | src/tessellate/ai/no_model_text.py:150 |
-| `_top_terms` | src/tessellate/ai/no_model_text.py:103 |
-| `_trim` | src/tessellate/ai/no_model_text.py:44 |
-| `_without_marks` | src/tessellate/ai/no_model_text.py:97 |
-| `draft_title` | src/tessellate/ai/no_model_text.py:76 |
-| `split_notes` | src/tessellate/ai/no_model_text.py:193 |
+| `Part` | src/tessellate/ai/no_model_text.py:33 |
+| `_blocks` | src/tessellate/ai/no_model_text.py:148 |
+| `_clean_line` | src/tessellate/ai/no_model_text.py:66 |
+| `_count` | src/tessellate/ai/no_model_text.py:62 |
+| `_first_line_title` | src/tessellate/ai/no_model_text.py:94 |
+| `_heading` | src/tessellate/ai/no_model_text.py:38 |
+| `_headings` | src/tessellate/ai/no_model_text.py:168 |
+| `_join_scraps` | src/tessellate/ai/no_model_text.py:211 |
+| `_marks_end` | src/tessellate/ai/no_model_text.py:50 |
+| `_merge` | src/tessellate/ai/no_model_text.py:188 |
+| `_paragraph_chunks` | src/tessellate/ai/no_model_text.py:192 |
+| `_part` | src/tessellate/ai/no_model_text.py:237 |
+| `_section_chunks` | src/tessellate/ai/no_model_text.py:206 |
+| `_split_heading` | src/tessellate/ai/no_model_text.py:83 |
+| `_strip_rules` | src/tessellate/ai/no_model_text.py:178 |
+| `_top_terms` | src/tessellate/ai/no_model_text.py:131 |
+| `_trim` | src/tessellate/ai/no_model_text.py:72 |
+| `_without_marks` | src/tessellate/ai/no_model_text.py:125 |
+| `draft_title` | src/tessellate/ai/no_model_text.py:104 |
+| `split_notes` | src/tessellate/ai/no_model_text.py:221 |
 
 ### src/tessellate/ai/note_order.py (9)
 

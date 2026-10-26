@@ -20,10 +20,13 @@ TITLE_WORDS = 7
 #: A part this short is a scrap ("Notes:", "TODO"), not a note: it joins its neighbour.
 SCRAP_WORDS = 4
 
-_HEADING = re.compile(r"^\s{0,3}#{1,6}\s+(\S.*?)(?:\s+#+)?\s*$")
+# Prefixes only, each bounded: the rest of the line is trimmed in Python, so
+# no two unbounded runs of whitespace meet (CodeQL: a line of tabs went
+# polynomial through `\s+(\S.*?)(?:\s+#+)?\s*$`).
+_HEADING_LEAD = re.compile(r"[ \t]{0,3}#{1,6}[ \t]+")
 _RULE = re.compile(r"^\s*(?:-{3,}|\*{3,}|_{3,})\s*$")
 _FENCE = re.compile(r"^\s*(```|~~~)")
-_MARKS = re.compile(r"^(?:\s*(?:[-*+>]|\d+[.)]|\[[ xX]\]|#{1,6}))+\s*")
+_MARK = re.compile(r"[-*+>]|\d+[.)]|\[[ xX]\]|#{1,6}")
 
 
 @dataclass
@@ -32,12 +35,37 @@ class Part:
     content: str
 
 
+def _heading(line: str) -> str | None:
+    """A Markdown heading's text, closing hashes dropped, or None."""
+    lead = _HEADING_LEAD.match(line)
+    if not lead:
+        return None
+    text = line[lead.end() :].rstrip()
+    bare = text.rstrip("#")
+    if bare != text and bare.strip() and bare[-1] in " \t":
+        text = bare.rstrip()
+    return text or None
+
+
+def _marks_end(line: str) -> int:
+    """Where a line's leading list, quote, task and heading marks end (0 when it has none)."""
+    at, end = 0, 0
+    while True:
+        while at < len(line) and line[at] in " \t":
+            at += 1
+        mark = _MARK.match(line, at)
+        if not mark:
+            return end
+        at = end = mark.end()
+
+
 def _count(text: str) -> int:
     return len(re.findall(r"\w+", text))
 
 
 def _clean_line(line: str) -> str:
-    text = _MARKS.sub("", line.strip())
+    stripped = line.strip()
+    text = stripped[_marks_end(stripped) :].lstrip()
     return re.sub(r"[*_`~]+", "", text).strip()
 
 
@@ -58,8 +86,8 @@ def _split_heading(draft: str) -> tuple[str, list[str]]:
     for i, line in enumerate(lines):
         if not line.strip():
             continue
-        found = _HEADING.match(line)
-        return (found.group(1).strip(), lines[i + 1 :]) if found else ("", lines)
+        found = _heading(line)
+        return (found, lines[i + 1 :]) if found else ("", lines)
     return "", lines
 
 
@@ -97,7 +125,7 @@ def draft_title(draft: str) -> str:
 def _without_marks(body: str) -> str:
     """Bullets, quote marks and bold stripped line by line, so the first
     sentence reads as prose rather than as a list item or a quotation."""
-    return "\n".join(_clean_line(line) if _MARKS.match(line) or "*" in line else line for line in body.split("\n"))
+    return "\n".join(_clean_line(line) if _marks_end(line) or "*" in line else line for line in body.split("\n"))
 
 
 def _top_terms(text: str) -> str:
@@ -142,7 +170,7 @@ def _headings(lines: list[str]) -> list[int]:
     for i, line in enumerate(lines):
         if _FENCE.match(line):
             fenced = not fenced
-        elif not fenced and _HEADING.match(line):
+        elif not fenced and _heading(line):
             out.append(i)
     return out
 
@@ -171,7 +199,7 @@ def _paragraph_chunks(lines: list[str]) -> list[str]:
             chunks[-1] += "\n\n" + body
         else:
             chunks.append(body)
-        bare_heading = not bare_heading and len(block) == 1 and bool(_HEADING.match(block[0]))
+        bare_heading = not bare_heading and len(block) == 1 and bool(_heading(block[0]))
     return chunks
 
 
@@ -209,6 +237,6 @@ def split_notes(text: str, limit: int) -> list[Part]:
 def _part(chunk: str) -> Part:
     from tessellate.ai import composer_voice
 
-    found = _HEADING.match(chunk.split("\n", 1)[0])
-    title = found.group(1) if found else composer_voice.title_for(_without_marks(chunk))
+    found = _heading(chunk.split("\n", 1)[0])
+    title = found if found else composer_voice.title_for(_without_marks(chunk))
     return Part(title=title, content=chunk)
