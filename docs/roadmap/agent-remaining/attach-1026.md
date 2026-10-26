@@ -22,7 +22,7 @@ link, the Library opened on Images):
 
 - [ ] A1 One attachment chip recipe for every chat surface (Chat composer, popup agent, Ask): file-type icon or image thumbnail, name with a middle ellipsis that keeps the extension, size, upload progress, a remove button, error state; a DESIGN.md recipe and its lint in the same commit (standing order 11). Measure against Claude, ChatGPT and Notion chips.
 - [ ] A2 Popup agent: attachments become chips, not a markdown link in the text box; removing one before sending deletes the upload (an attached file is not kept in the Library until the message is sent; say so in the chip's title).
-- [ ] A3 Popup agent accepts what Chat accepts (documents, text, code, audio as Chat does), not only images and PDFs; drag and drop and paste.
+- [ ] A3 (log, 15:02: "[HTTP 415] POST /media/upload: Only images and PDFs can be dropped in here") Popup agent accepts what Chat accepts (documents, text, code, audio as Chat does), not only images and PDFs; drag and drop and paste.
 - [ ] A4 Bug: a notification about an uploaded PDF opens Library > Images; it must open Library > Files at that file.
 - [ ] O1 OCR workbench: switching files and pages in the left sidebar is slow; the page and the top pill's page number lag. Measure first (lag-watch.js now logs the frames and their scripts), then render the visible page first, cache rendered pages, cancel a stale render when another file is picked, update the pill at once.
 - [ ] O2 The owner: "I think it waits for rapid ocr or tesserract to read the whole ndocument first before loading the other pages". Check whether a page view waits on the whole-document OCR job; show each page image as soon as it renders and fill its text when that page's OCR lands.

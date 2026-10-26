@@ -212,7 +212,6 @@
  "src/tessellate/entry/tidy.py::_undo_payload": 28,
  "src/tessellate/entry/timewords.py::_clock": 20,
  "src/tessellate/entry/topics.py::detect": 16,
- "src/tessellate/search/engine.py::_explain": 18,
  "src/tessellate/search/engine.py::_with_meaning": 31,
  "src/tessellate/search/index.py::_boards_touched_by_objects": 17,
  "src/tessellate/search/index.py::_index_on_flush": 16,

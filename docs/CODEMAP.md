@@ -2,7 +2,7 @@
 
 Generated 2026-10-26 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6399, frontend ids 2536, CSS sections 503, backend routes 622, backend modules 6530, test files 1362, tests 12156, plan headings 972.
+Counts: frontend functions 6399, frontend ids 2536, CSS sections 503, backend routes 622, backend modules 6531, test files 1362, tests 12156, plan headings 972.
 
 ## Frontend functions (6399)
 
@@ -10988,7 +10988,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (6530)
+## Backend modules (6531)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -18863,27 +18863,28 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `reset` | src/tessellate/search/chunks.py:374 |
 | `stats` | src/tessellate/search/chunks.py:381 |
 
-### src/tessellate/search/engine.py (52)
+### src/tessellate/search/engine.py (53)
 
 | Name | File:line |
 |---|---|
 | `Hit` | src/tessellate/search/engine.py:103 |
 | `_Matrix` | src/tessellate/search/engine.py:150 |
 | `_backend_id` | src/tessellate/search/engine.py:495 |
-| `_candidate_rows` | src/tessellate/search/engine.py:1110 |
+| `_candidate_rows` | src/tessellate/search/engine.py:1114 |
 | `_candidates` | src/tessellate/search/engine.py:753 |
 | `_compact` | src/tessellate/search/engine.py:658 |
-| `_cosine_scores` | src/tessellate/search/engine.py:1364 |
-| `_explain` | src/tessellate/search/engine.py:933 |
+| `_cosine_scores` | src/tessellate/search/engine.py:1368 |
+| `_explain` | src/tessellate/search/engine.py:949 |
+| `_explain_words` | src/tessellate/search/engine.py:933 |
 | `_filter_only` | src/tessellate/search/engine.py:794 |
-| `_filter_rows` | src/tessellate/search/engine.py:1150 |
-| `_flag_filters` | src/tessellate/search/engine.py:993 |
+| `_filter_rows` | src/tessellate/search/engine.py:1154 |
+| `_flag_filters` | src/tessellate/search/engine.py:997 |
 | `_forget` | src/tessellate/search/engine.py:620 |
 | `_forget_from` | src/tessellate/search/engine.py:629 |
-| `_has_attachment_ids` | src/tessellate/search/engine.py:1000 |
-| `_has_ids` | src/tessellate/search/engine.py:1030 |
-| `_having` | src/tessellate/search/engine.py:1143 |
-| `_hit_for` | src/tessellate/search/engine.py:1168 |
+| `_has_attachment_ids` | src/tessellate/search/engine.py:1004 |
+| `_has_ids` | src/tessellate/search/engine.py:1034 |
+| `_having` | src/tessellate/search/engine.py:1147 |
+| `_hit_for` | src/tessellate/search/engine.py:1172 |
 | `_hops_from` | src/tessellate/search/engine.py:873 |
 | `_keep_matrix_in_step` | src/tessellate/search/engine.py:533 |
 | `_keyword_pass` | src/tessellate/search/engine.py:847 |
@@ -18893,31 +18894,31 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_matrix_key` | src/tessellate/search/engine.py:248 |
 | `_mentions` | src/tessellate/search/engine.py:839 |
 | `_normalised_bm25` | src/tessellate/search/engine.py:917 |
-| `_plan_terms` | src/tessellate/search/engine.py:1090 |
+| `_plan_terms` | src/tessellate/search/engine.py:1094 |
 | `_put` | src/tessellate/search/engine.py:574 |
-| `_rank_rows` | src/tessellate/search/engine.py:1202 |
+| `_rank_rows` | src/tessellate/search/engine.py:1206 |
 | `_reconcile` | src/tessellate/search/engine.py:429 |
 | `_remember` | src/tessellate/search/engine.py:555 |
-| `_row_has` | src/tessellate/search/engine.py:1066 |
+| `_row_has` | src/tessellate/search/engine.py:1070 |
 | `_row_ids` | src/tessellate/search/engine.py:268 |
-| `_search_space` | src/tessellate/search/engine.py:1105 |
+| `_search_space` | src/tessellate/search/engine.py:1109 |
 | `_session_space` | src/tessellate/search/engine.py:735 |
-| `_snippet` | src/tessellate/search/engine.py:974 |
+| `_snippet` | src/tessellate/search/engine.py:978 |
 | `_space_clause` | src/tessellate/search/engine.py:715 |
 | `_table_fingerprint` | src/tessellate/search/engine.py:253 |
 | `_term_groups` | src/tessellate/search/engine.py:676 |
 | `_unit` | src/tessellate/search/engine.py:339 |
-| `_with_meaning` | src/tessellate/search/engine.py:1271 |
-| `cached_similar_pairs` | src/tessellate/search/engine.py:1478 |
+| `_with_meaning` | src/tessellate/search/engine.py:1275 |
+| `cached_similar_pairs` | src/tessellate/search/engine.py:1482 |
 | `current_matrix` | src/tessellate/search/engine.py:368 |
 | `forget_vector` | src/tessellate/search/engine.py:606 |
 | `index_counts` | src/tessellate/search/engine.py:671 |
-| `related` | src/tessellate/search/engine.py:1408 |
+| `related` | src/tessellate/search/engine.py:1412 |
 | `rows_for` | src/tessellate/search/engine.py:403 |
-| `search` | src/tessellate/search/engine.py:1219 |
-| `stats` | src/tessellate/search/engine.py:1524 |
+| `search` | src/tessellate/search/engine.py:1223 |
+| `stats` | src/tessellate/search/engine.py:1528 |
 | `vector_view` | src/tessellate/search/engine.py:475 |
-| `vectors_by_id` | src/tessellate/search/engine.py:1432 |
+| `vectors_by_id` | src/tessellate/search/engine.py:1436 |
 | `warm_vectors` | src/tessellate/search/engine.py:346 |
 
 ### src/tessellate/search/index.py (36)

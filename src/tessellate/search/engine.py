@@ -930,6 +930,22 @@ def _normalised_bm25(raw: float, best: float) -> float:
     return max(0.0, min(1.0, raw / best))
 
 
+def _explain_words(weight: float, row: dict, terms: list[str]) -> tuple[float, str]:
+    """Where the words matched: the title, a tag, or the body."""
+    title = (row.get("title") or "").lower()
+    body = " ".join((row.get("body") or "").split()).lower()
+    # A note's "title" is its own first line, so on a one-line note the title
+    # and the body are the same words and "matched the title" would be a
+    # distinction the person cannot see. Only say it when there is a title to
+    # match that the body does not repeat.
+    if title and body != title and any(term in title for term in terms):
+        return weight + 0.01, "matched the title"
+    tags = (row.get("tags") or "").lower()
+    if tags and any(term in tags for term in terms):
+        return weight, "matched a tag"
+    return weight, "matched your words"
+
+
 def _explain(scores: dict[str, float], row: dict, terms: list[str], hop: int | None) -> list[str]:
     """Why this hit is here, in the words the Notes list renders.
 
@@ -937,20 +953,8 @@ def _explain(scores: dict[str, float], row: dict, terms: list[str], hop: int | N
     true reason rather than a fixed sentence with numbers in it.
     """
     said: list[tuple[float, str]] = []
-    title = (row.get("title") or "").lower()
-    body = " ".join((row.get("body") or "").split()).lower()
-    # A note's "title" is its own first line, so on a one-line note the title
-    # and the body are the same words and "matched the title" would be a
-    # distinction the person cannot see. Only say it when there is a title to
-    # match that the body does not repeat.
-    has_real_title = bool(title) and body != title
     if scores["bm25"] > 0:
-        if has_real_title and any(term in title for term in terms):
-            said.append((scores["bm25"] * WEIGHTS["bm25"] + 0.01, "matched the title"))
-        elif (row.get("tags") or "") and any(term in (row.get("tags") or "").lower() for term in terms):
-            said.append((scores["bm25"] * WEIGHTS["bm25"], "matched a tag"))
-        else:
-            said.append((scores["bm25"] * WEIGHTS["bm25"], "matched your words"))
+        said.append(_explain_words(scores["bm25"] * WEIGHTS["bm25"], row, terms))
     #: Any two vectors have a cosine above zero, so a keyword hit would always
     #: claim "similar meaning". With words already matched it takes a close vector.
     if scores["cosine"] >= (EXPLAIN_MEANING_MIN if scores["bm25"] > 0 else 1e-9):
