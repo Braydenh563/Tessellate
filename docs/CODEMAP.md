@@ -2,7 +2,7 @@
 
 Generated 2026-10-26 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6452, frontend ids 2542, CSS sections 503, backend routes 622, backend modules 6533, test files 1364, tests 12169, plan headings 972.
+Counts: frontend functions 6452, frontend ids 2542, CSS sections 503, backend routes 622, backend modules 6533, test files 1364, tests 12172, plan headings 972.
 
 ## Frontend functions (6452)
 
@@ -10633,14 +10633,14 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/graph` | GET | `graph` | src/tessellate/api/routes_graph.py:745 |
 | `/graph/local/{entry_id}` | GET | `graph_local` | src/tessellate/api/routes_graph.py:1212 |
 | `/graph/match` | GET | `graph_match` | src/tessellate/api/routes_graph.py:328 |
-| `/graph/path` | GET | `graph_path` | src/tessellate/api/routes_graph.py:1576 |
-| `/graph/pin/{node_id}` | PUT | `pin_node` | src/tessellate/api/routes_graph.py:1790 |
-| `/graph/pins` | PUT | `pin_nodes` | src/tessellate/api/routes_graph.py:1847 |
+| `/graph/path` | GET | `graph_path` | src/tessellate/api/routes_graph.py:1575 |
+| `/graph/pin/{node_id}` | PUT | `pin_node` | src/tessellate/api/routes_graph.py:1789 |
+| `/graph/pins` | PUT | `pin_nodes` | src/tessellate/api/routes_graph.py:1846 |
 | `/graph/structure` | GET | `graph_structure` | src/tessellate/api/routes_graph.py:1336 |
 | `/graph/topics/name` | PUT | `name_topic` | src/tessellate/api/routes_graph.py:1411 |
 | `/graph/topics/of` | GET | `graph_topics_of` | src/tessellate/api/routes_graph.py:1374 |
 | `/graph/topics/summary` | POST | `topic_summary` | src/tessellate/api/routes_graph.py:1443 |
-| `/graph/unpin-all` | POST | `unpin_all_nodes` | src/tessellate/api/routes_graph.py:1883 |
+| `/graph/unpin-all` | POST | `unpin_all_nodes` | src/tessellate/api/routes_graph.py:1882 |
 | `/greeting` | GET | `greeting` | src/tessellate/api/routes_insights.py:172 |
 | `/hardware` | GET | `hardware_memory` | src/tessellate/api/routes_models.py:696 |
 | `/hardware` | PUT | `save_hardware` | src/tessellate/api/routes_models.py:704 |
@@ -10700,9 +10700,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/logs` | DELETE | `clear_server_logs` | src/tessellate/api/routes_settings.py:2309 |
 | `/logs` | GET | `server_logs` | src/tessellate/api/routes_settings.py:2226 |
 | `/logs/client` | POST | `record_client_error` | src/tessellate/api/routes_settings.py:2245 |
-| `/logs/lag` | DELETE | `clear_lag_reports` | src/tessellate/api/routes_lag.py:50 |
-| `/logs/lag` | GET | `lag_reports` | src/tessellate/api/routes_lag.py:45 |
-| `/logs/lag` | POST | `record_lag` | src/tessellate/api/routes_lag.py:31 |
+| `/logs/lag` | DELETE | `clear_lag_reports` | src/tessellate/api/routes_lag.py:51 |
+| `/logs/lag` | GET | `lag_reports` | src/tessellate/api/routes_lag.py:46 |
+| `/logs/lag` | POST | `record_lag` | src/tessellate/api/routes_lag.py:32 |
 | `/logs/stats` | GET | `server_log_stats` | src/tessellate/api/routes_settings.py:2297 |
 | `/logs/stream` | GET | `stream_server_logs` | src/tessellate/api/routes_settings.py:2325 |
 | `/maps/from-note/{note_id}` | POST | `map_from_note` | src/tessellate/api/routes_map_from_notes.py:446 |
@@ -11719,33 +11719,33 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Mood` | src/tessellate/ai/composer_compose.py:123 |
-| `_clause` | src/tessellate/ai/composer_compose.py:299 |
-| `_fields` | src/tessellate/ai/composer_compose.py:211 |
-| `_fresh` | src/tessellate/ai/composer_compose.py:154 |
-| `_score` | src/tessellate/ai/composer_compose.py:143 |
-| `_slot_on` | src/tessellate/ai/composer_compose.py:201 |
-| `_stable` | src/tessellate/ai/composer_compose.py:116 |
-| `bridge` | src/tessellate/ai/composer_compose.py:254 |
-| `closer` | src/tessellate/ai/composer_compose.py:245 |
-| `eligible` | src/tessellate/ai/composer_compose.py:183 |
-| `frame` | src/tessellate/ai/composer_compose.py:215 |
-| `head` | src/tessellate/ai/composer_compose.py:270 |
-| `join_facts` | src/tessellate/ai/composer_compose.py:260 |
-| `mood_of` | src/tessellate/ai/composer_compose.py:135 |
-| `opener` | src/tessellate/ai/composer_compose.py:236 |
+| `Mood` | src/tessellate/ai/composer_compose.py:124 |
+| `_clause` | src/tessellate/ai/composer_compose.py:300 |
+| `_fields` | src/tessellate/ai/composer_compose.py:212 |
+| `_fresh` | src/tessellate/ai/composer_compose.py:155 |
+| `_score` | src/tessellate/ai/composer_compose.py:144 |
+| `_slot_on` | src/tessellate/ai/composer_compose.py:202 |
+| `_stable` | src/tessellate/ai/composer_compose.py:117 |
+| `bridge` | src/tessellate/ai/composer_compose.py:255 |
+| `closer` | src/tessellate/ai/composer_compose.py:246 |
+| `eligible` | src/tessellate/ai/composer_compose.py:184 |
+| `frame` | src/tessellate/ai/composer_compose.py:216 |
+| `head` | src/tessellate/ai/composer_compose.py:271 |
+| `join_facts` | src/tessellate/ai/composer_compose.py:261 |
+| `mood_of` | src/tessellate/ai/composer_compose.py:136 |
+| `opener` | src/tessellate/ai/composer_compose.py:237 |
 | `persona_cue` | src/tessellate/ai/composer_compose.py:82 |
-| `pick` | src/tessellate/ai/composer_compose.py:158 |
-| `read_emotion` | src/tessellate/ai/composer_compose.py:100 |
-| `say` | src/tessellate/ai/composer_compose.py:283 |
-| `sentence_case` | src/tessellate/ai/composer_compose.py:295 |
-| `span_phrase` | src/tessellate/ai/composer_compose.py:288 |
-| `surfaces` | src/tessellate/ai/composer_compose.py:171 |
-| `tail` | src/tessellate/ai/composer_compose.py:278 |
-| `time_of_day` | src/tessellate/ai/composer_compose.py:307 |
+| `pick` | src/tessellate/ai/composer_compose.py:159 |
+| `read_emotion` | src/tessellate/ai/composer_compose.py:101 |
+| `say` | src/tessellate/ai/composer_compose.py:284 |
+| `sentence_case` | src/tessellate/ai/composer_compose.py:296 |
+| `span_phrase` | src/tessellate/ai/composer_compose.py:289 |
+| `surfaces` | src/tessellate/ai/composer_compose.py:172 |
+| `tail` | src/tessellate/ai/composer_compose.py:279 |
+| `time_of_day` | src/tessellate/ai/composer_compose.py:308 |
 | `voice_for` | src/tessellate/ai/composer_compose.py:69 |
-| `voice_for_persona` | src/tessellate/ai/composer_compose.py:94 |
-| `welcome` | src/tessellate/ai/composer_compose.py:312 |
+| `voice_for_persona` | src/tessellate/ai/composer_compose.py:95 |
+| `welcome` | src/tessellate/ai/composer_compose.py:313 |
 
 ### src/tessellate/ai/composer_digest.py (183)
 
@@ -12212,7 +12212,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_build` | src/tessellate/ai/composer_tables.py:757 |
+| `_build` | src/tessellate/ai/composer_tables.py:760 |
 | `voice_of` | src/tessellate/ai/composer_tables.py:35 |
 
 ### src/tessellate/ai/composer_tone.py (3)
@@ -13171,13 +13171,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_row` | src/tessellate/ai/personal.py:208 |
 | `_written` | src/tessellate/ai/personal.py:190 |
 | `about_me` | src/tessellate/ai/personal.py:358 |
-| `about_own_notes` | src/tessellate/ai/personal.py:397 |
+| `about_own_notes` | src/tessellate/ai/personal.py:400 |
 | `answer` | src/tessellate/ai/personal.py:165 |
 | `asked` | src/tessellate/ai/personal.py:155 |
 | `birthday` | src/tessellate/ai/personal.py:83 |
 | `facts` | src/tessellate/ai/personal.py:97 |
 | `general` | src/tessellate/ai/personal.py:377 |
-| `general_reply` | src/tessellate/ai/personal.py:403 |
+| `general_reply` | src/tessellate/ai/personal.py:406 |
 | `notes_of` | src/tessellate/ai/personal.py:72 |
 
 ### src/tessellate/ai/phrasing.py (8)
@@ -15760,9 +15760,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `PinBody` | src/tessellate/api/routes_graph.py:1769 |
-| `PinRow` | src/tessellate/api/routes_graph.py:1835 |
-| `PinsBody` | src/tessellate/api/routes_graph.py:1843 |
+| `PinBody` | src/tessellate/api/routes_graph.py:1768 |
+| `PinRow` | src/tessellate/api/routes_graph.py:1834 |
+| `PinsBody` | src/tessellate/api/routes_graph.py:1842 |
 | `TopicNameBody` | src/tessellate/api/routes_graph.py:1406 |
 | `TopicSummaryBody` | src/tessellate/api/routes_graph.py:1423 |
 | `_add_attachment_nodes` | src/tessellate/api/routes_graph.py:620 |
@@ -15773,20 +15773,20 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_add_unresolved_nodes` | src/tessellate/api/routes_graph.py:579 |
 | `_age_days` | src/tessellate/api/routes_graph.py:39 |
 | `_build_graph` | src/tessellate/api/routes_graph.py:786 |
-| `_build_structure` | src/tessellate/api/routes_graph.py:1528 |
-| `_build_topics` | src/tessellate/api/routes_graph.py:1499 |
+| `_build_structure` | src/tessellate/api/routes_graph.py:1527 |
+| `_build_topics` | src/tessellate/api/routes_graph.py:1498 |
 | `_cached` | src/tessellate/api/routes_graph.py:118 |
 | `_centrality` | src/tessellate/api/routes_graph.py:285 |
 | `_extractive_summary` | src/tessellate/api/routes_graph.py:1429 |
 | `_graph_fingerprint` | src/tessellate/api/routes_graph.py:97 |
-| `_hop_reasons` | src/tessellate/api/routes_graph.py:1727 |
+| `_hop_reasons` | src/tessellate/api/routes_graph.py:1726 |
 | `_iso_or_none` | src/tessellate/api/routes_graph.py:782 |
 | `_load_entries` | src/tessellate/api/routes_graph.py:1156 |
 | `_local_topology` | src/tessellate/api/routes_graph.py:1168 |
 | `_note_texts` | src/tessellate/api/routes_graph.py:151 |
 | `_path_node` | src/tessellate/api/routes_graph.py:1325 |
 | `_payload_key` | src/tessellate/api/routes_graph.py:670 |
-| `_pin_target` | src/tessellate/api/routes_graph.py:1780 |
+| `_pin_target` | src/tessellate/api/routes_graph.py:1779 |
 | `_preview` | src/tessellate/api/routes_graph.py:196 |
 | `_preview_line` | src/tessellate/api/routes_graph.py:221 |
 | `_similarity_edges` | src/tessellate/api/routes_graph.py:230 |
@@ -15796,15 +15796,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `graph` | src/tessellate/api/routes_graph.py:746 |
 | `graph_local` | src/tessellate/api/routes_graph.py:1213 |
 | `graph_match` | src/tessellate/api/routes_graph.py:329 |
-| `graph_path` | src/tessellate/api/routes_graph.py:1577 |
+| `graph_path` | src/tessellate/api/routes_graph.py:1576 |
 | `graph_structure` | src/tessellate/api/routes_graph.py:1337 |
 | `graph_topics_of` | src/tessellate/api/routes_graph.py:1375 |
 | `name_topic` | src/tessellate/api/routes_graph.py:1412 |
-| `pin_node` | src/tessellate/api/routes_graph.py:1791 |
-| `pin_nodes` | src/tessellate/api/routes_graph.py:1848 |
+| `pin_node` | src/tessellate/api/routes_graph.py:1790 |
+| `pin_nodes` | src/tessellate/api/routes_graph.py:1847 |
 | `reset_graph_cache` | src/tessellate/api/routes_graph.py:135 |
 | `topic_summary` | src/tessellate/api/routes_graph.py:1444 |
-| `unpin_all_nodes` | src/tessellate/api/routes_graph.py:1884 |
+| `unpin_all_nodes` | src/tessellate/api/routes_graph.py:1883 |
 
 ### src/tessellate/api/routes_help.py (8)
 
@@ -15887,11 +15887,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `LagBatch` | src/tessellate/api/routes_lag.py:22 |
-| `_logs_dir` | src/tessellate/api/routes_lag.py:27 |
-| `clear_lag_reports` | src/tessellate/api/routes_lag.py:51 |
-| `lag_reports` | src/tessellate/api/routes_lag.py:46 |
-| `record_lag` | src/tessellate/api/routes_lag.py:32 |
+| `LagBatch` | src/tessellate/api/routes_lag.py:23 |
+| `_logs_dir` | src/tessellate/api/routes_lag.py:28 |
+| `clear_lag_reports` | src/tessellate/api/routes_lag.py:52 |
+| `lag_reports` | src/tessellate/api/routes_lag.py:47 |
+| `record_lag` | src/tessellate/api/routes_lag.py:33 |
 
 ### src/tessellate/api/routes_learned.py (25)
 
@@ -19240,7 +19240,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12169)
+## Tests (12172)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19470,7 +19470,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_overview_787.py | 18 |
 | tests/test_composer_owner_1017.py | 15 |
 | tests/test_composer_parts.py | 4 |
-| tests/test_composer_phrasings_1025.py | 6 |
+| tests/test_composer_phrasings_1025.py | 9 |
 | tests/test_composer_polish.py | 8 |
 | tests/test_composer_relevance_1310.py | 10 |
 | tests/test_composer_route_688.py | 20 |

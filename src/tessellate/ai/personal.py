@@ -388,9 +388,12 @@ _OWN_NOTES = re.compile(
     r"|\bi (?:ever )?(?:wrote|made|saved)\b|\bin (?:my|the) notes\b"
     #: The person's own doings ("what did I do last week", the composer's own
     #: suggested question): their history, which the web cannot know.
-    r"|\b(?:i|we) (?:did|edited|deleted|created|worked on|added|changed)\b"
-    r"|\b(?:did|have) (?:i|we) (?:do|done|make|made|write|written|edit|edited|delete|deleted|create|created|work on|worked on|add|added|change|changed)\b"
-    r"|\bmy (?:history|activity|day|week|month|work)\b"
+    #: A bare "we added" or "my work" is not enough ("what changed in Python
+    #: since we added X", "my work visa rules"): a time word or the question
+    #: shape has to say it is the person's own record.
+    r"|\b(?:i|we) (?:did|edited|deleted|created|worked on|added|changed)(?: \w+)? (?:today|yesterday|recently|lately|this|last)\b"
+    r"|\b(?:what|which|where) (?:did|have) (?:i|we) (?:do|done|make|made|write|written|edit|edited|delete|deleted|create|created|work on|worked on|add|added|change|changed)\b"
+    r"|\bmy (?:history|activity)\b|\bmy (?:day|week|month|work) (?:so far|today|this week)\b"
 )
 
 

@@ -1459,14 +1459,13 @@ def topic_summary(body: TopicSummaryBody, session: Session = Depends(get_session
         raise HTTPException(status_code=404, detail="Those notes could not be found.")
     readable = sorted((e for e in rows if not e.is_private), key=lambda e: e.id)
     key = tuple((e.id, str(e.updated_at or e.created_at)) for e in readable)
-    fallback = _extractive_summary(session, rows, readable, body.terms)
     with _cache_lock:
         hit = _summaries.get(key)
     if hit:
         return {"summary": hit, "source": "model", "cached": True}
     ollama = deps.get_ollama()
     if not readable or not ollama.is_running():
-        return {"summary": fallback, "source": "terms", "cached": False}
+        return {"summary": _extractive_summary(session, rows, readable, body.terms), "source": "terms", "cached": False}
     lines = []
     for entry in readable[: topic_finder.SUMMARY_NOTES]:
         text = " ".join(manager.readable_content(entry).split())
@@ -1484,7 +1483,7 @@ def topic_summary(body: TopicSummaryBody, session: Session = Depends(get_session
     except Exception:  # noqa: BLE001  # any model failure reads as "no model"
         summary = ""
     if not summary:
-        return {"summary": fallback, "source": "terms", "cached": False}
+        return {"summary": _extractive_summary(session, rows, readable, body.terms), "source": "terms", "cached": False}
     summary = summary[:300]
     with _cache_lock:
         _summaries[key] = summary
