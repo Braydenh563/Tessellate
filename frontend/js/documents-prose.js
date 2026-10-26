@@ -2829,7 +2829,7 @@ function docSmartPasteEvent(event, view) {
   const url = pasteUrl(plain);
   if (url) return docPasteUrlEvent(event, view, url, plain);
   const html = data.getData("text/html") || "";
-  if (html && DOC_RICH_TAGS.test(html)) return false;
+  if (html && docHtmlIsRich(html)) return false;
   if (pasteLines(plain).length < 2) return false;
   const { from, to } = sel.main;
   let variants = docPasteTextVariants(plain, view.state.doc.toString(), from, to);

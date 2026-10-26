@@ -49,3 +49,16 @@ def test_a_picture_pasted_or_dropped_into_a_document_is_uploaded():
     assert 'el?.closest?.("#doc-editor")' in code
     assert 'box.kind === "codemirror" && e.clipboardData.getData("text/plain")' in code
     assert "box.view.posAtCoords({ x: e.clientX, y: e.clientY })" in code
+
+
+def test_emphasis_kept_only_in_a_span_style_is_a_rich_paste_unless_it_is_code():
+    # dog3d-1026:7: a lone <span style="font-weight:700"> arrived as plain text. Browser check
+    # (scratchpad/ui-sweeps/mmdoc1005-richpaste.js): "**Heavy words**", "*Soft words*", and a
+    # monospace white-space:pre copy with a bold token stays plain.
+    body = DOCS[DOCS.index("const DOC_RICH_STYLE"):DOCS.index("let docPastePlain")]
+    assert "font-weight" in body and "font-style" in body
+    assert "white-space" in body and "consolas" in body
+    assert "DOC_RICH_TAGS.test(html) || (DOC_RICH_STYLE.test(html) && !DOC_CODE_HTML.test(html))" in body
+    # Both paste handlers ask the one question.
+    prose = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents-prose.js").read_text(encoding="utf-8")
+    assert "docHtmlIsRich(html)" in DOCS and "docHtmlIsRich(html)" in prose

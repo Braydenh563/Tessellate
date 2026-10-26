@@ -21,12 +21,12 @@ Driven as a student at 1440x900 and 390x844, mouse and keyboard; scripts live in
 
 ## Found, not fixed
 
-- Live scroll worst frame 132 ms on the 8,221-word document (Source 29 ms): decoration cost on long Live documents.
-- docs-1025:5 More menu third row at 600 px not re-measured.
-- dog3d-1026:7 lone-span HTML paste still arrives as plain text (rare).
+- Live scroll worst frame (dogfix-1026, profiled, not fixed): `doclivescroll.js`, 8,200 words, 80 jumps of about 400px at 40ms, 1440x900. Three runs: Live worst 67 / 117 ms with 1 and 6 long tasks (53 and 441 ms), Source worst 50 / 67 ms with 1 and 2 (52 and 122 ms); median 17 ms both. CPU profile (200us): Live native `(program)` (style, layout, paint) 2795 ms against Source 1456 ms; CodeMirror's own `measure` is 168 against 284 ms, so the cause is not script and not the decoration build (it already walks `view.visibleRanges`). `closeActionMenusOnScroll` (182 / 147 ms), `syncEdgeFade` (117 / 163) and `keepOutlineRowInView` (108 / 81) are the first forced layout after each scroll, charged to whoever reads first, in Live and Source alike. Next step is layout cost of the Live DOM (`contain` on `.cm-line`, fewer wrapper spans), measured with the same script.
+- [x] docs-1025:5 re-measured (dogfix-1026), not broken: `docmorerows.js`, row mode, More open, 600 wide: 27 controls on 4 rows (the strip row plus three of folded tools), strip 486x191, row pitch 42/48/48px, none outside the strip, no sideways scroll. At 360 it is 6 rows, 300x263, still inside (a phone uses its own bar).
+- [x] dog3d-1026:7 lone-span HTML paste: done in dogfix-1026 (`docHtmlIsRich`): a bold or italic span style now counts unless the copy is monospace or `white-space: pre`. `mmdoc1005-richpaste.js`: `**Heavy words**`, `*Soft words*`, and a Consolas copy with a bold token stays `const x = 1;` (8 of 8 cases).
 - Owner decisions still open: docs-1025:4 live default for a stored Source choice; table cell merge; find in selection.
 
 ## Not verified
 
-- Comments, delete and restore, version history, templates, wiki links, math, outline, Live/Source switching and the dark theme were not driven this run.
+- Smoke-driven in dogfix-1026 (`docsmoke1026.js`, dark theme, 1440x900, 0 console or page errors): Live, Source, Split and back switch with the editor present each time; outline 7 rows; version history and the templates dialog (19 buttons) open inside the window; the `[[` typeahead opens a menu. Still not driven: comments, delete and restore, math, and the finer behaviour behind each of these (this was open-and-close, not use). One thing to look at: after Live > Source > Split > Live the heading line read `# Smoke notes` (the caret line's marks, probably by design; not checked).
 - Real-clipboard Ctrl+V from Word or a browser, and real touch on the phone bar (headless only).

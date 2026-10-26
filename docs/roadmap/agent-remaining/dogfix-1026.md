@@ -9,5 +9,9 @@ Port 8797 (8796 was held by another agent). Not pushed.
 ## Found, not fixed
 - 3 root width: `maprootwidth.js` (1440x900): a template root with a 26 character board name is 180x140, four lines, because the centre's ellipse takes `padding-inline: var(--space-7)` off both sides (text column about 100px); a plain-API root is 200 wide and wraps to 3. The width is persisted data (200 default, 180 in templates, the resize grip), so a "widen the root when its words wrap past three lines" rule has to write a width, or the ellipse padding has to shrink; not done, needs a decision.
 
+- 4 Live scroll: profiled, not fixed; see docdog-1026 "Found, not fixed" (native layout and paint, not script).
+- 5 More menu at 600: measured, not broken (4 rows, 486x191, none outside).
+- 6 lone-span paste: done (`docHtmlIsRich`), 8 of 8 paste cases.
+
 ## Next
-- 4 Live scroll worst frame, 5 More menu 600px, 6 lone-span paste, then the never-driven doc features.
+- Live DOM layout cost (`contain` on `.cm-line`, fewer wrapper spans) with `doclivescroll.js`; root width decision; comments, delete and restore, math driven for real use.

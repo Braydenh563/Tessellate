@@ -5702,6 +5702,18 @@ function docTablePasteEvent(event, view) {
 // a code editor's copy is coloured spans and divs, and turning those into
 // paragraphs would break the code it was copying.
 const DOC_RICH_TAGS = /<(h[1-6]|strong|b|em|i|a\s[^>]*href|ul|ol|blockquote|pre|code|img|table|del|s)[\s>]|mso-list/i;
+//: **Emphasis kept only in a span's style counts too** (dog3d-1026:7: a lone
+//: `<span style="font-weight:700">` arrived as plain text, because no tag in
+//: the list above was in it). Not when the copy is code: an editor's copy is a
+//: monospace, `white-space: pre` block whose coloured spans are sometimes bold
+//: or italic, and those must stay code.
+const DOC_RICH_STYLE = /font-weight\s*:\s*(bold|bolder|[6-9]00)\b|font-style\s*:\s*italic/i;
+const DOC_CODE_HTML = /white-space\s*:\s*pre|font-family\s*:[^;"]*(mono|consolas|courier|menlo)/i;
+
+function docHtmlIsRich(html) {
+  return DOC_RICH_TAGS.test(html) || (DOC_RICH_STYLE.test(html) && !DOC_CODE_HTML.test(html));
+}
+
 let docPastePlain = false;
 
 //: **Word's lists are paragraphs, not lists.** A pasted bullet from Word is a
@@ -5865,7 +5877,7 @@ function docRichPasteEvent(event, view) {
   docPastePlain = false;
   if (plain || view.dom.classList.contains("doc-content-code")) return false;
   const html = event.clipboardData?.getData("text/html") || "";
-  if (!html || !DOC_RICH_TAGS.test(html)) return false;
+  if (!html || !docHtmlIsRich(html)) return false;
   const markdown = docHtmlToMarkdown(html);
   if (!markdown) return false;
   event.preventDefault();
