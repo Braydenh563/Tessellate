@@ -160,10 +160,26 @@ def _matching(ctx: Ctx, wanted: list[str], start: date, end: date) -> list[dict]
     return out
 
 
+#: A note that is one "Label: value" line and no heading ("Blockers: none."):
+#: the label is what it says, not its name.
+_LABEL_NOTE = re.compile(r"[A-Za-z][\w -]{0,30}: [^:\n]{1,40}")
+
+
+def _is_label_note(content: str) -> bool:
+    lines = [ln.strip() for ln in content.splitlines() if ln.strip()]
+    return len(lines) == 1 and not lines[0].startswith("#") and bool(_LABEL_NOTE.fullmatch(lines[0]))
+
+
 def _item(note: dict, wanted: list[str]) -> str:
     content = str(note.get("content") or "")
+    if _is_label_note(content):
+        return f"- {_day(_made(note))}, [Untitled](#/notes/{note['id']}): {content.strip()}"
     line = re.sub(r"^#{1,6}\s+", "", _sentence_with(content, wanted) or "")
     title = study.title_of(content)
+    #: The sentence read from a headed note starts with the heading ("Scope
+    #: Blockers: none."): the link already says it.
+    if title and line.lower().startswith(title.lower() + " "):
+        line = line[len(title):].strip()
     body = f": {line}" if line and line.strip().lower() != title.strip().lower() else ""
     return f"- {_day(_made(note))}, [{title or 'Untitled'}](#/notes/{note['id']}){body}"
 

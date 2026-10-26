@@ -107,6 +107,19 @@ B_COUNTS = [
     ("number of notes in November last year", r"\b3 notes\b"),
 ]
 
+#: Class C, a note whose first line is a label is named by its title when it
+#: has one, else the way other untitled notes are. (question, must, never)
+C_LABEL_NAMES = [
+    ("notes from November last year", r"(?=.*(?:Untitled\]|From 4 November).*Blockers: none)", r"\[Blockers: none|\[Mood: fine"),
+    ("what did I write in November 2025", r"(?=.*(?:Untitled\]|From 4 November).*Blockers: none)", r"\[Blockers: none|\[Mood: fine"),
+    ("what did I write on 4 November 2025", r"(?:Untitled\]|From 4 November).*Blockers: none", r"\[Blockers: none"),
+    ("what did I write on 18 November 2025", r"(?:Untitled\]|From 18 November).*Mood: fine", r"\[Mood: fine"),
+    ("notes from 16 October 2026", r"(?:Untitled\]|From 16 October).*Status: done", r"\[Status: done"),
+    ("what did I write on 17 October 2026", r"Scope", r"\[Blockers: none|Scope Blockers|Scope\W+Scope"),
+    ("show me notes from 17 October 2026", r"Scope", r"\[Blockers: none|Scope Blockers|Scope\W+Scope"),
+]
+
+
 def _check(said: str, must: str, never: str | None, q: str, cls: str) -> None:
     ok = bool(re.search(must, said, re.I | re.S)) and not (never and re.search(never, said, re.I | re.S))
     assert ok, f"[{cls}] {q!r} -> {said[:600]!r}"
@@ -130,3 +143,8 @@ def test_a_month_with_last_this_or_next_year(ask, q, must, never):
 @pytest.mark.parametrize("q,must", B_COUNTS, ids=[r[0] for r in B_COUNTS])
 def test_a_month_with_a_year_word_is_counted(ask, q, must):
     _check(ask(q), must, NOT_FOUND, q, "B")
+
+
+@pytest.mark.parametrize("q,must,never", C_LABEL_NAMES, ids=[r[0] for r in C_LABEL_NAMES])
+def test_a_label_line_note_is_not_named_by_its_label(ask, q, must, never):
+    _check(ask(q), must, never + "|" + NOT_FOUND, q, "C")

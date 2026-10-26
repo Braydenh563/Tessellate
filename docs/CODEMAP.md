@@ -2,7 +2,7 @@
 
 Generated 2026-10-26 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6556, frontend ids 2556, CSS sections 504, backend routes 622, backend modules 6686, test files 1402, tests 12423, plan headings 976.
+Counts: frontend functions 6556, frontend ids 2556, CSS sections 504, backend routes 622, backend modules 6687, test files 1402, tests 12424, plan headings 976.
 
 ## Frontend functions (6556)
 
@@ -11177,7 +11177,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (6686)
+## Backend modules (6687)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -12212,28 +12212,29 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `mention_subject` | src/tessellate/ai/composer_lists.py:242 |
 | `window_of` | src/tessellate/ai/composer_lists.py:115 |
 
-### src/tessellate/ai/composer_notes.py (18)
+### src/tessellate/ai/composer_notes.py (19)
 
 | Name | File:line |
 |---|---|
 | `_day` | src/tessellate/ai/composer_notes.py:96 |
-| `_heading_lines` | src/tessellate/ai/composer_notes.py:223 |
-| `_item` | src/tessellate/ai/composer_notes.py:163 |
+| `_heading_lines` | src/tessellate/ai/composer_notes.py:239 |
+| `_is_label_note` | src/tessellate/ai/composer_notes.py:168 |
+| `_item` | src/tessellate/ai/composer_notes.py:173 |
 | `_link` | src/tessellate/ai/composer_notes.py:92 |
 | `_made` | src/tessellate/ai/composer_notes.py:143 |
 | `_matching` | src/tessellate/ai/composer_notes.py:148 |
-| `_nothing` | src/tessellate/ai/composer_notes.py:191 |
-| `_outline_lines` | src/tessellate/ai/composer_notes.py:241 |
-| `_outline_note` | src/tessellate/ai/composer_notes.py:232 |
+| `_nothing` | src/tessellate/ai/composer_notes.py:207 |
+| `_outline_lines` | src/tessellate/ai/composer_notes.py:257 |
+| `_outline_note` | src/tessellate/ai/composer_notes.py:248 |
 | `_plural` | src/tessellate/ai/composer_notes.py:88 |
-| `_read_recent` | src/tessellate/ai/composer_notes.py:171 |
+| `_read_recent` | src/tessellate/ai/composer_notes.py:187 |
 | `_sentence_with` | src/tessellate/ai/composer_notes.py:138 |
 | `_wanted` | src/tessellate/ai/composer_notes.py:134 |
 | `_window` | src/tessellate/ai/composer_notes.py:120 |
 | `_without_phrases` | src/tessellate/ai/composer_notes.py:108 |
-| `answer` | src/tessellate/ai/composer_notes.py:268 |
-| `outline` | src/tessellate/ai/composer_notes.py:252 |
-| `recent` | src/tessellate/ai/composer_notes.py:201 |
+| `answer` | src/tessellate/ai/composer_notes.py:284 |
+| `outline` | src/tessellate/ai/composer_notes.py:268 |
+| `recent` | src/tessellate/ai/composer_notes.py:217 |
 
 ### src/tessellate/ai/composer_open.py (10)
 
@@ -19542,7 +19543,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12423)
+## Tests (12424)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19761,7 +19762,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_classes_1026b.py | 2 |
 | tests/test_composer_classes_1026c.py | 6 |
 | tests/test_composer_classes_1026d.py | 10 |
-| tests/test_composer_classes_1026e.py | 4 |
+| tests/test_composer_classes_1026e.py | 5 |
 | tests/test_composer_classes_1357.py | 1 |
 | tests/test_composer_commands.py | 14 |
 | tests/test_composer_compose_1026.py | 20 |
