@@ -4037,6 +4037,7 @@ Link to another note with [[its first few words]]."></textarea>
               <p>Layout is how the notes are placed: Force lets links pull them together, Tree, Radial and Arc lay them out from one note, and Treemap boxes them by category.</p>
               <p>Shape is Force's own: Organic follows the links, Clusters gathers each category, Galaxy puts the best-connected notes in the middle.</p>
               <p>Colour paints the dots by category, topic, note type, age, tag or another rule; Size makes a dot bigger for more connections, a longer note or a more recent one.</p>
+              <p>Match strength appears while Similarity (under Show) is on: raise it to keep only the closest matches.</p>
             </div>
             <div class="graph-option-row">
               <label for="graph-layout" id="graph-layout-label">Layout</label>
@@ -4100,6 +4101,20 @@ Link to another note with [[its first few words]]."></textarea>
                 <option value="recency">Recency</option>
                 <option value="none">None</option>
               </select>
+            </div>
+            <!-- INBOX 1400 and 407: the cutoff for similarity lines, with the
+                 always-open controls, not inside the closed Show fold where
+                 the switch that turns it on is. Shown only while Similarity is
+                 on (graph.js, `graphSyncSimilarityRow`): a cutoff for lines
+                 that are not drawn does nothing, and a row that is hidden
+                 costs no height. At the far left it adds no cutoff and each
+                 note keeps its two closest matches, the backbone
+                 `gcPruneSimilarity` draws. -->
+            <div class="graph-option-row hidden" id="graph-similarity-min-row">
+              <label for="graph-similarity-min">Match strength</label>
+              <input id="graph-similarity-min" type="range" min="55" max="95" value="55"
+                aria-label="Similarity strength"
+                title="Hide similarity lines weaker than this. At the left, each note keeps its two closest matches">
             </div>
             <div class="graph-view-tools">
               <button id="graph-trace-toggle" class="doc-dock-menu-item" type="button" aria-expanded="false"
@@ -4236,8 +4251,8 @@ Link to another note with [[its first few words]]."></textarea>
                 Similarity joins each note to its two closest matches in
                 meaning with a faint dashed line: the stronger the match, the
                 darker the line. Solid lines are links you or Atlas made. Point
-                at a note to see how close each match is, and raise Strength to
-                keep only the closest.
+                at a note to see how close each match is, and raise Match strength
+                (under Size) to keep only the closest.
               </p>
             </div>
             <!-- Two columns, not one (graph.md section 2, beyond its own two
@@ -4287,18 +4302,6 @@ Link to another note with [[its first few words]]."></textarea>
                 <span>Hide unlinked</span>
                 <input type="checkbox" id="graph-hide-orphans">
               </label>
-              <!-- INBOX 407: the cutoff for similarity lines, in the grid's
-                   free cell beside Length by similarity, and shown only while
-                   Similarity is on (graph.js, `graphSyncSimilarityRow`): a
-                   cutoff for lines that are not drawn does nothing. At the far
-                   left it adds no cutoff and each note keeps its two closest
-                   matches, the backbone `gcPruneSimilarity` draws. -->
-              <div class="graph-option-row hidden" id="graph-similarity-min-row">
-                <label for="graph-similarity-min">Strength</label>
-                <input id="graph-similarity-min" type="range" min="55" max="95" value="55"
-                  aria-label="Similarity strength"
-                  title="Hide similarity lines weaker than this. At the left, each note keeps its two closest matches">
-              </div>
             </div>
           </details>
           <!-- How the map is drawn, folded like Physics: set once, then left

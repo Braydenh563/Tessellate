@@ -116,6 +116,46 @@ Left:
 - Show and Time are folds now: Show's Similarity strength slider is hidden while Show is closed.
 - Phone sheet for Options (390): fit not measured (the sheet scrolls by design); ? popovers open in view.
 
-done: 444dd43 (? and fit), e4d28b1 (toast), next commit (two untangle passes, quick relax)
-next: line-clearance check in untangleLayout, then three passes
+done: 444dd43 (? and fit), e4d28b1 (toast), two untangle passes with a quick relax
+next: moved to Round 4 (built there)
 
+
+## Round 4 (line clearance, untangle budget, Show fold)
+
+Sweeps (session scratchpad, not the repo): `g4_run.js` (browser: crossings and notes on lines at rest, `end` time),
+`g4_off.js` (the real worker replayed in node), `g4_exp.py` (variants: no guard, no cleanup, soft margins).
+Browser medians of 3 runs, one server (port 8806), same data per row.
+
+| Item | Before | After |
+| --- | --- | --- |
+| 36 notes, crossings at rest, 1440 / 390 | 62 / 53 | 53 / 51 |
+| 186 notes, crossings at rest, 1440 / 390 | 372 / 355 | 353 / 323 |
+| 36 notes, notes on lines at rest, 1440 | 10 | 0 |
+| `test_graph_layout.py` scenario, notes on lines after 3 passes | 7 | 0 (5 repeat runs) |
+| `end` after init, 36 notes | 3.8 s | 4.1 s (+9% at 1440, +11% at 390) |
+| `end` after init, 186 notes | 6.8 s | 7.2 s (+5% at 1440) |
+| Pass time budget | 200 ms | 2 ms a note, 200 to 600 ms (36: 200, 186: 372) |
+| Options panel, Show closed, Similarity on | Strength hidden | Match strength under Size, no new fold height at 1440x900 (scrolls by 26 px with Similarity on: 554 in 528) |
+
+The 186-note dataset here differs from Round 3's, so the absolute numbers do not compare with that table.
+
+Decisions:
+- A guard on each move failed on the measure. A strict clearance rejected every move at 186 notes (140 of 186
+  already sit near a line); a no-more-clashes count cost 11 crossings at 36 notes (61 against 50). So the passes
+  run free and one cleanup at the end (`untangleCleanup`) projects the notes left on a line off it: iterative,
+  collision radii as the collide force, a ring search for what is left, no tick after it (`untangle.holding`),
+  or the forces pull the notes straight back.
+- Three passes at 36 notes (53 / 57 crossings with two, 50 / 49 with three, offline); two past `UNTANGLE_BIG`
+  (100) because the third costs a second of relax for a tenth of the crossings. A pass that gains under 3% ends the rest.
+- Glide after a pass 12 frames, after the cleanup 8 (18 each regressed settle by 40%).
+- Budget by map size: at 186 notes the larger budget alone is worth 3 to 4% fewer crossings; the cap is the settle time.
+- Slider moved, Show not opened: opening it costs the panel the height of its toggles (over the 11rem cap).
+
+Left:
+- The cleanup is skipped over 100 notes (measured 220 to 320 ms and no gain): at 186 notes about 45 notes stay on lines.
+- Settle is at +9% / +11% / +5%, at the edge of the 10% cap; a fourth pass or a longer glide would break it.
+- Not verified: the phone sheet for Options at 390 (fit not measured), the canvas curve against the worker's 5-point
+  polyline, and real inference (fake transport only).
+
+done: untangle (3 passes, cleanup, scaled budget), Match strength under Size
+next: cleanup for 100+ notes inside the time cap (a grid of line segments instead of the all-pairs near list), then re-measure settle
