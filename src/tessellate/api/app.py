@@ -77,6 +77,7 @@ from tessellate.api import (
     routes_graph,
     routes_help,
     routes_insights,
+    routes_lag,
     routes_library,
     routes_maintenance,
     routes_models,
@@ -1303,6 +1304,7 @@ def _include_routers(app: FastAPI, locked: list) -> None:
     app.include_router(routes_models.router, dependencies=locked)
     app.include_router(routes_settings.router, dependencies=locked)
     app.include_router(routes_maintenance.router, dependencies=locked)
+    app.include_router(routes_lag.router, dependencies=locked)
     # The browser's own crash reports, which have to reach the log *before*
     # unlock: that is when the failure they describe happens. One route, and
     # `routes_settings.open_router`'s own comment says why it is separate.

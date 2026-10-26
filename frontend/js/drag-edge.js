@@ -76,4 +76,9 @@ function initDragSelectEdgeScroll() {
   }, true);
 }
 
+//: **The lag log rides this bundle** (lag-watch.js): app.js is at its gzip
+//: ratchet (tests/test_static_compression.py), and this file is fetched with
+//: the late bundles three seconds after boot, which is when the watcher
+//: should start; its observers are buffered, so boot's own stalls still count.
+lazyScript("/js/lag-watch.js");
 initDragSelectEdgeScroll();
