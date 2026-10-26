@@ -6410,6 +6410,32 @@ function clearWbSelection() {
   wbUpdateSelectionBar();
 }
 
+//: **A selection never outlives its items.** Undo of a paste, a redo of a
+//: delete, another tab's change or the history panel can take away what is
+//: selected without a deselect behind it; the board kept the dead id, and
+//: Export > Selection then threw "Cannot read properties of undefined
+//: (reading 'width')" and wrote nothing, with a selection bar over nothing.
+//: Run at the top of every render, so no path has to remember it.
+function wbPruneSelection() {
+  let changed = false;
+  if (wbSelectedItem && !wbFindItem(wbSelectedItem.kind, wbSelectedItem.id)) {
+    wbSelectedItem = null;
+    changed = true;
+  }
+  for (const key of [...wbMultiSelection]) {
+    const at = key.indexOf(":");
+    const list = wbState[WB_LIST_BY_KIND[key.slice(0, at)]] || [];
+    if (!list.some((i) => String(i.id) === key.slice(at + 1))) {
+      wbMultiSelection.delete(key);
+      changed = true;
+    }
+  }
+  if (!changed) return;
+  wbApplySelectionHighlight();
+  wbSyncMapToolState();
+  wbUpdateSelectionBar();
+}
+
 //: **Where the context bar goes.** Above the selection, in the view's own
 //: coordinates, from the item's board bbox through the live zoom transform,
 //: re-placed on every render and every pan/zoom frame. What it *contains* is
@@ -20654,6 +20680,7 @@ function renderWhiteboardNow() {
 }
 
 function renderWhiteboard() {
+  wbPruneSelection();
   //: A render replaces every map node's element, so every measurement taken
   //: from the previous set is about to describe something that is gone.
   wbClearMapNodeSizeCache();
