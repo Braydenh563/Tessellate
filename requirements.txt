@@ -15,7 +15,7 @@
 # Regenerate it whenever you change this file.
 
 # Web server
-fastapi>=0.143.3,<1.0
+fastapi>=0.161.1,<1.0
 uvicorn[standard]>=0.54.0,<1.0
 
 # Database (SQLite via ORM)
