@@ -2,10 +2,34 @@
 // driving real ClipboardEvents with a DataTransfer.
 //   BASE=http://127.0.0.1:8798 node docpaste.js
 const { boot } = require('./lib.js');
+// dog3d-1026: typed pipe tables, table exit keys, Read-view table, list markers, untouched documents.
+//   DOG3D=1 WIDTHS=1440,720,390 BASE=... node docpaste.js
+async function dog3d(page, ev, width) {
+  const r = {};
+  const text = () => ev(() => docText());
+  const put = (t, at) => ev(({ t, at }) => { const v = docSurface().view; v.focus(); v.dispatch({ changes: { from: 0, to: v.state.doc.length, insert: t }, selection: { anchor: at < 0 ? t.length : at } }); }, { t, at });
+  await put('', -1);
+  for (const line of ['| A | B |', '| --- | --- |', '| 1 | 2 |']) { await page.keyboard.type(line); await page.keyboard.press('Enter'); }
+  r.typedTable = (await text()) === '| A | B |\n| --- | --- |\n| 1 | 2 |\n';
+  await put('| A | B |\n| --- | --- |\n| 1 | 2 |', 30);
+  await page.keyboard.press('Control+Enter');
+  r.ctrlEnterBlankLine = (await text()) === '| A | B |\n| --- | --- |\n| 1 | 2 |\n\n';
+  await put('| A | B |\n| --- | --- |\n| 1 | 2 |', 30);
+  await page.keyboard.press('Tab'); await page.keyboard.press('Tab'); await page.keyboard.press('Enter');
+  r.emptyRowExit = (await text()) === '| A | B |\n| --- | --- |\n| 1 | 2 |\n\n';
+  await put('- one\n- two\n\n1. first\n', -1); await page.waitForTimeout(500);
+  r.markers = await ev(() => [...document.querySelectorAll('.cm-md-li')].map((l) => { const w = document.createTreeWalker(l, NodeFilter.SHOW_TEXT); const xs = []; let n; while ((n = w.nextNode())) { if (!n.nodeValue.trim()) continue; const g = document.createRange(); g.selectNodeContents(n); const b = g.getBoundingClientRect(); xs.push([Math.round(b.left - l.getBoundingClientRect().left), Math.round(b.width)]); } return xs.slice(0, 2); }));
+  await put('| Stage | Share of night | Notes |\n| --- | --- | --- |\n| REM | 25% | dreams |\n| Deep | 20% | repair |\n| Light | 50% | most of the night |\n', 0);
+  await ev(() => setDocView('rendered')); await page.waitForTimeout(1000);
+  r.readTable = await ev(() => { const t = document.querySelector('#doc-preview .md-table'); const c = t.closest('.md-table-block').querySelector('.code-lang'); return { mono: /mono/i.test(getComputedStyle(t).fontFamily), w: Math.round(t.getBoundingClientRect().width), page: Math.round(document.getElementById('doc-preview').clientWidth), cap: c.textContent }; });
+  await ev(() => setDocView('live'));
+  return r;
+}
+
 (async () => {
   const out = {};
   for (const width of (process.env.WIDTHS || "1440,720").split(",").map(Number)) {
-    const { browser, page } = await boot({ viewport: { width, height: 900 } });
+    const { browser, page } = await boot({ viewport: { width, height: 900 }, args: ['--disable-dev-shm-usage'] });
     const ev = (fn, a) => page.evaluate(fn, a);
     const id = await ev(async () => (await apiJson('/documents', { method: 'POST', body: JSON.stringify({ title: `Paste ${Date.now()}`, content: 'Intro line\n\nSee docs here\n\nend\n', file_type: 'md' }) })).id);
     await ev(() => switchTab('documents')); await page.waitForTimeout(700);
@@ -19,6 +43,7 @@ const { boot } = require('./lib.js');
     }, { data, sel });
     const chip = () => ev(() => { const c = document.querySelector('.doc-paste-chip'); if (!c || c.classList.contains('hidden')) return null; const b = c.getBoundingClientRect(); return { l: Math.round(b.left), t: Math.round(b.top), r: Math.round(b.right), b: Math.round(b.bottom), fits: b.left >= 0 && b.top >= 0 && b.right <= innerWidth && b.bottom <= innerHeight, w: Math.round(b.width), h: Math.round(b.height) }; });
     const text = () => ev(() => docText());
+    if (process.env.DOG3D) { out[width] = await dog3d(page, ev, width); await browser.close(); continue; }
     const r = {};
     const turnInto = async () => {
     // 8. Turn into (INBOX docs5): menu from the selection bar, palette row, one undo.
