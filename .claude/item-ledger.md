@@ -34,3 +34,6 @@ date | item | type | rung | rework | note
 2026-10-26 | composer round 4: archived, mentions, day runs, year, label lines | feature | sonnet | 0 | 
 2026-10-26 | graph round 4: untangle passes, cleanup, budget | ui | sonnet | 1 | 
 2026-10-26 | whiteboard leftovers: origin cache, insert z, export, table widths | bugfix | sonnet | 1 | 
+2026-10-26 | CI: 10 repo-wide lint failures from merges | bugfix | sonnet | 0 | 
+2026-10-26 | composer round 5: archived lists, month+year word, label names | feature | sonnet | 0 | 
+2026-10-26 | graph round 5: line grid cleanup on big maps | ui | sonnet | 0 | 
