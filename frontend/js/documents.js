@@ -145,9 +145,10 @@ function syncDocFileType({ prose = true } = {}) {
   //: to prose, plain text or a CSV. The pair swap in one place, so a
   //: document never shows both or neither.
   $("doc-code-format")?.classList.toggle("hidden", type.previewable || ["txt", "csv"].includes(type.ext));
-  //: And the prose-only rows of the ⋯ menu: the image bundle, the Word file and
-  //: the print (`docCodeExportRefused`) and the heading map, which reads `#` lines.
-  for (const id of ["doc-export-zip", "doc-export-docx", "doc-export-pdf", "doc-map-headings"]) $(id)?.classList.toggle("hidden", docIsCodeFile());
+  //: And the prose-only rows of the ⋯ menu: the image bundle, the Word file
+  //: (`docCodeExportRefused`) and the heading map, which reads `#` lines. Print
+  //: stays: a code file prints its own listing (`docCodePrintFill`).
+  for (const id of ["doc-export-zip", "doc-export-docx", "doc-map-headings"]) $(id)?.classList.toggle("hidden", docIsCodeFile());
   $("doc-code-run")?.classList.toggle("hidden", !docRunnable(type));
   docRunSyncAvailability(type);
   //: Wrapping and whitespace are about a file that does not wrap by itself:
@@ -12169,20 +12170,81 @@ function docPrintIsOurs() {
   }
 }
 
+//: The lines a code file prints: one row per line, and the newline that ends
+//: the last one is not a row of its own.
+function docCodePrintRows(text) {
+  const value = String(text || "").replace(/\r\n?/g, "\n");
+  if (!value) return [];
+  const rows = value.split("\n");
+  if (rows[rows.length - 1] === "") rows.pop();
+  return rows;
+}
+
+//: **A code file prints as code** (the owner's dogfood, 2026-10-26: "no print
+//: or export path for code files"). It has no rendered form, so the preview
+//: pane that every prose print goes through is filled with a listing instead:
+//: one row per line, the line number in a column of its own, the text
+//: monospaced and wrapping inside its row. The same pane, the same page setup
+//: and the same `printing-doc` rules (the editor, the dock and the panels go),
+//: so Ctrl+P and the menu's Print or save as PDF put the same page on paper.
+//: Measured before: a plain Ctrl+P printed the live editor, 1408px wide and
+//: only as much of a long file as the editor had drawn.
+function docCodePrintFill() {
+  const rows = docCodePrintRows(docText());
+  const listing = document.createElement("div");
+  listing.className = "doc-code-print";
+  //: The number column is as wide as the last number, set on each row (the
+  //: stylesheet's own 3ch is the width before it is known).
+  const columns = `${String(rows.length).length}ch minmax(0, 1fr)`;
+  const frame = document.createDocumentFragment();
+  rows.forEach((line, index) => {
+    const row = document.createElement("div");
+    row.className = "doc-code-print-line";
+    row.style.gridTemplateColumns = columns;
+    const number = document.createElement("span");
+    number.className = "doc-code-print-no";
+    number.textContent = String(index + 1);
+    const text = document.createElement("span");
+    text.className = "doc-code-print-text";
+    text.textContent = line;
+    row.append(number, text);
+    frame.appendChild(row);
+  });
+  listing.appendChild(frame);
+  $("doc-preview").replaceChildren(listing);
+  document.body.classList.add("printing-code");
+}
+
+function docCodePrintClear() {
+  document.body.classList.remove("printing-code");
+  $("doc-preview").replaceChildren();
+}
+
+//: The start of a plain Ctrl+P: the page the print will show, and the class
+//: that lets the print stylesheet take the application away.
+function docPrintBegin() {
+  if (docIsCodeFile()) {
+    docCodePrintFill();
+    docPrintRestore = docCodePrintClear;
+  } else {
+    const wasView = docView;
+    if (docView !== "rendered") {
+      setDocView("rendered");
+      docPrintRestore = () => setDocView(wasView);
+    }
+    renderDocPreview();
+  }
+  //: A plain Ctrl+P prints on the page last chosen (decision 7).
+  docApplyPrintSetup();
+  document.body.classList.add("printing-doc");
+}
+
 window.addEventListener("beforeprint", () => {
   //: Already set means the Export menu started this print and has its own
   //: cleanup, including the footnotes it asked for. Left alone entirely.
   if (document.body.classList.contains("printing-doc")) return;
   if (!docPrintIsOurs()) return;
-  const wasView = docView;
-  if (docView !== "rendered") {
-    setDocView("rendered");
-    docPrintRestore = () => setDocView(wasView);
-  }
-  renderDocPreview();
-  //: A plain Ctrl+P prints on the page last chosen (decision 7).
-  docApplyPrintSetup();
-  document.body.classList.add("printing-doc");
+  docPrintBegin();
 });
 
 window.addEventListener("afterprint", () => {
@@ -12353,17 +12415,30 @@ function docPrintSetupDialog() {
   });
 }
 
+//: The menu's print of a code file: the listing in the preview pane, the
+//: print class on for as long as the browser's dialog is open.
+function docCodePrintNow() {
+  docCodePrintFill();
+  document.body.classList.add("printing-doc");
+  const cleanup = () => {
+    document.body.classList.remove("printing-doc");
+    docCodePrintClear();
+    window.removeEventListener("afterprint", cleanup);
+  };
+  window.addEventListener("afterprint", cleanup);
+  setTimeout(() => window.print(), 150);
+}
+
 // PDF via the browser's own print dialog: it renders the preview exactly as
 // shown and every platform already has "Save as PDF" there. Bundling a PDF
 // engine would add a heavy dependency to produce a worse-looking result.
 async function exportDocumentPdf() {
   if (!currentDoc) return;
-  //: The page it prints is the rendered preview, which a code file does not
-  //: have: the sheet came out blank. Said, rather than printed empty.
-  if (docCodeExportRefused("Print or save as PDF")) return;
   const setup = await docPrintSetupDialog();
   if (!setup) return;
   docApplyPrintSetup(setup);
+  //: A code file has no rendered form to show: it prints its listing.
+  if (docIsCodeFile()) return docCodePrintNow();
   //: Set *before* `withDocPreviewShown`, which renders the pane on the way in:
   //: the whole point of the flag is that the render it triggers is the one that
   //: carries the footnotes (DOCUMENTS_PLAN Phase 5 item 1, "exported as
@@ -16821,11 +16896,42 @@ function docLineCount(text) {
   return textCounts(value).lines + (value.endsWith("\n") ? 0 : 1);
 }
 
+//: What a code file's status bar says: the lines, the characters and the
+//: language, in that order. Words and a reading time are about prose; a
+//: `.py` file has neither a reader nor a word count worth a bar's room. The
+//: same two counters as the prose line (`docLineCount`, `textCounts`).
+function docCodeCountsText(text, label) {
+  const lines = docLineCount(text);
+  const { chars } = textCounts(String(text || ""));
+  return [`${lines.toLocaleString()} line${lines === 1 ? "" : "s"}`, `${chars.toLocaleString()} char${chars === 1 ? "" : "s"}`, label]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+const DOC_COUNTS_TITLE_PROSE = "Characters, words, lines and roughly how long this takes to read. Press for the full statistics";
+const DOC_COUNTS_TITLE_CODE = "Lines, characters and the language. Press for the full statistics";
+
+//: A code file's counts, drawn. Decided the way `docProseChord` decides: by the
+//: file type's own `previewable`, through `docIsCodeFile`, so a `.txt` or a
+//: `.csv` keeps the prose line it is read as.
+function renderDocCodeCounts(counts) {
+  const text = docText();
+  counts.textContent = docCodeCountsText(text, docFileType().label);
+  counts.title = DOC_COUNTS_TITLE_CODE;
+  if (docFocusOn()) {
+    const lines = docLineCount(text);
+    docSetStatusText($("doc-focus-words"), lines ? `${lines.toLocaleString()} line${lines === 1 ? "" : "s"}` : "");
+    docSetStatusText($("doc-focus-title"), $("doc-title")?.value.trim() || "Untitled");
+  }
+}
+
 //: The counts. A whole-document pass, which is why it is scheduled rather
 //: than run on the keystroke (see `scheduleDocFacts`).
 function renderDocCounts() {
   const counts = $("doc-counts");
   if (!counts) return;
+  if (docIsCodeFile()) return renderDocCodeCounts(counts);
+  counts.title = DOC_COUNTS_TITLE_PROSE;
   //: **A remark is not prose you wrote for a reader**, so it is not in the
   //: count, the character total or the reading time. Measured on a 128-word
   //: document with two comments in it: 134 words counted before this, 128

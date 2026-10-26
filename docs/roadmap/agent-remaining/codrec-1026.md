@@ -18,8 +18,5 @@ Driven with Playwright at 1440x900 and 390x844, light and dark, server on :8802 
 
 ## Remaining
 
-- Print a code file: the PDF row is refused with a message; a real print path (source in a print-only block) is still to build (`exportDocumentPdf`, documents.js, uses `withDocPreviewShown`).
-- The status bar still shows prose counts (words, reading time) in a code file.
-- The code assistant's Ask with an empty box does nothing and says nothing (`#doc-assist-send`).
-- Recording waveform is 40 px tall (`--control-h-touch`), under the 44 px the buttons beside it meet.
-- Not driven: note templates beyond the silent-click audit, attachments, OCR with an engine present (`MODE=present`), real transcription (no add-on in this sandbox), real microphone and real touch.
+- Done in the second pass (see `git log`): the code status bar (lines, characters, language), the Assistant's empty Ask (field flagged, hint under it), a code file's print (listing with line numbers; Ctrl+P and the menu row), the recording waveform (64px, 48px on a phone).
+- Not driven: the Assistant hint on a phone's sheet, a print in a real browser dialog (measured with `emulateMedia` print and `page.pdf`), a print of a file with very long unbroken lines, note templates beyond the silent-click audit, attachments, OCR with an engine present (`MODE=present`), real transcription (no add-on in this sandbox), real microphone and real touch.

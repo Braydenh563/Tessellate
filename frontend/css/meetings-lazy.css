@@ -94,12 +94,20 @@
 .recording-wave {
   display: block;
   width: 100%;
-  /* A seek control: one touch target tall. */
-  height: var(--control-h-touch);
+  /* A seek control that is also the picture of the take: 1.6 touch targets
+     (64px) so the peaks read, where one target (40px) squeezed them into a
+     strip. The phone keeps to 1.2 (48px) below, so a card stays short. */
+  height: calc(var(--control-h-touch) * 1.6);
   border-radius: var(--radius-md);
   background: var(--chip-bg);
   cursor: pointer;
   touch-action: none;
+}
+
+@media (max-width: 599.98px) {
+  .recording-wave {
+    height: calc(var(--control-h-touch) * 1.2);
+  }
 }
 
 .recording-time {
