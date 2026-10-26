@@ -89,6 +89,8 @@
  "shell-reminders.js::mutation-observer": 2,
  "shell-reminders.js::raf": 3,
  "shell-reminders.js::resize-observer": 4,
+ "sketch-pad.js::raf": 2,
+ "sketch-pad.js::resize-observer": 1,
  "spaces-find.js::interval": 1,
  "status.js::interval": 1,
  "status.js::mutation-observer": 1,

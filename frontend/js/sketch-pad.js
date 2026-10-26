@@ -26,23 +26,20 @@
     title: "Quick sketch",
     //: async (blob, caption) => void. Null hides Save as note.
     save: null,
+    //: (message, isError) => void. Null leaves the status line to say it.
     toast: null,
+    //: (message, { confirmLabel, cancelLabel }) => Promise<boolean>.
     confirm: async (message) => window.confirm(message),
+    //: { get(key, fallback), set(key, value) }. With none the settings last
+    //: the visit: storage is the page's to choose (the app's `prefs`, the
+    //: standalone page's localStorage in its boot.js), never the pad's.
     prefs: {
+      memo: new Map(),
       get(key, fallback) {
-        try {
-          const raw = window.localStorage.getItem(`sketch-pad:${key}`);
-          return raw === null ? fallback : JSON.parse(raw);
-        } catch {
-          return fallback;
-        }
+        return this.memo.has(key) ? this.memo.get(key) : fallback;
       },
       set(key, value) {
-        try {
-          window.localStorage.setItem(`sketch-pad:${key}`, JSON.stringify(value));
-        } catch {
-          /* private window or blocked storage: the setting lasts the visit */
-        }
+        this.memo.set(key, value);
       },
     },
     //: The app hands over its own table (HIGHLIGHTER_STYLE, media.js), so the
@@ -268,16 +265,26 @@
       "data-help-for": "sketch-help", "aria-controls": "sketch-help", "aria-expanded": "false",
       title: "About the sketch pad", "aria-label": "About the sketch pad",
     }, icon("question"));
-    const keys = TOOLS.map((t) => h("li", {}, h("kbd", {}, t.key), ` ${t.label}: ${t.tip}`));
+    //: One line per area, the tools as a key and a name: each tool's own
+    //: tooltip says what Shift and Alt do, and the panel fits without
+    //: scrolling (it scrolled at 548px in a 510px popover with a line each).
+    const keys = TOOLS.map((t) => h("li", {}, h("kbd", {}, t.key), ` ${t.label}`));
+    const areas = [
+      ["Tools", "pick one on the left or press its letter. A shape runs corner to corner; Alt draws it from the centre, Shift keeps it square, round or at 45 degrees."],
+      ["Colours", "the ink well colours lines, text and the bucket, the fill well the inside of shapes. A swatch sets the ringed well; X swaps them."],
+      ["Shape style", "outline, outline and fill, or fill only, for rectangles, ellipses and polygons."],
+      ["Size", "[ and ] change it; with the Text tool it is the text size."],
+      ["More", "sets the paper colour or adds a picture under the ink; Clear keeps both."],
+      ["Keys", "+ and - zoom, 0 fits, Ctrl+Z undoes, Ctrl+Shift+Z or Ctrl+Y redoes, Ctrl+A selects the page, Esc cancels a shape or places the text."],
+    ];
     const panel = h("div", { class: "help-body hidden sp-help", id: "sketch-help", role: "dialog", "aria-label": "About the sketch pad" },
-      h("p", {}, "Pick a tool on the left or press its letter. Shapes draw corner to corner; Alt draws from the centre and Shift keeps them square, round or at 45 degrees. Esc cancels a shape in progress."),
       h("ul", { class: "sp-help-keys" }, keys),
-      h("p", {}, "[ and ] change the size, X swaps the ink and fill colours, + and - zoom, 0 fits the page, Ctrl+Z undoes, Ctrl+Y redoes and Ctrl+A selects the whole page. Clear keeps the paper and any picture under the ink."));
+      h("ul", { class: "sp-help-areas" }, areas.map(([name, line]) => h("li", {}, h("strong", {}, name), `: ${line}`))));
     return { button, panel };
   }
 
   function buildTools() {
-    const rail = h("div", { class: "sp-rail", role: "toolbar", "aria-label": "Tools", "aria-orientation": "vertical", "data-sp": "rail" });
+    const rail = h("div", { class: "sp-rail", role: "toolbar", "aria-label": "Tools", "aria-orientation": "vertical", "data-sp": "rail", "data-rove": "" });
     let group = null;
     let groupName = "";
     for (const tool of TOOLS) {
@@ -291,11 +298,17 @@
     return rail;
   }
 
+  //: The two wells stay on the bar at every width. Below 820 (the 44px
+  //: touch floor) the palette, the size and the shape style fold into one
+  //: popover under "Colour, size and style", so a phone's page is over half
+  //: the screen (it was 34%, the controls taking 555 of 844px); wider, the
+  //: popover is `display: contents` and its groups sit on the bar.
   function buildColours() {
-    const wells = h("div", { class: "sp-wells", role: "group", "aria-label": "Colours" },
+    const wells = h("div", { class: "sp-group sp-colours sp-wells", role: "group", "aria-label": "Colours", "data-sp": "wells", "data-rove": "" },
       h("button", { type: "button", class: "sp-well sp-well-ink active", "data-sp": "well-ink", title: "Ink colour: lines, text, fill and outlines", "aria-label": "Ink colour", "aria-pressed": "true", onclick: () => setWell("ink") }),
       h("button", { type: "button", class: "sp-well sp-well-fill", "data-sp": "well-fill", title: "Fill colour: the inside of shapes", "aria-label": "Fill colour", "aria-pressed": "false", onclick: () => setWell("fill") }),
-      iconButton("arrows-left-right", "Swap ink and fill", swapColours, { key: "X", extra: "sp-swap" }));
+      iconButton("arrows-left-right", "Swap ink and fill", swapColours, { key: "X", extra: "sp-swap", data: { sp: "swap" } }),
+      iconButton("sliders-horizontal", "Colour, size and style", () => toggleStyle(), { extra: "sp-style-toggle", data: { sp: "style-toggle" } }));
     const swatches = h("div", { class: "sp-swatches", role: "group", "aria-label": "Palette", "data-sp": "swatches" },
       SWATCHES.map(([hex, name]) => swatch(hex, name)));
     const recent = h("div", { class: "sp-swatches sp-recent", role: "group", "aria-label": "Recent colours", "data-sp": "recent" });
@@ -303,21 +316,51 @@
       h("span", { class: "sp-visually-hidden" }, "Any colour"),
       h("input", { type: "color", "data-sp": "custom", value: S.ink, oninput: (e) => setColour(e.target.value), onchange: (e) => rememberColour(e.target.value) }),
       icon("plus"));
-    return h("div", { class: "sp-group sp-colours" }, wells, swatches, recent, custom);
+    const palette = h("div", { class: "sp-group sp-palette", role: "group", "aria-label": "Palette and any colour", "data-sp": "palette", "data-rove": "" }, swatches, recent, custom);
+    return [wells, h("div", { class: "sp-style", id: "sp-style", "data-sp": "style" }, palette, buildStroke())];
+  }
+
+  //: The popover's own open and close; at 820 and wider it never opens, as
+  //: its button is not shown there.
+  function toggleStyle(force) {
+    const pop = S.el.style;
+    const open = force ?? !pop.classList.contains("open");
+    pop.classList.toggle("open", open);
+    S.el.styleToggle.setAttribute("aria-expanded", String(open));
+    if (open) refreshRove();
+    return open;
+  }
+
+  function closeStyle() {
+    if (!S.el.style?.classList.contains("open")) return false;
+    const inside = S.el.style.contains(document.activeElement);
+    toggleStyle(false);
+    if (inside) S.el.styleToggle.focus();
+    return true;
+  }
+
+  //: Swap sits between the wells on the bar and leads the palette in the
+  //: popover, where the bar has no room for an eighth button.
+  function placeSwap() {
+    const narrow = NARROW?.matches;
+    if (narrow && S.el.swap.parentElement !== S.el.palette) S.el.palette.prepend(S.el.swap);
+    if (!narrow && S.el.swap.parentElement !== S.el.wells) S.el.wellFill.after(S.el.swap);
+    if (!narrow) toggleStyle(false);
+    refreshRove();
   }
 
   function swatch(hex, name) {
-    const b = h("button", { type: "button", class: "sp-swatch", title: name, "aria-label": name, "data-colour": hex, onclick: () => setColour(hex) });
+    const b = h("button", { type: "button", class: "sp-swatch", title: name, "aria-label": name, "aria-pressed": "false", "data-colour": hex, onclick: () => setColour(hex) });
     b.style.background = hex;
     return b;
   }
 
   function buildStroke() {
-    const size = h("label", { class: "sp-size", title: "Size ([ and ])" },
-      h("span", { class: "sp-visually-hidden" }, "Size"),
+    const size = h("label", { class: "sp-size", title: "Size ([ and ])", "data-sp": "size-field" },
+      h("span", { class: "sp-visually-hidden", "data-sp": "size-label" }, "Size"),
       h("input", { type: "range", min: "1", max: "48", value: String(S.size), "data-sp": "size", "aria-keyshortcuts": "[ ]", oninput: (e) => setSize(Number(e.target.value)) }),
       h("output", { class: "sp-size-value", "data-sp": "size-value" }, String(S.size)));
-    const modes = h("div", { class: "sp-modes", role: "group", "aria-label": "Shape style" },
+    const modes = h("div", { class: "sp-modes", role: "group", "aria-label": "Shape style", "data-rove": "" },
       iconButton("square", "Outline only", () => setMode("outline"), { extra: "sp-mode", data: { mode: "outline" } }),
       iconButton("square-half", "Outline and fill", () => setMode("both"), { extra: "sp-mode", data: { mode: "both" } }),
       iconButton("square-fill", "Fill only", () => setMode("fill"), { extra: "sp-mode", data: { mode: "fill" } }));
@@ -325,16 +368,16 @@
   }
 
   function buildActions() {
+    //: Clear is the bar's bin and Download the foot's button: the menu holds
+    //: only what has no button of its own.
     const items = [
       { label: "Add a picture under the ink", run: () => S.el.image.click() },
       { label: "Paper colour", run: () => S.el.paper.click() },
-      { label: "Download as PNG", run: () => downloadPng() },
-      { label: "Clear the ink", danger: true, run: () => clearInk() },
     ];
     const menu = S.host.menu ? S.host.menu(items.map((i) => ({ ...i, title: i.label })), "More for this sketch") : fallbackMenu(items);
-    return h("div", { class: "dock-actions sp-group sp-actions", role: "group", "aria-label": "The sheet" },
+    return h("div", { class: "dock-actions sp-group sp-actions", role: "group", "aria-label": "The sheet", "data-rove": "" },
       iconButton("arrow-counter-clockwise", "Undo", undo, { key: "Ctrl+Z", data: { sp: "undo" } }),
-      iconButton("arrow-clockwise", "Redo", redo, { key: "Ctrl+Y", data: { sp: "redo" } }),
+      iconButton("arrow-clockwise", "Redo", redo, { key: "Ctrl+Shift+Z", data: { sp: "redo" } }),
       iconButton("trash", "Clear the ink", clearInk, { data: { sp: "clear" } }),
       menu,
       h("input", { type: "file", accept: "image/png, image/jpeg, image/gif, image/webp", class: "sp-hidden", "data-sp": "image", "aria-label": "Choose a picture to draw over", onchange: onImagePicked }),
@@ -349,7 +392,9 @@
     const opener = iconButton("dots-three", "More for this sketch", () => {
       list.classList.toggle("hidden");
       opener.setAttribute("aria-expanded", String(!list.classList.contains("hidden")));
-      if (!list.classList.contains("hidden")) list.querySelector("button")?.focus();
+      if (list.classList.contains("hidden")) return;
+      clampMenu(list);
+      list.querySelector("button")?.focus();
     });
     opener.setAttribute("aria-haspopup", "menu");
     opener.setAttribute("aria-expanded", "false");
@@ -357,12 +402,33 @@
       if (!e.target.closest?.(".sp-menu-wrap")) list.classList.add("hidden");
     });
     list.addEventListener("keydown", (e) => {
+      const rows = [...list.querySelectorAll("button")];
+      const at = rows.indexOf(document.activeElement);
+      const to = { ArrowDown: at + 1, ArrowUp: at - 1, Home: 0, End: rows.length - 1 }[e.key];
+      if (to !== undefined) {
+        e.preventDefault();
+        e.stopPropagation();
+        rows[(to + rows.length) % rows.length].focus();
+        return;
+      }
       if (e.key !== "Escape") return;
       e.stopPropagation();
       list.classList.add("hidden");
+      opener.setAttribute("aria-expanded", "false");
       opener.focus();
     });
     return h("span", { class: "sp-menu-wrap" }, opener, list);
+  }
+
+  //: Right-aligned to its button, then moved back inside the window: on a
+  //: phone the button is not at the right edge and the menu ran 7px off
+  //: the left.
+  function clampMenu(list) {
+    list.style.transform = "";
+    const r = list.getBoundingClientRect();
+    const gutter = 8;
+    const dx = r.left < gutter ? gutter - r.left : Math.min(0, window.innerWidth - gutter - r.right);
+    if (dx) list.style.transform = `translateX(${Math.round(dx)}px)`;
   }
 
   function buildStage() {
@@ -374,7 +440,9 @@
     for (const [type, fn] of [["pointerdown", onDown], ["pointermove", onMove], ["pointerup", onUp], ["pointercancel", onCancelPointer], ["pointerleave", onLeave], ["dblclick", onDouble]]) {
       stage.addEventListener(type, fn);
     }
-    const viewport = h("div", { class: "sp-viewport", "data-sp": "viewport", onwheel: onWheel, onscroll: () => { S.rect = null; } }, stage);
+    //: A Tab stop, so a zoomed page scrolls from the keyboard, and where the
+    //: focus starts: on the page, not on a tool a Space would press.
+    const viewport = h("div", { class: "sp-viewport", "data-sp": "viewport", tabindex: "0", role: "group", "aria-label": "Page", onwheel: onWheel, onscroll: () => { S.rect = null; } }, stage);
     return viewport;
   }
 
@@ -383,9 +451,13 @@
       h("span", { class: "sp-readout", "data-sp": "pos", title: "Pointer position" }),
       h("span", { class: "sp-readout", "data-sp": "box", title: "Size of the shape or selection" }),
       h("span", { class: "sp-readout sp-dim", "data-sp": "dims", title: "Page size" }, `${W} × ${H} px`),
-      h("span", { class: "sp-zoom", role: "group", "aria-label": "Zoom" },
+      //: The pad's messages live in the status row, which has a fixed
+      //: height: in the foot a message (an offline save) rewrapped the foot
+      //: and moved the page.
+      h("span", { class: "status sp-message", role: "status", "data-sp": "message" }),
+      h("span", { class: "sp-zoom", role: "group", "aria-label": "Zoom", "data-rove": "" },
         iconButton("magnifying-glass-minus", "Zoom out", () => stepZoom(-1), { key: "-" }),
-        h("button", { type: "button", class: "ghost sp-zoom-value", "data-sp": "zoom", title: "Fit the page (0); press again for 100%", onclick: toggleFit }, "100%"),
+        h("button", { type: "button", class: "ghost sp-zoom-value", "data-sp": "zoom", title: "Fit the page (0); press again for 100%", "aria-label": "Zoom 100%, fit the page", onclick: toggleFit }, "100%"),
         iconButton("magnifying-glass-plus", "Zoom in", () => stepZoom(1), { key: "+" })));
   }
 
@@ -393,16 +465,15 @@
     const saving = typeof S.host.save === "function";
     return h("div", { class: "sp-foot", "data-sp": "foot" },
       saving ? h("input", { type: "text", maxlength: "200", class: "sp-caption", "data-sp": "caption", placeholder: "Caption (becomes the note text)", "aria-label": "Caption for this sketch" }) : null,
-      h("span", { class: "status sp-message", role: "status", "data-sp": "message" }),
-      h("button", { type: "button", class: `${saving ? "ghost" : ""} sp-download`.trim(), "data-sp": "download", onclick: downloadPng }, icon("download-simple"), " Download PNG"),
-      saving ? h("button", { type: "button", class: "sp-save", "data-sp": "save", onclick: saveNote }, "Save as note") : null);
+      h("button", { type: "button", class: `${saving ? "ghost" : ""} sp-download`.trim(), "data-sp": "download", title: "Download PNG", "aria-label": "Download PNG", onclick: downloadPng }, icon("download-simple"), h("span", { class: "sp-download-label" }, "Download PNG")),
+      saving ? h("button", { type: "button", class: "sp-save", "data-sp": "save", "aria-disabled": "true", title: "Draw something first", onclick: saveNote }, "Save as note") : null);
   }
 
   function build(root) {
     root.replaceChildren();
     root.classList.add("sp-root");
     const bar = h("div", { class: "dock sp-bar", "data-dock-name": "sketch", role: "toolbar", "aria-label": "Colour, size and sheet" },
-      buildColours(), buildStroke(), buildActions());
+      buildColours(), buildActions());
     const body = h("div", { class: "sp-body" }, buildTools(), buildStage());
     root.append(buildHead(), bar, body, buildStatus(), buildFoot());
     S.el = {};
@@ -412,10 +483,60 @@
     S.el.paperCtx = S.el.paperCanvas.getContext("2d");
     S.el.text = null;
     wireHelp();
+    root.addEventListener("focusin", onRoveFocus);
+    S.el.styleToggle.setAttribute("aria-controls", "sp-style");
+    placeSwap();
   }
 
   function camel(name) {
     return name.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+  }
+
+  // --- One Tab stop per group ---------------------------------------------------------
+
+  //: The rail and each bar group are one Tab stop (roving tabindex, the APG
+  //: toolbar pattern): the arrows walk the group, Home and End go to its
+  //: ends. Tab crossed 45 stops before; the slider keeps its own arrows.
+  function roveItems(group) {
+    return [...group.querySelectorAll("button, input[type=color]")].filter((el) => el.closest("[data-rove]") === group
+      && !el.closest("[role=menu], .action-menu") && el.getClientRects().length);
+  }
+
+  function setStop(group, item) {
+    for (const el of group.querySelectorAll("button, input[type=color]")) {
+      if (el.closest("[data-rove]") === group && !el.closest("[role=menu], .action-menu")) el.tabIndex = -1;
+    }
+    if (item) item.tabIndex = 0;
+  }
+
+  //: Keeps each group's stop on a control that is shown: the one already
+  //: holding it, else the one that is on, else the first.
+  function refreshRove() {
+    for (const group of S.root.querySelectorAll("[data-rove]")) {
+      const items = roveItems(group);
+      const keep = items.find((el) => el.tabIndex === 0)
+        || items.find((el) => el.classList.contains("active") || el.getAttribute("aria-pressed") === "true") || items[0];
+      setStop(group, keep);
+    }
+  }
+
+  function onRoveFocus(e) {
+    const group = e.target.closest?.("[data-rove]");
+    if (group && roveItems(group).includes(e.target)) setStop(group, e.target);
+  }
+
+  const ROVE_STEP = { ArrowLeft: -1, ArrowUp: -1, ArrowRight: 1, ArrowDown: 1 };
+
+  function roveKey(e) {
+    const group = e.target.closest?.("[data-rove]");
+    if (!group || e.ctrlKey || e.metaKey || e.altKey || e.target.closest("[role=menu], .action-menu")) return false;
+    if (!(e.key in ROVE_STEP) && e.key !== "Home" && e.key !== "End") return false;
+    const items = roveItems(group);
+    const at = items.indexOf(e.target);
+    if (at < 0) return false;
+    const to = e.key === "Home" ? 0 : e.key === "End" ? items.length - 1 : (at + ROVE_STEP[e.key] + items.length) % items.length;
+    items[to].focus();
+    return true;
   }
 
   function wireHelp() {
@@ -447,6 +568,15 @@
     }
     S.el.stage.dataset.tool = id;
     S.el.ring.classList.add("hidden");
+    if (!S.el.rail.contains(document.activeElement)) setStop(S.el.rail, S.root.querySelector(`.sp-tool[data-tool="${id}"]`));
+    labelSize();
+  }
+
+  //: With the Text tool the one slider is the text size, and says so.
+  function labelSize() {
+    const name = S.tool === "text" ? "Text size" : "Size";
+    S.el.sizeLabel.textContent = name;
+    S.el.sizeField.title = `${name} ([ and ])`;
   }
 
   function setWell(which) {
@@ -470,8 +600,11 @@
     S.el.wellFill.style.background = S.fill;
     S.el.wellInk.title = `Ink colour ${S.ink}: lines, text, fill and outlines`;
     S.el.wellFill.title = `Fill colour ${S.fill}: the inside of shapes`;
+    const current = (S.well === "fill" ? S.fill : S.ink).toLowerCase();
     for (const b of S.root.querySelectorAll(".sp-swatch")) {
-      b.classList.toggle("active", b.dataset.colour.toLowerCase() === (S.well === "fill" ? S.fill : S.ink).toLowerCase());
+      const on = b.dataset.colour.toLowerCase() === current;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", String(on));
     }
     S.host.prefs.set("colours", { ink: S.ink, fill: S.fill });
   }
@@ -494,6 +627,8 @@
   function paintRecent() {
     S.el.recent.replaceChildren(...S.recent.map((hex) => swatch(hex, `Recent ${hex}`)));
     S.el.recent.classList.toggle("sp-hidden", S.recent.length === 0);
+    paintWells();
+    refreshRove();
   }
 
   function setSize(n) {
@@ -515,7 +650,7 @@
   function setPaper(hex) {
     S.paper = hex;
     drawPaper();
-    S.dirty = true;
+    setDirty(true);
   }
 
   function drawPaper() {
@@ -535,7 +670,7 @@
     try {
       S.image = await createImageBitmap(file);
       drawPaper();
-      S.dirty = true;
+      setDirty(true);
       say("");
     } catch {
       say("Couldn't load that picture.");
@@ -556,7 +691,10 @@
     S.zoom = Math.max(ZOOMS[0], Math.min(ZOOMS[ZOOMS.length - 1], z));
     S.el.stage.style.width = `${Math.round(W * S.zoom)}px`;
     S.el.stage.style.height = `${Math.round(H * S.zoom)}px`;
-    S.el.zoom.textContent = `${Math.round(S.zoom * 100)}%`;
+    const pct = `${Math.round(S.zoom * 100)}%`;
+    S.el.zoom.textContent = pct;
+    //: Its name says what it shows and what a press does (it read "100%").
+    S.el.zoom.setAttribute("aria-label", `Zoom ${pct}, ${S.fitted && Math.abs(S.zoom - 1) > 0.01 ? "show at 100%" : "fit the page"}`);
     S.rect = null;
     if (before) {
       vp.scrollLeft = before.x * S.zoom - anchor.x;
@@ -611,6 +749,10 @@
   }
 
   function onDown(e) {
+    if (S.swallow) {
+      S.swallow = false;
+      return;
+    }
     if (e.button !== undefined && e.button !== 0) return;
     if (e.target.closest?.(".sp-text-editor")) return;
     e.preventDefault();
@@ -701,7 +843,7 @@
   // --- Brushes ----------------------------------------------------------------------------
 
   function startStroke(p, e) {
-    pushUndo();
+    snapshotInk();
     S.drag = { kind: "stroke", x0: p.x, y0: p.y, points: [p], last: p, mid: p, cancelled: false };
     const ctx = strokeCtx();
     styleStroke(ctx, e);
@@ -775,7 +917,7 @@
 
   function endStroke() {
     if (S.tool !== "eraser") landPreview(S.tool === "highlighter");
-    S.dirty = true;
+    setDirty(true);
   }
 
   //: The preview layer onto the ink, once: at the highlighter's alpha and
@@ -814,9 +956,9 @@
   function endShape(p, e, d) {
     clearPreview();
     if (Math.hypot(p.x - d.x0, p.y - d.y0) < 2) return;
-    pushUndo();
+    snapshotInk();
     paintShape(S.el.inkCtx, S.tool, d.x0, d.y0, p.x, p.y, mods(e));
-    S.dirty = true;
+    setDirty(true);
   }
 
   //: Draws one shape and returns its size for the status line.
@@ -914,9 +1056,9 @@
     S.poly = null;
     clearPreview();
     if (!poly || poly.points.length < 3) return;
-    pushUndo();
+    snapshotInk();
     tracePolygon(S.el.inkCtx, poly.points, true);
-    S.dirty = true;
+    setDirty(true);
   }
 
   function cancelPolygon() {
@@ -945,7 +1087,7 @@
     if (x < 0 || y < 0 || x >= W || y >= H) return;
     const seen = composite().getContext("2d").getImageData(0, 0, W, H);
     const mask = spFloodMask(seen.data, W, H, x, y);
-    pushUndo();
+    snapshotInk();
     const ink = S.el.inkCtx.getImageData(0, 0, W, H);
     const [r, g, b] = spRgb(S.ink);
     for (let i = 0; i < mask.length; i += 1) {
@@ -957,7 +1099,7 @@
       ink.data[q + 3] = 255;
     }
     S.el.inkCtx.putImageData(ink, 0, 0);
-    S.dirty = true;
+    setDirty(true);
   }
 
   function pickColour(p) {
@@ -984,7 +1126,7 @@
       commitText();
       return;
     }
-    const input = h("textarea", { class: "sp-text-editor", rows: "1", "aria-label": "Text to place", spellcheck: "true" });
+    const input = h("textarea", { class: "sp-text-editor", rows: "1", wrap: "off", "aria-label": "Text to place", spellcheck: "true" });
     input.style.color = S.ink;
     input.style.fontSize = `${textPx() * S.zoom}px`;
     S.text = { x: p.x, y: p.y, input };
@@ -1002,6 +1144,10 @@
     input.style.left = `${x * S.zoom}px`;
     input.style.top = `${y * S.zoom}px`;
     input.style.fontSize = `${textPx() * S.zoom}px`;
+    //: Inside the page: past its edge the canvas clips the text anyway, and
+    //: an unclamped box overhung the page by 830px at size 24.
+    input.style.maxWidth = `${Math.max(0, (W - x) * S.zoom)}px`;
+    input.style.maxHeight = `${Math.max(0, (H - y) * S.zoom)}px`;
     growText();
   }
 
@@ -1015,10 +1161,7 @@
 
   function onTextKey(e) {
     e.stopPropagation();
-    if (e.key === "Escape") {
-      e.preventDefault();
-      dropText();
-    } else if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === "Escape" || (e.key === "Enter" && !e.shiftKey)) {
       e.preventDefault();
       commitText();
     }
@@ -1031,7 +1174,7 @@
     const value = t.input.value.replace(/\s+$/, "");
     t.input.remove();
     if (!value) return;
-    pushUndo();
+    snapshotInk();
     const ctx = S.el.inkCtx;
     const px = textPx();
     ctx.save();
@@ -1040,7 +1183,15 @@
     ctx.textBaseline = "top";
     value.split("\n").forEach((line, i) => ctx.fillText(line, t.x + 2, t.y + 2 + i * px * 1.25));
     ctx.restore();
-    S.dirty = true;
+    setDirty(true);
+  }
+
+  //: Escape places what was typed, as a click elsewhere does: it discarded
+  //: it silently.
+  function placeTextInHand() {
+    if (!S.text) return false;
+    commitText();
+    return true;
   }
 
   function dropText() {
@@ -1094,7 +1245,7 @@
   function liftSelection() {
     const s = S.sel;
     if (s.img) return;
-    pushUndo();
+    snapshotInk();
     const c = document.createElement("canvas");
     c.width = s.w;
     c.height = s.h;
@@ -1131,21 +1282,24 @@
     const s = S.sel;
     if (!s) return;
     S.sel = null;
-    if (s.img) S.el.inkCtx.drawImage(s.img, s.x, s.y);
     clearPreview();
-    S.dirty = true;
+    //: A box drawn and let go changes nothing, so it does not make a blank
+    //: page something to save.
+    if (!s.img) return;
+    S.el.inkCtx.drawImage(s.img, s.x, s.y);
+    setDirty(true);
   }
 
   function deleteSelection() {
     const s = S.sel;
     if (!s) return false;
     if (!s.img) {
-      pushUndo();
+      snapshotInk();
       S.el.inkCtx.clearRect(s.x, s.y, s.w, s.h);
     }
     S.sel = null;
     clearPreview();
-    S.dirty = true;
+    setDirty(true);
     return true;
   }
 
@@ -1198,7 +1352,7 @@
 
   // --- History ----------------------------------------------------------------------------------------------
 
-  function pushUndo() {
+  function snapshotInk() {
     S.undo.push(S.el.inkCtx.getImageData(0, 0, W, H));
     if (S.undo.length > UNDO_DEPTH) S.undo.shift();
     S.redo = [];
@@ -1218,7 +1372,7 @@
     if (!S.undo.length) return say("Nothing to undo.");
     S.redo.push(S.el.inkCtx.getImageData(0, 0, W, H));
     S.el.inkCtx.putImageData(S.undo.pop(), 0, 0);
-    S.dirty = true;
+    setDirty(true);
     say("");
   }
 
@@ -1226,7 +1380,7 @@
     if (!S.redo.length) return say("Nothing to redo.");
     S.undo.push(S.el.inkCtx.getImageData(0, 0, W, H));
     S.el.inkCtx.putImageData(S.redo.pop(), 0, 0);
-    S.dirty = true;
+    setDirty(true);
     say("");
   }
 
@@ -1235,9 +1389,9 @@
     cancelPolygon();
     S.sel = null;
     clearPreview();
-    pushUndo();
+    snapshotInk();
     S.el.inkCtx.clearRect(0, 0, W, H);
-    S.dirty = true;
+    setDirty(true);
     say("Cleared. Undo brings it back.");
   }
 
@@ -1245,11 +1399,20 @@
 
   function onKey(e) {
     if (!S.open) return;
+    //: Only keys meant for the pad: a dialog over it (the close confirm, the
+    //: app's help popover) holds the focus outside it, and a "b" there
+    //: changed the tool behind the dialog.
+    if (e.target !== document.body && !S.root.contains(e.target)) return;
     if (e.key === "Escape") {
       onEscape(e);
       return;
     }
     if (typingIn(e.target)) return;
+    if (roveKey(e)) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
     if ((e.ctrlKey || e.metaKey) && chordKey(e)) {
       e.preventDefault();
       e.stopPropagation();
@@ -1271,7 +1434,7 @@
   //: nothing in hand reaches the page, which closes the pad.
   function onEscape(e) {
     if (e.target.closest?.("[role='menu'], .sp-help:not(.hidden)")) return;
-    const spent = cancelDrag() || cancelPolygon() || dropText() || clearSelection() || closeOwnHelp();
+    const spent = cancelDrag() || cancelPolygon() || placeTextInHand() || closeStyle() || clearSelection() || closeOwnHelp();
     if (!spent) return;
     e.preventDefault();
     e.stopImmediatePropagation();
@@ -1303,16 +1466,20 @@
     return true;
   }
 
-  const PLAIN = {
+  //: A character key alone: off with the app's single-key shortcuts
+  //: (WCAG 2.1.4), as the tool letters are.
+  const SINGLE = {
     "[": () => setSize(S.size - (S.size > 10 ? 2 : 1)),
     "]": () => setSize(S.size + (S.size >= 10 ? 2 : 1)),
     "+": () => stepZoom(1),
     "=": () => stepZoom(1),
     "-": () => stepZoom(-1),
     "0": () => fit(),
-    //: These three act only on a polygon or a selection in hand; otherwise
-    //: the key is left alone, so Enter still presses a focused button (it
-    //: was swallowed, and the help '?' would not open from the keyboard).
+  };
+  //: These three act only on a polygon or a selection in hand; otherwise
+  //: the key is left alone, so Enter still presses a focused button (it
+  //: was swallowed, and the help '?' would not open from the keyboard).
+  const PLAIN = {
     Enter: () => Boolean(S.poly) && (closePolygon(), true),
     Delete: () => deleteSelection(),
     Backspace: () => (S.poly ? (popPolygonPoint(), true) : deleteSelection()),
@@ -1320,7 +1487,7 @@
   const NUDGE = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
 
   function plainKey(e) {
-    if (NUDGE[e.key] && S.sel) {
+    if (NUDGE[e.key] && S.sel && e.target.type !== "range") {
       const [dx, dy] = NUDGE[e.key];
       const step = e.shiftKey ? 10 : 1;
       nudge(dx * step, dy * step);
@@ -1328,6 +1495,7 @@
     }
     if (PLAIN[e.key]) return PLAIN[e.key]() !== false;
     if (!S.host.singleKeys()) return false;
+    if (SINGLE[e.key]) return SINGLE[e.key]() !== false;
     const k = e.key.toUpperCase();
     if (k === "X") {
       swapColours();
@@ -1367,8 +1535,23 @@
     });
   }
 
-  function say(text) {
-    if (S.el.message) S.el.message.textContent = text;
+  //: One line in the status row; an error is in the error colour, its whole
+  //: text on the title when the row cuts it short.
+  function say(text, error = false) {
+    const el = S.el.message;
+    if (!el) return;
+    el.textContent = text;
+    el.title = text;
+    el.classList.toggle("sp-error", error);
+  }
+
+  //: Save says why it cannot run yet rather than going dead (DESIGN: a
+  //: control that does not apply is `aria-disabled` and its press says why).
+  function setDirty(on) {
+    S.dirty = on;
+    if (!S.el.save) return;
+    S.el.save.setAttribute("aria-disabled", String(!on));
+    S.el.save.title = on ? "Save as a new note" : "Draw something first";
   }
 
   // --- Output ------------------------------------------------------------------------------------------------------
@@ -1396,17 +1579,24 @@
   }
 
   async function saveNote() {
+    commitText();
+    if (!S.dirty) {
+      say("Draw something first.");
+      return;
+    }
     const caption = (S.el.caption?.value || "").trim() || `Sketch: ${new Date().toLocaleDateString()}`;
     say("Saving…");
     S.el.save.disabled = true;
     try {
       await S.host.save(await pngBlob(), caption);
-      S.dirty = false;
+      setDirty(false);
       if (S.el.caption) S.el.caption.value = "";
       say("");
       finishClose();
     } catch (error) {
-      say(error?.message || "Couldn't save the sketch.");
+      const message = error?.message || "Couldn't save the sketch.";
+      say(message, true);
+      S.host.toast?.(message, true);
     } finally {
       S.el.save.disabled = false;
     }
@@ -1441,10 +1631,11 @@
     S.open = true;
     if (options.caption && S.el.caption) S.el.caption.value = options.caption;
     if (options.image) setImage(options.image);
-    requestAnimationFrame(() => {
-      fit();
-      root.querySelector('.sp-tool[data-tool="pencil"]')?.focus();
-    });
+    //: The host shows the root before it calls this, so the fit reads the
+    //: real room now (no frame to wait for); the viewport watch refits when
+    //: the bar rewraps later.
+    fit();
+    S.el.viewport.focus({ preventScroll: true });
   }
 
   function reset() {
@@ -1455,7 +1646,7 @@
     S.sel = null;
     dropText();
     S.image = null;
-    S.dirty = false;
+    setDirty(false);
     S.el.inkCtx.clearRect(0, 0, W, H);
     clearPreview();
     drawPaper();
@@ -1467,6 +1658,8 @@
     paintWells();
     paintRecent();
     say("");
+    toggleStyle(false);
+    refreshRove();
     S.root.querySelector("#sketch-help")?.classList.add("hidden");
   }
 
@@ -1474,7 +1667,7 @@
   async function requestClose() {
     if (!S.open) return true;
     commitText();
-    if (S.dirty && !(await S.host.confirm("Close without saving your sketch?"))) return false;
+    if (S.dirty && !(await S.host.confirm("Close without saving your sketch?", { confirmLabel: "Discard sketch", cancelLabel: "Keep drawing" }))) return false;
     finishClose();
     return true;
   }
@@ -1486,6 +1679,18 @@
   }
 
   document.addEventListener("keydown", onKey, true);
+  //: The width the popover folds at: the app's touch floor (44 under 820).
+  const NARROW = typeof window.matchMedia === "function" ? window.matchMedia("(max-width: 819.98px)") : null;
+  NARROW?.addEventListener?.("change", () => {
+    if (S.root) placeSwap();
+  });
+  document.addEventListener("pointerdown", (e) => {
+    if (!S.open || !S.el.style?.classList.contains("open")) return;
+    if (e.target.closest?.("[data-sp=style], [data-sp=style-toggle]")) return;
+    toggleStyle(false);
+    //: A press on the page that closes the popover draws nothing.
+    if (S.el.stage.contains(e.target)) S.swallow = true;
+  }, true);
   //: The viewport, not the window: the bar can rewrap after the pad opens
   //: (the icon font arriving, a phone turning), which moves the page without
   //: a window resize, and the fit and the pointer's box then went stale

@@ -32,6 +32,9 @@
   width: min(72rem, 100%);
   height: min(56rem, 100%);
   max-height: 100%;
+  /* Not `.card`'s 16px bottom margin: centred in the overlay it pushed the
+     head 8px above a phone's screen. */
+  margin: 0;
   overflow: hidden;
   background: var(--modal-bg);
 }
@@ -95,6 +98,7 @@
   color: var(--ink);
 }
 .sp-root .sp-btn:focus-visible,
+.sp-root .sp-viewport:focus-visible,
 .sp-root .sp-well:focus-visible,
 .sp-root .sp-swatch:focus-visible,
 .sp-root .sp-custom:focus-within {
@@ -140,7 +144,7 @@
 }
 /* Two wells, the one the palette writes to ringed: the ink (lines, text,
    the bucket) and the fill (inside a shape). */
-.sp-well {
+.sp-root .sp-well {
   width: var(--target-min);
   height: var(--target-min);
   padding: 0;
@@ -155,18 +159,16 @@
 }
 .sp-swatches {
   display: grid;
-  grid-template-columns: repeat(6, 1.5rem);
+  grid-template-columns: repeat(6, var(--target-min));
   gap: var(--space-1);
 }
 .sp-recent {
-  grid-template-columns: repeat(3, 1.5rem);
+  grid-template-columns: repeat(3, var(--target-min));
 }
-/* A 20px disc 4px from the next: under the 24px target, inside WCAG 2.5.8's
-   spacing allowance (a 24px circle round each one meets no other). */
+/* The app's target floor, as every other control: 28px, 44 under 820 and
+   on a finger (it was 24, the WCAG minimum, under DESIGN's floor). */
 .sp-swatch {
-  /* 24px, the WCAG 2.2 target floor (2.5.8): at 20 with a 3px gap the
-     spacing exception did not hold. */
-  width: 1.5rem;
+  width: var(--target-min);
   aspect-ratio: 1;
   min-width: 0;
   min-height: 0;
@@ -188,6 +190,7 @@
 }
 .sp-custom {
   position: relative;
+  flex: none;
   display: inline-grid;
   place-items: center;
   width: var(--target-min);
@@ -204,6 +207,22 @@
   height: 100%;
   opacity: 0;
   cursor: pointer;
+}
+/* Forced colours paint every background the system's: the swatches and
+   wells were all one colour and the ring (a shadow) was gone. The colour is
+   the content here, so it is kept, and the one that is on is outlined. */
+@media (forced-colors: active) {
+  .sp-swatch,
+  .sp-well {
+    forced-color-adjust: none;
+    border: 1px solid CanvasText;
+  }
+  .sp-swatch.active,
+  .sp-well.active,
+  .sp-root .sp-btn.active {
+    outline: 3px solid Highlight;
+    outline-offset: 2px;
+  }
 }
 /* The size: a slider and the number it is on, as one tonal field. */
 .sp-size {
@@ -232,6 +251,14 @@
 .sp-modes {
   display: inline-flex;
   gap: var(--space-1);
+}
+/* The palette, size and style: on the bar from 820 up, a popover under
+   "Colour, size and style" below it (the narrow rules at the end). */
+.sp-style {
+  display: contents;
+}
+.sp-root .sp-btn.sp-style-toggle {
+  display: none;
 }
 
 /* The menu the pad draws when the page has none (standalone only; in the
@@ -368,6 +395,7 @@
 }
 .sp-text-editor {
   position: absolute;
+  white-space: pre;
   z-index: 2;
   min-width: 2ch;
   margin: 0;
@@ -384,17 +412,20 @@
 }
 
 /* --- status and foot ------------------------------------------------------------------ */
+/* One row of a fixed height whatever it says: the message is the flexible
+   part and is cut short rather than wrapping. */
 .sp-status {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: var(--space-2) var(--space-6);
-  min-height: var(--control-h-lg);
+  min-height: max(var(--control-h-lg), var(--target-min));
   font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
   color: var(--muted);
 }
 .sp-readout {
+  flex: none;
   min-width: 5rem;
 }
 .sp-readout:empty {
@@ -402,9 +433,9 @@
 }
 .sp-zoom {
   display: inline-flex;
+  flex: none;
   align-items: center;
   gap: var(--space-1);
-  margin-inline-start: auto;
 }
 .sp-root .sp-zoom-value {
   min-width: 3.5rem;
@@ -420,18 +451,21 @@
   align-items: center;
   gap: var(--space-3);
 }
-.sp-caption {
+.sp-foot .sp-caption {
   flex: 1 1 12rem;
   min-width: 0;
-  height: var(--control-h-lg);
+  height: max(var(--control-h-lg), var(--target-min));
   margin: 0;
 }
 .sp-message {
-  flex: 0 1 auto;
+  flex: 1 1 0;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.sp-message.sp-error {
+  color: var(--error);
 }
 .sp-foot :is(.sp-download, .sp-save) {
   display: inline-flex;
@@ -449,6 +483,12 @@
   font-weight: 600;
   cursor: pointer;
 }
+/* Nothing drawn yet: dimmed as a disabled button is, still pressable, and
+   the press says "Draw something first". */
+.sp-foot .sp-save[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: default;
+}
 /* Beside Save as note, Download is the quiet one: the ghost recipe. */
 .sp-foot .sp-download.ghost {
   border-color: var(--ghost-btn-border);
@@ -456,7 +496,8 @@
   color: var(--ink);
   font-weight: 500;
 }
-.sp-foot .sp-download.ghost:hover {
+.sp-foot .sp-download.ghost:hover,
+.sp-foot .sp-download.ghost:is(:focus-visible, :has(:focus-visible)) {
   background: var(--ghost-btn-bg);
 }
 .sp-foot .sp-download:only-of-type,
@@ -484,12 +525,22 @@
 .sp-help.hidden {
   display: none;
 }
+/* The thirteen keys in two columns, then one line per area. */
 .sp-help-keys {
-  margin: var(--space-3) 0;
-  padding-left: var(--space-6);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-1) var(--space-4);
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  list-style: none;
   font-size: var(--text-sm);
 }
-.sp-help-keys li + li {
+.sp-help-areas {
+  margin: 0;
+  padding-left: var(--space-4);
+  font-size: var(--text-sm);
+}
+.sp-help-areas li + li {
   margin-top: var(--space-1);
 }
 .sp-help kbd {
@@ -518,6 +569,46 @@
     --target-min: 2.75rem;
   }
 }
+/* The palette, size and style fold into one popover under the bar. */
+@media (max-width: 819.98px) {
+  .sp-bar {
+    position: relative;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+  }
+  .sp-root .sp-btn.sp-style-toggle {
+    display: inline-grid;
+  }
+  .sp-style {
+    position: absolute;
+    top: calc(100% + var(--space-1));
+    left: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+    max-width: 100%;
+    padding: var(--space-3);
+    background: var(--modal-bg-opaque);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+  }
+  .sp-style:not(.open) {
+    display: none;
+  }
+}
+/* Thirteen tools at 44px are taller than the page on a half-width or short
+   window (662 against 558 at 720x900, Fill and the picker cut off): two
+   columns per group there. */
+@media (min-width: 600px) and (max-width: 819.98px), (min-width: 600px) and (max-height: 799.98px), (min-width: 600px) and (pointer: coarse) {
+  .sp-rail-group {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: var(--space-1);
+  }
+}
 @media (max-width: 599.98px) {
   #sketch-overlay {
     padding: 0;
@@ -527,8 +618,16 @@
     height: 100%;
     border-radius: 0;
   }
+  .sp-root {
+    gap: var(--space-2);
+  }
   .sp-bar {
-    gap: var(--space-2) var(--space-4);
+    gap: var(--space-2);
+    padding: var(--space-1) var(--space-2);
+  }
+  .sp-colours,
+  .sp-actions {
+    gap: var(--space-1);
   }
   .sp-actions {
     margin-inline-start: 0;
@@ -545,14 +644,43 @@
     gap: var(--space-1) var(--space-2);
     overflow: visible;
   }
+  /* The groups give way so the thirteen wrap as two rows, not three. */
   .sp-rail-group {
-    flex-direction: row;
+    display: contents;
   }
-  .sp-rail-group + .sp-rail-group {
-    padding-top: 0;
-    border-top: 0;
+  .sp-rail {
+    padding: var(--space-1);
+  }
+  .sp-viewport {
+    padding: var(--space-2);
+  }
+  .sp-status {
+    gap: var(--space-2);
+  }
+  .sp-readout {
+    min-width: 0;
   }
   .sp-readout[data-sp="dims"] {
     display: none;
+  }
+  /* The foot is one row: the caption, Download as its glyph, Save. */
+  .sp-foot {
+    flex-wrap: nowrap;
+    gap: var(--space-2);
+  }
+  .sp-foot .sp-caption {
+    flex-basis: 0;
+  }
+  .sp-foot .sp-download {
+    flex: none;
+    width: var(--target-min);
+    padding: 0;
+    justify-content: center;
+  }
+  .sp-download-label {
+    display: none;
+  }
+  .sp-foot .sp-save {
+    flex: none;
   }
 }

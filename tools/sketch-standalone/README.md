@@ -4,9 +4,10 @@ Tessellate's Quick sketch pad running on its own page. It uses the same two
 files as the app: `frontend/js/sketch-pad.js` and `frontend/css/sketch-pad.css`.
 In the app, `openSketch` (media.js) hands the pad a host that saves to notes
 and uses the app's menu, help popover, confirm dialog and preferences. With
-no host, the pad falls back to its built-in defaults: localStorage for its
-settings, the browser's confirm dialog, its own menu and help panel, and
-Download PNG.
+no host, the pad falls back to its built-in defaults: settings kept for the
+visit, the browser's confirm dialog, its own menu and help panel, and
+Download PNG. This page's `boot.js` hands it a `prefs` that keeps the
+settings in localStorage.
 
 ## Run it
 
@@ -41,8 +42,9 @@ SketchPad.open(element, {
 });
 ```
 
-Every host hook is optional: `save`, `toast`, `confirm`, `prefs`
-(`{ get(key), set(key, value) }`), `highlighter`, `menu`, `wireHelp`,
+Every host hook is optional: `save`, `toast` (`(message, isError)`),
+`confirm` (`(message, { confirmLabel, cancelLabel })`), `prefs`
+(`{ get(key, fallback), set(key, value) }`), `highlighter`, `menu`, `wireHelp`,
 `singleKeys` and `close`. `SKETCH_HOST_DEFAULTS` at the top of
 `sketch-pad.js` lists them with their fallbacks.
 

@@ -77,8 +77,8 @@ function sketchHost() {
   sketchHostObject ||= {
     title: "Quick sketch",
     save: saveSketch,
-    toast: (message) => toast(message),
-    confirm: (message) => confirmDialog(message),
+    toast: (message, isError = false) => toast(message, isError),
+    confirm: (message, options) => confirmDialog(message, options),
     prefs: {
       get: (key, fallback) => prefs.json(`sketch-pad-${key}`, fallback),
       set: (key, value) => prefs.setJSON(`sketch-pad-${key}`, value),

@@ -4,59 +4,59 @@ Independent reviews of the paint-1026 Quick sketch (ux-auditor, blind-tester),
 run on 8eaa506. Code: `frontend/js/sketch-pad.js`, `frontend/css/sketch-pad.css`,
 `openSketch` and `sketchHost` in `frontend/js/media.js`, standalone page
 `tools/sketch-standalone/`. Sweeps: `scratchpad/ui-sweeps/paint1026-pad.js`,
-`paint1026-pad-a11y.js` (extend them for each fix).
+`paint1026-pad-a11y.js` (a check per fix, marked "fix N").
+
+## Done (agent/sketchfix-1026)
+
+Measured by the two sweeps at 1440x900, 720x900 and 390x844, light and dark,
+in the app and on the standalone page.
+
+- [x] 1. Rail at 720x900: two columns per group from 600 to 819 wide, under
+  800 tall and on a coarse pointer. scrollHeight 662 vs 558 to 611 vs 611.
+- [x] 2. `#sketch-card { margin: 0 }`: card y -8 to 0 at 390.
+- [x] 3. `[ ] + = - 0` sit behind `host.singleKeys()` with the tool letters.
+- [x] 4. Forced colours: `forced-color-adjust: none` on swatches and wells
+  (12 distinct colours, was 1), a 3px Highlight outline on the one that is on.
+- [x] 5. Swatches 24 to 28 (44 under 820), wells 32 to 44 tall under 820,
+  caption 32 to 44 under 820; no target under the floor at any width.
+- [x] 6. Not reproduced: 0 of 7 fresh logins (720 and 390, two fresh data
+  dirs and the sweep dir, sampled every 250ms from the unlock): the Quick
+  access row and its Sketch tile were drawn before or within 260ms of the
+  lock lifting every time. Nothing changed outside the pad.
+- [x] 7. Phone: palette, size and style under one "Colour, size and style"
+  popover; rail two rows (153 to 100); foot one row (94 to 44, Download as a
+  glyph). Viewport 222 to 497px, 26% to 59% of 844.
+- [x] 8. Keys whose target is outside the pad (the confirm, the help popover)
+  are left alone: `b` and `]` under the confirm change nothing.
+- [x] 9. Roving tabindex in the rail and each bar group: Tab stops 45 to 13
+  (10 at 820 and under with the popover shut); arrows, Home and End.
+- [x] 10. `.sp-swatch` `aria-pressed`, set in `paintWells`.
+- [x] 11. Save is `aria-disabled` until something is drawn; a press says
+  "Draw something first." and posts nothing.
+- [x] 12. A failed save: the message in `--error`, the app's error toast,
+  Save still offered; the message moved to the fixed-height status row, so
+  the viewport rect is identical before and after.
+- [x] 13. Escape while typing places the text.
+- [x] 14. Close confirm: "Discard sketch" and "Keep drawing".
+- [x] 15. Standalone menu clamped to the window (8px gutter), Up, Down, Home
+  and End walk it.
+- [x] 16. Zoom button named "Zoom 54%, show at 100%" / "Zoom 100%, fit the page".
+- [x] 17. Help: keys in two columns, one line per area; 548 in 510 (scrolls)
+  to 488 (no scroll). Clear and Download left the More menu. `.sp-status`
+  37 to 44 under 820.
+- [x] 18. Slider named "Text size" with the Text tool; the editor is clamped
+  to the page (`wrap=off`, max width and height): overhang 830 to 0.
+- [x] 19. Ctrl+Shift+Z redid in every run (focus on the page or a tool); a
+  check now holds it. Initial focus is the page (the viewport, now a Tab
+  stop), not the Pencil.
+
+Also (CI on PR 204): the pad's snapshot stack is `snapshotInk` (not the app's
+`pushUndo` name), its default prefs are in memory with localStorage moved to
+the standalone `boot.js`, the Download hover has its focus twin, and the
+wake-source seed holds sketch-pad.js at 2 rafs (the status readout, the text
+box's focus after the press) and 1 ResizeObserver (the viewport refit); the
+open's frame wait was dropped.
 
 ## Remaining
 
-High
-1. `.sp-rail` at 720x900: scrollHeight 662 vs clientHeight 558; Fill and
-   Colour picker hidden, no scroll cue. Wrap to two columns or use the row
-   layout below about 900px tall.
-2. `#sketch-card` at 390x844: y -8 (inherits `.card` margin-bottom 16px);
-   head clipped 8px. `#sketch-card { margin: 0 }`.
-3. `[ ] + = - 0` act with single-key shortcuts off (`PLAIN`, about line
-   1306); WCAG 2.1.4. Check `S.host.singleKeys()` first.
-4. Forced colours: swatches and wells all white, active ring `box-shadow:
-   none`. `forced-color-adjust: none` on swatches and wells, an outline
-   for the active one.
-5. Targets: `.sp-swatch` 24x24, `.sp-custom` 26x32 at 1440, `.sp-caption`
-   32 tall under 820. DESIGN floor 28, 44 under 820 or coarse pointer.
-6. Dashboard blank after a fresh login at 720 and 390 (no Quick access
-   row, no Sketch tile) until a tab switch; 3 of 3 runs. Not the pad;
-   reproduce first.
-
-Medium
-7. Phone 390: controls take 555px, canvas 330x206 at 34%. Fold palette,
-   size and style into one popover and the foot into the bar; target a
-   viewport of at least 50% of the height.
-8. Keys leak past the close confirm: `b` changes tool behind the dialog
-   (capture listener about line 1488). Return early when `e.target` is
-   outside `S.root`.
-9. Toolbars: 45 tab stops; `role=toolbar` without arrow keys. Roving
-   tabindex in the rail and each bar group.
-10. `.sp-swatch` has no `aria-pressed`; set it in `paintWells`.
-11. Save on a blank page writes an empty "Sketch: date" note. Disable Save
-    until dirty, or say "Draw something first".
-12. A failed save shows the server message in muted text only. Error token
-    plus the app's error toast; Save still offered. Offline status reflows
-    the footer and moves the canvas: reserve its height.
-13. Esc while typing text discards it silently; Esc commits the text.
-
-Low
-14. Close confirm says "Cancel"/"OK": pass `confirmLabel: "Discard sketch"`
-    through `sketchHost().confirm`.
-15. Standalone `.sp-menu` at 390: x -7; clamp to the viewport; arrow keys
-    in `fallbackMenu`.
-16. `[data-sp=zoom]` accessible name is "100%": `aria-label` "Zoom 100%,
-    fit the page", updated in `applyZoom`.
-17. Help `#sketch-help` scrolls (548 vs 510): one line per area (wells,
-    shape style, paper, Add a picture); drop the duplicate Clear and
-    Download menu rows. `.sp-status` 37px tall holding 44px buttons:
-    `min-height: var(--target-min)`.
-18. Text size follows the stroke slider (24 makes huge text; the editor
-    box overhangs the page by about 830px). Label the slider as text size
-    for the Text tool, and clamp the editor to the page.
-19. Ctrl+Shift+Z does not redo. Initial focus is the Pencil; put it on the
-    canvas or first bar control.
-</content>
-</invoke>
+None.

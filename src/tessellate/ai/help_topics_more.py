@@ -2745,12 +2745,15 @@ MORE_TOPICS.append({
         "rectangle, O ellipse, G polygon, T text, F fill, I colour picker. A "
         "shape is drawn corner to corner; Shift makes it a square or circle "
         "and snaps a line to 45 degrees, Alt draws it from the centre, and "
-        "Escape cancels it. The bar holds the ink and fill colours (X swaps "
-        "them), a custom colour, the size ([ and ] change it), outline, fill "
-        "or both for shapes, Undo, Redo and a More menu (background picture, "
-        "paper colour, Download PNG, Clear). Ctrl and the wheel zoom, 0 fits "
-        "the page. Save as note adds the sketch to a new note; a picture's "
-        "Annotate opens it here to draw on."
+        "Escape cancels it; with the Text tool Escape places the text. The "
+        "bar holds the ink and fill colours (X swaps them), the palette and "
+        "a custom colour, the size ([ and ] change it; for Text it is the "
+        "text size), outline, fill or both for shapes, Undo, Redo (Ctrl+Shift+Z "
+        "or Ctrl+Y), Clear and a More menu (a picture under the ink, the paper "
+        "colour). On a narrow window the palette, size and style are under "
+        "Colour, size and style. Ctrl and the wheel zoom, 0 fits the page. "
+        "Save as note adds the sketch to a new note once something is drawn; "
+        "Download PNG saves the picture; a picture's Annotate opens it here."
     ),
     "badge": {"label": "Notes", "tab": "notes"},
 })

@@ -63,6 +63,10 @@ async function open() {
       btnHeights: [...new Set(sizes)], page: [Math.round(stage.width), Math.round(stage.height)], viewport: [Math.round(vp.width), Math.round(vp.height)],
       zoom: root.querySelector("[data-sp=zoom]").textContent, dims: root.querySelector("[data-sp=dims]").textContent,
       barRows: new Set([...root.querySelectorAll(".sp-bar > .sp-group")].map((g) => Math.round(g.getBoundingClientRect().top))).size,
+      rail: (() => { const r = root.querySelector(".sp-rail"); return [r.scrollHeight, r.clientHeight, r.scrollWidth, r.clientWidth]; })(),
+      top: [Math.round(document.getElementById("sketch-card").getBoundingClientRect().top), Math.round(root.querySelector(".sp-head").getBoundingClientRect().top)],
+      vpShare: Math.round((vp.height / innerHeight) * 100),
+      focus: document.activeElement?.dataset?.sp || document.activeElement?.className,
     };
   });
   console.log("fit", JSON.stringify(fit));
@@ -73,6 +77,11 @@ async function open() {
   check("every button has a name", fit.untitled === 0, fit.untitled);
   check("one button height", fit.btnHeights.length === 1, fit.btnHeights);
   check("the whole page shows at the fit zoom", fit.page[0] <= fit.viewport[0] && fit.page[1] <= fit.viewport[1], { page: fit.page, viewport: fit.viewport, zoom: fit.zoom });
+  // sketchfix-1026 1, 2, 7, 19
+  check("every tool shows: the rail does not scroll (fix 1)", fit.rail[0] <= fit.rail[1] + 1 && fit.rail[2] <= fit.rail[3] + 1, fit.rail);
+  check("the card and its head start inside the window (fix 2)", fit.top[0] >= 0 && fit.top[1] >= 0, fit.top);
+  if (PHONE) check("a phone's page is at least half the screen (fix 7)", fit.vpShare >= 50, `${fit.vpShare}%`);
+  check("the focus starts on the page, not a tool (fix 19)", fit.focus === "viewport", fit.focus);
 
   // --- helpers in page pixels ---
   const stage = await page.evaluate(() => { const r = document.querySelector(".sp-ink").getBoundingClientRect(); return { x: r.left, y: r.top, s: r.width / 960 }; });
@@ -97,6 +106,16 @@ async function open() {
     await page.waitForTimeout(80);
   };
   const near = (a, b, tol) => Math.abs(a - b) <= tol;
+  // Below 820 the palette, size and style are in the "Colour, size and
+  // style" popover: open it for the press and close it after with Escape.
+  const styleShut = () => page.evaluate(() => { const t = document.querySelector("[data-sp=style-toggle]"); return Boolean(t && t.getClientRects().length && t.getAttribute("aria-expanded") !== "true"); });
+  const inStyle = async (fn) => {
+    const folded = await styleShut();
+    if (folded) await page.click("[data-sp=style-toggle]");
+    await fn();
+    if (folded) await key("Escape");
+  };
+  const pickMode = (m) => inStyle(() => page.click(`.sp-mode[data-mode="${m}"]`));
 
   // --- keys pick tools ---
   const picked = [];
@@ -148,12 +167,12 @@ async function open() {
   // --- fill modes and bucket ---
   await key("r");
   await page.evaluate(() => { const S = SketchPad._state; S.ink = "#1f2430"; S.fill = "#22c55e"; });
-  await page.click('.sp-mode[data-mode="both"]');
+  await pickMode("both");
   await clear();
   await drag([100, 100], [200, 200]);
   const inside = await px(150, 150);
   check("Outline and fill: the inside is the fill colour", inside[1] > 150 && inside[0] < 80 && inside[3] === 255, inside);
-  await page.click('.sp-mode[data-mode="outline"]');
+  await pickMode("outline");
   await clear();
   await drag([100, 100], [200, 200]);
   check("Outline only: the inside is empty", (await px(150, 150))[3] === 0);
@@ -274,6 +293,132 @@ async function open() {
   });
   console.log("brush frames", JSON.stringify(ft));
   check("a 120-move brush stroke: p95 under 34 ms, no long task", ft.p95 < 34 && ft.long.length === 0, ft);
+
+  // --- sketchfix-1026 ---
+  // 3: with single-key shortcuts off, [ ] + = - 0 do nothing either.
+  await page.mouse.move(...at(480, 300));
+  const singles = await page.evaluate(() => { const S = SketchPad._state; const was = S.host.singleKeys; S.host.singleKeys = () => false; window.__sk = was; return [S.size, document.querySelector("[data-sp=zoom]").textContent]; });
+  for (const k of ["]", "+", "="]) await key(k);
+  const singlesAfter = await page.evaluate(() => { const S = SketchPad._state; S.host.singleKeys = window.__sk; return [S.size, document.querySelector("[data-sp=zoom]").textContent]; });
+  check("single-key shortcuts off: ] and + do nothing (fix 3)", JSON.stringify(singles) === JSON.stringify(singlesAfter), [singles, singlesAfter]);
+
+  // 9: one Tab stop per group, the arrows walk it.
+  await page.evaluate(() => document.querySelector('.sp-tool[data-tool="brush"]').focus());
+  await key("ArrowDown");
+  const roved = await page.evaluate(() => [document.activeElement?.dataset.tool, [...document.querySelectorAll(".sp-tool")].filter((b) => b.tabIndex === 0).length]);
+  check("the rail is one Tab stop and Down moves to the next tool (fix 9)", roved[0] === "highlighter" && roved[1] === 1, roved);
+
+  // 10: the swatch that is on says so.
+  await inStyle(() => page.click('.sp-swatch[data-colour="#3b82f6"]'));
+  const pressed = await page.evaluate(() => [...document.querySelectorAll(".sp-swatch[aria-pressed=true]")].map((b) => b.dataset.colour));
+  check("the active swatch is aria-pressed, the others not (fix 10)", pressed.length === 1 && pressed[0] === "#3b82f6", pressed);
+
+  // 7: the popover opens and closes, and the press that closes it draws nothing.
+  if (W < 820) {
+    await page.click("[data-sp=style-toggle]");
+    const pop = await page.evaluate(() => { const p = document.querySelector("[data-sp=style]"); const r = p.getBoundingClientRect(); return { open: p.classList.contains("open"), swatches: [...p.querySelectorAll(".sp-swatch")].filter((s) => s.getClientRects().length).length, inView: r.left >= 0 && r.right <= innerWidth && r.bottom <= innerHeight, swatch: Math.round(p.querySelector(".sp-swatch").getBoundingClientRect().width) }; });
+    check("Colour, size and style opens the palette, size and style in view (fix 7)", pop.open && pop.swatches === 12 && pop.inView && pop.swatch >= 44, pop);
+    await key("r");
+    await clear();
+    await drag([100, 100], [300, 200]);
+    const shut = await page.evaluate(() => !document.querySelector("[data-sp=style]").classList.contains("open"));
+    check("a press on the page closes it and draws nothing", shut && (await ink()).n === 0, { shut });
+  }
+
+  // 13: Escape places the text being typed.
+  await key("t");
+  await clear();
+  await page.mouse.click(...at(300, 300));
+  await page.waitForTimeout(150);
+  await page.keyboard.type("Kept");
+  await key("Escape");
+  await page.waitForTimeout(80);
+  check("Escape while typing places the text (fix 13)", (await ink()).n > 30 && (await page.evaluate(() => SketchPad.isOpen())));
+
+  // 18: the slider says text size for Text, and the box stays on the page.
+  await key("t");
+  const textSize = await page.evaluate(() => [document.querySelector("[data-sp=size-label]").textContent, document.querySelector("[data-sp=size-field]").title]);
+  await page.evaluate(() => { const S = SketchPad._state; S.size = 24; S.el.size.value = "24"; });
+  await page.mouse.click(...at(700, 500));
+  await page.waitForTimeout(150);
+  await page.keyboard.type("A long line that runs well past the edge of the page");
+  const overhang = await page.evaluate(() => { const e = document.querySelector(".sp-text-editor"); const s = document.querySelector(".sp-stage").getBoundingClientRect(); const r = e.getBoundingClientRect(); return [Math.round(r.right - s.right), Math.round(r.bottom - s.bottom)]; });
+  await key("Escape");
+  await page.evaluate(() => { const S = SketchPad._state; S.size = 4; S.el.size.value = "4"; });
+  check("with Text the slider is the text size (fix 18)", textSize[0] === "Text size" && /^Text size/.test(textSize[1]), textSize);
+  check("the text box stays inside the page (fix 18)", overhang[0] <= 1 && overhang[1] <= 1, overhang);
+
+  // 19: Ctrl+Shift+Z redoes, with the focus on the page or on a tool.
+  await key("p");
+  await clear();
+  await drag([100, 450], [300, 520]);
+  await key("Control+z");
+  const redoA = await page.evaluate(() => SketchPad._state.redo.length);
+  await key("Control+Shift+z");
+  const redoB = await page.evaluate(() => [SketchPad._state.redo.length, SketchPad._state.undo.length]);
+  check("Ctrl+Shift+Z redoes (fix 19)", redoA === 1 && redoB[0] === 0 && redoB[1] === 1, { redoA, redoB });
+
+  // 16: the zoom button's name says the zoom and what a press does.
+  const zoomName = await page.evaluate(() => document.querySelector("[data-sp=zoom]").getAttribute("aria-label"));
+  check("the zoom button is named for what it does (fix 16)", /^Zoom \d+%, (fit the page|show at 100%)$/.test(zoomName), zoomName);
+
+  // 17: the status row is as tall as its buttons.
+  const status = await page.evaluate(() => { const s = document.querySelector(".sp-status").getBoundingClientRect().height; const b = Math.max(...[...document.querySelectorAll(".sp-status button")].map((x) => x.getBoundingClientRect().height)); return [Math.round(s), Math.round(b)]; });
+  check("the status row holds its buttons (fix 17)", status[0] >= status[1], status);
+
+  // 15: the More menu stays in the window and the arrows walk it.
+  if (STANDALONE) {
+    await page.click(".sp-menu-wrap > button");
+    const menu = await page.evaluate(() => { const r = document.querySelector(".sp-menu").getBoundingClientRect(); return [Math.round(r.left), Math.round(r.right), innerWidth, document.activeElement.textContent]; });
+    await key("ArrowDown");
+    const moved = await page.evaluate(() => document.activeElement.textContent);
+    await key("Escape");
+    check("the menu is inside the window (fix 15)", menu[0] >= 0 && menu[1] <= menu[2], menu);
+    check("Down moves to the next row", moved !== menu[3] && /Paper/.test(moved), moved);
+  }
+
+  if (!STANDALONE) {
+    // 11: Save on a blank page saves nothing and says why.
+    await clear();
+    await page.evaluate(() => { SketchPad._state.dirty = false; });
+    await page.evaluate(() => SketchPad._state.el.save && SketchPad._state.el.save.setAttribute("aria-disabled", "true"));
+    let posted = 0;
+    await page.route("**/media/upload*", (r) => { posted++; return r.continue(); });
+    await page.click("[data-sp=save]", { force: true });
+    await page.waitForTimeout(200);
+    const blank = await page.evaluate(() => [document.querySelector("[data-sp=message]").textContent, document.querySelector("[data-sp=save]").getAttribute("aria-disabled"), SketchPad.isOpen()]);
+    check("Save on a blank page saves nothing and says why (fix 11)", posted === 0 && blank[0] === "Draw something first." && blank[1] === "true" && blank[2], { posted, blank });
+    await page.unroute("**/media/upload*");
+
+    // 12: a failed save is an error, the page does not move, Save stays.
+    await key("p");
+    await drag([100, 100], [200, 160]);
+    const enabled = await page.evaluate(() => document.querySelector("[data-sp=save]").getAttribute("aria-disabled"));
+    await page.route("**/media/upload*", (r) => r.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ detail: "The server could not be reached; you may be offline." }) }));
+    const vp0 = await page.evaluate(() => JSON.stringify(document.querySelector(".sp-viewport").getBoundingClientRect()));
+    await page.click("[data-sp=save]");
+    await page.waitForTimeout(600);
+    const failed = await page.evaluate(() => { const m = document.querySelector("[data-sp=message]"); return { text: m.textContent, error: m.classList.contains("sp-error"), colour: getComputedStyle(m).color, want: (() => { const x = document.createElement("span"); x.style.color = "var(--error)"; m.append(x); const c = getComputedStyle(x).color; x.remove(); return c; })(), toast: [...document.querySelectorAll(".toast")].some((t) => /offline|reached|save/i.test(t.textContent)), saveOn: !document.querySelector("[data-sp=save]").disabled, open: SketchPad.isOpen() }; });
+    const vp1 = await page.evaluate(() => JSON.stringify(document.querySelector(".sp-viewport").getBoundingClientRect()));
+    await page.unroute("**/media/upload*");
+    check("drawing turns Save on", enabled === "false", enabled);
+    check("a failed save: error colour, a toast, Save still there (fix 12)", failed.error && failed.colour === failed.want && failed.toast && failed.saveOn && failed.open, failed);
+    check("and the page does not move (fix 12)", vp0 === vp1, [vp0, vp1]);
+
+    // 8 and 14: the close confirm names its action and keeps the keys.
+    await key("p");
+    await page.click("[data-sp=close]");
+    await page.waitForTimeout(300);
+    const confirmText = await page.evaluate(() => [...document.querySelectorAll(".confirm-overlay button")].map((b) => b.textContent.trim()));
+    await key("b");
+    await key("]");
+    const behind = await page.evaluate(() => [SketchPad._state.tool, SketchPad._state.size]);
+    check("the close confirm says Discard sketch (fix 14)", confirmText.includes("Discard sketch"), confirmText);
+    check("keys under the confirm do not reach the pad (fix 8)", behind[0] === "pencil" && behind[1] === 4, behind);
+    await key("Escape");
+    await page.waitForTimeout(300);
+    check("Escape on the confirm keeps the pad open", await page.evaluate(() => SketchPad.isOpen()));
+  }
 
   // --- download ---
   const dl = page.waitForEvent("download", { timeout: 15000 }).catch(() => null);

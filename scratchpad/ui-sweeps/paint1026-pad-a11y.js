@@ -18,7 +18,7 @@ const W = Number(process.env.W || 1440);
     const bgOf = (e) => { for (let n = e; n; n = n.parentElement) { const c = toRgb(getComputedStyle(n).backgroundColor); if (c[3] > 240) return c; } return [255, 255, 255, 255]; };
     const out = [];
     for (const e of document.querySelectorAll(".sp-root *")) {
-      if (!e.getClientRects().length || e.closest(".hidden, .sp-hidden")) continue;
+      if (!e.getClientRects().length || e.closest(".hidden, .sp-hidden, [aria-disabled=true]")) continue;
       const own = [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()) || e.matches("i.ph");
       if (!own) continue;
       const cs = getComputedStyle(e);
@@ -34,8 +34,20 @@ const W = Number(process.env.W || 1440);
   });
   console.log("contrast misses", contrast.length, JSON.stringify(contrast.slice(0, 12)));
   const controls = await page.evaluate(() => [...document.querySelectorAll(".sp-root :is(button, input, select, textarea, [tabindex])")].filter((e) => e.getClientRects().length && !e.closest(".hidden, .sp-hidden") && !e.disabled && e.tabIndex >= 0 && !e.matches(".sp-visually-hidden *, .sp-visually-hidden")).length);
-  const small = await page.evaluate(() => [...document.querySelectorAll(".sp-root :is(button, input, label)")].filter((e) => e.getClientRects().length && !e.closest(".hidden, .sp-hidden")).map((e) => { const r = e.getBoundingClientRect(); return [e.className || e.tagName, Math.round(r.width), Math.round(r.height)]; }).filter(([, w, h]) => w < 24 || h < 24));
-  console.log("targets under 24px", small.length, JSON.stringify(small.slice(0, 8)));
+  // sketchfix-1026 5: DESIGN's floor, 28 and 44 under 820 (the popover open
+  // so its swatches are measured); the range's own track is exempt (2.5.8).
+  const floor = W < 820 ? 44 : 28;
+  await page.evaluate(() => { const t = document.querySelector("[data-sp=style-toggle]"); if (t && t.getClientRects().length) t.click(); });
+  const small = await page.evaluate((floor) => [...document.querySelectorAll(".sp-root :is(button, input, label)")].filter((e) => e.getClientRects().length && !e.closest(".hidden, .sp-hidden, .sp-visually-hidden") && e.type !== "range" && !e.matches(".sp-custom input")).map((e) => { const r = e.getBoundingClientRect(); return [e.className || e.tagName, Math.round(r.width), Math.round(r.height)]; }).filter(([, w, h]) => w < floor - 0.5 || h < floor - 0.5), floor);
+  console.log(`targets under ${floor}px`, small.length, JSON.stringify(small.slice(0, 8)));
+  await page.evaluate(() => { if (document.querySelector("[data-sp=style]")?.classList.contains("open")) document.querySelector("[data-sp=style-toggle]").click(); });
+  // sketchfix-1026 4: forced colours keep the swatch colours and outline the one that is on.
+  await page.emulateMedia({ forcedColors: "active" });
+  await page.evaluate(() => { const t = document.querySelector("[data-sp=style-toggle]"); if (t && t.getClientRects().length) t.click(); });
+  const forced = await page.evaluate(() => { const sw = [...document.querySelectorAll(".sp-swatch")]; const a = document.querySelector(".sp-well.active"); const cs = getComputedStyle(a); return { adjust: getComputedStyle(sw[0]).forcedColorAdjust, colours: new Set(sw.map((s) => getComputedStyle(s).backgroundColor)).size, activeOutline: `${cs.outlineStyle} ${cs.outlineWidth}` }; });
+  console.log("forced colours", JSON.stringify(forced), forced.adjust === "none" && forced.colours === 12 && /solid 3px/.test(forced.activeOutline) ? "PASS" : "FAIL");
+  await page.evaluate(() => { if (document.querySelector("[data-sp=style]")?.classList.contains("open")) document.querySelector("[data-sp=style-toggle]").click(); });
+  await page.emulateMedia({ forcedColors: "none" });
   await page.evaluate(() => { let i = 0; for (const e of document.querySelectorAll(".sp-root *")) e.dataset.a11y = String(i++); });
   await page.focus("[data-sp=close]");
   const seen = new Set(); const noRing = []; let steps = 0;
@@ -52,7 +64,7 @@ const W = Number(process.env.W || 1440);
   }
   console.log("tab reached", seen.size, "of", controls, "focusable; without a ring", JSON.stringify(noRing));
   await page.focus("[data-help-for=sketch-help]"); await page.keyboard.press("Enter"); await page.waitForTimeout(200);
-  const help = await page.evaluate(() => { const p = document.getElementById("sketch-help"); const r = p.getBoundingClientRect(); return { shown: !p.classList.contains("hidden") && r.height > 0, inView: r.bottom <= innerHeight && r.right <= innerWidth && r.left >= 0, h: Math.round(r.height) }; });
+  const help = await page.evaluate(() => { const p = document.getElementById("sketch-help"); const r = p.getBoundingClientRect(); return { shown: !p.classList.contains("hidden") && r.height > 0, inView: r.bottom <= innerHeight && r.right <= innerWidth && r.left >= 0, h: Math.round(r.height), scrolls: p.scrollHeight > p.clientHeight + 1 }; });
   console.log("help by keyboard", JSON.stringify(help));
   await page.keyboard.press("Escape"); await page.waitForTimeout(150);
   console.log("Esc closes help, pad stays", await page.evaluate(() => [document.getElementById("sketch-help").classList.contains("hidden") || !document.getElementById("sketch-help").getClientRects().length, SketchPad.isOpen()]));
