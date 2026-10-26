@@ -2588,9 +2588,10 @@ MORE_TOPICS.extend([
             "three cells, the first a header. Double-click a cell to type in it; "
             "Tab and Shift+Tab go to the next and previous cell, Enter keeps the "
             "words, Escape drops them. Right-click the table for Add a row below or "
-            "above, Add a column to the right or left, Delete this row or column "
-            "(at the cell you pressed last) and First row as a header. Resize it "
-            "by its handles; every cell keeps an equal share."
+            "above, Add a column to the right or left, Widen or Narrow this column, "
+            "Equal column widths, Delete this row or column (at the cell you "
+            "pressed last) and First row as a header. Resize it by its handles; "
+            "columns share the width equally until you widen or narrow one."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },

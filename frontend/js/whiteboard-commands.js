@@ -858,7 +858,7 @@ async function wbJoinSelection(mode) {
       if (b.kind !== "node") data.targetKind = b.kind;
       const link = await apiJson("/whiteboard/sketches", {
         method: "POST",
-        body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z: 1, board_id: window.currentBoardId ?? null }),
+        body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z: wbStackNewZ("sketch"), board_id: window.currentBoardId ?? null }),
       });
       wbState.sketches.push(link);
     }
@@ -1118,11 +1118,11 @@ function wbPasteLook() {
   return { paper: WB_STICKY_PAPERS[0].value, root: WB_STICKY_PAPERS[4].value, ink: window.currentStrokeColor || "#888888" };
 }
 
+//: Read fresh, not from the drag cache: the chip is placed once, often with
+//: no pointer event since the canvas last moved (wb5: 16px left, 60px high).
 function wbBoardToClient(x, y) {
-  const origin = wbCanvasOrigin();
-  const t = d3.zoomTransform(document.getElementById("whiteboard-container"));
-  const s = origin.scale || 1;
-  return [origin.left + (x * t.k + t.x) * s, origin.top + (y * t.k + t.y) * s];
+  wbClearCanvasRectCache();
+  return wbBoardToScreen(x, y, wbCanvasOrigin(), d3.zoomTransform(document.getElementById("whiteboard-container")));
 }
 
 function wbPasteChipClose() {

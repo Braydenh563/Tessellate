@@ -105,3 +105,18 @@ def test_every_site_reads_the_one_order() -> None:
     assert ".sort((a, b) => (a.z || 0) - (b.z || 0) || a.id - b.id)" not in SOURCE
     assert '.style("z-index", d => d.z)' not in SOURCE
     assert '.style("z-index", (d) => d.z)' not in SOURCE
+
+
+def test_inserts_make_their_drawings_on_top_not_at_a_fixed_z() -> None:
+    """wb5: Mermaid, draw.io, Join, the library's Place joined and a dragged
+    link wrote z 1, 2 or 3, so they landed under or over what was there. The
+    library's own placement is stacked on the server (`_stack_on_top`)."""
+    import re
+
+    for name in ("whiteboard-interchange", "whiteboard-commands", "whiteboard-library"):
+        text = (JS / f"{name}.js").read_text(encoding="utf-8")
+        fixed = re.findall(r"x: 0, y: 0, z: \d+,? ?\n? *board_id", text)
+        assert fixed == [], (name, fixed)
+    interchange = (JS / "whiteboard-interchange.js").read_text(encoding="utf-8")
+    assert "post = async (data, z" not in interchange
+    assert interchange.count('z: wbStackNewZ("sketch")') >= 6

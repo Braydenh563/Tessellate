@@ -751,7 +751,7 @@ async function wbLibPlace(entry, at = null, { connect = false, onto = null, grab
             method: "POST",
             body: JSON.stringify({
               data: JSON.stringify({ type: "link-straight", sourceId: was.id, sourceKind: was.kind, targetId: first.id, targetKind, color: wbLibInk(), endCap: "arrow" }),
-              x: 0, y: 0, z: 1, board_id: window.currentBoardId ?? null,
+              x: 0, y: 0, z: wbStackNewZ("sketch"), board_id: window.currentBoardId ?? null,
             }),
           });
           wbState.sketches.push(link);

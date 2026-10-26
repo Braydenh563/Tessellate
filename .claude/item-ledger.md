@@ -32,3 +32,5 @@ date | item | type | rung | rework | note
 2026-10-26 | code editor leftovers: status bar, assist hint, code print, waveform | ui | sonnet | 0 | 
 2026-10-26 | graph round 3: options help, panel fit, toasts, untangle | ui | sonnet | 0 | 
 2026-10-26 | composer round 4: archived, mentions, day runs, year, label lines | feature | sonnet | 0 | 
+2026-10-26 | graph round 4: untangle passes, cleanup, budget | ui | sonnet | 1 | 
+2026-10-26 | whiteboard leftovers: origin cache, insert z, export, table widths | bugfix | sonnet | 1 | 

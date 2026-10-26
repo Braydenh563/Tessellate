@@ -31,6 +31,7 @@ def _run(expr: str, prelude: str = ""):
         "const wbSvgWrapLines = (t) => [String(t)];"
         "const wbTableCells = (d) => d.data.cells;"
         + prelude
+        + _slice(FMT, "const WB_TABLE_WEIGHT_MIN", "//: **A text box, a sticky or a table, as the export draws it.**")
         + _slice(FMT, "//: **A text box, a sticky or a table, as the export draws it.**", "function wbBuildTable(")
         + f"console.log(JSON.stringify({expr}));"
     )
@@ -65,3 +66,38 @@ def test_a_table_draws_a_rect_and_the_words_for_every_cell():
 
 def test_the_export_calls_both_for_the_object_kinds():
     assert "wbSvgBoxBackdrop(" in WB and "wbSvgTable(" in WB
+
+
+# --- the fold and the picture's corners (wb5) ---------------------------------
+
+GRADIENT = "linear-gradient(to left top, rgb(255, 255, 255) 50%, color(srgb 0.77 0.7 0.42) 50%)"
+
+
+def test_the_two_fold_colours_are_read_off_the_computed_gradient():
+    assert _run(f"wbSvgFoldColours({json.dumps(GRADIENT)})") == ["rgb(255, 255, 255)", "color(srgb 0.77 0.7 0.42)"]
+    assert _run('wbSvgFoldColours("none")') is None
+
+
+def _fold(sticky: bool = True, no_fold: bool = False, size: int = 24):
+    prelude = (
+        "const wbExportColour = (c) => c;"
+        f"const el = {{ classList: {{ contains: (n) => (n === 'wb-sticky' ? {str(sticky).lower()} : n === 'wb-no-fold' && {str(no_fold).lower()}) }} }};"
+        f"const getComputedStyle = () => ({{ width: '{size}px', content: '\"\"', backgroundImage: {json.dumps(GRADIENT)} }});"
+    )
+    return _run("wbSvgStickyFold(el, 200, 140)", prelude)
+
+
+def test_a_sticky_draws_its_cut_corner_and_the_fold_over_the_paper():
+    out = _fold()
+    assert 'd="M176 140H200V116Z" fill="rgb(255, 255, 255)"' in out
+    assert 'd="M176 116V140L200 116Z" fill="color(srgb 0.77 0.7 0.42)"' in out
+
+
+def test_a_sticky_with_the_fold_off_or_a_plain_box_draws_none():
+    assert _fold(no_fold=True) == ""
+    assert _fold(sticky=False) == ""
+
+
+def test_a_picture_is_clipped_to_the_corners_it_is_drawn_with():
+    body = WB[WB.index('if (obj.kind === "image" && obj.data.url) {') :][:1400]
+    assert "wbSvgBoxRadii(" in body and "<clipPath" in body and 'clip-path="url(#' in body
