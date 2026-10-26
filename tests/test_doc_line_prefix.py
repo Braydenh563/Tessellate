@@ -70,3 +70,29 @@ def test_underline_and_replace_have_their_word_processor_chords():
     # Hiding the toolbar from inside it hands the keyboard back to the page.
     hide = js[js.index("function toggleDocToolbar()"):]
     assert "docSurface()?.focus()" in hide[: hide.index("\n}\n")]
+
+
+NUMBER_SCRIPT = """
+const fs = require('fs');
+const take = (src, name) => { const a = src.indexOf('function ' + name); return src.slice(a, src.indexOf('\\n}\\n', a) + 3); };
+eval(take(fs.readFileSync(process.argv[1], 'utf8'), 'docOrderedNumberAt').replace('function ', 'globalThis.n = function '));
+eval(take(fs.readFileSync(process.argv[2], 'utf8'), 'docListEnter').replace('function ', 'globalThis.e = function '));
+const at = (v) => n(v, v.length + 1, 2);
+console.log(JSON.stringify([
+  n('1. a\\n', 5, 2), n('1. a\\n  1. b\\n', 13, 0), n('1. a\\n2. b\\n', 11, 0), n('- a\\n', 4, 2),
+  n('1. a\\n  1. b\\n  2. c\\n', 21, 0), n('intro\\n', 6, 0), n('', 0, 0),
+  e('> '), e('>'), e('> > '), e('> text'), e('- '), e('  - '),
+]));
+"""
+
+
+def test_numbered_item_takes_its_place_when_the_level_changes():
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    out = subprocess.run(
+        [node, "-e", NUMBER_SCRIPT, str(ROOT / "frontend" / "js" / "documents.js"), str(ROOT / "frontend" / "js" / "documents-prose.js")],
+        capture_output=True, text=True, check=True,
+    )
+    # Nested under 1. a: 1; back out beside 1. a (nested children skipped): 2; a bullet parent: 1.
+    assert json.loads(out.stdout) == [1, 2, 3, 1, 2, 1, 1, "", "", "> ", None, "", "- "]

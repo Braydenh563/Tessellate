@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: Enter on an empty quote line ends the quote (a nested one steps out a level), and Tab on a numbered item renumbers it for its new level ("1." as the first of a nested list, the next number when brought back out) instead of keeping "2." in a list of one.
 - Documents: Ctrl+U underlines (it was CodeMirror's "undo selection" and looked dead; a second press takes it off, as does Superscript and Subscript), Ctrl+H opens Replace with the cursor in the Replace field, and hiding the formatting toolbar with Ctrl+Shift+X no longer drops the keyboard onto the page.
 - Documents: the heading, list, task and quote buttons switch a line instead of stacking markers (Numbered on a bullet gave "1. - x", H2 on a heading did nothing); a second press takes it off, a numbered list counts 1, 2, 3, blank lines stay blank. Undo and Redo, Outdent and Indent no longer split across a wrapped toolbar row.
 - Spelling and grammar no longer mark the words of a link, code, addresses, file paths, email addresses or a unit after a number ("10-20 min" is not "minimum"); Settings, Writing, Check link text turns the link words back on (K11, K4b).

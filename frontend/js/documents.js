@@ -4561,6 +4561,26 @@ function docTakeTabEscape() {
 //: "- al|pha" plus Tab gave "- al  pha").
 const DOC_LIST_LINE = /^([ \t]*)([-*+]|\d+[.)])(\s)/;
 
+//: The number an ordered item at `indent` columns should carry, from the
+//: lines above `start`: its previous sibling's plus one, or 1 when a shallower
+//: line (the parent) or a break in the list comes first. Deeper lines are the
+//: sibling's children and are skipped over.
+function docOrderedNumberAt(value, start, indent) {
+  const above = value.slice(0, Math.max(0, start - 1)).split("\n");
+  for (let i = above.length - 1; i >= 0; i--) {
+    const line = above[i];
+    if (!line.trim()) continue;
+    const m = /^([ \t]*)(?:(\d+)[.)]|[-*+])\s/.exec(line);
+    if (!m) {
+      if (/^\s/.test(line)) continue;
+      return 1;
+    }
+    if (m[1].length > indent) continue;
+    return m[1].length === indent && m[2] ? Number(m[2]) + 1 : 1;
+  }
+  return 1;
+}
+
 function docCanOutdent(box) {
   if (!box) return false;
   if (box.selectionEnd > box.selectionStart) return true;
@@ -4596,8 +4616,14 @@ function indentDocSelection(box, outdent) {
       next = leading.slice(Math.min(leading.length, unit.length));
     }
     if (next === leading) return; // nothing to remove: the caller lets Tab go
-    docReplaceRange(box, start, start + leading.length, next);
-    const moved = next.length - leading.length;
+    //: A numbered item that changes level takes its place in the new list:
+    //: indented under "1. a" it is the first of a nested list ("1."), and
+    //: brought back out it is the parent's next number. Left alone it kept
+    //: "2." in a list of one, which renders as "2." and counts from there.
+    const digits = /^\d+/.exec(text.slice(leading.length))?.[0] || "";
+    const number = digits ? String(docOrderedNumberAt(box.value, start, next.length)) : "";
+    docReplaceRange(box, start, start + leading.length + digits.length, next + number);
+    const moved = next.length - leading.length + number.length - digits.length;
     const at = Math.max(start + next.length, caret + moved);
     box.setSelectionRange(at, at);
     markDocDirty();
