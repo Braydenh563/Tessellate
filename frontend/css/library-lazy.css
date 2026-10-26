@@ -6748,3 +6748,13 @@ input[type="color"].wb-mixed {
     inset: -9px;
   }
 }
+
+/* The zoom dock's level (INBOX 1352 gap 5): a text button the height of its
+   icon neighbours, wide enough for "400%" so the dock does not jitter as the
+   number changes. */
+.whiteboard-floating-panel .wb-zoom-level {
+  min-inline-size: 6ch;
+  padding-inline: var(--space-2);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}

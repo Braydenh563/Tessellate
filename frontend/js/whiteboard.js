@@ -622,6 +622,19 @@ function wbZoomFrameWork() {
   // redrawn (`wbNavigatorUpdateViewport`). It returns immediately when the
   // overview is closed, which is the common case.
   wbNavigatorUpdateViewport(t, size);
+  wbShowZoomLevel(t.k);
+}
+
+//: The zoom dock says the level (INBOX 1352 gap 5: three icons and no
+//: number). Written only when the rounded percent changes, to an element
+//: found once, so a pan costs nothing here.
+const wbZoomLevel = { pct: -1, el: null };
+function wbShowZoomLevel(k) {
+  const pct = Math.round(k * 100);
+  if (pct === wbZoomLevel.pct) return;
+  wbZoomLevel.pct = pct;
+  wbZoomLevel.el ||= document.getElementById("wb-zoom-level");
+  if (wbZoomLevel.el) wbZoomLevel.el.textContent = `${pct}%`;
 }
 
 //: Run a queued zoom frame now rather than on the next one: for a transform
@@ -13685,6 +13698,8 @@ async function initWhiteboard() {
   // Was `wbZoom.transform(d3.zoomIdentity)`, a reset to 100% at the origin,
   // under a button labelled "Fit to Screen". See `wbZoomToFit`.
   document.getElementById("wb-zoom-fit").addEventListener("click", () => wbZoomToFit());
+  //: The level itself is the 100% button, as in Figma and draw.io.
+  document.getElementById("wb-zoom-level").addEventListener("click", () => container.transition().duration(160).call(wbZoom.scaleTo, 1));
 
   // **An arrow, not the function directly.** `addEventListener` passes the
   // click event as the first argument, which would land in

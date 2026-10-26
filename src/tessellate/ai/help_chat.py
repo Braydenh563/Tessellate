@@ -1416,12 +1416,12 @@ HELP_TOPICS.extend(
                 "bubble and block arrow. Moving around: the wheel "
                 "zooms about the pointer, two trackpad fingers pan, Shift+wheel pans sideways, a pinch "
                 "zooms too, Space and drag pans, so does the middle or right button held down (a plain right-click opens the menu), a drag to an edge pans, Ctrl+= and Ctrl+- zoom, "
-                "Ctrl+0 is 100%, Shift+1 fits all, Shift+2 zooms to the selection (View has it too), Shift+N shows the "
-                "overview, / or Ctrl+F finds (with Whole word and Pattern buttons), Ctrl+H replaces, and Tab walks the board's "
+                "Ctrl+0 (or the zoom dock's level) is 100%, Shift+1 fits all, Shift+2 zooms to the selection (View has it too), Shift+N shows the "
+                "overview, / or Ctrl+F finds (with Whole word and Pattern buttons), Ctrl+H replaces, Tab walks the "
                 "items. Ctrl+K also finds select all shapes or connectors, select similar (same kind, fill and line colour), turn 90 degrees, remove from "
                 "the group, copy and paste the size, grow to fit the words, reverse a connector and clear its bends. "
                 "Groups nest (Ungroup takes off one level, a double-click goes in); a turn near upright snaps. "
-                "Selection, menus and presenting are in Whiteboard selection and menus."
+                "Selecting, menus, presenting: Whiteboard selection and menus."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
