@@ -138,7 +138,7 @@ function getStartedHide() {
   $("dash-first-steps")?.replaceChildren();
   $("dash-start")?.replaceChildren();
   renderDashMore();
-  toastAction("Get started is hidden. Customise or the palette (Show Get started) brings it back.", "Show again", getStartedShow);
+  toastAction("Get started is hidden. Settings > Help, Customise or the palette brings it back.", "Show again", getStartedShow);
 }
 
 function getStartedMarkDone() {
@@ -165,7 +165,7 @@ function firstStepsMenuItems(host, state) {
     { label: "ph:compass Take the tour", title: "Two minutes through what is here", group: "help", run: () => openTour("basics") },
     { label: "ph:book-open-text Read the manual", title: "Every help topic on one page", group: "help", run: () => lazyScript("/js/manual.js").then((ok) => ok && openManual()) },
     { label: "ph:checks Mark all as done", title: "Tick every step and put this card away", group: "away", run: getStartedMarkDone },
-    { label: "ph:eye-slash Hide Get started", title: "Hide this card and the Get started button; Customise shows them again", group: "away", run: getStartedHide }
+    { label: "ph:eye-slash Hide Get started", title: "Hide this card and the Get started button; Settings > Help or Customise shows them again", group: "away", run: getStartedHide }
   );
   return items;
 }

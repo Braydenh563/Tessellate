@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Settings > Help has a Show Get started button, for bringing back the dashboard's Get started after hiding it.
 - Fix: the Windows splash drew "Tessellate notes" with colour fringes and "notes" run into the name. The wordmark is now greyscale-smoothed with a proper gap.
 - Fix: asking "what did I do last week?" with web search on and no model went to the web (and reported the search service down). Questions about your own doings never go to the web now.
 - Fix: the ... button on Library image tiles was a faint glyph on the photo. It now sits on a small solid chip that reads on any picture.

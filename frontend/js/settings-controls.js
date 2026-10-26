@@ -996,6 +996,14 @@ $("show-guide-btn")?.addEventListener("click", () => {
   openOnboarding();
 });
 
+//: The owner, 2026-10-26: "if I hide this getting started button, is there a
+//: way to get it to show again in settings?" Customise and the palette could;
+//: Settings now can too.
+$("show-get-started-btn")?.addEventListener("click", () => {
+  closeSettingsModal();
+  lazyScript("/js/first-run.js").then(() => getStartedShow());
+});
+
 $("about-take-tour")?.addEventListener("click", () => {
   if (typeof TOUR_ENABLED !== "undefined" && !TOUR_ENABLED) return;
   closeSettingsModal();
