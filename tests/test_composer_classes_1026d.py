@@ -193,7 +193,7 @@ E_LABELS = [
     ("what did I write in November 2025", *_LABELS),
     ("show me notes from November last year", *_LABELS),
     ("list my notes from November 2025", *_LABELS),
-    ("what did I write in November last year", *_LABELS),
+    ("what did I jot down in November 2025", *_LABELS),
     ("what did I write on 4 November 2025", r"Blockers", r"Daily check|Gym routine"),
     ("notes from 4 November 2025", r"Blockers", r"Daily check|Gym routine"),
     ("what did I write on 18 November 2025", r"Daily check", r"Blockers|Gym routine"),
@@ -206,19 +206,10 @@ E_COUNTS = [
 
 #: Classes still failing, each case a strict xfail until its fix lands (take
 #: the letter out when the class passes).
-OPEN: set[str] = {"E"}
-#: Phrasings of an open class that already worked before its fix.
-WORKED = {
-    "notes between 10 and 12 September", "notes between 3 and 9 May", "what did I write May 3 to 9",
-    "how many notes between 10 and 12 September", "how many notes did I write between the 3rd and the 9th of May",
-    "how many notes did I write from 24 to 30 September", "how many notes did I write between the 24th and the 30th of September",
-    "what did I write in November 2025", "how many notes did I write in November 2025", "how many notes in November last year",
-}
-
-
+OPEN: set[str] = set()
 def _cases(cls: str, rows: list):  # noqa: ANN202
     def mark(q: str) -> list:
-        return [pytest.mark.xfail(strict=True, reason="open")] if cls in OPEN and q not in WORKED else []
+        return [pytest.mark.xfail(strict=True, reason="open")] if cls in OPEN else []
 
     return [pytest.param(*row, id=row[0], marks=mark(row[0])) for row in rows]
 

@@ -4006,7 +4006,7 @@ RECALL_NOTES = 8
 def _recall(out: _Answer, p: Plan, views: list[NoteView], question: str) -> None:
     """Recall by time (decision 31's schema): the notes in the window, newest
     first, grouped by day, under the count; "nothing from then" when none."""
-    inside = sorted((v for v in views if v.sentences and _in_window(v, p.window)), key=lambda v: (v.written, -v.rank), reverse=True)
+    inside = sorted((v for v in views if _in_window(v, p.window)), key=lambda v: (v.written, -v.rank), reverse=True)
     said = window_said(_as_typed(p.window_phrase, question))
     if not inside:
         out.t("recall_none").asked(said).t("stop")
@@ -4019,10 +4019,30 @@ def _recall(out: _Answer, p: Plan, views: list[NoteView], question: str) -> None
             out.name(view).dated(view)
         else:
             out.t("list_from").m(out.day(view.written))
-        out.t("colon")
         #: A picture's note as what it shows and its words; a note's
         #: heading with the sentence after it (INBOX 787).
-        _overview_line(out, composer_overview.best_line(view.sentences, set()), set())
+        units = composer_overview.best_line(view.sentences, set()) or _label_line(view)
+        if not units:
+            out.t("stop")
+            continue
+        out.t("colon")
+        _overview_line(out, units, set())
+
+
+def _label_line(view: NoteView) -> list[Sentence]:
+    """The first line under the heading of a note with no quotable sentence
+    (its body is a label such as "Blockers: none."): listing by date needs a
+    day and a name, not a claim, so the line stands in for the sentence."""
+    content = str(view.note.get("content") or "")
+    offset = 0
+    for line in content.splitlines(keepends=True):
+        start, offset = offset, offset + len(line)
+        if not line.strip() or _heading_text(line) is not None or line.strip().startswith(("```", "![", "|")):
+            continue
+        item = _ITEM.match(line)
+        unit = _unit(view, content, start + (item.end() if item else 0), start + len(line.rstrip("\r\n")), "item", None)
+        return [unit] if unit else []
+    return []
 
 
 # --- the overview of a topic (INBOX 787) ------------------------------------------
