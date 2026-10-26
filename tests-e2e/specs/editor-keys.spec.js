@@ -189,6 +189,9 @@ test("a note card shows heading words, not heading hashes", async ({ page }) => 
   await openApp(page);
   const mark = `Hashfree${Date.now() % 100000}`;
   await api(page, "/entries", { method: "POST", body: JSON.stringify({ content: `# Card title ${mark}\n\n## Sub heading ${mark}\n\nSome \`code\` words.` }) });
+  // The POST goes behind the client's back, and the filter reads the cached
+  // list: reload it, or the note shows only when boot's load lost the race.
+  await page.evaluate(() => loadEntries());
   await openTab(page, "notes");
   await page.fill("#note-search", mark);
   const body = page.locator("#tab-notes .entry-content", { hasText: `Sub heading ${mark}` }).first();

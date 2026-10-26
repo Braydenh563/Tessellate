@@ -33,7 +33,8 @@ def test_an_answer_is_still_graded(ask):
     history: list = []
     _turn(ask, history, "quiz me on lecture 6")
     said = _turn(ask, history, "a column that identifies each row")
-    assert re.search(r"Correct|Close|Not quite|Right|Nearly|Missed|Part of it|matches", said) and "question 2 of" in said
+    #: composer6 varies the feedback (`composer_study._FEEDBACK`); any of its openers counts as graded.
+    assert re.search(r"correct|close|not quite|right|nearly|missed|part of it|matches|that's it|not this time", said, re.I) and "question 2 of" in said
 
 
 def test_every_quiz_question_offers_a_stop(client, ask):
