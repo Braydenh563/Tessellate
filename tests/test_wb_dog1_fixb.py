@@ -35,7 +35,7 @@ def _node(expr: str):
     if not node:
         pytest.skip("node is not installed")
     script = (
-        "".join(_function(n) for n in ("wbShapeDims", "wbEllipseDrawD"))
+        "".join(_function(n) for n in ("wbDragBox", "wbEllipseDrawD"))
         + f"console.log(JSON.stringify({expr}));"
     )
     return json.loads(
@@ -55,18 +55,29 @@ def test_ellipse_is_drawn_corner_to_corner_like_the_rectangle():
     # Press at (100, 100), drag to (200, 160): the rectangle's box is x 100..200,
     # y 100..160, and the ellipse must fill the same box (it used to centre on
     # the press and reach 200 wide, 120 tall, 100 left and 40 above it).
-    left, top, w, h, rx = _bbox(_node("wbEllipseDrawD(100, 100, 200, 160, false)"))
+    left, top, w, h, rx = _bbox(_node("wbEllipseDrawD(100, 100, 200, 160)"))
     assert (left, top, w, h) == (100, 100, 100, 60) and rx == 50
 
 
 def test_ellipse_dragged_up_left_stays_in_the_dragged_box():
-    left, top, w, h, _ = _bbox(_node("wbEllipseDrawD(200, 160, 100, 100, false)"))
+    left, top, w, h, _ = _bbox(_node("wbEllipseDrawD(200, 160, 100, 100)"))
     assert (left, top, w, h) == (100, 100, 100, 60)
 
 
 def test_ellipse_with_shift_is_a_circle_away_from_the_press():
-    left, top, w, h, _ = _bbox(_node("wbEllipseDrawD(200, 160, 100, 100, true)"))
+    left, top, w, h, _ = _bbox(_node("wbEllipseDrawD(200, 160, 100, 100, { shiftKey: true })"))
     assert (left, top, w, h) == (100, 60, 100, 100)
+
+
+def test_alt_draws_the_ellipse_from_its_centre():
+    """INBOX 1352 gap 2: the default stays corner to corner; Alt is the centre."""
+    left, top, w, h, _ = _bbox(_node("wbEllipseDrawD(200, 160, 260, 190, { altKey: true })"))
+    assert (left, top, w, h) == (140, 130, 120, 60)
+
+
+def test_a_shift_square_dragged_up_and_left_ends_at_the_pointer():
+    """INBOX 1352 gap 1: it straddled the press (x -60 of a 120 square)."""
+    assert _node("wbDragBox(100, 100, 40, 80, { shiftKey: true })") == {"x": 40, "y": 40, "w": 60, "h": 60}
 
 
 def test_draw_out_snap_has_no_centred_mode():

@@ -8502,10 +8502,13 @@ input[type="file"] {
    square swatch beside seven round controls. Same disc the board's pickers
    are, at the strip's own control height. */
 .wb-map-strip input[type="color"].wb-color-picker {
-  width: 1.75rem;
-  height: 1.75rem;
-  min-width: 1.75rem;
-  min-height: 1.75rem;
+  /* The touch floor, as every other strip control (1.75rem at a desk, 44px
+     under 820): it was 28px beside 44px buttons on a phone (INBOX 1354
+     item 5). */
+  width: var(--target-min);
+  height: var(--target-min);
+  min-width: var(--target-min);
+  min-height: var(--target-min);
   padding: 0;
   margin: 0;
   border: 2px solid var(--muted);
@@ -8535,6 +8538,10 @@ input[type="file"] {
    1.75rem control height so it sits on the same line as the colour well. */
 .wb-map-strip .wb-menu-toggle {
   height: 1.75rem;
+  /* `button.small`'s floor (32px) beat the height above, so the three doors
+     stood 4px taller than the well and the steppers (INBOX 1354 item 5);
+     the touch floor still lifts all of them to 44 under 820. */
+  min-height: var(--target-min);
   gap: var(--space-1);
   padding-inline: var(--space-2);
   font-size: var(--text-sm);

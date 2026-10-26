@@ -674,7 +674,8 @@ document.addEventListener("keydown", (e) => {
     return;
   }
   if (e.key === "Escape" && !$("sketch-overlay").classList.contains("hidden")) {
-    closeSketch();
+    //: As the palette: an Escape that closed the pad's '?' leaves the pad.
+    if (!e.helpPopoverSpent) closeSketch();
     return;
   }
   if (e.key === "Escape" && !$("meeting-overlay").classList.contains("hidden")) {
@@ -1788,8 +1789,6 @@ for (const [id, key] of [["entry-title", "captureDraftTitle"], ["entry-tags", "c
 }
 
 $("sketch-btn").addEventListener("click", openSketch);
-$("sketch-close").addEventListener("click", closeSketch);
-$("sketch-save").addEventListener("click", saveSketch);
 // Wave H: dictation + read-aloud.
 $("mic-note").addEventListener("click", () =>
   toggleDictation($("mic-note"), $("entry-content"))

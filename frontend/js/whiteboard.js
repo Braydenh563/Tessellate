@@ -19,7 +19,7 @@
 // first.
 //
 // NOT included here: the "Quick Sketch" pad (`openSketch`/`closeSketch`/
-// `saveSketch`/`sketchPen`/... and the `#sketch-*` DOM ids), which stayed in
+// `saveSketch`, sketch-pad.js and its `.sp-*` markup), which stayed in
 // app.js. It looks related by name, the task that produced this split
 // flagged it explicitly for a call, but it is a separate, still-live Wave F
 // ("Platform") feature: a full-screen freehand pad that saves a PNG as a
@@ -622,6 +622,19 @@ function wbZoomFrameWork() {
   // redrawn (`wbNavigatorUpdateViewport`). It returns immediately when the
   // overview is closed, which is the common case.
   wbNavigatorUpdateViewport(t, size);
+  wbShowZoomLevel(t.k);
+}
+
+//: The zoom dock says the level (INBOX 1352 gap 5: three icons and no
+//: number). Written only when the rounded percent changes, to an element
+//: found once, so a pan costs nothing here.
+const wbZoomLevel = { pct: -1, el: null };
+function wbShowZoomLevel(k) {
+  const pct = Math.round(k * 100);
+  if (pct === wbZoomLevel.pct) return;
+  wbZoomLevel.pct = pct;
+  wbZoomLevel.el ||= document.getElementById("wb-zoom-level");
+  if (wbZoomLevel.el) wbZoomLevel.el.textContent = `${pct}%`;
 }
 
 //: Run a queued zoom frame now rather than on the next one: for a transform
@@ -1298,18 +1311,20 @@ function wbGuidedResize(kind, d, handle, start, width, height, { off = false, fi
 //: beside it. Every closed shape is drawn corner to corner, the ellipse
 //: included (dogfood 2026-10-25 item 7: a circle grown from its centre
 //: put its top under the toolbar and felt unlike the rectangle). Alt draws
-//: without snapping, as a move does; Shift (a square) is left alone.
+//: from the centre without snapping (`wbDragBox`); Shift (a square) is left
+//: alone.
 function wbDrawOutSnap(sx, sy, x, y, event) {
   const dx = x - sx, dy = y - sy;
   const box = { x: Math.min(sx, x), y: Math.min(sy, y), w: Math.abs(dx), h: Math.abs(dy) };
-  if (event.shiftKey) {
-    const side = Math.max(box.w, box.h);
+  if (event.shiftKey || event.altKey) {
+    //: Shift (a square) and Alt (from the centre, unsnapped) are left to
+    //: `wbDragBox`; the readout shows the box it will draw.
     wbShowAlignmentGuides([]);
-    wbShowSizeReadout({ ...box, w: side, h: side });
+    wbShowSizeReadout(wbDragBox(sx, sy, x, y, event));
     return [x, y];
   }
   const edges = (dx >= 0 ? "e" : "w") + (dy >= 0 ? "s" : "n");
-  const snapped = event.altKey ? { ...box, guideLines: [] } : wbResizeGuides(null, box, edges, {
+  const snapped = wbResizeGuides(null, box, edges, {
     grid: wbSnapOn() ? WB_GRID_SPACING : 0, min: 1, tol: wbAlignTol(),
   });
   wbShowAlignmentGuides(snapped.guideLines);
@@ -1792,26 +1807,49 @@ function wbRoundedPathD(d, radius, shaftOnly = false) {
 //: `approachAngle` (the direction the shaft arrives *from*, in radians), 
 //: factored out so both ends of an arrow can draw one (`currentArrowEndStyle`,
 //: reported directly: "can't change arrow heads").
-//: Absolute width/height for a shape drawn from `(0,0)` to `(dx, dy)`, 
-//: equal (a square/perfect circle) while `shiftHeld`, matching the sketch
-//: pad's own rect tool (HISTORY.md) and asked for again directly for the
-//: whiteboard's shapes generally. Squares to the *larger* of the two raw
-//: dimensions so the shape still reaches all the way to the cursor.
-function wbShapeDims(dx, dy, shiftHeld) {
+//: The box a shape tool draws from the press `(sx, sy)` to the pointer: corner
+//: to corner; Shift makes it square, grown towards the pointer so a drag up
+//: and left still ends under it (it straddled the press, INBOX 1352 gap 1);
+//: Alt draws it from its centre, as Alt resizes from the centre (decision
+//: 40). One model for every closed shape, the ellipse included.
+function wbDragBox(sx, sy, x, y, mods = {}) {
+  let dx = x - sx, dy = y - sy;
+  if (mods.shiftKey) {
+    const side = Math.max(Math.abs(dx), Math.abs(dy));
+    dx = Math.sign(dx || 1) * side;
+    dy = Math.sign(dy || 1) * side;
+  }
   const w = Math.abs(dx), h = Math.abs(dy);
-  if (!shiftHeld) return { w, h };
-  const s = Math.max(w, h);
-  return { w: s, h: s };
+  if (mods.altKey) return { x: sx - w, y: sy - h, w: 2 * w, h: 2 * h };
+  return { x: Math.min(sx, sx + dx), y: Math.min(sy, sy + dy), w, h };
 }
 
-//: The ellipse drawn corner to corner: its bounding box is the one the
-//: rectangle would get from the same two points, so both tools share one drag
-//: model. Shift makes it a circle, grown away from the press.
-function wbEllipseDrawD(sx, sy, x, y, shiftHeld) {
-  const { w, h } = wbShapeDims(x - sx, y - sy, shiftHeld);
-  const left = x >= sx ? sx : sx - w, top = y >= sy ? sy : sy - h;
+//: The ellipse in the box `wbDragBox` gives the same drag (dogfood
+//: 2026-10-25 item 7: it used to centre on the press by default).
+function wbEllipseDrawD(sx, sy, x, y, mods = {}) {
+  const { x: left, y: top, w, h } = wbDragBox(sx, sy, x, y, mods);
   const rx = w / 2, ry = h / 2;
   return `M ${left} ${top + ry} a ${rx} ${ry} 0 1 0 ${w} 0 a ${rx} ${ry} 0 1 0 ${-w} 0`;
+}
+
+//: Shift snaps a line's far end to the nearest 45 degrees, keeping its
+//: length (INBOX 1352 gap 3).
+function wbSnap45(sx, sy, x, y) {
+  const step = Math.PI / 4;
+  const angle = Math.round(Math.atan2(y - sy, x - sx) / step) * step;
+  const d = Math.hypot(x - sx, y - sy);
+  return [sx + Math.round(Math.cos(angle) * d * 100) / 100, sy + Math.round(Math.sin(angle) * d * 100) / 100];
+}
+
+//: A closed shape's path in its drawn box. Plain `L` commands for the
+//: triangle and diamond, as the pen and line tools use, so
+//: wbTransformPathD and wbPathBBox have no new command to learn.
+function wbClosedShapeD(tool, { x, y, w, h }) {
+  if (tool === "rect") return `M ${x} ${y} h ${w} v ${h} h ${-w} Z`;
+  if (tool === "triangle") return `M ${x + w / 2} ${y} L ${x + w} ${y + h} L ${x} ${y + h} Z`;
+  if (tool === "diamond") return `M ${x + w / 2} ${y} L ${x + w} ${y + h / 2} L ${x + w / 2} ${y + h} L ${x} ${y + h / 2} Z`;
+  const more = WB_MORE_SHAPES[tool];
+  return more ? more.d(x, y, Math.max(w, 1), Math.max(h, 1)) : "";
 }
 
 function wbArrowHeadPath(tipX, tipY, approachAngle, headLen) {
@@ -2158,38 +2196,111 @@ const wbMultiKey = (kind, id) => `${kind}:${id}`;
 // on every member's own `group_id` column, so clicking any one member later
 // reselects the whole set, the other half of this feature lives in
 // `wbHandleItemClick` below.
+//
+//: **Groups nest** (the owner, INBOX 1354: "if I have 7 items and group 5 but
+//: then highlight the grouped 5 and the other two can it group them all again
+//: and then if I ungroup them the 5 will also remain grouped?"). `group_id` is
+//: a chain, outermost first, joined by `>`: the 5 hold `outer>inner`, the 2
+//: hold `outer`. Grouping puts a new id in front; ungrouping takes the one the
+//: selection shares off. The column is 40 characters, so new ids are 6 and a
+//: chain is five deep at most; an old 36-character id is re-keyed short, on
+//: every member at once, the first time it is nested.
+const WB_GROUP_SEP = ">";
+const WB_GROUP_MAX_LEN = 40;
+
+function wbGroupChain(item) {
+  return item?.group_id ? String(item.group_id).split(WB_GROUP_SEP).filter(Boolean) : [];
+}
+
+function wbTopGroup(item) {
+  return wbGroupChain(item)[0] || null;
+}
+
+function wbNewGroupId() {
+  const bytes = crypto.getRandomValues ? crypto.getRandomValues(new Uint8Array(6)) : Array.from({ length: 6 }, () => Math.random() * 256);
+  return Array.from(bytes, (b) => "abcdefghijklmnopqrstuvwxyz0123456789"[b % 36]).join("");
+}
+
+//: The chain every item in `items` starts with (empty when they share none).
+function wbCommonGroupPrefix(items) {
+  const chains = items.map(wbGroupChain);
+  if (!chains.length) return [];
+  const prefix = [];
+  for (let i = 0; i < chains[0].length; i += 1) {
+    const seg = chains[0][i];
+    if (!chains.every((c) => c[i] === seg)) break;
+    prefix.push(seg);
+  }
+  return prefix;
+}
+
+//: Each board item whose chain starts with `prefix` (all of them for none).
+function wbItemsWithGroupPrefix(prefix) {
+  const out = [];
+  for (const [kind, list] of Object.entries(WB_LIST_BY_KIND)) {
+    for (const item of wbState[list] || []) {
+      const chain = wbGroupChain(item);
+      if (prefix.every((seg, i) => chain[i] === seg)) out.push({ kind, item });
+    }
+  }
+  return out;
+}
+
+function wbSaveGroupMember(kind, item) {
+  if (kind === "sketch") return wbSaveSketchProps(item, {});
+  if (kind === "node") return wbSaveNode(item);
+  return wbSaveObject(item);
+}
+
+//: An id too long to nest under (a 36-character one from before chains) is
+//: swapped for a short one on every item that carries it.
+async function wbShortenGroupIds(entries) {
+  const long = new Set();
+  for (const e of entries) for (const seg of wbGroupChain(e.item)) if (seg.length > 8) long.add(seg);
+  for (const seg of long) {
+    const short = wbNewGroupId();
+    for (const { kind, item } of wbItemsWithGroupPrefix([])) {
+      const chain = wbGroupChain(item);
+      if (!chain.includes(seg)) continue;
+      item.group_id = chain.map((c) => (c === seg ? short : c)).join(WB_GROUP_SEP);
+      await wbSaveGroupMember(kind, item);
+    }
+  }
+}
+
 async function wbGroupSelection() {
-  if (wbMultiSelection.size < 2) {
+  const entries = wbSelectionEntries();
+  if (entries.length < 2) {
     toast("Select more than one item to group them.");
     return;
   }
-  const groupId = crypto.randomUUID ? crypto.randomUUID() : `g${Date.now()}${Math.random().toString(36).slice(2)}`;
-  for (const key of wbMultiSelection) {
-    const sep = key.indexOf(":");
-    const kind = key.slice(0, sep), id = Number(key.slice(sep + 1));
-    const item = (wbState[WB_LIST_BY_KIND[kind]] || []).find((i) => i.id === id);
-    if (!item) continue;
-    item.group_id = groupId;
-    if (kind === "sketch") await wbSaveSketchProps(item, {});
-    else if (kind === "node") await wbSaveNode(item);
-    else await wbSaveObject(item);
-  }
-  toast("Grouped.");
+  const groupId = wbNewGroupId();
+  await wbRecordGesture(async () => {
+    await wbShortenGroupIds(entries);
+    const chains = entries.map((e) => [groupId, ...wbGroupChain(e.item)].join(WB_GROUP_SEP));
+    if (chains.some((c) => c.length > WB_GROUP_MAX_LEN)) {
+      toast("Groups nest five deep at most.");
+      return;
+    }
+    for (let i = 0; i < entries.length; i += 1) {
+      entries[i].item.group_id = chains[i];
+      await wbSaveGroupMember(entries[i].kind, entries[i].item);
+    }
+    toast("Grouped.");
+  });
   wbUpdateContextBar();
 }
 
 //: **Which of Group and Ungroup the selection can use** (B29: "the ungroup
 //: button on the popup tools doesn't change"). Both buttons stayed on the bar
 //: through every selection, so grouping changed nothing the eye could see.
-//: Group is offered unless the selection already is exactly one group;
-//: Ungroup only while some member belongs to one.
+//: One or the other, never both (the owner, 10-25: "the group and ungroup
+//: button show at the same time"): a selection that shares a group ungroups
+//: it; anything else of two or more groups (a group with loose items, or two
+//: groups, makes a group of groups).
 function wbGroupButtonState(items) {
-  const ids = items.map((i) => i.group_id || null);
-  const oneGroup = ids.length > 0 && ids[0] !== null && ids.every((g) => g === ids[0]);
-  //: One or the other, never both (the owner, 10-25: "the group and ungroup
-  //: button show at the same time"): a selection that is exactly one group
-  //: ungroups; anything else of two or more groups (merging what is grouped).
-  return { canGroup: ids.length > 1 && !oneGroup, canUngroup: oneGroup };
+  const shared = items.length > 0 && wbCommonGroupPrefix(items).length > 0;
+  return { canGroup: items.length > 1 && !shared, canUngroup: shared };
 }
 
 function wbSyncGroupButtons() {
@@ -2198,28 +2309,23 @@ function wbSyncGroupButtons() {
   document.getElementById("wb-multi-ungroup")?.classList.toggle("hidden", !state.canUngroup);
 }
 
-//: Clears `group_id` on every currently-selected member, the current
-//: selection is either a multi-selection built by hand, or (per
-//: `wbHandleItemClick`'s own group-select branch) already the whole group,
-//: since clicking any one grouped member selects all of it.
+//: Takes the innermost group the selection shares off each member, so the
+//: groups inside it stay groups. One Undo step.
 async function wbUngroupSelection() {
-  const keys = wbMultiSelection.size > 0
-    ? [...wbMultiSelection]
-    : wbSelectedItem ? [wbMultiKey(wbSelectedItem.kind, wbSelectedItem.id)] : [];
-  if (keys.length === 0) return;
-  let ungrouped = 0;
-  for (const key of keys) {
-    const sep = key.indexOf(":");
-    const kind = key.slice(0, sep), id = Number(key.slice(sep + 1));
-    const item = (wbState[WB_LIST_BY_KIND[kind]] || []).find((i) => i.id === id);
-    if (!item || !item.group_id) continue;
-    item.group_id = null;
-    ungrouped++;
-    if (kind === "sketch") await wbSaveSketchProps(item, {});
-    else if (kind === "node") await wbSaveNode(item);
-    else await wbSaveObject(item);
-  }
-  if (ungrouped) toast("Ungrouped.");
+  const lone = wbSelectedItem && (wbState[WB_LIST_BY_KIND[wbSelectedItem.kind]] || []).find((i) => i.id === wbSelectedItem.id);
+  const entries = wbMultiSelection.size ? wbSelectionEntries() : lone ? [{ kind: wbSelectedItem.kind, item: lone }] : [];
+  const prefix = wbCommonGroupPrefix(entries.map((e) => e.item));
+  if (!prefix.length) return;
+  const depth = prefix.length - 1;
+  await wbRecordGesture(async () => {
+    for (const { kind, item } of entries) {
+      const chain = wbGroupChain(item);
+      chain.splice(depth, 1);
+      item.group_id = chain.length ? chain.join(WB_GROUP_SEP) : null;
+      await wbSaveGroupMember(kind, item);
+    }
+  });
+  toast("Ungrouped.");
   wbUpdateContextBar();
 }
 
@@ -4829,7 +4935,7 @@ async function wbTidySelection(direction = "down") {
 //: shape has now. Text, colours, line and its connectors (bound by id) stay.
 const WB_SHAPE_SWAPS = {
   rect: { label: "Rectangle", icon: "ph:square", d: (x, y, w, h) => `M ${x} ${y} h ${w} v ${h} h ${-w} Z` },
-  circle: { label: "Ellipse", icon: "ph:circle", d: (x, y, w, h) => wbEllipseDrawD(x, y, x + w, y + h, false) },
+  circle: { label: "Ellipse", icon: "ph:circle", d: (x, y, w, h) => wbEllipseDrawD(x, y, x + w, y + h) },
   triangle: { label: "Triangle", icon: "ph:triangle", d: (x, y, w, h) => `M ${x + w / 2} ${y} L ${x + w} ${y + h} L ${x} ${y + h} Z` },
   diamond: { label: "Diamond", icon: "ph:diamond", d: (x, y, w, h) => `M ${x + w / 2} ${y} L ${x + w} ${y + h / 2} L ${x + w / 2} ${y + h} L ${x} ${y + h / 2} Z` },
   ...Object.fromEntries(Object.entries(WB_MORE_SHAPES).filter(([k]) => k !== "shape-ellipse")),
@@ -5465,6 +5571,7 @@ function wbUpdateContextBar() {
 //: over a selection it does not have.
 function wbFillContextBar() {
   const bar = document.getElementById("wb-context");
+  WB_CTX_FOLD.sig = null;
   if (!bar) return null;
   const show = (...ids) => ids.forEach((id) => document.getElementById(id)?.classList.remove("hidden"));
 
@@ -6484,7 +6591,10 @@ function wbRenderRelease() {
 //: the "..." menu's own section, the same controls with the same handlers.
 //: Every placement puts them back first, so a wider window or a smaller
 //: selection gets them on the bar again.
-const WB_CTX_FOLD = { order: ["order", "stroke", "arrange", "caps", "route"], home: new Map() };
+//: The groups a wrapped bar folds into More, first to last. Fill and text go
+//: last: they are what a shape or a text box is selected for, but a phone's
+//: text bar was four rows tall without them (INBOX 1354, 198px at 390).
+const WB_CTX_FOLD = { order: ["order", "stroke", "arrange", "caps", "route", "fill", "text"], home: new Map(), sig: null, size: null };
 
 function wbFoldContextBar(bar) {
   const menu = document.getElementById("wb-context-menu");
@@ -6510,15 +6620,45 @@ function wbFoldContextBar(bar) {
     shelf.setAttribute("aria-label", "More controls for this selection");
     menu.insertBefore(shelf, menu.firstChild);
   }
-  const visible = (name) => [...bar.querySelectorAll(`:scope > .wb-context-group[data-wb-ctx="${name}"]:not(.hidden)`)].reverse();
-  for (const name of WB_CTX_FOLD.order) {
-    for (const g of visible(name)) {
-      if (bar.offsetHeight <= 60) return;
-      WB_CTX_FOLD.home.set(g, g.nextElementSibling);
-      shelf.insertBefore(g, shelf.firstChild);
-      shelf.classList.remove("hidden");
-    }
+  const candidates = WB_CTX_FOLD.order.flatMap((name) =>
+    [...bar.querySelectorAll(`:scope > .wb-context-group[data-wb-ctx="${name}"]:not(.hidden)`)].reverse());
+  const fold = (g) => {
+    WB_CTX_FOLD.home.set(g, g.nextElementSibling);
+    shelf.insertBefore(g, shelf.firstChild);
+    shelf.classList.remove("hidden");
+  };
+  //: **Planned from one measurement, then checked once** (the owner,
+  //: 10-26: "make everything lightweight"). Reading the bar's height after
+  //: every move was one layout per folded group: 31 ms of a 63 ms bar open at
+  //: 390. The plan folds what the widths say must go; the loop after it only
+  //: runs when a group that wrapped inside itself made the plan short.
+  const planned = wbFoldPlan(bar, candidates);
+  planned.forEach(fold);
+  for (const g of candidates.slice(planned.length)) {
+    if (bar.offsetHeight <= 60) return;
+    fold(g);
   }
+}
+
+//: The leading run of `candidates` that has to leave for the rest of the bar
+//: to fit one row, from one read of every width (no layout between reads).
+function wbFoldPlan(bar, candidates) {
+  const cs = getComputedStyle(bar);
+  const room = bar.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const gap = parseFloat(cs.columnGap) || 0;
+  const span = (el) => {
+    const st = getComputedStyle(el);
+    return el.getBoundingClientRect().width + parseFloat(st.marginLeft) + parseFloat(st.marginRight) + gap;
+  };
+  const shown = [...bar.children].filter((el) => !el.classList.contains("hidden") && el.getClientRects().length);
+  let need = shown.reduce((sum, el) => sum + span(el), -gap);
+  const out = [];
+  for (const g of candidates) {
+    if (need <= room) break;
+    need -= span(g);
+    out.push(g);
+  }
+  return out;
 }
 
 //: What a pan keeps of the selection bar's measurements: a pan moves the
@@ -6671,7 +6811,14 @@ function wbUpdateSelectionBar(panning = false) {
   //: A bar that wraps to a second row is a panel, not a pill: the pill's
   //: radius cut the corners of its first and last rows (the 22-10 bug doc,
   //: "the two rows clash at a half window").
-  if (!held && active.id === "wb-context") {
+  //: **Folded once per fill, not once per frame** (the owner, 10-26: "not
+  //: laggy"). A one-item drag places the bar every frame and refolded it
+  //: each time: at 390 the fold and the reads after it were 945 ms of a 30-move
+  //: drag, every frame a long task. The bar's groups change only when
+  //: `wbFillContextBar` runs (it clears `sig`) or the host's width does.
+  const foldSig = !held && active.id === "wb-context" ? `${panSig}:${Math.round(hostRect.width)}` : null;
+  const folded = foldSig && WB_CTX_FOLD.sig === foldSig ? WB_CTX_FOLD.size : null;
+  if (foldSig && !folded) {
     active.classList.remove("wb-context-wrapped");
     wbFoldContextBar(active);
     const groups = [...active.querySelectorAll(":scope > .wb-context-group:not(.hidden)")];
@@ -6685,16 +6832,17 @@ function wbUpdateSelectionBar(panning = false) {
       groups.forEach((g, i) => { if (i && tops[i] > tops[i - 1] + 2) g.classList.add("wb-row-start"); });
     }
   }
-  const w = held ? held.w : active.offsetWidth;
-  const h = held ? held.h : active.offsetHeight;
+  const w = held ? held.w : folded ? folded.w : active.offsetWidth;
+  const h = held ? held.h : folded ? folded.h : active.offsetHeight;
+  if (foldSig && !folded) Object.assign(WB_CTX_FOLD, { sig: foldSig, size: { w, h } });
   // 44px above, not 10: the rotation handle sits 28px above a card or
   // text box (`.wb-rotate-handle`, 12px tall), and a bar placed just over
   // the item covered it, reported: "I can't rotate objects because that
   // panel appears."
-  //: 58 while the clone arrows show: the top one stands past the rotation
-  //: handle (42px up, 8px tall), and the bar over it hid it (the owner,
+  //: 72 while the clone arrows show: the top one stands past the rotation
+  //: handle (56px up, 8px tall), and the bar over it hid it (the owner,
   //: 2026-10-10: "you cant even see the top one").
-  const gapAbove = document.getElementById("wb-clone-grips") ? 58 : 44, gapBelow = 10;
+  const gapAbove = document.getElementById("wb-clone-grips") ? 72 : 44, gapBelow = 10;
   //: Clear of the board's two side panels (the sidebar's rail on the left,
   //: the Format panel on the right), which stand over the canvas: a shape
   //: near the left edge put the bar's first controls under the rail.
@@ -6758,7 +6906,11 @@ function wbUpdateSelectionBar(panning = false) {
     //: top, as before.
     const rail = document.getElementById("wb-tool-group")?.getBoundingClientRect();
     const foot = (rail && rail.height ? rail.top - hostRect.top : rect.bottom - hostRect.top) - h - gapBelow;
-    const under = (at) => top < at + h && bottom > at;
+    //: The grips count as the selection (INBOX 1354, measured at 390: the
+    //: band ended 10px over a shape's top and covered its rotation grip and
+    //: up arrow, 28 and 56px above it, so a turn there was a press on the bar).
+    const gripsTop = top - gapAbove + 12;
+    const under = (at) => gripsTop < at + h && bottom > at;
     if (under(y) && foot > y && !under(foot)) {
       bar.dataset.wbAnchor = "bottom";
       y = foot;
@@ -6808,24 +6960,51 @@ function wbHandleItemClick(kind, id, event) {
     wbApplySelectionHighlight();
     return;
   }
-  wbMultiSelection.clear();
   // A plain click on a *grouped* item selects the whole group, not just the
   // one thing clicked: the other half of Ctrl+G (`wbGroupSelection`).
   const item = (wbState[WB_LIST_BY_KIND[kind]] || []).find((i) => i.id === id);
-  if (item && item.group_id) {
-    for (const [memberKind, listName] of Object.entries(WB_LIST_BY_KIND)) {
-      for (const candidate of wbState[listName] || []) {
-        //: A locked member stays put while its group moves (decision 15).
-        if (candidate.group_id === item.group_id && !wbIsLocked(memberKind, candidate)) {
-          wbMultiSelection.add(wbMultiKey(memberKind, candidate.id));
-        }
-      }
-    }
-    wbSelectedItem = null;
-    wbApplySelectionHighlight();
+  const chain = wbGroupChain(item);
+  if (!chain.length) {
+    wbMultiSelection.clear();
+    selectWbItem(kind, id);
     return;
   }
-  selectWbItem(kind, id);
+  //: A click inside the group already selected keeps it (so a press to drag
+  //: does not climb back out); a double-click goes one group further in, and
+  //: past the innermost to the item itself (INBOX 1354).
+  const depth = wbSelectedGroupDepth(chain);
+  if (depth && !(event.detail >= 2)) return;
+  const want = depth ? depth + 1 : 1;
+  wbMultiSelection.clear();
+  if (want > chain.length) {
+    wbDrilledAt = performance.now();
+    selectWbItem(kind, id);
+    return;
+  }
+  if (depth) wbDrilledAt = performance.now();
+  for (const { kind: memberKind, item: candidate } of wbItemsWithGroupPrefix(chain.slice(0, want))) {
+    //: A locked member stays put while its group moves (decision 15).
+    if (!wbIsLocked(memberKind, candidate)) wbMultiSelection.add(wbMultiKey(memberKind, candidate.id));
+  }
+  wbSelectedItem = null;
+  wbApplySelectionHighlight();
+}
+
+//: How deep into `chain` the current selection is: n when it is exactly the
+//: unlocked members of the chain's first n ids, 0 otherwise.
+function wbSelectedGroupDepth(chain) {
+  if (!wbMultiSelection.size) return 0;
+  for (let n = chain.length; n >= 1; n -= 1) {
+    const members = wbItemsWithGroupPrefix(chain.slice(0, n)).filter((e) => !wbIsLocked(e.kind, e.item));
+    if (members.length === wbMultiSelection.size && members.every((e) => wbMultiSelection.has(wbMultiKey(e.kind, e.item.id)))) return n;
+  }
+  return 0;
+}
+
+//: The double-click that went into a group is not also an edit of the item.
+let wbDrilledAt = 0;
+function wbJustDrilled() {
+  return performance.now() - wbDrilledAt < 600;
 }
 
 //: Which `wbState` list a selection's item lives in, by kind, one place so
@@ -7386,13 +7565,21 @@ const WB_TOUCH_SLOP = 8;
 //: pixels one of the event's units is: 1 for a card (screen pixels), the zoom
 //: scale for a shape (its drag measures in board units). Returns the movement
 //: to apply, or null while the finger is still inside the slop.
+//:
+//: **A mouse gets a slop too, of 3px** (the owner, INBOX 1354: moving and
+//: editing "is very finicky"). Without one, a click that slipped 2px moved
+//: the shape 2px and, because d3 then swallows the click, selected nothing.
+//: `WB_CLICK_SLOP` is the same distance given to the drags' `clickDistance`,
+//: so a press that moved less than it is a click and nothing else.
+const WB_CLICK_SLOP = 3;
+
 function wbTouchSlopStep(gesture, event, unit = 1, slop = WB_TOUCH_SLOP) {
   const { dx, dy } = event;
   const touch = String(event.sourceEvent?.type || "").startsWith("touch");
-  if (!gesture || !touch || gesture.slopDone) return { dx, dy };
+  if (!gesture || gesture.slopDone) return { dx, dy };
   gesture.slopX = (gesture.slopX || 0) + dx;
   gesture.slopY = (gesture.slopY || 0) + dy;
-  if (Math.hypot(gesture.slopX, gesture.slopY) * unit < slop) return null;
+  if (Math.hypot(gesture.slopX, gesture.slopY) * unit < (touch ? slop : WB_CLICK_SLOP)) return null;
   gesture.slopDone = true;
   return { dx: gesture.slopX, dy: gesture.slopY };
 }
@@ -7656,11 +7843,13 @@ async function wbCreateCopies(items, dx, dy, noComments = false) {
       body.y = (body.y || 0) + dy;
       if (noComments) wbWithoutComments(body);
     }
+    //: Each id in the chain gets its own fresh one, so a pasted group of
+    //: groups is still nested and never joins the original.
     if (body.group_id) {
-      if (!groups.has(body.group_id)) {
-        groups.set(body.group_id, crypto.randomUUID ? crypto.randomUUID() : `g${Date.now()}${Math.random().toString(36).slice(2)}`);
-      }
-      body.group_id = groups.get(body.group_id);
+      body.group_id = wbGroupChain(body).map((seg) => {
+        if (!groups.has(seg)) groups.set(seg, wbNewGroupId());
+        return groups.get(seg);
+      }).join(WB_GROUP_SEP);
     }
     const row = { key: key || `i${i}` };
     if (kind === "sketch") Object.assign(row, { sketch: body, src: src || null, dst: dst || null });
@@ -8191,7 +8380,11 @@ const WB_CLONE_DIRS = {
 const WB_CLONE_GRIP_DIRS = ["up", "right", "down", "left"];
 //: How far out from each side the arrow's centre sits, in screen pixels: the
 //: grips are drawn one size to the hand at any zoom, so their distance is too.
-const WB_CLONE_GRIP_OUT = { up: 42, right: 22, down: 22, left: 22 };
+//: **The up arrow stands clear of the rotation grip** (INBOX 1354, rotating
+//: "is very finicky"): both are fixed screen distances above the box, the
+//: grip 28px, and at 42 the arrow took presses 10px from the grip's centre.
+//: At 56 the grip's 14px reach on a touch screen ends before the arrow.
+const WB_CLONE_GRIP_OUT = { up: 56, right: 22, down: 22, left: 22 };
 
 //: The one selected item clone-and-connect works on, or null.
 function wbCloneSource() {
@@ -9995,10 +10188,20 @@ function wbSketchAngleFromCenterDeg(boardCx, boardCy, sourceEvent, shiftSnap) {
   return wbAngleFromCenterDeg(screenCx, screenCy, sourceEvent.clientX, sourceEvent.clientY, shiftSnap);
 }
 
+//: A shape's drawn group, path and hit path, for a drag to write to.
+function wbSketchLiveEls(id) {
+  const g = document.querySelector(`.sketch-group[data-id="${id}"]`);
+  return { g, path: g?.querySelector(".sketch-path"), hit: g?.querySelector(".sketch-hitbox") };
+}
+
 function wbAngleFromCenterDeg(cx, cy, px, py, shiftSnap) {
   let deg = Math.atan2(py - cy, px - cx) * (180 / Math.PI) + 90;
   deg = ((deg % 360) + 360) % 360;
   if (shiftSnap) deg = Math.round(deg / 15) * 15 % 360;
+  //: **Upright and square are magnetic** (INBOX 1354, rotating "is very
+  //: finicky"): without Shift, an angle within 3 degrees of 0, 90, 180 or 270
+  //: lands on it, so a shape turned by eye to a quarter turn is one.
+  else if (Math.abs(deg - Math.round(deg / 90) * 90) < 3) deg = Math.round(deg / 90) * 90 % 360;
   return Math.round(deg);
 }
 
@@ -13511,6 +13714,8 @@ async function initWhiteboard() {
   // Was `wbZoom.transform(d3.zoomIdentity)`, a reset to 100% at the origin,
   // under a button labelled "Fit to Screen". See `wbZoomToFit`.
   document.getElementById("wb-zoom-fit").addEventListener("click", () => wbZoomToFit());
+  //: The level itself is the 100% button, as in Figma and draw.io.
+  document.getElementById("wb-zoom-level").addEventListener("click", () => container.transition().duration(160).call(wbZoom.scaleTo, 1));
 
   // **An arrow, not the function directly.** `addEventListener` passes the
   // click event as the first argument, which would land in
@@ -17203,7 +17408,8 @@ async function initWhiteboard() {
       // replaces whatever has been drawn since the start point with one
       // segment, and letting go carries on freehand from there, which is how
       // a straightedge behaves and how every app that offers this does it.
-      if (e.shiftKey && window.currentTool === "highlighter") {
+      // The pen as well as the highlighter (INBOX 1352 gap 4).
+      if (e.shiftKey) {
         const [sx0, sy0] = currentDrawData[0];
         currentDrawData.length = 1;
         currentDrawData.push([x, y]);
@@ -17229,34 +17435,13 @@ async function initWhiteboard() {
         // default (Line: none, Arrow: end): see the live-reported bug fix
         // on `currentLineEndStyle`/`currentArrowEndStyle` in `initWhiteboard`.
         const caps = wbToolCaps();
-        currentDrawPath.setAttribute("d", wbRegenerateShapeCaps(`M ${sx} ${sy} L ${x} ${y}`, caps.startCap, caps.endCap, WB_STROKE_WIDTH * 4 + 6));
-      } else if (window.currentTool === "rect") {
-        const mx = Math.min(sx, x), my = Math.min(sy, y);
-        const { w, h } = wbShapeDims(x - sx, y - sy, e.shiftKey);
-        currentDrawPath.setAttribute("d", `M ${mx} ${my} h ${w} v ${h} h ${-w} Z`);
+        const [ex, ey] = e.shiftKey ? wbSnap45(sx, sy, x, y) : [x, y];
+        currentDrawPath.setAttribute("d", wbRegenerateShapeCaps(`M ${sx} ${sy} L ${ex} ${ey}`, caps.startCap, caps.endCap, WB_STROKE_WIDTH * 4 + 6));
       } else if (window.currentTool === "circle") {
-        currentDrawPath.setAttribute("d", wbEllipseDrawD(sx, sy, x, y, e.shiftKey));
-      } else if (window.currentTool === "triangle") {
-        // Asked for directly ("more types of shapes"). Plain `L` commands,
-        // same as the pen/line tools, no new command type for
-        // wbTransformPathD/wbPathBBox to learn.
-        const mx = Math.min(sx, x), my = Math.min(sy, y);
-        const { w, h } = wbShapeDims(x - sx, y - sy, e.shiftKey);
-        currentDrawPath.setAttribute(
-          "d",
-          `M ${mx + w / 2} ${my} L ${mx + w} ${my + h} L ${mx} ${my + h} Z`
-        );
-      } else if (window.currentTool === "diamond") {
-        const mx = Math.min(sx, x), my = Math.min(sy, y);
-        const { w, h } = wbShapeDims(x - sx, y - sy, e.shiftKey);
-        currentDrawPath.setAttribute(
-          "d",
-          `M ${mx + w / 2} ${my} L ${mx + w} ${my + h / 2} L ${mx + w / 2} ${my + h} L ${mx} ${my + h / 2} Z`
-        );
-      } else if (WB_MORE_SHAPES[window.currentTool]) {
-        const mx = Math.min(sx, x), my = Math.min(sy, y);
-        const { w, h } = wbShapeDims(x - sx, y - sy, e.shiftKey);
-        currentDrawPath.setAttribute("d", WB_MORE_SHAPES[window.currentTool].d(mx, my, Math.max(w, 1), Math.max(h, 1)));
+        currentDrawPath.setAttribute("d", wbEllipseDrawD(sx, sy, x, y, e));
+      } else {
+        const d = wbClosedShapeD(window.currentTool, wbDragBox(sx, sy, x, y, e));
+        if (d) currentDrawPath.setAttribute("d", d);
       }
     }
   });
@@ -18021,7 +18206,7 @@ function wbTransformPathD(d, { dx = 0, dy = 0, sx = 1, sy = 1, rotate = 0, ancho
       out.push(cmd, rx, ry, rot, large, sweep, mdx, mdy);
       px += edx; py += edy;
     } else if (cmd === "A") {
-      //: The circle tool writes absolute arcs (`wbShapeDims`), and this walk
+      //: The circle tool writes absolute arcs (`wbEllipseDrawD`), and this walk
       //: knew only the relative spelling, so it fell into the "unrecognised
       //: token" branch below and handed the path back unchanged: a circle
       //: could be selected and never moved, resized or rotated (the owner,
@@ -18087,7 +18272,7 @@ function wbPathBBox(d) {
       const rx = parseFloat(tokens[i++]), ry = parseFloat(tokens[i++]);
       i += 3; // x-axis-rotation, large-arc-flag, sweep-flag: unused for a bbox
       let ex = parseFloat(tokens[i++]), ey = parseFloat(tokens[i++]);
-      //: The circle tool writes absolute arcs (`A`, `wbShapeDims`), and this
+      //: The circle tool writes absolute arcs (`A`, `wbEllipseDrawD`), and this
       //: parser only knew the relative spelling: a circle's box collapsed to
       //: its first point, so a marquee dragged over one selected nothing
       //: unless it happened to cover that point (INBOX 252, the owner: "when
@@ -20099,7 +20284,7 @@ function wbDrawSketchHandles(sketch, { outlineOnly = false } = {}) {
   // rotation applied is exactly the pointer's own angle from vertical, the
   // same "the handle follows your cursor" feel `nodeRotateDrag` above
   // already established for cards.
-  let rotateOriginalD = null, rotateLiveD = null, rotateLiveAngle = 0;
+  let rotateOriginalD = null, rotateLiveD = null, rotateLiveAngle = 0, spinEls = null;
   const shapeGrip = group.append("circle")
     .attr("class", "wb-sketch-rotate-handle")
     // r 6, not 7: the card and text-box grip is 12px across
@@ -20134,12 +20319,15 @@ function wbDrawSketchHandles(sketch, { outlineOnly = false } = {}) {
           //: same centre, as a card's outline does, and the grip stays under
           //: the pointer; the release render draws the new shape's own box.
           group.attr("transform", `rotate(${currentAngle} ${centerX} ${centerY})`);
-          document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-path`)?.setAttribute("d", newD);
-          document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-hitbox`)?.setAttribute("d", newD);
-          wbLayoutShapeLabel(document.querySelector(`.sketch-group[data-id="${sketch.id}"]`));
+          //: Looked up on the first frame, not every frame.
+          spinEls ||= wbSketchLiveEls(sketch.id);
+          spinEls.path?.setAttribute("d", newD);
+          spinEls.hit?.setAttribute("d", newD);
+          wbLayoutShapeLabel(spinEls.g);
           wbFollowLiveShape(sketch, newD);
         })
         .on("end", async () => {
+          spinEls = null;
           wbFollowLiveShape(sketch, null);
           const before = sketch._rotateUndoBefore;
           delete sketch._rotateUndoBefore;
@@ -20316,6 +20504,7 @@ function renderWhiteboard() {
   // pan in particular, since the canvas's own zoom/pan drag needs an
   // unclaimed pointerdown to reach it.
   const sketchDrag = d3.drag()
+    .clickDistance(WB_CLICK_SLOP)
     .filter((event) => !wbIsSecondTouch(event) && !event.button && (window.currentTool === "select" || Boolean(window.currentTool?.startsWith("link-"))))
     .on("start", function (event, d) {
       event.sourceEvent.stopPropagation();
@@ -20475,6 +20664,7 @@ function renderWhiteboard() {
       let parsed = null;
       try { parsed = JSON.parse(d.data); } catch { parsed = null; }
       //: A closed shape's double-click types into it (decision 12).
+      if (wbJustDrilled()) { event.stopPropagation(); return; }
       if (wbShapeLabelKind(parsed) && (window.currentTool === "select" || window.currentTool === "pan")) {
         event.stopPropagation();
         event.preventDefault();
@@ -20878,6 +21068,7 @@ function renderWhiteboard() {
     .style("height", (d) => (d.height ? `${d.height}px` : ""))
     .style("z-index", d => d.z)
     .call(d3.drag()
+      .clickDistance(WB_CLICK_SLOP)
       // Reported directly: drawing over a note "just moves the note
       // instead" of drawing on it. Cards sit in `#wb-html-layer`, a sibling
       // painted on top of `#wb-svg-layer`, a pointerdown that lands on a
@@ -21900,6 +22091,7 @@ function renderWbObjects(canvas) {
     //: Not d3's default filter, which refuses a Ctrl press: Ctrl is how a
     //: frame is turned without what it holds.
     return d3.drag()
+      .clickDistance(WB_CLICK_SLOP)
       .filter((event) => !event.button)
       .on("start", (event, d) => {
         event.sourceEvent.stopPropagation();
@@ -22139,6 +22331,7 @@ function renderWbObjects(canvas) {
       });
       content.on("dblclick", function (event) {
         event.stopPropagation();
+        if (wbJustDrilled()) return;
         wbBeginTextEdit(this);
       });
     }

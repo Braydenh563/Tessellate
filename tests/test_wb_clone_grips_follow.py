@@ -55,7 +55,13 @@ def test_clone_and_connect_joins_fixed_ports():
 
 
 def test_the_bar_stands_clear_of_the_top_arrow():
-    assert 'document.getElementById("wb-clone-grips") ? 58 : 44' in WB
+    assert 'document.getElementById("wb-clone-grips") ? 72 : 44' in WB
+
+
+def test_the_top_arrow_stands_clear_of_the_rotation_grip():
+    # INBOX 1354: the grip is 28px up; at 42 the arrow took presses 10px
+    # from its centre, so a turn started as a copy
+    assert "const WB_CLONE_GRIP_OUT = { up: 56," in WB
 
 
 def test_a_note_card_gets_the_arrows_and_they_make_a_new_note():

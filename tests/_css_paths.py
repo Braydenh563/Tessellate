@@ -108,6 +108,8 @@ CSS_FILES = [
     CSS_DIR / "settings-controls-lazy.css",
     #: The density strip's year and month labels (timeline-ticks.js loads it).
     CSS_DIR / "timeline-ticks-lazy.css",
+    #: Quick sketch, the self-contained pad (media.js `openSketch` loads it).
+    CSS_DIR / "sketch-pad.css",
     #: The Notes sidebar's folds (C43).
     CSS_DIR / "sidebar-folds-lazy.css",
     #: The thrown companion's fates (companion-throw.js loads it, D6).

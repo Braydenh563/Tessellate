@@ -1074,34 +1074,37 @@ function wbTurnSelection(degrees = 90) {
   }).then(() => wbScheduleRender());
 }
 
-//: Remove from group: the selected members leave their group, and a group
-//: left with one member is no group (a lone member would still pull a click
-//: onto itself alone).
+//: Remove from group: the selected members leave the innermost group they
+//: are in (groups nest, `wbGroupChain`), and a group left with one member is
+//: no group (a lone member would still pull a click onto itself alone).
 function wbRemoveFromGroup() {
   return wbRecordGesture(async () => {
-    const save = (kind, item) => (kind === "sketch" ? wbSaveSketchProps(item, {}) : kind === "node" ? wbSaveNode(item) : wbSaveObject(item));
     const leaving = wbFmtEntries().filter((e) => e.item.group_id);
     if (!leaving.length) return;
     for (const e of leaving) {
-      e.item.group_id = null;
-      await save(e.kind, e.item);
+      const chain = wbGroupChain(e.item);
+      chain.pop();
+      e.item.group_id = chain.length ? chain.join(WB_GROUP_SEP) : null;
+      await wbSaveGroupMember(e.kind, e.item);
     }
-    const members = new Map();
-    for (const kind of ["sketch", "node", "object"]) {
-      for (const item of wbState[WB_LIST_BY_KIND[kind]] || []) {
-        if (!item.group_id) continue;
-        if (!members.has(item.group_id)) members.set(item.group_id, []);
-        members.get(item.group_id).push([kind, item]);
-      }
-    }
-    for (const list of members.values()) {
-      if (list.length !== 1) continue;
-      list[0][1].group_id = null;
-      await save(list[0][0], list[0][1]);
-    }
+    await wbDropLoneGroups();
     wbAnnounce("Removed from the group.");
     wbUpdateContextBar();
   });
+}
+
+//: Each group id held by one item only is taken off it.
+async function wbDropLoneGroups() {
+  const all = wbItemsWithGroupPrefix([]);
+  const count = new Map();
+  for (const { item } of all) for (const seg of wbGroupChain(item)) count.set(seg, (count.get(seg) || 0) + 1);
+  for (const { kind, item } of all) {
+    const chain = wbGroupChain(item);
+    const kept = chain.filter((seg) => count.get(seg) > 1);
+    if (kept.length === chain.length) continue;
+    item.group_id = kept.length ? kept.join(WB_GROUP_SEP) : null;
+    await wbSaveGroupMember(kind, item);
+  }
 }
 
 //: Copy size and Paste size (draw.io's Alt+Shift+F and V): the width and height

@@ -2268,7 +2268,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "command-palette", "find-anything", "find-a-place", "search", "addresses", "settings-overview", "settings-reset", "install-app", "name",
     )),
     ("Writing notes", (
-        "capture", "quick-note", "quick-add", "editor-offers", "autocorrect", "share-note", "capture-anywhere", "note-outbox", "attachments", "notes-controls",
+        "capture", "quick-note", "quick-add", "editor-offers", "autocorrect", "share-note", "capture-anywhere", "note-outbox", "attachments", "quick-sketch", "notes-controls",
         "notes-list", "note-history", "links", "favourites", "templates",
         "write-with-atlas", "translate", "translate-offline", "extract-notes", "voice", "live-captions", "meetings",
     )),
@@ -2727,3 +2727,31 @@ TOPIC_META["slash-commands"] = {"title": "Slash commands", "path": "Chat tab, ty
 
 
 TOPIC_META["patterns"] = {"title": "Patterns", "path": "The dashboard's line under the greeting, and Notes, Tidy"}
+
+
+#: INBOX 1352: the quick sketch pad rebuilt as a paint pad (sketch-pad.js).
+MORE_TOPICS.append({
+    "id": "quick-sketch",
+    "keywords": (
+        "quick sketch", "sketch pad", "draw a picture", "paint", "drawing tools",
+        "brush", "pencil", "eraser", "highlighter", "bucket fill", "paint bucket",
+        "eyedropper", "colour picker", "draw a rectangle", "draw a circle",
+        "polygon", "annotate a picture", "draw on a picture", "download png",
+    ),
+    "body": (
+        "Quick sketch (q, Ctrl+Shift+K, or Sketch on the dashboard) is a paint "
+        "pad. The tools are down the left, each with a letter: S select, P "
+        "pencil, B brush, H highlighter, E eraser, L line, A arrow, R "
+        "rectangle, O ellipse, G polygon, T text, F fill, I colour picker. A "
+        "shape is drawn corner to corner; Shift makes it a square or circle "
+        "and snaps a line to 45 degrees, Alt draws it from the centre, and "
+        "Escape cancels it. The bar holds the ink and fill colours (X swaps "
+        "them), a custom colour, the size ([ and ] change it), outline, fill "
+        "or both for shapes, Undo, Redo and a More menu (background picture, "
+        "paper colour, Download PNG, Clear). Ctrl and the wheel zoom, 0 fits "
+        "the page. Save as note adds the sketch to a new note; a picture's "
+        "Annotate opens it here to draw on."
+    ),
+    "badge": {"label": "Notes", "tab": "notes"},
+})
+TOPIC_META["quick-sketch"] = {"title": "Quick sketch", "path": "Notes, the sketch button; q or Ctrl+Shift+K anywhere"}

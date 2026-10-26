@@ -166,9 +166,7 @@ const ATTACHMENT_ACTIONS = {
   annotate: async (spec) => {
     try {
       const blob = await attachmentBlob(spec);
-      openSketch();
-      await sketchUploadImage(blob);
-      $("sketch-caption").value = `Notes on ${attachmentLabel(spec)}`;
+      await openSketch({ image: blob, caption: `Notes on ${attachmentLabel(spec)}` });
     } catch (error) {
       toast(error.message || "Couldn't open that picture for drawing.", true);
     }
