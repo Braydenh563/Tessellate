@@ -88,3 +88,36 @@ def test_an_empty_assistant_prompt_is_shown_at_the_field_not_far_below_it():
 def test_the_invalid_field_is_drawn_in_the_error_ink():
     css = _css("library-lazy.css")
     assert re.search(r'\.search-field\.doc-assist-form:has\(\[aria-invalid="true"\]\)[^{]*\{[^}]*--error', css)
+
+
+# --- 3. printing a code file ------------------------------------------------
+
+
+@node
+def test_a_code_file_prints_one_row_per_line_without_a_phantom_last_row():
+    names = [(DOCS_JS, "docCodePrintRows")]
+    assert _run(names, 'docCodePrintRows("a\\nb\\n")') == ["a", "b"]
+    assert _run(names, 'docCodePrintRows("a\\r\\n\\r\\nb")') == ["a", "", "b"]
+    assert _run(names, 'docCodePrintRows("")') == []
+
+
+def test_a_code_file_has_a_print_row_and_prints_its_own_listing():
+    hidden = re.search(r'for \(const id of \[([^\]]*)\]\) \$\(id\)\?\.classList\.toggle\("hidden", docIsCodeFile\(\)\)', DOCS_JS)
+    assert hidden and "doc-export-pdf" not in hidden.group(1)
+    assert "docCodeExportRefused" not in _function(DOCS_JS, "exportDocumentPdf")
+    begin = _function(DOCS_JS, "docPrintBegin")
+    assert "docIsCodeFile()" in begin and "docCodePrintFill()" in begin
+    fill = _function(DOCS_JS, "docCodePrintFill")
+    assert "doc-code-print-line" in fill and "doc-code-print-no" in fill
+    assert "docPrintBegin()" in DOCS_JS.split('window.addEventListener("beforeprint"')[1][:500]
+
+
+def test_the_printed_code_is_monospaced_with_numbers_and_keeps_a_line_whole():
+    css = _css("library-lazy.css")  # lazy: the boot stylesheets have a byte cap
+    assert "@media print" in css
+    row = re.search(r"body\.printing-doc \.doc-code-print-line \{[^}]*\}", css)
+    assert row and "break-inside: avoid" in row.group(0)
+    text = re.search(r"body\.printing-doc \.doc-code-print \{[^}]*\}", css)
+    assert text and text.group(0).count("monospace") == 1 and "ui-monospace" not in text.group(0)
+    number = re.search(r"body\.printing-doc \.doc-code-print-no \{[^}]*\}", css)
+    assert number and "text-align: right" in number.group(0) and "tabular-nums" in number.group(0)

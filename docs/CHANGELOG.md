@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: a code file prints as monospaced code with line numbers (Ctrl+P and the menu's Print or save as PDF, which is no longer hidden for code), instead of the live editor.
 - Code editor: sending the Assistant an empty question puts the cursor in the field, rings it in the error ink and says so under it (the old line landed at the foot of the panel, off screen).
 - Documents: a code file's status bar shows lines, characters and the language instead of words and a reading time.
 - Time words: "from Monday to Wednesday", "between March and May", "between 1 and 5 October", "recently" and "lately" (the last 14 days, said in the answer) are read as dates, and "this weekend" asked of the past is the weekend just gone.

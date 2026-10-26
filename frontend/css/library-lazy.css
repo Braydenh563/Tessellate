@@ -675,6 +675,52 @@ body.printing-doc #doc-preview p,
     max-height: 22cm;
   }
 
+  /* **A code file on paper** (`docCodePrintFill`). The preview pane holds a
+     listing instead of a rendered page: the full width of the sheet (a 68ch
+     prose measure would wrap code at 68 columns), black on white, monospaced
+     at a size that fits about 90 columns on A4, a number column as wide as the
+     file's last line number, and each line kept whole across a page break.
+     Long lines wrap inside their own row, under the text and not the number. */
+  body.printing-doc.printing-code #doc-preview {
+    max-width: none;
+    margin-inline: 0;
+    line-height: 1.4;
+  }
+
+  /* The editor, its side panel and the run panel go: the listing is the page. */
+  body.printing-code #doc-source-wrap,
+  body.printing-code #doc-code-side,
+  body.printing-code .cm-run-panel {
+    display: none !important;
+  }
+
+  body.printing-doc .doc-code-print {
+    /* Named faces first, the generic last: the system-ui style keyword listed
+       first resolved to the sans face on Linux (the PDF embedded Inter). */
+    font-family: "Cascadia Code", "SF Mono", Menlo, Consolas, "Liberation Mono", "DejaVu Sans Mono", monospace;
+    font-size: 9pt;
+    tab-size: 4;
+  }
+
+  body.printing-doc .doc-code-print-line {
+    display: grid;
+    grid-template-columns: 3ch minmax(0, 1fr);
+    column-gap: 1.5ch;
+    min-height: 1.4em;
+    break-inside: avoid;
+  }
+
+  body.printing-doc .doc-code-print-no {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    opacity: 0.6;
+  }
+
+  body.printing-doc .doc-code-print-text {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
 }
 
 .doc-block-bar.hidden {
