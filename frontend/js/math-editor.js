@@ -324,7 +324,7 @@ function closeMathEditor() {
 function mathEditorSurface(target) {
   if (!target) return null;
   if (target.kind) return target;
-  const surface = typeof editorSurfaceFor === "function" ? editorSurfaceFor(target) : null;
+  const surface = editorSurfaceFor(target);
   return surface || target;
 }
 
@@ -391,11 +391,9 @@ function mathEditorDrawPreview(preview, tex, display) {
   }
   if (typeof docMathRender !== "function") {
     preview.textContent = body;
-    if (typeof ensureModule === "function") {
-      ensureModule("library").then(() => {
-        if (preview.isConnected && typeof docMathRender === "function") mathEditorDrawPreview(preview, tex, display);
-      });
-    }
+    ensureModule("library").then(() => {
+      if (preview.isConnected && typeof docMathRender === "function") mathEditorDrawPreview(preview, tex, display);
+    });
     return;
   }
   try {
@@ -547,7 +545,7 @@ function mathEditorFoot(onCancel, onInsert, label) {
 //: Where the panel hangs: from the button that asked, else the middle.
 function mathEditorPlace(panel, anchor) {
   const rect = anchor?.getBoundingClientRect?.();
-  if (rect && (rect.width || rect.height) && typeof placeHelpPopover === "function") placeHelpPopover(panel, anchor);
+  if (rect && (rect.width || rect.height)) placeHelpPopover(panel, anchor);
   else panel.classList.add("math-editor-centred");
 }
 
@@ -579,7 +577,7 @@ function mathEditorWrite(surface, start, tex, display) {
   if (!text || !surface) return false;
   const value = String(surface.value || "");
   if (display && !oneLine && !start.editing) text = mathEditorBlockText(value, start.from, start.to, text);
-  if (typeof editorSplice === "function" && (surface.kind || surface.setSelectionRange)) {
+  if (surface.kind || surface.setSelectionRange) {
     editorSplice(surface, start.from, start.to, text, { from: text.length, to: text.length });
   } else {
     surface.value = value.slice(0, start.from) + text + value.slice(start.to);
@@ -684,7 +682,7 @@ function openMathEditor({ target = null, anchor = null } = {}) {
 
   panel.append(head, helpBody, mode.tabs, lede, input, preview, search, list, foot);
   document.body.appendChild(panel);
-  if (typeof initHelpToggles === "function") initHelpToggles(panel);
+  initHelpToggles(panel);
   mathEditorPlace(panel, anchor);
   redraw();
   input.focus({ preventScroll: true });

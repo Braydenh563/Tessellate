@@ -3,8 +3,8 @@
 Reset to defaults lets go of pinned notes and its toast's Undo puts them back;
 a Shift-drag on empty map is a rectangle, not a freehand loop (a straight drag
 caught nothing); the selection bar pins and unpins; Unpin all is in the graph's
-more menu as well as the Physics fold, and undoable. Static checks: the sweeps
-(scratchpad/ui-sweeps/graphpins1026.js) drive the real thing.
+more menu as well as the Physics fold, and undoable. Static checks; the
+browser run that measured them is recorded in CHANGELOG (graph K6 to K10).
 """
 
 import re

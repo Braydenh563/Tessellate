@@ -14,7 +14,7 @@ CSS = (Path(__file__).resolve().parent.parent / "frontend" / "css" / "01-forms-s
 
 
 def test_an_active_pill_draws_its_icon_in_the_label_colour():
-    assert "#web-search-toggle.active i,\n#chat-plan.active i {\n  color: inherit;" in CSS
+    assert "#web-search-toggle.active i,\n#ask-use-ai.active i,\n#chat-plan.active i {\n  color: inherit;" in CSS
 
 
 def test_the_embedding_fix_row_has_room_below():

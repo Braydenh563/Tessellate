@@ -132,7 +132,7 @@ OPENERS = {
     "wiring.js": ['go: { open: "conversation", id: fork.id }'],
     "palette.js": ['go: { open: "conversation", id: conversation.id }'],
     "library.js": ['go: { open: "doc", id: made[0].id }'],
-    "chat-attach.js": ['go: { tab: "library" }'],
+    "chat-attach.js": ['go: { tab: "library", media: "files" }'],
     "lightbox-view.js": ['go: { tab: "library" }'],
     "attach-to.js": ['go: { open: "board", id }', 'go: { open: "doc", id: Number(id) }'],
     "capture-ask.js": ['go: { open: "entry", id: entry.id }', 'go: { open: "entry", id: status.similar.id }'],

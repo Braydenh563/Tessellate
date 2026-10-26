@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- CI: today's lint ratchets back in line (guards on boot functions dropped from the equation editor, one-off sweeps whose findings are in this log removed, the lag view read through prefs, the sketch button no longer hands its click event to openSketch).
 - Fix: turning Graph auto-fit back on after a resize with it off now frames the map again, instead of leaving the camera treated as moved for good.
 - Fix: the Web row in the palette and the slash menu always toggles web search; the Web button opens the panel first when web is on and the panel is shut, and its tooltip and the Guide say so.
 - Fix: leaving a document no longer deletes an older empty "Untitled document N" you made on purpose; only a blank document created in this session and never written in is dropped.

@@ -245,6 +245,7 @@ FAULTS = {
     },
     'graph-canvas.js': {
         '"The moved notes were not pinned where you left them."': 'the pin save after a group drag failed: the places shown are not the places kept',
+        '"The pins were not saved."': 'the selection bar\'s Pin or Unpin write failed: the pins shown are not the pins kept',
     },
     'library.js': {
         '`The topic was not renamed: ${e?.message || e}.`': 'the rename request failed: the name shown is not the name kept',

@@ -31,11 +31,7 @@ const LAG_INPUT_MS = 300;
 const LAG_REQUEST_MS = 3000;
 
 function lagView() {
-  try {
-    return localStorage.getItem("activeTab") || "notes";
-  } catch {
-    return "?";
-  }
+  return prefs.get("activeTab", null) || "notes";
 }
 
 //: `button#ask-btn.primary`: enough to find the control, no text content.

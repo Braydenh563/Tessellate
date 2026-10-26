@@ -4326,16 +4326,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `lagFile` | frontend/js/lag-watch.js:48 |
-| `lagFlush` | frontend/js/lag-watch.js:90 |
-| `lagFrame` | frontend/js/lag-watch.js:97 |
-| `lagInput` | frontend/js/lag-watch.js:104 |
-| `lagNote` | frontend/js/lag-watch.js:66 |
-| `lagObserve` | frontend/js/lag-watch.js:120 |
-| `lagRequest` | frontend/js/lag-watch.js:113 |
-| `lagScriptCause` | frontend/js/lag-watch.js:54 |
-| `lagStart` | frontend/js/lag-watch.js:126 |
-| `lagTarget` | frontend/js/lag-watch.js:42 |
+| `lagFile` | frontend/js/lag-watch.js:44 |
+| `lagFlush` | frontend/js/lag-watch.js:86 |
+| `lagFrame` | frontend/js/lag-watch.js:93 |
+| `lagInput` | frontend/js/lag-watch.js:100 |
+| `lagNote` | frontend/js/lag-watch.js:62 |
+| `lagObserve` | frontend/js/lag-watch.js:116 |
+| `lagRequest` | frontend/js/lag-watch.js:109 |
+| `lagScriptCause` | frontend/js/lag-watch.js:50 |
+| `lagStart` | frontend/js/lag-watch.js:122 |
+| `lagTarget` | frontend/js/lag-watch.js:38 |
 | `lagView` | frontend/js/lag-watch.js:33 |
 
 ### frontend/js/lan-watch.js (19)
@@ -4684,30 +4684,30 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `closeMathEditor` | frontend/js/math-editor.js:318 |
 | `mathEditorAuto` | frontend/js/math-editor.js:207 |
-| `mathEditorBlockText` | frontend/js/math-editor.js:568 |
+| `mathEditorBlockText` | frontend/js/math-editor.js:566 |
 | `mathEditorDrawPreview` | frontend/js/math-editor.js:383 |
-| `mathEditorFoot` | frontend/js/math-editor.js:537 |
+| `mathEditorFoot` | frontend/js/math-editor.js:535 |
 | `mathEditorFraction` | frontend/js/math-editor.js:177 |
 | `mathEditorGroups` | frontend/js/math-editor.js:69 |
-| `mathEditorGuide` | frontend/js/math-editor.js:512 |
-| `mathEditorHelp` | frontend/js/math-editor.js:408 |
+| `mathEditorGuide` | frontend/js/math-editor.js:510 |
+| `mathEditorHelp` | frontend/js/math-editor.js:406 |
 | `mathEditorInText` | frontend/js/math-editor.js:116 |
 | `mathEditorInsert` | frontend/js/math-editor.js:255 |
-| `mathEditorKeys` | frontend/js/math-editor.js:489 |
+| `mathEditorKeys` | frontend/js/math-editor.js:487 |
 | `mathEditorLeave` | frontend/js/math-editor.js:169 |
 | `mathEditorMatch` | frontend/js/math-editor.js:103 |
-| `mathEditorModes` | frontend/js/math-editor.js:436 |
+| `mathEditorModes` | frontend/js/math-editor.js:434 |
 | `mathEditorNextSlot` | frontend/js/math-editor.js:224 |
 | `mathEditorOutput` | frontend/js/math-editor.js:281 |
 | `mathEditorPair` | frontend/js/math-editor.js:155 |
 | `mathEditorPalette` | frontend/js/math-editor.js:355 |
-| `mathEditorPlace` | frontend/js/math-editor.js:548 |
+| `mathEditorPlace` | frontend/js/math-editor.js:546 |
 | `mathEditorPrevSlot` | frontend/js/math-editor.js:242 |
 | `mathEditorPreviewTex` | frontend/js/math-editor.js:272 |
 | `mathEditorScript` | frontend/js/math-editor.js:162 |
-| `mathEditorSearch` | frontend/js/math-editor.js:470 |
+| `mathEditorSearch` | frontend/js/math-editor.js:468 |
 | `mathEditorSpan` | frontend/js/math-editor.js:289 |
-| `mathEditorStart` | frontend/js/math-editor.js:556 |
+| `mathEditorStart` | frontend/js/math-editor.js:554 |
 | `mathEditorSurface` | frontend/js/math-editor.js:324 |
 | `mathEditorTabStop` | frontend/js/math-editor.js:234 |
 | `mathEditorTermStart` | frontend/js/math-editor.js:131 |
@@ -4715,8 +4715,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `mathEditorTileFace` | frontend/js/math-editor.js:333 |
 | `mathEditorWord` | frontend/js/math-editor.js:187 |
 | `mathEditorWordCommand` | frontend/js/math-editor.js:89 |
-| `mathEditorWrite` | frontend/js/math-editor.js:576 |
-| `openMathEditor` | frontend/js/math-editor.js:593 |
+| `mathEditorWrite` | frontend/js/math-editor.js:574 |
+| `openMathEditor` | frontend/js/math-editor.js:591 |
 
 ### frontend/js/meaning.js (18)
 
@@ -13175,13 +13175,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_row` | src/tessellate/ai/personal.py:208 |
 | `_written` | src/tessellate/ai/personal.py:190 |
 | `about_me` | src/tessellate/ai/personal.py:358 |
-| `about_own_notes` | src/tessellate/ai/personal.py:400 |
+| `about_own_notes` | src/tessellate/ai/personal.py:401 |
 | `answer` | src/tessellate/ai/personal.py:165 |
 | `asked` | src/tessellate/ai/personal.py:155 |
 | `birthday` | src/tessellate/ai/personal.py:83 |
 | `facts` | src/tessellate/ai/personal.py:97 |
 | `general` | src/tessellate/ai/personal.py:377 |
-| `general_reply` | src/tessellate/ai/personal.py:406 |
+| `general_reply` | src/tessellate/ai/personal.py:407 |
 | `notes_of` | src/tessellate/ai/personal.py:72 |
 
 ### src/tessellate/ai/phrasing.py (8)
