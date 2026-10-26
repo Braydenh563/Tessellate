@@ -557,11 +557,31 @@ textarea.has-gutter {
   max-height: none;
 }
 
-/* The capture box is stretched too, but its footer (Save) must stay in view:
-   it scrolls inside a cap instead of growing (dogfood 21: 30 lines put Save
-   at y=981 on an 800px window). 45vh leaves room for the toolbar and the foot. */
-#capture .note-surface-stretch .cm-editor .cm-scroller {
+/* **A growing field is capped, and its footer stays in view** (the owner,
+   INBOX 1357, "fix the class": Save went off the screen once a note passed
+   18 to 30 lines). Measured at 1440x900, 60 lines typed: the note edit form's
+   box grew to 1,630px and its Save sat at y=929, 29px below the window; the
+   capture box was already held to 352px by an `#capture`-only rule, so the
+   same widget in the same `.note-composer` shell had two behaviours.
+   One recipe, DESIGN.md "A growing field is capped": the field scrolls inside
+   `min(22rem, 45vh)` (the cm scroller scrolls its caret into view itself; a
+   textarea does it natively), one rule for every field below, and the foot is `position: sticky` so it stays
+   reachable when the chrome above the field is already tall (a phone).
+   `.note-surface-stretch` lifts the cap for the Writing Room's two boxes,
+   which a column of fixed height bounds; every box in a `.note-composer`
+   is bounded here instead. `tests/test_ui_recipes.py` holds the pair. */
+.note-composer .note-surface-stretch .cm-editor .cm-scroller,
+.answer-editor textarea,
+.msg-edit textarea,
+.wb-comments-box {
   max-height: min(22rem, 45vh);
+}
+.note-edit-foot {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  padding-block: var(--space-2);
+  background: var(--card);
 }
 
 /* The chrome above the box (toolbar, fields, wrapped rows at 700) can still

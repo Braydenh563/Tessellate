@@ -6006,3 +6006,78 @@ def test_one_attachment_chip_serves_chat_and_the_popup_agent() -> None:
     commit = palette[palette.index("async function agentCommitFiles(") :][:1800]
     assert 'method: "DELETE"' in commit
     assert "agentStageFiles(" in frontend_text("settings-wiring.js")
+
+
+# --- A growing field is capped, and its foot stays in view (INBOX 1357) ---------
+# The owner: "fix the class, not the case". Save went off the screen once a
+# note passed 18 to 30 lines; the capture box had a cap of its own (an
+# `#capture`-only rule) while the note edit form, the same `.note-composer`
+# shell and the same editor, grew to 1,630px with Save 29px below a 900px
+# window. Browser half: type 60 lines into the field and compare the foot's
+# `getBoundingClientRect().bottom` with the window's, at 1440x900 and 390x844.
+
+_SHEETS = ROOT / "frontend" / "css"
+
+# How each editor in `NOTE_SURFACES` (documents.js) is kept from pushing its
+# foot away. A new key fails until it is placed here, which is the point.
+_SURFACE_BOUND = {
+    "entry-content": "composer",
+    "entry-edit-content": "composer",
+    "graph-popup-content": "size",
+    "graph-new-content": "size",
+    "draft-text": "column",
+    "draft-thoughts": "column",
+    "wb-card-editor": "size",
+}
+# Content-derived `rows` (a textarea sized to its text) and the selector the
+# cap is on. A new file with `.rows = Math.` fails until it is placed.
+_ROWS_BOUND = {
+    "chat-edit.js": ".msg-edit textarea",
+    "gesture-kit.js": ".answer-editor textarea",
+    "whiteboard.js": ".wb-comments-box",
+}
+
+
+def _sheet_rule(sheet: str, selector: str) -> str:
+    css = (_SHEETS / sheet).read_text(encoding="utf-8")
+    for sel, body in _rules(css):
+        if selector in [s.strip() for s in sel.split(",")]:
+            return body
+    raise AssertionError(f"{selector} has no rule in {sheet}")
+
+
+def test_a_growing_field_has_one_cap_and_every_composer_uses_it() -> None:
+    cap = _sheet_rule("library-lazy.css", ".note-composer .note-surface-stretch .cm-editor .cm-scroller")
+    assert "max-height: min(22rem, 45vh)" in cap
+    # The per-id rule is the case-fix this replaced; it must not return.
+    assert "#capture .note-surface-stretch" not in (_SHEETS / "library-lazy.css").read_text(encoding="utf-8")
+
+
+def test_every_note_editor_says_how_it_is_bounded() -> None:
+    documents = frontend_text("documents.js")
+    table = documents[documents.index("const NOTE_SURFACES = {") :]
+    table = table[: table.index("\n};")]
+    ids = set(re.findall(r'^\s+"([a-z-]+)": \{ size:', table, flags=re.M))
+    assert ids == set(_SURFACE_BOUND), (
+        "NOTE_SURFACES changed: place the new editor in _SURFACE_BOUND and make sure its foot "
+        "cannot be pushed out of view (DESIGN.md, 'A growing field is capped')"
+    )
+    sized = (_SHEETS / "09-editor.css").read_text(encoding="utf-8")
+    assert "max-height: 18rem" in sized and "max-height: 22rem" in sized  # size: inline / box
+
+
+def test_a_textarea_sized_from_its_text_is_capped() -> None:
+    found = {p.name for p in JS if re.search(r"\.rows = Math\.", p.read_text(encoding="utf-8"))}
+    assert found == set(_ROWS_BOUND), f"content-derived rows in {sorted(found)}: cap it and place it in _ROWS_BOUND"
+    for selector in _ROWS_BOUND.values():
+        assert "max-height: min(22rem, 45vh)" in _sheet_rule("library-lazy.css", selector)
+
+
+def test_the_foot_under_a_growing_field_is_pinned_to_the_scroll() -> None:
+    for sheet, selector in (
+        ("library-lazy.css", ".note-edit-foot"),
+        ("library-lazy.css", "#capture .capture-commit-row"),
+        ("graph-lazy.css", ".graph-popup-saverow:has(#graph-popup-save:not(.hidden))"),
+    ):
+        body = _sheet_rule(sheet, selector)
+        assert "position: sticky" in body and "bottom: 0" in body, selector

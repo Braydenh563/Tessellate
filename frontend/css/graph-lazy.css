@@ -452,3 +452,17 @@
     right: calc(var(--space-4) + 4.5rem);
   }
 }
+
+/* **The popups' Save stays in the panel's view** (INBOX 1357, "fix the class",
+   DESIGN.md "A growing field is capped"). The popup scrolls itself, so a long
+   note put Save below its fold: at 390x844 the panel's bottom was y=765 and
+   Save sat at 796 to 840, reachable only by scrolling the panel. The row is
+   pinned to the foot of the panel's scroll, the way Capture's commit row is. */
+.graph-popup-saverow:has(#graph-popup-save:not(.hidden)),
+#graph-new .row:has(#graph-new-save) {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  padding-block: var(--space-2);
+  background: var(--modal-bg);
+}
