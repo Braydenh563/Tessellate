@@ -19,7 +19,7 @@ fastapi>=0.161.1,<1.0
 uvicorn[standard]>=0.54.0,<1.0
 
 # Database (SQLite via ORM)
-SQLAlchemy>=2.1.4,<3.0
+SQLAlchemy>=2.1.6,<3.0
 
 # Schema migrations for a real rename/drop — additive column changes still go
 # through DatabaseManager's own auto-migrator (core/database.py); this is the
