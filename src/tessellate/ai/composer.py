@@ -3765,8 +3765,13 @@ def _feature_instead(question: str, absent: list[str]) -> dict | None:
         return None
     #: The thing asked for is named in the help line itself: "spare key
     #: where" is a lost key, not the keyboard shortcuts (test_composer_eval_741).
+    #: Outside the line's own examples: "who is Sam" is a person, not the
+    #: Names tool whose help line quotes "Sam" and "Sam Lee" as its example;
+    #: "what about running?" is a follow-up, not the Follow-up trail topic
+    #: that gives it in brackets as one.
+    line = re.sub(r"\"[^\"]*\"|“[^”]*”|‘[^’]*’|\([^)]*\)", " ", best[0])
     wanted = absent or [w for w in words if len(w) >= 4]
-    if not wanted or not all(re.search(rf"\b{re.escape(w)}", best[0], re.I) for w in wanted):
+    if not wanted or not all(re.search(rf"\b{re.escape(w)}", line, re.I) for w in wanted):
         return None
     said = absent[0] if absent else " ".join(words)
     #: The feature first: "Nothing in your notes mentions timer" was a
