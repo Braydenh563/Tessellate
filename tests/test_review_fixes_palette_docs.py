@@ -47,3 +47,13 @@ def test_math_render_failures_show_the_source():
     assert "host.textContent = this.tex" in _js("documents.js")
     assert "preview.textContent = body;\n  }\n}" in _js("math-editor.js")
 
+
+def test_untouched_drop_is_limited_to_documents_made_this_session():
+    src = _js("documents.js")
+    drop = src[src.index("async function docDropIfUntouched") :]
+    drop = drop[: drop.index("\n}\n")]
+    assert "docsMadeThisSession.has(doc.id)" in drop
+    made = src[src.index("async function ensureDocumentExists") :]
+    made = made[: made.index("\n}\n")]
+    assert "docsMadeThisSession.add(doc.id)" in made
+

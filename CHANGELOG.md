@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fix: leaving a document no longer deletes an older empty "Untitled document N" you made on purpose; only a blank document created in this session and never written in is dropped.
 - Fix: a name typed in a note's maths that matches a built-in word (\toString, \begin{constructor}) broke the equation instead of drawing it; an equation that cannot be drawn now shows its source in the editor and the equation dialog.
 - Fix: a failed send in the popup agent now also removes the documents it had just imported from attached files, so a retry no longer duplicates them.
 - CodeQL: the composer reads "Lisbon notes" as Lisbon by word steps, not a regex quadratic on a run of whitespace.

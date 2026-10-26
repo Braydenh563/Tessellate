@@ -1939,7 +1939,8 @@ const docNextName = () => docUntitledName(docs.map((d) => d.title));
 //: not fill with "Untitled document N". Anything with a word in it stays.
 async function docDropIfUntouched(nextId = null) {
   const doc = currentDoc;
-  if (!doc || doc.id === nextId || creatingDocument || !docIsUntouched($("doc-title").value, docText())) return;
+  // Only a document made in this session: an older empty "Untitled document N" is the owner's.
+  if (!doc || !docsMadeThisSession.has(doc.id) || doc.id === nextId || creatingDocument || !docIsUntouched($("doc-title").value, docText())) return;
   currentDoc = null;
   docs = docs.filter((d) => d.id !== doc.id);
   await apiJson(`/documents/${doc.id}`, { method: "DELETE" }).catch(() => {});
@@ -2111,6 +2112,8 @@ function showDocTemplatePreview(template) {
 
 // Guards against creating several documents from one fast burst of typing.
 let creatingDocument = null;
+// Ids `ensureDocumentExists` made since the page loaded; the only ones `docDropIfUntouched` may bin.
+const docsMadeThisSession = new Set();
 
 async function ensureDocumentExists() {
   if (currentDoc) return currentDoc;
@@ -2121,6 +2124,7 @@ async function ensureDocumentExists() {
       body: JSON.stringify({ title: $("doc-title").value.trim() || docNextName(), content: "" }),
     });
     currentDoc = doc;
+    docsMadeThisSession.add(doc.id);
     docs.unshift({ ...doc });
     // The list gains an "Untitled" row the moment this returns, so show the
     // same name in the title box, otherwise the document you're typing into
