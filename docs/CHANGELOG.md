@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fix: with no model, a text note was filed under Sketches at 52-54% because a caption plus a drawing counted as an example for filing by meaning. Picture notes (a short note ending in an image) no longer vote; the note stays Uncategorised with no percentage (measured on a fresh notebook: 52% to 0%).
 - Fix: pressing Ask after typing a question sometimes did nothing. While the field had focus it took the whole row and pushed Ask down; the press moved focus away, the row shrank, and Ask moved 65px up before the click finished. The field keeps the same width focused or not.
 - Documents: an equation can carry a number. `\tag{3}` inside display maths is set at the right edge as (3), and the Read view draws a thin progress line at the top of the page that fills as you scroll (0, 0.5, 1 at the top, middle and end at 1440, 720 and 390).
 - Documents: Turn into (Notion's block menu). The swap button on the selection bar, the phone formatting bar's new button and the Ctrl+K row open a menu that turns the block at the caret, or every line selected, into a paragraph, heading 1 to 3, bulleted, numbered or to-do list, quote, callout or code block, taking the old marker off first and as one undo step (docpaste.js at 1440, 720, 390, light and dark: 10 rows, 8 conversions correct, one Ctrl+Z restores, a caret inside a code fence is refused).

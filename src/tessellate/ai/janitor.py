@@ -31,7 +31,7 @@ import weakref
 from dataclasses import dataclass
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import filing_certainty, learning, lexical_filing, librarian
@@ -86,6 +86,9 @@ KNN_MIN_SHARE = 0.55
 # (`lexical_filing`), which is the safe side.
 SHORT_NOTE_WORDS = 4
 SHORT_NOTE_MIN_NEIGHBOUR = 0.72
+#: A note ending in an image and under this many characters is a picture with a
+#: caption: no words of its own to file by.
+PICTURE_NOTE_CHARS = 160
 
 SYSTEM_PROMPT = (
     "You are the filing assistant of a personal notebook. Given a note, "
@@ -459,6 +462,10 @@ def _labelled_vectors(
         .where(
             Entry.is_deleted == False,  # noqa: E712
             Category.name != UNCATEGORISED,
+            #: A short caption beside a drawing (the Sketches category) has
+            #: no words to compare, yet its vector sat close enough to file
+            #: unrelated text under it at 52% (dog3-1026 row 1).
+            ~(Entry.content.like("%![%](%)") & (func.length(Entry.content) < PICTURE_NOTE_CHARS)),
         )
     )
     if exclude_entry_id is not None:
