@@ -1699,3 +1699,8 @@ Missing (items 1 to 5, zoom to the selection, tidy as a tree, change the shape, 
     Measured 2026-10-26: Ctrl+= and Ctrl+- scale by 1.2 and 0.8 about the view's centre (`whiteboard.js` keydown, `wbZoom.scaleBy`), never about the selection; Shift+1 fits the board, Shift+2 (wb2) the selection. Placed: agent `wb3-1026` (Sonnet): zoom about the selection when one exists, multi-object copy, cut and paste (links between copied items kept, offset paste, paste in place), linking, templates (more board and map templates, a picker with previews), more elements (shape library), and the formatting panel's missing properties, measured against draw.io and PaintZ. `paint-1026` keeps interaction, toolbars, groups and Quick sketch.
 
 1356. Board paste options and Paste special: built (`wbpaste-1026`); moved to HISTORY.md, "Moved from the plans, 2026-10-26 (wbpaste-1026)".
+
+## Placed from INBOX, 2026-10-26b
+
+1358. **The owner, 2026-10-26, verbatim.** "also keep improving all the main features like the whitebaord, mindmap and document editor, there are still A LOT of issues with them which keep being missed. as well as missing features or features that dont work properly, both of which I keep easily encountering."
+     Placed: after the current three agents, one dogfood-and-fix agent per surface (whiteboard, mind map, document editor): a blind-tester pass on everyday tasks first (find what is missed, not what is listed), each finding fixed as a class, then the surface's open inventory rows (.claude/inputs/open-inventory-1026.md) by impact. Missing features are measured against the competitor reads in ANALYSIS.md and WORLD_CLASS_PLAN.
