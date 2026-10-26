@@ -4618,7 +4618,8 @@ function graphPopupActionList(entry) {
       group: "shape",
       icon: "target",
       word: "Focus on this note",
-      title: "Focus: isolate this note's neighbourhood",
+      short: "Focus",
+      title: "Focus: show only this note and its neighbours",
       run: () => {
         graphFocusModeId = entry.id;
         recordTabVisit("graph", `focus:${entry.id}`);
@@ -4626,6 +4627,25 @@ function graphPopupActionList(entry) {
         closeGraphPopup();
         renderGraph();
         toast("Focus Mode active. Showing local neighborhood.");
+      },
+    });
+  }
+  //: Pin from the panel (INBOX 1400): the same toggle as a double-click on
+  //: the dot (`gcTogglePin`), offered only while the note is on the drawn map.
+  const mapNode = typeof gcTab !== "undefined" && gcTab.byId ? gcTab.byId.get(entry.id) : null;
+  if (mapNode && !gcTab.tree) {
+    const pinned = mapNode.fx != null;
+    list.push({
+      key: "pin",
+      group: "shape",
+      icon: pinned ? "push-pin-slash" : "push-pin",
+      word: pinned ? "Unpin" : "Pin in place",
+      short: pinned ? "Unpin" : "Pin",
+      title: pinned ? "Let this note move with the map again" : "Hold this note where it is (double-click a dot does the same)",
+      pressed: pinned,
+      run: () => {
+        gcTogglePin(mapNode);
+        renderGraphPopupActions(entry);
       },
     });
   }
@@ -4707,64 +4727,41 @@ function renderGraphPopupActions(entry) {
   const list = graphPopupActionList(entry);
   const compact = window.matchMedia(GRAPH_POPUP_COMPACT).matches;
   box.classList.toggle("is-compact", compact);
-  if (compact) {
-    //: Open and Link are the two the words are spent on; the rest are the ⋯.
-    //: Open stays the one filled control (the ramp's "the action this surface
-    //: is for"), Link is tonal.
-    const shown = new Set(["open", "link"]);
-    const row = document.createElement("div");
-    row.className = "graph-popup-tool-group graph-popup-tool-shown";
-    for (const a of list.filter((x) => shown.has(x.key))) {
-      const b = smallButton(`ph:${a.icon} ${a.key === "open" ? "Open" : "Link"}`, a.title, (event) => a.run(event), !a.primary);
-      if (a.primary) b.classList.add("graph-popup-tool-primary");
-      row.appendChild(b);
-    }
-    const rest = list.filter((x) => !shown.has(x.key));
-    row.appendChild(
-      kebabMenu(
-        rest.map((a) => ({
-          label: `ph:${a.icon} ${a.word}`,
-          title: a.title,
-          run: () => a.run(null),
-          danger: a.danger,
-          group: a.group,
-        })),
-        "More note actions"
-      )
-    );
-    box.appendChild(row);
-    return;
+  //: **Every action has a visible name, at every width** (INBOX 1400, the
+  //: owner: "the popup panels could be improved", "access to the tools ...
+  //: aren't really easy to understand"). The desktop row was nine bare icons
+  //: in three groups, readable only by hovering each for its tooltip
+  //: (`gp.js`: 11 of 12 buttons icon-only). Now the four moves a map is for
+  //: are words, Open filled, then Focus, Pin and Link, and the ⋯
+  //: (`kebabMenu`) holds the rest as labelled rows in their read, shape and
+  //: keep groups; on a phone the words are Open and Link, the rest the ⋯,
+  //: the shape INBOX 883 gave it.
+  const shown = compact ? ["open", "link"] : ["open", "focus", "pin", "link"];
+  const row = document.createElement("div");
+  row.className = "graph-popup-tool-group graph-popup-tool-shown";
+  for (const key of shown) {
+    const a = list.find((x) => x.key === key);
+    if (!a) continue;
+    const b = smallButton(`ph:${a.icon} ${a.short || a.word}`, a.title, (event) => a.run(event), !a.primary);
+    b.dataset.action = a.key;
+    if (a.primary) b.classList.add("graph-popup-tool-primary");
+    if (a.pressed != null) b.setAttribute("aria-pressed", String(a.pressed));
+    row.appendChild(b);
   }
-
-  const group = (name) => {
-    const el = document.createElement("div");
-    el.className = `graph-popup-tool-group graph-popup-tool-${name}`;
-    box.appendChild(el);
-    return el;
-  };
-  const groups = { read: group("read"), shape: group("shape"), keep: group("keep") };
-  for (const a of list) {
-    const b = smallButton(`ph:${a.icon}`, a.title, (event) => a.run(event), !a.primary);
-    if (a.primary) {
-      //: The class, not just the absence of `.ghost`: a late rule paints every
-      //: `.icon-only:not(.ghost)` button tonal (07-whiteboard-misc.css, "a
-      //: control inside a grouped strip does not need its own ground"), so
-      //: leaving Open non-ghost made it *look* exactly like its eight
-      //: neighbours. Measured on the running panel: the markup said one filled
-      //: button and the pixels said none.
-      b.classList.add("graph-popup-tool-primary");
-    }
-    if (a.key === "favourite") {
-      //: One glyph in both states, coloured when it is on, the note cards'
-      //: own rule (`favouriteButton`, note-cards.js).
-      b.classList.toggle("is-favourite", a.pressed);
-      b.setAttribute("aria-pressed", String(a.pressed));
-    }
-    //: Set apart by a gap of its own inside the keep group rather than by a
-    //: fourth divider: three groups is the structure.
-    if (a.key === "bin") b.classList.add("graph-popup-tool-bin");
-    groups[a.group].appendChild(b);
-  }
+  const rest = list.filter((x) => !shown.includes(x.key));
+  row.appendChild(
+    kebabMenu(
+      rest.map((a) => ({
+        label: `ph:${a.icon} ${a.word}`,
+        title: a.title,
+        run: () => a.run(null),
+        danger: a.danger,
+        group: a.group,
+      })),
+      "More note actions"
+    )
+  );
+  box.appendChild(row);
 }
 
 //: A rotation or a window resize can cross the compact line with a panel

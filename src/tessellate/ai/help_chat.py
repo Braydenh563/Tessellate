@@ -187,7 +187,7 @@ HELP_TOPICS: list[dict] = [
     },
     {
         "id": "graph",
-        "keywords": ("graph", "concept map", "mind map", "mindmap", "network", "connected to", "untouched since", "filter the graph"),
+        "keywords": ("graph", "concept map", "mind map", "mindmap", "network", "connected to", "untouched since", "filter the graph", "note panel", "node panel", "hub"),
         "body": (
             "The Graph tab shows notes as a force-directed map, links and threads "
             "drawn between them, plus optional AI similarity lines. Search "
@@ -199,7 +199,9 @@ HELP_TOPICS: list[dict] = [
             "The Graph's search box reads filters as well as words: "
             "\"connected to Harbor\", \"untouched since June\", \"tagged work\", "
             "\"pinned\", \"with pictures\", \"edited last week\"; any other "
-            "words still have to match."
+            "words still have to match. Click a note for its panel: Open, Focus, "
+            "Pin and Link are at its foot and the ⋯ holds the rest. A hub's lines "
+            "run straight and faint until you point at it."
         ),
         "badge": {"label": "Graph", "tab": "graph"},
     },

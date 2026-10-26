@@ -10071,23 +10071,24 @@ header#top-bar {
     row-gap: var(--space-3);
   }
 }
-/* The compact row (Open, Link, ⋯; `renderGraphPopupActions`): one line at any
+/* The worded row (Open, Focus, Pin, Link, ⋯; on a phone Open, Link, ⋯;
+   `renderGraphPopupActions`, INBOX 1400): one line at any
    width that gets it, the ⋯ at the far end so the two worded buttons sit
    together and the menu sits where a thumb rests. */
-.graph-popup-actions.is-compact {
+.graph-popup-actions {
   justify-content: stretch;
   flex-wrap: nowrap;
 }
-.graph-popup-actions.is-compact .graph-popup-tool-shown {
+.graph-popup-actions .graph-popup-tool-shown {
   flex: 1 1 auto;
   min-width: 0;
   gap: var(--space-2);
 }
-.graph-popup-actions.is-compact .graph-popup-tool-shown > .menu-wrap {
+.graph-popup-actions .graph-popup-tool-shown > .menu-wrap {
   margin-left: auto;
 }
-.graph-popup-actions.is-compact .graph-popup-tool-shown > button:not(.icon-only) {
-  padding-inline: var(--space-4);
+.graph-popup-actions .graph-popup-tool-shown > button:not(.icon-only) {
+  padding-inline: var(--space-3);
 }
 @media (max-width: 599.98px) {
   :root {
