@@ -1011,6 +1011,7 @@ async function openDocument(id) {
   docRememberPositionNow();
   // Never lose unsaved work by switching away from it.
   if (docDirty) await saveDocument({ silent: true });
+  await docDropIfUntouched(id);
   //: **The engine is loaded here, and this is the only place it is.** Awaited
   //: before the text is handed over, so the document goes straight into
   //: CodeMirror rather than into the fallback and then into a view mounted a
@@ -1924,8 +1925,26 @@ function docUntitledName(titles) {
   }
   return top ? `Untitled document ${top + 1}` : "Untitled document";
 }
+
+//: A document nobody touched: still named by the app (or not at all), still empty. The only
+//: kind that is dropped on leaving; one word of text keeps it (dog3-1026 D20).
+function docIsUntouched(title, text) {
+  return /^(?:untitled(?: document)?(?: \d{1,6})?)?$/i.test(String(title || "").trim()) && !String(text || "").trim();
+}
 // DOC-UNTITLED-END
 const docNextName = () => docUntitledName(docs.map((d) => d.title));
+
+//: Leaving a document that was made and never written in (a keystroke in the
+//: title, then undone; New, then another document) bins it, so the list does
+//: not fill with "Untitled document N". Anything with a word in it stays.
+async function docDropIfUntouched(nextId = null) {
+  const doc = currentDoc;
+  if (!doc || doc.id === nextId || creatingDocument || !docIsUntouched($("doc-title").value, docText())) return;
+  currentDoc = null;
+  docs = docs.filter((d) => d.id !== doc.id);
+  await apiJson(`/documents/${doc.id}`, { method: "DELETE" }).catch(() => {});
+  renderDocList();
+}
 
 //: **A blank document is not made until it is written in** (dog1-1025 item
 //: 16, decided): the editor opens empty and the first keystroke in the title
@@ -1935,6 +1954,7 @@ async function startBlankDocument() {
   const seq = ++docOpenSeq;
   docRememberPositionNow();
   if (docDirty) await saveDocument({ silent: true });
+  await docDropIfUntouched();
   await ensureDocEditor();
   if (seq !== docOpenSeq) return;
   showNoDocument();
@@ -2098,7 +2118,7 @@ async function ensureDocumentExists() {
   creatingDocument = (async () => {
     const doc = await apiJson("/documents", {
       method: "POST",
-      body: JSON.stringify({ title: docNextName(), content: "" }),
+      body: JSON.stringify({ title: $("doc-title").value.trim() || docNextName(), content: "" }),
     });
     currentDoc = doc;
     docs.unshift({ ...doc });
@@ -21615,8 +21635,11 @@ function docCmTheme(CM) {
       //: than the punctuation, and left in the document so it can be
       //: selected, deleted and typed over like any other character.
       ".cm-md-li-mark": { color: "var(--muted)" },
-      ".cm-md-li-bullet": { display: "inline-block", width: "1.6em" },
-      ".cm-md-li-num": { display: "inline-block", minWidth: "1.6em" },
+      //: `textIndent: 0`: an inline-block is a block container, so it inherits
+      //: the line's hanging `-1.6em` and drew its own glyph 24px left of its
+      //: box (bullet 44px from the words, half outside the page at 720).
+      ".cm-md-li-bullet": { display: "inline-block", width: "1.6em", textIndent: "0" },
+      ".cm-md-li-num": { display: "inline-block", minWidth: "1.6em", textIndent: "0" },
       //: **A quotation's bar has to be seen to do its job** (17c). It was
       //: `--border`, a 10% ink that composites to 1.2:1 on the page, so a
       //: quotation read as a paragraph set in grey. Half the muted ink is a

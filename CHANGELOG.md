@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents Edit view: list bullets and numbers sit beside their words (a bullet was drawn 24 px left of its box, 40 px from the text and half outside the page at 720 px wide; it inherited the line's hanging indent).
+- Documents: a new document made by typing takes the name you are typing instead of "Untitled document N", and a document still unnamed and empty when you leave it is moved to the bin instead of piling up in the list. A document with any text stays.
 - Documents Read view: a table is set in the body font and sized to its content (three short columns measured 658 px wide in monospace at 1440, now 302 px), and its caption reads "table, header and 3 rows" so the count is not mistaken for the whole table.
 - Library: a document card's preview reads a table as its words ("REM, 25%") and drops the `| --- |` rule, bold markers and link syntax.
 - Documents: typing "/table" and Enter inserts Table, not Table of contents (a label equal to the query ranks above a longer one that starts with it).

@@ -433,3 +433,14 @@ def test_read_view_table_is_set_like_prose_and_counts_rows_plainly() -> None:
     assert "font-family: var(--font-sans)" in rule and "width: auto" in rule and "max-width: 100%" in rule
     markdown = (ROOT / "frontend" / "js" / "markdown.js").read_text(encoding="utf-8")
     assert "table · header and ${bodyRows.length} row" in markdown and "table · header only" in markdown
+
+
+def test_list_markers_do_not_inherit_the_hanging_indent() -> None:
+    """dog3-1026 D23, measured on :8898 at 720: the bullet's glyph sat at
+    x -6 (half outside the page, 40 px from its words) because the inline-block
+    marker inherited the line's `text-indent: -1.6em`; with it reset the glyph
+    is at 18 and the words at 42."""
+    source = DOCUMENTS_JS.read_text(encoding="utf-8")
+    for name in ("cm-md-li-bullet", "cm-md-li-num"):
+        line = next(ln for ln in source.splitlines() if f'".{name}": ' in ln)
+        assert 'textIndent: "0"' in line, name
