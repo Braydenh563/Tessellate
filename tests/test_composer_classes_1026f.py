@@ -209,12 +209,15 @@ SURFACE_LISTS = [
     ("notes from 1-10 March last year", _t("Early tulips"), "Seed order|Taxes"),
     ("what did I write from 1 March to 10 April last year", _t("Early tulips", "Seed order", "Tulip day"), "Lent plans|Solstice picnic"),
     ("notes from March to April last year", _t("Early tulips", "Lent plans"), "Solstice picnic|Old ledger"),
-    ("what did I write since last spring", _t("Spring clean", "Beach day"), "Seed order|Solstice picnic|Autumn leaves|Frost walk"),
-    ("notes since March last year", _t("Seed order", "Solstice picnic", "Spring clean"), "Old ledger"),
-    ("what did I write since 20 March last year", _t("Seed order", "Tulip day"), "Early tulips|Old ledger"),
+    #: A long list shows its newest eight: the count says where it starts
+    #: (the base notebook has 16 notes since 1 March, 9 more back to 20 March
+    #: last year, 1 more to 1 March last year, 2 boards counted by a list).
+    ("what did I write since last spring", r"\b16 notes", "Seed order|Solstice picnic|Autumn leaves|Frost walk"),
+    ("notes since March last year", r"\b28 notes", "Old ledger"),
+    ("what did I write since 20 March last year", r"\b25 notes", "Early tulips|Old ledger"),
     ("what did I write before March last year", _t("Old ledger"), "Early tulips|Seed order|Spring clean"),
     ("notes until May last year", _t("Old ledger", "Early tulips", "Lent plans"), "Solstice picnic|Spring clean"),
-    ("notes from after summer last year", _t("Autumn leaves", "Frost walk"), "Solstice picnic|Old ledger"),
+    ("notes from after summer last year", r"\b23 notes", "Solstice picnic|Old ledger"),
 ]
 #: A window still ahead holds no note yet: said as that, no other window's notes.
 _AHEAD = (r"nothing|no notes|none|not yet|haven't|yet to", r"Old ledger|Early tulips|Seed order|Solstice|Autumn leaves|Frost walk|Spring clean|Taxes|is not in anything")
@@ -224,14 +227,14 @@ SURFACE_AHEAD = [
     ("notes from 20 March next year", *_AHEAD),
 ]
 SURFACE_COUNTS = [
-    ("how many notes did I write on 20 March last year", r"\b1 note\b"),
-    ("how many notes did I write on 20 March this year", r"\b1 note\b"),
-    ("how many notes did I write summer last year", r"\b1 note\b"),
-    ("how many notes did I write in early March last year", r"\b1 note\b"),
-    ("how many notes did I write between 1 and 10 March last year", r"\b1 note\b"),
-    ("how many notes did I write from 1 March to 10 April last year", r"\b3 notes\b"),
-    ("how many notes did I write in the second half of March last year", r"\b2 notes\b"),
-    ("how many notes did I write before March last year", r"\b1 note\b"),
+    ("how many notes did I write on 20 March last year", r"\b(?:1|one) note\b"),
+    ("how many notes did I write on 20 March this year", r"\b(?:1|one) note\b"),
+    ("how many notes did I write summer last year", r"\b(?:1|one) note\b"),
+    ("how many notes did I write in early March last year", r"\b(?:1|one) note\b"),
+    ("how many notes did I write between 1 and 10 March last year", r"\b(?:1|one) note\b"),
+    ("how many notes did I write from 1 March to 10 April last year", r"\b(?:3|three) notes\b"),
+    ("how many notes did I write in the second half of March last year", r"\b(?:2|two) notes\b"),
+    ("how many notes did I write before March last year", r"\b(?:1|one) note\b"),
 ]
 
 
