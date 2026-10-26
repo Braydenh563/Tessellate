@@ -2,9 +2,9 @@
 
 Generated 2026-10-26 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6452, frontend ids 2542, CSS sections 503, backend routes 622, backend modules 6533, test files 1365, tests 12173, plan headings 972.
+Counts: frontend functions 6453, frontend ids 2542, CSS sections 503, backend routes 622, backend modules 6533, test files 1365, tests 12174, plan headings 972.
 
-## Frontend functions (6452)
+## Frontend functions (6453)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -1251,7 +1251,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `toggleAutonomousPanel` | frontend/js/phone-shell.js:2162 |
 | `watchEmblemVisibility` | frontend/js/phone-shell.js:16 |
 
-### frontend/js/wiring.js (34)
+### frontend/js/wiring.js (35)
 
 | Name | File:line |
 |---|---|
@@ -1260,7 +1260,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `applyPlanMode` | frontend/js/wiring.js:1427 |
 | `askAtlasAbout` | frontend/js/wiring.js:200 |
 | `chatRecallStep` | frontend/js/wiring.js:804 |
-| `clearDueNudges` | frontend/js/wiring.js:1712 |
+| `clearDueNudges` | frontend/js/wiring.js:1714 |
 | `closeGlobalFind` | frontend/js/wiring.js:630 |
 | `dashboardGreetingPersona` | frontend/js/wiring.js:909 |
 | `escapeForFind` | frontend/js/wiring.js:408 |
@@ -1272,9 +1272,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `initGraphOptionFolds` | frontend/js/wiring.js:1000 |
 | `initHelpToggles` | frontend/js/wiring.js:220 |
 | `noteSourceOn` | frontend/js/wiring.js:875 |
-| `nudgeDueShown` | frontend/js/wiring.js:1716 |
+| `nudgeDueShown` | frontend/js/wiring.js:1718 |
 | `openGlobalFind` | frontend/js/wiring.js:568 |
-| `openReminderCompose` | frontend/js/wiring.js:1612 |
+| `openReminderCompose` | frontend/js/wiring.js:1614 |
 | `paintDashboardPersonaMark` | frontend/js/wiring.js:915 |
 | `reflectOnlineState` | frontend/js/wiring.js:16 |
 | `renameCurrentConversation` | frontend/js/wiring.js:717 |
@@ -1288,6 +1288,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `syncNoteSourceButtons` | frontend/js/wiring.js:883 |
 | `timelineSelectableRows` | frontend/js/wiring.js:1345 |
 | `toggleSelectAllRows` | frontend/js/wiring.js:1331 |
+| `toggleWebSearch` | frontend/js/wiring.js:1455 |
 | `watchFullscreenSurface` | frontend/js/wiring.js:1243 |
 
 ### frontend/js/settings-wiring.js (44)
@@ -12603,41 +12604,41 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_of` | src/tessellate/ai/help_chat.py:2586 |
-| `_aware` | src/tessellate/ai/help_chat.py:3120 |
-| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2517 |
-| `_guide_lead` | src/tessellate/ai/help_chat.py:3034 |
-| `_guide_opening` | src/tessellate/ai/help_chat.py:3050 |
-| `_help_sentences` | src/tessellate/ai/help_chat.py:3017 |
-| `_keyword_in` | src/tessellate/ai/help_chat.py:2507 |
-| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2439 |
-| `_keyword_regex` | src/tessellate/ai/help_chat.py:2503 |
-| `_matching_topics` | src/tessellate/ai/help_chat.py:2636 |
-| `_meaning_topics` | src/tessellate/ai/help_chat.py:2716 |
-| `_normalise_keys` | src/tessellate/ai/help_chat.py:2462 |
-| `_place` | src/tessellate/ai/help_chat.py:2991 |
-| `_preference` | src/tessellate/ai/help_chat.py:3073 |
-| `_prompt_for` | src/tessellate/ai/help_chat.py:2864 |
-| `_read_as` | src/tessellate/ai/help_chat.py:3185 |
-| `_reading_topics` | src/tessellate/ai/help_chat.py:2608 |
-| `_repaired` | src/tessellate/ai/help_chat.py:2625 |
-| `_second_sentence` | src/tessellate/ai/help_chat.py:3021 |
-| `_state_line` | src/tessellate/ai/help_chat.py:3082 |
-| `_stated_lead` | src/tessellate/ai/help_chat.py:3091 |
-| `answer` | src/tessellate/ai/help_chat.py:3265 |
-| `answer_stream` | src/tessellate/ai/help_chat.py:3200 |
-| `badges_for` | src/tessellate/ai/help_chat.py:2804 |
-| `composed_answer` | src/tessellate/ai/help_chat.py:3102 |
-| `help_block_for` | src/tessellate/ai/help_chat.py:3346 |
-| `help_listing` | src/tessellate/ai/help_chat.py:2775 |
-| `help_sentences` | src/tessellate/ai/help_chat.py:3000 |
-| `names_app` | src/tessellate/ai/help_chat.py:3330 |
-| `offline_answer` | src/tessellate/ai/help_chat.py:3132 |
-| `social_reply` | src/tessellate/ai/help_chat.py:2964 |
-| `source_names` | src/tessellate/ai/help_chat.py:2771 |
-| `system_answer` | src/tessellate/ai/help_chat.py:2753 |
-| `topic_title` | src/tessellate/ai/help_chat.py:2739 |
-| `topics_for` | src/tessellate/ai/help_chat.py:2818 |
+| `_act_of` | src/tessellate/ai/help_chat.py:2587 |
+| `_aware` | src/tessellate/ai/help_chat.py:3121 |
+| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2518 |
+| `_guide_lead` | src/tessellate/ai/help_chat.py:3035 |
+| `_guide_opening` | src/tessellate/ai/help_chat.py:3051 |
+| `_help_sentences` | src/tessellate/ai/help_chat.py:3018 |
+| `_keyword_in` | src/tessellate/ai/help_chat.py:2508 |
+| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2440 |
+| `_keyword_regex` | src/tessellate/ai/help_chat.py:2504 |
+| `_matching_topics` | src/tessellate/ai/help_chat.py:2637 |
+| `_meaning_topics` | src/tessellate/ai/help_chat.py:2717 |
+| `_normalise_keys` | src/tessellate/ai/help_chat.py:2463 |
+| `_place` | src/tessellate/ai/help_chat.py:2992 |
+| `_preference` | src/tessellate/ai/help_chat.py:3074 |
+| `_prompt_for` | src/tessellate/ai/help_chat.py:2865 |
+| `_read_as` | src/tessellate/ai/help_chat.py:3186 |
+| `_reading_topics` | src/tessellate/ai/help_chat.py:2609 |
+| `_repaired` | src/tessellate/ai/help_chat.py:2626 |
+| `_second_sentence` | src/tessellate/ai/help_chat.py:3022 |
+| `_state_line` | src/tessellate/ai/help_chat.py:3083 |
+| `_stated_lead` | src/tessellate/ai/help_chat.py:3092 |
+| `answer` | src/tessellate/ai/help_chat.py:3266 |
+| `answer_stream` | src/tessellate/ai/help_chat.py:3201 |
+| `badges_for` | src/tessellate/ai/help_chat.py:2805 |
+| `composed_answer` | src/tessellate/ai/help_chat.py:3103 |
+| `help_block_for` | src/tessellate/ai/help_chat.py:3347 |
+| `help_listing` | src/tessellate/ai/help_chat.py:2776 |
+| `help_sentences` | src/tessellate/ai/help_chat.py:3001 |
+| `names_app` | src/tessellate/ai/help_chat.py:3331 |
+| `offline_answer` | src/tessellate/ai/help_chat.py:3133 |
+| `social_reply` | src/tessellate/ai/help_chat.py:2965 |
+| `source_names` | src/tessellate/ai/help_chat.py:2772 |
+| `system_answer` | src/tessellate/ai/help_chat.py:2754 |
+| `topic_title` | src/tessellate/ai/help_chat.py:2740 |
+| `topics_for` | src/tessellate/ai/help_chat.py:2819 |
 
 ### src/tessellate/ai/help_topics_more.py (2)
 
@@ -19240,7 +19241,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12173)
+## Tests (12174)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20241,7 +20242,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_restart_everywhere.py | 7 |
 | tests/test_restore_roundtrip.py | 2 |
 | tests/test_resurface_spec.py | 16 |
-| tests/test_review_fixes_palette_docs.py | 4 |
+| tests/test_review_fixes_palette_docs.py | 5 |
 | tests/test_review_queue_17.py | 6 |
 | tests/test_ring_room.py | 8 |
 | tests/test_round2_sweep_fixes.py | 3 |

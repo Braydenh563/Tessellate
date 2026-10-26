@@ -1450,11 +1450,10 @@ $("chat-plan").addEventListener("click", async () => {
 
 renderPlanToggle();
 
-$("web-search-toggle").addEventListener("click", async () => {
-  //: On with the panel shut, a click opens the panel rather than turning web
-  //: off (the owner, 2026-10-26: it took off-then-on to see it). A click with
-  //: the panel open turns web off.
-  if (prefsCache?.web_search_enabled && $("web-panel").classList.contains("hidden")) {
+//: `openFirst` is the button's own click: with web on and the panel shut it opens the
+//: panel rather than turning web off. The palette and slash row pass nothing and always toggle.
+async function toggleWebSearch({ openFirst = false } = {}) {
+  if (openFirst && prefsCache?.web_search_enabled && $("web-panel").classList.contains("hidden")) {
     toggleWebPanel(true);
     return;
   }
@@ -1472,7 +1471,10 @@ $("web-search-toggle").addEventListener("click", async () => {
     toggleWebPanel(false);
     toast("Web search off.");
   }
-});
+}
+//: On with the panel shut, a click opens the panel rather than turning web off (the owner,
+//: 2026-10-26: it took off-then-on to see it). A click with the panel open turns web off.
+$("web-search-toggle").addEventListener("click", () => toggleWebSearch({ openFirst: true }));
 $("web-panel-close").addEventListener("click", () => toggleWebPanel(false));
 //: Enter searches; there is no Search button to press. ArrowDown walks from
 //: the field into the results (and ArrowUp from the first result back to the

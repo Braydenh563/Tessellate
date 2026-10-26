@@ -546,7 +546,8 @@ HELP_TOPICS: list[dict] = [
         "keywords": ("web search", "websearch", "internet search", "searxng", "search the web", "search online", "look it up online"),
         "body": (
             "Web search is opt-in and off by default. Turn it on in Settings, Web "
-            "search: only your search words are sent out, "
+            "search, or with the Web button in Chat (with web on and the panel "
+            "shut, a click opens the panel; with it open, a click turns web off): only your search words are sent out, "
             "never your notes, so the assistant can look something up online "
             "when asked. With it on and no model running, a Chat question your "
             "notes do not answer is answered from the pages found, one line a "

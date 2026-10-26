@@ -672,7 +672,7 @@ function chatCommands() {
     { id: "chat-attach-file", primary: true, group: "Attach", icon: "ph:paperclip", label: "A file", hint: "from the Library", keywords: ["attach", "file", "pdf", "spreadsheet"], run: pick("files") },
     { id: "chat-attach-image", group: "Attach", icon: "ph:image", label: "An image", hint: "from the Library", keywords: ["attach", "image", "picture", "photo", "sketch"], run: pick("images") },
     { id: "chat-upload", primary: true, group: "Attach", icon: "ph:upload-simple", label: "Upload something new", hint: "any file", keywords: ["upload", "new", "file", "attach"], run: press("attach-image") },
-    { id: "chat-web", primary: true, group: "This message", icon: "ph:globe", label: "Web search", hint: "toggle", keywords: ["web", "search", "online", "internet"], run: press("web-search-toggle") },
+    { id: "chat-web", primary: true, group: "This message", icon: "ph:globe", label: "Web search", hint: "toggle", keywords: ["web", "search", "online", "internet"], run: afterPress(() => toggleWebSearch()) },
     { id: "chat-plan", primary: true, group: "This message", icon: "ph:compass", label: "Plan first", hint: "toggle", keywords: ["plan", "steps", "think"], run: press("chat-plan") },
     { id: "chat-skills", primary: true, group: "This message", icon: "ph:lightning", label: "Skills", hint: "run a saved skill", keywords: ["skill", "skills", "run", "workflow"], run: press("chat-skills-btn") },
     { id: "chat-equation", group: "This message", icon: "ph:function", label: "Equation", hint: "build a formula", keywords: ["equation", "math", "maths", "formula", "symbol"], run: afterPress(() => openMathEditor({ target: document.getElementById("chat-input") })) },

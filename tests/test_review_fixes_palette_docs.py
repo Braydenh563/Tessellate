@@ -57,3 +57,13 @@ def test_untouched_drop_is_limited_to_documents_made_this_session():
     made = made[: made.index("\n}\n")]
     assert "docsMadeThisSession.add(doc.id)" in made
 
+
+def test_web_row_always_toggles_and_button_title_says_what_a_click_does():
+    assert "afterPress(() => toggleWebSearch())" in _js("editor.js")
+    assert 'press("web-search-toggle")' not in _js("editor.js")
+    wiring = _js("wiring.js")
+    assert "toggleWebSearch({ openFirst: true })" in wiring
+    assert "if (openFirst && prefsCache?.web_search_enabled" in wiring
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert "a click opens the panel" in html[html.index('id="web-search-toggle"') :][:400]
+
