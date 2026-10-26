@@ -3067,7 +3067,13 @@ dialog::backdrop {
 .ask-composer {
   flex-wrap: wrap;
 }
-.ask-composer > #question {
+/* With its focus states: the shared interior rule above names them, so a
+   bare selector here lost to it while typing, the field took its full width
+   (flex-basis auto, width 100%), and pressing Ask blurred it and pulled the
+   button 65px up between press and release, so the click missed. */
+.ask-composer > #question,
+.ask-composer > #question:focus,
+.ask-composer > #question:focus-visible {
   flex: 1 1 14rem;
 }
 /* The controls are one flex item, so a row that cannot hold them beside a
