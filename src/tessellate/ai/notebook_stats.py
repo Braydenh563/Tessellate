@@ -214,7 +214,7 @@ def looks_like_a_question_about_the_notebook(message: str) -> bool:
     return bool(
         re.search(_TAG_WORDS, text)
         or re.search(_CATEGORY_WORDS, text)
-        or re.search(r"\bnotes?\b|\bdocuments?\b|notebook", text)
+        or re.search(r"\bnotes?\b|\bdocuments?\b|notebook|\b(?:white)?boards?\b|\b(?:mind ?)?maps?\b", text)
         #: The topics added alongside the spelling pass. Without these the
         #: pre-filter rejected "how many words have I written" before any
         #: matcher saw it: a question the module now answers exactly, refused
@@ -252,10 +252,9 @@ def answer(message: str, session: Session) -> StatAnswer | None:
     for ask, reader in _FIRST_RULES:
         if ask(text):
             return reader(session)
-    if re.search(_COUNT, text) and re.search(r"\bnotes?\b", text):
-        named = _named_count(text, session)
-        if named is not None:
-            return named
+    counted = _counted(text, message, session) if re.search(_COUNT, text) else None
+    if counted is not None:
+        return counted
     for ask, reader in _COUNT_RULES:
         if ask(text):
             return reader(session)
@@ -276,6 +275,27 @@ def answer(message: str, session: Session) -> StatAnswer | None:
         if ask(text):
             return reader(session)
     return _whole_notebook(text, session)
+
+
+def _counted(text: str, message: str, session: Session) -> StatAnswer | None:
+    """A count of notes narrowed by a filter or named by a category or tag, or
+    of boards and maps; None for the rest."""
+    if re.search(r"\bnotes?\b", text):
+        return _narrowed_count(text, message, session) or _named_count(text, session)
+    if re.search(r"\b(?:white)?boards?\b|\b(?:mind ?)?maps?\b", text):
+        return _board_count(session, text)
+    return None
+
+
+def _narrowed_count(text: str, message: str, session: Session) -> StatAnswer | None:
+    """A count narrowed by link state, tag or category (and a window with
+    them), `ai/notebook_filters.py`; None when nothing narrows it."""
+    from tessellate.ai import notebook_filters
+
+    names = list(session.scalars(select(Category.name)))
+    narrowed = notebook_filters.read(text, message or "", names, _window(text), lambda value: _window(value) is not None)
+    said = notebook_filters.count(session, narrowed, _visible)
+    return None if said is None else StatAnswer("filtered-count", said[0], said[1])
 
 
 def _whole_notebook(text: str, session: Session) -> StatAnswer | None:
@@ -453,6 +473,18 @@ def _note_count(session: Session) -> StatAnswer:
         f"You have {_plural(total, 'note')}.",
         [{"label": "notes", "count": total}],
     )
+
+
+def _board_count(session: Session, text: str) -> StatAnswer:
+    """How many boards, or mind maps, the notebook holds (a map is a board
+    whose settings say so)."""
+    maps = bool(re.search(r"\bmaps?\b", text))
+    rows = session.scalars(
+        select(Entry.board_settings).where(Entry.is_board.is_(True), Entry.deleted_at.is_(None), Entry.is_private.is_(False))
+    ).all()
+    total = sum(1 for raw in rows if ('"type": "map"' in (raw or "") or '"type":"map"' in (raw or "")) == maps)
+    word = "mind map" if maps else "board"
+    return StatAnswer("board-count", f"You have {_plural(total, word)}.", [{"label": word + "s", "count": total}])
 
 
 def _document_count(session: Session) -> StatAnswer:

@@ -88,6 +88,7 @@ from tessellate.core.imagesize import image_size
 from tessellate.core.logbuffer import safe_value
 from tessellate.entry import manager
 from tessellate.entry.manager import UNCATEGORISED
+from tessellate.search import engine
 from tessellate.search import chunks as search_chunks
 from tessellate.search import search_manager
 from sqlalchemy import func
@@ -1078,6 +1079,9 @@ def _attached_boards(session: Session, board_ids: list[int]) -> list[dict]:
                 ),
                 "category": "Mind map" if is_map else "Board",
                 "kind": "map" if is_map else "board",
+                #: Its own day, so a newer note on the same thing is not
+                #: set aside for a board that says none (`supersede`).
+                "created_at": entry.created_at.isoformat() if entry.created_at else None,
                 "attached": True,
                 "connected": False,
                 "match_info": None,
@@ -1885,17 +1889,83 @@ def _named_rows(session: Session, question: str) -> list[dict]:
     """A document, board or map the question names by title, read first as
     itself (not as an attachment the person picked)."""
     named_docs, named_boards = _named_sources(session, question)
-    boards = _attached_boards(session, named_boards)
-    for row in boards:
-        #: Said by its title and words, as a note is: the "Mind map: X (4
-        #: nodes...)" head is for a model, and the composer quoted it.
-        head, _, outline = row["content"].partition("\n\n")
-        row["content"] = f"# {head.split(': ', 1)[-1].splitlines()[0]}\n\n{outline}"
+    #: Said by its title and words, as a note is (`_board_rows`).
+    boards = _board_rows(_attached_boards(session, named_boards))
     named = [_document_row(d) for d in named_docs] + boards
     for row in named:
         row["attached"] = False
         row["named"] = True
     return named
+
+
+#: How many boards, maps and documents a question's words may bring in.
+MATCHED_SOURCES = 3
+
+
+def _holds_every(text: str, terms: list[str]) -> bool:
+    """Every term is a word (or the start of one) in `text`."""
+    words = re.findall(r"[a-z0-9]+", (text or "").lower())
+    return all(any(w.startswith(t.lower()) for w in words) for t in terms)
+
+
+def _board_rows(boards: list[dict], terms: list[str] | None = None) -> list[dict]:
+    """Attached-board rows said as notes are: the title and its words, without
+    the "Mind map: X (4 nodes)" head that is for a model. With `terms`, only
+    those holding every term."""
+    kept = []
+    for row in boards:
+        head, _, outline = row["content"].partition("\n\n")
+        title = head.split(": ", 1)[-1].splitlines()[0]
+        if terms is not None and not _holds_every(f"{title} {outline}", terms):
+            continue
+        row["content"] = f"# {title}\n\n{outline}"
+        kept.append(row)
+    return kept
+
+
+def _holding(session: Session, hits: list, terms: list[str], skip: set[tuple[str, int]]) -> tuple[list, list[int]]:
+    """The documents and board ids among search `hits` not yet in, a document
+    kept only where its text holds every term."""
+    docs, boards = [], []
+    for hit in hits:
+        if ("document" if hit.kind == "document" else "board", hit.ref_id) in skip:
+            continue
+        doc = session.get(Document, hit.ref_id) if hit.kind == "document" else None
+        if doc is not None and doc.deleted_at is None and _holds_every(f"{doc.title} {doc.content}", terms):
+            docs.append(doc)
+        elif hit.kind != "document":
+            boards.append(hit.ref_id)
+    return docs, boards
+
+
+def _matched_rows(session: Session, question: str, skip: set[tuple[str, int]]) -> list[dict]:
+    """Boards, maps and documents whose own words hold the question's words
+    (composer work list 1: "tell me about IaaS" found nothing when IaaS was a
+    node on a map, because the note search reads notes). Found by the one
+    search index, then kept only where every term is really in the text, so a
+    partial match does not bring a source in. Read as the named ones are, so
+    the answer says the kind ("on your Cloud map"). `skip` holds
+    (document or board, id) pairs already in."""
+    terms = [t for t in search_manager._meaningful_terms(question or "") if t not in composer._ASKING_WORDS]  # noqa: SLF001
+    if not terms or len(question or "") > 300:
+        return []
+    hits = engine.search(session, " ".join(terms), kinds=["board", "map", "document"], limit=8, hybrid=False)
+    docs, boards = _holding(session, hits, terms, skip)
+    rows = [_document_row(d) for d in docs] + _board_rows(_attached_boards(session, boards), terms)
+    for row in rows:
+        row["attached"] = False
+        row["named"] = True
+    return rows[:MATCHED_SOURCES]
+
+
+def _with_sources(session: Session, question: str, notes: list[dict], mode: str) -> list[dict]:
+    """The notes with the boards, maps and documents the question names or
+    whose words hold it. Where the note search found nothing by its words, a
+    source that holds them leads; where it did, the notes lead and it follows."""
+    named = _named_rows(session, question)
+    taken = {("document" if r["kind"] == "document" else "board", r["id"]) for r in named}
+    matched = _matched_rows(session, question, taken)
+    return named + (matched + notes if mode in ("recent", "none") else notes + matched)
 
 
 def _prepare(
@@ -1936,7 +2006,7 @@ def _prepare(
     #: Only the notes: a document or a file row has another table's id.
     _frame_matches(session, question, notes[: len(found.entries)], found.match_info, found.mode)
     if not (attached or attached_docs or attached_files or attached_boards or skip_search) and found.stats is None and as_of is None:
-        notes = _named_rows(session, question) + notes
+        notes = _with_sources(session, question, notes, found.mode)
     config = deps.get_config()
 
     # Every entry this question surfaced counts as "used".
@@ -3082,6 +3152,46 @@ def _digest_for(req: _StreamRequest, prepared: dict, follow, current: list, rest
         return None
 
 
+def _told_sources(req: _StreamRequest, current: list, today) -> str:  # noqa: ANN001
+    """The sentences the earlier answers drew on, as the notes wrote them,
+    found by where they sit in the notes (composer work list 4). An answer
+    that put a sentence in its own words ("the week of 13 July" for "this
+    week") is not found in its text, so "tell me more" quoted it again; its
+    grounding rows say which sentence it was. The earlier questions are
+    answered again over the same notes for their rows only."""
+    by_id = {n.get("source_id", n.get("id")): str(n.get("content") or "") for n in current}
+    told: list[str] = []
+    for question in _asked_before(req):
+        try:
+            result = composer_digest.answer(question, current, today=today, voice=_answer_voice()) or composer.compose(
+                question, current, today=today, voice=_composer_voice(), now=user_now(deps.get_config()).replace(tzinfo=None)
+            )
+        except Exception:  # noqa: BLE001  # the words of the earlier answers still stand
+            continue
+        for row in result.get("grounding") or []:
+            told.extend(_row_source(by_id, part) for part in [row, *(row.get("parts") or [])])
+    return "\n".join(t for t in told if t)
+
+
+def _asked_before(req: _StreamRequest) -> list[str]:
+    """The questions of the last three turns as they stood, a "more" being
+    the question it leans on, once each."""
+    asked: list[str] = []
+    for turn in composer._standing([t for t in (req.history or [])[-3:] if str(t.get("question") or "").strip()]):
+        if turn["question"] not in asked and not composer._MORE.match(turn["question"]):
+            asked.append(turn["question"])
+    return asked
+
+
+def _row_source(by_id: dict, row: dict) -> str:
+    """A grounding row's sentence as its note wrote it (by place), or as the
+    row quotes it."""
+    content = by_id.get(row.get("note_id"), "")
+    if content and "start" in row and "end" in row:
+        return content[row["start"]:row["end"]]
+    return str(row.get("source") or "")
+
+
 def _compose_for(req: _StreamRequest, prepared: dict, follow, current: list, today) -> dict:  # noqa: ANN001
     #: The conversation the history describes (decisions 34 and 35): its
     #: turn and salt word this answer, a retry ("Try again") rewords it,
@@ -3094,7 +3204,7 @@ def _compose_for(req: _StreamRequest, prepared: dict, follow, current: list, tod
         today=today,
         recent=str(prepared.get("search_mode") or "").endswith("recent"),
         embed=_composer_embed(),
-        said=follow.said if follow else "",
+        said="\n".join([follow.said, _told_sources(req, current, today)]) if follow and follow.kind == "more" else follow.said if follow else "",
         voice=_composer_voice(),
         register=_chat_voice(req),
         #: The turn before's answer, so this one opens differently (INBOX 741).

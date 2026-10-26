@@ -78,7 +78,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Any
 
-from tessellate.ai import act_registry, composer_ack, composer_compose, composer_lines, composer_open, composer_overview, composer_parts, composer_replies, composer_tables, grounding, phrasing, question_noise, realise, spelling, utilities, variants
+from tessellate.ai import act_registry, composer_ack, composer_compose, composer_lines, composer_open, composer_overview, composer_parts, composer_replies, composer_tables, composer_tree, grounding, phrasing, question_noise, realise, spelling, utilities, variants
 from tessellate.ai import recognise as rec
 from tessellate.ai import when as when_words
 from tessellate.search import query as query_understanding
@@ -133,6 +133,7 @@ PHRASES: dict[str, str] = {
     "para": "\n\n",
     "line": "\n",
     "bullet": "- ",
+    "indent": "  ",
     "task_done": "- [x] ",
     "task_open": "- [ ] ",
     "bold": "**",
@@ -772,6 +773,9 @@ class Sentence:
     done: bool | None = None
     order: int = 0
     score: float = 0.0
+    #: How far a list item is indented under the one before it (a map's
+    #: children, an outline's sub-points); 0 for everything else.
+    depth: int = 0
     #: Sentences of other notes that say the same thing, dropped so the answer
     #: says it once, and counted: "(Your notes say this three times.)".
     echoes: list = field(default_factory=list)
@@ -878,6 +882,12 @@ def _title(content: str) -> tuple[str, int]:
         return "", 0
     name = " ".join(words[:UNTITLED_WORDS]).rstrip(".,;:!?")
     return (name + "…" if len(words) > UNTITLED_WORDS else name), 0
+
+
+def _depth(line: str) -> int:
+    """A list item's nesting: two columns of indent a level, tabs as four."""
+    flat = line.expandtabs(4).rstrip("\r\n")
+    return min((len(flat) - len(flat.lstrip(" "))) // 2, 4)
 
 
 def _unit(view: NoteView, content: str, start: int, end: int, kind: str, done: bool | None) -> Sentence | None:
@@ -1042,6 +1052,7 @@ def read_note(note: dict, rank: int) -> NoteView | None:
                 None if not box else box.strip("[] \t").lower() == "x",
             )
             if unit:
+                unit.depth = _depth(line)
                 view.sentences.append(unit)
             continue
         body = line_start + (len(line) - len(line.lstrip(" >")))
@@ -1856,6 +1867,21 @@ def _your_kind(view: NoteView) -> str:
     return f"your_{view.kind}_cap" if view.kind in ("board", "map", "document") else "your_note_cap"
 
 
+def _list_lead(out: _Answer, view: NoteView, lead: str) -> None:
+    """What introduces a list: "Your note **Reading list** lists ", or "It
+    also lists " when the answer already named the note."""
+    if lead == "opening" and _unlike_before(out, ["your_note_cap", "in_cap"])[0] == "in_cap":
+        #: "In **Reading list** you listed four: ...", after a turn that
+        #: opened "Your note ...".
+        out.t("in_cap").name(view).t("you_listed")
+    elif lead == "opening":
+        if view.titled:
+            out.t(_your_kind(view), "space")
+        out.name(view, cap=True).t("lists")
+    else:
+        out.t("it_lists")
+
+
 def _list_block(out: _Answer, view: NoteView, items: list[Sentence], terms: list[str], lead: str) -> None:
     """A note's list, introduced by what it holds: "Your note **Reading
     list** lists four: ...", a checklist with how many are ticked."""
@@ -1874,16 +1900,10 @@ def _list_block(out: _Answer, view: NoteView, items: list[Sentence], terms: list
                 out.t("line")
             out.item(s, terms)
         return
-    if lead == "opening" and _unlike_before(out, ["your_note_cap", "in_cap"])[0] == "in_cap":
-        #: "In **Reading list** you listed four: ...", after a turn that
-        #: opened "Your note ...".
-        out.t("in_cap").name(view).t("you_listed")
-    elif lead == "opening":
-        if view.titled:
-            out.t(_your_kind(view), "space")
-        out.name(view, cap=True).t("lists")
-    else:
-        out.t("it_lists")
+    _list_lead(out, view, lead)
+    if composer_tree.nested(items):
+        composer_tree.write(out, items, terms)
+        return
     out.m(out.count(len(items)))
     if _fusable(items):
         out.t("colon")
