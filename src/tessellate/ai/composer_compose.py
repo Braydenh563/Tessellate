@@ -79,17 +79,22 @@ _PERSONA_CUES: tuple[tuple[str, tuple[str, ...]], ...] = (
 )
 
 
-def voice_for_persona(prompt: str | None, fallback: str = "natural") -> str:
-    """The voice a persona's description asks for, by its own words: "a witty
-    pirate" is playful, "a precise archivist" formal. A persona with no cue
-    keeps the voice the person picked in Settings."""
+def persona_cue(prompt: str | None) -> str:
+    """The voice a persona's description asks for, by its own words ("a witty
+    pirate" is playful, "a precise archivist" formal), or empty for none."""
     low = str(prompt or "").lower()
     best, best_hits = "", 0
     for voice, cues in _PERSONA_CUES:
         hits = sum(1 for cue in cues if cue in low)
         if hits > best_hits:
             best, best_hits = voice, hits
-    return best or voice_for(fallback)
+    return best
+
+
+def voice_for_persona(prompt: str | None, fallback: str = "natural") -> str:
+    """The persona's voice; a persona with no cue keeps the voice the person
+    picked in Settings (`fallback`)."""
+    return persona_cue(prompt) or voice_for(fallback)
 
 
 def read_emotion(text: str) -> str:
@@ -196,12 +201,12 @@ def frame(ability: str, mood: Mood, **facts: object) -> str:
 
 #: Abilities whose frames carry their own greeting or are clauses of one:
 #: a generic "Sure." before "Good morning." would be wrong.
-_NO_AROUND = frozenset({"hello", "welcome_new", "w_due", "w_last", "w_streak", "w_quiet"})
+_NO_AROUND = frozenset({"close_next", "act_card", "hello", "welcome_new", "w_due", "w_last", "w_streak", "w_quiet"})
 
 
 #: Abilities that take only their own openers and closers (an act's
 #: confirmation or question, where "Let me see." would read wrong).
-_OWN = frozenset({"act_done", "act_ask", "act_baddate", "act_none"})
+_OWN = frozenset({"close_next", "act_card", "act_done", "act_ask", "act_baddate", "act_none"})
 
 
 def opener(mood: Mood, ability: str = "") -> str:

@@ -289,6 +289,29 @@ FRAMES: dict[str, tuple[Cand, ...]] = {
         c("It is done: {what}.", "f"), c("I have completed this: {what}.", "f"),
         c("Consider it done: {what}.", "p"), c("Handled. {what}.", "p"),
     ),
+    #: A card's own label said back ("remind you on Friday at 9: call the dentist").
+    #: The line after an answer that points at the next step (`composer_tone.closing`).
+    "close_next": (
+        c("I can see you've been working on “{t}”. Ask me what is left on it, or when it is due.", "w"),
+        c("Your latest note is “{t}”. Want a summary of it, or what is left to do?", "w"),
+        c("Since you've been in “{t}” lately, I can list what is still open there.", "w"),
+        c("Next, I can open “{t}” or pull out its dates.", "w"),
+        c("If it helps, ask me who is involved in “{t}”, your newest note.", "w"),
+        c("Most recently you wrote “{t}”. Say the word and I will go through it with you.", "w"),
+        c("Next: “{t}”, your newest note. Summary, dates or what is left?", "t"), c("Latest note: “{t}”. Ask for what is open on it.", "t"),
+        c("“{t}” is your newest. Dates or tasks?", "t"), c("Want “{t}” opened?", "t"),
+        c("Your most recent note is “{t}”. I can summarise it, list its dates or show what remains open.", "f"),
+        c("Should you wish to continue with “{t}”, your newest note, I can list what is outstanding.", "f"),
+        c("The latest entry is “{t}”; I can retrieve its dates or its open items.", "f"),
+        c("“{t}” is where you left off. Shall I dig out its open items or dates?", "p"), c("Fresh off your keyboard: “{t}”. Want the dates or what is left?", "p"),
+        c("Your newest page, “{t}”, is still warm. Ask what is left on it.", "p"),
+    ),
+    "act_card": (
+        c("Done: {what}.", "t"), c("Set: {what}.", "t"), c("{what}. Done.", "t"),
+        c("All set, I will {what}.", "w"), c("Done. I will {what}.", "w"), c("Sure, I will {what}.", "w"), c("Got it, I will {what}.", "w"),
+        c("Understood. I shall {what}.", "f"), c("Done: I will {what}.", "f"), c("Noted, and I will {what}.", "f"),
+        c("Consider it handled: I will {what}.", "p"), c("Sorted, I will {what}.", "p"), c("Locked in, I will {what}.", "p"),
+    ),
     "act_ask": (
         c("I need a little more for that: {missing}.", "w"), c("Almost there. {missing}?", "w"), c("Before I do it, {missing}.", "w"),
         c("Need: {missing}.", "t"), c("{missing}?", "t"),

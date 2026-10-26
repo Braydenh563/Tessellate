@@ -37,11 +37,11 @@ def ask(client, session, monkeypatch):
 RECENT = [
     ("what did I write about databases this week", r"Lecture 6: Databases", r"couldn't find"),
     ("What did I write about scheduling this month?", r"Lecture 5: Operating systems", r""),
-    ("what did i write about search last week", r"did not write|No note|Nothing", r"^- .*Lecture 3"),
+    ("what did i write about search last week", r"(?i)did not write|no note|nothing|not in anything|no entry|no record|not a word|nowhere|not made it", r"^- .*Lecture 3"),
     ("what did I write about search this week", r"COMP2001 Lecture 3", r""),
     ("what have I written about the exam this month", r"Lecture 5", r""),
     ("show me my notes on databases this week", r"Lecture 6: Databases", r""),
-    ("what did I jot down about joins yesterday", r"did not write|No note|Nothing", r"^- .*Lecture 6"),
+    ("what did I jot down about joins yesterday", r"(?i)did not write|no note|nothing|not in anything|no entry|no record|not a word|nowhere|not made it", r"^- .*Lecture 6"),
 ]
 
 

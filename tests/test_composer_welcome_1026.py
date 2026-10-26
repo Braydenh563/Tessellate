@@ -45,3 +45,28 @@ def test_hi_in_chat_is_answered_with_a_welcome(client, session):
     out = _ask(client, "hi")
     assert "“Tides”" in out["text"], out["text"]
     assert "!" not in out["text"]
+
+
+def test_a_persona_sets_the_voice_unless_one_was_chosen(monkeypatch):
+    from types import SimpleNamespace
+
+    from tessellate.ai import librarian
+    from tessellate.api import routes_chat
+
+    monkeypatch.setattr(routes_chat, "_answer_voice", lambda: "natural")
+    pick = lambda prompt: routes_chat._chat_voice(SimpleNamespace(persona_prompt=prompt))  # noqa: E731
+    assert pick("You are a witty pirate who loves jokes.") == "playful"
+    assert pick("A precise, formal archivist.") == "formal"
+    assert pick(librarian.DEFAULT_PERSONA + "\n\nRemember: be brief.") == "natural"
+    assert pick(None) == "natural" and pick("an ordinary helper") == "natural"
+    monkeypatch.setattr(routes_chat, "_answer_voice", lambda: "plain")
+    assert pick("You are a witty pirate who loves jokes.") == "plain"
+
+
+def test_the_dashboard_line_welcomes_an_empty_notebook(client):
+    seen = set()
+    for seed in range(12):
+        got = client.get(f"/insights/today-line?seed={seed}").json()
+        assert got["kind"] == "welcome" and got["text"] and "!" not in got["text"]
+        seen.add(got["text"])
+    assert len(seen) >= 3

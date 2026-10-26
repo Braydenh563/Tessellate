@@ -40,6 +40,8 @@ FACTS: dict[str, dict] = {
     "w_streak": {"streak": "5 days"},
     "w_quiet": {},
     "act_done": {"what": "set a reminder for Friday at 15:00"},
+    "close_next": {"t": "Harbor launch plan"},
+    "act_card": {"what": "remind you on Friday at 9: call the dentist"},
     "act_ask": {"missing": "what the reminder is for"},
     "act_baddate": {"said": "whenever"},
     "act_none": {},
