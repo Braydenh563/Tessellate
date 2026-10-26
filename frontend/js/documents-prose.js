@@ -2562,6 +2562,7 @@ const DOC_PASTE_KEYS = { keep: "k", text: "t", match: "m", asis: "k", table: "a"
 const DOC_PASTE_SPECIAL = [
   ["plain", "Paste as plain text"],
   ["source", "Paste as Markdown source, no conversion"],
+  ["match", "Paste matching the surrounding text"],
   ["code", "Paste as a code block"],
   ["quote", "Paste as a quote"],
   ["table", "Paste as a table, from a spreadsheet or CSV"],
@@ -2717,6 +2718,13 @@ function docPasteTextVariants(plain, doc, from, to) {
   return out;
 }
 
+//: Two or more rows of the same two or more tab-separated cells, and not
+//: every row led by a tab (that is indented code, not a sheet).
+function docPasteIsTsvGrid(plain) {
+  const rows = String(plain).replace(/\r\n?/g, "\n").replace(/\n+$/, "").split("\n").map((r) => r.split("\t"));
+  return rows.length >= 2 && rows[0].length >= 2 && rows.every((r) => r.length === rows[0].length) && !rows.every((r) => r[0] === "");
+}
+
 function docPasteIsLinewise(plain) {
   return typeof DOC_LINE_CLIP !== "undefined" && DOC_LINE_CLIP.text && plain === DOC_LINE_CLIP.text;
 }
@@ -2761,10 +2769,14 @@ function docSmartPasteEvent(event, view) {
   if (html && DOC_RICH_TAGS.test(html)) return false;
   if (pasteLines(plain).length < 2) return false;
   const { from, to } = sel.main;
-  const variants = docPasteTextVariants(plain, view.state.doc.toString(), from, to);
+  let variants = docPasteTextVariants(plain, view.state.doc.toString(), from, to);
+  //: Tab-separated rows in a rectangle (a spreadsheet copied with no HTML
+  //: table) become the table; the chip's other rows put the text back.
+  const tabbed = docPasteIsTsvGrid(plain) && variants.find((v) => v.id === "table");
+  if (tabbed) variants = [tabbed, ...variants.filter((v) => v !== tabbed)];
   event.preventDefault();
   docPasteWrite(view, from, to, variants[0].text);
-  docPasteOffer(view, from, from + variants[0].text.length, "asis", variants);
+  docPasteOffer(view, from, from + variants[0].text.length, tabbed ? "table" : "asis", variants);
   return true;
 }
 

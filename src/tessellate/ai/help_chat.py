@@ -1854,7 +1854,7 @@ HELP_TOPICS.extend(
                 "a table, checklist, quote or code block. One Ctrl+Z undoes the "
                 "choice; Esc or typing closes the chip. Paste special, in the "
                 "document menu and the palette (F1), pastes on purpose as plain "
-                "text, Markdown source, a code block (the language is guessed), a "
+                "text, Markdown source, matching the surrounding text, a code block (language guessed), a "
                 "quote, a table from a spreadsheet or CSV, a link or a checklist. "
                 "A web address pasted over selected words makes a link. If the "
                 "browser will not let the app read the clipboard, Paste special "
