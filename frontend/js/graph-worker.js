@@ -1539,22 +1539,45 @@ const UNTANGLE_ROUNDS = 4;
 const UNTANGLE_REACH = 1.2;
 const UNTANGLE_RELAX = 0.05;
 const UNTANGLE_MS = 200;
-//: **Two passes, with the relax between** (INBOX 1400): the second starts from
-//: where the first one's relax rested. Browser, at rest: 36 notes 63 to 62
-//: crossings at 1440 and 55 to 53 at 390; 186 notes 722 to 683 and 677 to 617.
-//: Three reach 50 and 48 at 36 notes but leave notes on lines (`untangleFree`
-//: checks notes, not lines: `tests/test_graph_layout.py` counts 7), so two
-//: until a move checks a line's clearance. Each is bounded by `UNTANGLE_MS`;
-//: a pass that moves nothing ends it.
-const UNTANGLE_PASSES = 2;
+const UNTANGLE_MS_PER_NOTE = 2;
+const UNTANGLE_MS_MAX = 600;
+//: A pass costs more as the map grows (186 notes: a pass needs 730 ms and was
+//: cut at 200 with most of its moves unmade), so the budget is
+//: `UNTANGLE_MS_PER_NOTE` a note, never under `UNTANGLE_MS` nor over
+//: `UNTANGLE_MS_MAX`. The cap is the settle time: each 100 ms of a pass is 100 ms
+//: before the map rests (INBOX 1400).
+function untangleBudget() {
+  return Math.min(UNTANGLE_MS_MAX, Math.max(UNTANGLE_MS, nodes.length * UNTANGLE_MS_PER_NOTE));
+}
+//: **Up to three passes, with the relax between** (INBOX 1400): the next starts
+//: from where the last one's relax rested. 36 notes, mean of 6 layouts offline:
+//: 53 and 57 crossings (1440 and 390 wide) with two passes, 50 and 49 with three. Past `UNTANGLE_BIG` notes a pass
+//: costs a second of relax for a tenth of the crossings, so there are two; and a
+//: pass that gained under `UNTANGLE_MIN_SHARE` of the crossings, or moved
+//: nothing, ends them.
+//: The glide after a pass is shorter than a reshuffle's (`SHUFFLE_STEPS`, 18
+//: frames): three passes and the cleanup at 18 each would be 1.1 s of the map's
+//: rest (4.8 s against 3.8 at 36 notes), and a note that has covered 97% of its
+//: way in 12 frames is not seen to jump the rest (4.1 s with these). The cleanup moves a note a few steps, so 8.
+const UNTANGLE_GLIDE_STEPS = 12;
+const UNTANGLE_CLEAN_STEPS = 8;
+const UNTANGLE_PASSES = 3;
+const UNTANGLE_BIG = 100;
+const UNTANGLE_BIG_PASSES = 2;
+const UNTANGLE_MIN_SHARE = 0.03;
+function untanglePasses() {
+  return nodes.length > UNTANGLE_BIG ? UNTANGLE_BIG_PASSES : UNTANGLE_PASSES;
+}
 const UNTANGLE_MAX_EDGES = 4000;
-const untangle = { edges: [], incident: [], done: false, passes: 0, relaxing: false, ea: null, eb: null, xs: null, ys: null, mark: null };
+const untangle = { holding: false, margin: 0, cleaned: false, widest: 8, edges: [], incident: [], done: false, passes: 0, relaxing: false, ea: null, eb: null, xs: null, ys: null, mark: null };
 
 function untangleSetup(edges) {
   untangle.edges = [];
   untangle.incident = nodes.map(() => []);
   untangle.done = false;
   untangle.passes = 0;
+  untangle.cleaned = false;
+  untangle.holding = false;
   untangle.mark = null;
   if (edges.length > UNTANGLE_MAX_EDGES) return;
   for (const edge of edges) {
@@ -1684,6 +1707,237 @@ function untangleFree(node, x, y, gap) {
   return true;
 }
 
+//: **What the passes leave on a line is cleared once, at the end** (INBOX 1400).
+//: `untangleFree` looks at notes only, so three passes left 7 notes on lines
+//: (`tests/test_graph_layout.py`). A check on every move kept them off but cost
+//: the passes a fifth of their gain (36 notes, mean of 6 layouts: 61 crossings
+//: with it, 50 without), so the passes move freely and `untangleCleanup` clears
+//: what they and the relax left. `untangleNear` says whether a note is within
+//: its radius and `untangle.margin` of a line: the curve the canvas draws
+//: (`clearCurve`) or the chord (a hub's lines are drawn straight).
+const UNTANGLE_LINE_BOW = 30;
+function untangleNear(note, a, b) {
+  clearNearest(note, clearCurve(a, b));
+  let d2 = clearNear[0];
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const u = Math.max(0, Math.min(1, ((note.x - a.x) * dx + (note.y - a.y) * dy) / (dx * dx + dy * dy || 1)));
+  d2 = Math.min(d2, (note.x - a.x - u * dx) ** 2 + (note.y - a.y - u * dy) ** 2);
+  const need = (note.r || 8) + untangle.margin;
+  return d2 < need * need;
+}
+
+// Does a line the note at `i` does not join pass over it?
+function untangleOnLine(i) {
+  const node = nodes[i];
+  const ea = untangle.ea;
+  const eb = untangle.eb;
+  for (let k = 0; k < ea.length; k++) {
+    const a = nodes[ea[k]];
+    const b = nodes[eb[k]];
+    if (a !== node && b !== node && untangleNear(node, a, b)) return true;
+  }
+  return false;
+}
+
+// Does a line of the note at `i` pass over a note it does not join?
+function untangleLineOver(i) {
+  const ea = untangle.ea;
+  const eb = untangle.eb;
+  for (const k of untangle.incident[i]) {
+    const a = nodes[ea[k]];
+    const b = nodes[eb[k]];
+    const reach = untangle.widest + untangle.margin + UNTANGLE_LINE_BOW;
+    const loX = Math.min(a.x, b.x) - reach;
+    const hiX = Math.max(a.x, b.x) + reach;
+    const loY = Math.min(a.y, b.y) - reach;
+    const hiY = Math.max(a.y, b.y) + reach;
+    for (const other of nodes) {
+      if (other === a || other === b || other.x < loX || other.x > hiX || other.y < loY || other.y > hiY) continue;
+      if (untangleNear(other, a, b)) return true;
+    }
+  }
+  return false;
+}
+
+//: **What is left on a line is pushed off it, once, at the end** (INBOX 1400).
+//: The notes that stand on a line when the last relax rests stay there: the clearance
+//: force is a push the links pull back, and in a crowded category no ring of
+//: spots round the note is both clear of lines and of notes (tried; 5 of 13
+//: stayed). So the last step is a projection, not a force: up to
+//: `UNTANGLE_CLEAN_ITERS` times, each note nearer a line than its radius and
+//: `UNTANGLE_CLEAN_MARGIN` steps straight off it (the note that is free, else
+//: the line's two ends), and notes pushed into each other part. Nothing
+//: pulls back, and no note travels past `UNTANGLE_CLEAN_FAR`.
+const UNTANGLE_CLEAN_ITERS = 60;
+const UNTANGLE_CLEAN_MARGIN = 3;
+const UNTANGLE_CLEAN_FAR = 40;
+const UNTANGLE_CLEAN_SLACK = 12;
+//: A note between two lines closer than its width cannot be pushed off one
+//: without the other: it steps to the nearest spot, in rings round where it
+//: stands, that is clear of every line and note, at the fewest crossings it
+//: adds (at most `UNTANGLE_CLEAN_COST`; a note on a line reads worse).
+const UNTANGLE_CLEAN_RINGS = 8;
+const UNTANGLE_CLEAN_TURNS = 16;
+const UNTANGLE_CLEAN_COST = 3;
+function untangleStepOff(i) {
+  const node = nodes[i];
+  const mine = untangle.incident[i];
+  const x0 = node.x;
+  const y0 = node.y;
+  const before = mine.length ? crossingsOn(mine) : 0;
+  const step = (node.r || 8) + CLEAR_GAP;
+  let best = null;
+  let cost = UNTANGLE_CLEAN_COST + 1;
+  for (let ring = 1; ring <= UNTANGLE_CLEAN_RINGS; ring++) {
+    for (let t = 0; t < UNTANGLE_CLEAN_TURNS; t++) {
+      const angle = (2 * Math.PI * t) / UNTANGLE_CLEAN_TURNS;
+      node.x = x0 + Math.cos(angle) * step * ring;
+      node.y = y0 + Math.sin(angle) * step * ring;
+      if (!untangleInside(node) || !untangleFree(node, node.x, node.y, COLLIDE_PAD / 2)) continue;
+      if (untangleOnLine(i) || untangleLineOver(i)) continue;
+      const added = mine.length ? crossingsOn(mine) - before : 0;
+      if (added < cost) {
+        cost = added;
+        best = [node.x, node.y];
+      }
+    }
+    if (best && cost <= 0) break;
+  }
+  node.x = best ? best[0] : x0;
+  node.y = best ? best[1] : y0;
+}
+
+function untangleCleanup() {
+  const until = Date.now() + UNTANGLE_MS / 2;
+  const free = (node) => node.fx == null && !node.placed;
+  const startX = nodes.map((n) => n.x);
+  const startY = nodes.map((n) => n.y);
+  const ea = untangle.ea;
+  const eb = untangle.eb;
+  // The (line, note) pairs near enough to matter and the note pairs near
+  // enough to meet, found once: a push moves a note a few steps, not across the map.
+  untangleReach();
+  untangle.margin = UNTANGLE_CLEAN_MARGIN + UNTANGLE_CLEAN_SLACK;
+  const near = [];
+  let stuck = false;
+  for (let k = 0; k < ea.length; k++) {
+    const a = nodes[ea[k]];
+    const b = nodes[eb[k]];
+    const reach = untangle.widest + untangle.margin + UNTANGLE_LINE_BOW;
+    const loX = Math.min(a.x, b.x) - reach;
+    const hiX = Math.max(a.x, b.x) + reach;
+    const loY = Math.min(a.y, b.y) - reach;
+    const hiY = Math.max(a.y, b.y) + reach;
+    for (let m = 0; m < nodes.length; m++) {
+      const node = nodes[m];
+      if (node === a || node === b) continue;
+      if (node.x < loX || node.x > hiX || node.y < loY || node.y > hiY) continue;
+      if (untangleNear(node, a, b)) near.push([a, b, node]);
+    }
+  }
+  untangle.margin = UNTANGLE_CLEAN_MARGIN;
+  for (let i = 0; i < nodes.length && !stuck; i++) stuck = untangleOnLine(i);
+  const meet = [];
+  const spread = (node) => Math.max((node.r || 8) + COLLIDE_PAD, 2 * (node.r || 8));
+  for (let i = 0; stuck && i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      // The collision force's own radii: a smaller gap would be pushed back open by the next tick.
+      const need = spread(nodes[i]) + spread(nodes[j]);
+      if (Math.hypot(nodes[i].x - nodes[j].x, nodes[i].y - nodes[j].y) < need + 2 * UNTANGLE_CLEAN_SLACK) meet.push([nodes[i], nodes[j], need]);
+    }
+  }
+  for (let iter = 0; stuck && iter < UNTANGLE_CLEAN_ITERS && Date.now() < until; iter++) {
+    let moved = false;
+    for (const [a, b, node] of near) {
+      const need = (node.r || 8) + untangle.margin;
+      if (!untangleNear(node, a, b)) continue;
+      // The nearest point of the drawn line (curve or chord, whichever is nearer).
+      clearNearest(node, clearCurve(a, b));
+      let qx = clearNear[1];
+      let qy = clearNear[2];
+      let d = Math.sqrt(clearNear[0]);
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const u = Math.max(0, Math.min(1, ((node.x - a.x) * dx + (node.y - a.y) * dy) / (dx * dx + dy * dy || 1)));
+      const cd = Math.hypot(node.x - a.x - u * dx, node.y - a.y - u * dy);
+      if (cd < d) {
+        d = cd;
+        qx = a.x + u * dx;
+        qy = a.y + u * dy;
+      }
+      let nx = node.x - qx;
+      let ny = node.y - qy;
+      const len = Math.hypot(nx, ny);
+      if (len > 1e-6) {
+        nx /= len;
+        ny /= len;
+      } else {
+        const chord = Math.hypot(dx, dy) || 1;
+        nx = -dy / chord;
+        ny = dx / chord;
+      }
+      const push = need - d + 1;
+      if (free(node)) {
+        node.x += nx * push;
+        node.y += ny * push;
+      } else if (free(a) || free(b)) {
+        const share = (free(a) ? 1 : 0) + (free(b) ? 1 : 0);
+        if (free(a)) {
+          a.x -= (nx * push) / share;
+          a.y -= (ny * push) / share;
+        }
+        if (free(b)) {
+          b.x -= (nx * push) / share;
+          b.y -= (ny * push) / share;
+        }
+      } else continue;
+      moved = true;
+    }
+    // Notes pushed into each other part, except in the last quarter of the
+    // turns: the lines have the last word, nothing ticks after them (`untangle.holding`).
+    if (iter < UNTANGLE_CLEAN_ITERS * 0.75) {
+      for (const [p, q, need] of meet) {
+        const dx = q.x - p.x;
+        const dy = q.y - p.y;
+        const d = Math.hypot(dx, dy);
+        if (d >= need) continue;
+        const nx = d > 1e-6 ? dx / d : 1;
+        const ny = d > 1e-6 ? dy / d : 0;
+        const gap = need - d;
+        const share = (free(p) ? 1 : 0) + (free(q) ? 1 : 0);
+        if (!share) continue;
+        if (free(p)) {
+          p.x -= (nx * gap) / share;
+          p.y -= (ny * gap) / share;
+        }
+        if (free(q)) {
+          q.x += (nx * gap) / share;
+          q.y += (ny * gap) / share;
+        }
+        moved = true;
+      }
+    }
+    if (!moved) break;
+  }
+  // A note that travelled too far is put back: the point is to clear a line, not to move the map.
+  nodes.forEach((node, i) => {
+    if (Math.hypot(node.x - startX[i], node.y - startY[i]) > UNTANGLE_CLEAN_FAR) {
+      node.x = startX[i];
+      node.y = startY[i];
+    }
+  });
+  untangle.margin = 1;
+  untangleReach();
+  const stepUntil = Date.now() + UNTANGLE_MS / 2;
+  for (let i = 0; i < nodes.length && Date.now() < stepUntil; i++) {
+    if (free(nodes[i]) && untangleOnLine(i)) untangleStepOff(i);
+  }
+  untangle.margin = 0;
+  untangle.holding = untangleGlide(startX, startY) > 0;
+  return untangle.holding ? 1 : 0;
+}
+
 // A moved note stays inside its category's reach (the farthest of its notes
 // from their middle when the pass began), so a move never stretches the map.
 function untangleReach() {
@@ -1693,6 +1947,7 @@ function untangleReach() {
     groups.get(node.group).push(node);
   }
   untangle.reach = new Map();
+  untangle.widest = nodes.reduce((w, n) => Math.max(w, n.r || 8), 0);
   for (const [group, list] of groups) {
     const cx = list.reduce((a, n) => a + n.x, 0) / list.length;
     const cy = list.reduce((a, n) => a + n.y, 0) / list.length;
@@ -1711,11 +1966,13 @@ function untangleLayout() {
   // here would undo what those shapes are for.
   if (untangle.done || !untangle.edges.length || ring.shape !== "organic") return 0;
   untangle.done = true;
-  const until = Date.now() + UNTANGLE_MS;
+  const until = Date.now() + untangleBudget();
   const still = (node) => node.fx != null || node.placed;
   const startX = nodes.map((n) => n.x);
   const startY = nodes.map((n) => n.y);
   untangleReach();
+  untangle.total = crossingsOn(untangle.edges.map((_, i) => i));
+  untangle.gain = 0;
   for (let round = 0; round < UNTANGLE_ROUNDS && Date.now() < until; round++) {
     let gained = untangleGroups(still);
     for (let i = 0; i < nodes.length && Date.now() < until; i++) {
@@ -1794,9 +2051,14 @@ function untangleLayout() {
       node.y = bestAt ? bestAt[1] : y0;
       if (bestAt) gained += before - best;
     }
+    untangle.gain += gained;
     if (!gained) break;
   }
-  // The move is shown, not jumped: back to the start, then a glide (`shuffleStep`).
+  return untangleGlide(startX, startY);
+}
+
+// The move is shown, not jumped: back to the start, then a glide (`shuffleStep`).
+function untangleGlide(startX, startY) {
   let moved = 0;
   nodes.forEach((node, i) => {
     if (node.x === startX[i] && node.y === startY[i]) return;
@@ -1876,6 +2138,15 @@ function loop() {
     timer = setTimeout(loop, 16 * (perf ? 2 : 1));
     return;
   }
+  //: The cleanup's glide is the last thing: a tick after it would let the links
+  //: draw the notes it pushed off a line back onto it, so the map ends where
+  //: the glide does.
+  if (untangle.holding) {
+    untangle.holding = false;
+    post(true);
+    self.postMessage({ type: "end", alpha: simulation.alpha(), epoch });
+    return;
+  }
   const started = Date.now();
   //: **A cheap tick is not one a frame** (INBOX 1400: the map took 4.5 to
   //: 5.8 s to come to rest, `gm.js`). Once nothing is held, ticks that cost
@@ -1900,18 +2171,29 @@ function loop() {
   const settled = !dragging && (simulation.alpha() < simulation.alphaMin() || overBudget);
   //: The second pass waits for the first one's relax to rest.
   if (settled && untangle.relaxing) untangle.relaxing = false;
-  if (settled && untangle.done && untangle.passes > 0 && untangle.passes < UNTANGLE_PASSES && !dragging) untangle.done = false;
+  if (settled && untangle.done && untangle.passes > 0 && untangle.passes < untanglePasses() && !dragging) untangle.done = false;
   if (settled && !untangle.done && untangleLayout()) {
     untangle.passes += 1;
+    if (untangle.gain < Math.max(2, untangle.total * UNTANGLE_MIN_SHARE)) untangle.passes = UNTANGLE_PASSES;
     untangle.relaxing = true;
     // At rest, untangled: the notes glide to their new places, then a low
     // heat lets the collision and the line clearance settle what the moves
     // brought close (a swap can put a hub where a small note stood).
-    shuffle.left = SHUFFLE_STEPS;
+    shuffle.left = UNTANGLE_GLIDE_STEPS;
     simulation.alpha(UNTANGLE_RELAX);
     post(false);
     timer = setTimeout(loop, 16);
     return;
+  }
+  if (settled && untangle.passes > 0 && !untangle.cleaned && !dragging && nodes.length <= UNTANGLE_BIG) {
+    untangle.cleaned = true;
+    untangle.holding = false;
+    if (untangleCleanup()) {
+      shuffle.left = UNTANGLE_CLEAN_STEPS;
+      post(false);
+      timer = setTimeout(loop, 16);
+      return;
+    }
   }
   if (settled) {
     post(true);
@@ -2158,6 +2440,8 @@ self.onmessage = (event) => {
     case "params":
       untangle.done = false;
       untangle.passes = 0;
+      untangle.cleaned = false;
+      untangle.holding = false;
       applyForces(message.params);
       if (simulation) simulation.alpha(Math.max(simulation.alpha(), 0.3));
       run();
@@ -2172,6 +2456,8 @@ self.onmessage = (event) => {
         // A note the reader moves is not followed by a reshuffle of others.
         untangle.done = true;
         untangle.passes = UNTANGLE_PASSES;
+        untangle.cleaned = true;
+        untangle.holding = false;
         untangle.relaxing = false;
         dragOrigin = { x: node.x, y: node.y };
         markFollowers(node, true);
@@ -2264,6 +2550,8 @@ self.onmessage = (event) => {
       if (!simulation) break;
       untangle.done = false;
       untangle.passes = 0;
+      untangle.cleaned = false;
+      untangle.holding = false;
       reshuffle(message.seed, message.animate !== false);
       run();
       break;
