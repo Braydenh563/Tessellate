@@ -41,7 +41,7 @@ Sweeps: `scratchpad/ui-sweeps/paint1026-audit.js` (board, 1440), `paint1026-sket
 ## INBOX 1354 (the owner's second message, ranked first)
 
 1. Interaction feel: handle hit areas, drag threshold, rotate snapping, double-click to edit. Open.
-2. Popup and context bars stretching to the full width: cap, fold into "...". Open.
+2. Popup and context bars stretching to the full width: built (below).
 3. Group and Ungroup one state-aware control: measured already one-or-other on the context bar, the right-click menu and Arrange (`paint1026-groups.js`). Kept, now chain-aware.
 4. Nested groups. Built (below).
 5. Control consistency across the three surfaces. Open (map strip 28/32 heights, gap 8).
@@ -50,7 +50,8 @@ Sweeps: `scratchpad/ui-sweeps/paint1026-audit.js` (board, 1440), `paint1026-sket
 
 | What | Commit | Sweep, numbers |
 | --- | --- | --- |
-| Nested groups: chain `group_id`, click selects outermost, double-click drills, Ungroup one level, one Undo step each, paste keeps nesting, layers by outermost group | (this step) | `paint1026-groups.js` 19/19 at 1280 (before: flat, ungroup of outer cleared all 7, no Undo entry); group walk 0.074 ms per click on 507 items; whole click 7.7 ms, the highlight's (unchanged) |
+| Context bar capped at 40rem, fill and text fold last, fold planned from one measurement | (this step) | `paint1026-barwidth.js` 27/27 at 1280 and 960, 26/26 at 390 (before 25/27, 25/27, 24/26: line 700, arrow 851 of 1280; rect 2 rows, text 4 rows at 390). Bar open, 20-call mean: 390 line 153 to 51 ms, arrow 114 to 57, rect 77 to 59; 960 arrow 2.0 (unfolded, 776 wide) to 14.5; 1280 arrow 2.0 to 10.6 (it folds now). More menu 304 wide everywhere |
+| Nested groups: chain `group_id`, click selects outermost, double-click drills, Ungroup one level, one Undo step each, paste keeps nesting, layers by outermost group | 883fc62 | `paint1026-groups.js` 19/19 at 1280 (before: flat, ungroup of outer cleared all 7, no Undo entry); group walk 0.074 ms per click on 507 items; whole click 7.7 ms, the highlight's (unchanged) |
 
 ## Remaining
 

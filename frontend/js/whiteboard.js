@@ -6526,7 +6526,10 @@ function wbRenderRelease() {
 //: the "..." menu's own section, the same controls with the same handlers.
 //: Every placement puts them back first, so a wider window or a smaller
 //: selection gets them on the bar again.
-const WB_CTX_FOLD = { order: ["order", "stroke", "arrange", "caps", "route"], home: new Map() };
+//: The groups a wrapped bar folds into More, first to last. Fill and text go
+//: last: they are what a shape or a text box is selected for, but a phone's
+//: text bar was four rows tall without them (INBOX 1354, 198px at 390).
+const WB_CTX_FOLD = { order: ["order", "stroke", "arrange", "caps", "route", "fill", "text"], home: new Map() };
 
 function wbFoldContextBar(bar) {
   const menu = document.getElementById("wb-context-menu");
@@ -6552,15 +6555,45 @@ function wbFoldContextBar(bar) {
     shelf.setAttribute("aria-label", "More controls for this selection");
     menu.insertBefore(shelf, menu.firstChild);
   }
-  const visible = (name) => [...bar.querySelectorAll(`:scope > .wb-context-group[data-wb-ctx="${name}"]:not(.hidden)`)].reverse();
-  for (const name of WB_CTX_FOLD.order) {
-    for (const g of visible(name)) {
-      if (bar.offsetHeight <= 60) return;
-      WB_CTX_FOLD.home.set(g, g.nextElementSibling);
-      shelf.insertBefore(g, shelf.firstChild);
-      shelf.classList.remove("hidden");
-    }
+  const candidates = WB_CTX_FOLD.order.flatMap((name) =>
+    [...bar.querySelectorAll(`:scope > .wb-context-group[data-wb-ctx="${name}"]:not(.hidden)`)].reverse());
+  const fold = (g) => {
+    WB_CTX_FOLD.home.set(g, g.nextElementSibling);
+    shelf.insertBefore(g, shelf.firstChild);
+    shelf.classList.remove("hidden");
+  };
+  //: **Planned from one measurement, then checked once** (the owner,
+  //: 10-26: "make everything lightweight"). Reading the bar's height after
+  //: every move was one layout per folded group: 31 ms of a 63 ms bar open at
+  //: 390. The plan folds what the widths say must go; the loop after it only
+  //: runs when a group that wrapped inside itself made the plan short.
+  const planned = wbFoldPlan(bar, candidates);
+  planned.forEach(fold);
+  for (const g of candidates.slice(planned.length)) {
+    if (bar.offsetHeight <= 60) return;
+    fold(g);
   }
+}
+
+//: The leading run of `candidates` that has to leave for the rest of the bar
+//: to fit one row, from one read of every width (no layout between reads).
+function wbFoldPlan(bar, candidates) {
+  const cs = getComputedStyle(bar);
+  const room = bar.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const gap = parseFloat(cs.columnGap) || 0;
+  const span = (el) => {
+    const st = getComputedStyle(el);
+    return el.getBoundingClientRect().width + parseFloat(st.marginLeft) + parseFloat(st.marginRight) + gap;
+  };
+  const shown = [...bar.children].filter((el) => !el.classList.contains("hidden") && el.getClientRects().length);
+  let need = shown.reduce((sum, el) => sum + span(el), -gap);
+  const out = [];
+  for (const g of candidates) {
+    if (need <= room) break;
+    need -= span(g);
+    out.push(g);
+  }
+  return out;
 }
 
 //: What a pan keeps of the selection bar's measurements: a pan moves the

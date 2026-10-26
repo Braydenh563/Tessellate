@@ -24,7 +24,8 @@ def test_context_bar_folds_into_more_before_it_wraps():
     fold = _function(WB, "wbFoldContextBar")
     # Restored on every placement, so a wider window gets the groups back.
     assert fold.index("bar.insertBefore(g") < fold.index("bar.offsetHeight <= 60")
-    assert 'order: ["order", "stroke", "arrange", "caps", "route"]' in WB
+    # Fill and text fold last (INBOX 1354: a phone's text bar was four rows).
+    assert 'order: ["order", "stroke", "arrange", "caps", "route", "fill", "text"]' in WB
     assert ".wb-context-overflow > .wb-context-group:not(.hidden)" in LAZY_CSS
 
 
@@ -210,3 +211,11 @@ def test_dim_all_but_the_selected_branch():
 
     body = next(t["body"] for t in help_chat.HELP_TOPICS if t["id"] == "mind-map-features")
     assert "Dim all but the selected branch" in body
+
+
+def test_context_bar_is_capped_and_folds_from_one_measurement():
+    # INBOX 1354: an arrow's bar measured 851 of 1280. The bar is at most
+    # 40rem; the fold is planned from one read of the widths, then checked.
+    assert ".wb-context {\n  max-width: min(40rem, calc(100% - var(--space-6)));" in LAZY_CSS
+    fold = _function(WB, "wbFoldContextBar")
+    assert "wbFoldPlan(bar, candidates)" in fold
