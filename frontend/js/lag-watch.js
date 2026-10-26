@@ -108,8 +108,9 @@ function lagInput(e) {
 
 function lagRequest(e) {
   const fetched = e.initiatorType === "fetch" || e.initiatorType === "xmlhttprequest";
-  //: The long-lived streams (chat, logs, events) are slow by design.
-  if (!fetched || e.duration < LAG_REQUEST_MS || /\/stream\b|\/events\b/.test(e.name)) return;
+  //: The long-lived streams (chat, logs, events) and the long-poll the
+  //: server holds open (`/auth/lan-watch`, 25 s a turn) are slow by design.
+  if (!fetched || e.duration < LAG_REQUEST_MS || /\/stream\b|\/events\b|\/lan-watch\b/.test(e.name)) return;
   lagNote("request", e.duration, new URL(e.name, location.href).pathname);
 }
 

@@ -56,3 +56,8 @@ def test_the_watcher_is_lazy_and_preloaded():
     assert 'lazyScript("/js/lag-watch.js")' in (ROOT / "frontend/js/drag-edge.js").read_text()
     index = (ROOT / "frontend/index.html").read_text()
     assert "lag-watch.js" not in index
+
+
+def test_the_lan_watch_long_poll_is_not_a_slow_request():
+    """Held open 25 s by design; the owner's log had one "lag" every 25 s."""
+    assert "/lan-watch" in (ROOT / "frontend/js/lag-watch.js").read_text()

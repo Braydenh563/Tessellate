@@ -23,10 +23,11 @@ import re
 import secrets
 import threading
 import time
+import urllib.parse
 from pathlib import Path
 
 import bcrypt
-from fastapi import APIRouter, Cookie, Depends, Header, HTTPException, Request, Response
+from fastapi import APIRouter, Cookie, Depends, Header, HTTPException, Query, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import select
@@ -104,6 +105,18 @@ MEDIA_COOKIE_PATHS = ("/media", "/files")
 # ticket -> the session token it was issued for
 _media_tickets: dict[str, str] = {}
 register_cache_reset(_media_tickets.clear)
+
+# The desktop window's "Open in a new tab" hands the link to the system
+# browser, a different cookie jar with no media cookie (the owner,
+# 2026-10-27: the tab said "The app is locked"). A one-file link carries a
+# `once` ticket instead: it opens that one path only, for two minutes, while
+# its session lives; never the session token, never the API. Reusable inside
+# its life because a PDF viewer asks for ranges more than once.
+MEDIA_LINK_SECONDS = 120
+# ticket -> (decoded path, expiry, session token)
+_media_links: dict[str, tuple[str, float, str]] = {}
+register_cache_reset(_media_links.clear)
+_MEDIA_LINK_PATH = re.compile(r"/(?:media|files)/[A-Za-z0-9._~%/-]+")
 # Module state, not app state, so `deps.reset_app_state()` (the thing every
 # test's `app_state` fixture calls) threw the database away and kept the
 # tokens. Any test that ran `/auth/setup` before `test_account.py` in the same
@@ -609,8 +622,10 @@ def require_unlock_media(
     config: ConfigManager = Depends(get_config),
     x_auth_token: str | None = Header(default=None),
     memorymap_media: str | None = Cookie(default=None),
+    once: str | None = Query(default=None),
 ) -> None:
-    """Same gate as `require_unlock`, plus the media cookie.
+    """Same gate as `require_unlock`, plus the media cookie (or a one-file
+    link, `MEDIA_LINK_SECONDS`).
 
     For the handful of routes a plain `<img src>` points at directly
     (`/media/{filename}`, `/files/{attachment_id}` and their page and preview
@@ -625,6 +640,10 @@ def require_unlock_media(
         return
     idle_ttl = config.get_preference("session_idle_ttl_minutes", _SESSION_IDLE_TTL // 60) * 60
     token = x_auth_token or _media_tickets.get(memorymap_media or "")
+    if not token and once:
+        path, expires, link_token = _media_links.get(once, ("", 0.0, ""))
+        if path == request.scope.get("path") and time.time() < expires:
+            token = link_token
     if not _token_valid(token, idle_ttl):
         raise HTTPException(status_code=401, detail="The app is locked. Unlock it first.")
 
@@ -934,6 +953,24 @@ def media_session(request: Request, response: Response, x_auth_token: str | None
     """
     _grant_media(request, response, x_auth_token or "")
     return {"ok": True}
+
+
+class MediaLinkIn(BaseModel):
+    path: str = Field(max_length=512)
+
+
+@router.post("/media-link", dependencies=[Depends(require_unlock)])
+def media_link(body: MediaLinkIn, x_auth_token: str | None = Header(default=None)) -> dict:
+    """A two-minute link to one `/media` or `/files` path (see MEDIA_LINK_SECONDS)."""
+    path = urllib.parse.unquote(body.path)
+    if not _MEDIA_LINK_PATH.fullmatch(body.path) or "/.." in path or "//" in path:
+        raise HTTPException(status_code=422, detail="Only a picture or file of this notebook can open in a tab.")
+    now = time.time()
+    for stale in [t for t, (_, expires, _) in _media_links.items() if expires <= now]:
+        del _media_links[stale]
+    ticket = secrets.token_urlsafe(32)
+    _media_links[ticket] = (path, now + MEDIA_LINK_SECONDS, x_auth_token or "")
+    return {"url": f"{body.path}?once={ticket}"}
 
 
 @router.post("/auto-session")

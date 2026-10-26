@@ -1062,8 +1062,19 @@ function openLightbox(items, startIndex = 0, opts = {}) {
   //: "Open in": the browser's own viewer, in a tab of its own, for a file
   //: with a url (a native document has none: its url is a download).
   const openTabBtn = actionBtn("ph:arrow-square-out", "Open in a new tab", async () => {
-    const href = await Promise.resolve(items[index].getUrl()).catch(() => "");
-    if (href) window.open(href, "_blank", "noopener");
+    const item = items[index];
+    let href = item.openUrl || (await Promise.resolve(item.getUrl()).catch(() => ""));
+    if (!href) return;
+    //: The desktop window opens a tab in the system browser, which has no
+    //: media cookie ("The app is locked", the owner, 2026-10-27): a two-minute
+    //: link to this one file goes instead (`/auth/media-link`).
+    const path = new URL(href, location.href);
+    if (path.origin === location.origin && /^\/(media|files)\//.test(path.pathname) && (await desktopShell())) {
+      const link = await apiJson("/auth/media-link", { method: "POST", body: JSON.stringify({ path: path.pathname }) }).catch(() => null);
+      if (!link) return toast("Couldn't open that in a tab.", true);
+      href = link.url + path.search.replace(/^\?/, "&");
+    }
+    window.open(href, "_blank", "noopener");
   }, topActions);
   openTabBtn.classList.add("lightbox-open-tab");
   //: The details under the picture (facts, caption, reading) can be put

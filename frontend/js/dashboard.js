@@ -3745,7 +3745,7 @@ async function renderRandomShuffle(body) {
           .catch(() => wrap.remove());
         img.addEventListener("click", () => {
           openLightbox(
-            images.map((a) => ({ filename: a.filename, getUrl: () => attachmentObjectUrl(a) })),
+            images.map((a) => ({ filename: a.filename, getUrl: () => attachmentObjectUrl(a), openUrl: `/files/${a.id}` })),
             images.indexOf(attachment)
           );
         });

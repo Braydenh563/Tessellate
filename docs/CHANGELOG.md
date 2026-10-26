@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Picture viewer: Open in a new tab works from the desktop window. The system browser has no session there, so it gets a two-minute link to that one file. The lag log no longer counts the other-devices long-poll as a slow request every 25 seconds.
 - Chat: the weather goes to the model or the web when either is on (it came back as the app's own "not something this app knows"), and a local web search carries the city of your timezone. The no-model badge's help no longer nudges the bubble 2px taller on hover.
 - The composer's cold import is 15% lighter (0.117 to 0.099 s here): the two largest patterns compile on first use, so 3.13 CI is back under its 0.2 s budget.
 - Timeline calendar: a month taller than its pane (at 1280 by 800, 729px in 579) fades the pane's bottom edge while rows wait below the fold, and the shortcuts sheet, Settings keys list and the Guide now say that a formatting toolbar is one Tab stop with Left and Right between its buttons.

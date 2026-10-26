@@ -198,3 +198,67 @@ def test_the_media_cookie_is_secure_on_loopback_and_https_only():
     assert routes_auth._cookie_secure(req("https://notebook.lan/"))
     assert not routes_auth._cookie_secure(req("http://192.168.1.20:8000/"))
     assert not routes_auth._cookie_secure(req("http://testserver/"))
+
+
+# --- the desktop window's "Open in a new tab" (the owner, 2026-10-27) ---
+#
+# The window hands a link to the system browser, which has its own cookie
+# jar and so no media cookie: the tab showed "The app is locked". A one-file
+# link that lives two minutes opens it there without the session token ever
+# being in a URL.
+
+
+def test_a_one_file_link_opens_that_file_in_a_browser_without_the_cookie(client, picture):
+    token = _setup(client)
+    response = client.post("/auth/media-link", json={"path": picture}, headers={"X-Auth-Token": token})
+    assert response.status_code == 200
+    url = response.json()["url"]
+    assert url.startswith(picture + "?once=") and token not in url
+    client.cookies.clear()
+    first, again = client.get(url), client.get(url)  # a viewer may ask twice (PDF ranges)
+    assert first.status_code == 200 and again.status_code == 200
+
+
+def test_the_link_opens_no_other_file_and_no_api(client, picture):
+    token = _setup(client)
+    url = client.post("/auth/media-link", json={"path": picture}, headers={"X-Auth-Token": token}).json()["url"]
+    once = url.split("once=")[1]
+    client.cookies.clear()
+    other = client.get("/media/other.png", params={"once": once})
+    api = client.get("/entries", params={"once": once})
+    assert other.status_code == 401 and api.status_code == 401
+
+
+def test_the_link_expires_and_dies_with_its_session(client, picture, monkeypatch):
+    token = _setup(client)
+    url = client.post("/auth/media-link", json={"path": picture}, headers={"X-Auth-Token": token}).json()["url"]
+    clock = [routes_auth.time.time() + routes_auth.MEDIA_LINK_SECONDS + 1]
+    monkeypatch.setattr(routes_auth.time, "time", lambda: clock[0])
+    client.cookies.clear()
+    late = client.get(url)
+    assert late.status_code == 401
+    monkeypatch.undo()
+    url = client.post("/auth/media-link", json={"path": picture}, headers={"X-Auth-Token": token}).json()["url"]
+    client.post("/auth/lock", headers={"X-Auth-Token": token})
+    client.cookies.clear()
+    locked = client.get(url)
+    assert locked.status_code == 401
+
+
+@pytest.mark.parametrize("path", ["/entries", "/media", "/media/../auth/x", "https://evil.example/media/a.png", "/media/a.png?x=1"])
+def test_a_link_is_only_for_a_media_or_file_path(client, path):
+    token = _setup(client)
+    response = client.post("/auth/media-link", json={"path": path}, headers={"X-Auth-Token": token})
+    assert response.status_code == 422
+
+
+def test_the_link_route_needs_the_header(client):
+    _setup(client)
+    response = client.post("/auth/media-link", json={"path": "/media/pic.png"})
+    assert response.status_code == 401
+
+
+def test_the_viewer_asks_for_a_link_in_the_desktop_window():
+    view = (FRONTEND / "js" / "lightbox-view.js").read_text(encoding="utf-8")
+    body = view[view.index('"Open in a new tab"'):][:1200]
+    assert "/auth/media-link" in body and "desktopShell()" in body
