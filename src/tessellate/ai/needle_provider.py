@@ -352,6 +352,14 @@ def _said_by_one(name: str, words: str, args: dict | None = None) -> str:
     return needle_control.confirm(name, result, args or {}, mood) or tool_say.say(name, result, args or {}, datetime.now().date())["text"]
 
 
+def _usable_schemas(tools: list[dict] | None) -> list[dict]:
+    """The tool schemas needle may be shown: the ones that work without a model."""
+    return [
+        t["function"] for t in tools or []
+        if isinstance(t, dict) and t.get("function") and t["function"].get("name") not in NOT_WITHOUT_A_MODEL
+    ]
+
+
 class NeedleProvider(Provider):
     """A `Provider` that can only call tools. See the module docstring."""
 
@@ -405,14 +413,10 @@ class NeedleProvider(Provider):
             # reply is what they said, in order, since the last request.
             return self._reply(_said_by_tools(messages) or "Done.", [], started)
 
-        text = next(
+        text = request_of(next(
             (_text(m.get("content")) for m in reversed(messages) if m.get("role") == "user"), ""
-        )
-        text = request_of(text)
-        schemas = [
-            t["function"] for t in tools or []
-            if isinstance(t, dict) and t.get("function") and t["function"].get("name") not in NOT_WITHOUT_A_MODEL
-        ]
+        ))
+        schemas = _usable_schemas(tools)
         mood = compose.mood_of(text, voice=voice_now(), seed=text, intent="act")
         decided = needle_control.decide(text, {s.get("name") for s in schemas})
         #: The composer decides; needle is shown only the decided tool and

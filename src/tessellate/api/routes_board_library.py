@@ -1134,6 +1134,64 @@ class PasteBody(BaseModel):
     items: list[PasteItem] = Field(min_length=1, max_length=MAX_PASTE_ITEMS)
 
 
+def _point_link_ends(parsed: dict, item: PasteItem, keys: dict[str, tuple[str, int]]) -> None:
+    """Point a copied link's ends at the rows its pasted ends became."""
+    for end, key in (("source", item.src), ("target", item.dst)):
+        if key and key in keys:
+            parsed[f"{end}Kind"], parsed[f"{end}Id"] = keys[key]
+
+
+def _paste_object(db: Session, target: int | None, item: PasteItem, keys: dict[str, tuple[str, int]]) -> WhiteboardObject:
+    b = item.object
+    _require_object_data(b)
+    row = WhiteboardObject(
+        kind=b.kind, board_id=target, x=b.x, y=b.y, z=b.z, width=b.width, height=b.height,
+        rotation=b.rotation, group_id=b.group_id,
+        data=json.dumps(_on_current_layer(db, target, b.data.model_dump(mode="json", exclude_none=True)), separators=(",", ":")),
+    )
+    db.add(row)
+    db.flush()
+    keys[item.key] = ("object", row.id)
+    return row
+
+
+def _paste_sketch(db: Session, target: int | None, item: PasteItem, keys: dict[str, tuple[str, int]]) -> WhiteboardSketch:
+    b = item.sketch
+    try:
+        parsed = json.loads(b.data)
+    except ValueError:
+        parsed = None
+    data = b.data
+    if isinstance(parsed, dict):
+        _point_link_ends(parsed, item, keys)
+        data = json.dumps(_on_current_layer(db, target, parsed))
+    row = WhiteboardSketch(board_id=target, data=data, x=b.x, y=b.y, z=b.z, group_id=b.group_id)
+    db.add(row)
+    db.flush()
+    keys[item.key] = ("sketch", row.id)
+    return row
+
+
+def _process_pasted_images(db: Session, made_objects: list) -> None:
+    from tessellate.core import media_process
+
+    for o in made_objects:
+        if o.kind == "image":
+            media_process.process_referenced_uploads(db, deps.get_config().data_dir / "media", o.data)
+
+
+def _record_paste(db: Session, board_id: int, made_sketches: list, made_objects: list) -> None:
+    """One event for the paste, then one per row made, so each undoes alone."""
+    events.record(db, "placed", "board", board_id, "pasted items",
+                  payload={"after": {"sketches": [s.id for s in made_sketches], "objects": [o.id for o in made_objects]}})
+    for s in made_sketches:
+        events.record(db, "created", "whiteboard_sketch", s.id, f"drawing on board {board_id} (paste)",
+                      payload={"after": _sketch_state(s)})
+    for o in made_objects:
+        events.record(db, "created", "whiteboard_object", o.id, f"{o.kind} on board {board_id} (paste)",
+                      payload={"after": _object_state(o)})
+
+
 @router.post("/whiteboard/boards/{board_id}/paste", status_code=201)
 def paste_board_items(board_id: int, body: PasteBody, db: Session = Depends(get_session)) -> dict:
     """**A paste is one request** (WHITEBOARD_PLAN 1355): the copied objects
@@ -1146,64 +1204,19 @@ def paste_board_items(board_id: int, body: PasteBody, db: Session = Depends(get_
     keys: dict[str, tuple[str, int]] = {}
     made_objects, made_sketches = [], []
 
-    def add_object(item: PasteItem) -> None:
-        b = item.object
-        _require_object_data(b)
-        row = WhiteboardObject(
-            kind=b.kind, board_id=target, x=b.x, y=b.y, z=b.z, width=b.width, height=b.height,
-            rotation=b.rotation, group_id=b.group_id,
-            data=json.dumps(_on_current_layer(db, target, b.data.model_dump(mode="json", exclude_none=True)), separators=(",", ":")),
-        )
-        db.add(row)
-        db.flush()
-        keys[item.key] = ("object", row.id)
-        made_objects.append(row)
-
-    def add_sketch(item: PasteItem) -> None:
-        b = item.sketch
-        try:
-            parsed = json.loads(b.data)
-        except ValueError:
-            parsed = None
-        data = b.data
-        if isinstance(parsed, dict):
-            if item.src or item.dst:
-                for end, key in (("source", item.src), ("target", item.dst)):
-                    if key and key in keys:
-                        parsed[f"{end}Kind"], parsed[f"{end}Id"] = keys[key]
-            data = json.dumps(_on_current_layer(db, target, parsed))
-        row = WhiteboardSketch(board_id=target, data=data, x=b.x, y=b.y, z=b.z, group_id=b.group_id)
-        db.add(row)
-        db.flush()
-        keys[item.key] = ("sketch", row.id)
-        made_sketches.append(row)
-
     # Links last: their ends have to exist before they can point at them.
     for item in body.items:
         if item.object and not (item.src or item.dst):
-            add_object(item)
-    for item in body.items:
-        if item.sketch and not (item.src or item.dst):
-            add_sketch(item)
-    for item in body.items:
-        if item.sketch and (item.src or item.dst):
-            add_sketch(item)
-    events.record(db, "placed", "board", board_id, "pasted items",
-                  payload={"after": {"sketches": [s.id for s in made_sketches], "objects": [o.id for o in made_objects]}})
-    for s in made_sketches:
-        events.record(db, "created", "whiteboard_sketch", s.id, f"drawing on board {board_id} (paste)",
-                      payload={"after": _sketch_state(s)})
-    for o in made_objects:
-        events.record(db, "created", "whiteboard_object", o.id, f"{o.kind} on board {board_id} (paste)",
-                      payload={"after": _object_state(o)})
+            made_objects.append(_paste_object(db, target, item, keys))
+    for linked in (False, True):
+        for item in body.items:
+            if item.sketch and bool(item.src or item.dst) == linked:
+                made_sketches.append(_paste_sketch(db, target, item, keys))
+    _record_paste(db, board_id, made_sketches, made_objects)
     db.commit()
     for row in made_sketches + made_objects:
         db.refresh(row)
-    for o in made_objects:
-        if o.kind == "image":
-            from tessellate.core import media_process
-
-            media_process.process_referenced_uploads(db, deps.get_config().data_dir / "media", o.data)
+    _process_pasted_images(db, made_objects)
     return {
         "keys": {k: {"kind": v[0], "id": v[1]} for k, v in keys.items()},
         "sketches": [{"id": s.id, "board_id": s.board_id, "data": s.data, "x": s.x, "y": s.y, "z": s.z, "group_id": s.group_id} for s in made_sketches],
