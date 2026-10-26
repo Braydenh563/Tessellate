@@ -121,11 +121,11 @@ def test_the_rich_and_table_pastes_offer_the_chip():
 def test_paste_special_is_a_menu_row_and_palette_commands_all_prose_free_of_code_files():
     assert 'id="doc-paste-special"' in INDEX
     assert '$("doc-paste-special")?.addEventListener("click"' in DOCUMENTS
-    for mode in ("plain", "code", "quote", "table", "link", "checklist"):
+    for mode in ("plain", "source", "match", "code", "quote", "table", "link", "checklist"):
         assert f'docPasteSpecial("{mode}")' in DOCUMENTS
     assert "docPasteSpecialMenu()" in DOCUMENTS
     spec = re.findall(r'\["(\w+)", "Paste', PROSE)
-    assert spec == ["plain", "source", "code", "quote", "table", "link", "checklist"]
+    assert spec == ["plain", "source", "match", "code", "quote", "table", "link", "checklist"]
 
 
 def test_paste_special_works_without_clipboard_permission_by_arming_the_next_paste():
@@ -140,3 +140,11 @@ def test_the_shared_outline_reader_nests_by_indent_and_never_skips_a_level():
     script = core + f"\nconsole.log(JSON.stringify(pasteOutline({json.dumps(text)})));"
     out = json.loads(subprocess.run(["node", "-e", script], capture_output=True, text=True, timeout=60, check=True).stdout)
     assert [(r["depth"], r["text"]) for r in out] == [(0, "root"), (1, "a"), (2, "a1"), (1, "b"), (2, "deep")]
+
+
+def test_tab_separated_rows_with_no_html_table_become_a_table_with_a_chip_to_undo():
+    start = PROSE.index("function docSmartPasteEvent(")
+    body = PROSE[start : PROSE.index("\n}\n", start)]
+    assert "docPasteIsTsvGrid(plain)" in body
+    assert 'tabbed ? "table" : "asis"' in body
+    assert "docPasteIsTsvGrid" in PROSE and "r[0] === \"\"" in PROSE
