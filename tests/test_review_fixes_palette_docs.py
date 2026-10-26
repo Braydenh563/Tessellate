@@ -67,3 +67,10 @@ def test_web_row_always_toggles_and_button_title_says_what_a_click_does():
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert "a click opens the panel" in html[html.index('id="web-search-toggle"') :][:400]
 
+
+def test_turning_graph_autofit_on_clears_the_moved_camera_and_refits():
+    canvas = _js("graph-canvas.js")
+    fn = canvas[canvas.index("function gcAutoFitTurnedOn") :]
+    fn = fn[: fn.index("\n}\n")]
+    assert "s.userZoomed = false" in fn and "gcRefitForPanels(s)" in fn
+    assert "gcAutoFitTurnedOn()" in _js("graph.js")

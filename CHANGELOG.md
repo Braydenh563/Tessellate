@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fix: turning Graph auto-fit back on after a resize with it off now frames the map again, instead of leaving the camera treated as moved for good.
 - Fix: the Web row in the palette and the slash menu always toggles web search; the Web button opens the panel first when web is on and the panel is shut, and its tooltip and the Guide say so.
 - Fix: leaving a document no longer deletes an older empty "Untitled document N" you made on purpose; only a blank document created in this session and never written in is dropped.
 - Fix: a name typed in a note's maths that matches a built-in word (\toString, \begin{constructor}) broke the equation instead of drawing it; an equation that cannot be drawn now shows its source in the editor and the equation dialog.

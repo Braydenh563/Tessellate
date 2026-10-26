@@ -1858,6 +1858,14 @@ function gcRefitForPanels(s) {
   else if (s.fittedOnce) fitGraphToView(s.svg, null, s.zoom, s.nodes, s.dims.w, s.dims.h);
 }
 
+//: Auto-fit turned back on: with it off a resize marks the camera as moved for good
+//: (`userZoomed`), so the switch clears that and frames the map again.
+function gcAutoFitTurnedOn(s = gcTab) {
+  if (!s) return;
+  s.userZoomed = false;
+  gcRefitForPanels(s);
+}
+
 //: **A computed layout moves in from the map that was there** (the owner,
 //: round 2: "I just change views or reset it and it just suddenly
 //: changes"). A tree, radial or arc has no simulation to carry the notes

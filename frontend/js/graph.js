@@ -5920,7 +5920,10 @@ for (const id of ["graph-tags", "graph-attachments", "graph-unresolved"]) $(id)?
 function graphAutoFitOn() {
   return prefs.get("graph-autofit", null) !== "0";
 }
-$("graph-autofit")?.addEventListener("change", (event) => prefs.set("graph-autofit", event.target.checked ? "1" : "0"));
+$("graph-autofit")?.addEventListener("change", (event) => {
+  prefs.set("graph-autofit", event.target.checked ? "1" : "0");
+  if (event.target.checked) gcAutoFitTurnedOn();
+});
 $("graph-arrows")?.addEventListener("change", (event) => {
   prefs.set("graph-arrows", event.target.checked ? "1" : "0");
   gcRequestDraw();
