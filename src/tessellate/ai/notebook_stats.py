@@ -606,10 +606,16 @@ def _busiest(session: Session) -> StatAnswer:
     )
 
 
-def _window_words(words: str, grain: str, first: date) -> str:
+#: A month said in a question (lower-cased for reading) is written back with its capital.
+_MONTH_WORD = re.compile(r"\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b")
+
+
+def _window_words(words: str, grain: str, first: date, last: date | None = None) -> str:
     """How a counted window is said back: "in March 2026", "in the first week
-    of October", "last summer", "on Friday"."""
+    of October", "last summer", "on Friday", "from 24 to 30 September"."""
     low = words.lower()
+    if grain == "day" and last not in (None, first):
+        return _MONTH_WORD.sub(lambda m: m.group(0).capitalize(), words if low.startswith(("from ", "between ", "since ")) else "from " + words)
     if grain == "month" and low.startswith(("in ", "during ")):
         return first.strftime("in %B %Y")
     if grain in ("season", "week", "half") and not low.startswith(("in ", "during ", "since ", "this ", "last ", "next ", "over ", "throughout ", "through ", "from ", "for ")):
@@ -631,7 +637,7 @@ def _window(text: str) -> tuple[datetime, datetime, str] | None:
         first, last, grain = found.value if found.kind == "range" else (found.value, found.value, "day")
         if not isinstance(first, date):
             continue
-        words = _window_words(found.text.strip(), grain, first)
+        words = _window_words(found.text.strip(), grain, first, last)
         start = datetime.combine(first, time(0), now.tzinfo)
         end = min(datetime.combine(last, time(23, 59, 59), now.tzinfo), now)
         return (start, end, words) if start < end else None

@@ -1016,6 +1016,16 @@ _PREVIOUS_UNIT = r"the previous (?:week|weekend|month|year|quarter)"
 _END_DAY = rf"(?:{_WEEKDAY_RE}|{_MONTH_RE}(?: \d{{1,2}}(?:st|nd|rd|th)?)?|\d{{1,2}}(?:st|nd|rd|th)? (?:of )?{_MONTH_RE})"
 _JOIN = r" (?:to|and|until|till|through) "
 _BETWEEN = rf"(?:(?:between|from) {_END_DAY}{_JOIN}{_END_DAY}|between \d{{1,2}}(?:st|nd|rd|th)?{_JOIN}\d{{1,2}}(?:st|nd|rd|th)? (?:of )?{_MONTH_RE})"
+#: A run of days inside one month, said four ways: "24-30 September", "from
+#: 24 to 30 September", "between the 3rd and the 9th of May", "September 24 to
+#: 30". Single spaces only and the parts disjoint, so nothing backtracks over
+#: a run of spaces (CodeQL).
+_DAY_NO = r"\d{1,2}(?:st|nd|rd|th)?"
+_DAY_TO = r"(?: (?:to|through|until|till|and) (?:the )?|-|–)"
+_DAY_RUNS = (
+    rf"(?:(?:between|from) )?(?:the )?{_DAY_NO}{_DAY_TO}{_DAY_NO} (?:of )?{_MONTH_RE}(?: \d{{4}})?",
+    rf"(?:(?:between|from) )?{_MONTH_RE} (?:the )?{_DAY_NO}{_DAY_TO}{_DAY_NO}(?:,? \d{{4}})?",
+)
 _SINCE_PART = r"(?:the weekend|this morning|last night|the \d{1,2}(?:st|nd|rd|th))"
 _AMOUNT_RE = r"(\d{1,3}|a|an|one|two|three|four|five|six|seven|eight|nine|ten|twelve|a couple of|a few)"
 
@@ -1061,6 +1071,7 @@ _DATE_PHRASE_SOURCE = (
             *_TO_DATE,
             *_PART_OF_DAY,
             _BETWEEN,
+            *_DAY_RUNS,
             _LATELY,
             _BEFORE_LAST,
             _QUARTER,
@@ -1346,6 +1357,32 @@ def _end_of_range(side: str, a: date, tense: str | None, other: tuple | None = N
         day = other[1].replace(day=int(side))
         return day, day, "day"
     return got
+
+
+_DAY_RUN_DAY_FIRST = re.compile(rf"(?:between )?(?:the )?({_DAY_NO}){_DAY_TO}({_DAY_NO}) (?:of )?{_MONTH_RE}(?: (\d{{4}}))?")
+_DAY_RUN_MONTH_FIRST = re.compile(rf"(?:between )?{_MONTH_RE} (?:the )?({_DAY_NO}){_DAY_TO}({_DAY_NO})(?:,? (\d{{4}}))?")
+
+
+def _span_day_run(text: str, a: date, tense: str | None) -> Any:
+    """"24-30 September", "between the 3rd and the 9th of May": the days from
+    the first to the second in one month. The year is the one the first day
+    falls in when the month is read as any day of it is (latest past for a
+    note about the past), so both ends are always in the same year."""
+    found = _DAY_RUN_DAY_FIRST.fullmatch(text)
+    if found:
+        first_day, last_day, month, year = found.groups()
+    else:
+        found = _DAY_RUN_MONTH_FIRST.fullmatch(text)
+        if not found:
+            return _MISS
+        month, first_day, last_day, year = found.groups()
+    first_n, last_n = (int(re.sub(r"\D", "", day)) for day in (first_day, last_day))
+    anchor = span(f"{first_n} {month}" + (f" {year}" if year else ""), a, tense)
+    try:
+        first, last = (anchor[0], date(anchor[0].year, anchor[0].month, last_n)) if anchor else (None, None)
+    except ValueError:
+        return None
+    return (first, last, "day") if first and last >= first else None
 
 
 def _span_between(text: str, a: date, tense: str | None) -> Any:
@@ -1643,7 +1680,7 @@ def _span_season(text: str, a: date, tense: str | None) -> Any:
 
 #: Tried in this order: an earlier reader's pattern can be a prefix of a later one's.
 _SPAN_READERS = (
-    _span_since, _span_fixed, _span_between, _span_week_before_last, _span_calendar_unit, _span_weekend, _span_recent, _span_lately, _span_to_date,
+    _span_since, _span_fixed, _span_day_run, _span_between, _span_week_before_last, _span_calendar_unit, _span_weekend, _span_recent, _span_lately, _span_to_date,
     _span_other_day, _span_same_day, _span_ago, _span_in,
     _span_nth, _span_weekday, _span_iso, _span_month_day, _span_day_and_month, _span_ordinal,
     _span_part_of_period, _span_season, _span_part_of_month, _span_end_of, _span_month, _span_holiday,
@@ -1671,7 +1708,7 @@ def span(phrase: str, anchor: date, tense: str | None = None) -> tuple[date, dat
 #: ("last week", "3 days ago", "this month"), so "week 4" stays a subject
 #: and "last week" is not one. Moved from the composer (ledger row 453).
 _WINDOW_WORDS = re.compile(
-    r"\b(?:" + "|".join((*_PERIODS, _WEEKEND, *_ROLLING, *_TO_DATE, *_PART_OF_DAY, _BETWEEN, _LATELY, _BEFORE_LAST, _QUARTER, _PREVIOUS_UNIT,
+    r"\b(?:" + "|".join((*_PERIODS, _WEEKEND, *_ROLLING, *_TO_DATE, *_PART_OF_DAY, _BETWEEN, *_DAY_RUNS, _LATELY, _BEFORE_LAST, _QUARTER, _PREVIOUS_UNIT,
                          r"since (?:" + _WEEKDAY_RE + r"|yesterday|" + _SINCE_PART + r"|last (?:week|month|year))")) + r"|(?:the\s+)?(?:last|this|next|past|previous|coming)\s+(?:few\s+|couple\s+of\s+|\d{1,3}\s+|two\s+|three\s+|four\s+|five\s+|six\s+|seven\s+|eight\s+|nine\s+|ten\s+|eleven\s+|twelve\s+)?"
     r"(?:days?|weeks?|weekend|months?|years?|night|morning|evening|monday|tuesday|wednesday|thursday|friday|saturday|sunday)"
     r"|(?:the\s+)?week\s+before\s+last|(?:\d{1,3}|a|an|one|two|three|four|five|six)\s+(?:days?|weeks?|months?|years?)\s+ago"
