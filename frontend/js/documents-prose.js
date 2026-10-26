@@ -2908,6 +2908,12 @@ function docTurnInto(kind, boxId = "doc-content") {
 //: bar (under its button), the palette (at the caret) or the right-click menu.
 function docTurnIntoMenu(boxId = "doc-content", x = null, y = null) {
   const box = docSurfaceById(boxId);
+  //: A button as the anchor: hung under it, or above it on the phone's foot bar.
+  if (x instanceof Element) {
+    const rect = x.getBoundingClientRect();
+    const foot = Boolean(x.closest(".doc-phone-bar"));
+    [x, y] = [rect.left, foot ? rect.top - 8 : rect.bottom + 4];
+  }
   let at = null;
   if (x == null && box?.view) at = box.view.coordsAtPos(box.view.state.selection.main.head);
   openMenuAtPoint(

@@ -1932,8 +1932,7 @@ function selectionBarElement() {
       const textarea = selectionBarState.textarea;
       if (!textarea) return;
       if (action.turn) {
-        const at = button.getBoundingClientRect();
-        if (typeof docTurnIntoMenu === "function") docTurnIntoMenu(textarea.id, at.left, at.bottom + 4);
+        if (typeof docTurnIntoMenu === "function") docTurnIntoMenu(textarea.id, button);
         return;
       }
       if (action.ask) {
