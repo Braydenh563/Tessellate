@@ -160,7 +160,9 @@ def test_a_model_the_catalog_does_not_describe_falls_back_to_what_we_know():
     assert c.context_length("qwen3") == known_context("qwen3")
 
 
-def test_an_unknown_model_on_a_silent_server_is_budgeted_at_the_default():
+def test_an_unknown_model_on_a_silent_server_is_budgeted_at_the_default(tmp_path, monkeypatch):
+    #: The lookup writes under the data dir (the serial guard caught the repo's).
+    monkeypatch.setenv("TESSELLATE_DATA_DIR", str(tmp_path))
     c = OpenAICompatClient(base_url="http://localhost:1234/v1")
     c._catalog = []
     c._props = {}

@@ -1000,6 +1000,10 @@ def _dated_line(line_body: str, label: str, i: int, by_day: date | None, written
     #: one the same days as the last, says a recent day as a person would.
     recent = _recent(written, by_day) if not gap or (by_day and written and (by_day - written).days <= 7) else ""
     lead = recent or (_gap_on(gap, label) if gap >= 2 else f"on {label}, ")
+    #: A note that opens on its own day ("on 21 September, you have work")
+    #: already has it in the lead: kept, it read "on 21 September, on 21
+    #: September, you have work", and the present tense went unshifted.
+    line_body = re.sub(rf"^on {re.escape(label)},?\s*", "", line_body, flags=re.I) or line_body
     if _SHORTHAND.match(line_body) and not _FINITE.search(line_body.split(",")[0]):
         #: "golf practice after work, hit a bucket ...": shorthand with no
         #: verb is what the person wrote down, never a dated fragment.
@@ -1176,9 +1180,27 @@ def _reported(body: str, i: int) -> str:
     if past and not _PRESENT.match(said):
         verb = past.group(2)
         said = f"you had{past.group(1)} {_PAST_PARTICIPLE.get(verb, verb)}" + said[past.end():]
-    for pattern, repl in _BACKSHIFT:
-        said = pattern.sub(repl, said)
+    #: The note's later sentences were written that day too ("You need to
+    #: finish your IT assignment, which is due on Friday"): shifted alike.
+    head, *rest = re.split(r"(?<=[.!?]) (?=You\b)", said)
+    said = " ".join([_backshift(head)] + ["Y" + _backshift("y" + more[1:])[1:] for more in rest])
     return _REPORTS[i % len(_REPORTS)] + said
+
+
+#: A day named in a dated note is that week's, not this one's (the owner,
+#: 2026-10-26: "it was due that friday, not this friday").
+_DAY_SHIFT = (
+    (re.compile(r"\b(?:on |this )?(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b"), r"that \1"),
+    (re.compile(r"\btonight\b"), "that night"), (re.compile(r"\btoday\b"), "that day"),
+    (re.compile(r"\btomorrow\b"), "the next day"), (re.compile(r"\bnext week\b"), "the week after"),
+    (re.compile(r"\bis due\b"), "was due"),
+)
+
+
+def _backshift(said: str) -> str:
+    for pattern, repl in _BACKSHIFT + _DAY_SHIFT:
+        said = pattern.sub(repl, said)
+    return said
 
 
 _PINNED = re.compile(r" \(you pinned this as true, [^)]+\)")

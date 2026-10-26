@@ -165,3 +165,19 @@ def test_own_doings_need_a_time_word_or_the_question_shape():
         assert personal.about_own_notes(q), q
     for q in ("my work visa rules", "what changed in Python since we added type hints", "how is my day in Tokyo time"):
         assert not personal.about_own_notes(q), q
+
+
+def test_a_note_opening_on_its_own_day_is_dated_once_and_reported():
+    """The owner, 2026-10-26: "on september 21 is repeated twice" and "I had
+    work not have"."""
+    from tessellate.ai import composer_digest
+
+    said, _ = composer_digest._dated_line(
+        "on 21 September, you have work. You need to finish your IT assignment, which is due on Friday.",
+        "21 September", 1,
+        dt.date(2026, 10, 26), dt.date(2026, 9, 21), dt.date(2026, 9, 5),
+    )
+    assert said.count("21 September") == 1
+    assert "you had work" in said and "you have work" not in said
+    #: "it was due that friday, not this friday".
+    assert "You needed to finish" in said and "was due that Friday" in said
