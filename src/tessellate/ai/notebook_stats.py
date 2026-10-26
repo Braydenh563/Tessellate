@@ -42,6 +42,7 @@ from datetime import date, datetime, time, timedelta
 from sqlalchemy import and_, case, exists, func, or_, select
 from sqlalchemy.orm import Session, aliased
 
+from tessellate.ai import spelling
 from tessellate.core.database import Category, Document, Entry, EntryLink, EntryRevision, Reminder, utcnow
 
 #: How many rows a "top N" answer lists. Ten is a glance; fifty is a report
@@ -185,7 +186,9 @@ def _despell(text: str) -> str:
 
     def fix(match: re.Match) -> str:
         word = match.group(0)
-        if len(word) < _SPELLING_MIN_LENGTH or word in known:
+        #: A word the dictionary lists is meant: "estates" is 0.83 close to
+        #: "stats" and turned a history question into a note count.
+        if len(word) < _SPELLING_MIN_LENGTH or word in known or spelling.is_word(word, strict=True):
             return word
         swap = _transposition_of(word, known)
         if swap:

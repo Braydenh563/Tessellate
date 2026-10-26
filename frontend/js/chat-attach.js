@@ -2404,6 +2404,7 @@ async function chatSendTurn(preset, opts = {}) {
     meta,
     toolEvents,
     touched: [...touchedItems.values()],
+    grounded: meta?.composed ? new Set((groundingSentences || []).map((row) => row.note_id).filter(Boolean)) : null,
   });
   //: The page this turn went out to read, for a follow-up about it
   //: (`webFollowUp`, web-clip.js).
