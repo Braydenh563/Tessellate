@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Settings: shortcut keys sit in one column with the pencils lined up, and hover no longer draws a second box behind the keys.
 - Header: the emblem no longer claims the AI is running when it is not.
 - Board: the arrows and turn handle hide while a size or gap badge shows, so the numbers are no longer covered.
 - Fix: the default board now gets a stored thumbnail on the Boards list like every other board (its missing id was skipped by the thumbnail writer; it travels as board 0).

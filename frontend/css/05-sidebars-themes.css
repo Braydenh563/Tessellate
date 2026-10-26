@@ -721,10 +721,20 @@ mark.text-highlight-grey { background: rgba(148, 163, 184, 0.25); }
    ghost tint under the pointer or the keyboard and the focus ring. A fixed
    column, so the descriptions start on one edge. */
 .shortcut-list button.shortcut-key {
-  justify-content: flex-start;
-  min-width: 7.5rem;
+  justify-content: space-between;
+  min-width: 11rem;
   min-height: var(--target-min);
   padding: 0 var(--space-1);
+}
+/* No tinted box behind the chip on hover (the owner 2026-10-26: "look even
+   more off when hovered"): a grey plate around a bordered chip drew two
+   boxes. The chip's own border and the pencil take the accent instead; the
+   pencil sits at the column's right edge so every row's pencil lines up. */
+.shortcut-list button.shortcut-key:hover {
+  background: transparent;
+}
+.shortcut-list .shortcut-key:is(:hover, :focus-visible) kbd {
+  border-color: var(--accent);
 }
 /* The keys are one item, not one item per key. Every `<kbd>` in a row used
    to be its own flex child, so a chord row's keys and the separators between
