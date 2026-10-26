@@ -26,6 +26,14 @@
   border-end-start-radius: 0;
 }
 
+/* A touch caret is a 44px target wide as well as tall (touch.js at 720: it
+   measured 30.4x44). */
+@media (max-width: 819.98px), (pointer: coarse) {
+  .ai-offline-split .menu-wrap > .split-button-caret {
+    min-width: var(--target-min);
+  }
+}
+
 .ai-offline-split > .split-button-main:is(:hover, :focus-visible),
 .ai-offline-split .menu-wrap > .split-button-caret:is(:hover, :focus-visible) {
   position: relative;

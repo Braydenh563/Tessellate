@@ -1915,6 +1915,16 @@ header#top-bar[data-scrolled="1"],
 .sheet-card-page > .note-page-bar {
   display: flex;
 }
+/* The mode segment's touch floor holds wherever `.seg button` takes it (under
+   820 or on a coarse pointer), not only under 600: at 720 the two buttons
+   measured 65.7x42 and 80x42 (touch.js, 2026-10-26). */
+@media (max-width: 819.98px), (pointer: coarse) {
+  .chat-dock-controls .seg {
+    min-height: var(--target-min);
+    align-items: stretch;
+    border-width: 0;
+  }
+}
 /* --- Phase 11 item 3: the chat composer on a phone ---------------------------
    04-chat-dock-appearance.css's 820 band wraps the composer, with a reason
    from when the row held four icon buttons and Send: squeezed beside them the
@@ -1949,11 +1959,6 @@ header#top-bar[data-scrolled="1"],
      family") left the two buttons 42px inside the 44px shell (touch.js at
      390, 2026-10-10: 65.7x42 and 80x42, the sweep's only control findings);
      the border draws nothing, so here the cells are the well. */
-  .chat-dock-controls .seg {
-    min-height: var(--target-min);
-    align-items: stretch;
-    border-width: 0;
-  }
   /* The model picker keeps the touch floor too (measured 30px beside the
      44px segment), and goes after the segment and the gear rather than
      before them: the mode is the control that must be on screen when the
