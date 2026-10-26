@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fix: the companion lies down only where its whole body fits on its perch, head left or right to suit (it lay with only its legs on the board's tool dock); its shadow and dark-theme glow sit under the lying body, its Zs rise over its head, the hair above a hat's brim or the nightcap's band is hidden, and no nightcap goes over a hat it already wears.
 - CI: today's lint ratchets back in line (guards on boot functions dropped from the equation editor, one-off sweeps whose findings are in this log removed, the lag view read through prefs, the sketch button no longer hands its click event to openSketch).
 - Fix: turning Graph auto-fit back on after a resize with it off now frames the map again, instead of leaving the camera treated as moved for good.
 - Fix: the Web row in the palette and the slash menu always toggles web search; the Web button opens the panel first when web is on and the panel is shut, and its tooltip and the Guide say so.

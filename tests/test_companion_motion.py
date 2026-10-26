@@ -955,9 +955,36 @@ def test_it_lies_down_to_sleep_where_there_is_room_and_moves_by_its_look() -> No
     # button dozes where it is; a 160px walk as you takes 898ms masculine and
     # 754 feminine (a deeper and a lighter bob), Atlas's float 788 and 662.
     act = _fn("nameMarkBuddyAct")
-    assert 'if (act === "nap" && !nameMarkBuddyActOff("lie") && nameMarkBuddyLieRoom()) act = "lie";' in act
+    assert 'const lieSide = act === "lie" || (act === "nap" && !nameMarkBuddyActOff("lie")) ? nameMarkBuddyLieRoom() : "";' in act
+    assert 'if (act === "nap" || act === "lie") act = lieSide ? "lie" : "nap";' in act
     assert "nameMarkBuddyLieRoom()" in _fn("nameMarkBuddyTick")
     assert 'if (nmb.pose !== "stand" || nmb.legs' in _fn("nameMarkBuddyLieRoom")
+
+
+def test_it_lies_only_where_its_whole_body_is_on_its_perch() -> None:
+    # K25, the owner: "my companion shadow is wrong, the hair is showing from
+    # the behind the hat, and it is hanging off the ui element it is perched
+    # on". Measured on the board's tool dock (332 to 1108px, 1440 wide): lying
+    # from its left end it reached 18px past the dock's left edge (only its
+    # legs on it), while the shadow sat under its standing feet and the dark
+    # glow 37px above the body. Now the side that fits is chosen (head right
+    # there: 338 to 430), the shadow and glow are centred on the body (within
+    # 2px), and the hair above a hat's brim is not drawn.
+    room = _fn("nameMarkBuddyLieRoom")
+    assert "const NMB_LIE_SPAN = { left: [-42, 70], right: [-6, 106] };" in AV
+    assert "return left >= lo && right <= hi && !obstacles.some(" in room
+    assert 'buddy.dataset.lie = "r"' in _fn("nameMarkBuddyLieDown")
+    assert 'buddy.dataset.atlasVariant = side === "left" ? "1" : "0";' in _fn("nameMarkBuddyLieDown")
+    assert "if (x < lo || x > hi) continue;" in _fn("nameMarkBuddyStepAside")
+    assert '#nm-buddy.nmb-act-lie[data-lie="r"] .nm-buddy-char { transform: translate(-34px, -30px) rotate(90deg); }' in CSS08
+    assert '[data-pose="lie"][data-atlas-variant="1"])::before { left: -26px; right: -2px;' in CSS08
+    assert "var(--atl-v1)); right: calc(-46px" not in CSS08
+    # Hair under a hat: clipped at the brim; under the nightcap, its crown
+    # is a piece of its own, hidden while the cap shows; no cap over a hat.
+    assert "const NM_HAT_BRIM = {" in AV and ".nmc-hair-crown`" in AV
+    assert "hairUnder(back, backHair);" in AV and "hairUnder(torso, frontHair);" in AV
+    assert "if (capSlot) {" in AV
+    assert ":not(.nmb-cap-off) .nmc-hair-crown," in CSS08
     assert "NMB_GAIT_PACE[buddy.dataset.gait]" in _fn("nameMarkBuddyGo")
     assert '&[data-gait="masculine"].nmb-walking .nm-buddy-char { animation: nmb-bob-heavy' in CSS08
     assert '&[data-gait="feminine"].nmb-walking .nm-buddy-char { animation: nmb-bob-light' in CSS08
@@ -1189,7 +1216,7 @@ def test_the_atlas_hooks_are_wired() -> None:
     assert 'nameMarkBuddyFrames(buddy, ["curl-1", "curl"]);' in _fn("nameMarkBuddyCurlUp")
     assert "nameMarkBuddyKeepFrame(buddy);" in _fn("nameMarkBuddyMoveTo")
     assert "buddy.dataset.atlasVariant = String(nameMarkBuddyPickVariant(3," in _fn("nameMarkBuddyMoveTo")
-    assert 'if (act === "lie") nameMarkBuddyLieDown(buddy);' in _fn("nameMarkBuddyAct")
+    assert 'if (act === "lie") nameMarkBuddyLieDown(buddy, lieSide);' in _fn("nameMarkBuddyAct")
     assert "nameMarkBuddyCurlUp(buddy)" in _fn("nameMarkBuddyTick") and "nameMarkBuddyGetUp(buddy)" in _fn("nameMarkBuddyWake")
     assert "if (/^(lie|curl)/.test(buddy.dataset.pose || \"\")) buddy.dataset.pose = nmb.pose;" in _fn("nameMarkBuddyHalt")
     assert "#nm-buddy.nmb-act-lie:has(.atl-figure-box) .nm-buddy-char { transform: none; }" in CSS08
