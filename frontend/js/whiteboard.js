@@ -1668,13 +1668,32 @@ new MutationObserver(wbRefreshHighlighterBlend).observe(document.documentElement
 //: `label_area` (fractions of its box) or the whole box.
 const WB_FILLABLE_SHAPES = new Set(["rect", "circle", "triangle", "diamond", "custom"]);
 
-//: The Format panel's shadow (decision 19): one soft drop, the same on a
-//: shape, a line, a text box and a picture, and in the export.
-const WB_ITEM_SHADOW = "drop-shadow(0 2px 4px rgb(0 0 0 / 0.28))";
-//: The same shadow as an SVG filter, for the exported picture.
-const WB_EXPORT_SHADOW_DEF =
-  '<defs><filter id="wb-export-shadow" x="-20%" y="-20%" width="140%" height="140%">' +
-  '<feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.28"/></filter></defs>';
+//: The Format panel's shadow (decision 19): one soft drop on a shape, a line,
+//: a text box and a picture, and in the export. The offset and blur are the
+//: item's own (`shadow_x`, `shadow_y`, `shadow_blur`; wb5), and an item that
+//: set none keeps the original 0, 2 and 4.
+function wbShadowOf(look) {
+  const n = (v, d) => (v === null || v === undefined || v === "" || !Number.isFinite(Number(v)) ? d : Number(v));
+  return { x: n(look?.shadow_x, 0), y: n(look?.shadow_y, 2), blur: n(look?.shadow_blur, 4) };
+}
+
+function wbShadowCss(look) {
+  if (!look?.shadow) return null;
+  const { x, y, blur } = wbShadowOf(look);
+  return `drop-shadow(${x}px ${y}px ${blur}px rgb(0 0 0 / 0.28))`;
+}
+
+//: The same shadow as an SVG filter for the exported picture: defined once in
+//: `parts` under an id that names its numbers, and the attribute that uses it.
+//: A blur is a standard deviation of half its pixels, as in CSS.
+function wbExportShadow(parts, look) {
+  const { x, y, blur } = wbShadowOf(look);
+  const id = `wb-export-shadow-${x}_${y}_${blur}`;
+  const def = `<defs><filter id="${id}" x="-30%" y="-30%" width="160%" height="160%">` +
+    `<feDropShadow dx="${x}" dy="${y}" stdDeviation="${blur / 2}" flood-color="#000" flood-opacity="0.28"/></filter></defs>`;
+  if (!parts.includes(def)) parts.push(def);
+  return ` filter="url(#${id})"`;
+}
 
 //: SVG `stroke-dasharray` for each style, scaled to the actual stroke width
 //: so a thick dashed line doesn't look like a row of dots. `null` (solid)
@@ -5309,8 +5328,9 @@ let wbCopiedStyle = null; // { kind: "sketch" | "object", style: {...} }
 const WB_SKETCH_STYLE_KEYS = [
   "color", "width", "dash", "fill", "fillOpacity", "noStroke", "startCap", "endCap", "startCapSize", "endCapSize",
   "dashPattern", "round", "flow", "gradient", "fillStyle", "jumpSize", "gapStart", "gapEnd",
+  "shadow", "shadow_x", "shadow_y", "shadow_blur",
 ];
-const WB_OBJECT_STYLE_KEYS = ["color", "bg", "border_color", "font_size"];
+const WB_OBJECT_STYLE_KEYS = ["color", "bg", "border_color", "font_size", "radii", "pad", "shadow", "shadow_x", "shadow_y", "shadow_blur"];
 
 function wbPickStyle(source, keys) {
   const out = {};
@@ -5396,10 +5416,10 @@ async function wbPasteCopiedStyle() {
 //: sticky goes back to the first paper; a map topic back to following its
 //: map and level (`wbMapResetToBranch`'s keys). One undo step for the lot.
 const WB_SKETCH_RESET_KEYS = [
-  "color", "width", "dash", "fill", "fillOpacity", "noStroke", "alpha", "shadow", "rough", "jumps", "round", "dashPattern", "flow", "gradient", "fillStyle", "jumpSize", "gapStart", "gapEnd",
+  "color", "width", "dash", "fill", "fillOpacity", "noStroke", "alpha", "shadow", "shadow_x", "shadow_y", "shadow_blur", "rough", "jumps", "round", "dashPattern", "flow", "gradient", "fillStyle", "jumpSize", "gapStart", "gapEnd",
   "startCapSize", "endCapSize", "label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign", "label_lh", "label_ls",
 ];
-const WB_OBJECT_RESET_KEYS = ["color", "bg", "border_color", "font_size", "bold", "italic", "underline", "strike", "font_family", "align", "valign", "line_height", "letter_spacing", "alpha", "shadow", "fold"];
+const WB_OBJECT_RESET_KEYS = ["color", "bg", "border_color", "font_size", "bold", "italic", "underline", "strike", "font_family", "align", "valign", "line_height", "letter_spacing", "alpha", "shadow", "shadow_x", "shadow_y", "shadow_blur", "radii", "pad", "fold"];
 
 //: The reset fields for one sketch, or null for a drawing with nothing to
 //: reset (a highlighter's look is its tool). A line whose ends are drawn in
@@ -12343,8 +12363,7 @@ function wbExportPaint(el, inkEl) {
 function wbExportTopicEffect(topicEl, colour, rx, ry, size, parts) {
   const effect = topicEl?.dataset.shape === "none" ? null : topicEl?.dataset.effect;
   if (effect === "shadow") {
-    if (!parts.includes(WB_EXPORT_SHADOW_DEF)) parts.push(WB_EXPORT_SHADOW_DEF);
-    return ' filter="url(#wb-export-shadow)"';
+    return wbExportShadow(parts, null);
   }
   if (effect !== "glow") return "";
   const ink = wbSvgEscape(colour);
@@ -12557,8 +12576,7 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
     //: (tests/test_security_boundaries.py). Defined once, before its first use.
     let shadow = "";
     if (obj.data?.shadow) {
-      if (!parts.includes(WB_EXPORT_SHADOW_DEF)) parts.push(WB_EXPORT_SHADOW_DEF);
-      shadow = ' filter="url(#wb-export-shadow)"';
+      shadow = wbExportShadow(parts, obj.data);
     }
     parts.push(`<g transform="translate(${obj.x}, ${obj.y})"${alpha}${shadow}>`);
     if (obj.kind === "image" && obj.data.url) {
@@ -12665,13 +12683,14 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       );
     } else if (obj.kind === "text") {
       const fontSize = obj.data.font_size || 16;
-      const lines = wbSvgWrapLines(obj.data.content || "", obj.width - 20, 20, fontSize * 0.55);
+      const pad = obj.data.pad ?? 10;
+      const lines = wbSvgWrapLines(obj.data.content || "", obj.width - 2 * pad, 20, fontSize * 0.55);
       //: A text box with no colour of its own writes in the theme's ink, which
       //: is near-white on a dark board: read it off the box, as above.
       const textEl = obj.data.color ? null : document.querySelector(`#wb-html-layer .wb-object[data-id="${obj.id}"] .wb-text-content`);
       const textInk = textEl ? wbExportColour(getComputedStyle(textEl).color) : null;
       parts.push(
-        wbSvgText(lines, 10, fontSize + 8, {
+        wbSvgText(lines, pad, fontSize + pad - 2, {
           fontSize,
           fill: obj.data.color || textInk || "#1f2430",
           lineHeight: fontSize * 1.25,
@@ -20950,7 +20969,7 @@ function renderWhiteboard() {
     const look = shapeData || linkData;
     d3.select(this)
       .attr("opacity", look?.alpha != null && look.alpha < 1 ? look.alpha : null)
-      .style("filter", look?.shadow ? WB_ITEM_SHADOW : null);
+      .style("filter", wbShadowCss(look));
     wbSyncSketchTip(this, look);
     // After the path, which the label is laid out from (decision 12).
     wbPaintShapeLabel(this, shapeData, d);
@@ -22493,10 +22512,12 @@ function renderWbObjects(canvas) {
     else this.style.zIndex = d.z;
     if (!WB_MAP_KINDS.has(d.kind)) {
       this.style.opacity = d.data?.alpha != null && d.data.alpha < 1 ? String(d.data.alpha) : "";
-      this.style.filter = d.data?.shadow ? WB_ITEM_SHADOW : "";
+      this.style.filter = wbShadowCss(d.data) || "";
+      this.style.borderRadius = Array.isArray(d.data?.radii) ? d.data.radii.map((r) => `${r}px`).join(" ") : "";
+      if (d.kind === "text") this.style.padding = d.data?.pad != null ? `${d.data.pad}px` : "";
     }
     if (d.kind === "image") {
-      el.select("img").attr("src", mediaSrc(d.data.url) || "");
+      el.select("img").attr("src", mediaSrc(d.data.url) || "").style("border-radius", d.data.radii ? "inherit" : null);
     } else if (WB_MAP_KINDS.has(d.kind)) {
       wbPaintMapNode(el, d, mapIndex, mapColors, mapFills);
     } else if (d.kind === "frame") {

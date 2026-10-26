@@ -396,6 +396,12 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         # Added with the Format panel's line and letter spacing (wb3, INBOX 1355).
         "line_height": None,
         "letter_spacing": None,
+        # Added with the Format panel's box rows (wb5): corners, padding, shadow offset and blur.
+        "radii": None,
+        "pad": None,
+        "shadow_x": None,
+        "shadow_y": None,
+        "shadow_blur": None,
         # Added with the text-box formatting controls; None until set.
         "align": None,
         "valign": None,

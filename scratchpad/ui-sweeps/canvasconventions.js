@@ -369,7 +369,7 @@ const near = (a, b, tol = 1.5) => a != null && b != null && Math.abs(a - b) <= t
     await selectMany([`object:${ids.t}`, `object:${ids.u}`]);
     const rel0 = await page.evaluate(([a, b]) => {
       const A = wbState.objects.find((o) => o.id === a), B = wbState.objects.find((o) => o.id === b);
-      return { dx: B.x - A.x, dy: B.y - A.y };
+      return { dx: B.x - A.x, dy: B.y - A.y, x: Math.min(A.x, B.x), y: Math.min(A.y, B.y) };
     }, [ids.t, ids.u]);
     await page.keyboard.press("Control+c");
     await wait(200);
@@ -387,16 +387,40 @@ const near = (a, b, tol = 1.5) => a != null && b != null && Math.abs(a - b) <= t
     check("paste of two items makes two", c1.objects === c0.objects + 2 && pasted.length === 2, `${c0.objects} to ${c1.objects}, ${pasted.length} selected`);
     if (pasted.length === 2) {
       const [a, b] = pasted.sort((p, q) => p.x - q.x);
-      const box = { x: (a.x + b.x + b.w) / 2, y: (Math.min(a.y, b.y) + Math.max(a.y + a.h, b.y + b.h)) / 2 };
       const pointer = await page.evaluate(([cx, cy]) => {
         const t = d3.zoomTransform(document.getElementById("whiteboard-container"));
         const r = wbCanvasOriginRect();
         return { x: (cx - r.left - t.x) / t.k, y: (cy - r.top - t.y) / t.k };
       }, [pastePoint.x, pastePoint.y]);
       check("and keeps their places relative to each other", near(b.x - a.x, rel0.dx) && near(b.y - a.y, rel0.dy), `${b.x - a.x},${b.y - a.y} vs ${rel0.dx},${rel0.dy}`);
-      check("centred on the pointer", Math.abs(box.x - pointer.x) < 6 && Math.abs(box.y - pointer.y) < 6,
-        `centre (${Math.round(box.x)},${Math.round(box.y)}), pointer (${Math.round(pointer.x)},${Math.round(pointer.y)})`);
+      //: Not the pointer: a keyboard paste on the board the copy came from steps
+      //: one grid square (24) down and right of the originals, then two, and so
+      //: on (the owner, 2026-10-26; the pointer is "Paste here" in the menu).
+      const topLeft = { x: Math.min(a.x, b.x), y: Math.min(a.y, b.y) };
+      check("lands one grid square down and right of the originals", near(topLeft.x - rel0.x, 24) && near(topLeft.y - rel0.y, 24),
+        `offset (${Math.round(topLeft.x - rel0.x)},${Math.round(topLeft.y - rel0.y)}), pointer (${Math.round(pointer.x)},${Math.round(pointer.y)})`);
     }
+
+    // --- 12b. a selection low on the screen is kept clear of the bottom docks (wb5) ---
+    await page.evaluate(() => clearWbSelection());
+    const low = await page.evaluate((id) => {
+      const o = wbState.objects.find((x) => x.id === id);
+      const c = document.getElementById("whiteboard-container");
+      const t = d3.zoomTransform(c), r = c.getBoundingClientRect();
+      const dockTop = document.getElementById("wb-tools-panel").getBoundingClientRect().top;
+      const dy = dockTop + 30 - (r.top + t.y + (o.y + o.height) * t.k);
+      d3.select(c).call(wbZoom.transform, d3.zoomIdentity.translate(t.x, t.y + dy).scale(t.k));
+      return { x: r.left + t.x + (o.x + o.width / 2) * t.k, y: r.top + t.y + dy + o.y * t.k + 12 };
+    }, ids.t);
+    await wait(500);
+    await page.mouse.click(low.x, low.y);
+    await wait(1000);
+    const grips = await page.evaluate(() => {
+      const all = [...document.querySelectorAll(".wb-selected .wb-resize-handle, .wb-selected [data-handle]")].filter((g) => g.getBoundingClientRect().width);
+      const hit = all.filter((g) => { const b = g.getBoundingClientRect(); return document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2) === g; });
+      return { all: all.length, hit: hit.length };
+    });
+    check("a text box low on the screen has every grip pressable (the view slid clear of the docks)", grips.all >= 8 && grips.hit === grips.all, `${grips.hit} of ${grips.all}`);
 
     // --- 13. Ctrl+A selects everything, Delete removes the selection ---
     await clickEmpty();

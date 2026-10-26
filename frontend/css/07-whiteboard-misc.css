@@ -11760,6 +11760,16 @@ button.finder-row:is(:focus-visible, :has(:focus-visible)) {
   width: 100%;
   min-width: 0;
 }
+/* Several small numbers under one row name (shadow offset and blur, the four
+   corner radii): two columns, each label as wide as its own word. */
+.wb-fmt-quad {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-1) var(--space-2);
+}
+.wb-fmt-quad .wb-fmt-num {
+  grid-template-columns: auto minmax(0, 1fr);
+}
 .wb-fmt-commands {
   display: flex;
   flex-direction: column;
