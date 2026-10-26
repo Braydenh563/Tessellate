@@ -3058,6 +3058,26 @@ dialog::backdrop {
   padding-inline: var(--space-3);
   margin-bottom: 0;
 }
+/* **At half a window the field wraps above its controls** (the owner's 22-10
+   list: "redesign Ask at half width"). The field gave up its width first and
+   was left about 150px wide beside a length picker, two icon buttons and Ask.
+   Its basis is now a width worth typing in: when the row cannot hold that and
+   the controls, the controls drop to a second line at the right, and on a
+   wide window nothing changes. No width query: the wrap is the flex row's. */
+.ask-composer {
+  flex-wrap: wrap;
+}
+.ask-composer > #question {
+  flex: 1 1 14rem;
+}
+/* The controls are one flex item, so a row that cannot hold them beside a
+   field worth typing in moves them down as a group. */
+.ask-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+}
 /* The answer-length picker was squashed to "Det…", it is a real choice
    with real words in it, and an ellipsis where the word "Detailed" should
    be is not a control anyone can read. A floor wide enough for the longest

@@ -225,7 +225,7 @@ def frame(ability: str, mood: Mood, **facts: object) -> str:
 
 #: Abilities whose frames carry their own greeting or are clauses of one:
 #: a generic "Sure." before "Good morning." would be wrong.
-_NO_AROUND = frozenset({"social_how", "social_sorry", "social_laugh", "social_reaction", "social_confused", "social_ack", "social_compliment", "quiz_right", "quiz_close", "quiz_wrong", "quiz_skip", "close_next", "act_card", "hello", "welcome_new", "w_due", "w_last", "w_streak", "w_quiet"})
+_NO_AROUND = frozenset({"next_due", "social_how", "social_sorry", "social_laugh", "social_reaction", "social_confused", "social_ack", "social_compliment", "quiz_right", "quiz_close", "quiz_wrong", "quiz_skip", "close_next", "act_card", "hello", "welcome_new", "w_due", "w_last", "w_streak", "w_quiet"})
 
 
 #: Abilities that take only their own openers and closers (an act's

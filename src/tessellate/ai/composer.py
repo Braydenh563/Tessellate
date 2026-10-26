@@ -1633,6 +1633,10 @@ def _count_word(n: int) -> str:
 #: openers and joins are chosen again; empty outside a conversation, where the
 #: same question gets the same words every time.
 _SESSION: contextvars.ContextVar[str] = contextvars.ContextVar("composer_session", default="")
+#: The chat's own voice (natural, professional, playful or plain, a persona's
+#: cue included) while `compose` runs: the no-answer is composed in it
+#: (composer8). Empty means the two registers the callers already pass.
+_REGISTER: contextvars.ContextVar[str] = contextvars.ContextVar("composer_register", default="")
 #: What the person said of insights (decision 60, `insights.Memory`), set by
 #: `compose` for one answer: dismissed ones are not said, confirmed ones are
 #: said as their own word.
@@ -4246,13 +4250,33 @@ _EMPTY_WINDOW_SPAN = {
         "The notebook begins on {first}.",
     ),
 }
+#: The terse and playful chat voices say the same two things their own way
+#: (composer8): a persona that asks for either is heard on an empty window too.
+_EMPTY_WINDOW["terse"] = (
+    "Nothing {when}.", "No notes {when}.", "Empty {when}.", "{When}: nothing.", "Nothing written {when}.", "No entries {when}.", "Blank {when}.", "{When}: no notes.",
+)
+_EMPTY_WINDOW["playful"] = (
+    "Not a word written {when}.", "{When}, the pages stayed blank.", "The notebook was quiet {when}.", "Crickets {when}.",
+    "Nothing in the notebook {when}, not even a doodle.", "{When} left no ink behind.", "The pages are bare {when}.", "No scribbles {when}.",
+)
+_EMPTY_WINDOW_SPAN["terse"] = ("Notes run {first} to {last}.", "Earliest: {first}.", "Starts {first}.", "From {first}.")
+_EMPTY_WINDOW_SPAN["playful"] = (
+    "The ink starts on {first} and ends on {last}.", "Your first page is dated {first}.", "The notebook begins on {first}, so look there.", "Everything starts on {first}.",
+)
+_EMPTY_WINDOW_ONE = {
+    "natural": "All your notes are from {first}.", "professional": "Every entry is dated {first}.",
+    "terse": "All from {first}.", "playful": "Every page is from {first}.",
+}
 
 
 def empty_window(when: str, first: date | None, last: date | None, *, voice: str = "natural", seed: str = "",
-                 today: date | None = None) -> str:
+                 today: date | None = None, register: str = "") -> str:
     """A time window with no note in it, said as that, and where the notes
-    are (`first` and `last` written days; None for an empty notebook)."""
+    are (`first` and `last` written days; None for an empty notebook).
+    `register` is the chat's own voice (a persona's cue included)."""
     voice = "professional" if composer_tables.voice_of(voice) == "professional" else "natural"
+    if register:
+        voice = {"warm": "natural", "formal": "professional"}.get(composer_compose.voice_for(register), composer_compose.voice_for(register))
     today = today or date.today()
     when = window_said(when)
     lead = _pick(seed or when, "empty_window", list(_EMPTY_WINDOW[voice])).format(when=when, When=when[:1].upper() + when[1:])
@@ -4263,7 +4287,7 @@ def empty_window(when: str, first: date | None, last: date | None, *, voice: str
         return f"{d.day} {d:%B}" if d.year == today.year else f"{d.day} {d:%B %Y}"
 
     if first == last:
-        span = ("All your notes are from {first}." if voice == "natural" else "Every entry is dated {first}.").format(first=day(first))
+        span = _EMPTY_WINDOW_ONE[voice].format(first=day(first))
     else:
         span = _pick(seed or when, "empty_window_span", list(_EMPTY_WINDOW_SPAN[voice])).format(first=day(first), last=day(last))
     return f"{lead} {span}"
@@ -4283,7 +4307,9 @@ def _nothing(
         out = _Answer({}, date.today())
         out.voice = composer_tables.voice_of(voice)
     parts: list[tuple] = [("template", PHRASES[out.voiced("nothing")])]
-    if absent:
+    if _REGISTER.get():
+        parts = _nothing_parts(out, _REGISTER.get(), absent or [])
+    elif absent:
         #: Measured over the notes found: the words asked about that none of
         #: them holds, said before the question back.
         parts = [("template", PHRASES[out.voiced("none_found")])]
@@ -4305,6 +4331,26 @@ def _nothing(
     }
 
 
+def _nothing_parts(out: "_Answer", register: str, absent: list[str]) -> list[tuple]:
+    """The no-answer composed in the chat's voice and mood (composer8): a
+    head and a tail, or, naming the words no note holds, a lead, those words
+    and a tail; never the opening one of the last answers used."""
+    seen = [x for x in (*(out.recent or []), out.previous) if x]
+    mood = composer_compose.mood_of(out.question, voice=register, seed=f"{_SESSION.get()}|{out.question}", said=seen)
+    if not absent:
+        text = composer_compose.pick(composer_compose.surfaces("social_nothing"), "nothing", mood)
+        return [("template", text.text if text else PHRASES[out.voiced("nothing")])]
+    lead = composer_compose.pick(composer_lines.NONE_FOUND_LEADS, "none_found", mood)
+    tail = composer_compose.pick(composer_lines.SOCIAL_TAILS["nothing"], "nothing_ask", mood)
+    parts: list[tuple] = [("template", lead.text if lead else PHRASES[out.voiced("none_found")])]
+    for i, word in enumerate(absent[:3]):
+        if i:
+            parts.append(("template", PHRASES["or"]))
+        parts += [("template", PHRASES["open_quote"]), ("asked", word), ("template", PHRASES["close_quote"])]
+    parts += [("template", PHRASES["stop"]), ("template", PHRASES["space"]), ("template", tail.text if tail else PHRASES[out.voiced("nothing_ask")])]
+    return parts
+
+
 def compose(
     question: str,
     notes: list[dict],
@@ -4322,6 +4368,7 @@ def compose(
     prefer: str = "",
     resolved: bool = False,
     learned=None,  # noqa: ANN001
+    register: str = "",
 ) -> dict:
     """`{"text", "grounding", "support", "shape", "parts", "next", "next_parts"}`
     for one question.
@@ -4357,6 +4404,7 @@ def compose(
             question, dialogue, salt=salt, turn=turn, said=said, prefer=prefer, previous=previous, resolved=resolved
         )
     token = _SESSION.set(f"{salt}:{turn}" if (salt or turn) else "")
+    registered = _REGISTER.set(register)
     #: `learned`: what the person said of insights (`insights.memory`).
     known = _LEARNED.set(learned)
     words = _note_words(notes)
@@ -4368,6 +4416,7 @@ def compose(
                                history=dialogue.history if dialogue is not None else [{"answer": previous}], previous=previous, known=words)
     finally:
         _SESSION.reset(token)
+        _REGISTER.reset(registered)
         _LEARNED.reset(known)
         _KNOWN.reset(owned)
     #: A how-to the notes have nothing on that plainly names the app ("how do

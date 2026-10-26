@@ -466,3 +466,132 @@ SOCIAL_TAILS: dict[str, tuple[Cand, ...]] = {
                        t="Which part?|Say it another way.|Name the note.|Try again.", f="Which point should I clarify?|Please rephrase and I will try again.|Please name the note you mean.|Which part was unclear?",
                        p="Point at the knot and I will unpick it.|Which bit shall I untangle?|Say it another way and I will have another go.|Name the page and I will start there."),
 }
+
+
+#: The rest of small talk, and the no-answer, in the same shape (composer8,
+#: CHAT_PLAN 1353): each kind is a head and a tail per voice, so a joke, a
+#: test, a who-are-you or a nothing-found reads as the chat's persona says it.
+#: Identity kinds name Atlas's assistant (CHAT_PLAN decision 36).
+SOCIAL_HEADS.update({
+    "insult": _heads(w="Sorry about that.|My apologies.|Fair enough.|Point taken.|I'm sorry that missed.", t="Sorry.|My bad.|Fair.|Point taken.",
+                     f="My apologies.|I regret the poor result.|Point taken.|I am sorry that was not helpful.", p="Ouch, fair.|Fair hit.|I deserved that one.|The notebook hangs its head."),
+    "emotion": _heads(w="I'm sorry to hear that.|That sounds hard.|I hear you.|I understand.|That's totally fair.", t="Sorry to hear it.|Hard.|Understood.|I hear you.",
+                      f="I am sorry to hear that.|That sounds difficult.|I understand.|Thank you for telling me.", p="Ugh, that sounds rough.|Big sigh, I hear you.|That is a lot for one day.|Noted, with sympathy."),
+    "who": _heads(w="I'm Atlas's assistant.|This is Atlas's assistant speaking.|Atlas's assistant, at your service.|I'm the assistant that works for Atlas.", t="Atlas's assistant.|Atlas's assistant here.|The notebook's assistant, for Atlas.|Assistant to Atlas.",
+                  f="I am Atlas's assistant.|This is Atlas's assistant.|I am the assistant to Atlas.|Atlas's assistant, at your service.", p="Atlas's assistant, reporting for duty.|Atlas's assistant, notebook division.|Assistant to Atlas, keeper of your pages.|Atlas's assistant, ink on my fingers."),
+    "about_app": _heads(w="I'm Atlas's assistant.|Atlas's assistant here.|Short version: I'm Atlas's assistant.|I'm Atlas's assistant, and I read your notes for you.", t="Atlas's assistant.|Atlas's assistant here.|Short version: Atlas's assistant.|Atlas's assistant, notes only.",
+                        f="I am Atlas's assistant.|This is Atlas's assistant.|In brief, I am Atlas's assistant.|Atlas's assistant is at your disposal.", p="Atlas's assistant, reporting for duty.|Atlas's assistant, notebook division.|I'm Atlas's assistant, keeper of your pages.|Atlas's assistant, ink on my fingers."),
+    "joke": _heads(w="I have no jokes of my own.|Jokes are not something I make up.|Comedy isn't my strength.|I'm a better finder than a comedian.", t="No jokes.|Not a comedian.|Sorry, none.|Not funny, me.",
+                   f="I am not a comedian, I am afraid.|Humour is not my strength.|I do not keep jokes.|Regrettably, no.", p="Alas, my act is empty.|My stand-up career ends here.|The comedy shelf is bare.|I do notes, not punchlines."),
+    "unclear": _heads(w="I couldn't make that out.|That didn't come through as words.|Looks like the keyboard got there first.|I didn't catch that.|Hmm, that looks like a few stray keys.", t="Unclear.|Stray keys?|Not words.|Missed that.",
+                      f="That message was not clear.|That appears to be a few stray keys.|I could not read that.|The message was not recognised.", p="The keys have spoken, in no language.|That looks like a cat walked the keyboard.|Gibberish detected.|My decoder gave up."),
+    "test": _heads(w="Test received.|Loud and clear.|Got your test.|Test noted.|I'm here and this works.", t="Received.|Working.|Test ok.|Loud and clear.",
+                   f="Test received.|The test was received.|Test acknowledged.|The notebook is responding.", p="Testing, testing, and it works.|Mic check passed.|Beep boop, received.|The notebook heard you."),
+    "nothing": _heads(w="I couldn't find that in your notes.|Nothing I found answers that.|No luck in your notes for that one.|That doesn't seem to be in the notes I found.|I looked, but nothing answers that.",
+                      t="Nothing found.|No match.|Not in your notes.|Found nothing.", f="No entry found answers that.|The notes found do not address that.|No matching entry was found.|That does not appear in the notes found.",
+                      p="The notebook came up empty.|I turned every page and found nothing.|Not a trace in the notebook.|The shelves are bare on that one."),
+})
+SOCIAL_TAILS.update({
+    "insult": _heads(w="Tell me what you were after, in any words.|Could you try asking another way?|Name the note and I will start there.|Let me have another go.", t="Again?|Say it another way.|What did you need?|Try me again.",
+                     f="Please describe what you need and I will try again.|Shall we try another approach?|Please rephrase and I shall retry.|What would be most useful?", p="Give me another swing.|Say it differently and I will try harder.|Point at the page you wanted.|Round two?"),
+    "emotion": (*_heads(w="Take whatever time you need.|I can list today's plans, or you could jot down what's on your mind.|I'm here when you want to look something up.|Tell me what would help.", t="Here when needed.|Plans for today?|Note it down?|Say what helps.",
+                        f="Take whatever time you need.|I can list today's plans, or you may note down what is on your mind.|I am available whenever you are ready.|Please say what would be useful.",
+                        p="I will keep the notebook warm.|Shall we do one small thing from your list?|Jot it down and I will hold the page.|Say the word and I will fetch today's plans."),
+                c("We can take it one thing at a time.", "w", "SU"), c("Tell me what is most pressing and we will start there.", "w", "S")),
+    "who": _heads(w="With no model running I answer from your notes in their own words.|I find things in your notes and say what they say.|Connect a model and you can talk to Atlas itself.|Ask me when something is, or what you decided.",
+                  t="I answer from your notes.|Notes only, no model.|Ask away.|Connect a model for Atlas itself.", f="Without a model running, I answer from your notes in their own words.|I locate entries in your notes and report what they say.|To speak with Atlas itself, a model must be connected.|Questions about dates, decisions and lists are welcome.",
+                  p="I read your notes so you do not have to.|No model running, just me and your pages.|Connect a model if you want Atlas itself.|Ask me about anything you wrote down."),
+    "about_app": _heads(w="I answer from your notes: when something is, who said what, what the latest is on a project.|I also set reminders, tag, pin and move notes.|Try “what did I do last week” or “remind me to call the dentist on Friday”.|Connecting a model adds writing and tools.",
+                        t="Answers from your notes.|Reminders, tags, pins, moves.|Dates, lists, decisions.|A model adds writing.", f="Answers come from your notes: dates, decisions and the status of a project.|Reminders, tags, pins and moves are done on request.|Connecting a model adds writing and tools.|Try “what is on today” to begin.",
+                        p="I turn your notes into answers: dates, lists, decisions.|Reminders, tags, pins and moves are small jobs I enjoy.|Try “what did I do last week”.|Connect a model and I get a writing partner."),
+    "joke": _heads(w="If you saved one, ask me for it.|If one of your notes has a good one, I can find it.|Want me to search your notes for a joke?|Finding your notes is what I do.", t="Search your notes for one?|I only report notes.|Saved one? Ask.|Ask about a note.",
+                   f="A joke recorded in your notes can be found on request.|I report what your notes contain.|Shall I search your notes for one?|Locating your notes is what I do.", p="Saved a good one? I will fetch it.|Shall I rummage your notes for a joke?|Your notes may be funnier than I am.|Ask for a note instead."),
+    "unclear": _heads(w="Try a word or two about what you need.|Ask about a note, a date or a list.|What did you mean to ask?|You could start with “what's on today”.", t="Try again.|A word or two?|Ask about a note.|What do you need?",
+                      f="Please try again in a few words.|What would you like to find?|Please ask about a note, a date or a reminder.|You could begin with “what is on today”.", p="Say it again with words.|What did you mean to ask?|Ask about a note and I will cheer up.|Try “what's on today”."),
+    "test": _heads(w="Ask me something real whenever you like.|Try “what's on today” or “remind me to call the dentist on Friday”.|Everything runs on this computer, and I can answer from your notes right now.|Say “what can you do” for the short tour.",
+                   t="Ask something.|Next?|Notes ready.|Try “what's on today”.", f="Ask about a note, a date or a reminder to continue.|Please state what to find.|Answers are drawn from your notes, with the source shown.|Say “what can you do” for a summary of the available functions.",
+                   p="Ask me something real.|Try “what's on today”.|Say “what can you do” for the tour.|What shall we dig up?"),
+    "nothing": (*_heads(w="Could you put it another way?|Is there a word you might have used in the note?|Do you remember roughly when you wrote it?|Which note might it be in?|Want to try a different word?",
+                        t="Another word?|Which note?|When did you write it?|Rephrase?", f="Could you rephrase the question?|Which entry might contain it?|Do you recall approximately when it was recorded?|Would a different wording help?",
+                        p="Try another word and I will look again.|Do you remember roughly when you wrote it?|Which note might be hiding it?|Could it be under another name?"),
+                c("No harm, we will find it. Which note might it be in?", "w", "SU")),
+})
+for _kind in ("insult", "emotion", "who", "about_app", "joke", "unclear", "test", "nothing"):
+    FRAMES[f"social_{_kind}"] = ()
+
+#: The words that lead a no-answer naming what no note holds ("None of your
+#: notes mention <word>."), per voice; a tail from SOCIAL_TAILS["nothing"] follows.
+NONE_FOUND_LEADS: tuple[Cand, ...] = _heads(
+    w="None of your notes mention |I couldn't find anything on |Your notes don't mention |There's nothing in your notes about |I found no mention of ",
+    t="Nothing on |No mention of |No note has |Found no mention of ", f="No note found mentions |No entry refers to |The notes contain no mention of |No record mentions ",
+    p="The notebook has nothing on |Not a word in the notes about |Every page turned, no sign of |Zero pages mention ",
+)
+
+#: Whole sentences beside the head and tail pairs, so the shapes vary: one
+#: short line, one long, openers unlike the pairs' (reply_variety measures it).
+FRAMES["social_who"] = (
+    c("Your notebook's helper, Atlas's assistant. Atlas is the model you connect.", "w"), c("Here to help as Atlas's assistant: I live in this notebook and know what's in it.", "w"),
+    c("Reading your notes so you don't have to is my job, as Atlas's assistant.", "w"), c("Assistant here; Atlas is the model. Connect one in Settings, Models to talk to Atlas.", "w"),
+    c("Assistant to Atlas. Notes only.", "t"), c("Your notebook's helper, for Atlas.", "t"), c("Atlas's assistant, and nothing more.", "t"),
+    c("The assistant to Atlas, answering from your notes.", "f"), c("To speak with Atlas itself, a model must be connected; I am its assistant.", "f"),
+    c("Running on this computer, I am Atlas's assistant and know only what you have recorded.", "f"),
+    c("Notebook sidekick to Atlas, at your service.", "p"), c("Your pages are read by Atlas's assistant, which is me, and nobody else.", "p"),
+)
+FRAMES["social_about_app"] = (
+    c("Plenty. I'm Atlas's assistant: I answer questions from your notes, set reminders, and tag, pin or move notes for you.", "w"),
+    c("Ask me, Atlas's assistant, what's on today, what you decided about something, or where a setting lives.", "w"),
+    c("Think of me as a search that answers, from Atlas's assistant: dates, lists, decisions and how things are going.", "w"),
+    c("Mostly, Atlas's assistant reads your notes for you. Try “what did I do last week”.", "w"),
+    c("Plenty: answers, reminders, tags, pins. Atlas's assistant.", "t"), c("Ask about dates, lists, decisions. Atlas's assistant answers.", "t"),
+    c("In brief: Atlas's assistant searches your notes and answers from them.", "f"),
+    c("Ask Atlas's assistant what is on today, what was decided about a matter, or where a setting is located.", "f"),
+    c("Short version: a tidy brain for your notebook, courtesy of Atlas's assistant.", "p"), c("Atlas's assistant reads, files and reminds; you just ask.", "p"),
+)
+FRAMES["social_emotion"] = (
+    c("That sounds hard.", "w"), c("Sorry you're feeling that way. If it helps, I can pull up today's plans, or you could jot down what's on your mind.", "w"),
+    c("Hard. Here when needed.", "t"), c("I understand.", "f"), c("That sounds difficult. I can list today's plans, or you could note down what is on your mind.", "f"),
+    c("Ugh. I will keep the notebook warm.", "p"),
+)
+FRAMES["social_insult"] = (
+    c("Fair. I can do better.", "w"), c("Point taken. Tell me what you were after, in any words, and I'll have another go.", "w"),
+    c("Fair. Again?", "t"), c("Sorry, that one's on me.", "t"),
+    c("My apologies. Please describe what you need and I will try again.", "f"), c("Understood. I will try to do better.", "f"),
+    c("Ouch. Give me another swing and I will do better.", "p"), c("Fair hit.", "p"),
+)
+FRAMES["social_joke"] = (
+    c("Comedy isn't my strength. Finding your notes is.", "w"), c("I'm a better finder than a comedian. Saved any good ones?", "w"),
+    c("No jokes. Search your notes for one?", "t"), c("Not funny, me. Notes only.", "t"),
+    c("Humour is not my strength. Locating your notes is.", "f"), c("I do not keep jokes. Shall I search your notes for one?", "f"),
+    c("My stand-up career ends here. Your notes may be funnier.", "p"), c("The comedy shelf is bare, but your notes might not be.", "p"),
+)
+FRAMES["social_unclear"] = (
+    c("Not sure what that was. Ask me about a note, a date or a reminder.", "w"), c("Hmm, that looks like a stray key or two.", "w"),
+    c("Not words. Try again?", "t"), c("Missed that.", "t"),
+    c("The message was not recognised. You could begin with “what is on today”.", "f"), c("I did not understand that. Please ask about a note, a date or a reminder.", "f"),
+    c("My decoder gave up. Say it again with words.", "p"), c("Gibberish detected.", "p"),
+)
+FRAMES["social_test"] = (
+    c("Loud and clear. Try “what's on today” or “remind me to call the dentist on Friday”.", "w"), c("All good on my end. What would you like to find?", "w"),
+    c("Received. Notes ready.", "t"), c("Working.", "t"),
+    c("All systems are working. What should be located?", "f"), c("Working as expected. Please state what to find.", "f"),
+    c("Mic check passed. Ask me something real.", "p"), c("Testing, testing, and it works.", "p"),
+)
+FRAMES["social_nothing"] = (
+    c("Your notes don't seem to cover that. Did you mean something else?", "w"), c("Nothing found.", "t"),
+    c("Nothing found answers the question. Would a different wording help?", "f"), c("The notebook came up empty. Try another word?", "p"),
+)
+FRAMES["social_emotion"] += (
+    c("I hear you.", "w", "SU"), c("That sounds like a lot. What would help most right now?", "w", "SU"),
+    c("Sorry to hear that, truly. Take whatever time you need. I'm here when you're ready to look something up.", "w", "SU"),
+    c("That is hard to carry. We can take it one thing at a time.", "w", "SU"),
+    c("I hear you.", "w"), c("That sounds like a lot. What would help most right now?", "w"),
+    c("Sorry to hear that, truly. Take whatever time you need. I'm here when you're ready to look something up.", "w"),
+)
+#: The line after an empty window that names the next dated item (composer8;
+#: it was the plain "Next up:" in every voice).
+FRAMES["next_due"] = (
+    c("Next up: {what} ({when}).", "w"), c("After that comes {what} ({when}).", "w"), c("The next one is {what} ({when}).", "w"), c("Coming up after that: {what} ({when}).", "w"),
+    c("Next: {what} ({when}).", "t"), c("Then: {what} ({when}).", "t"), c("After: {what} ({when}).", "t"),
+    c("The next dated item is {what} ({when}).", "f"), c("Thereafter: {what} ({when}).", "f"), c("The following entry is {what} ({when}).", "f"), c("Next in the notes is {what} ({when}).", "f"),
+    c("Next on the horizon: {what} ({when}).", "p"), c("Further out: {what} ({when}).", "p"), c("Peeking ahead: {what} ({when}).", "p"), c("Spotted on the horizon: {what} ({when}).", "p"),
+)
