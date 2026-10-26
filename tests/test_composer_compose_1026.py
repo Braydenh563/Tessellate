@@ -48,6 +48,7 @@ FACTS: dict[str, dict] = {
     "social_confused": {},
     "social_ack": {},
     "social_compliment": {},
+    "due_none": {"span": "Friday 23 October"},
     "act_card": {"what": "remind you on Friday at 9: call the dentist"},
     "quiz_right": {},
     "quiz_close": {"a": "a column that identifies each row"},

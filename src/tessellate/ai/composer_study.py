@@ -503,6 +503,12 @@ def _off_topic(reply: str, card: study.Card) -> bool:
 QUIZ_CHIPS = ["Hint", "Skip", "Stop the quiz"]
 
 
+def _grade(ctx: Ctx, reply: str, card: study.Card) -> tuple[str, str]:
+    """The verdict on an answer (or a skip) and the composed line saying it."""
+    verdict = "skip" if _SKIP.match(reply) else study.grade(reply, card)
+    return verdict, compose.frame(f"quiz_{verdict}", ctx.mood, **({"a": card.a} if verdict != "right" else {}))
+
+
 def _continue_quiz(ctx: Ctx) -> Reply | None:
     header = _last_header(ctx.last_answer)
     reply = " ".join((ctx.asked or ctx.question).split())
@@ -522,11 +528,7 @@ def _continue_quiz(ctx: Ctx) -> Reply | None:
     if command:
         return command
     topic, n, total, score, done, rounds, note, deck, card = place
-    if _SKIP.match(reply):
-        verdict = "skip"
-    else:
-        verdict = study.grade(reply, card)
-    feedback = compose.frame(f"quiz_{verdict}", ctx.mood, **({"a": card.a} if verdict != "right" else {}))
+    verdict, feedback = _grade(ctx, reply, card)
     score += 1 if verdict in ("right", "close") else 0
     done += 1
     if n >= len(deck):

@@ -130,6 +130,12 @@ FRAMES: dict[str, tuple[Cand, ...]] = {
         c("No new dates fall in {span}; an earlier item is overdue.", "f"), c("{span} carries no new dates, but an item is overdue.", "f"),
         c("{span} is quiet, but an old date is waving at you.", "p"), c("No new dates {span}, yet something is past due.", "p"),
     ),
+    "due_none": (
+        c("Nothing is dated for {span}.", "w"), c("{span} is clear: no reminder and no dated note.", "w"), c("You have nothing dated for {span}.", "w"),
+        c("Nothing {span}.", "t"), c("{span}: clear.", "t"), c("No dates for {span}.", "t"),
+        c("No reminder or dated note falls on {span}.", "f"), c("The calendar holds nothing for {span}.", "f"),
+        c("{span} is wide open, not a date in sight.", "p"), c("Not a thing is dated for {span}. Enjoy the quiet.", "p"),
+    ),
     "plan": (
         c("Your plan for {span}, from your reminders and notes.", "w"), c("Here is {span}, laid out from what you have saved.", "w"),
         c("{span}, as your notes and reminders have it.", "w"),

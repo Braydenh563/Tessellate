@@ -37,3 +37,18 @@ def test_small_talk_follows_the_voice_and_the_emotion():
     assert not calm & formal
     stressed = {composer.social("sorry i am so stressed about the deadline", voice="natural", seed=str(n)) for n in range(40)}
     assert any("one thing at a time" in x or "plate" in x or "pressing" in x or "juggling" in x or "stress" in x.lower() for x in stressed)
+
+
+@pytest.mark.parametrize("q", ["due friday", "what's due friday", "what's on friday"])
+def test_an_empty_weekday_says_nothing_is_dated(ask, q):  # noqa: F811
+    said = ask(q, notes_only=False)
+    assert "Friday" in said or "friday" in said, said
+    assert "couldn't find" not in said, said
+    assert "Next up: Call the landlord" in said, said
+
+
+@pytest.mark.parametrize("q", ["the next 7 days", "what is the next 7 days"])
+def test_a_bare_span_is_a_due_question(ask, q):  # noqa: F811
+    said = ask(q, notes_only=False)
+    assert "Call the landlord" in said or "Nothing" in said or "dated" in said, said
+    assert "newest notes" not in said, said

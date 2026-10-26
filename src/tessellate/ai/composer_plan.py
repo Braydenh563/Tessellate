@@ -292,8 +292,9 @@ def _due(ctx: Ctx, win: tuple[date, date, str]) -> Reply | None:
     if not found and not overdue:
         # The reminders path answers an empty window: it names a waiting
         # reminder outside it, or the next day the notes give
-        # (tests/test_due_in_ask_1018.py).
-        return None
+        # (tests/test_due_in_ask_1018.py). A window it does not know (a
+        # weekday, "the next 7 days") has no such path, so it is said here.
+        return None if recognise.ahead_window(said) else _nothing_due(ctx, end, span)
     head = compose.head("due", ctx.mood, count=f"{len(found)} dated item{'s' if len(found) != 1 else ''}", span=span) if found \
         else compose.head("due_overdue", ctx.mood, span=span)
     head = compose.sentence_case(head)
@@ -303,6 +304,14 @@ def _due(ctx: Ctx, win: tuple[date, date, str]) -> Reply | None:
     if (end - start).days >= 3:
         lines += _next_reminder(ctx, end, found)
     return Reply("\n".join(lines), asks=["Plan my week"] if (end - start).days >= 3 else [])
+
+
+def _nothing_due(ctx: Ctx, end: date, span: str) -> Reply:
+    lines = [compose.sentence_case(compose.frame("due_none", ctx.mood, span=span))]
+    later, _o = events(ctx, end + timedelta(days=1), end + timedelta(days=3650))
+    if later:
+        lines += ["", f"Next up: {later[0].text} ({_long(later[0].day)} {later[0].day.year})."]
+    return Reply("\n".join(lines))
 
 
 def _next_reminder(ctx: Ctx, end: date, found: list[Event]) -> list[str]:
@@ -503,6 +512,11 @@ def _when_reply(ctx: Ctx, text: str) -> Reply | None:
     return _when_is(ctx, nxt.group("t") or nxt.group("t2")) if nxt else None
 
 
+def _asks_due(text: str, today: date) -> bool:
+    """"What is due", or a bare span ("the next 7 days"), or "what's on" with a window."""
+    return bool(_DUE.match(text) or ((_SPAN_WORDS.search(text) or _BUSY.match(text)) and window(text, today) is not None))
+
+
 def answer(ctx: Ctx) -> Reply | None:
     text = " ".join((ctx.question or "").split())
     if not text or len(text) > 200:
@@ -518,6 +532,4 @@ def answer(ctx: Ctx) -> Reply | None:
     plan = _PLAN.match(text)
     if plan:
         return _plan(ctx, _plan_window(text, " ".join(g for g in plan.groups() if g) or "this week", today))
-    if _DUE.match(text) or (_BUSY.match(text) and window(text, today) is not None):
-        return _due_reply(ctx, text, today)
-    return None
+    return _due_reply(ctx, text, today) if _asks_due(text, today) else None
