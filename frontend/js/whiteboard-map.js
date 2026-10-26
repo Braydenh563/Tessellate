@@ -3306,6 +3306,16 @@ window.addEventListener("pointercancel", wbClearMapNodeSizeCache, true);
 //: down. `radial` and `free` have no fixed direction, so the axis is chosen
 //: per edge from whichever delta is larger, which is what makes a radial map's
 //: edges leave a node on the side the child is actually on.
+//: A topic dragged beside its parent in a map that grows down: a line out of
+//: the parent's bottom into the child's top would double back (the owner,
+//: 2026-10-26: "refuses to connect to the side"), so it joins side to side.
+//: Only when the two are about level; a level of a tree is always further apart.
+function wbMapBesideParent(parent, p, child, c) {
+  const gapX = Math.max(child.x - (parent.x + p.w), parent.x - (child.x + c.w));
+  const gapY = Math.max(child.y - (parent.y + p.h), parent.y - (child.y + c.h));
+  return gapX > 0 && gapY < Math.min(p.h, c.h) / 2;
+}
+
 function wbMapEdgeAnchors(parent, child, mapLayout) {
   const p = wbMapNodeSize(parent);
   const c = wbMapNodeSize(child);
@@ -3335,6 +3345,8 @@ function wbMapEdgeAnchors(parent, child, mapLayout) {
   }
   if (layout === "radial" || layout === "free" || layout === "fishbone") {
     horizontal = Math.abs(child.x - parent.x) >= Math.abs(child.y - parent.y);
+  } else if (!horizontal && layout !== "timeline" && wbMapBesideParent(parent, p, child, c)) {
+    horizontal = true;
   }
   if (horizontal) {
     const leftward = child.x + c.w / 2 < parent.x + p.w / 2;

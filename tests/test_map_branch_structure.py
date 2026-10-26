@@ -67,3 +67,26 @@ def test_the_menu_sets_it_in_one_undo_step():
     menu = WB[WB.index('subItem("Structure"') :][:700]
     assert "WB_MAP_BRANCH_STRUCTURES" in menu and "Follow the map's layout" in menu
     assert '"branch_layout"' in MAP[MAP.index("const WB_MAP_CONTENT_KEYS") :][:400]
+
+
+def test_a_topic_beside_its_parent_joins_side_to_side_in_a_downward_map():
+    """The owner, 2026-10-26: a topic level with its parent still joined top to bottom."""
+    import json
+    import shutil
+    import subprocess
+
+    node = shutil.which("node")
+    if not node:
+        import pytest
+
+        pytest.skip("node is not installed")
+    helper = _body(MAP, "function wbMapBesideParent(") + "\n}"
+    box = {"w": 220, "h": 48}
+    cases = [
+        ({"x": 0, "y": 0}, {"x": 520, "y": 62}),  # the owner's capture: right, a little lower
+        ({"x": 0, "y": 0}, {"x": 0, "y": 124}),  # a tree level below: not beside
+        ({"x": 0, "y": 0}, {"x": 300, "y": 124}),  # a wide sibling a level down: not beside
+    ]
+    script = f"{helper}\nconsole.log(JSON.stringify({json.dumps(cases)}.map(([a, b]) => wbMapBesideParent(a, {json.dumps(box)}, b, {json.dumps(box)}))));"
+    run = subprocess.run([node, "-e", script], capture_output=True, text=True, check=True)
+    assert json.loads(run.stdout) == [True, False, False]

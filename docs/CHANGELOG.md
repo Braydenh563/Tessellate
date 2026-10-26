@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fix: in a mind map that grows down, a topic dragged level with its parent joined it bottom to top, doubling back. It now joins side to side.
 - Fix: the dashboard subtext showed the same pattern every day. It now shows a different one each day.
 - Fix: with Web on in Chat, opening the web panel took turning Web off and on again. A click on Web while it is on and the panel is shut now opens the panel; a click with the panel open turns Web off.
 - Lag log: the app now notices its own slow moments and writes down what caused them. A frame that blocked the page for 200 ms or more (with the scripts and functions that ran in it, and any forced layout), a click or key that took 300 ms to answer (which control, and whether the time went waiting, running or drawing) and a request that took 3 s, each with the view on screen, the last thing pressed, the page size and memory. They show in Settings > Logs as "Lag:" lines and are kept in lag.log in the logs folder (Settings > Maintenance > Open logs folder), so they survive a restart and can be sent as a file.
