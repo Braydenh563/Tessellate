@@ -357,6 +357,10 @@ class WhiteboardObjectData(BaseModel):
     #: header, drawn bold on a tint.
     cells: list[list[Annotated[str, StringConstraints(max_length=500)]]] | None = Field(default=None, max_length=50)
     header: bool | None = None
+    #: **A table's column widths** (wb5): one relative weight per column, so
+    #: [2, 1, 1] is a first column twice the others and the box's width the
+    #: sum. Absent means equal; a length other than the columns is refused.
+    col_widths: list[Annotated[float, Field(ge=0.1, le=20)]] | None = Field(default=None, max_length=20)
     #: **Edit data** (draw.io's custom properties; canvasdepth2): up to 30
     #: named values on an item, edited in the Format panel's Data tab.
     props: dict[
@@ -850,6 +854,8 @@ def _require_object_data(body: WhiteboardObjectBase) -> None:
         )
     elif body.kind == TABLE_KIND:
         _require_table_cells(body.data.cells)
+        if body.data.col_widths is not None and len(body.data.col_widths) != len(body.data.cells[0]):
+            raise HTTPException(status_code=422, detail="A table needs one width for each of its columns.")
     elif body.kind in MAP_REFERENCE_KINDS and body.data.ref_id is None:
         # A reference node with nothing to reference is the map equivalent of
         # a card pointing at note 9999 (this module's own opening comment): it

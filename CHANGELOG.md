@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard tables: Widen this column, Narrow this column and Equal column widths in the table menu (a quarter wider or a fifth narrower at the pressed cell, the others give way, the table keeps its width); the grid, the export, Add and Delete a column and Undo follow; a table made before is unchanged. Measured: first column 137.7px against 110.1px, 358px in all, export within 1px.
 - Whiteboard export: a sticky draws its folded corner (the board colour cut away and the darker fold, read off the board) and a picture with rounded corners is clipped to them, in SVG, PNG and PDF; the corner pixels read the paper and red before, now the board colour and the fold.
 - Whiteboard: Mermaid, draw.io, the Join command, Place joined and a dragged link, and every library placement now land on top of what is already on the board (drawings over drawings, cards over cards, frames under frames) instead of at a fixed z; 16 of 16 overlapped pairs came in under before, 0 now.
 - Whiteboard: a canvas shown with no pointer event since no longer reads 16px left and 60px high (the paste chip, drops and pastes at any zoom or pan; 20 of 20 measured points off, now 0), because its cached origin is dropped when the canvas resizes and the chip reads it fresh.

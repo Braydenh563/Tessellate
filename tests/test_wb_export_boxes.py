@@ -31,6 +31,7 @@ def _run(expr: str, prelude: str = ""):
         "const wbSvgWrapLines = (t) => [String(t)];"
         "const wbTableCells = (d) => d.data.cells;"
         + prelude
+        + _slice(FMT, "const WB_TABLE_WEIGHT_MIN", "//: **A text box, a sticky or a table, as the export draws it.**")
         + _slice(FMT, "//: **A text box, a sticky or a table, as the export draws it.**", "function wbBuildTable(")
         + f"console.log(JSON.stringify({expr}));"
     )

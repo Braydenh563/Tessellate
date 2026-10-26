@@ -483,6 +483,8 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         # A table's cells and header row (canvasdepth2); None on a text box.
         "cells": None,
         "header": None,
+        # And a table's column widths (wb5).
+        "col_widths": None,
         # Its custom properties, the Format panel's Data tab (canvasdepth2).
         "props": None,
         "page": None,

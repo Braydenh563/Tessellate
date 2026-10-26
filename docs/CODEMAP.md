@@ -2,9 +2,9 @@
 
 Generated 2026-10-26 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6543, frontend ids 2556, CSS sections 504, backend routes 622, backend modules 6678, test files 1400, tests 12400, plan headings 976.
+Counts: frontend functions 6547, frontend ids 2556, CSS sections 504, backend routes 622, backend modules 6678, test files 1400, tests 12406, plan headings 976.
 
-## Frontend functions (6543)
+## Frontend functions (6547)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -6123,24 +6123,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbSyncMoreMenu` | frontend/js/whiteboard-commands.js:508 |
 | `wbTool` | frontend/js/whiteboard-commands.js:107 |
 
-### frontend/js/whiteboard-format.js (86)
+### frontend/js/whiteboard-format.js (90)
 
 | Name | File:line |
 |---|---|
 | `wbAutoSizeFactors` | frontend/js/whiteboard-format.js:1172 |
 | `wbAutoSizeSelection` | frontend/js/whiteboard-format.js:1206 |
-| `wbBuildTable` | frontend/js/whiteboard-format.js:1467 |
+| `wbBuildTable` | frontend/js/whiteboard-format.js:1501 |
 | `wbClearTextFormat` | frontend/js/whiteboard-format.js:1060 |
 | `wbClearWaypoints` | frontend/js/whiteboard-format.js:1236 |
-| `wbColourButton` | frontend/js/whiteboard-format.js:1802 |
-| `wbColourHeading` | frontend/js/whiteboard-format.js:1817 |
-| `wbColourMenu` | frontend/js/whiteboard-format.js:1773 |
-| `wbColourName` | frontend/js/whiteboard-format.js:1703 |
-| `wbColourPairOf` | frontend/js/whiteboard-format.js:1714 |
+| `wbColourButton` | frontend/js/whiteboard-format.js:1871 |
+| `wbColourHeading` | frontend/js/whiteboard-format.js:1886 |
+| `wbColourMenu` | frontend/js/whiteboard-format.js:1842 |
+| `wbColourName` | frontend/js/whiteboard-format.js:1772 |
+| `wbColourPairOf` | frontend/js/whiteboard-format.js:1783 |
 | `wbCopySize` | frontend/js/whiteboard-format.js:1142 |
 | `wbDrawsRough` | frontend/js/whiteboard-format.js:1295 |
 | `wbDropLoneGroups` | frontend/js/whiteboard-format.js:1126 |
-| `wbEditTableCell` | frontend/js/whiteboard-format.js:1529 |
+| `wbEditTableCell` | frontend/js/whiteboard-format.js:1569 |
 | `wbFmtAngle` | frontend/js/whiteboard-format.js:343 |
 | `wbFmtApply` | frontend/js/whiteboard-format.js:177 |
 | `wbFmtBox` | frontend/js/whiteboard-format.js:205 |
@@ -6178,14 +6178,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbFormatSyncSoon` | frontend/js/whiteboard-format.js:440 |
 | `wbFormatToggle` | frontend/js/whiteboard-format.js:433 |
 | `wbGrowShapeToLabel` | frontend/js/whiteboard-format.js:1184 |
-| `wbHexOf` | frontend/js/whiteboard-format.js:1685 |
-| `wbInsertTable` | frontend/js/whiteboard-format.js:1505 |
-| `wbOpenColourMenu` | frontend/js/whiteboard-format.js:1826 |
-| `wbOpenPaperMenu` | frontend/js/whiteboard-format.js:1986 |
-| `wbPaintTable` | frontend/js/whiteboard-format.js:1484 |
+| `wbHexOf` | frontend/js/whiteboard-format.js:1754 |
+| `wbInsertTable` | frontend/js/whiteboard-format.js:1540 |
+| `wbOpenColourMenu` | frontend/js/whiteboard-format.js:1895 |
+| `wbOpenPaperMenu` | frontend/js/whiteboard-format.js:2055 |
+| `wbPaintTable` | frontend/js/whiteboard-format.js:1518 |
 | `wbPasteSize` | frontend/js/whiteboard-format.js:1152 |
-| `wbRecentColours` | frontend/js/whiteboard-format.js:1663 |
-| `wbRememberColour` | frontend/js/whiteboard-format.js:1672 |
+| `wbRecentColours` | frontend/js/whiteboard-format.js:1732 |
+| `wbRememberColour` | frontend/js/whiteboard-format.js:1741 |
 | `wbRemoveFromGroup` | frontend/js/whiteboard-format.js:1109 |
 | `wbReverseSelection` | frontend/js/whiteboard-format.js:1263 |
 | `wbReversedLinkFields` | frontend/js/whiteboard-format.js:1247 |
@@ -6193,26 +6193,30 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbRoughProbe` | frontend/js/whiteboard-format.js:1312 |
 | `wbRoughRandom` | frontend/js/whiteboard-format.js:1301 |
 | `wbRoughSpline` | frontend/js/whiteboard-format.js:1327 |
-| `wbSampleColour` | frontend/js/whiteboard-format.js:2052 |
-| `wbSetColourField` | frontend/js/whiteboard-format.js:1725 |
+| `wbSampleColour` | frontend/js/whiteboard-format.js:2121 |
+| `wbSetColourField` | frontend/js/whiteboard-format.js:1794 |
 | `wbSetLinkRoute` | frontend/js/whiteboard-format.js:373 |
-| `wbSetTable` | frontend/js/whiteboard-format.js:1519 |
-| `wbStartEyedrop` | frontend/js/whiteboard-format.js:2028 |
+| `wbSetTable` | frontend/js/whiteboard-format.js:1555 |
+| `wbStartEyedrop` | frontend/js/whiteboard-format.js:2097 |
 | `wbStepFontSize` | frontend/js/whiteboard-format.js:1067 |
-| `wbStopEyedrop` | frontend/js/whiteboard-format.js:2041 |
-| `wbSvgBoxBackdrop` | frontend/js/whiteboard-format.js:1415 |
-| `wbSvgBoxRadii` | frontend/js/whiteboard-format.js:1408 |
-| `wbSvgFoldColours` | frontend/js/whiteboard-format.js:1431 |
-| `wbSvgRoundedPath` | frontend/js/whiteboard-format.js:1403 |
-| `wbSvgStickyFold` | frontend/js/whiteboard-format.js:1436 |
-| `wbSvgTable` | frontend/js/whiteboard-format.js:1455 |
-| `wbSvgTableCell` | frontend/js/whiteboard-format.js:1447 |
+| `wbStopEyedrop` | frontend/js/whiteboard-format.js:2110 |
+| `wbSvgBoxBackdrop` | frontend/js/whiteboard-format.js:1446 |
+| `wbSvgBoxRadii` | frontend/js/whiteboard-format.js:1439 |
+| `wbSvgFoldColours` | frontend/js/whiteboard-format.js:1462 |
+| `wbSvgRoundedPath` | frontend/js/whiteboard-format.js:1434 |
+| `wbSvgStickyFold` | frontend/js/whiteboard-format.js:1467 |
+| `wbSvgTable` | frontend/js/whiteboard-format.js:1486 |
+| `wbSvgTableCell` | frontend/js/whiteboard-format.js:1478 |
 | `wbTableCells` | frontend/js/whiteboard-format.js:1392 |
-| `wbTableMenuRows` | frontend/js/whiteboard-format.js:1608 |
-| `wbTableReshape` | frontend/js/whiteboard-format.js:1582 |
+| `wbTableColumnEdges` | frontend/js/whiteboard-format.js:1422 |
+| `wbTableMenuRows` | frontend/js/whiteboard-format.js:1676 |
+| `wbTableReshape` | frontend/js/whiteboard-format.js:1622 |
+| `wbTableResizeColumn` | frontend/js/whiteboard-format.js:1414 |
+| `wbTableWeights` | frontend/js/whiteboard-format.js:1404 |
+| `wbTableWidthRows` | frontend/js/whiteboard-format.js:1660 |
 | `wbToggleLabelFit` | frontend/js/whiteboard-format.js:1054 |
 | `wbTurnSelection` | frontend/js/whiteboard-format.js:1082 |
-| `wbWriteColourPair` | frontend/js/whiteboard-format.js:1738 |
+| `wbWriteColourPair` | frontend/js/whiteboard-format.js:1807 |
 
 ### frontend/js/whiteboard-history.js (16)
 
@@ -10573,7 +10577,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |  | POST | `create_reminder` | src/tessellate/api/routes_reminders.py:476 |
 |  | POST | `create_type` | src/tessellate/api/routes_relations.py:76 |
 |  | POST | `start` | src/tessellate/api/routes_bench.py:200 |
-| `/` | GET | `get_whiteboard_state` | src/tessellate/api/routes_whiteboard.py:963 |
+| `/` | GET | `get_whiteboard_state` | src/tessellate/api/routes_whiteboard.py:969 |
 | `/account` | GET | `account` | src/tessellate/api/routes_auth.py:1458 |
 | `/activity` | GET | `list_activity` | src/tessellate/api/routes_tasks.py:976 |
 | `/activity/{job_id:path}/stop` | POST | `stop_activity` | src/tessellate/api/routes_tasks.py:1057 |
@@ -10609,26 +10613,26 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/board-library/{item_id}` | PUT | `update_library_item` | src/tessellate/api/routes_board_library.py:537 |
 | `/board-library/{item_id}/duplicate` | POST | `duplicate_library_item` | src/tessellate/api/routes_board_library.py:609 |
 | `/board-library/{item_id}/restore` | POST | `restore_library_item` | src/tessellate/api/routes_board_library.py:598 |
-| `/boards` | GET | `list_boards` | src/tessellate/api/routes_whiteboard.py:2480 |
-| `/boards` | POST | `create_board` | src/tessellate/api/routes_whiteboard.py:2737 |
-| `/boards/generate` | POST | `generate_map` | src/tessellate/api/routes_whiteboard.py:5949 |
-| `/boards/import` | POST | `import_board` | src/tessellate/api/routes_whiteboard.py:6023 |
-| `/boards/propose` | POST | `propose_map` | src/tessellate/api/routes_whiteboard.py:5820 |
-| `/boards/{board_id}` | PUT | `rename_board` | src/tessellate/api/routes_whiteboard.py:2944 |
-| `/boards/{board_id}/duplicate` | POST | `duplicate_board` | src/tessellate/api/routes_whiteboard.py:2779 |
-| `/boards/{board_id}/export` | GET | `export_board` | src/tessellate/api/routes_whiteboard.py:4998 |
-| `/boards/{board_id}/nodes` | POST | `create_map_node` | src/tessellate/api/routes_whiteboard.py:3871 |
-| `/boards/{board_id}/nodes/clear-style` | POST | `clear_map_node_styles` | src/tessellate/api/routes_whiteboard.py:4296 |
-| `/boards/{board_id}/nodes/move-many` | PUT | `move_map_nodes` | src/tessellate/api/routes_whiteboard.py:4159 |
-| `/boards/{board_id}/nodes/outline` | POST | `paste_map_outline` | src/tessellate/api/routes_whiteboard.py:3966 |
+| `/boards` | GET | `list_boards` | src/tessellate/api/routes_whiteboard.py:2486 |
+| `/boards` | POST | `create_board` | src/tessellate/api/routes_whiteboard.py:2743 |
+| `/boards/generate` | POST | `generate_map` | src/tessellate/api/routes_whiteboard.py:5955 |
+| `/boards/import` | POST | `import_board` | src/tessellate/api/routes_whiteboard.py:6029 |
+| `/boards/propose` | POST | `propose_map` | src/tessellate/api/routes_whiteboard.py:5826 |
+| `/boards/{board_id}` | PUT | `rename_board` | src/tessellate/api/routes_whiteboard.py:2950 |
+| `/boards/{board_id}/duplicate` | POST | `duplicate_board` | src/tessellate/api/routes_whiteboard.py:2785 |
+| `/boards/{board_id}/export` | GET | `export_board` | src/tessellate/api/routes_whiteboard.py:5004 |
+| `/boards/{board_id}/nodes` | POST | `create_map_node` | src/tessellate/api/routes_whiteboard.py:3877 |
+| `/boards/{board_id}/nodes/clear-style` | POST | `clear_map_node_styles` | src/tessellate/api/routes_whiteboard.py:4302 |
+| `/boards/{board_id}/nodes/move-many` | PUT | `move_map_nodes` | src/tessellate/api/routes_whiteboard.py:4165 |
+| `/boards/{board_id}/nodes/outline` | POST | `paste_map_outline` | src/tessellate/api/routes_whiteboard.py:3972 |
 | `/boards/{board_id}/nodes/{node_id}/branches` | POST | `add_branches` | src/tessellate/api/routes_map_suggest.py:306 |
 | `/boards/{board_id}/nodes/{node_id}/expand` | POST | `expand_from_note` | src/tessellate/api/routes_map_suggest.py:271 |
-| `/boards/{board_id}/nodes/{node_id}/move` | PUT | `move_map_node` | src/tessellate/api/routes_whiteboard.py:4042 |
+| `/boards/{board_id}/nodes/{node_id}/move` | PUT | `move_map_node` | src/tessellate/api/routes_whiteboard.py:4048 |
 | `/boards/{board_id}/nodes/{node_id}/suggest` | POST | `suggest_branches` | src/tessellate/api/routes_map_suggest.py:146 |
 | `/boards/{board_id}/nodes/{node_id}/summary` | POST | `summarise_branch` | src/tessellate/api/routes_map_suggest.py:417 |
-| `/boards/{board_id}/thumbnail` | PUT | `put_thumbnail` | src/tessellate/api/routes_whiteboard.py:2416 |
-| `/boards/{board_id}/thumbnail/state` | GET | `thumbnail_state` | src/tessellate/api/routes_whiteboard.py:2405 |
-| `/boards/{board_id}/tree` | GET | `board_tree` | src/tessellate/api/routes_whiteboard.py:3804 |
+| `/boards/{board_id}/thumbnail` | PUT | `put_thumbnail` | src/tessellate/api/routes_whiteboard.py:2422 |
+| `/boards/{board_id}/thumbnail/state` | GET | `thumbnail_state` | src/tessellate/api/routes_whiteboard.py:2411 |
+| `/boards/{board_id}/tree` | GET | `board_tree` | src/tessellate/api/routes_whiteboard.py:3810 |
 | `/budgets` | GET | `budgets` | src/tessellate/api/routes_bench.py:124 |
 | `/bulk` | POST | `bulk_action` | src/tessellate/api/routes_learned.py:282 |
 | `/bulk` | POST | `bulk_edit_tags` | src/tessellate/api/routes_tags.py:104 |
@@ -10766,7 +10770,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/history/snapshots/{snapshot_id}` | DELETE | `delete_snapshot` | src/tessellate/api/routes_board_history.py:372 |
 | `/history/{event_id}` | GET | `board_at` | src/tessellate/api/routes_board_history.py:385 |
 | `/history/{event_id}/restore` | POST | `restore_board` | src/tessellate/api/routes_board_history.py:528 |
-| `/images` | GET | `list_images` | src/tessellate/api/routes_whiteboard.py:2669 |
+| `/images` | GET | `list_images` | src/tessellate/api/routes_whiteboard.py:2675 |
 | `/import` | POST | `import_document` | src/tessellate/api/routes_documents.py:587 |
 | `/import.ics` | POST | `import_ics` | src/tessellate/api/routes_reminders.py:401 |
 | `/import/app` | POST | `import_app` | src/tessellate/api/routes_import.py:63 |
@@ -10821,7 +10825,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/maps/from-text` | POST | `map_from_text` | src/tessellate/api/routes_map_from_notes.py:474 |
 | `/media` | GET | `list_media` | src/tessellate/api/routes_files.py:1444 |
 | `/media-session` | POST | `media_session` | src/tessellate/api/routes_auth.py:926 |
-| `/media/board-thumb/{board_id}` | GET | `get_thumbnail` | src/tessellate/api/routes_whiteboard.py:2447 |
+| `/media/board-thumb/{board_id}` | GET | `get_thumbnail` | src/tessellate/api/routes_whiteboard.py:2453 |
 | `/media/meta/{filename}` | GET | `media_meta` | src/tessellate/api/routes_files.py:1601 |
 | `/media/orphans` | DELETE | `clean_orphaned_media` | src/tessellate/api/routes_files.py:1576 |
 | `/media/orphans` | GET | `list_orphaned_media` | src/tessellate/api/routes_files.py:1545 |
@@ -10863,16 +10867,16 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/most-opened` | GET | `most_opened` | src/tessellate/api/routes_vision.py:112 |
 | `/move` | POST | `move_notes` | src/tessellate/api/routes_categories.py:161 |
 | `/near/{entry_id}` | GET | `near` | src/tessellate/api/routes_resurface.py:145 |
-| `/nodes` | POST | `create_node` | src/tessellate/api/routes_whiteboard.py:3049 |
-| `/nodes/{node_id}` | DELETE | `delete_node` | src/tessellate/api/routes_whiteboard.py:3126 |
-| `/nodes/{node_id}` | PUT | `update_node` | src/tessellate/api/routes_whiteboard.py:3094 |
+| `/nodes` | POST | `create_node` | src/tessellate/api/routes_whiteboard.py:3055 |
+| `/nodes/{node_id}` | DELETE | `delete_node` | src/tessellate/api/routes_whiteboard.py:3132 |
+| `/nodes/{node_id}` | PUT | `update_node` | src/tessellate/api/routes_whiteboard.py:3100 |
 | `/note-types` | GET | `list_note_types` | src/tessellate/api/routes_properties.py:133 |
 | `/note-types` | POST | `create_note_type` | src/tessellate/api/routes_properties.py:145 |
 | `/note-types/{type_id}` | DELETE | `delete_note_type` | src/tessellate/api/routes_properties.py:189 |
 | `/note-types/{type_id}` | PATCH | `patch_note_type` | src/tessellate/api/routes_properties.py:167 |
-| `/objects` | POST | `create_object` | src/tessellate/api/routes_whiteboard.py:3231 |
-| `/objects/{object_id}` | DELETE | `delete_object` | src/tessellate/api/routes_whiteboard.py:3309 |
-| `/objects/{object_id}` | PUT | `update_object` | src/tessellate/api/routes_whiteboard.py:3275 |
+| `/objects` | POST | `create_object` | src/tessellate/api/routes_whiteboard.py:3237 |
+| `/objects/{object_id}` | DELETE | `delete_object` | src/tessellate/api/routes_whiteboard.py:3315 |
+| `/objects/{object_id}` | PUT | `update_object` | src/tessellate/api/routes_whiteboard.py:3281 |
 | `/ocr-model` | POST | `set_ocr_model` | src/tessellate/api/routes_models.py:810 |
 | `/ocr-readers` | GET | `ocr_readers` | src/tessellate/api/routes_files.py:3310 |
 | `/ocr/language` | POST | `set_ocr_language` | src/tessellate/api/routes_files.py:3359 |
@@ -10952,9 +10956,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/seed-examples` | POST | `seed_example_entries` | src/tessellate/api/routes_entries.py:2617 |
 | `/setup` | POST | `setup` | src/tessellate/api/routes_auth.py:690 |
 | `/shutdown` | POST | `shutdown` | src/tessellate/api/routes_tasks.py:870 |
-| `/sketches` | POST | `create_sketch` | src/tessellate/api/routes_whiteboard.py:3147 |
-| `/sketches/{sketch_id}` | DELETE | `delete_sketch` | src/tessellate/api/routes_whiteboard.py:3202 |
-| `/sketches/{sketch_id}` | PUT | `update_sketch` | src/tessellate/api/routes_whiteboard.py:3177 |
+| `/sketches` | POST | `create_sketch` | src/tessellate/api/routes_whiteboard.py:3153 |
+| `/sketches/{sketch_id}` | DELETE | `delete_sketch` | src/tessellate/api/routes_whiteboard.py:3208 |
+| `/sketches/{sketch_id}` | PUT | `update_sketch` | src/tessellate/api/routes_whiteboard.py:3183 |
 | `/skills` | GET | `list_skills` | src/tessellate/api/routes_settings.py:1456 |
 | `/source-status` | GET | `source_update_status` | src/tessellate/api/routes_update.py:672 |
 | `/spaces` | GET | `get_spaces` | src/tessellate/api/routes_spaces.py:66 |
@@ -12830,8 +12834,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2654 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2756 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2655 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2757 |
 
 ### src/tessellate/ai/inbox.py (7)
 
@@ -16929,169 +16933,169 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `BoardBackground` | src/tessellate/api/routes_whiteboard.py:1379 |
-| `BoardCreate` | src/tessellate/api/routes_whiteboard.py:1573 |
-| `BoardImageOut` | src/tessellate/api/routes_whiteboard.py:2662 |
-| `BoardLayer` | src/tessellate/api/routes_whiteboard.py:1288 |
-| `BoardOut` | src/tessellate/api/routes_whiteboard.py:1475 |
-| `BoardRename` | src/tessellate/api/routes_whiteboard.py:2899 |
-| `BoardTypeMixin` | src/tessellate/api/routes_whiteboard.py:1547 |
-| `MapClearStyleOut` | src/tessellate/api/routes_whiteboard.py:4273 |
-| `MapGenerate` | src/tessellate/api/routes_whiteboard.py:5889 |
-| `MapImport` | src/tessellate/api/routes_whiteboard.py:5079 |
-| `MapNodeCreate` | src/tessellate/api/routes_whiteboard.py:3831 |
-| `MapNodeMove` | src/tessellate/api/routes_whiteboard.py:4007 |
-| `MapNodeMoveOne` | src/tessellate/api/routes_whiteboard.py:4098 |
-| `MapNodesMove` | src/tessellate/api/routes_whiteboard.py:4113 |
-| `MapOutlinePaste` | src/tessellate/api/routes_whiteboard.py:3936 |
-| `MapProposal` | src/tessellate/api/routes_whiteboard.py:5731 |
-| `MapTreeOut` | src/tessellate/api/routes_whiteboard.py:3765 |
+| `BoardBackground` | src/tessellate/api/routes_whiteboard.py:1385 |
+| `BoardCreate` | src/tessellate/api/routes_whiteboard.py:1579 |
+| `BoardImageOut` | src/tessellate/api/routes_whiteboard.py:2668 |
+| `BoardLayer` | src/tessellate/api/routes_whiteboard.py:1294 |
+| `BoardOut` | src/tessellate/api/routes_whiteboard.py:1481 |
+| `BoardRename` | src/tessellate/api/routes_whiteboard.py:2905 |
+| `BoardTypeMixin` | src/tessellate/api/routes_whiteboard.py:1553 |
+| `MapClearStyleOut` | src/tessellate/api/routes_whiteboard.py:4279 |
+| `MapGenerate` | src/tessellate/api/routes_whiteboard.py:5895 |
+| `MapImport` | src/tessellate/api/routes_whiteboard.py:5085 |
+| `MapNodeCreate` | src/tessellate/api/routes_whiteboard.py:3837 |
+| `MapNodeMove` | src/tessellate/api/routes_whiteboard.py:4013 |
+| `MapNodeMoveOne` | src/tessellate/api/routes_whiteboard.py:4104 |
+| `MapNodesMove` | src/tessellate/api/routes_whiteboard.py:4119 |
+| `MapOutlinePaste` | src/tessellate/api/routes_whiteboard.py:3942 |
+| `MapProposal` | src/tessellate/api/routes_whiteboard.py:5737 |
+| `MapTreeOut` | src/tessellate/api/routes_whiteboard.py:3771 |
 | `WhiteboardComment` | src/tessellate/api/routes_whiteboard.py:270 |
 | `WhiteboardNodeBase` | src/tessellate/api/routes_whiteboard.py:295 |
 | `WhiteboardNodeOut` | src/tessellate/api/routes_whiteboard.py:318 |
-| `WhiteboardObjectBase` | src/tessellate/api/routes_whiteboard.py:730 |
+| `WhiteboardObjectBase` | src/tessellate/api/routes_whiteboard.py:734 |
 | `WhiteboardObjectData` | src/tessellate/api/routes_whiteboard.py:339 |
-| `WhiteboardObjectOut` | src/tessellate/api/routes_whiteboard.py:753 |
+| `WhiteboardObjectOut` | src/tessellate/api/routes_whiteboard.py:757 |
 | `WhiteboardSketchBase` | src/tessellate/api/routes_whiteboard.py:324 |
 | `WhiteboardSketchOut` | src/tessellate/api/routes_whiteboard.py:333 |
-| `WhiteboardStateOut` | src/tessellate/api/routes_whiteboard.py:864 |
-| `_PathEnd` | src/tessellate/api/routes_whiteboard.py:1886 |
-| `_apply_board_look` | src/tessellate/api/routes_whiteboard.py:2921 |
-| `_apply_comments` | src/tessellate/api/routes_whiteboard.py:3042 |
-| `_board_background` | src/tessellate/api/routes_whiteboard.py:1417 |
-| `_board_entry` | src/tessellate/api/routes_whiteboard.py:3795 |
-| `_board_filter` | src/tessellate/api/routes_whiteboard.py:874 |
-| `_board_layers` | src/tessellate/api/routes_whiteboard.py:1309 |
-| `_board_numbered` | src/tessellate/api/routes_whiteboard.py:1245 |
-| `_board_palette` | src/tessellate/api/routes_whiteboard.py:1693 |
-| `_board_preview` | src/tessellate/api/routes_whiteboard.py:2201 |
-| `_board_settings` | src/tessellate/api/routes_whiteboard.py:1039 |
-| `_board_theme` | src/tessellate/api/routes_whiteboard.py:1168 |
-| `_branch_children` | src/tessellate/api/routes_whiteboard.py:1698 |
-| `_build_tree` | src/tessellate/api/routes_whiteboard.py:3658 |
-| `_card_preview_rows` | src/tessellate/api/routes_whiteboard.py:1994 |
-| `_clean_import_style` | src/tessellate/api/routes_whiteboard.py:5169 |
-| `_clean_levels` | src/tessellate/api/routes_whiteboard.py:1134 |
-| `_clean_theme` | src/tessellate/api/routes_whiteboard.py:1092 |
-| `_cross_links` | src/tessellate/api/routes_whiteboard.py:3733 |
-| `_current_thumb_fp` | src/tessellate/api/routes_whiteboard.py:2398 |
-| `_delete_one_object` | src/tessellate/api/routes_whiteboard.py:3387 |
-| `_drop_orphan_links` | src/tessellate/api/routes_whiteboard.py:989 |
-| `_export_freemind` | src/tessellate/api/routes_whiteboard.py:4834 |
-| `_export_markdown` | src/tessellate/api/routes_whiteboard.py:4486 |
-| `_export_node_id` | src/tessellate/api/routes_whiteboard.py:4771 |
-| `_export_opml` | src/tessellate/api/routes_whiteboard.py:4691 |
-| `_export_text` | src/tessellate/api/routes_whiteboard.py:4527 |
-| `_export_tree` | src/tessellate/api/routes_whiteboard.py:4384 |
-| `_export_xmind` | src/tessellate/api/routes_whiteboard.py:4954 |
-| `_first_cycle` | src/tessellate/api/routes_whiteboard.py:4130 |
-| `_flatten_parsed` | src/tessellate/api/routes_whiteboard.py:6012 |
-| `_forget_links_to` | src/tessellate/api/routes_whiteboard.py:884 |
-| `_freemind_attributes` | src/tessellate/api/routes_whiteboard.py:4775 |
-| `_freemind_edge` | src/tessellate/api/routes_whiteboard.py:4810 |
-| `_freemind_font` | src/tessellate/api/routes_whiteboard.py:4796 |
-| `_freemind_style` | src/tessellate/api/routes_whiteboard.py:5203 |
-| `_import_link_targets` | src/tessellate/api/routes_whiteboard.py:5245 |
-| `_is_descendant` | src/tessellate/api/routes_whiteboard.py:4013 |
-| `_is_link_sketch` | src/tessellate/api/routes_whiteboard.py:1465 |
+| `WhiteboardStateOut` | src/tessellate/api/routes_whiteboard.py:870 |
+| `_PathEnd` | src/tessellate/api/routes_whiteboard.py:1892 |
+| `_apply_board_look` | src/tessellate/api/routes_whiteboard.py:2927 |
+| `_apply_comments` | src/tessellate/api/routes_whiteboard.py:3048 |
+| `_board_background` | src/tessellate/api/routes_whiteboard.py:1423 |
+| `_board_entry` | src/tessellate/api/routes_whiteboard.py:3801 |
+| `_board_filter` | src/tessellate/api/routes_whiteboard.py:880 |
+| `_board_layers` | src/tessellate/api/routes_whiteboard.py:1315 |
+| `_board_numbered` | src/tessellate/api/routes_whiteboard.py:1251 |
+| `_board_palette` | src/tessellate/api/routes_whiteboard.py:1699 |
+| `_board_preview` | src/tessellate/api/routes_whiteboard.py:2207 |
+| `_board_settings` | src/tessellate/api/routes_whiteboard.py:1045 |
+| `_board_theme` | src/tessellate/api/routes_whiteboard.py:1174 |
+| `_branch_children` | src/tessellate/api/routes_whiteboard.py:1704 |
+| `_build_tree` | src/tessellate/api/routes_whiteboard.py:3664 |
+| `_card_preview_rows` | src/tessellate/api/routes_whiteboard.py:2000 |
+| `_clean_import_style` | src/tessellate/api/routes_whiteboard.py:5175 |
+| `_clean_levels` | src/tessellate/api/routes_whiteboard.py:1140 |
+| `_clean_theme` | src/tessellate/api/routes_whiteboard.py:1098 |
+| `_cross_links` | src/tessellate/api/routes_whiteboard.py:3739 |
+| `_current_thumb_fp` | src/tessellate/api/routes_whiteboard.py:2404 |
+| `_delete_one_object` | src/tessellate/api/routes_whiteboard.py:3393 |
+| `_drop_orphan_links` | src/tessellate/api/routes_whiteboard.py:995 |
+| `_export_freemind` | src/tessellate/api/routes_whiteboard.py:4840 |
+| `_export_markdown` | src/tessellate/api/routes_whiteboard.py:4492 |
+| `_export_node_id` | src/tessellate/api/routes_whiteboard.py:4777 |
+| `_export_opml` | src/tessellate/api/routes_whiteboard.py:4697 |
+| `_export_text` | src/tessellate/api/routes_whiteboard.py:4533 |
+| `_export_tree` | src/tessellate/api/routes_whiteboard.py:4390 |
+| `_export_xmind` | src/tessellate/api/routes_whiteboard.py:4960 |
+| `_first_cycle` | src/tessellate/api/routes_whiteboard.py:4136 |
+| `_flatten_parsed` | src/tessellate/api/routes_whiteboard.py:6018 |
+| `_forget_links_to` | src/tessellate/api/routes_whiteboard.py:890 |
+| `_freemind_attributes` | src/tessellate/api/routes_whiteboard.py:4781 |
+| `_freemind_edge` | src/tessellate/api/routes_whiteboard.py:4816 |
+| `_freemind_font` | src/tessellate/api/routes_whiteboard.py:4802 |
+| `_freemind_style` | src/tessellate/api/routes_whiteboard.py:5209 |
+| `_import_link_targets` | src/tessellate/api/routes_whiteboard.py:5251 |
+| `_is_descendant` | src/tessellate/api/routes_whiteboard.py:4019 |
+| `_is_link_sketch` | src/tessellate/api/routes_whiteboard.py:1471 |
 | `_is_one_emoji` | src/tessellate/api/routes_whiteboard.py:228 |
-| `_link_preview` | src/tessellate/api/routes_whiteboard.py:2025 |
-| `_map_branch_colors` | src/tessellate/api/routes_whiteboard.py:1734 |
-| `_map_kind_ok` | src/tessellate/api/routes_whiteboard.py:3437 |
-| `_map_node_dict` | src/tessellate/api/routes_whiteboard.py:3630 |
-| `_map_node_style` | src/tessellate/api/routes_whiteboard.py:3616 |
-| `_map_objects` | src/tessellate/api/routes_whiteboard.py:3702 |
-| `_markdown_note_lines` | src/tessellate/api/routes_whiteboard.py:4548 |
-| `_next_position` | src/tessellate/api/routes_whiteboard.py:3846 |
-| `_note_reference_label` | src/tessellate/api/routes_whiteboard.py:3497 |
-| `_note_titles` | src/tessellate/api/routes_whiteboard.py:5758 |
-| `_object_data` | src/tessellate/api/routes_whiteboard.py:2108 |
-| `_object_data` | src/tessellate/api/routes_whiteboard.py:3557 |
-| `_object_preview_rows` | src/tessellate/api/routes_whiteboard.py:2117 |
-| `_object_to_out` | src/tessellate/api/routes_whiteboard.py:813 |
-| `_on_current_layer` | src/tessellate/api/routes_whiteboard.py:1364 |
-| `_opml_style` | src/tessellate/api/routes_whiteboard.py:5228 |
-| `_other_reference_label` | src/tessellate/api/routes_whiteboard.py:3510 |
-| `_outline_attach` | src/tessellate/api/routes_whiteboard.py:5500 |
-| `_outline_covering` | src/tessellate/api/routes_whiteboard.py:5802 |
-| `_outline_from_filing` | src/tessellate/api/routes_whiteboard.py:5773 |
-| `_outline_from_paste` | src/tessellate/api/routes_whiteboard.py:3946 |
-| `_outline_node` | src/tessellate/api/routes_whiteboard.py:5513 |
-| `_outline_note_line` | src/tessellate/api/routes_whiteboard.py:5488 |
-| `_outline_numbers` | src/tessellate/api/routes_whiteboard.py:4423 |
-| `_outline_rows` | src/tessellate/api/routes_whiteboard.py:4353 |
-| `_parent_map` | src/tessellate/api/routes_whiteboard.py:4120 |
-| `_parse_freemind` | src/tessellate/api/routes_whiteboard.py:5256 |
-| `_parse_markdown_outline` | src/tessellate/api/routes_whiteboard.py:5523 |
-| `_parse_opml` | src/tessellate/api/routes_whiteboard.py:5320 |
-| `_parse_xmind` | src/tessellate/api/routes_whiteboard.py:5407 |
-| `_parse_xml_document` | src/tessellate/api/routes_whiteboard.py:5104 |
-| `_path_bbox` | src/tessellate/api/routes_whiteboard.py:1824 |
-| `_place_map_nodes` | src/tessellate/api/routes_whiteboard.py:5587 |
-| `_preview_aspect` | src/tessellate/api/routes_whiteboard.py:2166 |
-| `_preview_edges` | src/tessellate/api/routes_whiteboard.py:2183 |
-| `_preview_fields` | src/tessellate/api/routes_whiteboard.py:2335 |
-| `_preview_fingerprint` | src/tessellate/api/routes_whiteboard.py:2294 |
-| `_preview_items` | src/tessellate/api/routes_whiteboard.py:1937 |
-| `_preview_points` | src/tessellate/api/routes_whiteboard.py:1583 |
-| `_preview_size` | src/tessellate/api/routes_whiteboard.py:1785 |
-| `_proposal_notes` | src/tessellate/api/routes_whiteboard.py:5739 |
-| `_record_map_creation` | src/tessellate/api/routes_whiteboard.py:5902 |
-| `_reference_facets` | src/tessellate/api/routes_whiteboard.py:3526 |
-| `_reference_label` | src/tessellate/api/routes_whiteboard.py:3481 |
-| `_require_board` | src/tessellate/api/routes_whiteboard.py:936 |
-| `_require_entry` | src/tessellate/api/routes_whiteboard.py:929 |
-| `_require_object_data` | src/tessellate/api/routes_whiteboard.py:840 |
-| `_require_reference` | src/tessellate/api/routes_whiteboard.py:3449 |
-| `_require_table_cells` | src/tessellate/api/routes_whiteboard.py:830 |
-| `_restore_import_links` | src/tessellate/api/routes_whiteboard.py:5658 |
-| `_sibling_key` | src/tessellate/api/routes_whiteboard.py:3724 |
-| `_sketch_preview` | src/tessellate/api/routes_whiteboard.py:1897 |
-| `_sketch_preview_rows` | src/tessellate/api/routes_whiteboard.py:2069 |
-| `_store_board_background` | src/tessellate/api/routes_whiteboard.py:1441 |
-| `_store_board_layers` | src/tessellate/api/routes_whiteboard.py:1327 |
-| `_store_board_numbered` | src/tessellate/api/routes_whiteboard.py:1263 |
-| `_store_board_settings` | src/tessellate/api/routes_whiteboard.py:1066 |
-| `_store_board_theme` | src/tessellate/api/routes_whiteboard.py:1181 |
-| `_strip_outline_numbers` | src/tessellate/api/routes_whiteboard.py:4457 |
-| `_subtree` | src/tessellate/api/routes_whiteboard.py:3356 |
-| `_themed_style` | src/tessellate/api/routes_whiteboard.py:1215 |
-| `_thumb_board` | src/tessellate/api/routes_whiteboard.py:2393 |
-| `_thumb_fp` | src/tessellate/api/routes_whiteboard.py:2381 |
-| `_without_pins` | src/tessellate/api/routes_whiteboard.py:1233 |
-| `_xmind_marks` | src/tessellate/api/routes_whiteboard.py:5397 |
-| `_xmind_style` | src/tessellate/api/routes_whiteboard.py:5379 |
-| `_xmind_topic` | src/tessellate/api/routes_whiteboard.py:4925 |
-| `_xml_attribute` | src/tessellate/api/routes_whiteboard.py:4676 |
-| `board_tree` | src/tessellate/api/routes_whiteboard.py:3805 |
-| `clear_map_node_styles` | src/tessellate/api/routes_whiteboard.py:4298 |
-| `create_board` | src/tessellate/api/routes_whiteboard.py:2739 |
-| `create_map_node` | src/tessellate/api/routes_whiteboard.py:3875 |
-| `create_node` | src/tessellate/api/routes_whiteboard.py:3051 |
-| `create_object` | src/tessellate/api/routes_whiteboard.py:3233 |
-| `create_sketch` | src/tessellate/api/routes_whiteboard.py:3149 |
-| `current_layer` | src/tessellate/api/routes_whiteboard.py:1352 |
-| `delete_node` | src/tessellate/api/routes_whiteboard.py:3128 |
-| `delete_object` | src/tessellate/api/routes_whiteboard.py:3311 |
-| `delete_sketch` | src/tessellate/api/routes_whiteboard.py:3204 |
-| `duplicate_board` | src/tessellate/api/routes_whiteboard.py:2781 |
-| `export_board` | src/tessellate/api/routes_whiteboard.py:4999 |
-| `generate_map` | src/tessellate/api/routes_whiteboard.py:5950 |
-| `get_thumbnail` | src/tessellate/api/routes_whiteboard.py:2448 |
-| `get_whiteboard_state` | src/tessellate/api/routes_whiteboard.py:964 |
-| `import_board` | src/tessellate/api/routes_whiteboard.py:6024 |
-| `list_boards` | src/tessellate/api/routes_whiteboard.py:2481 |
-| `list_images` | src/tessellate/api/routes_whiteboard.py:2670 |
-| `move_map_node` | src/tessellate/api/routes_whiteboard.py:4046 |
-| `move_map_nodes` | src/tessellate/api/routes_whiteboard.py:4161 |
-| `paste_map_outline` | src/tessellate/api/routes_whiteboard.py:3971 |
-| `propose_map` | src/tessellate/api/routes_whiteboard.py:5821 |
-| `put_thumbnail` | src/tessellate/api/routes_whiteboard.py:2417 |
-| `rename_board` | src/tessellate/api/routes_whiteboard.py:2945 |
-| `thumbnail_state` | src/tessellate/api/routes_whiteboard.py:2406 |
-| `update_node` | src/tessellate/api/routes_whiteboard.py:3096 |
-| `update_object` | src/tessellate/api/routes_whiteboard.py:3277 |
-| `update_sketch` | src/tessellate/api/routes_whiteboard.py:3179 |
+| `_link_preview` | src/tessellate/api/routes_whiteboard.py:2031 |
+| `_map_branch_colors` | src/tessellate/api/routes_whiteboard.py:1740 |
+| `_map_kind_ok` | src/tessellate/api/routes_whiteboard.py:3443 |
+| `_map_node_dict` | src/tessellate/api/routes_whiteboard.py:3636 |
+| `_map_node_style` | src/tessellate/api/routes_whiteboard.py:3622 |
+| `_map_objects` | src/tessellate/api/routes_whiteboard.py:3708 |
+| `_markdown_note_lines` | src/tessellate/api/routes_whiteboard.py:4554 |
+| `_next_position` | src/tessellate/api/routes_whiteboard.py:3852 |
+| `_note_reference_label` | src/tessellate/api/routes_whiteboard.py:3503 |
+| `_note_titles` | src/tessellate/api/routes_whiteboard.py:5764 |
+| `_object_data` | src/tessellate/api/routes_whiteboard.py:2114 |
+| `_object_data` | src/tessellate/api/routes_whiteboard.py:3563 |
+| `_object_preview_rows` | src/tessellate/api/routes_whiteboard.py:2123 |
+| `_object_to_out` | src/tessellate/api/routes_whiteboard.py:817 |
+| `_on_current_layer` | src/tessellate/api/routes_whiteboard.py:1370 |
+| `_opml_style` | src/tessellate/api/routes_whiteboard.py:5234 |
+| `_other_reference_label` | src/tessellate/api/routes_whiteboard.py:3516 |
+| `_outline_attach` | src/tessellate/api/routes_whiteboard.py:5506 |
+| `_outline_covering` | src/tessellate/api/routes_whiteboard.py:5808 |
+| `_outline_from_filing` | src/tessellate/api/routes_whiteboard.py:5779 |
+| `_outline_from_paste` | src/tessellate/api/routes_whiteboard.py:3952 |
+| `_outline_node` | src/tessellate/api/routes_whiteboard.py:5519 |
+| `_outline_note_line` | src/tessellate/api/routes_whiteboard.py:5494 |
+| `_outline_numbers` | src/tessellate/api/routes_whiteboard.py:4429 |
+| `_outline_rows` | src/tessellate/api/routes_whiteboard.py:4359 |
+| `_parent_map` | src/tessellate/api/routes_whiteboard.py:4126 |
+| `_parse_freemind` | src/tessellate/api/routes_whiteboard.py:5262 |
+| `_parse_markdown_outline` | src/tessellate/api/routes_whiteboard.py:5529 |
+| `_parse_opml` | src/tessellate/api/routes_whiteboard.py:5326 |
+| `_parse_xmind` | src/tessellate/api/routes_whiteboard.py:5413 |
+| `_parse_xml_document` | src/tessellate/api/routes_whiteboard.py:5110 |
+| `_path_bbox` | src/tessellate/api/routes_whiteboard.py:1830 |
+| `_place_map_nodes` | src/tessellate/api/routes_whiteboard.py:5593 |
+| `_preview_aspect` | src/tessellate/api/routes_whiteboard.py:2172 |
+| `_preview_edges` | src/tessellate/api/routes_whiteboard.py:2189 |
+| `_preview_fields` | src/tessellate/api/routes_whiteboard.py:2341 |
+| `_preview_fingerprint` | src/tessellate/api/routes_whiteboard.py:2300 |
+| `_preview_items` | src/tessellate/api/routes_whiteboard.py:1943 |
+| `_preview_points` | src/tessellate/api/routes_whiteboard.py:1589 |
+| `_preview_size` | src/tessellate/api/routes_whiteboard.py:1791 |
+| `_proposal_notes` | src/tessellate/api/routes_whiteboard.py:5745 |
+| `_record_map_creation` | src/tessellate/api/routes_whiteboard.py:5908 |
+| `_reference_facets` | src/tessellate/api/routes_whiteboard.py:3532 |
+| `_reference_label` | src/tessellate/api/routes_whiteboard.py:3487 |
+| `_require_board` | src/tessellate/api/routes_whiteboard.py:942 |
+| `_require_entry` | src/tessellate/api/routes_whiteboard.py:935 |
+| `_require_object_data` | src/tessellate/api/routes_whiteboard.py:844 |
+| `_require_reference` | src/tessellate/api/routes_whiteboard.py:3455 |
+| `_require_table_cells` | src/tessellate/api/routes_whiteboard.py:834 |
+| `_restore_import_links` | src/tessellate/api/routes_whiteboard.py:5664 |
+| `_sibling_key` | src/tessellate/api/routes_whiteboard.py:3730 |
+| `_sketch_preview` | src/tessellate/api/routes_whiteboard.py:1903 |
+| `_sketch_preview_rows` | src/tessellate/api/routes_whiteboard.py:2075 |
+| `_store_board_background` | src/tessellate/api/routes_whiteboard.py:1447 |
+| `_store_board_layers` | src/tessellate/api/routes_whiteboard.py:1333 |
+| `_store_board_numbered` | src/tessellate/api/routes_whiteboard.py:1269 |
+| `_store_board_settings` | src/tessellate/api/routes_whiteboard.py:1072 |
+| `_store_board_theme` | src/tessellate/api/routes_whiteboard.py:1187 |
+| `_strip_outline_numbers` | src/tessellate/api/routes_whiteboard.py:4463 |
+| `_subtree` | src/tessellate/api/routes_whiteboard.py:3362 |
+| `_themed_style` | src/tessellate/api/routes_whiteboard.py:1221 |
+| `_thumb_board` | src/tessellate/api/routes_whiteboard.py:2399 |
+| `_thumb_fp` | src/tessellate/api/routes_whiteboard.py:2387 |
+| `_without_pins` | src/tessellate/api/routes_whiteboard.py:1239 |
+| `_xmind_marks` | src/tessellate/api/routes_whiteboard.py:5403 |
+| `_xmind_style` | src/tessellate/api/routes_whiteboard.py:5385 |
+| `_xmind_topic` | src/tessellate/api/routes_whiteboard.py:4931 |
+| `_xml_attribute` | src/tessellate/api/routes_whiteboard.py:4682 |
+| `board_tree` | src/tessellate/api/routes_whiteboard.py:3811 |
+| `clear_map_node_styles` | src/tessellate/api/routes_whiteboard.py:4304 |
+| `create_board` | src/tessellate/api/routes_whiteboard.py:2745 |
+| `create_map_node` | src/tessellate/api/routes_whiteboard.py:3881 |
+| `create_node` | src/tessellate/api/routes_whiteboard.py:3057 |
+| `create_object` | src/tessellate/api/routes_whiteboard.py:3239 |
+| `create_sketch` | src/tessellate/api/routes_whiteboard.py:3155 |
+| `current_layer` | src/tessellate/api/routes_whiteboard.py:1358 |
+| `delete_node` | src/tessellate/api/routes_whiteboard.py:3134 |
+| `delete_object` | src/tessellate/api/routes_whiteboard.py:3317 |
+| `delete_sketch` | src/tessellate/api/routes_whiteboard.py:3210 |
+| `duplicate_board` | src/tessellate/api/routes_whiteboard.py:2787 |
+| `export_board` | src/tessellate/api/routes_whiteboard.py:5005 |
+| `generate_map` | src/tessellate/api/routes_whiteboard.py:5956 |
+| `get_thumbnail` | src/tessellate/api/routes_whiteboard.py:2454 |
+| `get_whiteboard_state` | src/tessellate/api/routes_whiteboard.py:970 |
+| `import_board` | src/tessellate/api/routes_whiteboard.py:6030 |
+| `list_boards` | src/tessellate/api/routes_whiteboard.py:2487 |
+| `list_images` | src/tessellate/api/routes_whiteboard.py:2676 |
+| `move_map_node` | src/tessellate/api/routes_whiteboard.py:4052 |
+| `move_map_nodes` | src/tessellate/api/routes_whiteboard.py:4167 |
+| `paste_map_outline` | src/tessellate/api/routes_whiteboard.py:3977 |
+| `propose_map` | src/tessellate/api/routes_whiteboard.py:5827 |
+| `put_thumbnail` | src/tessellate/api/routes_whiteboard.py:2423 |
+| `rename_board` | src/tessellate/api/routes_whiteboard.py:2951 |
+| `thumbnail_state` | src/tessellate/api/routes_whiteboard.py:2412 |
+| `update_node` | src/tessellate/api/routes_whiteboard.py:3102 |
+| `update_object` | src/tessellate/api/routes_whiteboard.py:3283 |
+| `update_sketch` | src/tessellate/api/routes_whiteboard.py:3185 |
 
 ### src/tessellate/api/run_sandbox.py (21)
 
@@ -19521,7 +19525,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12400)
+## Tests (12406)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20883,7 +20887,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_size_link_and_groups.py | 5 |
 | tests/test_wb_stack_order.py | 8 |
 | tests/test_wb_style_tab.py | 6 |
-| tests/test_wb_table.py | 3 |
+| tests/test_wb_table.py | 9 |
 | tests/test_wb_text_tab.py | 6 |
 | tests/test_wb_valign.py | 3 |
 | tests/test_wb_waypoints.py | 14 |
