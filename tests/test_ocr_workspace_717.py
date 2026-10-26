@@ -290,7 +290,9 @@ def test_pages_belongs_to_the_file_being_viewed():
     assert "ocrIsPdf(current)" not in switch
     assert "ocrUi.pagesFor = ocrRailKey(image);" in _body(LIBRARY, "ocrBuildPageRail")
     load = _body(LIBRARY, "ocrLoadPage")
-    assert load.count("if (ocrWorkspaceCurrent !== image) return;") >= 2
+    #: The stale check moved from "is it still this file" to "is it still this
+    #: load" (attach-1026 O1): it also stops page 3's answer painting page 4.
+    assert load.count("if (seq !== ocrLoadSeq) return;") >= 2
     assert 'ocrRailMode = row._isImage ? "images" : "files";' in _body(LIBRARY, "ocrOpenSibling")
 
 

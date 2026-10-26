@@ -806,7 +806,9 @@ def attached_file_pdf_info(attachment_id: int, session: Session = Depends(get_se
 
 
 @media_router.get("/files/{attachment_id}/pdf-page/{index}")
-def attached_file_pdf_page(attachment_id: int, index: int, session: Session = Depends(get_session)) -> Response:
+def attached_file_pdf_page(
+    attachment_id: int, index: int, thumb: bool = False, session: Session = Depends(get_session)
+) -> Response:
     """`media_pdf_page`'s sibling for an attached PDF, see that docstring
     for why this is always a freshly rendered PNG, never the file's own
     bytes. On `media_router`, same reason: loaded via `mediaSrc()`-tokened
@@ -817,7 +819,7 @@ def attached_file_pdf_page(attachment_id: int, index: int, session: Session = De
     path = _within_dir(deps.get_config().uploads_dir, attachment.stored_name)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
-    png = pdfpages.render_page(path, index)
+    png = pdfpages.render_page(path, index, thumb=thumb)
     if png is None:
         raise HTTPException(status_code=404, detail="That page doesn't exist.")
     return Response(content=png, media_type="image/png", headers={"Cache-Control": "private, max-age=3600"})
@@ -1757,7 +1759,9 @@ def media_pdf_info(filename: str, session: Session = Depends(get_session)) -> Pd
 
 
 @media_router.get("/media/pdf-page/{filename}/{index}")
-def media_pdf_page(filename: str, index: int, session: Session = Depends(get_session)) -> Response:
+def media_pdf_page(
+    filename: str, index: int, thumb: bool = False, session: Session = Depends(get_session)
+) -> Response:
     """One page of an uploaded PDF, rasterised to a PNG, the actual pixels
     a `<img>` in the lightbox loads, one per page, so a PDF scrolls like a
     PDF. On `media_router` rather than `router`: this is loaded the same
@@ -1776,13 +1780,12 @@ def media_pdf_page(filename: str, index: int, session: Session = Depends(get_ses
     if Path(filename).suffix.lower() != ".pdf":
         raise HTTPException(status_code=404, detail="Not a PDF.")
     _upload, path = _media_upload_path(session, filename)
-    png = pdfpages.render_page(path, index)
+    png = pdfpages.render_page(path, index, thumb=thumb)
     if png is None:
         raise HTTPException(status_code=404, detail="That page doesn't exist.")
-    # Regenerated on every request rather than cached to disk: ~20ms/page
-    # (measured, pdfpages.py's own docstring) and this app has no existing
-    # per-file render cache to hang a second one off. `Cache-Control`
-    # still lets the *browser* avoid re-fetching a page it already has.
+    # Kept in memory by `pdfpages` (a bounded LRU keyed by the file's mtime and
+    # size), not on disk. `thumb=1` is the rail's quarter-width picture.
+    # `Cache-Control` still lets the *browser* avoid re-fetching a page it has.
     return Response(content=png, media_type="image/png", headers={"Cache-Control": "private, max-age=3600"})
 
 
