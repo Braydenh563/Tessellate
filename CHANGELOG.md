@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Boards: select words in a text box or sticky while typing and the selection bar bolds, italicises, strikes, highlights, codes, links or lists just that part (Ctrl+B, Ctrl+I, Ctrl+K too, Ctrl+Z undoes); the box keeps markdown and shows it rendered once you finish.
 - Boards: an empty text box or sticky shows its typing caret again.
 - Start a timer and Start a stopwatch now show in Tools and features, the shortcuts dialog's Tools list and the "/" menus, not only the command palette.
 - Ask: under a model's answer a From your notes line opens the quoted answer to the same question beside it (one fetch, shut and opened again freely, not saved to Ask history), and what the composer says first (the personal digest, a place in the app) is drawn as a card above the AI text instead of being dropped.
