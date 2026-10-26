@@ -77,15 +77,15 @@ function wbFmtKind(entry) {
 
 //: The fields each kind takes, by the `data-fmt` names in index.html.
 const WB_FMT_FIELDS = {
-  shape: ["stroke", "width", "dash", "fill", "alpha", "shadow", "rough", "text", "fit", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "fillstyle", "gradient", "tip"],
-  line: ["stroke", "width", "dash", "alpha", "shadow", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
+  shape: ["stroke", "width", "dash", "fill", "alpha", "shadow", "shadowset", "rough", "text", "fit", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "fillstyle", "gradient", "tip"],
+  line: ["stroke", "width", "dash", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
   //: A straight line or arrow: a line that takes ends.
-  arrow: ["stroke", "width", "dash", "caps", "alpha", "shadow", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
+  arrow: ["stroke", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
   link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "props", "pattern", "round", "flow", "jumpsize", "gapstart", "gapend", "tip"],
-  text: ["stroke", "fill", "alpha", "shadow", "fold", "text", "geometry", "angle", "style-lib", "props"],
-  image: ["alpha", "shadow", "geometry", "angle", "props"],
+  text: ["stroke", "fill", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props"],
+  image: ["alpha", "shadow", "shadowset", "radii", "geometry", "angle", "props"],
   frame: ["geometry", "props"],
-  table: ["alpha", "shadow", "geometry", "props"],
+  table: ["alpha", "shadow", "shadowset", "radii", "geometry", "props"],
   note: ["geometry", "angle"],
 };
 
@@ -132,6 +132,12 @@ function wbFmtValue(entry, field) {
     case "fill": return s ? s.fill || "#3355ff" : (o.bg && o.bg !== "transparent" ? o.bg : "#ffffff");
     case "alpha": return Math.round(((s ? s.alpha : o?.alpha) ?? 1) * 100);
     case "shadow": return Boolean(s ? s.shadow : o?.shadow);
+    //: Empty (not 0) when the item set none, so the field shows the default as a placeholder.
+    case "shx": return (s || o)?.shadow_x ?? "";
+    case "shy": return (s || o)?.shadow_y ?? "";
+    case "shb": return (s || o)?.shadow_blur ?? "";
+    case "r0": case "r1": case "r2": case "r3": return o?.radii?.[Number(field[1])] ?? "";
+    case "pad": return o?.pad ?? "";
     case "rough": return wbDrawsRough(s, false);
     case "route": return wbLinkRouteName(s);
     case "jumps": return WB_JUMP_STYLES.includes(s?.jumps) ? s.jumps : "none";
@@ -560,6 +566,8 @@ function wbFormatSync() {
     ["wb-fmt-fillstyle", "fillstyle", "fillstyle"], ["wb-fmt-gradient-dir", "gradient-dir", "gradient"], ["wb-fmt-gradient", "gradient", "gradient"],
     ["wb-fmt-jumpsize", "jumpsize", "jumpsize"], ["wb-fmt-gapstart", "gapstart", "gapstart"], ["wb-fmt-gapend", "gapend", "gapend"], ["wb-fmt-tip", "tip", "tip"],
     ["wb-fmt-pattern", "pattern", "pattern"], ["wb-fmt-round", "round", "round"], ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-size", "size", "text"],
+    ["wb-fmt-shx", "shx", "shadowset"], ["wb-fmt-shy", "shy", "shadowset"], ["wb-fmt-shb", "shb", "shadowset"], ["wb-fmt-pad", "pad", "pad"],
+    ["wb-fmt-r0", "r0", "radii"], ["wb-fmt-r1", "r1", "radii"], ["wb-fmt-r2", "r2", "radii"], ["wb-fmt-r3", "r3", "radii"],
     ["wb-fmt-ink", "ink", "text"], ["wb-fmt-alpha", "alpha", "alpha"], ["wb-fmt-lh", "lh", "text"], ["wb-fmt-ls", "ls", "text"],
   ]) {
     if (!takes.has(row)) continue;
@@ -842,7 +850,28 @@ onDomReady(() => {
     const radius = Math.max(0, Math.min(80, Math.round(Number(e.target.value) || 0)));
     wbFmtApply("round", () => ({ round: radius || undefined }), radius ? `Corners rounded by ${radius}.` : "Corners sharp.");
   });
-  on("wb-fmt-flow", "change", (e) => wbFmtApply("flow", () => ({ flow: e.target.checked || undefined }), e.target.checked ? "Flow on." : "Flow off."));
+  //: A blank box is the default and clears the value; a number is clamped to the
+  //: server's bound. Setting a shadow's shape turns the shadow on, since an
+  //: offset on an item with no shadow shows nothing.
+  const boxNumber = (el, min, max) => (el.value === "" ? undefined : Math.max(min, Math.min(max, Math.round(Number(el.value) || 0))));
+  for (const [id, key, min, max, word] of [["wb-fmt-shx", "shadow_x", -60, 60, "across"], ["wb-fmt-shy", "shadow_y", -60, 60, "down"], ["wb-fmt-shb", "shadow_blur", 0, 60, "blur"]]) {
+    on(id, "change", (e) => {
+      const value = boxNumber(e.target, min, max);
+      wbFmtApply("shadowset", () => ({ [key]: value, shadow: true }), value === undefined ? `Shadow ${word} default.` : `Shadow ${word} ${value}.`);
+    });
+  }
+  on("wb-fmt-pad", "change", (e) => {
+    const value = boxNumber(e.target, 0, 80);
+    wbFmtApply("pad", () => ({ pad: value }), value === undefined ? "Padding default." : `Padding ${value}px.`);
+  });
+  for (const corner of [0, 1, 2, 3]) {
+    on(`wb-fmt-r${corner}`, "change", () => {
+      const radii = [0, 1, 2, 3].map((i) => boxNumber(document.getElementById(`wb-fmt-r${i}`), 0, 200));
+      const set = radii.some((r) => r !== undefined);
+      wbFmtApply("radii", () => ({ radii: set ? radii.map((r) => r ?? 0) : undefined }), set ? "Corner radii set." : "Corner radii default.");
+    });
+  }
+  on("wb-fmt-flow", "change",(e) => wbFmtApply("flow", () => ({ flow: e.target.checked || undefined }), e.target.checked ? "Flow on." : "Flow off."));
   on("wb-fmt-dash", "change", (e) => wbFmtApply("dash", () => ({ dash: e.target.value === "solid" ? undefined : e.target.value }), `Line ${e.target.value}.`));
   on("wb-fmt-fill-on", "change", (e) => {
     const colour = document.getElementById("wb-fmt-fill")?.value || "#3355ff";

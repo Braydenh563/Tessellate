@@ -8124,6 +8124,22 @@ Link to another note with [[its first few words]]."></textarea>
           </label>
           <div class="wb-fmt-row" data-fmt="fold"><span class="wb-fmt-label">Folded corner</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="Draw this note's bottom corner folded over; off, the paper is flat"><input type="checkbox" id="wb-fmt-fold" aria-label="Folded corner"></label></span></div>
           <div class="wb-fmt-row" data-fmt="shadow"><span class="wb-fmt-label">Shadow</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="A soft shadow under it"><input type="checkbox" id="wb-fmt-shadow" aria-label="Shadow"></label></span></div>
+          <div class="wb-fmt-row" data-fmt="shadowset"><span class="wb-fmt-label">Shadow offset</span>
+            <span class="wb-fmt-quad">
+              <label class="wb-fmt-num"><span class="wb-fmt-label">X</span><input type="number" id="wb-fmt-shx" min="-60" max="60" step="1" placeholder="0" aria-label="Shadow offset across, in pixels" title="How far the shadow sits to the right; negative is left"></label>
+              <label class="wb-fmt-num"><span class="wb-fmt-label">Y</span><input type="number" id="wb-fmt-shy" min="-60" max="60" step="1" placeholder="2" aria-label="Shadow offset down, in pixels" title="How far the shadow sits down; negative is up"></label>
+              <label class="wb-fmt-num"><span class="wb-fmt-label">Blur</span><input type="number" id="wb-fmt-shb" min="0" max="60" step="1" placeholder="4" aria-label="Shadow blur, in pixels" title="How soft the shadow's edge is; 0 is sharp"></label>
+            </span>
+          </div>
+          <div class="wb-fmt-row" data-fmt="radii"><span class="wb-fmt-label">Corner radii</span>
+            <span class="wb-fmt-quad">
+              <label class="wb-fmt-num"><span class="wb-fmt-label">TL</span><input type="number" id="wb-fmt-r0" min="0" max="200" step="1" placeholder="Auto" aria-label="Top left corner radius" title="Top left corner radius in pixels; all four empty is the default"></label>
+              <label class="wb-fmt-num"><span class="wb-fmt-label">TR</span><input type="number" id="wb-fmt-r1" min="0" max="200" step="1" placeholder="Auto" aria-label="Top right corner radius" title="Top right corner radius in pixels"></label>
+              <label class="wb-fmt-num"><span class="wb-fmt-label">BL</span><input type="number" id="wb-fmt-r3" min="0" max="200" step="1" placeholder="Auto" aria-label="Bottom left corner radius" title="Bottom left corner radius in pixels"></label>
+              <label class="wb-fmt-num"><span class="wb-fmt-label">BR</span><input type="number" id="wb-fmt-r2" min="0" max="200" step="1" placeholder="Auto" aria-label="Bottom right corner radius" title="Bottom right corner radius in pixels"></label>
+            </span>
+          </div>
+          <label class="wb-fmt-row" data-fmt="pad"><span class="wb-fmt-label">Padding</span><input type="number" id="wb-fmt-pad" min="0" max="80" step="1" placeholder="Auto" aria-label="Padding between the edge and the text, in pixels" title="Space between the box's edge and its text, in pixels; empty is the default"></label>
           <div class="wb-fmt-row" data-fmt="rough"><span class="wb-fmt-label">Hand-drawn</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="Draw its lines rough, as by hand; the View menu sets it for the whole board"><input type="checkbox" id="wb-fmt-rough" aria-label="Hand-drawn"></label></span></div>
           <label class="wb-fmt-row" data-fmt="route"><span class="wb-fmt-label">Line shape</span>
             <select id="wb-fmt-route" aria-label="Line shape" title="Line shape">

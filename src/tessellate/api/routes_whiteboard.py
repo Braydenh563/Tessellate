@@ -398,6 +398,15 @@ class WhiteboardObjectData(BaseModel):
     line_height: float | None = Field(default=None, ge=0.8, le=3)
     letter_spacing: float | None = Field(default=None, ge=-5, le=30)
     md: bool | None = None
+    #: The Format panel's box rows (WHITEBOARD_PLAN 1355, wb5): each corner's
+    #: radius in pixels as top-left, top-right, bottom-right, bottom-left; the
+    #: space between a text box's edge and its words; and the shadow's offset
+    #: and blur (the shadow switch itself is `shadow`). Absent is the default.
+    radii: list[Annotated[int, Field(ge=0, le=200)]] | None = Field(default=None, min_length=4, max_length=4)
+    pad: int | None = Field(default=None, ge=0, le=80)
+    shadow_x: int | None = Field(default=None, ge=-60, le=60)
+    shadow_y: int | None = Field(default=None, ge=-60, le=60)
+    shadow_blur: int | None = Field(default=None, ge=0, le=60)
     #: A map reference node's target: the note / document / file / bookmark id
     #: this node stands for. Only meaningful for `MAP_REFERENCE_KINDS`; a
     #: topic has nothing to point at and leaves it None.

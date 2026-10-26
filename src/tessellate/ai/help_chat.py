@@ -1574,7 +1574,7 @@ HELP_TOPICS.extend(
             "id": "board-format",
             "keywords": (
                 "format panel", "format", "exact position", "position", "x and y", "width and height",
-                "angle", "rotate by", "flip", "mirror", "opacity", "transparency", "see through", "shadow",
+                "angle", "rotate by", "flip", "mirror", "opacity", "transparency", "see through", "shadow", "shadow offset", "shadow blur", "corner radius", "padding",
                 "text size in a shape", "align text",
                 "line shape", "line end", "line ends", "arrowhead", "arrow end", "diamond end", "label position",
                 "arrow size", "end size", "bigger arrowhead", "stealth arrow", "memorymap arrow", "signature arrow",
@@ -1585,15 +1585,15 @@ HELP_TOPICS.extend(
                 "The top bar's Format button, Ctrl+Shift+P or View > Format panel opens "
                 "the Format panel on the right, with three tabs. Style: line colour, width and pattern, "
                 "your own dashes (a dash and a gap in line widths, like 8 4), rounded corners, flow (dashes that move), "
-                "fill (gradient, hatch, dots or zigzag; how solid), opacity, shadow, and for a connector its line shape (curved, straight or elbow), "
+                "fill (gradient, hatch, dots or zigzag; how solid), opacity, shadow (offset, blur), box corner radii and padding, and for a connector its line shape (curved, straight or elbow), "
                 "its line jumps (it hops over a line under it with an arc, a gap or a "
-                "sharp peak, of a size you set), a gap to stop short of the shape at each end, its two ends (twenty-one marks, from the Tessellate end through open, "
-                "filled, stealth, half and double arrows, circles and diamonds to a cross, a bar and a crow's foot, "
+                "sharp peak, of a size you set), a gap to stop short of the shape at each end, its two ends (twenty-one marks, from open and "
+                "filled arrows to circles, diamonds, a cross and a crow's foot, "
                 "each small, medium or large; a plain line takes them too) and where its label sits. Text: font (default, serif, monospace, wide sans, handwritten), size, colour, bold, italic, underline, strikethrough, "
                 "line and letter spacing, alignment and vertical place of a box's or shape's words; Clear text formatting and larger or smaller text are in the command palette. Arrange: X, Y, width, height (a chain button links them at their present ratio) and "
                 "angle as numbers, flip, and the order, align, spacing, group and lock buttons. With "
                 "several items selected it shows what they share, and a value they differ on reads Mixed. Every "
-                "change is one undo step. Reset style (right-click menu or Ctrl+K) puts colour, fill, line and text back to the defaults. "
+                "change is one undo step. Reset style (right-click menu or Ctrl+K) restores the defaults. "
                 "Colours are in Fill, border and recent colours. Bends, connection points and imports are in Connector bends and importing."
             ),
             "badge": {"label": "Library", "tab": "library"},
