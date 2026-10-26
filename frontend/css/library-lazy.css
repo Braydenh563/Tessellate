@@ -3565,6 +3565,12 @@ button.ghost.doc-template-choice.wb-template-choice {
   column-gap: var(--space-3);
 }
 
+.wb-template-choice-slot {
+  display: block;
+  width: 3.5rem;
+  aspect-ratio: 14 / 9;
+}
+
 .wb-template-choice-art.wb-lib-thumb {
   width: 3.5rem;
   height: 2.25rem;

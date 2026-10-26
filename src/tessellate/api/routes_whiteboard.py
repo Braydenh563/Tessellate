@@ -393,6 +393,10 @@ class WhiteboardObjectData(BaseModel):
     #: Where the text sits up and down its box (the owner, 2026-10-10:
     #: "there's no way to vertically centre text"); absent is the top.
     valign: str | None = Field(default=None, pattern="^(middle|bottom)$")
+    #: Line spacing (a multiple of the text size) and the space between
+    #: letters in pixels (the Format panel's Text tab; WHITEBOARD_PLAN 1355).
+    line_height: float | None = Field(default=None, ge=0.8, le=3)
+    letter_spacing: float | None = Field(default=None, ge=-5, le=30)
     md: bool | None = None
     #: A map reference node's target: the note / document / file / bookmark id
     #: this node stands for. Only meaningful for `MAP_REFERENCE_KINDS`; a

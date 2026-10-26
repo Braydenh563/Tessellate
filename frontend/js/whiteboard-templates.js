@@ -353,6 +353,12 @@ function wbTemplateChoices(kind) {
   return out;
 }
 
+//: A search word matches a template's name, its line of help or any tag.
+function wbTemplateMatches(choice, query) {
+  const text = [choice.name, choice.hint, ...(choice.entry?.tags || [])].join(" ").toLowerCase();
+  return query.split(/\s+/).every((word) => text.includes(word));
+}
+
 function wbTemplatePicture(choice, kind) {
   if (!choice.entry) return wbThumbSvg(wbBlankThumbSpec(kind));
   const entry = choice.entry;
@@ -386,8 +392,9 @@ async function wbOpenTemplateGallery(kind = "board") {
   const list = document.getElementById("wb-template-list");
   const preview = document.getElementById("wb-template-preview");
   const nameField = document.getElementById("wb-template-name");
+  const search = document.getElementById("wb-template-search");
   const tabs = document.getElementById("wb-template-kind");
-  if (!dialog || !list || !preview || !nameField || !tabs) return null;
+  if (!dialog || !list || !preview || !nameField || !tabs || !search) return null;
   const [, untitled] = await Promise.all([wbLoadLibrary(), wbUntitledNames()]);
   let chosen = null;
   let choices = [];
@@ -418,6 +425,25 @@ async function wbOpenTemplateGallery(kind = "board") {
     //: the value, selected when the dialog opens, so typing replaces it.
     if (!nameField.dataset.typed) nameField.value = choice.ref ? choice.name : untitled[kind === "map" ? "map" : "board"];
   };
+  const slots = new Map();
+  let seen = null;
+  const drawSlot = (slot) => {
+    const choice = slots.get(slot);
+    slots.delete(slot);
+    if (!choice || !slot.isConnected) return;
+    const art = wbTemplatePicture(choice, kind);
+    art.classList.add("wb-template-choice-art");
+    slot.replaceWith(art);
+  };
+  const watchSlots = () => {
+    seen?.disconnect();
+    slots.clear();
+    seen = typeof IntersectionObserver === "function"
+      ? new IntersectionObserver((hits) => {
+          for (const hit of hits) if (hit.isIntersecting) { seen.unobserve(hit.target); drawSlot(hit.target); }
+        }, { root: list, rootMargin: "120px" })
+      : null;
+  };
   const row = (choice) => {
     const li = document.createElement("li");
     li.setAttribute("role", "presentation");
@@ -427,8 +453,16 @@ async function wbOpenTemplateGallery(kind = "board") {
     button.setAttribute("role", "radio");
     button.setAttribute("aria-checked", "false");
     button.dataset.ref = String(choice.ref);
-    const art = wbTemplatePicture(choice, kind);
-    art.classList.add("wb-template-choice-art");
+    //: **A row's picture is drawn when the row is seen** (the owner's order,
+    //: 2026-10-26: lightweight, fast). Sixty-five rows' SVGs built on open
+    //: was the dialog's long task; a slot the size of the picture holds the
+    //: place and the observer below swaps the picture in.
+    const art = document.createElement("span");
+    art.className = "wb-template-choice-slot";
+    art.dataset.ref = String(choice.ref);
+    slots.set(art, choice);
+    seen?.observe(art);
+    if (!seen) drawSlot(art);
     const words = document.createElement("span");
     words.className = "wb-template-choice-words";
     const name = document.createElement("strong");
@@ -455,22 +489,25 @@ async function wbOpenTemplateGallery(kind = "board") {
   };
   const fill = () => {
     list.replaceChildren();
+    watchSlots();
     for (const tab of tabs.querySelectorAll("[role='tab']")) {
       const on = tab.dataset.value === kind;
       tab.setAttribute("aria-selected", on ? "true" : "false");
       tab.tabIndex = on ? 0 : -1;
     }
     nameField.placeholder = untitled[kind === "map" ? "map" : "board"];
-    choices = wbTemplateChoices(kind);
-    list.append(row(choices[0]));
+    const query = (search?.value || "").trim().toLowerCase();
+    choices = wbTemplateChoices(kind).filter((c) => !query || !c.ref || wbTemplateMatches(c, query));
+    if (!query) list.append(row(choices[0]));
+    if (query && !choices.length) list.append(heading("No template matches. Clear the search to see them all."));
     for (const [key, words] of [...WB_TEMPLATE_PURPOSES, ["yours", "Yours"]]) {
-      const group = choices.filter((c) => c.group === key);
+      const group = choices.filter((c) => c.group === key && c.ref);
       if (!group.length) continue;
       list.append(heading(words));
       for (const choice of group) list.append(row(choice));
     }
     list.scrollTop = 0;
-    choose(choices[0]);
+    if (choices.length) choose(choices[0]);
   };
   let settle;
   const done = new Promise((resolve) => {
@@ -481,6 +518,8 @@ async function wbOpenTemplateGallery(kind = "board") {
     dialog.close();
     settle(make ? { name, kind, ref: chosen?.ref || null } : null);
   };
+  search.value = "";
+  search.oninput = () => fill();
   nameField.value = "";
   delete nameField.dataset.typed;
   nameField.oninput = () => {

@@ -89,6 +89,15 @@ const WB_FMT_FIELDS = {
   note: ["geometry", "angle"],
 };
 
+//: The fill's own opacity (draw.io's "Fill opacity", PaintZ's fill toggle): the
+//: line and the words keep theirs. The slider and its number, kept together.
+function wbFmtShowFillAlpha(isMixed, value) {
+  const slider = document.getElementById("wb-fmt-fillalpha");
+  const out = document.getElementById("wb-fmt-fillalpha-out");
+  if (slider && document.activeElement !== slider) slider.value = value;
+  if (out) out.textContent = isMixed ? "Mixed" : `${value}%`;
+}
+
 function wbFmtCanRound(entry) {
   if (entry.kind !== "sketch") return false;
   const parsed = wbFmtSketch(entry);
@@ -149,6 +158,9 @@ function wbFmtValue(entry, field) {
     //: centre text").
     case "valign": return (kind === "shape" ? s.label_valign : o.valign) || (kind === "shape" ? "middle" : "top");
     case "ink": return (kind === "shape" ? s.label_color : o.color) || "#1f2430";
+    case "lh": return (kind === "shape" ? s.label_lh : o.line_height) || "";
+    case "ls": return (kind === "shape" ? s.label_ls : o.letter_spacing) || "";
+    case "fillalpha": return Math.round((s?.fillOpacity ?? 1) * 100);
     default: return null;
   }
 }
@@ -548,7 +560,7 @@ function wbFormatSync() {
     ["wb-fmt-fillstyle", "fillstyle", "fillstyle"], ["wb-fmt-gradient-dir", "gradient-dir", "gradient"], ["wb-fmt-gradient", "gradient", "gradient"],
     ["wb-fmt-jumpsize", "jumpsize", "jumpsize"], ["wb-fmt-gapstart", "gapstart", "gapstart"], ["wb-fmt-gapend", "gapend", "gapend"], ["wb-fmt-tip", "tip", "tip"],
     ["wb-fmt-pattern", "pattern", "pattern"], ["wb-fmt-round", "round", "round"], ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-size", "size", "text"],
-    ["wb-fmt-ink", "ink", "text"], ["wb-fmt-alpha", "alpha", "alpha"],
+    ["wb-fmt-ink", "ink", "text"], ["wb-fmt-alpha", "alpha", "alpha"], ["wb-fmt-lh", "lh", "text"], ["wb-fmt-ls", "ls", "text"],
   ]) {
     if (!takes.has(row)) continue;
     const el = document.getElementById(id);
@@ -576,6 +588,7 @@ function wbFormatSync() {
   if (sticky) set("wb-fmt-fold", wbStickyFolds(sticky.item), "checked");
   const alphaOut = document.getElementById("wb-fmt-alpha-out");
   if (alphaOut && takes.has("alpha")) alphaOut.textContent = mixed("alpha") ? "Mixed" : `${wbFmtValue(first, "alpha")}%`;
+  if (takes.has("fillstyle")) wbFmtShowFillAlpha(mixed("fillalpha"), wbFmtValue(first, "fillalpha"));
   if (takes.has("text")) {
     const pressed = (field, value) => {
       const some = sharing.map((e) => wbFmtValue(e, field) === value);
@@ -874,6 +887,14 @@ onDomReady(() => {
     const pct = Math.max(10, Math.min(100, Number(e.target.value) || 100));
     wbFmtApply("alpha", () => ({ alpha: pct >= 100 ? undefined : pct / 100 }), `Opacity ${pct}%.`);
   });
+  on("wb-fmt-fillalpha", "input", (e) => {
+    const out = document.getElementById("wb-fmt-fillalpha-out");
+    if (out) out.textContent = `${e.target.value}%`;
+  });
+  on("wb-fmt-fillalpha", "change", (e) => {
+    const pct = Math.max(5, Math.min(100, Number(e.target.value) || 100));
+    wbFmtApply("fillstyle", (entry) => (entry.kind === "sketch" && wbFmtSketch(entry).fill ? { fillOpacity: pct / 100 } : null), `Fill ${pct}% solid.`);
+  });
   on("wb-fmt-fold", "change", (e) => wbFmtApply("fold", (entry) => (entry.kind === "object" && wbIsSticky(entry.item) ? { fold: e.target.checked } : null), e.target.checked ? "Corner folded." : "Corner flat."));
   on("wb-fmt-shadow", "change", (e) => wbFmtApply("shadow", () => ({ shadow: e.target.checked || undefined }), e.target.checked ? "Shadow on." : "Shadow off."));
   //: An item that matches the board's look stores nothing, so it follows the
@@ -944,6 +965,16 @@ onDomReady(() => {
       wbFmtApply("text", textPatch(shapeKey, objectKey, next || undefined), `${word} ${next ? "on" : "off"}.`);
     });
   }
+  on("wb-fmt-lh", "change", (e) => {
+    const raw = Number(e.target.value);
+    const lh = raw > 0 ? Math.max(0.8, Math.min(3, Math.round(raw * 20) / 20)) : undefined;
+    wbFmtApply("text", textPatch("label_lh", "line_height", lh), lh ? `Line spacing ${lh}.` : "Line spacing automatic.");
+  });
+  on("wb-fmt-ls", "change", (e) => {
+    const raw = Number(e.target.value);
+    const ls = raw ? Math.max(-5, Math.min(30, Math.round(raw * 2) / 2)) : undefined;
+    wbFmtApply("text", textPatch("label_ls", "letter_spacing", ls), ls ? `Letter spacing ${ls}px.` : "Letter spacing normal.");
+  });
   on("wb-fmt-fit", "click", () => wbToggleLabelFit());
   on("wb-fmt-align", "click", (e) => {
     const button = e.target.closest("[data-align]");
@@ -985,8 +1016,8 @@ onDomReady(() => {
 //: text box is one step on the stack and an item with no text of its own is
 //: skipped.
 const WB_TEXT_LOOK_KEYS = {
-  shape: ["label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign", "label_fit"],
-  text: ["font_size", "color", "bold", "italic", "underline", "strike", "font_family", "align", "valign"],
+  shape: ["label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign", "label_fit", "label_lh", "label_ls"],
+  text: ["font_size", "color", "bold", "italic", "underline", "strike", "font_family", "align", "valign", "line_height", "letter_spacing"],
 };
 
 //: Shrink to fit, on or off for every selected shape as one step: on unless

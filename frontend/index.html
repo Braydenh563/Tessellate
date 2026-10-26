@@ -1116,6 +1116,8 @@
     </div>
     <label class="wb-template-name-row"><span>Name</span>
       <input type="text" id="wb-template-name" maxlength="100" placeholder="Name the new board" autocomplete="off"></label>
+    <label class="wb-template-name-row"><span class="visually-hidden">Search templates</span>
+      <input type="search" id="wb-template-search" maxlength="60" placeholder="Search templates: study, plan, timeline" autocomplete="off" aria-controls="wb-template-list"></label>
     <div class="doc-template-body">
       <ul id="wb-template-list" class="doc-ai-history-list wb-template-list" role="radiogroup" aria-label="Start from"></ul>
       <div id="wb-template-preview" class="doc-template-preview wb-template-preview" aria-hidden="true" inert></div>
@@ -6757,6 +6759,11 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" class="wb-menu-item" data-wb-cmd="tidy-right"><i class="ph ph-tree-view ph-lead" aria-hidden="true"></i><span>Left to right</span></button>
             </div>
             <div class="wb-menu-section">
+              <span class="wb-panel-group-label">Connect the selected</span>
+              <button type="button" class="wb-menu-item" data-wb-cmd="join-chain"><i class="ph ph-arrow-elbow-down-right ph-lead" aria-hidden="true"></i><span>In a line</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="join-fan"><i class="ph ph-share-network ph-lead" aria-hidden="true"></i><span>All to the first picked</span></button>
+            </div>
+            <div class="wb-menu-section">
               <span class="wb-panel-group-label">Order</span>
               <button type="button" class="wb-menu-item" data-wb-cmd="order-forward"><i class="ph ph-arrow-up ph-lead" aria-hidden="true"></i><span>Bring forward</span><kbd>]</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="order-backward"><i class="ph ph-arrow-down ph-lead" aria-hidden="true"></i><span>Send backward</span><kbd>[</kbd></button>
@@ -8054,6 +8061,7 @@ Link to another note with [[its first few words]]."></textarea>
           <div class="wb-fmt-row" data-fmt="fill"><span class="wb-fmt-label">Fill</span>
             <span class="wb-fmt-buttons"><label class="wb-snap-label" title="Filled"><input type="checkbox" id="wb-fmt-fill-on" aria-label="Filled"></label><input type="color" id="wb-fmt-fill" class="wb-color-picker" aria-label="Fill colour" title="Fill colour"></span>
           </div>
+          <label class="wb-fmt-row" data-fmt="fillstyle"><span class="wb-fmt-label">Fill opacity</span><span class="wb-fmt-buttons"><input type="range" id="wb-fmt-fillalpha" min="5" max="100" step="5" aria-label="Fill opacity" title="How solid the fill is; the line keeps its own"><output id="wb-fmt-fillalpha-out" for="wb-fmt-fillalpha" class="wb-fmt-out">100%</output></span></label>
           <label class="wb-fmt-row" data-fmt="fillstyle"><span class="wb-fmt-label">Fill style</span>
             <select id="wb-fmt-fillstyle" aria-label="Fill style" title="Fill the shape with lines or dots in its colour instead of a solid">
               <option value="solid">Solid</option>
@@ -8152,6 +8160,8 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" id="wb-fmt-fit" class="ghost small icon-only" aria-pressed="false" title="Shrink the text to fit the shape" aria-label="Shrink the text to fit the shape"><i class="ph ph-arrows-in-simple" aria-hidden="true"></i></button>
             </span>
           </div>
+          <label class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Line spacing</span><input type="number" id="wb-fmt-lh" min="0.8" max="3" step="0.05" placeholder="Auto" aria-label="Line spacing, as a multiple of the text size" title="Line spacing, as a multiple of the text size; empty is automatic"></label>
+          <label class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Letter spacing</span><input type="number" id="wb-fmt-ls" min="-5" max="30" step="0.5" placeholder="0" aria-label="Letter spacing in pixels" title="Space added between letters, in pixels; 0 is normal"></label>
           <div class="wb-fmt-row" data-fmt="text"><span class="wb-fmt-label">Align</span>
             <span id="wb-fmt-align" class="wb-fmt-buttons" role="group" aria-label="Text alignment">
               <button type="button" class="ghost small icon-only" data-align="left" aria-pressed="false" title="Align left" aria-label="Align left"><i class="ph ph-text-align-left" aria-hidden="true"></i></button>

@@ -754,6 +754,985 @@
      }
     ]
    }
+  },
+  {
+   "key": "lecture-map",
+   "kind": "branch",
+   "name": "Lecture notes",
+   "hint": "The topic, its key ideas, examples and questions",
+   "purpose": "learn",
+   "shape": "tree",
+   "layout": "tree-right",
+   "tags": [
+    "template",
+    "lecture",
+    "notes",
+    "class",
+    "study"
+   ],
+   "template": "map",
+   "payload": {
+    "nodes": [
+     {
+      "text": "Key ideas",
+      "children": [
+       {
+        "text": "Idea 1",
+        "children": [
+         {
+          "text": "D",
+          "children": [
+           {
+            "text": "e",
+            "children": []
+           },
+           {
+            "text": "t",
+            "children": []
+           },
+           {
+            "text": "a",
+            "children": []
+           },
+           {
+            "text": "i",
+            "children": []
+           },
+           {
+            "text": "l",
+            "children": []
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "text": "Idea 2",
+        "children": [
+         {
+          "text": "D",
+          "children": [
+           {
+            "text": "e",
+            "children": []
+           },
+           {
+            "text": "t",
+            "children": []
+           },
+           {
+            "text": "a",
+            "children": []
+           },
+           {
+            "text": "i",
+            "children": []
+           },
+           {
+            "text": "l",
+            "children": []
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "text": "Idea 3",
+        "children": [
+         {
+          "text": "D",
+          "children": [
+           {
+            "text": "e",
+            "children": []
+           },
+           {
+            "text": "t",
+            "children": []
+           },
+           {
+            "text": "a",
+            "children": []
+           },
+           {
+            "text": "i",
+            "children": []
+           },
+           {
+            "text": "l",
+            "children": []
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "text": "Examples",
+      "children": [
+       {
+        "text": "Case 1",
+        "children": []
+       },
+       {
+        "text": "Case 2",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Questions",
+      "children": [
+       {
+        "text": "To ask",
+        "children": []
+       },
+       {
+        "text": "To look up",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Summary",
+      "children": []
+     }
+    ]
+   }
+  },
+  {
+   "key": "revision-map",
+   "kind": "branch",
+   "name": "Revision plan",
+   "hint": "Subjects, topics to cover and how you will revise",
+   "purpose": "learn",
+   "shape": "radial",
+   "layout": "radial",
+   "tags": [
+    "template",
+    "revision",
+    "exam",
+    "study",
+    "subjects"
+   ],
+   "template": "map",
+   "payload": {
+    "nodes": [
+     {
+      "text": "Subject 1",
+      "children": [
+       {
+        "text": "Topic",
+        "children": []
+       },
+       {
+        "text": "Topic",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Subject 2",
+      "children": [
+       {
+        "text": "Topic",
+        "children": []
+       },
+       {
+        "text": "Topic",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Subject 3",
+      "children": [
+       {
+        "text": "Topic",
+        "children": []
+       },
+       {
+        "text": "Topic",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Methods",
+      "children": [
+       {
+        "text": "Flashcards",
+        "children": []
+       },
+       {
+        "text": "Past papers",
+        "children": []
+       },
+       {
+        "text": "Teach someone",
+        "children": []
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "exam-map",
+   "kind": "branch",
+   "name": "Exam preparation",
+   "hint": "What is tested, what you know and what to practise",
+   "purpose": "learn",
+   "shape": "tiers",
+   "layout": "tree-down",
+   "tags": [
+    "template",
+    "exam",
+    "preparation",
+    "study",
+    "test"
+   ],
+   "template": "map",
+   "payload": {
+    "nodes": [
+     {
+      "text": "Format",
+      "children": [
+       {
+        "text": "Date and room",
+        "children": []
+       },
+       {
+        "text": "Marks",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Know well",
+      "children": [
+       {
+        "text": "Topic",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Practise",
+      "children": [
+       {
+        "text": "Topic",
+        "children": []
+       },
+       {
+        "text": "Past paper",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Day before",
+      "children": [
+       {
+        "text": "Sleep",
+        "children": []
+       },
+       {
+        "text": "Kit ready",
+        "children": []
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "research-map",
+   "kind": "branch",
+   "name": "Research project",
+   "hint": "Question, sources, method, findings and write-up",
+   "purpose": "learn",
+   "shape": "phases",
+   "layout": "tree-down",
+   "tags": [
+    "template",
+    "research",
+    "project",
+    "dissertation",
+    "sources"
+   ],
+   "template": "map",
+   "payload": {
+    "nodes": [
+     {
+      "text": "Question",
+      "children": [
+       {
+        "text": "Why it matters",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Sources",
+      "children": [
+       {
+        "text": "Books",
+        "children": []
+       },
+       {
+        "text": "Papers",
+        "children": []
+       },
+       {
+        "text": "Interviews",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Method",
+      "children": [
+       {
+        "text": "Steps",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Findings",
+      "children": [
+       {
+        "text": "Result",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Write-up",
+      "children": [
+       {
+        "text": "Draft",
+        "children": []
+       },
+       {
+        "text": "Edit",
+        "children": []
+       },
+       {
+        "text": "Submit",
+        "children": []
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "presentation-map",
+   "kind": "branch",
+   "name": "Presentation",
+   "hint": "Message, sections, visuals and rehearsal",
+   "purpose": "plan",
+   "shape": "tiers",
+   "layout": "tree-down",
+   "tags": [
+    "template",
+    "presentation",
+    "talk",
+    "slides",
+    "speech"
+   ],
+   "template": "map",
+   "payload": {
+    "nodes": [
+     {
+      "text": "Message",
+      "children": [
+       {
+        "text": "One sentence",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Opening",
+      "children": [
+       {
+        "text": "Hook",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Middle",
+      "children": [
+       {
+        "text": "Point 1",
+        "children": []
+       },
+       {
+        "text": "Point 2",
+        "children": []
+       },
+       {
+        "text": "Point 3",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Close",
+      "children": [
+       {
+        "text": "Ask",
+        "children": []
+       },
+       {
+        "text": "Thanks",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Rehearse",
+      "children": [
+       {
+        "text": "Timing",
+        "children": []
+       },
+       {
+        "text": "Questions",
+        "children": []
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "group-map",
+   "kind": "branch",
+   "name": "Group project",
+   "hint": "Who does what, by when, and how you will meet",
+   "purpose": "plan",
+   "shape": "tree",
+   "layout": "tree-right",
+   "tags": [
+    "template",
+    "group",
+    "project",
+    "team",
+    "assignment"
+   ],
+   "template": "map",
+   "payload": {
+    "nodes": [
+     {
+      "text": "Tasks",
+      "children": [
+       {
+        "text": "Research",
+        "children": []
+       },
+       {
+        "text": "Writing",
+        "children": []
+       },
+       {
+        "text": "Slides",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "People",
+      "children": [
+       {
+        "text": "Name: role",
+        "children": []
+       },
+       {
+        "text": "Name: role",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Dates",
+      "children": [
+       {
+        "text": "Draft",
+        "children": []
+       },
+       {
+        "text": "Final",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Meetings",
+      "children": [
+       {
+        "text": "When",
+        "children": []
+       },
+       {
+        "text": "Where",
+        "children": []
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "goals-map",
+   "kind": "branch",
+   "name": "Personal goals",
+   "hint": "Work, health, money, people and learning",
+   "purpose": "plan",
+   "shape": "radial",
+   "layout": "radial",
+   "tags": [
+    "template",
+    "goals",
+    "personal",
+    "life",
+    "year"
+   ],
+   "template": "map",
+   "payload": {
+    "nodes": [
+     {
+      "text": "Work",
+      "children": [
+       {
+        "text": "Next step",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Health",
+      "children": [
+       {
+        "text": "Next step",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Money",
+      "children": [
+       {
+        "text": "Next step",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "People",
+      "children": [
+       {
+        "text": "Next step",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Learning",
+      "children": [
+       {
+        "text": "Next step",
+        "children": []
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "routine-map",
+   "kind": "branch",
+   "name": "Daily routine",
+   "hint": "Morning, study, meals, exercise and wind-down",
+   "purpose": "plan",
+   "shape": "two-sided",
+   "layout": "tree-both",
+   "tags": [
+    "template",
+    "routine",
+    "day",
+    "habits",
+    "schedule"
+   ],
+   "template": "map",
+   "payload": {
+    "nodes": [
+     {
+      "text": "Morning",
+      "children": [
+       {
+        "text": "Wake",
+        "children": []
+       },
+       {
+        "text": "Breakfast",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Study",
+      "children": [
+       {
+        "text": "Block 1",
+        "children": []
+       },
+       {
+        "text": "Block 2",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Meals",
+      "children": [
+       {
+        "text": "Lunch",
+        "children": []
+       },
+       {
+        "text": "Dinner",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Exercise",
+      "children": [
+       {
+        "text": "Walk",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Evening",
+      "children": [
+       {
+        "text": "Free time",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Wind down",
+      "children": [
+       {
+        "text": "Screens off",
+        "children": []
+       },
+       {
+        "text": "Bed",
+        "children": []
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "career-map",
+   "kind": "branch",
+   "name": "Career plan",
+   "hint": "Where you are, where to, skills and next steps",
+   "purpose": "plan",
+   "shape": "phases",
+   "layout": "tree-down",
+   "tags": [
+    "template",
+    "career",
+    "job",
+    "future",
+    "skills"
+   ],
+   "template": "map",
+   "payload": {
+    "nodes": [
+     {
+      "text": "Now",
+      "children": [
+       {
+        "text": "Skills",
+        "children": []
+       },
+       {
+        "text": "Experience",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Aim",
+      "children": [
+       {
+        "text": "Role",
+        "children": []
+       },
+       {
+        "text": "Employer",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Gaps",
+      "children": [
+       {
+        "text": "Skill to learn",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Steps",
+      "children": [
+       {
+        "text": "This month",
+        "children": []
+       },
+       {
+        "text": "This year",
+        "children": []
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "reading-map",
+   "kind": "branch",
+   "name": "Reading list",
+   "hint": "Topics, the books under each and what to read first",
+   "purpose": "learn",
+   "shape": "tree",
+   "layout": "tree-right",
+   "tags": [
+    "template",
+    "reading",
+    "books",
+    "list",
+    "library"
+   ],
+   "template": "map",
+   "payload": {
+    "nodes": [
+     {
+      "text": "Topic 1",
+      "children": [
+       {
+        "text": "Book",
+        "children": []
+       },
+       {
+        "text": "Book",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Topic 2",
+      "children": [
+       {
+        "text": "Book",
+        "children": []
+       },
+       {
+        "text": "Book",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Read first",
+      "children": [
+       {
+        "text": "Title",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Notes",
+      "children": [
+       {
+        "text": "Quotes",
+        "children": []
+       },
+       {
+        "text": "Ideas",
+        "children": []
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "habits-map",
+   "kind": "branch",
+   "name": "Healthy habits",
+   "hint": "Sleep, food, movement, mind and people",
+   "purpose": "plan",
+   "shape": "radial",
+   "layout": "radial",
+   "tags": [
+    "template",
+    "health",
+    "habits",
+    "wellbeing",
+    "sleep"
+   ],
+   "template": "map",
+   "payload": {
+    "nodes": [
+     {
+      "text": "Sleep",
+      "children": [
+       {
+        "text": "Bedtime",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Food",
+      "children": [
+       {
+        "text": "Water",
+        "children": []
+       },
+       {
+        "text": "Meals",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Movement",
+      "children": [
+       {
+        "text": "Walk",
+        "children": []
+       },
+       {
+        "text": "Stretch",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Mind",
+      "children": [
+       {
+        "text": "Breaks",
+        "children": []
+       },
+       {
+        "text": "Journal",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "People",
+      "children": [
+       {
+        "text": "Call a friend",
+        "children": []
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "moving-map",
+   "kind": "branch",
+   "name": "Moving house",
+   "hint": "Before, packing, the day and after",
+   "purpose": "plan",
+   "shape": "phases",
+   "layout": "tree-down",
+   "tags": [
+    "template",
+    "moving",
+    "house",
+    "home",
+    "checklist"
+   ],
+   "template": "map",
+   "payload": {
+    "nodes": [
+     {
+      "text": "Before",
+      "children": [
+       {
+        "text": "Notice",
+        "children": []
+       },
+       {
+        "text": "Quotes",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Packing",
+      "children": [
+       {
+        "text": "Boxes",
+        "children": []
+       },
+       {
+        "text": "Labels",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Moving day",
+      "children": [
+       {
+        "text": "Keys",
+        "children": []
+       },
+       {
+        "text": "Van",
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "After",
+      "children": [
+       {
+        "text": "Post",
+        "children": []
+       },
+       {
+        "text": "Utilities",
+        "children": []
+       }
+      ]
+     }
+    ]
+   }
   }
  ]
 }
