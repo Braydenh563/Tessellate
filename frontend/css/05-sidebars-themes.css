@@ -730,7 +730,7 @@ mark.text-highlight-grey { background: rgba(148, 163, 184, 0.25); }
    more off when hovered"): a grey plate around a bordered chip drew two
    boxes. The chip's own border and the pencil take the accent instead; the
    pencil sits at the column's right edge so every row's pencil lines up. */
-.shortcut-list button.shortcut-key:hover {
+.shortcut-list button.shortcut-key:is(:hover, :focus-visible) {
   background: transparent;
 }
 .shortcut-list .shortcut-key:is(:hover, :focus-visible) kbd {
