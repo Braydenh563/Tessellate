@@ -103,10 +103,10 @@ B_MENTION = [
     ("number of work notes", r"\b3 notes mention work"),
     ("count my work notes", r"\b3 notes mention work"),
     ("how many work notes are there", r"\b3 notes mention work"),
-    ("how many zebra notes", r"\bno notes? mentions? zebra"),
-    ("how many quokka notes do I have", r"\bno notes? mentions? quokka"),
-    ("number of volcano notes", r"\bno notes? mentions? volcano"),
-    ("count my lantern notes", r"\bno notes? mentions? lantern"),
+    ("how many zebra notes", r"none of your notes mention zebra"),
+    ("how many quokka notes do I have", r"none of your notes mention quokka"),
+    ("number of volcano notes", r"none of your notes mention volcano"),
+    ("count my lantern notes", r"none of your notes mention lantern"),
 ]
 #: A word that says what kind of notes, not what they say, stays a total.
 B_NOT_A_WORD = [
@@ -206,7 +206,7 @@ E_COUNTS = [
 
 #: Classes still failing, each case a strict xfail until its fix lands (take
 #: the letter out when the class passes).
-OPEN: set[str] = {"B", "C", "D", "E"}
+OPEN: set[str] = {"C", "D", "E"}
 #: Phrasings of an open class that already worked before its fix.
 WORKED = {
     "notes between 10 and 12 September", "notes between 3 and 9 May", "what did I write May 3 to 9",

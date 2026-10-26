@@ -288,7 +288,7 @@ def _counted(text: str, message: str, session: Session) -> StatAnswer | None:
     if tasks is not None:
         return StatAnswer(*tasks[:2], tasks[2])
     if re.search(r"\bnotes?\b|\b(?:pinned|archived|checklists?)\b", text):
-        return _narrowed_count(text, message, session) or _named_count(text, session)
+        return _narrowed_count(text, message, session) or _named_count(text, session) or _mention_count(text, session)
     if re.search(r"\b(?:white)?boards?\b|\b(?:mind ?)?maps?\b", text):
         return _board_count(session, text)
     return None
@@ -471,6 +471,33 @@ def _named_count(text: str, session: Session) -> StatAnswer | None:
         if re.search(rf"(?<!\w){re.escape(tag)}(?!\w)", text):
             return StatAnswer("tag-count", f"{_plural(n, 'note')} are tagged {tag}.".replace("1 notes are", "1 note is"), [{"label": tag, "count": n}])
     return None
+
+
+#: "how many work notes", "number of zebra notes": the word before "notes".
+#: The text is read with single spaces, so nothing here runs over a run of them.
+_WORD_NOTES = re.compile(r"\b(?:how many|number of|count|total)(?: of)?(?: (?:my|the|all|our|your))? ([a-z][a-z'-]{1,29}) notes?\b")
+#: Words before "notes" that say which kind or how many, not what they say.
+_KIND_WORDS = frozenset(
+    """new newest old oldest recent latest last first total all my the your our any every some few many more most other another
+    long longest short shortest big small empty blank private public deleted binned untitled titled tagged untagged linked unlinked
+    pinned unpinned archived live active open closed done total saved written whole entire single separate different distinct
+    unique individual personal""".split()
+)
+
+
+def _mention_count(text: str, session: Session) -> StatAnswer | None:
+    """"How many work notes" when no tag or folder is called work: the notes
+    whose title or text has the word, and the answer says so, so it is never
+    read as the notebook's total. None when the word is a kind (new, long),
+    a day or window, or the question names a subject after the notes."""
+    found = _WORD_NOTES.search(" ".join(text.split()))
+    word = found.group(1) if found else ""
+    if not word or word in _KIND_WORDS or _SUBJECT_AFTER.search(text) or _window(word) is not None:
+        return None
+    said = re.compile(rf"(?<!\w){re.escape(word)}(?:s|es)?(?!\w)", re.I)
+    n = sum(1 for body in session.scalars(_visible(select(Entry.content))) if said.search(body or ""))
+    said_n = f"{_plural(n, 'note')} mention{'s' if n == 1 else ''} {word}." if n else f"None of your notes mention {word}."
+    return StatAnswer("mention-count", said_n, [{"label": word, "count": n}])
 
 
 def _note_count(session: Session) -> StatAnswer:
