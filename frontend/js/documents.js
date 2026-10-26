@@ -8119,16 +8119,18 @@ function docMathToken(token, tokens, state) {
 //: **Matrices and case splits** (DOCUMENTS_PLAN row 16, the equation
 //: editor's templates). The fences each environment wears, open then close;
 //: `matrix` has none and `cases` only the brace on its left.
-const DOC_MATH_FENCES = {
+const DOC_MATH_FENCES = Object.assign(Object.create(null), {
   matrix: ["", ""], pmatrix: ["(", ")"], bmatrix: ["[", "]"], Bmatrix: ["{", "}"],
   vmatrix: ["|", "|"], Vmatrix: ["‖", "‖"], cases: ["{", ""], aligned: ["", ""], array: ["", ""],
-};
+});
 
 //: Accents over their argument, as `mover`: what each one draws.
-const DOC_MATH_ACCENTS = { vec: "→", hat: "^", bar: "‾", overline: "‾", tilde: "~", dot: "˙", ddot: "¨" };
+const DOC_MATH_ACCENTS = Object.assign(Object.create(null), { vec: "→", hat: "^", bar: "‾", overline: "‾", tilde: "~", dot: "˙", ddot: "¨" });
 
+//: The three tables below have no prototype: a name typed in a note (`\toString`,
+//: `\begin{constructor}`) must not find an Object.prototype member.
 //: TeX's spaces, as their width in ems: `\,` was a printed comma before.
-const DOC_MATH_SPACES = { ",": "0.17em", ":": "0.22em", ";": "0.28em", "!": "0em", quad: "1em", qquad: "2em" };
+const DOC_MATH_SPACES = Object.assign(Object.create(null), { ",": "0.17em", ":": "0.22em", ";": "0.28em", "!": "0em", quad: "1em", qquad: "2em" });
 
 //: The letters of a braced name (`{pmatrix}`), consumed; "" when there is none.
 function docMathBracedName(tokens, state) {
@@ -8777,7 +8779,11 @@ function docLivePlugin(CM) {
     toDOM() {
       const host = document.createElement("span");
       host.className = this.display ? "cm-md-math cm-md-math-block" : "cm-md-math";
-      host.appendChild(docMathRender(this.tex, this.display));
+      try {
+        host.appendChild(docMathRender(this.tex, this.display));
+      } catch {
+        host.textContent = this.tex;
+      }
       return host;
     }
   }

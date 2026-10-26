@@ -398,7 +398,11 @@ function mathEditorDrawPreview(preview, tex, display) {
     }
     return;
   }
-  preview.replaceChildren(docMathRender(mathEditorPreviewTex(body), display));
+  try {
+    preview.replaceChildren(docMathRender(mathEditorPreviewTex(body), display));
+  } catch {
+    preview.textContent = body;
+  }
 }
 
 function mathEditorHelp() {
