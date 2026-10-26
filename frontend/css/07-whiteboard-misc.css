@@ -13,6 +13,17 @@
 .wb-object:active {
   cursor: grabbing;
 }
+/* A picture fills its box and keeps its aspect (K16/K19): without this it drew
+   at its natural size, so a pasted image shrunk to the view overflowed a
+   smaller selection box and a resize changed the box but not the picture. */
+.wb-object-image > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
+  pointer-events: none;
+}
 /* A frame (WHITEBOARD_PLAN decision 14): an edge and a title with nothing in
    between, so the shapes on the drawing layer below the card layer show
    through it. Its inside lets the pointer through to the board, so a press

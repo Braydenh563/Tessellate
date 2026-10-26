@@ -124,5 +124,5 @@ def test_a_rotated_box_aligns_by_its_visible_bounds() -> None:
 
 
 def test_a_spacing_guide_is_labelled_with_its_length() -> None:
-    assert 'if (kind !== "spacing") continue;' in SOURCE
+    assert 'if (kind !== "spacing" || line.label === false) continue;' in SOURCE
     assert "wb-align-guide-label" in SOURCE

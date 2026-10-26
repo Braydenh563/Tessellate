@@ -113,6 +113,68 @@ async function run(viewport) {
   check("a large picture is shrunk to sit inside the view", img && img.w <= view.w && img.h <= view.h && Math.abs(img.w / img.h - 1.5) < 0.02, { img, view });
   check("one picture, one object", (await objs()) === before + 1);
 
+  // 6b. K19/K16/K17 (owner-1026b): the box is the drawn picture; a grip resizes it; the badge is off the grips; double-click fits
+  const pic = () => page.evaluate(() => {
+    const o = wbState.objects.find((x) => x.kind === "image");
+    const el = document.querySelector(`.wb-object[data-id="${o.id}"]`);
+    const R = (e) => { const b = e.getBoundingClientRect(); return { l: b.left, t: b.top, w: b.width, h: b.height }; };
+    const g = (h) => { const e = el.querySelector(`.wb-resize-handle[data-handle="${h}"]`); return e ? R(e) : null; };
+    return { o: { w: o.width, h: o.height }, box: R(el), img: R(el.querySelector("img")), se: g("se"), w: g("w") };
+  });
+  await page.evaluate(() => { const o = wbState.objects.find((x) => x.kind === "image"); selectWbItem("object", o.id); });
+  await page.waitForTimeout(500);
+  await page.waitForFunction(() => !document.querySelector(".toast"), null, { timeout: 15000 }).catch(() => {});
+  let p = await pic();
+  check("K19 the picture is drawn exactly as large as its box", Math.abs(p.img.w - p.box.w) < 1.5 && Math.abs(p.img.h - p.box.h) < 1.5, p);
+  const grab = { x: p.se.l + p.se.w / 2, y: p.se.t + p.se.h / 2 };
+  await page.mouse.move(grab.x, grab.y);
+  const under = await page.evaluate(([x, y]) => { const e = document.elementFromPoint(x, y); return e ? `${e.tagName}.${String(e.className.baseVal ?? e.className).slice(0, 60)}` : null; }, [grab.x, grab.y]);
+  check("K19 the corner grip is what sits under its own centre", /wb-resize-handle/.test(under), { under, grab, vw: viewport.width });
+  await page.mouse.down();
+  await page.mouse.move(grab.x - 80, grab.y - 20, { steps: 8 });
+  const badges = await page.evaluate(() => [...document.querySelectorAll(".wb-align-guide-label")].map((l) => { const b = l.getBoundingClientRect(); return { l: b.left, t: b.top, r: b.right, b: b.bottom }; }));
+  const grips = await page.evaluate(() => [...document.querySelectorAll(".wb-object.wb-selected .wb-resize-handle")].map((h) => { const b = h.getBoundingClientRect(); return { l: b.left, t: b.top, r: b.right, b: b.bottom }; }));
+  await page.mouse.up();
+  await page.waitForTimeout(700);
+  const hit = (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t;
+  check("K19 a size badge never covers a grip", badges.every((a) => grips.every((g) => !hit(a, g))), { badges, n: grips.length });
+  // A forced badge on the left edge (the owner's "34" under the left grip) and on the top edge, as a size match draws them.
+  const forced = await page.evaluate(() => {
+    const o = wbState.objects.find((x) => x.kind === "image");
+    wbSelectExactly([["object", o]]);
+    wbShowAlignmentGuides([
+      { x1: o.x - 8, y1: o.y, x2: o.x - 8, y2: o.y + o.height, kind: "spacing", out: true },
+      { x1: o.x, y1: o.y - 8, x2: o.x + o.width, y2: o.y - 8, kind: "spacing", out: true },
+      { x1: o.x + o.width / 2, y1: o.y + o.height + 30, x2: o.x + o.width / 2 + 60, y2: o.y + o.height + 30, kind: "spacing", label: false },
+    ]);
+    const rect = (e) => { const b = e.getBoundingClientRect(); return { l: b.left, t: b.top, r: b.right, b: b.bottom }; };
+    const lum = (c) => { const v = c.match(/\d+(\.\d+)?/g).slice(0, 3).map((n) => { n = Number(n) / 255; return n <= 0.03928 ? n / 12.92 : ((n + 0.055) / 1.055) ** 2.4; }); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
+    const labels = [...document.querySelectorAll(".wb-align-guide-label")];
+    const plate = labels[0] && getComputedStyle(labels[0].querySelector("rect")).fill;
+    const ink = labels[0] && getComputedStyle(labels[0].querySelector("text")).fill;
+    const hi = plate && ink ? Math.max(lum(plate), lum(ink)) : 0, lo = plate && ink ? Math.min(lum(plate), lum(ink)) : 1;
+    return { plate, ink, n: labels.length, rects: labels.map(rect), ratio: (hi + 0.05) / (lo + 0.05),
+      grips: [...document.querySelectorAll(".wb-object.wb-selected .wb-resize-handle")].map(rect) };
+  });
+  const hit2 = (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t;
+  check("K19 two badges drawn (the neighbour's bare line has none)", forced.n === 2, forced.n);
+  check("K19 forced badges clear all eight grips", forced.rects.every((a) => forced.grips.every((g) => !hit2(a, g))), forced);
+  check("K19 badge text reads on its plate (>= 4.5:1)", forced.ratio >= 4.5, [forced.ratio, forced.plate, forced.ink]);
+  await page.evaluate(() => wbClearAlignmentGuides());
+  const p2 = await pic();
+  check("K19 dragging the corner shrinks the box", p2.box.w < p.box.w - 40, [p.box.w, p2.box.w]);
+  check("K16 the picture scales with its box, aspect kept", Math.abs(p2.img.w - p2.box.w) < 1.5 && Math.abs(p2.img.h - p2.box.h) < 1.5, p2);
+  await page.evaluate(() => { const o = wbState.objects.find((x) => x.kind === "image"); o.height = Math.round(o.height * 0.5); wbScheduleRender(); });
+  await page.waitForTimeout(500);
+  const squat = await pic();
+  await page.dblclick(".wb-object.wb-selected .wb-resize-handle[data-handle=\"se\"]");
+  await page.waitForTimeout(900);
+  const fitted = await pic();
+  check("K17 double-click fits the picture to its natural aspect", Math.abs(fitted.o.w / fitted.o.h - 1.5) < 0.02 && fitted.o.h > squat.o.h, [squat.o, fitted.o]);
+  await undo();
+  const back = await pic();
+  check("K17 one Undo restores the size", Math.abs(back.o.h - squat.o.h) < 1 && Math.abs(back.o.w - squat.o.w) < 1, [squat.o, back.o]);
+
   // 7. fast path: copied objects still paste in one request
   await page.evaluate(() => { wbSelectAllItems(); wbCopySelection(); });
   let posts = 0;
@@ -184,6 +246,6 @@ async function run(viewport) {
 
 (async () => {
   let all = true;
-  for (const vp of [{ width: 1440, height: 900 }, { width: 720, height: 900 }]) all = (await run(vp)) && all;
+  for (const vp of [{ width: 1440, height: 900 }, { width: 720, height: 900 }, { width: 390, height: 844 }]) all = (await run(vp)) && all;
   process.exit(all ? 0 : 1);
 })();

@@ -1250,10 +1250,13 @@ function wbResizeGuides(excludeKeys, box, edges, { fit = null, grid = 0, min = 1
     //: A size match marks both measures: the neighbour's and the one it set.
     if (Array.isArray(best.line)) {
       const m = best.line[0];
-      const mark = (at, from, to) => (horizontal
-        ? { x1: from, y1: at, x2: to, y2: at, kind: "spacing" }
-        : { x1: at, y1: from, x2: at, y2: to, kind: "spacing" });
-      out.guideLines.push(mark(m.at, m.from, m.to), mark(crossLo - 8, lowEdge, highEdge));
+      const mark = (at, from, to, extra) => ({
+        ...(horizontal ? { x1: from, y1: at, x2: to, y2: at } : { x1: at, y1: from, x2: at, y2: to }),
+        kind: "spacing", ...extra,
+      });
+      //: Only the item being resized wears the number, and it stands clear of
+      //: the grips on its edge (K19); the neighbour's measure is a bare line.
+      out.guideLines.push(mark(m.at, m.from, m.to, { label: false }), mark(crossLo - 8, lowEdge, highEdge, { out: true }));
     } else if (best.line) out.guideLines.push(best.line);
   };
   axis(true);
@@ -1349,6 +1352,7 @@ function wbAlignGuideColor(kind) {
 //: Draws (or clears) the guide lines `wbAlignmentGuides` found. A "spacing"
 //: line also gets its length as a label at a constant screen size (Figma's
 //: distance badges), so an equal-gap guide says what the gap is.
+const WB_BADGE_CLEAR_PX = 22;
 function wbShowAlignmentGuides(lines) {
   const zoomGroup = document.getElementById("wb-zoom-group");
   if (!zoomGroup) return;
@@ -1375,12 +1379,17 @@ function wbShowAlignmentGuides(lines) {
     const picked = wbAlignGuideColor(kind);
     if (picked) el.style.stroke = picked;
     group.appendChild(el);
-    if (kind !== "spacing") continue;
+    if (kind !== "spacing" || line.label === false) continue;
     const length = Math.round(Math.hypot(line.x2 - line.x1, line.y2 - line.y1));
     if (length * k < 22) continue; // a label wider than its gap is noise
     const label = document.createElementNS(ns, "g");
     label.setAttribute("class", "wb-align-guide-label");
-    label.setAttribute("transform", `translate(${(line.x1 + line.x2) / 2} ${(line.y1 + line.y2) / 2}) scale(${1 / k})`);
+    //: A badge on the edge being dragged sits over that edge's own grip (the
+    //: "34" under the left handle, K19): it steps off the line, away from the box.
+    const clear = line.out ? WB_BADGE_CLEAR_PX / k : 0;
+    const bx = (line.x1 + line.x2) / 2 - (line.x1 === line.x2 ? clear : 0);
+    const by = (line.y1 + line.y2) / 2 - (line.y1 === line.y2 ? clear : 0);
+    label.setAttribute("transform", `translate(${bx} ${by}) scale(${1 / k})`);
     const words = String(length);
     const width = words.length * 7 + 10;
     const plate = document.createElementNS(ns, "rect");
@@ -16746,10 +16755,9 @@ async function initWhiteboard() {
       wbFrameFit((wbState.objects || []).find((o) => o.id === Number(frameEl.dataset.id)), handle.dataset.handle);
       return;
     }
-    //: A picture has no words to fit, so its grip's double-click is nothing.
     const owner = handle.closest(".wb-object, .node-card");
-    if (owner?.classList.contains("wb-object-image")) return;
-    wbFitToText(owner);
+    if (owner?.classList.contains("wb-object-image")) wbFitImage(owner);
+    else wbFitToText(owner);
   });
 
   //: **The two gestures a map has to answer on its own canvas** (MINDMAP_PLAN
@@ -21518,8 +21526,34 @@ function wbCardFitHeight(el) {
 //: what it holds, a picture has nothing to fit, the rest fit their words.
 function wbResizeHandleTitle(kind) {
   if (kind === "frame") return "Drag to resize, double-click to fit this edge to what is inside";
-  if (kind === "image") return "Drag to resize: Shift keeps the proportions";
+  if (kind === "image") return "Drag to resize: Shift keeps the proportions, double-click fits the picture";
   return "Drag to resize: Shift keeps the proportions, double-click fits the text";
+}
+
+//: A picture's own proportions at the width it has now (pure, node-tested).
+function wbImageFitHeight(natW, natH, width) {
+  if (!(natW > 0 && natH > 0)) return width;
+  return Math.max(WB_OBJECT_MIN_SIZE, Math.round((width * natH) / natW));
+}
+
+//: Double-click on a picture's grip: the box takes the picture's natural
+//: aspect at the current width, one undo step.
+async function wbFitImage(el) {
+  const item = (wbState.objects || []).find((o) => o.id === Number(el.dataset.id));
+  const img = el.querySelector("img");
+  if (!item || !img) return;
+  const next = wbImageFitHeight(img.naturalWidth, img.naturalHeight, item.width);
+  if (Math.abs(item.height - next) < 2) {
+    toast("Already the picture's own shape.");
+    return;
+  }
+  const before = WB_KIND_INFO.object.payload(item);
+  item.height = next;
+  el.style.height = `${next}px`;
+  await wbSaveObject(item);
+  wbPushUndo({ action: "move", kind: "object", id: item.id, before });
+  wbScheduleRender();
+  toast("Fitted to the picture.");
 }
 
 async function wbFitToText(el) {
@@ -21609,10 +21643,12 @@ async function wbFitToText(el) {
     toast("Already sized to its text.");
     return;
   }
+  const before = WB_KIND_INFO[isNode ? "node" : "object"].payload(item);
   item.height = next;
   el.style.height = `${next}px`;
   if (isNode) await wbSaveNode(item);
   else await wbSaveObject(item);
+  wbPushUndo({ action: "move", kind: isNode ? "node" : "object", id: item.id, before });
   wbScheduleRender();
   toast("Sized to its text.");
 }
