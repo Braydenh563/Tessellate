@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Faster start: the model badge's spec panel, editing a chat answer and a note's Explain row load on first use (1,965 bytes less boot script).
 - Settings: Extras no longer jumps when its package list arrives; its placeholders take the list's size.
 - Boards: select words in a text box or sticky while typing and the selection bar bolds, italicises, strikes, highlights, codes, links or lists just that part (Ctrl+B, Ctrl+I, Ctrl+K too, Ctrl+Z undoes); the box keeps markdown and shows it rendered once you finish.
 - Boards: an empty text box or sticky shows its typing caret again.

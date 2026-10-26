@@ -160,7 +160,7 @@ EXPECTED = {
         '"Give the look a name first."',
         '`You can keep ${MAX_CUSTOM_THEMES} saved looks: delete one first.`',
     ],
-    'sheets-selects.js': [
+    'gesture-kit.js': [
         '"An empty answer isn\'t a correction: delete the message instead."',
     ],
     'shell-reminders.js': [
@@ -262,7 +262,7 @@ FAULTS = {
     'lightbox-actions.js': {
         '"Couldn\'t load the Library gallery."': 'loading the gallery failed',
     },
-    'menus.js': {
+    'gesture-kit.js': {
         '"Couldn\'t read this note."': 'reading a note failed',
     },
     'note-properties.js': {

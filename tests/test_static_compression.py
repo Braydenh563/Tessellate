@@ -100,6 +100,7 @@ PIECE_CAP = 32_000
 #: won back, not raised for: the share-sheet intake (`takeSharedIntake`) is the
 #: lazy shared-intake.js and `renderMemorySettings` is in settings-controls.js,
 #: behind stand-ins. App.js 14,045, total 319,920.
+#: And after the model panel, answer edit and Explain row moved to the lazy gesture-kit.js: 318,631.
 TOTAL_CAP = 320_600
 
 
