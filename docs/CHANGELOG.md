@@ -5,7 +5,6 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
-
 ## [Unreleased]
 - Mind maps: a line style picker beside the Layout picker draws every line on the map Curved, Straight (one segment) or Elbow (right angles, rounded corners); a topic's own line shape still wins, and Ctrl+Z undoes it.
 - Mind maps: each end of a line has a grip (point at the line or select a topic): drag it round the topic to pin the side the line leaves or enters, in any layout; it stays there when either topic moves. Double-click it, or the topic menu's Lines, Line ends: back to Auto, to let the layout choose again.
