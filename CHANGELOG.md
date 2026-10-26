@@ -10,7 +10,7 @@ below). Versioning is `0.x` while the app stabilises.
 - Grammar: list items, headings and table cells are never judged as long sentences; en dash ranges, the Oxford comma and abbreviation expanders are off; names are no longer misspelt; "your" for "you're" is caught. Fixture: 58 false positives on 77 clean lines became 0, and 33 of 33 planted errors are caught (K4).
 - Notes: a long note no longer pushes Save off the screen. The note edit form's box scrolls inside a cap (Save was 29px below a 900px window after 60 lines) and its foot stays pinned; the graph popups' Save and the chat edit boxes follow the same rule.
 - Settings, Models: with no model connected, the status line says Atlas answers with its built-in composer until one is.
-- Loading placeholders now take the count and height of what that list drew last time, so the swap no longer jumps (Reminders: 290px to 8px).
+- Loading placeholders now take the count and height of what that list drew last time, so the swap no longer jumps (Reminders: 290px to 0px).
 - Faster start: the model badge's spec panel, editing a chat answer and a note's Explain row load on first use (1,965 bytes less boot script).
 - Settings: Extras no longer jumps when its package list arrives; its placeholders take the list's size.
 - Boards: select words in a text box or sticky while typing and the selection bar bolds, italicises, strikes, highlights, codes, links or lists just that part (Ctrl+B, Ctrl+I, Ctrl+K too, Ctrl+Z undoes); the box keeps markdown and shows it rendered once you finish.

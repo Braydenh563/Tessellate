@@ -502,9 +502,9 @@ HELP_TOPICS: list[dict] = [
             "or from the banner itself: the caret beside Connect a model has "
             "Hide these popups, and the toast that follows offers Show them "
             "again; "
-            "Atlas still answers from your notes without a model, and the top "
-            "of the Models page says so until one answers: its built-in "
-            "composer, no AI."
+            "Atlas still answers from your notes without a model. Until one "
+            "is connected, the top of that page says so: its built-in composer, "
+            "no AI."
         ),
         "badge": {"label": "Models", "section": "models"},
     },

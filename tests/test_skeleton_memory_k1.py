@@ -15,7 +15,7 @@ from tests._app_js import app_js_text
 
 def _show() -> str:
     text = app_js_text()
-    return re.search(r"function showSkeletons\(.*?\n}\n\nfunction skeletonRemember.*?\n}\n", text, re.S).group(0)
+    return re.search(r"function showSkeletons\(.*?\nfunction clearSkeletons.*?\n}\n", text, re.S).group(0)
 
 
 def test_the_last_render_sets_count_and_height():
@@ -28,5 +28,16 @@ def test_it_records_only_what_was_on_screen_and_only_once():
     body = _show()
     assert "getBoundingClientRect().top < innerHeight" in body
     assert "Math.min(shown.length, 30)" in body
-    assert "skeletonWatch?.disconnect()" in body and "skeletonWatch.disconnect()" in body
     assert 'prefs.setJSON("skeleton-seen", seen)' in body
+
+
+def test_it_records_after_the_swap_without_a_new_wake_source():
+    body = _show()
+    assert "queueMicrotask(() => skeletonRemember(container))" in body
+    assert "MutationObserver" not in body and "requestAnimationFrame" not in body
+
+
+def test_skeletons_cover_the_span_the_rows_did():
+    body = _show()
+    assert "seen?.[2]" in body and "seen[container.id] = [n, height, Math.round(span)]" in body
+    assert "if (drawn > 0)" in body

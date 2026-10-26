@@ -2837,14 +2837,15 @@ function showSkeletons(container, count = 3, tag = "div") {
     el.setAttribute("aria-hidden", "true");
     container.appendChild(el);
   }
-  if (!container.id) return;
-  container.skeletonWatch?.disconnect();
-  container.skeletonWatch = new MutationObserver(() => {
-    if (!container.querySelector(":scope > :not(.skeleton)")) return;
-    container.skeletonWatch.disconnect();
-    requestAnimationFrame(() => skeletonRemember(container));
-  });
-  container.skeletonWatch.observe(container, { childList: true });
+  //: Real rows and skeletons have different gaps between them, so the
+  //: skeletons are then sized to cover the same span the rows did.
+  const span = seen?.[2];
+  const first = container.firstElementChild;
+  if (span && first) {
+    const drawn = container.lastElementChild.getBoundingClientRect().bottom - first.getBoundingClientRect().top;
+    const height = Math.max(8, seen[1] + (span - drawn) / seen[0]);
+    if (drawn > 0) for (const el of container.children) el.style.height = `${height}px`;
+  }
 }
 
 function skeletonRemember(container) {
@@ -2854,7 +2855,9 @@ function skeletonRemember(container) {
   const height = Math.round(shown.reduce((sum, el) => sum + el.offsetHeight, 0) / shown.length);
   if (!height) return;
   const seen = prefs.json("skeleton-seen", {});
-  seen[container.id] = [Math.min(shown.length, 30), height];
+  const n = Math.min(shown.length, 30);
+  const span = shown[n - 1].getBoundingClientRect().bottom - shown[0].getBoundingClientRect().top;
+  seen[container.id] = [n, height, Math.round(span)];
   prefs.setJSON("skeleton-seen", seen);
 }
 
@@ -2863,6 +2866,9 @@ function clearSkeletons(container) {
   container.removeAttribute("aria-busy");
   const held = container.querySelectorAll(":scope > .skeleton");
   for (const el of held) el.remove();
+  //: The caller draws its rows right after this in the same task, so a
+  //: microtask sees them (K1; no observer or frame loop, test_frontend_wake_sources).
+  if (held.length && container.id) queueMicrotask(() => skeletonRemember(container));
   //: **What replaces them settles in** (the motion pass, 2026-10-05): the
   //: first rows fade up a step, staggered (`.ui-settle`, 08-consistency.css),
   //: instead of popping in where the skeletons were. Only on this first
