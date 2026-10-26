@@ -121,6 +121,16 @@ def strip_comments(text: str) -> str:
     return out
 
 
+def with_title(content: str, title: str) -> str:
+    """The first line is already the title as an H1 (the editor's habit), so
+    an export does not put a second one above it."""
+    opening = next((ln for ln in content.splitlines() if ln.strip()), "")
+    match = re.fullmatch(r"#\s+(.*?)\s*#*\s*", opening)
+    if match and match.group(1).strip().casefold() == title.strip().casefold():
+        return content.lstrip("\n")
+    return f"# {title}\n\n{content}"
+
+
 def comments_to_footnotes(text: str, prefix: str = "c") -> str:
     """The document with its remarks as footnotes: what an export carries."""
     body = text or ""
@@ -209,7 +219,7 @@ def bundle(title: str, text: str, media_dir: Path, names: set[str]) -> tuple[byt
         except OSError:
             continue
         carried.append(name)
-    body = f"# {title}\n\n{comments_to_footnotes(text or '')}"
+    body = with_title(comments_to_footnotes(text or ""), title)
     body = rewrite_media_links(body, set(carried))
     buffer = io.BytesIO()
     #: Deflate, and one archive written in memory: a document with its images

@@ -49,6 +49,7 @@ from tessellate.entry.mentions import (
 from tessellate.entry.manager import (
     entries_for_document,
     join_blocks,
+    strip_inline_markdown,
     get_entry,
     link_document,
     log_action,
@@ -134,6 +135,20 @@ class AiEditBody(BaseModel):
 PREVIEW_CHARS = 240
 
 
+_TABLE_RULE = re.compile(r"^\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?$")
+
+
+def _preview_line(line: str) -> str:
+    """One line as plain words: a table row becomes its cells ("REM, 25%"), the
+    `| --- |` rule under its header nothing, and bold, links and code lose
+    their markers. dog3-1026 D7: the list card showed raw `| Stage | Share |`."""
+    if line.startswith("|") and line.endswith("|"):
+        if _TABLE_RULE.match(line):
+            return ""
+        line = ", ".join(cell.strip() for cell in line.strip("|").split("|") if cell.strip())
+    return strip_inline_markdown(line).lstrip("#>-*+ \t")
+
+
 def _preview(content: str) -> str:
     """The opening of a document, flattened to one run of prose.
 
@@ -151,9 +166,7 @@ def _preview(content: str) -> str:
     # Leading markdown syntax only, a `#` inside a sentence stays. The blocks
     # stay apart (`join_blocks`, INBOX 464): a heading is not the first word
     # of the sentence under it.
-    text = join_blocks(
-        strip_properties(content), strip=lambda line: line.lstrip("#>-*+ \t"), limit=PREVIEW_CHARS
-    )
+    text = join_blocks(strip_properties(content), strip=_preview_line, limit=PREVIEW_CHARS)
     if len(text) <= PREVIEW_CHARS:
         return text
     # Cut at a word boundary, not mid-word. A hard slice ended the first
@@ -1027,7 +1040,8 @@ def export_markdown(
         #: that silently says less than the editor does. Markdown only, for the
         #: same reason the `# Title` preamble is markdown only: `%%` is not a
         #: comment in python, so in a code file it is text somebody typed.
-        body = f"# {document.title}\n\n{docexport.comments_to_footnotes(document.content or '')}"
+        content = docexport.comments_to_footnotes(document.content or "")
+        body = docexport.with_title(content, document.title)
         media_type = "text/markdown; charset=utf-8"
     else:
         body = document.content

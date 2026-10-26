@@ -383,6 +383,23 @@ const t3 = docTableParse(docTableApplyEdits(text, [p3.edit]), PRE.length);
 check("paste/delimiter-to-body", !!t3 && t3.rows[2].cells[0].trim() === "d" && t3.rows[1].cells[0].includes("-"),
   t3 ? JSON.stringify(t3.rows.map((r) => r.cells)) : "none");
 
+// The way out below (Ctrl+Enter, Enter on an empty last row): the caret lands
+// on the line under the table, or on a fresh one when the table ends the text.
+const exitText = "| a | b |\n| --- | --- |\n| 1 | 2 |\n|  |  |";
+const exitTable = docTableParse(exitText, 0);
+const exitEnd = docTableExitEdit(exitTable, exitText, true);
+const exitDone = docTableApplyEdits(exitText, exitEnd.changes);
+check("exit/empty-row-dropped", exitDone === "| a | b |\n| --- | --- |\n| 1 | 2 |\n\n" && exitDone.length === exitEnd.anchor,
+  JSON.stringify([exitDone, exitEnd.anchor]));
+const exitMid = "| a |\n| --- |\n| 1 |\nafter";
+const exitMidEdit = docTableExitEdit(docTableParse(exitMid, 0), exitMid, false);
+check("exit/blank-line-before-text", docTableApplyEdits(exitMid, exitMidEdit.changes) === "| a |\n| --- |\n| 1 |\n\nafter" && exitMidEdit.anchor === 21, JSON.stringify(exitMidEdit));
+const exitBlank = "| a |\n| --- |\n| 1 |\n\nafter";
+const exitBlankEdit = docTableExitEdit(docTableParse(exitBlank, 0), exitBlank, false);
+check("exit/existing-blank-line-reused", exitBlankEdit.changes.length === 0 && exitBlank.slice(exitBlankEdit.anchor) === "after", JSON.stringify(exitBlankEdit));
+const exitKeep = docTableExitEdit(docTableParse("| a |\n| --- |\n| 1 |", 0), "| a |\n| --- |\n| 1 |", false);
+check("exit/end-of-document-adds-blank-line", exitKeep.anchor === 21 && exitKeep.changes[0].insert === "\n\n", JSON.stringify(exitKeep));
+
 process.stdout.write(JSON.stringify(results));
 """
 
@@ -405,3 +422,25 @@ def test_the_live_table_transforms_do_what_the_gestures_need(transform_checks: l
     assert len(transform_checks) >= 17
     failed = [c for c in transform_checks if not c["ok"]]
     assert not failed, "\n".join(f"{c['name']}: {c['detail']}" for c in failed)
+
+
+def test_read_view_table_is_set_like_prose_and_counts_rows_plainly() -> None:
+    """dog3-1026 D5, measured on :8898 at 1440: the Read view table was
+    monospace and 658 px wide for three short columns (113/249/295 px); now
+    system-ui and 302 px. The caption says what the number counts."""
+    css = (ROOT / "frontend" / "css" / "09-editor.css").read_text(encoding="utf-8")
+    rule = css[css.index("#doc-preview .md-table-block:not(.is-full) .md-table") :].split("}")[0]
+    assert "font-family: var(--font-sans)" in rule and "width: auto" in rule and "max-width: 100%" in rule
+    markdown = (ROOT / "frontend" / "js" / "markdown.js").read_text(encoding="utf-8")
+    assert "table · header and ${bodyRows.length} row" in markdown and "table · header only" in markdown
+
+
+def test_list_markers_do_not_inherit_the_hanging_indent() -> None:
+    """dog3-1026 D23, measured on :8898 at 720: the bullet's glyph sat at
+    x -6 (half outside the page, 40 px from its words) because the inline-block
+    marker inherited the line's `text-indent: -1.6em`; with it reset the glyph
+    is at 18 and the words at 42."""
+    source = DOCUMENTS_JS.read_text(encoding="utf-8")
+    for name in ("cm-md-li-bullet", "cm-md-li-num"):
+        line = next(ln for ln in source.splitlines() if f'".{name}": ' in ln)
+        assert 'textIndent: "0"' in line, name

@@ -1011,6 +1011,7 @@ async function openDocument(id) {
   docRememberPositionNow();
   // Never lose unsaved work by switching away from it.
   if (docDirty) await saveDocument({ silent: true });
+  await docDropIfUntouched(id);
   //: **The engine is loaded here, and this is the only place it is.** Awaited
   //: before the text is handed over, so the document goes straight into
   //: CodeMirror rather than into the fallback and then into a view mounted a
@@ -1924,8 +1925,26 @@ function docUntitledName(titles) {
   }
   return top ? `Untitled document ${top + 1}` : "Untitled document";
 }
+
+//: A document nobody touched: still named by the app (or not at all), still empty. The only
+//: kind that is dropped on leaving; one word of text keeps it (dog3-1026 D20).
+function docIsUntouched(title, text) {
+  return /^(?:untitled(?: document)?(?: \d{1,6})?)?$/i.test(String(title || "").trim()) && !String(text || "").trim();
+}
 // DOC-UNTITLED-END
 const docNextName = () => docUntitledName(docs.map((d) => d.title));
+
+//: Leaving a document that was made and never written in (a keystroke in the
+//: title, then undone; New, then another document) bins it, so the list does
+//: not fill with "Untitled document N". Anything with a word in it stays.
+async function docDropIfUntouched(nextId = null) {
+  const doc = currentDoc;
+  if (!doc || doc.id === nextId || creatingDocument || !docIsUntouched($("doc-title").value, docText())) return;
+  currentDoc = null;
+  docs = docs.filter((d) => d.id !== doc.id);
+  await apiJson(`/documents/${doc.id}`, { method: "DELETE" }).catch(() => {});
+  renderDocList();
+}
 
 //: **A blank document is not made until it is written in** (dog1-1025 item
 //: 16, decided): the editor opens empty and the first keystroke in the title
@@ -1935,6 +1954,7 @@ async function startBlankDocument() {
   const seq = ++docOpenSeq;
   docRememberPositionNow();
   if (docDirty) await saveDocument({ silent: true });
+  await docDropIfUntouched();
   await ensureDocEditor();
   if (seq !== docOpenSeq) return;
   showNoDocument();
@@ -2098,7 +2118,7 @@ async function ensureDocumentExists() {
   creatingDocument = (async () => {
     const doc = await apiJson("/documents", {
       method: "POST",
-      body: JSON.stringify({ title: docNextName(), content: "" }),
+      body: JSON.stringify({ title: $("doc-title").value.trim() || docNextName(), content: "" }),
     });
     currentDoc = doc;
     docs.unshift({ ...doc });
@@ -5268,6 +5288,20 @@ function docTableStepRow(table, row, delta) {
   return r;
 }
 
+//: The way out of a table below: the edits and the caret. The caret lands
+//: after one blank line, added when missing: text on the very next line
+//: would be read as one more row. `dropLast` first removes the last row,
+//: for Enter on an empty one (Notion and Google Docs do the same);
+//: Ctrl+Enter keeps every row, in Source too.
+function docTableExitEdit(table, text, dropLast) {
+  const end = table.to;
+  const from = dropLast ? table.rows[table.rows.length - 1].from - 1 : end;
+  const lead = Math.min(2, /^\n*/.exec(text.slice(end))[0].length);
+  const changes = dropLast ? [{ from, to: end, insert: "" }] : [];
+  if (lead < 2) changes.push({ from: end + lead, to: end + lead, insert: "\n".repeat(2 - lead) });
+  return { changes, anchor: from + 2 };
+}
+
 //: A cell's text as markdown can hold it: one line, and a pipe escaped so it
 //: stays inside its cell rather than opening a new one. An already escaped
 //: pipe is kept as it is.
@@ -5494,6 +5528,19 @@ function docTableCaretTo(context, row, col) {
   return true;
 }
 
+//: Leave a table downwards through `docTableExitEdit`, the way out as data.
+function docTableExit(view, table, dropLast) {
+  const out = docTableExitEdit(table, view.state.doc.toString(), dropLast);
+  view.dispatch({ changes: out.changes, selection: { anchor: out.anchor }, scrollIntoView: true, userEvent: "input" });
+  return true;
+}
+
+function docTableCtrlEnter(view) {
+  const context = docTableContext();
+  if (!context || context.surface.kind !== "codemirror" || context.surface.view !== view) return false;
+  return docTableExit(view, context.table, false);
+}
+
 //: **Enter and the arrows in a Live table** (INBOX 425 i: "tables are still
 //: really annoying to use and edit in the documents live view"). Measured
 //: before this in `scratchpad/ui-sweeps/doctablework.js`: ArrowDown from the
@@ -5518,6 +5565,14 @@ function docTableKeyMove(view, key) {
   if (!context || context.surface.kind !== "codemirror" || context.surface.view !== view) return false;
   const { table, cell } = context;
   if (key === "Enter") {
+    const last = table.rows[table.rows.length - 1];
+    if (cell.row === table.rows.length - 1 && table.rows.length > 2 && !last.cells.some((c) => c.trim())) return docTableExit(view, table, true);
+    //: A row typed by hand ends with its closing pipe: Enter there is the
+    //: plain newline, so the next line is typed rather than found inside a
+    //: cell (typed line by line, `| --- |` then Enter used to add an empty
+    //: row and park the next line inside it).
+    const line = view.state.doc.lineAt(sel.head);
+    if (sel.head === line.to && /\|\s*$/.test(line.text)) return false;
     const next = docTableStepRow(table, cell.row, 1);
     if (next !== null) return docTableCaretTo(context, next, cell.col);
     const rows = table.rows.length;
@@ -5529,20 +5584,8 @@ function docTableKeyMove(view, key) {
   if (moved.head !== sel.head && landed && landed.row === cell.row && landed.col === cell.col) return false;
   const next = docTableStepRow(table, cell.row, down ? 1 : -1);
   if (next !== null) return docTableCaretTo(context, next, cell.col);
+  if (down) return docTableExit(view, table, false);
   const doc = view.state.doc;
-  if (down) {
-    if (table.to < doc.length) {
-      view.dispatch({ selection: { anchor: table.to + 1 }, scrollIntoView: true });
-    } else {
-      view.dispatch({
-        changes: { from: table.to, insert: "\n\n" },
-        selection: { anchor: table.to + 2 },
-        scrollIntoView: true,
-        userEvent: "input",
-      });
-    }
-    return true;
-  }
   if (table.from > 0) {
     view.dispatch({ selection: { anchor: table.from - 1 }, scrollIntoView: true });
   } else {
@@ -11410,6 +11453,14 @@ function wrapDocSelection(marker, placeholder = "", boxId = "doc-content") {
   finishMarkdownEdit(box, boxId);
 }
 
+//: One file name for every export: the server's rule (`_safe_filename`)
+//: written once more for the formats the browser builds itself, so a
+//: document is "Sleep-essay" as .md, .zip, .docx and .html alike.
+function docExportName(title, ext) {
+  const cleaned = String(title || "").replace(/[^\p{L}\p{N}_\s-]/gu, "").trim() || "document";
+  return `${cleaned.replace(/[\s_]+/g, "-").slice(0, 60)}.${ext}`;
+}
+
 //: **One download, four routes to it.** The markdown, the bundle and the Word
 //: file are the same three steps (ask the server, read the filename off the
 //: header, save the blob) and differed only in the path, which is how the
@@ -11784,8 +11835,7 @@ async function exportDocumentHtml() {
       const images = await docExportInlineImages(clone);
       const savedOn = `${currentDoc.title || "Untitled"} · exported ${new Date().toLocaleDateString()}`;
       const html = docExportHtmlDocument(currentDoc.title, clone.innerHTML, savedOn);
-      const name = (currentDoc.title || "document").replace(/[^\w. -]+/g, "").trim() || "document";
-      await saveFile(`${name}.html`, new Blob([html], { type: "text/html" }));
+      await saveFile(docExportName(currentDoc.title, "html"), new Blob([html], { type: "text/html" }));
       if (images.dropped) {
         toast(`Saved. ${images.dropped} image(s) could not be embedded and are named in the text.`);
       }
@@ -21611,8 +21661,11 @@ function docCmTheme(CM) {
       //: than the punctuation, and left in the document so it can be
       //: selected, deleted and typed over like any other character.
       ".cm-md-li-mark": { color: "var(--muted)" },
-      ".cm-md-li-bullet": { display: "inline-block", width: "1.6em" },
-      ".cm-md-li-num": { display: "inline-block", minWidth: "1.6em" },
+      //: `textIndent: 0`: an inline-block is a block container, so it inherits
+      //: the line's hanging `-1.6em` and drew its own glyph 24px left of its
+      //: box (bullet 44px from the words, half outside the page at 720).
+      ".cm-md-li-bullet": { display: "inline-block", width: "1.6em", textIndent: "0" },
+      ".cm-md-li-num": { display: "inline-block", minWidth: "1.6em", textIndent: "0" },
       //: **A quotation's bar has to be seen to do its job** (17c). It was
       //: `--border`, a 10% ink that composites to 1.2:1 on the page, so a
       //: quotation read as a paragraph set in grey. Half the muted ink is a
@@ -22117,6 +22170,7 @@ function docCmKeymap(CM) {
     //: anything that would treat a row as a line of text; each declines
     //: (returns false) everywhere that is not a Live table cell.
     { key: "Enter", run: (view) => docTableKeyMove(view, "Enter") },
+    { key: "Mod-Enter", run: (view) => docTableCtrlEnter(view) },
     { key: "ArrowDown", run: (view) => docTableKeyMove(view, "ArrowDown") },
     { key: "ArrowUp", run: (view) => docTableKeyMove(view, "ArrowUp") },
     //: A markdown document moves a block, not a line (`docBlockMoveEdit`); a

@@ -232,8 +232,7 @@ async function docWordExport() {
   try {
     const D = await docWordLib("docx");
     const blob = await docWordBlob(D, currentDoc.title, docCmView ? docCmView.state.doc.toString() : currentDoc.content || "");
-    const name = `${String(currentDoc.title || "document").replace(/[\\/:*?"<>|]+/g, " ").trim() || "document"}.docx`;
-    await saveFile(name, blob);
+    await saveFile(docExportName(currentDoc.title, "docx"), blob);
     return true;
   } catch (error) {
     toast(`Could not write the Word file: ${error.message}`, true);

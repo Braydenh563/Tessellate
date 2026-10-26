@@ -5,6 +5,8 @@ The rule that matters: an AI edit never writes to the document by itself.
 
 from __future__ import annotations
 
+import pytest
+
 
 def test_create_read_update_delete(client):
     created = client.post(
@@ -112,6 +114,18 @@ def test_markdown_export_includes_the_title_and_a_filename(client):
     assert response.text.startswith("# My Essay")
     assert "Body text." in response.text
     assert 'filename="My-Essay.md"' in response.headers["content-disposition"]
+
+
+def test_markdown_export_does_not_repeat_a_heading_that_is_the_title(client):
+    """dog3-1026 D6: a document that opens with its own title as the H1 came
+    out with the title twice. Another heading, or the same words lower down,
+    still gets the title put on top."""
+    same = client.post("/documents", json={"title": "Sleep essay", "content": "\n# Sleep Essay \n\nBody."}).json()
+    text = client.get(f"/documents/{same['id']}/export.md").text
+    assert text.count("# Sleep") == 1 and text.startswith("\n# Sleep Essay") is False
+    assert text.lstrip().startswith("# Sleep Essay")
+    other = client.post("/documents", json={"title": "Sleep essay", "content": "# Chapter one\n\nSleep essay."}).json()
+    assert client.get(f"/documents/{other['id']}/export.md").text.startswith("# Sleep essay\n\n# Chapter one")
 
 
 def test_export_filename_cannot_be_steered_by_the_title(client):
@@ -652,3 +666,37 @@ def test_a_document_with_a_note_attached_can_still_be_deleted(client, session):
     assert session.scalar(select(func.count()).select_from(DocumentBookmark)) == 0
     # The note itself is not the document's to delete.
     assert client.get(f"/entries/{note['id']}").status_code == 200
+
+
+def test_every_export_format_names_the_file_the_same_way():
+    """dog3-1026 D6: .md came out as "Sleep-essay.md" and .docx as "Sleep
+    essay.docx". The browser-built formats use the server's rule."""
+    import json
+    import shutil
+    import subprocess
+    from pathlib import Path
+
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    root = Path(__file__).resolve().parents[1] / "frontend" / "js"
+    source = (root / "documents.js").read_text(encoding="utf-8")
+    start = source.index("function docExportName")
+    fn = source[start : source.index("\n}\n", start) + 3]
+    titles = '["Sleep essay", "a/b: c?", "", "  ", "Caf\u00e9 notes", "x".repeat(80)]'
+    script = fn + f'console.log(JSON.stringify({titles}.map((t) => docExportName(t, "docx"))));'
+    names = json.loads(subprocess.run([node, "-e", script], capture_output=True, text=True, check=True).stdout)
+    assert names[:5] == ["Sleep-essay.docx", "ab-c.docx", "document.docx", "document.docx", "Caf\u00e9-notes.docx"]
+    assert len(names[5]) == 65
+    assert "docExportName(" in (root / "documents-word.js").read_text(encoding="utf-8")
+    assert "docExportName(currentDoc.title" in source
+
+
+def test_library_preview_reads_a_table_and_markers_as_plain_words(client):
+    """dog3-1026 D7: the Library card for a document with a table showed
+    `| Stage | Share |` and `| --- |`."""
+    body = "Intro with **bold** and [a link](http://x.test).\n\n| Stage | Share |\n| --- | :---: |\n| REM | 25% |\n| Deep | 20% |\n"
+    client.post("/documents", json={"title": "Sleep", "content": body})
+    preview = next(d["preview"] for d in client.get("/documents").json() if d["title"] == "Sleep")
+    assert "|" not in preview and "---" not in preview and "**" not in preview and "](" not in preview
+    assert "Stage, Share" in preview and "REM, 25%" in preview and preview.startswith("Intro with bold and a link")

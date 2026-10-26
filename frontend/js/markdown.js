@@ -862,7 +862,7 @@ function buildTableBlock(scroller, headers, bodyRows, rawTable) {
   bar.className = "code-bar";
   const label = document.createElement("span");
   label.className = "code-lang";
-  label.textContent = `table · ${bodyRows.length} row${bodyRows.length === 1 ? "" : "s"}`;
+  label.textContent = bodyRows.length ? `table · header and ${bodyRows.length} row${bodyRows.length === 1 ? "" : "s"}` : "table · header only";
   const cells = (row) => headers.map((_, c) => (row[c] || "").trim());
   const rows = [cells(headers), ...bodyRows.map(cells)];
   const tsv = rows.map((row) => row.map((v) => v.replace(/\t/g, " ")).join("\t")).join("\n");
