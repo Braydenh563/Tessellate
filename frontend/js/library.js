@@ -3901,12 +3901,16 @@ function ocrRegionsUrl(image, page = 0) {
 //: The rendered picture of one page, an image is itself the page, a PDF has
 //: to be rasterised, and the endpoints for that already exist for the file
 //: viewer and the Files tile.
-function ocrPageImageUrl(image, page = 0) {
+//: `thumb` is the rail's picture: a quarter of the width, drawn in ~7 ms where
+//: the page is ~116 ms, so twenty-four of them never queue ahead of the page
+//: you asked for (measured, attach-1026 O1).
+function ocrPageImageUrl(image, page = 0, thumb = false) {
   if (!ocrIsPdf(image)) return image._src || mediaSrc(image.url);
   return mediaSrc(
-    image._isAttachment
+    (image._isAttachment
       ? `/files/${image.id}/pdf-page/${page}`
-      : `/media/pdf-page/${encodeURIComponent((image.url || "").split("/").pop())}/${page}`
+      : `/media/pdf-page/${encodeURIComponent((image.url || "").split("/").pop())}/${page}`)
+      + (thumb ? "?thumb=1" : "")
   );
 }
 
@@ -4115,24 +4119,128 @@ function ocrRenderOtherReadings(body) {
 function ocrPaintLiveText(regions) {
   const layer = $("ocr-live-text");
   if (!layer) return;
-  layer.replaceChildren();
+  const wanted = [];
   for (const region of regions) {
     for (const [index, word] of (region.words || []).entries()) {
-      const span = document.createElement("span");
-      span.className = "ocr-live-word";
-      span.textContent = word.text;
-      span.dataset.region = String(region.index);
-      span.dataset.word = String(index);
-      span.style.left = `${word.x * 100}%`;
-      span.style.top = `${word.y * 100}%`;
-      span.style.width = `${word.w * 100}%`;
-      span.style.height = `${word.h * 100}%`;
-      span.style.setProperty("--word-h", String(word.h));
-      layer.appendChild(span);
+      wanted.push({
+        key: `${region.index}:${index}`,
+        sig: `${word.text}|${word.x}|${word.y}|${word.w}|${word.h}`,
+        region: region.index,
+        index,
+        word,
+      });
     }
   }
+  //: Patched, not rebuilt (attach-1026 O3): a repaint of an unchanged page
+  //: removed and re-added every word, which is the blink.
+  const changed = ocrKeepNodes(
+    layer,
+    wanted,
+    (item) => {
+      const span = document.createElement("span");
+      span.className = "ocr-live-word";
+      ocrSetLiveWord(span, item);
+      return span;
+    },
+    (span, item) => {
+      //: Its box moved or its text changed: it is measured again.
+      delete span.dataset.fitted;
+      ocrSetLiveWord(span, item);
+    }
+  );
   layer.classList.toggle("hidden", !layer.childElementCount);
-  requestAnimationFrame(ocrFitLiveText);
+  if (changed) requestAnimationFrame(ocrFitLiveText);
+}
+
+function ocrSetLiveWord(span, { region, index, word }) {
+  span.textContent = word.text;
+  span.dataset.region = String(region);
+  span.dataset.word = String(index);
+  span.style.left = `${word.x * 100}%`;
+  span.style.top = `${word.y * 100}%`;
+  span.style.width = `${word.w * 100}%`;
+  span.style.height = `${word.h * 100}%`;
+  span.style.setProperty("--word-h", String(word.h));
+}
+
+//: **Keep the nodes of what did not change** (attach-1026 O3, the owner: "rendering
+//: the regions on pdfs is a little flashy and on and off"). An overlay layer
+//: is the answer to a list of wanted `{key, sig}` items: a node whose key and
+//: signature are unchanged is left alone, a changed one is patched, a new one
+//: is built, and only the ones no longer wanted are removed. Returns whether
+//: anything was added or patched. The nodes are remembered per layer here,
+//: not read back from the DOM, so a layer someone cleared by hand is rebuilt.
+const ocrKept = new WeakMap();
+
+function ocrKeepNodes(layer, wanted, build, patch) {
+  const old = ocrKept.get(layer) || new Map();
+  const next = new Map();
+  let changed = false;
+  for (const item of wanted) {
+    let entry = old.get(item.key);
+    old.delete(item.key);
+    if (entry && entry.node.parentNode !== layer) entry = null;
+    if (!entry) {
+      entry = { node: build(item), sig: item.sig };
+      layer.appendChild(entry.node);
+      changed = true;
+    } else if (entry.sig !== item.sig) {
+      patch(entry.node, item);
+      entry.sig = item.sig;
+      changed = true;
+    }
+    next.set(item.key, entry);
+  }
+  for (const { node } of old.values()) node.remove();
+  //: Order is part of the answer (the Live Text copy reads it): a node built
+  //: in the middle of the list is moved there, and a list already in order
+  //: costs one comparison per node.
+  let place = 0;
+  for (const { node } of next.values()) {
+    if (layer.children[place] !== node) layer.insertBefore(node, layer.children[place] || null);
+    place += 1;
+  }
+  ocrKept.set(layer, next);
+  return changed;
+}
+
+//: The boxes on the picture, patched the same way. A box is keyed by its
+//: region's index and its signature is everything it shows.
+function ocrPaintBoxes(regions) {
+  const layer = $("ocr-boxes");
+  if (!layer) return;
+  const wanted = regions.map((region) => ({
+    key: String(region.index),
+    sig: `${region.kind}|${region.box.x}|${region.box.y}|${region.box.w}|${region.box.h}|${region.text}`,
+    region,
+  }));
+  ocrKeepNodes(
+    layer,
+    wanted,
+    ({ region }) => {
+      const box = document.createElement("button");
+      box.type = "button";
+      box.dataset.index = String(region.index);
+      //: By index, not by closure over the region: this node outlives the
+      //: answer that built it.
+      box.addEventListener("click", () => ocrSelectRegion(Number(box.dataset.index)));
+      ocrSetBox(box, region);
+      return box;
+    },
+    (box, { region }) => ocrSetBox(box, region)
+  );
+}
+
+function ocrSetBox(box, region) {
+  box.className = `ocr-box ocr-box-${region.kind}`
+    + (box.classList.contains("is-active") ? " is-active" : "")
+    + (box.classList.contains("is-dimmed") ? " is-dimmed" : "");
+  box.style.left = `${region.box.x * 100}%`;
+  box.style.top = `${region.box.y * 100}%`;
+  box.style.width = `${region.box.w * 100}%`;
+  box.style.height = `${region.box.h * 100}%`;
+  box.title = region.text.slice(0, 120);
+  box.setAttribute("aria-label", `Region ${region.index + 1}: ${region.text.slice(0, 60)}`);
 }
 
 //: Each word stretched to its box: the ratio does not change with the zoom,
@@ -4182,7 +4290,6 @@ function ocrRenderRegions(body) {
   const list = $("ocr-region-list");
   const message = $("ocr-message");
   const source = $("ocr-source");
-  boxes.replaceChildren();
   list.replaceChildren();
   ocrWorkspaceRegions = body.regions || [];
   ocrPaintLiveText(body.source === "tesseract" ? ocrWorkspaceRegions : []);
@@ -4330,26 +4437,14 @@ function ocrRenderRegions(body) {
     $("ocr-boxes").classList.toggle("is-hidden", positioned && boxToggle.getAttribute("aria-pressed") !== "true");
     ocrSyncToolsMenu();
   }
+  const boxed = [];
   for (const region of ocrWorkspaceRegions) {
     //: `positioned` says the *reading* has boxes; `region.box` says this block
     //: does. They are the same thing today and were not always, a payload
     //: from before `box` became nullable, or a future reader that boxes some
     //: blocks and not others, would crash on `region.box.x` here. One extra
     //: check, and the list rows below still render for every block either way.
-    if (positioned && region.box) {
-      const box = document.createElement("button");
-      box.type = "button";
-      box.className = `ocr-box ocr-box-${region.kind}`;
-      box.dataset.index = String(region.index);
-      box.style.left = `${region.box.x * 100}%`;
-      box.style.top = `${region.box.y * 100}%`;
-      box.style.width = `${region.box.w * 100}%`;
-      box.style.height = `${region.box.h * 100}%`;
-      box.title = region.text.slice(0, 120);
-      box.setAttribute("aria-label", `Region ${region.index + 1}: ${region.text.slice(0, 60)}`);
-      box.addEventListener("click", () => ocrSelectRegion(region.index));
-      boxes.appendChild(box);
-    }
+    if (positioned && region.box) boxed.push(region);
 
     const row = document.createElement("li");
     row.className = "ocr-region";
@@ -4580,12 +4675,14 @@ function ocrRenderRegions(body) {
     //: warning's colours, over a state that is not a fault.
     source.hidden = true;
   }
+  ocrPaintBoxes(boxed);
+  const activeBox = ocrUi.activeRegion ? String(ocrUi.activeRegion.index) : "";
+  for (const box of boxes.children) box.classList.toggle("is-active", box.dataset.index === activeBox);
   if (ocrUi.activeRegion) {
     const again = list.querySelector(
       `.ocr-region[data-index="${ocrUi.activeRegion.index}"][data-page="${ocrUi.activeRegion.page}"]`
     );
     again?.classList.add("is-active");
-    document.querySelector(`#ocr-boxes .ocr-box[data-index="${ocrUi.activeRegion.index}"]`)?.classList.add("is-active");
   }
   ocrRoveSync(list, ".ocr-region");
   //: A find that survives a re-read: the rows were just rebuilt, so the filter
@@ -4911,10 +5008,10 @@ async function ocrRunRegion(mode) {
 //: Everything this document has already had read off it, from the store the
 //: read endpoints write to. Never throws: a document with no readings and a
 //: backend that cannot answer are the same thing here, nothing to show.
-async function ocrStoredPageReads(image) {
+async function ocrStoredPageReads(image, signal) {
   if (!image) return null;
   const base = image._isAttachment ? `/files/${image.id}` : `/media/${image.id}`;
-  return apiJson(`${base}/page-reads`).catch(() => null);
+  return apiJson(`${base}/page-reads`, signal ? { signal } : {}).catch(() => null);
 }
 
 //: **What the app knows about this document, page by page, in page order.**
@@ -5042,12 +5139,75 @@ function ocrFillPageCaptions(stored) {
   }
 }
 
+//: **Which load is the latest** (attach-1026 O1/O2). Every `ocrLoadPage` takes a
+//: number and an abort handle; an answer that comes back for an older one
+//: neither paints nor holds the next up, and its request is cancelled. The
+//: check used to be on the file alone, so page 3's slow answer landed on page
+//: 4 of the same document.
+let ocrLoadSeq = 0;
+let ocrLoadAbort = null;
+//: Page counts by file, from `pdf-info` (a header read, ~0.1 ms) or a regions
+//: answer, so a file seen once opens with its count, its pill and its rail at
+//: the click and never waits on a reader to learn how long it is.
+const ocrPageCounts = new Map();
+
+async function ocrKnownPages(image, signal) {
+  const key = ocrRailKey(image);
+  if (ocrPageCounts.has(key)) return ocrPageCounts.get(key);
+  const url = image._isAttachment
+    ? `/files/${image.id}/pdf-info`
+    : `/media/pdf-info/${encodeURIComponent((image.url || "").split("/").pop())}`;
+  try {
+    const info = await apiJson(url, { silent: true, signal });
+    const pages = info?.available ? Number(info.pages) || 0 : 0;
+    if (pages > 0) ocrPageCounts.set(key, pages);
+    return pages;
+  } catch {
+    //: Not knowing yet is not a failure: the regions answer carries the count.
+    return 0;
+  }
+}
+
+//: The lit item in the rail follows the page at once, before anything is asked.
+function ocrRailActive(image) {
+  const activeKey = ocrIsPdf(image) ? `page:${ocrWorkspacePage}` : ocrRailKey(image);
+  for (const thumb of document.querySelectorAll("#ocr-rail .ocr-rail-item")) {
+    const active = thumb.dataset.key === activeKey;
+    thumb.classList.toggle("is-active", active);
+    thumb.setAttribute("aria-current", active ? "true" : "false");
+  }
+  ocrRoveSync($("ocr-rail"), ".ocr-rail-item");
+}
+
+//: A document's length, applied: the page rail, the pill, and the continuous
+//: layout the person chose, all from the count alone.
+function ocrApplyPageCount(image, count, continuous) {
+  ocrBuildPageRail(image, count);
+  if (ocrWorkspacePage >= ocrWorkspacePages) {
+    //: A page past the end (a stale number from the lightbox) lands on the last.
+    ocrWorkspacePage = ocrWorkspacePages - 1;
+    if (!continuous) $("ocr-image").src = ocrPageImageUrl(image, ocrWorkspacePage);
+  }
+  ocrRailActive(image);
+  ocrSyncPager(image, true);
+  if (ocrViewMode === "scroll" && !continuous) {
+    ocrSetViewMode("scroll", image);
+  }
+}
+
 async function ocrLoadPage(image, page = 0, opts = {}) {
+  const seq = (ocrLoadSeq += 1);
+  ocrLoadAbort?.abort();
+  const ctl = new AbortController();
+  ocrLoadAbort = ctl;
   //: Another page of the same file keeps its reading on screen until the new
   //: answer replaces it (INBOX 717, measured: turning a page of a stored
   //: three-page reading emptied the pane for 11 of 91 frames, and the list's
   //: scroll position went with it). A different file starts empty.
   const sameFile = Boolean(ocrWorkspaceCurrent) && ocrRailKey(ocrWorkspaceCurrent) === ocrRailKey(image);
+  //: The same page of the same file (a re-read, an edit, a delete settling):
+  //: its boxes and words stay up until the new answer patches them.
+  const samePage = sameFile && ocrWorkspacePage === Math.max(0, page);
   ocrWorkspaceCurrent = image;
   ocrWorkspacePage = Math.max(0, page);
   //: Whatever page descriptions are on screen belong to the *previous* load.
@@ -5061,7 +5221,7 @@ async function ocrLoadPage(image, page = 0, opts = {}) {
   //: A document's descriptions arrive with its stored reading, a quick read
   //: of the database, asked for here beside the slow regions request below
   //: rather than behind it. A failure is left to the awaited call below.
-  const storedAsked = ocrIsPdf(image) && !ocrIsTextFile(image) ? ocrStoredPageReads(image) : null;
+  const storedAsked = ocrIsPdf(image) && !ocrIsTextFile(image) ? ocrStoredPageReads(image, ctl.signal) : null;
   storedAsked?.then((early) => {
     if (ocrWorkspaceCurrent !== image || ocrWorkspacePage !== Math.max(0, page)) return;
     ocrFillPageCaptions(early);
@@ -5115,13 +5275,12 @@ async function ocrLoadPage(image, page = 0, opts = {}) {
       ? `Page ${ocrWorkspacePage + 1} of ${image.original_name}`
       : `Page: ${image.original_name}`;
   }
-  const activeKey = ocrIsPdf(image) ? `page:${ocrWorkspacePage}` : ocrRailKey(image);
-  for (const thumb of document.querySelectorAll("#ocr-rail .ocr-rail-item")) {
-    const active = thumb.dataset.key === activeKey;
-    thumb.classList.toggle("is-active", active);
-    thumb.setAttribute("aria-current", active ? "true" : "false");
-  }
-  ocrRoveSync($("ocr-rail"), ".ocr-rail-item");
+  //: The lit rail item and the pill move in this frame, before any request is
+  //: answered (they used to wait for the regions, 3110 ms behind 24 rail
+  //: renders, measured): the label shows the count this file is known to
+  //: have, or the last one while a new file's is asked for just below.
+  ocrRailActive(image);
+  ocrSyncPager(image, true);
   //: A read started elsewhere and still running is the *first* thing this
   //: window has to say, otherwise reopening mid-read shows an empty page and
   //: reads as "it stopped when I closed the window", which is exactly what
@@ -5133,8 +5292,10 @@ async function ocrLoadPage(image, page = 0, opts = {}) {
       : "Reading the page…";
     $("ocr-message").classList.remove("hidden");
   }
-  $("ocr-boxes").replaceChildren();
-  ocrPaintLiveText([]);
+  if (!samePage) {
+    ocrPaintBoxes([]);
+    ocrPaintLiveText([]);
+  }
   if (!sameFile) $("ocr-region-list").replaceChildren();
   //: **The read button is not a PDF button.** Asked for directly: *"make it not
   //: just reading text on the page but truly ... an all encompassing text and
@@ -5157,13 +5318,13 @@ async function ocrLoadPage(image, page = 0, opts = {}) {
   if (ocrIsTextFile(image)) {
     $("ocr-read-page")?.classList.add("hidden");
     $("ocr-describe")?.classList.add("hidden");
-    $("ocr-boxes")?.replaceChildren();
+    ocrPaintBoxes([]);
     ocrPaintLiveText([]);
     $("ocr-stage")?.classList.add("ocr-stage-text");
     try {
       const file = await ocrFetchFileText(image);
       //: The view moved on while this was fetched: its answer is not for it.
-      if (ocrWorkspaceCurrent !== image) return;
+      if (seq !== ocrLoadSeq) return;
       const paragraphs = (file.text || "").split(/\n{2,}/).map((t) => t.trim()).filter(Boolean);
       ocrRenderRegions({
         regions: (paragraphs.length ? paragraphs : ["(This file is empty.)"]).map((text, index) => ({
@@ -5201,8 +5362,18 @@ async function ocrLoadPage(image, page = 0, opts = {}) {
   $("ocr-stage")?.classList.remove("ocr-stage-text");
   $("ocr-image")?.classList.remove("hidden");
   $("ocr-stage")?.querySelector(".ocr-text-view")?.remove();
+  //: **The length first, the reader after.** The page count comes from
+  //: `pdf-info`, not from the regions answer that an optical reader may take
+  //: seconds over (the owner: "I think it waits for rapid ocr or tesserract to
+  //: read the whole document first before loading the other pages"). The
+  //: rail, the pill and the layout need nothing else.
+  if (ocrIsPdf(image)) {
+    const count = await ocrKnownPages(image, ctl.signal);
+    if (seq !== ocrLoadSeq) return;
+    if (count) ocrApplyPageCount(image, count, continuous);
+  }
   try {
-    const body = await apiJson(ocrRegionsUrl(image, ocrWorkspacePage));
+    const body = await apiJson(ocrRegionsUrl(image, ocrWorkspacePage), { signal: ctl.signal });
     //: **What was already read wins over "nothing read yet".** Reported
     //: twice: "ai read the pages 1-3 in my pdf as I put it, but no text
     //: appeared in any of the extracted text areas?? notifications appeared
@@ -5222,10 +5393,10 @@ async function ocrLoadPage(image, page = 0, opts = {}) {
     //: something: a Tesseract reading with real box positions is a better
     //: answer than stored text, and this must not overwrite it.
     const stored = ocrIsPdf(image) ? await (storedAsked || ocrStoredPageReads(image)) : null;
-    //: Another file was opened while this page loaded (a PDF, then at once an
-    //: image): painting this answer would put the PDF's reading and its Pages
-    //: rail under the image.
-    if (ocrWorkspaceCurrent !== image) return;
+    //: Another file or page was opened while this loaded (a PDF, then at once
+    //: an image): painting this answer would put the PDF's reading and its
+    //: Pages rail under the image, or page 3's under page 4.
+    if (seq !== ocrLoadSeq) return;
     //: **Per-page descriptions, from the same response** (Phase 7.3). A page's
     //: reading and its description live on one `PageRead` row, so one request
     //: carries both; keeping them in a map keyed by page is what lets the
@@ -5290,6 +5461,8 @@ async function ocrLoadPage(image, page = 0, opts = {}) {
       $("ocr-message").classList.remove("hidden");
     }
   } catch (error) {
+    //: A load that was replaced says nothing: the newer one owns the message.
+    if (seq !== ocrLoadSeq || error?.name === "AbortError") return;
     $("ocr-message").textContent = error.message || "That page could not be read.";
   }
 }
@@ -5310,6 +5483,7 @@ function ocrNoRendererLink() {
 //: does not render 200 pages to show three.
 function ocrBuildPageRail(image, pages) {
   ocrWorkspacePages = Math.max(1, pages || 1);
+  if (pages > 0) ocrPageCounts.set(ocrRailKey(image), ocrWorkspacePages);
   ocrPagesKnown = true;
   ocrUi.pagesFor = ocrRailKey(image);
   const rail = $("ocr-rail");
@@ -5346,7 +5520,7 @@ function ocrBuildPageRail(image, pages) {
     item.className = "ocr-rail-item";
     item.dataset.key = `page:${index}`;
     const thumb = document.createElement("img");
-    thumb.src = ocrPageImageUrl(image, index);
+    thumb.src = ocrPageImageUrl(image, index, true);
     thumb.alt = "";
     thumb.loading = "lazy";
     const name = document.createElement("span");
@@ -5682,7 +5856,8 @@ function ocrRenderRail(current) {
 function ocrOpenSibling(row) {
   if (ocrIsPdf(row)) {
     ocrWorkspacePage = 0;
-    ocrWorkspacePages = 1;
+    //: A file seen before shows its length in the pill at the click.
+    ocrWorkspacePages = ocrPageCounts.get(ocrRailKey(row)) || 1;
     ocrPagesKnown = false;
     ocrRailMode = "pages";
     ocrTearDownScroll();
@@ -6151,6 +6326,9 @@ function ocrBuildScrollPages(image) {
   }
   ocrWatchScroll(image);
   ocrApplyZoom();
+  //: The boxes and words go with the page on screen, not stay behind on the
+  //: hidden single stage until the next page change.
+  ocrMoveOverlays(scroll.querySelector(`.ocr-stage[data-page="${ocrWorkspacePage}"]`));
   ocrScrollToPage(ocrWorkspacePage);
 }
 
@@ -6196,11 +6374,16 @@ function ocrScrollToPage(page) {
 //: Where you are, in words, beside the two controls that change it. A page
 //: counter is not decoration in a document reader, without it "next page"
 //: is a button with no idea how many times it can be pressed.
-function ocrSyncPager(image) {
+function ocrSyncPager(image, early = false) {
   //: Every path that changes the page ends here -- the pager buttons, the
   //: rail, and continuous scrolling -- which makes it the one place the
   //: reading panel has to be told to follow. See `ocrRevealRegionsForPage`.
-  ocrRevealRegionsForPage(ocrWorkspacePage);
+  //: `early` is the call made at the click, before the new reading arrives:
+  //: the label, arrows and layout move, the reading does not, because the
+  //: reveal's scroll lock (300 ms) would otherwise swallow the real one that
+  //: follows the rebuilt list (measured: ocr717 smooth, "the reading follows
+  //: the page").
+  if (!early) ocrRevealRegionsForPage(ocrWorkspacePage);
   const pager = $("ocr-pager");
   const label = $("ocr-page-label");
   const multi = ocrIsPdf(image) && ocrWorkspacePages > 1;
