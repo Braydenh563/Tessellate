@@ -122,7 +122,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `showNoteInGraph` | frontend/js/note-cards.js:2464 |
 | `tagAddChipKind` | frontend/js/note-cards.js:1381 |
 
-### frontend/js/menus.js (34)
+### frontend/js/menus.js (33)
 
 | Name | File:line |
 |---|---|
@@ -138,7 +138,6 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `escapeAndCapMenu` | frontend/js/menus.js:749 |
 | `escapeMenuIfClipped` | frontend/js/menus.js:648 |
 | `escapeMenuToBody` | frontend/js/menus.js:670 |
-| `explainNote` | frontend/js/menus.js:1980 |
 | `fitActionMenuInWindow` | frontend/js/menus.js:439 |
 | `focusMenuItem` | frontend/js/menus.js:561 |
 | `generateEntryTitle` | frontend/js/menus.js:1224 |
@@ -664,21 +663,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `startChatTimer` | frontend/js/chat-attach.js:3034 |
 | `stopChatTimer` | frontend/js/chat-attach.js:3043 |
 
-### frontend/js/sheets-selects.js (52)
+### frontend/js/sheets-selects.js (51)
 
 | Name | File:line |
 |---|---|
-| `aiNameNow` | frontend/js/sheets-selects.js:2314 |
+| `aiNameNow` | frontend/js/sheets-selects.js:2236 |
 | `annotateSliders` | frontend/js/sheets-selects.js:993 |
 | `applySidebarSheetMode` | frontend/js/sheets-selects.js:199 |
 | `applySidebarWidth` | frontend/js/sheets-selects.js:100 |
 | `applyWebPanelWidth` | frontend/js/sheets-selects.js:508 |
-| `builtinPersonas` | frontend/js/sheets-selects.js:2413 |
-| `builtinThinkingWords` | frontend/js/sheets-selects.js:2363 |
+| `builtinPersonas` | frontend/js/sheets-selects.js:2335 |
+| `builtinThinkingWords` | frontend/js/sheets-selects.js:2285 |
 | `clampToolbarMenu` | frontend/js/sheets-selects.js:1465 |
 | `dateFieldFace` | frontend/js/sheets-selects.js:1022 |
 | `eachSidebar` | frontend/js/sheets-selects.js:192 |
-| `editChatAnswer` | frontend/js/sheets-selects.js:1940 |
 | `editedMarker` | frontend/js/sheets-selects.js:1929 |
 | `enhanceAllSelects` | frontend/js/sheets-selects.js:1004 |
 | `enhanceDateField` | frontend/js/sheets-selects.js:1032 |
@@ -693,17 +691,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `layoutIsTablet` | frontend/js/sheets-selects.js:79 |
 | `lightboxReadingsFor` | frontend/js/sheets-selects.js:1664 |
 | `listFilter` | frontend/js/sheets-selects.js:1229 |
-| `loadChatSuggestions` | frontend/js/sheets-selects.js:2241 |
+| `loadChatSuggestions` | frontend/js/sheets-selects.js:2163 |
 | `loadConversationList` | frontend/js/sheets-selects.js:1762 |
 | `makeMenuItem` | frontend/js/sheets-selects.js:602 |
 | `makeSidebarResizable` | frontend/js/sheets-selects.js:318 |
 | `makeWebPanelResizable` | frontend/js/sheets-selects.js:545 |
 | `menuRowFits` | frontend/js/sheets-selects.js:1296 |
-| `openConversation` | frontend/js/sheets-selects.js:2015 |
+| `openConversation` | frontend/js/sheets-selects.js:1937 |
 | `openKebabSheet` | frontend/js/sheets-selects.js:1143 |
 | `parseServerTime` | frontend/js/sheets-selects.js:1702 |
-| `personaDisplayName` | frontend/js/sheets-selects.js:2320 |
-| `personaNamesNow` | frontend/js/sheets-selects.js:2430 |
+| `personaDisplayName` | frontend/js/sheets-selects.js:2242 |
+| `personaNamesNow` | frontend/js/sheets-selects.js:2352 |
 | `relativeTime` | frontend/js/sheets-selects.js:1712 |
 | `replaceOpenToolbarMenus` | frontend/js/sheets-selects.js:1573 |
 | `resetWebPanelWidth` | frontend/js/sheets-selects.js:526 |
@@ -713,9 +711,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `sidebarFittedWidth` | frontend/js/sheets-selects.js:86 |
 | `sidebarWidth` | frontend/js/sheets-selects.js:25 |
 | `sortConversations` | frontend/js/sheets-selects.js:1749 |
-| `thinkingWordsFor` | frontend/js/sheets-selects.js:2379 |
+| `thinkingWordsFor` | frontend/js/sheets-selects.js:2301 |
 | `trackSeparatorValue` | frontend/js/sheets-selects.js:297 |
-| `wantsThinkingWords` | frontend/js/sheets-selects.js:2400 |
+| `wantsThinkingWords` | frontend/js/sheets-selects.js:2322 |
 | `watchForSelects` | frontend/js/sheets-selects.js:1107 |
 | `webPanelIsNarrow` | frontend/js/sheets-selects.js:492 |
 | `webPanelMaxWidth` | frontend/js/sheets-selects.js:502 |
@@ -1140,51 +1138,50 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `voiceLine` | frontend/js/status.js:1065 |
 | `whenText` | frontend/js/status.js:1054 |
 
-### frontend/js/ai-tools.js (41)
+### frontend/js/ai-tools.js (40)
 
 | Name | File:line |
 |---|---|
 | `_namesSignature` | frontend/js/ai-tools.js:149 |
-| `applyEmbeddingBackend` | frontend/js/ai-tools.js:942 |
-| `applyFeatureModel` | frontend/js/ai-tools.js:530 |
-| `applyPalette` | frontend/js/ai-tools.js:1346 |
-| `applyRestoredLook` | frontend/js/ai-tools.js:1281 |
-| `clearEmbeddingBackendLatch` | frontend/js/ai-tools.js:989 |
-| `featureModelChoiceLabel` | frontend/js/ai-tools.js:524 |
-| `featureModelMenuItem` | frontend/js/ai-tools.js:567 |
-| `featureModelRow` | frontend/js/ai-tools.js:506 |
-| `featureModelState` | frontend/js/ai-tools.js:514 |
+| `applyEmbeddingBackend` | frontend/js/ai-tools.js:861 |
+| `applyFeatureModel` | frontend/js/ai-tools.js:449 |
+| `applyPalette` | frontend/js/ai-tools.js:1265 |
+| `applyRestoredLook` | frontend/js/ai-tools.js:1200 |
+| `clearEmbeddingBackendLatch` | frontend/js/ai-tools.js:908 |
+| `featureModelChoiceLabel` | frontend/js/ai-tools.js:443 |
+| `featureModelMenuItem` | frontend/js/ai-tools.js:486 |
+| `featureModelRow` | frontend/js/ai-tools.js:425 |
+| `featureModelState` | frontend/js/ai-tools.js:433 |
 | `fillModelSelect` | frontend/js/ai-tools.js:153 |
-| `lookFromOtherWindow` | frontend/js/ai-tools.js:1316 |
-| `looksLikeEmbeddingModel` | frontend/js/ai-tools.js:938 |
-| `mirroredUiKeys` | frontend/js/ai-tools.js:1094 |
-| `openChatModelPanel` | frontend/js/ai-tools.js:337 |
+| `lookFromOtherWindow` | frontend/js/ai-tools.js:1235 |
+| `looksLikeEmbeddingModel` | frontend/js/ai-tools.js:857 |
+| `mirroredUiKeys` | frontend/js/ai-tools.js:1013 |
 | `paintTaskRunLines` | frontend/js/ai-tools.js:54 |
 | `placeChatModelPanel` | frontend/js/ai-tools.js:305 |
-| `pullLookFromNotebook` | frontend/js/ai-tools.js:1302 |
-| `renderAutonomousModelPicker` | frontend/js/ai-tools.js:697 |
+| `pullLookFromNotebook` | frontend/js/ai-tools.js:1221 |
+| `renderAutonomousModelPicker` | frontend/js/ai-tools.js:616 |
 | `renderChatActiveModelBadge` | frontend/js/ai-tools.js:230 |
 | `renderChatModelPicker` | frontend/js/ai-tools.js:186 |
-| `renderEmbeddingPicker` | frontend/js/ai-tools.js:712 |
-| `renderFeatureModels` | frontend/js/ai-tools.js:553 |
-| `renderOcrModelPicker` | frontend/js/ai-tools.js:678 |
-| `renderReindex` | frontend/js/ai-tools.js:874 |
-| `renderUtilityModelPicker` | frontend/js/ai-tools.js:431 |
-| `renderVisionModelPicker` | frontend/js/ai-tools.js:454 |
-| `saveUiState` | frontend/js/ai-tools.js:1152 |
-| `seedUiStateFromServer` | frontend/js/ai-tools.js:1229 |
-| `syncEmbeddingPickerState` | frontend/js/ai-tools.js:811 |
-| `syncFeatureModelSelects` | frontend/js/ai-tools.js:602 |
+| `renderEmbeddingPicker` | frontend/js/ai-tools.js:631 |
+| `renderFeatureModels` | frontend/js/ai-tools.js:472 |
+| `renderOcrModelPicker` | frontend/js/ai-tools.js:597 |
+| `renderReindex` | frontend/js/ai-tools.js:793 |
+| `renderUtilityModelPicker` | frontend/js/ai-tools.js:350 |
+| `renderVisionModelPicker` | frontend/js/ai-tools.js:373 |
+| `saveUiState` | frontend/js/ai-tools.js:1071 |
+| `seedUiStateFromServer` | frontend/js/ai-tools.js:1148 |
+| `syncEmbeddingPickerState` | frontend/js/ai-tools.js:730 |
+| `syncFeatureModelSelects` | frontend/js/ai-tools.js:521 |
 | `taskElapsed` | frontend/js/ai-tools.js:80 |
 | `taskRunFold` | frontend/js/ai-tools.js:31 |
 | `taskRunLinesText` | frontend/js/ai-tools.js:21 |
 | `taskSteps` | frontend/js/ai-tools.js:98 |
-| `uiStateFingerprint` | frontend/js/ai-tools.js:1141 |
-| `uiStatePayload` | frontend/js/ai-tools.js:1128 |
-| `uiStateRememberSynced` | frontend/js/ai-tools.js:1270 |
-| `watchMirroredUiKeys` | frontend/js/ai-tools.js:1197 |
-| `wireFeatureModelSelects` | frontend/js/ai-tools.js:660 |
-| `wireReindexButton` | frontend/js/ai-tools.js:853 |
+| `uiStateFingerprint` | frontend/js/ai-tools.js:1060 |
+| `uiStatePayload` | frontend/js/ai-tools.js:1047 |
+| `uiStateRememberSynced` | frontend/js/ai-tools.js:1189 |
+| `watchMirroredUiKeys` | frontend/js/ai-tools.js:1116 |
+| `wireFeatureModelSelects` | frontend/js/ai-tools.js:579 |
+| `wireReindexButton` | frontend/js/ai-tools.js:772 |
 
 ### frontend/js/phone-shell.js (61)
 
@@ -3915,6 +3912,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `getStartedSteps` | frontend/js/first-run.js:265 |
 | `renderFirstSteps` | frontend/js/first-run.js:242 |
 | `renderGetStarted` | frontend/js/first-run.js:349 |
+
+### frontend/js/gesture-kit.js (3)
+
+| Name | File:line |
+|---|---|
+| `editChatAnswer` | frontend/js/gesture-kit.js:93 |
+| `explainNote` | frontend/js/gesture-kit.js:174 |
+| `openChatModelPanel` | frontend/js/gesture-kit.js:9 |
 
 ### frontend/js/graph-canvas.js (154)
 

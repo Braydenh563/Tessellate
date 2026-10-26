@@ -24,6 +24,8 @@ Object.assign(LAZY_MODULES, {
   screenContext: ["/js/screen-context.js"],
   //: The guided equation editor (math-editor.js's header; DOCUMENTS_PLAN 16).
   mathEditor: ["/css/math-editor-lazy.css", "/js/math-editor.js"],
+  //: The model badge's spec panel, editing an answer, a note's Explain row (gesture-kit.js's header).
+  gestureKit: ["/js/gesture-kit.js"],
 });
 installStandIns({
   settingsPanes: ["renderTasks", "renderTaskHistory", "renderHealthBlock", "renderSamplingRows", "renderPersonas", "savePersonaList"],
@@ -35,6 +37,7 @@ installStandIns({
   phoneMore: ["openPhoneMoreSheet"],
   screenContext: ["screenContext"],
   mathEditor: ["openMathEditor"],
+  gestureKit: ["openChatModelPanel", "editChatAnswer", "explainNote"],
 });
 //: Alt+= opens the equation editor, as in Word, in the boxes that write
 //: markdown and in the Ask box (math-editor.js).
