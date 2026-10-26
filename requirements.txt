@@ -26,7 +26,7 @@ SQLAlchemy>=2.1.6,<3.0
 # escape hatch for the day that stops being enough. Never fatal if missing
 # (_ensure_alembic_baseline catches ImportError and logs), but the app then
 # silently stays on the additive-only path — keep it installed.
-alembic>=1.20.0,<2.0
+alembic>=1.20.1,<2.0
 
 # Config
 python-dotenv>=1.2.4,<2.0
