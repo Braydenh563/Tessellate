@@ -2,7 +2,7 @@
 
 Generated 2026-10-26 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6400, frontend ids 2536, CSS sections 503, backend routes 622, backend modules 6531, test files 1362, tests 12157, plan headings 972.
+Counts: frontend functions 6400, frontend ids 2536, CSS sections 503, backend routes 622, backend modules 6531, test files 1362, tests 12158, plan headings 972.
 
 ## Frontend functions (6400)
 
@@ -13107,13 +13107,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_row` | src/tessellate/ai/personal.py:208 |
 | `_written` | src/tessellate/ai/personal.py:190 |
 | `about_me` | src/tessellate/ai/personal.py:358 |
-| `about_own_notes` | src/tessellate/ai/personal.py:392 |
+| `about_own_notes` | src/tessellate/ai/personal.py:397 |
 | `answer` | src/tessellate/ai/personal.py:165 |
 | `asked` | src/tessellate/ai/personal.py:155 |
 | `birthday` | src/tessellate/ai/personal.py:83 |
 | `facts` | src/tessellate/ai/personal.py:97 |
 | `general` | src/tessellate/ai/personal.py:377 |
-| `general_reply` | src/tessellate/ai/personal.py:398 |
+| `general_reply` | src/tessellate/ai/personal.py:403 |
 | `notes_of` | src/tessellate/ai/personal.py:72 |
 
 ### src/tessellate/ai/phrasing.py (8)
@@ -19174,7 +19174,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12157)
+## Tests (12158)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19404,7 +19404,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_overview_787.py | 18 |
 | tests/test_composer_owner_1017.py | 15 |
 | tests/test_composer_parts.py | 4 |
-| tests/test_composer_phrasings_1025.py | 5 |
+| tests/test_composer_phrasings_1025.py | 6 |
 | tests/test_composer_polish.py | 8 |
 | tests/test_composer_relevance_1310.py | 10 |
 | tests/test_composer_route_688.py | 20 |

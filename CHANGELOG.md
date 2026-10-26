@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fix: asking "what did I do last week?" with web search on and no model went to the web (and reported the search service down). Questions about your own doings never go to the web now.
 - Fix: the ... button on Library image tiles was a faint glyph on the photo. It now sits on a small solid chip that reads on any picture.
 - Fix: the rows of "How this map looks" sat flush against each other; they now have the dialog's gap, every select is one width, and the switches' words match the labels.
 - Fix: in a mind map that grows down, a topic dragged level with its parent joined it bottom to top, doubling back. It now joins side to side.

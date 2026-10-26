@@ -386,6 +386,11 @@ def general(question: str) -> bool:
 _OWN_NOTES = re.compile(
     r"\b(?:my|our|your)\s+(?:\w+\s+){0,2}(?:notes?|notebook|entries|entry)\b|\b(?:notes?|entry) (?:i|we) (?:ever )?(?:wrote|made|took|saved)\b"
     r"|\bi (?:ever )?(?:wrote|made|saved)\b|\bin (?:my|the) notes\b"
+    #: The person's own doings ("what did I do last week", the composer's own
+    #: suggested question): their history, which the web cannot know.
+    r"|\b(?:i|we) (?:did|edited|deleted|created|worked on|added|changed)\b"
+    r"|\b(?:did|have) (?:i|we) (?:do|done|make|made|write|written|edit|edited|delete|deleted|create|created|work on|worked on|add|added|change|changed)\b"
+    r"|\bmy (?:history|activity|day|week|month|work)\b"
 )
 
 

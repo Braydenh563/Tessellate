@@ -128,3 +128,13 @@ def test_fixed_phrases_come_in_variants(ask):
         if "only note" in line or "only one" in line
     }
     assert len(said) >= 2, said
+
+
+def test_a_question_about_my_own_doings_never_goes_to_the_web():
+    """The owner, 2026-10-26: "what did I do last week?" (the composer's own
+    suggestion) went to web search and reported SearXNG down."""
+    from tessellate.ai import personal
+
+    asked = [personal.about_own_notes(q) for q in ("what did I do last week?", "what did I edit yesterday", "show my history")]
+    general = [personal.about_own_notes(q) for q in ("what's the capital of France", "how do I do a backflip")]
+    assert asked == [True, True, True] and general == [False, False]
