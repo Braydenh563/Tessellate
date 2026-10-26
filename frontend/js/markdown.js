@@ -1292,7 +1292,7 @@ function linkCard(url, text) {
 //: ratchet that keeps the next one from being hand-built.
 let pointerMenuHost = null;
 
-function openMenuAtPoint(items, ariaLabel, x, y) {
+function openMenuAtPoint(items, ariaLabel, x, y, returnFocus = null) {
   closeActionMenus();
   if (!pointerMenuHost) {
     pointerMenuHost = document.createElement("div");
@@ -1309,6 +1309,7 @@ function openMenuAtPoint(items, ariaLabel, x, y) {
   const wrap = kebabMenu(items, ariaLabel);
   const opener = wrap.querySelector("[aria-haspopup]");
   opener.classList.add("pointer-menu-anchor");
+  if (returnFocus) opener._returnFocusTo = returnFocus;
   //: Not `hidden` and not `display: none`: `openActionMenu` measures the
   //: opener to decide whether to flip or to escape its container, and an
   //: element with no box measures at 0,0, which is the top left corner this

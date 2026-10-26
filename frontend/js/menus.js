@@ -83,7 +83,10 @@ function closeActionMenus() {
     // menu, so this changes nothing for them.
     const opener = menu._escapedOpener || menu.parentElement.querySelector("[aria-haspopup]");
     if (opener) opener.setAttribute("aria-expanded", "false");
-    if (held && opener?.isConnected) opener.focus({ preventScroll: true });
+    //: A menu opened at a point has an invisible anchor; its caller can name
+    //: the element the focus belongs to instead (`openMenuAtPoint`'s `returnFocus`).
+    const back = opener?._returnFocusTo?.isConnected ? opener._returnFocusTo : opener;
+    if (held && back?.isConnected) back.focus({ preventScroll: true });
   }
   for (const strip of document.querySelectorAll(".menu-open")) {
     strip.classList.remove("menu-open");
@@ -1323,7 +1326,7 @@ function wireMenuKeyboard(menu, opener) {
       //: Settings window, a sheet), one key doing two things.
       event.stopPropagation();
       closeActionMenus();
-      opener.focus();
+      (opener._returnFocusTo?.isConnected ? opener._returnFocusTo : opener).focus();
     }
   });
 }

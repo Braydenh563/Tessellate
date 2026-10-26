@@ -18787,7 +18787,7 @@ function docEditorMenuAtPoint(event, point) {
   const sel = view.state.selection.main;
   const at = view.posAtCoords(point);
   if (at != null && (at < sel.from || at > sel.to)) view.dispatch({ selection: { anchor: at } });
-  openMenuAtPoint(docEditorMenuItems(view, point.x, point.y), "Document editor actions", point.x, point.y);
+  openMenuAtPoint(docEditorMenuItems(view, point.x, point.y), "Document editor actions", point.x, point.y, view.contentDOM);
   return true;
 }
 
@@ -18805,13 +18805,16 @@ document.addEventListener("contextmenu", (event) => {
     event.preventDefault();
   }
 });
+//: The hold does not open the editor's own menu (`docEditorMenuAtPoint`): on a
+//: phone a hold in text is how a word gets selected, with the browser's handles.
+//: The menu answers the contextmenu event a device sends, and the phone bar and
+//: selection bar carry Turn into.
 if (typeof wireLongPress === "function") {
   wireLongPress(
     document,
     (event, point) =>
       docTableMenuAtPoint(event.target, point.x, point.y) ||
-      docOpenSuggestAtPoint(event.target, point) ||
-      docEditorMenuAtPoint(event, point),
+      docOpenSuggestAtPoint(event.target, point),
     { selector: ".doc-flag, .cm-finding, .cm-content, .doc-table-grip, textarea" }
   );
 }

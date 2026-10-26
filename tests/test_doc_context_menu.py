@@ -46,3 +46,9 @@ def test_shift_bypass_and_scope():
     # Tables and flags keep their own menus, ahead of the editor's.
     order = [listener.index(n) for n in ("docTableMenuAtPoint", "docOpenSuggestAtPoint", "docEditorMenuAtPoint(event")]
     assert order == sorted(order)
+
+
+def test_escape_returns_focus_to_the_editor():
+    menus = (ROOT / "frontend/js/menus.js").read_text(encoding="utf-8")
+    assert "view.contentDOM);" in _fn(DOCUMENTS, "docEditorMenuAtPoint")
+    assert menus.count("_returnFocusTo") >= 2
