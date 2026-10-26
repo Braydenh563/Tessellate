@@ -2,7 +2,7 @@
 
 Generated 2026-10-26 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6531, frontend ids 2555, CSS sections 504, backend routes 622, backend modules 6658, test files 1396, tests 12370, plan headings 976.
+Counts: frontend functions 6531, frontend ids 2555, CSS sections 504, backend routes 622, backend modules 6658, test files 1396, tests 12371, plan headings 976.
 
 ## Frontend functions (6531)
 
@@ -4107,7 +4107,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `bridgeGroup` | frontend/js/graph-worker.js:638 |
 | `carryForce` | frontend/js/graph-worker.js:186 |
 | `centreScale` | frontend/js/graph-worker.js:426 |
-| `clampToWorld` | frontend/js/graph-worker.js:1803 |
+| `clampToWorld` | frontend/js/graph-worker.js:1812 |
 | `clearCurve` | frontend/js/graph-worker.js:1080 |
 | `clearNearest` | frontend/js/graph-worker.js:1107 |
 | `clearPush` | frontend/js/graph-worker.js:1128 |
@@ -4115,7 +4115,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `clustered` | frontend/js/graph-worker.js:626 |
 | `collidePadFor` | frontend/js/graph-worker.js:324 |
 | `crossStrength` | frontend/js/graph-worker.js:392 |
-| `crossingsOn` | frontend/js/graph-worker.js:1575 |
+| `crossingsOn` | frontend/js/graph-worker.js:1584 |
 | `densityScale` | frontend/js/graph-worker.js:402 |
 | `dragHeat` | frontend/js/graph-worker.js:199 |
 | `ellipseWalk` | frontend/js/graph-worker.js:725 |
@@ -4134,7 +4134,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `landscapePull` | frontend/js/graph-worker.js:492 |
 | `leafForce` | frontend/js/graph-worker.js:1348 |
 | `linkStrength` | frontend/js/graph-worker.js:395 |
-| `loop` | frontend/js/graph-worker.js:1855 |
+| `loop` | frontend/js/graph-worker.js:1864 |
 | `markFollowers` | frontend/js/graph-worker.js:171 |
 | `median` | frontend/js/graph-worker.js:1255 |
 | `orbitForce` | frontend/js/graph-worker.js:1043 |
@@ -4143,26 +4143,26 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `orbitUpdate` | frontend/js/graph-worker.js:985 |
 | `orbitUpdateGrouped` | frontend/js/graph-worker.js:931 |
 | `portraitPull` | frontend/js/graph-worker.js:498 |
-| `post` | frontend/js/graph-worker.js:1812 |
+| `post` | frontend/js/graph-worker.js:1821 |
 | `reshuffle` | frontend/js/graph-worker.js:1478 |
 | `rimOffset` | frontend/js/graph-worker.js:1300 |
 | `ringFor` | frontend/js/graph-worker.js:751 |
-| `run` | frontend/js/graph-worker.js:1946 |
+| `run` | frontend/js/graph-worker.js:1962 |
 | `seededRandom` | frontend/js/graph-worker.js:661 |
-| `segmentsCross` | frontend/js/graph-worker.js:1566 |
+| `segmentsCross` | frontend/js/graph-worker.js:1575 |
 | `setRingSeed` | frontend/js/graph-worker.js:672 |
 | `shapeForce` | frontend/js/graph-worker.js:1322 |
 | `shuffleStep` | frontend/js/graph-worker.js:1504 |
 | `smallSpread` | frontend/js/graph-worker.js:416 |
-| `stopLoop` | frontend/js/graph-worker.js:1844 |
+| `stopLoop` | frontend/js/graph-worker.js:1853 |
 | `tetherForce` | frontend/js/graph-worker.js:1259 |
 | `tuning` | frontend/js/graph-worker.js:436 |
-| `untangleFree` | frontend/js/graph-worker.js:1669 |
-| `untangleGroups` | frontend/js/graph-worker.js:1622 |
-| `untangleInside` | frontend/js/graph-worker.js:1694 |
-| `untangleLayout` | frontend/js/graph-worker.js:1699 |
-| `untangleReach` | frontend/js/graph-worker.js:1680 |
-| `untangleSetup` | frontend/js/graph-worker.js:1545 |
+| `untangleFree` | frontend/js/graph-worker.js:1678 |
+| `untangleGroups` | frontend/js/graph-worker.js:1631 |
+| `untangleInside` | frontend/js/graph-worker.js:1703 |
+| `untangleLayout` | frontend/js/graph-worker.js:1708 |
+| `untangleReach` | frontend/js/graph-worker.js:1689 |
+| `untangleSetup` | frontend/js/graph-worker.js:1553 |
 | `warmLayout` | frontend/js/graph-worker.js:264 |
 
 ### frontend/js/graph.js (130)
@@ -19483,7 +19483,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12370)
+## Tests (12371)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20034,7 +20034,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_graph_toast_1306.py | 2 |
 | tests/test_graph_topic_drag.py | 7 |
 | tests/test_graph_treemap.py | 5 |
-| tests/test_graph_untangle_1400.py | 5 |
+| tests/test_graph_untangle_1400.py | 6 |
 | tests/test_graph_view_positions.py | 6 |
 | tests/test_greeting_compose.py | 5 |
 | tests/test_greeting_name.py | 9 |

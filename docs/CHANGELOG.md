@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Graph: the untangle runs two passes with the relax between, and the relax cools several ticks a frame, so the map rests about 2.5 s sooner at 36 notes (`end` 3.8 s after the layout starts, was 6.3) and 186 notes lose 5 to 9% of their crossings in the browser (722 to 683 at 1440, 677 to 617 at 390).
 - Graph: a toast over the map stands above the legend and left of the zoom strip, so it covers neither (0 intersections at 1440, 1024, 820 and 390; it met the legend row at 1440 and the zoom strip at 390).
 - Graph: every Options section (Physics, Show, Display, Filter, Time, Groups, Minimap) has a ? that says in a line what each control does to the map, and with every fold closed the panel fits its box at 1440x900 (520px of list in 520, was 904 in 512): Show and Time are folds like the rest, Trace sits beside Legend and Suggest links beside Reset to defaults, and the cap leaves a gap above the zoom strip.
 - Time words: "from Monday to Wednesday", "between March and May", "between 1 and 5 October", "recently" and "lately" (the last 14 days, said in the answer) are read as dates, and "this weekend" asked of the past is the weekend just gone.

@@ -1539,13 +1539,22 @@ const UNTANGLE_ROUNDS = 4;
 const UNTANGLE_REACH = 1.2;
 const UNTANGLE_RELAX = 0.05;
 const UNTANGLE_MS = 200;
+//: **Two passes, with the relax between** (INBOX 1400): the second starts from
+//: where the first one's relax rested. Browser, at rest: 36 notes 63 to 62
+//: crossings at 1440 and 55 to 53 at 390; 186 notes 722 to 683 and 677 to 617.
+//: Three reach 50 and 48 at 36 notes but leave notes on lines (`untangleFree`
+//: checks notes, not lines: `tests/test_graph_layout.py` counts 7), so two
+//: until a move checks a line's clearance. Each is bounded by `UNTANGLE_MS`;
+//: a pass that moves nothing ends it.
+const UNTANGLE_PASSES = 2;
 const UNTANGLE_MAX_EDGES = 4000;
-const untangle = { edges: [], incident: [], done: false, ea: null, eb: null, xs: null, ys: null, mark: null };
+const untangle = { edges: [], incident: [], done: false, passes: 0, relaxing: false, ea: null, eb: null, xs: null, ys: null, mark: null };
 
 function untangleSetup(edges) {
   untangle.edges = [];
   untangle.incident = nodes.map(() => []);
   untangle.done = false;
+  untangle.passes = 0;
   untangle.mark = null;
   if (edges.length > UNTANGLE_MAX_EDGES) return;
   for (const edge of edges) {
@@ -1875,7 +1884,9 @@ function loop() {
   //: hundred. Only the cooling of a new layout (an init, a reshuffle, new
   //: settings: the runs `untangle` waits on); a drag and the ease after a
   //: drop keep one tick a frame, their pace is the pointer's.
-  const quick = !dragging && !untangle.done && simulation.alpha() < WARM_ALPHA;
+  //: The relax after an untangle pass is cooling too (`untangle.relaxing`): one
+  //: tick a frame it took 2.8 s a pass, which three passes made 8 s.
+  const quick = !dragging && (!untangle.done || untangle.relaxing) && simulation.alpha() < WARM_ALPHA;
   let steps = 0;
   do {
     simulation.tick();
@@ -1887,7 +1898,12 @@ function loop() {
   clampToWorld();
   const overBudget = !dragging && Date.now() - settleFrom > SETTLE_BUDGET_MS;
   const settled = !dragging && (simulation.alpha() < simulation.alphaMin() || overBudget);
+  //: The second pass waits for the first one's relax to rest.
+  if (settled && untangle.relaxing) untangle.relaxing = false;
+  if (settled && untangle.done && untangle.passes > 0 && untangle.passes < UNTANGLE_PASSES && !dragging) untangle.done = false;
   if (settled && !untangle.done && untangleLayout()) {
+    untangle.passes += 1;
+    untangle.relaxing = true;
     // At rest, untangled: the notes glide to their new places, then a low
     // heat lets the collision and the line clearance settle what the moves
     // brought close (a swap can put a hub where a small note stood).
@@ -2141,6 +2157,7 @@ self.onmessage = (event) => {
     }
     case "params":
       untangle.done = false;
+      untangle.passes = 0;
       applyForces(message.params);
       if (simulation) simulation.alpha(Math.max(simulation.alpha(), 0.3));
       run();
@@ -2154,6 +2171,8 @@ self.onmessage = (event) => {
         dragging = true;
         // A note the reader moves is not followed by a reshuffle of others.
         untangle.done = true;
+        untangle.passes = UNTANGLE_PASSES;
+        untangle.relaxing = false;
         dragOrigin = { x: node.x, y: node.y };
         markFollowers(node, true);
         if (ring.params) applyGrouping(ring.params);
@@ -2244,6 +2263,7 @@ self.onmessage = (event) => {
     case "reshuffle":
       if (!simulation) break;
       untangle.done = false;
+      untangle.passes = 0;
       reshuffle(message.seed, message.animate !== false);
       run();
       break;

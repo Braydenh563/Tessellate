@@ -102,7 +102,7 @@ def test_the_untangle_waits_for_rest_and_never_follows_a_drag() -> None:
 
 def test_a_new_layout_cools_several_ticks_a_frame_but_a_drag_one() -> None:
     loop = WORKER[WORKER.index("\nfunction loop() {") :]
-    assert "const quick = !dragging && !untangle.done && simulation.alpha() < WARM_ALPHA;" in loop
+    assert "const quick = !dragging && (!untangle.done || untangle.relaxing) && simulation.alpha() < WARM_ALPHA;" in loop
     assert re.search(r"^const LIVE_STEP_MS = 8;$", WORKER, re.M)
 
 
@@ -141,3 +141,19 @@ def test_a_phone_cuts_names_shorter_so_more_of_them_fit() -> None:
     assert len(out["wide"]) > 20, out
     assert len(out["phone"]) <= 15 and out["phone"].endswith("…"), out
     assert len(out["phone"]) < len(out["hub"]) <= 21, out
+
+
+def test_the_untangle_runs_two_passes_with_the_relax_between_and_never_after_a_drag() -> None:
+    """INBOX 1400: the second pass starts from where the first one's relax rested
+    (186 notes in the browser: 722 to 683 crossings at 1440), and the relax is
+    cooled several ticks a frame so the map rests sooner (`end` 3.8 s after
+    init at 36 notes, was 6.3). Three passes lower the crossings further but
+    put notes on lines, which `test_graph_layout.py` refuses, so two."""
+    assert "const UNTANGLE_PASSES = 2;" in WORKER
+    assert "untangle.passes < UNTANGLE_PASSES && !dragging) untangle.done = false;" in WORKER
+    # A drag marks the passes spent, so the ease after a drop is never untangled.
+    drag = WORKER[WORKER.index('if (message.phase === "start") {') :]
+    drag = drag[: drag.index('} else if (message.phase === "move")')]
+    assert "untangle.passes = UNTANGLE_PASSES;" in drag and "untangle.relaxing = false;" in drag
+    # Anything that lays the map out again starts the count over.
+    assert WORKER.count("untangle.passes = 0;") == 3

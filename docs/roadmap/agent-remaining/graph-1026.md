@@ -88,3 +88,34 @@ category's reach (crossings 245 but the map 1.9 times taller).
 
 done: 7812ece (untangle, ring by affinity, quick cooling, phone names)
 next: untangle on the warm-up, graph-worker.js warmLayout ~264; options ? per fold, index.html ~4130
+
+## Round 3 (Options help and fit, toast, untangle passes)
+
+Sweeps (session scratchpad): `g3_opt.js` (panel fit), `g3_help.js` (every ? opens, fold unchanged),
+`g3_toast.js` (toast against chrome rects), `g3_init2.js` (worker messages and crossings at `end`),
+`g3_xcheck.js` (offline positions in the browser's counter), `g3_off5.js` (loop-driven offline, passes).
+
+| Item | Before | After |
+| --- | --- | --- |
+| Options panel, folds closed, 1440x900 | 904 in 512 (scrolls) | 520 in 520 (fits); 7 sections each with a ? |
+| Toast rect against legend row / zoom strip | 1440: overlaps legend; 390: overlaps both | 0 intersections at 1440, 1024, 820, 390 |
+| 36 notes, crossings at rest, 1440 / 390 | 63 / 55 | 62 / 53 (2 passes); 50 / 48 with 3 passes |
+| 186 notes, crossings at rest, 1440 / 390 | 722 / 677 | 683 / 617 |
+| `end` after init, 36 notes | 6.3 s | 3.8 s (1440), 3.4 s (390) |
+
+The "offline 45" was a capture artefact: `init36w.json` is a second init (alpha 0.3) from an earlier
+layout. On a fresh init the offline harness gives 55 to 58 (`g3init36.json`); the browser counter agrees
+with the offline one on the same positions (45 on offline's own positions, `g3_xcheck.js`).
+
+Left:
+- Three untangle passes reach 50 / 48 at 36 notes but `tests/test_graph_layout.py` (no link through a
+  note) finds 7: `untangleFree` (graph-worker.js ~1690) checks notes, not lines. Next: a move that checks
+  a line's clearance, then `UNTANGLE_PASSES = 3`. A pass is cut at `UNTANGLE_MS` 200, which truncates it at 186 notes.
+- The second init the brief named (alpha 0.3 on the Graph tab) did not appear on a cold open (one init, alpha 1);
+  it follows a render after the first layout settled. Not changed: `warmLayout` only steps to alpha 0.08.
+- Show and Time are folds now: Show's Similarity strength slider is hidden while Show is closed.
+- Phone sheet for Options (390): fit not measured (the sheet scrolls by design); ? popovers open in view.
+
+done: 444dd43 (? and fit), e4d28b1 (toast), next commit (two untangle passes, quick relax)
+next: line-clearance check in untangleLayout, then three passes
+
