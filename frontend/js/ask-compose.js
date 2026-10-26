@@ -1,4 +1,4 @@
-// ask-compose.js: the Ask box's "Use AI" chip (INBOX 688, 714, K6).
+// ask-compose.js: the Ask box's AI switch (INBOX 688, 714, K6, K34).
 //
 // The owner: "is there a way to do very good imitations of ai responses but
 // using string concatenation with the app when the ai isnt available with the
@@ -14,17 +14,29 @@
 //   device's (`prefs`, "ask-answer-from", "ai" or "notes"), read by
 //   `streamChatEvents` on every notes-only turn and sent as `answer_from`.
 // - With no model running "From your notes" is the answer whatever is stored,
-//   so the chip shows off and disabled with the reason; the stored choice is
-//   left alone, and Use AI comes back the moment a model does.
+//   so the switch shows off and disabled with the exact cause (askAiOffCause); the stored choice is
+//   left alone, and the switch comes back the moment a model does.
 // - Lazy and preloaded three seconds after boot (app.js), because the boot
-//   scripts are at their gzip cap; until it lands the markup's own state (on)
-//   stands, and the server composes regardless when no model runs.
+//   scripts are at their gzip cap; until the first status lands the markup's
+//   neutral state (unchecked, enabled) stands, and the server composes
+//   regardless when no model runs.
 
 const ASK_ANSWER_FROM_KEY = "ask-answer-from";
 
-//: The reason the switch is greyed, on the row and in its hover text.
-const ASK_AI_OFF_REASON = "No model is running, so answers come from your notes. Connect a model in Settings to use AI.";
+//: The title when a model answers.
 const ASK_AI_ON_TITLE = "Atlas answers with your model, citing your notes. Off: answers are quoted from your notes, with no AI";
+
+//: **The exact cause, not "no model"** (K34, the owner: it "disables itself"
+//: with no word why). Three causes, in the order they can be told apart: the
+//: server does not answer (its URL, so a wrong port shows), it answers with
+//: nothing pulled, or the chosen chat model is not among what it has.
+function askAiOffCause() {
+  const s = modelStatus || {};
+  const server = s.provider && s.provider !== "ollama" ? "The model server" : "Ollama";
+  if (s.ollama_running === false) return `${server} is not answering${s.base_url ? ` at ${s.base_url}` : ""}.`;
+  if (!(s.installed_models || []).length) return `${server} is answering but has no models pulled.`;
+  return `The chat model "${s.chat_model || "none chosen"}" is not installed.`;
+}
 
 function askAnswerFrom() {
   if (aiIsOff()) return "notes";
@@ -32,31 +44,39 @@ function askAnswerFrom() {
 }
 
 function renderAskUseAi() {
-  const chip = $("ask-use-ai");
-  if (!chip) return;
+  const box = $("ask-use-ai");
+  if (!box) return;
+  //: Neutral until the first status lands: unchecked and enabled, so the
+  //: switch never flips from "looks active" to "disabled".
+  if (!modelStatus) return;
   const off = aiIsOff();
-  const on = askAnswerFrom() === "ai";
-  chip.classList.toggle("active", on);
-  chip.setAttribute("aria-pressed", on ? "true" : "false");
-  chip.disabled = off;
-  chip.title = off ? ASK_AI_OFF_REASON : ASK_AI_ON_TITLE;
+  box.checked = askAnswerFrom() === "ai";
+  box.disabled = off;
+  const cause = off ? askAiOffCause() : "";
+  const label = box.closest("label");
+  if (label) label.title = off ? `${cause} Answers come from your notes. Connect a model in Settings, Models.` : ASK_AI_ON_TITLE;
+  //: The Ask notice names the cause too, after the poll rebuilds it.
+  const text = document.querySelector("#ask-offline .ai-offline-text");
+  const line = off ? `${cause} Ask shows the matching records below.` : "";
+  if (text && line && text.textContent !== line) text.textContent = line;
 }
 
 function wireAskUseAi() {
-  const chip = $("ask-use-ai");
-  if (!chip || chip.dataset.wired) return;
-  chip.dataset.wired = "1";
-  chip.addEventListener("click", () => {
-    if (chip.disabled) return;
-    prefs.set(ASK_ANSWER_FROM_KEY, askAnswerFrom() === "ai" ? "notes" : "ai");
+  const box = $("ask-use-ai");
+  if (!box || box.dataset.wired) return;
+  box.dataset.wired = "1";
+  box.addEventListener("change", () => {
+    if (box.disabled) return;
+    prefs.set(ASK_ANSWER_FROM_KEY, box.checked ? "ai" : "notes");
     renderAskUseAi();
   });
   //: **Following the model without a hook in the boot scripts.** The status
   //: poll redraws `#ask-offline` on every tick (`renderAiOfflineNotice`),
-  //: showing it exactly when no model answers; watching that one attribute
-  //: keeps the chip in step with the model starting and stopping.
+  //: showing it exactly when no model answers; watching it keeps the switch
+  //: in step with the model starting and stopping, and rewrites the notice's
+  //: sentence with the cause (its button already opens Settings, Models).
   const offline = $("ask-offline");
-  if (offline) new MutationObserver(renderAskUseAi).observe(offline, { attributes: true, attributeFilter: ["class"] });
+  if (offline) new MutationObserver(renderAskUseAi).observe(offline, { attributes: true, attributeFilter: ["class"], childList: true });
   renderAskUseAi();
 }
 

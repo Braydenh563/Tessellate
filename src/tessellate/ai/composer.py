@@ -3923,12 +3923,18 @@ def _overview_answer(
     found = composer_overview.members(stems, views, _holds, head)
     if len(found) < 2 or not _overview_over_broad(question, stems, views):
         return None
+    #: K30: the records the search matched count too (by meaning, not only by
+    #: the category), and the lead says how many of them are filed under it.
+    filed = len(found)
+    matched = [v for v in views if v not in found and v.note.get("match_info")]
+    if matched:
+        found = sorted([*found, *matched], key=lambda v: v.rank)
     out = _Answer({v.id: v for v in views}, today)
     out.voice, out.question, out.subject = composer_tables.voice_of(voice), question, stems
     #: No joining words twice in a conversation (decision 25).
     out.used = set(dialogue.used) if dialogue is not None else set()
     themes = [] if _PERSON.match(subject) else composer_overview.themes(found, stems, _stem, views)
-    _overview_lead(out, question, subject, found, themes)
+    _overview_lead(out, question, subject, found, themes, filed if matched else 0)
     shown = _overview_groups(out, found, themes, stems)
     _overview_links(out, found, themes, stems, views)
     if len(found) > shown:
@@ -3989,7 +3995,7 @@ def _span_of(out: _Answer, views: list[NoteView]) -> None:
         out.t("ov_span_a").m(first).t("ov_span_b").m(last)
 
 
-def _overview_lead(out: _Answer, question: str, subject: str, found: list[NoteView], themes: list) -> None:
+def _overview_lead(out: _Answer, question: str, subject: str, found: list[NoteView], themes: list, filed: int = 0) -> None:
     """The first sentence answers: how many notes, over which days, and the
     thread most of them share."""
     said = _as_typed(subject, question)
@@ -4005,6 +4011,8 @@ def _overview_lead(out: _Answer, question: str, subject: str, found: list[NoteVi
         return
     out.t("ov_lead_a").m(out.count(len(found))).t("ov_lead_b").asked(said)
     _span_of(out, found)
+    if filed:
+        out.t("semicolon").m(out.count(filed)).t("ov_filed" if filed > 1 else "ov_filed_one")
     if themes:
         label, held = themes[0]
         out.t("semicolon").term(label, held[0]).t("ov_theme_mid").m(out.count(len(held))).t("ov_theme_end")

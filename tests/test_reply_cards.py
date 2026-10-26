@@ -222,7 +222,7 @@ def test_the_no_model_badge_opens_a_help_popover_1344():
     assert "wireHelpPopover(chip, panel);" in kit
     assert "function replyByHelpPanel(" in kit and "written without an AI model" in kit
     assert "(hover: hover)" in kit
-    assert "Use AI" in kit[kit.index("function replyByHelpPanel(") :].split("\n}\n", 1)[0]
+    assert "switch labelled AI" in kit[kit.index("function replyByHelpPanel(") :].split("\n}\n", 1)[0]
     css = (ROOT / "frontend" / "css" / "reply-kit-lazy.css").read_text(encoding="utf-8")
     assert "button.reply-by" in css
 

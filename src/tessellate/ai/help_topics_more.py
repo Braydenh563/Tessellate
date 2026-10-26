@@ -1603,7 +1603,7 @@ MORE_TOPICS.extend(
             "badge": {"label": "Library", "tab": "library"},
         },
         {
-            #: INBOX 688, 714: the Ask box's Use AI button (a switch until 10-26).
+            #: INBOX 688, 714: the Ask box's AI switch (K34).
             "id": "answers-from-notes",
             "keywords": (
                 "from your notes", "answer without ai", "no ai answer", "answer with no model",
@@ -1613,7 +1613,7 @@ MORE_TOPICS.extend(
             ),
             "body": (
                 (
-                    "Ask on the Notes tab has a Use AI button beside its title. On, your model writes the "
+                    "Ask on the Notes tab has an AI switch beside its answer-length picker. On, your model writes the "
                     "answer; off, the answer is From your notes, with no AI. It opens with the answer, or for"
                     " a topic with how many notes and over which days (You have four notes about uni, 17 July"
                     " to 4 August), then tells each note in a sentence (In your first psych lecture you "
@@ -2246,8 +2246,8 @@ TOPIC_META: dict[str, dict] = {
     "addresses": {"title": "Every view has an address", "path": "The browser's address bar"},
     "bookmarks": {"title": "Bookmarks", "path": "Library tab, Bookmarks"},
     "contents": {"title": "Contents, the notebook's outline", "path": "Library tab, Contents"},
-    "answers-from-notes": {"title": "Answers from your notes, no AI", "path": "Notes tab, Ask, the Use AI button", "steps": (
-        "Open Ask on the Notes tab.", "Turn Use AI off beside the title.", "Ask: the answer is quoted from your notes, with no AI.")},
+    "answers-from-notes": {"title": "Answers from your notes, no AI", "path": "Notes tab, Ask, the AI switch", "steps": (
+        "Open Ask on the Notes tab.", "Turn the AI switch off beside the answer length.", "Ask: the answer is quoted from your notes, with no AI.")},
     "follow-up-trail": {"title": "Where a follow-up came from", "path": "Chat tab, or Ask in the Notes tab, under an answer"},
     "why-this-answer": {"title": "Why this answer", "path": "Notes tab, Ask, under an answer"},
     "line-verdicts": {"title": "Wrong fact and Pin as true", "path": "Ask or Chat, a numbered mark in an answer"},

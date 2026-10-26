@@ -35,61 +35,68 @@ def _ask_header() -> str:
     return HTML[start : HTML.index('id="ask-source-help"', start)]
 
 
-def test_the_pill_is_gone_and_one_chip_stands_in_its_place():
-    # K6 (2026-10-26): the bare switch drew as on with no model; the Chat
-    # dock's toggle chip (`#web-search-toggle`) replaced it.
+def _controls() -> str:
+    start = HTML.index('class="ask-controls"')
+    return HTML[start : HTML.index('id="ask-btn"', start)]
+
+
+def test_the_pill_is_gone_and_one_switch_stands_in_the_input_row():
+    # K34 (2026-10-26): a compact pill switch beside the answer-length select,
+    # neutral (unchecked, enabled) until the first model status lands.
     header = _ask_header()
-    assert "ask-source-seg" not in header
-    assert "data-answer-from" not in header
-    assert "From your notes</button>" not in header
-    assert 'type="checkbox"' not in header[header.index("ask-header-actions") :]
-    match = re.search(r'<button type="button" id="ask-use-ai"([^>]*)>(.*?)</button>', header, re.S)
-    assert match, "the header has no button#ask-use-ai"
-    attrs, inner = match.groups()
-    # Drawn from the provider status: unpressed and disabled until it answers.
-    assert 'aria-pressed="false"' in attrs and " disabled" in attrs
-    assert "Use AI" in inner and "ph-sparkle" in inner
-    assert header.index("ask-header-actions") < header.index('id="ask-use-ai"')
-    assert header.index('id="ask-use-ai"') < header.index('data-help-for="ask-source-help"')
+    assert "ask-source-seg" not in header and "ask-use-ai" not in header
+    controls = _controls()
+    match = re.search(r'<label class="checkbox-label ask-ai-switch"[^>]*>(.*?)</label>', controls, re.S)
+    assert match, "the control row has no AI switch label"
+    inner = match.group(1)
+    assert 'type="checkbox"' in inner and 'id="ask-use-ai"' in inner and 'role="switch"' in inner
+    assert "disabled" not in inner and "checked" not in inner
+    assert "<span>AI</span>" in inner
+    assert controls.index('id="ask-use-ai"') < controls.index('id="ask-mode-select"')
+    assert header.index("ask-header-actions") < header.index('data-help-for="ask-source-help"')
 
 
 def test_the_help_popover_names_the_switch_and_says_what_off_means():
     start = HTML.index('id="ask-source-help"')
     popover = HTML[start : HTML.index("</div>", start)]
-    assert "Use AI" in popover
+    assert "switch labelled AI" in popover
     assert "From your notes" in popover
     assert "AI | From your notes" not in popover
 
 
-def test_the_chip_keeps_the_stored_choice_and_gives_the_reason_when_no_model_runs():
+def test_the_switch_keeps_the_stored_choice_and_names_the_cause_when_no_model_runs():
     assert 'const ASK_ANSWER_FROM_KEY = "ask-answer-from";' in COMPOSE
-    assert 'prefs.set(ASK_ANSWER_FROM_KEY, askAnswerFrom() === "ai" ? "notes" : "ai")' in COMPOSE
+    assert 'prefs.set(ASK_ANSWER_FROM_KEY, box.checked ? "ai" : "notes")' in COMPOSE
     assert 'prefs.get(ASK_ANSWER_FROM_KEY) === "notes" ? "notes" : "ai"' in COMPOSE
-    assert "chip.disabled = off;" in COMPOSE
-    assert 'chip.setAttribute("aria-pressed"' in COMPOSE and 'classList.toggle("active", on)' in COMPOSE
-    assert "ASK_AI_OFF_REASON" in COMPOSE
+    assert "box.disabled = off;" in COMPOSE
+    # Neutral until the first status: nothing is drawn before it lands.
+    assert "if (!modelStatus) return;" in COMPOSE
+    # The three causes, each from the status, the first with the server's URL.
+    assert "is not answering" in COMPOSE and "s.base_url" in COMPOSE
+    assert "has no models pulled" in COMPOSE
+    assert 'is not installed' in COMPOSE and "s.chat_model" in COMPOSE
     assert "data-answer-from" not in COMPOSE
 
 
-def test_the_chip_wears_the_chat_toggles_on_state_and_the_old_switch_recipe_is_gone():
+def test_the_switch_wears_the_pill_switch_recipe_and_the_chip_rules_are_gone():
     forms = _css("01-forms-settings.css")
-    assert "#ask-use-ai.active," in forms and "#ask-use-ai.active i," in forms
-    assert "#ask-use-ai:not(.active)" in forms
+    assert "#ask-use-ai" not in forms and ".ask-ai-switch {" in forms
     assert ".ask-use-ai" not in _css("06-timeline-dialogs.css")
-    assert "min-height: max(var(--control-h), var(--target-min))" in forms[forms.index("#ask-use-ai {") :][:200]
+    assert "#ask-use-ai" not in _css("10-responsive.css")
     assert ".ask-source-seg" not in _css("10-responsive.css")
 
 
 def test_every_help_surface_names_the_switch():
     source = Path(help_topics_more.__file__).read_text(encoding="utf-8")
     chat = Path(help_chat.__file__).read_text(encoding="utf-8")
-    assert "Ask on the Notes tab has a Use AI button" in source
-    assert "Notes tab, Ask, the Use AI button" in source
-    assert "Turn Use AI off beside the title." in source
-    assert "Its Use AI button " in chat
+    assert "Ask on the Notes tab has an AI switch beside its answer-length picker" in source
+    assert "Notes tab, Ask, the AI switch" in source
+    assert "Turn the AI switch off beside the answer length." in source
+    assert "Its AI switch " in chat
     for text in (source, chat):
         assert "AI and From your notes switch" not in text
         assert "AI, or From your notes" not in text
+        assert "Use AI button" not in text
 
 
 def test_the_switch_is_drawn_from_the_first_status_not_the_preload():
