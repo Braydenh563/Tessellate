@@ -709,7 +709,12 @@ def _bare_side(side: str) -> str:
     """One side of a comparison without the noun that names the notes:
     "Lisbon notes" is Lisbon (1324)."""
     side = re.sub(r"^(?:how (?:does|do|is|are) |what (?:does|do) )?(?:my )?(?:notes? )?(?:on |about )?", "", side.strip(" ,"), flags=re.I)
-    return re.sub(r"\s+(?:notes?|entries)$", "", side, flags=re.I).strip(" ,") or side
+    # Word steps, not `\s+(?:notes?|entries)$`: that regex is quadratic on a run
+    # of whitespace (CodeQL py/polynomial-redos).
+    head, _, last = side.rstrip().rpartition(" ")
+    if head and last.casefold() in ("note", "notes", "entries"):
+        side = head
+    return side.strip(" ,") or side
 
 
 _SIDE_CONNECTOR = re.compile(r"\s(?:and|with|to|vs\.?|versus)\s", re.I)
