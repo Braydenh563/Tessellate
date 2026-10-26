@@ -986,7 +986,11 @@ function gcEnsureCanvas(s = gcTab) {
       //: person moved keeps its middle in the middle, so a panel opening or
       //: closing beside it never leaves the map off to one side.
       if (s.zoom && s.svg && before.w && before.h && s.nodes?.length) {
-        if (!s.userZoomed) fitGraphToView(s.svg, null, s.zoom, s.nodes, s.dims.w, s.dims.h, !wasReal);
+        if (!s.userZoomed && s.size === "full" && wasReal && !graphAutoFitOn()) s.userZoomed = true;
+        //: A tree, radial or arc is framed by `frameTree`, as on first draw;
+        //: the force fit read the arc's dots alone and overshot (1920x1080).
+        if (!s.userZoomed && s.tree) frameTree(s.svg, s.zoom, null, gcTreeFrameNodes(s.tree, s.nodes), s.dims.w, s.dims.h, s.tree.radial, s.tree.arc, !wasReal);
+        else if (!s.userZoomed) fitGraphToView(s.svg, null, s.zoom, s.nodes, s.dims.w, s.dims.h, !wasReal);
         else s.svg.call(s.zoom.translateBy, (s.dims.w - before.w) / 2 / s.transform.k, (s.dims.h - before.h) / 2 / s.transform.k);
       }
       gcRequestDraw(s);

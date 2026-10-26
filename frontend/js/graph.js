@@ -5856,7 +5856,7 @@ initGraphDockHeightToken();
 //: so Curved links, Cluster glow and Label backgrounds came back on after a
 //: reload while drawn from the box.
 const GRAPH_STORED_SWITCHES = ["graph-curved", "graph-label-plates", "graph-nebula", "graph-length-score", "graph-group",
-  "graph-focus-in", "graph-focus-out", "graph-focus-neighbours", "graph-pane-in", "graph-pane-out", "graph-pane-neighbours"];
+  "graph-focus-in", "graph-focus-out", "graph-focus-neighbours", "graph-pane-in", "graph-pane-out", "graph-pane-neighbours", "graph-autofit"];
 //: Off by default, so stored "1" means on; and the sliders' stored values.
 const GRAPH_STORED_OFF = ["graph-arrows"];
 const GRAPH_STORED_SLIDERS = ["graph-label-fade", "graph-link-width", "graph-focus-depth", "graph-pane-depth"];
@@ -5877,6 +5877,13 @@ graphRestoreSwitches();
 //: fetch (renderGraph), the drawing ones a frame, the local ones a fetch of
 //: their own surface.
 for (const id of ["graph-tags", "graph-attachments", "graph-unresolved"]) $(id)?.addEventListener("change", renderGraph);
+//: The owner, 2026-10-26: views "need to better fit the user's screen and
+//: readjust to fit when switching between views (maybe make that togglable
+//: but on by default)". Off keeps the camera across a layout change or resize.
+function graphAutoFitOn() {
+  return prefs.get("graph-autofit", null) !== "0";
+}
+$("graph-autofit")?.addEventListener("change", (event) => prefs.set("graph-autofit", event.target.checked ? "1" : "0"));
 $("graph-arrows")?.addEventListener("change", (event) => {
   prefs.set("graph-arrows", event.target.checked ? "1" : "0");
   gcRequestDraw();
@@ -6138,6 +6145,7 @@ const GRAPH_DEFAULTS = {
   "graph-attachments": false,
   "graph-unresolved": false,
   "graph-arrows": false,
+  "graph-autofit": true,
   "graph-label-fade": "50",
   "graph-link-width": "50",
   "graph-focus-depth": "2",

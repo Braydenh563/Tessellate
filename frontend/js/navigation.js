@@ -2178,7 +2178,7 @@ $("graph-layout").addEventListener("change", async (event) => {
   // A different layout is a different shape (a radial ring is nothing like
   // a force-directed cloud): re-frame for it, unlike the filter/slider
   // changes that intentionally leave the camera alone.
-  graphAutoFitDone = false;
+  if (prefs.get("graph-autofit", null) !== "0") graphAutoFitDone = false;
   renderGraph();
 });
 
