@@ -1635,7 +1635,8 @@ function wbLayerEntryByKey(key) {
 function wbLayerRows() {
   const rows = [];
   const layer = (title, entries, held = null) => {
-    entries.sort((a, b) => (b.item.z || 0) - (a.item.z || 0) || b.item.id - a.item.id);
+    //: Top first, in the board's one stack order (`wbStackCompare`).
+    entries.sort((a, b) => wbStackCompare(b, a));
     const groups = new Map();
     const top = [];
     for (const e of entries) {
@@ -1663,7 +1664,7 @@ function wbLayerRows() {
         rows.push({ ...m, level: 2, name: wbLayerName(m.kind, m.item), holds: inside.length });
         if (inside.length && !wbLayerFoldedFrames.has(m.item.id)) {
           const members = inside.map((key) => wbLayerEntryByKey(key)).filter(Boolean)
-            .sort((a, b) => (b.item.z || 0) - (a.item.z || 0) || b.item.id - a.item.id);
+            .sort((a, b) => wbStackCompare(b, a));
           for (const h of members) rows.push({ ...h, level: 3, name: wbLayerName(h.kind, h.item), held: true });
         }
       }
@@ -2144,13 +2145,13 @@ async function wbLayerRestack(li, target, above) {
   const b = wbLayerEntry(target);
   if (!a || !b || a[1] === b[1]) return;
   const [kind, item] = a;
-  const sameLayer = (kind === "sketch") === (b[0] === "sketch") && (item.kind === "frame") === (b[1].kind === "frame");
-  if (!sameLayer) {
+  if (wbStackBand(kind, item) !== wbStackBand(b[0], b[1])) {
     toast("Drawings stay under the cards, and frames under both: an item restacks within its own layer.");
     return;
   }
+  //: Already in the board's stack order, bottom first.
   const peers = wbZOrderStepPeers(kind, item);
-  const order = peers.map((p) => p.row).sort((x, y) => (x.z || 0) - (y.z || 0) || x.id - y.id).filter((r) => r !== item);
+  const order = peers.map((p) => p.row).filter((r) => r !== item);
   const at = order.indexOf(b[1]);
   if (at < 0) return;
   order.splice(above ? at + 1 : at, 0, item);

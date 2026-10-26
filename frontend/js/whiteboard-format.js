@@ -1485,7 +1485,7 @@ async function wbInsertTable(rows = 3, cols = 3) {
   const w = cols * WB_TABLE_COL_W;
   const h = rows * WB_TABLE_ROW_H;
   const cells = Array.from({ length: rows }, () => Array.from({ length: cols }, () => ""));
-  const made = await wbCreateObject("table", { cells, header: true }, cx - w / 2, cy - h / 2, w, h, 2);
+  const made = await wbCreateObject("table", { cells, header: true }, cx - w / 2, cy - h / 2, w, h);
   if (!made) return null;
   clearWbSelection();
   wbHandleItemClick("object", made.id, { shiftKey: false });

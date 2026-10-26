@@ -7192,22 +7192,75 @@ function deleteWbSelection() {
   return true;
 }
 
+// --- The board's one stacking order (wbz-1026) ----------------------------
+//
+//: **One answer to "what is on top"** (the layer-order pair sweep, wbz-1026:
+//: four sites each decided it their own way, so what was seen on top was not
+//: always what a click hit, what Bring to front changed or what the export
+//: drew). The render (the drawings' sort and the cards' z-index), the hit
+//: tests, the order commands, the Layers tab and the export all read this.
+//: Bottom to top:
+//:   0  frames (decision 14: under everything they hold);
+//:   1  drawings: shapes, lines, connectors and pen strokes, the SVG layer,
+//:      which the browser paints under the card layer as a whole;
+//:   2  notes, text boxes, stickies, tables and pictures, the HTML layer.
+//: Within a band, `z`; a tie (a fresh board has many items at one z) goes
+//: the way a reload paints it: notes under objects, then by id.
+const WB_STACK_KIND_RANK = { sketch: 0, node: 1, object: 2 };
+
+function wbStackBand(kind, item) {
+  if (kind === "sketch") return 1;
+  return kind === "object" && item?.kind === "frame" ? 0 : 2;
+}
+
+function wbStackCompare(a, b) {
+  return wbStackBand(a.kind, a.item) - wbStackBand(b.kind, b.item)
+    || (Number(a.item.z) || 0) - (Number(b.item.z) || 0)
+    || WB_STACK_KIND_RANK[a.kind] - WB_STACK_KIND_RANK[b.kind]
+    || a.item.id - b.item.id;
+}
+
+//: Every item on the board, bottom first, as `{ kind, item, key }`.
+function wbStackOrder(state = wbState) {
+  const all = [];
+  for (const [kind, list] of [["sketch", state.sketches], ["node", state.nodes], ["object", state.objects]]) {
+    for (const item of list || []) all.push({ kind, item, key: `${kind}:${item.id}` });
+  }
+  return all.sort(wbStackCompare);
+}
+
+//: The z a new item is made with: on top of its own band, so what was just
+//: made is what is seen, clicked and exported on top. A frame is the one
+//: exception: it goes under the frames already there, since a frame drawn
+//: later is usually drawn around them.
+function wbStackNewZ(kind, item = null, state = wbState) {
+  const band = wbStackBand(kind, item);
+  const zs = wbStackOrder(state).filter((e) => wbStackBand(e.kind, e.item) === band).map((e) => Number(e.item.z) || 0);
+  if (band === 0) return zs.length ? Math.min(...zs) - 1 : 0;
+  return Math.max(0, ...zs) + 1;
+}
+
+//: Each item's place in the stack, 1 at the bottom: the z-index the card
+//: layer paints by, so two items at one z never fall back on DOM order.
+function wbStackRanks(state = wbState) {
+  return new Map(wbStackOrder(state).map((e, i) => [e.key, i + 1]));
+}
+
 // --- Layer order: bring to front / send to back (asked for directly) ------
 //
-// `z` already exists on every kind's own row and already drives paint order
-// (`.style("z-index", d => d.z)`, both nodes' and objects' own render merge
-// a few hundred lines down), nothing here needed a schema change or a new
-// render path, only an action that actually changes the number. Nodes and
+// `z` is on every kind's own row and the stack above (`wbStackOrder`) turns
+// it into paint order, so these commands only change the number. Nodes and
 // objects share one HTML stacking context (`canvas` in renderWhiteboard),
 // so they interleave against each other; a sketch renders in the separate
 // SVG layer beneath both (wbShowAnchorHints's own comment explains why), so
 // it only ever reorders against other sketches, never in front of a card.
-// An honest limit of this app's layering, not something faked here.
+// An honest limit of this app's layering, which the stack's bands say.
 
-function wbZOrderPeers(kind) {
-  return kind === "sketch"
-    ? wbState.sketches || []
-    : [...(wbState.nodes || []), ...(wbState.objects || [])];
+//: An item's peers for an order command: its own band of the stack, bottom
+//: first, as `{ kind, item, key }`.
+function wbZOrderPeers(kind, item) {
+  const band = wbStackBand(kind, item);
+  return wbStackOrder().filter((e) => wbStackBand(e.kind, e.item) === band);
 }
 
 //: Moves one item to the front/back of its own layer and saves it, mirroring
@@ -7215,12 +7268,9 @@ function wbZOrderPeers(kind) {
 //: undo entry) so it plugs into the same undo/redo stack without a new
 //: action type.
 async function wbSetZOrder(kind, item, toFront) {
-  //: Within its band: a frame to the front of the frames, never over the
-  //: cards it holds (decision 14 stacks frames below everything).
-  const isFrame = kind === "object" && item.kind === "frame";
-  const zs = wbZOrderPeers(kind)
-    .filter((p) => kind === "sketch" || (p.kind === "frame") === isFrame)
-    .map((p) => p.z || 0);
+  //: Within its band (`wbStackBand`): a frame to the front of the frames,
+  //: never over the cards it holds (decision 14).
+  const zs = wbZOrderPeers(kind, item).map((e) => Number(e.item.z) || 0);
   const next = toFront ? Math.max(0, ...zs) + 1 : Math.min(0, ...zs) - 1;
   if ((item.z || 0) === next) return null;
   const before = WB_KIND_INFO[kind].payload(item);
@@ -7299,18 +7349,12 @@ function wbZOrderStepPlan(peers, key, dir) {
 //: The peers of one item for a step, with the boxes the overlap test reads.
 //: A frame is stacked below everything (decision 14), so a frame steps
 //: among frames and nothing else steps past one.
+//: In stack order, so the plan's tie-break (array index) is the paint's.
 function wbZOrderStepPeers(kind, item) {
-  const isFrame = kind === "object" && item.kind === "frame";
-  const nodes = new Set(wbState.nodes || []);
-  return wbZOrderPeers(kind)
-    .filter((p) => kind === "sketch" || (p.kind === "frame") === isFrame)
-    .map((p) => {
-      const pk = kind === "sketch" ? "sketch" : nodes.has(p) ? "node" : "object";
-      return {
-        key: wbMultiKey(pk, p.id), z: p.z || 0, box: wbItemBBox(pk, p),
-        skip: wbItemHidden(pk, p), row: p, kind: pk,
-      };
-    });
+  return wbZOrderPeers(kind, item).map((e) => ({
+    key: e.key, z: Number(e.item.z) || 0, box: wbItemBBox(e.kind, e.item),
+    skip: wbItemHidden(e.kind, e.item), row: e.item, kind: e.kind,
+  }));
 }
 
 //: Whether an item is hidden from the board (the Layers tab's eye). A card
@@ -8580,7 +8624,7 @@ async function wbCloneConnect(dirName) {
           color: (source.kind === "sketch" && wbSketchParsedData(source.item)?.color) || window.currentStrokeColor || "#888888",
           width: 2, endCap: "arrow",
         }),
-        x: 0, y: 0, z: 1, board_id: window.currentBoardId ?? null,
+        x: 0, y: 0, z: wbStackNewZ("sketch"), board_id: window.currentBoardId ?? null,
       }),
     });
     wbState.sketches.push(link);
@@ -8621,7 +8665,7 @@ async function wbCloneNoteCard(source, dirName) {
           targetAnchor: { x: 0.5 - dir.x / 2, y: 0.5 - dir.y / 2 },
           color: window.currentStrokeColor || "#888888", width: 2, endCap: "arrow",
         }),
-        x: 0, y: 0, z: 1, board_id: window.currentBoardId ?? null,
+        x: 0, y: 0, z: wbStackNewZ("sketch"), board_id: window.currentBoardId ?? null,
       }),
     });
     wbState.sketches.push(link);
@@ -10801,7 +10845,9 @@ async function wbRedo() {
 // rendered by `renderWbObjects`. One shared creator (a POST plus the usual
 // create-undo-entry dance every other whiteboard item already does) rather
 // than a copy per kind, since only the `kind`/`data` differ.
-async function wbCreateObject(kind, data, x, y, width, height, z = 1) {
+//: Made on top of its own band of the stack (`wbStackNewZ`; a frame under
+//: the frames already there), so what was just made is what is on top.
+async function wbCreateObject(kind, data, x, y, width, height, z = wbStackNewZ("object", { kind })) {
   const body = { kind, data, board_id: window.currentBoardId, x, y, z, width, height };
   try {
     const created = await apiJson("/whiteboard/objects", { method: "POST", body: JSON.stringify(body) });
@@ -11177,9 +11223,8 @@ function wbLockedItemAt(x, y) {
     if (wbItemHidden(kind, item)) continue;
     const box = wbItemBBox(kind, item);
     if (!box || x < box.minX || x > box.maxX || y < box.minY || y > box.maxY) continue;
-    //: Cards and text over drawings, then z, as they are painted.
-    const rank = [kind === "sketch" ? 0 : 1, item.z || 0];
-    if (!best || rank[0] > best.rank[0] || (rank[0] === best.rank[0] && rank[1] >= best.rank[1])) best = { kind, item, box, rank };
+    //: The front-most as painted: the board's one stack order.
+    if (!best || wbStackCompare({ kind, item }, best) > 0) best = { kind, item, box };
   }
   return best;
 }
@@ -11216,8 +11261,8 @@ function wbPaintLockHover(hit) {
   wbBoardState.lockHoverKey = key;
   pin.style.left = `${hit.box.maxX}px`;
   pin.style.top = `${hit.box.minY}px`;
-  let top = 1;
-  for (const list of [wbState.nodes, wbState.objects]) for (const i of list || []) if (Number.isFinite(i.z)) top = Math.max(top, i.z);
+  //: Over every item: the card layer paints by stack rank (`wbStackRanks`).
+  const top = wbStackOrder().length + 1;
   pin.style.zIndex = String(top + 2);
 }
 
@@ -11397,8 +11442,8 @@ function wbPaintLinkMarks() {
     host.className = "wb-comment-marks";
     layer.appendChild(host);
   }
-  let top = 1;
-  for (const list of [wbState.nodes, wbState.objects]) for (const i of list || []) if (Number.isFinite(i.z)) top = Math.max(top, i.z);
+  //: Over every item: the card layer paints by stack rank (`wbStackRanks`).
+  const top = wbStackOrder().length + 1;
   host.style.zIndex = String(top + 1);
   const old = new Map([...host.children].map((pin) => [pin.dataset.linkKey, pin]));
   for (const [kind, item, link] of wanted) {
@@ -11471,8 +11516,8 @@ function wbPaintCommentMarks() {
     host.className = "wb-comment-marks";
     layer.appendChild(host);
   }
-  let top = 1;
-  for (const list of [wbState.nodes, wbState.objects]) for (const i of list || []) if (Number.isFinite(i.z)) top = Math.max(top, i.z);
+  //: Over every item: the card layer paints by stack rank (`wbStackRanks`).
+  const top = wbStackOrder().length + 1;
   host.style.zIndex = String(top + 1);
   const old = new Map([...host.children].map((pin) => [pin.dataset.commentKey, pin]));
   for (const [kind, item, count] of wanted) {
@@ -11944,15 +11989,6 @@ function wbFrameTitle(frame) {
   return String(frame?.data?.content || "").trim() || "Frame";
 }
 
-//: Below the lowest item on the board, so a new frame never covers what was
-//: there before it, whatever order things were made in.
-function wbFrameZ() {
-  let low = 1;
-  for (const o of wbState.objects || []) if (Number.isFinite(o.z)) low = Math.min(low, o.z);
-  for (const n of wbState.nodes || []) if (Number.isFinite(n.z)) low = Math.min(low, n.z);
-  return low - 1;
-}
-
 async function wbCreateFrame(x, y, box = null) {
   //: Never wider than most of what is on screen: on a phone the default is a
   //: frame whose edges are off both sides, which reads as no frame at all.
@@ -11964,7 +12000,7 @@ async function wbCreateFrame(x, y, box = null) {
   const w = Math.round(WB_FRAME_SIZE.w * fit), h = Math.round(WB_FRAME_SIZE.h * fit);
   const at = box || { x: x - w / 2, y: y - h / 2, w, h };
   const count = (wbState.objects || []).filter((o) => o.kind === "frame").length;
-  const created = await wbCreateObject("frame", { content: `Frame ${count + 1}` }, at.x, at.y, at.w, at.h, wbFrameZ());
+  const created = await wbCreateObject("frame", { content: `Frame ${count + 1}` }, at.x, at.y, at.w, at.h);
   if (!created) return;
   wbSelectToolRef?.("select");
   selectWbItem("object", created.id);
@@ -12672,9 +12708,9 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
   //: Frames first (decision 14): they sit under everything they hold, in the
   //: file as on the board. The edge and title ink are read off the frame as
   //: drawn, since the stylesheet does not travel into a standalone SVG.
-  for (const frame of wbState.objects || []) {
-    if (frame.kind !== "frame") continue;
-    if ((onlyKeys && !onlyKeys.has(wbMultiKey("object", frame.id))) || wbItemHidden("object", frame)) continue;
+  const drawFrame = (frame) => {
+    if (frame.kind !== "frame") return;
+    if ((onlyKeys && !onlyKeys.has(wbMultiKey("object", frame.id))) || wbItemHidden("object", frame)) return;
     const frameEl = document.querySelector(`#wb-html-layer .wb-object[data-id="${frame.id}"]`);
     const edge = frameEl ? wbExportColour(getComputedStyle(frameEl).borderTopColor) : null;
     const titleEl = frameEl?.querySelector(".wb-frame-title");
@@ -12684,7 +12720,12 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
         `stroke="${wbSvgEscape(edge || "#8a90a0")}" stroke-width="1.5" />`
     );
     parts.push(wbSvgText([wbFrameTitle(frame)], frame.x, frame.y - 6, { fontSize: 12, fill: ink || "#8a90a0" }));
-  }
+  };
+  //: **One order for the file and the board** (wbz-1026): frames, then the
+  //: map's structure, then every other item in `wbStackOrder`, so what is
+  //: on top on the board is on top in the file.
+  const stack = wbStackOrder();
+  for (const e of stack) if (wbStackBand(e.kind, e.item) === 0) drawFrame(e.item);
 
   // A map's branch colours, and its tree edges, both computed once for the
   // whole export. The edges are cloned out of the live DOM rather than
@@ -12742,10 +12783,10 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
   // Sketches already exist as real SVG, cloned as-is rather than
   // reinterpreted, so a stroke's colour/width/opacity (including the
   // highlighter's own translucency) survives into the export untouched.
-  for (const sketch of wbState.sketches) {
-    if ((onlyKeys && !onlyKeys.has(wbMultiKey("sketch", sketch.id))) || wbSketchHiddenOnBoard(sketch)) continue;
+  const drawSketch = (sketch) => {
+    if ((onlyKeys && !onlyKeys.has(wbMultiKey("sketch", sketch.id))) || wbSketchHiddenOnBoard(sketch)) return;
     const el = document.querySelector(`.sketch-group[data-id="${sketch.id}"]`);
-    if (!el) continue;
+    if (!el) return;
     const clone = el.cloneNode(true);
     clone.removeAttribute("class");
     //: A shape's text (decision 12) is painted by the stylesheet, which does
@@ -12773,7 +12814,7 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       }
     });
     parts.push(clone.outerHTML);
-  }
+  };
 
   // Cards are the HTML layer, which doesn't survive SVG rasterization the
   // way real SVG does, a simplified rect + label stands in for the live
@@ -12788,8 +12829,8 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
   const topics = document.querySelectorAll("#wb-html-layer .wb-object.wb-map-node");
   const lastTopic = topics[topics.length - 1];
   const topicFallback = wbExportPaint(lastTopic, lastTopic?.querySelector(".wb-map-text"));
-  for (const node of wbState.nodes) {
-    if ((onlyKeys && !onlyKeys.has(wbMultiKey("node", node.id))) || wbItemHidden("node", node)) continue;
+  const drawNode = (node) => {
+    if ((onlyKeys && !onlyKeys.has(wbMultiKey("node", node.id))) || wbItemHidden("node", node)) return;
     const entry = exportEntriesById.get(String(node.entry_id));
     const el = document.querySelector(`.node-card[data-id="${node.id}"]`);
     const w = el ? el.offsetWidth : 250;
@@ -12815,7 +12856,7 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
     parts.push(wbSvgText(wbSvgWrapLines(label || "Empty note", w - 28, cardLines), 14, 24,
       { fill: cardPaint?.ink || "#1f2430" }));
     parts.push("</g>");
-  }
+  };
 
   // Images and text boxes, the two new object kinds, neither tied to a
   // note. An <image> element rasterizes cleanly since the URL is always
@@ -12823,10 +12864,10 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
   // text box gets the same simplified rect+label treatment a card does,
   // but honours the colour/size it was actually given rather than a fixed
   // look, since those are the whole point of a text box.
-  for (const obj of wbState.objects || []) {
-    if ((onlyKeys && !onlyKeys.has(wbMultiKey("object", obj.id))) || wbItemHidden("object", obj)) continue;
+  const drawObject = (obj) => {
+    if ((onlyKeys && !onlyKeys.has(wbMultiKey("object", obj.id))) || wbItemHidden("object", obj)) return;
     //: Drawn before the sketches, above.
-    if (obj.kind === "frame") continue;
+    if (obj.kind === "frame") return;
     const alpha = obj.data?.alpha != null && obj.data.alpha < 1 ? ` opacity="${obj.data.alpha}"` : "";
     //: An SVG filter, not a `style` attribute: the CSP refuses inline style
     //: (tests/test_security_boundaries.py). Defined once, before its first use.
@@ -12958,6 +12999,12 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       parts.push(wbSvgTable(document.querySelector(`#wb-html-layer .wb-object[data-id="${obj.id}"]`), obj));
     }
     parts.push("</g>");
+  };
+  for (const e of stack) {
+    if (wbStackBand(e.kind, e.item) === 0) continue;
+    if (e.kind === "sketch") drawSketch(e.item);
+    else if (e.kind === "node") drawNode(e.item);
+    else drawObject(e.item);
   }
 
   parts.push("</svg>");
@@ -17342,7 +17389,7 @@ async function initWhiteboard() {
     try {
       const made = await apiJson("/whiteboard/sketches", {
         method: "POST",
-        body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z: 1, board_id: window.currentBoardId ?? null }),
+        body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z: wbStackNewZ("sketch"), board_id: window.currentBoardId ?? null }),
       });
       wbState.sketches.push(made);
       wbPushUndo({ action: "create", kind: "sketch", id: made.id });
@@ -17857,7 +17904,7 @@ async function initWhiteboard() {
       data: JSON.stringify(bound || blob),
       x: 0,
       y: 0,
-      z: 5,
+      z: wbStackNewZ("sketch"),
       board_id: window.currentBoardId
     };
 
@@ -17923,7 +17970,7 @@ async function initWhiteboard() {
       entry_id: entryId,
       x: at[0] - WB_CARD_DEFAULT_SIZE.w / 2,
       y: at[1] - WB_CARD_DEFAULT_SIZE.h / 2,
-      z: 10,
+      z: wbStackNewZ("node"),
       board_id: window.currentBoardId
     };
 
@@ -21264,16 +21311,17 @@ function renderWhiteboard() {
   //: **A shape's z is its paint order** (found with FEAT-07). SVG paints in
   //: document order, and a new sketch was appended last whatever its z, so
   //: Bring forward on a shape wrote a number nothing read. `sort` reorders
-  //: the groups by z (ties by id, the order they were appended in before);
+  //: the groups by the stack order (`wbStackCompare`: z, then id);
   //: d3 moves only the groups that are out of place. Not on a map, whose
   //: lines have no order to keep.
   //: Then each connector that jumps hops over the lines under it (wb-phase2
   //: step 1), in paint order: `sort` returns a new, sorted selection and
   //: leaves this one in data order, so it is read off the sorted one.
-  if (!wbIsMap()) wbApplyLineJumps(sketchUpdate.sort((a, b) => (a.z || 0) - (b.z || 0) || a.id - b.id).nodes());
+  if (!wbIsMap()) wbApplyLineJumps(sketchUpdate.sort((a, b) => wbStackCompare({ kind: "sketch", item: a }, { kind: "sketch", item: b })).nodes());
 
   // Render Nodes (Cards)
   const canvas = d3.select("#wb-html-layer");
+  const stackRank = wbStackRanks();
   const nodeSelection = canvas.selectAll(".wb-card.node-card")
     .data(wbState.nodes, d => d.id);
     
@@ -21434,7 +21482,7 @@ function renderWhiteboard() {
     .style("transform", wbItemTransform)
     .style("width", (d) => (d.width ? `${d.width}px` : ""))
     .style("height", (d) => (d.height ? `${d.height}px` : ""))
-    .style("z-index", d => d.z)
+    .style("z-index", (d) => stackRank.get(`node:${d.id}`))
     .call(d3.drag()
       .clickDistance(WB_CLICK_SLOP)
       // Reported directly: drawing over a note "just moves the note
@@ -21626,7 +21674,7 @@ function renderWhiteboard() {
     //: at (see `wbCardExpandHeight`), so a redraw does not clip it again.
     .style("height", (d) => (d.height && !wbExpandedNodes.has(d.id) ? `${d.height}px` : ""))
     .style("min-height", (d) => (d.height && wbExpandedNodes.has(d.id) ? `${d.height}px` : ""))
-    .style("z-index", d => d.z)
+    .style("z-index", (d) => stackRank.get(`node:${d.id}`))
     //: The eight-line cap is for the card that has never been resized and so
     //: has no height of its own to clip against. A card with a stored height
     //: does, and applying both would clamp a 700px card to eight lines and
@@ -22076,6 +22124,7 @@ async function wbStickyRemind(d, day) {
 
 function renderWbObjects(canvas) {
   wbScheduleStickyDates();
+  const stackRank = wbStackRanks();
   async function deleteObject(d) {
     // The same rule as the map's own subtree delete, at the other door: this
     // is what the Delete tool, the context menu's Delete and the selection
@@ -22576,7 +22625,7 @@ function renderWbObjects(canvas) {
     .style("transform", wbItemTransform)
     .style("width", (d) => `${d.width}px`)
     .style("height", objectHeight)
-    .style("z-index", (d) => d.z)
+    .style("z-index", (d) => stackRank.get(`object:${d.id}`))
     .call(objDrag)
     .on("click", (event, d) => {
       // ROADMAP row 0(b), asked for directly: with the Hand active, a plain
@@ -22820,6 +22869,10 @@ function renderWbObjects(canvas) {
   const movesLater = [];
   const repainted = new Set();
   objectUpdate.each(function (d) {
+    //: Before the paint-key skip: another item's order command moves this
+    //: one's rank without changing anything this one would repaint.
+    const rank = String(stackRank.get(`object:${d.id}`) ?? "");
+    if (this.style.zIndex !== rank) this.style.zIndex = rank;
     const key = wbObjectPaintKey(d, paintCtx);
     //: **A move is a transform, not a repaint** (audit FEAT-02): the key left
     //: out x and y so a tidy that shifts two hundred topics down for one new
@@ -22841,11 +22894,6 @@ function renderWbObjects(canvas) {
     this.style.transform = wbItemTransform(d);
     this.style.width = `${d.width}px`;
     this.style.height = objectHeight(d);
-    //: `removeProperty` for an unset `z`, which is what d3's own
-    //: `.style("z-index", d => d.z)` did with a null: an object with no z
-    //: stacks in document order rather than at "undefined".
-    if (d.z === null || d.z === undefined) this.style.removeProperty("z-index");
-    else this.style.zIndex = d.z;
     if (!WB_MAP_KINDS.has(d.kind)) {
       this.style.opacity = d.data?.alpha != null && d.data.alpha < 1 ? String(d.data.alpha) : "";
       this.style.filter = wbShadowCss(d.data) || "";
