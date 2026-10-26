@@ -4238,6 +4238,16 @@ button.ghost.doc-template-choice.wb-template-choice {
   --wb-paper: var(--wb-sticky-paper);
 }
 
+/* An empty box's caret sits at x 0 and its scroll box clipped it (K23:
+   "I cant see the typing carret when typing on an empty text box";
+   measured 0 caret pixels empty, 18 with this). Two pixels of room on the
+   start side, given back by the margin, so the text does not move. */
+.wb-object-text .wb-text-content {
+  margin-inline-start: -2px;
+  padding-inline-start: 2px;
+  width: calc(100% + 2px);
+}
+
 /* Up and down the box (the Format panel's Vertical row; the owner,
    2026-10-10: "there's no way to vertically centre text"). A column whose
    runs are pushed to the middle or the foot; `safe` keeps an overflowing

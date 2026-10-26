@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Boards: an empty text box or sticky shows its typing caret again.
 - Start a timer and Start a stopwatch now show in Tools and features, the shortcuts dialog's Tools list and the "/" menus, not only the command palette.
 - Header: the small "notes" beside the Tessellate name is gone (the owner, 2026-10-26).
 - Mind maps: a line style picker beside the Layout picker draws every line on the map Curved, Straight (one segment) or Elbow (right angles, rounded corners); a topic's own line shape still wins, and Ctrl+Z undoes it.
