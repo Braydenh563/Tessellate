@@ -3890,7 +3890,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `gcArmTouchLasso` | frontend/js/graph-canvas.js:3985 |
-| `gcArriving` | frontend/js/graph-canvas.js:6286 |
+| `gcArriving` | frontend/js/graph-canvas.js:6292 |
 | `gcArrows` | frontend/js/graph-canvas.js:838 |
 | `gcAutoFitDone` | frontend/js/graph-canvas.js:180 |
 | `gcBalanceFit` | frontend/js/graph-canvas.js:1715 |
@@ -3977,14 +3977,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `gcRadius` | frontend/js/graph-canvas.js:248 |
 | `gcReadTokens` | frontend/js/graph-canvas.js:300 |
 | `gcRefitForPanels` | frontend/js/graph-canvas.js:1854 |
-| `gcRelinkPairs` | frontend/js/graph-canvas.js:6266 |
+| `gcRelinkPairs` | frontend/js/graph-canvas.js:6272 |
 | `gcRenameTopicInline` | frontend/js/graph-canvas.js:1588 |
 | `gcRenderFilterChips` | frontend/js/graph-canvas.js:1413 |
 | `gcRequestDraw` | frontend/js/graph-canvas.js:2136 |
 | `gcRequestMinimapFrame` | frontend/js/graph-canvas.js:2157 |
 | `gcReshuffle` | frontend/js/graph-canvas.js:4653 |
 | `gcResize` | frontend/js/graph-canvas.js:923 |
-| `gcReveal` | frontend/js/graph-canvas.js:6294 |
+| `gcReveal` | frontend/js/graph-canvas.js:6300 |
 | `gcRuleDomain` | frontend/js/graph-canvas.js:5522 |
 | `gcRuleKey` | frontend/js/graph-canvas.js:5504 |
 | `gcRuleScale` | frontend/js/graph-canvas.js:5528 |
@@ -4018,7 +4018,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `gcTreeFrameNodes` | frontend/js/graph-canvas.js:1186 |
 | `gcTreeIndex` | frontend/js/graph-canvas.js:3392 |
 | `gcTweenFromPrior` | frontend/js/graph-canvas.js:1868 |
-| `gcUnlinkPairs` | frontend/js/graph-canvas.js:6259 |
+| `gcUnlinkPairs` | frontend/js/graph-canvas.js:6265 |
 | `gcVisibleAtTime` | frontend/js/graph-canvas.js:2213 |
 | `gcWireInteraction` | frontend/js/graph-canvas.js:3472 |
 | `gcWireLasso` | frontend/js/graph-canvas.js:4000 |
@@ -4028,18 +4028,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `gcWorldFor` | frontend/js/graph-canvas.js:5010 |
 | `gcWorldPoint` | frontend/js/graph-canvas.js:3416 |
 | `gcWriteUnresolved` | frontend/js/graph-canvas.js:4583 |
-| `graphPaneColour` | frontend/js/graph-canvas.js:6051 |
-| `graphPaneDocumentNote` | frontend/js/graph-canvas.js:6187 |
-| `graphPaneEnsure` | frontend/js/graph-canvas.js:6029 |
-| `graphPaneFollow` | frontend/js/graph-canvas.js:6141 |
-| `graphPaneWire` | frontend/js/graph-canvas.js:6196 |
+| `graphPaneColour` | frontend/js/graph-canvas.js:6057 |
+| `graphPaneDocumentNote` | frontend/js/graph-canvas.js:6193 |
+| `graphPaneEnsure` | frontend/js/graph-canvas.js:6035 |
+| `graphPaneFollow` | frontend/js/graph-canvas.js:6147 |
+| `graphPaneWire` | frontend/js/graph-canvas.js:6202 |
 | `graphRenderLegend` | frontend/js/graph-canvas.js:5545 |
 | `graphRenderStats` | frontend/js/graph-canvas.js:5787 |
-| `graphSyncLayoutChip` | frontend/js/graph-canvas.js:5829 |
-| `graphSyncTimeSlider` | frontend/js/graph-canvas.js:5856 |
-| `graphWireTimePlay` | frontend/js/graph-canvas.js:5895 |
+| `graphSyncLayoutChip` | frontend/js/graph-canvas.js:5835 |
+| `graphSyncTimeSlider` | frontend/js/graph-canvas.js:5862 |
+| `graphWireTimePlay` | frontend/js/graph-canvas.js:5901 |
 | `renderGraphCanvas` | frontend/js/graph-canvas.js:5144 |
-| `renderGraphPane` | frontend/js/graph-canvas.js:6057 |
+| `renderGraphPane` | frontend/js/graph-canvas.js:6063 |
 
 ### frontend/js/graph-worker.js (55)
 
