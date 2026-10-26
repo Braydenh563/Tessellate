@@ -1900,6 +1900,10 @@ def _range_for(kind: str, match: re.Match, today: date) -> tuple[date, date]:
 
 
 
+def is_lately(phrase: str) -> bool:
+    """True for a bare "recently" or "lately": a lean towards new, not a span."""
+    return bool(re.fullmatch(_LATELY, (phrase or "").strip().lower()))
+
 def question_range(text: str, today: date) -> tuple[date, date, str, int, int, bool] | None:
     """(since, until, phrase, start, end, soft) for the first stretch-ending-now
     phrase in a search question, or None. `soft` is "recently": a lean, not

@@ -3689,6 +3689,13 @@ def _time_phrase(question: str) -> str:
     return found[0][2] if found else ""
 
 
+def _plan_phrase(question: str, terms: list[str]) -> str:
+    """The question's time phrase, or "" for a bare "recently" with no subject:
+    "what did I write recently" asks for the newest notes, not a fortnight."""
+    phrase = _time_phrase(question)
+    return "" if not terms and rec.is_lately(phrase) else phrase
+
+
 #: What the planner reads of a question. Its passes cost words x length, so a
 #: 20,000-character paste took 38 s; the model still gets the whole question.
 PLAN_CHARS = 2000
@@ -3739,7 +3746,7 @@ def plan(question: str, today: date | None = None, *, recent: bool = False, embe
     shape = "recent" if recent else classify(question, embed)
     terms = subject_terms(question)
     constraints, terms, source_kind = _plan_constraints(question, terms)
-    phrase = _time_phrase(question)
+    phrase = _plan_phrase(question, terms)
     span = when_words.span(phrase, today, "past") if phrase else None
     if span and span[0] > today:
         span = None
