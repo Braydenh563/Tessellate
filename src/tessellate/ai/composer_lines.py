@@ -130,6 +130,12 @@ FRAMES: dict[str, tuple[Cand, ...]] = {
         c("No new dates fall in {span}; an earlier item is overdue.", "f"), c("{span} carries no new dates, but an item is overdue.", "f"),
         c("{span} is quiet, but an old date is waving at you.", "p"), c("No new dates {span}, yet something is past due.", "p"),
     ),
+    "due_none": (
+        c("Nothing is dated for {span}.", "w"), c("{span} is clear: no reminder and no dated note.", "w"), c("You have nothing dated for {span}.", "w"),
+        c("Nothing {span}.", "t"), c("{span}: clear.", "t"), c("No dates for {span}.", "t"),
+        c("No reminder or dated note falls on {span}.", "f"), c("The calendar holds nothing for {span}.", "f"),
+        c("{span} is wide open, not a date in sight.", "p"), c("Not a thing is dated for {span}. Enjoy the quiet.", "p"),
+    ),
     "plan": (
         c("Your plan for {span}, from your reminders and notes.", "w"), c("Here is {span}, laid out from what you have saved.", "w"),
         c("{span}, as your notes and reminders have it.", "w"),
@@ -282,6 +288,91 @@ FRAMES: dict[str, tuple[Cand, ...]] = {
         c("No items fall due today.", "f"), c("Nothing is scheduled for today.", "f"),
         c("Today has no deadlines, which is a gift.", "p"), c("An empty day on the calendar.", "p"),
     ),
+    # ---- quiz feedback (graded against the note; {a} is the note's own answer) ----
+    "quiz_right": (
+        c("Correct.", "wt"), c("Yes, that's it.", "w"), c("Right.", "t"), c("That's right.", "w"), c("Good, that matches your note.", "w"),
+        c("Yes.", "t"), c("Spot on, that matches your note.", "w", "H"), c("Correct, and well put.", "w", "H"),
+        c("That is correct.", "f"), c("Correct, in agreement with your note.", "f"), c("Exactly right.", "f"),
+        c("Nailed it.", "p"), c("Bang on, that matches your note.", "p"), c("Right, and I did not even have to nudge.", "p"),
+        c("Correct. One step at a time and you are getting there.", "w", "SU"),
+    ),
+    "quiz_close": (
+        c("Close enough, that counts. Your note says: {a}", "w"), c("Nearly. Your note has it as: {a} I'll count it.", "w"),
+        c("Part of it, and I'll count it. The note says: {a}", "w"), c("Close, counted. Note: {a}", "t"), c("Nearly. Counted. The note says: {a}", "t"),
+        c("Close enough to count. The note gives it as: {a}", "f"), c("Substantially correct; credit given. The note reads: {a}", "f"),
+        c("So close, I'll let it through. The note says: {a}", "p"), c("Almost there, counted anyway. The note says: {a}", "p"),
+        c("Nearly, and that is good progress. Your note says: {a}", "w", "SU"),
+    ),
+    "quiz_wrong": (
+        c("Not quite. Your note says: {a}", "w"), c("Not this time. The note says: {a}", "w"), c("Missed that one. It is: {a}", "w"),
+        c("Not quite: {a}", "t"), c("Missed. It is: {a}", "t"),
+        c("That is not correct. The note reads: {a}", "f"), c("Incorrect on this occasion. The note states: {a}", "f"),
+        c("Not quite, but now you know. The note says: {a}", "p"), c("Swing and a miss. The note says: {a}", "p"),
+        c("Not quite, and that is fine, this is how it sticks. Your note says: {a}", "w", "SU"),
+    ),
+    "quiz_skip": (
+        c("Skipped. The answer: {a}", "wt"), c("No problem. The answer is: {a}", "w"), c("The answer was: {a}", "wt"),
+        c("Skipped. For the record, the answer is: {a}", "f"), c("Moving on. The answer was: {a}", "f"),
+        c("Skipped, and here is the answer: {a}", "p"), c("Passing is allowed. The answer: {a}", "p"),
+    ),
+    # ---- small talk (no facts; the kind and the mood pick) ----
+    "social_how": (
+        c("All good here, and your notes are in order. What can I find for you?", "w"), c("Doing well, thanks for asking. What would you like to know?", "w"),
+        c("Fine, thank you. Anything you want to look up?", "w"), c("Steady and ready. How are you getting on?", "w"),
+        c("Good, thanks. What are we working on?", "t"), c("Fine. You?", "t"), c("Ready. What do you need?", "t"), c("All well. Ask away.", "t"),
+        c("I am well, thank you. How may I assist with your notes?", "f"), c("Quite well, thank you. What may I find for you?", "f"),
+        c("In good order, thank you. What would you like to review?", "f"),
+        c("Pages crisp, pencils sharp. What shall we dig up?", "p"), c("Living my best notebook life. What are you after?", "p"),
+        c("Never better, and the shelves are tidy. What next?", "p"),
+        c("Doing fine, and more to the point, how are you holding up? We can take your list one item at a time.", "w", "SU"),
+        c("Fine, thanks. You sound busy, so let me take something off your plate.", "w", "S"), c("Glad to hear from you too. What are we looking up?", "w", "H"),
+    ),
+    "social_sorry": (
+        c("No need to apologise. What would you like to try?", "w"), c("Not at all. Ask it another way and I will look again.", "w"),
+        c("It's completely fine. What can I do for you?", "w"), c("Don't worry about it. Let's try again.", "w"), c("That's okay. What are you looking for?", "w"),
+        c("It's fine. Go on.", "t"), c("No harm. Again?", "t"), c("All good.", "t"), c("Fine. What next?", "t"),
+        c("There is nothing to apologise for. How may I help?", "f"), c("No apology is necessary. Please continue.", "f"), c("That is quite all right. What would you like next?", "f"),
+        c("Pah, no harm done. Where were we?", "p"), c("Forgiven before you finished typing. What next?", "p"), c("Apology accepted, notebook still intact.", "p"),
+        c("It really is fine, you are juggling a lot. Take your time.", "w", "S"), c("No worries, a rough moment is allowed. Let's get it sorted.", "w", "U"),
+    ),
+    "social_laugh": (
+        c("Glad something made you smile. Anything else I can find?", "w"), c("Good to hear. Ask whenever you like.", "w"), c("Glad you found that funny. Ready for the next question?", "w"),
+        c("Heh. Let me know if you need to search anything else.", "w"), c("Nice to hear a laugh. What next?", "w", "H"),
+        c("Ha. What next?", "t"), c("Good. Next?", "t"), c("Heh. Go on.", "t"),
+        c("I am pleased that amused you. How may I help next?", "f"), c("Delighted to be of amusement. What would you like next?", "f"),
+        c("Ha, I will be here all week. What now?", "p"), c("Tell me I am funny again, then ask me something.", "p"), c("Comedy break over. Back to the pages?", "p"),
+    ),
+    "social_reaction": (
+        c("I know. Anything you want to look up about it?", "w"), c("Fair reaction. Want me to find anything else?", "w"), c("Totally. Let me know what to look up.", "w"),
+        c("Quite something. What next?", "w"), c("It does look that way. Shall we check your notes on it?", "w"),
+        c("Right. Next?", "t"), c("Noted. Anything to look up?", "t"), c("Yes. More?", "t"),
+        c("Indeed. Would you like me to search on it?", "f"), c("Understandably so. What would you like to review?", "f"), c("Quite. Shall I look into your notes on it?", "f"),
+        c("Wild, right? Shall I go rummage?", "p"), c("Ha, I felt that too. What shall I dig up?", "p"), c("Big reaction energy. Want me to check the notebook?", "p"),
+    ),
+    "social_confused": (
+        c("Sorry, that was not clear. Ask it another way, or say “tell me more” for the rest of what I found.", "w"),
+        c("Let me try again: put it in other words, or name the note you mean.", "w"), c("My answer may have missed. Which part should I look at again?", "w"),
+        c("Which bit lost you? I can say it more plainly.", "w"), c("Fair, that was clumsy. Tell me which part and I will redo it.", "w", "U"),
+        c("Unclear. Which part?", "t"), c("Say what is unclear and I will redo it.", "t"), c("Which part? I will simplify.", "t"),
+        c("I apologise for the confusion. Which part should I clarify?", "f"), c("Allow me to restate that. Which point was unclear?", "f"),
+        c("Plot twist: I was confusing. Which bit shall I untangle?", "p"), c("My notes got tangled. Point at the knot and I will unpick it.", "p"),
+        c("No stress, we will go slowly. Which part should I make plainer?", "w", "S"),
+    ),
+    "social_ack": (
+        c("Good. Anything else?", "w"), c("All right. What next?", "w"), c("Noted. Ask whenever you like.", "w"), c("Okay. I am here when you need me.", "w"),
+        c("Understood. Just say what you want to look up.", "w"), c("Glad that worked. What else?", "w", "H"),
+        c("Okay.", "t"), c("Noted.", "t"), c("Next?", "t"), c("Ready when you are.", "t"),
+        c("Understood. Please let me know what else you need.", "f"), c("Very good. I remain at your disposal.", "f"), c("Noted. How may I help next?", "f"),
+        c("Roger that. Notebook stays open.", "p"), c("Cool cool. What are we hunting next?", "p"), c("Filed under done. What now?", "p"),
+        c("Okay, one thing down. What is next on your list?", "w", "S"),
+    ),
+    "social_compliment": (
+        c("I am glad to hear that. What can I find for you next?", "w"), c("That's kind of you. What else should we search for?", "w"),
+        c("Much appreciated. Anything else in your notes to find?", "w"), c("Thank you, that means a lot. What next?", "w", "H"),
+        c("Thanks. Next?", "t"), c("Appreciated. More?", "t"), c("Good to hear. Go on.", "t"),
+        c("Thank you, that is kind. How may I assist further?", "f"), c("I appreciate that. What would you like to review next?", "f"),
+        c("Stop, you will make the pages blush. What next?", "p"), c("Aw, shucks. Back to the notebook?", "p"), c("I will take that and frame it. What are we after?", "p"),
+    ),
     # ---- tool confirmations (needle slots, the composer's prose) ----
     "act_done": (
         c("Done: {what}.", "wt"), c("Done. {what}.", "w"), c("I have {what}.", "w"), c("All set, {what}.", "w"),
@@ -337,4 +428,41 @@ FRAMES: dict[str, tuple[Cand, ...]] = {
         c("That one is beyond me without a model. Search, count, list and remind, though, I can do.", "p"),
         c("No model, no magic. But searching, counting, listing and reminders are all mine.", "p"),
     ),
+}
+
+
+def _heads(**by_voice: str) -> tuple[Cand, ...]:
+    """`w="A|B", t="C"` as candidates tagged for that voice."""
+    return tuple(c(text, v) for v, joined in by_voice.items() for text in joined.split("|"))
+
+
+#: Small talk is built as a head and a tail (a pair is a sentence somebody
+#: would say), over the whole sentences in FRAMES: a kind holds the frames
+#: and every head with every tail of its voice. A kind with no tails of its
+#: own uses "*".
+SOCIAL_HEADS: dict[str, tuple[Cand, ...]] = {
+    "how": _heads(w="All good here.|Doing well, thanks.|Fine, thank you.|Steady and ready.|Glad you asked.", t="Fine.|Good.|Ready.|All well.",
+                  f="I am well, thank you.|Quite well, thank you.|In good order, thank you.|Very well.", p="Pages crisp, pencils sharp.|Living my best notebook life.|Never better.|Shelves tidy, ink full."),
+    "sorry": _heads(w="No need to apologise.|Not at all.|It's completely fine.|Don't worry about it.|That's okay.", t="Fine.|No harm.|All good.|Forget it.",
+                    f="There is nothing to apologise for.|No apology is necessary.|That is quite all right.|Please think nothing of it.",
+                    p="Forgiven before you finished typing.|Pah, no harm done.|Apology accepted.|Already forgotten."),
+    "laugh": _heads(w="Glad something made you smile.|Good to hear.|Glad you found that funny.|Heh.|Nice to hear a laugh.", t="Ha.|Heh.|Good.|Funny.",
+                    f="I am pleased that amused you.|Delighted to be of amusement.|Most agreeable.|Quite so.", p="Ha, I will be here all week.|Comedy break over.|Tell me I am funny again.|Ba dum tss."),
+    "reaction": _heads(w="I know.|Fair reaction.|Totally.|Quite something.|It does look that way.", t="Right.|Noted.|Yes.|Same.",
+                       f="Indeed.|Understandably so.|Quite.|One can see why.", p="Wild, right?|Ha, I felt that too.|Big reaction energy.|I gasped too, silently."),
+    "confused": _heads(w="Sorry, that was not clear.|Fair, that was clumsy.|My answer may have missed.|Let me try again.", t="Unclear.|Missed.|Again.|My miss.",
+                       f="I apologise for the confusion.|Allow me to restate that.|That was imprecise of me.|Forgive the muddle.", p="Plot twist: I was confusing.|My notes got tangled.|That came out as soup.|Well, that went sideways."),
+    "ack": _heads(w="Good.|All right.|Noted.|Okay.|Understood.", t="Okay.|Noted.|Right.|Fine.", f="Understood.|Very good.|Noted with thanks.|Certainly.", p="Roger that.|Cool cool.|Filed under done.|Consider it logged."),
+    "compliment": _heads(w="I am glad to hear that.|That's kind of you.|Much appreciated.|Thank you.|That means a lot.", t="Thanks.|Appreciated.|Good to hear.|Noted, thanks.",
+                         f="Thank you, that is kind.|I appreciate that.|Most kind of you.|Thank you very much.", p="Stop, you will make the pages blush.|Aw, shucks.|I will take that and frame it.|Careful, it will go to my head."),
+}
+SOCIAL_TAILS: dict[str, tuple[Cand, ...]] = {
+    "*": (*_heads(w="What can I find for you?|Anything you want to look up?|Tell me what you need from your notes.|Ask whenever you like.|Your notes are ready when you are.|What shall we look at?",
+                  t="Next?|What do you need?|Ask away.|Go on.|More?", f="How may I assist with your notes?|What would you like to review?|Please say what you need.|I remain at your disposal.",
+                  p="What are we digging up?|Where shall the notebook take us?|Point me at a page.|What is the hunt?"),
+          c("We can take it one thing at a time.", "w", "SU"), c("Tell me what is most pressing and we will start there.", "w", "S"), c("What can I take off your plate?", "w", "S"),
+          c("One item first.", "t", "S"), c("Take it in order, and I will keep pace.", "f", "S")),
+    "confused": _heads(w="Which part should I look at again?|Ask it another way and I will redo it.|Name the note you mean and I will start there.|Tell me which bit lost you.",
+                       t="Which part?|Say it another way.|Name the note.|Try again.", f="Which point should I clarify?|Please rephrase and I will try again.|Please name the note you mean.|Which part was unclear?",
+                       p="Point at the knot and I will unpick it.|Which bit shall I untangle?|Say it another way and I will have another go.|Name the page and I will start there."),
 }

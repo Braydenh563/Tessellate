@@ -130,7 +130,7 @@ def test_nothing_found_has_eight_wordings_a_voice(key):
 
 
 @pytest.mark.parametrize("family", ["CONFIRM", "WHICH_NOTE"])
-def test_clarifying_and_confirming_vary(family):
+def test_clarifying_and_confirming_vary(family, app_state):
     """An act's Confirm line and its "which note?" were one sentence each:
     eight a voice now, and fifty acts in a row open differently."""
     from tessellate.ai import commands

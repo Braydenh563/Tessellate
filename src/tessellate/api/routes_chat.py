@@ -2627,7 +2627,7 @@ def _social_reply(req: _StreamRequest, prepared: dict) -> str:
         prepared["intent"],
         str(last.get("answer") or ""),
         str(last.get("question") or ""),
-        voice=_composer_voice(),
+        voice=_chat_voice(req),
         recent=recent,
         seed=seed,
         invite=_newest_word(req.session),
@@ -3410,12 +3410,12 @@ def _act_planned_events(req: _StreamRequest, parsed: dict) -> Iterator[dict]:
     planned = acts.preview(req.session, parsed, req.body.note_ids)
     card = planned.get("card")
     if card and planned.get("run"):
-        done = acts.run(req.session, card["steps"], card.get("skipped"))
+        mood = composer_compose.mood_of(req.question or "", voice=_chat_voice(req), seed=_reply_seed(req)[1], intent="act")
+        done = acts.run(req.session, card["steps"], card.get("skipped"), lambda what: composer_compose.frame("act_done", mood, what=f"{what[:1].lower()}{what[1:]}"))
         if done["ok"] and parsed["intent"] == "reminder":
             #: Said as the card says it (INBOX 734): "Done: remind you on
             #: Friday at 9: call the dentist."
             what = f"{card['label'][:1].lower()}{card['label'][1:]}"
-            mood = composer_compose.mood_of(req.question or "", voice=_chat_voice(req), seed=_reply_seed(req)[1], intent="act")
             done["summary"] = composer_compose.frame("act_card", mood, what=what)
         yield {"type": "answer", "delta": done["summary"]}
         yield {**card, "done": True, "summary": done["summary"], "undo": done["undo"], "open": done.get("open")}

@@ -56,6 +56,12 @@ _WHEN_IS = re.compile(rf"^{_LEAD}when(?:'s|’s| is| are| was)\s+(?:my |the |our
 _WHEN_IS_ALT = re.compile(
     rf"^{_LEAD}(?:what (?:date|day|time)(?:'s| is| are| was)(?: it)?(?: for)?|when (?:do|did|will|shall) (?:i|we) (?:have|sit|take|do)|when am i (?:sitting|having|taking|doing))"
     r"\s+(?:my |the |our |this |that )?(?P<t>.+?)\W*$", re.I)
+#: "What's my next exam", "exam date", "my exam day": the same ask as "when
+#: is my exam" (composer5); a reminder must name the subject, else the notes'
+#: reader answers.
+_WHEN_IS_NEXT = re.compile(
+    rf"^{_LEAD}(?:what(?:'s|’s| is| are) (?:my |the |our )?next\s+(?P<t>.+?)"
+    r"|(?:my |the |our )?(?P<t2>.+?)\s+(?:date|day|deadline|time))\W*$", re.I)
 _SPAN_WORDS = re.compile(r"\b(?:the )?(?:next|coming|following) (\d{1,2}|few|couple of) days?\b|\bnext (\d{1,2}) days\b|\bthe rest of (?:the|this) week\b|\brest of (?:the|this) week\b", re.I)
 _FILLER_STEMS = frozenset(study.stem(w) for w in (
     "what whats is are do have got any anything due deadlines deadline coming up upcoming on my plate the this next week today tomorrow "
@@ -286,8 +292,9 @@ def _due(ctx: Ctx, win: tuple[date, date, str]) -> Reply | None:
     if not found and not overdue:
         # The reminders path answers an empty window: it names a waiting
         # reminder outside it, or the next day the notes give
-        # (tests/test_due_in_ask_1018.py).
-        return None
+        # (tests/test_due_in_ask_1018.py). A window it does not know (a
+        # weekday, "the next 7 days") has no such path, so it is said here.
+        return None if recognise.ahead_window(said) else _nothing_due(ctx, end, span)
     head = compose.head("due", ctx.mood, count=f"{len(found)} dated item{'s' if len(found) != 1 else ''}", span=span) if found \
         else compose.head("due_overdue", ctx.mood, span=span)
     head = compose.sentence_case(head)
@@ -297,6 +304,14 @@ def _due(ctx: Ctx, win: tuple[date, date, str]) -> Reply | None:
     if (end - start).days >= 3:
         lines += _next_reminder(ctx, end, found)
     return Reply("\n".join(lines), asks=["Plan my week"] if (end - start).days >= 3 else [])
+
+
+def _nothing_due(ctx: Ctx, end: date, span: str) -> Reply:
+    lines = [compose.sentence_case(compose.frame("due_none", ctx.mood, span=span))]
+    later, _o = events(ctx, end + timedelta(days=1), end + timedelta(days=3650))
+    if later:
+        lines += ["", f"Next up: {later[0].text} ({_long(later[0].day)} {later[0].day.year})."]
+    return Reply("\n".join(lines))
 
 
 def _next_reminder(ctx: Ctx, end: date, found: list[Event]) -> list[str]:
@@ -491,7 +506,15 @@ def _when_is(ctx: Ctx, subject: str) -> Reply | None:
 
 def _when_reply(ctx: Ctx, text: str) -> Reply | None:
     when = _WHEN_IS.match(text) or _WHEN_IS_ALT.match(text)
-    return _when_is(ctx, when.group("t")) if when else None
+    if when:
+        return _when_is(ctx, when.group("t"))
+    nxt = _WHEN_IS_NEXT.match(text)
+    return _when_is(ctx, nxt.group("t") or nxt.group("t2")) if nxt else None
+
+
+def _asks_due(text: str, today: date) -> bool:
+    """"What is due", or a bare span ("the next 7 days"), or "what's on" with a window."""
+    return bool(_DUE.match(text) or ((_SPAN_WORDS.search(text) or _BUSY.match(text)) and window(text, today) is not None))
 
 
 def answer(ctx: Ctx) -> Reply | None:
@@ -509,6 +532,4 @@ def answer(ctx: Ctx) -> Reply | None:
     plan = _PLAN.match(text)
     if plan:
         return _plan(ctx, _plan_window(text, " ".join(g for g in plan.groups() if g) or "this week", today))
-    if _DUE.match(text) or (_BUSY.match(text) and window(text, today) is not None):
-        return _due_reply(ctx, text, today)
-    return None
+    return _due_reply(ctx, text, today) if _asks_due(text, today) else None

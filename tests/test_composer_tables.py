@@ -331,8 +331,8 @@ def test_every_added_natural_social_line_follows_the_copy_rules(line):
      ("lol", "laugh"), ("wow", "reaction"), ("what", "confused"), ("ok", "ack"), ("who are you", "who")],
 )
 def test_a_professional_reply_is_of_the_turns_kind(message, kind):
-    assert composer.social(message, voice="professional") in composer.SOCIAL_PROFESSIONAL[kind]
-    assert composer.social(message) in composer.SOCIAL[kind]
+    assert composer.social(message, voice="professional") in composer.social_surfaces(kind, True)
+    assert composer.social(message) in composer.social_surfaces(kind)
 
 
 def test_the_professional_reply_is_never_the_one_before_and_offers_a_professional_next_step():
