@@ -36,7 +36,7 @@ def _run(expr: str, state: dict) -> object:
         pytest.skip("node is not installed")
     script = (
         _const("WB_STACK_KIND_RANK")
-        + "".join(_function(n) for n in ("wbStackBand", "wbStackCompare", "wbStackOrder", "wbStackNewZ"))
+        + "".join(_function(n) for n in ("wbStackBand", "wbStackCompare", "wbStackOrder", "wbStackNewZ", "wbSketchBands"))
         + f"\nconst wbState = {json.dumps(state)};\nconsole.log(JSON.stringify({expr}));\n"
     )
     out = subprocess.run([node, "-e", script], capture_output=True, text=True, check=True)
@@ -47,13 +47,18 @@ def _keys(state: dict) -> list:
     return _run("wbStackOrder(wbState).map((e) => e.key)", state)
 
 
-def test_frames_paint_below_drawings_and_drawings_below_cards() -> None:
+def test_frames_paint_below_and_drawings_stack_with_cards() -> None:
+    """The owner, 2026-10-27 ("each stroke stacks"): a drawing is no longer
+    one layer under every card; it sits above or below a card by its z like
+    any other item. This test pinned the old bands (drawings under cards);
+    its intent moved with that decision. Frames stay under everything
+    (decision 14)."""
     state = {
         "sketches": [{"id": 1, "z": 50}],
         "nodes": [{"id": 1, "z": -5}],
         "objects": [{"id": 1, "kind": "frame", "z": 99}, {"id": 2, "kind": "text", "z": -9}],
     }
-    assert _keys(state) == ["object:1", "sketch:1", "object:2", "node:1"]
+    assert _keys(state) == ["object:1", "object:2", "node:1", "sketch:1"]
 
 
 def test_z_orders_within_a_band() -> None:
@@ -74,12 +79,22 @@ def test_a_tie_breaks_as_a_reload_paints_notes_then_objects_then_id() -> None:
     assert _keys(state) == ["sketch:3", "sketch:9", "node:2", "node:20", "object:1"]
 
 
+def test_a_card_over_a_stroke_and_a_stroke_over_a_card() -> None:
+    state = {
+        "sketches": [{"id": 1, "z": 1}, {"id": 2, "z": 3}],
+        "nodes": [],
+        "objects": [{"id": 5, "kind": "text", "z": 2}],
+    }
+    assert _keys(state) == ["sketch:1", "object:5", "sketch:2"]
+
+
 def test_a_missing_z_counts_as_zero() -> None:
     state = {"sketches": [], "nodes": [], "objects": [{"id": 1, "kind": "text", "z": None}, {"id": 2, "kind": "text", "z": -1}]}
     assert _keys(state) == ["object:2", "object:1"]
 
 
 def test_a_new_item_goes_on_top_of_its_own_band() -> None:
+    """A new stroke lands on top of the cards too (owner, 2026-10-27)."""
     state = {
         "sketches": [{"id": 1, "z": 5}],
         "nodes": [{"id": 1, "z": 10}],
@@ -87,7 +102,39 @@ def test_a_new_item_goes_on_top_of_its_own_band() -> None:
     }
     assert _run('wbStackNewZ("object", { kind: "text" })', state) == 11
     assert _run('wbStackNewZ("node")', state) == 11
-    assert _run('wbStackNewZ("sketch")', state) == 6
+    assert _run('wbStackNewZ("sketch")', state) == 11
+    state["sketches"].append({"id": 2, "z": 30})
+    assert _run('wbStackNewZ("node")', state) == 31
+
+
+def _bands(state: dict) -> dict:
+    return _run("wbSketchBands(wbStackOrder(wbState))", state)
+
+
+def test_strokes_below_every_card_stay_in_the_base_layer() -> None:
+    """The bands (decision 76): a run of strokes under every card paints in
+    the base SVG layer, which costs nothing new."""
+    state = {"sketches": [{"id": 1, "z": -3}, {"id": 2, "z": -2}], "nodes": [{"id": 1, "z": 0}], "objects": []}
+    assert _bands(state) == {"base": [1, 2], "bands": []}
+
+
+def test_each_run_of_strokes_between_cards_is_one_band_at_its_rank() -> None:
+    """One SVG per run of strokes, not per stroke; its z-index is the stack
+    rank of its first stroke, which no card holds (`wbStackRanks`)."""
+    state = {
+        "sketches": [{"id": 1, "z": 0}, {"id": 2, "z": 2}, {"id": 3, "z": 2}, {"id": 4, "z": 9}],
+        "nodes": [{"id": 1, "z": 1}],
+        "objects": [{"id": 7, "kind": "text", "z": 5}],
+    }
+    # Order: sketch 1, node 1, sketch 2, sketch 3, object 7, sketch 4.
+    assert _bands(state) == {"base": [1], "bands": [{"rank": 3, "ids": [2, 3]}, {"rank": 6, "ids": [4]}]}
+
+
+def test_a_frame_lifts_every_stroke_off_the_base_layer() -> None:
+    """A frame is in the HTML layer and under every stroke, so with a frame
+    on the board no stroke can paint in the base SVG beneath it."""
+    state = {"sketches": [{"id": 1, "z": -9}], "nodes": [], "objects": [{"id": 2, "kind": "frame", "z": 0}]}
+    assert _bands(state) == {"base": [], "bands": [{"rank": 2, "ids": [1]}]}
 
 
 def test_a_new_frame_goes_under_the_frames_already_there() -> None:
@@ -99,7 +146,7 @@ def test_a_new_frame_goes_under_the_frames_already_there() -> None:
 def test_every_site_reads_the_one_order() -> None:
     """The render, the export, the Layers tab, the hit test and the order
     commands each call the shared order rather than sorting for themselves."""
-    for name in ("wbBuildExportSvg", "wbLayerRows", "wbLayerRestack", "wbLockedItemAt", "wbZOrderPeers", "renderWbObjects"):
+    for name in ("wbBuildExportSvg", "wbLayerRows", "wbLayerRestack", "wbLockedItemAt", "wbZOrderPeers", "renderWbObjects", "wbPlaceSketchBands"):
         body = _function(name)
         assert "wbStack" in body, name
     assert ".sort((a, b) => (a.z || 0) - (b.z || 0) || a.id - b.id)" not in SOURCE
@@ -120,3 +167,11 @@ def test_inserts_make_their_drawings_on_top_not_at_a_fixed_z() -> None:
     interchange = (JS / "whiteboard-interchange.js").read_text(encoding="utf-8")
     assert "post = async (data, z" not in interchange
     assert interchange.count('z: wbStackNewZ("sketch")') >= 6
+
+
+def test_the_live_stroke_paints_over_the_cards_while_it_is_drawn() -> None:
+    """A new stroke lands on top, so the path drawn under the pointer is in
+    the overlay layer above the cards, not the base layer under them."""
+    text = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    assert 'document.getElementById("wb-zoom-group").appendChild(currentDrawPath)' not in text
+    assert 'document.getElementById("wb-overlay-zoom-group").appendChild(currentDrawPath)' in text

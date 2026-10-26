@@ -463,6 +463,9 @@ def test_a_placement_lands_on_top_of_what_is_already_there(ai_client):
     new_box = [z for i, z in objects.items() if i not in (old_box["id"], old_frame["id"])]
     assert min(new_sketch) > sketches[old_sketch["id"]] and len(set(new_sketch)) == len(new_sketch)
     assert min(new_box) > objects[old_box["id"]] and len(set(new_box)) == len(new_box)
+    #: One band for drawings and cards (decision 43): the whole placement is
+    #: over the old drawing too, and no two placed rows tie.
+    assert min(new_box) > sketches[old_sketch["id"]] and not set(new_box) & set(new_sketch)
     #: The link (z 1 in the stencil) stays under its two shapes (z 5).
     first = [s for s in state["sketches"] if s["id"] != old_sketch["id"]][:3]
     link = next(s for s in first if json.loads(s["data"]).get("type", "").startswith("link-"))
