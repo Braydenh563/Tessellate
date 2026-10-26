@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Stats: counts of nothing are said as "no" ("You are not using any tags yet", "You have no documents"), and one note takes a singular verb ("1 note out of 3 has no tags").
 - Chat: a mind-map node or board card written "Label: text" is said as its own text in a summary, never as a bold heading over the rest.
 - Time words: "over the weekend", "last fortnight", "since Monday", "the other day", "earlier this week", "so far this month", "year to date" and the rest of the this/last/past N days, weeks, months forms are read as dates in recaps and searches.
 - Chat: a short message whose word only a Guide topic's bracketed or quoted examples hold ("what about running?", "who is Sam") is a missing word in your notes, not a request for an app tool.

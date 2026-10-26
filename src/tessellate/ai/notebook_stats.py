@@ -92,8 +92,11 @@ def _tags_of(raw: str) -> list[str]:
 
 def _plural(n: int, word: str) -> str:
     #: "10 categorys" was said in the overview (INBOX 801's NOTEBOOK STATS).
+    #: "0 distinct tags" was said of nothing: none is "no", then the plural.
     if n == 1:
         return f"{n} {word}"
+    if n == 0:
+        return f"no {_plural(2, word)[2:]}"
     return f"{n} {word[:-1]}ies" if word.endswith("y") and word[-2:-1] not in "aeiou" else f"{n} {word}s"
 
 
@@ -303,6 +306,13 @@ _PLAIN = frozenset(
 )
 
 
+def _no_repeats(notes: int) -> str:
+    """No word is shared yet: "more than one of your 1 note" is not a sentence."""
+    if notes == 1:
+        return "You have only one note, so no word comes up in more than one yet."
+    return f"No word comes up in more than one of your {_plural(notes, 'note')} yet."
+
+
 def _top_subjects(session: Session) -> StatAnswer:
     """What the notebook is most about, by what it is filed under first (its
     tags, then its categories) and, with neither, by the words the most notes
@@ -321,7 +331,7 @@ def _top_subjects(session: Session) -> StatAnswer:
         words.update({w for w in re.findall(r"[a-z][a-z'-]{2,}", str(content or "").lower()) if w not in _PLAIN})
     top = [(w, n) for w, n in words.most_common(5) if n >= 2]
     if not top:
-        return StatAnswer("subjects", f"No word comes up in more than one of your {_plural(len(rows), 'note')} yet.")
+        return StatAnswer("subjects", _no_repeats(len(rows)))
     listed = ", ".join(f"“{w}” ({_plural(n, 'note')})" for w, n in top)
     return StatAnswer("subjects", f"The words the most notes use are {listed}.", [{"label": w, "count": n} for w, n in top])
 
@@ -362,11 +372,16 @@ def _top_categories(session: Session) -> StatAnswer:
 def _untagged(session: Session) -> StatAnswer:
     rows = session.scalars(_visible(select(Entry.tags))).all()
     without = sum(1 for raw in rows if not _tags_of(raw))
+    facts = [{"label": "untagged", "count": without}, {"label": "total", "count": len(rows)}]
+    if not rows:
+        return StatAnswer("untagged", "You have no notes yet.", facts)
+    if not without:
+        return StatAnswer("untagged", "Every note has a tag.", facts)
     return StatAnswer(
         "untagged",
-        f"{_plural(without, 'note')} out of {len(rows)} have no tags."
-        + (" Filing those would make them much easier to find." if without else ""),
-        [{"label": "untagged", "count": without}, {"label": "total", "count": len(rows)}],
+        f"{_plural(without, 'note')} out of {len(rows)} {'has' if without == 1 else 'have'} no tags."
+        " Filing those would make them much easier to find.",
+        facts,
     )
 
 
@@ -375,7 +390,7 @@ def _tag_count(session: Session) -> StatAnswer:
     distinct = {tag for raw in rows for tag in _tags_of(raw)}
     return StatAnswer(
         "tag-count",
-        f"You are using {_plural(len(distinct), 'distinct tag')}.",
+        f"You are using {_plural(len(distinct), 'distinct tag')}." if distinct else "You are not using any tags yet.",
         [{"label": "tags", "count": len(distinct)}],
     )
 
@@ -490,10 +505,15 @@ def _orphans(session: Session) -> StatAnswer:
         linked.add(target)
     ids = session.scalars(_visible(select(Entry.id))).all()
     alone = [entry_id for entry_id in ids if entry_id not in linked]
+    facts = [{"label": "unlinked", "count": len(alone)}, {"label": "total", "count": len(ids)}]
+    if not ids:
+        return StatAnswer("orphans", "You have no notes yet.", facts)
+    if not alone:
+        return StatAnswer("orphans", "Every note is linked to another.", facts)
     return StatAnswer(
         "orphans",
-        f"{_plural(len(alone), 'note')} out of {len(ids)} are not linked to anything else.",
-        [{"label": "unlinked", "count": len(alone)}, {"label": "total", "count": len(ids)}],
+        f"{_plural(len(alone), 'note')} out of {len(ids)} {'is' if len(alone) == 1 else 'are'} not linked to anything else.",
+        facts,
     )
 
 
