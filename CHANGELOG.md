@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: Mermaid, draw.io, the Join command, Place joined and a dragged link, and every library placement now land on top of what is already on the board (drawings over drawings, cards over cards, frames under frames) instead of at a fixed z; 16 of 16 overlapped pairs came in under before, 0 now.
 - Whiteboard: a canvas shown with no pointer event since no longer reads 16px left and 60px high (the paste chip, drops and pastes at any zoom or pan; 20 of 20 measured points off, now 0), because its cached origin is dropped when the canvas resizes and the chip reads it fresh.
 - Composer: the heading and picture-line readers no longer backtrack over long runs of tabs (CodeQL, 4 alerts).
 - Time words: seasons ("last summer", "in winter", "over the winter": June to August, December to February) and a week or half of a named month ("the first week of October", "the last week of September", "the second half of March") are read as dates, and "anything from September" asks what was written, not what is coming.

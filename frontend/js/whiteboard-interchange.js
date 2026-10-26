@@ -787,7 +787,7 @@ async function wbImportBoardRows(rows, at = wbViewCentre()) {
       data.sourceId = s;
       data.targetId = t;
       if (Array.isArray(data.points)) data.points = data.points.map((p) => ({ x: p.x + dx, y: p.y + dy }));
-      const link = await apiJson("/whiteboard/sketches", { method: "POST", body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z: 1, board_id: window.currentBoardId ?? null }) });
+      const link = await apiJson("/whiteboard/sketches", { method: "POST", body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z: wbStackNewZ("sketch"), board_id: window.currentBoardId ?? null }) });
       wbState.sketches.push(link);
     }
   });
@@ -834,7 +834,7 @@ async function wbImportMermaid(source, at = wbViewCentre()) {
       if (e.startCap) data.startCap = wbMermaidCap(e.startCap);
       if (e.dashed) data.dash = "dashed";
       if (e.label) data.label = e.label;
-      const link = await apiJson("/whiteboard/sketches", { method: "POST", body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z: 1, board_id: window.currentBoardId ?? null }) });
+      const link = await apiJson("/whiteboard/sketches", { method: "POST", body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z: wbStackNewZ("sketch"), board_id: window.currentBoardId ?? null }) });
       wbState.sketches.push(link);
     }
   });
@@ -873,7 +873,7 @@ async function wbMermaidPlaceNode(n, cx, cy, ink) {
   if (n.shape === "end") data.width = 4;
   return apiJson("/whiteboard/sketches", {
     method: "POST",
-    body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z: 2, board_id: window.currentBoardId ?? null }),
+    body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z: wbStackNewZ("sketch"), board_id: window.currentBoardId ?? null }),
   });
 }
 
@@ -895,8 +895,8 @@ async function wbImportMermaidSequence(source, at = wbViewCentre()) {
   const height = boxH + row * (seq.steps.length + 1);
   const top = at[1] - height / 2;
   const xOf = new Map(seq.participants.map((p, i) => [p.id, left + i * gapX]));
-  const post = async (data, z = 2) => {
-    const made = await apiJson("/whiteboard/sketches", { method: "POST", body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z, board_id: window.currentBoardId ?? null }) });
+  const post = async (data) => {
+    const made = await apiJson("/whiteboard/sketches", { method: "POST", body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z: wbStackNewZ("sketch"), board_id: window.currentBoardId ?? null }) });
     wbState.sketches.push(made);
     return made;
   };
@@ -905,7 +905,7 @@ async function wbImportMermaidSequence(source, at = wbViewCentre()) {
     for (const p of seq.participants) {
       const cx = xOf.get(p.id);
       await wbMermaidPlaceNode({ shape: p.actor ? "rounded" : "rect", text: p.text, h: boxH }, cx, top + boxH / 2, ink).then((made) => wbState.sketches.push(made));
-      await post({ d: `M ${cx} ${top + boxH} L ${cx} ${top + height}`, shape: "line", color: ink, width: 1.5, dash: "dashed" }, 1);
+      await post({ d: `M ${cx} ${top + boxH} L ${cx} ${top + height}`, shape: "line", color: ink, width: 1.5, dash: "dashed" });
     }
     for (const [i, step] of seq.steps.entries()) {
       const y = top + boxH + row * (i + 1);
@@ -915,7 +915,7 @@ async function wbImportMermaidSequence(source, at = wbViewCentre()) {
         if (x1 === x2) Object.assign(data, { sourcePoint: { x: x1, y: y - row / 4 }, targetPoint: { x: x1, y: y + row / 4 }, points: [{ x: x1 + 60, y: y - row / 4 }, { x: x1 + 60, y: y + row / 4 }] });
         else Object.assign(data, { sourcePoint: { x: x1, y }, targetPoint: { x: x2, y } });
         if (step.dashed) data.dash = "dashed";
-        await post(data, 3);
+        await post(data);
         messages += 1;
       } else if (step.kind === "note") {
         const xs = step.over.map((id) => xOf.get(id));
@@ -1055,7 +1055,7 @@ async function wbDrawioPlace(plan, dx, dy, ink) {
   for (const item of plan.items.filter((i) => i.kind === "shape")) {
     const data = { d: wbDrawioPath(item.shape, item.x + dx, item.y + dy, item.w, item.h), shape: item.shape === "ellipse" ? "circle" : item.shape === "diamond" ? "diamond" : item.shape === "rect" ? "rect" : "custom", color: ink, ...item.look };
     if (item.label) data.label = item.label;
-    const made = await apiJson("/whiteboard/sketches", { method: "POST", body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z: 2, board_id: window.currentBoardId ?? null }) });
+    const made = await apiJson("/whiteboard/sketches", { method: "POST", body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z: wbStackNewZ("sketch"), board_id: window.currentBoardId ?? null }) });
     wbState.sketches.push(made);
     ids.set(item.id, ["sketch", made.id]);
   }
@@ -1068,7 +1068,7 @@ async function wbDrawioPlace(plan, dx, dy, ink) {
     if (t) Object.assign(data, { targetKind: t[0], targetId: t[1] });
     for (const key of ["sourcePoint", "targetPoint"]) if (data[key]) data[key] = { x: data[key].x + dx, y: data[key].y + dy };
     if (data.points) data.points = data.points.map((p) => ({ x: p.x + dx, y: p.y + dy }));
-    const made = await apiJson("/whiteboard/sketches", { method: "POST", body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z: 1, board_id: window.currentBoardId ?? null }) });
+    const made = await apiJson("/whiteboard/sketches", { method: "POST", body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z: wbStackNewZ("sketch"), board_id: window.currentBoardId ?? null }) });
     wbState.sketches.push(made);
   }
 }

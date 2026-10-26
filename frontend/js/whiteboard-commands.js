@@ -858,7 +858,7 @@ async function wbJoinSelection(mode) {
       if (b.kind !== "node") data.targetKind = b.kind;
       const link = await apiJson("/whiteboard/sketches", {
         method: "POST",
-        body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z: 1, board_id: window.currentBoardId ?? null }),
+        body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z: wbStackNewZ("sketch"), board_id: window.currentBoardId ?? null }),
       });
       wbState.sketches.push(link);
     }

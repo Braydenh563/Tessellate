@@ -23432,7 +23432,7 @@ async function dragEndNode(event, d) {
             //: keeps the map's own look.
             ...(crossLink ? {} : wbToolCaps()),
          }),
-         x: 0, y: 0, z: 1,
+         x: 0, y: 0, z: wbStackNewZ("sketch"),
          board_id: window.currentBoardId
        };
        try {

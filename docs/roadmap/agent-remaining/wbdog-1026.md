@@ -19,10 +19,10 @@ Scripts live in the session scratchpad (`wbdog/`), not the repo. Student story a
 
 ## Done (wb5)
 - **`wbBoardToClient` 16px left, 60px high**: the cause was a stale origin cache (a rect read while the canvas was hidden, dropped only by pointer events), so `wbClientToBoard` was off the other way too. Measured at zoom 1, 0.5, 2 and two pans, canvas hidden and shown: 20 of 20 coordinates off before, 0 after; the canvas now clears the cache on resize, the chip reads fresh (tests/test_wb_board_to_client.py).
+- **Inserts on top** (wb5): Mermaid (flow and sequence), draw.io, Join, Place joined and the dragged link take `wbStackNewZ("sketch")`; the library's `/place` stacks its rows server-side (`_stack_on_top`: each band's next z, the stencil's order kept, frames under frames). Insert sweep over existing higher-z items (session scratchpad `ins.js`): same-band new-under-old pairs 16 of 16 before, 0 of 16 after (tests/test_board_library.py, tests/test_wb_stack_order.py). Map topics and links keep their own z (the map lays out; no overlap).
 
 ## Found, not fixed
 - Drawings and cards cannot interleave (above: 11 create, 15 front, 15 back of 45 pairs). A frame's 1.5px edge, in the card layer, paints over a drawing inside it.
-- Templates, Mermaid and draw.io inserts, the map and the library still write fixed z values (1, 2, 5) for the items they make; the stack orders them, but they can land under what was there.
 - Per-corner radius on a shape (sketch) and shape label padding are not built (wb5-1026 row 2).
 - K24 Live view inside boxes: not built.
 - K16: resizing a note or image card leaves the contents small in a large box (partly done).
