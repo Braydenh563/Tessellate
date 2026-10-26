@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat (composer classes, INBOX 1026d): archived notes are in no count unless asked for ("how many notes do I have", a month, a folder, a tag); "how many work notes" with no such tag or folder counts the notes that mention the word and says so; a run of days in one month ("24-30 September", "from 24 to 30 September", "between the 3rd and the 9th of May", "September 24 to 30"), a season or month with a year and no lead word ("winter 2025", "summer 2024 notes", "March 2026 notes") are read as dates; a note that is one short label line ("Blockers: none.") is listed by its date.
 - Composer: the heading and picture-line readers no longer backtrack over long runs of tabs (CodeQL, 4 alerts).
 - Time words: seasons ("last summer", "in winter", "over the winter": June to August, December to February) and a week or half of a named month ("the first week of October", "the last week of September", "the second half of March") are read as dates, and "anything from September" asks what was written, not what is coming.
 - Chat: a window said twice in one question ("what did I write this week, I mean this week") is the same window, taken out once.

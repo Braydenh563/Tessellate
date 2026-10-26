@@ -68,8 +68,10 @@ class StatAnswer:
     offer: dict | None = None
 
 
-def _visible(query):
-    """Live notes only: binned and private notes are nobody's statistics.
+def _visible(query, archived: bool = False):
+    """Live notes only: binned and private notes are nobody's statistics, and
+    an archived note is in no count unless the question asks for archived
+    ones (`archived=True`, "how many archived notes").
 
     Private notes are excluded for the reason the rest of the app excludes
     them: a count that changes when a note is made private is a count that
@@ -77,9 +79,8 @@ def _visible(query):
     """
     #: `is_board` too: a mind map is an `Entry` whose text is its title, and
     #: "how many notes do I have" counted it (the Notes list does not).
-    return query.where(
-        Entry.deleted_at.is_(None), Entry.is_private.is_(False), Entry.is_board.is_(False)
-    )
+    query = query.where(Entry.deleted_at.is_(None), Entry.is_private.is_(False), Entry.is_board.is_(False))
+    return query if archived else query.where(Entry.archived_at.is_(None))
 
 
 def _tags_of(raw: str) -> list[str]:
@@ -287,7 +288,7 @@ def _counted(text: str, message: str, session: Session) -> StatAnswer | None:
     if tasks is not None:
         return StatAnswer(*tasks[:2], tasks[2])
     if re.search(r"\bnotes?\b|\b(?:pinned|archived|checklists?)\b", text):
-        return _narrowed_count(text, message, session) or _named_count(text, session)
+        return _narrowed_count(text, message, session) or _named_count(text, session) or _mention_count(text, session)
     if re.search(r"\b(?:white)?boards?\b|\b(?:mind ?)?maps?\b", text):
         return _board_count(session, text)
     return None
@@ -472,6 +473,33 @@ def _named_count(text: str, session: Session) -> StatAnswer | None:
     return None
 
 
+#: "how many work notes", "number of zebra notes": the word before "notes".
+#: The text is read with single spaces, so nothing here runs over a run of them.
+_WORD_NOTES = re.compile(r"\b(?:how many|number of|count|total)(?: of)?(?: (?:my|the|all|our|your))? ([a-z][a-z'-]{1,29}) notes?\b")
+#: Words before "notes" that say which kind or how many, not what they say.
+_KIND_WORDS = frozenset(
+    """new newest old oldest recent latest last first total all my the your our any every some few many more most other another
+    long longest short shortest big small empty blank private public deleted binned untitled titled tagged untagged linked unlinked
+    pinned unpinned archived live active open closed done total saved written whole entire single separate different distinct
+    unique individual personal""".split()
+)
+
+
+def _mention_count(text: str, session: Session) -> StatAnswer | None:
+    """"How many work notes" when no tag or folder is called work: the notes
+    whose title or text has the word, and the answer says so, so it is never
+    read as the notebook's total. None when the word is a kind (new, long),
+    a day or window, or the question names a subject after the notes."""
+    found = _WORD_NOTES.search(" ".join(text.split()))
+    word = found.group(1) if found else ""
+    if not word or word in _KIND_WORDS or _SUBJECT_AFTER.search(text) or _window(word) is not None:
+        return None
+    said = re.compile(rf"(?<!\w){re.escape(word)}(?:s|es)?(?!\w)", re.I)
+    n = sum(1 for body in session.scalars(_visible(select(Entry.content))) if said.search(body or ""))
+    said_n = f"{_plural(n, 'note')} mention{'s' if n == 1 else ''} {word}." if n else f"None of your notes mention {word}."
+    return StatAnswer("mention-count", said_n, [{"label": word, "count": n}])
+
+
 def _note_count(session: Session) -> StatAnswer:
     total = session.scalar(_visible(select(func.count(Entry.id)))) or 0
     return StatAnswer(
@@ -486,7 +514,9 @@ def _board_count(session: Session, text: str) -> StatAnswer:
     whose settings say so)."""
     maps = bool(re.search(r"\bmaps?\b", text))
     rows = session.scalars(
-        select(Entry.board_settings).where(Entry.is_board.is_(True), Entry.deleted_at.is_(None), Entry.is_private.is_(False))
+        select(Entry.board_settings).where(
+            Entry.is_board.is_(True), Entry.deleted_at.is_(None), Entry.is_private.is_(False), Entry.archived_at.is_(None)
+        )
     ).all()
     total = sum(1 for raw in rows if ('"type": "map"' in (raw or "") or '"type":"map"' in (raw or "")) == maps)
     word = "mind map" if maps else "board"
@@ -576,14 +606,21 @@ def _busiest(session: Session) -> StatAnswer:
     )
 
 
-def _window_words(words: str, grain: str, first: date) -> str:
+#: A month said in a question (lower-cased for reading) is written back with its capital.
+_MONTH_WORD = re.compile(r"\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b")
+
+
+def _window_words(words: str, grain: str, first: date, last: date | None = None) -> str:
     """How a counted window is said back: "in March 2026", "in the first week
-    of October", "last summer", "on Friday"."""
+    of October", "last summer", "on Friday", "from 24 to 30 September"."""
     low = words.lower()
-    if grain == "month" and low.startswith(("in ", "during ")):
+    if grain == "day" and last not in (None, first):
+        return _MONTH_WORD.sub(lambda m: m.group(0).capitalize(), words if low.startswith(("from ", "between ", "since ")) else "from " + words)
+    if grain == "month" and (low.startswith(("in ", "during ")) or _MONTH_WORD.match(low)):
         return first.strftime("in %B %Y")
     if grain in ("season", "week", "half") and not low.startswith(("in ", "during ", "since ", "this ", "last ", "next ", "over ", "throughout ", "through ", "from ", "for ")):
-        return "in " + (words if low.startswith("the ") else "the " + words)
+        the = "" if low.startswith("the ") or (grain == "season" and re.search(r"\d{4}", low)) else "the "
+        return "in " + the + words
     if not low.startswith(("in ", "since ", "on ", "this ", "last ", "today", "yesterday")):
         return ("in the " if low.startswith(("past ", "previous ")) else "on ") + words
     return words
@@ -601,7 +638,7 @@ def _window(text: str) -> tuple[datetime, datetime, str] | None:
         first, last, grain = found.value if found.kind == "range" else (found.value, found.value, "day")
         if not isinstance(first, date):
             continue
-        words = _window_words(found.text.strip(), grain, first)
+        words = _window_words(found.text.strip(), grain, first, last)
         start = datetime.combine(first, time(0), now.tzinfo)
         end = min(datetime.combine(last, time(23, 59, 59), now.tzinfo), now)
         return (start, end, words) if start < end else None
