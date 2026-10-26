@@ -9,7 +9,7 @@ Scripts live in the session scratchpad (`wbdog/`), not the repo. Student story a
 - **Words overflowing a shape**: a label longer than the shape spilled out; the shape grows in proportion until it fits (`wbGrowShapeToLabel`, tests/test_wb_grow_shape.py).
 - **Find and Replace skipped table cells**: "0 matches" for a word inside a table; cells are searched and replaced, one undo (tests/test_wb_find_cells.py).
 - **No keyboard-only path** (WCAG 2.1.1): N, Enter did nothing and a selected sticky needed a double-click; `wbKeyboardEnter` places the held tool at the view centre and edits a lone text box (tests/test_wb_keyboard_enter.py, Keys sheet row, Guide topic board-keyboard-create).
-- **Export drew boxes as words** (in progress, see below).
+- **Export drew boxes as words**: SVG, PNG and PDF had one `<rect>` (the background) for a board of a sticky, a text box and a table; text boxes now export paper, border and per-corner radii, a table its grid and words (`wbSvgBoxBackdrop`, `wbSvgTable`, tests/test_wb_export_boxes.py). Rasterised pixel check: sticky paper 253,230,138 light and dark; a plain box takes the theme fill. Pictures with per-corner radii still export square; a sticky's folded corner is not drawn.
 
 ## Found, not fixed
 - Per-corner radius on a shape (sketch) and shape label padding are not built (wb5-1026 row 2).
