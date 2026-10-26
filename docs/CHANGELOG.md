@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Code files: the word-count goal button is not offered in a code file.
 - Recordings and code files (owner 1400): a recording's menu has Download audio (the file as it was recorded), and Print or save as PDF on a code file says it is for writing instead of printing a blank sheet.
 - Code files, downloads (owner 1400): Download as .html of a Python or other code file saved an empty page named without its dot (apppy.html); it now saves the source as preformatted text named app.py.html, and the image bundle, Word export and Map the headings (which have nothing to work on in code) are out of a code file's menu.
 - Code files on a phone (owner 1400): the bar at the foot of a code file now holds Tab, Outdent, Undo, Redo and the brackets and common symbols (it held Bold, Italic and Heading), and Ctrl+G goes to a line in a code file.

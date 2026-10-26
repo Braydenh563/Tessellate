@@ -104,3 +104,9 @@ def test_an_export_name_keeps_a_code_files_extension():
     script = fn + f'console.log(JSON.stringify({titles}.map((t) => docExportName(t, "html"))));'
     names = json.loads(subprocess.run([node, "-e", script], capture_output=True, text=True, check=True).stdout)
     assert names == ["app.py.html", "hidden.html", "a.b.html", "Notes-v1.2.html"]
+
+
+def test_the_word_goal_is_not_offered_in_a_code_file():
+    source = DOCS_JS.read_text(encoding="utf-8")
+    body = source[source.index("function renderDocStats()") :].split("\n}\n")[0]
+    assert 'button.classList.toggle("hidden", docIsCodeFile())' in body

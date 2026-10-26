@@ -2310,6 +2310,8 @@ function renderDocStats() {
   const button = $("doc-word-goal");
   const label = $("doc-goal-label");
   if (!button || !label) return;
+  //: A word-count goal is for writing: a code file has no use for one.
+  button.classList.toggle("hidden", docIsCodeFile());
   button.setAttribute("aria-pressed", String(goal > 0));
   button.classList.toggle("has-findings", goal > 0 && words >= goal);
   if (!goal) {
