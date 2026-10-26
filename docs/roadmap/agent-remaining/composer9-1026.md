@@ -58,7 +58,7 @@ The fixes, each in the shared layer rather than for its case:
 
 ## Remaining
 
-- J "what have I saved about the gym?" then "tell me more": answers "That's all your notes say on gym so far". Both notes were already told, so this may be right and the case's check wrong; judge before fixing (`tests/test_composer_classes_1357.py` J_FOLLOW).
+- J gym "tell me more": judged, the code is right. The first answer already told both notes whole, so "That's all your notes say on gym" is true; the case now checks that (and a second, the essay). Found, not fixed: "what have I saved about uni?" then "tell me more" re-tells the timetable, because the first answer worded it differently from the note (told-tracking is by wording, not by sentence).
 - K3 done (see Built below): title and the extract buttons work with no model; drafting, refining, doc-ai, plan, template draft and the code panel answer a press with why and Set up a model.
 - when_words done (see below): the class is `ai/recognise.py` readers, cased in `tests/test_when_class_1026.py` (187 phrases, three ways each) and K_WINDOWS. Found, not fixed: "this weekend" is ambiguous in the past tense, ranges ("from Monday to Wednesday") and seasons are not read, "recently" and "lately" stay as they were.
 - Not verified: no browser run of the dashboard's composed digest or the recap's links; the API and tests only.

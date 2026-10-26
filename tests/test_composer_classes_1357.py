@@ -242,7 +242,10 @@ J_FOLLOW = [
     ("what did I do last week?", "and this week?", r"Gym routine|Lecture 5", r"Cloud computing map"),
     ("what did I do this week?", "what about last week", r"board|map|Errands", None),
     ("when is my exam?", "what's it on", r"operating systems|process", None),
-    ("what have I saved about the gym?", "tell me more", r"squats|deadlifts|Pull|rest day", None),
+    #: The first answer already told both gym notes whole, so "tell me more" has
+    #: nothing left to tell and says so; re-telling them was the wrong check.
+    ("what have I saved about the gym?", "tell me more", r"That's all your notes say on gym", r"squats|deadlifts|rest day"),
+    ("what did I write about the essay?", "tell me more", r"That's all your notes say on essay", r"Hamlet"),
 ]
 
 
@@ -283,9 +286,7 @@ L_NAMES = [
 #: Cases still failing, each a strict xfail: a fix that makes one pass fails
 #: the run until its id is taken out of this set (INBOX 1357 baseline: 35 of
 #: 77 passing before any fix).
-OPEN = {
-    'J-what have I saved about the gym?->tell me more',
-}
+OPEN: set[str] = set()
 
 
 def _p(cls: str, turns: tuple, must, never, ident: str):  # noqa: ANN001, ANN202
