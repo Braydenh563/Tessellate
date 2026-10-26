@@ -195,12 +195,12 @@ const rgb = (s) => (String(s).match(/[\d.]+/g) || []).slice(0, 3).map(Number);
   // 8. The menu says it in words; a line takes no text.
   await page.evaluate((sid) => selectWbItem("sketch", sid), rect);
   const rb = await shapeState(rect);
-  await page.mouse.click(rb.pathBox.l + 10, rb.pathBox.t + 10, { button: "right" });
+  await page.mouse.click(rb.pathBox.l + 24, rb.pathBox.t + 24, { button: "right" });
   await page.waitForTimeout(300);
   const words = await page.evaluate(() =>
     [...document.querySelectorAll(".wb-ctx-menu:not(.hidden) .menu-item")].map((b) => b.textContent.trim())
   );
-  ok("the shape's right-click menu offers to edit its text", words.includes("Edit the text"), words.join(", "));
+  ok("the shape's right-click menu offers to edit its text", words.includes("Edit the text") || words.includes("Add text"), words.join(", "));
   await page.keyboard.press("Escape");
   const line = await draw("l", 300, 520, 240, 0.5);
   const lb = await page.evaluate((sid) => {

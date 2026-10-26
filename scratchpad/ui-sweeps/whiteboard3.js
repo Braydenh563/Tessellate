@@ -105,8 +105,8 @@ async function newBoard(page, name, type) {
     dialog ? `card ${Math.round(dialog.rect.left)},${Math.round(dialog.rect.top)} ${Math.round(dialog.rect.width)}x${Math.round(dialog.rect.height)} in ${dialog.w}x${dialog.h}` : "no dialog",
   );
   ok(
-    "the choices are two segments, not a list",
-    dialog && dialog.segs.length === 2 && dialog.segs[0].options.length === 4 && dialog.segs[1].options.length === 3,
+    "the choices are three segments (format, scope, picture size), not one long list",
+    dialog && dialog.segs.length === 3 && dialog.segs[0].options.length >= 6 && dialog.segs[1].options.length === 3 && dialog.segs[2].options.length === 3,
     dialog ? dialog.segs.map((sg) => `${sg.label}: ${sg.options.join("/")}`).join(" | ") : "none",
   );
   ok(

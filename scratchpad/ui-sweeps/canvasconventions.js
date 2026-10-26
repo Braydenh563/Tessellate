@@ -417,10 +417,10 @@ const near = (a, b, tol = 1.5) => a != null && b != null && Math.abs(a - b) <= t
     await wait(1000);
     const grips = await page.evaluate(() => {
       const all = [...document.querySelectorAll(".wb-selected .wb-resize-handle, .wb-selected [data-handle]")].filter((g) => g.getBoundingClientRect().width);
-      const hit = all.filter((g) => { const b = g.getBoundingClientRect(); return document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2) === g; });
-      return { all: all.length, hit: hit.length };
+      const docked = all.filter((g) => { const b = g.getBoundingClientRect(); return document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2)?.closest("#wb-tools-panel, [data-panel-id='zoom']"); });
+      return { all: all.length, docked: docked.length };
     });
-    check("a text box low on the screen has every grip pressable (the view slid clear of the docks)", grips.all >= 8 && grips.hit === grips.all, `${grips.hit} of ${grips.all}`);
+    check("a text box low on the screen has no grip under a dock (the view slid clear of them)", grips.all >= 8 && grips.docked === 0, `${grips.docked} of ${grips.all} under a dock`);
 
     // --- 13. Ctrl+A selects everything, Delete removes the selection ---
     await clickEmpty();

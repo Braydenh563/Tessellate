@@ -2817,7 +2817,12 @@ function wbQueueReveal() {
 
 function wbRevealSelection() {
   const container = document.getElementById("whiteboard-container");
-  const b = container && container.offsetParent && wbSelectionBounds();
+  let b = null;
+  try {
+    b = container?.offsetParent && wbSelectionBounds();
+  } catch {
+    // The selected item went (deleted, or the board changed) while the timer ran.
+  }
   if (!b || document.activeElement?.matches?.("input, textarea, [contenteditable]")) return;
   const sig = [...wbSelectedKeys()].join(",") + `|${Math.round(b.minX)},${Math.round(b.minY)},${Math.round(b.width)},${Math.round(b.height)}`;
   if (sig === wbRevealSig) return;
@@ -6375,6 +6380,7 @@ function clearWbSelection() {
   wbAddGate.cardRetypeId = null;
   //: Deselecting clears every overlay, the link tool's dots included (INBOX 573).
   if (!wbLinkDragActive) wbClearAnchorHints();
+  wbRevealSig = ""; // choosing the same item again is a new selection to keep clear of the docks
   if (!wbSelectedItem && wbMultiSelection.size === 0) return;
   wbSelectedItem = null;
   wbMultiSelection.clear();
