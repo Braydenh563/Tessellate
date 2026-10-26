@@ -29,7 +29,7 @@ PINNED = ("# Gym routine", "# Shakespeare essay")
 MORE = [
     ("# Old receipts\n\nBin the 2025 receipts.", "Personal", D(2026, 9, 3, 9), {"archived_at": D(2026, 10, 1, 9)}, []),
     ("# Packing list\n\n- [ ] Passport\n- [ ] Charger\n- [x] Tickets", "Personal", D(2026, 9, 12, 9), {}, []),
-    ("# Standup notes\n\nBlockers: none.", "Personal", D(2026, 9, 28, 9), {}, ["work"]),
+    ("# Standup notes\n\nThe build was slow, otherwise a quiet day.", "Personal", D(2026, 9, 28, 9), {}, ["work"]),
     ("# Quarterly report\n\nNumbers due Friday.", "Personal", D(2026, 9, 10, 9), {}, ["work"]),
     ("# Pasta bake\n\nTomato, cheese, thirty minutes.", "Recipes", D(2026, 4, 2, 18), {}, []),
     ("# Lentil curry\n\nOnions first, then the spices.", "Recipes", D(2026, 4, 10, 18), {}, []),
@@ -190,13 +190,16 @@ W_REPEAT = [
     ("notes from this week, what did I make this week", _THIS_WEEK, _NOT_THIS_WEEK),
     ("what have I written this week, I mean this week", _THIS_WEEK, _NOT_THIS_WEEK),
     ("how many notes did I write this week, this week only", r"\b2 notes", NOT_FOUND),
+    ("what did I do this week and this week", _THIS_WEEK, _NOT_THIS_WEEK),
+    ("what did I write about the gym this week, this week", r"Gym routine", r"Lecture 5|Errands"),
+    ("show me what I wrote this week, again this week", _THIS_WEEK, _NOT_THIS_WEEK),
     ("notes from last month, you know, last month", r"Packing list", r"Gym routine|Lecture 5|Bubble tea"),
 ]
 
 
 #: Classes still failing, each case a strict xfail until its fix lands (take
 #: the letter out when the class passes).
-OPEN = {"U", "V", "what did I write this week and this week", "what have I written this week, I mean this week"}
+OPEN: set[str] = set()
 
 
 def _cases(cls: str, rows: list):  # noqa: ANN202

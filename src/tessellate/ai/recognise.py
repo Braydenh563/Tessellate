@@ -1019,6 +1019,23 @@ _BETWEEN = rf"(?:(?:between|from) {_END_DAY}{_JOIN}{_END_DAY}|between \d{{1,2}}(
 _SINCE_PART = r"(?:the weekend|this morning|last night|the \d{1,2}(?:st|nd|rd|th))"
 _AMOUNT_RE = r"(\d{1,3}|a|an|one|two|three|four|five|six|seven|eight|nine|ten|twelve|a couple of|a few)"
 
+#: A week or half of a named month ("the first week of October", "the last
+#: week of September", "the second half of March") and a season ("last
+#: summer", "in winter"): a bare season word is a phrase only after a lead-in
+#: or a this/last/next, since "winter tyres" is a subject.
+_LEAD_IN = r"(?:(?:in|during|over|throughout|through) )?"
+_PART_OF_MONTH = (
+    r"(?:the )?(?:first|second|third|fourth|1st|2nd|3rd|4th|last|final|latter|back) (?:week|half) of "
+    r"(?:(?:this|next|last) month|" + _MONTH_RE + r"(?: \d{4})?)"
+)
+_SEASON_RE = r"(spring|summer|autumn|fall|winter)"
+_SEASON_FIND = (
+    r"(?:in|during|over|throughout|through|from|for) (?:the )?(?:(?:last|this|next|previous|coming) )?"
+    + _SEASON_RE + r"(?: \d{4})?",
+    r"(?:the )?(?:last|this|next|previous|coming) " + _SEASON_RE + r"(?: \d{4})?",
+)
+_PERIODS = (_LEAD_IN + _PART_OF_MONTH, *_SEASON_FIND)
+
 #: Every phrase `span` reads, longest forms first, as one pattern for `find`
 #: (`_date_phrase`).
 #: Word boundaries on both sides; nothing here backtracks over a run of
@@ -1038,6 +1055,7 @@ _DATE_PHRASE_SOURCE = (
     r"\b(?:"
     + "|".join(
         (
+            *_PERIODS,
             _WEEKEND,
             *_ROLLING,
             *_TO_DATE,
@@ -1541,12 +1559,94 @@ def _span_holiday(text: str, a: date, tense: str | None) -> Any:
     return _one_day(day)
 
 
+_WEEK_NUMBER = {"first": 1, "1st": 1, "second": 2, "2nd": 2, "third": 3, "3rd": 3, "fourth": 4, "4th": 4}
+_PART_OF_MONTH_RX = re.compile(
+    r"(?:the )?(first|second|third|fourth|1st|2nd|3rd|4th|last|final|latter|back) (week|half) of "
+    r"(?:(this|next|last) month|" + _MONTH_RE + r"(?: (\d{4}))?)"
+)
+
+
+def _part_in(first: date, nth: str, unit: str) -> tuple[date, date] | None:
+    """The days a week or half of the month starting `first` covers: a week
+    is a run of seven days from the 1st, the last week the month's final
+    seven, the second half the 16th to the end."""
+    end = _month_end(first)
+    if unit == "half":
+        if nth in ("first", "1st"):
+            return first, first.replace(day=15)
+        return (first.replace(day=16), end) if nth in ("second", "2nd", "last", "final", "latter", "back") else None
+    if nth in ("last", "final"):
+        return end - timedelta(days=6), end
+    number = _WEEK_NUMBER.get(nth)
+    if number is None:
+        return None
+    start = first + timedelta(days=7 * (number - 1))
+    return (start, min(start + timedelta(days=6), end)) if start <= end else None
+
+
+def _span_part_of_period(text: str, a: date, tense: str | None) -> Any:
+    found = _PART_OF_MONTH_RX.fullmatch(re.sub(r"^(?:in|during|over|throughout|through) ", "", text))
+    if not found:
+        return _MISS
+    nth, unit, which, month, year = found.groups()
+    named = which is None and year is None
+    first = _shift_months(a.replace(day=1), _SHIFT[which]) if which else _month_span(_MONTHS[month], a, tense, int(year) if year else None)[0]
+    part = _part_in(first, nth, unit)
+    if part and named and tense == "past" and part[0] > a:
+        part = _part_in(first.replace(year=first.year - 1), nth, unit)
+    return None if part is None else (part[0], part[1], unit)
+
+
+_SEASON_START = {"spring": 3, "summer": 6, "autumn": 9, "fall": 9, "winter": 12}
+_SEASON_RX = re.compile(r"(?:(?:in|during|over|throughout|through) )?(?:the )?(?:(last|this|next|previous|coming|past) )?" + _SEASON_RE + r"(?: (\d{4}))?")
+
+
+def _season_cycles(name: str, a: date) -> list[tuple[date, date]]:
+    """Every run of the season near `a`, oldest first (meteorological seasons:
+    winter is December to February, starting in the year it is named for)."""
+    firsts = [date(y, _SEASON_START[name], 1) for y in range(a.year - 2, a.year + 2)]
+    return [(f, _month_end(_shift_months(f, 2))) for f in firsts]
+
+
+def _season_pick(which: str | None, tense: str | None, a: date, cycles: list[tuple[date, date]]) -> tuple[date, date]:
+    """The run a this/last/next or a bare season names: the one in progress if
+    there is one (a bare season, or "this"), else the one gone for the past
+    and the one to come for the future; "this" and no tense pick the nearer."""
+    now = next((c for c in cycles if c[0] <= a <= c[1]), None)
+    gone = [c for c in cycles if c[1] < a][-1]
+    coming = next(c for c in cycles if c[0] > a)
+    if which in ("last", "previous", "past"):
+        return gone
+    if which in ("next", "coming"):
+        return coming
+    if now:
+        return now
+    if tense == "future":
+        return coming
+    if tense == "past":
+        return gone
+    return gone if (a - gone[1]) <= (coming[0] - a) else coming
+
+
+def _span_season(text: str, a: date, tense: str | None) -> Any:
+    found = _SEASON_RX.fullmatch(text)
+    if not found:
+        return _MISS
+    which, name, year = found.groups()
+    cycles = _season_cycles(name, a)
+    if year:
+        pick = next((c for c in cycles if c[0].year == int(year)), None)
+        return None if pick is None else (pick[0], pick[1], "season")
+    first, last = _season_pick(which, tense, a, cycles)
+    return first, last, "season"
+
+
 #: Tried in this order: an earlier reader's pattern can be a prefix of a later one's.
 _SPAN_READERS = (
     _span_since, _span_fixed, _span_between, _span_week_before_last, _span_calendar_unit, _span_weekend, _span_recent, _span_lately, _span_to_date,
     _span_other_day, _span_same_day, _span_ago, _span_in,
     _span_nth, _span_weekday, _span_iso, _span_month_day, _span_day_and_month, _span_ordinal,
-    _span_part_of_month, _span_end_of, _span_month, _span_holiday,
+    _span_part_of_period, _span_season, _span_part_of_month, _span_end_of, _span_month, _span_holiday,
 )
 
 
@@ -1571,7 +1671,7 @@ def span(phrase: str, anchor: date, tense: str | None = None) -> tuple[date, dat
 #: ("last week", "3 days ago", "this month"), so "week 4" stays a subject
 #: and "last week" is not one. Moved from the composer (ledger row 453).
 _WINDOW_WORDS = re.compile(
-    r"\b(?:" + "|".join((_WEEKEND, *_ROLLING, *_TO_DATE, *_PART_OF_DAY, _BETWEEN, _LATELY, _BEFORE_LAST, _QUARTER, _PREVIOUS_UNIT,
+    r"\b(?:" + "|".join((*_PERIODS, _WEEKEND, *_ROLLING, *_TO_DATE, *_PART_OF_DAY, _BETWEEN, _LATELY, _BEFORE_LAST, _QUARTER, _PREVIOUS_UNIT,
                          r"since (?:" + _WEEKDAY_RE + r"|yesterday|" + _SINCE_PART + r"|last (?:week|month|year))")) + r"|(?:the\s+)?(?:last|this|next|past|previous|coming)\s+(?:few\s+|couple\s+of\s+|\d{1,3}\s+|two\s+|three\s+|four\s+|five\s+|six\s+|seven\s+|eight\s+|nine\s+|ten\s+|eleven\s+|twelve\s+)?"
     r"(?:days?|weeks?|weekend|months?|years?|night|morning|evening|monday|tuesday|wednesday|thursday|friday|saturday|sunday)"
     r"|(?:the\s+)?week\s+before\s+last|(?:\d{1,3}|a|an|one|two|three|four|five|six)\s+(?:days?|weeks?|months?|years?)\s+ago"

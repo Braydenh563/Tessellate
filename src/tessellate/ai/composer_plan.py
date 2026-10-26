@@ -514,9 +514,23 @@ def _when_reply(ctx: Ctx, text: str) -> Reply | None:
     return _when_is(ctx, nxt.group("t") or nxt.group("t2")) if nxt else None
 
 
+def _written_from(text: str, today: date) -> bool:
+    """"Anything from September", "notes from the last week of September": a
+    window said with "from" that is already over asks what was written then
+    (the recall's), never what is coming up."""
+    low = text.lower()
+    for start, _end, phrase in when_words.find(low):
+        if phrase.startswith("from ") or low[:start].rstrip().endswith(" from"):
+            gone = when_words.span(phrase, today, "past")
+            return bool(gone and gone[1] < today)
+    return False
+
+
 def _asks_due(text: str, today: date) -> bool:
     """"What is due", or a bare span ("the next 7 days"), or "what's on" with a window."""
-    return bool(_DUE.match(text) or ((_SPAN_WORDS.search(text) or _BUSY.match(text)) and window(text, today) is not None))
+    if _DUE.match(text):
+        return True
+    return bool((_SPAN_WORDS.search(text) or _BUSY.match(text)) and window(text, today) is not None and not _written_from(text, today))
 
 
 def answer(ctx: Ctx) -> Reply | None:

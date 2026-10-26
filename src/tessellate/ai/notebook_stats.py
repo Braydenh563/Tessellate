@@ -576,6 +576,19 @@ def _busiest(session: Session) -> StatAnswer:
     )
 
 
+def _window_words(words: str, grain: str, first: date) -> str:
+    """How a counted window is said back: "in March 2026", "in the first week
+    of October", "last summer", "on Friday"."""
+    low = words.lower()
+    if grain == "month" and low.startswith(("in ", "during ")):
+        return first.strftime("in %B %Y")
+    if grain in ("season", "week", "half") and not low.startswith(("in ", "during ", "since ", "this ", "last ", "next ", "over ", "throughout ", "through ", "from ", "for ")):
+        return "in " + (words if low.startswith("the ") else "the " + words)
+    if not low.startswith(("in ", "since ", "on ", "this ", "last ", "today", "yesterday")):
+        return ("in the " if low.startswith(("past ", "previous ")) else "on ") + words
+    return words
+
+
 def _window(text: str) -> tuple[datetime, datetime, str] | None:
     """(start, end, words) of the first day or span of days the question
     names, on the UTC calendar the notes are stamped with; None for none."""
@@ -588,11 +601,7 @@ def _window(text: str) -> tuple[datetime, datetime, str] | None:
         first, last, grain = found.value if found.kind == "range" else (found.value, found.value, "day")
         if not isinstance(first, date):
             continue
-        words = found.text.strip()
-        if grain == "month" and words.lower().startswith(("in ", "during ")):
-            words = first.strftime("in %B %Y")
-        elif not words.lower().startswith(("in ", "since ", "on ", "this ", "last ", "today", "yesterday")):
-            words = ("in the " if words.lower().startswith(("past ", "previous ")) else "on ") + words
+        words = _window_words(found.text.strip(), grain, first)
         start = datetime.combine(first, time(0), now.tzinfo)
         end = min(datetime.combine(last, time(23, 59, 59), now.tzinfo), now)
         return (start, end, words) if start < end else None
