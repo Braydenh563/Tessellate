@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fix: the rows of "How this map looks" sat flush against each other; they now have the dialog's gap, every select is one width, and the switches' words match the labels.
 - Fix: in a mind map that grows down, a topic dragged level with its parent joined it bottom to top, doubling back. It now joins side to side.
 - Fix: the dashboard subtext showed the same pattern every day. It now shows a different one each day.
 - Fix: with Web on in Chat, opening the web panel took turning Web off and on again. A click on Web while it is on and the panel is shut now opens the panel; a click with the panel open turns Web off.

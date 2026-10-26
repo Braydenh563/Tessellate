@@ -1432,6 +1432,23 @@ body.printing-doc #doc-preview p,
   min-height: 2rem;
 }
 
+/* The rows the scope select swaps in are their own column: without its own
+   gap they sat flush, select on select (the owner, 2026-10-26: "there's no
+   spacing or gaps between any of these rows"). One width for every select,
+   so the column of values ends on one edge, and the switches' words at the
+   rows' size rather than a size larger than the labels beside them. */
+.wb-map-theme-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.wb-map-theme-row > select {
+  width: min(11rem, 45vw);
+}
+.wb-map-theme-check > span {
+  font-size: var(--text-sm);
+}
+
 /* The bulk action, on its own line under a hairline: it is about every topic
    on the map rather than about the field above it, and a button that reaches
    two hundred topics does not sit in the run of controls that reach one. */
