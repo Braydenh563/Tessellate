@@ -136,7 +136,7 @@ HELP_TOPICS: list[dict] = [
             "saved notes, with the raw notes beside the answer, each saying why "
             "it is there; in Ask, "
             "Enter asks and Escape clears the question, and the clock button "
-            "answers from your notes as they were on a day you pick. Its Use AI switch "
+            "answers from your notes as they were on a day you pick. Its Use AI button "
             "picks who answers: off, the answer is From your notes, quoted from your "
             "notes' own sentences with no AI, and it is the answer when no model runs, "
             "in Ask and in Chat. "

@@ -83,10 +83,10 @@ def test_the_chip_wears_the_chat_toggles_on_state_and_the_old_switch_recipe_is_g
 def test_every_help_surface_names_the_switch():
     source = Path(help_topics_more.__file__).read_text(encoding="utf-8")
     chat = Path(help_chat.__file__).read_text(encoding="utf-8")
-    assert "Ask on the Notes tab has a Use AI switch" in source
-    assert "Notes tab, Ask, the Use AI switch" in source
+    assert "Ask on the Notes tab has a Use AI button" in source
+    assert "Notes tab, Ask, the Use AI button" in source
     assert "Turn Use AI off beside the title." in source
-    assert "Its Use AI switch " in chat
+    assert "Its Use AI button " in chat
     for text in (source, chat):
         assert "AI and From your notes switch" not in text
         assert "AI, or From your notes" not in text
