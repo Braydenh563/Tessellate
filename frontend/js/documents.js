@@ -18774,21 +18774,47 @@ function docOpenSuggestAtPoint(target, point) {
   return Boolean(docOpenSuggestAtCaret(box, point));
 }
 
+//: **The editor's own menu, last of the three.** Not for Shift+right-click
+//: (the browser's menu: native spelling, Look up, Translate), not for a code
+//: file (its own handler), not for the plain-textarea fallback. A press outside
+//: the selection moves the caret there first, as a native menu would. A word
+//: the app flagged keeps its suggestion popover, which is asked first.
+function docEditorMenuAtPoint(event, point) {
+  if (event.shiftKey || !(event.target instanceof Element)) return false;
+  const surface = docToolsBoxFor(event.target);
+  const view = surface && surface.view;
+  if (!view || view.dom.classList.contains("doc-content-code") || typeof docEditorMenuItems !== "function") return false;
+  const sel = view.state.selection.main;
+  const at = view.posAtCoords(point);
+  if (at != null && (at < sel.from || at > sel.to)) view.dispatch({ selection: { anchor: at } });
+  openMenuAtPoint(docEditorMenuItems(view, point.x, point.y), "Document editor actions", point.x, point.y, view.contentDOM);
+  return true;
+}
+
 //: The table's menu goes first (`docTableMenuAtPoint`, below), and takes the
 //: press from the caret-level suggestion: the one this listener opens on any
 //: press in a box with something to say. A misspelt word keeps its own. One
 //: listener, because the long-press twin below is one call (a lint counts both).
 document.addEventListener("contextmenu", (event) => {
   const point = { x: event.clientX, y: event.clientY };
-  if (docTableMenuAtPoint(event.target, point.x, point.y) || docOpenSuggestAtPoint(event.target, point)) {
+  if (
+    docTableMenuAtPoint(event.target, point.x, point.y) ||
+    docOpenSuggestAtPoint(event.target, point) ||
+    docEditorMenuAtPoint(event, point)
+  ) {
     event.preventDefault();
   }
 });
+//: The hold does not open the editor's own menu (`docEditorMenuAtPoint`): on a
+//: phone a hold in text is how a word gets selected, with the browser's handles.
+//: The menu answers the contextmenu event a device sends, and the phone bar and
+//: selection bar carry Turn into.
 if (typeof wireLongPress === "function") {
   wireLongPress(
     document,
     (event, point) =>
-      docTableMenuAtPoint(event.target, point.x, point.y) || docOpenSuggestAtPoint(event.target, point),
+      docTableMenuAtPoint(event.target, point.x, point.y) ||
+      docOpenSuggestAtPoint(event.target, point),
     { selector: ".doc-flag, .cm-finding, .cm-content, .doc-table-grip, textarea" }
   );
 }

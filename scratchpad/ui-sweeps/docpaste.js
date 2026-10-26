@@ -4,12 +4,16 @@
 const { boot } = require('./lib.js');
 (async () => {
   const out = {};
-  for (const width of (process.env.WIDTHS || "1440,720").split(",").map(Number)) {
-    const { browser, page } = await boot({ viewport: { width, height: 900 } });
+  for (const width of (process.env.WIDTHS || "1440,720,390").split(",").map(Number)) {
+    const { browser, page } = await boot({ args: ['--disable-dev-shm-usage', '--disable-gpu'], viewport: { width, height: width === 390 ? 844 : 900 }, ...(width === 390 ? { hasTouch: true, isMobile: true } : {}) });
+    const errors = [];
+    page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+    page.on('pageerror', (e) => errors.push(String(e)));
     const ev = (fn, a) => page.evaluate(fn, a);
     const id = await ev(async () => (await apiJson('/documents', { method: 'POST', body: JSON.stringify({ title: `Paste ${Date.now()}`, content: 'Intro line\n\nSee docs here\n\nend\n', file_type: 'md' }) })).id);
     await ev(() => switchTab('documents')); await page.waitForTimeout(700);
     await ev((id) => loadDocuments(id), id); await page.waitForTimeout(2000);
+    await page.waitForTimeout(1500); await ev(() => { const b = [...document.querySelectorAll('.confirm-overlay button')].find((x) => /Don.t check/.test(x.textContent)); if (b) b.click(); }); await page.waitForTimeout(300);
     const paste = (data, sel) => ev(({ data, sel }) => {
       const v = docSurface().view; v.focus();
       v.dispatch({ selection: { anchor: sel[0], head: sel[1] } });
@@ -71,7 +75,57 @@ const { boot } = require('./lib.js');
       await ev(() => { const el = document.getElementById('doc-preview'); el.scrollTop = el.scrollHeight; }); await page.waitForTimeout(300); r.extras.end = await ev(() => getComputedStyle(document.getElementById('doc-preview'), '::before').transform);
       r.extras.barH = await ev(() => getComputedStyle(document.getElementById('doc-preview'), '::before').height);
     };
-    if (width < 600) { await turnInto(); await extras(); out[width] = r; await browser.close(); continue; }
+    const section8 = async () => {
+    // 8. The editor's right-click menu (docs6-1026); a synthetic contextmenu stands in for a long press at 390.
+    const rows = () => ev(() => [...document.querySelectorAll('.action-menu:not(.hidden) .menu-item')].map((b) => ({ t: b.textContent.trim(), h: Math.round(b.getBoundingClientRect().height) })));
+    const ctx = (shift) => ev((shift) => {
+      const v = docSurface().view; v.focus();
+      const at = v.coordsAtPos(v.state.doc.toString().indexOf('beta') + 1);
+      const e = new MouseEvent('contextmenu', { clientX: at.left, clientY: at.top + 4, bubbles: true, cancelable: true, shiftKey: shift });
+      v.contentDOM.querySelector('.cm-line').dispatchEvent(e);
+      return e.defaultPrevented;
+    }, shift);
+    const setDoc = (t) => ev((t) => { const v = docSurface().view; v.dispatch({ changes: { from: 0, to: v.state.doc.length, insert: t } }); }, t);
+    await ev(() => setDocView('live')); await page.waitForTimeout(500);
+    await setDoc('alpha beta gamma\n\nsecond\n');
+    await page.waitForTimeout(600);
+    r.ctxShiftPrevented = await ctx(true);
+    r.ctxShiftRows = (await rows()).length;
+    r.ctxPrevented = await ctx(false); await page.waitForTimeout(400);
+    const menu = await rows();
+    r.ctxRows = menu.map((m) => m.t).join('|');
+    r.ctxMinRowH = Math.min(...menu.map((m) => m.h));
+    r.ctxFits = await ev(() => { const m = document.querySelector('.action-menu:not(.hidden)'); const b = m.getBoundingClientRect(); return b.left >= 0 && b.top >= 0 && b.right <= innerWidth && b.bottom <= innerHeight; });
+    await page.keyboard.press('Escape'); await page.waitForTimeout(200);
+    r.ctxEscape = { open: (await rows()).length, focusInEditor: await ev(() => !!document.activeElement.closest('.cm-editor')) };
+    const clip = (t) => ev((t) => Object.defineProperty(navigator, 'clipboard', { value: { readText: async () => t, writeText: async () => {} }, configurable: true }), t);
+    const pick = async (label) => { await ctx(false); await page.waitForTimeout(300); await ev((label) => [...document.querySelectorAll('.action-menu:not(.hidden) .menu-item')].find((b) => b.textContent.trim() === label).click(), label); await page.waitForTimeout(300); };
+    await clip('one\ntwo');
+    const tail = async () => (await text()).split('\n\nsecond')[0];
+    await pick('Paste'); r.pastePlain = await tail();
+    await ev(() => docUndoBreak()); await page.keyboard.press('Control+z'); await page.waitForTimeout(200);
+    r.pasteUndoOneStep = await tail();
+    await pick('Paste as a quote'); r.pasteQuote = (await text()).includes('> one\n> two');
+    await ev(() => docUndoBreak()); await page.keyboard.press('Control+z'); await page.waitForTimeout(200);
+    await clip('# Head **x**');
+    await pick('Paste as Markdown source, no conversion'); r.pasteSource = (await text()).includes('# Head **x**');
+    await ev(() => docUndoBreak()); await page.keyboard.press('Control+z'); await page.waitForTimeout(200);
+    await pick('Paste matching the surrounding text'); r.pasteMatch = (await text()).length > 26;
+    await ev(() => docUndoBreak()); await page.keyboard.press('Control+z'); await page.waitForTimeout(200);
+    await pick('Select all'); r.selectAll = await ev(() => { const s = docSurface().view.state; return s.selection.main.to === s.doc.length && s.selection.main.from === 0; });
+    await pick('Turn into'); r.turnIntoRows = (await rows()).length; await page.keyboard.press('Escape');
+    await ev(() => Object.defineProperty(navigator, 'clipboard', { value: { readText: async () => { throw new Error('denied'); } }, configurable: true }));
+    await pick('Paste'); r.refusalToast = await ev(() => document.body.innerText.includes('Press Ctrl+V'));
+    if (width > 390) {
+      await ev(() => { const v = docSurface().view; v.dispatch({ selection: { anchor: 0 } }); });
+      const pt = await ev(() => { const v = docSurface().view; const c = v.coordsAtPos(v.state.doc.toString().indexOf('gamma') + 2); return { x: c.left, y: c.top + 4 }; });
+      await page.mouse.click(pt.x, pt.y, { button: 'right' }); await page.waitForTimeout(400);
+      r.realRightClickRows = (await rows()).length;
+      await page.keyboard.press('Escape');
+    }
+    r.consoleErrors = errors.length; if (errors.length) r.errors = errors.slice(0, 3);
+    };
+    if (width < 600) { await turnInto(); await extras(); await section8(); out[width] = r; console.error('W' + width, JSON.stringify(r)); await browser.close(); continue; }
     // 1. Rich paste -> chip -> Text only, one undo.
     await paste({ 'text/html': '<h2>Title</h2><p>Some <strong>bold</strong> text</p>', 'text/plain': 'Title\nSome bold text' }, [0, 0]);
     r.richText = (await text()).split('\n').slice(0, 3).join('|');
@@ -127,8 +181,8 @@ const { boot } = require('./lib.js');
     await turnInto();
     await extras();
     // 7. Ctrl+Shift+V path leaves a multi-line paste alone (no chip).
-    r.consoleErrors = 0;
-    out[width] = r;
+    await section8();
+    out[width] = r; console.error('W' + width, JSON.stringify(r));
     await browser.close();
   }
   console.log(JSON.stringify(out, null, 1));
