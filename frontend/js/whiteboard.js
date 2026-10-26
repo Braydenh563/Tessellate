@@ -1298,18 +1298,20 @@ function wbGuidedResize(kind, d, handle, start, width, height, { off = false, fi
 //: beside it. Every closed shape is drawn corner to corner, the ellipse
 //: included (dogfood 2026-10-25 item 7: a circle grown from its centre
 //: put its top under the toolbar and felt unlike the rectangle). Alt draws
-//: without snapping, as a move does; Shift (a square) is left alone.
+//: from the centre without snapping (`wbDragBox`); Shift (a square) is left
+//: alone.
 function wbDrawOutSnap(sx, sy, x, y, event) {
   const dx = x - sx, dy = y - sy;
   const box = { x: Math.min(sx, x), y: Math.min(sy, y), w: Math.abs(dx), h: Math.abs(dy) };
-  if (event.shiftKey) {
-    const side = Math.max(box.w, box.h);
+  if (event.shiftKey || event.altKey) {
+    //: Shift (a square) and Alt (from the centre, unsnapped) are left to
+    //: `wbDragBox`; the readout shows the box it will draw.
     wbShowAlignmentGuides([]);
-    wbShowSizeReadout({ ...box, w: side, h: side });
+    wbShowSizeReadout(wbDragBox(sx, sy, x, y, event));
     return [x, y];
   }
   const edges = (dx >= 0 ? "e" : "w") + (dy >= 0 ? "s" : "n");
-  const snapped = event.altKey ? { ...box, guideLines: [] } : wbResizeGuides(null, box, edges, {
+  const snapped = wbResizeGuides(null, box, edges, {
     grid: wbSnapOn() ? WB_GRID_SPACING : 0, min: 1, tol: wbAlignTol(),
   });
   wbShowAlignmentGuides(snapped.guideLines);
@@ -1792,26 +1794,49 @@ function wbRoundedPathD(d, radius, shaftOnly = false) {
 //: `approachAngle` (the direction the shaft arrives *from*, in radians), 
 //: factored out so both ends of an arrow can draw one (`currentArrowEndStyle`,
 //: reported directly: "can't change arrow heads").
-//: Absolute width/height for a shape drawn from `(0,0)` to `(dx, dy)`, 
-//: equal (a square/perfect circle) while `shiftHeld`, matching the sketch
-//: pad's own rect tool (HISTORY.md) and asked for again directly for the
-//: whiteboard's shapes generally. Squares to the *larger* of the two raw
-//: dimensions so the shape still reaches all the way to the cursor.
-function wbShapeDims(dx, dy, shiftHeld) {
+//: The box a shape tool draws from the press `(sx, sy)` to the pointer: corner
+//: to corner; Shift makes it square, grown towards the pointer so a drag up
+//: and left still ends under it (it straddled the press, INBOX 1352 gap 1);
+//: Alt draws it from its centre, as Alt resizes from the centre (decision
+//: 40). One model for every closed shape, the ellipse included.
+function wbDragBox(sx, sy, x, y, mods = {}) {
+  let dx = x - sx, dy = y - sy;
+  if (mods.shiftKey) {
+    const side = Math.max(Math.abs(dx), Math.abs(dy));
+    dx = Math.sign(dx || 1) * side;
+    dy = Math.sign(dy || 1) * side;
+  }
   const w = Math.abs(dx), h = Math.abs(dy);
-  if (!shiftHeld) return { w, h };
-  const s = Math.max(w, h);
-  return { w: s, h: s };
+  if (mods.altKey) return { x: sx - w, y: sy - h, w: 2 * w, h: 2 * h };
+  return { x: Math.min(sx, sx + dx), y: Math.min(sy, sy + dy), w, h };
 }
 
-//: The ellipse drawn corner to corner: its bounding box is the one the
-//: rectangle would get from the same two points, so both tools share one drag
-//: model. Shift makes it a circle, grown away from the press.
-function wbEllipseDrawD(sx, sy, x, y, shiftHeld) {
-  const { w, h } = wbShapeDims(x - sx, y - sy, shiftHeld);
-  const left = x >= sx ? sx : sx - w, top = y >= sy ? sy : sy - h;
+//: The ellipse in the box `wbDragBox` gives the same drag (dogfood
+//: 2026-10-25 item 7: it used to centre on the press by default).
+function wbEllipseDrawD(sx, sy, x, y, mods = {}) {
+  const { x: left, y: top, w, h } = wbDragBox(sx, sy, x, y, mods);
   const rx = w / 2, ry = h / 2;
   return `M ${left} ${top + ry} a ${rx} ${ry} 0 1 0 ${w} 0 a ${rx} ${ry} 0 1 0 ${-w} 0`;
+}
+
+//: Shift snaps a line's far end to the nearest 45 degrees, keeping its
+//: length (INBOX 1352 gap 3).
+function wbSnap45(sx, sy, x, y) {
+  const step = Math.PI / 4;
+  const angle = Math.round(Math.atan2(y - sy, x - sx) / step) * step;
+  const d = Math.hypot(x - sx, y - sy);
+  return [sx + Math.round(Math.cos(angle) * d * 100) / 100, sy + Math.round(Math.sin(angle) * d * 100) / 100];
+}
+
+//: A closed shape's path in its drawn box. Plain `L` commands for the
+//: triangle and diamond, as the pen and line tools use, so
+//: wbTransformPathD and wbPathBBox have no new command to learn.
+function wbClosedShapeD(tool, { x, y, w, h }) {
+  if (tool === "rect") return `M ${x} ${y} h ${w} v ${h} h ${-w} Z`;
+  if (tool === "triangle") return `M ${x + w / 2} ${y} L ${x + w} ${y + h} L ${x} ${y + h} Z`;
+  if (tool === "diamond") return `M ${x + w / 2} ${y} L ${x + w} ${y + h / 2} L ${x + w / 2} ${y + h} L ${x} ${y + h / 2} Z`;
+  const more = WB_MORE_SHAPES[tool];
+  return more ? more.d(x, y, Math.max(w, 1), Math.max(h, 1)) : "";
 }
 
 function wbArrowHeadPath(tipX, tipY, approachAngle, headLen) {
@@ -4873,7 +4898,7 @@ async function wbTidySelection(direction = "down") {
 //: shape has now. Text, colours, line and its connectors (bound by id) stay.
 const WB_SHAPE_SWAPS = {
   rect: { label: "Rectangle", icon: "ph:square", d: (x, y, w, h) => `M ${x} ${y} h ${w} v ${h} h ${-w} Z` },
-  circle: { label: "Ellipse", icon: "ph:circle", d: (x, y, w, h) => wbEllipseDrawD(x, y, x + w, y + h, false) },
+  circle: { label: "Ellipse", icon: "ph:circle", d: (x, y, w, h) => wbEllipseDrawD(x, y, x + w, y + h) },
   triangle: { label: "Triangle", icon: "ph:triangle", d: (x, y, w, h) => `M ${x + w / 2} ${y} L ${x + w} ${y + h} L ${x} ${y + h} Z` },
   diamond: { label: "Diamond", icon: "ph:diamond", d: (x, y, w, h) => `M ${x + w / 2} ${y} L ${x + w} ${y + h / 2} L ${x + w / 2} ${y + h} L ${x} ${y + h / 2} Z` },
   ...Object.fromEntries(Object.entries(WB_MORE_SHAPES).filter(([k]) => k !== "shape-ellipse")),
@@ -17339,7 +17364,8 @@ async function initWhiteboard() {
       // replaces whatever has been drawn since the start point with one
       // segment, and letting go carries on freehand from there, which is how
       // a straightedge behaves and how every app that offers this does it.
-      if (e.shiftKey && window.currentTool === "highlighter") {
+      // The pen as well as the highlighter (INBOX 1352 gap 4).
+      if (e.shiftKey) {
         const [sx0, sy0] = currentDrawData[0];
         currentDrawData.length = 1;
         currentDrawData.push([x, y]);
@@ -17365,34 +17391,13 @@ async function initWhiteboard() {
         // default (Line: none, Arrow: end): see the live-reported bug fix
         // on `currentLineEndStyle`/`currentArrowEndStyle` in `initWhiteboard`.
         const caps = wbToolCaps();
-        currentDrawPath.setAttribute("d", wbRegenerateShapeCaps(`M ${sx} ${sy} L ${x} ${y}`, caps.startCap, caps.endCap, WB_STROKE_WIDTH * 4 + 6));
-      } else if (window.currentTool === "rect") {
-        const mx = Math.min(sx, x), my = Math.min(sy, y);
-        const { w, h } = wbShapeDims(x - sx, y - sy, e.shiftKey);
-        currentDrawPath.setAttribute("d", `M ${mx} ${my} h ${w} v ${h} h ${-w} Z`);
+        const [ex, ey] = e.shiftKey ? wbSnap45(sx, sy, x, y) : [x, y];
+        currentDrawPath.setAttribute("d", wbRegenerateShapeCaps(`M ${sx} ${sy} L ${ex} ${ey}`, caps.startCap, caps.endCap, WB_STROKE_WIDTH * 4 + 6));
       } else if (window.currentTool === "circle") {
-        currentDrawPath.setAttribute("d", wbEllipseDrawD(sx, sy, x, y, e.shiftKey));
-      } else if (window.currentTool === "triangle") {
-        // Asked for directly ("more types of shapes"). Plain `L` commands,
-        // same as the pen/line tools, no new command type for
-        // wbTransformPathD/wbPathBBox to learn.
-        const mx = Math.min(sx, x), my = Math.min(sy, y);
-        const { w, h } = wbShapeDims(x - sx, y - sy, e.shiftKey);
-        currentDrawPath.setAttribute(
-          "d",
-          `M ${mx + w / 2} ${my} L ${mx + w} ${my + h} L ${mx} ${my + h} Z`
-        );
-      } else if (window.currentTool === "diamond") {
-        const mx = Math.min(sx, x), my = Math.min(sy, y);
-        const { w, h } = wbShapeDims(x - sx, y - sy, e.shiftKey);
-        currentDrawPath.setAttribute(
-          "d",
-          `M ${mx + w / 2} ${my} L ${mx + w} ${my + h / 2} L ${mx + w / 2} ${my + h} L ${mx} ${my + h / 2} Z`
-        );
-      } else if (WB_MORE_SHAPES[window.currentTool]) {
-        const mx = Math.min(sx, x), my = Math.min(sy, y);
-        const { w, h } = wbShapeDims(x - sx, y - sy, e.shiftKey);
-        currentDrawPath.setAttribute("d", WB_MORE_SHAPES[window.currentTool].d(mx, my, Math.max(w, 1), Math.max(h, 1)));
+        currentDrawPath.setAttribute("d", wbEllipseDrawD(sx, sy, x, y, e));
+      } else {
+        const d = wbClosedShapeD(window.currentTool, wbDragBox(sx, sy, x, y, e));
+        if (d) currentDrawPath.setAttribute("d", d);
       }
     }
   });
@@ -18157,7 +18162,7 @@ function wbTransformPathD(d, { dx = 0, dy = 0, sx = 1, sy = 1, rotate = 0, ancho
       out.push(cmd, rx, ry, rot, large, sweep, mdx, mdy);
       px += edx; py += edy;
     } else if (cmd === "A") {
-      //: The circle tool writes absolute arcs (`wbShapeDims`), and this walk
+      //: The circle tool writes absolute arcs (`wbEllipseDrawD`), and this walk
       //: knew only the relative spelling, so it fell into the "unrecognised
       //: token" branch below and handed the path back unchanged: a circle
       //: could be selected and never moved, resized or rotated (the owner,
@@ -18223,7 +18228,7 @@ function wbPathBBox(d) {
       const rx = parseFloat(tokens[i++]), ry = parseFloat(tokens[i++]);
       i += 3; // x-axis-rotation, large-arc-flag, sweep-flag: unused for a bbox
       let ex = parseFloat(tokens[i++]), ey = parseFloat(tokens[i++]);
-      //: The circle tool writes absolute arcs (`A`, `wbShapeDims`), and this
+      //: The circle tool writes absolute arcs (`A`, `wbEllipseDrawD`), and this
       //: parser only knew the relative spelling: a circle's box collapsed to
       //: its first point, so a marquee dragged over one selected nothing
       //: unless it happened to cover that point (INBOX 252, the owner: "when
