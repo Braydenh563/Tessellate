@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat: a mind-map node or board card written "Label: text" is said as its own text in a summary, never as a bold heading over the rest.
 - Time words: "over the weekend", "last fortnight", "since Monday", "the other day", "earlier this week", "so far this month", "year to date" and the rest of the this/last/past N days, weeks, months forms are read as dates in recaps and searches.
 - Chat: a short message whose word only a Guide topic's bracketed or quoted examples hold ("what about running?", "who is Sam") is a missing word in your notes, not a request for an app tool.
 - No-model fallbacks for the AI-only buttons (owner-1026b K3, fixed as a class): Suggest a title takes the title from the draft's own words, and Split into notes, Extract notes (document, selection, note review, board cards) and Save notes cut the text at its headings and paragraphs with a preview, linked to the notes it came from; none is greyed out for want of a model, a failed model split falls back to the same cut, and Draft, Refine, Plan, Draft with Atlas and AI edit now answer a press with why and Set up a model instead of doing nothing. A title no longer ends on a word like "about" or "the".
