@@ -1477,6 +1477,13 @@ $("chat-plan").addEventListener("click", async () => {
 renderPlanToggle();
 
 $("web-search-toggle").addEventListener("click", async () => {
+  //: On with the panel shut, a click opens the panel rather than turning web
+  //: off (the owner, 2026-10-26: it took off-then-on to see it). A click with
+  //: the panel open turns web off.
+  if (prefsCache?.web_search_enabled && $("web-panel").classList.contains("hidden")) {
+    toggleWebPanel(true);
+    return;
+  }
   const next = !(prefsCache && prefsCache.web_search_enabled);
   prefsCache = await apiJson("/preferences", {
     method: "PUT",

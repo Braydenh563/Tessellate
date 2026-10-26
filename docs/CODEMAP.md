@@ -2,7 +2,7 @@
 
 Generated 2026-10-26 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6393, frontend ids 2536, CSS sections 503, backend routes 622, backend modules 6528, test files 1359, tests 12139, plan headings 972.
+Counts: frontend functions 6393, frontend ids 2536, CSS sections 503, backend routes 622, backend modules 6528, test files 1359, tests 12140, plan headings 972.
 
 ## Frontend functions (6393)
 
@@ -1259,7 +1259,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `applyPlanMode` | frontend/js/wiring.js:1453 |
 | `askAtlasAbout` | frontend/js/wiring.js:200 |
 | `chatRecallStep` | frontend/js/wiring.js:804 |
-| `clearDueNudges` | frontend/js/wiring.js:1731 |
+| `clearDueNudges` | frontend/js/wiring.js:1738 |
 | `closeGlobalFind` | frontend/js/wiring.js:630 |
 | `dashboardGreetingPersona` | frontend/js/wiring.js:909 |
 | `escapeForFind` | frontend/js/wiring.js:408 |
@@ -1271,9 +1271,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `initGraphOptionFolds` | frontend/js/wiring.js:1026 |
 | `initHelpToggles` | frontend/js/wiring.js:220 |
 | `noteSourceOn` | frontend/js/wiring.js:875 |
-| `nudgeDueShown` | frontend/js/wiring.js:1735 |
+| `nudgeDueShown` | frontend/js/wiring.js:1742 |
 | `openGlobalFind` | frontend/js/wiring.js:568 |
-| `openReminderCompose` | frontend/js/wiring.js:1631 |
+| `openReminderCompose` | frontend/js/wiring.js:1638 |
 | `paintDashboardPersonaMark` | frontend/js/wiring.js:915 |
 | `reflectOnlineState` | frontend/js/wiring.js:16 |
 | `renameCurrentConversation` | frontend/js/wiring.js:717 |
@@ -19164,7 +19164,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12139)
+## Tests (12140)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19314,7 +19314,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_chat_app_help.py | 5 |
 | tests/test_chat_attachments.py | 18 |
 | tests/test_chat_checkpoint_race.py | 2 |
-| tests/test_chat_dock.py | 11 |
+| tests/test_chat_dock.py | 12 |
 | tests/test_chat_failed_step.py | 1 |
 | tests/test_chat_followups.py | 14 |
 | tests/test_chat_followups_race.py | 2 |
