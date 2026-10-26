@@ -125,8 +125,10 @@ def with_title(content: str, title: str) -> str:
     """The first line is already the title as an H1 (the editor's habit), so
     an export does not put a second one above it."""
     opening = next((ln for ln in content.splitlines() if ln.strip()), "")
-    match = re.fullmatch(r"#\s+(.*?)\s*#*\s*", opening)
-    if match and match.group(1).strip().casefold() == title.strip().casefold():
+    # String steps, not a regex: `(.*?)\s*#*\s*` over a line of spaces is
+    # polynomial backtracking on user text (CodeQL, PR 204).
+    heading = opening[1:].strip().rstrip("#").strip() if opening.startswith("#") and opening[1:2].isspace() else None
+    if heading is not None and heading.casefold() == title.strip().casefold():
         return content.lstrip("\n")
     return f"# {title}\n\n{content}"
 

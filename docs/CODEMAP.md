@@ -17083,11 +17083,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `Comment` | src/tessellate/core/docexport.py:43 |
 | `_skip_mask` | src/tessellate/core/docexport.py:53 |
-| `_stem` | src/tessellate/core/docexport.py:236 |
-| `bundle` | src/tessellate/core/docexport.py:183 |
-| `comments_to_footnotes` | src/tessellate/core/docexport.py:134 |
+| `_stem` | src/tessellate/core/docexport.py:238 |
+| `bundle` | src/tessellate/core/docexport.py:185 |
+| `comments_to_footnotes` | src/tessellate/core/docexport.py:136 |
 | `parse_comments` | src/tessellate/core/docexport.py:63 |
-| `rewrite_media_links` | src/tessellate/core/docexport.py:163 |
+| `rewrite_media_links` | src/tessellate/core/docexport.py:165 |
 | `strip_comments` | src/tessellate/core/docexport.py:96 |
 | `with_title` | src/tessellate/core/docexport.py:124 |
 

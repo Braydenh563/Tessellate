@@ -5572,7 +5572,7 @@ function docTableKeyMove(view, key) {
     //: cell (typed line by line, `| --- |` then Enter used to add an empty
     //: row and park the next line inside it).
     const line = view.state.doc.lineAt(sel.head);
-    if (sel.head === line.to && /\|\s*$/.test(line.text)) return false;
+    if (sel.head === line.to && line.text.trimEnd().endsWith("|")) return false;
     const next = docTableStepRow(table, cell.row, 1);
     if (next !== null) return docTableCaretTo(context, next, cell.col);
     const rows = table.rows.length;

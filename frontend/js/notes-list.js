@@ -1055,7 +1055,7 @@ function appendInlineRun(element, text, terms, compact, options) {
         //: markdown's, not the note's: kept, they stacked on the wrapper's own
         //: margin into a 33px gap under a sketch's caption (dog3-1026 row 15).
         const before = element.lastChild?.lastChild || element.lastChild;
-        if (before?.nodeType === Node.TEXT_NODE) before.textContent = before.textContent.replace(/\s+$/, "");
+        if (before?.nodeType === Node.TEXT_NODE) before.textContent = before.textContent.trimEnd();
         element.appendChild(wrapper);
       } else {
         element.appendChild(document.createTextNode(match[0]));
