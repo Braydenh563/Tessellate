@@ -5850,8 +5850,19 @@ body .chip.item-label,
 #nm-buddy .atl-figure-box > .atl-orbits { transform-origin: 31px 31px; transition: rotate calc(var(--motion-slow) * 1.8) var(--ease-in-out); }
 #nm-buddy[data-pose="lie-2"] .atl-figure-box > .atl-orbits { rotate: calc(40deg - 80deg * var(--atl-v1)); }
 #nm-buddy[data-pose="lie"] .atl-figure-box > .atl-orbits { rotate: calc(84deg - 168deg * var(--atl-v1)); }
-/* The ground shadow and the dark theme's glow follow the body down. */
-#nm-buddy[data-pose="lie"]::before { left: calc(-6px + 52px * var(--atl-v1)); right: calc(-46px + 52px * var(--atl-v1)); }
+/* The ground shadow and the dark theme's glow follow the body down, to
+   the side it lies (K25: the shadow stayed under its standing feet and
+   the glow behind where its head had been, "a round glow behind the
+   head"). Lying it reaches from 30px left of its box to 70px (head left:
+   a drawn face, or Atlas's variant 1), or from -6px to 94px (head right),
+   so the shadow spans that on the line it lies on, scaled about its box's
+   middle (32px), as the body is. `--atl-v1` is the figure's, not the
+   host's, so the host reads the side from its attributes. */
+#nm-buddy:is(.nmb-act-lie:not([data-lie="r"]):not([data-pose^="lie"]), [data-pose="lie"][data-atlas-variant="1"])::before { left: -26px; right: -2px; transform-origin: 58px 50%; }
+#nm-buddy:is(.nmb-act-lie[data-lie="r"]:not([data-pose^="lie"]), [data-pose="lie"]:not([data-atlas-variant="1"]))::before { left: 2px; right: -26px; transform-origin: 30px 50%; }
+:root[data-theme="dark"] #nm-buddy:is(.nmb-act-lie, [data-pose="lie"])::after { top: 36px; height: 56px; }
+:root[data-theme="dark"] #nm-buddy:is(.nmb-act-lie:not([data-lie="r"]):not([data-pose^="lie"]), [data-pose="lie"][data-atlas-variant="1"])::after { left: -34px; right: -8px; transform-origin: 66px 54px; }
+:root[data-theme="dark"] #nm-buddy:is(.nmb-act-lie[data-lie="r"]:not([data-pose^="lie"]), [data-pose="lie"]:not([data-atlas-variant="1"]))::after { left: -6px; right: -36px; transform-origin: 38px 54px; }
 /* **A nebula bed, not a thin band** (the owner, of the lie pose: the
    cushion should read as a bed). The stream turned flat under the body was
    one hairline of colour; the ground shadow under a lying or curled Atlas
@@ -5874,7 +5885,6 @@ body .chip.item-label,
    (atlasbed.js, the real companion: the torso spans 69 to 90 of the host's
    92px), so the bed sits under that, not behind the chest. */
 #nm-buddy:has(.atl-figure)[data-pose="lie"]::before { top: calc(var(--nmb-edge) + 6px); }
-:root[data-theme="dark"] #nm-buddy[data-pose="lie"]::after { top: 26px; height: 56px; left: calc(-8px + 52px * var(--atl-v1)); right: calc(-48px + 52px * var(--atl-v1)); }
 /* The near half of the stream lies under the body as its bed, not over it. */
 #nm-buddy[data-pose="lie"] .atl-layer-neb-front { opacity: 0.35; }
 /* Settling: sitting back with the legs out. */
@@ -5959,28 +5969,35 @@ body .chip.item-label,
   translate: 0 0;
   transition: opacity var(--motion-slow) var(--ease-in-out), translate calc(var(--motion-slow) * 3) var(--ease-in-out);
 }
-#nm-buddy.nmb-act-read .nmp-glasses { opacity: 1; }
 /* The body into and out of each: slowly, after the prop coming in, and at
    once going out (the prop waits for it). */
 #nm-buddy:is(.nmb-act-lie, .nmb-act-read, .nmb-act-beanbag, .nmb-act-chair, .nmb-act-facepalm, .nmb-act-shrug, .nmb-unwind) .nm-buddy-char {
   transition: transform calc(var(--motion-slow) * 4) var(--ease-in-out), rotate calc(var(--motion-slow) * 2) var(--ease-in-out);
 }
 #nm-buddy:is(.nmb-act-lie, .nmb-act-beanbag, .nmb-act-chair) .nm-buddy-char { transition-delay: var(--motion-slow); }
-#nm-buddy.nmb-act-lie .nm-buddy-char { transform: translate(34px, -20px) rotate(-90deg); }
+/* Turned about its soles onto its side, head left, or head right when
+   only that side has room (`data-lie="r"`, avatars.js
+   `nameMarkBuddyLieRoom`); 30px up, so the arm under it rests on the line
+   it lies on rather than 10px into its perch (K25). */
+#nm-buddy.nmb-act-lie .nm-buddy-char { transform: translate(34px, -30px) rotate(-90deg); }
+#nm-buddy.nmb-act-lie[data-lie="r"] .nm-buddy-char { transform: translate(-34px, -30px) rotate(90deg); }
+#nm-buddy.nmb-act-lie[data-lie="r"] .nms-pillow { translate: 80px 0; }
 /* Atlas lies down in its own drawing, on its nebula (the `data-pose` lie
    frames, avatars.js `nameMarkBuddyLieDown`): its body is not turned over
    as a whole, and the stream is its cushion, not a pillow. */
 #nm-buddy.nmb-act-lie:has(.atl-figure-box) .nm-buddy-char { transform: none; }
-#nm-buddy.nmb-act-lie:has(.atl-figure-box) .nms-pillow { opacity: 0; }
+#nm-buddy:has(.atl-figure-box) :is(.nms-pillow, .nms-book) { opacity: 0; }
 #nm-buddy.nmb-act-beanbag .nm-buddy-char { transform: translateY(12px) scale(1.03, 0.95); }
 #nm-buddy.nmb-act-chair .nm-buddy-char { transform: translateY(6px); }
-#nm-buddy.nmb-act-read .nm-buddy-char { transform: rotate(2deg); }
 #nm-buddy.nmb-act-facepalm .nm-buddy-char { transform: rotate(-3deg) translateY(2px); }
 #nm-buddy.nmb-act-shrug .nm-buddy-char { transform: translateY(-2px); }
 /* Gestures are the arms' own, eased by the limbs' transition. */
 #nm-buddy.nmb-act-facepalm :is(.nm-figure, .atl-figure) .nmb-arm-r { transform: rotate(-150deg); }
 #nm-buddy.nmb-act-shrug :is(.nm-figure, .atl-figure) .nmb-arm-r { transform: rotate(-40deg); }
 #nm-buddy.nmb-act-shrug :is(.nm-figure, .atl-figure) .nmb-arm-l { transform: rotate(40deg); }
+/* Reading: both hands in to hold the book at the chest (K14). */
+#nm-buddy:is(.nmb-act-read, .nmb-reading) .nmb-arm-r { transform: rotate(30deg); }
+#nm-buddy:is(.nmb-act-read, .nmb-reading) .nmb-arm-l { transform: rotate(-30deg); }
 /* **Arms that match the mood** (the owner: "make sure that the positions of
    the limbs like the arm on companions ... actually match the mood as
    well"). The face it is wearing (`data-feel`, avatars.js: the passing
@@ -6072,8 +6089,8 @@ body .chip.item-label,
 }
 /* Hanging by one hand (or scratching its head while it hangs): the other
    hand lets go and hangs free. */
-#nm-buddy:is(.nmb-act-onehand, [data-pose="hang"].nmb-act-scratch) .nmb-hold-r { opacity: 0; }
-#nm-buddy:is(.nmb-act-onehand, [data-pose="hang"].nmb-act-scratch) .nmb-arm-r { opacity: 1; }
+#nm-buddy:is(.nmb-act-onehand, [data-pose="hang"]:is(.nmb-act-scratch, .nmb-sleep)) .nmb-hold-r { opacity: 0; }
+#nm-buddy:is(.nmb-act-onehand, [data-pose="hang"]:is(.nmb-act-scratch, .nmb-sleep)) .nmb-arm-r { opacity: 1; }
 #nm-buddy.nmb-act-onehand .nm-buddy-char { transform-origin: 6px -6px; }
 #nm-buddy.nmb-act-feet .nm-buddy-char { transform-origin: 32px 40px; }
 /* The prop slots (avatars.js, the character interface): drawn hidden,
@@ -6084,8 +6101,8 @@ body .chip.item-label,
 }
 #nm-buddy.nmb-music .nmp-headphones,
 #nm-buddy.nmb-night:is([data-pose="sit"], [data-pose^="curl"], .nmb-act-lie) .nmp-nightcap,
-#nm-buddy.nmb-reading .nmp-glasses,
-#nm-buddy.nmb-reading .nmp-book,
+#nm-buddy:is(.nmb-reading, .nmb-act-read) .nmp-glasses,
+#nm-buddy:is(.nmb-reading, .nmb-act-read) .nmp-book,
 #nm-buddy.nmb-act-carry .nmp-note,
 #nm-buddy.nmb-act-bell .nmp-bell,
 #nm-buddy.nmb-act-lantern .nmp-lantern,
@@ -6096,12 +6113,12 @@ body .chip.item-label,
 #nm-buddy:is(.nmb-act-bell, .nmb-act-lantern) .nmb-arm-r { transform: rotate(-125deg); }
 #nm-buddy.nmb-act-carry .nmb-arm-r { transform: rotate(-70deg); }
 /* Late at night its eyes are heavier; reading, it looks down the page. */
-#nm-buddy.nmb-night .name-mark .nm-blinks { transform: scaleY(0.72); }
+#nm-buddy.nmb-night .name-mark .nm-blinks { scale: 1 0.72; }
 #nm-buddy.nmb-reading .name-mark .nm-eyes { translate: 0 1.4px; }
 #nm-buddy .nmp-bell { transform-box: fill-box; transform-origin: 50% 0; }
 #nm-buddy.nmb-music .nm-buddy-head { transform-origin: 50% 100%; }
 /* Drowsy (three idle minutes): heavy eyelids. */
-#nm-buddy.nmb-drowsy .name-mark .nm-blinks { transform: scaleY(0.55); }
+#nm-buddy.nmb-drowsy .name-mark .nm-blinks { scale: 1 0.55; }
 /* Woken: the raised arms of a stretch. */
 #nm-buddy.nmb-act-wake .nmb-hold { opacity: 1; }
 #nm-buddy.nmb-act-wake .nmb-arm { opacity: 0; }
@@ -6132,15 +6149,20 @@ body .chip.item-label,
   transition: translate var(--motion-slow) var(--ease-spring), rotate var(--motion-slow) var(--ease-spring);
 }
 /* Just woken: heavy lids for a few seconds. */
-#nm-buddy.nmb-groggy .name-mark .nm-blinks:not(.atl-blink) { transform: scaleY(0.6); }
+#nm-buddy.nmb-groggy .name-mark .nm-blinks:not(.atl-blink) { scale: 1 0.6; }
 /* Asleep, it breathes slower. */
 #nm-buddy:is(.nmb-sleep, .nmb-act-nap) .name-mark .nm-body { animation-duration: 6.4s; }
 #nm-buddy.nmb-think .nm-buddy-head { rotate: 8deg; }
-#nm-buddy:is(.nmb-sleep, .nmb-act-nap) .nm-buddy-head { rotate: 10deg; }
-#nm-buddy:is(.nmb-sleep, .nmb-act-nap) .name-mark .nm-blinks {
-  animation: none;
-  transform: scaleY(0.12);
-}
+/* Asleep without the Zs (K25b): head lolled, eyes shut, shades up over
+   drawn lids. `scale`, not `transform`: the blink loop's `transform`
+   outranks this, so a scaleY here never showed. */
+#nm-buddy:is(.nmb-sleep, .nmb-act-nap, .nmb-act-lie) .nm-buddy-head { rotate: 14deg; }
+#nm-buddy:is(.nmb-sleep, .nmb-act-nap, .nmb-act-lie) .nm-blinks { scale: 1 0.12; }
+#nm-buddy .nmc-lids { opacity: 0; }
+#nm-buddy:is(.nmb-sleep, .nmb-act-nap, .nmb-act-lie) .nmc-lids { opacity: 1; }
+#nm-buddy:is(.nmb-sleep, .nmb-act-nap, .nmb-act-lie) .nm-eyewear { translate: 0 -10px; }
+/* Asleep hanging: by one hand, like a sloth (sway below). */
+#nm-buddy[data-pose="hang"].nmb-sleep .nm-buddy-char { transform-origin: 6px -6px; rotate: 3deg; }
 .nm-buddy-think,
 .nm-buddy-z {
   position: absolute;
@@ -6184,6 +6206,13 @@ body .chip.item-label,
 #nm-buddy[data-pose="lie-1"] .nm-buddy-z { translate: -24px 0; }
 #nm-buddy[data-pose="lie-2"][data-atlas-variant="1"] .nm-buddy-z { translate: 22px 25px; }
 #nm-buddy[data-pose="lie-1"][data-atlas-variant="1"] .nm-buddy-z { translate: 22px 0; }
+/* A drawn face lying on its side (`nmb-act-lie`): the Zs are turned with
+   its body, so they are turned back to rise up the page, from over its
+   head either way round (head right they sat under it), and the sleepy
+   face's own small z, turned with the head, is let go (K25). */
+#nm-buddy.nmb-act-lie:not([data-pose^="lie"]) .nm-buddy-z { rotate: 90deg; }
+#nm-buddy.nmb-act-lie[data-lie="r"]:not([data-pose^="lie"]) .nm-buddy-z { translate: -56px 0; rotate: -90deg; }
+#nm-buddy.nmb-act-lie:not([data-pose^="lie"]) .nm-z { visibility: hidden; }
 /* The three z's (avatars.js), each its own drift; the second and third
    smaller and larger, so they read as a trail. */
 .nm-buddy-z i {
@@ -6200,6 +6229,11 @@ body .chip.item-label,
 /* Only lying or curled up (sitting): upright it dozes without it (the
    owner: it "goes to sleep standing with a night cap"). */
 #nm-buddy:is(.nmb-act-lie, :is([data-pose="sit"], [data-pose^="curl"]):is(.nmb-sleep, .nmb-act-nap)):not(.nmb-cap-off) .nmp-nightcap { opacity: 1; }
+/* The hair above the cap's band goes under it as it comes on (K25: the
+   curls showed round the cap), and comes back as it goes, at its pace. */
+#nm-buddy .nm-figure .nmc-hair-crown { transition: opacity calc(var(--motion-slow) * 3) var(--ease-in-out); }
+#nm-buddy:is(.nmb-act-lie, :is([data-pose="sit"], [data-pose^="curl"]):is(.nmb-sleep, .nmb-act-nap)):not(.nmb-cap-off) .nmc-hair-crown,
+#nm-buddy.nmb-night:is([data-pose="sit"], [data-pose^="curl"], .nmb-act-lie) .nmc-hair-crown { opacity: 0; }
 /* Its emotes (avatars.js, `nameMarkBuddyEmote`): by its head, hidden until
    one is played. */
 #nm-buddy .nmb-emote {
@@ -6311,6 +6345,8 @@ body .chip.item-label,
     &.nmb-act-onehand .nmb-arm-r { animation: nmb-wave 1.4s ease-in-out 3; }
     &.nmb-act-feet .nm-buddy-char { animation: nmb-feet 7s ease-in-out; }
     &.nmb-act-sloth .nm-buddy-char { animation: nmb-sloth 9s ease-in-out; }
+    &[data-pose="hang"].nmb-sleep .nm-buddy-char { animation: nmb-sloth 9s ease-in-out infinite; }
+    &:is(.nmb-sleep, .nmb-act-nap, .nmb-act-lie) .nm-char .nm-buddy-head { animation: nm-breathe 6.4s ease-in-out infinite; }
     &.nmb-act-sloth .name-mark .nm-blinks { animation: nmb-drowse 9s ease-in-out; }
     &.nmb-act-land .nm-buddy-char { animation: nmb-land 0.45s var(--ease-out); }
     &.nmb-act-peek .nm-buddy-char { animation: nmb-peek-in 1.1s ease-in-out forwards; }

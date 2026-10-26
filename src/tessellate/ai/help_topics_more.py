@@ -66,14 +66,16 @@ MORE_TOPICS: list[dict] = [
         "keywords": (
             "throw the companion", "flick the companion", "throwing the companion",
             "companion splat", "companion climbs", "companion hangs from the top bar",
-            "companion went off the screen", "companion lies down",
+            "companion went off the screen", "companion lies down", "companion slips off",
         ),
         "body": (
             "Throw the corner companion by letting go of it while it is still "
             "moving fast. It flies, bounces off the window's edges and stays "
             "where it lands, and now and then something else happens: it "
             "catches the top bar and hangs from it, grabs a panel's top edge "
-            "and climbs on, splats against a side of the window and slides "
+            "and climbs on, catches the end of a panel as it falls past or "
+            "slides off one and pulls itself up, splats against a side of the "
+            "window and slides "
             "down to the panel below, or goes off one side and comes back on "
             "the other. Once down it settles in its own way: sitting with its "
             "legs dangling or kicking, lying down, stretching, or swinging "

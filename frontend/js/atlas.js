@@ -1933,20 +1933,21 @@ function atlasHeadProps(sway, ears, look) {
   atlasMake("path", { class: "atl-prop-rim", d: `M${ATLAS_GEO.eyes[0][0] + 5.6} ${ATLAS_GEO.eyes[0][1] + 0.2}Q31 ${ATLAS_GEO.eyes[0][1] - 1.2} ${ATLAS_GEO.eyes[1][0] - 5.6} ${ATLAS_GEO.eyes[1][1] + 0.2}` }, glasses);
 }
 
-//: Reading (the sprite grid's `reading` cell): an open book of light under
-//: the figure, its pages lit from inside with a small constellation on
-//: them, the tail sweeping under it. Drawn over the tail and under the
-//: legs, so Atlas sits on it; the CSS shows it while a long answer is read.
+//: Reading (the sprite grid's `reading` cell): an open book of light held
+//: in both hands at the chest (the arms turn in, the CSS), its pages lit
+//: from inside with a small constellation on them. Drawn last, over the
+//: body and arms, not under the figure: a book read from below its feet
+//: made no sense (K14). The CSS shows it while a long answer is read.
 function atlasBookProp(layer) {
   const book = atlasGroup(layer, "nmp nmp-book");
-  atlasMake("ellipse", { class: "atl-prop-moon-glow", cx: 31, cy: 86, rx: 24, ry: 8 }, book);
-  const pageL = "M31 80.6C24 78.4 16 78.8 8.6 81.4C8.2 84.6 8.4 87.8 9 91C16 88.4 24 88 31 90.2Z";
-  const pageR = "M31 80.6C38 78.4 46 78.8 53.4 81.4C53.8 84.6 53.6 87.8 53 91C46 88.4 38 88 31 90.2Z";
+  atlasMake("ellipse", { class: "atl-prop-moon-glow", cx: 31, cy: 56.7, rx: 12, ry: 5 }, book);
+  const pageL = "M31 53.4C27.5 52 23.5 52.3 19.8 53.9C19.6 55.9 19.7 57.9 20 59.8C23.5 58.2 27.5 58 31 59.3Z";
+  const pageR = "M31 53.4C34.5 52 38.5 52.3 42.2 53.9C42.4 55.9 42.3 57.9 42 59.8C38.5 58.2 34.5 58 31 59.3Z";
   for (const d of [pageL, pageR]) atlasMake("path", { class: "atl-prop-page", d }, book);
-  atlasMake("path", { class: "atl-prop-page-edge", d: "M9 91C16 88.4 24 88 31 90.2C38 88 46 88.4 53 91" }, book);
-  atlasMake("path", { class: "atl-thread", d: "M14 84.6L19 82.8L23 85.4L27.6 83.2M35 83.2L40 85.2L44.6 82.6L49 84.8" }, book);
-  for (const [x, y] of [[14, 84.6], [19, 82.8], [23, 85.4], [27.6, 83.2], [35, 83.2], [40, 85.2], [44.6, 82.6], [49, 84.8]]) {
-    atlasMake("circle", { class: "atl-node-dot", cx: x, cy: y, r: 0.55 }, book);
+  atlasMake("path", { class: "atl-prop-page-edge", d: "M20 59.8C23.5 58.2 27.5 58 31 59.3C34.5 58 38.5 58.2 42 59.8" }, book);
+  atlasMake("path", { class: "atl-thread", d: "M22.5 55.9L25 54.8L27 56.4L29.3 55M33 55L35.5 56.2L37.8 54.6L40 56" }, book);
+  for (const [x, y] of [[22.5, 55.9], [25, 54.8], [27, 56.4], [29.3, 55], [33, 55], [35.5, 56.2], [37.8, 54.6], [40, 56]]) {
+    atlasMake("circle", { class: "atl-node-dot", cx: x, cy: y, r: 0.4 }, book);
   }
   return book;
 }
@@ -2237,7 +2238,6 @@ function atlasBody(parent, id, props, look, route = null) {
       mask(atlasTail(tipAt[kind], edge, look), "tip");
     }
     if (!edge && props) {
-      atlasBookProp(back.fill);
       atlasCoilProp(back.fill);
       atlasMapProp(back.fill);
     }
@@ -2481,6 +2481,7 @@ function atlasBody(parent, id, props, look, route = null) {
   }
   if (props) {
     atlasHandProps(arms.r, arms.l, look);
+    atlasBookProp(frontAt.fill);
     //: Startled, a translucent bubble round the whole figure (the
     //: reference's `startle` cell); the CSS shows it.
     const bubble = atlasGroup(frontAt.fill, "nmp nmp-bubble");

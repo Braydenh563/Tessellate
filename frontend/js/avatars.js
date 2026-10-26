@@ -1294,7 +1294,12 @@ const NM_MARK_PARTS = [
   ".nm-wave", ".nm-wing", ".nm-tentacle", ".nm-foot", ".nm-flame", ".nm-tail", ".nm-tails", ".nm-starfield",
   ".nm-aura", ".nm-earring",
 ].join(", ");
-const NM_FIGURE_PARTS = `${NM_MARK_PARTS}, .nmb-leg, .nmb-arm, .nmb-hold, .nm-buddy-head, .nmp, .nmp-lantern-glow, .nmc-shadow`;
+const NM_FIGURE_PARTS = `${NM_MARK_PARTS}, .nmb-leg, .nmb-arm, .nmb-hold, .nm-buddy-head, .nmp, .nmp-lantern-glow, .nmc-shadow, .nmc-hair-crown, .nm-eyewear, .nmc-lids`;
+//: Where a covering hat's brim meets the head, in drawing units: the hair
+//: above it is under the hat (K25). The nightcap's is the line along its
+//: band, a little under the band's middle so the band covers the seam.
+const NM_HAT_BRIM = { beanie: 14, cap: 11, cowboy: 11, hat: 10, gnome: 11, chefhat: 8, tricorn: 7 };
+const NM_NIGHTCAP_BRIM = "M-40 17 L8 17 L20 12 L32 10.5 L46 11 L58 15 L104 15";
 const NM_FACE_CACHE_CAP = 160;
 const nameMarkFaceCache = new Map();
 let nameMarkMeasureHost = null;
@@ -1886,20 +1891,40 @@ function drawCharacter(seed, size = 20, mode = "mark") {
     make("path", { d: `M${x} ${y0} L${x} ${y1}`, stroke: fill, "stroke-width": 4, "stroke-linecap": "round" }, g);
     return g;
   };
+  //: **Hair under a hat** (K25, the owner: "the hair is showing from
+  //: behind the hat"): under a hat that covers the crown, nothing of the
+  //: hair above its brim is drawn; under the nightcap, which comes and
+  //: goes, the hair above its band is a piece of its own
+  //: (`nmc-hair-crown`) that the CSS hides while the cap shows.
+  const brimAt = creature?.gnomeHat ? NM_HAT_BRIM.gnome : NM_HAT_BRIM[worn.find((p) => NM_HAT_BRIM[p])];
+  const capSlot = full && !hatOn;
+  const brimLine = brimAt ? `M-40 ${brimAt} L104 ${brimAt}` : capSlot ? NM_NIGHTCAP_BRIM : "";
+  if (brimLine) {
+    make("path", { d: `${brimLine} L104 120 L-40 120 Z` }, make("clipPath", { id: id("hb") }, defs));
+    if (!brimAt) make("path", { d: `${brimLine} L104 -40 L-40 -40 Z` }, make("clipPath", { id: id("hc") }, defs));
+  }
+  const hairUnder = (parent, draw) => {
+    if (!brimLine) return draw(parent);
+    draw(make("g", { "clip-path": `url(#${id("hb")})` }, parent));
+    if (!brimAt) draw(make("g", { class: "nmc-hair-crown", "clip-path": `url(#${id("hc")})` }, parent));
+  };
   //: Behind the head: the back layer in the shade, a ponytail, locs, a bun.
-  if (hairStyle?.back) hairShape(hairStyle.back, back, hairShade);
-  if (hairStyle?.tail) hairShape(hairStyle.tail, back);
-  if (hairStyle?.locs) for (const [x, y0, y1] of hairStyle.locs) lock(x, y0, y1, hairShade, back);
-  if (hairStyle?.backCurls) {
-    for (const [cx, cy, r] of hairStyle.backCurls) make("circle", { cx, cy, r, fill: hairLine, stroke: hairLine, "stroke-width": LW * 2 }, back);
-    for (const [cx, cy, r] of hairStyle.backCurls) make("circle", { cx, cy, r, fill: hairShade }, back);
-  }
-  if (hairStyle?.bun && !hatOn) {
-    const [cx, cy, r] = hairStyle.bun;
-    make("circle", { cx, cy, r, fill: hairColour, stroke: hairLine, "stroke-width": LW }, back);
-    make("path", { d: `M${cx - r * 0.55} ${cy + r * 0.1} C${cx - r * 0.4} ${cy - r * 0.6} ${cx + r * 0.5} ${cy - r * 0.6} ${cx + r * 0.55} ${cy}`, fill: "none", stroke: hairShade, "stroke-width": 0.9, "stroke-linecap": "round" }, back);
-    make("path", { d: `M${cx - r * 0.6} ${cy - r * 0.35} Q${cx - r * 0.2} ${cy - r * 0.85} ${cx + r * 0.3} ${cy - r * 0.8}`, fill: "none", stroke: hairLit, "stroke-width": 1.6, "stroke-linecap": "round", "stroke-opacity": 0.8 }, back);
-  }
+  const backHair = (parent) => {
+    if (hairStyle?.back) hairShape(hairStyle.back, parent, hairShade);
+    if (hairStyle?.tail) hairShape(hairStyle.tail, parent);
+    if (hairStyle?.locs) for (const [x, y0, y1] of hairStyle.locs) lock(x, y0, y1, hairShade, parent);
+    if (hairStyle?.backCurls) {
+      for (const [cx, cy, r] of hairStyle.backCurls) make("circle", { cx, cy, r, fill: hairLine, stroke: hairLine, "stroke-width": LW * 2 }, parent);
+      for (const [cx, cy, r] of hairStyle.backCurls) make("circle", { cx, cy, r, fill: hairShade }, parent);
+    }
+    if (hairStyle?.bun && !hatOn) {
+      const [cx, cy, r] = hairStyle.bun;
+      make("circle", { cx, cy, r, fill: hairColour, stroke: hairLine, "stroke-width": LW }, parent);
+      make("path", { d: `M${cx - r * 0.55} ${cy + r * 0.1} C${cx - r * 0.4} ${cy - r * 0.6} ${cx + r * 0.5} ${cy - r * 0.6} ${cx + r * 0.55} ${cy}`, fill: "none", stroke: hairShade, "stroke-width": 0.9, "stroke-linecap": "round" }, parent);
+      make("path", { d: `M${cx - r * 0.6} ${cy - r * 0.35} Q${cx - r * 0.2} ${cy - r * 0.85} ${cx + r * 0.3} ${cy - r * 0.8}`, fill: "none", stroke: hairLit, "stroke-width": 1.6, "stroke-linecap": "round", "stroke-opacity": 0.8 }, parent);
+    }
+  };
+  hairUnder(back, backHair);
   if (creature?.mane) {
     const mane = creature.mane === "rainbow" ? null : creature.mane;
     if (mane) {
@@ -2031,38 +2056,41 @@ function drawCharacter(seed, size = 20, mode = "mark") {
   if (creature?.sideEars) for (const sx of [-1, 1]) shape("path", { d: `M${32 + sx * 26} 26 L${32 + sx * (34 + creature.sideEars * 4)} 18 L${32 + sx * 26} 34 Z`, fill: base }, torso);
   if (beast?.gills) for (const sx of [-1, 1]) for (const dy of [-5, 0, 5]) outlined(`M${32 + sx * 26} ${30 + dy} L${32 + sx * 34} ${27 + dy * 1.6}`, beast.gills, 2.4, torso);
   // The front hair.
-  if (hairStyle) {
-    //: The fringe's shadow on the forehead: its own shape two units
-    //: lower, in the skin's shade, clipped to the head.
-    make("path", { d: hairStyle.sides || hairStyle.front, transform: "translate(0 2)", fill: nmMix(base, "#000000", 0.22), "fill-opacity": 0.45 }, make("g", { "clip-path": `url(#${id("c")})` }, torso));
-    //: A shaved layer reads as the hair colour thinned over the skin.
-    if (hairStyle.sides) make("path", { d: hairStyle.sides, fill: nmMix(hairColour, base, 0.35), stroke: hairLine, "stroke-width": LW * 0.6, "stroke-linejoin": "round" }, torso);
-    hairShape(hairStyle.front, torso, hairStyle.shaved ? nmMix(hairColour, base, 0.3) : hairColour);
-    const texture = (d, colour, width, opacity) => make("path", { d, fill: "none", stroke: colour, "stroke-width": width, "stroke-opacity": opacity, "stroke-linecap": "round", "stroke-linejoin": "round" }, torso);
-    if (hairStyle.curls) {
-      //: One cloud of curls with one outline round the outside: every
-      //: curl's outline first, then every curl's fill over them, so the
-      //: line only shows where the cloud meets the page or the face. A
-      //: small arc in the shade on every other curl is the texture.
-      for (const [cx, cy, r] of hairStyle.curls) make("circle", { cx, cy, r, fill: hairLine, stroke: hairLine, "stroke-width": LW * 2 }, torso);
-      for (const [cx, cy, r] of hairStyle.curls) make("circle", { cx, cy, r, fill: hairColour }, torso);
-      if (!mini) hairStyle.curls.forEach(([cx, cy, r], i) => {
-        if (i % 2 === 0) texture(`M${cx - r * 0.5} ${cy + r * 0.1} Q${cx - r * 0.1} ${cy + r * 0.6} ${cx + r * 0.45} ${cy + r * 0.2}`, hairShade, 0.9, 0.75);
-      });
-    }
-    if (hairStyle.frontLocs) {
-      for (const [x, y0, y1] of hairStyle.frontLocs) {
-        lock(x, y0, y1, hairColour, torso);
-        if (!mini) for (let y = y0 + 5; y < y1; y += 6) texture(`M${x - 2} ${y} Q${x} ${y + 1.2} ${x + 2} ${y}`, hairShade, 0.8, 0.8);
+  const frontHair = (parent) => {
+    if (hairStyle) {
+      //: The fringe's shadow on the forehead: its own shape two units
+      //: lower, in the skin's shade, clipped to the head.
+      make("path", { d: hairStyle.sides || hairStyle.front, transform: "translate(0 2)", fill: nmMix(base, "#000000", 0.22), "fill-opacity": 0.45 }, make("g", { "clip-path": `url(#${id("c")})` }, parent));
+      //: A shaved layer reads as the hair colour thinned over the skin.
+      if (hairStyle.sides) make("path", { d: hairStyle.sides, fill: nmMix(hairColour, base, 0.35), stroke: hairLine, "stroke-width": LW * 0.6, "stroke-linejoin": "round" }, parent);
+      hairShape(hairStyle.front, parent, hairStyle.shaved ? nmMix(hairColour, base, 0.3) : hairColour);
+      const texture = (d, colour, width, opacity) => make("path", { d, fill: "none", stroke: colour, "stroke-width": width, "stroke-opacity": opacity, "stroke-linecap": "round", "stroke-linejoin": "round" }, parent);
+      if (hairStyle.curls) {
+        //: One cloud of curls with one outline round the outside: every
+        //: curl's outline first, then every curl's fill over them, so the
+        //: line only shows where the cloud meets the page or the face. A
+        //: small arc in the shade on every other curl is the texture.
+        for (const [cx, cy, r] of hairStyle.curls) make("circle", { cx, cy, r, fill: hairLine, stroke: hairLine, "stroke-width": LW * 2 }, parent);
+        for (const [cx, cy, r] of hairStyle.curls) make("circle", { cx, cy, r, fill: hairColour }, parent);
+        if (!mini) hairStyle.curls.forEach(([cx, cy, r], i) => {
+          if (i % 2 === 0) texture(`M${cx - r * 0.5} ${cy + r * 0.1} Q${cx - r * 0.1} ${cy + r * 0.6} ${cx + r * 0.45} ${cy + r * 0.2}`, hairShade, 0.9, 0.75);
+        });
       }
+      if (hairStyle.frontLocs) {
+        for (const [x, y0, y1] of hairStyle.frontLocs) {
+          lock(x, y0, y1, hairColour, parent);
+          if (!mini) for (let y = y0 + 5; y < y1; y += 6) texture(`M${x - 2} ${y} Q${x} ${y + 1.2} ${x + 2} ${y}`, hairShade, 0.8, 0.8);
+        }
+      }
+      if (hairStyle.part) texture(hairStyle.part, hairShade, 1.1, 0.9);
+      if (hairStyle.line) texture(hairStyle.line, base, 1.4, 1);
+      if (!mini) for (const d of hairStyle.strands || []) texture(d, hairShade, 0.9, 0.7);
+      if (hairStyle.bun && !hatOn) make("ellipse", { cx: 32, cy: 2.4, rx: 4.4, ry: 1.8, fill: pair.cloth[0], stroke: nmLineFor(pair.cloth[0]), "stroke-width": 0.8 }, parent);
+      if (hairStyle.tail) make("ellipse", { cx: 52, cy: 10, rx: 2.2, ry: 3, transform: "rotate(-30 52 10)", fill: pair.cloth[0], stroke: nmLineFor(pair.cloth[0]), "stroke-width": 0.8 }, parent);
+      if (hairStyle.shine) texture(hairStyle.shine, hairLit, 2.2, 0.85);
     }
-    if (hairStyle.part) texture(hairStyle.part, hairShade, 1.1, 0.9);
-    if (hairStyle.line) texture(hairStyle.line, base, 1.4, 1);
-    if (!mini) for (const d of hairStyle.strands || []) texture(d, hairShade, 0.9, 0.7);
-    if (hairStyle.bun && !hatOn) make("ellipse", { cx: 32, cy: 2.4, rx: 4.4, ry: 1.8, fill: pair.cloth[0], stroke: nmLineFor(pair.cloth[0]), "stroke-width": 0.8 }, torso);
-    if (hairStyle.tail) make("ellipse", { cx: 52, cy: 10, rx: 2.2, ry: 3, transform: "rotate(-30 52 10)", fill: pair.cloth[0], stroke: nmLineFor(pair.cloth[0]), "stroke-width": 0.8 }, torso);
-    if (hairStyle.shine) texture(hairStyle.shine, hairLit, 2.2, 0.85);
-  }
+  };
+  hairUnder(torso, frontHair);
   if (creature?.snakeHair) for (const x of [14, 24, 34, 44, 52]) outlined(`M${x} 10 C${x - 4} 2 ${x + 4} -2 ${x} -8`, creature.snakeHair, 3, torso);
   if (creature?.topknot) shape("circle", { cx: 32, cy: 0, r: 6, fill: creature.topknot }, torso);
   //: A soft sheen on a bare crown, top left, the gloss Atlas's gel has
@@ -2317,7 +2345,15 @@ function drawCharacter(seed, size = 20, mode = "mark") {
     const [lx, ly] = eyes[0];
     const [rx2] = eyes[1];
     const rim = { glasses: "#2b2a33", squareglasses: "#2b2a33", monocle: "#b8860b", goggles: "#6b4a2f", threed: "#f5f4ef", starglasses: "#e36fa6", heartglasses: "#e8364f", visor: "#3fd0e0", shades: "#1c1b22" }[eyewear] || "#2b2a33";
-    const g = make("g", { class: "nm-eyewear" }, top);
+    //: On the face, not the crown: it goes with the head's tilt and turn
+    //: (K14, the owner: "the sunglasses ... dont move with the face"). A
+    //: figure in shades has no eyes drawn under them, so it has closed lids
+    //: of its own, shown only asleep, when the shades go up (K25b).
+    if (full && eyeStyle === "shades") {
+      const lids = make("g", { class: "nmc-lids" }, head);
+      for (const [x, y] of eyes) stroke(`M${x - 3.6} ${y - 0.6} Q${x} ${y + 3} ${x + 3.6} ${y - 0.6}`, lids, 2);
+    }
+    const g = make("g", { class: "nm-eyewear" }, head);
     if (eyewear === "visor") make("rect", { x: 9, y: ly - 5, width: 46, height: 10, rx: 5, fill: "#3fd0e0", "fill-opacity": 0.75, stroke: "#1b7f8c", "stroke-width": 1.2 }, g);
     else if (eyewear === "shades") {
       for (const x of [lx, rx2]) make("path", { d: `M${x - 6} ${ly - 3.5} L${x + 6} ${ly - 3.5} L${x + 5} ${ly + 3} Q${x} ${ly + 5.5} ${x - 5} ${ly + 3} Z`, fill: rim }, g);
@@ -2340,14 +2376,16 @@ function drawCharacter(seed, size = 20, mode = "mark") {
       stroke(`M${lx + 6} ${ly - 0.5} Q32 ${ly - 3} ${rx2 - 6} ${ly - 0.5}`, g, 1.4, rim);
     }
   }
+  //: A patch and a mask are on the face too, with the eyes and mouth they
+  //: cover; hats stay on the crown, which does not turn (K14).
   if (props.includes("eyepatch") && eyes.length === 2) {
     const [x, y] = eyes[1];
-    stroke(`M8 ${y - 9} L56 ${y + 2}`, top, 1.2, "#1c1b22");
-    make("ellipse", { cx: x, cy: y, rx: 5.6, ry: 5, fill: "#1c1b22" }, top);
+    stroke(`M8 ${y - 9} L56 ${y + 2}`, head, 1.2, "#1c1b22");
+    make("ellipse", { cx: x, cy: y, rx: 5.6, ry: 5, fill: "#1c1b22" }, head);
   }
   if (props.includes("ninjamask")) {
-    make("path", { d: `M6 ${my - 5} C12 ${my - 7} 52 ${my - 7} 58 ${my - 5} L56 ${my + 12} C44 ${my + 18} 20 ${my + 18} 8 ${my + 12} Z`, fill: "#2b2a33", stroke: nmLineFor("#2b2a33"), "stroke-width": LW }, top);
-    make("path", { d: "M6 14 C16 10 48 10 58 14 L58 19 C48 16 16 16 6 19 Z", fill: "#2b2a33" }, top);
+    make("path", { d: `M6 ${my - 5} C12 ${my - 7} 52 ${my - 7} 58 ${my - 5} L56 ${my + 12} C44 ${my + 18} 20 ${my + 18} 8 ${my + 12} Z`, fill: "#2b2a33", stroke: nmLineFor("#2b2a33"), "stroke-width": LW }, head);
+    make("path", { d: "M6 14 C16 10 48 10 58 14 L58 19 C48 16 16 16 6 19 Z", fill: "#2b2a33" }, head);
   }
   const headwear = props.find((p) => NAME_MARK_HAT_KINDS.includes(p) || ["halo", "horns", "antenna", "headphones", "helmet"].includes(p));
   const gold = "#f5c518";
@@ -2490,11 +2528,15 @@ function drawCharacter(seed, size = 20, mode = "mark") {
     const phones = make("g", { class: "nmp nmp-headphones" }, top);
     make("path", { d: "M7 30 C5 3 59 3 57 30", fill: "none", stroke: "#2b2a33", "stroke-width": 3.2, "stroke-linecap": "round" }, phones);
     for (const x of [5, 59]) make("rect", { x: x - 4.5, y: 23, width: 9, height: 14, rx: 4.5, fill: "#e2574c", stroke: "#2b2a33", "stroke-width": LW }, phones);
-    const cap = make("g", { class: "nmp nmp-nightcap" }, top);
-    make("path", { d: "M9 15 C13 1 30 -5 42 -1 C52 3 59 11 63 24 L57 22 C51 12 41 9 31 11 C23 12 16 14 9 15 Z", fill: "#4f7fd9", stroke: "#23407a", "stroke-width": LW, "stroke-linejoin": "round" }, cap);
-    make("path", { d: "M8 16 C18 9 46 7 58 14", fill: "none", stroke: "#f5f4ef", "stroke-width": 4, "stroke-linecap": "round" }, cap);
-    make("circle", { cx: 63, cy: 24, r: 3.4, fill: "#f5f4ef", stroke: "#9aa0a6", "stroke-width": 1 }, cap);
-    if (eyes.length === 2) {
+    //: Not over a hat it wears already: two hats at once (K14).
+    if (capSlot) {
+      const cap = make("g", { class: "nmp nmp-nightcap" }, top);
+      make("path", { d: "M9 15 C13 1 30 -5 42 -1 C52 3 59 11 63 24 L57 22 C51 12 41 9 31 11 C23 12 16 14 9 15 Z", fill: "#4f7fd9", stroke: "#23407a", "stroke-width": LW, "stroke-linejoin": "round" }, cap);
+      make("path", { d: "M8 16 C18 9 46 7 58 14", fill: "none", stroke: "#f5f4ef", "stroke-width": 4, "stroke-linecap": "round" }, cap);
+      make("circle", { cx: 63, cy: 24, r: 3.4, fill: "#f5f4ef", stroke: "#9aa0a6", "stroke-width": 1 }, cap);
+    }
+    //: Not over glasses it wears already: two pairs at once (K14).
+    if (eyes.length === 2 && !eyewear) {
       const glasses = make("g", { class: "nmp nmp-glasses" }, head);
       for (const [x, y] of eyes) make("circle", { cx: x, cy: y, r: 5.4, fill: "#ffffff", "fill-opacity": 0.18, stroke: "#6b4a2f", "stroke-width": 1.3 }, glasses);
       stroke(`M${eyes[0][0] + 5.4} ${eyes[0][1]} Q32 ${eyes[0][1] - 2.4} ${eyes[1][0] - 5.4} ${eyes[1][1]}`, glasses, 1.2, "#6b4a2f");
@@ -4439,9 +4481,14 @@ function nameMarkBuddyRestore(spot) {
 //: as long as it is there. The spot itself is kept.
 function nameMarkBuddyStepAside(spot, obstacles, far = 320) {
   if (!nameMarkBuddyHits(spot.x, spot.y, spot.pose, obstacles, spot.legs)) return spot;
+  //: Along its own edge, not off the end of it into the air (K25: Atlas
+  //: stepped 96px aside off the board's dock and was then carried away).
+  const along = spot.edge?.type === "top" || spot.edge?.type === "under" ? spot.edge : null;
+  const lo = Math.max(0, along?.left ?? 0);
+  const hi = Math.min(innerWidth, along?.right ?? innerWidth) - NMB_W;
   for (let d = 16; d <= far; d += 16) {
     for (const x of [spot.x - d, spot.x + d]) {
-      if (x < 0 || x > innerWidth - NMB_W) continue;
+      if (x < lo || x > hi) continue;
       if (!nameMarkBuddyHits(x, spot.y, spot.pose, obstacles, spot.legs)) return { ...spot, x };
     }
   }
@@ -7051,7 +7098,9 @@ function nameMarkBuddyAct(act, ms) {
   //: can it lay down??"): a nap on a flat place wide enough to lie on is a
   //: lie-down (`lie`, with its pillow and its slow way down and up);
   //: anywhere else it dozes where it is.
-  if (act === "nap" && !nameMarkBuddyActOff("lie") && nameMarkBuddyLieRoom()) act = "lie";
+  //: A lie-down asked for where there is no room for one is a doze.
+  const lieSide = act === "lie" || (act === "nap" && !nameMarkBuddyActOff("lie")) ? nameMarkBuddyLieRoom() : "";
+  if (act === "nap" || act === "lie") act = lieSide ? "lie" : "nap";
   const spec = NAME_MARK_BUDDY_ACTS[act];
   if (act === "glance") nameMarkBuddyAim(nmb.pointer);
   if (act === "look" || act === "nap") nameMarkBuddyRelease();
@@ -7064,7 +7113,7 @@ function nameMarkBuddyAct(act, ms) {
   //: any other act does not, since each style pass here is measurable.
   if (act === was) void buddy.offsetWidth;
   if (NMB_SCENE_ACTS.includes(act)) nameMarkBuddyScene(buddy);
-  if (act === "lie") nameMarkBuddyLieDown(buddy);
+  if (act === "lie") nameMarkBuddyLieDown(buddy, lieSide);
   //: **Never the same twice running** (the owner: "also state variations,
   //: not the exact same animation or mood animation each time"). An act
   //: with variants plays one it did not play last time (`data-variant`, the
@@ -7104,18 +7153,30 @@ function nameMarkBuddyAct(act, ms) {
 }
 
 //: Room to lie down: standing (not tucked, not peeking) on a flat place,
-//: with nothing it must not cover where it would lie, from 30px behind its
-//: box to 12px past it, over its lower half. One obstacle sweep, at the
-//: moment it would lie down.
+//: with nothing it must not cover where it would lie, over its lower half.
+//: Lying, it reaches past its box on one side (`NMB_LIE_SPAN`, px from its
+//: left at size 1, measured: the cap to the soles), and the whole of that
+//: must be on its perch (K25, the owner: "it is hanging off the ui element
+//: it is perched on"; it lay with only its legs on the board's dock). The
+//: side that fits, or either but last time's when both do; "" for none.
+//: One obstacle sweep, at the moment it would lie down.
+const NMB_LIE_SPAN = { left: [-42, 70], right: [-6, 106] };
 function nameMarkBuddyLieRoom() {
-  if (nmb.pose !== "stand" || nmb.legs || nmb.visit || !Number.isFinite(nmb.x)) return false;
+  if (nmb.pose !== "stand" || nmb.legs || nmb.visit || !Number.isFinite(nmb.x)) return "";
   const s = Math.max(0.7, nmb.scale || 1);
-  const box = { left: nmb.x - 30 * s, right: nmb.x + NMB_W + 12 * s, top: nmb.y + NMB_FEET - 36 * s, bottom: nmb.y + NMB_FEET - 2 };
-  if (box.left < 0 || box.right > innerWidth) return false;
   const edge = nmb.spot?.edge;
-  if (edge && edge.right - edge.left < box.right - box.left) return false;
+  const lo = Math.max(0, edge?.left ?? 0);
+  const hi = Math.min(innerWidth, edge?.right ?? innerWidth);
+  const top = nmb.y + NMB_FEET - 36 * s;
+  const bottom = nmb.y + NMB_FEET - 2;
   const obstacles = nameMarkBuddyObstacles(nameMarkBuddyTab());
-  return !obstacles.some((b) => b.right > box.left && b.left < box.right && b.bottom > box.top && b.top < box.bottom);
+  const sides = Object.keys(NMB_LIE_SPAN).filter((side) => {
+    const [a, b] = NMB_LIE_SPAN[side];
+    const left = nmb.x + 32 + (a - 32) * s;
+    const right = nmb.x + 32 + (b - 32) * s;
+    return left >= lo && right <= hi && !obstacles.some((o) => o.right > left && o.left < right && o.bottom > top && o.top < bottom);
+  });
+  return sides.find((side) => side !== nmb.lieSide) || sides[0] || "";
 }
 
 //: How many ways each act can go, and the pick: any but the last one.
@@ -7199,9 +7260,11 @@ function nameMarkBuddyScene(buddy) {
   make("ellipse", { cx: -8, cy: 86, rx: 18, ry: 5, fill: "#e6e0f2" }, pillow);
   const front = layer("front");
   const book = make("g", { class: "nms nms-book" }, front);
-  make("path", { d: "M17 50 L32 53 L47 50 L47 62 L32 65 L17 62 Z", fill: "#b5473a" }, book);
-  make("path", { d: "M19 51 L32 54 L45 51 L45 60 L32 63 L19 60 Z", fill: "#fbf6ea" }, book);
-  make("path", { d: "M32 54 L32 63", stroke: "#c9bfa6", "stroke-width": 1 }, book);
+  //: At its hands, turned in to hold it (the CSS), in front of its belly,
+  //: not under its chin (K14).
+  make("path", { d: "M17 55 L32 58 L47 55 L47 67 L32 70 L17 67 Z", fill: "#b5473a" }, book);
+  make("path", { d: "M19 56 L32 59 L45 56 L45 65 L32 68 L19 65 Z", fill: "#fbf6ea" }, book);
+  make("path", { d: "M32 59 L32 68", stroke: "#c9bfa6", "stroke-width": 1 }, book);
   face.insertBefore(back, char);
   char.after(front);
 }
@@ -7300,11 +7363,17 @@ function nameMarkBuddyFrames(buddy, frames) {
     else nmb.poseSteps.push(setTimeout(set, i * NMB_POSE_FRAME_MS));
   });
 }
-function nameMarkBuddyLieDown(buddy) {
-  if (!nameMarkBuddyHasAtlas(buddy)) return;
-  //: Head to the left or the right, a different way from last time.
-  const v = nameMarkBuddyPickVariant(2, Number(buddy.dataset.atlasVariant ?? -1) % 2);
-  buddy.dataset.atlasVariant = String(v);
+//: Head to the left or the right: the side its perch has room for
+//: (`nameMarkBuddyLieRoom`). Atlas's variant 1 reaches left of its box,
+//: 0 right; a drawn face lies head left, or head right with `data-lie`.
+function nameMarkBuddyLieDown(buddy, side = "left") {
+  nmb.lieSide = side;
+  if (!nameMarkBuddyHasAtlas(buddy)) {
+    if (side === "right") buddy.dataset.lie = "r";
+    else delete buddy.dataset.lie;
+    return;
+  }
+  buddy.dataset.atlasVariant = side === "left" ? "1" : "0";
   nameMarkBuddyFrames(buddy, ["lie-1", "lie-2", "lie"]);
 }
 function nameMarkBuddyCurlUp(buddy) {

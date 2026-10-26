@@ -5,6 +5,9 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
+- Companion: thrown at the top bar it catches hold more often (it mostly bounced off), and on the way down it may catch the end of a panel it falls past, or catch the edge as it slides off one, and pull itself up; each catch hangs a different while before the pull.
+- Fix: the companion's face accessories (sunglasses, an eyepatch, a mask) turn and tilt with its face; reading glasses are no longer drawn over glasses it wears; it holds a book in both hands in front of it, and Atlas reads its book of light at its chest rather than sitting on it.
+- Fix: the companion looks asleep without its Zs: its head lolls with a slow breathing bob, its eyes shut (they never did, under the blink loop), sunglasses go up onto its forehead, and hanging it holds on by one hand and sways like a sloth.
 ## [Unreleased]
 - Boards and mind maps: right-click a selection for Export selection, Copy as image (PNG, or a download with a note where the browser cannot copy pictures) and Copy as SVG; a selection export is the selection plus 24px of the canvas ground, with its links.
 - Presenter mode: the laser is one steady dot that follows every pointer move (it no longer fades out when the pointer slows), and the page bar's title cell has a fixed width with an ellipsis so the arrows sit at the same place on every page.
@@ -17,6 +20,7 @@ below). Versioning is `0.x` while the app stabilises.
 - Board: the arrows and turn handle hide while a size or gap badge shows, so the numbers are no longer covered.
 - Fix: the default board now gets a stored thumbnail on the Boards list like every other board (its missing id was skipped by the thumbnail writer; it travels as board 0).
 - Fix: resizing a note card now moves its four arrows and its links with the box on every frame, as a text box or picture already did (the right arrow was 98px inside the box at +120, now 22px outside at every step).
+- Fix: the companion lies down only where its whole body fits on its perch, head left or right to suit (it lay with only its legs on the board's tool dock); its shadow and dark-theme glow sit under the lying body, its Zs rise over its head, the hair above a hat's brim or the nightcap's band is hidden, and no nightcap goes over a hat it already wears.
 - CI: today's lint ratchets back in line (guards on boot functions dropped from the equation editor, one-off sweeps whose findings are in this log removed, the lag view read through prefs, the sketch button no longer hands its click event to openSketch).
 - Fix: turning Graph auto-fit back on after a resize with it off now frames the map again, instead of leaving the camera treated as moved for good.
 - Fix: the Web row in the palette and the slash menu always toggles web search; the Web button opens the panel first when web is on and the panel is shut, and its tooltip and the Guide say so.
