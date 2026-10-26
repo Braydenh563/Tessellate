@@ -8946,6 +8946,11 @@ function wbBuildContextMenu(kind) {
           wbMapStraightenEdge(mapNode)
         );
       }
+      if (!rooted && (mapNode.data?.edge_from || mapNode.data?.edge_to)) {
+        sub("Line ends: back to Auto", "Or double-click an end of the line", () =>
+          wbMapAutoEdgeEnds(mapNode)
+        );
+      }
       sub("Connect this topic to another", "Shift+C, then drag to the other topic", () => {
         //: Through the module's handle: `selectWbTool` lives inside
         //: `initWhiteboard`, so a bare call from this top-level builder threw
@@ -13907,6 +13912,7 @@ async function initWhiteboard() {
   $("wb-new-board")?.addEventListener("click", () => createNewBoard());
   $("wb-rename-board")?.addEventListener("click", renameCurrentBoard);
   $("wb-map-layout")?.addEventListener("change", (e) => wbMapSetLayout(e.target.value));
+  $("wb-map-link-style")?.addEventListener("change", (e) => wbMapSetLinkStyle(e.target.value));
   //: Phase 5's controls (§5 items 18 to 21). Wired here with the rest of the
   //: board chrome rather than inside their own render functions, which is the
   //: shape `tests/test_frontend_handlers.py` exists to keep: a listener added

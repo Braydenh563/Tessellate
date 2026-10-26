@@ -2290,7 +2290,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     ("Boards and maps", (
         "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-diagram-tools", "board-paste", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
         "board-comments", "sticky-notes",
-        "mind-map-structure", "mind-map-callouts", "board-current-layer", "board-hand-drawn", "board-tables", "board-edit-data", "board-colours",
+        "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-hand-drawn", "board-tables", "board-edit-data", "board-colours",
     )),
     ("Library and files", (
         "library", "library-controls", "bookmarks", "web-clipper-bookmark", "contents", "library-skills",
@@ -2479,6 +2479,28 @@ MORE_TOPICS.extend([
         "badge": {"label": "Library", "tab": "library"},
     },
     {
+        "id": "mind-map-lines",
+        "keywords": (
+            "straight lines on a map", "map line style", "lines arent straight", "curved lines",
+            "elbow lines", "which side a line leaves", "side of a topic", "line end side",
+            "pin a line to a side", "topic shape", "hexagon topic", "diamond topic", "cloud topic",
+            "circle topic", "core idea shape",
+        ),
+        "body": (
+            "Beside a map's Layout picker, the line style picker draws every line "
+            "Curved, Straight or Elbow (right angles with rounded corners); a "
+            "topic's own line Shape in its strip still wins. Point at a line, or "
+            "select a topic, and each end of its line shows a hollow dot: drag it "
+            "round the topic to choose the side the line leaves or enters, in any "
+            "layout, and it stays on that side when either topic moves. "
+            "Double-click the dot, or the topic's menu, Lines, Line ends: back to "
+            "Auto, to let the layout choose again. A topic's Box picker offers "
+            "Rounded, Pill, Box, Ellipse, Circle, Hexagon, Diamond, Cloud and "
+            "Plain, the words kept inside the shape. Ctrl+Z undoes each change."
+        ),
+        "badge": {"label": "Library", "tab": "library"},
+    },
+    {
         "id": "mind-map-callouts",
         #: No "votes": one typo from "notes", so "unlink two notes" read as this topic; "vote" matches its plural.
         "keywords": (
@@ -2600,6 +2622,7 @@ TOPIC_META.update({
     "board-hand-drawn": {"title": "The hand-drawn look", "path": "A board's View menu, Hand-drawn look"},
     "board-current-layer": {"title": "The current layer", "path": "A board's sidebar, Layers"},
     "mind-map-structure": {"title": "A structure per branch", "path": "A map topic's menu, Structure"},
+    "mind-map-lines": {"title": "Map line style, line ends and topic shapes", "path": "A map, Layout, the line style picker"},
     "mind-map-callouts": {"title": "Callouts, labels and stamps on a topic", "path": "A map topic's menu, Topic"},
 })
 

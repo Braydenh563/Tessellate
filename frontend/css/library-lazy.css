@@ -6902,3 +6902,136 @@ input[type="color"].wb-mixed {
     }
   }
 }
+
+/* --- a map line's end grips and the topic shapes (K31) ---------------------
+   The owner: "I want to be able to have more say in which sides the
+   connections come from and to" and "more shape designs for the core idea
+   nodes". The two end grips show with the waypoint (hover the line, or the
+   topic at either end selected) and take the waypoint's look, hollow so the
+   two kinds of grip read apart: the waypoint bends, an end picks a side. */
+.wb-map-edge-end {
+  fill: var(--card);
+  stroke: var(--wb-map-edge-colour, var(--accent));
+  stroke-width: 2px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--motion-fast) var(--ease-out);
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scale(var(--wb-inv-zoom));
+}
+
+.wb-map-edge-group:hover .wb-map-edge-end,
+.wb-map-edge-group:has(.wb-map-edge-handle.is-shown) .wb-map-edge-end,
+.wb-map-edge-end.is-dragging {
+  opacity: 1;
+  pointer-events: auto;
+  cursor: move;
+}
+
+/* A circle is the ellipse held square: as tall as it is wide unless its
+   words need more, centred, its label kept to the square inside it. */
+.wb-map-node[data-shape="circle"] {
+  container-type: inline-size;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  justify-content: center;
+  text-align: center;
+}
+
+.wb-map-node[data-shape="circle"] .wb-map-text {
+  max-width: 68cqw;
+}
+
+/* The label row is the topic's full width (`flex: 1`), so a label held to
+   the shape's inner box is centred inside that row too. */
+.wb-map-node:is([data-shape="circle"], [data-shape="hexagon"], [data-shape="diamond"], [data-shape="cloud"]) .wb-map-node-body {
+  justify-content: center;
+}
+
+/* **Diamond, hexagon and cloud cut into their box**, which a border-radius
+   cannot draw and a clip on the topic itself would take its grips, its add
+   button and its selection ring with it. So the topic paints no surface of
+   its own and two layers behind its words draw the shape: the rim in the
+   branch's edge colour, then the face inset by its width. The face is the
+   ground each fill rule above gives the card, restated per state because
+   the topic's own background is now off (no new tokens: the grammar's
+   count only falls). The label is held to the shape's inner box (container
+   units are the topic's own width), and every side's midpoint is on the
+   outline, which is where the lines meet it. */
+.wb-map-node.wb-map-node.wb-map-node:is([data-shape="diamond"], [data-shape="hexagon"], [data-shape="cloud"]) {
+  container-type: inline-size;
+  isolation: isolate;
+  justify-content: center;
+  text-align: center;
+  background: none;
+  border-width: 0;
+  box-shadow: none;
+}
+
+.wb-map-node:is([data-shape="diamond"], [data-shape="hexagon"], [data-shape="cloud"])::before,
+.wb-map-node:is([data-shape="diamond"], [data-shape="hexagon"], [data-shape="cloud"])::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.wb-map-node:is([data-shape="diamond"], [data-shape="hexagon"], [data-shape="cloud"])::before {
+  inset: 0;
+  background: color-mix(in srgb, var(--wb-branch-edge) 70%, transparent);
+}
+
+.wb-map-node:is([data-shape="diamond"], [data-shape="hexagon"], [data-shape="cloud"])::after {
+  inset: 2px;
+  background: color-mix(in srgb, var(--card) calc(var(--glass-opacity) * 100%), var(--modal-bg-opaque));
+}
+
+.wb-map-node.wb-map-filled:is([data-shape="diamond"], [data-shape="hexagon"], [data-shape="cloud"])::after {
+  background: color-mix(in srgb, var(--wb-branch) var(--wb-fill-strength), var(--modal-bg-opaque));
+}
+
+.wb-map-node:is(.wb-map-core, .wb-map-solid):is([data-shape="diamond"], [data-shape="hexagon"], [data-shape="cloud"])::before {
+  background: var(--wb-branch-edge);
+}
+
+.wb-map-node:is(.wb-map-core, .wb-map-solid):is([data-shape="diamond"], [data-shape="hexagon"], [data-shape="cloud"])::after {
+  background: var(--wb-branch);
+}
+
+.wb-map-node[data-shape="diamond"]::before,
+.wb-map-node[data-shape="diamond"]::after {
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+.wb-map-node[data-shape="hexagon"]::before,
+.wb-map-node[data-shape="hexagon"]::after {
+  clip-path: polygon(min(1.25rem, 22%) 0, calc(100% - min(1.25rem, 22%)) 0, 100% 50%, calc(100% - min(1.25rem, 22%)) 100%, min(1.25rem, 22%) 100%, 0 50%);
+}
+
+.wb-map-node.wb-map-node.wb-map-node[data-shape="diamond"] {
+  padding-block: var(--space-8);
+}
+
+.wb-map-node[data-shape="diamond"] .wb-map-text {
+  max-width: 48cqw;
+}
+
+.wb-map-node.wb-map-node.wb-map-node[data-shape="hexagon"] {
+  padding-inline: calc(var(--space-2) + 1.25rem);
+}
+
+/* Twelve bumps round an ellipse, peaking at the four compass points so each
+   side's middle is on the outline (sampled from r = 0.84 + 0.16|cos 6t|). */
+.wb-map-node[data-shape="cloud"]::before,
+.wb-map-node[data-shape="cloud"]::after {
+  clip-path: polygon(100% 50%, 98.7% 54.3%, 95.3% 58%, 90.6% 60.9%, 93.2% 65.7%, 94.3% 70.7%, 93.3% 75%, 90.1% 78.1%, 85.2% 79.6%, 79.7% 79.7%, 79.6% 85.2%, 78.1% 90.1%, 75% 93.3%, 70.7% 94.3%, 65.7% 93.2%, 60.9% 90.6%, 58% 95.3%, 54.3% 98.7%, 50% 100%, 45.7% 98.7%, 42% 95.3%, 39.1% 90.6%, 34.3% 93.2%, 29.3% 94.3%, 25% 93.3%, 21.9% 90.1%, 20.4% 85.2%, 20.3% 79.7%, 14.8% 79.6%, 9.9% 78.1%, 6.7% 75%, 5.7% 70.7%, 6.8% 65.7%, 9.4% 60.9%, 4.7% 58%, 1.3% 54.3%, 0 50%, 1.3% 45.7%, 4.7% 42%, 9.4% 39.1%, 6.8% 34.3%, 5.7% 29.3%, 6.7% 25%, 9.9% 21.9%, 14.8% 20.4%, 20.3% 20.3%, 20.4% 14.8%, 21.9% 9.9%, 25% 6.7%, 29.3% 5.7%, 34.3% 6.8%, 39.1% 9.4%, 42% 4.7%, 45.7% 1.3%, 50% 0, 54.3% 1.3%, 58% 4.7%, 60.9% 9.4%, 65.7% 6.8%, 70.7% 5.7%, 75% 6.7%, 78.1% 9.9%, 79.6% 14.8%, 79.7% 20.3%, 85.2% 20.4%, 90.1% 21.9%, 93.3% 25%, 94.3% 29.3%, 93.2% 34.3%, 90.6% 39.1%, 95.3% 42%, 98.7% 45.7%);
+}
+
+.wb-map-node.wb-map-node.wb-map-node[data-shape="cloud"] {
+  padding-block: var(--space-6);
+}
+
+.wb-map-node[data-shape="cloud"] .wb-map-text {
+  max-width: 56cqw;
+}
