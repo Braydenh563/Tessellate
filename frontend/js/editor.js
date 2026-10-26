@@ -675,7 +675,8 @@ function chatCommands() {
     { id: "chat-web", primary: true, group: "This message", icon: "ph:globe", label: "Web search", hint: "toggle", keywords: ["web", "search", "online", "internet"], run: afterPress(() => toggleWebSearch()) },
     { id: "chat-plan", primary: true, group: "This message", icon: "ph:compass", label: "Plan first", hint: "toggle", keywords: ["plan", "steps", "think"], run: press("chat-plan") },
     { id: "chat-skills", primary: true, group: "This message", icon: "ph:lightning", label: "Skills", hint: "run a saved skill", keywords: ["skill", "skills", "run", "workflow"], run: press("chat-skills-btn") },
-    { id: "chat-equation", group: "This message", icon: "ph:function", label: "Equation", hint: "build a formula", keywords: ["equation", "math", "maths", "formula", "symbol"], run: afterPress(() => openMathEditor({ target: document.getElementById("chat-input") })) },
+    { id: "chat-equation", group: "This message", icon: "ph:function", label: "Equation", hint: "build a formula, Alt+=", keywords: ["equation", "math", "maths", "formula", "symbol"], run: afterPress(() => openMathEditor({ target: document.getElementById("chat-input") })) },
+    ...POPUP_TOOLS.filter((t) => t.id !== "equation").map((tool) => ({ id: `chat-tool-${tool.id}`, group: "This message", icon: tool.icon, label: tool.name, hint: "opens a panel", keywords: tool.keywords.split(" "), run: afterPress(() => tool.open()) })),
     ...chatSlashRows(afterPress),
     { id: "chat-mode-agent", group: "Mode", icon: "ph:strategy", label: "Agent mode", hint: "let it act on the notebook", keywords: ["agent", "mode", "tools", "act"], run: mode("agent") },
     { id: "chat-mode-chat", group: "Mode", icon: "ph:sparkle", label: "Ask mode", hint: "answer only", keywords: ["ask", "chat", "mode", "answer"], run: mode("chat") },
@@ -932,6 +933,10 @@ function editorBlockRows(context) {
   add({ id: "math-inline", group: "Media", icon: "ph:math-operations", label: "Inline maths", about: "A formula inside a sentence", keys: "$ ... $", keywords: ["math", "inline", "formula", "latex", "tex"], run: act("math") });
   //: DOCUMENTS_PLAN 16: the guided editor (math-editor.js, lazy), Word's Alt+=.
   add({ id: "equation", group: "Media", icon: "ph:function", label: "Equation", about: "Build a formula from a palette, with a live preview", keys: "Alt+=", keywords: ["equation", "math", "maths", "formula", "symbol", "fraction", "greek", "matrix", "integral"], run: (t) => openMathEditor({ target: t }) });
+  //: The other popup tools (settings-panes.js `POPUP_TOOLS`): a row each, so "/calc" and "/convert" find them in a note too.
+  for (const tool of POPUP_TOOLS.filter((t) => t.id !== "equation")) {
+    add({ id: `tool-${tool.id}`, group: "Media", icon: tool.icon, label: tool.name, about: tool.about.split(";")[0], keys: tool.keys, keywords: tool.keywords.split(" "), run: () => tool.open() });
+  }
 
   // --- Embeds: other things in this notebook, and the web. ------------------
   add({ id: "wikilink", group: "Embeds", icon: "ph:link", label: "Link to a note", about: "Pick a note, document or board to link", keys: "[[", keywords: ["link", "note", "wiki", "reference", "connect", "document"], run: (t) => { editorApplyAction(t, { insert: "[[" }); editorOpenMenu(t, "[["); } });

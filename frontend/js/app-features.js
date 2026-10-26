@@ -9,7 +9,7 @@
 // Grouped, searchable, and every entry either jumps you there or explains
 // itself: the fastest way to discover features you didn't know existed.
 function featureCatalog() {
-  return [
+  const groups = [
     { group: "Audio", items: [
       { name: "New meeting", desc: "A meeting note: when, who, agenda, notes, decisions and action items.", reveal: "meeting-new" },
       { name: "Record a meeting", desc: "Record a meeting or lecture, saved as you go; transcribed when the Voice notes add-on is installed.", reveal: "meeting" },
@@ -203,5 +203,41 @@ function featureCatalog() {
     //: Each row declares where it goes (`tab`, `reveal` or `act`) and
     //: `catalogueRun` (settings-panes.js) makes the `run` the dialog calls, so every row
     //: lands on what it names (tests/test_catalogue_reveal.py).
-  ].map((group) => ({ ...group, items: group.items.map(catalogueRun) }));
+  ];
+  //: The popup tools (settings-panes.js `POPUP_TOOLS`) join their groups from
+  //: the registry, so a new tool is listed here by adding one entry there.
+  for (const tool of POPUP_TOOLS) {
+    groups.find((group) => group.group === tool.group)?.items.push({ name: tool.name, desc: `${tool.about} Keys: ${tool.keys}.`, act: tool.open });
+  }
+  return groups.map((group) => ({ ...group, items: group.items.map(catalogueRun) }));
+}
+
+//: The popup tools (settings-panes.js `POPUP_TOOLS`): Equation over the box the palette was opened from, else Capture; and the shortcuts dialog's Tools list.
+async function popupToolEquation(caught = paletteCaught) {
+  let target = caught.target;
+  const fit = target?.isConnected && (target.id === "question" || (typeof editorSurfaceKind === "function" && editorSurfaceKind(target)));
+  if (!fit) {
+    await switchTab("notes");
+    showNotesSection("capture");
+    target = $("entry-content");
+  }
+  target?.focus();
+  openMathEditor({ target });
+}
+
+function renderToolShortcutList(list) {
+  if (!list) return;
+  list.textContent = "";
+  for (const tool of POPUP_TOOLS) {
+    const li = document.createElement("li");
+    const keys = document.createElement("span");
+    keys.className = "shortcut-keys";
+    const kbd = document.createElement("kbd");
+    kbd.textContent = tool.keys.startsWith("/") ? tool.keys : (typeof chordLabel === "function" ? chordLabel(tool.keys) : tool.keys);
+    keys.appendChild(kbd);
+    const words = document.createElement("span");
+    words.textContent = tool.where;
+    li.append(keys, words);
+    list.appendChild(li);
+  }
 }

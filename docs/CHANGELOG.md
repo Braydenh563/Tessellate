@@ -9,6 +9,7 @@ below). Versioning is `0.x` while the app stabilises.
 - Composer: a dated note that opens on its own day says the day once, and its later sentences and weekdays are told as of that day ("you had work", "due that Friday").
 - Notes > Ask: the asked question stays in the box, selected, after any ask (typed, a chip, a follow-up, Retry or History); the search-mode badge is the standard label chip, link chips no longer clip descenders, and the why-matched line is a quiet muted sentence with its icon level with the first line.
 - Settings: shortcut keys sit in one column with the pencils lined up, and hover no longer draws a second box behind the keys.
+- Discoverability: one registry of popup tools (Equation, Calculator, Convert units) now lists each in the Ctrl+K palette, Tools and features, a Tools list in Keyboard shortcuts (Alt+= for Equation), the "/" menus in notes, documents and Chat, and the Guide; Convert units opens the Calculator on its conversion tab.
 - Header: the emblem no longer claims the AI is running when it is not.
 - Board: the arrows and turn handle hide while a size or gap badge shows, so the numbers are no longer covered.
 - Fix: the default board now gets a stored thumbnail on the Boards list like every other board (its missing id was skipped by the thumbnail writer; it travels as board 0).

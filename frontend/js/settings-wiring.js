@@ -1496,6 +1496,7 @@ function openShortcuts() {
   //: same table so the two cannot disagree"). documents.js is lazily loaded,
   //: so the section says where its contents are rather than sitting empty
   //: when this dialog is opened before that bundle has ever been fetched.
+  ensureModule("appPalette").then(() => renderToolShortcutList($("shortcut-list-tools")));
   const editorList = $("shortcut-list-documents");
   const editorNote = $("shortcut-list-documents-note");
   if (editorList && typeof renderDocShortcutSheet === "function") {

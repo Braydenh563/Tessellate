@@ -1280,6 +1280,33 @@ function catalogueRun(row) {
   return { ...row, run };
 }
 
+//: **The popup tools, one registry** (INBOX K27): the palette, Tools and
+//: features, the shortcuts dialog's Tools list, both "/" menus and the Guide
+//: read it; tests/test_popup_tools.py fails for a tool missing from any.
+const POPUP_TOOLS = [
+  {
+    id: "equation", name: "Equation", icon: "ph:function", group: "Capture & notes",
+    keywords: "equation math maths formula symbol fraction greek matrix integral latex alt word",
+    about: "Build a formula with a live preview; Alt+= opens it in a note, document, board text, Chat or Ask box.",
+    keys: "Alt+=", where: "Equation, in text boxes",
+    guide: "equation-editor", open: () => ensureModule("appPalette").then(() => popupToolEquation()),
+  },
+  {
+    id: "calculator", name: "Calculator", icon: "ph:calculator", group: "Ask & chat",
+    keywords: "calculator calc sum maths math work out percent convert units currency keypad",
+    about: "Sums, percentages and unit or currency conversions, with no model; /calc does the same in a chat.",
+    keys: "/calc", where: "Calculator, or type it in Chat",
+    guide: "calculator", open: () => ensureModule("replyKit").then(() => openCalculator()),
+  },
+  {
+    id: "convert", name: "Convert units", icon: "ph:ruler", group: "Ask & chat",
+    keywords: "convert conversion unit units miles km kg pounds celsius fahrenheit litres currency",
+    about: "Length, weight, temperature, volume and currency, with no model; the Calculator's second tab.",
+    keys: "/calc", where: "Convert units, in the Calculator",
+    guide: "calculator", open: () => ensureModule("replyKit").then(() => openCalculator("", "convert")),
+  },
+];
+
 function paletteCommands() {
   //: **The documents editor's own commands, at the top, while one is open**
   //: (DOCUMENTS_PLAN Phase 4 item 4). The plan named `Ctrl+K` for an editor
@@ -1505,7 +1532,7 @@ function paletteCommands() {
     //: The small tools (Brief 89, UI_MODERNISATION utilities rows 2 to 4):
     //: "timer 10 minutes" and "insert template ..." also build their own rows
     //: from the words (`utilityPaletteRows`, app-palette.js).
-    { label: "ph:calculator Calculator", keywords: "calculator calc sum maths math work out percent convert units currency keypad", about: "Sums, percentages and unit or currency conversions, worked out by the app; /calc does the same in a chat.", act: () => ensureModule("replyKit").then(() => openCalculator()) },
+    ...POPUP_TOOLS.map((t) => ({ label: `${t.icon} ${t.name}`, keywords: t.keywords, about: t.about, keys: t.keys, act: t.open })),
     { label: "ph:timer Start a timer", keywords: "timer countdown pomodoro minutes alarm", about: "25 minutes on the status bar, or type “timer 10 minutes”. Press it to stop.", act: () => ensureModule("utilities").then(() => startUtilityTimer(25)) },
     { label: "ph:timer Start a stopwatch", keywords: "stopwatch count up how long time it", about: "Counts up on the status bar. Press it to stop.", act: () => ensureModule("utilities").then(() => startStopwatch()) },
     { label: "ph:closed-captioning Live captions", quick: "captions", keywords: "live captions subtitles transcribe speech microphone listen real time stop", about: "Write what the microphone hears as you go, on this computer. Run it again to stop and save a note.", act: () => toggleLiveCaptions() },
