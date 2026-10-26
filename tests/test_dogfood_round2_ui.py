@@ -93,3 +93,22 @@ def test_a_formatting_toolbar_is_one_tab_stop():
 def test_note_cards_show_list_markers_as_bullets_not_dashes():
     # 9: "- item" lines showed as raw text in the notes list.
     assert '"$1•"' in (JS / "note-cards.js").read_text()
+
+
+def test_the_toolbar_arrow_keys_are_written_down_in_help_and_both_shortcut_lists():
+    # 21: Left and Right move inside a toolbar; the Guide and both key lists say so.
+    from tessellate.ai import help_chat
+
+    index = (JS.parent / "index.html").read_text()
+    assert index.count("Move between a formatting toolbar's buttons") == 2
+    body = " ".join(topic.get("body", "") for topic in help_chat.HELP_TOPICS)
+    assert "A formatting toolbar, here or in a document, is one Tab stop" in body and "Left and Right move between its buttons" in body
+
+
+def test_a_month_taller_than_its_pane_fades_its_bottom_edge():
+    # 5: at 1280x800 the last week row sat below the fold with no hint
+    # (measured: scrollHeight 729 over clientHeight 579; the mask is on at scrollTop 0, off at 150).
+    src = (JS / "timeline-calendar.js").read_text()
+    assert "timelineCalMoreHint(box);" in src.split("timelineCal.painted = drawn;")[1][:80]
+    css = (JS.parent / "css" / "timeline-calendar-lazy.css").read_text()
+    assert ".timeline-scroll.is-more-below:has(.timeline-cal-month) {" in css and "mask-image" in css

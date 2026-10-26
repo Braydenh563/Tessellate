@@ -229,7 +229,23 @@ function timelineCalDraw(box, span, first, last) {
   //: at the fold with nothing to say there is more below.
   if (span === "month" && timelineCal.painted !== drawn) timelineCalShowToday(box);
   timelineCal.painted = drawn;
+  timelineCalMoreHint(box);
   timelineCalRefocus(box);
+}
+
+//: **A month taller than the pane says so** (dog2 item 5: at 1280x800 the last
+//: week row sat below the fold and nothing hinted at it). The pane fades its
+//: bottom edge (`.is-more-below`, timeline-calendar-lazy.css) while there is
+//: more to scroll to; the scroll and the window's size keep it true.
+function timelineCalMoreHint(box) {
+  const pane = box.closest(".timeline-scroll");
+  if (!pane) return;
+  const set = () => pane.classList.toggle("is-more-below", pane.scrollHeight - pane.scrollTop - pane.clientHeight > 4);
+  set();
+  if (pane.dataset.moreHint) return;
+  pane.dataset.moreHint = "1";
+  pane.addEventListener("scroll", set, { passive: true });
+  window.addEventListener("resize", set);
 }
 
 function timelineCalShowToday(box) {
