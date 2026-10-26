@@ -9414,8 +9414,10 @@ Link to another note with [[its first few words]]."></textarea>
         length, plus grammar (agreement, "a" or "an", its or it's and the like)
         from Harper, a grammar checker that runs on this computer, and an
         accessibility check (a skipped heading level, an image with no
-        description, link text like "click here"). They read the text, not its
-        meaning. "Check with AI" in the suggestions panel is what
+        description, link text like "click here"). They skip code, addresses,
+        file paths, email addresses, units after a number (10 min, 5 km) and
+        the words of a link; "Check link text" below puts the link words back.
+        They read the text, not its meaning. "Check with AI" in the suggestions panel is what
         reads for meaning.
       </p>
       <p>
@@ -9455,6 +9457,13 @@ Link to another note with [[its first few words]]."></textarea>
       <span>
         Check grammar
         <small class="muted">In documents and notes, on this computer (Harper).</small>
+      </span>
+    </label>
+    <label class="setting-check">
+      <input type="checkbox" id="doc-check-link-text">
+      <span>
+        Check link text
+        <small class="muted">Off: the words of a link are skipped, like its address.</small>
       </span>
     </label>
     <label class="setting-check">
@@ -12250,6 +12259,11 @@ Link to another note with [[its first few words]]."></textarea>
                 <span id="pref-link-ignored-count"></span>
                 <button type="button" class="ghost small" id="pref-link-ignored-reset">Offer them again</button>
               </p>
+              <label class="check-row">
+                <input type="checkbox" id="pref-check-link-text">
+                <span>Check link text in documents</span>
+              </label>
+              <p class="muted">Spelling and grammar skip the words of a link, code, addresses, file paths and email addresses; turn this on to check a link's words too.</p>
               <label class="check-row">
                 <input type="checkbox" id="pref-autocorrect" checked>
                 <span>Autocorrect as I type</span>

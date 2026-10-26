@@ -76,7 +76,15 @@
   {"tag": "prose", "text": "Done ✅ shipped the fix 🎉 and moved on to the next ticket."},
   {"tag": "prose", "text": "It’s fine, they’re here, and we’ll start at noon."},
   {"tag": "prose", "text": "TODO: refactor parseDocument() and fix the off-by-one in getItems()."},
-  {"tag": "list", "text": "- Task one\n- Task two\n\n---\n\nNotes below."}
+  {"tag": "list", "text": "- Task one\n- Task two\n\n---\n\nNotes below."},
+  {"tag": "uni", "text": "The lecture on 5 May covered thermodynamics; Professor Lee's slides are on the portal."},
+  {"tag": "names", "text": "Remember to call Mum and ask about the 2 kg of flour for Saturday's baking."},
+  {"tag": "names", "text": "Notes from the call with Acme Corp: they want a demo by 3 pm on Thursday."},
+  {"tag": "prose", "text": "I think we should use the second approach, as it's simpler and more robust."},
+  {"tag": "list", "text": "- Ask Jamal about the budget\n- Draft the agenda for Monday\n- Book flights to Lisbon"},
+  {"tag": "link", "text": "See the [project board](https://example.com/board) and the [[Team handbook]] first."},
+  {"tag": "units", "text": "Total: 3 h 20 min across 4 sessions, about 50 min each."},
+  {"tag": "email", "text": "Ping me at ana.garcia@example.com if the file src/utils/date.ts breaks again."}
  ],
  "planted": [
   {"text": "Their is a problem with this sentence.", "expect": "Their"},
@@ -105,6 +113,12 @@
   {"text": "## Why the the plan changed", "expect": "the the"},
   {"text": "I recieve the file from [the site](https://example.com).", "expect": "recieve"},
   {"text": "It is a very wierd result.", "expect": "wierd"},
-  {"text": "She gave me a advice about it's use.", "expect": "a advice"}
+  {"text": "She gave me a advice about it's use.", "expect": "a advice"},
+  {"text": "- recieve the parcel tommorow", "expect": "recieve"},
+  {"text": "The meeting was long. we agreed on nothing.", "expect": "we"},
+  {"text": "It was a good lecture, there notes are great.", "expect": "there"},
+  {"text": "He dont know the answer to the 3rd question.", "expect": "dont"},
+  {"text": "The Reveiw was good.", "expect": "Reveiw"},
+  {"text": "Recieve the report before 3 pm.", "expect": "Recieve"}
  ]
 }

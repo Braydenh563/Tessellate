@@ -516,9 +516,18 @@ def test_a_grammar_lint_on_a_wiki_link_is_dropped(tmp_path) -> None:
             ("function docGrammarMessage(", "\n}\n"),
             ("const DOC_GRAMMAR_WIKI", ";\n"),
             ("function docGrammarOutside(", "\n}\n"),
+            ("const DOC_STRUCTURAL_LINE", ";\n"),
+            ("function docStructuralMask(", "\n}\n"),
+            ("const DOC_GRAMMAR_SENTENCE_KINDS", ";\n"),
+            ("const DOC_GRAMMAR_ABBREVIATION", ";\n"),
+            ("function docGrammarKeeps(", "\n}\n"),
             ("function docGrammarFindings(", "\n}\n"),
         )
     )
+    #: The skip mask is the page's (documents.js, tested in
+    #: test_grammar_classes_1026); a blank one here leaves the wiki filter
+    #: alone to do the dropping, which is what this test is about.
+    src = "const docProseSkipMask = (text) => new Uint8Array(text.length);\n" + src
     runner = tmp_path / "findings.js"
     runner.write_text(
         src + "\nconst lints = JSON.parse(process.argv[2]);\n"

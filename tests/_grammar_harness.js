@@ -47,7 +47,9 @@ const NAMES = options.names || [
   "docSpellLookup", "DOC_CONFIDENT_MIN", "DOC_ALPHABET", "DOC_EDIT_SWAP", "DOC_EDIT_DROP", "DOC_EDIT_ADD",
   "DOC_EDIT_SWAP_LETTER", "docMatchCase", "docWordlistReady", "DOC_VARIANT_LABEL",
   "DOC_GRAMMAR_SKIP_KINDS", "DOC_GRAMMAR_DASH", "docGrammarMessage", "docGrammarFindings", "DOC_GRAMMAR_WIKI", "docGrammarOutside",
-  "docProseRemap", "docProseExtras", "DOC_FINDING_SKIP",
+  "docProseRemap", "docProseExtras", "DOC_FINDING_SKIP", "docCheckLinkText", "DOC_PROSE_SKIP_LINK_TEXT",
+  "docSpellNameKind", "docSpellTransposed","DOC_STRUCTURAL_LINE", "docStructuralMask", "docStructuralBlank",
+  "DOC_GRAMMAR_SENTENCE_KINDS", "DOC_GRAMMAR_ABBREVIATION", "docGrammarKeeps",
   ...(options.extraNames || []),
 ];
 const body = NAMES.map(declaration).join("\n\n");
@@ -125,12 +127,15 @@ async function main() {
   const run = async (text) => {
     const reply = await ask(text);
     if (!reply.ok) throw new Error(reply.error);
+    raw.push(reply.lints.map((lint) => ({ kind: lint.kind, message: lint.message, problem: lint.problem })));
     page.setGrammar(text, reply.lints);
     return page.docProseExtras(text, page.docProseFindings(text)).filter((f) => f.rule !== "long-sentence" || options.longSentence);
   };
   const out = { clean: [], planted: [] };
-  for (const item of fixture.clean) out.clean.push({ ...item, findings: summary(await run(item.text)) });
-  for (const item of fixture.planted) out.planted.push({ ...item, findings: summary(await run(item.text)) });
+  const raw = [];
+  //: `lints` is what Harper itself said about the line, before the page's filtering.
+  for (const item of fixture.clean) out.clean.push({ ...item, findings: summary(await run(item.text)), lints: raw[raw.length - 1] });
+  for (const item of fixture.planted) out.planted.push({ ...item, findings: summary(await run(item.text)), lints: raw[raw.length - 1] });
   if (options.timing) {
     const sample = fixture.clean.map((c) => c.text).join("\n\n");
     const words = sample.split(/\s+/).length;

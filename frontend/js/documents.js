@@ -16743,7 +16743,8 @@ const DOC_PROSE_RULES = [
   },
   {
     id: "space-before-punctuation",
-    test: /\s+([,.;:!?])/g,
+    //: Not before `![[embed]]`: that `!` is the embed's own, not punctuation.
+    test: /\s+([,.;:!?])(?!\[\[)/g,
     message: "A space before punctuation",
     fix: (match) => match.trim(),
   },
@@ -16768,6 +16769,18 @@ const DOC_PROSE_RULES = [
     test: /([,;:])\1+/g,
     message: "Punctuation repeated",
     fix: (match) => match[0],
+  },
+  {
+    id: "confusion",
+    //: your/you're, the one confusion Harper let through on the fixture
+    //: (`tests/grammar_fixture_1026.json`): "Your going to love it", "your
+    //: not late", "your welcome". Only the forms that cannot be possessive
+    //: ("your going to", "your not", "your welcome." closing a clause),
+    //: because "your welcome mat" and "your right to vote" are fine. No `fix`:
+    //: the answer is offered and never applied by Fix all.
+    test: /\b[Yy]our(?= (?:going to|gonna|not|supposed to|able to|ready to)\b| welcome(?:[.,!?]|\s*$| to\b))/gm,
+    message: "“your” here is probably “you’re”",
+    alternatives: (match) => [match[0] === "Y" ? "You’re" : "you’re"],
   },
   {
     id: "spelling",
@@ -16950,7 +16963,36 @@ function docSpellable(text, word, start, end) {
   if (/[0-9_/@\\#$%&*+=<>~]/.test(before) || /[0-9_/@\\#$%&*+=<>~]/.test(after)) return false;
   if (after === "." && /[A-Za-z]/.test(text[end + 1] || "")) return false;
   if (before === "." && /[A-Za-z]/.test(text[start - 2] || "")) return false;
+  //: A short piece of a hyphenated word is a fragment of a compound that the
+  //: word list holds whole or not at all: the "Fi" of Wi-Fi, the "x" of x-ray.
+  //: Longer pieces ("anti-inflamatory") are still checked.
+  if (word.length <= 3 && ((before === "-" && /[A-Za-z]/.test(text[start - 2] || "")) || (after === "-" && /[A-Za-z]/.test(text[end + 1] || "")))) {
+    return false;
+  }
   return true;
+}
+
+//: **A name is not a misspelling.** A capitalised word that is not the first
+//: of its sentence is a person, a place or a product ("Okafor", "Priya",
+//: "Aroha", "Zeynep", "Siobhan": 8 of the 13 false spelling marks on the
+//: fixture), and no word list holds them. The first word of a sentence, a list
+//: item, a heading or a table cell is capitalised whatever it is, so it keeps
+//: the check but only where the checker has one confident correction
+//: (`docSpellConfident`): "Recieve the report" is still caught, "Priya will
+//: send" is not. What this gives up: a typo in a capitalised word in the
+//: middle of a sentence ("Reveiw" in a title-case line) is not marked; adding
+//: names to the dictionary was the only other answer and it never ends.
+//: The exception is a swap of two letters that makes exactly one real word
+//: ("Reveiw" is "Review", no name is spelled by swapping two letters of a
+//: common word), which `docSpellTransposed` answers.
+//: Returns "" for a word that is not capitalised.
+function docSpellNameKind(text, word, start) {
+  if (!/^[A-Z]/.test(word)) return "";
+  const lineStart = text.lastIndexOf("\n", start - 1) + 1;
+  const lead = text.slice(lineStart, start);
+  const opens = /^[ \t]*(?:(?:[#>*+|-]+|\d+[.)]|\[[ xX]\])[ \t]*)*["'“‘(*_]*$/.test(lead);
+  const afterStop = /[.!?]["')”’*_\]]*[ \t]+["'“‘(*_]*$/.test(lead);
+  return opens || afterStop ? "initial" : "name";
 }
 
 //: Is this a word? Asked only of things `docSpellable` has already allowed.
@@ -17111,6 +17153,20 @@ function docSpellConfident(word) {
   return null;
 }
 
+//: Is this word one swap of two letters from exactly one real word? The test a
+//: capitalised word in mid-sentence has to pass to be called a typo and not a
+//: name (`docSpellNameKind`).
+function docSpellTransposed(word) {
+  if (!docWordlist) return false;
+  const lower = docSpellRoot(word);
+  if (lower.length < DOC_CONFIDENT_MIN) return false;
+  let swaps = 0;
+  for (const [candidate, rank] of docEditsOnce(lower)) {
+    if (rank === DOC_EDIT_SWAP && docWordlist.has(candidate)) swaps += 1;
+  }
+  return swaps === 1;
+}
+
 //: One answer per word rather than per occurrence. A document says the same
 //: word many times, the answers cannot change between two of them inside one
 //: pass, and the generation above is the most expensive thing the checker
@@ -17161,11 +17217,36 @@ const DOC_PROSE_SKIP = [
   //: on its way out and not worth a finding, and the markers are syntax.
   /\{--[\s\S]*?--\}/g,
   /\{\+\+|\+\+\}/g,
+  //: **Things that are not prose** (INBOX 1357, K11; measured on
+  //: `tests/grammar_fixture_1026.json`): an email address, a file path and a
+  //: file name, and a unit written after a number. Harper read `/etc/nginx/
+  //: conf.d` as "config" and `uni` as a negative prefix, and called "min" and
+  //: "mL" words to fix; the dictionary read the host of an address.
+  /[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g, // an email address
+  /(?<![\w/.:])(?:~|\.{1,2})?(?:\/[\w.\-@+~%]+)+\/?/g, // /etc/hosts, ~/notes/a.md
+  /(?<![\w/])[\w.-]+(?:\/[\w.-]+){2,}\/?/g, // src/app/main.py
+  /(?<![\w/])[\w-]+\/[\w-]+\.[A-Za-z0-9]{1,5}\b/g, // docs/readme.md
+  /\b[A-Za-z]:\\[^\s"'<>|]*/g, // C:\Users\me\notes.txt
+  /\b[\w-]+\.(?:md|txt|pdf|png|jpe?g|gif|svg|csv|docx?|xlsx?|pptx?|html?|css|js|ts|py|json|ya?ml|toml|sh|zip)\b/gi, // a file name
+  //: A unit straight after a number is a unit and not a word: 10 min, 2 h,
+  //: 250 ms, 15 mL, 5 km, 3 x 4, 10am, 3rd, 90%, 37 °C. The number is not
+  //: masked, the unit is; a unit with no number before it is prose.
+  /(?<=\d)[ \u00a0]?(?:min|mins|h|hr|hrs|sec|secs|s|ms|ns|kg|g|mg|km|m|cm|mm|ml|l|kb|mb|gb|tb|khz|mhz|ghz|hz|kw|w|v|mv|ma|px|pt|dpi|fps|rpm|mph|lb|lbs|oz|ft|kcal|cal|kj|mol|db|x|am|pm|st|nd|rd|th)\b/gi,
+  /(?<=\d)[ \u00a0]?(?:%|°[CFKcfk]?|℃|℉)/g,
 ];
+
+//: **The words of a link** are the writer's label for an address, a name or a
+//: phrase pasted from somewhere ("something" in the owner's capture, K11), not
+//: a sentence of theirs, so they are skipped like the address beside them.
+//: `[text](address)`, `[text][ref]` and `![alt](source)`; not a `[[wiki link]]`
+//: (masked above) and not a `[ ]` checkbox, which no `(` or `[` follows.
+//: Settings, Writing, "Check link text" turns the check back on.
+const DOC_PROSE_SKIP_LINK_TEXT = [/!?\[(?!\[)[^\]\n]*\](?=\([^)\n]*\)|\[[^\]\n]*\])/g];
 
 function docProseSkipMask(text) {
   const mask = new Uint8Array(text.length);
-  for (const source of DOC_PROSE_SKIP) {
+  const sources = docCheckLinkText() ? DOC_PROSE_SKIP : DOC_PROSE_SKIP.concat(DOC_PROSE_SKIP_LINK_TEXT);
+  for (const source of sources) {
     //: A fresh regex per pass, for the reason the rules' own loop gives:
     //: `lastIndex` survives on a shared object and silently skips half the
     //: document on every second call.
@@ -17217,6 +17298,7 @@ function docProseFindings(text) {
         end: match.index + match[0].length,
         text: match[0],
         replacement: rule.fix ? rule.fix(match[0]) : null,
+        ...(rule.alternatives ? { alternatives: rule.alternatives(match[0]) } : {}),
       });
     }
   }
@@ -17270,8 +17352,11 @@ function docProseFindings(text) {
     //: takes it back is worse than one that waits.
     if (!docWordlistReady()) continue;
     if (!docSpellable(text, hit[0], hit.index, hit.index + hit[0].length)) continue;
+    const nameKind = docSpellNameKind(text, hit[0], hit.index);
+    if (nameKind === "name" && (docWordKnown(hit[0]) || !docSpellTransposed(hit[0]))) continue;
     const looked = docSpellLookup(hit[0]);
     if (looked.known) continue;
+    if (nameKind === "initial" && !looked.sure) continue;
     //: The candidate list is *not* computed here. It costs the square of the
     //: work of one edit when one edit finds nothing, and computing it for
     //: every unknown word on every pass put `docProseFindings` at 29ms over a
@@ -17301,10 +17386,21 @@ function docProseFindings(text) {
   //: Long sentences, measured over the prose only. Code fences and headings
   //: are skipped: a fenced block has no sentences, and a heading that runs
   //: long is a heading, not a run-on.
-  let index = 0;
-  for (const chunk of text.split(/\n\s*\n/)) {
-    const at = index;
-    index += chunk.length + 2;
+  //: Headings, list items and table rows are blanked first (same length, so
+  //: every offset holds): "- a, b and c" run together over a pasted list was
+  //: one 90-word sentence, and a list item is not a sentence anyway (K4b).
+  const sentences = docStructuralBlank(text);
+  const paragraphBreak = /\n[ \t]*\n/g;
+  const chunks = [];
+  let last = 0;
+  let split;
+  while ((split = paragraphBreak.exec(sentences)) !== null) {
+    chunks.push([last, split.index]);
+    last = split.index + split[0].length;
+  }
+  chunks.push([last, sentences.length]);
+  for (const [at, to] of chunks) {
+    const chunk = sentences.slice(at, to);
     if (/^\s*(?:```|~~~|#|\||>)/.test(chunk)) continue;
     let cursor = 0;
     for (const sentence of chunk.split(/(?<=[.!?])\s+/)) {
@@ -17315,7 +17411,7 @@ function docProseFindings(text) {
           message: `${words} words in one sentence`,
           start: at + cursor,
           end: at + cursor + sentence.length,
-          text: sentence,
+          text: text.slice(at + cursor, at + cursor + sentence.length),
           replacement: null,
         });
       }
@@ -17394,8 +17490,11 @@ function docCodeSpellFindings(text) {
       continue;
     }
     if (!docSpellable(masked, hit[0], at, at + hit[0].length)) continue;
+    const nameKind = docSpellNameKind(masked, hit[0], at);
+    if (nameKind === "name" && (docWordKnown(hit[0]) || !docSpellTransposed(hit[0]))) continue;
     const looked = docSpellLookup(hit[0]);
     if (looked.known) continue;
+    if (nameKind === "initial" && !looked.sure) continue;
     found.push({
       ...base,
       message: looked.sure ? `“${hit[0]}” is probably “${looked.sure}”` : `“${hit[0]}” is not in the dictionary`,
@@ -17487,7 +17586,7 @@ const DOC_FIX_ALL_NEVER = new Set(["ai", "link-offer"]);
 //: note as far as the eye is concerned, and both are answered the same way.
 function docFindingKind(finding) {
   if (finding.rule === "spelling") return "spelling";
-  if (finding.rule === "grammar") return "grammar";
+  if (finding.rule === "grammar" || finding.rule === "confusion") return "grammar";
   if (finding.rule === "ai") return "ai";
   if (DOC_ACCESS_RULES.has(finding.rule)) return "access";
   if (finding.rule === "repeat") return "repeat";
@@ -19230,6 +19329,16 @@ $("doc-link-offers")?.addEventListener("change", async (event) => {
   DOC_LINK_OFFERS.findings = [];
   renderDocProse();
 });
+//: Link text (K11): the same preference as Settings, Writing. The grammar
+//: answer is thrown away because what it keeps depends on the switch.
+$("doc-check-link-text")?.addEventListener("change", async (event) => {
+  prefsCache = await apiJson("/preferences", {
+    method: "PUT",
+    body: JSON.stringify({ check_link_text: event.currentTarget.checked }),
+  }).catch(() => prefsCache);
+  docGrammarCache = { text: null, findings: [] };
+  renderDocProse();
+});
 $("doc-grammar-check")?.addEventListener("change", async (event) => {
   prefsCache = await apiJson("/preferences", {
     method: "PUT",
@@ -20639,6 +20748,8 @@ async function openDocDictionary() {
   if (smart) smart.checked = !!(prefsCache && prefsCache.smart_punctuation === true);
   const linkOffers = $("doc-link-offers");
   if (linkOffers) linkOffers.checked = docLinkOfferEnabled();
+  const linkText = $("doc-check-link-text");
+  if (linkText) linkText.checked = docCheckLinkText();
   if (!dialog.open) dialog.showModal();
   search?.focus();
 }

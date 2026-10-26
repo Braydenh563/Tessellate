@@ -16,9 +16,16 @@ Scope: owner-1026b K4, K4b, K11; INBOX 1357 "The grammar and spellchecker need a
 Planted errors: 24 of 27 caught. Misses: "Your going", "Your welcome", "your not" (you're confusions).
 Timing (node, 1,918 words): page rules 17.6 ms (9 ms per 1,000 words), Harper in the worker 119 ms (62 ms per 1,000 words; off the main thread), `docProseExtras` 24 ms.
 
+## After step 2 (fixture grown to 85 clean lines and 33 planted; the same fixture run on the step-1 tree)
+
+Before: 61 false positives on 39 of 85 clean lines; 30 of 33 planted errors caught. After: 0 on 85; 33 of 33. A second set of 9 clean and 8 planted lines written after the fixes (not tuned against) gave 0 false positives and 8 of 8 (its "Reveiw" miss led to the transposition exception for names, then joined the fixture).
+Classes fixed: link text (default skipped, toggle `check_link_text`), emails, file paths and names, units after a number, Harper house-style rules off (en dash ranges, Oxford comma, `Expand*`, TODO, FYI), list/heading/table lines never judged for length or capital, `e.g.` at a sentence start, "Sam" as all-caps, identifiers in prose, "Wi-Fi" fragments, names as misspellings, `![[embed]]` space-before-punctuation, your/you're (new rule `confusion`, kind Grammar, never applied by Fix all).
+Already present, left alone: repeated words (Harper and the page rule), a/an, its/it's, their/there, capital after a full stop (Harper), "Add to dictionary" and "Ignore in this document" in the word menu.
+Tradeoff recorded: a typo in a capitalised word in mid-sentence is marked only when it is a one-swap of a real word ("Reveiw"); other capitalised unknown words are taken for names.
+
 ## Steps
 
 - [x] 1 Scout and measure (this file, fixture, harness).
-- [ ] 2 Fix as classes (K11, K4b, false positives, missing checks, Settings toggle "Check link text").
+- [x] 2 Fix as classes (K11, K4b, false positives, missing checks, Settings toggle "Check link text").
 - [ ] 3 Harper version check (propose only).
 - [ ] 4 Speed measurement after.

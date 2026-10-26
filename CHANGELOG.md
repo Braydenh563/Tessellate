@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Spelling and grammar no longer mark the words of a link, code, addresses, file paths, email addresses or a unit after a number ("10-20 min" is not "minimum"); Settings, Writing, Check link text turns the link words back on (K11, K4b).
+- Grammar: list items, headings and table cells are never judged as long sentences; en dash ranges, the Oxford comma and abbreviation expanders are off; names are no longer misspelt; "your" for "you're" is caught. Fixture: 58 false positives on 77 clean lines became 0, and 33 of 33 planted errors are caught (K4).
 - Settings, Models: with no model connected, the status line says Atlas answers with its built-in composer until one is.
 - Loading placeholders now take the count and height of what that list drew last time, so the swap no longer jumps (Reminders: 290px to 8px).
 - Faster start: the model badge's spec panel, editing a chat answer and a note's Explain row load on first use (1,965 bytes less boot script).

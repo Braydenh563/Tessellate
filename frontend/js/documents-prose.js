@@ -164,17 +164,76 @@ function docGrammarOutside(text) {
   return (lint) => !spans.some(([from, to]) => lint.start < to && lint.end > from);
 }
 
+//: **The writer's switch for the words of a link** (Settings, Writing, "Check
+//: link text"; the dictionary dialog). Off unless turned on: a link's label is
+//: a name or a pasted title more often than a sentence (K11).
+function docCheckLinkText() {
+  return typeof prefsCache === "object" && prefsCache !== null && prefsCache.check_link_text === true;
+}
+
+//: Lines that are structure rather than sentences: a heading, a list item (also
+//: a task) and a table row. A list item is a fragment by design, so the rules
+//: that judge sentences (length, "does not start with a capital letter",
+//: house-style nags) have nothing to say about one (K4b: a pasted list had its
+//: lines underlined whole). A grammar error inside one is still an error.
+const DOC_STRUCTURAL_LINE = /^[ \t]*(?:#{1,6}[ \t]|(?:[-*+]|\d+[.)])[ \t]|\|)[^\n]*/gm;
+
+function docStructuralMask(text) {
+  const mask = new Uint8Array(text.length);
+  const pattern = new RegExp(DOC_STRUCTURAL_LINE.source, DOC_STRUCTURAL_LINE.flags);
+  let match;
+  while ((match = pattern.exec(text)) !== null) mask.fill(1, match.index, match.index + match[0].length);
+  return mask;
+}
+
+//: The text with every structural line blanked to spaces, same length, so an
+//: offset into it is an offset into the text.
+function docStructuralBlank(text) {
+  const mask = docStructuralMask(text);
+  let out = "";
+  for (let i = 0; i < text.length; i += 1) out += mask[i] && text[i] !== "\n" ? " " : text[i];
+  return out;
+}
+
+//: Harper kinds that judge a sentence, dropped inside a structural line.
+const DOC_GRAMMAR_SENTENCE_KINDS = new Set(["Readability", "Style", "Formatting", "Miscellaneous"]);
+//: A sentence that opens with a lower-case abbreviation is fine: "e.g. the".
+const DOC_GRAMMAR_ABBREVIATION = /^(?:e\.g|i\.e|etc|vs|cf|approx|ca|resp)\b/i;
+
+//: Whether one of Harper's lints is worth showing. Each line is a class the
+//: fixture measured, not a case (`tests/test_grammar_classes_1026.py`).
+function docGrammarKeeps(lint, span, structural) {
+  //: An identifier in prose: `docSurface`, `parse_document`, `getItems`.
+  if (lint.kind === "Typo" && /[a-z][A-Z]|[_\d]/.test(span)) return false;
+  const message = String(lint.message || "");
+  //: "Sam" is not S.A.M.: the dictionary lists some names as all-caps words.
+  if (/all-caps/i.test(message) && /^[A-Z][a-z]/.test(span)) return false;
+  if (/does not start with a capital letter/i.test(message)) {
+    if (structural || DOC_GRAMMAR_ABBREVIATION.test(span)) return false;
+  }
+  if (structural && DOC_GRAMMAR_SENTENCE_KINDS.has(lint.kind)) return false;
+  return true;
+}
+
 //: Harper's lints as this app's findings. `replacement` stays null on
 //: purpose: "Fix all" applies without asking, and a grammar suggestion is a
 //: judgement, so it is always offered and never applied in bulk.
+//:
+//: The skip mask is applied here, not by each caller, so the document and the
+//: note boxes drop the same things: a lint that starts in code, an address, a
+//: path, an email, a unit after a number, or (unless "Check link text" is on)
+//: the words of a link.
 function docGrammarFindings(lints, text) {
   const out = [];
   const outside = docGrammarOutside(text);
+  const skip = docProseSkipMask(text);
+  const structure = docStructuralMask(text);
   for (const lint of lints || []) {
     if (DOC_GRAMMAR_SKIP_KINDS.has(lint.kind)) continue;
     if (!(lint.end > lint.start) || lint.end > text.length) continue;
-    if (!outside(lint)) continue;
+    if (!outside(lint) || skip[lint.start] === 1) continue;
     const span = text.slice(lint.start, lint.end);
+    if (!docGrammarKeeps(lint, span, structure[lint.start] === 1)) continue;
     const alternatives = [];
     for (const suggestion of lint.suggestions || []) {
       const option = suggestion.kind === "InsertAfter" ? span + suggestion.text : suggestion.text;
@@ -232,12 +291,12 @@ function docProseRemap(findings, from, to) {
 //: on the first document opened (or typed into) with grammar on.
 function docGrammarRequest(text) {
   if (!text || !text.trim()) return;
-  if (!docGrammarEnabled() || docGrammarAsking !== null || docGrammarCache.text === text) return;
+  if (!docGrammarEnabled() || docGrammarAsking !== null || (docGrammarCache.text === text && docGrammarCache.linkText === docCheckLinkText())) return;
   docGrammarAsking = text;
   docGrammarAsk(text).then((lints) => {
     docGrammarAsking = null;
     if (lints === null) return renderDocProse();
-    docGrammarCache = { text, findings: docGrammarFindings(lints, text) };
+    docGrammarCache = { text, findings: docGrammarFindings(lints, text), linkText: docCheckLinkText() };
     renderDocProse();
   });
 }
