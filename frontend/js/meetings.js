@@ -1452,19 +1452,26 @@ async function openRecordings(id = null) {
   row?.classList.add("flash");
 }
 
+let recordingsAsk = 0;
+
 async function renderRecordings() {
   const list = $("recordings-list");
   if (!list) return;
   let body = null;
+  const q = ($("recordings-search")?.value || "").trim();
   try {
-    body = await apiJson("/recordings?limit=500");
+    //: The server reads names and transcripts (`match` is the line that had
+    //: the words); asked again for each answer, so a late reply to an older
+    //: query cannot overwrite the list for the newer one.
+    const ask = ++recordingsAsk;
+    body = await apiJson(`/recordings?limit=500${q ? `&q=${encodeURIComponent(q)}` : ""}`);
+    if (ask !== recordingsAsk) return;
   } catch (error) {
     list.replaceChildren(recordingsEmpty("failed", error.message));
     return;
   }
   noteRecoveredRecordings(body.recovered);
-  const q = ($("recordings-search")?.value || "").trim().toLowerCase();
-  const rows = body.recordings.filter((r) => !q || (r.title || "").toLowerCase().includes(q));
+  const rows = body.recordings;
   list.replaceChildren(...rows.map(recordingRow));
   if (!rows.length) list.appendChild(recordingsEmpty(q ? "match" : "none"));
 }
@@ -1477,7 +1484,7 @@ async function renderRecordings() {
 function recordingsEmpty(kind, detail = "") {
   const copy = {
     none: ["ph-microphone", "Nothing recorded yet", "Record keeps a voice note here; a meeting's recording lands here too."],
-    match: ["ph-magnifying-glass", "No recordings match", "No recording has that in its name."],
+    match: ["ph-magnifying-glass", "No recordings match", "No recording has that in its name or its transcript."],
     failed: ["ph-warning-circle", "Recordings did not load", detail || "Couldn't load your recordings."],
   }[kind];
   const li = document.createElement("li");
@@ -1575,6 +1582,20 @@ function recordingRow(rec) {
   marks.setAttribute("aria-label", "Marks");
   li.recording = { rec, audio, wave, marks, facts };
   li.append(head, player, marks);
+  //: A search that found its words in the talk shows the line and when it was
+  //: said; pressing it plays from there.
+  if (rec.match) {
+    const found = document.createElement("button");
+    found.type = "button";
+    found.className = "ghost small recording-match";
+    found.title = "Play from this line";
+    const at = document.createElement("span");
+    at.className = "muted";
+    at.textContent = meetingClockText(rec.match.start);
+    found.append(at, ` ${rec.match.text}`);
+    found.addEventListener("click", () => playRecordingFrom(li, rec.match.start));
+    li.insertBefore(found, marks);
+  }
   if (rec.transcribed) li.append(...recordingTranscript(rec, audio));
   li.append(audio);
   recordingMarksFill(li);
@@ -1984,7 +2005,16 @@ function recordingMenu(rec) {
     makeMenuItem("ph:pencil-simple Rename", "Give this recording a name", () => renameRecording(rec)),
     makeMenuItem("ph:scissors Trim", "Keep part of it as a new recording; the original stays until the bin is emptied", () => openRecordingTrim(rec)),
   ];
-  if (voiceStatus?.available) items.push(makeMenuItem("ph:text-aa Transcribe", "Transcribe it on this computer", () => transcribeRecording(rec)));
+  //: Always offered. It used to appear only when `voiceStatus` said the add-on
+  //: was there, and that is fetched by the recorder alone: a library opened
+  //: first had no Transcribe even with the add-on installed, and one without
+  //: the add-on had no row to say why. Pressed, it asks once and either runs
+  //: or says what is missing.
+  items.push(makeMenuItem("ph:text-aa Transcribe", "Transcribe it on this computer", async () => {
+    if (voiceStatus === null) voiceStatus = await apiJson("/voice/status").catch(() => ({ available: false }));
+    if (!voiceStatus.available) return toast(voiceStatus.hint || "Transcribing needs the Voice notes add-on, in Settings, Packages.", "info");
+    transcribeRecording(rec);
+  }));
   if (rec.transcribed) {
     const name = (rec.title || "recording").replace(/[^A-Za-z0-9._ -]/g, "_");
     //: Row 11: offered only with a model on; with none, no label is shown.
@@ -2360,7 +2390,11 @@ $("meeting-copy")?.addEventListener("click", (event) =>
   copyToClipboard($("meeting-transcript").value, event.currentTarget)
 );
 $("meeting-transcript").addEventListener("input", () => autoGrow($("meeting-transcript")));
-$("recordings-search")?.addEventListener("input", () => renderRecordings());
+let recordingsSearchTimer = 0;
+$("recordings-search")?.addEventListener("input", () => {
+  clearTimeout(recordingsSearchTimer);
+  recordingsSearchTimer = setTimeout(renderRecordings, 200);
+});
 $("meeting-save-doc")?.addEventListener("click", saveMeetingDocument);
 $("meeting-pause")?.addEventListener("click", toggleMeetingPause);
 

@@ -260,3 +260,21 @@ def test_no_recordings_is_the_empty_state_recipe():
         assert part in body
     #: The title is part of the recipe now, and only in this function: no bare grey line elsewhere.
     assert JS.count("Nothing recorded yet") == 1
+
+
+def test_transcribe_is_always_in_the_menu_and_says_what_is_missing():
+    """INBOX 1400 dogfood: the row was added only when `voiceStatus` (fetched by
+    the recorder alone) said the add-on was there, so a library opened first
+    never had it, and one with no add-on had no row to say why."""
+    menu = JS.split("function recordingMenu(rec) {")[1].split("\n}\n")[0]
+    assert "if (voiceStatus?.available) items.push" not in menu
+    row = menu.split('makeMenuItem("ph:text-aa Transcribe"')[1].split("\n  }));")[0]
+    assert '"/voice/status"' in row
+    assert "voiceStatus.hint" in row
+
+
+def test_the_library_search_reads_transcripts_and_shows_the_line():
+    render = JS.split("async function renderRecordings() {")[1].split("\n}\n")[0]
+    assert "&q=" in render
+    assert "recording-match" in JS
+    assert "playRecordingFrom(li, rec.match.start)" in JS

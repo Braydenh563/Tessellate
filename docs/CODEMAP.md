@@ -2,7 +2,7 @@
 
 Generated 2026-10-26 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6511, frontend ids 2548, CSS sections 504, backend routes 622, backend modules 6607, test files 1387, tests 12315, plan headings 975.
+Counts: frontend functions 6511, frontend ids 2548, CSS sections 504, backend routes 622, backend modules 6608, test files 1387, tests 12318, plan headings 975.
 
 ## Frontend functions (6511)
 
@@ -4771,15 +4771,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addMeetingMarker` | frontend/js/meetings.js:2328 |
-| `addRecordingMark` | frontend/js/meetings.js:1815 |
-| `binRecording` | frontend/js/meetings.js:2048 |
+| `addMeetingMarker` | frontend/js/meetings.js:2358 |
+| `addRecordingMark` | frontend/js/meetings.js:1836 |
+| `binRecording` | frontend/js/meetings.js:2078 |
 | `closeMeetingRecorder` | frontend/js/meetings.js:955 |
 | `discardMeetingTake` | frontend/js/meetings.js:969 |
-| `editRecordingMark` | frontend/js/meetings.js:1830 |
+| `editRecordingMark` | frontend/js/meetings.js:1851 |
 | `enhanceGain` | frontend/js/meetings.js:1199 |
 | `enhanceRecording` | frontend/js/meetings.js:1221 |
-| `fillMicDevices` | frontend/js/meetings.js:2479 |
+| `fillMicDevices` | frontend/js/meetings.js:2513 |
 | `meetingAcceptOriginal` | frontend/js/meetings.js:1275 |
 | `meetingActionRow` | frontend/js/meetings.js:265 |
 | `meetingAppendUndoable` | frontend/js/meetings.js:539 |
@@ -4812,62 +4812,62 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `meetingTick` | frontend/js/meetings.js:892 |
 | `meetingTranscribeTake` | frontend/js/meetings.js:1142 |
 | `meetingWhenText` | frontend/js/meetings.js:29 |
-| `micControlsInto` | frontend/js/meetings.js:2419 |
-| `micLevelInto` | frontend/js/meetings.js:2539 |
-| `nameMeetingMic` | frontend/js/meetings.js:2580 |
-| `nameRecordingSpeakers` | frontend/js/meetings.js:2029 |
+| `micControlsInto` | frontend/js/meetings.js:2453 |
+| `micLevelInto` | frontend/js/meetings.js:2573 |
+| `nameMeetingMic` | frontend/js/meetings.js:2614 |
+| `nameRecordingSpeakers` | frontend/js/meetings.js:2059 |
 | `noteRecoveredRecordings` | frontend/js/meetings.js:1404 |
-| `openLiveCaptionsFrom` | frontend/js/meetings.js:2343 |
+| `openLiveCaptionsFrom` | frontend/js/meetings.js:2373 |
 | `openMeetingRecorder` | frontend/js/meetings.js:922 |
 | `openMeetingSheet` | frontend/js/meetings.js:334 |
 | `openNewMeeting` | frontend/js/meetings.js:131 |
-| `openRecordingTrim` | frontend/js/meetings.js:2195 |
+| `openRecordingTrim` | frontend/js/meetings.js:2225 |
 | `openRecordings` | frontend/js/meetings.js:1441 |
 | `openVoiceNote` | frontend/js/meetings.js:939 |
-| `playRecordingFrom` | frontend/js/meetings.js:1779 |
-| `recordingCardsRun` | frontend/js/meetings.js:2156 |
-| `recordingFacts` | frontend/js/meetings.js:1512 |
-| `recordingMarksFill` | frontend/js/meetings.js:1754 |
-| `recordingMenu` | frontend/js/meetings.js:1982 |
-| `recordingPaint` | frontend/js/meetings.js:1711 |
-| `recordingReady` | frontend/js/meetings.js:1605 |
-| `recordingRow` | frontend/js/meetings.js:1535 |
-| `recordingRunLine` | frontend/js/meetings.js:2165 |
-| `recordingShowLine` | frontend/js/meetings.js:1789 |
-| `recordingSpeed` | frontend/js/meetings.js:1627 |
-| `recordingTranscript` | frontend/js/meetings.js:1857 |
-| `recordingTranscriptFill` | frontend/js/meetings.js:1873 |
-| `recordingTranscriptNow` | frontend/js/meetings.js:1973 |
-| `recordingTranscriptState` | frontend/js/meetings.js:1522 |
-| `recordingTranscriptionEnded` | frontend/js/meetings.js:2130 |
-| `recordingTrimField` | frontend/js/meetings.js:2252 |
-| `recordingWav` | frontend/js/meetings.js:2296 |
-| `recordingWave` | frontend/js/meetings.js:1646 |
-| `recordingsEmpty` | frontend/js/meetings.js:1477 |
-| `removeRecordingMark` | frontend/js/meetings.js:1840 |
-| `renameRecording` | frontend/js/meetings.js:2039 |
-| `renameRecordingSpeaker` | frontend/js/meetings.js:2005 |
-| `renderRecordings` | frontend/js/meetings.js:1455 |
+| `playRecordingFrom` | frontend/js/meetings.js:1800 |
+| `recordingCardsRun` | frontend/js/meetings.js:2186 |
+| `recordingFacts` | frontend/js/meetings.js:1519 |
+| `recordingMarksFill` | frontend/js/meetings.js:1775 |
+| `recordingMenu` | frontend/js/meetings.js:2003 |
+| `recordingPaint` | frontend/js/meetings.js:1732 |
+| `recordingReady` | frontend/js/meetings.js:1626 |
+| `recordingRow` | frontend/js/meetings.js:1542 |
+| `recordingRunLine` | frontend/js/meetings.js:2195 |
+| `recordingShowLine` | frontend/js/meetings.js:1810 |
+| `recordingSpeed` | frontend/js/meetings.js:1648 |
+| `recordingTranscript` | frontend/js/meetings.js:1878 |
+| `recordingTranscriptFill` | frontend/js/meetings.js:1894 |
+| `recordingTranscriptNow` | frontend/js/meetings.js:1994 |
+| `recordingTranscriptState` | frontend/js/meetings.js:1529 |
+| `recordingTranscriptionEnded` | frontend/js/meetings.js:2160 |
+| `recordingTrimField` | frontend/js/meetings.js:2282 |
+| `recordingWav` | frontend/js/meetings.js:2326 |
+| `recordingWave` | frontend/js/meetings.js:1667 |
+| `recordingsEmpty` | frontend/js/meetings.js:1484 |
+| `removeRecordingMark` | frontend/js/meetings.js:1861 |
+| `renameRecording` | frontend/js/meetings.js:2069 |
+| `renameRecordingSpeaker` | frontend/js/meetings.js:2035 |
+| `renderRecordings` | frontend/js/meetings.js:1457 |
 | `resetMeetingUI` | frontend/js/meetings.js:900 |
 | `saveMeetingDocument` | frontend/js/meetings.js:1357 |
 | `saveMeetingNote` | frontend/js/meetings.js:1393 |
-| `saveRecordingMarks` | frontend/js/meetings.js:1802 |
+| `saveRecordingMarks` | frontend/js/meetings.js:1823 |
 | `saveVoiceNoteText` | frontend/js/meetings.js:1411 |
 | `setMeetingState` | frontend/js/meetings.js:851 |
 | `showMeetingRecorder` | frontend/js/meetings.js:944 |
 | `startMeetingWave` | frontend/js/meetings.js:712 |
-| `startRecordingTranscription` | frontend/js/meetings.js:2095 |
+| `startRecordingTranscription` | frontend/js/meetings.js:2125 |
 | `stopMeetingTimer` | frontend/js/meetings.js:832 |
 | `stopMeetingTranscription` | frontend/js/meetings.js:1300 |
-| `stopRecordingTranscription` | frontend/js/meetings.js:2102 |
-| `syncMicSelects` | frontend/js/meetings.js:2491 |
+| `stopRecordingTranscription` | frontend/js/meetings.js:2132 |
+| `syncMicSelects` | frontend/js/meetings.js:2525 |
 | `syncRecordingDock` | frontend/js/meetings.js:877 |
-| `testMicrophone` | frontend/js/meetings.js:2500 |
+| `testMicrophone` | frontend/js/meetings.js:2534 |
 | `toggleMeetingPause` | frontend/js/meetings.js:1329 |
 | `toggleMeetingRecording` | frontend/js/meetings.js:986 |
-| `transcribeRecording` | frontend/js/meetings.js:2064 |
-| `trimRecording` | frontend/js/meetings.js:2272 |
-| `watchRecordingTranscription` | frontend/js/meetings.js:2111 |
+| `transcribeRecording` | frontend/js/meetings.js:2094 |
+| `trimRecording` | frontend/js/meetings.js:2302 |
+| `watchRecordingTranscription` | frontend/js/meetings.js:2141 |
 
 ### frontend/js/model-bench.js (7)
 
@@ -10473,7 +10473,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/lightbox-lazy.css | 427 |
 | frontend/css/manual-lazy.css | 161 |
 | frontend/css/math-editor-lazy.css | 108 |
-| frontend/css/meetings-lazy.css | 543 |
+| frontend/css/meetings-lazy.css | 554 |
 | frontend/css/motion-still.css | 94 |
 | frontend/css/nav-history-lazy.css | 169 |
 | frontend/css/offline-split-lazy.css | 71 |
@@ -10787,7 +10787,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/media/orphans` | GET | `list_orphaned_media` | src/tessellate/api/routes_files.py:1545 |
 | `/media/pdf-info/{filename}` | GET | `media_pdf_info` | src/tessellate/api/routes_files.py:1719 |
 | `/media/pdf-page/{filename}/{index}` | GET | `media_pdf_page` | src/tessellate/api/routes_files.py:1759 |
-| `/media/recordings/{recording_id}` | GET | `recording_audio` | src/tessellate/api/routes_recordings.py:445 |
+| `/media/recordings/{recording_id}` | GET | `recording_audio` | src/tessellate/api/routes_recordings.py:465 |
 | `/media/restore` | POST | `restore_media` | src/tessellate/api/routes_files.py:1881 |
 | `/media/text/{filename}` | GET | `media_text` | src/tessellate/api/routes_files.py:1651 |
 | `/media/upload` | POST | `upload_media` | src/tessellate/api/routes_files.py:1295 |
@@ -10869,24 +10869,24 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/recent` | DELETE | `forget_recent_question` | src/tessellate/api/routes_chat.py:186 |
 | `/recent` | GET | `recent_questions` | src/tessellate/api/routes_chat.py:180 |
 | `/recent/restore` | POST | `remember_recent_question` | src/tessellate/api/routes_chat.py:198 |
-| `/recordings` | GET | `list_recordings` | src/tessellate/api/routes_recordings.py:85 |
-| `/recordings` | POST | `create_recording` | src/tessellate/api/routes_recordings.py:115 |
-| `/recordings/recover` | POST | `recover_recordings` | src/tessellate/api/routes_recordings.py:107 |
-| `/recordings/{recording_id}` | DELETE | `bin_recording` | src/tessellate/api/routes_recordings.py:205 |
-| `/recordings/{recording_id}` | GET | `read_recording` | src/tessellate/api/routes_recordings.py:185 |
-| `/recordings/{recording_id}` | PATCH | `update_recording` | src/tessellate/api/routes_recordings.py:190 |
-| `/recordings/{recording_id}/chunk` | POST | `append_chunk` | src/tessellate/api/routes_recordings.py:139 |
-| `/recordings/{recording_id}/finish` | POST | `finish_recording` | src/tessellate/api/routes_recordings.py:167 |
-| `/recordings/{recording_id}/purge` | POST | `purge_recording` | src/tessellate/api/routes_recordings.py:224 |
-| `/recordings/{recording_id}/restore` | POST | `restore_recording` | src/tessellate/api/routes_recordings.py:215 |
-| `/recordings/{recording_id}/speakers` | POST | `name_speakers` | src/tessellate/api/routes_recordings.py:388 |
-| `/recordings/{recording_id}/speakers` | PUT | `rename_speaker` | src/tessellate/api/routes_recordings.py:407 |
-| `/recordings/{recording_id}/transcribe` | POST | `transcribe_recording` | src/tessellate/api/routes_recordings.py:235 |
-| `/recordings/{recording_id}/transcribe/start` | POST | `start_transcription` | src/tessellate/api/routes_recordings.py:267 |
-| `/recordings/{recording_id}/transcribe/stop` | POST | `stop_transcription` | src/tessellate/api/routes_recordings.py:292 |
-| `/recordings/{recording_id}/transcript` | GET | `read_transcript` | src/tessellate/api/routes_recordings.py:380 |
-| `/recordings/{recording_id}/transcript.srt` | GET | `transcript_srt` | src/tessellate/api/routes_recordings.py:435 |
-| `/recordings/{recording_id}/transcript.vtt` | GET | `transcript_vtt` | src/tessellate/api/routes_recordings.py:440 |
+| `/recordings` | GET | `list_recordings` | src/tessellate/api/routes_recordings.py:87 |
+| `/recordings` | POST | `create_recording` | src/tessellate/api/routes_recordings.py:135 |
+| `/recordings/recover` | POST | `recover_recordings` | src/tessellate/api/routes_recordings.py:127 |
+| `/recordings/{recording_id}` | DELETE | `bin_recording` | src/tessellate/api/routes_recordings.py:225 |
+| `/recordings/{recording_id}` | GET | `read_recording` | src/tessellate/api/routes_recordings.py:205 |
+| `/recordings/{recording_id}` | PATCH | `update_recording` | src/tessellate/api/routes_recordings.py:210 |
+| `/recordings/{recording_id}/chunk` | POST | `append_chunk` | src/tessellate/api/routes_recordings.py:159 |
+| `/recordings/{recording_id}/finish` | POST | `finish_recording` | src/tessellate/api/routes_recordings.py:187 |
+| `/recordings/{recording_id}/purge` | POST | `purge_recording` | src/tessellate/api/routes_recordings.py:244 |
+| `/recordings/{recording_id}/restore` | POST | `restore_recording` | src/tessellate/api/routes_recordings.py:235 |
+| `/recordings/{recording_id}/speakers` | POST | `name_speakers` | src/tessellate/api/routes_recordings.py:408 |
+| `/recordings/{recording_id}/speakers` | PUT | `rename_speaker` | src/tessellate/api/routes_recordings.py:427 |
+| `/recordings/{recording_id}/transcribe` | POST | `transcribe_recording` | src/tessellate/api/routes_recordings.py:255 |
+| `/recordings/{recording_id}/transcribe/start` | POST | `start_transcription` | src/tessellate/api/routes_recordings.py:287 |
+| `/recordings/{recording_id}/transcribe/stop` | POST | `stop_transcription` | src/tessellate/api/routes_recordings.py:312 |
+| `/recordings/{recording_id}/transcript` | GET | `read_transcript` | src/tessellate/api/routes_recordings.py:400 |
+| `/recordings/{recording_id}/transcript.srt` | GET | `transcript_srt` | src/tessellate/api/routes_recordings.py:455 |
+| `/recordings/{recording_id}/transcript.vtt` | GET | `transcript_vtt` | src/tessellate/api/routes_recordings.py:460 |
 | `/recover` | POST | `recover` | src/tessellate/api/routes_auth.py:1951 |
 | `/recovery-key` | POST | `make_recovery_key` | src/tessellate/api/routes_auth.py:1874 |
 | `/recovery-key/save` | POST | `save_recovery_key` | src/tessellate/api/routes_auth.py:1921 |
@@ -11124,7 +11124,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (6607)
+## Backend modules (6608)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -16308,36 +16308,36 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `RecordingCreate` | src/tessellate/api/routes_recordings.py:44 |
-| `RecordingFinish` | src/tessellate/api/routes_recordings.py:54 |
-| `RecordingPatch` | src/tessellate/api/routes_recordings.py:60 |
-| `RenameSpeakerBody` | src/tessellate/api/routes_recordings.py:402 |
-| `_get` | src/tessellate/api/routes_recordings.py:67 |
-| `_keep_segments` | src/tessellate/api/routes_recordings.py:335 |
-| `_named` | src/tessellate/api/routes_recordings.py:360 |
-| `_people_at` | src/tessellate/api/routes_recordings.py:353 |
-| `_segments_of` | src/tessellate/api/routes_recordings.py:372 |
-| `_subtitles` | src/tessellate/api/routes_recordings.py:424 |
-| `_transcribe_in_background` | src/tessellate/api/routes_recordings.py:302 |
-| `append_chunk` | src/tessellate/api/routes_recordings.py:140 |
-| `bin_recording` | src/tessellate/api/routes_recordings.py:206 |
-| `create_recording` | src/tessellate/api/routes_recordings.py:116 |
-| `finish_recording` | src/tessellate/api/routes_recordings.py:168 |
-| `list_recordings` | src/tessellate/api/routes_recordings.py:86 |
-| `name_speakers` | src/tessellate/api/routes_recordings.py:389 |
-| `purge_recording` | src/tessellate/api/routes_recordings.py:225 |
-| `read_recording` | src/tessellate/api/routes_recordings.py:186 |
-| `read_transcript` | src/tessellate/api/routes_recordings.py:381 |
-| `recording_audio` | src/tessellate/api/routes_recordings.py:446 |
-| `recover_recordings` | src/tessellate/api/routes_recordings.py:108 |
-| `rename_speaker` | src/tessellate/api/routes_recordings.py:408 |
-| `restore_recording` | src/tessellate/api/routes_recordings.py:216 |
-| `start_transcription` | src/tessellate/api/routes_recordings.py:268 |
-| `stop_transcription` | src/tessellate/api/routes_recordings.py:293 |
-| `transcribe_recording` | src/tessellate/api/routes_recordings.py:236 |
-| `transcript_srt` | src/tessellate/api/routes_recordings.py:436 |
-| `transcript_vtt` | src/tessellate/api/routes_recordings.py:441 |
-| `update_recording` | src/tessellate/api/routes_recordings.py:191 |
+| `RecordingCreate` | src/tessellate/api/routes_recordings.py:46 |
+| `RecordingFinish` | src/tessellate/api/routes_recordings.py:56 |
+| `RecordingPatch` | src/tessellate/api/routes_recordings.py:62 |
+| `RenameSpeakerBody` | src/tessellate/api/routes_recordings.py:422 |
+| `_get` | src/tessellate/api/routes_recordings.py:69 |
+| `_keep_segments` | src/tessellate/api/routes_recordings.py:355 |
+| `_named` | src/tessellate/api/routes_recordings.py:380 |
+| `_people_at` | src/tessellate/api/routes_recordings.py:373 |
+| `_segments_of` | src/tessellate/api/routes_recordings.py:392 |
+| `_subtitles` | src/tessellate/api/routes_recordings.py:444 |
+| `_transcribe_in_background` | src/tessellate/api/routes_recordings.py:322 |
+| `append_chunk` | src/tessellate/api/routes_recordings.py:160 |
+| `bin_recording` | src/tessellate/api/routes_recordings.py:226 |
+| `create_recording` | src/tessellate/api/routes_recordings.py:136 |
+| `finish_recording` | src/tessellate/api/routes_recordings.py:188 |
+| `list_recordings` | src/tessellate/api/routes_recordings.py:88 |
+| `name_speakers` | src/tessellate/api/routes_recordings.py:409 |
+| `purge_recording` | src/tessellate/api/routes_recordings.py:245 |
+| `read_recording` | src/tessellate/api/routes_recordings.py:206 |
+| `read_transcript` | src/tessellate/api/routes_recordings.py:401 |
+| `recording_audio` | src/tessellate/api/routes_recordings.py:466 |
+| `recover_recordings` | src/tessellate/api/routes_recordings.py:128 |
+| `rename_speaker` | src/tessellate/api/routes_recordings.py:428 |
+| `restore_recording` | src/tessellate/api/routes_recordings.py:236 |
+| `start_transcription` | src/tessellate/api/routes_recordings.py:288 |
+| `stop_transcription` | src/tessellate/api/routes_recordings.py:313 |
+| `transcribe_recording` | src/tessellate/api/routes_recordings.py:256 |
+| `transcript_srt` | src/tessellate/api/routes_recordings.py:456 |
+| `transcript_vtt` | src/tessellate/api/routes_recordings.py:461 |
+| `update_recording` | src/tessellate/api/routes_recordings.py:211 |
 
 ### src/tessellate/api/routes_relations.py (10)
 
@@ -18374,20 +18374,21 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `recent` | src/tessellate/core/taskhistory.py:128 |
 | `record` | src/tessellate/core/taskhistory.py:70 |
 
-### src/tessellate/core/transcript.py (10)
+### src/tessellate/core/transcript.py (11)
 
 | Name | File:line |
 |---|---|
 | `_ms` | src/tessellate/core/transcript.py:24 |
-| `_stamp` | src/tessellate/core/transcript.py:63 |
-| `_vtt_text` | src/tessellate/core/transcript.py:80 |
+| `_stamp` | src/tessellate/core/transcript.py:73 |
+| `_vtt_text` | src/tessellate/core/transcript.py:90 |
 | `clean` | src/tessellate/core/transcript.py:31 |
 | `dumps` | src/tessellate/core/transcript.py:52 |
+| `first_match` | src/tessellate/core/transcript.py:63 |
 | `loads` | src/tessellate/core/transcript.py:56 |
-| `marks_of` | src/tessellate/core/transcript.py:109 |
-| `to_srt` | src/tessellate/core/transcript.py:70 |
-| `to_vtt` | src/tessellate/core/transcript.py:84 |
-| `turns` | src/tessellate/core/transcript.py:94 |
+| `marks_of` | src/tessellate/core/transcript.py:119 |
+| `to_srt` | src/tessellate/core/transcript.py:80 |
+| `to_vtt` | src/tessellate/core/transcript.py:94 |
+| `turns` | src/tessellate/core/transcript.py:104 |
 
 ### src/tessellate/core/undo_bin.py (10)
 
@@ -19395,7 +19396,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12315)
+## Tests (12318)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20373,7 +20374,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_recognise.py | 18 |
 | tests/test_recordings.py | 16 |
 | tests/test_recordings_background.py | 4 |
-| tests/test_recordings_library.py | 22 |
+| tests/test_recordings_library.py | 24 |
 | tests/test_records_a3.py | 16 |
 | tests/test_recycle_bin.py | 18 |
 | tests/test_redate.py | 6 |
@@ -20443,7 +20444,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_search_prefix.py | 7 |
 | tests/test_search_provider.py | 13 |
 | tests/test_search_recall.py | 5 |
-| tests/test_search_recordings.py | 9 |
+| tests/test_search_recordings.py | 10 |
 | tests/test_search_spaces.py | 2 |
 | tests/test_search_suggest_close.py | 4 |
 | tests/test_search_suggest_lists.py | 9 |

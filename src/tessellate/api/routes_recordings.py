@@ -12,6 +12,7 @@ the list is read, marked recovered so the app says so once.
 
 from __future__ import annotations
 
+import json
 import logging
 import re
 from pathlib import Path
@@ -20,12 +21,13 @@ from typing import Literal
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, Response, UploadFile
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from tessellate.ai import speakers, voice
 from tessellate.api import paging
 from tessellate.core import activity, background, deps, recordings, transcript
-from tessellate.core.database import Entry, Recording, utcnow
+from tessellate.core.database import LIKE_ESCAPE, Entry, Recording, like_escape, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry import bin as other_bin
 from tessellate.entry import manager
@@ -88,20 +90,38 @@ def list_recordings(
     limit: int = Query(default=RECORDINGS_PAGE_SIZE, ge=1, le=RECORDINGS_PAGE_SIZE_MAX),
     offset: int = Query(default=0, ge=0),
     cursor: str | None = paging.cursor_param(),
+    q: str = Query(default="", max_length=200),
     session: Session = Depends(get_session),
 ) -> dict:
     """Newest first, a page at a time (`X-Total-Count` is the whole library),
     after finishing any a closed tab left open (row 5): `recovered` lists
-    those, once."""
+    those, once. `q` keeps the recordings whose name or transcript has the
+    words, each with `match`: the first transcript line that has them and
+    when it was said (the library's own search box, which used to read names
+    alone)."""
     offset = paging.start(cursor, offset)
     recovered = recordings.recover_stale(session)
     query = session.query(Recording).filter(Recording.state == "saved")
+    needle = " ".join(q.split())
+    if needle:
+        # The transcript is stored as JSON, so a quote in the words is `\"` there.
+        stored = json.dumps(needle, ensure_ascii=False)[1:-1]
+        query = query.filter(
+            or_(
+                Recording.title.ilike(f"%{like_escape(needle)}%", escape=LIKE_ESCAPE),
+                Recording.segments.ilike(f"%{like_escape(stored)}%", escape=LIKE_ESCAPE),
+            )
+        )
     total = query.count()
     rows = query.order_by(Recording.created_at.desc()).offset(offset).limit(limit).all()
     response.headers["X-Total-Count"] = str(total)
     paging.finish(response, offset, limit, total)
     announced = [recordings.as_dict(row) for row in recovered]
-    return {"recordings": [recordings.as_dict(row) for row in rows], "recovered": announced}
+    found = [recordings.as_dict(row) for row in rows]
+    if needle:
+        for row, item in zip(rows, found, strict=True):
+            item["match"] = transcript.first_match(row.segments, needle)
+    return {"recordings": found, "recovered": announced}
 
 
 @router.post("/recordings/recover")
