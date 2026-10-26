@@ -764,7 +764,7 @@ body.printing-doc #doc-preview p,
   min-height: 0;
   padding: var(--space-1) var(--space-2);
   border: 0;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-md);
   background: var(--accent);
   color: var(--on-accent);
   font-size: var(--text-xs);
@@ -2170,7 +2170,7 @@ body.printing-doc #doc-preview p,
   top: calc(var(--space-8) * -1);
   min-width: 1.25rem;
   padding: 0 var(--space-1);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-md);
   background: var(--wb-branch);
   color: var(--card);
   font-size: var(--text-xs);
@@ -2376,7 +2376,7 @@ body.printing-doc #doc-preview p,
   width: 1.5rem;
   height: 1.5rem;
   min-width: 0;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-md);
   /* Under the nodes: a line's middle can pass behind a node on a dense map,
      and the node is the thing you meant to click there. */
   z-index: 1;
@@ -2827,7 +2827,7 @@ body.printing-doc #doc-preview p,
   justify-content: center;
   width: 1.5rem;
   height: 1.5rem;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-md);
   background: var(--card);
   color: var(--muted);
   border: 1px solid var(--divider);
@@ -2955,7 +2955,7 @@ body.printing-doc #doc-preview p,
   place-items: center;
   width: 1.15em;
   height: 1.15em;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-md);
   background: var(--accent);
   color: var(--on-accent);
   font-size: 0.8em;
@@ -2991,7 +2991,7 @@ body.printing-doc #doc-preview p,
   height: 0.95em;
   box-sizing: border-box;
   border: 1.5px solid currentColor;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-md);
   background: conic-gradient(currentColor var(--progress), transparent 0);
 }
 
@@ -3316,7 +3316,7 @@ body.printing-doc #doc-preview p,
   min-height: var(--target-min);
   padding: var(--space-2) var(--space-5);
   gap: var(--space-2);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-md);
   color: var(--muted);
   font-size: var(--text-sm);
   white-space: nowrap;
@@ -3831,7 +3831,7 @@ button.ghost.doc-template-choice.wb-template-choice {
   flex: none;
   width: 0.5rem;
   height: 0.5rem;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-md);
   background: var(--muted);
 }
 
@@ -4792,7 +4792,7 @@ button.ghost.doc-template-choice.wb-template-choice {
 .cm-run-panel .cm-run-status:not(:empty) {
   flex: 0 1 auto;
   padding: 0 var(--space-2);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-md);
   background: var(--chip-bg);
   line-height: 1.6;
 }
@@ -5463,7 +5463,7 @@ button.ghost.doc-template-choice.wb-template-choice {
   width: var(--space-3);
   height: var(--space-3);
   margin: calc(var(--space-3) / -2) 0 0 calc(var(--space-3) / -2);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-md);
   background: var(--error);
   box-shadow: 0 0 var(--space-2) var(--error);
   animation: wb-laser-fade 0.6s ease-out forwards;
@@ -5918,7 +5918,7 @@ button.ghost.doc-template-choice.wb-template-choice {
 
 .wb-map-tag {
   padding: 0 var(--space-2);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--wb-branch) 16%, var(--card));
   color: var(--text);
   font-size: 0.75em;
@@ -5936,7 +5936,7 @@ button.ghost.doc-template-choice.wb-template-choice {
   min-height: 1.6em;
   padding: 0 var(--space-2);
   border: 1px solid color-mix(in srgb, var(--wb-branch) 45%, transparent);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-md);
   background: var(--card);
   color: var(--text);
   font: inherit;
@@ -6308,7 +6308,7 @@ input[type="color"].wb-mixed {
   justify-content: center;
   box-sizing: border-box;
   border: 1px solid var(--control-edge);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-md);
   background: var(--surface-1);
   color: var(--muted);
   font-size: var(--text-sm);
@@ -6684,7 +6684,7 @@ input[type="color"].wb-mixed {
   min-height: 0;
   padding: var(--space-1);
   border: 0;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-md);
   background: var(--card);
   color: var(--accent);
   font-size: var(--text-xs);
@@ -6763,4 +6763,22 @@ input[type="color"].wb-mixed {
 #tab-documents.doc-spacing-relaxed .doc-source-wrap .cm-editor:not(.doc-content-code) .cm-scroller,
 #tab-documents.doc-spacing-relaxed #doc-preview {
   line-height: 1.9;
+}
+
+/* Paste options chip (docpaste-1026): a small floating button at the caret
+   after a paste that changed form. Its menu is the pointer-menu recipe. */
+.doc-paste-chip {
+  position: fixed;
+  z-index: 2;
+  max-width: calc(100vw - 2 * var(--space-4));
+}
+.doc-paste-chip.hidden {
+  display: none;
+}
+.doc-paste-chip button {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  white-space: nowrap;
 }

@@ -339,7 +339,7 @@ foldDocMenuGroup("ph:layout Editor and layout", [
   "doc-minimap-row",
 ]);
 foldDocMenuGroup("ph:pencil-simple While you write", [
-  "doc-dim-others", "doc-typewriter", "doc-serif", "doc-margin-reader", "doc-autocorrect-row", "doc-complete-row",
+  "doc-paste-special", "doc-dim-others", "doc-typewriter", "doc-serif", "doc-margin-reader", "doc-autocorrect-row", "doc-complete-row",
 ]);
 
 // --- which of the four views is showing ----------------------------------------
@@ -2840,6 +2840,20 @@ const DOC_COMMANDS = [
     run: () => docRunControl("doc-serif", "The serif face") },
   { id: "copy-formatted", icon: "ph:copy", label: "Copy as formatted text, to paste into Word or an email", keys: "none", prose: true,
     run: () => docCopyFormatted() },
+  { id: "paste-special", icon: "ph:clipboard-text", label: "Paste special: plain text, Markdown source, code, quote, table, link or checklist", keys: "none",
+    run: () => docPasteSpecialMenu() },
+  { id: "paste-plain", icon: "ph:clipboard-text", label: "Paste as plain text", keys: "Ctrl+Shift+V",
+    run: () => docPasteSpecial("plain") },
+  { id: "paste-code", icon: "ph:code-block", label: "Paste as a code block", keys: "none",
+    run: () => docPasteSpecial("code") },
+  { id: "paste-quote", icon: "ph:quotes", label: "Paste as a quote", keys: "none",
+    run: () => docPasteSpecial("quote") },
+  { id: "paste-table", icon: "ph:table", label: "Paste as a table, from a spreadsheet or CSV", keys: "none",
+    run: () => docPasteSpecial("table") },
+  { id: "paste-link", icon: "ph:link", label: "Paste as a link, over the selected words", keys: "none",
+    run: () => docPasteSpecial("link") },
+  { id: "paste-checklist", icon: "ph:check-square", label: "Paste as a checklist, one line per item", keys: "none",
+    run: () => docPasteSpecial("checklist") },
   { id: "text-size", icon: "ph:text-aa", label: "Text size: small, medium or large", keys: "none", prose: true,
     run: () => docRunControl("doc-text-size", "Text size") },
   { id: "line-spacing", icon: "ph:arrows-vertical", label: "Line spacing: compact, comfortable or relaxed", keys: "none", prose: true,
@@ -5582,6 +5596,7 @@ function docTablePasteEvent(event, view) {
     userEvent: "input.paste",
     scrollIntoView: true,
   });
+  docPasteOfferTable(view, sel.from, before + table + after, data.getData("text/plain"));
   return true;
 }
 
@@ -5749,6 +5764,7 @@ function docRichPasteEvent(event, view) {
     userEvent: "input.paste",
     scrollIntoView: true,
   });
+  docPasteOfferRich(view, sel.from, markdown, event.clipboardData.getData("text/plain"));
   return true;
 }
 
@@ -14941,6 +14957,7 @@ function docStepTypography(which) {
 }
 
 $("doc-text-size")?.addEventListener("click", () => docStepTypography("size"));
+$("doc-paste-special")?.addEventListener("click", () => docPasteSpecialMenu());
 $("doc-line-spacing")?.addEventListener("click", () => docStepTypography("spacing"));
 
 function docRestoreTypography() {
@@ -22239,8 +22256,12 @@ function docCmExtensions(CM) {
         docTabEscapes = false;
         return docTableCellClick(event, view);
       },
-      paste: (event, view) => docTablePasteEvent(event, view) || docRichPasteEvent(event, view),
     }),
+    //: Ahead of the markdown language's own paste-a-URL-as-a-link, which would
+    //: take a web address over selected words first and leave no paste chip.
+    CM.state.Prec.high(CM.view.EditorView.domEventHandlers({
+      paste: (event, view) => docTablePasteEvent(event, view) || docSmartPasteEvent(event, view) || docRichPasteEvent(event, view),
+    })),
     CM.view.EditorView.updateListener.of(docCmUpdate),
     //: **The browser's own spellcheck, and the one condition it stays on
     //: under.** CodeMirror turns it off by default, and for a code editor

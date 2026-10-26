@@ -1814,6 +1814,30 @@ HELP_TOPICS.extend(
             "badge": {"label": "Library", "tab": "library"},
         },
         {
+            "id": "documents-paste",
+            "keywords": (
+                "paste special", "paste options", "paste as", "paste as plain text",
+                "paste as table", "paste as code", "paste as quote", "paste link",
+                "paste checklist", "match surrounding", "keep formatting", "text only",
+            ),
+            "body": (
+                "Paste in the document editor. After a paste that changed form (a "
+                "web page or Word copy turned to Markdown, several lines, a "
+                "spreadsheet's rows, a web address) a Paste options chip appears at "
+                "the caret. Press Ctrl, then a letter or the arrows and Enter: Keep "
+                "formatting, Text only, Match surrounding, or read the same text as "
+                "a table, checklist, quote or code block. One Ctrl+Z undoes the "
+                "choice; Esc or typing closes the chip. Paste special, in the "
+                "document menu and the palette (F1), pastes on purpose as plain "
+                "text, Markdown source, a code block (the language is guessed), a "
+                "quote, a table from a spreadsheet or CSV, a link or a checklist. "
+                "A web address pasted over selected words makes a link. If the "
+                "browser will not let the app read the clipboard, Paste special "
+                "applies to your next Ctrl+V."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
             "id": "documents-features",
             "keywords": (
                 "history of a document", "word goal", "typewriter", "footnote", "footnotes",

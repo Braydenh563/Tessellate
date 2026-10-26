@@ -2347,3 +2347,455 @@ async function docCopyFormatted() {
     toast("The browser would not let the app write to the clipboard.", true);
   }
 }
+
+// --- paste options and Paste special (docpaste-1026) --------------------------
+//
+// **Paste is as good as Word's.** The owner: "What about different paste
+// options on the document editor??" Before this a paste was one thing: rich
+// HTML became Markdown, everything else went in as typed, and the only
+// alternative was Ctrl+Shift+V beforehand. Now a paste that changed form (rich
+// to Markdown, several lines, rows and columns, a web address) leaves a small
+// chip at the caret offering the other readings of the same clipboard, and
+// Paste special in the document menu and the palette applies one on purpose.
+// The pure half runs in node (tests/test_doc_paste.py); the wiring is checked
+// as text and driven by scratchpad/ui-sweeps/docpaste.js.
+
+// DOC-PASTE-PURE-START
+const DOC_PASTE_URL = /^(?:https?:\/\/[^\s<>]+|mailto:[^\s<>]+)$/i;
+const DOC_PASTE_BULLET = /^\s*(?:[-*+•·▪●○◦]|\d+[.)]|\[[ xX]\])\s+/;
+const DOC_PASTE_LANGS = [
+  ["json", /^\s*[[{][\s\S]*[\]}]\s*$/],
+  ["python", /^\s*(?:def |import |from \w+ import |class \w+.*:|if __name__)/m],
+  ["sql", /^\s*(?:select|insert into|update|delete from|create table)\b/i],
+  ["bash", /^\s*(?:\$ |#!\/bin\/|sudo |git |npm |pip |cd )/m],
+  ["html", /^\s*<(?:!doctype|html|div|p|span|ul|a)\b[\s\S]*>/i],
+  ["css", /[\w.#-]+\s*\{[^}]*:[^}]*\}/],
+  ["javascript", /\b(?:const|let|function|console\.log)\b|=>/],
+];
+
+//: A clipboard's text with the line ends and spaces a web page or Word leaves
+//: behind taken out: CRLF to LF, non-breaking spaces to spaces, no trailing
+//: spaces, no trailing newline.
+function docPasteClean(text) {
+  return String(text || "").replace(/\r\n?/g, "\n").replace(/ /g, " ").replace(/[ \t]+$/gm, "").replace(/\n+$/, "");
+}
+
+function docPasteUrl(text) {
+  const value = String(text || "").trim();
+  return DOC_PASTE_URL.test(value) ? value : "";
+}
+
+function docPasteLinkLabel(url) {
+  if (/^mailto:/i.test(url)) return url.slice(7);
+  const m = /^https?:\/\/(?:www\.)?([^/?#]+)/i.exec(url);
+  return m ? m[1] : url;
+}
+
+function docPasteLines(text) {
+  return docPasteClean(text).split("\n").filter((line) => line.trim());
+}
+
+//: Rows from comma- or tab-separated text, quotes honoured (a quoted cell may
+//: hold the delimiter, a doubled quote and a line break).
+function docPasteParseDelimited(text, delim) {
+  const rows = [[]];
+  let cell = "";
+  let quoted = false;
+  const body = String(text).replace(/\r\n?/g, "\n");
+  for (let i = 0; i < body.length; i++) {
+    const ch = body[i];
+    if (quoted) {
+      if (ch !== '"') cell += ch;
+      else if (body[i + 1] === '"') { cell += '"'; i++; }
+      else quoted = false;
+    } else if (ch === '"' && !cell) quoted = true;
+    else if (ch === delim) { rows[rows.length - 1].push(cell); cell = ""; }
+    else if (ch === "\n") { rows[rows.length - 1].push(cell); cell = ""; rows.push([]); }
+    else cell += ch;
+  }
+  if (cell || rows[rows.length - 1].length) rows[rows.length - 1].push(cell);
+  while (rows.length && !rows[rows.length - 1].length) rows.pop();
+  return rows.map((row) => row.map((c) => c.replace(/\s*\n\s*/g, " ").trim()));
+}
+
+//: Rows and columns from a spreadsheet copy (tabs) or a CSV (commas, and then
+//: only when every row has the same number of cells). Null for anything else.
+function docPasteGrid(text) {
+  const clean = String(text || "").replace(/\r\n?/g, "\n").replace(/\n+$/, "");
+  if (!clean.trim()) return null;
+  const tabbed = clean.includes("\t");
+  const rows = docPasteParseDelimited(clean, tabbed ? "\t" : ",");
+  if (!tabbed && (rows.length < 2 || rows[0].length < 2 || rows.some((r) => r.length !== rows[0].length))) return null;
+  return rows.some((r) => r.length > 1) ? rows : null;
+}
+
+function docPasteGuessLang(text) {
+  const hit = DOC_PASTE_LANGS.find(([lang, re]) => {
+    if (lang !== "json") return re.test(text);
+    try { return re.test(text) && Boolean(JSON.parse(text)); } catch { return false; }
+  });
+  return hit ? hit[0] : "";
+}
+
+//: A fence longer than any run of backticks inside, so code that holds a fence
+//: stays whole.
+function docPasteFence(text, lang) {
+  let size = 3;
+  for (const run of text.match(/`+/g) || []) size = Math.max(size, run.length + 1);
+  const fence = "`".repeat(size);
+  return `${fence}${lang || ""}\n${text}\n${fence}`;
+}
+
+//: The prefix of the line the caret is on that a pasted second line should
+//: carry: a quote's ">" or a list item's hanging indent.
+function docPasteMatch(text, linePrefix) {
+  const lines = docPasteClean(text).split("\n");
+  const m = /^(\s*(?:>\s?)+)|^(\s*(?:[-*+]|\d+[.)])\s+(?:\[[ xX]\]\s+)?)/.exec(linePrefix || "");
+  if (!m) return lines.join("\n");
+  const lead = m[1] ? m[1].replace(/\s*$/, " ") : " ".repeat(m[2].length);
+  return lines.map((line, i) => (i && line.trim() ? lead + line : line)).join("\n");
+}
+
+//: Block spacing: a table, a fence or a list needs its own lines. `kind` is
+//: "block" (a blank line either side) or "lines" (a line break either side).
+function docPasteBlockPad(doc, from, to, kind) {
+  const lineStart = doc.lastIndexOf("\n", from - 1) + 1;
+  const lineEnd = doc.indexOf("\n", to) === -1 ? doc.length : doc.indexOf("\n", to);
+  const textBefore = doc.slice(lineStart, from).trim();
+  const textAfter = doc.slice(to, lineEnd).trim();
+  const above = lineStart > 0 ? doc.slice(doc.lastIndexOf("\n", lineStart - 2) + 1, lineStart - 1).trim() : "";
+  const below = lineEnd < doc.length ? doc.slice(lineEnd + 1, doc.indexOf("\n", lineEnd + 1) === -1 ? doc.length : doc.indexOf("\n", lineEnd + 1)).trim() : "";
+  const gap = kind === "block" ? "\n\n" : "\n";
+  return {
+    before: textBefore ? gap : above && kind === "block" ? "\n" : "",
+    after: textAfter ? gap : below && kind === "block" ? "\n" : "",
+  };
+}
+
+const DOC_PASTE_MODES = {
+  plain: (text) => docPasteClean(text),
+  source: (text) => String(text || "").replace(/\r\n?/g, "\n"),
+  code: (text) => {
+    const body = docPasteClean(text);
+    return body ? docPasteFence(body, docPasteGuessLang(body)) : "";
+  },
+  quote: (text) => docPasteLines(text).map((line) => `> ${line}`).join("\n"),
+  checklist: (text) => docPasteLines(text).map((line) => `- [ ] ${line.replace(DOC_PASTE_BULLET, "").trim()}`).join("\n"),
+  table: (text) => {
+    const grid = docPasteGrid(text);
+    return grid ? docTableFromGrid(grid.map((row) => row.map(docTableEscapeCell))) : "";
+  },
+  link: (text, ctx) => {
+    const url = docPasteUrl(text);
+    return url ? `[${ctx.selected || docPasteLinkLabel(url)}](${url})` : "";
+  },
+  match: (text, ctx) => docPasteMatch(text, ctx.linePrefix),
+};
+
+//: Block modes get their own lines; the rest go in where the caret is.
+const DOC_PASTE_PAD = { code: "block", table: "block", quote: "lines", checklist: "lines" };
+
+//: What `mode` writes for this clipboard text, padded for the document around
+//: the range it replaces. Empty when the clipboard cannot be read that way.
+function docPasteTransform(mode, text, doc, from, to) {
+  const ctx = {
+    selected: doc.slice(from, to).replace(/\s+/g, " ").trim(),
+    linePrefix: doc.slice(doc.lastIndexOf("\n", from - 1) + 1, from),
+  };
+  const out = DOC_PASTE_MODES[mode]?.(text, ctx) || "";
+  if (!out || !DOC_PASTE_PAD[mode]) return out;
+  const pad = docPasteBlockPad(doc, from, to, DOC_PASTE_PAD[mode]);
+  return pad.before + out + pad.after;
+}
+// DOC-PASTE-PURE-END
+
+const DOC_PASTE_LABELS = {
+  keep: "Keep formatting",
+  text: "Text only",
+  match: "Match surrounding",
+  asis: "Keep as pasted",
+  table: "As a table",
+  checklist: "As a checklist",
+  quote: "As a quote",
+  code: "As a code block",
+  link: "As a link",
+  url: "Web address only",
+};
+const DOC_PASTE_KEYS = { keep: "k", text: "t", match: "m", asis: "k", table: "a", checklist: "c", quote: "q", code: "b", link: "l", url: "u" };
+const DOC_PASTE_SPECIAL = [
+  ["plain", "Paste as plain text"],
+  ["source", "Paste as Markdown source, no conversion"],
+  ["code", "Paste as a code block"],
+  ["quote", "Paste as a quote"],
+  ["table", "Paste as a table, from a spreadsheet or CSV"],
+  ["link", "Paste as a link"],
+  ["checklist", "Paste as a checklist, one line per item"],
+];
+
+//: The mode the next real paste applies (Paste special when the browser would
+//: not let the app read the clipboard itself).
+let docPasteArmed = "";
+//: The open chip: {view, from, to, current, variants, el, ctrl}.
+let docPasteChip = null;
+
+function docPasteVariant(id, text) {
+  return { id, key: DOC_PASTE_KEYS[id], label: DOC_PASTE_LABELS[id], text };
+}
+
+function docPasteChipClose() {
+  const chip = docPasteChip;
+  if (!chip) return;
+  docPasteChip = null;
+  chip.el.remove();
+  document.removeEventListener("keydown", chip.onKey, true);
+  document.removeEventListener("keyup", chip.onKeyUp, true);
+  document.removeEventListener("mousedown", chip.onMouse, true);
+  chip.view.scrollDOM.removeEventListener("scroll", chip.onScroll);
+  window.removeEventListener("resize", chip.onScroll);
+}
+
+function docPasteChipPlace(chip) {
+  const at = chip.view.coordsAtPos(chip.to);
+  const box = chip.view.scrollDOM.getBoundingClientRect();
+  if (!at || at.bottom < box.top || at.top > box.bottom) {
+    chip.el.classList.add("hidden");
+    return;
+  }
+  chip.el.classList.remove("hidden");
+  const w = chip.el.offsetWidth;
+  const h = chip.el.offsetHeight;
+  const left = Math.max(8, Math.min(at.left, window.innerWidth - w - 8));
+  const below = at.bottom + 6;
+  const top = below + h > window.innerHeight - 8 ? Math.max(8, at.top - h - 6) : below;
+  chip.el.style.left = `${left}px`;
+  chip.el.style.top = `${top}px`;
+}
+
+//: Swap the pasted range for another reading. One undo step; the chip stays so
+//: the writer can try another. A range that no longer holds what was pasted
+//: (the document moved under it) closes the chip instead of guessing.
+function docPasteChoose(chip, variant) {
+  const { view } = chip;
+  const now = chip.variants.find((v) => v.id === chip.current);
+  if (!now || view.state.doc.sliceString(chip.from, chip.to) !== now.text) {
+    docPasteChipClose();
+    return;
+  }
+  docUndoBreak();
+  view.dispatch({
+    changes: { from: chip.from, to: chip.to, insert: variant.text },
+    selection: { anchor: chip.from + variant.text.length },
+    userEvent: "input.paste",
+    scrollIntoView: true,
+  });
+  chip.to = chip.from + variant.text.length;
+  chip.current = variant.id;
+  view.focus();
+  docPasteChipPlace(chip);
+}
+
+function docPasteChipMenu(chip) {
+  const rect = chip.el.getBoundingClientRect();
+  const items = chip.variants
+    .filter((v) => v.id !== chip.current)
+    .map((v) => ({ label: `${v.label} (${v.key.toUpperCase()})`, run: () => docPasteChoose(chip, v) }));
+  openMenuAtPoint(items, "Paste options", rect.left, rect.bottom + 2);
+}
+
+function docPasteMenuOpen() {
+  return Boolean(document.querySelector(".pointer-menu-host .action-menu:not(.hidden)"));
+}
+
+//: Keys while the chip is up. Ctrl on its own opens the menu (as Word's does);
+//: with the menu open a variant's letter picks it; Escape or any other key is
+//: the writer going back to writing.
+function docPasteChipKey(chip, event) {
+  if (event.key === "Control") {
+    chip.ctrl = !event.repeat;
+    return;
+  }
+  chip.ctrl = false;
+  if (["Shift", "Alt", "Meta"].includes(event.key)) return;
+  const inMenu = event.target instanceof Element && event.target.closest(".action-menu");
+  if (inMenu || docPasteMenuOpen()) {
+    const hit = !event.ctrlKey && !event.metaKey && chip.variants.find((v) => v.id !== chip.current && v.key === event.key.toLowerCase());
+    if (hit) {
+      event.preventDefault();
+      closeActionMenus();
+      docPasteChoose(chip, hit);
+    }
+    return;
+  }
+  docPasteChipClose();
+}
+
+function docPasteOffer(view, from, to, current, variants) {
+  docPasteChipClose();
+  if (variants.length < 2) return;
+  const el = document.createElement("div");
+  el.className = "doc-paste-chip";
+  const opener = smallButton("ph:clipboard-text Paste options", "Paste options: other ways to paste this (Ctrl)", () => docPasteChipMenu(chip));
+  opener.setAttribute("aria-haspopup", "menu");
+  el.appendChild(opener);
+  document.body.appendChild(el);
+  const chip = { view, from, to, current, variants, el, ctrl: false };
+  chip.onKey = (event) => docPasteChipKey(chip, event);
+  chip.onKeyUp = (event) => {
+    if (event.key === "Control" && chip.ctrl) docPasteChipMenu(chip);
+    chip.ctrl = false;
+  };
+  chip.onMouse = (event) => {
+    if (!el.contains(event.target) && !(event.target instanceof Element && event.target.closest(".action-menu"))) docPasteChipClose();
+  };
+  chip.onScroll = () => docPasteChipPlace(chip);
+  document.addEventListener("keydown", chip.onKey, true);
+  document.addEventListener("keyup", chip.onKeyUp, true);
+  document.addEventListener("mousedown", chip.onMouse, true);
+  view.scrollDOM.addEventListener("scroll", chip.onScroll, { passive: true });
+  window.addEventListener("resize", chip.onScroll);
+  docPasteChip = chip;
+  docPasteChipPlace(chip);
+}
+
+function docPasteWrite(view, from, to, text) {
+  docUndoBreak();
+  view.dispatch({
+    changes: { from, to, insert: text },
+    selection: { anchor: from + text.length },
+    userEvent: "input.paste",
+    scrollIntoView: true,
+  });
+}
+
+//: The variants a multi-line or tabular clipboard offers, in the order a
+//: writer reaches for them. Each is the text that would replace the pasted
+//: range, already padded for the document around it.
+function docPasteTextVariants(plain, doc, from, to) {
+  const asis = String(plain).replace(/\r\n?/g, "\n");
+  const out = [docPasteVariant("asis", asis)];
+  for (const mode of ["table", "checklist", "quote", "code"]) {
+    const text = docPasteTransform(mode, plain, doc, from, to);
+    if (text && text !== asis) out.push(docPasteVariant(mode, text));
+  }
+  return out;
+}
+
+function docPasteIsLinewise(plain) {
+  return typeof DOC_LINE_CLIP !== "undefined" && DOC_LINE_CLIP.text && plain === DOC_LINE_CLIP.text;
+}
+
+//: A web address over selected words makes a link; with nothing selected it is
+//: pasted bare and the chip offers the link form.
+function docPasteUrlEvent(event, view, url, plain) {
+  const sel = view.state.selection.main;
+  const doc = view.state.doc.toString();
+  const selected = doc.slice(sel.from, sel.to);
+  event.preventDefault();
+  if (selected.trim() && !selected.includes("\n")) {
+    const link = docPasteTransform("link", url, doc, sel.from, sel.to);
+    docPasteWrite(view, sel.from, sel.to, link);
+    docPasteOffer(view, sel.from, sel.from + link.length, "link", [docPasteVariant("link", link), docPasteVariant("url", plain.trim())]);
+    return true;
+  }
+  docPasteWrite(view, sel.from, sel.to, plain.trim());
+  const link = docPasteTransform("link", url, doc, sel.from, sel.to);
+  docPasteOffer(view, sel.from, sel.from + plain.trim().length, "url", [docPasteVariant("url", plain.trim()), docPasteVariant("link", link)]);
+  return true;
+}
+
+//: The handler between the table's and the rich one's: Paste special's armed
+//: mode, a web address, and plain text of several lines or rows.
+function docSmartPasteEvent(event, view) {
+  const armed = docPasteArmed;
+  docPasteArmed = "";
+  const data = event.clipboardData;
+  const plain = data?.getData("text/plain") || "";
+  const sel = view.state.selection;
+  if (!plain || view.state.readOnly || sel.ranges.length !== 1 || view.dom.classList.contains("doc-content-code")) return false;
+  if (armed) {
+    docPasteSpecialApply(view, armed, plain);
+    event.preventDefault();
+    return true;
+  }
+  if (docPastePlain || docPasteIsLinewise(plain)) return false;
+  const url = docPasteUrl(plain);
+  if (url) return docPasteUrlEvent(event, view, url, plain);
+  const html = data.getData("text/html") || "";
+  if (html && DOC_RICH_TAGS.test(html)) return false;
+  if (docPasteLines(plain).length < 2) return false;
+  const { from, to } = sel.main;
+  const variants = docPasteTextVariants(plain, view.state.doc.toString(), from, to);
+  event.preventDefault();
+  docPasteWrite(view, from, to, variants[0].text);
+  docPasteOffer(view, from, from + variants[0].text.length, "asis", variants);
+  return true;
+}
+
+//: After a rich paste became Markdown (documents.js): the other two readings.
+function docPasteOfferRich(view, from, markdown, plain) {
+  const doc = view.state.doc.toString();
+  const prefix = doc.slice(doc.lastIndexOf("\n", from - 1) + 1, from);
+  const text = docPasteClean(plain || "");
+  const match = docPasteMatch(text, prefix);
+  const variants = [docPasteVariant("keep", markdown)];
+  if (text && text !== markdown) variants.push(docPasteVariant("text", text));
+  if (match && match !== text && match !== markdown) variants.push(docPasteVariant("match", match));
+  docPasteOffer(view, from, from + markdown.length, "keep", variants);
+}
+
+//: After a spreadsheet's rows became a table outside one (documents.js).
+function docPasteOfferTable(view, from, inserted, plain) {
+  const raw = String(plain).replace(/\r\n?/g, "\n");
+  docPasteOffer(view, from, from + inserted.length, "table", [docPasteVariant("table", inserted), docPasteVariant("text", raw)]);
+}
+
+function docPasteSpecialApply(view, mode, text) {
+  const sel = view.state.selection.main;
+  const doc = view.state.doc.toString();
+  const out = docPasteTransform(mode, text, doc, sel.from, sel.to);
+  if (!out) {
+    const why = { table: "Nothing on the clipboard reads as rows and columns.", link: "The clipboard does not hold a web address." };
+    toast(why[mode] || "Nothing to paste.", "info");
+    return false;
+  }
+  docPasteChipClose();
+  docPasteWrite(view, sel.from, sel.to, out);
+  return true;
+}
+
+//: Paste special. Reads the clipboard when the browser allows it; otherwise the
+//: next Ctrl+V applies the mode, so it works with no permission at all.
+async function docPasteSpecial(mode) {
+  const view = docSurface()?.view;
+  if (!view || view.dom.classList.contains("doc-content-code")) {
+    toast("Paste special works in a document, not in a code file.", "info");
+    return;
+  }
+  let text = "";
+  try {
+    text = await navigator.clipboard.readText();
+  } catch {
+    text = "";
+  }
+  view.focus();
+  if (text) {
+    docPasteSpecialApply(view, mode, text);
+    return;
+  }
+  docPasteArmed = mode;
+  const label = DOC_PASTE_SPECIAL.find(([id]) => id === mode)?.[1] || "Paste special";
+  toast(`Press Ctrl+V: ${label.toLowerCase()}.`, "info");
+}
+
+//: The document menu's Paste special row: the seven modes as one menu, opened
+//: at the caret (the document menu has closed by the time it draws).
+function docPasteSpecialMenu() {
+  const view = docSurface()?.view;
+  const at = view?.coordsAtPos(view.state.selection.main.head);
+  openMenuAtPoint(
+    DOC_PASTE_SPECIAL.map(([id, label]) => ({ label, run: () => docPasteSpecial(id) })),
+    "Paste special",
+    at ? at.left : window.innerWidth / 2,
+    at ? at.bottom + 4 : window.innerHeight / 3
+  );
+}
