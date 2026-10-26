@@ -335,7 +335,7 @@ foldDocMenuGroup("ph:download-simple Download or print", [
   "doc-export-md", "doc-export-html", "doc-export-zip", "doc-export-docx", "doc-export-pdf",
 ]);
 foldDocMenuGroup("ph:layout Editor and layout", [
-  "doc-format-toggle", "doc-width-menu", "doc-toolbar-mode", "doc-code-wrap-row", "doc-whitespace-row",
+  "doc-format-toggle", "doc-width-menu", "doc-text-size", "doc-line-spacing", "doc-toolbar-mode", "doc-code-wrap-row", "doc-whitespace-row",
   "doc-minimap-row",
 ]);
 foldDocMenuGroup("ph:pencil-simple While you write", [
@@ -2838,6 +2838,10 @@ const DOC_COMMANDS = [
     run: () => docRunControl("doc-dim-others", "Dimming") },
   { id: "serif", icon: "ph:text-aa", label: "Serif reading face", keys: "none",
     run: () => docRunControl("doc-serif", "The serif face") },
+  { id: "text-size", icon: "ph:text-aa", label: "Text size: small, medium or large", keys: "none", prose: true,
+    run: () => docRunControl("doc-text-size", "Text size") },
+  { id: "line-spacing", icon: "ph:arrows-vertical", label: "Line spacing: compact, comfortable or relaxed", keys: "none", prose: true,
+    run: () => docRunControl("doc-line-spacing", "Line spacing") },
   { id: "stats", icon: "ph:chart-bar", label: "Document statistics: words, reading ease, repeated words", keys: "none",
     run: () => docRunTextTool("stats") },
   { id: "case-upper", icon: "ph:text-aa", label: "Selection to UPPER CASE", keys: "none",
@@ -14889,6 +14893,70 @@ function docRestoreReading() {
 }
 
 docRestoreReading();
+
+//: **Text size and line spacing for prose** (docs3-1026). Word and Google
+//: Docs both have them; here they are two cycling rows in the menu, set once
+//: and remembered, because the same window is a half-screen beside a lecture
+//: one day and a full screen the next. Classes on the tab, drawn by
+//: library-lazy.css for prose only: a code file keeps its own metrics, which
+//: the gutter arithmetic depends on.
+const DOC_TEXT_SIZES = ["small", "medium", "large"];
+const DOC_LINE_SPACINGS = ["compact", "comfortable", "relaxed"];
+
+function docCycleChoice(list, current) {
+  return list[(list.indexOf(current) + 1) % list.length];
+}
+
+function applyDocTypography(size, spacing) {
+  const tab = $("tab-documents");
+  for (const name of DOC_TEXT_SIZES) tab?.classList.toggle(`doc-size-${name}`, name === size);
+  for (const name of DOC_LINE_SPACINGS) tab?.classList.toggle(`doc-spacing-${name}`, name === spacing);
+  const sizeLabel = $("doc-text-size-label");
+  if (sizeLabel) sizeLabel.textContent = `Text size: ${size}`;
+  const spacingLabel = $("doc-line-spacing-label");
+  if (spacingLabel) spacingLabel.textContent = `Line spacing: ${spacing}`;
+}
+
+function docTypographyNow() {
+  const tab = $("tab-documents");
+  return {
+    size: DOC_TEXT_SIZES.find((n) => tab?.classList.contains(`doc-size-${n}`)) || "medium",
+    spacing: DOC_LINE_SPACINGS.find((n) => tab?.classList.contains(`doc-spacing-${n}`)) || "comfortable",
+  };
+}
+
+function docStepTypography(which) {
+  const now = docTypographyNow();
+  const size = which === "size" ? docCycleChoice(DOC_TEXT_SIZES, now.size) : now.size;
+  const spacing = which === "spacing" ? docCycleChoice(DOC_LINE_SPACINGS, now.spacing) : now.spacing;
+  try {
+    prefs.set("doc-text-size", size);
+    prefs.set("doc-line-spacing", spacing);
+  } catch {
+    // A private window can refuse storage; the choice still applies for now.
+  }
+  applyDocTypography(size, spacing);
+}
+
+$("doc-text-size")?.addEventListener("click", () => docStepTypography("size"));
+$("doc-line-spacing")?.addEventListener("click", () => docStepTypography("spacing"));
+
+function docRestoreTypography() {
+  let size = "medium";
+  let spacing = "comfortable";
+  try {
+    const savedSize = prefs.get("doc-text-size", null);
+    const savedSpacing = prefs.get("doc-line-spacing", null);
+    if (DOC_TEXT_SIZES.includes(savedSize)) size = savedSize;
+    if (DOC_LINE_SPACINGS.includes(savedSpacing)) spacing = savedSpacing;
+  } catch {
+    // Nothing stored: the defaults are the app's own.
+  }
+  applyDocTypography(size, spacing);
+}
+
+docRestoreTypography();
+
 
 //: **Focus mode.** Asked for as part of "the ultimate editor", and again by
 //: the owner as "a document full screen mode so there is more space"

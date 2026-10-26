@@ -99,3 +99,16 @@ def test_the_commands_the_dialog_and_the_count_are_wired():
         assert f'id="{ident}"' in markup
     assert re.search(r'id="doc-counts"[^>]*role="button"[^>]*tabindex="0"', markup)
     assert '$("doc-counts")?.addEventListener("click"' in commands
+
+
+def test_text_size_and_line_spacing_are_menu_rows_with_prose_only_css():
+    markup = INDEX.read_text(encoding="utf-8")
+    documents = DOCUMENTS.read_text(encoding="utf-8")
+    css = (ROOT / "frontend/css/library-lazy.css").read_text(encoding="utf-8")
+    for ident in ("doc-text-size", "doc-text-size-label", "doc-line-spacing", "doc-line-spacing-label"):
+        assert f'id="{ident}"' in markup
+    assert 'docRunControl("doc-text-size"' in documents and 'docRunControl("doc-line-spacing"' in documents
+    # A code file keeps its own metrics: every size and spacing rule excludes it.
+    rules = re.findall(r"#tab-documents\.doc-(?:size|spacing)-\w+ [^{]*\{", css)
+    assert len(rules) == 4 and all(":not(.doc-content-code)" in r for r in rules)
+    assert "!important" not in css[css.index("Text size and line spacing for prose") :]

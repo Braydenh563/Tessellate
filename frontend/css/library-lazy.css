@@ -6737,3 +6737,24 @@ input[type="color"].wb-mixed {
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }
+
+/* Text size and line spacing for prose documents (docs3-1026). The id outranks
+   the editor theme's own scroller rule and the serif's leading by specificity,
+   alone, with no override flag. Code files are left alone: their gutter is measured from
+   the font. */
+#tab-documents.doc-size-small .doc-source-wrap .cm-editor:not(.doc-content-code) .cm-scroller,
+#tab-documents.doc-size-small #doc-preview {
+  font-size: var(--text-base);
+}
+#tab-documents.doc-size-large .doc-source-wrap .cm-editor:not(.doc-content-code) .cm-scroller,
+#tab-documents.doc-size-large #doc-preview {
+  font-size: var(--text-h3);
+}
+#tab-documents.doc-spacing-compact .doc-source-wrap .cm-editor:not(.doc-content-code) .cm-scroller,
+#tab-documents.doc-spacing-compact #doc-preview {
+  line-height: 1.4;
+}
+#tab-documents.doc-spacing-relaxed .doc-source-wrap .cm-editor:not(.doc-content-code) .cm-scroller,
+#tab-documents.doc-spacing-relaxed #doc-preview {
+  line-height: 1.9;
+}
