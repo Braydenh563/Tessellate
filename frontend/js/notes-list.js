@@ -2823,15 +2823,39 @@ function showEntrySkeletons() {
 //: what is already there; the list's own render replaces them, and
 //: `clearSkeletons` takes them out on a path that draws nothing (a failed
 //: request). `aria-busy` tells a screen reader the list is on its way.
+//: K1: a skeleton stands for what the last render drew in this container,
+//: as many rows as were on screen then at their mean height (kept per
+//: id), so the swap does not jump. `count` is only the first-visit guess.
 function showSkeletons(container, count = 3, tag = "div") {
   if (!container || container.children.length > 0) return;
+  const seen = container.id && prefs.json("skeleton-seen", {})[container.id];
   container.setAttribute("aria-busy", "true");
-  for (let i = 0; i < count; i++) {
+  for (let i = 0; i < (seen?.[0] || count); i++) {
     const el = document.createElement(tag);
     el.className = "skeleton";
+    if (seen) el.style.height = `${seen[1]}px`;
     el.setAttribute("aria-hidden", "true");
     container.appendChild(el);
   }
+  if (!container.id) return;
+  container.skeletonWatch?.disconnect();
+  container.skeletonWatch = new MutationObserver(() => {
+    if (!container.querySelector(":scope > :not(.skeleton)")) return;
+    container.skeletonWatch.disconnect();
+    requestAnimationFrame(() => skeletonRemember(container));
+  });
+  container.skeletonWatch.observe(container, { childList: true });
+}
+
+function skeletonRemember(container) {
+  const rows = [...container.children].filter((el) => !el.classList.contains("skeleton"));
+  //: The mean, not the first row: a group's heading would make every one short.
+  const shown = rows.filter((el) => el.getBoundingClientRect().top < innerHeight);
+  const height = Math.round(shown.reduce((sum, el) => sum + el.offsetHeight, 0) / shown.length);
+  if (!height) return;
+  const seen = prefs.json("skeleton-seen", {});
+  seen[container.id] = [Math.min(shown.length, 30), height];
+  prefs.setJSON("skeleton-seen", seen);
 }
 
 function clearSkeletons(container) {

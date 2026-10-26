@@ -2834,6 +2834,10 @@ function renderSettings() {
     ollamaLine.textContent = "The model server is slow to answer. Showing the last answer.";
     ollamaLine.className = "status is-checking";
   }
+  //: K13: with no model, the line says what answers instead (ai/composer.py).
+  if (aiIsOff()) {
+    ollamaLine.textContent = `${ollamaLine.textContent.replace(/\.$/, "")}. Until a model is connected, Atlas answers with its built-in composer: from your notes, no AI.`;
+  }
   renderBackendPicker(status);
   const embeddingError = $("embedding-error");
   embeddingError.classList.toggle("hidden", !status.embedding_error);

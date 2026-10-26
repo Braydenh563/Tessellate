@@ -2,9 +2,9 @@
 
 Generated 2026-10-26 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6484, frontend ids 2546, CSS sections 504, backend routes 622, backend modules 6538, test files 1370, tests 12217, plan headings 972.
+Counts: frontend functions 6485, frontend ids 2546, CSS sections 504, backend routes 622, backend modules 6538, test files 1372, tests 12221, plan headings 972.
 
-## Frontend functions (6484)
+## Frontend functions (6485)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -204,11 +204,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `syncSelectionPopup` | frontend/js/selection.js:849 |
 | `wrapFieldSelection` | frontend/js/selection.js:581 |
 
-### frontend/js/notes-list.js (113)
+### frontend/js/notes-list.js (114)
 
 | Name | File:line |
 |---|---|
-| `_loadEntries` | frontend/js/notes-list.js:2889 |
+| `_loadEntries` | frontend/js/notes-list.js:2913 |
 | `appendInline` | frontend/js/notes-list.js:1187 |
 | `appendInlineRun` | frontend/js/notes-list.js:954 |
 | `appendPlainText` | frontend/js/notes-list.js:1650 |
@@ -227,15 +227,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `categoryColoursChanged` | frontend/js/notes-list.js:2534 |
 | `categoryDotColour` | frontend/js/notes-list.js:2527 |
 | `categoryMenuItems` | frontend/js/notes-list.js:2771 |
-| `clearSkeletons` | frontend/js/notes-list.js:2837 |
+| `clearSkeletons` | frontend/js/notes-list.js:2861 |
 | `compareCategoryNames` | frontend/js/notes-list.js:2727 |
-| `dockConnectionsInRail` | frontend/js/notes-list.js:3611 |
+| `dockConnectionsInRail` | frontend/js/notes-list.js:3635 |
 | `engineQueryIds` | frontend/js/notes-list.js:194 |
-| `ensureCardCounts` | frontend/js/notes-list.js:3298 |
-| `ensureMapChipsFor` | frontend/js/notes-list.js:3340 |
-| `ensureOneCardCount` | frontend/js/notes-list.js:3302 |
+| `ensureCardCounts` | frontend/js/notes-list.js:3322 |
+| `ensureMapChipsFor` | frontend/js/notes-list.js:3364 |
+| `ensureOneCardCount` | frontend/js/notes-list.js:3326 |
 | `entryListItems` | frontend/js/notes-list.js:2426 |
-| `entryListOrder` | frontend/js/notes-list.js:3009 |
+| `entryListOrder` | frontend/js/notes-list.js:3033 |
 | `entryNeedsReview` | frontend/js/notes-list.js:225 |
 | `expandAngleAutolinks` | frontend/js/notes-list.js:866 |
 | `fileCard` | frontend/js/notes-list.js:717 |
@@ -246,7 +246,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `filterNotesByTag` | frontend/js/notes-list.js:2213 |
 | `focusNoteRow` | frontend/js/notes-list.js:62 |
 | `foldNoteToolbarForFirstPaint` | frontend/js/notes-list.js:17 |
-| `followNoteChanges` | frontend/js/notes-list.js:3075 |
+| `followNoteChanges` | frontend/js/notes-list.js:3099 |
 | `highlightIconsInto` | frontend/js/notes-list.js:1666 |
 | `highlightInto` | frontend/js/notes-list.js:1693 |
 | `initEntryListKeyboardNav` | frontend/js/notes-list.js:2438 |
@@ -257,7 +257,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `liveQueryBar` | frontend/js/notes-list.js:314 |
 | `liveQueryIds` | frontend/js/notes-list.js:163 |
 | `loadCategories` | frontend/js/notes-list.js:2543 |
-| `loadEntries` | frontend/js/notes-list.js:2881 |
+| `loadEntries` | frontend/js/notes-list.js:2905 |
 | `markSidebarRowCurrent` | frontend/js/notes-list.js:2731 |
 | `matchesSearch` | frontend/js/notes-list.js:381 |
 | `matchesTagCount` | frontend/js/notes-list.js:360 |
@@ -268,52 +268,53 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `noteQueryIsEmpty` | frontend/js/notes-list.js:343 |
 | `noteSemanticLoaded` | frontend/js/notes-list.js:377 |
 | `noteSortName` | frontend/js/notes-list.js:1798 |
-| `noteTopicChip` | frontend/js/notes-list.js:3228 |
-| `notesRailFocusSubject` | frontend/js/notes-list.js:3604 |
-| `notesRailHiddenByChoice` | frontend/js/notes-list.js:3427 |
-| `notesRailNearGroup` | frontend/js/notes-list.js:3575 |
-| `notesRailSync` | frontend/js/notes-list.js:3438 |
-| `notesRailWanted` | frontend/js/notes-list.js:3455 |
-| `nudgeReviewQueue` | frontend/js/notes-list.js:3351 |
-| `nudgeUntaggedNotes` | frontend/js/notes-list.js:3372 |
-| `offerWikiRename` | frontend/js/notes-list.js:3695 |
+| `noteTopicChip` | frontend/js/notes-list.js:3252 |
+| `notesRailFocusSubject` | frontend/js/notes-list.js:3628 |
+| `notesRailHiddenByChoice` | frontend/js/notes-list.js:3451 |
+| `notesRailNearGroup` | frontend/js/notes-list.js:3599 |
+| `notesRailSync` | frontend/js/notes-list.js:3462 |
+| `notesRailWanted` | frontend/js/notes-list.js:3479 |
+| `nudgeReviewQueue` | frontend/js/notes-list.js:3375 |
+| `nudgeUntaggedNotes` | frontend/js/notes-list.js:3396 |
+| `offerWikiRename` | frontend/js/notes-list.js:3719 |
 | `openNoteEditor` | frontend/js/notes-list.js:76 |
 | `orderedNotesForCurrentView` | frontend/js/notes-list.js:1998 |
 | `paginateNotesForDisplay` | frontend/js/notes-list.js:1964 |
 | `paintCategoryDot` | frontend/js/notes-list.js:2530 |
-| `paintEntriesProgress` | frontend/js/notes-list.js:2869 |
+| `paintEntriesProgress` | frontend/js/notes-list.js:2893 |
 | `parseNoteQuery` | frontend/js/notes-list.js:247 |
 | `propQuery` | frontend/js/notes-list.js:2220 |
 | `readableUrl` | frontend/js/notes-list.js:893 |
-| `referenceCountChip` | frontend/js/notes-list.js:3157 |
-| `referenceCountText` | frontend/js/notes-list.js:3145 |
-| `refreshEntries` | frontend/js/notes-list.js:3017 |
+| `referenceCountChip` | frontend/js/notes-list.js:3181 |
+| `referenceCountText` | frontend/js/notes-list.js:3169 |
+| `refreshEntries` | frontend/js/notes-list.js:3041 |
 | `refreshNoteSearchWhy` | frontend/js/notes-list.js:1756 |
-| `reminderCountChip` | frontend/js/notes-list.js:3200 |
+| `reminderCountChip` | frontend/js/notes-list.js:3224 |
 | `renderEntries` | frontend/js/notes-list.js:2265 |
 | `renderIncrementally` | frontend/js/notes-list.js:1869 |
 | `renderInlineMarkdown` | frontend/js/notes-list.js:910 |
 | `renderNoteInline` | frontend/js/notes-list.js:1567 |
 | `renderNoteText` | frontend/js/notes-list.js:1436 |
-| `renderNotesRail` | frontend/js/notes-list.js:3474 |
+| `renderNotesRail` | frontend/js/notes-list.js:3498 |
 | `renderSidebar` | frontend/js/notes-list.js:2558 |
 | `resolveCategoryChoice` | frontend/js/notes-list.js:127 |
 | `resolveNotePage` | frontend/js/notes-list.js:2038 |
 | `resolveWikiTarget` | frontend/js/notes-list.js:1326 |
 | `safeHref` | frontend/js/notes-list.js:843 |
-| `scheduleEntriesProgress` | frontend/js/notes-list.js:2876 |
-| `scheduleNotesRail` | frontend/js/notes-list.js:3450 |
+| `scheduleEntriesProgress` | frontend/js/notes-list.js:2900 |
+| `scheduleNotesRail` | frontend/js/notes-list.js:3474 |
 | `searchHighlightTerms` | frontend/js/notes-list.js:1728 |
-| `setNotesRailHidden` | frontend/js/notes-list.js:3617 |
+| `setNotesRailHidden` | frontend/js/notes-list.js:3641 |
 | `setNotesViewMode` | frontend/js/notes-list.js:2121 |
 | `showEntrySkeletons` | frontend/js/notes-list.js:2808 |
 | `showNotesFilter` | frontend/js/notes-list.js:236 |
-| `showSkeletons` | frontend/js/notes-list.js:2826 |
+| `showSkeletons` | frontend/js/notes-list.js:2829 |
+| `skeletonRemember` | frontend/js/notes-list.js:2850 |
 | `sortEntries` | frontend/js/notes-list.js:1802 |
-| `syncNotesRailToggle` | frontend/js/notes-list.js:3463 |
+| `syncNotesRailToggle` | frontend/js/notes-list.js:3487 |
 | `toggleExpandAllRows` | frontend/js/notes-list.js:2110 |
 | `toggleRowExpanded` | frontend/js/notes-list.js:2143 |
-| `topicRepeatsTag` | frontend/js/notes-list.js:3222 |
+| `topicRepeatsTag` | frontend/js/notes-list.js:3246 |
 | `unlatex` | frontend/js/notes-list.js:761 |
 | `updateExpandAllButton` | frontend/js/notes-list.js:2090 |
 | `whyThisResultChip` | frontend/js/notes-list.js:1740 |
@@ -1054,7 +1055,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `noteDamagedNotebook` | frontend/js/status.js:1241 |
 | `noteServerDown` | frontend/js/status.js:1297 |
 | `noteServerUp` | frontend/js/status.js:1306 |
-| `noticeTaskTransitions` | frontend/js/status.js:3020 |
+| `noticeTaskTransitions` | frontend/js/status.js:3024 |
 | `noticeUnwatchedAnswer` | frontend/js/status.js:685 |
 | `notificationsMuted` | frontend/js/status.js:627 |
 | `notificationsReadAt` | frontend/js/status.js:138 |
@@ -1064,7 +1065,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openLanPanel` | frontend/js/status.js:587 |
 | `openModelGate` | frontend/js/status.js:2019 |
 | `openModelOffer` | frontend/js/status.js:2026 |
-| `paintPrivacyChip` | frontend/js/status.js:3116 |
+| `paintPrivacyChip` | frontend/js/status.js:3120 |
 | `paintStatusItem` | frontend/js/status.js:2508 |
 | `paintTitle` | frontend/js/status.js:484 |
 | `paintUndoDoor` | frontend/js/status.js:1631 |
@@ -1079,9 +1080,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `pushEntryPutUndo` | frontend/js/status.js:1475 |
 | `pushUndo` | frontend/js/status.js:1371 |
 | `recordNotification` | frontend/js/status.js:97 |
-| `refreshBackgroundTasks` | frontend/js/status.js:2938 |
+| `refreshBackgroundTasks` | frontend/js/status.js:2942 |
 | `refreshModelStatus` | frontend/js/status.js:1871 |
-| `refreshPrivacyChip` | frontend/js/status.js:3130 |
+| `refreshPrivacyChip` | frontend/js/status.js:3134 |
 | `rememberAnnounced` | frontend/js/status.js:50 |
 | `reminderNoticeKey` | frontend/js/status.js:228 |
 | `renderAgentActivityMode` | frontend/js/status.js:721 |
@@ -1109,7 +1110,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `settleUndoFromToast` | frontend/js/status.js:1463 |
 | `showAgentNoModelHint` | frontend/js/status.js:2761 |
 | `showServerDownBanner` | frontend/js/status.js:1280 |
-| `startPrivacyChip` | frontend/js/status.js:3140 |
+| `startPrivacyChip` | frontend/js/status.js:3144 |
 | `startReminderWatch` | frontend/js/status.js:594 |
 | `storedNotifications` | frontend/js/status.js:84 |
 | `surfaceHistory` | frontend/js/status.js:1517 |
@@ -1117,7 +1118,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `syncModelGatedControls` | frontend/js/status.js:2073 |
 | `syncNotifBlocked` | frontend/js/status.js:373 |
 | `taskEndingWords` | frontend/js/status.js:130 |
-| `taskKey` | frontend/js/status.js:3001 |
+| `taskKey` | frontend/js/status.js:3005 |
 | `toast` | frontend/js/status.js:1071 |
 | `toastAction` | frontend/js/status.js:1213 |
 | `toastActionButton` | frontend/js/status.js:1193 |
@@ -12642,41 +12643,41 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_of` | src/tessellate/ai/help_chat.py:2587 |
-| `_aware` | src/tessellate/ai/help_chat.py:3121 |
-| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2518 |
-| `_guide_lead` | src/tessellate/ai/help_chat.py:3035 |
-| `_guide_opening` | src/tessellate/ai/help_chat.py:3051 |
-| `_help_sentences` | src/tessellate/ai/help_chat.py:3018 |
-| `_keyword_in` | src/tessellate/ai/help_chat.py:2508 |
-| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2440 |
-| `_keyword_regex` | src/tessellate/ai/help_chat.py:2504 |
-| `_matching_topics` | src/tessellate/ai/help_chat.py:2637 |
-| `_meaning_topics` | src/tessellate/ai/help_chat.py:2717 |
-| `_normalise_keys` | src/tessellate/ai/help_chat.py:2463 |
-| `_place` | src/tessellate/ai/help_chat.py:2992 |
-| `_preference` | src/tessellate/ai/help_chat.py:3074 |
-| `_prompt_for` | src/tessellate/ai/help_chat.py:2865 |
-| `_read_as` | src/tessellate/ai/help_chat.py:3186 |
-| `_reading_topics` | src/tessellate/ai/help_chat.py:2609 |
-| `_repaired` | src/tessellate/ai/help_chat.py:2626 |
-| `_second_sentence` | src/tessellate/ai/help_chat.py:3022 |
-| `_state_line` | src/tessellate/ai/help_chat.py:3083 |
-| `_stated_lead` | src/tessellate/ai/help_chat.py:3092 |
-| `answer` | src/tessellate/ai/help_chat.py:3266 |
-| `answer_stream` | src/tessellate/ai/help_chat.py:3201 |
-| `badges_for` | src/tessellate/ai/help_chat.py:2805 |
-| `composed_answer` | src/tessellate/ai/help_chat.py:3103 |
-| `help_block_for` | src/tessellate/ai/help_chat.py:3347 |
-| `help_listing` | src/tessellate/ai/help_chat.py:2776 |
-| `help_sentences` | src/tessellate/ai/help_chat.py:3001 |
-| `names_app` | src/tessellate/ai/help_chat.py:3331 |
-| `offline_answer` | src/tessellate/ai/help_chat.py:3133 |
-| `social_reply` | src/tessellate/ai/help_chat.py:2965 |
-| `source_names` | src/tessellate/ai/help_chat.py:2772 |
-| `system_answer` | src/tessellate/ai/help_chat.py:2754 |
-| `topic_title` | src/tessellate/ai/help_chat.py:2740 |
-| `topics_for` | src/tessellate/ai/help_chat.py:2819 |
+| `_act_of` | src/tessellate/ai/help_chat.py:2589 |
+| `_aware` | src/tessellate/ai/help_chat.py:3123 |
+| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2520 |
+| `_guide_lead` | src/tessellate/ai/help_chat.py:3037 |
+| `_guide_opening` | src/tessellate/ai/help_chat.py:3053 |
+| `_help_sentences` | src/tessellate/ai/help_chat.py:3020 |
+| `_keyword_in` | src/tessellate/ai/help_chat.py:2510 |
+| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2442 |
+| `_keyword_regex` | src/tessellate/ai/help_chat.py:2506 |
+| `_matching_topics` | src/tessellate/ai/help_chat.py:2639 |
+| `_meaning_topics` | src/tessellate/ai/help_chat.py:2719 |
+| `_normalise_keys` | src/tessellate/ai/help_chat.py:2465 |
+| `_place` | src/tessellate/ai/help_chat.py:2994 |
+| `_preference` | src/tessellate/ai/help_chat.py:3076 |
+| `_prompt_for` | src/tessellate/ai/help_chat.py:2867 |
+| `_read_as` | src/tessellate/ai/help_chat.py:3188 |
+| `_reading_topics` | src/tessellate/ai/help_chat.py:2611 |
+| `_repaired` | src/tessellate/ai/help_chat.py:2628 |
+| `_second_sentence` | src/tessellate/ai/help_chat.py:3024 |
+| `_state_line` | src/tessellate/ai/help_chat.py:3085 |
+| `_stated_lead` | src/tessellate/ai/help_chat.py:3094 |
+| `answer` | src/tessellate/ai/help_chat.py:3268 |
+| `answer_stream` | src/tessellate/ai/help_chat.py:3203 |
+| `badges_for` | src/tessellate/ai/help_chat.py:2807 |
+| `composed_answer` | src/tessellate/ai/help_chat.py:3105 |
+| `help_block_for` | src/tessellate/ai/help_chat.py:3349 |
+| `help_listing` | src/tessellate/ai/help_chat.py:2778 |
+| `help_sentences` | src/tessellate/ai/help_chat.py:3003 |
+| `names_app` | src/tessellate/ai/help_chat.py:3333 |
+| `offline_answer` | src/tessellate/ai/help_chat.py:3135 |
+| `social_reply` | src/tessellate/ai/help_chat.py:2967 |
+| `source_names` | src/tessellate/ai/help_chat.py:2774 |
+| `system_answer` | src/tessellate/ai/help_chat.py:2756 |
+| `topic_title` | src/tessellate/ai/help_chat.py:2742 |
+| `topics_for` | src/tessellate/ai/help_chat.py:2821 |
 
 ### src/tessellate/ai/help_topics_more.py (2)
 
@@ -19282,7 +19283,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12217)
+## Tests (12221)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20060,6 +20061,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_model_sizes.py | 5 |
 | tests/test_model_specs.py | 17 |
 | tests/test_models_api.py | 38 |
+| tests/test_models_composer_line_k13.py | 2 |
 | tests/test_models_doc_sizes.py | 4 |
 | tests/test_motion_endings.py | 2 |
 | tests/test_motion_recipes.py | 6 |
@@ -20365,6 +20367,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_sidebar_peek_head.py | 2 |
 | tests/test_silent_mutations.py | 2 |
 | tests/test_similar_pairs_cache.py | 6 |
+| tests/test_skeleton_memory_k1.py | 2 |
 | tests/test_sketch_media.py | 15 |
 | tests/test_sketch_pad.py | 15 |
 | tests/test_skill_composer.py | 11 |
