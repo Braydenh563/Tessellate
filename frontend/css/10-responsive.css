@@ -2198,12 +2198,6 @@ header#top-bar[data-scrolled="1"],
     min-width: 0;
     max-width: none;
   }
-  /* Ask's Use AI chip (INBOX 688, 714, K6) takes the first line with its '?':
-     beside History it left the '?' stranded at the line's end and History
-     on a line of its own. */
-  #ask .ask-header-actions > #ask-use-ai {
-    flex: 1 1 auto;
-  }
 }
 /* --- the lightbox on a phone (INBOX 430) ------------------------------------
    "The lightbox on phone needs a better layout": at 390 the action row

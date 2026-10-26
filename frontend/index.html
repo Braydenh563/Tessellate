@@ -2077,13 +2077,13 @@ Link to another note with [[its first few words]]."></textarea>
                    the app's pill-switch recipe (INBOX 714: the two-segment
                    pill "doesnt feel modern and professional"), this device's
                    choice, wired and kept in step with the model by
-                   ask-compose.js (lazy). The markup's own state (on) stands
-                   until it lands. -->
-              <button type="button" id="ask-use-ai" class="ghost small" aria-pressed="false" disabled
-                title="Checking whether a model answers"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Use AI</button>
+                   ask-compose.js (lazy). The switch itself sits in the ask
+                   input's control row (K34), beside the answer-length
+                   select, and starts neutral (unchecked, enabled) until
+                   the first model status lands. -->
               <button type="button" class="icon-only ghost small graph-help-toggle"
                 data-help-for="ask-source-help" aria-controls="ask-source-help" aria-expanded="false"
-                title="About Use AI" aria-label="About Use AI">
+                title="About AI answers" aria-label="About AI answers">
                 <i class="ph ph-question" aria-hidden="true"></i>
               </button>
               <!-- The model this box answers on: the Ask tab row of Settings,
@@ -2105,9 +2105,9 @@ Link to another note with [[its first few words]]."></textarea>
                 title="Clear this conversation and start fresh">New chat</button>
             </span>
           </div>
-          <div class="help-body hidden" id="ask-source-help" role="dialog" aria-label="About Use AI">
+          <div class="help-body hidden" id="ask-source-help" role="dialog" aria-label="About AI answers">
             <p>
-              Use AI on: your model writes the answer from your notes, citing
+              Switch on: your model writes the answer from your notes, citing
               them. Off: the answer is From your notes, with no AI. The app
               picks the sentences in your notes that answer the question and
               strings them together: the answer on the first line, then the
@@ -2122,8 +2122,9 @@ Link to another note with [[its first few words]]."></textarea>
               words the app adds are the joining ones and the counts and dates
               it measured. It never answers yes or no for you, and it says
               which of your words none of the notes found mention. With no
-              model running the switch is off and greyed, and the answer is
-              From your notes; Use AI comes back when a model does.
+              model running the switch labelled AI beside the answer length is off and
+              greyed, its hover text and the notice below name why, and the
+              answer is From your notes; it comes back when a model does.
             </p>
           </div>
           <!-- One surface, not five loose controls on a bare card. The
@@ -2159,6 +2160,14 @@ Link to another note with [[its first few words]]."></textarea>
               aria-label="Ask your notebook a question">
             <button type="button" id="ask-clear" class="ghost icon-only small field-clear hidden" title="Clear" aria-label="Clear"><i class="ph ph-eraser" aria-hidden="true"></i></button>
             <div class="ask-controls">
+            <!-- **Use AI** (K34): the pill-switch recipe on a checkbox
+                 (06-timeline-dialogs.css), `ask-compose.js` draws it.
+                 Neutral until the first status: unchecked, not disabled. -->
+            <label class="checkbox-label ask-ai-switch" for="ask-use-ai"
+              title="Checking whether a model answers">
+              <input type="checkbox" role="switch" id="ask-use-ai">
+              <span>AI</span>
+            </label>
             <!-- The same three presets the Chat tab offers, and the same
                  stored preference behind them, not a second setting. This
                  box always honoured the saved mode; it just had no way to

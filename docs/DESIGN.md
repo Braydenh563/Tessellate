@@ -1119,7 +1119,7 @@ and no rule, so "Ask Atlas" wore a sparkle in one menu and a wand in the next.
 
 | Glyph | Means | Where |
 | --- | --- | --- |
-| `ph-sparkle` | The AI does a thing for you | Describe with AI, Read text with AI, Ask (Notes' tab, its Use AI switch, Chat's mode), AI suggestions and composed answers, Draft, Refine, AI edit, Name with Atlas, File by meaning, Semantic search, the "AI off" mark (slashed) |
+| `ph-sparkle` | The AI does a thing for you | Describe with AI, Read text with AI, Ask (Notes' tab, its AI switch, Chat's mode), AI suggestions and composed answers, Draft, Refine, AI edit, Name with Atlas, File by meaning, Semantic search, the "AI off" mark (slashed) |
 | `ph-strategy` | The agent: plans, then acts in steps on your behalf | Agent mode (toggle, segment, palette row), the popup agent (status bar, its head and input, More on a phone), Agent activity (title, status bar runs), a run's notification, a past turn answered in Agent mode |
 | `ph-lightning` | Skills | The Skills picker, a skill's run, Settings, Skills |
 | `ph-magic-wand` | Tidy or fix automatically, by rule, no model | Fix all (prose), Autocorrect as I type, a map's auto alignment |

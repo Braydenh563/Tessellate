@@ -740,7 +740,7 @@ function replyByHelpPanel(kind) {
     REPLY_BY_WHAT[kind] || REPLY_BY_WHAT.notes,
     "Every sentence in a notes answer is quoted from a note and cited. The only words the app adds are the joining ones and the counts and dates it measured. It does not guess, so it can miss what a model would work out.",
     "A model's answer shows the model's name here instead, and its sentences are new wording.",
-    "To use a model, turn on Use AI in Ask when a model is running, or connect one in Settings, Models.",
+    "To use a model, turn on the switch labelled AI in Ask when a model is running, or connect one in Settings, Models.",
   ]) {
     const p = document.createElement("p");
     p.textContent = line;

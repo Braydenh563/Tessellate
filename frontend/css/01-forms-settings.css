@@ -2883,19 +2883,20 @@ li.link-source {
   flex: 1 1 auto;
   min-width: 0;
 }
-/* **Use AI** (K6, INBOX 714): the Chat dock's toggle chip (`#web-search-toggle`
-   is the recipe: a ghost small button, `aria-pressed`, `.active` the accent
-   fill), in the header's control group. It replaced a bare switch that drew as
-   on with no model running (the owner: "is there a bettwer ui way of changing
-   or redesigning that button or toggle"). Muted when off; disabled, with the
-   reason in its title, when no model answers (ask-compose.js). */
-#ask-use-ai {
-  min-height: max(var(--control-h), var(--target-min));
+/* **Use AI** (K34): the AI switch is a checkbox on the app's pill-switch
+   recipe (06-timeline-dialogs.css, `.checkbox-label`), in the ask input's
+   control row beside the answer-length select. Compact: the label drops the
+   chip border and padding so the row's other widths do not move; disabled
+   (no model) the recipe's own 0.45 opacity reads as greyed. */
+.ask-ai-switch {
+  flex: 0 0 auto;
+  border-color: transparent;
+  padding-inline: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--ink);
+  cursor: pointer;
 }
-#ask-use-ai:not(.active) {
-  color: var(--muted);
-}
-#ask-use-ai:disabled {
+.ask-ai-switch:has(input:disabled) {
   cursor: not-allowed;
 }
 #ask-history-toggle {
@@ -4149,7 +4150,6 @@ html.modal-open body {
    messages: and two different "on" treatments in one strip is how a user
    learns that one of them means something else. */
 #web-search-toggle.active,
-#ask-use-ai.active,
 #chat-plan.active {
   background: var(--accent-surface);
   color: var(--on-accent);
@@ -4159,7 +4159,6 @@ html.modal-open body {
    web polls when active"): a ghost button's icon keeps the accent, which on
    the accent fill measured 1.00:1, so the globe and the compass vanished. */
 #web-search-toggle.active i,
-#ask-use-ai.active i,
 #chat-plan.active i {
   color: inherit;
 }
