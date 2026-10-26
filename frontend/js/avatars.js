@@ -2376,14 +2376,16 @@ function drawCharacter(seed, size = 20, mode = "mark") {
       stroke(`M${lx + 6} ${ly - 0.5} Q32 ${ly - 3} ${rx2 - 6} ${ly - 0.5}`, g, 1.4, rim);
     }
   }
+  //: A patch and a mask are on the face too, with the eyes and mouth they
+  //: cover; hats stay on the crown, which does not turn (K14).
   if (props.includes("eyepatch") && eyes.length === 2) {
     const [x, y] = eyes[1];
-    stroke(`M8 ${y - 9} L56 ${y + 2}`, top, 1.2, "#1c1b22");
-    make("ellipse", { cx: x, cy: y, rx: 5.6, ry: 5, fill: "#1c1b22" }, top);
+    stroke(`M8 ${y - 9} L56 ${y + 2}`, head, 1.2, "#1c1b22");
+    make("ellipse", { cx: x, cy: y, rx: 5.6, ry: 5, fill: "#1c1b22" }, head);
   }
   if (props.includes("ninjamask")) {
-    make("path", { d: `M6 ${my - 5} C12 ${my - 7} 52 ${my - 7} 58 ${my - 5} L56 ${my + 12} C44 ${my + 18} 20 ${my + 18} 8 ${my + 12} Z`, fill: "#2b2a33", stroke: nmLineFor("#2b2a33"), "stroke-width": LW }, top);
-    make("path", { d: "M6 14 C16 10 48 10 58 14 L58 19 C48 16 16 16 6 19 Z", fill: "#2b2a33" }, top);
+    make("path", { d: `M6 ${my - 5} C12 ${my - 7} 52 ${my - 7} 58 ${my - 5} L56 ${my + 12} C44 ${my + 18} 20 ${my + 18} 8 ${my + 12} Z`, fill: "#2b2a33", stroke: nmLineFor("#2b2a33"), "stroke-width": LW }, head);
+    make("path", { d: "M6 14 C16 10 48 10 58 14 L58 19 C48 16 16 16 6 19 Z", fill: "#2b2a33" }, head);
   }
   const headwear = props.find((p) => NAME_MARK_HAT_KINDS.includes(p) || ["halo", "horns", "antenna", "headphones", "helmet"].includes(p));
   const gold = "#f5c518";
@@ -2533,7 +2535,8 @@ function drawCharacter(seed, size = 20, mode = "mark") {
       make("path", { d: "M8 16 C18 9 46 7 58 14", fill: "none", stroke: "#f5f4ef", "stroke-width": 4, "stroke-linecap": "round" }, cap);
       make("circle", { cx: 63, cy: 24, r: 3.4, fill: "#f5f4ef", stroke: "#9aa0a6", "stroke-width": 1 }, cap);
     }
-    if (eyes.length === 2) {
+    //: Not over glasses it wears already: two pairs at once (K14).
+    if (eyes.length === 2 && !eyewear) {
       const glasses = make("g", { class: "nmp nmp-glasses" }, head);
       for (const [x, y] of eyes) make("circle", { cx: x, cy: y, r: 5.4, fill: "#ffffff", "fill-opacity": 0.18, stroke: "#6b4a2f", "stroke-width": 1.3 }, glasses);
       stroke(`M${eyes[0][0] + 5.4} ${eyes[0][1]} Q32 ${eyes[0][1] - 2.4} ${eyes[1][0] - 5.4} ${eyes[1][1]}`, glasses, 1.2, "#6b4a2f");
@@ -7257,9 +7260,11 @@ function nameMarkBuddyScene(buddy) {
   make("ellipse", { cx: -8, cy: 86, rx: 18, ry: 5, fill: "#e6e0f2" }, pillow);
   const front = layer("front");
   const book = make("g", { class: "nms nms-book" }, front);
-  make("path", { d: "M17 50 L32 53 L47 50 L47 62 L32 65 L17 62 Z", fill: "#b5473a" }, book);
-  make("path", { d: "M19 51 L32 54 L45 51 L45 60 L32 63 L19 60 Z", fill: "#fbf6ea" }, book);
-  make("path", { d: "M32 54 L32 63", stroke: "#c9bfa6", "stroke-width": 1 }, book);
+  //: At its hands, turned in to hold it (the CSS), in front of its belly,
+  //: not under its chin (K14).
+  make("path", { d: "M17 55 L32 58 L47 55 L47 67 L32 70 L17 67 Z", fill: "#b5473a" }, book);
+  make("path", { d: "M19 56 L32 59 L45 56 L45 65 L32 68 L19 65 Z", fill: "#fbf6ea" }, book);
+  make("path", { d: "M32 59 L32 68", stroke: "#c9bfa6", "stroke-width": 1 }, book);
   face.insertBefore(back, char);
   char.after(front);
 }

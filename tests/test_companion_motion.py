@@ -1014,6 +1014,28 @@ def test_asleep_reads_as_asleep_without_the_zs() -> None:
     assert ".nm-eyewear, .nmc-lids`" in AV
 
 
+def test_accessories_go_with_the_face_and_a_book_is_held_in_the_hands() -> None:
+    # K14, the owner: "the sunglasses and accessories dont move with the
+    # face", "now hes wearing two sets of glasses", and the book "below
+    # them which doesnt make sense". Measured (read.js probe, 1440 light and
+    # 720 dark): reading glasses gone under worn shades (null), shown
+    # without; the "me" book at the hands in front of the belly (figure y 55
+    # to 70, hands at y 68.5 with the arms in 30deg); Atlas's book in front
+    # of the body at its hands (y 52 to 60, hands at y 56), not under its feet.
+    assert "if (eyes.length === 2 && !eyewear) {" in AV
+    for prop in ("eyepatch", "ninjamask"):
+        block = AV[AV.index(f'if (props.includes("{prop}")') :][:600]
+        assert ", top)" not in block.split("\n  }")[0], prop
+    assert 'make("path", { d: "M17 55 L32 58 L47 55 L47 67 L32 70 L17 67 Z"' in AV
+    assert "#nm-buddy:is(.nmb-act-read, .nmb-reading) .nmb-arm-r { transform: rotate(30deg); }" in CSS08
+    assert "#nm-buddy:is(.nmb-reading, .nmb-act-read) .nmp-book," in CSS08
+    atlas = (ROOT / "frontend" / "js" / "atlas.js").read_text(encoding="utf-8")
+    assert "atlasBookProp(back.fill)" not in atlas and "atlasBookProp(frontAt.fill);" in atlas
+    book = atlas[atlas.index("function atlasBookProp(") :][:900]
+    ys = [float(y) for y in re.findall(r"cy: ([\d.]+)", book)]
+    assert ys and all(50 <= y <= 60 for y in ys), ys
+
+
 @pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 def test_the_lean_has_hysteresis_and_a_dwell() -> None:
     # The owner: "leans or tilts to the left and right a bit back and forth

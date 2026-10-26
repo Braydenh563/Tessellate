@@ -5969,7 +5969,6 @@ body .chip.item-label,
   translate: 0 0;
   transition: opacity var(--motion-slow) var(--ease-in-out), translate calc(var(--motion-slow) * 3) var(--ease-in-out);
 }
-#nm-buddy.nmb-act-read .nmp-glasses { opacity: 1; }
 /* The body into and out of each: slowly, after the prop coming in, and at
    once going out (the prop waits for it). */
 #nm-buddy:is(.nmb-act-lie, .nmb-act-read, .nmb-act-beanbag, .nmb-act-chair, .nmb-act-facepalm, .nmb-act-shrug, .nmb-unwind) .nm-buddy-char {
@@ -5987,16 +5986,18 @@ body .chip.item-label,
    frames, avatars.js `nameMarkBuddyLieDown`): its body is not turned over
    as a whole, and the stream is its cushion, not a pillow. */
 #nm-buddy.nmb-act-lie:has(.atl-figure-box) .nm-buddy-char { transform: none; }
-#nm-buddy.nmb-act-lie:has(.atl-figure-box) .nms-pillow { opacity: 0; }
+#nm-buddy:has(.atl-figure-box) :is(.nms-pillow, .nms-book) { opacity: 0; }
 #nm-buddy.nmb-act-beanbag .nm-buddy-char { transform: translateY(12px) scale(1.03, 0.95); }
 #nm-buddy.nmb-act-chair .nm-buddy-char { transform: translateY(6px); }
-#nm-buddy.nmb-act-read .nm-buddy-char { transform: rotate(2deg); }
 #nm-buddy.nmb-act-facepalm .nm-buddy-char { transform: rotate(-3deg) translateY(2px); }
 #nm-buddy.nmb-act-shrug .nm-buddy-char { transform: translateY(-2px); }
 /* Gestures are the arms' own, eased by the limbs' transition. */
 #nm-buddy.nmb-act-facepalm :is(.nm-figure, .atl-figure) .nmb-arm-r { transform: rotate(-150deg); }
 #nm-buddy.nmb-act-shrug :is(.nm-figure, .atl-figure) .nmb-arm-r { transform: rotate(-40deg); }
 #nm-buddy.nmb-act-shrug :is(.nm-figure, .atl-figure) .nmb-arm-l { transform: rotate(40deg); }
+/* Reading: both hands in to hold the book at the chest (K14). */
+#nm-buddy:is(.nmb-act-read, .nmb-reading) .nmb-arm-r { transform: rotate(30deg); }
+#nm-buddy:is(.nmb-act-read, .nmb-reading) .nmb-arm-l { transform: rotate(-30deg); }
 /* **Arms that match the mood** (the owner: "make sure that the positions of
    the limbs like the arm on companions ... actually match the mood as
    well"). The face it is wearing (`data-feel`, avatars.js: the passing
@@ -6100,8 +6101,8 @@ body .chip.item-label,
 }
 #nm-buddy.nmb-music .nmp-headphones,
 #nm-buddy.nmb-night:is([data-pose="sit"], [data-pose^="curl"], .nmb-act-lie) .nmp-nightcap,
-#nm-buddy.nmb-reading .nmp-glasses,
-#nm-buddy.nmb-reading .nmp-book,
+#nm-buddy:is(.nmb-reading, .nmb-act-read) .nmp-glasses,
+#nm-buddy:is(.nmb-reading, .nmb-act-read) .nmp-book,
 #nm-buddy.nmb-act-carry .nmp-note,
 #nm-buddy.nmb-act-bell .nmp-bell,
 #nm-buddy.nmb-act-lantern .nmp-lantern,
