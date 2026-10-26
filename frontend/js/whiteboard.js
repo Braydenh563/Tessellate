@@ -12945,6 +12945,8 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       //: is near-white on a dark board: read it off the box, as above.
       const textEl = obj.data.color ? null : document.querySelector(`#wb-html-layer .wb-object[data-id="${obj.id}"] .wb-text-content`);
       const textInk = textEl ? wbExportColour(getComputedStyle(textEl).color) : null;
+      const boxEl = document.querySelector(`#wb-html-layer .wb-object[data-id="${obj.id}"]`);
+      parts.push(wbSvgBoxBackdrop(boxEl, obj.data, obj.width, obj.height));
       parts.push(
         wbSvgText(lines, pad, fontSize + pad - 2, {
           fontSize,
@@ -12952,6 +12954,8 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
           lineHeight: fontSize * 1.25,
         })
       );
+    } else if (obj.kind === "table") {
+      parts.push(wbSvgTable(document.querySelector(`#wb-html-layer .wb-object[data-id="${obj.id}"]`), obj));
     }
     parts.push("</g>");
   }

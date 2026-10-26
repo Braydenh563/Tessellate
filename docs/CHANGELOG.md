@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: exporting a board (SVG, PNG, PDF) now draws a text box or sticky as the box it is (paper, border, rounded corners) and a table as its grid and words; both used to come out as bare words or nothing.
 - Whiteboard: Enter works from the keyboard alone. With the text, sticky or frame tool held it drops one in the middle of the view, and on a selected text box or sticky it puts the caret at the end of the words (N, Enter, type no longer needs a click).
 - Whiteboard: Find and Replace all now read a table's cells; a table holding the word used to report no matches.
 - Whiteboard: words typed into a shape that do not fit now make the shape bigger in proportion, as one undo step with the words; before, 80 characters ran 100px past a 100x60 rectangle and across its border (diamonds and ellipses too).

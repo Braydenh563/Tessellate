@@ -1394,6 +1394,54 @@ function wbTableCells(d) {
   return cells.map((row) => (Array.isArray(row) ? row.map((c) => String(c ?? "")) : [""]));
 }
 
+//: **A text box, a sticky or a table, as the export draws it.** The export
+//: drew a text box as its words alone and left a table out of the file, so a
+//: yellow sticky came out as dark text on the board's white and a table as
+//: nothing (SVG, PNG and PDF all read the one SVG). Paint is read off the
+//: drawn element, as a map topic's is, so the theme, the paper and the corners
+//: it really wears travel; an item culled off screen falls back to its data.
+function wbSvgRoundedPath(w, h, radii) {
+  const [a, b, c, d] = radii.map((r) => Math.max(0, Math.min(Number(r) || 0, w / 2, h / 2)));
+  return `M${a} 0H${w - b}A${b} ${b} 0 0 1 ${w} ${b}V${h - c}A${c} ${c} 0 0 1 ${w - c} ${h}H${d}A${d} ${d} 0 0 1 0 ${h - d}V${a}A${a} ${a} 0 0 1 ${a} 0Z`;
+}
+
+function wbSvgBoxRadii(el, data, w, h) {
+  if (!el) return Array.isArray(data?.radii) ? data.radii : [6, 6, 6, 6];
+  const style = getComputedStyle(el);
+  const px = (v, side) => (/%$/.test(v) ? (parseFloat(v) / 100) * side : parseFloat(v) || 0);
+  return ["TopLeft", "TopRight", "BottomRight", "BottomLeft"].map((corner) => px(style[`border${corner}Radius`], Math.min(w, h)));
+}
+
+function wbSvgBoxBackdrop(el, data, w, h) {
+  const paper = data?.bg && data.bg !== "transparent" ? data.bg : "none";
+  const paint = el ? wbExportPaint(el) : { fill: paper, edge: data?.border_color || null };
+  //: A sticky's paper can be a gradient, which has no background colour to read.
+  const fill = paint.fill !== "none" ? paint.fill : paper;
+  if (fill === "none" && !paint.edge) return "";
+  const edge = paint.edge ? ` stroke="${wbSvgEscape(paint.edge)}" stroke-width="1.5"` : "";
+  return `<path d="${wbSvgRoundedPath(w, h, wbSvgBoxRadii(el, data, w, h))}" fill="${wbSvgEscape(fill)}"${edge} />`;
+}
+
+function wbSvgTableCell(paint, text, box, size) {
+  const edge = wbSvgEscape(paint.edge || "#9aa3b5");
+  const rect = `<rect x="${box.x}" y="${box.y}" width="${box.w}" height="${box.h}" fill="${wbSvgEscape(paint.fill)}" stroke="${edge}" stroke-width="1" />`;
+  if (!text) return rect;
+  const lines = wbSvgWrapLines(text, box.w - 12, Math.max(1, Math.floor(box.h / (size * 1.25))), size * 0.55);
+  return rect + wbSvgText(lines, box.x + 6, box.y + size + 4, { fontSize: size, fill: paint.ink, lineHeight: size * 1.25 });
+}
+
+function wbSvgTable(el, obj) {
+  const cells = wbTableCells(obj);
+  const cols = cells[0].length;
+  const box = { w: obj.width / cols, h: obj.height / cells.length };
+  const plain = { fill: "#ffffff", edge: "#9aa3b5", ink: "#1f2430" };
+  const cellEl = (r) => el?.querySelector(`.wb-table-cell[data-r="${Math.min(r, cells.length - 1)}"]`);
+  const body = (cellEl(1) && wbExportPaint(cellEl(1))) || plain;
+  const head = obj.data?.header ? (cellEl(0) && wbExportPaint(cellEl(0))) || { ...plain, fill: "#eef1f6" } : body;
+  const size = parseFloat(cellEl(1) && getComputedStyle(cellEl(1)).fontSize) || 14;
+  return cells.map((row, r) => row.map((text, c) => wbSvgTableCell(r === 0 ? head : body, text, { ...box, x: c * box.w, y: r * box.h }, size)).join("")).join("");
+}
+
 function wbBuildTable(el, d) {
   el.append("div").attr("class", "wb-table-grid").attr("role", "grid").attr("aria-label", "Table")
     .on("pointerdown", (event) => {
