@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat (composer classes, INBOX 1026c): counts by state are exact ("how many pinned notes", "archived notes", "checklists", "open tasks" or "unticked items", "reminders", "reminders this week"), and "count my work notes" counts the tag or folder.
 - Time words: "from Monday to Wednesday", "between March and May", "between 1 and 5 October", "recently" and "lately" (the last 14 days, said in the answer) are read as dates, and "this weekend" asked of the past is the weekend just gone.
 - Chat (composer classes, INBOX 1357/1400): a board, mind map or document is found by the words on it, not only by name ("tell me about IaaS" answers from the Cloud computing map and says it is a map); a map or an indented list is said as a hierarchy ("Service models: IaaS, PaaS and SaaS"); "tell me more" skips what an earlier answer drew on by where it sits in the note, not by its wording; counts narrowed by link state, tag, category or a window say the filtered number ("7 unlinked notes"), and a tag or category you do not have is said with the nearest one; "how many boards" and "how many maps" count them; a "when" answer leads with the sentence that holds a date.
 - Stats: counts of nothing are said as "no" ("You are not using any tags yet", "You have no documents"), and one note takes a singular verb ("1 note out of 3 has no tags").

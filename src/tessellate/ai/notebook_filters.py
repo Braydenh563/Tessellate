@@ -14,7 +14,7 @@ import json
 import re
 from dataclasses import dataclass
 
-from sqlalchemy import select
+from sqlalchemy import literal, select
 from sqlalchemy.orm import Session
 
 from tessellate.core.database import Category, Entry, EntryLink
@@ -33,6 +33,11 @@ _NOT_A_CATEGORY = frozenset(
     "total all each every my the notebook notebooks there here bin trash archive archived drafts draft progress general "
     "category categories folder folders space spaces tag tags common order full".split()
 )
+#: A note's state as the question says it: pinned, archived, or a checklist (a
+#: note holding any `- [ ]` box).
+_STATES = (("pinned", re.compile(r"\bpinned\b")), ("archived", re.compile(r"\barchived\b")),
+           ("checklist", re.compile(r"\b(?:check ?lists?|to-?do lists?)\b")))
+_BOX = re.compile(r"^[ \t]*(?:[-*+]|\d{1,3}[.)])[ \t]+\[[ xX]\]", re.M)
 _STOP_TAG = frozenset("a an the any no not with this that it them".split())
 
 
@@ -45,10 +50,11 @@ class Narrowed:
     tag: str = ""
     category: str = ""
     window: tuple | None = None
+    state: str = ""
 
     @property
     def active(self) -> bool:
-        return self.linked is not None or self.any_tag or bool(self.tag) or bool(self.category)
+        return self.linked is not None or self.any_tag or bool(self.tag) or bool(self.category) or bool(self.state)
 
 
 def _tags_of(raw: str) -> list[str]:
@@ -77,7 +83,7 @@ def _category_in(text: str, raw: str, names: list[str], is_date) -> str:  # noqa
 def read(text: str, raw: str, names: list[str], window: tuple | None, is_date) -> Narrowed:  # noqa: ANN001
     """The narrowing in a (lower-cased, spelling-corrected) question.
     `is_date` says whether a value is a day or span (the recogniser's)."""
-    narrowed = Narrowed(window=window)
+    narrowed = Narrowed(window=window, state=next((name for name, rx in _STATES if rx.search(text)), ""))
     if _UNLINKED.search(text):
         narrowed.linked = False
     elif _LINKED.search(text):
@@ -124,7 +130,8 @@ def _linked_ids(session: Session) -> set[int]:
 
 def _phrase(n: int, narrowed: Narrowed, category_name: str, tag: str) -> str:
     adj = {False: "unlinked ", True: "linked ", None: ""}[narrowed.linked]
-    note = "note" if n == 1 else "notes"
+    adj += {"pinned": "pinned ", "archived": "archived "}.get(narrowed.state, "")
+    note = ("checklist" if narrowed.state == "checklist" else "note") + ("" if n == 1 else "s")
     tail = [p for p in (
         f"in {category_name}" if category_name else "",
         f"tagged {tag}" if tag else "with a tag" if narrowed.any_tag else "",
@@ -143,14 +150,26 @@ def _gap(narrowed: Narrowed, tag_names: list[str], names: list[str]) -> tuple[st
     return None
 
 
+def _in_state(state: str, row: tuple) -> bool:
+    """Whether a note is in the state the question names: (pinned, archived
+    at, content) is the tail of its row."""
+    pinned, archived, content = row[4:7]
+    if state == "archived":
+        return archived is not None
+    if state == "checklist":
+        return archived is None and bool(_BOX.search(content or ""))
+    return not state or (archived is None and bool(pinned))
+
+
 def _keeps(narrowed: Narrowed, row: tuple, categories: dict, linked: set[int]) -> bool:
-    eid, raw, cid, made = row
+    eid, raw, cid, made = row[:4]
     tags = {t.lower() for t in _tags_of(raw)}
     return (
         (narrowed.linked is None or (eid in linked) == narrowed.linked)
         and (not narrowed.any_tag or bool(tags))
         and (not narrowed.tag or narrowed.tag.lower() in tags)
         and (not narrowed.category or (categories.get(cid) or "").lower() == narrowed.category.lower())
+        and _in_state(narrowed.state, row)
         and (narrowed.window is None or narrowed.window[0] <= made.replace(tzinfo=narrowed.window[0].tzinfo) <= narrowed.window[1])
     )
 
@@ -161,9 +180,12 @@ def count(session: Session, narrowed: Narrowed, visible) -> tuple[str, list[dict
     if not narrowed.active:
         return None
     categories = {c.id: c.name for c in session.scalars(select(Category))}
-    rows = session.execute(visible(select(Entry.id, Entry.tags, Entry.category_id, Entry.created_at))).all()
-    tag_names = sorted({t for _, raw, _, _ in rows for t in _tags_of(raw)}, key=str.lower)
-    names = sorted({categories[cid] for _, _, cid, _ in rows if cid in categories})
+    body = Entry.content if narrowed.state == "checklist" else literal("")
+    rows = session.execute(
+        visible(select(Entry.id, Entry.tags, Entry.category_id, Entry.created_at, Entry.pinned, Entry.archived_at, body))
+    ).all()
+    tag_names = sorted({t for row in rows for t in _tags_of(row[1])}, key=str.lower)
+    names = sorted({categories[row[2]] for row in rows if row[2] in categories})
     gap = _gap(narrowed, tag_names, names)
     if gap:
         return gap
