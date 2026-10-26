@@ -10367,11 +10367,6 @@ header#top-bar {
     width: var(--control-h-lg);
     height: var(--control-h-lg);
   }
-  /* Two lines held for the greeting: saving a name made it wrap, 82 to 118px
-     at 390, and moved everything below. */
-  .dash-greeting {
-    min-height: 2lh;
-  }
 }
 /* --- the settings jump list ----------------------------------------------
    `buildSettingsJumpList` (phone-shell.js) writes a native `<select>` of all

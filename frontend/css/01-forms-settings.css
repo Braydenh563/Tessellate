@@ -1760,6 +1760,10 @@ input.md-task-inline:disabled,
   font-size: var(--text-lg);
   font-weight: 600;
   color: var(--ink);
+  /* A 200-character heading with no space ran past the card and was cut at
+     its edge, no wrap and no ellipsis, at 720 (dog3-1026 row 16); the body
+     below it already breaks anywhere. */
+  overflow-wrap: anywhere;
 }
 .entry-content {
   margin: 0 0 0.4rem;

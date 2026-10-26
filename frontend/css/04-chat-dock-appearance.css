@@ -800,6 +800,13 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  /* A flex container draws no ellipsis for its text (it is an anonymous flex
+     item), so a long name was cut mid-letter: scrollWidth 747 in 352
+     (dog3-1026 row 9). A block does; the pencil follows the text inline. */
+  display: block;
+}
+.chat-toolbar #chat-title::after {
+  margin-inline-start: var(--space-2);
 }
 
 /* One line of quiet facts under the title: what the thread has cost, and

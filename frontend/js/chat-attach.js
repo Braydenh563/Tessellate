@@ -1567,7 +1567,14 @@ async function chatSendTurn(preset, opts = {}) {
   const input = $("chat-input");
   const status = $("chat-status");
   const typed = chatTidyTyped((preset ?? input.value).trim());
-  if (!typed) return;
+  if (!typed) {
+    //: Pressing Send on an empty box did nothing at all (dog3-1026 row 12).
+    if (preset == null) {
+      toast("Type a message first.");
+      input.focus();
+    }
+    return;
+  }
 
   // Plan mode is applied here, on the way out, rather than by whatever control
   // was pressed: so Send, Enter and a suggestion chip all get planned when the
