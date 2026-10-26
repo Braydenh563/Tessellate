@@ -735,6 +735,15 @@ def _split_label(text: str) -> _Split:
     return _Split("", text, False, bool(head))
 
 
+def _node_split(view: composer.NoteView, sentence: composer.Sentence) -> _Split | None:
+    """A map's node or a board's card is its own text, whole: "IaaS: renting
+    servers" is one node, not the heading "IaaS" over a sentence (the owner's
+    "**Service models:**" over a mind map). None for anything else."""
+    if view.kind in ("map", "board") and sentence.kind == "item":
+        return _Split("", sentence.text.strip().rstrip(".!"), False, False)
+    return None
+
+
 def _action_of(body: str) -> tuple[str, str]:
     """The to-do a sentence ends with, split from what it says: (action, body)."""
     acted = _ACTION.search(body)
@@ -829,7 +838,7 @@ def _facts(view: composer.NoteView, names: set[str], subject: set[str] | None = 
         if _left_out(view, s, known):
             continue
         pinned = known.pinned_on(view.id, s.text) if known else None
-        split = _split_label(s.text.strip().rstrip(".!"))
+        split = _node_split(view, s) or _split_label(s.text.strip().rstrip(".!"))
         if i == 0 and split.titled:
             note_label = split.label
         out += _sentence_facts(view, s, split, note_label, subject, pinned)

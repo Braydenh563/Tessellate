@@ -242,16 +242,51 @@ J_FOLLOW = [
     ("what did I do last week?", "and this week?", r"Gym routine|Lecture 5", r"Cloud computing map"),
     ("what did I do this week?", "what about last week", r"board|map|Errands", None),
     ("when is my exam?", "what's it on", r"operating systems|process", None),
-    ("what have I saved about the gym?", "tell me more", r"squats|deadlifts|Pull|rest day", None),
+    #: The first answer already told both gym notes whole, so "tell me more" has
+    #: nothing left to tell and says so; re-telling them was the wrong check.
+    ("what have I saved about the gym?", "tell me more", r"That's all your notes say on gym", r"squats|deadlifts|rest day"),
+    ("what did I write about the essay?", "tell me more", r"That's all your notes say on essay", r"Hamlet"),
+]
+
+
+#: Class K, the recent past said any way round (composer9-1026 Remaining:
+#: "over the weekend", "last fortnight"): the recap reads every form of the
+#: window, not only "last week" and "yesterday". (question, must, never)
+K_WINDOWS = [
+    ("what did I do over the weekend?", r"Essay draft", r"Gym routine|Lecture 5|Errands|" + NOT_FOUND),
+    ("what did i get up to at the weekend", r"Essay draft", r"Gym routine|Lecture 5|" + NOT_FOUND),
+    ("what did I do last fortnight?", r"(?=.*Errands)(?=.*Essay draft)(?=.*Gym routine)", r"Bubble tea|" + NOT_FOUND),
+    ("what did I do in the last fortnight", r"(?=.*Errands)(?=.*Gym routine)", r"Bubble tea|" + NOT_FOUND),
+    ("what did I make over the past fortnight", r"Errands", r"Bubble tea|" + NOT_FOUND),
+    ("what did I do since Monday?", r"(?=.*Gym routine)(?=.*Lecture 5)", r"Errands|Essay draft|" + NOT_FOUND),
+    ("what did I do since monday", r"Gym routine", r"Errands|" + NOT_FOUND),
+    ("what did I do the other day?", r"(?=.*Gym routine)(?=.*Essay draft)", r"Lecture 5|Errands|" + NOT_FOUND),
+    ("what did I do earlier this week?", r"(?=.*Gym routine)(?=.*Lecture 5)", r"Errands|" + NOT_FOUND),
+    ("what did I do so far this week", r"Gym routine", r"Errands|" + NOT_FOUND),
+    ("what did I do in the past 3 days?", r"(?=.*Lecture 5)(?=.*Gym routine)", r"Errands|" + NOT_FOUND),
+    ("what did I do over the last week?", r"(?=.*Errands)(?=.*Gym routine)", r"Bubble tea|" + NOT_FOUND),
+    ("what did I do in the last month", r"(?=.*Bubble tea)(?=.*Gym routine)", r"Hello|" + NOT_FOUND),
+    ("what did I do last night", r"Lecture 5", r"Gym routine|" + NOT_FOUND),
+    ("what did I do yesterday morning", r"Lecture 5", r"Gym routine|" + NOT_FOUND),
+]
+
+
+#: Class L, a name the notes do not hold is not an app feature because a help
+#: line quotes it as an example ("who is Sam" answered "one of the app's own
+#: tools": the Names line quotes "Sam" and "Sam Lee"). (question, must, never)
+L_NAMES = [
+    ("who is Sam", r"Sam", r"own tools"),
+    ("who is Sam Lee", r"Sam Lee", r"own tools"),
+    ("who's Sam?", r"Sam", r"own tools"),
+    ("who is Lee", r"Lee", r"own tools"),
+    ("do I know a Sam", r"Sam", r"own tools"),
 ]
 
 
 #: Cases still failing, each a strict xfail: a fix that makes one pass fails
 #: the run until its id is taken out of this set (INBOX 1357 baseline: 35 of
 #: 77 passing before any fix).
-OPEN = {
-    'J-what have I saved about the gym?->tell me more',
-}
+OPEN: set[str] = set()
 
 
 def _p(cls: str, turns: tuple, must, never, ident: str):  # noqa: ANN001, ANN202
@@ -278,6 +313,10 @@ def _cases():
         yield _p("H", (q,), must, None, f"H-{q}")
     for q, must in I_LISTS:
         yield _p("I", (q,), must, NOT_FOUND, f"I-{q}")
+    for q, must, never in K_WINDOWS:
+        yield _p("K", (q,), must, never, f"K-{q}")
+    for q, must, never in L_NAMES:
+        yield _p("L", (q,), must, never, f"L-{q}")
     for first, then, must, never in J_FOLLOW:
         yield _p("J", (first, then), must, never, f"J-{first}->{then}")
 
