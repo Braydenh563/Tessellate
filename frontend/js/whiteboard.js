@@ -12905,9 +12905,14 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       // a plain `<img>` (see `wbRasterizeSvg`), which never attaches
       // X-Auth-Token: the same gap that made the image never render on the
       // board itself, here too.
+      //: A picture with rounded corners (Format > Corners) is clipped to the
+      //: same path the board draws, read off the drawn element as a box's is.
+      const radii = wbSvgBoxRadii(document.querySelector(`#wb-html-layer .wb-object[data-id="${obj.id}"]`), obj.data, obj.width, obj.height);
+      const clip = radii.some((r) => r > 0) ? `wb-export-clip-${obj.id}` : "";
+      if (clip) parts.push(`<clipPath id="${clip}"><path d="${wbSvgRoundedPath(obj.width, obj.height, radii)}" /></clipPath>`);
       parts.push(
         `<image href="${wbSvgEscape(mediaSrc(obj.data.url))}" width="${obj.width}" height="${obj.height}" ` +
-          `preserveAspectRatio="xMidYMid slice" />`
+          `preserveAspectRatio="xMidYMid slice"${clip ? ` clip-path="url(#${clip})"` : ""} />`
       );
     } else if (WB_MAP_KINDS.has(obj.kind)) {
       // A map node exports as what it looks like: a rounded box with the
@@ -13012,6 +13017,7 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       const textInk = textEl ? wbExportColour(getComputedStyle(textEl).color) : null;
       const boxEl = document.querySelector(`#wb-html-layer .wb-object[data-id="${obj.id}"]`);
       parts.push(wbSvgBoxBackdrop(boxEl, obj.data, obj.width, obj.height));
+      parts.push(wbSvgStickyFold(boxEl, obj.width, obj.height));
       parts.push(
         wbSvgText(lines, pad, fontSize + pad - 2, {
           fontSize,

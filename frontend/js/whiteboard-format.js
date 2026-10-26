@@ -1422,6 +1422,28 @@ function wbSvgBoxBackdrop(el, data, w, h) {
   return `<path d="${wbSvgRoundedPath(w, h, wbSvgBoxRadii(el, data, w, h))}" fill="${wbSvgEscape(fill)}"${edge} />`;
 }
 
+//: **A sticky's folded corner, as the export draws it.** The board paints
+//: it as `::after` (a square in the bottom-right, a hard-stopped gradient:
+//: the board's ground on the outer half, the paper a shade darker on the
+//: inner), so the file had a square-cornered sheet. The two colours are read
+//: off the gradient the browser computed, so the theme and the paper travel;
+//: a sticky with the fold turned off draws none.
+function wbSvgFoldColours(gradient) {
+  const stops = [...String(gradient || "").matchAll(/(rgba?\([^)]*\)|color\([^)]*\))\s+50%/g)].map((m) => m[1]);
+  return stops.length === 2 ? stops : null;
+}
+
+function wbSvgStickyFold(el, w, h) {
+  if (!el?.classList.contains("wb-sticky") || el.classList.contains("wb-no-fold")) return "";
+  const fold = getComputedStyle(el, "::after");
+  const size = parseFloat(fold.width) || 0;
+  const colours = size > 0 && fold.content !== "none" ? wbSvgFoldColours(fold.backgroundImage) : null;
+  const [cut, paper] = (colours || []).map((c) => wbSvgEscape(wbExportColour(c) || c));
+  if (!colours || size > w || size > h) return "";
+  return `<path d="M${w - size} ${h}H${w}V${h - size}Z" fill="${cut}" />` +
+    `<path d="M${w - size} ${h - size}V${h}L${w} ${h - size}Z" fill="${paper}" />`;
+}
+
 function wbSvgTableCell(paint, text, box, size) {
   const edge = wbSvgEscape(paint.edge || "#9aa3b5");
   const rect = `<rect x="${box.x}" y="${box.y}" width="${box.w}" height="${box.h}" fill="${wbSvgEscape(paint.fill)}" stroke="${edge}" stroke-width="1" />`;
