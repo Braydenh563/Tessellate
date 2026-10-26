@@ -10646,8 +10646,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/logs` | DELETE | `clear_server_logs` | src/tessellate/api/routes_settings.py:2309 |
 | `/logs` | GET | `server_logs` | src/tessellate/api/routes_settings.py:2226 |
 | `/logs/client` | POST | `record_client_error` | src/tessellate/api/routes_settings.py:2245 |
-| `/logs/lag` | DELETE | `clear_lag_reports` | src/tessellate/api/routes_lag.py:45 |
-| `/logs/lag` | GET | `lag_reports` | src/tessellate/api/routes_lag.py:40 |
+| `/logs/lag` | DELETE | `clear_lag_reports` | src/tessellate/api/routes_lag.py:50 |
+| `/logs/lag` | GET | `lag_reports` | src/tessellate/api/routes_lag.py:45 |
 | `/logs/lag` | POST | `record_lag` | src/tessellate/api/routes_lag.py:31 |
 | `/logs/stats` | GET | `server_log_stats` | src/tessellate/api/routes_settings.py:2297 |
 | `/logs/stream` | GET | `stream_server_logs` | src/tessellate/api/routes_settings.py:2325 |
@@ -15834,8 +15834,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `LagBatch` | src/tessellate/api/routes_lag.py:22 |
 | `_logs_dir` | src/tessellate/api/routes_lag.py:27 |
-| `clear_lag_reports` | src/tessellate/api/routes_lag.py:46 |
-| `lag_reports` | src/tessellate/api/routes_lag.py:41 |
+| `clear_lag_reports` | src/tessellate/api/routes_lag.py:51 |
+| `lag_reports` | src/tessellate/api/routes_lag.py:46 |
 | `record_lag` | src/tessellate/api/routes_lag.py:32 |
 
 ### src/tessellate/api/routes_learned.py (25)

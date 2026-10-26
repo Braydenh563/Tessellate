@@ -33,7 +33,12 @@ def record_lag(body: LagBatch) -> dict:
     """Keep the reports on disk and put a one-line summary of each in the log."""
     events = [lagwatch.clean(e) for e in body.events]
     for e in events:
-        logger.warning("[lag] %s %sms on %s: %s", e.get("kind", "?"), e.get("ms", "?"), e.get("view", "?"), e.get("cause", ""))
+        # The fields come from the browser: a line break in one could forge a
+        # log record (CodeQL py/log-injection), so each is one line here.
+        kind, ms, view, cause = (
+            str(e.get(key, "?")).replace("\r", " ").replace("\n", " ") for key in ("kind", "ms", "view", "cause")
+        )
+        logger.warning("[lag] %s %sms on %s: %s", kind, ms, view, cause)
     return {"kept": lagwatch.append(_logs_dir(), events)}
 
 
