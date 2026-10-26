@@ -52,6 +52,9 @@ VERDICT = {
     # 2026-10-18 (C06): the answer panel's calculator.
     "frontend/js/reply-kit.js": "not a reader: REPLY_CALC_PAIRS, the unit pair each converter kind opens on; the sum is read by the server",
     "src/tessellate/ai/composer_digest.py": "not a reader: weekday names for writing a date (the digest's day-of-week phrasing); windows and units read by recognise",
+    # 2026-10-26 (grammar K4b): a mask, not a reader. The browser cannot call
+    # the recogniser, and nothing here becomes a date, window or quantity.
+    "frontend/js/documents.js": "not a reader: the spellcheck's unit mask, which skips the unit straight after a number (10 min, 5 km) so it is not marked as a misspelling",
     "src/tessellate/ai/commands.py": "not a reader: _TIME_FIRST, the words that open a reminder's time part (weekday words included), to split it from the task; the date is read by when, which delegates to recognise",
 }
 

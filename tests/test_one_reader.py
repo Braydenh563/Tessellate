@@ -37,7 +37,13 @@ def test_no_file_but_the_recogniser_reads_dates_or_units():
     for rel, kinds in found.items():
         if rel in scan.ALLOWED:
             continue
-        if kinds["pattern"] or (kinds["keyword"] and scan.VERDICT.get(rel, "").startswith("reader")):
+        verdict = scan.VERDICT.get(rel, "")
+        # A hand verdict of "not a reader" clears a pattern only when it says
+        # what the pattern masks instead of reads (2026-10-26, the spellcheck's
+        # unit mask: the browser cannot call the recogniser, and the mask turns
+        # no word into a value).
+        masked = verdict.startswith("not a reader") and "mask" in verdict
+        if (kinds["pattern"] and not masked) or (kinds["keyword"] and verdict.startswith("reader")):
             readers.add(rel)
     assert readers == STILL_READING, (
         f"new readers: {sorted(readers - STILL_READING)} (read through ai/recognise.py instead); "

@@ -894,7 +894,7 @@ HELP_TOPICS: list[dict] = [
             "checks accessibility: a skipped heading level, an image with no "
             "description, link text like \"click here\". Where the text names "
             "another note or document, a thin underline offers to turn the first "
-            "mention into a [[link]] (under \"Links to your notes\"; Fix never "
+            "mention into a [[Note title]] link (under \"Links to your notes\"; Fix never "
             "applies these). In Live "
             "view a flagged word is underlined: click or "
             "right-click it for corrections, \"Add to dictionary\" or \"Ignore "

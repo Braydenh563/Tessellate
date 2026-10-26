@@ -11,7 +11,12 @@ LAZY_CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="
 def test_capture_box_scrolls_inside_so_save_stays_in_view():
     # The stretch rule frees a scroller from its max-height; the capture box is
     # a stretched item too, and 30 lines pushed Save to y=981 at 800 high.
-    assert "#capture .note-surface-stretch .cm-editor .cm-scroller" in LAZY_CSS
+    # Since the footer class fix (45192e3) one rule caps every box in a
+    # `.note-composer`, the capture box's shell among them.
+    assert ".note-composer .note-surface-stretch .cm-editor .cm-scroller" in LAZY_CSS
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    capture = html[html.index('id="capture"') :]
+    assert 'class="note-composer"' in capture[: capture.index("</section>")]
     assert "#capture .capture-commit-row {\n  position: sticky;" in LAZY_CSS
 
 
