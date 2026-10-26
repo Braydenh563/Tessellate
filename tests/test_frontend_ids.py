@@ -278,19 +278,14 @@ def test_every_appearance_setting_has_a_default():
 MODEL_GATED_CONTROLS = {
     # The desk streams its draft, so the gate is the streaming route.
     "draft-compose": "/drafts/compose/stream",
-    "draft-title": "/drafts/title",
     # The same pass with an instruction in hand, and the same route, so it is
     # gated by the same rule: a Refine that looks available with no model
     # would fail only once it had been pressed.
     "draft-refine": "/drafts/compose/stream",
-    "draft-extract": "/entries/extract/preview",
-    "extract-commit": "/entries/extract/commit",
     "doc-ai": "/documents/<id>/ai-edit",
     "doc-ai-run": "/documents/<id>/ai-edit",
     # Its instruction field, gated with it (DOCUMENTS decision 10, 2026-10-11).
     "doc-ai-instruction": "/documents/<id>/ai-edit",
-    "doc-extract": "/entries/extract/preview",
-    "wb-extract-notes": "/entries/extract/preview",
     #: **Atlas is not here, and that is this rule's own rule** (INBOX 304).
     #: The guide's field and Send were gated with the rest of INBOX 203's
     #: fifteen, and then `help_chat.offline_answer` was built precisely so the
@@ -325,6 +320,15 @@ WORKS_WITHOUT_A_MODEL = {
     # composed from the notes (`ai/composer.py`), so the box and Send work.
     "chat-send": "/chat/stream",
     "chat-input": "/chat/stream",
+    # owner-1026b K3: with no model `/drafts/title` takes the title from the
+    # draft's own words and `/entries/extract/preview` splits by headings and
+    # paragraphs (`ai/no_model_text.py`), so none of these is off for want of
+    # a model; `tests/test_k3_no_model_1026.py` holds the class.
+    "draft-title": "/drafts/title",
+    "draft-extract": "/entries/extract/preview",
+    "extract-commit": "/entries/extract/commit",
+    "doc-extract": "/entries/extract/preview",
+    "wb-extract-notes": "/entries/extract/preview",
 }
 
 

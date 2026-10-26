@@ -2445,13 +2445,11 @@ function noteReviewActions(entry) {
     });
   });
   const refile = smallButton("ph:folder-open Refile…", `Now in ${where}; choose another`, () => chooseNoteCategory([entry.id], entry.category));
-  const aiOff = modelStatus ? modelStatus.ollama_running === false : false;
   const split = smallButton(
     "ph:scissors Split…",
-    aiOff ? `Splitting a note needs the local AI. ${AI_OFFLINE_HINT}.` : "Split it into linked notes, with a preview first",
+    "Split it into linked notes, with a preview first",
     () => openExtractPreview(entry.content || "", { sourceEntryIds: [entry.id] })
   );
-  split.disabled = aiOff;
   row.append(accept, refile, split);
   return row;
 }

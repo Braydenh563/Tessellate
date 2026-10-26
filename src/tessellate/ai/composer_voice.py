@@ -203,6 +203,13 @@ _TITLE_LEAD = re.compile(
     re.I,
 )
 TITLE_WORDS = 7
+#: A title never ends on these: the cut at seven words can land on one
+#: ("Teh first idea is about"), and nothing follows it to say about what.
+TITLE_DANGLING = frozenset(
+    "about of to for with in on at by from into onto over under between among against "
+    "and or but nor so if because that which who whom whose as than then while until "
+    "my your our their his her its this these those a an the".split()
+)
 
 _QUESTION = re.compile(
     r"^\s*(what|when|who|whom|whose|where|why|how|which|did|do|does|is|are|was|were|"
@@ -712,7 +719,7 @@ def title_for(content: str) -> str:
     words = _TITLE_LEAD.sub("", first.text.rstrip("…").rstrip(".!?")).split()
     words = words[:TITLE_WORDS]
     stop = query_understanding.STOPWORDS
-    while words and (words[-1].lower().strip(",;:") in stop or words[-1].endswith((",", ";", ":"))):
+    while words and (words[-1].lower().strip(",;:") in stop | TITLE_DANGLING or words[-1].endswith((",", ";", ":"))):
         words.pop()
     if len(words) < 2:
         return ""
