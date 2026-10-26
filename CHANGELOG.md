@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents Read view: a table is set in the body font and sized to its content (three short columns measured 658 px wide in monospace at 1440, now 302 px), and its caption reads "table, header and 3 rows" so the count is not mistaken for the whole table.
+- Library: a document card's preview reads a table as its words ("REM, 25%") and drops the `| --- |` rule, bold markers and link syntax.
 - Documents: typing "/table" and Enter inserts Table, not Table of contents (a label equal to the query ranks above a longer one that starts with it).
 - Documents: typing a pipe table line by line no longer adds empty rows or parks the next line inside a cell (Enter at the end of a typed row is a plain newline). Ctrl+Enter leaves a table below in Live and Source, and Enter on an empty last row removes it and leaves, with a blank line kept between the table and the text.
 - Documents export: a .md download no longer repeats an H1 that is already the title, and .md, .zip, .docx and .html share one file name rule (Sleep-essay.docx).

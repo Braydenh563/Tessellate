@@ -690,3 +690,13 @@ def test_every_export_format_names_the_file_the_same_way():
     assert len(names[5]) == 65
     assert "docExportName(" in (root / "documents-word.js").read_text(encoding="utf-8")
     assert "docExportName(currentDoc.title" in source
+
+
+def test_library_preview_reads_a_table_and_markers_as_plain_words(client):
+    """dog3-1026 D7: the Library card for a document with a table showed
+    `| Stage | Share |` and `| --- |`."""
+    body = "Intro with **bold** and [a link](http://x.test).\n\n| Stage | Share |\n| --- | :---: |\n| REM | 25% |\n| Deep | 20% |\n"
+    client.post("/documents", json={"title": "Sleep", "content": body})
+    preview = next(d["preview"] for d in client.get("/documents").json() if d["title"] == "Sleep")
+    assert "|" not in preview and "---" not in preview and "**" not in preview and "](" not in preview
+    assert "Stage, Share" in preview and "REM, 25%" in preview and preview.startswith("Intro with bold and a link")

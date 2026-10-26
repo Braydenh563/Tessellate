@@ -422,3 +422,14 @@ def test_the_live_table_transforms_do_what_the_gestures_need(transform_checks: l
     assert len(transform_checks) >= 17
     failed = [c for c in transform_checks if not c["ok"]]
     assert not failed, "\n".join(f"{c['name']}: {c['detail']}" for c in failed)
+
+
+def test_read_view_table_is_set_like_prose_and_counts_rows_plainly() -> None:
+    """dog3-1026 D5, measured on :8898 at 1440: the Read view table was
+    monospace and 658 px wide for three short columns (113/249/295 px); now
+    system-ui and 302 px. The caption says what the number counts."""
+    css = (ROOT / "frontend" / "css" / "09-editor.css").read_text(encoding="utf-8")
+    rule = css[css.index("#doc-preview .md-table-block:not(.is-full) .md-table") :].split("}")[0]
+    assert "font-family: var(--font-sans)" in rule and "width: auto" in rule and "max-width: 100%" in rule
+    markdown = (ROOT / "frontend" / "js" / "markdown.js").read_text(encoding="utf-8")
+    assert "table · header and ${bodyRows.length} row" in markdown and "table · header only" in markdown
