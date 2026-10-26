@@ -310,7 +310,7 @@ def _nothing_due(ctx: Ctx, end: date, span: str) -> Reply:
     lines = [compose.sentence_case(compose.frame("due_none", ctx.mood, span=span))]
     later, _o = events(ctx, end + timedelta(days=1), end + timedelta(days=3650))
     if later:
-        lines += ["", f"Next up: {later[0].text} ({_long(later[0].day)} {later[0].day.year})."]
+        lines += ["", compose.sentence_case(compose.frame("next_due", ctx.mood, what=later[0].text, when=f"{_long(later[0].day)} {later[0].day.year}"))]
     return Reply("\n".join(lines))
 
 

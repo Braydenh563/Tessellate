@@ -55,7 +55,7 @@ def test_the_router(message, expected):
 )
 def test_the_reply_kind(message, kind):
     assert composer.social_kind(message, intent.classify(message)) == kind
-    assert composer.social(message, intent.classify(message)) in composer.SOCIAL[kind]
+    assert composer.social(message, intent.classify(message)) in composer.social_surfaces(kind)
 
 
 @pytest.mark.parametrize(

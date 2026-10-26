@@ -2286,6 +2286,7 @@ def _assist(req: _StreamRequest, prepared: dict) -> None:
         composed = composer.compose(
             req.question, prepared["notes"], today=user_now(deps.get_config()).date(), recent=recent, embed=embed,
             voice=_composer_voice(),
+            register=_chat_voice(req),
         )
         packed = composer.brief(req.question, prepared["notes"], recent=recent, embed=embed, composed=composed)
     except Exception:  # noqa: BLE001  # the model answers from the notes as they are
@@ -2835,6 +2836,7 @@ def _no_notes_line(req: _StreamRequest, ollama_running: bool) -> str:
         last.date() if last else None,
         voice=_composer_voice(),
         seed=req.question or "",
+        register=_chat_voice(req),
     )
 
 
@@ -3010,6 +3012,7 @@ def _compose_for(req: _StreamRequest, prepared: dict, follow, current: list, tod
         embed=_composer_embed(),
         said=follow.said if follow else "",
         voice=_composer_voice(),
+        register=_chat_voice(req),
         #: The turn before's answer, so this one opens differently (INBOX 741).
         previous=str(req.history[-1].get("answer") or "") if req.history else "",
         now=user_now(deps.get_config()).replace(tzinfo=None),

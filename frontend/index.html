@@ -2155,6 +2155,7 @@ Link to another note with [[its first few words]]."></textarea>
               placeholder="e.g. What jokes have I saved?"
               aria-label="Ask your notebook a question">
             <button type="button" id="ask-clear" class="ghost icon-only small field-clear hidden" title="Clear" aria-label="Clear"><i class="ph ph-eraser" aria-hidden="true"></i></button>
+            <div class="ask-controls">
             <!-- The same three presets the Chat tab offers, and the same
                  stored preference behind them, not a second setting. This
                  box always honoured the saved mode; it just had no way to
@@ -2178,6 +2179,7 @@ Link to another note with [[its first few words]]."></textarea>
               aria-label="Tune search sensitivity"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i></button>
             <button id="ask-btn">Ask</button>
             <button id="stop-btn" data-shortcut="stopAI" class="ghost danger hidden" title="Stop the answer"><i class="ph ph-stop ph-lead" aria-hidden="true"></i> Stop</button>
+            </div>
           </div>
           <!-- What the Ask box does with no model connected (CHAT_PLAN.md
                decision 11). Ask is deliberately not among the controls that
