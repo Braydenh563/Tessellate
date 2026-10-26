@@ -1669,7 +1669,7 @@ HELP_TOPICS.extend(
                 "A choice replaces the paste and is one Undo step; Esc, typing or a click closes the chip. "
                 "Paste special, in the Edit menu and Ctrl+K, pastes on purpose in one of those forms, and "
                 "Paste into the selected shape's text writes the clipboard into the shape or connector. "
-                "Paste without comments pastes copied items without their comment threads (Paste keeps them). "
+                "Paste without comments (Ctrl+Alt+Shift+V, or right-click the canvas) drops copied comment threads; Paste keeps them. "
                 "A pasted picture keeps its own size, shrunk only to fit the view. On a mind map, lines pasted "
                 "with a topic selected become its child branches, indentation as depth, and the chip offers "
                 "the lines as one topic instead. If the browser will not let the app read the clipboard, "

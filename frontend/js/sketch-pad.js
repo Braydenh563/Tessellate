@@ -7,7 +7,7 @@
 // through the one `host` object handed to `SketchPad.open` (saving as a note,
 // the toast, the confirm dialog, preferences, the menu and help recipes, the
 // highlighter's numbers); `SKETCH_HOST_DEFAULTS` below is what it falls back
-// to with no app, so `scratchpad/sketch-standalone/` runs it from three files.
+// to with no app, so `tools/sketch-standalone/` runs it from three files.
 // It builds its own markup into the element it is given and reads nothing
 // global but `window`, `document` and the host.
 //

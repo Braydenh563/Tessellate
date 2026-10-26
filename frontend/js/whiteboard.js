@@ -15943,6 +15943,13 @@ async function initWhiteboard() {
       wbCutSelection();
       return;
     }
+    //: Ctrl+Alt+Shift+V: the board's copy without its comment threads (the
+    //: owner: an option, never the default). Before Ctrl+Shift+V, which it contains.
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.altKey && e.key.toLowerCase() === "v" && wbClipboard) {
+      e.preventDefault();
+      wbPasteClipboard({ noComments: true });
+      return;
+    }
     //: Ctrl+Shift+V: the board's copy again, exactly where it was. With
     //: nothing copied here the browser's own plain-text paste goes on.
     if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === "v" && wbClipboard) {
@@ -16741,7 +16748,9 @@ async function initWhiteboard() {
         count > 1 ? `ph:clipboard-text Paste ${count} items here` : "ph:clipboard-text Paste here",
         "Ctrl+V pastes beside the original, Ctrl+Shift+V in place", () => wbPasteClipboard({ at: [x, y] })
       ));
+      items.push(makeMenuItem("ph:clipboard Paste here without comments", "Ctrl+Alt+Shift+V", () => wbPasteClipboard({ at: [x, y], noComments: true })));
     }
+    items.push(makeMenuItem("ph:clipboard-text Paste special", "Choose how the clipboard lands", () => wbPasteSpecialMenu()));
     items.push(
       makeMenuItem("ph:text-t Add a text box here", "Or double-click the canvas", () => wbCreateTextBox(x, y)),
       makeMenuItem("ph:note Add a sticky note here", "N", () => wbCreateSticky(x, y)),

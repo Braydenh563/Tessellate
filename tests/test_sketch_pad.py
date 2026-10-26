@@ -5,7 +5,7 @@
 The pad is `frontend/js/sketch-pad.js` and `frontend/css/sketch-pad.css`,
 loaded on the first `openSketch` (media.js). It builds its own markup and
 reaches the app only through the host object media.js hands it, so the same
-two files run on `scratchpad/sketch-standalone/`. The geometry is checked
+two files run on `tools/sketch-standalone/`. The geometry is checked
 here by running the pad's own helpers under node; the tools end to end are
 `scratchpad/ui-sweeps/paint1026-pad.js` (34 checks at 1440, 720 and 390, in
 the app and on the standalone page).
@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PAD = ROOT / "frontend" / "js" / "sketch-pad.js"
 PAD_CSS = ROOT / "frontend" / "css" / "sketch-pad.css"
 MEDIA = ROOT / "frontend" / "js" / "media.js"
-STANDALONE = ROOT / "scratchpad" / "sketch-standalone"
+STANDALONE = ROOT / "tools" / "sketch-standalone"
 
 
 def _code(text: str) -> str:

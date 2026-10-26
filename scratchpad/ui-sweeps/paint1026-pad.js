@@ -6,7 +6,7 @@
 // place, polygon, select and move, undo and redo, Escape mid-shape, zoom, the
 // status line, PNG download, and the frame time of a long brush stroke.
 //   BASE=http://127.0.0.1:8861 PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers W=1440 node scratchpad/ui-sweeps/paint1026-pad.js
-//   STANDALONE=http://127.0.0.1:8862/scratchpad/sketch-standalone/ runs it on the page of its own.
+//   STANDALONE=http://127.0.0.1:8862/tools/sketch-standalone/ runs it on the page of its own.
 const { boot } = require("./lib.js");
 const PW = "/opt/node22/lib/node_modules/playwright";
 const W = Number(process.env.W || 1440);

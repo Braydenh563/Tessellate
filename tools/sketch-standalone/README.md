@@ -14,7 +14,7 @@ From the repository root:
 
 ```bash
 python3 -m http.server 8862
-# open http://127.0.0.1:8862/scratchpad/sketch-standalone/
+# open http://127.0.0.1:8862/tools/sketch-standalone/
 ```
 
 ## Files to copy
@@ -23,9 +23,9 @@ Keep the same relative layout, or change the four paths in `index.html`.
 
 | File | What it is |
 | --- | --- |
-| `scratchpad/sketch-standalone/index.html` | The page: one card, the stylesheets, two scripts |
-| `scratchpad/sketch-standalone/boot.js` | Opens the pad and follows the system's light or dark setting |
-| `scratchpad/sketch-standalone/standalone.css` | The page around the pad, plus three tokens the app sets in later sheets |
+| `tools/sketch-standalone/index.html` | The page: one card, the stylesheets, two scripts |
+| `tools/sketch-standalone/boot.js` | Opens the pad and follows the system's light or dark setting |
+| `tools/sketch-standalone/standalone.css` | The page around the pad, plus three tokens the app sets in later sheets |
 | `frontend/js/sketch-pad.js` | The pad: tools, canvases, undo, keyboard, the markup it builds |
 | `frontend/css/sketch-pad.css` | The pad's styles, all from the app's tokens |
 | `frontend/css/00-tokens-shell.css` | The app's design tokens (colour, space, radius, type) and its card |

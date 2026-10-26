@@ -2,7 +2,7 @@
    `openSketch`, media.js, out of the boot sheets). Every value is a token of
    00-tokens-shell.css, so the pad is the app's own surface in the app and,
    with that sheet linked, the same surface on its own page
-   (scratchpad/sketch-standalone/). Rules are on the pad's `sp-` classes and
+   (tools/sketch-standalone/). Rules are on the pad's `sp-` classes and
    restate what the app's `.ghost`, `.dock` and `.dialog-head` give, so the
    pad looks the same with or without the rest of the app's CSS. */
 

@@ -67,7 +67,7 @@ function highlighterBlend(backdropIsDark) {
 // The pad itself is sketch-pad.js and sketch-pad.css, loaded on the first
 // open: a self-contained paint pad (INBOX 1352) that asks the app for
 // everything through the one host object below, so it can also run on a
-// page of its own (scratchpad/sketch-standalone/). What stays here is what
+// page of its own (tools/sketch-standalone/). What stays here is what
 // only the app can do: save as a note, the toast and confirm dialogs, the
 // stored preferences, the menu and help recipes and the highlighter's table.
 
