@@ -8116,7 +8116,100 @@ function docMathToken(token, tokens, state) {
   return { tag: "mo", text: token.value };
 }
 
+//: **Matrices and case splits** (DOCUMENTS_PLAN row 16, the equation
+//: editor's templates). The fences each environment wears, open then close;
+//: `matrix` has none and `cases` only the brace on its left.
+const DOC_MATH_FENCES = {
+  matrix: ["", ""], pmatrix: ["(", ")"], bmatrix: ["[", "]"], Bmatrix: ["{", "}"],
+  vmatrix: ["|", "|"], Vmatrix: ["‖", "‖"], cases: ["{", ""], aligned: ["", ""], array: ["", ""],
+};
+
+//: Accents over their argument, as `mover`: what each one draws.
+const DOC_MATH_ACCENTS = { vec: "→", hat: "^", bar: "‾", overline: "‾", tilde: "~", dot: "˙", ddot: "¨" };
+
+//: TeX's spaces, as their width in ems: `\,` was a printed comma before.
+const DOC_MATH_SPACES = { ",": "0.17em", ":": "0.22em", ";": "0.28em", "!": "0em", quad: "1em", qquad: "2em" };
+
+//: The letters of a braced name (`{pmatrix}`), consumed; "" when there is none.
+function docMathBracedName(tokens, state) {
+  if (!tokens[state.at] || tokens[state.at].kind !== "{") return "";
+  state.at += 1;
+  let name = "";
+  while (state.at < tokens.length && tokens[state.at].kind !== "}") {
+    name += tokens[state.at].value || "";
+    state.at += 1;
+  }
+  if (state.at < tokens.length) state.at += 1;
+  return name;
+}
+
+//: The tokens of one environment's body split into rows of cells, at `&`
+//: and `\\` outside any brace or inner environment; stops after its `\end`.
+function docMathCells(tokens, state) {
+  const rows = [[[]]];
+  let depth = 0;
+  while (state.at < tokens.length) {
+    const token = tokens[state.at];
+    state.at += 1;
+    const cmd = token.kind === "cmd" ? token.value : null;
+    if (cmd === "end" && depth === 0) {
+      docMathBracedName(tokens, state);
+      break;
+    }
+    if (token.kind === "{" || cmd === "begin") depth += 1;
+    if (token.kind === "}" || cmd === "end") depth -= 1;
+    const row = rows[rows.length - 1];
+    if (depth === 0 && token.kind === "op" && token.value === "&") row.push([]);
+    else if (depth === 0 && cmd === "\\") rows.push([[]]);
+    else row[row.length - 1].push(token);
+  }
+  return rows;
+}
+
+function docMathEnvironment(tokens, state) {
+  const name = docMathBracedName(tokens, state);
+  const rows = docMathCells(tokens, state).filter((row) => row.some((cell) => cell.length));
+  const table = {
+    tag: "mtable",
+    attrs: name === "cases" ? { columnalign: "left" } : undefined,
+    kids: rows.map((row) => ({
+      tag: "mtr",
+      kids: row.map((cell) => ({ tag: "mtd", kids: [docMathRow(docMathNodes(cell, { at: 0 }))] })),
+    })),
+  };
+  const [open, close] = DOC_MATH_FENCES[name] || ["", ""];
+  if (!open && !close) return table;
+  const kids = [];
+  if (open) kids.push({ tag: "mo", text: open });
+  kids.push(table);
+  if (close) kids.push({ tag: "mo", text: close });
+  return { tag: "mrow", kids };
+}
+
+//: The commands that take arguments and draw a structure, other than the
+//: fraction and the root; null when `name` is not one of them.
+function docMathStructure(name, tokens, state) {
+  if (name === "begin") return docMathEnvironment(tokens, state);
+  if (name === "end") {
+    docMathBracedName(tokens, state);
+    return { tag: "mrow", kids: [] };
+  }
+  if (name === "binom") {
+    const top = docMathArgument(tokens, state);
+    const bottom = docMathArgument(tokens, state);
+    return { tag: "mrow", kids: [{ tag: "mo", text: "(" }, { tag: "mfrac", attrs: { linethickness: "0" }, kids: [top, bottom] }, { tag: "mo", text: ")" }] };
+  }
+  if (DOC_MATH_ACCENTS[name]) {
+    const base = docMathArgument(tokens, state);
+    return { tag: "mover", attrs: { accent: "true" }, kids: [base, { tag: "mo", text: DOC_MATH_ACCENTS[name] }] };
+  }
+  if (name in DOC_MATH_SPACES) return { tag: "mspace", attrs: { width: DOC_MATH_SPACES[name] } };
+  return null;
+}
+
 function docMathCommand(name, tokens, state) {
+  const structure = docMathStructure(name, tokens, state);
+  if (structure) return structure;
   if (name === "frac" || name === "dfrac" || name === "tfrac") {
     const top = docMathArgument(tokens, state);
     const bottom = docMathArgument(tokens, state);
