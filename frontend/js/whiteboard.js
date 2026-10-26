@@ -3284,7 +3284,7 @@ function wbSearchTextFor(kind, item, byId) {
     //: box was ever found (measured, canvasdepth: "SHIP" in a text box, 0).
     try {
       const data = typeof item.data === "string" ? JSON.parse(item.data || "{}") : item.data || {};
-      return `${data.content || ""}${wbPropsText(data.props)}`.toLowerCase();
+      return `${data.content || ""}${wbCellsText(data.cells)}${wbPropsText(data.props)}`.toLowerCase();
     } catch {
       return "";
     }
@@ -3296,6 +3296,25 @@ function wbSearchTextFor(kind, item, byId) {
     return `${data?.label || ""}${wbPropsText(data?.props)}`.toLowerCase();
   }
   return "";
+}
+
+//: A table's words are its cells: Find reads them too (a table of "zebra" was
+//: "0 matches" on a board that showed it), and Replace all rewrites them.
+function wbCellsText(cells) {
+  if (!Array.isArray(cells)) return "";
+  return cells.flat().map((cell) => `\n${cell ?? ""}`).join("");
+}
+
+function wbReplaceInCells(cells, find, to, opts = {}) {
+  if (!Array.isArray(cells)) return { cells, count: 0 };
+  let count = 0;
+  const out = cells.map((row) => (Array.isArray(row) ? row : []).map((cell) => {
+    if (typeof cell !== "string") return cell;
+    const done = wbReplaceText(cell, find, to, opts);
+    count += done.count;
+    return done.text;
+  }));
+  return { cells: out, count };
 }
 
 //: Find reads an item's data values too (draw.io's find reads its metadata).
@@ -3392,11 +3411,12 @@ async function wbBoardReplaceAll(find, to) {
       //: rewrite them, or the count says 3 of 3 and the toast says 1.
       const text = typeof field === "string" ? wbReplaceText(field, needle, to, wbBoardSearch) : { text: field, count: 0 };
       const values = wbReplaceInProps(own?.props, needle, to, wbBoardSearch);
-      const done = { count: text.count + values.count };
+      const grid = kind === "object" ? wbReplaceInCells(own?.cells, needle, to, wbBoardSearch) : { cells: undefined, count: 0 };
+      const done = { count: text.count + values.count + grid.count };
       if (!done.count) continue;
       undo.push({ action: "move", kind, id: item.id, before: WB_KIND_INFO[kind].payload(item) });
       if (kind === "object") {
-        item.data = { ...item.data, content: text.text, ...(values.count ? { props: values.props } : {}) };
+        item.data = { ...item.data, content: text.text, ...(values.count ? { props: values.props } : {}), ...(grid.count ? { cells: grid.cells } : {}) };
         await wbSaveObject(item);
       } else {
         await wbSaveSketchProps(item, { label: text.text, ...(values.count ? { props: values.props } : {}) });
@@ -6405,6 +6425,32 @@ function clearWbSelection() {
   if (!wbSelectedItem && wbMultiSelection.size === 0) return;
   wbSelectedItem = null;
   wbMultiSelection.clear();
+  wbApplySelectionHighlight();
+  wbSyncMapToolState();
+  wbUpdateSelectionBar();
+}
+
+//: **A selection never outlives its items.** Undo of a paste, a redo of a
+//: delete, another tab's change or the history panel can take away what is
+//: selected without a deselect behind it; the board kept the dead id, and
+//: Export > Selection then threw "Cannot read properties of undefined
+//: (reading 'width')" and wrote nothing, with a selection bar over nothing.
+//: Run at the top of every render, so no path has to remember it.
+function wbPruneSelection() {
+  let changed = false;
+  if (wbSelectedItem && !wbFindItem(wbSelectedItem.kind, wbSelectedItem.id)) {
+    wbSelectedItem = null;
+    changed = true;
+  }
+  for (const key of [...wbMultiSelection]) {
+    const at = key.indexOf(":");
+    const list = wbState[WB_LIST_BY_KIND[key.slice(0, at)]] || [];
+    if (!list.some((i) => String(i.id) === key.slice(at + 1))) {
+      wbMultiSelection.delete(key);
+      changed = true;
+    }
+  }
+  if (!changed) return;
   wbApplySelectionHighlight();
   wbSyncMapToolState();
   wbUpdateSelectionBar();
@@ -9964,23 +10010,48 @@ function wbPaintTextContent(contentEl, d) {
   contentEl.textContent = raw;
 }
 
+//: A marker around `text[from, to)`, or taken off again when the run already
+//: wears it (so Bold twice is not `****`). Pure, so a test can run it: the
+//: old code did `raw.replace(pickedText, ...)`, which wrapped the FIRST
+//: occurrence of the picked words, not the ones selected ("the cat and the
+//: cat" with the second "cat" picked bolded the first).
+function wbWrapRange(text, from, to, marker) {
+  const n = marker.length;
+  const inner = text.slice(from, to);
+  if (inner.length > 2 * n && inner.startsWith(marker) && inner.endsWith(marker)) {
+    return { text: text.slice(0, from) + inner.slice(n, -n) + text.slice(to), from, to: to - 2 * n };
+  }
+  if (text.slice(Math.max(0, from - n), from) === marker && text.slice(to, to + n) === marker) {
+    return { text: text.slice(0, from - n) + inner + text.slice(to + n), from: from - n, to: to - n };
+  }
+  return { text: text.slice(0, from) + marker + inner + marker + text.slice(to), from: from + n, to: to + n };
+}
+
 //: Wrap the selection inside a text box (or the whole text, when nothing is
 //: selected) in a markdown marker, the formatting bar a text box never had.
+//: While the box is being typed in, the work is done on what is on screen
+//: through its editing surface (`insertText`, so Ctrl+Z holds), by offsets:
+//: the saved `content` is stale until blur, and the picked words may occur
+//: twice.
 function wbWrapTextSelection(marker) {
   const item = wbSelectedTextObjectOrNull();
   if (!item) return;
+  const el = document.querySelector(`.wb-object[data-id="${item.id}"] .wb-text-content`);
+  const surf = el && el.isContentEditable ? el.wbEditorSurface : null;
+  if (surf) {
+    const value = surf.text;
+    const { from, to } = surf.selection();
+    const whole = from === to;
+    const out = wbWrapRange(value, whole ? 0 : from, whole ? value.length : to, marker);
+    if (!value.trim() || out.text === value) return;
+    surf.value = out.text;
+    surf.setSelectionRange(out.from, out.to);
+    return;
+  }
   const before = WB_KIND_INFO.object.payload(item);
   wbPushUndo({ action: "move", kind: "object", id: item.id, before });
-  const el = document.querySelector(`.wb-object[data-id="${item.id}"] .wb-text-content`);
   const raw = item.data.content || "";
-  const sel = window.getSelection();
-  let next;
-  if (el && el.isContentEditable && sel && sel.rangeCount && !sel.isCollapsed && el.contains(sel.anchorNode)) {
-    const picked = sel.toString();
-    next = raw.replace(picked, `${marker}${picked}${marker}`);
-  } else {
-    next = raw.trim() ? `${marker}${raw}${marker}` : raw;
-  }
+  const next = raw.trim() ? wbWrapRange(raw, 0, raw.length, marker).text : raw;
   item.data = { ...item.data, content: next };
   wbSaveObject(item);
   wbScheduleRender();
@@ -10344,6 +10415,35 @@ function wbIndentEditableLines(contentEl, outdent) {
   after.setEnd(...locate(selEnd + (replacement.length - (lineEnd - lineStart))));
   sel.removeAllRanges();
   sel.addRange(after);
+  return true;
+}
+
+//: **A box is as tall as its words.** What a text box or sticky needs to show
+//: all its text: the words' own scroll height plus the box's chrome (its
+//: padding and border, which the content element does not own). Used by
+//: "Grow to fit the words" and by typing, which grows the box as it goes:
+//: before, a lecture paragraph typed into a sticky sat behind a scroll bar
+//: (177px of words in a 62px box, measured) and the rest could only be read
+//: by scrolling inside the card.
+function wbTextFitHeight(el) {
+  const words = el.querySelector(".wb-text-content");
+  if (!words) return 0;
+  return Math.ceil(words.scrollHeight) + Math.max(0, el.offsetHeight - words.offsetHeight);
+}
+
+//: Typing in a box taller than the box: the box grows now (never shrinks, so
+//: a box made small on purpose stays small until its words need more). The
+//: state before the first growth is kept for the one undo step the blur makes.
+function wbGrowBoxToWords(contentEl, d) {
+  if (d.data.sticker) return false;
+  const el = contentEl.closest(".wb-object");
+  if (!el) return false;
+  const fit = wbTextFitHeight(el);
+  if (!(fit > (d.height || el.offsetHeight) + 1)) return false;
+  if (!contentEl.wbBeforeGrow) contentEl.wbBeforeGrow = WB_KIND_INFO.object.payload(d);
+  d.height = fit;
+  el.style.height = `${fit}px`;
+  wbUpdateSelectionBar();
   return true;
 }
 
@@ -10755,6 +10855,36 @@ function wbIsSticky(item) {
   const data = item?.data || {};
   if (data.sticker) return false;
   return Boolean(data.sticky) || (data.border_color === "#e8d56a" && Boolean(data.bg));
+}
+
+//: **Enter, for someone with no pointer.** A text box, sticky or frame was
+//: only ever placed by a click, so N then Enter did nothing and a selected
+//: sticky could not be written in without a double-click (WCAG 2.1.1; Figma,
+//: tldraw and Excalidraw all take Enter). With a placing tool held, Enter
+//: drops the thing at the middle of the view; with one text box or sticky
+//: selected, Enter puts the caret at the end of its words. Returns whether it
+//: acted, so the key keeps its other meanings otherwise. Only from the
+//: canvas itself: a focused toolbar button's Enter is its own.
+function wbKeyboardEnter() {
+  const focus = document.activeElement;
+  if (focus && focus !== document.body && focus.id !== "whiteboard-container") return false;
+  const place = { text: wbCreateTextBox, sticky: wbCreateSticky, frame: wbCreateFrame }[window.currentTool];
+  if (place) {
+    const [x, y] = wbViewCentre();
+    place(x, y);
+    return true;
+  }
+  const lone = wbSelectedItem?.kind === "object" && wbMultiSelection.size <= 1 ? wbFindItem("object", wbSelectedItem.id) : null;
+  if (!lone || lone.kind !== "text" || lone.data?.sticker || wbIsLocked("object", lone)) return false;
+  const words = document.querySelector(`.wb-object[data-id="${lone.id}"] .wb-text-content`);
+  if (!words) return false;
+  wbBeginTextEdit(words);
+  const range = document.createRange();
+  range.selectNodeContents(words);
+  range.collapse(false);
+  window.getSelection()?.removeAllRanges();
+  window.getSelection()?.addRange(range);
+  return true;
 }
 
 async function wbCreateSticky(x, y, box = null, like = null) {
@@ -12815,6 +12945,8 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       //: is near-white on a dark board: read it off the box, as above.
       const textEl = obj.data.color ? null : document.querySelector(`#wb-html-layer .wb-object[data-id="${obj.id}"] .wb-text-content`);
       const textInk = textEl ? wbExportColour(getComputedStyle(textEl).color) : null;
+      const boxEl = document.querySelector(`#wb-html-layer .wb-object[data-id="${obj.id}"]`);
+      parts.push(wbSvgBoxBackdrop(boxEl, obj.data, obj.width, obj.height));
       parts.push(
         wbSvgText(lines, pad, fontSize + pad - 2, {
           fontSize,
@@ -12822,6 +12954,8 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
           lineHeight: fontSize * 1.25,
         })
       );
+    } else if (obj.kind === "table") {
+      parts.push(wbSvgTable(document.querySelector(`#wb-html-layer .wb-object[data-id="${obj.id}"]`), obj));
     }
     parts.push("</g>");
   }
@@ -16255,6 +16389,10 @@ async function initWhiteboard() {
       wbMindMapAddChild(wbSelectedItem.id);
       return;
     }
+    if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey && !wbIsMap() && wbKeyboardEnter()) {
+      e.preventDefault();
+      return;
+    }
     //: Enter on one selected shape types into it (decision 12; tldraw's key).
     if (
       e.key === "Enter" && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey
@@ -19046,6 +19184,12 @@ function wbOpenSketchLabelEditor(sketch, parsed, { box, ink, multiline, max, nam
     const before = WB_KIND_INFO.sketch.payload(sketch);
     await wbSaveSketchProps(sketch, { label: text || undefined });
     wbPushUndo({ action: "move", kind: "sketch", id: sketch.id, before });
+    //: A shape's words that do not fit make the shape taller, as one step
+    //: with the words (the same grow as "Grow to fit the words").
+    if (text && wbShapeLabelKind(parsed) && !parsed.label_fit) {
+      renderWhiteboardNow();
+      await wbGrowShapeToLabel(sketch);
+    }
     wbScheduleRender();
     wbAnnounce(text ? said[0] : said[1]);
   };
@@ -20629,6 +20773,7 @@ function renderWhiteboardNow() {
 }
 
 function renderWhiteboard() {
+  wbPruneSelection();
   //: A render replaces every map node's element, so every measurement taken
   //: from the previous set is about to describe something that is gone.
   wbClearMapNodeSizeCache();
@@ -22535,13 +22680,23 @@ function renderWbObjects(canvas) {
         //: Formatted from the selection bar or Ctrl+B: shown rendered (K24).
         const formatted = this.dataset.wbFormatted === "1";
         delete this.dataset.wbFormatted;
+        const grownFrom = this.wbBeforeGrow;
+        delete this.wbBeforeGrow;
         if (d.data.content === edited) {
+          if (grownFrom) {
+            wbPushUndo({ action: "move", kind: "object", id: d.id, before: grownFrom });
+            wbSaveObject(d);
+          }
           wbScheduleRender();
           return;
         }
-        wbPushUndo({ action: "move", kind: "object", id: d.id, before: WB_KIND_INFO.object.payload(d) });
+        wbPushUndo({ action: "move", kind: "object", id: d.id, before: grownFrom || WB_KIND_INFO.object.payload(d) });
         d.data = formatted ? { ...d.data, content: edited, md: true } : { ...d.data, content: edited };
+        wbGrowBoxToWords(this, d);
         wbSaveObject(d);
+      });
+      content.on("input", function () {
+        if (this.isContentEditable) wbGrowBoxToWords(this, d);
       });
       // Typing is text-box business, not the canvas's: Delete/Backspace
       // here must edit the text, not delete the whole box the way the same

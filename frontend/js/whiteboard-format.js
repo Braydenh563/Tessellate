@@ -1174,6 +1174,33 @@ function wbAutoSizeFactors(text, area) {
   return { sx: grow(text.w, area.w), sy: grow(text.h, area.h) };
 }
 
+//: One shape grown until its words fit (never shrinks), from its top-left
+//: corner, keeping its proportions: the words wrap to the shape's width, so
+//: growing only the height made a diamond 733px tall for one sentence; both
+//: sides grow by the root of what is missing and the fit is measured again
+//: (a few rounds at most). Returns whether it changed. Run by the command
+//: and, on its own, when a label is typed into a shape: 80 characters in a
+//: 100x60 rectangle used to be drawn 160px tall across the border.
+async function wbGrowShapeToLabel(sketch) {
+  let changed = false;
+  for (let round = 0; round < 4; round += 1) {
+    const group = document.querySelector(`.sketch-group[data-id="${sketch.id}"]`);
+    const label = group?.querySelector(":scope > .sketch-label");
+    const placed = label ? wbShapeLabelPlace(group, label) : null;
+    const parsed = wbSketchParsedData(sketch);
+    const bbox = parsed?.d ? wbPathBBox(parsed.d) : null;
+    if (!placed || !bbox) break;
+    const words = label.getBBox();
+    const { sx, sy } = wbAutoSizeFactors({ w: words.width, h: words.height }, placed.area);
+    if (sx === 1 && sy === 1) break;
+    const f = Math.max(sx, Math.sqrt(sy), 1.05);
+    await wbSaveSketchD(sketch, wbTransformPathD(parsed.d, { sx: f, sy: f, anchorX: bbox.minX, anchorY: bbox.minY }));
+    changed = true;
+    renderWhiteboardNow();
+  }
+  return changed;
+}
+
 //: Grow to fit: a shape taller (or wider, for one long word) until its words
 //: fit; a text box or a note card taller until its text does. Never shrinks.
 function wbAutoSizeSelection() {
@@ -1182,16 +1209,7 @@ function wbAutoSizeSelection() {
     for (const e of wbFmtEntries().filter((x) => !wbIsLocked(x.kind, x.item) && x.bbox)) {
       const kind = wbFmtKind(e);
       if (kind === "shape") {
-        const group = document.querySelector(`.sketch-group[data-id="${e.id}"]`);
-        const label = group?.querySelector(":scope > .sketch-label");
-        const placed = label ? wbShapeLabelPlace(group, label) : null;
-        if (!placed) continue;
-        const words = label.getBBox();
-        const { sx, sy } = wbAutoSizeFactors({ w: words.width, h: words.height }, placed.area);
-        const parsed = wbSketchParsedData(e.item);
-        if (sx === 1 && sy === 1) continue;
-        await wbSaveSketchD(e.item, wbTransformPathD(parsed.d, { sx, sy, anchorX: e.bbox.minX, anchorY: e.bbox.minY }));
-        grown += 1;
+        if (await wbGrowShapeToLabel(e.item)) grown += 1;
       } else if (kind === "text" || kind === "note") {
         const el = wbItemElement(e.kind, e.id);
         if (!el) continue;
@@ -1201,8 +1219,7 @@ function wbAutoSizeSelection() {
         //: scroll height plus the box's chrome. (`wbCardFitHeight` opens a
         //: note card up the same way; at phone width its answer for a text
         //: box was the clipped height.)
-        const words = el.querySelector(".wb-text-content");
-        const fit = words ? Math.ceil(words.scrollHeight) + Math.max(0, el.offsetHeight - words.offsetHeight) : wbCardFitHeight(el);
+        const fit = el.querySelector(".wb-text-content") ? wbTextFitHeight(el) : wbCardFitHeight(el);
         if (!(fit > current + 1)) continue;
         e.item.height = Math.round(fit);
         if (e.kind === "node") await wbSaveNode(e.item);
@@ -1375,6 +1392,54 @@ const WB_TABLE_COL_W = 120;
 function wbTableCells(d) {
   const cells = Array.isArray(d.data?.cells) && d.data.cells.length ? d.data.cells : [[""]];
   return cells.map((row) => (Array.isArray(row) ? row.map((c) => String(c ?? "")) : [""]));
+}
+
+//: **A text box, a sticky or a table, as the export draws it.** The export
+//: drew a text box as its words alone and left a table out of the file, so a
+//: yellow sticky came out as dark text on the board's white and a table as
+//: nothing (SVG, PNG and PDF all read the one SVG). Paint is read off the
+//: drawn element, as a map topic's is, so the theme, the paper and the corners
+//: it really wears travel; an item culled off screen falls back to its data.
+function wbSvgRoundedPath(w, h, radii) {
+  const [a, b, c, d] = radii.map((r) => Math.max(0, Math.min(Number(r) || 0, w / 2, h / 2)));
+  return `M${a} 0H${w - b}A${b} ${b} 0 0 1 ${w} ${b}V${h - c}A${c} ${c} 0 0 1 ${w - c} ${h}H${d}A${d} ${d} 0 0 1 0 ${h - d}V${a}A${a} ${a} 0 0 1 ${a} 0Z`;
+}
+
+function wbSvgBoxRadii(el, data, w, h) {
+  if (!el) return Array.isArray(data?.radii) ? data.radii : [6, 6, 6, 6];
+  const style = getComputedStyle(el);
+  const px = (v, side) => (/%$/.test(v) ? (parseFloat(v) / 100) * side : parseFloat(v) || 0);
+  return ["TopLeft", "TopRight", "BottomRight", "BottomLeft"].map((corner) => px(style[`border${corner}Radius`], Math.min(w, h)));
+}
+
+function wbSvgBoxBackdrop(el, data, w, h) {
+  const paper = data?.bg && data.bg !== "transparent" ? data.bg : "none";
+  const paint = el ? wbExportPaint(el) : { fill: paper, edge: data?.border_color || null };
+  //: A sticky's paper can be a gradient, which has no background colour to read.
+  const fill = paint.fill !== "none" ? paint.fill : paper;
+  if (fill === "none" && !paint.edge) return "";
+  const edge = paint.edge ? ` stroke="${wbSvgEscape(paint.edge)}" stroke-width="1.5"` : "";
+  return `<path d="${wbSvgRoundedPath(w, h, wbSvgBoxRadii(el, data, w, h))}" fill="${wbSvgEscape(fill)}"${edge} />`;
+}
+
+function wbSvgTableCell(paint, text, box, size) {
+  const edge = wbSvgEscape(paint.edge || "#9aa3b5");
+  const rect = `<rect x="${box.x}" y="${box.y}" width="${box.w}" height="${box.h}" fill="${wbSvgEscape(paint.fill)}" stroke="${edge}" stroke-width="1" />`;
+  if (!text) return rect;
+  const lines = wbSvgWrapLines(text, box.w - 12, Math.max(1, Math.floor(box.h / (size * 1.25))), size * 0.55);
+  return rect + wbSvgText(lines, box.x + 6, box.y + size + 4, { fontSize: size, fill: paint.ink, lineHeight: size * 1.25 });
+}
+
+function wbSvgTable(el, obj) {
+  const cells = wbTableCells(obj);
+  const cols = cells[0].length;
+  const box = { w: obj.width / cols, h: obj.height / cells.length };
+  const plain = { fill: "#ffffff", edge: "#9aa3b5", ink: "#1f2430" };
+  const cellEl = (r) => el?.querySelector(`.wb-table-cell[data-r="${Math.min(r, cells.length - 1)}"]`);
+  const body = (cellEl(1) && wbExportPaint(cellEl(1))) || plain;
+  const head = obj.data?.header ? (cellEl(0) && wbExportPaint(cellEl(0))) || { ...plain, fill: "#eef1f6" } : body;
+  const size = parseFloat(cellEl(1) && getComputedStyle(cellEl(1)).fontSize) || 14;
+  return cells.map((row, r) => row.map((text, c) => wbSvgTableCell(r === 0 ? head : body, text, { ...box, x: c * box.w, y: r * box.h }, size)).join("")).join("");
 }
 
 function wbBuildTable(el, d) {
