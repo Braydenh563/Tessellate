@@ -238,11 +238,16 @@ try {
   $title.Add_Paint({
     param($sender, $e)
     $g = $e.Graphics
-    $g.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::ClearTypeGridFit
+    # Greyscale antialiasing: ClearType's colour fringes showed round the
+    # bold name on this transparent panel (the owner, 2026-10-26: "that
+    # notes on the tessellate isnt clean for the splash").
+    $g.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit
     $fmt = [System.Drawing.StringFormat]::GenericTypographic
     $nameW = $g.MeasureString("Tessellate", $titleFont, 1000, $fmt).Width
     $noteW = $g.MeasureString("notes", $noteFont, 1000, $fmt).Width
-    $gap   = $g.MeasureString(" ", $noteFont).Width * 0.6
+    # A typographic measure of " " is near zero (trailing spaces are not
+    # counted), which ran "notes" into the name; a third of an em instead.
+    $gap   = $noteFont.SizeInPoints * $g.DpiY / 72 * 0.33
     $x = ($WIDTH - $nameW - $gap - $noteW) / 2
     # Baseline: the cell ascent in pixels, per font.
     $asc = { param($f) $f.SizeInPoints * $g.DpiY / 72 * $f.FontFamily.GetCellAscent($f.Style) / $f.FontFamily.GetEmHeight($f.Style) }
