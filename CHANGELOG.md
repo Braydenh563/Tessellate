@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat and Ask with no model: the line after an answer no longer calls the note it cited your newest or latest when it is not (it named the oldest note that way).
 - Settings, Models: with no model connected, the status line says Atlas answers with its built-in composer until one is.
 - Loading placeholders now take the count and height of what that list drew last time, so the swap no longer jumps (Reminders: 290px to 8px).
 - Faster start: the model badge's spec panel, editing a chat answer and a note's Explain row load on first use (1,965 bytes less boot script).

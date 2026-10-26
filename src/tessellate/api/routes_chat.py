@@ -3164,8 +3164,11 @@ def _with_next_step(text: str, size: str, req: _StreamRequest, cited: list[str] 
     #: Nor on a note the answer never used ("what caused ww1" ended with an
     #: offer to open the Biology note): a closer names a note the answer cited.
     newest = [] if req.body.note_ids else (cited if cited is not None else _newest_titles(req.session, 1))[:1]
+    #: A cited note is called the newest only when it is (INBOX 1357, class
+    #: K: "Your latest note is Hello" named the oldest note).
+    is_newest = cited is None or bool(newest and newest == _newest_titles(req.session, 1)[:1])
     line = (composer_aware.closing(_awareness(req), seed, recent) if req.body.screen else "") or composer_tone.closing(
-        recent=newest, seed=seed, avoid=recent, voice=_chat_voice(req), question=req.question or ""
+        recent=newest, seed=seed, avoid=recent, voice=_chat_voice(req), question=req.question or "", newest=is_newest
     )
     return f"{text}\n\n{line}" if line else text
 

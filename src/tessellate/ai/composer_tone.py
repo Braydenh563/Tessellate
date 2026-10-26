@@ -37,7 +37,7 @@ def fit(text: str, size: str) -> str:
     return lead or text
 
 
-def closing(*, recent: list[str], seed: str, avoid: tuple[str, ...] | list[str] = (), voice: str = "natural", question: str = "") -> str:
+def closing(*, recent: list[str], seed: str, avoid: tuple[str, ...] | list[str] = (), voice: str = "natural", question: str = "", newest: bool = True) -> str:
     """One next-step line from the newest note's title, or empty with no notes.
 
     Composed (`composer_compose`, frame `close_next`) in the person's voice
@@ -52,4 +52,6 @@ def closing(*, recent: list[str], seed: str, avoid: tuple[str, ...] | list[str] 
     title = titles[0]
     if title.split()[0].islower():  # "iPhone" keeps its own shape
         title = title[:1].upper() + title[1:]
-    return compose.frame("close_next", mood, t=title)
+    #: `newest` False: the title is a note the answer cited, not the
+    #: notebook's newest, so the line may not call it newest or latest.
+    return compose.frame("close_next" if newest else "close_cited", mood, t=title)
