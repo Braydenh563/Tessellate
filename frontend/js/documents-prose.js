@@ -189,10 +189,8 @@ function docStructuralMask(text) {
 //: The text with every structural line blanked to spaces, same length, so an
 //: offset into it is an offset into the text.
 function docStructuralBlank(text) {
-  const mask = docStructuralMask(text);
-  let out = "";
-  for (let i = 0; i < text.length; i += 1) out += mask[i] && text[i] !== "\n" ? " " : text[i];
-  return out;
+  const pattern = new RegExp(DOC_STRUCTURAL_LINE.source, DOC_STRUCTURAL_LINE.flags);
+  return text.replace(pattern, (line) => " ".repeat(line.length));
 }
 
 //: Harper kinds that judge a sentence, dropped inside a structural line.

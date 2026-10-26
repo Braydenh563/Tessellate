@@ -241,6 +241,34 @@ def test_harper_rules_that_are_house_style_or_abbreviation_nags_are_off() -> Non
 # --- speed ----------------------------------------------------------------------------
 
 
+def test_a_pathological_document_cannot_stall_the_skip_mask(tmp_path) -> None:
+    """The new skip patterns (emails, paths, file names, link text) first
+    backtracked quadratically: 90,000 characters of "a.b" took 6.7 s and of
+    "ab-" 12 s, and a 100,000-letter run of one letter aborted node (that one
+    was already so in the base). Each of these is now a few ms to tens of ms;
+    the bound is 40 times that, for a loaded machine."""
+    stress = {
+        "dotted": "a.b" * 30000,
+        "hyphen": "ab-" * 30000,
+        "slashes": "ab/" * 30000,
+        "brackets": "[a" * 30000,
+        "ats": "a@b." * 25000,
+        "run": "x" * 100000,
+        "one line of prose": "The meeting went well and we agreed. " * 3000,
+    }
+    options = tmp_path / "stress.json"
+    options.write_text(json.dumps({"stress": stress}), encoding="utf-8")
+    fixture = tmp_path / "empty.json"
+    fixture.write_text(json.dumps({"clean": [], "planted": []}), encoding="utf-8")
+    out = subprocess.run(
+        ["node", str(HARNESS), str(ROOT), str(fixture), f"@{options}"],
+        capture_output=True, text=True, timeout=180, check=False,
+    )
+    assert out.returncode == 0, out.stderr
+    slow = {k: v for k, v in json.loads(out.stdout)["stress"].items() if v["maskMs"] > 1500 or v["findingsMs"] > 2500}
+    assert not slow, slow
+
+
 def test_checking_stays_off_the_typing_path(measured) -> None:
     """Harper runs in the worker (measured: about 60 ms per 1,000 words, never
     on the main thread). What is on the main thread per keystroke is the rule

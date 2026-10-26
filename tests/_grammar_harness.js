@@ -15,7 +15,8 @@ const { pathToFileURL } = require("node:url");
 
 const root = path.resolve(process.argv[2]);
 const fixture = JSON.parse(fs.readFileSync(process.argv[3], "utf8"));
-const options = JSON.parse(process.argv[4] || "{}");
+const optionsArg = process.argv[4] || "{}";
+const options = JSON.parse(optionsArg.startsWith("@") ? fs.readFileSync(optionsArg.slice(1), "utf8") : optionsArg);
 
 const SOURCES = ["documents.js", "documents-prose.js"].map((name) =>
   fs.readFileSync(path.join(root, "frontend", "js", name), "utf8")
@@ -136,6 +137,18 @@ async function main() {
   //: `lints` is what Harper itself said about the line, before the page's filtering.
   for (const item of fixture.clean) out.clean.push({ ...item, findings: summary(await run(item.text)), lints: raw[raw.length - 1] });
   for (const item of fixture.planted) out.planted.push({ ...item, findings: summary(await run(item.text)), lints: raw[raw.length - 1] });
+  if (options.stress) {
+    //: Pathological text, timed through the skip mask and the rule pass only.
+    out.stress = {};
+    for (const [name, text] of Object.entries(options.stress)) {
+      const t = performance.now();
+      page.docProseSkipMask(text);
+      const mask = performance.now() - t;
+      const t2 = performance.now();
+      page.docProseFindings(text);
+      out.stress[name] = { chars: text.length, maskMs: Math.round(mask), findingsMs: Math.round(performance.now() - t2) };
+    }
+  }
   if (options.timing) {
     const sample = fixture.clean.map((c) => c.text).join("\n\n");
     const words = sample.split(/\s+/).length;

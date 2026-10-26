@@ -16942,7 +16942,9 @@ function docLoadWordlist() {
 //: here is refused because flagging it would be wrong far more often than it
 //: would be right, and a checker that cries wolf is one that gets turned off.
 function docSpellable(text, word, start, end) {
-  if (word.length < 2) return false;
+  //: Nor a run of more than 40 letters: that is a pasted token or a hash, and
+  //: generating its one-edit neighbours aborted node on a 100,000-letter run.
+  if (word.length < 2 || word.length > 40) return false;
   //: An acronym (API, HTTP, NASA) is not in any word list and is not a typo.
   if (word === word.toUpperCase()) return false;
   //: An internal capital means an identifier or a product name: Tessellate,
@@ -16988,9 +16990,14 @@ function docSpellable(text, word, start, end) {
 //: Returns "" for a word that is not capitalised.
 function docSpellNameKind(text, word, start) {
   if (!/^[A-Z]/.test(word)) return "";
-  const lineStart = text.lastIndexOf("\n", start - 1) + 1;
-  const lead = text.slice(lineStart, start);
-  const opens = /^[ \t]*(?:(?:[#>*+|-]+|\d+[.)]|\[[ xX]\])[ \t]*)*["'“‘(*_]*$/.test(lead);
+  //: Only the last 120 characters are read: a one-line document of 100,000
+  //: characters made `lastIndexOf("\n")` scan back to its start for every
+  //: capitalised word (measured: 24 ms became 277 ms).
+  const window = text.slice(Math.max(0, start - 120), start);
+  const newline = window.lastIndexOf("\n");
+  const lead = newline >= 0 ? window.slice(newline + 1) : window;
+  const atLineHead = newline >= 0 || start <= 120;
+  const opens = atLineHead && /^[ \t]*(?:(?:[#>*+|-]+|\d+[.)]|\[[ xX]\])[ \t]*)*["'“‘(*_]*$/.test(lead);
   const afterStop = /[.!?]["')”’*_\]]*[ \t]+["'“‘(*_]*$/.test(lead);
   return opens || afterStop ? "initial" : "name";
 }
@@ -17222,12 +17229,12 @@ const DOC_PROSE_SKIP = [
   //: file name, and a unit written after a number. Harper read `/etc/nginx/
   //: conf.d` as "config" and `uni` as a negative prefix, and called "min" and
   //: "mL" words to fix; the dictionary read the host of an address.
-  /[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g, // an email address
+  /(?<![\w.+-])[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g, // an email address
   /(?<![\w/.:])(?:~|\.{1,2})?(?:\/[\w.\-@+~%]+)+\/?/g, // /etc/hosts, ~/notes/a.md
-  /(?<![\w/])[\w.-]+(?:\/[\w.-]+){2,}\/?/g, // src/app/main.py
-  /(?<![\w/])[\w-]+\/[\w-]+\.[A-Za-z0-9]{1,5}\b/g, // docs/readme.md
+  /(?<![\w/.-])[\w.-]+(?:\/[\w.-]+){2,}\/?/g, // src/app/main.py
+  /(?<![\w/-])[\w-]+\/[\w-]+\.[A-Za-z0-9]{1,5}\b/g, // docs/readme.md
   /\b[A-Za-z]:\\[^\s"'<>|]*/g, // C:\Users\me\notes.txt
-  /\b[\w-]+\.(?:md|txt|pdf|png|jpe?g|gif|svg|csv|docx?|xlsx?|pptx?|html?|css|js|ts|py|json|ya?ml|toml|sh|zip)\b/gi, // a file name
+  /(?<![\w-])[\w-]+\.(?:md|txt|pdf|png|jpe?g|gif|svg|csv|docx?|xlsx?|pptx?|html?|css|js|ts|py|json|ya?ml|toml|sh|zip)\b/gi, // a file name
   //: A unit straight after a number is a unit and not a word: 10 min, 2 h,
   //: 250 ms, 15 mL, 5 km, 3 x 4, 10am, 3rd, 90%, 37 °C. The number is not
   //: masked, the unit is; a unit with no number before it is prose.
@@ -17241,7 +17248,7 @@ const DOC_PROSE_SKIP = [
 //: `[text](address)`, `[text][ref]` and `![alt](source)`; not a `[[wiki link]]`
 //: (masked above) and not a `[ ]` checkbox, which no `(` or `[` follows.
 //: Settings, Writing, "Check link text" turns the check back on.
-const DOC_PROSE_SKIP_LINK_TEXT = [/!?\[(?!\[)[^\]\n]*\](?=\([^)\n]*\)|\[[^\]\n]*\])/g];
+const DOC_PROSE_SKIP_LINK_TEXT = [/!?\[(?!\[)[^\][\n]*\](?=\([^)\n]*\)|\[[^\]\n]*\])/g];
 
 function docProseSkipMask(text) {
   const mask = new Uint8Array(text.length);

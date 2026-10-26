@@ -27,5 +27,16 @@ Tradeoff recorded: a typo in a capitalised word in mid-sentence is marked only w
 
 - [x] 1 Scout and measure (this file, fixture, harness).
 - [x] 2 Fix as classes (K11, K4b, false positives, missing checks, Settings toggle "Check link text").
-- [ ] 3 Harper version check (propose only).
-- [ ] 4 Speed measurement after.
+- [x] 3 Harper version check, proposal only, nothing swapped. Vendored 2.10.0 (slim wasm 15,935,196 bytes, 8,033,436 gzipped); npm latest is 2.13.0 (slim wasm 19,953,168 bytes, +25%; 8,263,286 gzipped, +2.9%). Run through the same worker config on the fixture: identical Harper lints (52 on the clean lines, 36 on the planted, same problems and kinds, zero diffs), same 0 false positives and 33 of 33, lint time 60 ms against 84 ms per 1,066 words (node, single runs, noisy). Not clearly better, so not swapped; swapping would also change `BinaryModule-BmeyZWwZ.js` in the worker, `DOC_GRAMMAR_FILES` and `tests/test_prose_tools.py`, and the wasm is lazy so TOTAL_CAP would not move. Revisit when a release adds a rule the fixture lacks.
+- [x] 4 Speed. Harper runs in the worker, so typing never waits on it: about 52 to 71 ms per 1,000 words before and after (unchanged). Main-thread cost per keystroke (rule pass plus merge), 1,066 words, three alternating runs each: before 1.6 to 5.8 ms (rules) and 1.5 to 6.8 ms (merge); after 3.2 to 4.6 ms and 2.3 to 11.4 ms. The new skip patterns first backtracked quadratically on 90,000 characters of "a.b" (6.7 s) and "ab-" (12 s) and the name check scanned back a one-line text per capitalised word (24 ms became 277 ms); both fixed (lookbehinds on the run start, a 120-character window) and ratcheted by `test_a_pathological_document_cannot_stall_the_skip_mask`: now 3 to 55 ms on 100,000 characters. A 100,000-letter run of one letter aborted node already in the base (edit generation); words over 40 letters are no longer spell-checked.
+
+## Driven in the app (port 8791, one-off script, not added to scratchpad)
+
+Settings, General, Writing shows the Check link text row (off); the dictionary dialog shows it (off, 32 x 18 px box). On a document with `[teh docs](url)`, `Your going`, `The the`, names and "10-20 min": default marks `confusion:Your` and `repeat:The the` only; after ticking the dialog row also `spelling:teh`; preference stored true; no page errors. Not driven: the Settings Save path for the new key (only the stored preference and the row's initial state), dark theme, touch.
+
+## Left
+
+- Settings Save of the new row is covered by the SETTING_ROWS lint and the code path, not by a click in the browser.
+- Note boxes (`noteGrammarPlugin`) take the same Harper filtering but have no dictionary spelling; not driven in the browser.
+- Cached grammar findings follow the switch only after the next ask (a text change or the dialog toggle); a Settings Save does not re-ask by itself.
+- Grammar suggestions are never applied by Fix all (unchanged).
