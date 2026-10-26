@@ -1268,9 +1268,7 @@ function flashRevealed(target) {
   return shown;
 }
 
-//: A row's declaration, turned into the `run` the three lists call. The
-//: order matters only for a row that wrongly carries two, which the test
-//: refuses.
+//: A row's declaration, turned into the `run` the three lists call.
 function catalogueRun(row) {
   if (typeof row.run === "function") return row;
   let run = () => {};
@@ -1307,15 +1305,15 @@ const POPUP_TOOLS = [
   },
   {
     id: "timer", name: "Start a timer", icon: "ph:timer", group: "Plan & focus",
-    keywords: "timer countdown pomodoro minutes alarm",
-    about: "25 minutes on the status bar, or type timer 10 minutes in the palette; press its chip to stop.",
-    keys: "Ctrl+K", where: "Start a timer, or type timer 10 minutes",
+    keywords: "timer countdown pomodoro alarm",
+    about: "25 minutes on the status bar, or type timer 10 minutes.",
+    keys: "Ctrl+K", where: "Start a timer",
     guide: "timer", open: () => ensureModule("utilities").then(() => startUtilityTimer(25)),
   },
   {
     id: "stopwatch", name: "Start a stopwatch", icon: "ph:timer", group: "Plan & focus",
-    keywords: "stopwatch count up how long time it",
-    about: "Counts up on the status bar; press its chip to stop.",
+    keywords: "stopwatch count up",
+    about: "Counts up on the status bar.",
     keys: "Ctrl+K", where: "Start a stopwatch",
     guide: "timer", open: () => ensureModule("utilities").then(() => startStopwatch()),
   },

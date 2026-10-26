@@ -8,6 +8,7 @@ below). Versioning is `0.x` while the app stabilises.
 ## [Unreleased]
 - Boards: an empty text box or sticky shows its typing caret again.
 - Start a timer and Start a stopwatch now show in Tools and features, the shortcuts dialog's Tools list and the "/" menus, not only the command palette.
+- Ask: under a model's answer a From your notes line opens the quoted answer to the same question beside it (one fetch, shut and opened again freely, not saved to Ask history), and what the composer says first (the personal digest, a place in the app) is drawn as a card above the AI text instead of being dropped.
 - Header: the small "notes" beside the Tessellate name is gone (the owner, 2026-10-26).
 - Mind maps: a line style picker beside the Layout picker draws every line on the map Curved, Straight (one segment) or Elbow (right angles, rounded corners); a topic's own line shape still wins, and Ctrl+Z undoes it.
 - Mind maps: each end of a line has a grip (point at the line or select a topic): drag it round the topic to pin the side the line leaves or enters, in any layout; it stays there when either topic moves. Double-click it, or the topic menu's Lines, Line ends: back to Auto, to let the layout choose again.

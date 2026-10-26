@@ -798,3 +798,75 @@ async function renderAskFollowups(question, answer, given = null) {
   strip.classList.remove("hidden");
   $("ask-answer-foot")?.classList.remove("hidden");
 }
+
+//: **Both answers, one question** (K26, the owner: "if the ai is running then
+//: the user can see both the ai and composer response"). Called after every
+//: Ask turn. A model's answer gets (1) a card above it when the composer had
+//: something to say first (`panel: "pre_answer"`: the personal digest, a place in the
+//: app), never in place of the text, and (2) a "From your notes" fold under
+//: it: one press fetches the composed answer for the same question
+//: (`peek`, so Ask history does not keep it as a second turn), opened and
+//: shut again without a second fetch. A composed, counted or hinted answer
+//: has no model text to set it beside, so nothing is drawn.
+function renderAskBoth(question, meta, panels) {
+  const pre = panels.find((event) => event.panel === "pre_answer");
+  const cardHost = $("ask-pre");
+  const foldHost = $("ask-notes");
+  cardHost?.replaceChildren();
+  foldHost?.replaceChildren();
+  if (!meta || meta.composed || !meta.answered_by) return;
+  if (pre && cardHost) cardHost.appendChild(askPreAnswerCard(pre));
+  if (foldHost) foldHost.appendChild(askFromNotesFold(question, conversation.slice(-MAX_CLIENT_HISTORY - 1, -1)));
+}
+
+function askPreAnswerCard(pre) {
+  const card = document.createElement("div");
+  card.className = "ask-pre-answer answer answer-composed";
+  const body = document.createElement("div");
+  renderMarkdown(body, pre.text || "");
+  card.appendChild(body);
+  if (pre.offer) digestOffer(body, pre.offer);
+  return card;
+}
+
+function askFromNotesFold(question, history) {
+  const fold = document.createElement("details");
+  fold.className = "agent-step web-fold from-notes-fold";
+  const summary = document.createElement("summary");
+  summary.className = "fold-summary";
+  setLabel(summary, "ph:note From your notes");
+  summary.title = "The answer quoted from your notes, with no AI";
+  const body = document.createElement("div");
+  body.className = "answer answer-composed from-notes-body";
+  fold.append(summary, body);
+  let fetched = false;
+  fold.addEventListener("toggle", () => {
+    if (!fold.open || fetched) return;
+    fetched = true;
+    fetchComposedPeek(question, history, body);
+  });
+  return fold;
+}
+
+async function fetchComposedPeek(question, history, body) {
+  setLabel(body, "ph:spin Reading your notes…");
+  let text = "";
+  try {
+    await streamChatEvents({
+      question,
+      history,
+      notesOnly: true,
+      peek: true,
+      useTools: false,
+      onMeta: () => {},
+      onAnswer: (delta) => {
+        text += delta;
+      },
+    });
+    renderMarkdown(body, text || "Nothing in your notes answers this.");
+    body.classList.toggle("muted", !text);
+  } catch (error) {
+    body.textContent = "Could not read your notes just now.";
+    body.closest("details").dataset.failed = "1";
+  }
+}

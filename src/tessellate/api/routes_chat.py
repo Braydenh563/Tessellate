@@ -533,6 +533,10 @@ class ChatRequest(BaseModel):
     #: Literal, because the switch's stored value reaches here as read off the
     #: device and an unknown word must mean the default, not a 422.
     answer_from: str | None = Field(default=None, max_length=16)
+    #: A side fetch of the other answer to the question just asked (K26: the
+    #: Ask box's "From your notes" under an AI answer): read-only, so it is
+    #: not saved as a second turn in Ask history, and always the composed one.
+    peek: bool = False
     #: "Try again" on the same question (CHAT_PLAN decision 34): the how-many-
     #: th retry, so an answer composed from the notes is worded anew rather
     #: than repeated word for word. 0 for a first ask.
@@ -3357,7 +3361,32 @@ def _plain_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> 
     if own is not None:
         yield from own
         return
+    yield from _pre_answer_events(req, prepared)
     yield from _model_stream_events(req, prepared, messages)
+
+
+def _pre_answer_events(req: _StreamRequest, prepared: dict) -> list[dict]:
+    """**What the composer says before a model, offered to the model's turn**
+    (K26, the owner: "the ai should be able to do just as much"): the personal
+    digest ("where do I live"), a place in the app, a capability, drawn as a
+    card above the AI text and never in place of it. Ask box only, where the
+    card is drawn; a counted answer never gets here (`_exact_events`)."""
+    if not req.body.notes_only or req.body.peek:
+        return []
+    try:
+        said = _app_said(req, prepared, True)
+        if said is None:
+            #: Only the personal digest: `composer_digest` answers nearly every
+            #: question, so as a card it would repeat the composed answer.
+            own = personal.answer(req.question, lambda: personal.notes_of(req.session), user_now(deps.get_config()).date())
+            said = [{"type": "answer", "delta": own["text"]}] if own else None
+    except Exception:  # noqa: BLE001  # the model answers on its own
+        logging.getLogger("tessellate.chat").exception("chat: the pre-answer card failed")
+        return []
+    if not said or said[0].get("type") != "answer":
+        return []
+    offer = next((e["offer"] for e in said if e.get("type") == "offer"), None)
+    return [{"type": "panel", "panel": "pre_answer", "text": said[0]["delta"], **({"offer": offer} if offer else {})}]
 
 
 #: An act asked in the Ask box, which looks things up: said where to do it.
@@ -4110,7 +4139,7 @@ def _settle_turn(req: _StreamRequest, prepared: dict, t: _Turn) -> Iterator[str]
     grounding, grounding_event = _ground_final(req, prepared, t)
     if grounding_event is not None:
         yield _event(grounding_event)
-    if req.body.notes_only and t.answer_text:
+    if req.body.notes_only and t.answer_text and not req.body.peek:
         _save_ask_turn(req.session, _in_full(req), t.answer_text, prepared, grounding)
     #: A model that wrote a counted answer's words still gets its panel
     #: (INBOX 1300 C06; decision 75: the panel assists, the model leads).
@@ -4205,6 +4234,8 @@ def chat_stream(body: ChatRequest, session: Session = Depends(get_session)):
     {"type":"answer", "delta": "..."}     (one or more)
     {"type":"done"}
     """
+    if body.peek:
+        body.answer_from = "notes"
     _apply_scope(session, body)
     _apply_open(session, body)
     ollama = deps.get_ollama()

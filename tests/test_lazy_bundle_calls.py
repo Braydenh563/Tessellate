@@ -156,6 +156,7 @@ REACHED_AFTER_LOAD = {
     "askAnswerMenu": "askCompose, called in the .then of ensureModule('askCompose') in askQuestion",
     "renderAskInsights": "askCompose, called in the .then of ensureModule('askCompose') in askQuestion",
     "renderAskWhy": "askCompose, called in the .then of ensureModule('askCompose') in askQuestion",
+    "renderAskBoth": "askCompose, called in the .then of ensureModule('askCompose') in askQuestion",
     "renderAskFollowups": "askCompose, passed to the .then of ensureModule('askCompose') in askQuestion",
     #: B12: an answer's mind map is tidied after `await openWhiteboardBoard`,
     #: which loads the library bundle first (askKeepAsMap, capture-ask.js).
