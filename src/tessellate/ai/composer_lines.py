@@ -282,6 +282,33 @@ FRAMES: dict[str, tuple[Cand, ...]] = {
         c("No items fall due today.", "f"), c("Nothing is scheduled for today.", "f"),
         c("Today has no deadlines, which is a gift.", "p"), c("An empty day on the calendar.", "p"),
     ),
+    # ---- quiz feedback (graded against the note; {a} is the note's own answer) ----
+    "quiz_right": (
+        c("Correct.", "wt"), c("Yes, that's it.", "w"), c("Right.", "t"), c("That's right.", "w"), c("Good, that matches your note.", "w"),
+        c("Yes.", "t"), c("Spot on, that matches your note.", "w", "H"), c("Correct, and well put.", "w", "H"),
+        c("That is correct.", "f"), c("Correct, in agreement with your note.", "f"), c("Exactly right.", "f"),
+        c("Nailed it.", "p"), c("Bang on, that matches your note.", "p"), c("Right, and I did not even have to nudge.", "p"),
+        c("Correct. One step at a time and you are getting there.", "w", "SU"),
+    ),
+    "quiz_close": (
+        c("Close enough, that counts. Your note says: {a}", "w"), c("Nearly. Your note has it as: {a} I'll count it.", "w"),
+        c("Part of it, and I'll count it. The note says: {a}", "w"), c("Close, counted. Note: {a}", "t"), c("Nearly. Counted. The note says: {a}", "t"),
+        c("Close enough to count. The note gives it as: {a}", "f"), c("Substantially correct; credit given. The note reads: {a}", "f"),
+        c("So close, I'll let it through. The note says: {a}", "p"), c("Almost there, counted anyway. The note says: {a}", "p"),
+        c("Nearly, and that is good progress. Your note says: {a}", "w", "SU"),
+    ),
+    "quiz_wrong": (
+        c("Not quite. Your note says: {a}", "w"), c("Not this time. The note says: {a}", "w"), c("Missed that one. It is: {a}", "w"),
+        c("Not quite: {a}", "t"), c("Missed. It is: {a}", "t"),
+        c("That is not correct. The note reads: {a}", "f"), c("Incorrect on this occasion. The note states: {a}", "f"),
+        c("Not quite, but now you know. The note says: {a}", "p"), c("Swing and a miss. The note says: {a}", "p"),
+        c("Not quite, and that is fine, this is how it sticks. Your note says: {a}", "w", "SU"),
+    ),
+    "quiz_skip": (
+        c("Skipped. The answer: {a}", "wt"), c("No problem. The answer is: {a}", "w"), c("The answer was: {a}", "wt"),
+        c("Skipped. For the record, the answer is: {a}", "f"), c("Moving on. The answer was: {a}", "f"),
+        c("Skipped, and here is the answer: {a}", "p"), c("Passing is allowed. The answer: {a}", "p"),
+    ),
     # ---- tool confirmations (needle slots, the composer's prose) ----
     "act_done": (
         c("Done: {what}.", "wt"), c("Done. {what}.", "w"), c("I have {what}.", "w"), c("All set, {what}.", "w"),

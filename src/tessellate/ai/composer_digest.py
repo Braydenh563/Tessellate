@@ -2246,11 +2246,23 @@ def _single_close(out: _Out, kind: str, rest: list[Fact], members) -> None:  # n
         out.lines.append(PHRASES["only_note"] if noun == "note" else PHRASES["only_kind"].format(noun=noun))
 
 
+_TASKY = re.compile(r"\b(?:to-?do|tasks?|checklist|left|open|unfinished)\b", re.I)
+
+
+def _drop_tasks(kind: str, lead: Fact, rest: list[Fact], question: str) -> list[Fact]:
+    """An unticked checklist item is not a fact about the thing asked
+    (composer5: "what is the Krebs cycle" listing "read chapter 4")."""
+    if kind != "fact" or lead.sentence.kind == "task" or _TASKY.search(question):
+        return rest
+    return [f for f in rest if f.sentence.kind != "task"]
+
+
 def _single(out: _Out, kind: str, question: str, members, facts, today: date) -> None:
     lead = _best(facts, question, _SINGLE_CUES.get(kind))
     if lead is None:
         return
     rest = [f for f in facts if f is not lead]
+    rest = _drop_tasks(kind, lead, rest, question)
     if kind == "when":
         rest = _single_when(out, lead, rest, question, today)
     elif kind == "opinion":

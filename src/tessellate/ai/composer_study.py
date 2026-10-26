@@ -523,22 +523,15 @@ def _continue_quiz(ctx: Ctx) -> Reply | None:
         return command
     topic, n, total, score, done, rounds, note, deck, card = place
     if _SKIP.match(reply):
-        verdict, feedback = "skip", pick(ctx.seed, f"skip{n}", ("Skipped. The answer: {a}", "No problem. It is: {a}", "The answer was: {a}")).format(a=card.a)
+        verdict = "skip"
     else:
         verdict = study.grade(reply, card)
-        feedback = pick(ctx.seed, f"{verdict}{n}", _FEEDBACK[verdict]).format(a=card.a)
+    feedback = compose.frame(f"quiz_{verdict}", ctx.mood, **({"a": card.a} if verdict != "right" else {}))
     score += 1 if verdict in ("right", "close") else 0
     done += 1
     if n >= len(deck):
         return _finish(ctx, topic, note, deck, score, done, lead=feedback)
     return Reply(f"{feedback}\n\n{_header(topic, n + 1, total, score, done, rounds)}\n\n{deck[n].q}", asks=QUIZ_CHIPS)
-
-
-_FEEDBACK = {
-    "right": ("Correct.", "Yes, that's it.", "Right.", "That's right.", "Good, that matches your note."),
-    "close": ("Close enough, that counts. Your note says: {a}", "Nearly. Your note has it as: {a} I'll count it.", "Part of it, and I'll count it. The note says: {a}"),
-    "wrong": ("Not quite. Your note says: {a}", "Not this time. The note says: {a}", "Missed that one. It is: {a}"),
-}
 
 
 def _finish(ctx: Ctx, topic: str, note: dict, deck: list[study.Card], score: int, done: int, *, lead: str = "", stopped: bool = False) -> Reply:

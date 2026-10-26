@@ -8,7 +8,7 @@ Done (tests/test_composer_five_1025.py, a Biology 101 / WW1 / Maths notebook wit
 - 5: fenced code is not read by the tagger unless it is most of the note (`lexical_filing.clean`); Education, Learning and Study are not offered beside a specific subject (`tagging.GENERIC_TOPICS`).
 
 Left:
-- The "Also:" line of a fact answer still says a checklist item as a fact ("read chapter 4; revise the Krebs cycle diagram" under "what is the Krebs cycle"): composer_digest `_single`, unticked tasks should not be volunteered on a definition.
+- (done, composer7) The "Also:" line of a fact answer still says a checklist item as a fact ("read chapter 4; revise the Krebs cycle diagram" under "what is the Krebs cycle"): composer_digest `_single`, unticked tasks should not be volunteered on a definition.
 - The grounding "Heads up" was reproduced only at unit level and through a faked model reply; the exact owner turn ("could not find 14") was not reproduced against a real model.
-- "what's my next exam" answers from the note and ignores the reminder (`composer_plan._WHEN_IS` wants "when"); "exam date" likewise.
+- (done, composer7) "what's my next exam" answers from the note and ignores the reminder (`composer_plan._WHEN_IS` wants "when"); "exam date" likewise.
 - Carried from composer4: compare N-way and as a table, quiz on a whole category, the "Sources: N notes" line (boot JS cap).
