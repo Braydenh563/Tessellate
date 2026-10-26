@@ -2289,6 +2289,9 @@ Link to another note with [[its first few words]]."></textarea>
               <!-- The questions a follow-up chain came from (INBOX 490,
                    `renderAskTrail`). -->
               <div id="ask-trail" class="hidden"></div>
+              <!-- What was asked, as a quiet line above the answer (K29,
+                   `setAskedLine`); the full text is its title. -->
+              <p id="ask-asked" class="ask-asked muted hidden"></p>
               <!-- The app's one Thinking fold goes in here, built by
                    `thinkingFoldIn` (chat-agent.js; INBOX 457). -->
               <div id="thinking-box" class="hidden"></div>
@@ -2321,7 +2324,7 @@ Link to another note with [[its first few words]]."></textarea>
             <div class="chat-half">
               <h3 class="panel-head">
                 <i class="ph ph-cards ph-lead" aria-hidden="true"></i>
-                Matching records <span id="search-mode" class="chip"></span>
+                Matching records <span id="search-mode" class="chip item-label"></span>
               </h3>
               <ul id="raw-results" class="entry-list"></ul>
             </div>
