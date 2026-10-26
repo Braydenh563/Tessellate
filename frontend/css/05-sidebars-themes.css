@@ -394,6 +394,14 @@ select.ai-unavailable {
 .thumb-wrap .unlink:is(:focus-visible, :has(:focus-visible)) {
   opacity: 1;
 }
+/* On a pointer device the remove control waits for the picture to be hovered
+   or focused: always drawn, it read as a close button on a sketch's own
+   drawing. Touch has no hover, so it stays drawn there. */
+@media (hover: hover) {
+  .entry-content .thumb-wrap:not(:hover, :focus-within) .unlink {
+    opacity: 0;
+  }
+}
 .entry-content s {
   opacity: 0.65;
 }

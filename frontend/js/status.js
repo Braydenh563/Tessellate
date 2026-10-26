@@ -1724,7 +1724,12 @@ async function loadMostUsed() {
     // note beginning "# Groceries" rendered the literal "# Groceries", the
     // same gap the dashboard's mini-lists had, here too since this list uses
     // the same two-function combination.
-    const flat = stripFrontmatter(entry.content).replace(/^\s*(?:#{1,6}\s+|>\s?|[-*+]\s+|\d+\.\s+)/gm, "");
+    //: A picture's markdown is not words: cut at 25 characters it showed as a
+    //: raw `![Sketch...` (dog3-1026 row 15).
+    const flat = stripFrontmatter(entry.content)
+      .replace(/!\[[^\]\n]*\]\([^)\n]*\)/g, "")
+      .replace(/^\s*(?:#{1,6}\s+|>\s?|[-*+]\s+|\d+\.\s+)/gm, "")
+      .trim() || "Picture";
     const { text: sliced, truncated } = safeMdSlice(flat, 25);
     renderInlineMarkdown(text, sliced, [], true);
     if (truncated) text.appendChild(document.createTextNode("…"));

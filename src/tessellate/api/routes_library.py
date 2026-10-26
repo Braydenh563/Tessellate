@@ -120,10 +120,15 @@ _MD_LOOSE_MARKER = re.compile(r"\*\*|__|~~|(?<!\w)\*(?=\w)|(?<=\w)\*(?!\w)")
 CLIP_WINDOW = 4000
 
 
+#: A caption line followed by an image whose alt text is that same caption: a
+#: sketch note. Kept as the caption alone, so the card does not say it twice.
+_CAPTION_ECHO = re.compile(r"^([^\n!][^\n]{0,200})\n+!\[\1\]\([^)\n]{0,500}\)[ \t]*$", re.MULTILINE)
+
+
 def _clip(text: str, limit: int = PREVIEW_CHARS) -> str:
     # A note's or document's `---` properties block is data about it, never
     # its opening words (GRAPH_PLAN, "Still open after KG1 to KG9").
-    text = strip_properties(text or "")
+    text = _CAPTION_ECHO.sub(r"\1", strip_properties(text or ""))
     if len(text) > CLIP_WINDOW:
         end = text.rfind("\n", 0, CLIP_WINDOW)
         text = text[: end if end > limit else CLIP_WINDOW]
