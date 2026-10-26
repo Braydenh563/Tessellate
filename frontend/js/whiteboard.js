@@ -2776,6 +2776,51 @@ function wbCenterOn(box, { animate = true, minScale = 0.55 } = {}) {
   (animate ? sel.transition().duration(300) : sel).call(wbZoom.transform, target);
 }
 
+//: **A selection is kept clear of the bottom docks** (wb4's found-not-fixed:
+//: a shape low on the board had its lower grips under the zoom pill and the
+//: tool row, 3 of 8 at 390x844 and 3 of 8 at 1440x900, so the edge that
+//: resizes it could not be pressed). Figma and Miro move the view; a grip
+//: cannot sit above a dock, which is a sibling of the canvas. Once the
+//: selection has settled (350 ms with no press, so a double-click is never
+//: interrupted), the view slides up just far enough that the selection's
+//: bottom edge and its grips clear the docks it overlaps, and never so far
+//: that its top meets the bar above it. A pan afterwards is the person's own:
+//: the signature of the selection (what and where, in board units) has to
+//: change before the view moves again.
+const WB_REVEAL_DOCKS = "#wb-tools-panel, .whiteboard-floating-panel[data-panel-id=\"zoom\"]";
+let wbRevealSig = "";
+let wbRevealTimer = 0;
+
+function wbQueueReveal() {
+  clearTimeout(wbRevealTimer);
+  wbRevealTimer = setTimeout(wbRevealSelection, 350);
+}
+
+function wbRevealSelection() {
+  const container = document.getElementById("whiteboard-container");
+  const b = container && container.offsetParent && wbSelectionBounds();
+  if (!b || document.activeElement?.matches?.("input, textarea, [contenteditable]")) return;
+  const sig = [...wbSelectedKeys()].join(",") + `|${Math.round(b.minX)},${Math.round(b.minY)},${Math.round(b.width)},${Math.round(b.height)}`;
+  if (sig === wbRevealSig) return;
+  wbRevealSig = sig;
+  const t = d3.zoomTransform(container), r = container.getBoundingClientRect();
+  const pad = 40; // wbSelectionBounds' own margin
+  const left = r.left + t.x + (b.minX + pad) * t.k, right = left + (b.width - 2 * pad) * t.k;
+  const top = r.top + t.y + (b.minY + pad) * t.k, bottom = top + (b.height - 2 * pad) * t.k;
+  let dockTop = Infinity;
+  for (const el of document.querySelectorAll(WB_REVEAL_DOCKS)) {
+    const d = el.getBoundingClientRect();
+    if (d.width < 4 || d.right < left - 8 || d.left > right + 8 || d.bottom < top || d.top > bottom + 10) continue;
+    dockTop = Math.min(dockTop, d.top);
+  }
+  const shift = Math.min(bottom + 14 - dockTop, top - (r.top + wbFreeArea(container).top + 56));
+  if (!(shift >= 4)) return;
+  d3.select(container).transition().duration(200).call(wbZoom.transform, d3.zoomIdentity.translate(t.x, t.y - shift).scale(t.k));
+}
+
+window.addEventListener("pointerdown", () => clearTimeout(wbRevealTimer), true);
+window.addEventListener("pointerup", () => { if (wbSelectedItem || wbMultiSelection.size) wbQueueReveal(); }, true);
+
 // --- The navigator (a live minimap) ----------------------------------------
 //
 // Deliberately *not* a fifth always-on floating panel. The canvas already
@@ -6155,6 +6200,7 @@ function selectWbItem(kind, id) {
   //: nothing). One call site rather than every caller remembering two.
   wbSyncMapToolState();
   wbUpdateSelectionBar();
+  wbQueueReveal();
 }
 
 //: Select everything on the board (Edit → Select all, Ctrl+A on the
