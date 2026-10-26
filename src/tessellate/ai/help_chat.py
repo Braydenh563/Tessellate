@@ -1858,7 +1858,10 @@ HELP_TOPICS.extend(
                 "quote, a table from a spreadsheet or CSV, a link or a checklist. "
                 "A web address pasted over selected words makes a link. If the "
                 "browser will not let the app read the clipboard, Paste special "
-                "applies to your next Ctrl+V."
+                "applies to your next Ctrl+V. Right-click in the text for the same "
+                "choices beside Cut, Copy, Paste, Turn into and Select all (hold "
+                "on a phone); Shift+right-click opens the browser's own menu, with "
+                "its spelling suggestions."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

@@ -2923,3 +2923,42 @@ function docTurnIntoMenu(boxId = "doc-content", x = null, y = null) {
     y ?? (at ? at.bottom + 4 : window.innerHeight / 3)
   );
 }
+
+//: **The editor's own right-click menu** (docs6-1026: "paste options on right-click").
+//: Cut, Copy, Paste, the Paste special modes, Turn into, Select all. Opened by
+//: `docEditorMenuAtPoint` (documents.js) after the table's menu and the
+//: suggestion popover have declined; Shift+right-click keeps the browser's.
+async function docEditorPaste(view) {
+  let text = "";
+  try {
+    text = await navigator.clipboard.readText();
+  } catch {
+    toast("The browser blocked reading the clipboard. Press Ctrl+V instead.", "info");
+    view.focus();
+    return;
+  }
+  view.focus();
+  if (!text) return;
+  //: One undo step: the break keeps this paste from merging into typing.
+  docUndoBreak();
+  view.dispatch(view.state.replaceSelection(text.replace(/\r\n?/g, "\n")));
+}
+
+function docEditorMenuItems(view, x, y) {
+  const [cut, copy] = docClipboardMenuItems(view);
+  return [
+    { ...cut, label: "Cut" },
+    { ...copy, label: "Copy" },
+    { label: "Paste", group: "Clipboard", title: "Paste the clipboard as plain text", run: () => docEditorPaste(view) },
+    ...DOC_PASTE_SPECIAL.map(([id, label]) => ({ label, group: "Paste special", run: () => docPasteSpecial(id) })),
+    { label: "Turn into", group: "Block", title: "Change the block to a heading, list, quote or code", run: () => docTurnIntoMenu("doc-content", x, y) },
+    {
+      label: "Select all",
+      group: "Block",
+      run: () => {
+        view.dispatch({ selection: { anchor: 0, head: view.state.doc.length } });
+        view.focus();
+      },
+    },
+  ];
+}
