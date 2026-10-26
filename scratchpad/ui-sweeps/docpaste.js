@@ -50,12 +50,18 @@ const { boot } = require('./lib.js');
     r.multiMenu = await ev(() => [...document.querySelectorAll('.action-menu:not(.hidden) .menu-item')].map((b) => b.textContent.trim()));
     await page.keyboard.press('c'); await page.waitForTimeout(300);
     r.checklist = (await text()).includes('- [ ] milk\n- [ ] eggs\n- [ ] bread');
-    // 5. TSV outside a table -> chip offers table.
+    // 5. TSV outside a table -> becomes the table at once; the chip puts the text back.
     const end2 = (await text()).length;
     await paste({ 'text/plain': 'a\tb\n1\t2' }, [end2, end2]);
-    await ev(() => document.querySelector('.doc-paste-chip button').click()); await page.waitForTimeout(250);
-    await page.keyboard.press('a'); await page.waitForTimeout(300);
     r.table = (await text()).includes('| a | b |\n| --- | --- |\n| 1 | 2 |');
+    r.tableChip = !!(await chip());
+    await page.keyboard.press('Escape'); await page.waitForTimeout(150);
+    // Indented code stays text.
+    await ev(() => { const v = docSurface().view; v.dispatch({ changes: { from: v.state.doc.length, insert: '\n\nafter\n' } }); });
+    const end3 = (await text()).length;
+    await paste({ 'text/plain': '\tfoo\tbar\n\tbaz\tqux' }, [end3, end3]);
+    r.indentedCodeStaysText = !(await text()).includes('| foo |');
+    await page.keyboard.press('Escape'); await page.waitForTimeout(150);
     // 6. Paste special from the palette command, armed route (clipboard read refused).
     r.special = await ev(async () => {
       Object.defineProperty(navigator, 'clipboard', { value: { readText: async () => 'one\ntwo' }, configurable: true });
