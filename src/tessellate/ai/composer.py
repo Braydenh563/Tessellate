@@ -842,10 +842,15 @@ LEAD_INS_BARE = (
 )
 _LEAD_IN = "|".join(re.escape(w) for w in sorted(LEAD_INS, key=len, reverse=True))
 _LEAD_IN_BARE = "|".join(re.escape(w) for w in sorted(LEAD_INS_BARE, key=len, reverse=True))
-_DISCOURSE = re.compile(
-    rf"^(?:(?:{_LEAD_IN})(?:\s+(?:{_LEAD_IN}))*\s*[,:]\s+|(?:{_LEAD_IN_BARE})\s+(?=(?-i:[a-z])))+(?=\S)",
-    re.I,
-)
+#: Compiled on first use, for the cold-import budget (`recognise._window_words`).
+@functools.cache
+def _discourse() -> re.Pattern[str]:
+    return re.compile(
+        rf"^(?:(?:{_LEAD_IN})(?:\s+(?:{_LEAD_IN}))*\s*[,:]\s+|(?:{_LEAD_IN_BARE})\s+(?=(?-i:[a-z])))+(?=\S)",
+        re.I,
+    )
+
+
 _WRITTEN = re.compile(r"(\d{1,2}) (" + "|".join(_MONTHS) + r") (\d{4})")
 _MARKS = re.compile(r"[*_`]")
 
@@ -903,7 +908,7 @@ def _unit(view: NoteView, content: str, start: int, end: int, kind: str, done: b
     raw = content[start:end]
     start += len(raw) - len(raw.lstrip())
     raw = raw.strip()
-    discourse = _DISCOURSE.match(raw)
+    discourse = _discourse().match(raw)
     if discourse:
         start += discourse.end()
         raw = raw[discourse.end():]

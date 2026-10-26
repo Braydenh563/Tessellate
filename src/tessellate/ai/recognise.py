@@ -1840,14 +1840,25 @@ def span(phrase: str, anchor: date, tense: str | None = None) -> tuple[date, dat
 #: A question's time window, taken off whole before its subject is read
 #: ("last week", "3 days ago", "this month"), so "week 4" stays a subject
 #: and "last week" is not one. Moved from the composer (ledger row 453).
-_WINDOW_WORDS = re.compile(
-    r"\b(?:" + "|".join((*_EDGES, *_PERIODS, _WEEKEND, *_ROLLING, *_TO_DATE, *_PART_OF_DAY, _BETWEEN, *_DAY_RUNS, *_DAY_FORMS, _PART_WORD, _MONTH_YEAR, _LATELY, _BEFORE_LAST,
-                         _QUARTER, _PREVIOUS_UNIT)) + r"|(?:the\s+)?(?:last|this|next|past|previous|coming)\s+(?:few\s+|couple\s+of\s+|\d{1,3}\s+|two\s+|three\s+|four\s+|five\s+|six\s+|seven\s+|eight\s+|nine\s+|ten\s+|eleven\s+|twelve\s+)?"
-    r"(?:days?|weeks?|weekend|months?|years?|night|morning|evening|monday|tuesday|wednesday|thursday|friday|saturday|sunday)"
-    r"|(?:the\s+)?week\s+before\s+last|(?:\d{1,3}|a|an|one|two|three|four|five|six)\s+(?:days?|weeks?|months?|years?)\s+ago"
-    r"|(?:since|in|during)\s+(?:january|february|march|april|may|june|july|august|september|october|november|december)" + _NOT_A_DAY + r"(?: (?:of )?(?:last|this|next) year)?)\b",
-    re.I,
-)
+#: Compiled on first use: this alternation was 15 ms of the composer's cold
+#: import, whose budget is 0.2 s (tests/test_engine_budgets.py).
+_WINDOW_WORDS: re.Pattern[str] | None = None
+
+
+def _window_words() -> re.Pattern[str]:
+    global _WINDOW_WORDS
+    if _WINDOW_WORDS is None:
+        _WINDOW_WORDS = re.compile(
+            r"\b(?:" + "|".join((*_EDGES, *_PERIODS, _WEEKEND, *_ROLLING, *_TO_DATE, *_PART_OF_DAY, _BETWEEN, *_DAY_RUNS, *_DAY_FORMS, _PART_WORD, _MONTH_YEAR, _LATELY, _BEFORE_LAST,
+                                 _QUARTER, _PREVIOUS_UNIT)) + r"|(?:the\s+)?(?:last|this|next|past|previous|coming)\s+(?:few\s+|couple\s+of\s+|\d{1,3}\s+|two\s+|three\s+|four\s+|five\s+|six\s+|seven\s+|eight\s+|nine\s+|ten\s+|eleven\s+|twelve\s+)?"
+            r"(?:days?|weeks?|weekend|months?|years?|night|morning|evening|monday|tuesday|wednesday|thursday|friday|saturday|sunday)"
+            r"|(?:the\s+)?week\s+before\s+last|(?:\d{1,3}|a|an|one|two|three|four|five|six)\s+(?:days?|weeks?|months?|years?)\s+ago"
+            r"|(?:since|in|during)\s+(?:january|february|march|april|may|june|july|august|september|october|november|december)" + _NOT_A_DAY + r"(?: (?:of )?(?:last|this|next) year)?)\b",
+            re.I,
+        )
+    return _WINDOW_WORDS
+
+
 #: A sentence that looks dated: the composer's score for a "when" answer,
 #: never turned into a value (that is `find` and `span`).
 _DATED = re.compile(
@@ -1860,7 +1871,7 @@ _DATED = re.compile(
 
 def without_windows(text: str) -> str:
     """`text` with its time windows blanked out."""
-    return _WINDOW_WORDS.sub(" ", text or "")
+    return _window_words().sub(" ", text or "")
 
 
 def looks_dated(text: str) -> bool:

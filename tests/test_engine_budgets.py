@@ -45,3 +45,15 @@ def test_an_answer_over_twenty_notes_takes_under_fifty_milliseconds():
             best = min(best, time.perf_counter() - started)
         worst = max(worst, best)
     assert worst < 0.05, worst
+
+
+def test_the_largest_alternations_compile_on_first_use_not_at_import():
+    #: `_window_words` was 15 ms and `_discourse` 4 ms of the cold import
+    #: (measured, 2026-10-26), which put 3.13 CI at 0.215 s against the budget.
+    code = (
+        "import tessellate.ai.composer as c, tessellate.ai.recognise as r;"
+        "print(r._WINDOW_WORDS is None, c._discourse.cache_info().currsize)"
+    )
+    out = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, cwd=ROOT,
+                         env={"PYTHONPATH": str(ROOT / "src")}, check=True).stdout.split()
+    assert out == ["True", "0"]
