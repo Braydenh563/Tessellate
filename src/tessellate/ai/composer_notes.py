@@ -12,7 +12,7 @@ from __future__ import annotations
 import re
 from datetime import date, datetime
 
-from tessellate.ai import study
+from tessellate.ai import question_noise, study
 from tessellate.ai import when as when_words
 from tessellate.ai import composer_compose as compose
 from tessellate.ai.composer_study import Ctx, Reply, pick, topic_notes
@@ -147,9 +147,12 @@ def _made(note: dict) -> datetime | None:
 
 def _matching(ctx: Ctx, wanted: list[str], start: date, end: date) -> list[dict]:
     out = []
+    #: Archived notes are out of a list by date, as of a count, unless asked
+    #: for (then only those).
+    archived = question_noise.asks_archived(ctx.asked or ctx.question)
     for note in ctx.notes:
         made = _made(note)
-        if made is None or not start <= made.date() <= end:
+        if made is None or not start <= made.date() <= end or bool(note.get("archived")) != archived:
             continue
         low = str(note.get("content") or "").lower()
         if all(w in low for w in wanted):
@@ -157,10 +160,26 @@ def _matching(ctx: Ctx, wanted: list[str], start: date, end: date) -> list[dict]
     return out
 
 
+#: A note that is one "Label: value" line and no heading ("Blockers: none."):
+#: the label is what it says, not its name.
+_LABEL_NOTE = re.compile(r"[A-Za-z][\w -]{0,30}: [^:\n]{1,40}")
+
+
+def _is_label_note(content: str) -> bool:
+    lines = [ln.strip() for ln in content.splitlines() if ln.strip()]
+    return len(lines) == 1 and not lines[0].startswith("#") and bool(_LABEL_NOTE.fullmatch(lines[0]))
+
+
 def _item(note: dict, wanted: list[str]) -> str:
     content = str(note.get("content") or "")
+    if _is_label_note(content):
+        return f"- {_day(_made(note))}, [Untitled](#/notes/{note['id']}): {content.strip()}"
     line = re.sub(r"^#{1,6}\s+", "", _sentence_with(content, wanted) or "")
     title = study.title_of(content)
+    #: The sentence read from a headed note starts with the heading ("Scope
+    #: Blockers: none."): the link already says it.
+    if title and line.lower().startswith(title.lower() + " "):
+        line = line[len(title):].strip()
     body = f": {line}" if line and line.strip().lower() != title.strip().lower() else ""
     return f"- {_day(_made(note))}, [{title or 'Untitled'}](#/notes/{note['id']}){body}"
 

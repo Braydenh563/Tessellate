@@ -1606,7 +1606,7 @@ def _recall_window(session: Session, question: str, found: _Found) -> None:
     #: which five notes ranked by likeness never were.
     asked = composer.plan(question, user_now(deps.get_config()).date())
     if asked.kind == "recall" and asked.window:
-        found.entries = search_manager.entries_between(session, asked.window[0], asked.window[1])
+        found.entries = search_manager.entries_between(session, asked.window[0], asked.window[1], archived=question_noise.asks_archived(question))
         found.mode, found.connected_ids, found.match_info, found.when_phrase = "window", set(), {}, asked.window_phrase
     elif asked.window and found.entries:
         #: **A subject inside a window keeps the window** (1324): "what did I
