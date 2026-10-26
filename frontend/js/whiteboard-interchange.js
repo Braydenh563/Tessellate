@@ -812,10 +812,10 @@ async function wbImportMermaid(source, at = wbViewCentre()) {
   const ids = new Map();
   const frameIds = new Map();
   await wbRecordGesture(async () => {
-    //: Innermost first: `wbFrameZ` puts each new frame under everything,
+    //: Innermost first: `wbStackNewZ` puts each new frame under the others,
     //: so the outer frame, made last, is under the inner one.
     for (const f of [...(place.frames || [])].reverse()) {
-      const made = await wbCreateObject("frame", { content: f.title || "Frame" }, Math.round(at[0] + f.x), Math.round(at[1] + f.y), Math.round(f.w), Math.round(f.h), wbFrameZ());
+      const made = await wbCreateObject("frame", { content: f.title || "Frame" }, Math.round(at[0] + f.x), Math.round(at[1] + f.y), Math.round(f.w), Math.round(f.h));
       if (made) frameIds.set(f.id, made.id);
     }
     for (const n of graph.nodes) {
@@ -1045,7 +1045,7 @@ function wbDrawioBox(plan) {
 async function wbDrawioPlace(plan, dx, dy, ink) {
   const ids = new Map();
   for (const f of plan.items.filter((i) => i.kind === "frame").reverse()) {
-    const made = await wbCreateObject("frame", { content: f.label || "Lane" }, Math.round(f.x + dx), Math.round(f.y + dy), Math.round(f.w), Math.round(f.h), wbFrameZ());
+    const made = await wbCreateObject("frame", { content: f.label || "Lane" }, Math.round(f.x + dx), Math.round(f.y + dy), Math.round(f.w), Math.round(f.h));
     if (made) ids.set(f.id, ["object", made.id]);
   }
   for (const item of plan.items.filter((i) => i.kind === "text")) {
@@ -1115,7 +1115,7 @@ async function wbImportDrawio(text, at = wbViewCentre()) {
     for (const page of pages) {
       if (framed) {
         await wbCreateObject("frame", { content: page.name.slice(0, 120) }, Math.round(left), Math.round(top),
-          Math.round(page.box.w + pad * 2), Math.round(page.box.h + pad * 2), wbFrameZ());
+          Math.round(page.box.w + pad * 2), Math.round(page.box.h + pad * 2));
       }
       await wbDrawioPlace(page.plan, left + pad - page.box.minX, top + pad - page.box.minY, ink);
       left += page.box.w + pad * 2 + WB_DRAWIO_PAGE_GAP;

@@ -176,6 +176,9 @@ def test_frames_go_out_as_subgraphs_and_come_back() -> None:
 def test_the_import_makes_the_frames_and_joins_a_subgraph_edge_to_its_frame() -> None:
     body = SOURCE[SOURCE.index("async function wbImportMermaid(") :]
     body = body[: body.index("\n}\n")]
-    assert 'wbCreateObject("frame"' in body and "wbFrameZ()" in body
+    # The frame's z is the creator's default, the stack's "under the frames
+    # already there" (wbz-1026 replaced wbFrameZ with wbStackNewZ).
+    assert 'wbCreateObject("frame"' in body and "wbFrameZ" not in body
+    assert 'z = wbStackNewZ("object", { kind })' in (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
     assert "frameIds.get(e.from)" in body and 'tKind = ids.has(e.to) ? "sketch" : "object"' in body
     assert "wbMermaidFrameOf" in SOURCE[SOURCE.index("async function wbExportMermaid(") :]

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: one layer order for the whole board. What paints on top is now what a click hits, what Bring to front and Send to back change, what the Layers tab lists and what the export draws (frames, then drawings, then cards; a new item goes on top of its layer). A pair sweep of nine item kinds found 92 disagreements between the board and its own order before, 0 after.
 - Whiteboard: exporting a board (SVG, PNG, PDF) now draws a text box or sticky as the box it is (paper, border, rounded corners) and a table as its grid and words; both used to come out as bare words or nothing.
 - Whiteboard: Enter works from the keyboard alone. With the text, sticky or frame tool held it drops one in the middle of the view, and on a selected text box or sticky it puts the caret at the end of the words (N, Enter, type no longer needs a click).
 - Whiteboard: Find and Replace all now read a table's cells; a table holding the word used to report no matches.
