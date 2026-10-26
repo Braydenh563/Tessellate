@@ -6921,7 +6921,7 @@ input[type="color"].wb-mixed {
   transform: scale(var(--wb-inv-zoom));
 }
 
-.wb-map-edge-group:hover .wb-map-edge-end,
+.wb-map-edge-group:is(:hover, :focus-visible) .wb-map-edge-end,
 .wb-map-edge-group:has(.wb-map-edge-handle.is-shown) .wb-map-edge-end,
 .wb-map-edge-end.is-dragging {
   opacity: 1;
