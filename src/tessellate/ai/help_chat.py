@@ -294,7 +294,8 @@ HELP_TOPICS: list[dict] = [
             "the corner of a picture to resize it (or focus the corner and use the "
             "arrow keys), and its align button puts it left, centre or right. "
             "The status bar counts characters, words, lines and reading time the way "
-            "the note composer does (an emoji is one character). Search "
+            "the note composer does (an emoji is one character); in a code file it "
+            "shows lines, characters and the language instead. Search "
             "documents reads a window: \"harbor last week\" finds the ones "
             "about the harbor edited in the last week."
         ),

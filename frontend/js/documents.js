@@ -16821,11 +16821,42 @@ function docLineCount(text) {
   return textCounts(value).lines + (value.endsWith("\n") ? 0 : 1);
 }
 
+//: What a code file's status bar says: the lines, the characters and the
+//: language, in that order. Words and a reading time are about prose; a
+//: `.py` file has neither a reader nor a word count worth a bar's room. The
+//: same two counters as the prose line (`docLineCount`, `textCounts`).
+function docCodeCountsText(text, label) {
+  const lines = docLineCount(text);
+  const { chars } = textCounts(String(text || ""));
+  return [`${lines.toLocaleString()} line${lines === 1 ? "" : "s"}`, `${chars.toLocaleString()} char${chars === 1 ? "" : "s"}`, label]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+const DOC_COUNTS_TITLE_PROSE = "Characters, words, lines and roughly how long this takes to read. Press for the full statistics";
+const DOC_COUNTS_TITLE_CODE = "Lines, characters and the language. Press for the full statistics";
+
+//: A code file's counts, drawn. Decided the way `docProseChord` decides: by the
+//: file type's own `previewable`, through `docIsCodeFile`, so a `.txt` or a
+//: `.csv` keeps the prose line it is read as.
+function renderDocCodeCounts(counts) {
+  const text = docText();
+  counts.textContent = docCodeCountsText(text, docFileType().label);
+  counts.title = DOC_COUNTS_TITLE_CODE;
+  if (docFocusOn()) {
+    const lines = docLineCount(text);
+    docSetStatusText($("doc-focus-words"), lines ? `${lines.toLocaleString()} line${lines === 1 ? "" : "s"}` : "");
+    docSetStatusText($("doc-focus-title"), $("doc-title")?.value.trim() || "Untitled");
+  }
+}
+
 //: The counts. A whole-document pass, which is why it is scheduled rather
 //: than run on the keystroke (see `scheduleDocFacts`).
 function renderDocCounts() {
   const counts = $("doc-counts");
   if (!counts) return;
+  if (docIsCodeFile()) return renderDocCodeCounts(counts);
+  counts.title = DOC_COUNTS_TITLE_PROSE;
   //: **A remark is not prose you wrote for a reader**, so it is not in the
   //: count, the character total or the reading time. Measured on a 128-word
   //: document with two comments in it: 134 words counted before this, 128
