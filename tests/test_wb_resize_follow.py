@@ -28,3 +28,11 @@ def test_object_resize_drag_updates_arrows_and_links_each_frame():
     drag = _block("  function resizeDrag(handle) {", "  function objectRotateDrag()")
     assert "wbUpdateLinkedSketches(d.id, d._linkedSketches)" in drag
     assert "wbQueueSelectionBar()" in drag
+
+
+def test_default_board_thumbnail_is_not_skipped_for_its_missing_id():
+    text = (ROOT / "frontend" / "js" / "whiteboard-interchange.js").read_text(encoding="utf-8")
+    assert "window.currentBoardId ?? 0" in text
+    assert "if (!id) return;" not in text[text.index("function wbThumbMark") : text.index("async function wbThumbFlush")]
+    pick = (ROOT / "frontend" / "js" / "pick-row.js").read_text(encoding="utf-8")
+    assert "board-thumb/${board.id ?? 0}" in pick

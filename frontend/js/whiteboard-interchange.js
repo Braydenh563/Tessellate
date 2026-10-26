@@ -1179,10 +1179,15 @@ onDomReady(() => {
 const WB_THUMB = Object.freeze({ width: 480, maxHeight: 960, quality: 0.6, delayMs: 3000, maxBytes: 60 * 1024 });
 const wbThumbState = { timer: null, pending: null, busy: false };
 
+//: The default board has no note and no id; the server keeps its thumbnail
+//: under 0 (the owner, 2026-10-26: "the default board doesnt get a thumbnail":
+//: a falsy id was skipped here, so it only ever drew the schematic fallback).
+function wbThumbBoardId() {
+  return window.currentBoardId ?? 0;
+}
+
 function wbThumbMark() {
-  const id = window.currentBoardId;
-  if (!id) return;
-  wbThumbState.pending = id;
+  wbThumbState.pending = wbThumbBoardId();
   clearTimeout(wbThumbState.timer);
   wbThumbState.timer = setTimeout(wbThumbFlush, WB_THUMB.delayMs);
 }
@@ -1192,7 +1197,7 @@ async function wbThumbFlush() {
   const id = wbThumbState.pending;
   wbThumbState.pending = null;
   const container = document.getElementById("whiteboard-container");
-  if (!id || wbThumbState.busy || String(window.currentBoardId ?? "") !== String(id)) return;
+  if (id === null || wbThumbState.busy || String(wbThumbBoardId()) !== String(id)) return;
   if (!container || container.offsetParent === null) return;
   if (!(wbState.nodes?.length || wbState.sketches?.length || wbState.objects?.length)) return;
   let built;
@@ -1234,11 +1239,11 @@ async function wbThumbFlush() {
   document.addEventListener(
     "pointerdown",
     (event) => {
-      if (wbThumbState.pending && !container.contains(event.target)) wbThumbFlush();
+      if (wbThumbState.pending !== null && !container.contains(event.target)) wbThumbFlush();
     },
     true
   );
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden" && wbThumbState.pending) wbThumbFlush();
+    if (document.visibilityState === "hidden" && wbThumbState.pending !== null) wbThumbFlush();
   });
 })();
