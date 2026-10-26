@@ -58,6 +58,13 @@
   grid-auto-rows: auto;
   gap: var(--space-1);
 }
+/* A month taller than its pane fades the pane's last 1.5rem while more rows
+   wait below the fold (`timelineCalMoreHint`), the way the tab strip fades
+   toward its overflow (`--tab-fade`). Only while the month is drawn. */
+.timeline-scroll.is-more-below:has(.timeline-cal-month) {
+  -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 1.5rem), transparent 100%);
+  mask-image: linear-gradient(to bottom, black calc(100% - 1.5rem), transparent 100%);
+}
 .timeline-cal-dow {
   padding: 0 var(--space-2);
   font-size: var(--text-xs);

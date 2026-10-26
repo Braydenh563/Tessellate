@@ -125,7 +125,8 @@ HELP_TOPICS: list[dict] = [
             "note's first sentence and is named Title from its words. The Writing room has "
             "\"Split into notes\", which turns a block of pasted text into several "
             "notes, split by its headings and paragraphs with no model and by meaning, "
-            "auto-linked, with one."
+            "auto-linked, with one. A formatting toolbar, here or in a document, is one Tab stop: "
+            "Tab reaches it once, Left and Right move between its buttons, and Tab goes on to the page."
         ),
         "badge": {"label": "Notes", "tab": "notes"},
     },
