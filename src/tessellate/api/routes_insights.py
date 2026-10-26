@@ -441,7 +441,16 @@ def today_line(seed: int = 0, session: Session = Depends(get_session)) -> dict:
     ]
     line = composer_voice.today_line(notes, today=user_now(deps.get_config()).date(), seed=seed)
     if not line:
-        return {"text": "", "kind": "none", "sources": []}
+        #: An empty notebook is welcomed in words (CHAT_PLAN 1353), not left blank.
+        from tessellate.api import chat_extra
+
+        try:
+            now = user_now(deps.get_config()).replace(tzinfo=None)
+            voice = str(deps.get_config().get_preference("composer_voice", "natural") or "natural")
+            text = chat_extra.welcome_line(session, now, voice=voice, seed=f"{seed}:{now.date()}") if not notes else ""
+        except Exception:  # noqa: BLE001  # the page falls back to its counts
+            text = ""
+        return {"text": text, "kind": "welcome" if text else "none", "sources": []}
     return {"text": line["text"].replace("**", ""), "kind": line["kind"], "sources": line["sources"]}
 
 

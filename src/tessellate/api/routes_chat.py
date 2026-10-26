@@ -33,7 +33,7 @@ from sqlalchemy import or_, select
 from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
-from tessellate.ai import budget as run_budget, capability, composer, composer_aware, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, neighbours, personal, phrasing, verdicts, toolwords, vocative, why
+from tessellate.ai import budget as run_budget, capability, composer, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, neighbours, personal, phrasing, verdicts, toolwords, vocative, why
 from tessellate.ai import (
     acts,
     agent,
@@ -2200,6 +2200,18 @@ def _answer_voice() -> str:
     return value if value in ("natural", "professional", "playful", "plain") else "natural"
 
 
+def _chat_voice(req: _StreamRequest) -> str:
+    """The voice this turn is composed in: the Settings choice, unless it is
+    the default and the chat's persona asks for another by its own words
+    ("a witty pirate" is playful, a precise archivist formal; CHAT_PLAN
+    1353). The built-in persona asks for nothing."""
+    chosen = _answer_voice()
+    prompt = req.persona_prompt
+    if chosen != "natural" or not prompt or str(prompt).startswith(str(librarian.DEFAULT_PERSONA)):
+        return chosen
+    return composer_compose.persona_cue(prompt) or chosen
+
+
 def _insight_level() -> str:
     """How much Atlas volunteers past the answer (CHAT_PLAN decision 73), the
     `insight_level` preference: "off", "one" line (the default) or "all"."""
@@ -2584,11 +2596,32 @@ def _reply_seed(req: _StreamRequest) -> tuple[list[str], str]:
     return recent, f"{salt}:{date.today().isoformat()}:{req.body.attempt}"
 
 
+def _welcome(req: _StreamRequest, seed: str, recent: list[str]) -> str:
+    """The composed welcome for a hello (CHAT_PLAN 1353), or empty when the
+    day's numbers cannot be read (the stored greetings answer then)."""
+    try:
+        return chat_extra.welcome_line(
+            req.session, user_now(deps.get_config()).replace(tzinfo=None), question=req.question,
+            voice=_chat_voice(req), seed=seed, said=recent,
+        )
+    except Exception:  # noqa: BLE001  # the stored greetings answer
+        logging.getLogger("tessellate.chat").exception("chat: the composed welcome failed")
+        return ""
+
+
 def _social_reply(req: _StreamRequest, prepared: dict) -> str:
     """The app's own reply to small talk (INBOX 741), never echoing the last
     three replies (the owner: "can it have more varied responses??")."""
     recent, seed = _reply_seed(req)
     last = (req.history or [{}])[-1] if req.history else {}
+    if composer.social_kind(req.question, prepared["intent"]) in ("greeting", "morning"):
+        #: A hello is answered with a welcome built from the day (CHAT_PLAN 1353).
+        welcome = _welcome(req, seed, recent)
+        if welcome:
+            sees = composer_aware.opening(_awareness(req), seed) if req.body.screen else ""
+            invite = _newest_word(req.session)
+            asks = composer.invitation(req.question, invite, _composer_voice(), seed) if invite else ""
+            return "\n\n".join(p for p in (" ".join(p for p in (welcome, asks) if p), sees) if p)
     said = composer.social(
         req.question,
         prepared["intent"],
@@ -3125,7 +3158,7 @@ def _with_next_step(text: str, size: str, req: _StreamRequest, cited: list[str] 
     #: offer to open the Biology note): a closer names a note the answer cited.
     newest = [] if req.body.note_ids else (cited if cited is not None else _newest_titles(req.session, 1))[:1]
     line = (composer_aware.closing(_awareness(req), seed, recent) if req.body.screen else "") or composer_tone.closing(
-        recent=newest, seed=seed, avoid=recent
+        recent=newest, seed=seed, avoid=recent, voice=_chat_voice(req), question=req.question or ""
     )
     return f"{text}\n\n{line}" if line else text
 
@@ -3381,7 +3414,9 @@ def _act_planned_events(req: _StreamRequest, parsed: dict) -> Iterator[dict]:
         if done["ok"] and parsed["intent"] == "reminder":
             #: Said as the card says it (INBOX 734): "Done: remind you on
             #: Friday at 9: call the dentist."
-            done["summary"] = f"Done: {card['label'][:1].lower()}{card['label'][1:]}."
+            what = f"{card['label'][:1].lower()}{card['label'][1:]}"
+            mood = composer_compose.mood_of(req.question or "", voice=_chat_voice(req), seed=_reply_seed(req)[1], intent="act")
+            done["summary"] = composer_compose.frame("act_card", mood, what=what)
         yield {"type": "answer", "delta": done["summary"]}
         yield {**card, "done": True, "summary": done["summary"], "undo": done["undo"], "open": done.get("open")}
         return
@@ -3442,6 +3477,7 @@ def _app_first_events(req: _StreamRequest, follow, ollama_running: bool) -> list
             req.session, follow.question if follow else req.question, req.history or [], now=user_now(deps.get_config()).replace(tzinfo=None),
             seed=_reply_seed(req)[1], open_ids=[i for i in [req.body.open_note_id, *req.body.note_ids] if i],
             follow_kind=follow.kind if follow else "", said=follow.said if follow else "", asked=req.body.question, ask=bool(req.body.notes_only),
+            voice=_chat_voice(req),
         )
         if found is not None:
             return found

@@ -28,7 +28,8 @@ from datetime import date, datetime, time
 from pathlib import Path
 
 from tessellate.ai import arithmetic, recognise, study, utilities
-from tessellate.ai.composer_study import Ctx, Reply, pick, topic_notes
+from tessellate.ai import composer_compose as compose
+from tessellate.ai.composer_study import Ctx, Reply, topic_notes
 
 _NUM = r"(-?\d+(?:[.,]\d+)?)"
 _LEAD = r"^(?:(?:so|ok|okay|hey|please|pls|can you|could you|quick question|tell me)[, ]+)*"
@@ -201,40 +202,12 @@ def _gap_words(low: date, high: date, unit: str) -> str:
     return f"{days} day{'s' if days != 1 else ''}{tail}"
 
 
-PHRASES = {
-    "until": (
-        "{when} is {words} away.",
-        "There are {words} until {when}.",
-        "{when} is {words} from today.",
-        "{words} to go until {when}.",
-    ),
-    "until_past": (
-        "{when} was {words} ago.",
-        "{when} has already passed, {words} ago.",
-        "That was {words} ago, on {when}.",
-    ),
-    "today": (
-        "{when} is today.",
-        "That is today, {when}.",
-    ),
-    "since": (
-        "It has been {words} since {when}.",
-        "{words} have passed since {when}.",
-        "{when} was {words} ago.",
-    ),
-    "since_future": (
-        "{when} has not happened yet: it is {words} away.",
-        "{when} is still ahead, {words} from today.",
-    ),
-}
-
-
 def _countdown_words(today: date, target: date, unit: str) -> str:
     low, high = sorted((today, target))
     return _gap_words(low, high, "days" if unit == "sleeps" else unit)
 
 
-def _countdown(text: str, today: date, seed: str) -> Reply | None:
+def _countdown(text: str, today: date, mood: compose.Mood) -> Reply | None:
     """"How many days until 12 Dec", "weeks until christmas": the dates are
     read by the recogniser; a subject it does not know (an exam) is left to
     the notes."""
@@ -247,11 +220,11 @@ def _countdown(text: str, today: date, seed: str) -> Reply | None:
         return None
     key = "today" if target == today else "until" if target > today else "until_past"
     words = _countdown_words(today, target, unit)
-    line = pick(seed, "cd", PHRASES[key]).format(when=_long(target), words=words)
+    line = compose.say(key, mood, when=_long(target), words=words)
     return _computed(line, f"the days from today to {found.group('d').strip()}")
 
 
-def _since(text: str, today: date, seed: str) -> Reply | None:
+def _since(text: str, today: date, mood: compose.Mood) -> Reply | None:
     asked = recognise.since_question(text)
     if not asked:
         return None
@@ -261,7 +234,7 @@ def _since(text: str, today: date, seed: str) -> Reply | None:
         return None
     target = date.fromordinal(today.toordinal() - ago)
     words = _countdown_words(today, target, unit)
-    line = pick(seed, "sn", PHRASES["since"]).format(when=_long(target), words=words)
+    line = compose.say("since", mood, when=_long(target), words=words)
     return _computed(line, f"the days from {phrase} to today")
 
 
@@ -274,13 +247,14 @@ def _offset_question(text: str, today: date) -> Reply | None:
 
 # --- word counts and definitions ---------------------------------------------------------
 
-def _pasted_count(text: str) -> Reply | None:
+def _pasted_count(text: str, mood: compose.Mood) -> Reply | None:
     quoted = _QUOTED.search(text)
     body = ((quoted.group(1) or quoted.group(2)) if quoted else "") or ""
     if not body.strip():
         return None
     words = len(body.split())
-    return _computed(f"That text has {words} word{'s' if words != 1 else ''} and {len(body)} characters, about {utilities.reading_time(words) or 'a few seconds'} to read.", "the text you gave")
+    return _computed(compose.say("count_text", mood, words=f"{words} word{'s' if words != 1 else ''}", chars=f"{len(body)} characters",
+                                 read=utilities.reading_time(words) or "a few seconds"), "the text you gave")
 
 
 def _note_count(ctx: Ctx, topic: str) -> Reply | None:
@@ -293,17 +267,17 @@ def _note_count(ctx: Ctx, topic: str) -> Reply | None:
     counted = utilities.counts(body)
     sents = len(study.sentences(body))
     words = counted["words"]
-    return Reply(
-        f"[**{study.title_of(body)}**](#/notes/{notes[0]['id']}) has {words} word{'s' if words != 1 else ''}, {counted['chars']} characters and about {sents} sentence{'s' if sents != 1 else ''}"
-        + (f", {'' if counted['read'].startswith('under') else 'a '}{counted['read']}." if counted["read"] else ".")
-    )
+    read = f", {'' if counted['read'].startswith('under') else 'a '}{counted['read']}" if counted["read"] else ""
+    detail = f"{counted['chars']} characters and about {sents} sentence{'s' if sents != 1 else ''}{read}"
+    return Reply(compose.say("count_note", ctx.mood, link=f"[**{study.title_of(body)}**](#/notes/{notes[0]['id']})",
+                             words=f"{words} word{'s' if words != 1 else ''}", detail=detail))
 
 
 def _word_count(ctx: Ctx, text: str) -> Reply | None:
     found = _WORDS.match(text)
     if not found:
         return None
-    return _pasted_count(text) or _note_count(ctx, (found.group("t") or "").strip(" .?"))
+    return _pasted_count(text, ctx.mood) or _note_count(ctx, (found.group("t") or "").strip(" .?"))
 
 
 @functools.lru_cache(maxsize=1)
@@ -332,10 +306,8 @@ def _define(ctx: Ctx, text: str) -> Reply | None:
     needle = term.lower()
     if any(needle in str(n.get("content") or "").lower() for n in ctx.notes):
         return None
-    return Reply(
-        f"**{row['term']}**: {row['meaning']}\n\nNone of your notes mention “{term}”, so that is from the app's short study glossary, not from you. "
-        "Write it in a note in your own words and I will quote that next time."
-    )
+    mood = ctx.mood
+    return Reply(compose.head("define", mood, term=f"**{row['term']}**", meaning=row["meaning"]) + "\n\n" + compose.frame("define_src", mood, asked=term))
 
 
 def answer(ctx: Ctx) -> Reply | None:
@@ -353,5 +325,5 @@ def answer(ctx: Ctx) -> Reply | None:
     found = _RISE.match(text)
     if found:
         return _priced(found, up=True)
-    return (_word_count(ctx, text) or _day_question(text, today) or _between(text, today) or _countdown(text, today, ctx.seed)
-            or _since(text, today, ctx.seed) or _offset_question(text, today) or _define(ctx, text))
+    return (_word_count(ctx, text) or _day_question(text, today) or _between(text, today) or _countdown(text, today, ctx.mood)
+            or _since(text, today, ctx.mood) or _offset_question(text, today) or _define(ctx, text))

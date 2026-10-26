@@ -20,6 +20,7 @@ from datetime import date, datetime, timedelta
 
 from tessellate.ai import recognise, study
 from tessellate.ai import when as when_words
+from tessellate.ai import composer_compose as compose
 from tessellate.ai.composer_study import Ctx, Reply, pick
 
 _SENTENCE = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9*\"“(\[])")
@@ -287,11 +288,9 @@ def _due(ctx: Ctx, win: tuple[date, date, str]) -> Reply | None:
         # reminder outside it, or the next day the notes give
         # (tests/test_due_in_ask_1018.py).
         return None
-    head = pick(ctx.seed, "duehead", (
-        f"Coming up, {span}: {len(found)} thing{'s' if len(found) != 1 else ''}.",
-        f"Here is what is due or dated for {span}, {len(found)} in all.",
-        f"{len(found)} dated item{'s' if len(found) != 1 else ''} for {span}:",
-    )) if found else f"Nothing new is dated for {span}, but something is overdue."
+    head = compose.head("due", ctx.mood, count=f"{len(found)} dated item{'s' if len(found) != 1 else ''}", span=span) if found \
+        else compose.head("due_overdue", ctx.mood, span=span)
+    head = compose.sentence_case(head)
     lines = [head, *_grouped(found, today)]
     if overdue:
         lines += ["", "**Overdue**"] + [e.line(overdue=True) for e in overdue[:5]]
@@ -350,7 +349,7 @@ def _plan(ctx: Ctx, win: tuple[date, date, str]) -> Reply:
     days = [start + timedelta(days=i) for i in range((end - start).days + 1)]
     load = {d: sum(1 for e in found if e.day == d) for d in days}
     span = _range_words(start, end, said, today)
-    lines = [pick(ctx.seed, "planhead", (f"Your plan for {span}, from your reminders and notes.", f"Here is {span}, laid out from what you have saved.", f"{span.capitalize() if not span[0].isupper() else span}, as your notes and reminders have it."))]
+    lines = [compose.sentence_case(compose.head("plan", ctx.mood, span=span))]
     lines += _grouped(found, today, limit=10) if found else ["", "Nothing is dated in that time."]
     if overdue:
         lines += ["", "**Overdue**"] + [e.line(overdue=True) for e in overdue[:4]]
@@ -454,10 +453,10 @@ def _left(ctx: Ctx) -> Reply | None:
     today = ctx.now.date()
     reminders, tasks = _open_reminders(ctx), _open_tasks(ctx)
     if not reminders and not tasks:
-        return Reply(pick(ctx.seed, "leftnone", PHRASES["left_none"]))
+        return Reply(compose.say("left_none", ctx.mood))
     r = f"{len(reminders)} reminder{'s' if len(reminders) != 1 else ''}"
     t = f"{len(tasks)} unticked checklist item{'s' if len(tasks) != 1 else ''}"
-    lines = [pick(ctx.seed, "lefthead", PHRASES["left_head"]).format(r=r, t=t)]
+    lines = [compose.head("left", ctx.mood, r=r, t=t)]
     if reminders:
         lines += ["", "**Reminders**"] + [_reminder_line(x, today) for x in reminders[:MAX_ITEMS]]
     if tasks:

@@ -14,6 +14,7 @@ from datetime import date, datetime
 
 from tessellate.ai import study
 from tessellate.ai import when as when_words
+from tessellate.ai import composer_compose as compose
 from tessellate.ai.composer_study import Ctx, Reply, pick, topic_notes
 
 MAX_LISTED = 8
@@ -160,7 +161,8 @@ def _read_recent(ctx: Ctx) -> tuple[list[str], date, date, str, str] | None:
 
 def _nothing(ctx: Ctx, wanted: list[str], span: str, shown: str) -> Reply:
     seed = ctx.seed
-    lines = [pick(seed, "nt-none", PHRASES["recent_none"]).format(topic=shown, span=span)]
+    span = compose.span_phrase(span)
+    lines = [compose.sentence_case(compose.head("recent_none", ctx.mood, topic=shown, span=span))]
     before = next((n for n in ctx.notes if _made(n) and all(w in str(n.get("content") or "").lower() for w in wanted)), None)
     if before is not None:
         lines.append(pick(seed, "nt-last", PHRASES["recent_last"]).format(link=_link(before), day=_day(_made(before))))
@@ -172,13 +174,15 @@ def recent(ctx: Ctx) -> Reply | None:
     if read is None:
         return None
     wanted, start, end, span, shown = read
+    span = compose.span_phrase(span)
     hits = _matching(ctx, wanted, start, end)
     if not hits:
         # No topic and an empty window: composer.empty_window says where the notes are.
         return _nothing(ctx, wanted, span, shown) if wanted else None
     n = len(hits)
-    head = pick(ctx.seed, "nt-head", PHRASES["recent_head" if wanted else "recent_any_head"]).format(
-        topic=shown, n=n, s=_plural(n), span=span, Span=span[:1].upper() + span[1:], v="s" if n == 1 else "")
+    count = f"{n} note{_plural(n)}"
+    head = compose.sentence_case(compose.head("recent", ctx.mood, count=count, span=span, topic=shown) if wanted
+                                 else compose.head("recent_any", ctx.mood, count=count, span=span))
     lines = [head, ""] + [_item(note, wanted) for note in hits[:MAX_LISTED]]
     if n > MAX_LISTED:
         lines += ["", pick(ctx.seed, "nt-more", PHRASES["recent_more"]).format(n=n - MAX_LISTED)]

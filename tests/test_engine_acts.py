@@ -51,7 +51,7 @@ def test_a_reminder_runs_at_once_with_its_undo(client, session):
     _seed(session)
     out = _ask(client, "remind me to call the plumber tomorrow at 5pm", use_tools=False)
     card = out["act"][0]
-    assert card["done"] is True and out["text"].startswith("Done:")
+    assert card["done"] is True and "remind you tomorrow at 5pm: call the plumber" in out["text"]  # composed (CHAT_PLAN 1353)
     reminders = client.get("/reminders").json()
     assert reminders
     assert card["undo"] == [{"name": "bin_reminder", "arguments": {"reminder_id": card["undo"][0]["arguments"]["reminder_id"]}}]

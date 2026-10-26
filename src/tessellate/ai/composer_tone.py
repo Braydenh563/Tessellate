@@ -13,24 +13,15 @@ facts:
   seed's (the chat, the day and Ask again), so a replayed answer says the
   same and a new one does not.
 
-A persona is a prompt for a model. With none running it changes nothing here
-(the help says so), because the composer has one voice and quotes the notes.
+A persona is a prompt for a model, but with none running its own words still
+pick the composer's voice (`composer_compose.persona_cue`: "a witty pirate" is
+playful) unless a voice was chosen in Settings. It changes wording and
+rhythm, never a fact (CHAT_PLAN 1353).
 """
 
 from __future__ import annotations
 
-import hashlib
-
-PHRASES: dict[str, str] = {
-    "voice_close_a1": "I can see you've been working on “{t}”. Ask me what is left on it, or when it is due.",
-    "voice_close_a2": "Your latest note is “{t}”. Want a summary of it, or what is left to do?",
-    "voice_close_a3": "Since you've been in “{t}” lately, I can list what is still open there.",
-    "voice_close_a4": "Next, I can open “{t}” or pull out its dates.",
-    "voice_close_a5": "If it helps, ask me who is involved in “{t}”, your newest note.",
-    "voice_close_a6": "Most recently you wrote “{t}”. Say the word and I will go through it with you.",
-}
-
-_ORDER = tuple(PHRASES)
+from tessellate.ai import composer_compose as compose
 
 
 def length(mode: str | None) -> str:
@@ -46,20 +37,14 @@ def fit(text: str, size: str) -> str:
     return lead or text
 
 
-def closing(*, recent: list[str], seed: str, avoid: tuple[str, ...] | list[str] = ()) -> str:
+def closing(*, recent: list[str], seed: str, avoid: tuple[str, ...] | list[str] = (), voice: str = "natural", question: str = "") -> str:
     """One next-step line from the newest note's title, or empty with no notes.
 
-    `avoid` is the last replies of this conversation: a wording any of them
-    already holds is passed over for the next, and when every wording has been
-    said lately the closing is left off rather than repeated."""
+    Composed (`composer_compose`, frame `close_next`) in the person's voice
+    and for the mood of their words; `avoid` is the last replies of this
+    conversation, and a wording any of them already holds is passed over."""
     titles = [t for t in recent if t]
     if not titles:
         return ""
-    title = titles[0]
-    start = hashlib.sha256(f"{seed}:{title}".encode()).digest()[0]
-    said = "\n".join(avoid)
-    for step in range(len(_ORDER)):
-        line = PHRASES[_ORDER[(start + step) % len(_ORDER)]].replace("{t}", title)
-        if line not in said:
-            return line
-    return ""
+    mood = compose.mood_of(question, voice=voice, seed=f"{seed}:{titles[0]}", said=list(avoid))
+    return compose.frame("close_next", mood, t=titles[0])

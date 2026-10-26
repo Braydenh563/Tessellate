@@ -78,7 +78,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Any
 
-from tessellate.ai import act_registry, composer_ack, composer_open, composer_overview, composer_parts, composer_replies, composer_tables, composer_tone, grounding, phrasing, question_noise, realise, spelling, utilities, variants
+from tessellate.ai import act_registry, composer_ack, composer_open, composer_overview, composer_parts, composer_replies, composer_tables, grounding, phrasing, question_noise, realise, spelling, utilities, variants
 from tessellate.ai import recognise as rec
 from tessellate.ai import when as when_words
 from tessellate.search import query as query_understanding
@@ -338,7 +338,6 @@ PHRASES.update(composer_tables.OVERVIEW_PHRASES)
 PHRASES.update(composer_tables.EXTRA_PHRASES)
 PHRASES.update(composer_ack.PHRASES)
 PHRASES.update(composer_open.PHRASES)
-PHRASES.update(composer_tone.PHRASES)
 
 def phrase_options(key: str, voice: str | None = None) -> tuple[str, ...]:
     """Every wording of `key`: the original and the variants of `voice`, or of
@@ -3522,9 +3521,14 @@ def social(
     kind = social_kind(message, intent)
     line = _social_line(message, kind, previous, last_question, voice, recent, seed)
     if invite and kind in _INVITE_KINDS and "“" not in line and not line.endswith("?"):
-        said = "professional" if composer_tables.voice_of(voice) == "professional" else "natural"
-        line = f"{line} {_pick(f'{message}|{invite}', f'invite:{seed}', list(INVITES[said])).format(subject=invite)}"
+        line = f"{line} {invitation(message, invite, voice, seed)}"
     return line
+
+
+def invitation(message: str, subject: str, voice: str, seed: str) -> str:
+    """The invitation built on a word of the newest note (`INVITES`)."""
+    said = "professional" if composer_tables.voice_of(voice) == "professional" else "natural"
+    return _pick(f"{message}|{subject}", f"invite:{seed}", list(INVITES[said])).format(subject=subject)
 
 
 def _social_line(message: str, kind: str, previous: str, last_question: str, voice: str, recent, seed: str) -> str:  # noqa: ANN001

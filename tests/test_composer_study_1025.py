@@ -77,7 +77,7 @@ STUDY = [
     ("ask me questions about databases", r"question 1 of", r""),
     ("test my knowledge of operating systems", r"question 1 of", r""),
     ("quiz me on lecture 5 with 3 questions", r"question 1 of 3", r""),
-    ("quiz me on astrophysics", r"did not find a note about", r"question 1"),
+    ("quiz me on astrophysics", r"(?i)(?:did not find a note|nothing in your notebook|no note about|no match|holds no note|could not locate a note|no page of yours|not in it)", r"question 1"),
     ("make flashcards from lecture 5", r"\*\*Q:\*\*[^\n]+\n\*\*A:\*\*", r"not sure"),
     ("create some flashcards for databases", r"cards from", r""),
     ("flashcards for operating systems", r"cards from", r""),
@@ -221,7 +221,7 @@ CALC = [
     ("what date is 2 weeks after 1 december", r"15 December 2026", r""),
     ("what day is 25 december", r"Friday 25 December 2026", r""),
     ("how many days between 1 november and 25 december", r"54 days", r""),
-    ("how many words in lecture 5", r"Lecture 5: Operating systems\*\*\]\(#/notes/\d+\) has \d+ words", r""),
+    ("how many words in lecture 5", r"Lecture 5: Operating systems\*\*\]\(#/notes/\d+\)[^\n]{0,24}\d+ words", r""),
     ("word count of lecture 6", r"words", r""),
     #: "How long is" a journey is a question for the notes, not a word count
     #: (e2e ask-search: "How long is the train from Lisbon to Porto?").
