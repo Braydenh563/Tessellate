@@ -105,6 +105,8 @@ REACHED_AFTER_LOAD = {
     #: INBOX 1305: a far move asks for its path when `typeof companionPathPlan
     #: === "function"`; the mind's first tick fetches the bundle, and until
     #: it is here a far move walks.
+    "popupToolEquation": "POPUP_TOOLS' open, which waits on ensureModule('appPalette') before the call",
+    "renderToolShortcutList": "openShortcuts, which waits on ensureModule('appPalette') before the call",
     "docTurnIntoMenu": "the selection bar's Turn into button, which selectionBarShow hides until the library bundle defines it",
     "findSettings": "settingsUi, called by filterSettings only when renderSettingResults (same bundle) returned a count",
     "companionPathPlan": "companionMenu, fetched with the mind at the first tick; a far move walks until then (typeof check)",

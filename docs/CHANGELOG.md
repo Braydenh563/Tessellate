@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Discoverability: one registry of popup tools (Equation, Calculator, Convert units) now lists each in the Ctrl+K palette, Tools and features, a Tools list in Keyboard shortcuts (Alt+= for Equation), the "/" menus in notes, documents and Chat, and the Guide; Convert units opens the Calculator on its conversion tab.
 - Header: the emblem no longer claims the AI is running when it is not.
 - Board: the arrows and turn handle hide while a size or gap badge shows, so the numbers are no longer covered.
 - Fix: the default board now gets a stored thumbnail on the Boards list like every other board (its missing id was skipped by the thumbnail writer; it travels as board 0).

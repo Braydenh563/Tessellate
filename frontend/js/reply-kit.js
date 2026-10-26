@@ -336,7 +336,7 @@ async function replyCalcWork(text) {
   return apiJson(`/utilities/work?q=${encodeURIComponent(asked)}`);
 }
 
-function openCalculator(input = "") {
+function openCalculator(input = "", mode = "work") {
   const existing = document.querySelector('[data-sheet="calculator"]');
   if (existing) {
     const box = existing.querySelector(".calc-input");
@@ -345,17 +345,18 @@ function openCalculator(input = "") {
       box.dispatchEvent(new Event("input"));
     }
     box?.focus();
+    if (mode === "convert") existing.querySelector('.calc-modes [role="tab"]:last-child')?.click();
     return;
   }
   openSheet({
     label: "Calculator",
     sub: "Sums, percentages and conversions, worked out by the app with no model.",
     name: "calculator",
-    build: (card) => replyCalcBuild(card, input),
+    build: (card) => replyCalcBuild(card, input, mode),
   });
 }
 
-function replyCalcBuild(card, input) {
+function replyCalcBuild(card, input, mode = "work") {
   //: A tab strip, not a pill (DESIGN.md, "A popup that chooses a kind").
   const modes = document.createElement("div");
   modes.className = "tabs-line popup-kinds calc-modes";
@@ -393,7 +394,8 @@ function replyCalcBuild(card, input) {
     modes.appendChild(button);
   }
   card.append(modes, work, convert);
-  requestAnimationFrame(() => work.querySelector(".calc-input")?.focus());
+  if (mode === "convert") modes.lastElementChild.click();
+  else requestAnimationFrame(() => work.querySelector(".calc-input")?.focus());
 }
 
 function replyCalcResult() {

@@ -920,7 +920,8 @@ MORE_TOPICS: list[dict] = [
         "body": (
             "The calculator works out sums, percentages and conversions with no "
             "model, the same way /calc does. Open it from the command palette "
-            "(Ctrl+K, Calculator), by typing /calc with nothing after it, or "
+            "(Ctrl+K, Calculator, or Convert units for the conversion tab; both "
+            "are also in the / menu), by typing /calc with nothing after it, or "
             "with Open the calculator under an answer that worked something "
             "out. Work out takes a sum typed or keyed (12 * (3 + 4), 15% of 80, "
             "5 km to miles), shows the result as you type and says how it read "
@@ -2767,12 +2768,14 @@ MORE_TOPICS.append({
     "keywords": (
         "equation", "equations", "equation editor", "write an equation",
         "maths", "math", "formula", "fraction", "square root", "greek letter",
-        "symbol", "integral", "matrix", "latex", "tex",
+        "symbol", "integral", "matrix", "latex", "tex", "alt+=", "alt equals",
     ),
     "body": (
         "The equation editor opens from /equation in a note, a document, a "
         "board's text or the Chat box, from a document's Insert menu, or with "
-        "Alt+= there and in the Ask box. Type it plainly: a/b makes a "
+        "Alt+= there and in the Ask box (the same as Word's Alt+=); Ctrl+K, "
+        "Equation opens it over the box you were in, and the shortcuts list "
+        "has it under Tools. Type it plainly: a/b makes a "
         "fraction, ^ and _ a power or a subscript, and a space or an operator "
         "steps out of one; alpha, pi, sqrt, sum or sin become the symbol after "
         "a space, and >=, != and -> one sign. Tab goes to the next empty box; "
