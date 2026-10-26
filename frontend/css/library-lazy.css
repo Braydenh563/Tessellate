@@ -6975,7 +6975,7 @@ input[type="color"].wb-mixed {
 
 /* The label row is the topic's full width (`flex: 1`), so a label held to
    the shape's inner box is centred inside that row too. */
-.wb-map-node:is([data-shape="circle"], [data-shape="hexagon"], [data-shape="diamond"], [data-shape="cloud"]) .wb-map-node-body {
+.wb-map-node:is([data-shape="circle"], [data-shape="hexagon"], [data-shape="diamond"], [data-shape="cloud"], [data-shape="chevron"]) .wb-map-node-body {
   justify-content: center;
 }
 
@@ -6989,7 +6989,7 @@ input[type="color"].wb-mixed {
    count only falls). The label is held to the shape's inner box (container
    units are the topic's own width), and every side's midpoint is on the
    outline, which is where the lines meet it. */
-.wb-map-node.wb-map-node.wb-map-node:is([data-shape="diamond"], [data-shape="hexagon"], [data-shape="cloud"]) {
+.wb-map-node.wb-map-node.wb-map-node:is([data-shape="diamond"], [data-shape="hexagon"], [data-shape="cloud"], [data-shape="chevron"]) {
   container-type: inline-size;
   isolation: isolate;
   justify-content: center;
@@ -6999,33 +6999,33 @@ input[type="color"].wb-mixed {
   box-shadow: none;
 }
 
-.wb-map-node:is([data-shape="diamond"], [data-shape="hexagon"], [data-shape="cloud"])::before,
-.wb-map-node:is([data-shape="diamond"], [data-shape="hexagon"], [data-shape="cloud"])::after {
+.wb-map-node:is([data-shape="diamond"], [data-shape="hexagon"], [data-shape="cloud"], [data-shape="chevron"])::before,
+.wb-map-node:is([data-shape="diamond"], [data-shape="hexagon"], [data-shape="cloud"], [data-shape="chevron"])::after {
   content: "";
   position: absolute;
   z-index: -1;
   pointer-events: none;
 }
 
-.wb-map-node:is([data-shape="diamond"], [data-shape="hexagon"], [data-shape="cloud"])::before {
+.wb-map-node:is([data-shape="diamond"], [data-shape="hexagon"], [data-shape="cloud"], [data-shape="chevron"])::before {
   inset: 0;
   background: color-mix(in srgb, var(--wb-branch-edge) 70%, transparent);
 }
 
-.wb-map-node:is([data-shape="diamond"], [data-shape="hexagon"], [data-shape="cloud"])::after {
+.wb-map-node:is([data-shape="diamond"], [data-shape="hexagon"], [data-shape="cloud"], [data-shape="chevron"])::after {
   inset: 2px;
   background: color-mix(in srgb, var(--card) calc(var(--glass-opacity) * 100%), var(--modal-bg-opaque));
 }
 
-.wb-map-node.wb-map-filled:is([data-shape="diamond"], [data-shape="hexagon"], [data-shape="cloud"])::after {
+.wb-map-node.wb-map-filled:is([data-shape="diamond"], [data-shape="hexagon"], [data-shape="cloud"], [data-shape="chevron"])::after {
   background: color-mix(in srgb, var(--wb-branch) var(--wb-fill-strength), var(--modal-bg-opaque));
 }
 
-.wb-map-node:is(.wb-map-core, .wb-map-solid):is([data-shape="diamond"], [data-shape="hexagon"], [data-shape="cloud"])::before {
+.wb-map-node:is(.wb-map-core, .wb-map-solid):is([data-shape="diamond"], [data-shape="hexagon"], [data-shape="cloud"], [data-shape="chevron"])::before {
   background: var(--wb-branch-edge);
 }
 
-.wb-map-node:is(.wb-map-core, .wb-map-solid):is([data-shape="diamond"], [data-shape="hexagon"], [data-shape="cloud"])::after {
+.wb-map-node:is(.wb-map-core, .wb-map-solid):is([data-shape="diamond"], [data-shape="hexagon"], [data-shape="cloud"], [data-shape="chevron"])::after {
   background: var(--wb-branch);
 }
 
@@ -7049,6 +7049,30 @@ input[type="color"].wb-mixed {
 
 .wb-map-node.wb-map-node.wb-map-node[data-shape="hexagon"] {
   padding-inline: calc(var(--space-2) + 1.25rem);
+}
+
+/* **Chevron**: the phase arrow of a project or career plan, a pentagon whose
+   point is the right-hand midpoint, so a line meets it where it meets any
+   other shape. The point is as deep as the hexagon's slant. */
+.wb-map-node[data-shape="chevron"]::before,
+.wb-map-node[data-shape="chevron"]::after {
+  clip-path: polygon(0 0, calc(100% - min(1.25rem, 22%)) 0, 100% 50%, calc(100% - min(1.25rem, 22%)) 100%, 0 100%);
+}
+
+.wb-map-node.wb-map-node.wb-map-node[data-shape="chevron"] {
+  padding-inline: var(--space-3) calc(var(--space-2) + 1.25rem);
+}
+
+/* **Underline**: the words sit on a bar in the branch's colour, no card
+   (Coggle's and XMind's leaf look). Plain keeps the box it had and only stops
+   painting it, for the reason given on \`[data-shape="none"]\`; this adds the
+   bar as the bottom border, so the box does not move under its lines. */
+.wb-map-node.wb-map-node[data-shape="underline"] {
+  background: none;
+  border-radius: 0;
+  border-color: transparent;
+  border-bottom-color: var(--wb-branch-edge);
+  box-shadow: none;
 }
 
 /* Twelve bumps round an ellipse, peaking at the four compass points so each

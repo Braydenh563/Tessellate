@@ -819,6 +819,10 @@ async function wbLibNewBoardFrom(entry) {
       body: JSON.stringify({ ...wbLibRefBody(entry.ref), name: name.trim(), ink: wbLibInk() }),
     });
     await openWhiteboardBoard(board.id);
+    //: A template's rows are placed as a ladder; the layout it names is drawn
+    //: once, as the map opens (K15: Career plan said "Tree, downward" over
+    //: a sideways ladder).
+    if (board.type === "map") await wbMapTidyFresh();
     wbBoardMadeStep(board);
     toast(`Started "${board.title}" from ${entry.name}.`);
   } catch (err) {

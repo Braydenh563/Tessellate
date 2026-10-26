@@ -1049,7 +1049,10 @@ def _place_branch(db: Session, board_id: int | None, payload: dict, body: PlaceB
     #: (it has no parent); several go under a new centre named after the
     #: template, so a map has the one trunk it is built around.
     if parent is None and len(nodes) > 1 and _map_has_no_centre(db, board_id):
-        nodes = [{"text": (name or "Map").strip()[:200] or "Map", "children": nodes}]
+        #: A built-in template says how its centre is drawn (`payload.root`,
+        #: K15): the preview shows a root box or an oval, so the map built
+        #: from it does too.
+        nodes = [{"text": (name or "Map").strip()[:200] or "Map", "data": dict(payload.get("root") or {}), "children": nodes}]
     for node in nodes:
         add(node, parent.id if parent is not None else None, 1 if parent is not None else 0)
     return {"sketches": [], "objects": made}

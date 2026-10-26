@@ -851,7 +851,8 @@ const WB_MAP_THEME_GROUPS = [
       { key: "shape", label: "Box", kind: "select", options: [
         ["", "Rounded"], ["pill", "Pill"], ["rect", "Box"],
         ["ellipse", "Ellipse"], ["circle", "Circle"], ["hexagon", "Hexagon"],
-        ["diamond", "Diamond"], ["cloud", "Cloud"], ["none", "Plain"],
+        ["diamond", "Diamond"], ["cloud", "Cloud"], ["chevron", "Chevron"],
+        ["underline", "Underline"], ["none", "Plain"],
       ] },
       { key: "spine", label: "Edge bar", kind: "select", options: [
         ["", "Solid bar"], ["dashed", "Dashed bar"], ["none", "No bar"],
@@ -1047,7 +1048,7 @@ const WB_MAP_LEVEL_ROWS = [
   { key: "font_size", label: "Size", number: true, options: [["12", "S"], ["14", "M"], ["17", "L"], ["22", "XL"], ["28", "XXL"]] },
   { key: "bold", label: "Bold", bool: true },
   { key: "italic", label: "Italic", bool: true },
-  { key: "shape", label: "Box", options: [["rounded", "Rounded"], ["pill", "Pill"], ["rect", "Box"], ["ellipse", "Ellipse"], ["circle", "Circle"], ["hexagon", "Hexagon"], ["diamond", "Diamond"], ["cloud", "Cloud"], ["none", "Plain"]] },
+  { key: "shape", label: "Box", options: [["rounded", "Rounded"], ["pill", "Pill"], ["rect", "Box"], ["ellipse", "Ellipse"], ["circle", "Circle"], ["hexagon", "Hexagon"], ["diamond", "Diamond"], ["cloud", "Cloud"], ["chevron", "Chevron"], ["underline", "Underline"], ["none", "Plain"]] },
   { key: "spine", label: "Edge bar", options: [["solid", "Solid bar"], ["dashed", "Dashed bar"], ["none", "No bar"]] },
   { key: "fill", label: "Fill", options: [["solid", "Solid colour"], ["tint", "Tinted"], ["none", "No fill"]] },
   { key: "edge_width", label: "Line into it", options: [["thin", "Thin line"], ["normal", "Line"], ["thick", "Thick line"]] },
@@ -6729,7 +6730,7 @@ const WB_MAP_CHOICE_REDRAWS = [];
 const WB_MAP_PICK_GLYPHS = {
   "wb-map-align": { "": "ph:magic-wand", auto: "ph:magic-wand", left: "ph:text-align-left", center: "ph:text-align-center", right: "ph:text-align-right" },
   "wb-map-strip-icon": { "": "ph:prohibit" },
-  "wb-map-shape": { "": "svg:rounded", rounded: "svg:rounded", pill: "svg:pill", rect: "svg:rect", ellipse: "svg:ellipse", circle: "svg:circle", hexagon: "svg:hexagon", diamond: "svg:diamond", cloud: "svg:cloud", none: "svg:plain" },
+  "wb-map-shape": { "": "svg:rounded", rounded: "svg:rounded", pill: "svg:pill", rect: "svg:rect", ellipse: "svg:ellipse", circle: "svg:circle", hexagon: "svg:hexagon", diamond: "svg:diamond", cloud: "svg:cloud", chevron: "svg:chevron", underline: "svg:underline", none: "svg:plain" },
   "wb-map-spine": { "": "svg:bar", solid: "svg:bar", dashed: "svg:bar-dashed", none: "svg:bar-none" },
   "wb-map-fill": { "": "svg:fill-none", none: "svg:fill-none", self: "svg:fill-tint", branch: "svg:fill-branch", solid: "svg:fill-solid" },
   "wb-map-effect": { "": "svg:fill-none", none: "svg:fill-none", shadow: "svg:effect-shadow", glow: "svg:effect-glow" },
@@ -6749,6 +6750,8 @@ const WB_MAP_PICK_SHAPES = {
   hexagon: [["path", { d: "M5 2h10l3.5 5-3.5 5H5L1.5 7z" }]],
   diamond: [["path", { d: "M10 1.5L18.5 7 10 12.5 1.5 7z" }]],
   cloud: [["path", { d: "M6 12a3.5 3.5 0 0 1-.6-7 4.5 4.5 0 0 1 8.6-.6A3.5 3.5 0 1 1 15 12z" }]],
+  chevron: [["path", { d: "M2 2.5h11.5l4.5 4.5-4.5 4.5H2z" }]],
+  underline: [["path", { d: "M4 6h9" }], ["path", { d: "M2 11h16", "stroke-width": 2.5 }]],
   plain: [["path", { d: "M4 5.5h12M4 8.5h8" }]],
   bar: [["rect", { x: 2, y: 2.5, width: 16, height: 9, rx: 2 }], ["path", { d: "M4 4.5v5", "stroke-width": 2.5 }]],
   "bar-dashed": [["rect", { x: 2, y: 2.5, width: 16, height: 9, rx: 2 }], ["path", { d: "M4 4v6", "stroke-width": 2.5, "stroke-dasharray": "1.6 1.4", "stroke-linecap": "butt" }]],
@@ -6826,7 +6829,11 @@ function wbMapIsFollow(option) {
 function wbMapPickRow(select) {
   const row = document.createElement("div");
   row.className = "wb-map-picks";
-  if (select.id === "wb-map-strip-icon") row.classList.add("is-grid");
+  //: A row of more than seven previews is a palette, six to a row like the
+  //: icon slot's: nine shapes in one run never wrapped and the last two (Cloud,
+  //: Plain) sat past the menu's edge, unreachable (measured at 1440: row
+  //: 306px in a 220px cell).
+  if (select.id === "wb-map-strip-icon" || select.options.length > 7) row.classList.add("is-grid");
   row.setAttribute("role", "group");
   row.setAttribute("aria-label", select.getAttribute("aria-label") || "");
   const press = (value) => {
