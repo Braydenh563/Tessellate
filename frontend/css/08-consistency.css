@@ -10726,3 +10726,17 @@ header#top-bar button.space-switcher-btn:focus-visible {
   -webkit-user-select: text;
   user-select: text;
 }
+
+/* An image tile's kebab sits on the photo, where a bare glyph is lost (the
+   owner, 2026-10-26: "the image meatball buttons are really hard to see").
+   A small solid chip in the panel colour reads on any picture, either theme,
+   and the row stays at full strength, since the chip is not a wall of icons. */
+.library-image-tile .library-image-actions {
+  opacity: 1;
+}
+.library-image-tile .library-image-actions > .menu-wrap > button.ghost {
+  background: var(--panel);
+  border-color: var(--divider);
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+}

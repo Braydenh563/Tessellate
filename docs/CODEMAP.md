@@ -10318,7 +10318,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/05-sidebars-themes.css | 6271 |
 | frontend/css/06-timeline-dialogs.css | 3689 |
 | frontend/css/07-whiteboard-misc.css | 11920 |
-| frontend/css/08-consistency.css | 10728 |
+| frontend/css/08-consistency.css | 10742 |
 | frontend/css/09-editor.css | 1130 |
 | frontend/css/10-responsive.css | 2693 |
 | frontend/css/ask-compose-lazy.css | 201 |
