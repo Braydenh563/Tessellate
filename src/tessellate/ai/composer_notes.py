@@ -99,15 +99,35 @@ def _day(made: object) -> str:
 
 # --- what did I write about X this week ----------------------------------------------------
 
+#: Words said between or after a window said twice ("this week, I mean this
+#: week"): they join or stress it and name no subject.
+_FILLER = re.compile(r"(?:^|[\s,;])(?:and|or|i mean|i said|as in|you know|that is|only|just|again|also|too)\W*$", re.I)
+_LEADING_FILLER = re.compile(r"^\W*(?:and|or|i mean|i said|as in|you know|that is|only|just|again|also|too)\b\W*", re.I)
+
+
+def _without_phrases(text: str, spans: list[tuple[int, int]]) -> str:
+    for s, e in sorted(spans, reverse=True):
+        text = text[:s] + " " + text[e:]
+    text = " ".join(text.split()).strip(" ,.?")
+    text = re.sub(r"\b(?:from|during|in|over|within|for|since|on|of|at)\s*$", "", text, flags=re.I).strip(" ,.?")
+    while True:
+        trimmed = _LEADING_FILLER.sub("", _FILLER.sub("", text)).strip(" ,.?")
+        if trimmed == text:
+            return text
+        text = trimmed
+
+
 def _window(text: str, today: date) -> tuple[date, date, str, str] | None:
-    """(first day, last day, how it was said, the text without it)."""
+    """(first day, last day, how it was said, the text without it). A window
+    said again over the same days ("this week ... this week") is the same
+    window, taken out once with the rest."""
     low = text.lower()
-    for s, e, phrase in when_words.find(low):
+    found = when_words.find(low)
+    for index, (s, e, phrase) in enumerate(found):
         span = when_words.span(phrase, today, "past")
         if span:
-            rest = (text[:s] + " " + text[e:]).strip(" ,.?")
-            rest = re.sub(r"\b(?:from|during|in|over|within|for|since|on|of|at)\s*$", "", rest, flags=re.I).strip(" ,.?")
-            return span[0], span[1], phrase, rest
+            same = [(a, b) for a, b, said in found[index:] if when_words.span(said, today, "past") == span]
+            return span[0], span[1], phrase, _without_phrases(text, same)
     return None
 
 

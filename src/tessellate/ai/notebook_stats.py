@@ -110,7 +110,7 @@ def _plural(n: int, word: str) -> str:
 _TAG_WORDS = r"tags?"
 _CATEGORY_WORDS = r"categor(?:y|ies)|folders?|spaces?"
 _MOST = r"most|top|common|commonest|frequent|popular|biggest|largest|main"
-_COUNT = r"how many|how much|number of|count of|total"
+_COUNT = r"how many|how much|number of|count (?:of|my|the)|total"
 
 
 #: **Every word the matchers below actually look for.**
@@ -224,6 +224,7 @@ def looks_like_a_question_about_the_notebook(message: str) -> bool:
         or re.search(r"\bwords?\b|word ?count|writ(?:ten|ing)|\bwr(?:ite|ote)\b", text)
         or re.search(r"stale|forgotten|untouched|abandoned", text)
         or re.search(r"\bstat(?:istic)?s\b", text)
+        or re.search(r"\b(?:pinned|archived|checklists?|reminders?|unticked|unchecked|tasks?)\b", text)
     )
 
 
@@ -279,8 +280,13 @@ def answer(message: str, session: Session) -> StatAnswer | None:
 
 def _counted(text: str, message: str, session: Session) -> StatAnswer | None:
     """A count of notes narrowed by a filter or named by a category or tag, or
-    of boards and maps; None for the rest."""
-    if re.search(r"\bnotes?\b", text):
+    of boards and maps, reminders and open items; None for the rest."""
+    from tessellate.ai import notebook_tasks, recognise
+
+    tasks = None if _SUBJECT_AFTER.search(text) else notebook_tasks.answer(text, session, utcnow(), _visible, recognise.ahead_window(text))
+    if tasks is not None:
+        return StatAnswer(*tasks[:2], tasks[2])
+    if re.search(r"\bnotes?\b|\b(?:pinned|archived|checklists?)\b", text):
         return _narrowed_count(text, message, session) or _named_count(text, session)
     if re.search(r"\b(?:white)?boards?\b|\b(?:mind ?)?maps?\b", text):
         return _board_count(session, text)
@@ -570,6 +576,19 @@ def _busiest(session: Session) -> StatAnswer:
     )
 
 
+def _window_words(words: str, grain: str, first: date) -> str:
+    """How a counted window is said back: "in March 2026", "in the first week
+    of October", "last summer", "on Friday"."""
+    low = words.lower()
+    if grain == "month" and low.startswith(("in ", "during ")):
+        return first.strftime("in %B %Y")
+    if grain in ("season", "week", "half") and not low.startswith(("in ", "during ", "since ", "this ", "last ", "next ", "over ", "throughout ", "through ", "from ", "for ")):
+        return "in " + (words if low.startswith("the ") else "the " + words)
+    if not low.startswith(("in ", "since ", "on ", "this ", "last ", "today", "yesterday")):
+        return ("in the " if low.startswith(("past ", "previous ")) else "on ") + words
+    return words
+
+
 def _window(text: str) -> tuple[datetime, datetime, str] | None:
     """(start, end, words) of the first day or span of days the question
     names, on the UTC calendar the notes are stamped with; None for none."""
@@ -582,11 +601,7 @@ def _window(text: str) -> tuple[datetime, datetime, str] | None:
         first, last, grain = found.value if found.kind == "range" else (found.value, found.value, "day")
         if not isinstance(first, date):
             continue
-        words = found.text.strip()
-        if grain == "month" and words.lower().startswith(("in ", "during ")):
-            words = first.strftime("in %B %Y")
-        elif not words.lower().startswith(("in ", "since ", "on ", "this ", "last ", "today", "yesterday")):
-            words = ("in the " if words.lower().startswith(("past ", "previous ")) else "on ") + words
+        words = _window_words(found.text.strip(), grain, first)
         start = datetime.combine(first, time(0), now.tzinfo)
         end = min(datetime.combine(last, time(23, 59, 59), now.tzinfo), now)
         return (start, end, words) if start < end else None
