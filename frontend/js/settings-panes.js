@@ -1305,6 +1305,20 @@ const POPUP_TOOLS = [
     keys: "/calc", where: "Convert units, in the Calculator",
     guide: "calculator", open: () => ensureModule("replyKit").then(() => openCalculator("", "convert")),
   },
+  {
+    id: "timer", name: "Start a timer", icon: "ph:timer", group: "Plan & focus",
+    keywords: "timer countdown pomodoro minutes alarm",
+    about: "25 minutes on the status bar, or type timer 10 minutes in the palette; press its chip to stop.",
+    keys: "Ctrl+K", where: "Start a timer, or type timer 10 minutes",
+    guide: "timer", open: () => ensureModule("utilities").then(() => startUtilityTimer(25)),
+  },
+  {
+    id: "stopwatch", name: "Start a stopwatch", icon: "ph:timer", group: "Plan & focus",
+    keywords: "stopwatch count up how long time it",
+    about: "Counts up on the status bar; press its chip to stop.",
+    keys: "Ctrl+K", where: "Start a stopwatch",
+    guide: "timer", open: () => ensureModule("utilities").then(() => startStopwatch()),
+  },
 ];
 
 function paletteCommands() {
@@ -1533,8 +1547,6 @@ function paletteCommands() {
     //: "timer 10 minutes" and "insert template ..." also build their own rows
     //: from the words (`utilityPaletteRows`, app-palette.js).
     ...POPUP_TOOLS.map((t) => ({ label: `${t.icon} ${t.name}`, keywords: t.keywords, about: t.about, keys: t.keys, act: t.open })),
-    { label: "ph:timer Start a timer", keywords: "timer countdown pomodoro minutes alarm", about: "25 minutes on the status bar, or type “timer 10 minutes”. Press it to stop.", act: () => ensureModule("utilities").then(() => startUtilityTimer(25)) },
-    { label: "ph:timer Start a stopwatch", keywords: "stopwatch count up how long time it", about: "Counts up on the status bar. Press it to stop.", act: () => ensureModule("utilities").then(() => startStopwatch()) },
     { label: "ph:closed-captioning Live captions", quick: "captions", keywords: "live captions subtitles transcribe speech microphone listen real time stop", about: "Write what the microphone hears as you go, on this computer. Run it again to stop and save a note.", act: () => toggleLiveCaptions() },
     { label: "ph:text-aa Count words", keywords: "word count characters letters reading time selection length", about: "Words, characters and reading time of the selected text, or of the editor.", act: () => ensureModule("utilities").then(() => countSelection(paletteCaught)) },
     { label: "ph:translate Translate this", keywords: "translate translation spanish language offline selection passage", about: "The selected passage into Spanish, offline (a package).", act: () => { const caught = { ...paletteCaught }; ensureModule("translate").then(() => translateCaught(caught)); } },

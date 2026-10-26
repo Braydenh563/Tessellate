@@ -32,7 +32,7 @@ def _registry() -> list[dict]:
 
 def test_registry_has_the_known_tools():
     ids = {t["id"] for t in _registry()}
-    assert {"equation", "calculator", "convert"} <= ids
+    assert {"equation", "calculator", "convert", "timer", "stopwatch"} <= ids
 
 
 def test_every_entry_is_complete_and_has_a_guide_topic():

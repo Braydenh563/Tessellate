@@ -979,10 +979,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `markPrefsDirty` | frontend/js/settings-panes.js:1028 |
 | `markPrefsSaved` | frontend/js/settings-panes.js:1044 |
 | `nudgeZoom` | frontend/js/settings-panes.js:1191 |
-| `paletteAbouts` | frontend/js/settings-panes.js:1587 |
-| `paletteCommands` | frontend/js/settings-panes.js:1310 |
-| `paletteKeys` | frontend/js/settings-panes.js:1573 |
-| `paletteRowParts` | frontend/js/settings-panes.js:1598 |
+| `paletteAbouts` | frontend/js/settings-panes.js:1599 |
+| `paletteCommands` | frontend/js/settings-panes.js:1324 |
+| `paletteKeys` | frontend/js/settings-panes.js:1585 |
+| `paletteRowParts` | frontend/js/settings-panes.js:1610 |
 | `refitComposer` | frontend/js/settings-panes.js:269 |
 | `renderAccount` | frontend/js/settings-panes.js:488 |
 | `renderAutonomousSettings` | frontend/js/settings-panes.js:799 |

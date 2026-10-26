@@ -157,9 +157,15 @@ def test_every_utility_has_its_way_in_and_a_guide_topic():
     #: in-place help; the Statistics page and Settings, Templates also have a
     #: '?' popover (`data-help-for`).
     panes = (FRONTEND / "js" / "settings-panes.js").read_text(encoding="utf-8")
-    for label in ("Statistics", "Start a timer", "Start a stopwatch", "Count words", "Live captions"):
+    for label in ("Statistics", "Count words", "Live captions"):
         row = next((line for line in panes.splitlines() if 'label: "ph:' in line and f' {label}"' in line), "")
         assert "about:" in row, f"the palette's {label} row has no line of help"
+    #: The timer and stopwatch rows come from `POPUP_TOOLS` (INBOX K27), whose
+    #: entries carry the same `about`.
+    tools = panes.split("const POPUP_TOOLS = [", 1)[1].split("\n];", 1)[0]
+    for label in ("Start a timer", "Start a stopwatch"):
+        entry = next((block for block in tools.split("\n  },") if f'name: "{label}"' in block), "")
+        assert "about:" in entry, f"the palette's {label} row has no line of help"
     html = (FRONTEND / "index.html").read_text(encoding="utf-8")
     assert 'data-help-for="templates-help"' in html and "insert template" in html.split('id="templates-help"', 1)[1][:1200]
 
