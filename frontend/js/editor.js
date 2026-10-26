@@ -2012,6 +2012,7 @@ function selectionBarShow(textarea) {
     const onFoot = new Set([...foot.querySelectorAll("[data-md]")].map((b) => b.dataset.md));
     for (const button of bar.querySelectorAll("[data-md]")) button.hidden = onFoot.has(button.dataset.md);
   }
+  if (typeof wbSelectionBarFit === "function") wbSelectionBarFit(bar, textarea);
   bar.classList.remove("hidden");
   //: Anchored to the *start* of the selection, which is where the eye is when
   //: a selection is made left-to-right, and measured after the bar is visible

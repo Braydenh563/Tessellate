@@ -10141,12 +10141,17 @@ function wbEditableSurface(el, id) {
     isDocument: false,
     scrollEl: el,
     get value() { return text(); },
-    //: One text node again, the shape `wbBeginTextEdit` starts from.
-    set value(next) { el.textContent = next; },
+    //: Only the changed run is replaced, through `insertText`, so the
+    //: browser's own Ctrl+Z inside the box takes back a Bold from the
+    //: selection bar (`applyMarkdown` writes `value`, K24).
+    set value(next) { wbSpliceEditable(surface, text(), next); },
     get text() { return text(); },
-    set text(next) { el.textContent = next; },
+    set text(next) { surface.value = next; },
     get selectionStart() { return range().from; },
     get selectionEnd() { return range().to; },
+    //: `wrapDocSelection` sets the two ends one after the other.
+    set selectionStart(at) { surface.setSelectionRange(at, Math.max(at, range().to)); },
+    set selectionEnd(at) { surface.setSelectionRange(Math.min(range().from, at), at); },
     get classList() { return el.classList; },
     get dataset() { return el.dataset; },
     selection() { return range(); },
@@ -10162,7 +10167,7 @@ function wbEditableSurface(el, id) {
     setSelection(from, to = from) { surface.setSelectionRange(from, to); },
     setRangeText(insert, from, to) {
       const value = text();
-      el.textContent = value.slice(0, from) + insert + value.slice(to);
+      wbSpliceEditable(surface, value, value.slice(0, from) + insert + value.slice(to));
       surface.setSelectionRange(from + insert.length);
     },
     //: The caret's point on screen: a collapsed range's rect, or the box's
@@ -10194,6 +10199,88 @@ function wbEditableSurface(el, id) {
     dispatchEvent(event) { return el.dispatchEvent(event); },
   };
   return surface;
+}
+
+//: Replace what changed between `before` and `next` in a box being edited:
+//: the run between their common start and end, selected and typed over with
+//: `insertText`, which is what keeps the edit on the box's own undo stack.
+//: Where the command is refused the box is written whole.
+function wbSpliceEditable(surface, before, next) {
+  if (before === next) return;
+  let head = 0;
+  const limit = Math.min(before.length, next.length);
+  while (head < limit && before[head] === next[head]) head += 1;
+  let tail = 0;
+  while (tail < limit - head && before[before.length - 1 - tail] === next[next.length - 1 - tail]) tail += 1;
+  surface.setSelectionRange(head, before.length - tail);
+  const insert = next.slice(head, next.length - tail);
+  const done = document.activeElement === surface.el
+    && document.execCommand(insert ? "insertText" : "delete", false, insert);
+  if (!done || surface.value !== next) {
+    surface.el.textContent = next;
+    surface.setSelectionRange(head + insert.length);
+  }
+}
+
+//: The surface `applyMarkdown` writes to when its target is a board box
+//: (documents.js `docSurfaceById`): the box being typed in, if it is that
+//: kind. Marked, so the box shows its markdown rendered once the edit ends.
+function wbEditorSurfaceById(id) {
+  const surface = document.activeElement?.wbEditorSurface;
+  if (!surface || surface.id !== id) return null;
+  surface.el.dataset.wbFormatted = "1";
+  return surface;
+}
+
+//: Ctrl+B, Ctrl+I and Ctrl+K in a text box or sticky being edited: the
+//: documents editor's own actions on the selection (K24).
+const WB_TEXT_FORMAT_KEYS = { b: "bold", i: "italic", k: "link" };
+
+function wbTextFormatKey(event) {
+  if (!(event.ctrlKey || event.metaKey) || event.altKey || event.shiftKey) return false;
+  const kind = WB_TEXT_FORMAT_KEYS[String(event.key).toLowerCase()];
+  if (!kind || typeof applyMarkdown !== "function" || !event.currentTarget?.wbEditorSurface) return false;
+  event.preventDefault();
+  applyMarkdown(kind, "wb-text-edit");
+  return true;
+}
+
+//: **The selection bar on a board** (K24): the documents editor's bar
+//: (editor.js `selectionBarShow`), cut to what a box draws. A text box or
+//: sticky keeps the inline marks and gains a list; a map topic draws only
+//: bold, italic and code (`WB_MAP_INLINE`). Turn into, Ask and Rewrite act on
+//: a document, so they are off here. The list button is added once, beside
+//: Link, and hidden everywhere else.
+const WB_BAR_TEXT = new Set(["bold", "italic", "strike", "highlight", "code", "link", "ul"]);
+const WB_BAR_TOPIC = new Set(["bold", "italic", "code"]);
+
+function wbSelectionBarFit(bar, surface) {
+  let list = bar.querySelector("[data-board-md]");
+  if (!list) {
+    list = document.createElement("button");
+    list.type = "button";
+    list.className = "ghost small icon-button";
+    list.dataset.boardMd = "ul";
+    list.title = "Bulleted list";
+    list.setAttribute("aria-label", list.title);
+    setLabel(list, "ph:list-bullets");
+    list.addEventListener("mousedown", (event) => {
+      event.preventDefault();
+      const target = typeof selectionBarState === "object" ? selectionBarState.textarea : null;
+      if (target && typeof applyMarkdown === "function") applyMarkdown("ul", target.id);
+    });
+    bar.querySelector('[data-md="link"]')?.after(list);
+  }
+  const keep = surface?.id === "wb-text-edit" ? WB_BAR_TEXT : surface?.id === "wb-topic-edit" ? WB_BAR_TOPIC : null;
+  list.hidden = !keep?.has("ul");
+  //: Ask carries no data mark, so editor.js never shows it again by itself.
+  const ask = bar.querySelector("button:not([data-md]):not([data-turn]):not([data-inline-ai]):not([data-board-md])");
+  if (!keep) {
+    if (ask) ask.hidden = false;
+    return;
+  }
+  for (const button of bar.querySelectorAll("button:not([data-board-md])")) button.hidden = !keep.has(button.dataset.md);
+  for (const rule of bar.querySelectorAll(".selection-bar-rule")) rule.hidden = true;
 }
 
 //: What a text box or topic being edited says, with its line breaks. See
@@ -22445,12 +22532,15 @@ function renderWbObjects(canvas) {
         const edited = wbEditedText(this);
         //: Unchanged: nothing to save or record, but the box still goes back
         //: from its raw source to the rendered view.
+        //: Formatted from the selection bar or Ctrl+B: shown rendered (K24).
+        const formatted = this.dataset.wbFormatted === "1";
+        delete this.dataset.wbFormatted;
         if (d.data.content === edited) {
           wbScheduleRender();
           return;
         }
         wbPushUndo({ action: "move", kind: "object", id: d.id, before: WB_KIND_INFO.object.payload(d) });
-        d.data = { ...d.data, content: edited };
+        d.data = formatted ? { ...d.data, content: edited, md: true } : { ...d.data, content: edited };
         wbSaveObject(d);
       });
       // Typing is text-box business, not the canvas's: Delete/Backspace
@@ -22477,6 +22567,7 @@ function renderWbObjects(canvas) {
         if (event.key === "Tab" && !event.ctrlKey && !event.altKey && !event.metaKey) {
           if (wbIndentEditableLines(this, event.shiftKey)) event.preventDefault();
         }
+        if (wbTextFormatKey(event)) return;
         //: **Sticky chain** (WHITEBOARD_PLAN gap row 6, Miro's Tab): Ctrl+Enter
         //: ends this sticky and starts the next beside it, same paper and size.
         //: Not Tab, which indents a sticky's lines here.

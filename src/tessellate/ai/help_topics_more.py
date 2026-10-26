@@ -1883,6 +1883,7 @@ MORE_TOPICS.extend(
             "keywords": (
                 "sticky", "sticky note", "stickies", "note colour", "note color", "sticky colour",
                 "text box or note", "text box vs sticky", "paper colour",
+                "bold in a sticky", "format a text box", "selection bar on a board",
             ),
             "body": (
                 "Sticky notes and text boxes on a board. A sticky (N, or the note "
@@ -1894,7 +1895,12 @@ MORE_TOPICS.extend(
                 "menu, Box. The folded corner can be switched off for one note (Format "
                 "panel, Folded corner) or as the board's default (View, Folded sticky "
                 "corners). Each change is one Undo step. Typing in either, / offers "
-                "lists, a to-do, headings, links and an emoji, and [[ links a note."
+                "lists, a to-do, headings, links and an emoji, and [[ links a note. "
+                "To format part of the text while typing, select words: the "
+                "selection bar offers bold, italic, strike, highlight, code, link "
+                "and a list, and Ctrl+B, Ctrl+I and Ctrl+K work too. The box keeps "
+                "markdown and shows it rendered once you finish (Format panel, "
+                "Rendered markdown, to see the marks)."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
