@@ -205,3 +205,52 @@ Left:
 
 done: line grid and the cleanup above 100 notes
 next: the 400-note cost (above), if the owner wants the last 120 notes off lines
+
+
+## Round 6 (a grid of notes, curves cached in the pushes, nearest-first step-off)
+
+Sweeps (session scratchpad): `ab.sh` (head worker and new alternated on one server, load drift cancels; browser, `firstEndS` after
+init, crossings and notes on lines at rest), `stat.js` (the real worker replayed in node, the cleanup alone: ms per half, notes on
+lines before and after, step-offs tried and moved), `cprof.js` (`node --cpu-prof`). Data: `seedg.py` 186 notes (EXTRA 150) and
+400 notes (EXTRA 364), ports 8861 / 8862. Medians; 186: 3 pairs, 400 at 390: 3 pairs, 400 at 1440: 8 pairs.
+
+| Item | Before | After |
+| --- | --- | --- |
+| 186 notes at 1440, notes on lines / crossings | 19 / 385 | 19 / 393 (+2%) |
+| 186 notes at 1440, `end` after init | 5.96 s | 5.90 s |
+| 400 notes at 390, notes on lines / crossings | 132 / 1662 | 115 / 1616 (-3%) |
+| 400 notes at 390, `end` after init | 9.55 s | 9.16 s (-4%) |
+| 400 notes at 1440, notes on lines / crossings | 117 / 1566 | 118 / 1573 (+0.5%) |
+| 400 notes at 1440, `end` after init | 9.26 s | 9.36 s (+1%) |
+| Cleanup alone at 400 (node, 3 layouts) | 410 to 449 ms, 147 left on lines | 378 ms, 148 left (no sweeps); 452 ms, 140 left (3 sweeps, kept) |
+
+Built (graph-worker.js): `nodeGridBuild` / `nodeGridMove` / `nodeGridNear` / `nodeGridBox` (a dense array of cells, a linked list of
+notes per cell, cell = 1/0.75 of the reach, clamped to the edge so near stays near); `untangleFree` asks the 3 by 3 cells when the
+grid is live and the cell is wide enough, `untangleLineOver` asks the cells under the line's box (when that is under a third of
+the notes) and builds the curve once per line, not once per note near its chord (`untangleNearCurve`). The push turns read the
+points filed with each line (`lineCurveFile`, split out of `lineGridFile`) and file a line again only when one of its ends moved
+(`stale`), and `lineGridHit` ends the on-a-line walk at the first line. `untangleStepOrder` sends the step-off to the notes
+least into a line first, and the notes still on one go again (`UNTANGLE_CLEAN_SWEEPS` 3) while the clock lasts.
+Test: `tests/test_graph_node_grid_1026.py` (grid against the scan, pair for pair, inside, outside the cells and after moves; the
+order against a scan of every line; the refiled curve; both grids dropped after the cleanup).
+
+Decisions:
+- A grid walked along the curve for `untangleLineOver` (a sample every half cell, 3 by 3 cells each) was slower than the scan it
+  replaced: 80,000 cell queries at 400 notes, `nodeGridNear` 117 ms in the profile. The box of cells is exact and cheap.
+- The cleanup is not budget-bound at 400 in node: the pushes use 145 ms of their 300, the step-off 235 of 300, and every one of
+  about 245 stuck notes is tried. Only about 50 of the ~200 step-offs move a note: 95% of the 22,000 spots tried sit on a line
+  (`g6` counters). So nearest-first changes nothing measurable in the order (147 against 147 left on lines); the second and third
+  sweeps, which use the clock the cheaper checks freed, take 8 more off (140) for 70 ms.
+- At 1440 the browser's passes are cut by the clock, so layouts differ run to run (head 103 to 125 on lines); only the medians of 8
+  pairs compare. The 186-note layout at 1440 is the same every run (19 / 385 head, 19 / 393 new).
+
+Left:
+- The notes that stay on a line are in line-dense places where no spot within 8 rings is clear of every line at 3 or fewer added
+  crossings. More budget does not help; a wider ring search, or letting the lines give way (`clearanceForce` with the notes held), would.
+- `untangleFree` in the passes (`untangleLayout`) still scans: it is reached only on an improving move, and notes swap there, so the
+  grid would need a move per swap for no measured cost.
+- Not verified: the phone sheet for Options at 390, the canvas curve against the worker's 5-point polyline, an interactive drag
+  after the cleanup at 400 notes, and real inference (fake transport only).
+
+done: node grid, cached curves in the pushes, nearest-first step-off with sweeps
+next: the line-dense places (above), if the owner wants the last 115 notes off lines
