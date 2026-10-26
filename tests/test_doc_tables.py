@@ -383,6 +383,23 @@ const t3 = docTableParse(docTableApplyEdits(text, [p3.edit]), PRE.length);
 check("paste/delimiter-to-body", !!t3 && t3.rows[2].cells[0].trim() === "d" && t3.rows[1].cells[0].includes("-"),
   t3 ? JSON.stringify(t3.rows.map((r) => r.cells)) : "none");
 
+// The way out below (Ctrl+Enter, Enter on an empty last row): the caret lands
+// on the line under the table, or on a fresh one when the table ends the text.
+const exitText = "| a | b |\n| --- | --- |\n| 1 | 2 |\n|  |  |";
+const exitTable = docTableParse(exitText, 0);
+const exitEnd = docTableExitEdit(exitTable, exitText, true);
+const exitDone = docTableApplyEdits(exitText, exitEnd.changes);
+check("exit/empty-row-dropped", exitDone === "| a | b |\n| --- | --- |\n| 1 | 2 |\n\n" && exitDone.length === exitEnd.anchor,
+  JSON.stringify([exitDone, exitEnd.anchor]));
+const exitMid = "| a |\n| --- |\n| 1 |\nafter";
+const exitMidEdit = docTableExitEdit(docTableParse(exitMid, 0), exitMid, false);
+check("exit/blank-line-before-text", docTableApplyEdits(exitMid, exitMidEdit.changes) === "| a |\n| --- |\n| 1 |\n\nafter" && exitMidEdit.anchor === 21, JSON.stringify(exitMidEdit));
+const exitBlank = "| a |\n| --- |\n| 1 |\n\nafter";
+const exitBlankEdit = docTableExitEdit(docTableParse(exitBlank, 0), exitBlank, false);
+check("exit/existing-blank-line-reused", exitBlankEdit.changes.length === 0 && exitBlank.slice(exitBlankEdit.anchor) === "after", JSON.stringify(exitBlankEdit));
+const exitKeep = docTableExitEdit(docTableParse("| a |\n| --- |\n| 1 |", 0), "| a |\n| --- |\n| 1 |", false);
+check("exit/end-of-document-adds-blank-line", exitKeep.anchor === 21 && exitKeep.changes[0].insert === "\n\n", JSON.stringify(exitKeep));
+
 process.stdout.write(JSON.stringify(results));
 """
 

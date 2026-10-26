@@ -84,12 +84,13 @@ out.kindOf = ["note", "Warning", "caution", "hint", "done", "error", "cite", "tl
 out.everyKindHasIconAndLabel = Object.values(CALLOUT_KINDS).every((k) => /^ph:[a-z-]+$/.test(k.icon) && k.label && k.about);
 const rows = [
   { id: "h2", label: "Heading 2", keywords: ["h2", "section"] },
-  { id: "tbl", label: "Table", keywords: ["grid"] },
   { id: "toc", label: "Table of contents", keywords: ["toc", "outline"] },
+  { id: "tbl", label: "Table", keywords: ["grid"] },
   { id: "warn", label: "Warning callout", keywords: ["caution", "box"] },
   { id: "cols", label: "Two columns", keywords: ["layout", "side by side"] },
 ];
 out.rank = {
+  table: editorFuzzyRank(rows, "table").map((r) => r.id),
   ta: editorFuzzyRank(rows, "ta").map((r) => r.id),
   toc: editorFuzzyRank(rows, "toc").map((r) => r.id),
   twcl: editorFuzzyRank(rows, "twcl").map((r) => r.id),
@@ -184,12 +185,13 @@ def test_callout_kinds_cover_obsidian(result):
 
 def test_fuzzy_rank(result):
     rank = result["rank"]
-    assert rank["ta"][:2] == ["tbl", "toc"], "a label prefix beats everything"
+    assert rank["ta"][:2] == ["toc", "tbl"], "a prefix of both keeps the menu order"
+    assert rank["table"][:2] == ["tbl", "toc"], "a label that is the query ranks above a longer one that starts with it"
     assert rank["toc"][0] == "toc", "a keyword prefix finds the table of contents"
     assert rank["twcl"] == ["cols"], "letters in order anywhere in the label still match"
     assert rank["box"] == ["warn"]
     assert rank["zz"] == []
-    assert rank["empty"] == ["h2", "tbl", "toc", "warn", "cols"], "no query keeps the order"
+    assert rank["empty"] == ["h2", "toc", "tbl", "warn", "cols"], "no query keeps the order"
     assert result["hits"] == [0, 2, 9], "the matched letters, for the highlight"
 
 

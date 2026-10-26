@@ -1027,7 +1027,8 @@ def export_markdown(
         #: that silently says less than the editor does. Markdown only, for the
         #: same reason the `# Title` preamble is markdown only: `%%` is not a
         #: comment in python, so in a code file it is text somebody typed.
-        body = f"# {document.title}\n\n{docexport.comments_to_footnotes(document.content or '')}"
+        content = docexport.comments_to_footnotes(document.content or "")
+        body = docexport.with_title(content, document.title)
         media_type = "text/markdown; charset=utf-8"
     else:
         body = document.content

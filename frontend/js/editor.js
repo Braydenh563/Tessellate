@@ -345,7 +345,8 @@ function editorFuzzyMatch(label, query) {
   return hits;
 }
 
-//: Rank rows for a query, best first, stable within a tier: a label that
+//: Rank rows for a query, best first, stable within a tier: a label equal
+//: to it ("table" finds Table before Table of contents), a label that
 //: starts with it, a word in the label that does, a keyword that does, the
 //: label containing it, a keyword containing it, and last the letters in
 //: order anywhere in the label ("twcl" finds Two columns). No query keeps the
@@ -358,7 +359,8 @@ function editorFuzzyRank(rows, query) {
     const label = String(row.label || "").toLowerCase();
     const keywords = (row.keywords || []).map((k) => String(k).toLowerCase());
     let score = -1;
-    if (label.startsWith(needle)) score = 0;
+    if (label === needle) score = 0;
+    else if (label.startsWith(needle)) score = 0.5;
     else if (label.split(/[\s-]+/).some((word) => word.startsWith(needle))) score = 1;
     else if (keywords.some((k) => k.startsWith(needle))) score = 2;
     else if (label.includes(needle)) score = 3;
