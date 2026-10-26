@@ -2828,6 +2828,8 @@ const DOC_COMMANDS = [
     run: () => wrapDocSelection("**", "bold text") },
   { id: "italic", icon: "ph:text-italic", label: "Italic", keys: "Ctrl+I",
     run: () => wrapDocSelection("*", "italic text") },
+  { id: "underline", icon: "ph:text-underline", label: "Underline", keys: "Ctrl+U",
+    run: () => applyMarkdown("underline") },
   { id: "strike", icon: "ph:text-strikethrough", label: "Strike through", keys: "Ctrl+Shift+S",
     run: () => wrapDocSelection("~~", "struck through") },
   { id: "code", icon: "ph:code", label: "Inline code", keys: "Ctrl+E",
@@ -11444,6 +11446,22 @@ function applyMarkdown(kind, boxId = "doc-content") {
     return;
   }
   if (action.pre) {
+    //: A second press takes the pair off, as Bold does: the selection sits
+    //: inside the pair, or is the pair with its words.
+    const post = action.post || "";
+    if (selected && value.slice(start - action.pre.length, start) === action.pre && value.slice(end, end + post.length) === post) {
+      box.value = value.slice(0, start - action.pre.length) + selected + value.slice(end + post.length);
+      box.setSelectionRange(start - action.pre.length, end - action.pre.length);
+      finishMarkdownEdit(box, boxId);
+      return;
+    }
+    if (selected.length > action.pre.length + post.length && selected.startsWith(action.pre) && selected.endsWith(post)) {
+      const bare = selected.slice(action.pre.length, selected.length - post.length);
+      box.value = value.slice(0, start) + bare + value.slice(end);
+      box.setSelectionRange(start, start + bare.length);
+      finishMarkdownEdit(box, boxId);
+      return;
+    }
     const body = selected || action.placeholder || "";
     insertAround(box, start, end, action.pre, action.post || "", body, action.pre.length);
     finishMarkdownEdit(box, boxId);
@@ -16038,6 +16056,9 @@ function toggleDocToolbar() {
   const collapsed = !docToolbarCollapsed();
   setDocToolbarCollapsed(collapsed);
   if (!collapsed) $("doc-toolbar")?.querySelector("button:not([hidden])")?.focus({ preventScroll: true });
+  //: Hiding it from inside it must not strand the keyboard on <body>: the
+  //: focused button just vanished, and the next keystroke went nowhere.
+  else if (!document.activeElement || document.activeElement === document.body) docSurface()?.focus();
 }
 
 //: One strip's wrap/collapse group. Split out of the loop below so a bar that
@@ -22507,6 +22528,10 @@ function docCmKeymap(CM) {
     { key: "Mod-s", run: () => { saveDocument(); return true; } },
     { key: "Mod-b", run: () => { wrapDocSelection("**", "bold text"); return true; } },
     { key: "Mod-i", run: () => { wrapDocSelection("*", "italic text"); return true; } },
+    //: Underline, the one chord every word processor shares. CodeMirror binds
+    //: Mod-u to "undo selection", which on a prose page just collapses the
+    //: selection and reads as the key being dead.
+    { key: "Mod-u", run: () => { applyMarkdown("underline"); return true; } },
     { key: "Mod-e", run: () => { wrapDocSelection("`"); return true; } },
     { key: "Mod-1", run: () => { applyMarkdown("h1"); return true; } },
     { key: "Mod-2", run: () => { applyMarkdown("h2"); return true; } },
@@ -22519,6 +22544,9 @@ function docCmKeymap(CM) {
     //: panel here and the app's own bar on the fallback, so this binding does
     //: not have to know which is on screen.
     { key: "Mod-f", run: () => { toggleDocFindBar(true); return true; } },
+    //: Ctrl+H is Replace in every word processor and editor; the panel is the
+    //: same, with the cursor in its Replace field.
+    { key: "Mod-h", run: () => { toggleDocFindBar(true); docCmView?.dom.querySelector(".cm-search input[name=replace]")?.focus(); return true; } },
     //: Find in every document (INBOX 404), VS Code's search across files.
     { key: "Mod-Shift-f", run: () => docFindInDocuments() },
     //: The formatting toolbar, shown or hidden (INBOX 574).
