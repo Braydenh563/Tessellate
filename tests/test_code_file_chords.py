@@ -40,8 +40,12 @@ def test_the_guard_reads_the_file_type():
 def test_slash_and_link_menus_stay_shut_in_a_code_file():
     editor = (DOCS_JS.parent / "editor.js").read_text(encoding="utf-8")
     body = editor[editor.index("function editorHandleInput(") :].split("\n}\n")[0]
-    assert "docFileType().previewable" in body
-    assert body.index("docFileType().previewable") < body.index('["/", "[["]')
+    # The guard is one helper (the cross-file typeof check is counted by
+    # test_global_scope_ratchet), so the menu reads it and the helper reads the type.
+    assert "editorDocIsCode()" in body
+    assert body.index("editorDocIsCode()") < body.index('["/", "[["]')
+    helper = editor[editor.index("function editorDocIsCode(") :].split("\n}\n")[0]
+    assert "docFileType().previewable" in helper
 
 
 def test_a_code_file_has_go_to_line_on_ctrl_g_and_prose_keeps_find_next():

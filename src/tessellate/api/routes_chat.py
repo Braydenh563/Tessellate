@@ -3167,6 +3167,7 @@ def _told_sources(req: _StreamRequest, current: list, today) -> str:  # noqa: AN
                 question, current, today=today, voice=_composer_voice(), now=user_now(deps.get_config()).replace(tzinfo=None)
             )
         except Exception:  # noqa: BLE001  # the words of the earlier answers still stand
+            logging.getLogger("tessellate.chat").exception("chat: an earlier question could not be answered again for its sources")
             continue
         for row in result.get("grounding") or []:
             told.extend(_row_source(by_id, part) for part in [row, *(row.get("parts") or [])])
