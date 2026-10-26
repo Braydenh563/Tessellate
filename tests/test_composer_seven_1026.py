@@ -18,3 +18,22 @@ def test_next_exam_uses_reminder(ask, q):  # noqa: F811
     said = ask(q)
     assert "12 Nov" in said or "November" in said or "Nov 12" in said, said
     assert "09:00" in said, said
+
+
+@pytest.mark.parametrize("kind", ["how", "sorry", "laugh", "reaction", "confused", "ack", "compliment"])
+@pytest.mark.parametrize("voice", ["natural", "professional", "playful", "plain"])
+def test_small_talk_has_twenty_surfaces_a_voice(kind, voice):
+    from tessellate.ai import composer_compose as cc
+
+    mood = cc.mood_of("hello", voice=voice, seed="x")
+    assert len(set(cc.eligible(f"social_{kind}", mood))) >= 16, (kind, voice)
+
+
+def test_small_talk_follows_the_voice_and_the_emotion():
+    from tessellate.ai import composer
+
+    calm = {composer.social("sorry", voice="plain", seed=str(n)) for n in range(40)}
+    formal = {composer.social("sorry", voice="professional", seed=str(n)) for n in range(40)}
+    assert not calm & formal
+    stressed = {composer.social("sorry i am so stressed about the deadline", voice="natural", seed=str(n)) for n in range(40)}
+    assert any("one thing at a time" in x or "plate" in x or "pressing" in x or "juggling" in x or "stress" in x.lower() for x in stressed)

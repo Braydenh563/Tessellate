@@ -168,6 +168,30 @@ def pick(pool: tuple[lines.Cand, ...], slot: str, mood: Mood, render=None) -> li
     return best[1] if best else None
 
 
+def surfaces(ability: str) -> tuple[lines.Cand, ...]:
+    """Every sentence `ability` can say: its frames, and for small talk every
+    head with every tail of a shared voice."""
+    if not ability.startswith("social_"):
+        return lines.FRAMES[ability]
+    kind = ability.removeprefix("social_")
+    tails = lines.SOCIAL_TAILS.get(kind, lines.SOCIAL_TAILS["*"])
+    pairs = [lines.c(f"{h.text} {t.text}", "".join(k for k, v in lines._V.items() if v in h.voices), "".join(k for k, v in lines._E.items() if v in t.emotions))
+             for h in lines.SOCIAL_HEADS.get(kind, ()) for t in tails if not h.voices or not t.voices or h.voices & t.voices]
+    return (*lines.FRAMES[ability], *pairs)
+
+
+def eligible(ability: str, mood: Mood) -> list[str]:
+    """Every frame of `ability` that fits the voice and the emotion (no facts
+    to fill), for a caller that keeps its own no-repeat rule
+    (`phrasing.choose`). A person who is stressed or upset gets the lines
+    written for that, most of the time."""
+    fits = [x for x in surfaces(ability) if _score(x, ability, mood) >= 0 and not _fields(x.text)]
+    felt = [x for x in fits if mood.emotion in x.emotions]
+    if len(felt) >= 4 and _stable(mood.seed, ability, "felt") < 0.7:
+        fits = felt
+    return [x.text for x in fits]
+
+
 #: How much is said around the facts: the share of turns that get an opener
 #: and a closer, by voice, and the emotions that take neither.
 _AROUND = {"warm": (0.75, 0.55), "terse": (0.12, 0.08), "playful": (0.8, 0.65), "formal": (0.45, 0.4)}
@@ -201,7 +225,7 @@ def frame(ability: str, mood: Mood, **facts: object) -> str:
 
 #: Abilities whose frames carry their own greeting or are clauses of one:
 #: a generic "Sure." before "Good morning." would be wrong.
-_NO_AROUND = frozenset({"quiz_right", "quiz_close", "quiz_wrong", "quiz_skip", "close_next", "act_card", "hello", "welcome_new", "w_due", "w_last", "w_streak", "w_quiet"})
+_NO_AROUND = frozenset({"social_how", "social_sorry", "social_laugh", "social_reaction", "social_confused", "social_ack", "social_compliment", "quiz_right", "quiz_close", "quiz_wrong", "quiz_skip", "close_next", "act_card", "hello", "welcome_new", "w_due", "w_last", "w_streak", "w_quiet"})
 
 
 #: Abilities that take only their own openers and closers (an act's

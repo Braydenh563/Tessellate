@@ -2627,7 +2627,7 @@ def _social_reply(req: _StreamRequest, prepared: dict) -> str:
         prepared["intent"],
         str(last.get("answer") or ""),
         str(last.get("question") or ""),
-        voice=_composer_voice(),
+        voice=_chat_voice(req),
         recent=recent,
         seed=seed,
         invite=_newest_word(req.session),

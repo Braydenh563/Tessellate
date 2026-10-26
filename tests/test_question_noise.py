@@ -56,7 +56,7 @@ def test_a_question_with_small_talk_in_it_is_still_a_question(message):
 
 
 def test_laughter_and_thanks_get_their_own_reply():
-    assert composer.social("lol") in composer.SOCIAL["laugh"]
+    assert composer.social("lol") in composer.social_surfaces("laugh")
     assert composer.social("ty") in composer.SOCIAL["thanks"]
 
 

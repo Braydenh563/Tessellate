@@ -37,7 +37,7 @@ EM_DASH = chr(0x2014)
     ],
 )
 def test_each_kind_of_small_talk_gets_a_reply_of_its_own_kind(message, kind):
-    assert composer.social(message) in composer.SOCIAL[kind]
+    assert composer.social(message) in composer.social_surfaces(kind)
 
 
 def test_what_can_you_do_says_what_the_composer_answers():

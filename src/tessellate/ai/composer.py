@@ -78,7 +78,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Any
 
-from tessellate.ai import act_registry, composer_ack, composer_open, composer_overview, composer_parts, composer_replies, composer_tables, grounding, phrasing, question_noise, realise, spelling, utilities, variants
+from tessellate.ai import act_registry, composer_ack, composer_compose, composer_lines, composer_open, composer_overview, composer_parts, composer_replies, composer_tables, grounding, phrasing, question_noise, realise, spelling, utilities, variants
 from tessellate.ai import recognise as rec
 from tessellate.ai import when as when_words
 from tessellate.search import query as query_understanding
@@ -3535,14 +3535,30 @@ def _social_line(message: str, kind: str, previous: str, last_question: str, voi
     """The stored opener of `kind`, and a next step after an acknowledgement."""
     recent = [r for r in recent if r] or ([previous] if previous else [])
     professional = composer_tables.voice_of(voice) == "professional"
-    lines = (SOCIAL_PROFESSIONAL if professional else SOCIAL)[kind]
-    #: A composed line never ends on a sentence one of the last few ended on.
-    lines = [x for x in lines if not composer_parts.repeats_tail(x, recent[-phrasing.RECENT:])] or lines
-    line = phrasing.choose(lines, f"social:{kind}:{message}", recent, seed or _SESSION.get())
+    if f"social_{kind}" in composer_lines.FRAMES:
+        #: Composed in the voice and mood of the turn (CHAT_PLAN 1353).
+        mood = composer_compose.mood_of(message, voice=voice, seed=f"{seed or _SESSION.get()}|{message}")
+        line = phrasing.choose(composer_compose.eligible(f"social_{kind}", mood), f"social:{kind}:{message}", recent, seed or _SESSION.get())
+    else:
+        line = _stored_social(message, kind, professional, recent, seed)
     subject = _asked_span(last_question, subject_terms(last_question)) if last_question else ""
     if kind in _NEXT_STEP_KINDS and subject and len(subject) <= 40:
         line = f"{line} {_next_step(line, message, subject, professional)}"
     return line
+
+
+def social_surfaces(kind: str, professional: bool = False) -> list[str]:
+    """Every line `social` can say for `kind`: the stored ones, and for the
+    kinds the composition layer words every sentence it can build."""
+    built = [x.text for x in composer_compose.surfaces(f"social_{kind}")] if f"social_{kind}" in composer_lines.FRAMES else []
+    return [*(SOCIAL_PROFESSIONAL if professional else SOCIAL)[kind], *built]
+
+
+def _stored_social(message: str, kind: str, professional: bool, recent: list[str], seed: str) -> str:
+    lines = (SOCIAL_PROFESSIONAL if professional else SOCIAL)[kind]
+    #: A composed line never ends on a sentence one of the last few ended on.
+    lines = [x for x in lines if not composer_parts.repeats_tail(x, recent[-phrasing.RECENT:])] or lines
+    return phrasing.choose(lines, f"social:{kind}:{message}", recent, seed or _SESSION.get())
 
 
 def _next_step(line: str, message: str, subject: str, professional: bool) -> str:
