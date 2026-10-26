@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- A new mind map from a template that is too wide to read on a phone now opens at full size on its centre topic instead of shrunk to 17% (the New board dialog fitted it again after it had framed itself).
 - Mind map: the topic Shape menu showed only seven of its nine boxes (Cloud and Plain sat past the menu's edge, unreachable); a long row of choices is now a grid, six to a row, and Chevron and Underline are in it. A test holds the API, the menu, the pickers, the glyphs and the stylesheet to one list of shapes.
 - Mind map templates build what their pictures show: Career plan is a root box over four chevron topics each with two underlined bars, laid out Tree, downward as named (a new map from a template was a sideways ladder under that name). Every template stores its centre's shape and each topic's shape (Chevron and Underline are new in the topic Box picker), and the picture is drawn from the same data. Checked on all 27 templates at 1440: layout, branch and leaf shapes and counts match, 0 overlaps.
 - Spelling and grammar no longer mark the words of a link, code, addresses, file paths, email addresses or a unit after a number ("10-20 min" is not "minimum"); Settings, Writing, Check link text turns the link words back on (K11, K4b).

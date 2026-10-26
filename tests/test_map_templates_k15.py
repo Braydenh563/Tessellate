@@ -98,3 +98,15 @@ def test_the_picture_draws_the_shapes_the_template_stores():
             assert any(p["tag"] == "circle" for p in parts), entry["key"]
         if leaf == "underline":
             assert any(p["tag"] == "rect" and p["a"]["height"] == 1.2 for p in parts), entry["key"]
+
+
+def test_a_new_map_is_not_fitted_again_after_it_is_framed():
+    """The New board dialog fitted every board after opening it, which undid
+    `wbFrameMapOnOpen`'s fallback for a map too wide to read: Career plan
+    opened at 17% on a phone (measured 390x844, 12 topics, words 2px high)
+    instead of at 1:1 on its root. A map frames itself; only a board is fitted."""
+    text = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    start = text.index('if (board.type === "map") await wbMapTidyFresh();')
+    tail = text[start : start + 400]
+    fit = tail.index("wbZoomToFit({ animate: false })")
+    assert 'board.type !== "map"' in tail[:fit], tail

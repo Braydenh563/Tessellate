@@ -18216,7 +18216,10 @@ async function createNewBoard(preset = null, { reveal = false } = {}) {
       await openWhiteboardBoard(board.id);
       if (board.type === "map") await wbMapTidyFresh();
       wbBoardMadeStep(board);
-      wbZoomToFit({ animate: false });
+      //: A map frames itself (`wbFrameMapOnOpen`: a fit, or 1:1 on its root
+      //: when the fit would be unreadable); fitting it again here made a
+      //: wide template open at 17% on a phone.
+      if (board.type !== "map") wbZoomToFit({ animate: false });
       toast(`"${board.title}" started from a template.`);
     } catch (err) {
       toast(err.message || voiceLine("failed", { what: "create that board" }), true);
