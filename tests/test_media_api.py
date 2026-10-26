@@ -622,7 +622,7 @@ def test_pdf_page_404s_out_of_range(ai_client, monkeypatch):
     from tessellate.core import pdfpages
 
     monkeypatch.setattr(pdfpages, "available", lambda: True)
-    monkeypatch.setattr(pdfpages, "render_page", lambda p, i: None)
+    monkeypatch.setattr(pdfpages, "render_page", lambda p, i, thumb=False: None)
     stored = _upload_pdf(ai_client)
     assert ai_client.get(f"/media/pdf-page/{stored}/9").status_code == 404
 

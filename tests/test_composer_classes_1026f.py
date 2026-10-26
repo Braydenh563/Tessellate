@@ -256,3 +256,24 @@ def test_a_window_still_ahead_is_said_empty(ask, q, must, never):
 @pytest.mark.parametrize("q,must", SURFACE_COUNTS, ids=[r[0] for r in SURFACE_COUNTS])
 def test_a_count_by_a_dated_phrase(ask, q, must):
     _check(ask(q), must, NOT_FOUND, q)
+
+
+@pytest.mark.parametrize(
+    ("text", "due"),
+    [
+        ("Action: Priya to book the venue before 14 November.", "2026-11-14"),
+        ("send it until 3 March", "2027-03-03"),
+        ("pay the deposit till 20 December", "2026-12-20"),
+        ("book it before Friday", "2026-10-09"),
+    ],
+)
+def test_a_reminders_edge_word_is_its_due_day_not_a_stretch(text: str, due: str) -> None:
+    #: The edge readers are for questions about the past; meetings and
+    #: reminders read "before 14 November" as due that day (meeting rules 81).
+    from datetime import datetime
+
+    from tessellate.ai.recognise import recognise
+
+    spans = recognise(text, now=datetime(2026, 10, 7, 14), tense="future")
+    got = [str(s.value) for s in spans if s.kind == "date" and s.rank == 0]
+    assert got == [due]
