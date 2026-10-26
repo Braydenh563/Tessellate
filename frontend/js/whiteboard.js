@@ -505,6 +505,13 @@ function wbCanvasOrigin() {
   return wbCanvasOriginCache;
 }
 
+//: The inverse, for a thing placed on screen at a board point (the paste
+//: chip). Pure, with `wbScreenToBoard`, so one round trip holds both.
+function wbBoardToScreen(x, y, origin, t) {
+  const s = origin.scale || 1;
+  return [origin.left + (x * t.k + t.x) * s, origin.top + (y * t.k + t.y) * s];
+}
+
 function wbClientToBoard(clientX, clientY) {
   return wbScreenToBoard(clientX, clientY, wbCanvasOrigin(), d3.zoomTransform(document.getElementById("whiteboard-container")));
 }
@@ -12898,9 +12905,14 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       // a plain `<img>` (see `wbRasterizeSvg`), which never attaches
       // X-Auth-Token: the same gap that made the image never render on the
       // board itself, here too.
+      //: A picture with rounded corners (Format > Corners) is clipped to the
+      //: same path the board draws, read off the drawn element as a box's is.
+      const radii = wbSvgBoxRadii(document.querySelector(`#wb-html-layer .wb-object[data-id="${obj.id}"]`), obj.data, obj.width, obj.height);
+      const clip = radii.some((r) => r > 0) ? `wb-export-clip-${obj.id}` : "";
+      if (clip) parts.push(`<clipPath id="${clip}"><path d="${wbSvgRoundedPath(obj.width, obj.height, radii)}" /></clipPath>`);
       parts.push(
         `<image href="${wbSvgEscape(mediaSrc(obj.data.url))}" width="${obj.width}" height="${obj.height}" ` +
-          `preserveAspectRatio="xMidYMid slice" />`
+          `preserveAspectRatio="xMidYMid slice"${clip ? ` clip-path="url(#${clip})"` : ""} />`
       );
     } else if (WB_MAP_KINDS.has(obj.kind)) {
       // A map node exports as what it looks like: a rounded box with the
@@ -13005,6 +13017,7 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       const textInk = textEl ? wbExportColour(getComputedStyle(textEl).color) : null;
       const boxEl = document.querySelector(`#wb-html-layer .wb-object[data-id="${obj.id}"]`);
       parts.push(wbSvgBoxBackdrop(boxEl, obj.data, obj.width, obj.height));
+      parts.push(wbSvgStickyFold(boxEl, obj.width, obj.height));
       parts.push(
         wbSvgText(lines, pad, fontSize + pad - 2, {
           fontSize,
@@ -14785,6 +14798,13 @@ async function initWhiteboard() {
   if (typeof ResizeObserver !== "undefined") {
     let refitTimer = 0;
     const refit = () => {
+      //: **A rect read while the canvas was hidden is dropped when it shows**
+      //: (wb5): the origin cache is cleared by pointer events, and a canvas
+      //: that appears, or a panel that opens beside it, sends none, so a
+      //: paste chip or drop read the board 16px left and 60px high (the
+      //: library's own padding and tab bar) until the pointer next moved.
+      //: The canvas and the panels beside it are all watched here already.
+      wbClearCanvasRectCache();
       clearTimeout(refitTimer);
       refitTimer = setTimeout(wbRefitIfFitted, 200);
     };
@@ -23418,7 +23438,7 @@ async function dragEndNode(event, d) {
             //: keeps the map's own look.
             ...(crossLink ? {} : wbToolCaps()),
          }),
-         x: 0, y: 0, z: 1,
+         x: 0, y: 0, z: wbStackNewZ("sketch"),
          board_id: window.currentBoardId
        };
        try {

@@ -876,7 +876,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 804 | Logs More menu .dock-menu-check rows 34.9px/8px against 32px/12.8px items; the board's Start and End menus not measured for end gaps. | docs/roadmap/agent-remaining/OPEN.md:2252 | S | unassigned |
 | 805 | .wb-resize-handle title still says "double-click fits the text" on non-frame objects; a dead .wb-map-actions coarse-pointer rule pinned by... | docs/roadmap/agent-remaining/OPEN.md:2261 | S | unassigned |
 | 806 | Open: "what is there about X" with no model is the quoted answer, not the overview shape (decision 64). | docs/roadmap/agent-remaining/OPEN.md:2285 | S | unassigned |
-| 807 | Tables lack column widths and merged cells; Edit data lacks %name% placeholders; .drawio export is not built; a hidden named layer's item eye and... | docs/roadmap/agent-remaining/OPEN.md:2295 | S | unassigned |
+| 807 | Tables lack merged cells (column widths: built, wb5); Edit data lacks %name% placeholders; .drawio export is not built; a hidden named layer's item eye and... | docs/roadmap/agent-remaining/OPEN.md:2295 | S | unassigned |
 | 808 | Whiteboard gaps open: the hand-drawn look, tables, edit data, a current layer new items land in, .drawio pages after the first; an item's eye on a... | docs/roadmap/agent-remaining/OPEN.md:2379 | S | unassigned |
 | 809 | The laser sweep's 390 threshold was lowered from 10 dots to 3 and not re-run; a real draw.io file and dark theme not verified. | docs/roadmap/agent-remaining/OPEN.md:2382 | S | unassigned |
 | 810 | The AI board tools and import/export do not carry a note's fold. | docs/roadmap/agent-remaining/OPEN.md:2415 | S | unassigned |
@@ -2328,7 +2328,7 @@ File: `docs/roadmap/archive/agent-remaining/noagent-1011.md`.
 Full list: [archive/agent-remaining/canvasdepth2-1011.md](../archive/agent-remaining/canvasdepth2-1011.md).
 - Not driven: dark theme for the hand-drawn look, tables, the Data tab and the current layer; a real touch double-tap into a table cell; an .xmind opened in XMind; a real multi-page draw.io file; callouts, labels and stamps in the map's PNG and SVG.
 - maplayouts.js "tree-left carries the branch bar" fails on base too (it measures the centre topic).
-- Tables lack column widths and merged cells; Edit data lacks `%name%` placeholders; .drawio export is not built; a hidden named layer's item eye and layer order are still open.
+- Tables lack merged cells (column widths: built, wb5); Edit data lacks `%name%` placeholders; .drawio export is not built; a hidden named layer's item eye and layer order are still open.
 
 ## Left by the calendar55 agent (Brief 55, merged 2026-10-11)
 

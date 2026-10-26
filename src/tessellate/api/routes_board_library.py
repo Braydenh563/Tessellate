@@ -41,7 +41,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from pydantic import BaseModel, Field
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate.api.routes_whiteboard import (
@@ -72,6 +72,7 @@ from tessellate.core.database import (
     BoardLibraryMark,
     Entry,
     MediaUpload,
+    WhiteboardNode,
     WhiteboardObject,
     WhiteboardSketch,
     utcnow,
@@ -1058,6 +1059,46 @@ def _place_branch(db: Session, board_id: int | None, payload: dict, body: PlaceB
     return {"sketches": [], "objects": made}
 
 
+def _band_tops(db: Session, board_id: int | None, made: dict) -> tuple[int, int, list[int]]:
+    """The highest z already on the board in the drawings band and in the
+    cards band (notes, boxes, pictures, tables), and the frames' z values,
+    leaving out the rows just placed."""
+    here = (lambda col: col.is_(None)) if board_id is None else (lambda col: col == board_id)
+    sketch_top = db.scalar(
+        select(func.max(WhiteboardSketch.z)).where(here(WhiteboardSketch.board_id), WhiteboardSketch.id.not_in({r.id for r in made["sketches"]}))
+    )
+    note_top = db.scalar(select(func.max(WhiteboardNode.z)).where(here(WhiteboardNode.board_id)))
+    others = db.scalars(
+        select(WhiteboardObject).where(here(WhiteboardObject.board_id), WhiteboardObject.id.not_in({r.id for r in made["objects"]}))
+    ).all()
+    card_top = max([0, note_top or 0, *[o.z or 0 for o in others if o.kind != "frame"]])
+    return max(0, sketch_top or 0), card_top, [o.z or 0 for o in others if o.kind == "frame"]
+
+
+def _stack_on_top(db: Session, board_id: int | None, made: dict) -> None:
+    """Put placed rows on top of what is already on the board, keeping the
+    stencil's own order among them (wb5).
+
+    A stencil carries small fixed z values (a drawing 5, a card 1, a link 1),
+    so a placement landed under, or tied with, anything already drawn above
+    them. The board's stacking (`wbStackOrder` in whiteboard.js) is three
+    bands: frames, then drawings, then cards; each placed row takes the next
+    z of its own band, frames under the frames already there, as one drawn
+    by hand does (`wbStackNewZ`)."""
+    sketch_top, card_top, frame_zs = _band_tops(db, board_id, made)
+    by_stencil = lambda r: (r.z or 0, r.id)  # noqa: E731
+    frames = sorted((r for r in made["objects"] if r.kind == "frame"), key=by_stencil)
+    cards = sorted((r for r in made["objects"] if r.kind != "frame"), key=by_stencil)
+    for rows, first in (
+        (sorted(made["sketches"], key=by_stencil), sketch_top + 1),
+        (frames, (min(frame_zs) - len(frames)) if frame_zs else 0),
+        (cards, card_top + 1),
+    ):
+        for i, row in enumerate(rows):
+            row.z = first + i
+    db.flush()
+
+
 def _onto_current_layer(db: Session, board_id: int | None, made: dict) -> None:
     """Placed rows go on the board's current layer, as anything drawn by hand
     does (canvasdepth2, `_on_current_layer`)."""
@@ -1097,6 +1138,7 @@ def place_library_item(board_id: int, body: PlaceBody, db: Session = Depends(get
             made = {"sketches": [], "objects": []}
     else:
         raise _fail("A style or a palette is applied to what is selected, not placed.")
+    _stack_on_top(db, target, made)
     _onto_current_layer(db, target, made)
     events.record(
         db, "placed", "board", target, f"{entry_data.get('name', 'item')} placed"[:80],

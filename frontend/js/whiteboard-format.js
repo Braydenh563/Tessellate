@@ -1394,6 +1394,37 @@ function wbTableCells(d) {
   return cells.map((row) => (Array.isArray(row) ? row.map((c) => String(c ?? "")) : [""]));
 }
 
+//: **A table's column widths** (wb5): `data.col_widths`, one relative weight
+//: per column with a mean of 1, so the box's width times a weight over the
+//: column count is that column's width. Absent, or not one weight per column,
+//: reads as equal, so a table made before this is unchanged.
+const WB_TABLE_WEIGHT_MIN = 0.25;
+const WB_TABLE_WEIGHT_MAX = 6;
+
+function wbTableWeights(d) {
+  const cols = wbTableCells(d)[0].length;
+  const w = d.data?.col_widths;
+  const ok = Array.isArray(w) && w.length === cols && w.every((n) => Number.isFinite(n) && n > 0);
+  return ok ? w : Array(cols).fill(1);
+}
+
+//: The weights with column `c` scaled by `factor`, held to the least and most
+//: a column may take and scaled back to a mean of 1 (so the others give way
+//: and the table keeps its width). `null` when nothing would change.
+function wbTableResizeColumn(weights, c, factor) {
+  const next = weights.map((n, i) => (i === c ? Math.min(WB_TABLE_WEIGHT_MAX, Math.max(WB_TABLE_WEIGHT_MIN, n * factor)) : n));
+  const mean = next.reduce((a, n) => a + n, 0) / next.length;
+  const out = next.map((n) => Math.round((n / mean) * 1000) / 1000);
+  return out.every((n, i) => Math.abs(n - weights[i]) < 0.001) ? null : out;
+}
+
+//: Where each column starts, as a share of the width: [0, ..., 1].
+function wbTableColumnEdges(weights) {
+  const sum = weights.reduce((a, n) => a + n, 0);
+  let at = 0;
+  return [0, ...weights.map((n) => (at += n / sum))];
+}
+
 //: **A text box, a sticky or a table, as the export draws it.** The export
 //: drew a text box as its words alone and left a table out of the file, so a
 //: yellow sticky came out as dark text on the board's white and a table as
@@ -1422,6 +1453,28 @@ function wbSvgBoxBackdrop(el, data, w, h) {
   return `<path d="${wbSvgRoundedPath(w, h, wbSvgBoxRadii(el, data, w, h))}" fill="${wbSvgEscape(fill)}"${edge} />`;
 }
 
+//: **A sticky's folded corner, as the export draws it.** The board paints
+//: it as `::after` (a square in the bottom-right, a hard-stopped gradient:
+//: the board's ground on the outer half, the paper a shade darker on the
+//: inner), so the file had a square-cornered sheet. The two colours are read
+//: off the gradient the browser computed, so the theme and the paper travel;
+//: a sticky with the fold turned off draws none.
+function wbSvgFoldColours(gradient) {
+  const stops = [...String(gradient || "").matchAll(/(rgba?\([^)]*\)|color\([^)]*\))\s+50%/g)].map((m) => m[1]);
+  return stops.length === 2 ? stops : null;
+}
+
+function wbSvgStickyFold(el, w, h) {
+  if (!el?.classList.contains("wb-sticky") || el.classList.contains("wb-no-fold")) return "";
+  const fold = getComputedStyle(el, "::after");
+  const size = parseFloat(fold.width) || 0;
+  const colours = size > 0 && fold.content !== "none" ? wbSvgFoldColours(fold.backgroundImage) : null;
+  const [cut, paper] = (colours || []).map((c) => wbSvgEscape(wbExportColour(c) || c));
+  if (!colours || size > w || size > h) return "";
+  return `<path d="M${w - size} ${h}H${w}V${h - size}Z" fill="${cut}" />` +
+    `<path d="M${w - size} ${h - size}V${h}L${w} ${h - size}Z" fill="${paper}" />`;
+}
+
 function wbSvgTableCell(paint, text, box, size) {
   const edge = wbSvgEscape(paint.edge || "#9aa3b5");
   const rect = `<rect x="${box.x}" y="${box.y}" width="${box.w}" height="${box.h}" fill="${wbSvgEscape(paint.fill)}" stroke="${edge}" stroke-width="1" />`;
@@ -1432,14 +1485,17 @@ function wbSvgTableCell(paint, text, box, size) {
 
 function wbSvgTable(el, obj) {
   const cells = wbTableCells(obj);
-  const cols = cells[0].length;
-  const box = { w: obj.width / cols, h: obj.height / cells.length };
+  const edges = wbTableColumnEdges(wbTableWeights(obj));
+  const box = { h: obj.height / cells.length };
   const plain = { fill: "#ffffff", edge: "#9aa3b5", ink: "#1f2430" };
   const cellEl = (r) => el?.querySelector(`.wb-table-cell[data-r="${Math.min(r, cells.length - 1)}"]`);
   const body = (cellEl(1) && wbExportPaint(cellEl(1))) || plain;
   const head = obj.data?.header ? (cellEl(0) && wbExportPaint(cellEl(0))) || { ...plain, fill: "#eef1f6" } : body;
   const size = parseFloat(cellEl(1) && getComputedStyle(cellEl(1)).fontSize) || 14;
-  return cells.map((row, r) => row.map((text, c) => wbSvgTableCell(r === 0 ? head : body, text, { ...box, x: c * box.w, y: r * box.h }, size)).join("")).join("");
+  return cells.map((row, r) => row.map((text, c) => {
+    const x = edges[c] * obj.width;
+    return wbSvgTableCell(r === 0 ? head : body, text, { ...box, x, w: edges[c + 1] * obj.width - x, y: r * box.h }, size);
+  }).join("")).join("");
 }
 
 function wbBuildTable(el, d) {
@@ -1463,10 +1519,11 @@ function wbPaintTable(node, d) {
   const grid = node.querySelector(".wb-table-grid");
   if (!grid || grid.querySelector("[contenteditable='true']")) return;
   const cells = wbTableCells(d);
-  const key = JSON.stringify([cells, Boolean(d.data?.header)]);
+  const weights = wbTableWeights(d);
+  const key = JSON.stringify([cells, Boolean(d.data?.header), weights]);
   if (grid.dataset.key === key) return;
   grid.dataset.key = key;
-  grid.style.gridTemplateColumns = `repeat(${cells[0].length}, minmax(0, 1fr))`;
+  grid.style.gridTemplateColumns = weights.map((n) => `minmax(0, ${n}fr)`).join(" ");
   grid.style.gridTemplateRows = `repeat(${cells.length}, minmax(0, 1fr))`;
   grid.classList.toggle("has-header", Boolean(d.data?.header));
   grid.replaceChildren(...cells.flatMap((row, r) => row.map((text, c) => {
@@ -1494,10 +1551,15 @@ async function wbInsertTable(rows = 3, cols = 3) {
 }
 
 //: Writes new cells (and a new size) as one Undo step.
-async function wbSetTable(d, cells, size = null, said = "") {
+//: `widths`: the column weights to keep (undefined leaves them, null clears them).
+async function wbSetTable(d, cells, size = null, said = "", widths = undefined) {
   if (!d || wbIsLocked("object", d)) return;
   wbPushUndo({ action: "move", kind: "object", id: d.id, before: WB_KIND_INFO.object.payload(d) });
   d.data = { ...d.data, cells };
+  if (widths !== undefined) {
+    if (widths) d.data.col_widths = widths;
+    else delete d.data.col_widths;
+  }
   if (size) Object.assign(d, size);
   await wbSaveObject(d);
   wbScheduleRender();
@@ -1575,10 +1637,38 @@ function wbTableReshape(d, axis, at, remove) {
   } else {
     next = cells.map((row) => (remove ? row.filter((_, i) => i !== at) : [...row.slice(0, at), "", ...row.slice(at)]));
   }
-  const share = axis === "row" ? d.height / rows : d.width / cols;
+  //: A column takes the width it has (a removed one gives up its own), a new
+  //: one an average share; the weights go back to a mean of 1 so the others
+  //: keep their pixels.
+  const weights = wbTableWeights(d);
+  const total = weights.reduce((a, n) => a + n, 0);
+  const share = axis === "row" ? d.height / rows : remove ? (d.width * weights[at]) / total : d.width / cols;
   const size = axis === "row" ? { height: Math.max(WB_TABLE_ROW_H / 2, d.height + (remove ? -share : share)) } : { width: Math.max(WB_TABLE_COL_W / 2, d.width + (remove ? -share : share)) };
+  let widths;
+  if (axis === "col" && Array.isArray(d.data?.col_widths)) {
+    const grown = remove ? weights.filter((_, i) => i !== at) : [...weights.slice(0, at), total / cols, ...weights.slice(at)];
+    const mean = grown.reduce((a, n) => a + n, 0) / grown.length;
+    widths = grown.map((n) => Math.round((n / mean) * 1000) / 1000);
+  }
   const word = axis === "row" ? "Row" : "Column";
-  return wbSetTable(d, next, size, `${word} ${remove ? "removed" : "added"}.`);
+  return wbSetTable(d, next, size, `${word} ${remove ? "removed" : "added"}.`, widths);
+}
+
+//: The column-width rows of the item menu: a quarter wider or narrower at the
+//: cell last pressed (the others give way, the table keeps its width), and
+//: back to equal once any has been set.
+function wbTableWidthRows(d, cells, c, at) {
+  const here = at ? "The column of the cell you pressed" : "The last column; press a cell first to pick another";
+  const set = (factor, said) => () => {
+    const next = wbTableResizeColumn(wbTableWeights(d), c, factor);
+    if (next) wbSetTable(d, wbTableCells(d), null, said, next);
+  };
+  const rows = [
+    ["Widen this column", `${here}, a quarter wider`, set(1.25, "Column widened.")],
+    ["Narrow this column", `${here}, a fifth narrower`, set(0.8, "Column narrowed.")],
+  ];
+  if (Array.isArray(d.data?.col_widths)) rows.push(["Equal column widths", "Every column the same share again", () => wbSetTable(d, cells, null, "Columns equal.", null)]);
+  return rows;
 }
 
 //: The table's rows for the item menu: around the cell last pressed when it
@@ -1596,6 +1686,7 @@ function wbTableMenuRows(d) {
     ["Add a column to the left", `Before ${here} column`, () => wbTableReshape(d, "col", c, false)],
     [at ? "Delete this row" : "Delete the last row", at ? "The row of the cell you pressed" : "Press a cell first to pick another", () => wbTableReshape(d, "row", r, true)],
     [at ? "Delete this column" : "Delete the last column", at ? "The column of the cell you pressed" : "Press a cell first to pick another", () => wbTableReshape(d, "col", c, true)],
+    ...wbTableWidthRows(d, cells, c, at),
     [d.data?.header ? "Plain first row" : "First row as a header", "Bold on a tint, or like the rest", async () => {
       wbPushUndo({ action: "move", kind: "object", id: d.id, before: WB_KIND_INFO.object.payload(d) });
       d.data = { ...d.data, header: !d.data?.header || undefined };
