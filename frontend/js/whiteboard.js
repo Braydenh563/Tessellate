@@ -1289,6 +1289,14 @@ function wbShowSizeReadout(box) {
   text.textContent = words;
   g.append(plate, text);
   group.appendChild(g);
+  wbMeasuring(true);
+}
+
+//: While a size or gap badge shows, the arrow grips and the turn handle hide:
+//: they sit on the same spots (22 px out, mid-side) and covered the numbers
+//: (the owner 2026-10-26: "sizes still get cut off"). Neither works mid-drag.
+function wbMeasuring(on) {
+  document.getElementById("whiteboard-container")?.classList.toggle("wb-measuring", on);
 }
 
 //: One resize frame through the guides: the box the handle has made, snapped
@@ -1364,6 +1372,7 @@ function wbShowAlignmentGuides(lines) {
     zoomGroup.appendChild(group);
   }
   group.replaceChildren();
+  wbMeasuring(false);
   if (!lines.length) return;
   const ns = "http://www.w3.org/2000/svg";
   const container = document.getElementById("whiteboard-container");
@@ -1405,11 +1414,13 @@ function wbShowAlignmentGuides(lines) {
     text.textContent = words;
     label.append(plate, text);
     group.appendChild(label);
+    wbMeasuring(true);
   }
 }
 
 function wbClearAlignmentGuides() {
   document.getElementById("wb-align-guides")?.remove();
+  wbMeasuring(false);
 }
 
 function wbApplyGrid() {

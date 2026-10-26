@@ -2,7 +2,7 @@
 for a text box or picture (the owner, 2026-10-26: "the side arrows dont move
 with it"). The card's drag left the four arrows on the old box until release
 (measured 17px outside the box at the press, 98px inside it at +120; 22px at
-every step after the fix, scratchpad/ui-sweeps/wbresize-card.js).
+every step after the fix, measured by a one-off sweep).
 """
 
 from pathlib import Path

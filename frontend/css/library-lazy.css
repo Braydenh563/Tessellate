@@ -4934,6 +4934,12 @@ button.ghost.doc-template-choice.wb-template-choice {
 .wb-size-readout rect {
   fill: var(--warn);
 }
+/* `wbMeasuring`: the badges sit where the arrows and turn handle do. */
+.wb-measuring .wb-clone-grip,
+.wb-measuring .wb-rotate-handle,
+.wb-measuring .wb-rotate-handle-stem {
+  visibility: hidden;
+}
 /* --bg is a gradient, not a valid SVG fill (it drew black): the distance
    badge's measured pair instead, 4.5:1 or more in both themes. */
 .wb-size-readout text {
