@@ -2,9 +2,9 @@
 
 Generated 2026-10-26 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6582, frontend ids 2556, CSS sections 504, backend routes 622, backend modules 6698, test files 1405, tests 12460, plan headings 977.
+Counts: frontend functions 6585, frontend ids 2556, CSS sections 504, backend routes 624, backend modules 6706, test files 1407, tests 12474, plan headings 977.
 
-## Frontend functions (6582)
+## Frontend functions (6585)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -168,21 +168,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `captionCredit` | frontend/js/lightbox.js:142 |
 | `renderInlineAction` | frontend/js/lightbox.js:12 |
 
-### frontend/js/selection.js (30)
+### frontend/js/selection.js (31)
 
 | Name | File:line |
 |---|---|
 | `appendSelectionToNote` | frontend/js/selection.js:80 |
 | `bookmarkKind` | frontend/js/selection.js:414 |
-| `clampSelectionMenu` | frontend/js/selection.js:707 |
+| `clampSelectionMenu` | frontend/js/selection.js:720 |
 | `clippingMarkdown` | frontend/js/selection.js:20 |
 | `dialogHead` | frontend/js/selection.js:105 |
 | `fieldSelection` | frontend/js/selection.js:555 |
-| `hideSelectionPopup` | frontend/js/selection.js:698 |
-| `initSelectionPopup` | frontend/js/selection.js:872 |
+| `hideSelectionPopup` | frontend/js/selection.js:711 |
+| `initSelectionPopup` | frontend/js/selection.js:885 |
 | `libraryPickLabel` | frontend/js/selection.js:427 |
 | `noteFieldPickButton` | frontend/js/selection.js:328 |
-| `openSelectionMenuFromKeyboard` | frontend/js/selection.js:968 |
+| `openSelectionMenuFromKeyboard` | frontend/js/selection.js:981 |
 | `pickEntryDialog` | frontend/js/selection.js:297 |
 | `pickMediaDialog` | frontend/js/selection.js:453 |
 | `pickerDialog` | frontend/js/selection.js:131 |
@@ -193,14 +193,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `pickerRememberedSource` | frontend/js/selection.js:439 |
 | `remindFromSelection` | frontend/js/selection.js:528 |
 | `saveSelectionAsNote` | frontend/js/selection.js:30 |
-| `selectionIsActionable` | frontend/js/selection.js:819 |
-| `selectionMenuItems` | frontend/js/selection.js:589 |
-| `selectionPointInRange` | frontend/js/selection.js:929 |
-| `selectionPopup` | frontend/js/selection.js:689 |
-| `selectionRestoreOnContextMenu` | frontend/js/selection.js:938 |
+| `selectionIsActionable` | frontend/js/selection.js:832 |
+| `selectionMenuItems` | frontend/js/selection.js:600 |
+| `selectionNoteId` | frontend/js/selection.js:593 |
+| `selectionPointInRange` | frontend/js/selection.js:942 |
+| `selectionPopup` | frontend/js/selection.js:702 |
+| `selectionRestoreOnContextMenu` | frontend/js/selection.js:951 |
 | `selectionSource` | frontend/js/selection.js:10 |
-| `showSelectionPopupAt` | frontend/js/selection.js:743 |
-| `syncSelectionPopup` | frontend/js/selection.js:833 |
+| `showSelectionPopupAt` | frontend/js/selection.js:756 |
+| `syncSelectionPopup` | frontend/js/selection.js:846 |
 | `wrapFieldSelection` | frontend/js/selection.js:581 |
 
 ### frontend/js/notes-list.js (114)
@@ -582,7 +583,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `userMarkEl` | frontend/js/chat-agent.js:405 |
 | `userMarkSeed` | frontend/js/chat-agent.js:381 |
 
-### frontend/js/chat-attach.js (76)
+### frontend/js/chat-attach.js (77)
 
 | Name | File:line |
 |---|---|
@@ -595,36 +596,36 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `attachSelectionContext` | frontend/js/chat-attach.js:738 |
 | `attachedNotes` | frontend/js/chat-attach.js:885 |
 | `attachmentChip` | frontend/js/chat-attach.js:268 |
-| `buildFollowupStrip` | frontend/js/chat-attach.js:2850 |
-| `chatDeleteUndo` | frontend/js/chat-attach.js:3181 |
+| `buildFollowupStrip` | frontend/js/chat-attach.js:2903 |
+| `chatDeleteUndo` | frontend/js/chat-attach.js:3234 |
 | `chatDockMoreOpen` | frontend/js/chat-attach.js:1406 |
 | `chatQueueShow` | frontend/js/chat-attach.js:1605 |
 | `chatSendTurn` | frontend/js/chat-attach.js:1609 |
 | `chatTidyTyped` | frontend/js/chat-attach.js:1576 |
 | `chatTurnObjects` | frontend/js/chat-attach.js:893 |
-| `chatWriteRecord` | frontend/js/chat-attach.js:3199 |
+| `chatWriteRecord` | frontend/js/chat-attach.js:3252 |
 | `clearSelectionAttachment` | frontend/js/chat-attach.js:762 |
 | `closeChatDockMore` | frontend/js/chat-attach.js:1443 |
 | `closeExtractPreview` | frontend/js/chat-attach.js:164 |
 | `closeNotePicker` | frontend/js/chat-attach.js:1391 |
 | `commitExtractPreview` | frontend/js/chat-attach.js:169 |
 | `commitStagedImages` | frontend/js/chat-attach.js:404 |
-| `deleteChatTurn` | frontend/js/chat-attach.js:2956 |
-| `deleteCurrentChat` | frontend/js/chat-attach.js:3155 |
-| `exportChatMarkdown` | frontend/js/chat-attach.js:3204 |
+| `deleteChatTurn` | frontend/js/chat-attach.js:3009 |
+| `deleteCurrentChat` | frontend/js/chat-attach.js:3208 |
+| `exportChatMarkdown` | frontend/js/chat-attach.js:3257 |
 | `extractRefLabel` | frontend/js/chat-attach.js:53 |
 | `flattenNoteMarkdown` | frontend/js/chat-attach.js:922 |
-| `followupChain` | frontend/js/chat-attach.js:2879 |
-| `followupMatches` | frontend/js/chat-attach.js:2877 |
-| `followupParent` | frontend/js/chat-attach.js:2870 |
-| `followupTrail` | frontend/js/chat-attach.js:2896 |
+| `followupChain` | frontend/js/chat-attach.js:2932 |
+| `followupMatches` | frontend/js/chat-attach.js:2930 |
+| `followupParent` | frontend/js/chat-attach.js:2923 |
+| `followupTrail` | frontend/js/chat-attach.js:2949 |
 | `importChatDocuments` | frontend/js/chat-attach.js:494 |
 | `isImageFile` | frontend/js/chat-attach.js:445 |
-| `isStreamingConversation` | frontend/js/chat-attach.js:3083 |
+| `isStreamingConversation` | frontend/js/chat-attach.js:3136 |
 | `keepUnreadableChatFile` | frontend/js/chat-attach.js:465 |
-| `markFollowup` | frontend/js/chat-attach.js:2920 |
-| `mountChatTimer` | frontend/js/chat-attach.js:3009 |
-| `newChatConversation` | frontend/js/chat-attach.js:3103 |
+| `markFollowup` | frontend/js/chat-attach.js:2973 |
+| `mountChatTimer` | frontend/js/chat-attach.js:3062 |
+| `newChatConversation` | frontend/js/chat-attach.js:3156 |
 | `noteLabel` | frontend/js/chat-attach.js:899 |
 | `noteNamePlain` | frontend/js/chat-attach.js:959 |
 | `notePickerColumns` | frontend/js/chat-attach.js:1254 |
@@ -636,32 +637,33 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `notePickerRoving` | frontend/js/chat-attach.js:1244 |
 | `notePickerShape` | frontend/js/chat-attach.js:1074 |
 | `notePickerUsedIn` | frontend/js/chat-attach.js:1056 |
-| `offerFollowups` | frontend/js/chat-attach.js:2778 |
+| `offerFollowups` | frontend/js/chat-attach.js:2831 |
+| `offerReminder` | frontend/js/chat-attach.js:2770 |
 | `openChatDockMore` | frontend/js/chat-attach.js:1419 |
 | `openExtractPreview` | frontend/js/chat-attach.js:22 |
 | `openNotePicker` | frontend/js/chat-attach.js:1356 |
-| `paintChatTimer` | frontend/js/chat-attach.js:3022 |
+| `paintChatTimer` | frontend/js/chat-attach.js:3075 |
 | `plainText` | frontend/js/chat-attach.js:937 |
-| `reattachStreamingTurn` | frontend/js/chat-attach.js:3094 |
-| `refreshFollowupVisibility` | frontend/js/chat-attach.js:2830 |
-| `releaseChatComposer` | frontend/js/chat-attach.js:3053 |
+| `reattachStreamingTurn` | frontend/js/chat-attach.js:3147 |
+| `refreshFollowupVisibility` | frontend/js/chat-attach.js:2883 |
+| `releaseChatComposer` | frontend/js/chat-attach.js:3106 |
 | `renderAttachments` | frontend/js/chat-attach.js:1012 |
 | `renderBoardAttachments` | frontend/js/chat-attach.js:649 |
 | `renderDocumentAttachments` | frontend/js/chat-attach.js:702 |
 | `renderExtractPreview` | frontend/js/chat-attach.js:59 |
 | `renderFileAttachments` | frontend/js/chat-attach.js:599 |
-| `renderFollowups` | frontend/js/chat-attach.js:2816 |
+| `renderFollowups` | frontend/js/chat-attach.js:2869 |
 | `renderImageAttachments` | frontend/js/chat-attach.js:331 |
 | `renderSelectionAttachment` | frontend/js/chat-attach.js:767 |
 | `revalidateSelection` | frontend/js/chat-attach.js:814 |
-| `saveFollowups` | frontend/js/chat-attach.js:2939 |
+| `saveFollowups` | frontend/js/chat-attach.js:2992 |
 | `selectionContextBlock` | frontend/js/chat-attach.js:865 |
 | `sendChatMessage` | frontend/js/chat-attach.js:1585 |
 | `setActiveChoice` | frontend/js/chat-attach.js:945 |
 | `setNoteLabel` | frontend/js/chat-attach.js:969 |
 | `setNotePickerSource` | frontend/js/chat-attach.js:1329 |
-| `startChatTimer` | frontend/js/chat-attach.js:3034 |
-| `stopChatTimer` | frontend/js/chat-attach.js:3043 |
+| `startChatTimer` | frontend/js/chat-attach.js:3087 |
+| `stopChatTimer` | frontend/js/chat-attach.js:3096 |
 
 ### frontend/js/sheets-selects.js (51)
 
@@ -785,46 +787,47 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `syncSkillVerifyRow` | frontend/js/skills.js:151 |
 | `updateBatchCount` | frontend/js/skills.js:1248 |
 
-### frontend/js/shell-reminders.js (49)
+### frontend/js/shell-reminders.js (50)
 
 | Name | File:line |
 |---|---|
-| `addReminder` | frontend/js/shell-reminders.js:1512 |
-| `buildSelect` | frontend/js/shell-reminders.js:1701 |
+| `addReminder` | frontend/js/shell-reminders.js:1544 |
+| `buildSelect` | frontend/js/shell-reminders.js:1733 |
 | `clearDoneReminders` | frontend/js/shell-reminders.js:975 |
 | `clipText` | frontend/js/shell-reminders.js:757 |
-| `curtainShell` | frontend/js/shell-reminders.js:1663 |
-| `defaultDueValue` | frontend/js/shell-reminders.js:1574 |
+| `curtainShell` | frontend/js/shell-reminders.js:1695 |
+| `defaultDueValue` | frontend/js/shell-reminders.js:1606 |
 | `glideStrip` | frontend/js/shell-reminders.js:296 |
-| `liftLockScreen` | frontend/js/shell-reminders.js:1684 |
+| `liftLockScreen` | frontend/js/shell-reminders.js:1716 |
 | `loadReminders` | frontend/js/shell-reminders.js:828 |
 | `markScrollEdge` | frontend/js/shell-reminders.js:438 |
 | `markTabBarRecede` | frontend/js/shell-reminders.js:513 |
 | `notePreviewText` | frontend/js/shell-reminders.js:779 |
-| `nudgeDue` | frontend/js/shell-reminders.js:1343 |
+| `nudgeDue` | frontend/js/shell-reminders.js:1375 |
 | `onScrollEdge` | frontend/js/shell-reminders.js:545 |
+| `openCalendarPage` | frontend/js/shell-reminders.js:1208 |
 | `paginateDoneReminders` | frontend/js/shell-reminders.js:924 |
-| `presetDate` | frontend/js/shell-reminders.js:1232 |
-| `refreshMediaSession` | frontend/js/shell-reminders.js:1627 |
-| `refreshReminderDefaults` | frontend/js/shell-reminders.js:1364 |
-| `relativeWhen` | frontend/js/shell-reminders.js:1212 |
-| `reminderComposeIsPristine` | frontend/js/shell-reminders.js:1352 |
-| `reminderEditForm` | frontend/js/shell-reminders.js:1396 |
+| `presetDate` | frontend/js/shell-reminders.js:1264 |
+| `refreshMediaSession` | frontend/js/shell-reminders.js:1659 |
+| `refreshReminderDefaults` | frontend/js/shell-reminders.js:1396 |
+| `relativeWhen` | frontend/js/shell-reminders.js:1244 |
+| `reminderComposeIsPristine` | frontend/js/shell-reminders.js:1384 |
+| `reminderEditForm` | frontend/js/shell-reminders.js:1428 |
 | `reminderItem` | frontend/js/shell-reminders.js:1015 |
-| `reminderMadeUndo` | frontend/js/shell-reminders.js:1503 |
-| `reminderPutUndoably` | frontend/js/shell-reminders.js:1491 |
-| `reminderTarget` | frontend/js/shell-reminders.js:1193 |
+| `reminderMadeUndo` | frontend/js/shell-reminders.js:1535 |
+| `reminderPutUndoably` | frontend/js/shell-reminders.js:1523 |
+| `reminderTarget` | frontend/js/shell-reminders.js:1225 |
 | `revealActiveTab` | frontend/js/shell-reminders.js:256 |
 | `safeMdSlice` | frontend/js/shell-reminders.js:671 |
-| `setDue` | frontend/js/shell-reminders.js:1281 |
-| `snoozeReminderTo` | frontend/js/shell-reminders.js:1373 |
+| `setDue` | frontend/js/shell-reminders.js:1313 |
+| `snoozeReminderTo` | frontend/js/shell-reminders.js:1405 |
 | `startClockTicker` | frontend/js/shell-reminders.js:59 |
 | `startMinuteTicker` | frontend/js/shell-reminders.js:34 |
 | `stopClockTicker` | frontend/js/shell-reminders.js:63 |
 | `stripFrontmatter` | frontend/js/shell-reminders.js:767 |
-| `syncDueFromParts` | frontend/js/shell-reminders.js:1295 |
+| `syncDueFromParts` | frontend/js/shell-reminders.js:1327 |
 | `syncEdgeFade` | frontend/js/shell-reminders.js:369 |
-| `syncPartsFromDue` | frontend/js/shell-reminders.js:1287 |
+| `syncPartsFromDue` | frontend/js/shell-reminders.js:1319 |
 | `syncScrollEdges` | frontend/js/shell-reminders.js:596 |
 | `syncTabOverflowFade` | frontend/js/shell-reminders.js:214 |
 | `tabBarMode` | frontend/js/shell-reminders.js:208 |
@@ -832,8 +835,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `tabContentWidth` | frontend/js/shell-reminders.js:185 |
 | `tabRowSpace` | frontend/js/shell-reminders.js:120 |
 | `tickClocks` | frontend/js/shell-reminders.js:12 |
-| `toLocalInputValue` | frontend/js/shell-reminders.js:1225 |
-| `updateDueReadout` | frontend/js/shell-reminders.js:1307 |
+| `toLocalInputValue` | frontend/js/shell-reminders.js:1257 |
+| `updateDueReadout` | frontend/js/shell-reminders.js:1339 |
 | `updateReminderBadge` | frontend/js/shell-reminders.js:943 |
 | `wikiLinkLabel` | frontend/js/shell-reminders.js:718 |
 | `wikiLinkShown` | frontend/js/shell-reminders.js:744 |
@@ -10014,7 +10017,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 
 | Section | File:line |
 |---|---|
-| "Tools it can use": the row, measured against a normal one | frontend/css/03-dashboard-widgets.css:4349 |
+| "Tools it can use": the row, measured against a normal one | frontend/css/03-dashboard-widgets.css:4350 |
 | "how are these connected?" | frontend/css/02-chat-graph.css:3817 |
 | 08-consistency.css - one recipe per repeated shape | frontend/css/08-consistency.css:1 |
 | 1. One menu row | frontend/css/08-consistency.css:24 |
@@ -10027,7 +10030,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | 6. One toggle-row recipe: the switch says on, not the row | frontend/css/08-consistency.css:853 |
 | 7. Meta looks like meta | frontend/css/08-consistency.css:1050 |
 | 8. A panel head is identity, one fact, then the actions, and it does not | frontend/css/08-consistency.css:2397 |
-| A CALMER TOP, NOTHING TAKEN AWAY (Full view) | frontend/css/03-dashboard-widgets.css:4522 |
+| A CALMER TOP, NOTHING TAKEN AWAY (Full view) | frontend/css/03-dashboard-widgets.css:4523 |
 | A card's date is in the same corner on every card (INBOX 719) | frontend/css/08-consistency.css:10602 |
 | A chip's x: a round target inset evenly (INBOX 403) | frontend/css/08-consistency.css:4749 |
 | A dialog's head: title, its '?', icon-only actions, Close last | frontend/css/08-consistency.css:9103 |
@@ -10071,14 +10074,14 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Inline AI (editor.js) | frontend/css/07-whiteboard-misc.css:6411 |
 | Lagoon: indigo and teal together | frontend/css/05-sidebars-themes.css:3376 |
 | Library -> Contents: an outline (INBOX 496) | frontend/css/01-forms-settings.css:2485 |
-| Library → Documents | frontend/css/03-dashboard-widgets.css:4010 |
-| Library → Whiteboards | frontend/css/03-dashboard-widgets.css:4035 |
+| Library → Documents | frontend/css/03-dashboard-widgets.css:4011 |
+| Library → Whiteboards | frontend/css/03-dashboard-widgets.css:4036 |
 | Live preview | frontend/css/04-chat-dock-appearance.css:4626 |
 | MICRO-ANIMATIONS | frontend/css/07-whiteboard-misc.css:618 |
 | Midnight: deep navy and gold (Brief 95, INBOX 858: "truly good themes"). | frontend/css/05-sidebars-themes.css:3533 |
 | Ocean: cool teal and deep blue. Crisp rather than cosy. | frontend/css/05-sidebars-themes.css:3341 |
 | On paper (DOCUMENTS_PLAN Phase 5 item 4, the print stylesheet) | frontend/css/09-editor.css:930 |
-| On this day | frontend/css/03-dashboard-widgets.css:4299 |
+| On this day | frontend/css/03-dashboard-widgets.css:4300 |
 | One sidebar row recipe for every rail (INBOX 702) | frontend/css/08-consistency.css:10555 |
 | One ⋯ opener, styled once (INBOX 722) | frontend/css/08-consistency.css:10631 |
 | PLAN.md D1: the documents dock's formatting strip hides entirely | frontend/css/07-whiteboard-misc.css:7958 |
@@ -10102,7 +10105,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Phase 5: quick access + toasts | frontend/css/01-forms-settings.css:2846 |
 | Phase 5: the three things a map says about itself | frontend/css/07-whiteboard-misc.css:4409 |
 | Phones (roadmap §8: the layout had breakpoints but had never been driven at | frontend/css/05-sidebars-themes.css:3985 |
-| Placed at the end of this file on purpose. A panel keeps its original class | frontend/css/03-dashboard-widgets.css:4046 |
+| Placed at the end of this file on purpose. A panel keeps its original class | frontend/css/03-dashboard-widgets.css:4047 |
 | Plum: deep violet and magenta. The most saturated. | frontend/css/05-sidebars-themes.css:3463 |
 | Progress that keeps moving (INBOX 95) | frontend/css/08-consistency.css:2216 |
 | Quick access, and arranging it (INBOX 461) | frontend/css/03-dashboard-widgets.css:1691 |
@@ -10183,7 +10186,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Wave O: brand logo + a more present background | frontend/css/03-dashboard-widgets.css:270 |
 | Wave O: expanded appearance (theme/size/density/glass) | frontend/css/03-dashboard-widgets.css:334 |
 | Whiteboard chrome, restructured: one top bar, a centred tool dock, a | frontend/css/07-whiteboard-misc.css:6705 |
-| Writing pace | frontend/css/03-dashboard-widgets.css:4308 |
+| Writing pace | frontend/css/03-dashboard-widgets.css:4309 |
 | [[wiki links]] | frontend/css/05-sidebars-themes.css:773 |
 | `.seg-multi`'s word, and the width that decides it | frontend/css/10-responsive.css:545 |
 | `.seg-multi`: one well, independent toggles | frontend/css/03-dashboard-widgets.css:399 |
@@ -10220,7 +10223,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | a sticker (MINDMAP_PLAN decision 44, INBOX 642) | frontend/css/library-lazy.css:3388 |
 | a stored file that is no longer stored | frontend/css/02-chat-graph.css:4210 |
 | a traced path (§9) | frontend/css/graph-lazy.css:264 |
-| a turn that is still working says so, for as long as it is | frontend/css/03-dashboard-widgets.css:4117 |
+| a turn that is still working says so, for as long as it is | frontend/css/03-dashboard-widgets.css:4118 |
 | a zone that cannot shrink says so, instead of spilling | frontend/css/10-responsive.css:1048 |
 | account & security | frontend/css/01-forms-settings.css:3467 |
 | activity heatmap + tag cloud widgets | frontend/css/03-dashboard-widgets.css:1845 |
@@ -10248,7 +10251,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | chat dock density pass (§37C) | frontend/css/04-chat-dock-appearance.css:1310 |
 | chat page layout | frontend/css/04-chat-dock-appearance.css:509 |
 | chat panel: answer and raw records side by side | frontend/css/01-forms-settings.css:1074 |
-| chat polish | frontend/css/03-dashboard-widgets.css:3242 |
+| chat polish | frontend/css/03-dashboard-widgets.css:3243 |
 | chat tab (Wave C) | frontend/css/02-chat-graph.css:1 |
 | chat, de-vibecoded | frontend/css/08-consistency.css:3077 |
 | chat: an organised sidebar, readable code, correctable answers | frontend/css/05-sidebars-themes.css:2475 |
@@ -10281,7 +10284,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | glass reaches the floating chrome that sat outside it | frontend/css/08-consistency.css:2663 |
 | glass restraint (UI_MODERNISATION_PLAN.md, Phase 3) | frontend/css/07-whiteboard-misc.css:7831 |
 | graph minimap | frontend/css/02-chat-graph.css:3667 |
-| graph polish | frontend/css/03-dashboard-widgets.css:3464 |
+| graph polish | frontend/css/03-dashboard-widgets.css:3465 |
 | graph: depth, halos and legible labels | frontend/css/04-chat-dock-appearance.css:1545 |
 | graph: physics sliders + node popup | frontend/css/04-chat-dock-appearance.css:1588 |
 | heading hierarchy (§35L) | frontend/css/01-forms-settings.css:1 |
@@ -10333,7 +10336,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | radio groups as choices, not as a list of dots (§35L) | frontend/css/06-timeline-dialogs.css:1246 |
 | reading a scan against its own pages | frontend/css/lightbox-lazy.css:82 |
 | rebindable shortcuts | frontend/css/05-sidebars-themes.css:705 |
-| reminders page polish | frontend/css/03-dashboard-widgets.css:2706 |
+| reminders page polish | frontend/css/03-dashboard-widgets.css:2707 |
 | reminders, de-vibecoded | frontend/css/08-consistency.css:3145 |
 | reminders: "when" is one decision, so it is one group | frontend/css/07-whiteboard-misc.css:3611 |
 | resizable sidebars | frontend/css/05-sidebars-themes.css:1774 |
@@ -10383,8 +10386,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the accessible card: the title opens it (INBOX 433) | frontend/css/08-consistency.css:2981 |
 | the agent activity panel: nothing scrolls sideways, nothing folds onto | frontend/css/07-whiteboard-misc.css:10522 |
 | the agent's run, as a timeline | frontend/css/02-chat-graph.css:586 |
-| the app emblem, reused across the UI | frontend/css/03-dashboard-widgets.css:2942 |
-| the app's one help popover | frontend/css/03-dashboard-widgets.css:4055 |
+| the app emblem, reused across the UI | frontend/css/03-dashboard-widgets.css:2943 |
+| the app's one help popover | frontend/css/03-dashboard-widgets.css:4056 |
 | the app's own dropdown | frontend/css/07-whiteboard-misc.css:3704 |
 | the arrange zone, once it is inside the overflow menu | frontend/css/07-whiteboard-misc.css:9769 |
 | the assistant's head and its three verbs (the owner, 2026-09-24: | frontend/css/04-chat-dock-appearance.css:4882 |
@@ -10426,7 +10429,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the documents sidebar's vertical budget (§41) | frontend/css/07-whiteboard-misc.css:2131 |
 | the documents sidebar, redrawn as one tree (the owner, 2026-10-10: | frontend/css/library-lazy.css:4776 |
 | the export dialog (WHITEBOARD_PLAN.md Phase 3, decision 4) | frontend/css/06-timeline-dialogs.css:2570 |
-| the faded notes card (WORLD_CLASS_PLAN 15, I4) | frontend/css/03-dashboard-widgets.css:4458 |
+| the faded notes card (WORLD_CLASS_PLAN 15, I4) | frontend/css/03-dashboard-widgets.css:4459 |
 | the field: the glyph inside, Stop only while something is loading | frontend/css/03-dashboard-widgets.css:1056 |
 | the file picker, in the app's own clothes | frontend/css/08-consistency.css:8945 |
 | the first steps (first-run.js; the head row, the fold and the bar are | frontend/css/05-sidebars-themes.css:3904 |
@@ -10492,9 +10495,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the timeline, de-vibecoded | frontend/css/08-consistency.css:3128 |
 | the tool rail (WHITEBOARD_PLAN.md Phase 1, decision 1) | frontend/css/07-whiteboard-misc.css:10592 |
 | the tools panel, sorted into what each group of icons does | frontend/css/06-timeline-dialogs.css:2725 |
-| the touch floor, for the two surfaces the dock rule cannot reach | frontend/css/03-dashboard-widgets.css:4422 |
+| the touch floor, for the two surfaces the dock rule cannot reach | frontend/css/03-dashboard-widgets.css:4423 |
 | the trace strip | frontend/css/04-chat-dock-appearance.css:1 |
-| the two radio-backed segmented bars | frontend/css/03-dashboard-widgets.css:3547 |
+| the two radio-backed segmented bars | frontend/css/03-dashboard-widgets.css:3548 |
 | the two whiteboard controls that never joined the strip | frontend/css/07-whiteboard-misc.css:3308 |
 | the web-search engine picker | frontend/css/04-chat-dock-appearance.css:2533 |
 | the whiteboard top bar and the documents editor join the families | frontend/css/07-whiteboard-misc.css:7865 |
@@ -10526,7 +10529,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/00-tokens-shell.css | 4291 |
 | frontend/css/01-forms-settings.css | 6298 |
 | frontend/css/02-chat-graph.css | 5346 |
-| frontend/css/03-dashboard-widgets.css | 4839 |
+| frontend/css/03-dashboard-widgets.css | 4840 |
 | frontend/css/04-chat-dock-appearance.css | 6557 |
 | frontend/css/05-sidebars-themes.css | 6276 |
 | frontend/css/06-timeline-dialogs.css | 3682 |
@@ -10574,7 +10577,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/utilities-lazy.css | 304 |
 | frontend/css/web-lazy.css | 88 |
 
-## Backend routes (622)
+## Backend routes (624)
 
 `@router.<method>(`, `@<name>_router.<method>(` and `@app.<method>(` decorators in `src/tessellate/api/*.py`, sorted by path. The line is the decorator's.
 
@@ -10593,7 +10596,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |  | GET | `list_entries` | src/tessellate/api/routes_entries.py:2396 |
 |  | GET | `list_facts` | src/tessellate/api/routes_learned.py:158 |
 |  | GET | `list_questions` | src/tessellate/api/routes_questions.py:26 |
-|  | GET | `list_reminders` | src/tessellate/api/routes_reminders.py:431 |
+|  | GET | `list_reminders` | src/tessellate/api/routes_reminders.py:484 |
 |  | GET | `list_tags` | src/tessellate/api/routes_tags.py:40 |
 |  | GET | `list_types` | src/tessellate/api/routes_relations.py:65 |
 |  | GET | `search` | src/tessellate/api/routes_search.py:59 |
@@ -10609,7 +10612,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |  | POST | `create_conversation` | src/tessellate/api/routes_conversations.py:430 |
 |  | POST | `create_document` | src/tessellate/api/routes_documents.py:502 |
 |  | POST | `create_entry` | src/tessellate/api/routes_entries.py:743 |
-|  | POST | `create_reminder` | src/tessellate/api/routes_reminders.py:476 |
+|  | POST | `create_reminder` | src/tessellate/api/routes_reminders.py:529 |
 |  | POST | `create_type` | src/tessellate/api/routes_relations.py:76 |
 |  | POST | `start` | src/tessellate/api/routes_bench.py:200 |
 | `/` | GET | `get_whiteboard_state` | src/tessellate/api/routes_whiteboard.py:969 |
@@ -10700,7 +10703,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/corrections/{correction_id}` | DELETE | `remove_correction` | src/tessellate/api/routes_learned.py:426 |
 | `/count` | GET | `count_entries` | src/tessellate/api/routes_entries.py:2557 |
 | `/counts` | GET | `counts` | src/tessellate/api/routes_questions.py:45 |
-| `/counts` | GET | `reminder_counts` | src/tessellate/api/routes_reminders.py:208 |
+| `/counts` | GET | `reminder_counts` | src/tessellate/api/routes_reminders.py:212 |
 | `/daily` | GET | `daily_journal` | src/tessellate/api/routes_entries.py:982 |
 | `/daily/{day}` | GET | `daily_note` | src/tessellate/api/routes_entries.py:1024 |
 | `/daily/{day}` | POST | `open_daily_note` | src/tessellate/api/routes_entries.py:1040 |
@@ -10738,7 +10741,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/events` | GET | `event_feed` | src/tessellate/api/routes_settings.py:1927 |
 | `/events/undo` | POST | `undo_actor` | src/tessellate/api/routes_settings.py:1898 |
 | `/export` | GET | `export_learned` | src/tessellate/api/routes_learned.py:176 |
-| `/export.ics` | GET | `export_ics` | src/tessellate/api/routes_reminders.py:356 |
+| `/export.ics` | GET | `export_ics` | src/tessellate/api/routes_reminders.py:367 |
 | `/export/backup` | GET | `export_backup` | src/tessellate/api/routes_settings.py:2593 |
 | `/export/csv` | GET | `export_csv` | src/tessellate/api/routes_settings.py:3311 |
 | `/export/folder` | GET | `export_notebook_folder` | src/tessellate/api/routes_import.py:121 |
@@ -10807,7 +10810,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/history/{event_id}/restore` | POST | `restore_board` | src/tessellate/api/routes_board_history.py:528 |
 | `/images` | GET | `list_images` | src/tessellate/api/routes_whiteboard.py:2675 |
 | `/import` | POST | `import_document` | src/tessellate/api/routes_documents.py:587 |
-| `/import.ics` | POST | `import_ics` | src/tessellate/api/routes_reminders.py:401 |
+| `/import.ics` | POST | `import_ics` | src/tessellate/api/routes_reminders.py:454 |
 | `/import/app` | POST | `import_app` | src/tessellate/api/routes_import.py:63 |
 | `/import/directory` | POST | `import_directory` | src/tessellate/api/routes_settings.py:3088 |
 | `/import/document` | POST | `import_document` | src/tessellate/api/routes_settings.py:3215 |
@@ -10918,7 +10921,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/on-this-day` | GET | `on_this_day` | src/tessellate/api/routes_insights.py:505 |
 | `/openapi.json` | GET | `openapi_schema` | src/tessellate/api/app.py:1397 |
 | `/outline` | GET | `documents_outline` | src/tessellate/api/routes_documents.py:470 |
-| `/parse` | POST | `magic_add_reminder` | src/tessellate/api/routes_reminders.py:538 |
+| `/parse` | POST | `magic_add_reminder` | src/tessellate/api/routes_reminders.py:623 |
 | `/password-on-open` | POST | `set_password_on_open` | src/tessellate/api/routes_auth.py:1027 |
 | `/patterns` | GET | `patterns` | src/tessellate/api/routes_insights.py:404 |
 | `/personas/suggest-thinking-words` | POST | `suggest_persona_thinking_words` | src/tessellate/api/routes_settings.py:189 |
@@ -11016,6 +11019,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/stop` | POST | `stop` | src/tessellate/api/routes_bench.py:249 |
 | `/storage` | GET | `storage_location` | src/tessellate/api/routes_backups.py:43 |
 | `/stream` | POST | `chat_stream` | src/tessellate/api/routes_chat.py:4425 |
+| `/suggest` | POST | `suggest_reminder` | src/tessellate/api/routes_reminders.py:596 |
 | `/suggest-category` | POST | `suggest_category_for_draft` | src/tessellate/api/routes_entries.py:1311 |
 | `/suggest-tags` | POST | `suggest_tags_for_draft` | src/tessellate/api/routes_entries.py:1339 |
 | `/suggested` | GET | `suggested` | src/tessellate/api/routes_models.py:627 |
@@ -11083,7 +11087,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/websearch/searxng/start` | POST | `searxng_start` | src/tessellate/api/routes_websearch.py:136 |
 | `/websearch/searxng/status` | GET | `searxng_status` | src/tessellate/api/routes_websearch.py:122 |
 | `/websearch/searxng/stop` | POST | `searxng_stop` | src/tessellate/api/routes_websearch.py:200 |
-| `/when` | POST | `read_when` | src/tessellate/api/routes_reminders.py:519 |
+| `/when` | POST | `read_when` | src/tessellate/api/routes_reminders.py:572 |
 | `/whiteboard/boards/{board_id}/paste` | POST | `paste_board_items` | src/tessellate/api/routes_board_library.py:1240 |
 | `/whiteboard/boards/{board_id}/place` | POST | `place_library_item` | src/tessellate/api/routes_board_library.py:1109 |
 | `/{bookmark_id}` | DELETE | `delete_bookmark` | src/tessellate/api/routes_bookmarks.py:183 |
@@ -11188,14 +11192,15 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{key}/apply` | POST | `tidy_apply` | src/tessellate/api/routes_tidy.py:118 |
 | `/{key}/dismiss` | POST | `tidy_dismiss` | src/tessellate/api/routes_tidy.py:104 |
 | `/{key}/undismiss` | POST | `tidy_undismiss` | src/tessellate/api/routes_tidy.py:112 |
-| `/{reminder_id}` | DELETE | `delete_reminder` | src/tessellate/api/routes_reminders.py:734 |
-| `/{reminder_id}` | PUT | `update_reminder` | src/tessellate/api/routes_reminders.py:618 |
-| `/{reminder_id}/complete` | POST | `complete_reminder` | src/tessellate/api/routes_reminders.py:652 |
-| `/{reminder_id}/export.ics` | GET | `export_one_ics` | src/tessellate/api/routes_reminders.py:365 |
-| `/{reminder_id}/notification-act` | POST | `act_from_notification` | src/tessellate/api/routes_reminders.py:709 |
-| `/{reminder_id}/notification-token` | POST | `notification_token` | src/tessellate/api/routes_reminders.py:692 |
-| `/{reminder_id}/purge` | DELETE | `purge_reminder` | src/tessellate/api/routes_reminders.py:765 |
-| `/{reminder_id}/restore` | POST | `restore_reminder` | src/tessellate/api/routes_reminders.py:755 |
+| `/{reminder_id}` | DELETE | `delete_reminder` | src/tessellate/api/routes_reminders.py:822 |
+| `/{reminder_id}` | PUT | `update_reminder` | src/tessellate/api/routes_reminders.py:706 |
+| `/{reminder_id}/calendar-links` | GET | `calendar_links` | src/tessellate/api/routes_reminders.py:383 |
+| `/{reminder_id}/complete` | POST | `complete_reminder` | src/tessellate/api/routes_reminders.py:740 |
+| `/{reminder_id}/export.ics` | GET | `export_one_ics` | src/tessellate/api/routes_reminders.py:376 |
+| `/{reminder_id}/notification-act` | POST | `act_from_notification` | src/tessellate/api/routes_reminders.py:797 |
+| `/{reminder_id}/notification-token` | POST | `notification_token` | src/tessellate/api/routes_reminders.py:780 |
+| `/{reminder_id}/purge` | DELETE | `purge_reminder` | src/tessellate/api/routes_reminders.py:853 |
+| `/{reminder_id}/restore` | POST | `restore_reminder` | src/tessellate/api/routes_reminders.py:843 |
 | `/{session_id}/audio` | POST | `audio` | src/tessellate/api/routes_captions.py:112 |
 | `/{session_id}/stop` | POST | `stop` | src/tessellate/api/routes_captions.py:137 |
 | `/{turn_id}` | DELETE | `delete_ask_turn` | src/tessellate/api/routes_ask_history.py:172 |
@@ -11203,7 +11208,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (6698)
+## Backend modules (6706)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -12834,41 +12839,41 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_of` | src/tessellate/ai/help_chat.py:2627 |
-| `_aware` | src/tessellate/ai/help_chat.py:3161 |
-| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2558 |
-| `_guide_lead` | src/tessellate/ai/help_chat.py:3075 |
-| `_guide_opening` | src/tessellate/ai/help_chat.py:3091 |
-| `_help_sentences` | src/tessellate/ai/help_chat.py:3058 |
-| `_keyword_in` | src/tessellate/ai/help_chat.py:2548 |
-| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2480 |
-| `_keyword_regex` | src/tessellate/ai/help_chat.py:2544 |
-| `_matching_topics` | src/tessellate/ai/help_chat.py:2677 |
-| `_meaning_topics` | src/tessellate/ai/help_chat.py:2757 |
-| `_normalise_keys` | src/tessellate/ai/help_chat.py:2503 |
-| `_place` | src/tessellate/ai/help_chat.py:3032 |
-| `_preference` | src/tessellate/ai/help_chat.py:3114 |
-| `_prompt_for` | src/tessellate/ai/help_chat.py:2905 |
-| `_read_as` | src/tessellate/ai/help_chat.py:3226 |
-| `_reading_topics` | src/tessellate/ai/help_chat.py:2649 |
-| `_repaired` | src/tessellate/ai/help_chat.py:2666 |
-| `_second_sentence` | src/tessellate/ai/help_chat.py:3062 |
-| `_state_line` | src/tessellate/ai/help_chat.py:3123 |
-| `_stated_lead` | src/tessellate/ai/help_chat.py:3132 |
-| `answer` | src/tessellate/ai/help_chat.py:3306 |
-| `answer_stream` | src/tessellate/ai/help_chat.py:3241 |
-| `badges_for` | src/tessellate/ai/help_chat.py:2845 |
-| `composed_answer` | src/tessellate/ai/help_chat.py:3143 |
-| `help_block_for` | src/tessellate/ai/help_chat.py:3387 |
-| `help_listing` | src/tessellate/ai/help_chat.py:2816 |
-| `help_sentences` | src/tessellate/ai/help_chat.py:3041 |
-| `names_app` | src/tessellate/ai/help_chat.py:3371 |
-| `offline_answer` | src/tessellate/ai/help_chat.py:3173 |
-| `social_reply` | src/tessellate/ai/help_chat.py:3005 |
-| `source_names` | src/tessellate/ai/help_chat.py:2812 |
-| `system_answer` | src/tessellate/ai/help_chat.py:2794 |
-| `topic_title` | src/tessellate/ai/help_chat.py:2780 |
-| `topics_for` | src/tessellate/ai/help_chat.py:2859 |
+| `_act_of` | src/tessellate/ai/help_chat.py:2637 |
+| `_aware` | src/tessellate/ai/help_chat.py:3171 |
+| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2568 |
+| `_guide_lead` | src/tessellate/ai/help_chat.py:3085 |
+| `_guide_opening` | src/tessellate/ai/help_chat.py:3101 |
+| `_help_sentences` | src/tessellate/ai/help_chat.py:3068 |
+| `_keyword_in` | src/tessellate/ai/help_chat.py:2558 |
+| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2490 |
+| `_keyword_regex` | src/tessellate/ai/help_chat.py:2554 |
+| `_matching_topics` | src/tessellate/ai/help_chat.py:2687 |
+| `_meaning_topics` | src/tessellate/ai/help_chat.py:2767 |
+| `_normalise_keys` | src/tessellate/ai/help_chat.py:2513 |
+| `_place` | src/tessellate/ai/help_chat.py:3042 |
+| `_preference` | src/tessellate/ai/help_chat.py:3124 |
+| `_prompt_for` | src/tessellate/ai/help_chat.py:2915 |
+| `_read_as` | src/tessellate/ai/help_chat.py:3236 |
+| `_reading_topics` | src/tessellate/ai/help_chat.py:2659 |
+| `_repaired` | src/tessellate/ai/help_chat.py:2676 |
+| `_second_sentence` | src/tessellate/ai/help_chat.py:3072 |
+| `_state_line` | src/tessellate/ai/help_chat.py:3133 |
+| `_stated_lead` | src/tessellate/ai/help_chat.py:3142 |
+| `answer` | src/tessellate/ai/help_chat.py:3316 |
+| `answer_stream` | src/tessellate/ai/help_chat.py:3251 |
+| `badges_for` | src/tessellate/ai/help_chat.py:2855 |
+| `composed_answer` | src/tessellate/ai/help_chat.py:3153 |
+| `help_block_for` | src/tessellate/ai/help_chat.py:3397 |
+| `help_listing` | src/tessellate/ai/help_chat.py:2826 |
+| `help_sentences` | src/tessellate/ai/help_chat.py:3051 |
+| `names_app` | src/tessellate/ai/help_chat.py:3381 |
+| `offline_answer` | src/tessellate/ai/help_chat.py:3183 |
+| `social_reply` | src/tessellate/ai/help_chat.py:3015 |
+| `source_names` | src/tessellate/ai/help_chat.py:2822 |
+| `system_answer` | src/tessellate/ai/help_chat.py:2804 |
+| `topic_title` | src/tessellate/ai/help_chat.py:2790 |
+| `topics_for` | src/tessellate/ai/help_chat.py:2869 |
 
 ### src/tessellate/ai/help_topics_more.py (2)
 
@@ -13931,6 +13936,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `unhedged` | src/tessellate/ai/reminder_parser.py:231 |
 | `without_conditions` | src/tessellate/ai/reminder_parser.py:264 |
 | `worded` | src/tessellate/ai/reminder_parser.py:274 |
+
+### src/tessellate/ai/reminder_suggest.py (3)
+
+| Name | File:line |
+|---|---|
+| `_reads_as_intention` | src/tessellate/ai/reminder_suggest.py:48 |
+| `_sentences` | src/tessellate/ai/reminder_suggest.py:44 |
+| `suggest` | src/tessellate/ai/reminder_suggest.py:56 |
 
 ### src/tessellate/ai/resurface.py (12)
 
@@ -16535,46 +16548,51 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `list_types` | src/tessellate/api/routes_relations.py:66 |
 | `patch_type` | src/tessellate/api/routes_relations.py:111 |
 
-### src/tessellate/api/routes_reminders.py (36)
+### src/tessellate/api/routes_reminders.py (41)
 
 | Name | File:line |
 |---|---|
-| `MagicAddBody` | src/tessellate/api/routes_reminders.py:63 |
-| `NotificationAct` | src/tessellate/api/routes_reminders.py:702 |
-| `ReminderCreate` | src/tessellate/api/routes_reminders.py:47 |
-| `ReminderUpdate` | src/tessellate/api/routes_reminders.py:71 |
-| `WhenBody` | src/tessellate/api/routes_reminders.py:514 |
-| `_binned` | src/tessellate/api/routes_reminders.py:745 |
-| `_complete` | src/tessellate/api/routes_reminders.py:671 |
-| `_existing` | src/tessellate/api/routes_reminders.py:186 |
-| `_ics_event` | src/tessellate/api/routes_reminders.py:306 |
-| `_ics_fold` | src/tessellate/api/routes_reminders.py:283 |
-| `_ics_response` | src/tessellate/api/routes_reminders.py:342 |
-| `_ics_text` | src/tessellate/api/routes_reminders.py:272 |
-| `_ics_time` | src/tessellate/api/routes_reminders.py:301 |
-| `_import_one` | src/tessellate/api/routes_reminders.py:386 |
-| `_naive_utc` | src/tessellate/api/routes_reminders.py:611 |
-| `_past_and_open` | src/tessellate/api/routes_reminders.py:380 |
-| `_reject_if_in_the_past` | src/tessellate/api/routes_reminders.py:85 |
-| `_repeat_words` | src/tessellate/api/routes_reminders.py:158 |
-| `_rule_words` | src/tessellate/api/routes_reminders.py:169 |
-| `_target` | src/tessellate/api/routes_reminders.py:100 |
-| `_to_out` | src/tessellate/api/routes_reminders.py:125 |
-| `act_from_notification` | src/tessellate/api/routes_reminders.py:710 |
-| `complete_reminder` | src/tessellate/api/routes_reminders.py:653 |
-| `create_reminder` | src/tessellate/api/routes_reminders.py:477 |
-| `delete_reminder` | src/tessellate/api/routes_reminders.py:735 |
-| `export_ics` | src/tessellate/api/routes_reminders.py:357 |
-| `export_one_ics` | src/tessellate/api/routes_reminders.py:366 |
-| `import_ics` | src/tessellate/api/routes_reminders.py:402 |
-| `list_reminders` | src/tessellate/api/routes_reminders.py:432 |
-| `magic_add_reminder` | src/tessellate/api/routes_reminders.py:539 |
-| `notification_token` | src/tessellate/api/routes_reminders.py:693 |
-| `purge_reminder` | src/tessellate/api/routes_reminders.py:766 |
-| `read_when` | src/tessellate/api/routes_reminders.py:520 |
-| `reminder_counts` | src/tessellate/api/routes_reminders.py:209 |
-| `restore_reminder` | src/tessellate/api/routes_reminders.py:756 |
-| `update_reminder` | src/tessellate/api/routes_reminders.py:619 |
+| `MagicAddBody` | src/tessellate/api/routes_reminders.py:64 |
+| `NotificationAct` | src/tessellate/api/routes_reminders.py:790 |
+| `ReminderCreate` | src/tessellate/api/routes_reminders.py:48 |
+| `ReminderUpdate` | src/tessellate/api/routes_reminders.py:75 |
+| `SuggestBody` | src/tessellate/api/routes_reminders.py:591 |
+| `WhenBody` | src/tessellate/api/routes_reminders.py:567 |
+| `_binned` | src/tessellate/api/routes_reminders.py:833 |
+| `_complete` | src/tessellate/api/routes_reminders.py:759 |
+| `_event_details` | src/tessellate/api/routes_reminders.py:310 |
+| `_existing` | src/tessellate/api/routes_reminders.py:190 |
+| `_ics_event` | src/tessellate/api/routes_reminders.py:322 |
+| `_ics_fold` | src/tessellate/api/routes_reminders.py:287 |
+| `_ics_response` | src/tessellate/api/routes_reminders.py:353 |
+| `_ics_text` | src/tessellate/api/routes_reminders.py:276 |
+| `_ics_time` | src/tessellate/api/routes_reminders.py:305 |
+| `_import_one` | src/tessellate/api/routes_reminders.py:439 |
+| `_naive_utc` | src/tessellate/api/routes_reminders.py:699 |
+| `_outlook_time` | src/tessellate/api/routes_reminders.py:419 |
+| `_past_and_open` | src/tessellate/api/routes_reminders.py:433 |
+| `_reject_if_in_the_past` | src/tessellate/api/routes_reminders.py:89 |
+| `_repeat_words` | src/tessellate/api/routes_reminders.py:162 |
+| `_rule_words` | src/tessellate/api/routes_reminders.py:173 |
+| `_target` | src/tessellate/api/routes_reminders.py:104 |
+| `_to_out` | src/tessellate/api/routes_reminders.py:129 |
+| `act_from_notification` | src/tessellate/api/routes_reminders.py:798 |
+| `calendar_links` | src/tessellate/api/routes_reminders.py:384 |
+| `complete_reminder` | src/tessellate/api/routes_reminders.py:741 |
+| `create_reminder` | src/tessellate/api/routes_reminders.py:530 |
+| `delete_reminder` | src/tessellate/api/routes_reminders.py:823 |
+| `export_ics` | src/tessellate/api/routes_reminders.py:368 |
+| `export_one_ics` | src/tessellate/api/routes_reminders.py:377 |
+| `import_ics` | src/tessellate/api/routes_reminders.py:455 |
+| `list_reminders` | src/tessellate/api/routes_reminders.py:485 |
+| `magic_add_reminder` | src/tessellate/api/routes_reminders.py:624 |
+| `notification_token` | src/tessellate/api/routes_reminders.py:781 |
+| `purge_reminder` | src/tessellate/api/routes_reminders.py:854 |
+| `read_when` | src/tessellate/api/routes_reminders.py:573 |
+| `reminder_counts` | src/tessellate/api/routes_reminders.py:213 |
+| `restore_reminder` | src/tessellate/api/routes_reminders.py:844 |
+| `suggest_reminder` | src/tessellate/api/routes_reminders.py:597 |
+| `update_reminder` | src/tessellate/api/routes_reminders.py:707 |
 
 ### src/tessellate/api/routes_resurface.py (7)
 
@@ -19580,7 +19598,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12460)
+## Tests (12474)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20586,6 +20604,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_relations_kg2.py | 15 |
 | tests/test_release_smoke_step.py | 21 |
 | tests/test_reminder_audio_deferred.py | 2 |
+| tests/test_reminder_calendar_links.py | 8 |
 | tests/test_reminder_duplicate_flag.py | 2 |
 | tests/test_reminder_edit_form_alert.py | 3 |
 | tests/test_reminder_feedback_dog1.py | 3 |
@@ -20593,6 +20612,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_reminder_notifier.py | 14 |
 | tests/test_reminder_scoped_token.py | 16 |
 | tests/test_reminder_snooze_row34.py | 4 |
+| tests/test_reminder_suggest.py | 6 |
 | tests/test_reminder_sw_notify.py | 4 |
 | tests/test_reminder_targets_row15.py | 5 |
 | tests/test_reminder_times.py | 20 |
@@ -21791,7 +21811,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-19 (per-board view, Format on a map; next PR) | docs/roadmap/WHITEBOARD_PLAN.md:1671 |
 | Placed from INBOX, 2026-10-19 (wb1327) | docs/roadmap/WHITEBOARD_PLAN.md:1665 |
 | Placed from INBOX, 2026-10-26 | docs/roadmap/WHITEBOARD_PLAN.md:1690 |
-| Placed from INBOX, 2026-10-26 (the owner: the composer composes, everywhere) | docs/roadmap/CHAT_PLAN.md:1892 |
+| Placed from INBOX, 2026-10-26 (the owner: the composer composes, everywhere) | docs/roadmap/CHAT_PLAN.md:1893 |
 | Placed from INBOX, 2026-10-26 (the owner: the force view is messy, popups and controls hard to learn) | docs/roadmap/GRAPH_PLAN.md:659 |
 | Placed from INBOX, 2026-10-26b | docs/roadmap/WHITEBOARD_PLAN.md:1703 |
 | Placed from INBOX, 2026-10-26b | docs/roadmap/WORLD_CLASS_PLAN.md:4197 |
