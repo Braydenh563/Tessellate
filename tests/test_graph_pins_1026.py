@@ -25,7 +25,7 @@ def _body(source: str, name: str) -> str:
 def test_reset_releases_pins_and_undo_restores_them():
     body = _body(GRAPH, "graphResetToDefaults")
     assert "graphPinnedRows()" in body and "graphUnpinAllNow" in body
-    assert "graphRestorePins(pins)" in body
+    assert "graphRestorePins(released)" in body  # the server's list: off-screen and document pins too
     assert "already on its default settings" in body and "!pins.length" in body
 
 

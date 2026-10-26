@@ -61,7 +61,7 @@ _WHEN_IS_ALT = re.compile(
 #: reader answers.
 _WHEN_IS_NEXT = re.compile(
     rf"^{_LEAD}(?:what(?:'s|’s| is| are) (?:my |the |our )?next\s+(?P<t>.+?)"
-    r"|(?:my |the |our )?(?P<t2>.+?)\s+(?:date|day|deadline|time))\W*$", re.I)
+    r"|(?:my |the |our )?(?P<t2>\S.*?) (?:date|day|deadline|time))\W*$", re.I)
 _SPAN_WORDS = re.compile(r"\b(?:the )?(?:next|coming|following) (\d{1,2}|few|couple of) days?\b|\bnext (\d{1,2}) days\b|\bthe rest of (?:the|this) week\b|\brest of (?:the|this) week\b", re.I)
 _FILLER_STEMS = frozenset(study.stem(w) for w in (
     "what whats is are do have got any anything due deadlines deadline coming up upcoming on my plate the this next week today tomorrow "

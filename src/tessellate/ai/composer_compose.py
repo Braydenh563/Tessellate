@@ -82,10 +82,11 @@ _PERSONA_CUES: tuple[tuple[str, tuple[str, ...]], ...] = (
 def persona_cue(prompt: str | None) -> str:
     """The voice a persona's description asks for, by its own words ("a witty
     pirate" is playful, "a precise archivist" formal), or empty for none."""
-    low = str(prompt or "").lower()
+    # Whole words: "fun" is not in "function", nor "direct" in "directory".
+    words = set(re.findall(r"[a-z]+", str(prompt or "").lower()))
     best, best_hits = "", 0
     for voice, cues in _PERSONA_CUES:
-        hits = sum(1 for cue in cues if cue in low)
+        hits = sum(1 for cue in cues if cue in words)
         if hits > best_hits:
             best, best_hits = voice, hits
     return best

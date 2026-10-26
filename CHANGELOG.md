@@ -10,9 +10,14 @@ below). Versioning is `0.x` while the app stabilises.
 - Fix: leaving a document no longer deletes an older empty "Untitled document N" you made on purpose; only a blank document created in this session and never written in is dropped.
 - Fix: a name typed in a note's maths that matches a built-in word (\toString, \begin{constructor}) broke the equation instead of drawing it; an equation that cannot be drawn now shows its source in the editor and the equation dialog.
 - Fix: a failed send in the popup agent now also removes the documents it had just imported from attached files, so a retry no longer duplicates them.
+- Graph: Unpin all and Reset release document pins too, and their Undo puts back every pin they released, including ones a filter hid.
+- Whiteboard: the size readout while drawing or resizing draws its digits in a readable pair; it was black on a dark plate.
+- Review fixes: persona voices match whole words and a formal persona reads the professional lines; "my work visa" and "since we added" questions can reach the web again; the topic summary builds its no-AI answer only when it is used; a chat question is capped at 20,000 characters.
 - CodeQL: the composer reads "Lisbon notes" as Lisbon by word steps, not a regex quadratic on a run of whitespace.
 - Settings > Help has a Show Get started button, for bringing back the dashboard's Get started after hiding it.
 - Fix: the Windows splash drew "Tessellate notes" with colour fringes and "notes" run into the name. The wordmark is now greyscale-smoothed with a proper gap.
+- Fix: a picture pasted on a board drew at its own size inside a smaller selection box, and dragging a grip changed the box but not the picture. A picture now fills its box (aspect kept), so the box, grips and resize match. The size badge no longer sits under the grip being dragged, reads on its plate, and appears only for the item being resized.
+- New: double-click a resize grip to fit a picture to its own shape, and a note or text box to its content, as one Undo step (the grip tooltip and the Guide say so).
 - Fix: asking "what did I do last week?" with web search on and no model went to the web (and reported the search service down). Questions about your own doings never go to the web now.
 - Fix: the ... button on Library image tiles was a faint glyph on the photo. It now sits on a small solid chip that reads on any picture.
 - Fix: the rows of "How this map looks" sat flush against each other; they now have the dialog's gap, every select is one width, and the switches' words match the labels.

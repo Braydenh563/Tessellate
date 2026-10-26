@@ -1,4 +1,5 @@
-"""The lag log (core/lagwatch.py): the browser posts, Settings reads.
+"""The lag log (core/lagwatch.py): the browser posts; GET and DELETE read and clear
+the file (`<data dir>/logs/lag.log`) for whoever is asked to look at it.
 
 Behind the unlock gate like every route but `/logs/client`: a lag report is
 written after the app is open, never on the loading screen, and from a phone

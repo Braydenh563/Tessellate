@@ -138,3 +138,30 @@ def test_a_question_about_my_own_doings_never_goes_to_the_web():
     asked = [personal.about_own_notes(q) for q in ("what did I do last week?", "what did I edit yesterday", "show my history")]
     general = [personal.about_own_notes(q) for q in ("what's the capital of France", "how do I do a backflip")]
     assert asked == [True, True, True] and general == [False, False]
+
+
+def test_persona_cues_are_whole_words_and_formal_reads_the_professional_lines():
+    from tessellate.ai import composer_compose, composer_tables
+
+    assert composer_compose.persona_cue("an expert in functional programming and directory layouts") == ""
+    assert composer_compose.persona_cue("a witty, fun pirate") == "playful"
+    assert composer_tables.voice_of("formal") == "professional"
+
+
+def test_when_is_next_is_linear_on_a_run_of_spaces():
+    import time
+
+    from tessellate.ai import composer_plan
+
+    start = time.perf_counter()
+    composer_plan._WHEN_IS_NEXT.match("a" + " " * 20000 + "x")
+    assert time.perf_counter() - start < 0.5
+
+
+def test_own_doings_need_a_time_word_or_the_question_shape():
+    from tessellate.ai import personal
+
+    for q in ("what did I do last week?", "what did I edit yesterday", "show my history", "notes I edited today"):
+        assert personal.about_own_notes(q), q
+    for q in ("my work visa rules", "what changed in Python since we added type hints", "how is my day in Tokyo time"):
+        assert not personal.about_own_notes(q), q

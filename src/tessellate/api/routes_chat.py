@@ -384,7 +384,7 @@ class ScreenBody(BaseModel):
 
 
 class ChatRequest(BaseModel):
-    question: str = Field(min_length=1)
+    question: str = Field(min_length=1, max_length=20000)
     #: Answer from the notebook as it stood at the end of this day
     #: (WORLD_CLASS_PLAN I5, row 23). Read, never act: the turn runs without
     #: tools, which would read and change the notebook as it is now.
