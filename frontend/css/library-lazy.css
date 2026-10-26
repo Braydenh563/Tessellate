@@ -105,14 +105,13 @@ button.outline-twist {
 
 /* A run of strokes between two cards (WHITEBOARD_PLAN decision 43,
    `wbPlaceSketchBands`): an `<svg>` in the card layer at board 0,0, its
-   z-index set in JS between the cards' ranks. 1px, not 0: a zero-size
-   `<svg>` draws nothing; overflow shows the strokes wherever they are. */
+   z-index set in JS between the cards' ranks. Its width and height are 1
+   (attributes, set in JS), not 0: a zero-size `<svg>` draws nothing;
+   overflow shows the strokes wherever they are. */
 #wb-html-layer > .wb-sketch-band {
   position: absolute;
   left: 0;
   top: 0;
-  width: 1px;
-  height: 1px;
   overflow: visible;
 }
 

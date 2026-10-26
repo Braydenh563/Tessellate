@@ -1606,10 +1606,10 @@ onDomReady(() => {
 
 // --- Layers (WHITEBOARD_PLAN decision 27; INBOX 557b) ------------------------
 //
-// The board as a tree in paint order, front first: what is drawn in the card
-// layer (cards, text, stickies, pictures), the frames under them, then the
-// drawing layer (shapes, lines, ink, connectors), which this app always
-// paints under the cards. A group is a row with its members under it. Each
+// The board as a tree in paint order, front first: cards, text, stickies,
+// pictures, shapes, lines, ink and connectors in one list (they stack
+// together, decision 43), then the frames under them. A group is a row with
+// its members under it. Each
 // row: the eye (hide, show), the lock (decision 15's flag) and its name; a
 // press selects the item and brings it on screen; a drag, or Alt+Up and
 // Alt+Down, restacks it within its layer; F2 renames; Delete deletes.
@@ -1689,9 +1689,10 @@ function wbLayerRows() {
     held.set(frame.item.id, keys);
   }
   const unclaimed = (list) => list.filter((e) => !claimed.has(wbMultiKey(e.kind, e.item.id)));
-  layer("Cards, text and pictures", unclaimed(cards));
+  //: One list for cards and drawings, top first: they stack together
+  //: (decision 43), and frames are under both.
+  layer("Cards and drawings", unclaimed([...cards, ...drawings]));
   if (frames.length) layer("Frames", frames, held);
-  layer("Drawings, shapes and lines", unclaimed(drawings));
   return rows;
 }
 
@@ -2146,7 +2147,7 @@ async function wbLayerRestack(li, target, above) {
   if (!a || !b || a[1] === b[1]) return;
   const [kind, item] = a;
   if (wbStackBand(kind, item) !== wbStackBand(b[0], b[1])) {
-    toast("Drawings stay under the cards, and frames under both: an item restacks within its own layer.");
+    toast("Frames stay under everything else: a frame restacks among the frames.");
     return;
   }
   //: Already in the board's stack order, bottom first.

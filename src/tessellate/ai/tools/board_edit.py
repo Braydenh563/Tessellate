@@ -25,7 +25,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.core import events
 
-from ._common import ToolError, _clip
+from ._common import ToolError, _clip, board_top_z
 
 ITEM_KINDS = ("card", "object", "shape")
 SHAPES = ("rect", "ellipse", "diamond", "frame")
@@ -315,7 +315,7 @@ def _add_board_shape(session: Session, args: dict) -> dict:
             data["fill"] = _colour(args.get("fill"))
         if text:
             data["label"] = text
-        row = WhiteboardSketch(board_id=board_id, data=json.dumps(data), x=0, y=0, z=2)
+        row = WhiteboardSketch(board_id=board_id, data=json.dumps(data), x=0, y=0, z=board_top_z(session, board_id))
         kind = "shape"
     session.add(row)
     session.flush()

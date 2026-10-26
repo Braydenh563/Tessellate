@@ -7331,6 +7331,8 @@ function wbPlaceSketchBands(groups, order = wbStackOrder()) {
     if (!host) {
       host = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       host.setAttribute("class", "wb-sketch-band");
+      host.setAttribute("width", "1");
+      host.setAttribute("height", "1");
       layer.appendChild(host);
       hosts.push(host);
     }
