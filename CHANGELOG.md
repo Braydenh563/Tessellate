@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fix: a picture pasted on a board drew at its own size inside a smaller selection box, and dragging a grip changed the box but not the picture. A picture now fills its box (aspect kept), so the box, grips and resize match. The size badge no longer sits under the grip being dragged, reads on its plate, and appears only for the item being resized.
+- New: double-click a resize grip to fit a picture to its own shape, and a note or text box to its content, as one Undo step (the grip tooltip and the Guide say so).
 - Fix: asking "what did I do last week?" with web search on and no model went to the web (and reported the search service down). Questions about your own doings never go to the web now.
 - Fix: the ... button on Library image tiles was a faint glyph on the photo. It now sits on a small solid chip that reads on any picture.
 - Fix: the rows of "How this map looks" sat flush against each other; they now have the dialog's gap, every select is one width, and the switches' words match the labels.

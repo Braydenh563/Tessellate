@@ -4919,11 +4919,12 @@ button.ghost.doc-template-choice.wb-template-choice {
 .wb-align-guide-edge { stroke: var(--error); }
 .wb-align-guide-center { stroke: var(--accent-text); }
 .wb-align-guide-spacing { stroke: var(--warn); }
-/* Distance badge on an equal-gap guide: the kind's ink as the plate, the
-   page's background as the digits, a constant screen size. */
+/* Distance badge on an equal-gap guide: the kind's ink as the plate, --on-error as
+   the digits (it reads on --warn in both themes), a constant screen size.
+   Digits in `var(--bg)` were black: that token is a gradient, no SVG fill. */
 .wb-align-guide-label rect { fill: var(--warn); }
 .wb-align-guide-label text {
-  fill: var(--bg);
+  fill: var(--on-error);
   font-size: var(--text-xs);
   font-variant-numeric: tabular-nums;
 }
