@@ -131,9 +131,6 @@ EXPECTED = {
     'questions-view.js': [
         '"Reading is paused in Settings, What it learned."',
     ],
-    'selection.js': [
-        '"Extracting notes needs the local AI."',
-    ],
     'settings-controls.js': [
         '"No skills found in that file."',
         '"No personas found in that file."',

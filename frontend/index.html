@@ -1850,12 +1850,12 @@ Link to another note with [[its first few words]]."></textarea>
                        button on the old card; the desk keeps the capability
                        and moves it in here with the other things you do to a
                        draft once it exists. -->
-                  <button id="draft-title" data-needs-model="Naming a draft needs a model connected"
+                  <button id="draft-title"
                     class="doc-dock-menu-item" type="button"
-                    title="Let Atlas name this draft, as its heading"><i class="ph ph-text-h ph-lead" aria-hidden="true"></i> Suggest a title</button>
-                  <button id="draft-extract" data-needs-model="Extracting notes needs the local AI"
+                    title="Name this draft from its own words, or with Atlas when a model is connected, as its heading"><i class="ph ph-text-h ph-lead" aria-hidden="true"></i> Suggest a title</button>
+                  <button id="draft-extract"
                     class="doc-dock-menu-item" type="button"
-                    title="Split this into one or more notes, auto-linked to what they relate to"><i class="ph ph-scissors ph-lead" aria-hidden="true"></i> Split into notes</button>
+                    title="Split this into one or more notes by its headings and paragraphs, or with Atlas when a model is connected"><i class="ph ph-scissors ph-lead" aria-hidden="true"></i> Split into notes</button>
                   <!-- The one capability the desk could not reach: a note
                        that already exists, carried on. It comes in as the
                        draft, and what goes back out goes back to that note
@@ -1873,7 +1873,7 @@ Link to another note with [[its first few words]]."></textarea>
                     title="Clear the desk: the thoughts, the draft and its earlier versions"><i class="ph ph-trash ph-lead" aria-hidden="true"></i> Discard this draft</button>
                 </div>
               </details>
-              <button id="draft-compose" data-needs-model="Drafting needs a model connected"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Draft</button>
+              <button id="draft-compose" data-needs-model="Drafting needs a model connected" data-model-offer="Writing, Suggest a title, Split into notes and Save as a note work without one."><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Draft</button>
             </div>
           </div>
           <div class="help-body hidden" id="draft-help-body" role="dialog" aria-label="What is this?">
@@ -1884,9 +1884,11 @@ Link to another note with [[its first few words]]."></textarea>
             <p>Your own words stay in the box: nothing here overwrites what
               you typed, Undo steps back through every pass, and every draft
               Atlas produced is kept under the box so you can go back to one.
-              This is the one part of the app that needs a model connected,
-              with it off the Draft button is disabled and everything else on
-              this tab still works.</p>
+              Drafting and Refine need a model connected: with none, pressing
+              them says so and offers Set up a model, and everything else on
+              this tab still works. Suggest a title takes the title from your
+              own words, and Split into notes cuts the text at its headings
+              and paragraphs.</p>
           </div>
           <!-- Decision 11's link half, the shape Ask and the popup agent
                already use: a sentence a reader can act on, with the one
@@ -2033,6 +2035,7 @@ Link to another note with [[its first few words]]."></textarea>
                   placeholder="Refine: “make it shorter”, “add a summary”…"
                   aria-label="An instruction for the next pass">
                 <button id="draft-refine" data-needs-model="Refining needs a model connected"
+                  data-model-offer="Writing, Suggest a title, Split into notes and Save as a note work without one."
                   class="ghost" type="button"
                   title="Run this instruction over the draft"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Refine</button>
               </div>
@@ -3182,6 +3185,7 @@ Link to another note with [[its first few words]]."></textarea>
                      every later question through a planning round it did not
                      need, and planning costs a model round-trip. -->
                 <button id="chat-plan" class="ghost small" type="button" data-needs-model="A plan needs a model to reason"
+                  data-model-offer="Asking in the chat works without one: the answer is composed from your notes."
                   title="Plan this request first, the Librarian draws the steps and shows them before it starts"><i class="ph ph-compass ph-lead" aria-hidden="true"></i> Plan</button>
               </div>
 
@@ -5040,7 +5044,7 @@ Link to another note with [[its first few words]]."></textarea>
                      menu the AI edit button already sits beside. -->
                 <button id="doc-ai-model" class="menu-item doc-dock-menu-item" type="button"
                   title="Pick the model Atlas runs on in this document"><i class="ph ph-cube ph-lead" aria-hidden="true"></i> Model for this feature</button>
-                <button id="doc-extract" data-needs-model="Extracting notes needs the local AI" data-model-offer="The writing check, find, outline, export and history work without one." class="menu-item doc-dock-menu-item" type="button"
+                <button id="doc-extract" class="menu-item doc-dock-menu-item" type="button"
                   title="Turn this document, or the text you have selected, into one or more notes, auto-linked to what they relate to"><i class="ph ph-scissors ph-lead" aria-hidden="true"></i> Extract notes</button>
                 <button id="doc-map-headings" class="menu-item doc-dock-menu-item" type="button"
                   title="Make a new mind map from this document's headings, with a topic that leads back here"><i class="ph ph-tree-structure ph-lead" aria-hidden="true"></i> Map the headings</button>
@@ -5626,7 +5630,7 @@ Link to another note with [[its first few words]]."></textarea>
           <input id="doc-ai-instruction" data-needs-model="Rewriting with Atlas needs a model" type="text" maxlength="500"
             placeholder="e.g. “tighten this”, “make it more formal”"
             aria-label="What should Atlas do?">
-          <button id="doc-ai-run" data-needs-model="AI editing needs the local AI"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Suggest an edit</button>
+          <button id="doc-ai-run" data-needs-model="AI editing needs the local AI" data-model-offer="The writing check, find, outline, export and history work without one."><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Suggest an edit</button>
           <button id="doc-ai-cancel-run" class="ghost hidden" type="button"
             title="Stop Atlas: the document is untouched"><i class="ph ph-stop ph-lead" aria-hidden="true"></i> Stop</button>
         </div>
@@ -7702,7 +7706,7 @@ Link to another note with [[its first few words]]."></textarea>
             </div>
             <div class="wb-menu-section hidden" data-wb-ctx="more-notes">
               <span class="wb-panel-group-label">Notes</span>
-              <button type="button" class="wb-menu-item" id="wb-extract-notes" data-needs-model="Extracting notes needs the local AI" title="Turn the selected notes' content into one or more new notes, auto-linked to what they relate to"><i class="ph ph-scissors ph-lead" aria-hidden="true"></i><span>Extract notes</span></button>
+              <button type="button" class="wb-menu-item" id="wb-extract-notes" title="Turn the selected notes' content into one or more new notes, split by their headings and paragraphs, or with Atlas when a model is connected"><i class="ph ph-scissors ph-lead" aria-hidden="true"></i><span>Extract notes</span></button>
             </div>
             <div class="wb-menu-section hidden" data-wb-ctx="more-mindmap">
               <span class="wb-panel-group-label">Arrange as mind map</span>
@@ -9499,7 +9503,7 @@ Link to another note with [[its first few words]]."></textarea>
            then the one filled action, both the confirm alert's height. -->
       <div class="row right space-dialog-actions">
         <button id="extract-cancel" class="ghost small" type="button">Cancel</button>
-        <button id="extract-commit" data-needs-model="Extracting notes needs the local AI" class="small"><i class="ph ph-floppy-disk ph-lead" aria-hidden="true"></i> Save notes</button>
+        <button id="extract-commit" class="small"><i class="ph ph-floppy-disk ph-lead" aria-hidden="true"></i> Save notes</button>
       </div>
     </div>
   </div>
@@ -10694,6 +10698,7 @@ Link to another note with [[its first few words]]."></textarea>
               <button id="template-add" class="small">Add template</button>
               <!-- INBOX 430: a body from the name and the line, or another take. -->
               <button id="template-draft" class="ghost small" type="button" data-needs-model="Drafting a template needs the local AI"
+                data-model-offer="Writing the template by hand and saving it works without one."
                 title="Atlas writes the template from its name and line; press again for another version"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Draft with Atlas</button>
               <button id="template-cancel" class="ghost small hidden">Cancel edit</button>
               <span id="template-status" class="status"></span>

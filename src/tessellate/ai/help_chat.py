@@ -124,7 +124,8 @@ HELP_TOPICS: list[dict] = [
             "A note's ... menu has Generate title, which with no model takes the title from the "
             "note's first sentence and is named Title from its words. The Writing room has "
             "\"Split into notes\", which turns a block of pasted text into several "
-            "AI-drafted, auto-linked notes."
+            "notes, split by its headings and paragraphs with no model and by meaning, "
+            "auto-linked, with one."
         ),
         "badge": {"label": "Notes", "tab": "notes"},
     },
@@ -788,12 +789,16 @@ HELP_TOPICS: list[dict] = [
         "keywords": ("extract notes", "rough thoughts", "writing room", "draft"),
         "body": (
             "Split into notes, in the More menu of the Writing room (Notes "
-            "tab), turns a block of pasted free text into several AI-drafted, "
-            "auto-linked notes instead of one long one. The Writing room is "
-            "for turning rough, unstructured thoughts into a proper note "
-            "before it's saved. A document's menu and a selection of cards on "
-            "a board have Extract notes, which does the same for a document "
-            "or for those cards."
+            "tab), turns a block of pasted free text into several notes "
+            "instead of one long one: with no model it cuts at the text's "
+            "headings and paragraphs and links the parts, with one it splits by "
+            "meaning and links with reasons. A preview comes first either way. "
+            "The Writing room is for turning rough, unstructured thoughts into "
+            "a proper note before it's saved: Suggest a title there takes the "
+            "title from your own words with no model, while Draft and Refine "
+            "need one and say so when pressed. A document's menu, a selection of "
+            "text, a note under review and a selection of cards on a board have "
+            "Extract notes, which does the same for a document, the text or those cards."
         ),
         "badge": {"label": "Notes", "tab": "notes"},
     },
@@ -1914,8 +1919,8 @@ HELP_TOPICS.extend(
                 "(every version, and a way back to any), Connections, Extract "
                 "notes, AI edit, a word goal, typewriter scrolling, dim all but "
                 "this paragraph, serif for reading and full width. With no model "
-                "connected, AI edit and Extract notes say why when pressed and "
-                "offer Set up a model. Footnotes show "
+                "connected, AI edit says why when pressed and "
+                "offers Set up a model. Footnotes show "
                 "as numbered notes at the foot in Read view, in print and in the "
                 "HTML download. A page break (the / menu's Page break, written "
                 "\\newpage on its own line) starts what follows on a new page when "

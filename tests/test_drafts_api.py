@@ -92,10 +92,15 @@ def test_a_rambling_title_is_rejected(ai_client, fake_ollama):
     assert body["title"] == ""
 
 
-def test_title_without_the_model_is_empty_not_an_error(ai_client, fake_ollama):
+def test_title_without_the_model_is_taken_from_the_drafts_words_not_an_error(ai_client, fake_ollama):
+    """Moved by owner-1026b K3: it was "" (the model's answer, absent); with no
+    model the title is now the draft's own first words and `by` says so, and a
+    draft with nothing to take one from still answers "" rather than failing."""
     fake_ollama.running = False
     body = ai_client.post("/drafts/title", json={"draft": "A note."}).json()
-    assert body["title"] == ""
+    assert body["title"] == "A note" and body["by"] == "composer"
+    nothing = ai_client.post("/drafts/title", json={"draft": "."}).json()
+    assert nothing["title"] == ""
 
 
 def test_build_messages_switches_prompt_on_whether_a_draft_exists():

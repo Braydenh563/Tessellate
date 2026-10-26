@@ -589,8 +589,6 @@ function wrapFieldSelection(field, before, after) {
 function selectionMenuItems() {
   const text = selectionPopupText;
   const source = selectionPopupSource;
-  const aiOff = modelStatus ? modelStatus.ollama_running === false : false;
-
   const items = [];
 
   // **Where highlighting is discovered** ("I still dont know how to highlight
@@ -672,25 +670,11 @@ function selectionMenuItems() {
     )
   );
 
-  // AI-only, and disabled rather than hidden when the model is off, the same
-  // convention `data-needs-model` applies to every other AI action, so the
-  // capability stays discoverable and the reason is on the item itself.
-  // (That attribute is read from the markup by `syncModelGatedControls`, and
-  // these items are built fresh on every open, so they carry the state
-  // directly instead.)
+  // Never gated on a model (owner-1026b K3): with none, the preview splits
+  // the text by its own headings and paragraphs and says so.
   items.push(
-    makeMenuItem(
-      "ph:scissors Extract notes…",
-      aiOff
-        ? `Extracting notes needs the local AI. ${AI_OFFLINE_HINT}.`
-        : "Split this into one or more linked notes, with a preview first",
-      () => {
-        if (aiOff) {
-          toast("Extracting notes needs the local AI.", "info");
-          return;
-        }
-        openExtractPreview(text);
-      }
+    makeMenuItem("ph:scissors Extract notes…", "Split this into one or more linked notes, with a preview first", () =>
+      openExtractPreview(text)
     ),
     makeMenuItem("ph:chat-circle Ask Atlas about this", "Start a chat about the selection", () => {
       switchTab("chat");

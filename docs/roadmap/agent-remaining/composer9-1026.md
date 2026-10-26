@@ -52,7 +52,7 @@ The fixes, each in the shared layer rather than for its case:
 ## Remaining
 
 - J "what have I saved about the gym?" then "tell me more": answers "That's all your notes say on gym so far". Both notes were already told, so this may be right and the case's check wrong; judge before fixing (`tests/test_composer_classes_1357.py` J_FOLLOW).
-- K3, the other AI-only buttons with no composer fallback, in order of use (`data-needs-model` in `frontend/index.html`): `draft-compose` 1876, `draft-title` 1853, the extract buttons (`draft-extract` 1856, `extract-commit` 9493, `doc-extract` 5043, `wb-extract-notes` 7705), `draft-refine` 2035, `doc-ai`/`doc-ai-run`/`doc-ai-instruction` 4934/5629/5626, `chat-plan` 3184, `template-draft` 10687, the code panel's explain, tests and refactor 5427-5435. Recommendation: title (first line or top terms) and extract (one note per paragraph or heading) first; drafting and refining stay model-only with their popover.
+- K3 done (see Built below): title and the extract buttons work with no model; drafting, refining, doc-ai, plan, template draft and the code panel answer a press with why and Set up a model.
 - when_words does not read "over the weekend" or "last fortnight" (the recap answers neither).
 - "summarise my uni notes" mislabels a map's node as a heading ("**Service models:**"); seen in the dump, not in a class.
 - "0 distinct tags" in the stats wording; seen once, not cased.

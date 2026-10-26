@@ -192,15 +192,27 @@ async function suggestDraftTitle() {
     //: running or its answer was not a title (too long, too many words: see
     //: `drafter.suggest_title`). That is a real answer and it gets a real
     //: sentence, not a thrown error.
+    //: With no model the server takes the title from the draft's own words
+    //: (`by: "composer"`, owner-1026b K3), so an empty answer there means the
+    //: draft has no sentence to take one from, not that a model is off.
     if (!title) {
-      setDraftStatus(`Couldn't think of a title for this one. ${aiNameNow()} may not be running.`, true);
+      setDraftStatus(
+        body.by === "composer"
+          ? "There's no sentence here to take a title from yet. Write a little more."
+          : `Couldn't think of a title for this one. ${aiNameNow()} may not be running.`,
+        true
+      );
       return;
     }
     pushDraftUndo();
     box.value = draftWithHeading(box.value, title);
     updateDraftCount();
     saveDraftLocally();
-    setDraftStatus(`Titled "${title}". Undo puts it back.`);
+    setDraftStatus(
+      body.by === "composer"
+        ? `Titled "${title}" from the draft's own words. Undo puts it back.`
+        : `Titled "${title}". Undo puts it back.`
+    );
   } catch (error) {
     setDraftStatus(error.message, true);
   } finally {

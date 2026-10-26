@@ -43,8 +43,7 @@ from dataclasses import dataclass
 
 from sqlalchemy.orm import Session
 
-from tessellate.ai import janitor, librarian
-from tessellate.ai import offline
+from tessellate.ai import janitor, librarian, no_model_text, offline
 from tessellate.ai.embeddings import EmbeddingService, cosine_similarity
 from tessellate.ai.links import _clean_reason, _is_vague_reason
 from tessellate.ai.model_manager import ModelManager
@@ -98,24 +97,22 @@ SPLIT_SYSTEM_PROMPT = (
     '"the note text"}, ...]}'
 )
 
-#: See `drafter.offline_message` and `ai/offline.py`: the way out depends on
-#: whether Ollama is installed at all, which a constant cannot know.
+#: With no model the text is split by its own headings and paragraphs
+#: (`no_model_text.split_notes`, owner-1026b K3), so the preview is a real
+#: split rather than one note, and says who did it.
 def offline_message() -> str:
     return offline.offline_message(
-        "The AI isn't running, so this couldn't be split or linked, it's "
-        "shown as one plain note below."
+        "No model is connected, so this was split by its headings and "
+        "paragraphs. Read each note before saving."
     )
 
 
 #: Kept for anything still importing the name.
-OFFLINE_MESSAGE = (
-    "The AI isn't running, so this couldn't be split or linked, it's shown "
-    "as one plain note below. Start Ollama and try again for a real split."
-)
+OFFLINE_MESSAGE = offline_message()
 
 SPLIT_FAILED_MESSAGE = (
-    "The AI couldn't split this cleanly, so it's shown as one note, edit "
-    "it below, or save it as is."
+    "The AI couldn't split this cleanly, so it was split by its headings "
+    "and paragraphs instead. Read each note before saving."
 )
 
 
@@ -272,6 +269,10 @@ def find_related(
     return related
 
 
+def _plain_split(text: str) -> list[ExtractedNote]:
+    return [ExtractedNote(title=p.title, content=p.content) for p in no_model_text.split_notes(text, MAX_EXTRACT_NOTES)]
+
+
 def build_extraction(
     session: Session,
     text: str,
@@ -314,7 +315,7 @@ def build_extraction(
     ollama_running = ollama.is_running()
     message = ""
     if not ollama_running:
-        notes = [ExtractedNote(title="", content=text)]
+        notes = _plain_split(text)
         message = offline_message()
     else:
         try:
@@ -322,7 +323,7 @@ def build_extraction(
             notes = merge_near_duplicates(notes, embeddings)
         except (OllamaError, ValueError) as exc:
             logger.info("extraction split failed, falling back to one note: %s", exc)
-            notes = [ExtractedNote(title="", content=text)]
+            notes = _plain_split(text)
             message = SPLIT_FAILED_MESSAGE
 
     proposals = []
@@ -341,7 +342,27 @@ def build_extraction(
         })
 
     links: list[dict] = []
-    if ollama_running:
+    if message:
+        #: A plain split carries only links that are true without a model:
+        #: each part came from the selected notes, and the parts are one text.
+        for i, note in enumerate(notes):
+            for entry in source_entries:
+                links.append({
+                    "source_ref": f"n{i}",
+                    "target_ref": f"existing:{entry.id}",
+                    "target_preview": _short_preview(entry.content),
+                    "reason": "Taken from this note's text",
+                    "kind": "source",
+                })
+        for i in range(len(notes) - 1):
+            links.append({
+                "source_ref": f"n{i}",
+                "target_ref": f"n{i + 1}",
+                "target_preview": "",
+                "reason": "Parts of the same text",
+                "kind": "sibling",
+            })
+    elif ollama_running:
         exclude_ids = {e.id for e in source_entries}
         for i, note in enumerate(notes):
             ref = f"n{i}"
