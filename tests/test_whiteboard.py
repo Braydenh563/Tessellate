@@ -393,6 +393,9 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
     assert state["objects"][0]["data"] == {
         "content": "Meeting notes", "color": "#ffcc00", "font_size": 18, "url": None,
         "bg": None, "border_color": None,
+        # Added with the Format panel's line and letter spacing (wb3, INBOX 1355).
+        "line_height": None,
+        "letter_spacing": None,
         # Added with the text-box formatting controls; None until set.
         "align": None,
         "valign": None,
