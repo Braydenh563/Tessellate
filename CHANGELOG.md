@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: Find and Replace all now read a table's cells; a table holding the word used to report no matches.
 - Whiteboard: words typed into a shape that do not fit now make the shape bigger in proportion, as one undo step with the words; before, 80 characters ran 100px past a 100x60 rectangle and across its border (diamonds and ellipses too).
 - Whiteboard: a text box or sticky grows taller as you type, so long text is never hidden behind a scroll bar inside the card (a 177px paragraph sat in a 62px box); Grow to fit the words uses the same measure, and one undo takes back the words and the growth together.
 - Whiteboard: undoing a paste (or any change that removes what is selected) no longer leaves a ghost selection; Export > Selection used to fail with a 'width' error and write nothing.

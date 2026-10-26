@@ -3284,7 +3284,7 @@ function wbSearchTextFor(kind, item, byId) {
     //: box was ever found (measured, canvasdepth: "SHIP" in a text box, 0).
     try {
       const data = typeof item.data === "string" ? JSON.parse(item.data || "{}") : item.data || {};
-      return `${data.content || ""}${wbPropsText(data.props)}`.toLowerCase();
+      return `${data.content || ""}${wbCellsText(data.cells)}${wbPropsText(data.props)}`.toLowerCase();
     } catch {
       return "";
     }
@@ -3296,6 +3296,25 @@ function wbSearchTextFor(kind, item, byId) {
     return `${data?.label || ""}${wbPropsText(data?.props)}`.toLowerCase();
   }
   return "";
+}
+
+//: A table's words are its cells: Find reads them too (a table of "zebra" was
+//: "0 matches" on a board that showed it), and Replace all rewrites them.
+function wbCellsText(cells) {
+  if (!Array.isArray(cells)) return "";
+  return cells.flat().map((cell) => `\n${cell ?? ""}`).join("");
+}
+
+function wbReplaceInCells(cells, find, to, opts = {}) {
+  if (!Array.isArray(cells)) return { cells, count: 0 };
+  let count = 0;
+  const out = cells.map((row) => (Array.isArray(row) ? row : []).map((cell) => {
+    if (typeof cell !== "string") return cell;
+    const done = wbReplaceText(cell, find, to, opts);
+    count += done.count;
+    return done.text;
+  }));
+  return { cells: out, count };
 }
 
 //: Find reads an item's data values too (draw.io's find reads its metadata).
@@ -3392,11 +3411,12 @@ async function wbBoardReplaceAll(find, to) {
       //: rewrite them, or the count says 3 of 3 and the toast says 1.
       const text = typeof field === "string" ? wbReplaceText(field, needle, to, wbBoardSearch) : { text: field, count: 0 };
       const values = wbReplaceInProps(own?.props, needle, to, wbBoardSearch);
-      const done = { count: text.count + values.count };
+      const grid = kind === "object" ? wbReplaceInCells(own?.cells, needle, to, wbBoardSearch) : { cells: undefined, count: 0 };
+      const done = { count: text.count + values.count + grid.count };
       if (!done.count) continue;
       undo.push({ action: "move", kind, id: item.id, before: WB_KIND_INFO[kind].payload(item) });
       if (kind === "object") {
-        item.data = { ...item.data, content: text.text, ...(values.count ? { props: values.props } : {}) };
+        item.data = { ...item.data, content: text.text, ...(values.count ? { props: values.props } : {}), ...(grid.count ? { cells: grid.cells } : {}) };
         await wbSaveObject(item);
       } else {
         await wbSaveSketchProps(item, { label: text.text, ...(values.count ? { props: values.props } : {}) });
