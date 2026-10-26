@@ -22531,6 +22531,12 @@ function docRedoChord(CM) {
 //: a listener bolted onto it would fight the editor rather than extend it.
 //: Same behaviour and the same order (the shifted S before the plain one, for
 //: the reason that handler's own comment gives).
+function docProseChord(run) {
+  if (!docFileType().previewable) return false;
+  run();
+  return true;
+}
+
 function docCmKeymap(CM) {
   const surface = () => docSurface();
   return [
@@ -22578,22 +22584,25 @@ function docCmKeymap(CM) {
       },
     },
     { key: "Mod-/", run: () => { toggleDocComment(surface()); return true; } },
-    { key: "Mod-Shift-s", run: () => { wrapDocSelection("~~", "struck through"); return true; } },
+    //: The chords below write markdown syntax. In a code file they decline
+    //: (`docProseChord`), so Ctrl+B does not wrap a Python line in `**` and
+    //: the engine's own binding for the key answers instead.
+    { key: "Mod-Shift-s", run: () => docProseChord(() => { wrapDocSelection("~~", "struck through"); }) },
     { key: "Mod-s", run: () => { saveDocument(); return true; } },
-    { key: "Mod-b", run: () => { wrapDocSelection("**", "bold text"); return true; } },
-    { key: "Mod-i", run: () => { wrapDocSelection("*", "italic text"); return true; } },
+    { key: "Mod-b", run: () => docProseChord(() => { wrapDocSelection("**", "bold text"); }) },
+    { key: "Mod-i", run: () => docProseChord(() => { wrapDocSelection("*", "italic text"); }) },
     //: Underline, the one chord every word processor shares. CodeMirror binds
     //: Mod-u to "undo selection", which on a prose page just collapses the
     //: selection and reads as the key being dead.
-    { key: "Mod-u", run: () => { applyMarkdown("underline"); return true; } },
-    { key: "Mod-e", run: () => { wrapDocSelection("`"); return true; } },
-    { key: "Mod-1", run: () => { applyMarkdown("h1"); return true; } },
-    { key: "Mod-2", run: () => { applyMarkdown("h2"); return true; } },
-    { key: "Mod-3", run: () => { applyMarkdown("h3"); return true; } },
+    { key: "Mod-u", run: () => docProseChord(() => { applyMarkdown("underline"); }) },
+    { key: "Mod-e", run: () => docProseChord(() => { wrapDocSelection("`"); }) },
+    { key: "Mod-1", run: () => docProseChord(() => { applyMarkdown("h1"); }) },
+    { key: "Mod-2", run: () => docProseChord(() => { applyMarkdown("h2"); }) },
+    { key: "Mod-3", run: () => docProseChord(() => { applyMarkdown("h3"); }) },
     //: Google Docs' list chords; the base key is read, so Shift's `*` is 8.
-    { key: "Mod-Shift-8", run: () => { applyMarkdown("ul"); return true; } },
-    { key: "Mod-Shift-7", run: () => { applyMarkdown("ol"); return true; } },
-    { key: "Mod-Shift-9", run: () => { applyMarkdown("task"); return true; } },
+    { key: "Mod-Shift-8", run: () => docProseChord(() => { applyMarkdown("ul"); }) },
+    { key: "Mod-Shift-7", run: () => docProseChord(() => { applyMarkdown("ol"); }) },
+    { key: "Mod-Shift-9", run: () => docProseChord(() => { applyMarkdown("task"); }) },
     //: One gesture, one entry point: `toggleDocFindBar` opens the engine's
     //: panel here and the app's own bar on the fallback, so this binding does
     //: not have to know which is on screen.

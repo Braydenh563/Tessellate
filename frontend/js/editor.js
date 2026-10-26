@@ -1689,6 +1689,10 @@ function editorRefreshMenu() {
 function editorHandleInput(textarea) {
   if (!textarea) return;
   if (!editorSurfaceKind(textarea)) return;
+  //: A code file's "/" is a comment or a path and "[[" is an index: neither
+  //: opens a menu of headings and links (INBOX 1400 dogfood: a `//` comment
+  //: at a line start raised "Heading 1" over a .sql file).
+  if (editorSurfaceFor(textarea)?.id === "doc-content" && typeof docFileType === "function" && !docFileType().previewable) return;
 
   if (editorMenuState.open && editorMenuState.textarea === textarea) {
     editorRefreshMenu();
