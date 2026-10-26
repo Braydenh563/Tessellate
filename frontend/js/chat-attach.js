@@ -259,6 +259,75 @@ let lastChatAttachments = [];
 let attachedImages = [];
 let lastChatImageAttachments = [];
 
+//: **The one attachment chip** (DESIGN.md "An attachment chip"; Chat's images,
+//: documents and files and the popup agent's staged files all build it here).
+//: A tile (the picture, or the kind's glyph), the name with its extension kept
+//: when the stem is cut, one facts line, a bar while it uploads, a round x.
+//: `state` is "ready", "uploading" (with `progress` 0..1) or "error" (the
+//: facts line then says why).
+function attachmentChip({ name, size, thumb, state = "ready", progress = 0, error = "", title, removeTitle, onRemove }) {
+  const chipEl = document.createElement("span");
+  chipEl.className = "chip attachment-chip att-chip";
+  chipEl.dataset.state = state;
+  chipEl.title = title || name;
+  let tile;
+  if (thumb) {
+    tile = document.createElement("img");
+    tile.src = thumb;
+    tile.alt = "";
+  } else {
+    tile = document.createElement("i");
+    tile.className = `ph ${attachmentIconClass("", name) || "ph-file"}`;
+    tile.setAttribute("aria-hidden", "true");
+  }
+  tile.classList.add("att-chip-tile");
+  const ext = attachmentExt(name);
+  const stem = document.createElement("span");
+  stem.className = "att-chip-stem";
+  stem.textContent = ext ? name.slice(0, -(ext.length + 1)) : name;
+  const nameEl = document.createElement("span");
+  nameEl.className = "att-chip-name";
+  nameEl.append(stem);
+  if (ext) {
+    const extEl = document.createElement("span");
+    extEl.className = "att-chip-ext";
+    extEl.textContent = `.${ext}`;
+    nameEl.append(extEl);
+  }
+  const facts = document.createElement("span");
+  facts.className = "att-chip-facts";
+  const kind = fileKindLabel("", name);
+  facts.textContent =
+    state === "uploading"
+      ? `Uploading ${Math.round(progress * 100)}%`
+      : state === "error"
+        ? error || "Could not attach"
+        : [kind, formatFileSize(size)].filter(Boolean).join(" · ");
+  const body = document.createElement("span");
+  body.className = "att-chip-body";
+  body.append(nameEl, facts);
+  chipEl.append(tile, body);
+  if (state === "uploading") {
+    const bar = document.createElement("progress");
+    bar.className = "att-chip-bar";
+    bar.max = 100;
+    bar.value = Math.round(progress * 100);
+    bar.setAttribute("aria-label", `Uploading ${name}`);
+    chipEl.append(bar);
+  }
+  if (onRemove) {
+    const remove = document.createElement("button");
+    remove.className = "att-chip-x";
+    remove.type = "button";
+    setLabel(remove, "ph:x");
+    remove.title = removeTitle || `Remove “${name}”`;
+    remove.setAttribute("aria-label", remove.title);
+    remove.addEventListener("click", onRemove);
+    chipEl.append(remove);
+  }
+  return chipEl;
+}
+
 function renderImageAttachments() {
   const box = $("chat-image-attachments");
   if (!box) return;
@@ -266,40 +335,29 @@ function renderImageAttachments() {
   box.classList.toggle("hidden", attachedImages.length === 0);
   $("attach-image")?.classList.toggle("has-attachments", attachedImages.length > 0);
   for (const image of attachedImages) {
-    const chipEl = document.createElement("span");
-    // Reuses the note-composer's own image-attachment look
-    // (04-chat-dock-appearance.css) rather than inventing a second one.
-    chipEl.className = "chip attachment-chip attachment-chip-image";
-    const thumb = document.createElement("img");
     // A staged image has no server url yet, its bytes are local, so the
     // object URL is what draws it. `mediaSrc` is still right for one already
     // uploaded: a plain <img> never attaches X-Auth-Token.
-    thumb.src = image.objectUrl || mediaSrc(image.url);
-    thumb.alt = "";
-    const remove = document.createElement("button");
-    remove.className = "attachment-remove";
-    remove.type = "button";
-    setLabel(remove, "ph:x");
-    remove.title = "Remove this image";
-    remove.setAttribute("aria-label", remove.title);
-    remove.addEventListener("click", async () => {
-      attachedImages = attachedImages.filter((img) => img.key !== image.key);
-      // An object URL is a document-lifetime reference to a Blob: dropping the
-      // array entry alone leaks the image's bytes for as long as the tab is
-      // open.
-      if (image.objectUrl) URL.revokeObjectURL(image.objectUrl);
-      renderImageAttachments();
-      announce(`Removed image. ${attachedImages.length} image(s) attached.`);
-      // Nothing to tell the server about: a staged image has never been
-      // uploaded (see `attachImageFiles`). The delete call that used to live
-      // here existed because attaching uploaded immediately, so removing had
-      // to clean up after it, staging removes the need rather than the
-      // symptom. An image that *is* already on the server (a regenerate
-      // re-using an earlier message's attachments) keeps its id and is left
-      // alone, because the sent message still references it.
-    });
-    chipEl.append(thumb, remove);
-    box.appendChild(chipEl);
+    box.appendChild(
+      attachmentChip({
+        name: image.name || "Image",
+        size: image.file?.size,
+        thumb: image.objectUrl || mediaSrc(image.url),
+        removeTitle: "Remove this image",
+        onRemove: () => {
+          attachedImages = attachedImages.filter((img) => img.key !== image.key);
+          // An object URL is a document-lifetime reference to a Blob:
+          // dropping the array entry alone leaks the bytes while the tab is open.
+          if (image.objectUrl) URL.revokeObjectURL(image.objectUrl);
+          renderImageAttachments();
+          announce(`Removed image. ${attachedImages.length} image(s) attached.`);
+          // A staged image was never uploaded (see `attachImageFiles`), so
+          // there is nothing to tell the server. One already on the server (a
+          // regenerate re-using an earlier message) is left alone: the sent
+          // message still references it.
+        },
+      }),
+    );
   }
 }
 
@@ -424,11 +482,11 @@ async function keepUnreadableChatFile(file, error) {
   toastAction(
     `Kept “${file.name}” in your Library, ${error?.message || "its text could not be read"}`,
     "Show it",
-    () => {
-      switchTab("library");
-      if (typeof renderLibrary === "function") renderLibrary();
+    async () => {
+      await switchTab("library");
+      document.querySelector('#library-subtabs [data-media-kind="files"]')?.click();
     },
-    { go: { tab: "library" } },
+    { go: { tab: "library", media: "files" } },
   );
   return true;
 }
@@ -544,26 +602,17 @@ function renderFileAttachments() {
   box.replaceChildren();
   box.classList.toggle("hidden", attachedFiles.length === 0);
   for (const file of attachedFiles) {
-    const chipEl = document.createElement("span");
-    chipEl.className = "chip attachment-chip";
-    const label = document.createElement("span");
-    setLabel(label, `ph:paperclip ${file.name}`);
-    const remove = document.createElement("button");
-    remove.className = "attachment-remove";
-    remove.type = "button";
-    //: Through `setLabel`, like every other close in the app. It was a typed
-    //: U+2715, written as an escape, which is how it passed the glyph lint
-    //: while nine other close buttons were being converted.
-    setLabel(remove, "ph:x");
-    remove.title = `Don't send “${file.name}” with this message`;
-    remove.setAttribute("aria-label", remove.title);
-    remove.addEventListener("click", () => {
-      attachedFiles = attachedFiles.filter((f) => f.id !== file.id);
-      renderFileAttachments();
-      announce(`Removed attachment. ${attachedFiles.length} file(s) attached.`);
-    });
-    chipEl.append(label, remove);
-    box.appendChild(chipEl);
+    box.appendChild(
+      attachmentChip({
+        name: file.name,
+        removeTitle: `Don't send “${file.name}” with this message`,
+        onRemove: () => {
+          attachedFiles = attachedFiles.filter((f) => f.id !== file.id);
+          renderFileAttachments();
+          announce(`Removed attachment. ${attachedFiles.length} file(s) attached.`);
+        },
+      }),
+    );
   }
 }
 
@@ -656,23 +705,17 @@ function renderDocumentAttachments() {
   box.replaceChildren();
   box.classList.toggle("hidden", attachedDocuments.length === 0);
   for (const document_ of attachedDocuments) {
-    const chipEl = document.createElement("span");
-    chipEl.className = "chip attachment-chip";
-    const label = document.createElement("span");
-    setLabel(label, `ph:file-text ${document_.name}`);
-    const remove = document.createElement("button");
-    remove.className = "attachment-remove";
-    remove.type = "button";
-    setLabel(remove, "ph:x");
-    remove.title = `Don't send “${document_.name}” with this message`;
-    remove.setAttribute("aria-label", remove.title);
-    remove.addEventListener("click", () => {
-      attachedDocuments = attachedDocuments.filter((d) => d.id !== document_.id);
-      renderDocumentAttachments();
-      announce(`Removed attachment. ${attachedDocuments.length} document(s) attached.`);
-    });
-    chipEl.append(label, remove);
-    box.appendChild(chipEl);
+    box.appendChild(
+      attachmentChip({
+        name: document_.name,
+        removeTitle: `Don't send “${document_.name}” with this message`,
+        onRemove: () => {
+          attachedDocuments = attachedDocuments.filter((d) => d.id !== document_.id);
+          renderDocumentAttachments();
+          announce(`Removed attachment. ${attachedDocuments.length} document(s) attached.`);
+        },
+      }),
+    );
   }
 }
 

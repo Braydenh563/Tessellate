@@ -1933,6 +1933,7 @@ document.addEventListener("drop", async (e) => {
   e.stopPropagation();
   box.classList.remove("drag-over");
 
+  if (box.id === "command-palette-input") return agentStageFiles(Array.from(e.dataTransfer.files));
   if (_isChatComposer(box)) {
     const files = Array.from(e.dataTransfer.files);
     const images = files.filter((f) => f.type.startsWith("image/"));
@@ -1963,6 +1964,8 @@ document.addEventListener("paste", async (e) => {
   // Don't prevent default entirely unless we have files, otherwise normal paste breaks
   e.preventDefault();
   e.stopPropagation();
+
+  if (box.id === "command-palette-input") return agentStageFiles(files);
 
   if (_isChatComposer(box)) {
     const images = files.filter((f) => f.type.startsWith("image/"));

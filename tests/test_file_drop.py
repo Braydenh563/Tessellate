@@ -100,3 +100,14 @@ def test_the_veil_is_a_status_with_no_press_and_no_blur():
     assert "pointer-events: none" in css and "blur" not in css
     assert 'veil.setAttribute("role", "status")' in DROP
     assert "innerHTML" not in DROP
+
+
+def test_a_notice_about_a_pdf_opens_library_files_not_images():
+    """attach-1026 A4: the toast and its bell row name the sub-tab the drop
+    filled; the bell reopens it from the stored `go.media`."""
+    assert 'go: { tab: "library", media: where }' in DROP
+    assert 'lands.add(/\\.pdf$/i.test(file.name) ? "files" : "images")' in DROP
+    bell = (ROOT / "frontend/js/notifications.js").read_text(encoding="utf-8")
+    assert 'data-media-kind="${action.media}"' in bell
+    kept = (ROOT / "frontend/js/chat-attach.js").read_text(encoding="utf-8")
+    assert '{ go: { tab: "library", media: "files" } }' in kept

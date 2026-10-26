@@ -672,7 +672,9 @@
           answers from your notes, and an act (remind me, tag, link, add to
           today's note) comes as a card you confirm and can undo. A plan it
           draws waits for Run the plan, each step's writes listed; Stop ends it
-          between two steps, and Ctrl+Z takes back its last write. On a phone
+          between two steps, and Ctrl+Z takes back its last write. The paperclip,
+          a drop or a paste adds files as chips (any kind, up to four); nothing is
+          saved until you send, and the x on a chip takes one back. On a phone
           it opens as a sheet from More.
         </p>
       </div>
@@ -690,8 +692,11 @@
         <textarea id="command-palette-input" class="command-palette-input" rows="1"
           placeholder="Ask the agent to do something…" enterkeyhint="send"
           aria-label="Ask the agent to do something"></textarea>
+        <button type="button" id="command-palette-attach" class="ghost icon-only small" title="Attach files to your next message" aria-label="Attach files to your next message"><i class="ph ph-paperclip" aria-hidden="true"></i></button>
+        <input type="file" id="command-palette-attach-input" class="hidden" multiple aria-label="Choose files to attach to your next message">
         <button type="button" id="command-palette-clear" class="ghost icon-only small field-clear hidden" title="Clear" aria-label="Clear"><i class="ph ph-eraser" aria-hidden="true"></i></button>
       </div>
+      <div id="command-palette-attachments" class="chat-attachments command-palette-attachments hidden" role="group" aria-label="Files attached to your next message"></div>
       <div id="command-palette-results" class="command-palette-results"></div>
       <!-- **What it can do, said out loud.** Reported: "the popup agent needs
            more features, capability, and learnability… idk what it can do, and
