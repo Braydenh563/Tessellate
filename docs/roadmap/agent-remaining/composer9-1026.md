@@ -49,11 +49,15 @@ The fixes, each in the shared layer rather than for its case:
 - A: `capability._OVERVIEW` takes "even", "actually", "else".
 - H: `vocative._tail` keeps a subject word after "about X" ("chromodynamics"); `composer._as_phrase` names the words as one phrase.
 
+## Built (when_words, this agent)
+
+- The this/last/past N unit forms, weekend, fortnight, since X, earlier this X, so far, to date, the other day and the part-of-day words read as spans in `ai/recognise.py`; 187 class phrases went from 47 to all passing, recap cases 5 to 15 of 15, L_NAMES 3 to 5 of 5. Feature fallback ignores a help line's examples (`tests/test_feature_instead_class_1026.py`).
+
 ## Remaining
 
 - J "what have I saved about the gym?" then "tell me more": answers "That's all your notes say on gym so far". Both notes were already told, so this may be right and the case's check wrong; judge before fixing (`tests/test_composer_classes_1357.py` J_FOLLOW).
 - K3 done (see Built below): title and the extract buttons work with no model; drafting, refining, doc-ai, plan, template draft and the code panel answer a press with why and Set up a model.
-- when_words does not read "over the weekend" or "last fortnight" (the recap answers neither).
+- when_words done (see below): the class is `ai/recognise.py` readers, cased in `tests/test_when_class_1026.py` (187 phrases, three ways each) and K_WINDOWS. Found, not fixed: "this weekend" is ambiguous in the past tense, ranges ("from Monday to Wednesday") and seasons are not read, "recently" and "lately" stay as they were.
 - "summarise my uni notes" mislabels a map's node as a heading ("**Service models:**"); seen in the dump, not in a class.
 - "0 distinct tags" in the stats wording; seen once, not cased.
 - Not verified: no browser run of the dashboard's composed digest or the recap's links; the API and tests only.

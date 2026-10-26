@@ -972,6 +972,41 @@ _NTH_IN_MONTH = (
     + r" (?:of|in) (?:(this|next|last) month|" + _MONTH_RE + r"(?: (\d{4}))?)"
 )
 _UNIT_RE = r"(days?|weeks?|fortnights?|months?|years?)"
+#: The recent past, said any way round (composer9-1026, "over the weekend",
+#: "last fortnight", "in the past 3 weeks"): one set of fragments for `span`
+#: (`_span_recent`, `_span_weekend`), `find` and `without_windows`, so the
+#: three cannot drift apart.
+_PRE = r"(?:in|over|during|within|throughout|across|through|for) "
+_COUNT = r"(?:\d{1,3}|few|couple of|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)"
+_RECENT_UNIT = r"(?:hours?|days?|weeks?|fortnights?|months?|years?)"
+_ROLLING = (
+    #: A count makes it a run of days back from today, with any lead-in.
+    rf"(?:{_PRE})?(?:(?:the|these|this) )?(?:last|past|previous) {_COUNT} {_RECENT_UNIT}",
+    #: No count: only after a lead-in or "the"; bare "last week" is the calendar week.
+    #: Not "the last day of this month" or "the last week of the term": a
+    #: "last" with an "of" after it names a place in something, not a run back.
+    rf"(?:(?:{_PRE})(?:the |these |this )?|the |these |this )(?:last|past) {_RECENT_UNIT}(?! of\b)",
+    r"(?:the |this |these )?(?:last|past|previous) fortnight",
+)
+#: The weekend just gone ("last weekend" stays the calendar reading).
+_WEEKEND = r"(?:(?:in|over|during|throughout|across|through|for|at|on) the|the|this past|this last|the past) week[- ]?end(?: just (?:gone|past))?"
+_TO_DATE = (
+    r"(?:earlier|so far) this (?:week|month|year)",
+    r"this (?:week|month|year) so far",
+    r"(?:week|month|year)[ -]to[ -]date",
+    r"earlier today",
+)
+_PART_OF_DAY = (
+    r"last night",
+    r"yesterday (?:morning|afternoon|evening|night)",
+    r"this (?:morning|afternoon|evening)",
+    r"the other day",
+    r"(?:this time|the same day|same day) last (?:week|month|year)",
+)
+_BEFORE_LAST = r"(?:the )?(?:week|month|year) before last"
+_QUARTER = r"(?:the )?(?:last|this|next|previous|coming) quarter"
+_PREVIOUS_UNIT = r"the previous (?:week|weekend|month|year|quarter)"
+_SINCE_PART = r"(?:the weekend|this morning|last night|the \d{1,2}(?:st|nd|rd|th))"
 _AMOUNT_RE = r"(\d{1,3}|a|an|one|two|three|four|five|six|seven|eight|nine|ten|twelve|a couple of|a few)"
 
 #: Every phrase `span` reads, longest forms first, as one pattern for `find`
@@ -993,17 +1028,23 @@ _DATE_PHRASE_SOURCE = (
     r"\b(?:"
     + "|".join(
         (
+            _WEEKEND,
+            *_ROLLING,
+            *_TO_DATE,
+            *_PART_OF_DAY,
+            _BEFORE_LAST,
+            _QUARTER,
+            _PREVIOUS_UNIT,
             _NTH_IN_MONTH,
             r"(?:next|this|last) month,? (?:on )?(?:the )?\d{1,2}(?:st|nd|rd|th)",
             r"(?:the )?(?:first|last) day of (?:(?:this|next|last) month|the month|" + _MONTH_RE + r")",
             r"since (?:the )?(?:\d{1,2}(?:st|nd|rd|th)? (?:of )?" + _MONTH_RE + r"|" + _MONTH_RE + r"(?: \d{1,2}(?:st|nd|rd|th)?)?|"
-            + _WEEKDAY_RE + r"|last (?:week|month|year)|yesterday|\d{4}-\d{2}-\d{2})",
-            r"(?:the )?week before last",
+            + _WEEKDAY_RE + r"|last (?:week|month|year)|yesterday|\d{4}-\d{2}-\d{2}|" + _SINCE_PART + r")",
             r"(?:the )?day (?:after tomorrow|before yesterday)",
             _AMOUNT_RE + r" " + _UNIT_RE + r" ago",
             r"in (?:a fortnight|" + _AMOUNT_RE + r" " + _UNIT_RE + r")",
             r"(?:the )?(?:last|past|previous) (?:(?:\d{1,3}|few|couple of|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve) )?(?:days|weeks|months|years)",
-            r"(?:last|this|next|past|coming) (?:week|weekend|month|year)",
+            r"(?:last|this|next|past|coming) (?:week|weekend|month|year)(?! of\b)",
             r"(?:last|this|next|coming|on) " + _WEEKDAY_RE + r"(?: (?:morning|afternoon|evening|night))?",
             r"\d{4}-\d{2}-\d{2}",
             r"(?:on )?(?:the )?" + _ORD + r" of (?:next|this|last) month",
@@ -1110,7 +1151,13 @@ def _back(anchor: date, amount: int, unit: str) -> date:
 
 def _calendar_unit_span(which: str, unit: str, a: date) -> tuple[date, date, str]:
     """"last week", "next month", "this year", "past week": a whole calendar unit."""
-    step = {"last": -1, "past": -1, "this": 0, "next": 1, "coming": 1}[which]
+    step = {"last": -1, "past": -1, "previous": -1, "this": 0, "next": 1, "coming": 1}[which]
+    if unit == "quarter":
+        index = a.year * 4 + (a.month - 1) // 3 + step
+        first = date(index // 4, index % 4 * 3 + 1, 1)
+        return first, _month_end(_shift_months(first, 2)), "month"
+    if which == "past" and unit == "weekend":
+        which = "last"
     if unit == "week":
         if which == "past":
             return a - timedelta(days=7), a, "week"
@@ -1213,6 +1260,8 @@ _FIXED_DAYS = {
     "today": 0, "tonight": 0, "later today": 0, "yesterday": -1, "tomorrow": 1, "the day after tomorrow": 2,
     "day after tomorrow": 2, "the day before yesterday": -2, "day before yesterday": -2, "end of day": 0,
     "the end of the day": 0, "end of the day": 0, "eod": 0,
+    "last night": -1, "yesterday morning": -1, "yesterday afternoon": -1, "yesterday evening": -1, "yesterday night": -1,
+    "this morning": 0, "this afternoon": 0, "this evening": 0, "earlier today": 0,
 }
 
 _HOLIDAYS = {
@@ -1226,10 +1275,12 @@ def _one_day(day: date) -> tuple[date, date, str]:
 
 
 def _span_since(text: str, a: date, tense: str | None) -> Any:
-    found = re.fullmatch(r"since (?:the )?(.+)", text)
+    found = re.fullmatch(r"since (.+)", text)
     if not found:
         return _MISS
-    start = span(found.group(1), a, "past")
+    #: "since the weekend" keeps its "the"; "since the 15th" and "since the
+    #: first of march" read without it.
+    start = span(found.group(1), a, "past") or span(re.sub(r"^the ", "", found.group(1)), a, "past")
     return (start[0], a, start[2]) if start and start[0] <= a else None
 
 
@@ -1240,23 +1291,79 @@ def _span_fixed(text: str, a: date, tense: str | None) -> Any:
 
 
 def _span_week_before_last(text: str, a: date, tense: str | None) -> Any:
-    if not re.fullmatch(r"(?:the )?week before last", text):
+    found = re.fullmatch(_BEFORE_LAST, text)
+    if not found:
         return _MISS
-    first, last = _week_of(a - timedelta(days=14))
-    return first, last, "week"
+    unit = text.split()[-3]
+    if unit == "week":
+        first, last = _week_of(a - timedelta(days=14))
+        return first, last, "week"
+    if unit == "month":
+        first = _shift_months(a.replace(day=1), -2)
+        return first, _month_end(first), "month"
+    return date(a.year - 2, 1, 1), date(a.year - 2, 12, 31), "year"
 
 
 def _span_calendar_unit(text: str, a: date, tense: str | None) -> Any:
-    found = re.fullmatch(r"(last|this|next|past|coming) (week|weekend|month|year)", text)
+    found = re.fullmatch(r"(last|this|next|past|coming|previous) (week|weekend|month|year|quarter)", re.sub(r"^the previous ", "previous ", text))
     return _calendar_unit_span(*found.groups(), a) if found else _MISS
 
 
-def _span_last_n(text: str, a: date, tense: str | None) -> Any:
-    found = re.fullmatch(r"(?:the )?(?:last|past|previous) (?:(\d{1,3}|few|couple of|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve) )?(days|weeks|months|years)", text)
+_RECENT = re.compile(rf"(?:({_PRE.strip()}) )?(?:(the|these|this) )?(last|past|previous) (?:({_COUNT}) )?({_RECENT_UNIT})")
+
+
+def _span_recent(text: str, a: date, tense: str | None) -> Any:
+    """A run of days back from today: "the last 3 days", "in the past
+    fortnight", "over the last week". A count always makes it one; without a
+    count it takes a lead-in or "the" ("last week" alone is the calendar week,
+    read before this)."""
+    found = _RECENT.fullmatch(text)
     if not found:
         return _MISS
-    amount = _amount(found.group(1) or "one") or {"few": 3, "couple of": 2}.get(found.group(1) or "", 1)
-    return _back(a, amount, found.group(2)), a, "day"
+    lead, det, word, count, unit = found.groups()
+    unit = unit.rstrip("s")
+    if not (count or unit == "fortnight" or ((lead or det) and word in ("last", "past"))):
+        return _MISS
+    amount = _amount(count) if count else 1
+    if unit == "hour":
+        start = a - timedelta(days=-(-amount // 24) if amount >= 24 else 0)
+    else:
+        start = _back(a, amount, unit)
+    return start, a, "day"
+
+
+def _span_weekend(text: str, a: date, tense: str | None) -> Any:
+    """The weekend just gone ("over the weekend", "the weekend"); the coming
+    one for a note about the future. "last weekend" is the calendar reading."""
+    if not re.fullmatch(_WEEKEND, text):
+        return _MISS
+    if tense == "future":
+        saturday = a - timedelta(days=1) if a.weekday() == 6 else a + timedelta(days=(5 - a.weekday()) % 7)
+    else:
+        saturday = a - timedelta(days=(a.weekday() - 5) % 7)
+    return saturday, saturday + timedelta(days=1), "week"
+
+
+def _span_to_date(text: str, a: date, tense: str | None) -> Any:
+    """From the start of this week, month or year up to today."""
+    found = re.fullmatch(r"(?:(?:earlier|so far) this (week|month|year)|this (week|month|year) so far|(week|month|year)[ -]to[ -]date)", text)
+    if not found:
+        return _MISS
+    unit = next(g for g in found.groups() if g)
+    start = {"week": _week_of(a)[0], "month": a.replace(day=1), "year": date(a.year, 1, 1)}[unit]
+    return start, a, unit
+
+
+def _span_other_day(text: str, a: date, tense: str | None) -> Any:
+    """"The other day": a few days back, two to four."""
+    if text != "the other day":
+        return _MISS
+    return a - timedelta(days=4), a - timedelta(days=2), "day"
+
+
+def _span_same_day(text: str, a: date, tense: str | None) -> Any:
+    found = re.fullmatch(r"(?:this time|the same day|same day) last (week|month|year)", text)
+    return _one_day(_back(a, 1, found.group(1))) if found else _MISS
 
 
 def _span_ago(text: str, a: date, tense: str | None) -> Any:
@@ -1391,7 +1498,8 @@ def _span_holiday(text: str, a: date, tense: str | None) -> Any:
 
 #: Tried in this order: an earlier reader's pattern can be a prefix of a later one's.
 _SPAN_READERS = (
-    _span_since, _span_fixed, _span_week_before_last, _span_calendar_unit, _span_last_n, _span_ago, _span_in,
+    _span_since, _span_fixed, _span_week_before_last, _span_calendar_unit, _span_weekend, _span_recent, _span_to_date,
+    _span_other_day, _span_same_day, _span_ago, _span_in,
     _span_nth, _span_weekday, _span_iso, _span_month_day, _span_day_and_month, _span_ordinal,
     _span_part_of_month, _span_end_of, _span_month, _span_holiday,
 )
@@ -1418,7 +1526,8 @@ def span(phrase: str, anchor: date, tense: str | None = None) -> tuple[date, dat
 #: ("last week", "3 days ago", "this month"), so "week 4" stays a subject
 #: and "last week" is not one. Moved from the composer (ledger row 453).
 _WINDOW_WORDS = re.compile(
-    r"\b(?:(?:the\s+)?(?:last|this|next|past|previous|coming)\s+(?:few\s+|couple\s+of\s+|\d{1,3}\s+|two\s+|three\s+|four\s+|five\s+|six\s+|seven\s+|eight\s+|nine\s+|ten\s+|eleven\s+|twelve\s+)?"
+    r"\b(?:" + "|".join((_WEEKEND, *_ROLLING, *_TO_DATE, *_PART_OF_DAY, _BEFORE_LAST, _QUARTER, _PREVIOUS_UNIT,
+                         r"since (?:" + _WEEKDAY_RE + r"|yesterday|" + _SINCE_PART + r"|last (?:week|month|year))")) + r"|(?:the\s+)?(?:last|this|next|past|previous|coming)\s+(?:few\s+|couple\s+of\s+|\d{1,3}\s+|two\s+|three\s+|four\s+|five\s+|six\s+|seven\s+|eight\s+|nine\s+|ten\s+|eleven\s+|twelve\s+)?"
     r"(?:days?|weeks?|weekend|months?|years?|night|morning|evening|monday|tuesday|wednesday|thursday|friday|saturday|sunday)"
     r"|(?:the\s+)?week\s+before\s+last|(?:\d{1,3}|a|an|one|two|three|four|five|six)\s+(?:days?|weeks?|months?|years?)\s+ago"
     r"|(?:since|in|during)\s+(?:january|february|march|april|may|june|july|august|september|october|november|december))\b",
