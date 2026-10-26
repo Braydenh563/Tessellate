@@ -512,7 +512,10 @@ async function renderDashSubmessage() {
     atlasStreak(streak);
     nameMarkBuddyStreak(streak);
   }
-  const pattern = patterns?.patterns?.[0];
+  //: A different pattern each day, not always the first (the owner, 2026-10-26:
+  //: "I keep seeing this one pattern and nothing else").
+  const found = patterns?.patterns || [];
+  const pattern = found[Math.floor(Date.now() / 86400000) % (found.length || 1)];
   if (pattern) bits.push(["patterns", "Pattern: ", pattern.text]);
   //: One span per fact, its separator inside it, so a view can fold one fact
   //: away whole: the Focused hero's glance says what is due (INBOX 675), and
