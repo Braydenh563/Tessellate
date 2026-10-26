@@ -11278,6 +11278,60 @@ const MD_ACTIONS = {
 // would have been the third place in this app to independently decide what
 // `**` means: see MD_ACTIONS' own comment and editor.js's "/" menu, which
 // are already deliberately kept to one dialect.
+//: **A line prefix is a switch, not a stack.** The heading, list, task and
+//: quote buttons used to put their marker in front of whatever the line
+//: already began with, so H2 on a heading did nothing,
+//: Numbered on a bullet gave `1. - x` and H1 on `## x` gave `# ## x`. A
+//: second press on the same kind takes it off (every other editor's toggle);
+//: a different kind of the same family (heading, list) replaces it; a quote
+//: marker is its own layer and stays put under either. Blank lines in a
+//: multi-line selection are left blank; a numbered list counts 1, 2, 3.
+const MD_LINE_KINDS = {
+  h1: ["heading", "# "], h2: ["heading", "## "], h3: ["heading", "### "],
+  h4: ["heading", "#### "], h5: ["heading", "##### "], h6: ["heading", "###### "],
+  ul: ["list", "- "], ol: ["list", "1. "], task: ["list", "- [ ] "], quote: ["quote", "> "],
+};
+const MD_LINE_QUOTE = /^(?:>[ \t]?)+/;
+const MD_LINE_HEAD = /^( *)(#{1,6}[ \t]+)?(?:(?:([-*+])|(\d+[.)]))[ \t]+(\[[ xX]\][ \t]+)?)?/;
+
+//: What a line (past any quote marker) already is: "h1".."h6", "ul", "ol",
+//: "task" or "".
+function mdLineKind(rest) {
+  const m = MD_LINE_HEAD.exec(rest);
+  if (m[2]) return `h${m[2].trim().length}`;
+  if (m[4]) return "ol";
+  if (m[3]) return m[5] ? "task" : "ul";
+  return "";
+}
+
+function mdLinePrefixEdit(block, kind) {
+  const [family, marker] = MD_LINE_KINDS[kind];
+  const lines = block.split("\n");
+  const live = lines.filter((line) => line.trim());
+  const one = lines.length === 1;
+  const split = (line) => {
+    const lead = MD_LINE_QUOTE.exec(line)?.[0] || "";
+    return [lead, line.slice(lead.length)];
+  };
+  const has = (line) => {
+    const [lead, rest] = split(line);
+    return family === "quote" ? Boolean(lead) : mdLineKind(rest) === kind;
+  };
+  const off = (live.length > 0 || one) && (live.length ? live : lines).every(has);
+  let count = 0;
+  return lines.map((line) => {
+    if (!line.trim() && !one) return line;
+    const [lead, rest] = split(line);
+    if (family === "quote") return off ? rest : lead ? line : marker + line;
+    const head = MD_LINE_HEAD.exec(rest)[0];
+    const body = rest.slice(head.length);
+    if (off) return lead + body;
+    count += 1;
+    const indent = family === "list" ? /^ */.exec(rest)[0] : "";
+    return `${lead}${indent}${kind === "ol" ? `${count}. ` : marker}${body}`;
+  }).join("\n");
+}
+
 function applyMarkdown(kind, boxId = "doc-content") {
   const action = MD_ACTIONS[kind];
   const box = docSurfaceById(boxId);
@@ -11396,15 +11450,12 @@ function applyMarkdown(kind, boxId = "doc-content") {
     return;
   }
   if (action.line) {
-    // Prefix every selected line, or the current one when nothing is selected.
+    // Every selected line, or the current one when nothing is selected.
     const lineStart = value.lastIndexOf("\n", start - 1) + 1;
     const lineEnd = end + (value.slice(end).indexOf("\n") === -1 ? 0 : value.slice(end).indexOf("\n"));
-    const target = value.slice(lineStart, Math.max(lineEnd, end)) || "";
-    const prefixed = target
-      .split("\n")
-      .map((line) => (line.startsWith(action.line) ? line : action.line + line))
-      .join("\n");
-    box.value = value.slice(0, lineStart) + prefixed + value.slice(Math.max(lineEnd, end));
+    const to = Math.max(lineEnd, end);
+    const prefixed = mdLinePrefixEdit(value.slice(lineStart, to), kind);
+    box.value = value.slice(0, lineStart) + prefixed + value.slice(to);
     box.setSelectionRange(lineStart, lineStart + prefixed.length);
   } else if (action.custom === "link") {
     const label = selected || "link text";
@@ -13985,7 +14036,18 @@ function mountEditorToolbarExtras(bar) {
     return el;
   };
   bar.appendChild(sep());
+  //: **A pair is one flex item.** Undo and redo (and outdent and indent) are
+  //: one decision; the strip wraps between items, and at 1440 it wrapped
+  //: between Undo and Redo, leaving Redo alone at the start of row two.
+  let pair = null;
   for (const spec of EDITOR_TOOLBAR_BUTTONS) {
+    if (!pair || pair.children.length > 1) {
+      pair = document.createElement("span");
+      pair.className = "doc-toolbar-pair";
+      pair.setAttribute("role", "group");
+      pair.dataset.mdExtra = "1";
+      bar.appendChild(pair);
+    }
     const button = document.createElement("button");
     button.type = "button";
     button.dataset.md = spec.md;
@@ -13993,7 +14055,7 @@ function mountEditorToolbarExtras(bar) {
     button.title = spec.title;
     button.setAttribute("aria-label", spec.title);
     setLabel(button, spec.icon);
-    bar.appendChild(button);
+    pair.appendChild(button);
   }
   for (const menu of EDITOR_TOOLBAR_MENUS) {
     const details = document.createElement("details");
