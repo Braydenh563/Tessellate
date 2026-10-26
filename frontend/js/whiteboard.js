@@ -2797,6 +2797,23 @@ function wbRestoreOrFrameBoard(boardId) {
   if (bounds && !wbViewShowsContent(current, bounds, free)) wbZoomToFit({ animate: false });
 }
 
+//: **The canvas is panned by its transform and never by scrolling** (mapdeeppan.js:
+//: Tab under "Cells" at 1440x900 moved the whole map 351px with the zoom
+//: transform unchanged, because the browser scrolls an `overflow: hidden` box
+//: to bring a newly focused editor into view and centres it, 627px in the
+//: report). Any such scroll (a focus, a caret, a find) is folded into the zoom
+//: transform at once, so the view the saved camera, Fit and the reveal rules
+//: read is the view on screen; the editors also focus with `preventScroll`.
+function wbFoldNativeScroll(event) {
+  const el = event.currentTarget;
+  const dx = el.scrollLeft, dy = el.scrollTop;
+  if (!dx && !dy) return;
+  el.scrollLeft = 0;
+  el.scrollTop = 0;
+  const t = d3.zoomTransform(el);
+  d3.select(el).call(wbZoom.transform, d3.zoomIdentity.translate(t.x - dx, t.y - dy).scale(t.k));
+}
+
 /** Centre the viewport on one board-space rectangle, keeping the current zoom. */
 function wbCenterOn(box, { animate = true, minScale = 0.55 } = {}) {
   const container = document.getElementById("whiteboard-container");
@@ -6072,7 +6089,7 @@ function wbEditNodeText(nodeId, firstKey = "") {
     { key: "Escape", run: () => { finish(false); return true; } },
   ];
   content.replaceChildren(box);
-  box.focus();
+  box.focus({ preventScroll: true });
   box.select();
   if (firstKey) box.setRangeText(firstKey, 0, box.value.length, "end");
 
@@ -10097,7 +10114,7 @@ function wbBeginTextEdit(contentEl, ownText) {
   if (contentEl.contentEditable !== "plaintext-only") contentEl.setAttribute("contenteditable", "true");
   contentEl.closest(".wb-object")?.classList.add("wb-text-editing");
   wbAttachEditorMenu(contentEl);
-  contentEl.focus();
+  contentEl.focus({ preventScroll: true });
 }
 
 //: **The editor's "/" and "[[" menus, in a box on the board** (the owner,
@@ -14002,6 +14019,7 @@ async function initWhiteboard() {
     if (event.button === 1 && event.target?.closest?.("#library-view-whiteboard")) event.preventDefault();
   }, true);
   container.call(wbZoom).on("dblclick.zoom", null);
+  container.node().addEventListener("scroll", wbFoldNativeScroll);
   // Shift+wheel pans sideways; every other wheel is d3-zoom's, by
   // `wbZoomFilter`, which prevents the page scrolling too. `passive: false`
   // here so the page behind the board does not scroll on a shifted wheel.

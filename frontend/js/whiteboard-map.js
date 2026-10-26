@@ -5348,7 +5348,29 @@ function wbMapRevealTopic(item) {
     maxX: Math.max(box.maxX, pBox.maxX), maxY: Math.max(box.maxY, pBox.maxY),
   };
   const fits = both && (both.maxX - both.minX) * k <= area.right - area.left - 32 && (both.maxY - both.minY) * k <= area.bottom - area.top - 32;
-  wbCenterOn(fits ? both : box, { animate: true });
+  const want = fits ? both : box;
+  //: **The least move that brings it in, not a recentre** (mapdog-1026: Tab
+  //: three levels deep centred the new topic and the root was left 16px from
+  //: the window's edge, a 627px pan). Each axis slides only as far as the
+  //: topic (with its parent) needs, to a 24px margin inside the free area, so
+  //: what was on screen mostly stays where it was. A view too small to read
+  //: still eases up to a legible zoom, which is `wbCenterOn`'s job.
+  if (k < 0.55) {
+    wbCenterOn(want, { animate: true });
+    return true;
+  }
+  const t = d3.zoomTransform(container);
+  const m = 24;
+  const slide = (lo, hi, a0, a1) => {
+    let d = 0;
+    if (hi > a1 - m) d = a1 - m - hi;
+    if (lo + d < a0 + m) d = a0 + m - lo;
+    return d;
+  };
+  const dx = slide(t.x + k * want.minX, t.x + k * want.maxX, area.left, area.right);
+  const dy = slide(t.y + k * want.minY, t.y + k * want.maxY, area.top, area.bottom);
+  if (!dx && !dy) return false;
+  d3.select(container).transition().duration(300).call(wbZoom.transform, d3.zoomIdentity.translate(t.x + dx, t.y + dy).scale(t.k));
   return true;
 }
 

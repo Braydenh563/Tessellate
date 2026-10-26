@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard and mind map: the canvas no longer scrolls on its own. A new topic's editor took focus and the browser scrolled the box to centre it (Tab under Cells at 1440x900 moved the map 351px with the zoom unchanged); focus now keeps the view and any stray scroll is folded into the zoom, and a new topic slides in by the least move (24px inside the edge) instead of being centred.
+- Mind map: the topic bar on a phone no longer ends a row on its divider or leaves the reset alone; the divider goes under 600px and under 380px the bar is three columns (390 wide: one row of five on a root, 4 and 2 on a child; 360: 3 and 2).
 - Whiteboard: exporting a board (SVG, PNG, PDF) now draws a text box or sticky as the box it is (paper, border, rounded corners) and a table as its grid and words; both used to come out as bare words or nothing.
 - Whiteboard: Enter works from the keyboard alone. With the text, sticky or frame tool held it drops one in the middle of the view, and on a selected text box or sticky it puts the caret at the end of the words (N, Enter, type no longer needs a click).
 - Whiteboard: Find and Replace all now read a table's cells; a table holding the word used to report no matches.

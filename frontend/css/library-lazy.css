@@ -144,6 +144,21 @@ textarea.has-gutter {
 
 }
 
+/* The map's topic bar wraps on a phone. A divider there could close a row and
+   the reset sit alone (390x844: 348x102; 4 and 1 at 360), so the mark goes, as
+   the top bar's did, and the bar is three columns: five or six controls fall
+   3 and 2 or 3 and 3. Here, not in 07-whiteboard-misc.css: the boot CSS is at
+   its cap (tests/test_boot_budget.py) and this comes after the bar's flex. */
+@media (max-width: 599.98px) {
+  .wb-map-strip {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+  }
+  .wb-map-strip .wb-topbar-divider {
+    display: none;
+  }
+}
+
 /* What a connect drag is about to make (MINDMAP_PLAN §13c, `wbMapLinkCue`):
    the drop target's own ring when the release joins the tree, a dashed muted
    ring and a dashed preview line when it will be a cross-link. As specific as

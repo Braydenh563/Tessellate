@@ -59,7 +59,9 @@ def test_map_opens_with_its_root_clear_of_the_chrome():
     assert "wbViewHoldsBox(saved, rootBox, free)" in restore
     assert "if (saved && rootShown && wbViewShowsContent(" in restore
     reveal = _function(MAP, "wbMapRevealTopic")
-    assert "wbCenterOn(fits ? both : box" in reveal
+    # Same intent, a smaller move: the pair slides in by the least distance
+    # (mapdog-1026) instead of being centred, so the root is not left at the edge.
+    assert "const want = fits ? both : box;" in reveal and "slide(t.x + k * want.minX" in reveal
 
 
 def test_link_tool_draws_an_end_arrow_and_shows_its_ends():
