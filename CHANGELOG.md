@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: a text box or sticky grows taller as you type, so long text is never hidden behind a scroll bar inside the card (a 177px paragraph sat in a 62px box); Grow to fit the words uses the same measure, and one undo takes back the words and the growth together.
 - Whiteboard: undoing a paste (or any change that removes what is selected) no longer leaves a ghost selection; Export > Selection used to fail with a 'width' error and write nothing.
 - Board text: the Format panel's Bold and Italic wrap the words you selected, not the first place those words occur, work on text typed but not yet saved, and a second press takes the marks off again.
 - Spelling and grammar no longer mark the words of a link, code, addresses, file paths, email addresses or a unit after a number ("10-20 min" is not "minimum"); Settings, Writing, Check link text turns the link words back on (K11, K4b).

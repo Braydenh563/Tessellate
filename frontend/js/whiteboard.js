@@ -10398,6 +10398,35 @@ function wbIndentEditableLines(contentEl, outdent) {
   return true;
 }
 
+//: **A box is as tall as its words.** What a text box or sticky needs to show
+//: all its text: the words' own scroll height plus the box's chrome (its
+//: padding and border, which the content element does not own). Used by
+//: "Grow to fit the words" and by typing, which grows the box as it goes:
+//: before, a lecture paragraph typed into a sticky sat behind a scroll bar
+//: (177px of words in a 62px box, measured) and the rest could only be read
+//: by scrolling inside the card.
+function wbTextFitHeight(el) {
+  const words = el.querySelector(".wb-text-content");
+  if (!words) return 0;
+  return Math.ceil(words.scrollHeight) + Math.max(0, el.offsetHeight - words.offsetHeight);
+}
+
+//: Typing in a box taller than the box: the box grows now (never shrinks, so
+//: a box made small on purpose stays small until its words need more). The
+//: state before the first growth is kept for the one undo step the blur makes.
+function wbGrowBoxToWords(contentEl, d) {
+  if (d.data.sticker) return false;
+  const el = contentEl.closest(".wb-object");
+  if (!el) return false;
+  const fit = wbTextFitHeight(el);
+  if (!(fit > (d.height || el.offsetHeight) + 1)) return false;
+  if (!contentEl.wbBeforeGrow) contentEl.wbBeforeGrow = WB_KIND_INFO.object.payload(d);
+  d.height = fit;
+  el.style.height = `${fit}px`;
+  wbUpdateSelectionBar();
+  return true;
+}
+
 function wbEndTextEdit(contentEl) {
   if (!contentEl) return;
   wbDetachEditorMenu(contentEl);
@@ -22587,13 +22616,23 @@ function renderWbObjects(canvas) {
         //: Formatted from the selection bar or Ctrl+B: shown rendered (K24).
         const formatted = this.dataset.wbFormatted === "1";
         delete this.dataset.wbFormatted;
+        const grownFrom = this.wbBeforeGrow;
+        delete this.wbBeforeGrow;
         if (d.data.content === edited) {
+          if (grownFrom) {
+            wbPushUndo({ action: "move", kind: "object", id: d.id, before: grownFrom });
+            wbSaveObject(d);
+          }
           wbScheduleRender();
           return;
         }
-        wbPushUndo({ action: "move", kind: "object", id: d.id, before: WB_KIND_INFO.object.payload(d) });
+        wbPushUndo({ action: "move", kind: "object", id: d.id, before: grownFrom || WB_KIND_INFO.object.payload(d) });
         d.data = formatted ? { ...d.data, content: edited, md: true } : { ...d.data, content: edited };
+        wbGrowBoxToWords(this, d);
         wbSaveObject(d);
+      });
+      content.on("input", function () {
+        if (this.isContentEditable) wbGrowBoxToWords(this, d);
       });
       // Typing is text-box business, not the canvas's: Delete/Backspace
       // here must edit the text, not delete the whole box the way the same

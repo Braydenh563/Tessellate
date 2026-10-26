@@ -1201,8 +1201,7 @@ function wbAutoSizeSelection() {
         //: scroll height plus the box's chrome. (`wbCardFitHeight` opens a
         //: note card up the same way; at phone width its answer for a text
         //: box was the clipped height.)
-        const words = el.querySelector(".wb-text-content");
-        const fit = words ? Math.ceil(words.scrollHeight) + Math.max(0, el.offsetHeight - words.offsetHeight) : wbCardFitHeight(el);
+        const fit = el.querySelector(".wb-text-content") ? wbTextFitHeight(el) : wbCardFitHeight(el);
         if (!(fit > current + 1)) continue;
         e.item.height = Math.round(fit);
         if (e.kind === "node") await wbSaveNode(e.item);
