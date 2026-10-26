@@ -108,3 +108,11 @@
 #settings-modal .settings-section > .dock:has(> .dock-identity > h3.jump-echo:only-child):not(:has(> :not(.dock-identity))) {
   display: none;
 }
+
+/* Hover tints the chip's border, not a second box (K28); lazy with Settings for the boot CSS cap. */
+.shortcut-list button.shortcut-key:is(:hover, :focus-visible) {
+  background: transparent;
+}
+.shortcut-list .shortcut-key:is(:hover, :focus-visible) kbd {
+  border-color: var(--accent);
+}

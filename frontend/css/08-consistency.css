@@ -10146,14 +10146,14 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
    the descenders were cut (scrollHeight 13 over clientHeight 12, measured):
    the words get a line box taller than their glyphs, and the chip's own
    `align-items: center` keeps them level. */
-#raw-results .chip.link .ph-text {
+#raw-results :is(.chip.link, .result-reason-why) .ph-text {
   line-height: 1.4;
 }
 /* The "why this matched" sentence is a quiet line under the card, not a plate:
    no ground, no edge, normal weight, muted ink at the small size, and the
    sparkle as tall as the first line so a wrapped sentence keeps it level with
    its first line (it sat 1.55px above, on a 36px slab). */
-#raw-results .entry-why .result-reason-why {
+#raw-results .result-reason-why {
   background: none;
   padding: 0;
   font-size: var(--text-xs);
@@ -10162,15 +10162,12 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   color: var(--muted);
   align-items: flex-start;
 }
-#raw-results .entry-why .result-reason-why > .ph {
+#raw-results .result-reason-why > .ph {
   display: inline-flex;
   align-items: center;
   block-size: 1lh;
   translate: none;
   color: var(--accent-text);
-}
-#raw-results .entry-why .result-reason-why .ph-text {
-  line-height: inherit;
 }
 /* Settings, Help search (INBOX 520): the field is the `.search-field` recipe
    with a gap under it; a typed word is marked in the soft accent, the same

@@ -101,7 +101,7 @@
 }
 .wb-present-count {
   /* Fixed, so the arrows beside it never move between pages (INBOX K32). */
-  flex: 0 0 auto;
+  flex: none;
   width: min(20rem, 50vw);
   min-width: 0;
   overflow: hidden;

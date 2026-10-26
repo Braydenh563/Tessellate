@@ -2883,22 +2883,6 @@ li.link-source {
   flex: 1 1 auto;
   min-width: 0;
 }
-/* **Use AI** (K34): the AI switch is a checkbox on the app's pill-switch
-   recipe (06-timeline-dialogs.css, `.checkbox-label`), in the ask input's
-   control row beside the answer-length select. Compact: the label drops the
-   chip border and padding so the row's other widths do not move; disabled
-   (no model) the recipe's own 0.45 opacity reads as greyed. */
-.ask-ai-switch {
-  flex: 0 0 auto;
-  border-color: transparent;
-  padding-inline: var(--space-1);
-  font-size: var(--text-sm);
-  color: var(--ink);
-  cursor: pointer;
-}
-.ask-ai-switch:has(input:disabled) {
-  cursor: not-allowed;
-}
 #ask-history-toggle {
   position: relative;
 }

@@ -726,16 +726,6 @@ mark.text-highlight-grey { background: rgba(148, 163, 184, 0.25); }
   min-height: var(--target-min);
   padding: 0 var(--space-1);
 }
-/* No tinted box behind the chip on hover (the owner 2026-10-26: "look even
-   more off when hovered"): a grey plate around a bordered chip drew two
-   boxes. The chip's own border and the pencil take the accent instead; the
-   pencil sits at the column's right edge so every row's pencil lines up. */
-.shortcut-list button.shortcut-key:is(:hover, :focus-visible) {
-  background: transparent;
-}
-.shortcut-list .shortcut-key:is(:hover, :focus-visible) kbd {
-  border-color: var(--accent);
-}
 /* The keys are one item, not one item per key. Every `<kbd>` in a row used
    to be its own flex child, so a chord row's keys and the separators between
    them each took the row's 0.5rem gap and pushed the description into
