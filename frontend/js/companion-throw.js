@@ -16,8 +16,16 @@
 //: - a side, met fast: it splats flat against it, holds, and slides down to
 //:   the first ledge under it or the floor (`splat`); faster still, it may go
 //:   off that side and come back on the other (`wrap`);
+//: - coming down just past a panel's end, a hand may catch its edge
+//:   (`grab`); sliding off the end of one it landed on, it may catch the
+//:   edge as it goes (`slip`): either way it hangs a moment and pulls itself
+//:   up on to it (K12, the owner: "catch a higher or lower ui element and
+//:   perch on that ... or nearly slip off a ui element but manage to grab on
+//:   and pull itself up");
 //: - otherwise the bounce it always had, and its landing on the first ledge
 //:   or the floor under its path.
+//: How long it hangs before pulling up is rolled too (`fate.ms`), so no two
+//: catches are timed alike.
 //: Then it settles into one of the postures its perch allows
 //: (`companionThrowSettle`: sitting with its legs dangling or kicking,
 //: lying down, a stretch, a swing from the bar). Every place it ends is the
@@ -25,16 +33,21 @@
 //: Pure apart from `nameMarkBuddyThrow` and the three DOM helpers under it;
 //: the rolls come from `rand`, seeded by `companionThrowSeed` in the sweep
 //: (scratchpad/ui-sweeps/throwfates.js) and in tests/test_companion_throw_fates.py.
-const COMPANION_THROW_ODDS = { hang: 0.4, climb: 0.45, wrap: 0.3, splat: 0.4 };
+const COMPANION_THROW_ODDS = { hang: 0.55, climb: 0.45, wrap: 0.3, splat: 0.4, grab: 0.5, slip: 0.6 };
 //: The speed, px per ms, each needs where it meets the edge: a lob that
 //: barely reaches the bar is not caught, a nudge into a side does not splat.
-const COMPANION_THROW_NEEDS = { hang: 0.35, splat: 0.9, wrap: 1.4 };
+//: The bar was 0.35 and 0.4 odds: most throws to it bounced off (K12, the
+//: owner: "every time I throw the companion to the roof it just bounces off").
+const COMPANION_THROW_NEEDS = { hang: 0.2, splat: 0.9, wrap: 1.4 };
 //: How far under an edge its hands still catch it at the top of the arc.
 const COMPANION_THROW_REACH = 26;
+//: How far past a panel's end a falling hand still catches its edge.
+const COMPANION_THROW_GRAB = 22;
 //: Flat against a side this long before it slides, at most this fast.
 const COMPANION_THROW_HOLD = 240;
 const COMPANION_THROW_SLIDE = 0.32;
-//: Hanging from the edge it caught before it pulls itself up.
+//: Hanging from the edge it caught before it pulls itself up: this, times
+//: 0.8 to 1.6 by a roll.
 const COMPANION_THROW_CLIMB_MS = 520;
 //: A seed for the rolls (0: `Math.random`); the sweep sets it.
 //: The sweep sets `.seed`; 0 is Math.random.
@@ -61,7 +74,7 @@ function companionThrowStep(s, dt, world, k, base, rand) {
   if (s.rest) return s;
   if (s.splat) return companionThrowSlide(s, dt, world, k);
   if (s.wrap) return companionThrowWrapOn(base(s, dt, { ...world, left: -Infinity, right: Infinity }, k), world, dt);
-  const n = companionThrowUp(s, companionThrowSide(s, base(s, dt, world, k), world, rand), world, rand);
+  const n = companionThrowDown(s, companionThrowUp(s, companionThrowSide(s, base(s, dt, world, k), world, rand), world, rand), world, rand);
   if (n.rest && !n.fate) n.fate = { kind: n.on === "floor" ? "floor" : n.on ? "ledge" : "air" };
   return n;
 }
@@ -140,10 +153,38 @@ function companionThrowUp(s, n, world, rand) {
     const reaches = m.vy >= 0 && m.y >= grip && m.y - grip <= COMPANION_THROW_REACH;
     if (!passes && !reaches) continue;
     const tried = { ...m.tried, [key]: true };
-    if (rand() < COMPANION_THROW_ODDS.climb) return { ...m, tried, y: grip, vx: 0, vy: 0, rot: 0, rest: true, fate: { kind: "climb", at: [Math.round(m.x), l.y] } };
+    if (rand() < COMPANION_THROW_ODDS.climb) return companionThrowHold({ ...m, tried }, l, world, "climb", rand);
     m = { ...m, tried };
   }
   return m;
+}
+
+//: Coming down: off the end of the ledge it slid along (`slip`), or
+//: falling just past a ledge's end as its hands pass the edge (`grab`).
+function companionThrowDown(s, n, world, rand) {
+  if (n.rest || n.splat || n.wrap) return n;
+  const slid = s.on && s.on !== "floor" && !n.on ? s.on : null;
+  if (slid) return rand() < COMPANION_THROW_ODDS.slip ? companionThrowHold(n, slid, world, "slip", rand) : n;
+  if (n.on || s.vy <= 0) return n;
+  let m = n;
+  for (const l of world.ledges || []) {
+    const grip = l.y + world.climb;
+    const key = `g${Math.round(l.left)},${Math.round(l.y)}`;
+    const past = Math.max(l.left - m.x, m.x - l.right);
+    if (past <= 0 || past > COMPANION_THROW_GRAB || m.tried?.[key] || s.y >= grip || m.y < grip) continue;
+    const tried = { ...m.tried, [key]: true };
+    if (rand() < COMPANION_THROW_ODDS.grab) return companionThrowHold({ ...m, tried }, l, world, "grab", rand);
+    m = { ...m, tried };
+  }
+  return m;
+}
+
+//: Hanging by its hands from ledge `l`'s edge, at the end nearest, to pull
+//: itself up on to it after a rolled while.
+function companionThrowHold(n, l, world, kind, rand) {
+  const x = Math.min(Math.max(n.x, l.left), l.right);
+  const ms = Math.round(COMPANION_THROW_CLIMB_MS * (0.8 + rand() * 0.8));
+  return { ...n, x, y: l.y + world.climb, vx: 0, vy: 0, rot: 0, rest: true, on: null, fate: { kind, at: [Math.round(x), l.y], ms } };
 }
 
 //: Where the drop looks for its place: a climb's is the top of the edge it
@@ -165,7 +206,7 @@ const COMPANION_THROW_SETTLE = {
   float: ["shrug", "wave"],
 };
 function companionThrowSettle(kind, pose, roll) {
-  if (kind === "splat" && pose !== "hang") return roll < 0.6 ? "scratch" : "shrug";
+  if ((kind === "splat" || kind === "slip") && pose !== "hang") return roll < 0.6 ? "scratch" : "shrug";
   const list = COMPANION_THROW_SETTLE[pose] || [];
   return list[Math.min(list.length - 1, Math.floor(roll * list.length))] || "";
 }
@@ -199,7 +240,7 @@ function nameMarkBuddyThrow(buddy, vx, vy, world) {
       clearTimeout(flight.timer);
       if (nmb.flight !== flight) return;
       nmb.flight = null;
-      buddy.classList.remove("nm-buddy-dragging", "nmb-splat", "nmb-climb");
+      buddy.classList.remove("nm-buddy-dragging", "nmb-splat", "nmb-climb", "nmb-slip");
       delete buddy.dataset.splat;
       nameMarkBuddySway(buddy, 0);
       if (!char) return;
@@ -207,6 +248,7 @@ function nameMarkBuddyThrow(buddy, vx, vy, world) {
       //: short way, never snapped.
       const r = ((((Number.parseFloat(char.style.rotate) || 0) + 180) % 360) + 360) % 360 - 180;
       char.style.rotate = "";
+      char.style.animationDuration = "";
       if (Math.abs(r) > 1 && typeof char.animate === "function") char.animate([{ rotate: `${r}deg` }, { rotate: "0deg" }], { duration: 260, easing: "ease-out" });
     },
   };
@@ -241,7 +283,7 @@ function nameMarkBuddyThrow(buddy, vx, vy, world) {
         nameMarkBuddyThrowLand(buddy, s, tab, landing);
         companionThrowSettleSoon(buddy, s, landing, rand);
       };
-      if (s.fate?.kind === "climb" && landing.y < s.y) companionThrowClimb(buddy, flight, land);
+      if (COMPANION_THROW_PULLS.includes(s.fate?.kind) && landing.y < s.y) companionThrowClimb(buddy, flight, land, s.fate);
       else land();
       return;
     }
@@ -272,15 +314,25 @@ function companionThrowFlat(buddy, char, s) {
   if (char && typeof char.animate === "function") char.animate([{ scale: "0.6 1.2" }, { scale: "0.84 1.08" }], { duration: 240, easing: "ease-out" });
 }
 
-//: Caught by its hands on a panel's top edge: it hangs there, dips and
-//: pulls (`.nmb-climb`, the lazy CSS), then climbs on (the move to its
-//: place). A grab in the meantime stops the flight, and the climb with it.
-function companionThrowClimb(buddy, flight, land) {
+//: Caught by its hands on a panel's top edge (going up, coming down past
+//: its end, or slipping off it): it hangs there, dips and pulls
+//: (`.nmb-climb`, the lazy CSS, over the rolled `fate.ms`), then climbs on
+//: (the move to its place). A grab in the meantime stops the flight, and
+//: the climb with it.
+const COMPANION_THROW_PULLS = ["climb", "grab", "slip"];
+function companionThrowClimb(buddy, flight, land, fate) {
   buddy.classList.remove("nm-buddy-dragging");
   buddy.dataset.pose = "hang";
   buddy.dataset.legs = "";
+  const char = buddy.querySelector(".nm-buddy-char");
+  if (char) char.style.animationDuration = `${fate.ms}ms`;
   buddy.classList.add("nmb-climb");
-  flight.timer = setTimeout(land, COMPANION_THROW_CLIMB_MS);
+  //: Nearly gone: a jolt as the hand catches, and a startled face.
+  if (fate.kind === "slip") {
+    buddy.classList.add("nmb-slip");
+    nameMarkBuddyExpress("surprised", fate.ms + 600, { drift: true });
+  }
+  flight.timer = setTimeout(land, fate.ms);
 }
 
 //: Once it has landed (and the landing's own act is over), one of the

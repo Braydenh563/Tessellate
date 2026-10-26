@@ -2,9 +2,9 @@
 
 Generated 2026-10-26 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6456, frontend ids 2542, CSS sections 503, backend routes 622, backend modules 6533, test files 1365, tests 12187, plan headings 972.
+Counts: frontend functions 6458, frontend ids 2542, CSS sections 503, backend routes 622, backend modules 6533, test files 1365, tests 12190, plan headings 972.
 
-## Frontend functions (6456)
+## Frontend functions (6458)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -2689,22 +2689,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkViewerNear` | frontend/js/companion-menu.js:473 |
 | `openNameMarkViewer` | frontend/js/companion-menu.js:30 |
 
-### frontend/js/companion-throw.js (12)
+### frontend/js/companion-throw.js (14)
 
 | Name | File:line |
 |---|---|
-| `companionThrowAt` | frontend/js/companion-throw.js:151 |
-| `companionThrowClimb` | frontend/js/companion-throw.js:278 |
-| `companionThrowFlat` | frontend/js/companion-throw.js:262 |
-| `companionThrowRng` | frontend/js/companion-throw.js:44 |
-| `companionThrowSettle` | frontend/js/companion-throw.js:167 |
-| `companionThrowSettleSoon` | frontend/js/companion-throw.js:289 |
-| `companionThrowSide` | frontend/js/companion-throw.js:70 |
-| `companionThrowSlide` | frontend/js/companion-throw.js:107 |
-| `companionThrowStep` | frontend/js/companion-throw.js:60 |
-| `companionThrowUp` | frontend/js/companion-throw.js:127 |
-| `companionThrowWrapOn` | frontend/js/companion-throw.js:89 |
-| `nameMarkBuddyThrow` | frontend/js/companion-throw.js:177 |
+| `companionThrowAt` | frontend/js/companion-throw.js:192 |
+| `companionThrowClimb` | frontend/js/companion-throw.js:323 |
+| `companionThrowDown` | frontend/js/companion-throw.js:164 |
+| `companionThrowFlat` | frontend/js/companion-throw.js:304 |
+| `companionThrowHold` | frontend/js/companion-throw.js:184 |
+| `companionThrowRng` | frontend/js/companion-throw.js:57 |
+| `companionThrowSettle` | frontend/js/companion-throw.js:208 |
+| `companionThrowSettleSoon` | frontend/js/companion-throw.js:341 |
+| `companionThrowSide` | frontend/js/companion-throw.js:83 |
+| `companionThrowSlide` | frontend/js/companion-throw.js:120 |
+| `companionThrowStep` | frontend/js/companion-throw.js:73 |
+| `companionThrowUp` | frontend/js/companion-throw.js:140 |
+| `companionThrowWrapOn` | frontend/js/companion-throw.js:102 |
+| `nameMarkBuddyThrow` | frontend/js/companion-throw.js:218 |
 
 ### frontend/js/connections.js (6)
 
@@ -10391,7 +10393,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/ask-compose-lazy.css | 201 |
 | frontend/css/atlas-lazy.css | 60 |
 | frontend/css/captions-lazy.css | 95 |
-| frontend/css/companion-throw-lazy.css | 23 |
+| frontend/css/companion-throw-lazy.css | 32 |
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/file-drop-lazy.css | 51 |
@@ -12647,8 +12649,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2604 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2706 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2606 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2708 |
 
 ### src/tessellate/ai/inbox.py (7)
 
@@ -19244,7 +19246,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12187)
+## Tests (12190)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19442,7 +19444,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_companion_ride_late_scroller.py | 2 |
 | tests/test_companion_stacking.py | 4 |
 | tests/test_companion_throw.py | 8 |
-| tests/test_companion_throw_fates.py | 12 |
+| tests/test_companion_throw_fates.py | 15 |
 | tests/test_companion_toggle.py | 3 |
 | tests/test_companion_viewer_face.py | 1 |
 | tests/test_companion_viewer_sleep.py | 6 |

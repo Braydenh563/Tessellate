@@ -5,6 +5,7 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
+- Companion: thrown at the top bar it catches hold more often (it mostly bounced off), and on the way down it may catch the end of a panel it falls past, or catch the edge as it slides off one, and pull itself up; each catch hangs a different while before the pull.
 - Fix: the companion's face accessories (sunglasses, an eyepatch, a mask) turn and tilt with its face; reading glasses are no longer drawn over glasses it wears; it holds a book in both hands in front of it, and Atlas reads its book of light at its chest rather than sitting on it.
 - Fix: the companion looks asleep without its Zs: its head lolls with a slow breathing bob, its eyes shut (they never did, under the blink loop), sunglasses go up onto its forehead, and hanging it holds on by one hand and sways like a sloth.
 ## [Unreleased]
