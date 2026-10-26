@@ -21049,6 +21049,7 @@ function renderWhiteboard() {
         rawDX = 0;
         rawDY = 0;
         d._resizeUndoBefore = WB_KIND_INFO.node.payload(d);
+        d._linkedSketches = wbLinkedSketchesFor(d.id, "node");
         //: Measured once, at the press: the height the text needs.
         const card = document.querySelector(`.node-card[data-id="${d.id}"]`);
         d._fitH = card && !wbExpandedNodes.has(d.id) ? wbCardFitHeight(card) : null;
@@ -21083,9 +21084,18 @@ function renderWhiteboard() {
           el.style.height = `${height}px`;
           el.style.transform = wbItemTransform(d);
         }
+        //: **The arrows and the links follow a card's resize as they follow a
+        //: move** (the owner, 2026-10-26: "the side arrows dont move with it").
+        //: The object's resize did this; the card's left the four arrows and
+        //: every link on the old box until the release (measured: the right
+        //: arrow 17px outside the box at the press, 98px inside it at +120).
+        wbMapNodeSizeCache?.delete(d.id);
+        if (d._linkedSketches?.length) wbUpdateLinkedSketches(d.id, d._linkedSketches);
+        wbQueueSelectionBar();
       })
       .on("end", async (event, d) => {
         wbClearAlignmentGuides();
+        delete d._linkedSketches;
         delete d._fitH;
         delete d._resizeStartW;
         delete d._resizeStartH;
