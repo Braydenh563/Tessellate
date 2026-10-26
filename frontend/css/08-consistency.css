@@ -10774,15 +10774,3 @@ header#top-bar button.space-switcher-btn:focus-visible {
   box-shadow: var(--shadow-sm);
 }
 
-/* **The asked question, above its answer** (K29): one muted line at the small
-   size, an ellipsis when long; the full text is on its title. */
-.ask-asked {
-  margin: 0 0 var(--space-3);
-  font-size: var(--text-sm);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.ask-asked.hidden {
-  display: none;
-}

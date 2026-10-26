@@ -2874,27 +2874,12 @@ function renderAskTrail() {
   host.append(trail, peek);
 }
 
-//: **What was asked, above its answer** (K29, the owner: "I want some way to
-//: tell what I searched becasue I forgot instantly"). One quiet line, ellipsis
-//: when long, the full question on its title. The box keeps the question too,
-//: selected after the answer (see `askQuestion`'s finally), so one key retypes it.
-function setAskedLine(question) {
-  const line = $("ask-asked");
-  if (!line) return;
-  const text = (question || "").trim();
-  line.classList.toggle("hidden", !text);
-  line.textContent = text ? `You asked: ${text}` : "";
-  if (text) line.title = text;
-  else line.removeAttribute("title");
-}
-
 function newChat() {
   conversation = [];
   askTrail = [];
   askTrailPending = null;
   renderAskTrail();
   lastQuestion = "";
-  setAskedLine("");
   clearAskAnswerFoot();
   $("chat-results").classList.add("hidden");
   $("ask-idle")?.classList.remove("hidden");
@@ -2975,9 +2960,10 @@ async function askQuestion(preset) {
   askTrailPending = null;
   renderAskTrail();
   lastQuestion = question;
-  //: A chip, a follow-up or Retry asks without typing: the box shows it anyway.
+  //: A chip, a follow-up or Retry asks without typing: the box shows it
+  //: anyway (K29, "I forgot instantly"), the one place the question is said;
+  //: a "You asked:" line above the answer said it twice (INBOX 1301).
   if (preset != null) questionBox.value = question;
-  setAskedLine(question);
 
   // A new answer is coming, hide the suggestion/recent chips and the
   // per-answer action buttons until it lands.

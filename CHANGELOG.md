@@ -7,7 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Composer: a dated note that opens on its own day says the day once, and its later sentences and weekdays are told as of that day ("you had work", "due that Friday").
-- Notes > Ask: the asked question shows above the answer ("You asked: ...", full text on hover) and stays selected in the box; the search-mode badge is the standard label chip, link chips no longer clip descenders, and the why-matched line is a quiet muted sentence with its icon level with the first line.
+- Notes > Ask: the asked question stays in the box, selected, after any ask (typed, a chip, a follow-up, Retry or History); the search-mode badge is the standard label chip, link chips no longer clip descenders, and the why-matched line is a quiet muted sentence with its icon level with the first line.
 - Settings: shortcut keys sit in one column with the pencils lined up, and hover no longer draws a second box behind the keys.
 - Header: the emblem no longer claims the AI is running when it is not.
 - Board: the arrows and turn handle hide while a size or gap badge shows, so the numbers are no longer covered.
