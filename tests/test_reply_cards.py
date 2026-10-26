@@ -239,3 +239,12 @@ def test_the_slash_menu_clears_the_agent_popup_overlay_1333a():
     assert "z-index: 2550;" in rule
     overlay = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
     assert "z-index: 2000;" in overlay
+
+
+def test_the_badge_panel_waits_inside_the_head_not_between_the_bubbles_blocks():
+    #: Measured 2026-10-27: the hidden panel after the head broke
+    #: `.msg-role:has(+ .agent-steps)` and the bubble grew 2.4px on hover.
+    kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
+    body = kit[kit.index("function replyByline(") :].split("\n}\n", 1)[0]
+    assert "head.appendChild(panel);" in body
+    assert "head.after(panel)" not in body

@@ -3155,9 +3155,21 @@ def _result(out: _Out, kind: str, question: str) -> dict:
 _WEB_ASK = re.compile(r"^(?:(?:hey|hi|ok|okay),? )?(?:(?:can|could|will) (?:you|u) )?(?:(?:please|pls|plz) )?(?:search (?:the )?(?:web|internet|online) (?:for|about)|search up|look up|google|find (?:on|from) the web|web search(?: for)?)\s+", re.I)
 
 
-def web_query(question: str) -> str:
-    """What to search for: the turn without its "can you search the web for"."""
-    return clean(_WEB_ASK.sub("", clean(question))) or question
+#: A question whose answer depends on where the person is ("the weather
+#: today", "pharmacies near me") and that names no place itself.
+_LOCAL = re.compile(r"\b(?:weather|forecast|temperature|rain(?:ing)?|sunrise|sunset|near me|nearby|open now)\b", re.I)
+_NAMES_PLACE = re.compile(r"\b(?:in|at|for|near) (?-i:[A-Z])\w+")
+
+
+def web_query(question: str, place: str = "") -> str:
+    """What to search for: the turn without its "can you search the web for",
+    and, for a local question that names no place, the person's own place
+    (their timezone's city), so "what's the weather like today" is not
+    searched as if from nowhere. `place` comes from settings, never typed."""
+    asked = clean(_WEB_ASK.sub("", clean(question))) or question
+    if place and _LOCAL.search(asked) and not _NAMES_PLACE.search(asked) and place.lower() not in asked.lower():
+        asked = f"{asked.rstrip(' ?.!')} {place}"
+    return asked
 
 
 def _page_span(view, row: dict | None, terms: set[str]) -> str:  # noqa: ANN001

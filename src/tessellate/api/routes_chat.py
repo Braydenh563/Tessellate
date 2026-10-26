@@ -1546,8 +1546,15 @@ def _worked_out(question: str):
     Translating is a model's job when one runs: that one is chat."""
     from tessellate.ai import utilities
 
+    kind = utilities.kind_of(question)
+    if kind == "weather" and (deps.get_ollama().is_running() or utilities.web_on()):
+        #: "The weather is not something this app knows" is the answer only with
+        #: no model and no web; with either, the turn is a general question and
+        #: goes to them (the owner, 2026-10-27: a weather follow-up came back
+        #: from the composer with a model up and Web on).
+        return intent.NOTES, None
     worked = None
-    if utilities.kind_of(question) != "translate" or not deps.get_ollama().is_running():
+    if kind != "translate" or not deps.get_ollama().is_running():
         now = user_now(deps.get_config())
         worked = composer.compose(question, [], today=now.date(), now=now.replace(tzinfo=None))
     if worked and worked["shape"] == "utility":
@@ -2504,6 +2511,13 @@ def _web_pages(websearch, results: list[dict]) -> list[dict]:  # noqa: ANN001
     return pages
 
 
+def _home_place(config) -> str:  # noqa: ANN001
+    """The person's city, read off their reported timezone ("Australia/Brisbane"
+    is Brisbane), for a local web search; "" for none or a bare zone (UTC)."""
+    name = str(config.get_preference("timezone", "") or "").strip()
+    return name.rsplit("/", 1)[-1].replace("_", " ") if "/" in name and not name.startswith("Etc/") else ""
+
+
 def _web_answer(req: _StreamRequest, question: str) -> tuple[dict, list[dict]] | None:
     """An answer composed from web pages (CHAT_PLAN decision 37, the second
     half): the search the agent's `web_search` uses, the top pages read as
@@ -2514,7 +2528,7 @@ def _web_answer(req: _StreamRequest, question: str) -> tuple[dict, list[dict]] |
     config = deps.get_config()
     searxng_url, provider = websearch.settings_from(config)
     try:
-        results = websearch.search_web(composer_digest.web_query(question), limit=5, searxng_url=searxng_url or None, provider=provider)
+        results = websearch.search_web(composer_digest.web_query(question, _home_place(config)), limit=5, searxng_url=searxng_url or None, provider=provider)
     except websearch.WebSearchError as exc:
         #: One line: a refused optional service (SearXNG not running) is not a bug.
         logging.getLogger("tessellate.chat").info("chat: web search failed for a composed answer: %s", exc)

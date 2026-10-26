@@ -801,7 +801,10 @@ function replyByline(head, facts) {
     chip.setAttribute("aria-expanded", "false");
     chip.setAttribute("aria-label", `${said[0]}, written without an AI model. About this badge`);
     head.appendChild(chip);
-    head.after(panel);
+    //: Inside the head, not after it: a hidden panel between the head and the
+    //: steps broke `.msg-role:has(+ .agent-steps)`, so the bubble grew 2.4px
+    //: each time the open panel moved out to <body> (the owner, 2026-10-27).
+    head.appendChild(panel);
     wireHelpPopover(chip, panel);
     replyByHover(chip, panel);
     return;
