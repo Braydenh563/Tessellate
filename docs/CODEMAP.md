@@ -2,7 +2,7 @@
 
 Generated 2026-10-26 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6452, frontend ids 2542, CSS sections 503, backend routes 622, backend modules 6533, test files 1364, tests 12169, plan headings 972.
+Counts: frontend functions 6452, frontend ids 2542, CSS sections 503, backend routes 622, backend modules 6533, test files 1365, tests 12170, plan headings 972.
 
 ## Frontend functions (6452)
 
@@ -2069,31 +2069,31 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `agentActStarters` | frontend/js/palette.js:184 |
 | `agentCommitFiles` | frontend/js/palette.js:982 |
 | `agentCurrentTab` | frontend/js/palette.js:119 |
-| `agentFocusStarter` | frontend/js/palette.js:1514 |
+| `agentFocusStarter` | frontend/js/palette.js:1516 |
 | `agentOpenSubject` | frontend/js/palette.js:260 |
 | `agentPaletteShut` | frontend/js/palette.js:450 |
 | `agentPhoneSheet` | frontend/js/palette.js:418 |
 | `agentRenderChips` | frontend/js/palette.js:921 |
 | `agentScopeForRun` | frontend/js/palette.js:313 |
 | `agentStageFiles` | frontend/js/palette.js:951 |
-| `agentStarterButtons` | frontend/js/palette.js:1510 |
+| `agentStarterButtons` | frontend/js/palette.js:1512 |
 | `agentStarterRecents` | frontend/js/palette.js:147 |
 | `agentTabLabel` | frontend/js/palette.js:134 |
 | `agentUnstage` | frontend/js/palette.js:944 |
 | `agentUploadOne` | frontend/js/palette.js:966 |
 | `cmdNoteLink` | frontend/js/palette.js:820 |
 | `cmdNoteName` | frontend/js/palette.js:807 |
-| `cmdPaletteAsk` | frontend/js/palette.js:1005 |
+| `cmdPaletteAsk` | frontend/js/palette.js:1007 |
 | `cmdPaletteBusy` | frontend/js/palette.js:595 |
 | `cmdPaletteFacts` | frontend/js/palette.js:629 |
 | `cmdPaletteGoToNote` | frontend/js/palette.js:667 |
-| `cmdPaletteGrow` | frontend/js/palette.js:1492 |
+| `cmdPaletteGrow` | frontend/js/palette.js:1494 |
 | `cmdPaletteLinkNotes` | frontend/js/palette.js:855 |
 | `cmdPaletteReset` | frontend/js/palette.js:494 |
 | `cmdPaletteSaveAsChat` | frontend/js/palette.js:513 |
 | `cmdPaletteSources` | frontend/js/palette.js:682 |
 | `cmdSourceRow` | frontend/js/palette.js:721 |
-| `paletteLater` | frontend/js/palette.js:1599 |
+| `paletteLater` | frontend/js/palette.js:1601 |
 | `rememberAgentStarter` | frontend/js/palette.js:164 |
 | `renderAgentStarters` | frontend/js/palette.js:197 |
 | `renderCmdPaletteMenu` | frontend/js/palette.js:568 |
@@ -19240,7 +19240,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12169)
+## Tests (12170)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20241,6 +20241,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_restart_everywhere.py | 7 |
 | tests/test_restore_roundtrip.py | 2 |
 | tests/test_resurface_spec.py | 16 |
+| tests/test_review_fixes_palette_docs.py | 1 |
 | tests/test_review_queue_17.py | 6 |
 | tests/test_ring_room.py | 8 |
 | tests/test_round2_sweep_fixes.py | 3 |

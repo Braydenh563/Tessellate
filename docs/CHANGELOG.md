@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fix: a failed send in the popup agent now also removes the documents it had just imported from attached files, so a retry no longer duplicates them.
 - CodeQL: the composer reads "Lisbon notes" as Lisbon by word steps, not a regex quadratic on a run of whitespace.
 - Settings > Help has a Show Get started button, for bringing back the dashboard's Get started after hiding it.
 - Fix: the Windows splash drew "Tessellate notes" with colour fringes and "notes" run into the name. The wordmark is now greyscale-smoothed with a proper gap.

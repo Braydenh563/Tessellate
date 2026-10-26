@@ -993,6 +993,8 @@ async function agentCommitFiles() {
       Object.assign(item, { state: "error", error: error.message || "Could not attach" });
       agentRenderChips();
       for (const id of sent.imageMediaIds) await apiJson(`/media/${id}`, { method: "DELETE" }).catch(() => null);
+      // An imported document would otherwise be duplicated by the retry.
+      for (const id of sent.documentIds) await apiJson(`/documents/${id}`, { method: "DELETE" }).catch(() => null);
       return null;
     }
   }
