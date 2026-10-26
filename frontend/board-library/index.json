@@ -5,17 +5,22 @@
   {
    "key": "templates",
    "name": "Templates",
-   "count": 24
+   "count": 38
   },
   {
    "key": "maps",
    "name": "Mind map templates",
-   "count": 15
+   "count": 27
   },
   {
    "key": "general",
    "name": "General",
    "count": 19
+  },
+  {
+   "key": "callouts",
+   "name": "Callouts and notes",
+   "count": 16
   },
   {
    "key": "flowchart",

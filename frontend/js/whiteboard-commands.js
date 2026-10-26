@@ -59,6 +59,7 @@ const wbCommandNeeds = {
   selection: () => wbCommandSelectionCount() > 0,
   tree: () => wbTidyEdges(wbSelectionEntries()).length > 0,
   swappable: () => Boolean(wbSwapTarget()),
+  joinable: () => wbJoinableEntries().length >= 2,
   linkable: () => wbMultiSelection.size <= 1 && Boolean(wbSelectedItem) && wbTakesLink(wbSelectedItem.kind, wbFindItem(wbSelectedItem.kind, wbSelectedItem.id)),
   two: () => wbCommandSelectionCount() >= 2,
   three: () => wbCommandSelectionCount() >= 3,
@@ -190,6 +191,8 @@ const WB_COMMANDS = [
   { id: "same-height", group: "Arrange", icon: "ph:arrows-out-line-vertical", label: "Same height as the tallest", menu: "Same height", keys: "", surface: "board", needs: "two", run: () => wbSameSizeSelection("height") },
   { id: "tidy-down", group: "Arrange", icon: "ph:tree-structure", label: "Tidy as a tree, top to bottom", menu: "Top to bottom", keys: "", surface: "board", needs: "tree", run: () => wbTidySelection("down") },
   { id: "tidy-right", group: "Arrange", icon: "ph:tree-view", label: "Tidy as a tree, left to right", menu: "Left to right", keys: "", surface: "board", needs: "tree", run: () => wbTidySelection("right") },
+  { id: "join-chain", group: "Arrange", icon: "ph:arrow-elbow-down-right", label: "Connect the selected in a line, one to the next", menu: "In a line", keys: "", surface: "board", needs: "joinable", run: () => wbJoinSelection("chain") },
+  { id: "join-fan", group: "Arrange", icon: "ph:share-network", label: "Connect the selected to the first one picked", menu: "All to the first picked", keys: "", surface: "board", needs: "joinable", run: () => wbJoinSelection("fan") },
   { id: "change-shape", group: "Arrange", icon: "ph:shapes", label: "Change the shape to another kind…", menu: "Change the shape…", keys: "", surface: "board", needs: "swappable", run: () => wbOpenShapeSwapMenu() },
   { id: "text-fit", group: "Edit", icon: "ph:arrows-in-simple", label: "Shrink the text to fit the shape (on or off)", keys: "", surface: "board", needs: "swappable", run: () => wbToggleLabelFit() },
   { id: "item-link", group: "Edit", icon: "ph:link-simple", label: "Link to a note or a web page…", menu: "Link…", keys: "", surface: "board", needs: "linkable", run: () => wbEditItemLink() },
@@ -308,6 +311,7 @@ function wbRunCommand(id) {
       three: "Select three or more items first.",
       tree: "Select two or more shapes and the connectors between them first.",
       swappable: "Select one closed shape first.",
+      joinable: "Select two or more shapes, text boxes or notes first.",
       linkable: "Select one shape, text box or picture first.",
       shape: "Select one closed shape or one connector first.",
       link: "Select one connector first.",
@@ -781,3 +785,79 @@ onDomReady(() => {
     wbCloseHelpSheet();
   });
 });
+
+
+// --- Connect the selected (WHITEBOARD_PLAN 1355) ------------------------------
+//
+// The owner, 2026-10-26: "what about linking". A connector was only drawn by
+// hand, end to end. These join what is selected in one step: in a line (each to
+// the next, in reading order) or all to the first one picked, each joined side
+// to the facing side, one undo step. A pair already joined is left alone.
+
+function wbJoinableEntries() {
+  if (wbIsMap() || wbMultiSelection.size < 2) return [];
+  const ok = new Set(wbLinkCandidates().map(([kind, item]) => `${kind}:${item.id}`));
+  return wbSelectionEntries().filter((e) => ok.has(`${e.kind}:${e.id}`));
+}
+
+function wbJoinedPairs() {
+  const pairs = new Set();
+  for (const s of wbState.sketches || []) {
+    const p = wbIsLinkSketch(s) ? wbSketchParsedData({ data: s.data }) || JSON.parse(s.data) : null;
+    if (p && p.sourceId != null && p.targetId != null) pairs.add(`${p.sourceKind || "node"}:${p.sourceId}>${p.targetKind || "node"}:${p.targetId}`);
+  }
+  return pairs;
+}
+
+//: The sides that face: the wider gap between the two centres decides.
+function wbFacingAnchors(a, b) {
+  const dx = (b.bbox.minX + b.bbox.maxX - a.bbox.minX - a.bbox.maxX) / 2;
+  const dy = (b.bbox.minY + b.bbox.maxY - a.bbox.minY - a.bbox.maxY) / 2;
+  const [ux, uy] = Math.abs(dx) >= Math.abs(dy) ? [Math.sign(dx) || 1, 0] : [0, Math.sign(dy) || 1];
+  return { sourceAnchor: { x: 0.5 + ux / 2, y: 0.5 + uy / 2 }, targetAnchor: { x: 0.5 - ux / 2, y: 0.5 - uy / 2 } };
+}
+
+function wbJoinPlan(entries, mode) {
+  if (mode === "fan") {
+    const [first, ...rest] = entries;
+    return rest.map((e) => [first, e]);
+  }
+  const wide = Math.max(...entries.map((e) => e.bbox.minX)) - Math.min(...entries.map((e) => e.bbox.minX))
+    >= Math.max(...entries.map((e) => e.bbox.minY)) - Math.min(...entries.map((e) => e.bbox.minY));
+  const key = (e) => (wide ? e.bbox.minX : e.bbox.minY);
+  const sorted = [...entries].sort((p, q) => key(p) - key(q));
+  return sorted.slice(1).map((e, i) => [sorted[i], e]);
+}
+
+async function wbJoinSelection(mode) {
+  const entries = wbJoinableEntries();
+  if (entries.length < 2) {
+    toast("Select two or more shapes, text boxes or notes first.");
+    return;
+  }
+  const have = wbJoinedPairs();
+  const end = (e) => `${e.kind}:${e.id}`;
+  const plan = wbJoinPlan(entries, mode).filter(([a, b]) => !have.has(`${end(a)}>${end(b)}`) && !have.has(`${end(b)}>${end(a)}`));
+  if (!plan.length) {
+    toast("Those are already joined.");
+    return;
+  }
+  const color = window.currentStrokeColor || "#888888";
+  await wbRecordGesture(async () => {
+    for (const [a, b] of plan) {
+      const data = {
+        type: "link-straight", route: "elbow", color, width: 2, endCap: "arrow",
+        sourceId: a.id, targetId: b.id, ...wbFacingAnchors(a, b),
+      };
+      if (a.kind !== "node") data.sourceKind = a.kind;
+      if (b.kind !== "node") data.targetKind = b.kind;
+      const link = await apiJson("/whiteboard/sketches", {
+        method: "POST",
+        body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z: 1, board_id: window.currentBoardId ?? null }),
+      });
+      wbState.sketches.push(link);
+    }
+  });
+  wbScheduleRender();
+  wbAnnounce(`Joined ${plan.length} pair${plan.length === 1 ? "" : "s"}.`);
+}

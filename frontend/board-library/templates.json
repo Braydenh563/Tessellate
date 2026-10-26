@@ -4718,6 +4718,2407 @@
     ],
     "links": []
    }
+  },
+  {
+   "key": "lecture",
+   "kind": "element",
+   "name": "Lecture notes",
+   "hint": "Key terms, main points, examples and questions",
+   "purpose": "learn",
+   "tags": [
+    "template",
+    "lecture",
+    "notes",
+    "class",
+    "study",
+    "university"
+   ],
+   "template": "board",
+   "payload": {
+    "box": {
+     "w": 960,
+     "h": 880
+    },
+    "items": [
+     {
+      "key": "f1",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Lecture",
+       "hint": "Course, date and the topic in one line",
+       "tint": "blue"
+      },
+      "x": 0,
+      "y": 0,
+      "w": 960,
+      "h": 120,
+      "z": -1
+     },
+     {
+      "key": "f2",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Key terms",
+       "hint": "Words to define",
+       "tint": "amber"
+      },
+      "x": 0,
+      "y": 160,
+      "w": 300,
+      "h": 460,
+      "z": -1
+     },
+     {
+      "key": "f3",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Main points",
+       "hint": "What was taught, in your words",
+       "tint": "neutral"
+      },
+      "x": 340,
+      "y": 160,
+      "w": 620,
+      "h": 460,
+      "z": -1
+     },
+     {
+      "key": "f4",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Examples",
+       "hint": "A case that makes it stick",
+       "tint": "green"
+      },
+      "x": 0,
+      "y": 660,
+      "w": 460,
+      "h": 220,
+      "z": -1
+     },
+     {
+      "key": "f5",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Questions",
+       "hint": "What to ask or look up",
+       "tint": "violet"
+      },
+      "x": 500,
+      "y": 660,
+      "w": 460,
+      "h": 220,
+      "z": -1
+     },
+     {
+      "key": "s6",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Term: meaning",
+       "bg": "#fff4a3",
+       "border_color": "#e8d56a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 24,
+      "y": 270,
+      "w": 250,
+      "h": 80,
+      "z": 1
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "revision",
+   "kind": "element",
+   "name": "Revision plan",
+   "hint": "Topics for this week, next week and before the exam",
+   "purpose": "learn",
+   "tags": [
+    "template",
+    "revision",
+    "exam",
+    "study",
+    "plan",
+    "timetable"
+   ],
+   "template": "board",
+   "payload": {
+    "box": {
+     "w": 1040,
+     "h": 560
+    },
+    "items": [
+     {
+      "key": "f1",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "This week",
+       "hint": "Topics to cover now",
+       "tint": "blue"
+      },
+      "x": 0,
+      "y": 0,
+      "w": 300,
+      "h": 560,
+      "z": -1
+     },
+     {
+      "key": "f2",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Next week",
+       "hint": "Topics to cover next",
+       "tint": "amber"
+      },
+      "x": 340,
+      "y": 0,
+      "w": 300,
+      "h": 560,
+      "z": -1
+     },
+     {
+      "key": "f3",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Before the exam",
+       "hint": "Past papers and a last read",
+       "tint": "green"
+      },
+      "x": 680,
+      "y": 0,
+      "w": 300,
+      "h": 560,
+      "z": -1
+     },
+     {
+      "key": "s4",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Subject: topic",
+       "bg": "#cfe8ff",
+       "border_color": "#94bfe8",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 24,
+      "y": 96,
+      "w": 200,
+      "h": 90,
+      "z": 1
+     },
+     {
+      "key": "s5",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Subject: topic",
+       "bg": "#cfe8ff",
+       "border_color": "#94bfe8",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 24,
+      "y": 206,
+      "w": 200,
+      "h": 90,
+      "z": 1
+     },
+     {
+      "key": "s6",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Subject: topic",
+       "bg": "#ffe0b8",
+       "border_color": "#e8b070",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 364,
+      "y": 96,
+      "w": 200,
+      "h": 90,
+      "z": 1
+     },
+     {
+      "key": "s7",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Past paper 1",
+       "bg": "#d6f5c9",
+       "border_color": "#9dd18a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 704,
+      "y": 96,
+      "w": 200,
+      "h": 90,
+      "z": 1
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "essay",
+   "kind": "element",
+   "name": "Essay outline",
+   "hint": "A thesis, three points with evidence, a conclusion",
+   "purpose": "learn",
+   "tags": [
+    "template",
+    "essay",
+    "outline",
+    "writing",
+    "argument",
+    "thesis"
+   ],
+   "template": "board",
+   "payload": {
+    "box": {
+     "w": 960,
+     "h": 570
+    },
+    "items": [
+     {
+      "key": "s1",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Thesis: the one claim this essay proves",
+       "bg": "#fff4a3",
+       "border_color": "#e8d56a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 0,
+      "y": 0,
+      "w": 960,
+      "h": 90,
+      "z": 1
+     },
+     {
+      "key": "f2",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Introduction",
+       "hint": "Hook and thesis",
+       "tint": "blue"
+      },
+      "x": 0,
+      "y": 150,
+      "w": 176,
+      "h": 420,
+      "z": -1
+     },
+     {
+      "key": "f3",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Point 1",
+       "hint": "Claim, evidence, link",
+       "tint": "green"
+      },
+      "x": 216,
+      "y": 150,
+      "w": 176,
+      "h": 420,
+      "z": -1
+     },
+     {
+      "key": "f4",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Point 2",
+       "hint": "Claim, evidence, link",
+       "tint": "green"
+      },
+      "x": 432,
+      "y": 150,
+      "w": 176,
+      "h": 420,
+      "z": -1
+     },
+     {
+      "key": "f5",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Point 3",
+       "hint": "Claim, evidence, link",
+       "tint": "green"
+      },
+      "x": 648,
+      "y": 150,
+      "w": 176,
+      "h": 420,
+      "z": -1
+     },
+     {
+      "key": "f6",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Conclusion",
+       "hint": "Answer and so what",
+       "tint": "violet"
+      },
+      "x": 864,
+      "y": 150,
+      "w": 176,
+      "h": 420,
+      "z": -1
+     },
+     {
+      "key": "k7",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 120 L 960 120",
+       "shape": "line",
+       "color": "ink",
+       "width": 2
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "timeline",
+   "kind": "element",
+   "name": "Timeline",
+   "hint": "Five dates along a line, an event under each",
+   "purpose": "plan",
+   "tags": [
+    "template",
+    "timeline",
+    "history",
+    "dates",
+    "events",
+    "chronology"
+   ],
+   "template": "board",
+   "payload": {
+    "box": {
+     "w": 1180,
+     "h": 420
+    },
+    "items": [
+     {
+      "key": "k1",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 200 L 1180 200",
+       "shape": "arrow",
+       "color": "ink",
+       "width": 3,
+       "endCap": "arrow"
+      },
+      "z": 5
+     },
+     {
+      "key": "t2",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Date 1",
+       "color": "ink",
+       "font_size": 18
+      },
+      "x": 0,
+      "y": 120,
+      "w": 180,
+      "h": 40,
+      "z": 1
+     },
+     {
+      "key": "s3",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "What happened",
+       "bg": "#cfe8ff",
+       "border_color": "#94bfe8",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 0,
+      "y": 230,
+      "w": 180,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "t4",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Date 2",
+       "color": "ink",
+       "font_size": 18
+      },
+      "x": 220,
+      "y": 120,
+      "w": 180,
+      "h": 40,
+      "z": 1
+     },
+     {
+      "key": "s5",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "What happened",
+       "bg": "#d6f5c9",
+       "border_color": "#9dd18a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 220,
+      "y": 330,
+      "w": 180,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "t6",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Date 3",
+       "color": "ink",
+       "font_size": 18
+      },
+      "x": 440,
+      "y": 120,
+      "w": 180,
+      "h": 40,
+      "z": 1
+     },
+     {
+      "key": "s7",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "What happened",
+       "bg": "#ffe0b8",
+       "border_color": "#e8b070",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 440,
+      "y": 230,
+      "w": 180,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "t8",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Date 4",
+       "color": "ink",
+       "font_size": 18
+      },
+      "x": 660,
+      "y": 120,
+      "w": 180,
+      "h": 40,
+      "z": 1
+     },
+     {
+      "key": "s9",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "What happened",
+       "bg": "#ffd6e0",
+       "border_color": "#e8a0b4",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 660,
+      "y": 330,
+      "w": 180,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "t10",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Date 5",
+       "color": "ink",
+       "font_size": 18
+      },
+      "x": 880,
+      "y": 120,
+      "w": 180,
+      "h": 40,
+      "z": 1
+     },
+     {
+      "key": "s11",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "What happened",
+       "bg": "#e6dcff",
+       "border_color": "#b9a3ee",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 880,
+      "y": 230,
+      "w": 180,
+      "h": 80,
+      "z": 1
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "venn",
+   "kind": "element",
+   "name": "Venn diagram",
+   "hint": "Two overlapping circles: only A, both, only B",
+   "purpose": "decide",
+   "tags": [
+    "template",
+    "venn",
+    "compare",
+    "contrast",
+    "overlap",
+    "similar"
+   ],
+   "template": "board",
+   "payload": {
+    "box": {
+     "w": 760,
+     "h": 550
+    },
+    "items": [
+     {
+      "key": "o1",
+      "kind": "sketch",
+      "data": {
+       "d": "M 20 310 A 220 220 0 1 0 460 310 A 220 220 0 1 0 20 310 Z",
+       "shape": "custom",
+       "color": "#3355ff",
+       "width": 3,
+       "fill": "#3355ff",
+       "fillOpacity": 0.18
+      },
+      "z": 5
+     },
+     {
+      "key": "o2",
+      "kind": "sketch",
+      "data": {
+       "d": "M 300 310 A 220 220 0 1 0 740 310 A 220 220 0 1 0 300 310 Z",
+       "shape": "custom",
+       "color": "#e8590c",
+       "width": 3,
+       "fill": "#e8590c",
+       "fillOpacity": 0.18
+      },
+      "z": 5
+     },
+     {
+      "key": "t3",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Idea A",
+       "color": "ink",
+       "font_size": 20
+      },
+      "x": 80,
+      "y": 20,
+      "w": 200,
+      "h": 40,
+      "z": 1
+     },
+     {
+      "key": "t4",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Idea B",
+       "color": "ink",
+       "font_size": 20
+      },
+      "x": 480,
+      "y": 20,
+      "w": 200,
+      "h": 40,
+      "z": 1
+     },
+     {
+      "key": "s5",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Only A",
+       "bg": "#cfe8ff",
+       "border_color": "#94bfe8",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 80,
+      "y": 280,
+      "w": 150,
+      "h": 60,
+      "z": 1
+     },
+     {
+      "key": "s6",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Both",
+       "bg": "#fff4a3",
+       "border_color": "#e8d56a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 360,
+      "y": 280,
+      "w": 120,
+      "h": 60,
+      "z": 1
+     },
+     {
+      "key": "s7",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Only B",
+       "bg": "#ffe0b8",
+       "border_color": "#e8b070",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 560,
+      "y": 280,
+      "w": 150,
+      "h": 60,
+      "z": 1
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "brainstorm",
+   "kind": "element",
+   "name": "Brainstorm",
+   "hint": "One question in the middle, six ideas around it",
+   "purpose": "learn",
+   "tags": [
+    "template",
+    "brainstorm",
+    "ideas",
+    "think",
+    "creative"
+   ],
+   "template": "board",
+   "payload": {
+    "box": {
+     "w": 900,
+     "h": 500
+    },
+    "items": [
+     {
+      "key": "s1",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "The question",
+       "bg": "#fff4a3",
+       "border_color": "#e8d56a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 340,
+      "y": 200,
+      "w": 220,
+      "h": 100,
+      "z": 1
+     },
+     {
+      "key": "s2",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Idea",
+       "bg": "#cfe8ff",
+       "border_color": "#94bfe8",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 0,
+      "y": 0,
+      "w": 220,
+      "h": 100,
+      "z": 1
+     },
+     {
+      "key": "s3",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Idea",
+       "bg": "#d6f5c9",
+       "border_color": "#9dd18a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 340,
+      "y": 0,
+      "w": 220,
+      "h": 100,
+      "z": 1
+     },
+     {
+      "key": "s4",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Idea",
+       "bg": "#ffe0b8",
+       "border_color": "#e8b070",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 680,
+      "y": 0,
+      "w": 220,
+      "h": 100,
+      "z": 1
+     },
+     {
+      "key": "s5",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Idea",
+       "bg": "#ffd6e0",
+       "border_color": "#e8a0b4",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 0,
+      "y": 400,
+      "w": 220,
+      "h": 100,
+      "z": 1
+     },
+     {
+      "key": "s6",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Idea",
+       "bg": "#e6dcff",
+       "border_color": "#b9a3ee",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 340,
+      "y": 400,
+      "w": 220,
+      "h": 100,
+      "z": 1
+     },
+     {
+      "key": "s7",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Idea",
+       "bg": "#cfe8ff",
+       "border_color": "#94bfe8",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 680,
+      "y": 400,
+      "w": 220,
+      "h": 100,
+      "z": 1
+     }
+    ],
+    "links": [
+     {
+      "from": "s1",
+      "to": "s2",
+      "data": {
+       "type": "link-straight",
+       "color": "ink",
+       "width": 2,
+       "endCap": "arrow"
+      }
+     },
+     {
+      "from": "s1",
+      "to": "s3",
+      "data": {
+       "type": "link-straight",
+       "color": "ink",
+       "width": 2,
+       "endCap": "arrow"
+      }
+     },
+     {
+      "from": "s1",
+      "to": "s4",
+      "data": {
+       "type": "link-straight",
+       "color": "ink",
+       "width": 2,
+       "endCap": "arrow"
+      }
+     },
+     {
+      "from": "s1",
+      "to": "s5",
+      "data": {
+       "type": "link-straight",
+       "color": "ink",
+       "width": 2,
+       "endCap": "arrow"
+      }
+     },
+     {
+      "from": "s1",
+      "to": "s6",
+      "data": {
+       "type": "link-straight",
+       "color": "ink",
+       "width": 2,
+       "endCap": "arrow"
+      }
+     },
+     {
+      "from": "s1",
+      "to": "s7",
+      "data": {
+       "type": "link-straight",
+       "color": "ink",
+       "width": 2,
+       "endCap": "arrow"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "key": "concept",
+   "kind": "element",
+   "name": "Concept map",
+   "hint": "A main idea joined to its parts, causes and effects",
+   "purpose": "learn",
+   "tags": [
+    "template",
+    "concept",
+    "map",
+    "study",
+    "relationships",
+    "connect"
+   ],
+   "template": "board",
+   "payload": {
+    "box": {
+     "w": 820,
+     "h": 450
+    },
+    "items": [
+     {
+      "key": "s1",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Main concept",
+       "bg": "#fff4a3",
+       "border_color": "#e8d56a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 300,
+      "y": 180,
+      "w": 240,
+      "h": 100,
+      "z": 1
+     },
+     {
+      "key": "s2",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Part",
+       "bg": "#cfe8ff",
+       "border_color": "#94bfe8",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 0,
+      "y": 0,
+      "w": 220,
+      "h": 90,
+      "z": 1
+     },
+     {
+      "key": "s3",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Cause",
+       "bg": "#d6f5c9",
+       "border_color": "#9dd18a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 600,
+      "y": 0,
+      "w": 220,
+      "h": 90,
+      "z": 1
+     },
+     {
+      "key": "s4",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Example",
+       "bg": "#ffe0b8",
+       "border_color": "#e8b070",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 0,
+      "y": 360,
+      "w": 220,
+      "h": 90,
+      "z": 1
+     },
+     {
+      "key": "s5",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Effect",
+       "bg": "#ffd6e0",
+       "border_color": "#e8a0b4",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 600,
+      "y": 360,
+      "w": 220,
+      "h": 90,
+      "z": 1
+     }
+    ],
+    "links": [
+     {
+      "from": "s1",
+      "to": "s2",
+      "data": {
+       "type": "link-straight",
+       "color": "ink",
+       "width": 2,
+       "endCap": "arrow"
+      }
+     },
+     {
+      "from": "s1",
+      "to": "s3",
+      "data": {
+       "type": "link-straight",
+       "color": "ink",
+       "width": 2,
+       "endCap": "arrow"
+      }
+     },
+     {
+      "from": "s1",
+      "to": "s4",
+      "data": {
+       "type": "link-straight",
+       "color": "ink",
+       "width": 2,
+       "endCap": "arrow"
+      }
+     },
+     {
+      "from": "s1",
+      "to": "s5",
+      "data": {
+       "type": "link-straight",
+       "color": "ink",
+       "width": 2,
+       "endCap": "arrow"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "key": "timetable",
+   "kind": "element",
+   "name": "Study timetable",
+   "hint": "Monday to Friday columns and a weekend row",
+   "purpose": "plan",
+   "tags": [
+    "template",
+    "timetable",
+    "schedule",
+    "week",
+    "study",
+    "school"
+   ],
+   "template": "board",
+   "payload": {
+    "box": {
+     "w": 1110,
+     "h": 700
+    },
+    "items": [
+     {
+      "key": "f1",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Mon",
+       "hint": "Classes and study",
+       "tint": "blue"
+      },
+      "x": 0,
+      "y": 0,
+      "w": 190,
+      "h": 520,
+      "z": -1
+     },
+     {
+      "key": "f2",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Tue",
+       "hint": "Classes and study",
+       "tint": "green"
+      },
+      "x": 230,
+      "y": 0,
+      "w": 190,
+      "h": 520,
+      "z": -1
+     },
+     {
+      "key": "f3",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Wed",
+       "hint": "Classes and study",
+       "tint": "amber"
+      },
+      "x": 460,
+      "y": 0,
+      "w": 190,
+      "h": 520,
+      "z": -1
+     },
+     {
+      "key": "f4",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Thu",
+       "hint": "Classes and study",
+       "tint": "violet"
+      },
+      "x": 690,
+      "y": 0,
+      "w": 190,
+      "h": 520,
+      "z": -1
+     },
+     {
+      "key": "f5",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Fri",
+       "hint": "Classes and study",
+       "tint": "red"
+      },
+      "x": 920,
+      "y": 0,
+      "w": 190,
+      "h": 520,
+      "z": -1
+     },
+     {
+      "key": "f6",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Weekend",
+       "hint": "Catch up, rest, one long session",
+       "tint": "neutral"
+      },
+      "x": 0,
+      "y": 560,
+      "w": 1110,
+      "h": 140,
+      "z": -1
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "habits",
+   "kind": "element",
+   "name": "Habit tracker",
+   "hint": "Three habits across seven days",
+   "purpose": "plan",
+   "tags": [
+    "template",
+    "habit",
+    "tracker",
+    "routine",
+    "goals",
+    "personal"
+   ],
+   "template": "board",
+   "payload": {
+    "box": {
+     "w": 1000,
+     "h": 500
+    },
+    "items": [
+     {
+      "key": "f1",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Week of",
+       "hint": "Tick a note each day you keep the habit",
+       "tint": "blue"
+      },
+      "x": 0,
+      "y": 0,
+      "w": 1000,
+      "h": 110,
+      "z": -1
+     },
+     {
+      "key": "s2",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Habit 1",
+       "bg": "#fff4a3",
+       "border_color": "#e8d56a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 0,
+      "y": 150,
+      "w": 200,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "s3",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "",
+       "bg": "#d6f5c9",
+       "border_color": "#9dd18a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 240,
+      "y": 150,
+      "w": 90,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "s4",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "",
+       "bg": "#d6f5c9",
+       "border_color": "#9dd18a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 348,
+      "y": 150,
+      "w": 90,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "s5",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "",
+       "bg": "#d6f5c9",
+       "border_color": "#9dd18a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 456,
+      "y": 150,
+      "w": 90,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "s6",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "",
+       "bg": "#d6f5c9",
+       "border_color": "#9dd18a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 564,
+      "y": 150,
+      "w": 90,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "s7",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "",
+       "bg": "#d6f5c9",
+       "border_color": "#9dd18a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 672,
+      "y": 150,
+      "w": 90,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "s8",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "",
+       "bg": "#d6f5c9",
+       "border_color": "#9dd18a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 780,
+      "y": 150,
+      "w": 90,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "s9",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "",
+       "bg": "#d6f5c9",
+       "border_color": "#9dd18a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 888,
+      "y": 150,
+      "w": 90,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "s10",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Habit 2",
+       "bg": "#fff4a3",
+       "border_color": "#e8d56a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 0,
+      "y": 270,
+      "w": 200,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "s11",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "",
+       "bg": "#d6f5c9",
+       "border_color": "#9dd18a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 240,
+      "y": 270,
+      "w": 90,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "s12",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "",
+       "bg": "#d6f5c9",
+       "border_color": "#9dd18a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 348,
+      "y": 270,
+      "w": 90,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "s13",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "",
+       "bg": "#d6f5c9",
+       "border_color": "#9dd18a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 456,
+      "y": 270,
+      "w": 90,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "s14",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "",
+       "bg": "#d6f5c9",
+       "border_color": "#9dd18a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 564,
+      "y": 270,
+      "w": 90,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "s15",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "",
+       "bg": "#d6f5c9",
+       "border_color": "#9dd18a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 672,
+      "y": 270,
+      "w": 90,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "s16",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "",
+       "bg": "#d6f5c9",
+       "border_color": "#9dd18a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 780,
+      "y": 270,
+      "w": 90,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "s17",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "",
+       "bg": "#d6f5c9",
+       "border_color": "#9dd18a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 888,
+      "y": 270,
+      "w": 90,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "s18",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Habit 3",
+       "bg": "#fff4a3",
+       "border_color": "#e8d56a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 0,
+      "y": 390,
+      "w": 200,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "s19",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "",
+       "bg": "#d6f5c9",
+       "border_color": "#9dd18a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 240,
+      "y": 390,
+      "w": 90,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "s20",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "",
+       "bg": "#d6f5c9",
+       "border_color": "#9dd18a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 348,
+      "y": 390,
+      "w": 90,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "s21",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "",
+       "bg": "#d6f5c9",
+       "border_color": "#9dd18a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 456,
+      "y": 390,
+      "w": 90,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "s22",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "",
+       "bg": "#d6f5c9",
+       "border_color": "#9dd18a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 564,
+      "y": 390,
+      "w": 90,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "s23",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "",
+       "bg": "#d6f5c9",
+       "border_color": "#9dd18a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 672,
+      "y": 390,
+      "w": 90,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "s24",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "",
+       "bg": "#d6f5c9",
+       "border_color": "#9dd18a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 780,
+      "y": 390,
+      "w": 90,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "s25",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "",
+       "bg": "#d6f5c9",
+       "border_color": "#9dd18a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 888,
+      "y": 390,
+      "w": 90,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "t26",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "M",
+       "color": "ink",
+       "font_size": 18
+      },
+      "x": 240,
+      "y": 110,
+      "w": 90,
+      "h": 36,
+      "z": 1
+     },
+     {
+      "key": "t27",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "T",
+       "color": "ink",
+       "font_size": 18
+      },
+      "x": 348,
+      "y": 110,
+      "w": 90,
+      "h": 36,
+      "z": 1
+     },
+     {
+      "key": "t28",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "W",
+       "color": "ink",
+       "font_size": 18
+      },
+      "x": 456,
+      "y": 110,
+      "w": 90,
+      "h": 36,
+      "z": 1
+     },
+     {
+      "key": "t29",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "T",
+       "color": "ink",
+       "font_size": 18
+      },
+      "x": 564,
+      "y": 110,
+      "w": 90,
+      "h": 36,
+      "z": 1
+     },
+     {
+      "key": "t30",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "F",
+       "color": "ink",
+       "font_size": 18
+      },
+      "x": 672,
+      "y": 110,
+      "w": 90,
+      "h": 36,
+      "z": 1
+     },
+     {
+      "key": "t31",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "S",
+       "color": "ink",
+       "font_size": 18
+      },
+      "x": 780,
+      "y": 110,
+      "w": 90,
+      "h": 36,
+      "z": 1
+     },
+     {
+      "key": "t32",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "S",
+       "color": "ink",
+       "font_size": 18
+      },
+      "x": 888,
+      "y": 110,
+      "w": 90,
+      "h": 36,
+      "z": 1
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "smart",
+   "kind": "element",
+   "name": "Goal setting",
+   "hint": "A goal checked against the five SMART questions",
+   "purpose": "plan",
+   "tags": [
+    "template",
+    "goal",
+    "smart",
+    "personal",
+    "planning",
+    "target"
+   ],
+   "template": "board",
+   "payload": {
+    "box": {
+     "w": 1110,
+     "h": 550
+    },
+    "items": [
+     {
+      "key": "f1",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Specific",
+       "hint": "What exactly will you do",
+       "tint": "blue"
+      },
+      "x": 0,
+      "y": 0,
+      "w": 190,
+      "h": 420,
+      "z": -1
+     },
+     {
+      "key": "f2",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Measurable",
+       "hint": "How will you know",
+       "tint": "green"
+      },
+      "x": 230,
+      "y": 0,
+      "w": 190,
+      "h": 420,
+      "z": -1
+     },
+     {
+      "key": "f3",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Achievable",
+       "hint": "Is it within reach",
+       "tint": "amber"
+      },
+      "x": 460,
+      "y": 0,
+      "w": 190,
+      "h": 420,
+      "z": -1
+     },
+     {
+      "key": "f4",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Relevant",
+       "hint": "Why it matters now",
+       "tint": "violet"
+      },
+      "x": 690,
+      "y": 0,
+      "w": 190,
+      "h": 420,
+      "z": -1
+     },
+     {
+      "key": "f5",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Time-bound",
+       "hint": "The date it is done by",
+       "tint": "red"
+      },
+      "x": 920,
+      "y": 0,
+      "w": 190,
+      "h": 420,
+      "z": -1
+     },
+     {
+      "key": "s6",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "My goal in one line",
+       "bg": "#fff4a3",
+       "border_color": "#e8d56a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 0,
+      "y": 460,
+      "w": 1110,
+      "h": 90,
+      "z": 1
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "project-plan",
+   "kind": "element",
+   "name": "Project plan",
+   "hint": "Four phases, a task in each, a deadline line",
+   "purpose": "plan",
+   "tags": [
+    "template",
+    "project",
+    "plan",
+    "phases",
+    "assignment",
+    "group"
+   ],
+   "template": "board",
+   "payload": {
+    "box": {
+     "w": 1160,
+     "h": 650
+    },
+    "items": [
+     {
+      "key": "f1",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Plan",
+       "hint": "Tasks in this phase",
+       "tint": "blue"
+      },
+      "x": 0,
+      "y": 0,
+      "w": 250,
+      "h": 520,
+      "z": -1
+     },
+     {
+      "key": "s2",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Task",
+       "bg": "#cfe8ff",
+       "border_color": "#94bfe8",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 24,
+      "y": 96,
+      "w": 210,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "f3",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Build",
+       "hint": "Tasks in this phase",
+       "tint": "amber"
+      },
+      "x": 290,
+      "y": 0,
+      "w": 250,
+      "h": 520,
+      "z": -1
+     },
+     {
+      "key": "s4",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Task",
+       "bg": "#ffe0b8",
+       "border_color": "#e8b070",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 314,
+      "y": 96,
+      "w": 210,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "f5",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Test",
+       "hint": "Tasks in this phase",
+       "tint": "violet"
+      },
+      "x": 580,
+      "y": 0,
+      "w": 250,
+      "h": 520,
+      "z": -1
+     },
+     {
+      "key": "s6",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Task",
+       "bg": "#e6dcff",
+       "border_color": "#b9a3ee",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 604,
+      "y": 96,
+      "w": 210,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "f7",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Finish",
+       "hint": "Tasks in this phase",
+       "tint": "green"
+      },
+      "x": 870,
+      "y": 0,
+      "w": 250,
+      "h": 520,
+      "z": -1
+     },
+     {
+      "key": "s8",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Task",
+       "bg": "#d6f5c9",
+       "border_color": "#9dd18a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 894,
+      "y": 96,
+      "w": 210,
+      "h": 80,
+      "z": 1
+     },
+     {
+      "key": "s9",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Deadline and who is doing what",
+       "bg": "#fff4a3",
+       "border_color": "#e8d56a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 0,
+      "y": 570,
+      "w": 1160,
+      "h": 80,
+      "z": 1
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "reading",
+   "kind": "element",
+   "name": "Reading list",
+   "hint": "To read, reading now and finished",
+   "purpose": "learn",
+   "tags": [
+    "template",
+    "reading",
+    "books",
+    "papers",
+    "list",
+    "library"
+   ],
+   "template": "board",
+   "payload": {
+    "box": {
+     "w": 1040,
+     "h": 500
+    },
+    "items": [
+     {
+      "key": "f1",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "To read",
+       "hint": "Books and papers lined up",
+       "tint": "neutral"
+      },
+      "x": 0,
+      "y": 0,
+      "w": 300,
+      "h": 500,
+      "z": -1
+     },
+     {
+      "key": "f2",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Reading now",
+       "hint": "What you have open",
+       "tint": "blue"
+      },
+      "x": 340,
+      "y": 0,
+      "w": 300,
+      "h": 500,
+      "z": -1
+     },
+     {
+      "key": "f3",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Finished",
+       "hint": "With a line on what you took",
+       "tint": "green"
+      },
+      "x": 680,
+      "y": 0,
+      "w": 300,
+      "h": 500,
+      "z": -1
+     },
+     {
+      "key": "s4",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Title, author",
+       "bg": "#fff4a3",
+       "border_color": "#e8d56a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 24,
+      "y": 96,
+      "w": 200,
+      "h": 90,
+      "z": 1
+     },
+     {
+      "key": "s5",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Title, author",
+       "bg": "#cfe8ff",
+       "border_color": "#94bfe8",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 364,
+      "y": 96,
+      "w": 200,
+      "h": 90,
+      "z": 1
+     },
+     {
+      "key": "s6",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Title: one takeaway",
+       "bg": "#d6f5c9",
+       "border_color": "#9dd18a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 704,
+      "y": 96,
+      "w": 200,
+      "h": 90,
+      "z": 1
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "exam",
+   "kind": "element",
+   "name": "Exam readiness",
+   "hint": "Sort each topic into confident, shaky or not yet",
+   "purpose": "learn",
+   "tags": [
+    "template",
+    "exam",
+    "revision",
+    "topics",
+    "checklist",
+    "confidence"
+   ],
+   "template": "board",
+   "payload": {
+    "box": {
+     "w": 1040,
+     "h": 520
+    },
+    "items": [
+     {
+      "key": "f1",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Confident",
+       "hint": "I could teach this",
+       "tint": "green"
+      },
+      "x": 0,
+      "y": 0,
+      "w": 300,
+      "h": 520,
+      "z": -1
+     },
+     {
+      "key": "f2",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Shaky",
+       "hint": "Needs another pass",
+       "tint": "amber"
+      },
+      "x": 340,
+      "y": 0,
+      "w": 300,
+      "h": 520,
+      "z": -1
+     },
+     {
+      "key": "f3",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Not yet",
+       "hint": "Start here",
+       "tint": "red"
+      },
+      "x": 680,
+      "y": 0,
+      "w": 300,
+      "h": 520,
+      "z": -1
+     },
+     {
+      "key": "s4",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Topic",
+       "bg": "#d6f5c9",
+       "border_color": "#9dd18a",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 24,
+      "y": 96,
+      "w": 200,
+      "h": 90,
+      "z": 1
+     },
+     {
+      "key": "s5",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Topic",
+       "bg": "#ffe0b8",
+       "border_color": "#e8b070",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 364,
+      "y": 96,
+      "w": 200,
+      "h": 90,
+      "z": 1
+     },
+     {
+      "key": "s6",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "Topic",
+       "bg": "#ffd6e0",
+       "border_color": "#e8a0b4",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 704,
+      "y": 96,
+      "w": 200,
+      "h": 90,
+      "z": 1
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "day",
+   "kind": "element",
+   "name": "Daily plan",
+   "hint": "Morning, afternoon, evening and a top three",
+   "purpose": "plan",
+   "tags": [
+    "template",
+    "day",
+    "daily",
+    "planner",
+    "today",
+    "schedule",
+    "personal"
+   ],
+   "template": "board",
+   "payload": {
+    "box": {
+     "w": 1300,
+     "h": 520
+    },
+    "items": [
+     {
+      "key": "f1",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Morning",
+       "hint": "Before lunch",
+       "tint": "amber"
+      },
+      "x": 0,
+      "y": 0,
+      "w": 300,
+      "h": 520,
+      "z": -1
+     },
+     {
+      "key": "f2",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Afternoon",
+       "hint": "Classes and study",
+       "tint": "blue"
+      },
+      "x": 340,
+      "y": 0,
+      "w": 300,
+      "h": 520,
+      "z": -1
+     },
+     {
+      "key": "f3",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Evening",
+       "hint": "Dinner and rest",
+       "tint": "violet"
+      },
+      "x": 680,
+      "y": 0,
+      "w": 300,
+      "h": 520,
+      "z": -1
+     },
+     {
+      "key": "f4",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Top three",
+       "hint": "Do these first",
+       "tint": "red"
+      },
+      "x": 1020,
+      "y": 0,
+      "w": 280,
+      "h": 520,
+      "z": -1
+     },
+     {
+      "key": "s5",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "1",
+       "bg": "#ffd6e0",
+       "border_color": "#e8a0b4",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 1044,
+      "y": 96,
+      "w": 230,
+      "h": 70,
+      "z": 1
+     },
+     {
+      "key": "s6",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "2",
+       "bg": "#ffd6e0",
+       "border_color": "#e8a0b4",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 1044,
+      "y": 186,
+      "w": 230,
+      "h": 70,
+      "z": 1
+     },
+     {
+      "key": "s7",
+      "kind": "object",
+      "type": "text",
+      "data": {
+       "content": "3",
+       "bg": "#ffd6e0",
+       "border_color": "#e8a0b4",
+       "color": "#2a2a1f",
+       "font_size": 16
+      },
+      "x": 1044,
+      "y": 276,
+      "w": 230,
+      "h": 70,
+      "z": 1
+     }
+    ],
+    "links": []
+   }
   }
  ]
 }

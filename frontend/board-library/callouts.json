@@ -1,0 +1,758 @@
+{
+ "format": "memorymap-library-set",
+ "version": 1,
+ "key": "callouts",
+ "name": "Callouts and notes",
+ "items": [
+  {
+   "key": "speech-round",
+   "kind": "element",
+   "name": "Speech bubble",
+   "tags": [
+    "speech",
+    "bubble",
+    "say",
+    "callout",
+    "comment"
+   ],
+   "payload": {
+    "box": {
+     "w": 200,
+     "h": 130
+    },
+    "items": [
+     {
+      "key": "p0",
+      "kind": "sketch",
+      "data": {
+       "d": "M 22 0 L 178 0 A 22 22 0 0 1 200 22 L 200 78 A 22 22 0 0 1 178 100 L 22 100 A 22 22 0 0 1 0 78 L 0 22 A 22 22 0 0 1 22 0 Z M 50 100 L 38 130 L 84 100 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label_area": {
+        "x": 0.04,
+        "y": 0.04,
+        "w": 0.92,
+        "h": 0.7
+       }
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "speech-right",
+   "kind": "element",
+   "name": "Speech bubble, tail right",
+   "tags": [
+    "speech",
+    "bubble",
+    "say",
+    "callout",
+    "reply"
+   ],
+   "payload": {
+    "box": {
+     "w": 200,
+     "h": 130
+    },
+    "items": [
+     {
+      "key": "p0",
+      "kind": "sketch",
+      "data": {
+       "d": "M 22 0 L 178 0 A 22 22 0 0 1 200 22 L 200 78 A 22 22 0 0 1 178 100 L 22 100 A 22 22 0 0 1 0 78 L 0 22 A 22 22 0 0 1 22 0 Z M 150 100 L 168 130 L 116 100 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label_area": {
+        "x": 0.04,
+        "y": 0.04,
+        "w": 0.92,
+        "h": 0.7
+       }
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "rounded-callout",
+   "kind": "element",
+   "name": "Callout with a pointer",
+   "tags": [
+    "callout",
+    "pointer",
+    "label",
+    "annotation",
+    "point"
+   ],
+   "payload": {
+    "box": {
+     "w": 200,
+     "h": 130
+    },
+    "items": [
+     {
+      "key": "p0",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 200 0 L 200 90 L 120 90 L 100 130 L 80 90 L 0 90 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label_area": {
+        "x": 0.03,
+        "y": 0.03,
+        "w": 0.94,
+        "h": 0.66
+       }
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "thought",
+   "kind": "element",
+   "name": "Thought bubble",
+   "tags": [
+    "thought",
+    "think",
+    "bubble",
+    "idea",
+    "cloud"
+   ],
+   "payload": {
+    "box": {
+     "w": 200,
+     "h": 150
+    },
+    "items": [
+     {
+      "key": "p0",
+      "kind": "sketch",
+      "data": {
+       "d": "M 40 20 C 40 -4 90 -8 100 14 C 120 -6 176 2 168 38 C 200 46 196 96 160 96 C 150 112 112 116 100 98 C 84 114 40 110 36 86 C 4 84 -4 40 40 20 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12,
+       "label_area": {
+        "x": 0.12,
+        "y": 0.12,
+        "w": 0.76,
+        "h": 0.6
+       }
+      },
+      "z": 5
+     },
+     {
+      "key": "p1",
+      "kind": "sketch",
+      "data": {
+       "d": "M 51 122 A 9 9 0 1 1 69 122 A 9 9 0 1 1 51 122 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12
+      },
+      "z": 5
+     },
+     {
+      "key": "p2",
+      "kind": "sketch",
+      "data": {
+       "d": "M 29 142 A 5 5 0 1 1 39 142 A 5 5 0 1 1 29 142 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "tip-box",
+   "kind": "element",
+   "name": "Tip box",
+   "tags": [
+    "tip",
+    "hint",
+    "remember",
+    "study",
+    "box"
+   ],
+   "payload": {
+    "box": {
+     "w": 220,
+     "h": 110
+    },
+    "items": [
+     {
+      "key": "p0",
+      "kind": "sketch",
+      "data": {
+       "d": "M 10 0 L 210 0 A 10 10 0 0 1 220 10 L 220 100 A 10 10 0 0 1 210 110 L 10 110 A 10 10 0 0 1 0 100 L 0 10 A 10 10 0 0 1 10 0 Z",
+       "shape": "custom",
+       "color": "#2f9e44",
+       "width": 2,
+       "fill": "#2f9e44",
+       "fillOpacity": 0.14,
+       "label": "Tip\nWrite it here",
+       "label_area": {
+        "x": 0.14,
+        "y": 0.08,
+        "w": 0.82,
+        "h": 0.84
+       }
+      },
+      "z": 5
+     },
+     {
+      "key": "p1",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 10 A 10 10 0 0 1 10 0 L 22 0 L 22 110 L 10 110 A 10 10 0 0 1 0 100 Z",
+       "shape": "custom",
+       "color": "#2f9e44",
+       "width": 1,
+       "fill": "#2f9e44",
+       "fillOpacity": 0.9
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "warning-box",
+   "kind": "element",
+   "name": "Warning box",
+   "tags": [
+    "warning",
+    "careful",
+    "watch out",
+    "danger",
+    "box"
+   ],
+   "payload": {
+    "box": {
+     "w": 220,
+     "h": 110
+    },
+    "items": [
+     {
+      "key": "p0",
+      "kind": "sketch",
+      "data": {
+       "d": "M 10 0 L 210 0 A 10 10 0 0 1 220 10 L 220 100 A 10 10 0 0 1 210 110 L 10 110 A 10 10 0 0 1 0 100 L 0 10 A 10 10 0 0 1 10 0 Z",
+       "shape": "custom",
+       "color": "#e8590c",
+       "width": 2,
+       "fill": "#e8590c",
+       "fillOpacity": 0.14,
+       "label": "Watch out\nWrite it here",
+       "label_area": {
+        "x": 0.14,
+        "y": 0.08,
+        "w": 0.82,
+        "h": 0.84
+       }
+      },
+      "z": 5
+     },
+     {
+      "key": "p1",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 10 A 10 10 0 0 1 10 0 L 22 0 L 22 110 L 10 110 A 10 10 0 0 1 0 100 Z",
+       "shape": "custom",
+       "color": "#e8590c",
+       "width": 1,
+       "fill": "#e8590c",
+       "fillOpacity": 0.9
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "info-box",
+   "kind": "element",
+   "name": "Info box",
+   "tags": [
+    "info",
+    "note",
+    "fact",
+    "box",
+    "key point"
+   ],
+   "payload": {
+    "box": {
+     "w": 220,
+     "h": 110
+    },
+    "items": [
+     {
+      "key": "p0",
+      "kind": "sketch",
+      "data": {
+       "d": "M 10 0 L 210 0 A 10 10 0 0 1 220 10 L 220 100 A 10 10 0 0 1 210 110 L 10 110 A 10 10 0 0 1 0 100 L 0 10 A 10 10 0 0 1 10 0 Z",
+       "shape": "custom",
+       "color": "#1c7ed6",
+       "width": 2,
+       "fill": "#1c7ed6",
+       "fillOpacity": 0.14,
+       "label": "Key point\nWrite it here",
+       "label_area": {
+        "x": 0.14,
+        "y": 0.08,
+        "w": 0.82,
+        "h": 0.84
+       }
+      },
+      "z": 5
+     },
+     {
+      "key": "p1",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 10 A 10 10 0 0 1 10 0 L 22 0 L 22 110 L 10 110 A 10 10 0 0 1 0 100 Z",
+       "shape": "custom",
+       "color": "#1c7ed6",
+       "width": 1,
+       "fill": "#1c7ed6",
+       "fillOpacity": 0.9
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "definition-box",
+   "kind": "element",
+   "name": "Definition box",
+   "tags": [
+    "definition",
+    "term",
+    "meaning",
+    "study",
+    "glossary"
+   ],
+   "payload": {
+    "box": {
+     "w": 220,
+     "h": 110
+    },
+    "items": [
+     {
+      "key": "p0",
+      "kind": "sketch",
+      "data": {
+       "d": "M 10 0 L 210 0 A 10 10 0 0 1 220 10 L 220 100 A 10 10 0 0 1 210 110 L 10 110 A 10 10 0 0 1 0 100 L 0 10 A 10 10 0 0 1 10 0 Z",
+       "shape": "custom",
+       "color": "#7048e8",
+       "width": 2,
+       "fill": "#7048e8",
+       "fillOpacity": 0.14,
+       "label": "Definition\nWrite it here",
+       "label_area": {
+        "x": 0.14,
+        "y": 0.08,
+        "w": 0.82,
+        "h": 0.84
+       }
+      },
+      "z": 5
+     },
+     {
+      "key": "p1",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 10 A 10 10 0 0 1 10 0 L 22 0 L 22 110 L 10 110 A 10 10 0 0 1 0 100 Z",
+       "shape": "custom",
+       "color": "#7048e8",
+       "width": 1,
+       "fill": "#7048e8",
+       "fillOpacity": 0.9
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "example-box",
+   "kind": "element",
+   "name": "Example box",
+   "tags": [
+    "example",
+    "worked",
+    "case",
+    "study",
+    "box"
+   ],
+   "payload": {
+    "box": {
+     "w": 220,
+     "h": 110
+    },
+    "items": [
+     {
+      "key": "p0",
+      "kind": "sketch",
+      "data": {
+       "d": "M 10 0 L 210 0 A 10 10 0 0 1 220 10 L 220 100 A 10 10 0 0 1 210 110 L 10 110 A 10 10 0 0 1 0 100 L 0 10 A 10 10 0 0 1 10 0 Z",
+       "shape": "custom",
+       "color": "#0c8599",
+       "width": 2,
+       "fill": "#0c8599",
+       "fillOpacity": 0.14,
+       "label": "Example\nWrite it here",
+       "label_area": {
+        "x": 0.14,
+        "y": 0.08,
+        "w": 0.82,
+        "h": 0.84
+       }
+      },
+      "z": 5
+     },
+     {
+      "key": "p1",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 10 A 10 10 0 0 1 10 0 L 22 0 L 22 110 L 10 110 A 10 10 0 0 1 0 100 Z",
+       "shape": "custom",
+       "color": "#0c8599",
+       "width": 1,
+       "fill": "#0c8599",
+       "fillOpacity": 0.9
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "folded-note",
+   "kind": "element",
+   "name": "Note with a folded corner",
+   "tags": [
+    "note",
+    "page",
+    "paper",
+    "memo",
+    "folded"
+   ],
+   "payload": {
+    "box": {
+     "w": 180,
+     "h": 140
+    },
+    "items": [
+     {
+      "key": "p0",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 140 0 L 180 40 L 180 140 L 0 140 Z",
+       "shape": "custom",
+       "color": "#f59f00",
+       "width": 2,
+       "fill": "#f59f00",
+       "fillOpacity": 0.2,
+       "label_area": {
+        "x": 0.06,
+        "y": 0.06,
+        "w": 0.88,
+        "h": 0.88
+       }
+      },
+      "z": 5
+     },
+     {
+      "key": "p1",
+      "kind": "sketch",
+      "data": {
+       "d": "M 140 0 L 140 40 L 180 40 Z",
+       "shape": "custom",
+       "color": "#f59f00",
+       "width": 2,
+       "fill": "#f59f00",
+       "fillOpacity": 0.5
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "banner",
+   "kind": "element",
+   "name": "Banner",
+   "tags": [
+    "banner",
+    "ribbon",
+    "title",
+    "heading",
+    "label"
+   ],
+   "payload": {
+    "box": {
+     "w": 260,
+     "h": 80
+    },
+    "items": [
+     {
+      "key": "p0",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 10 L 30 10 L 30 0 L 230 0 L 230 10 L 260 10 L 240 40 L 260 70 L 230 70 L 230 80 L 30 80 L 30 70 L 0 70 L 20 40 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.14,
+       "label_area": {
+        "x": 0.14,
+        "y": 0.1,
+        "w": 0.72,
+        "h": 0.8
+       }
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "tag",
+   "kind": "element",
+   "name": "Label tag",
+   "tags": [
+    "tag",
+    "label",
+    "badge",
+    "category",
+    "pill"
+   ],
+   "payload": {
+    "box": {
+     "w": 140,
+     "h": 50
+    },
+    "items": [
+     {
+      "key": "p0",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 25 L 20 0 L 140 0 L 140 50 L 20 50 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.14,
+       "label_area": {
+        "x": 0.18,
+        "y": 0,
+        "w": 0.8,
+        "h": 1
+       }
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "step-marker",
+   "kind": "element",
+   "name": "Step marker",
+   "tags": [
+    "step",
+    "number",
+    "marker",
+    "circle",
+    "badge"
+   ],
+   "payload": {
+    "box": {
+     "w": 64,
+     "h": 64
+    },
+    "items": [
+     {
+      "key": "p0",
+      "kind": "sketch",
+      "data": {
+       "d": "M 2 32 A 30 30 0 1 1 62 32 A 30 30 0 1 1 2 32 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 3,
+       "fill": "ink",
+       "fillOpacity": 0.2,
+       "label": "1",
+       "label_area": {
+        "x": 0.1,
+        "y": 0.1,
+        "w": 0.8,
+        "h": 0.8
+       }
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "brace",
+   "kind": "element",
+   "name": "Curly brace",
+   "tags": [
+    "brace",
+    "bracket",
+    "group",
+    "curly",
+    "span"
+   ],
+   "payload": {
+    "box": {
+     "w": 40,
+     "h": 200
+    },
+    "items": [
+     {
+      "key": "p0",
+      "kind": "sketch",
+      "data": {
+       "d": "M 4 0 C 24 0 24 20 24 50 C 24 80 24 96 40 100 C 24 104 24 120 24 150 C 24 180 24 200 4 200",
+       "shape": "line",
+       "color": "ink",
+       "width": 3
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "highlight",
+   "kind": "element",
+   "name": "Highlight",
+   "tags": [
+    "highlight",
+    "marker",
+    "emphasis",
+    "underline",
+    "mark"
+   ],
+   "payload": {
+    "box": {
+     "w": 220,
+     "h": 40
+    },
+    "items": [
+     {
+      "key": "p0",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 6 L 220 0 L 216 36 L 4 40 Z",
+       "shape": "custom",
+       "color": "#fcc419",
+       "width": 1,
+       "fill": "#fcc419",
+       "fillOpacity": 0.45
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "quote",
+   "kind": "element",
+   "name": "Quote block",
+   "tags": [
+    "quote",
+    "quotation",
+    "cite",
+    "source",
+    "block"
+   ],
+   "payload": {
+    "box": {
+     "w": 260,
+     "h": 110
+    },
+    "items": [
+     {
+      "key": "p0",
+      "kind": "sketch",
+      "data": {
+       "d": "M 6 0 L 254 0 A 6 6 0 0 1 260 6 L 260 104 A 6 6 0 0 1 254 110 L 6 110 A 6 6 0 0 1 0 104 L 0 6 A 6 6 0 0 1 6 0 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.06,
+       "label": "“Quote”\nSource",
+       "label_area": {
+        "x": 0.1,
+        "y": 0.08,
+        "w": 0.86,
+        "h": 0.84
+       }
+      },
+      "z": 5
+     },
+     {
+      "key": "p1",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 8 0 L 8 110 L 0 110 Z",
+       "shape": "custom",
+       "color": "ink",
+       "width": 1,
+       "fill": "ink",
+       "fillOpacity": 0.7
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  }
+ ]
+}

@@ -1116,6 +1116,8 @@
     </div>
     <label class="wb-template-name-row"><span>Name</span>
       <input type="text" id="wb-template-name" maxlength="100" placeholder="Name the new board" autocomplete="off"></label>
+    <label class="wb-template-name-row"><span class="visually-hidden">Search templates</span>
+      <input type="search" id="wb-template-search" maxlength="60" placeholder="Search templates: study, plan, timeline" autocomplete="off" aria-controls="wb-template-list"></label>
     <div class="doc-template-body">
       <ul id="wb-template-list" class="doc-ai-history-list wb-template-list" role="radiogroup" aria-label="Start from"></ul>
       <div id="wb-template-preview" class="doc-template-preview wb-template-preview" aria-hidden="true" inert></div>
@@ -6751,6 +6753,11 @@ Link to another note with [[its first few words]]."></textarea>
               <span class="wb-panel-group-label">Tidy as a tree (shapes and their connectors)</span>
               <button type="button" class="wb-menu-item" data-wb-cmd="tidy-down"><i class="ph ph-tree-structure ph-lead" aria-hidden="true"></i><span>Top to bottom</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="tidy-right"><i class="ph ph-tree-view ph-lead" aria-hidden="true"></i><span>Left to right</span></button>
+            </div>
+            <div class="wb-menu-section">
+              <span class="wb-panel-group-label">Connect the selected</span>
+              <button type="button" class="wb-menu-item" data-wb-cmd="join-chain"><i class="ph ph-arrow-elbow-down-right ph-lead" aria-hidden="true"></i><span>In a line</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="join-fan"><i class="ph ph-share-network ph-lead" aria-hidden="true"></i><span>All to the first picked</span></button>
             </div>
             <div class="wb-menu-section">
               <span class="wb-panel-group-label">Order</span>
