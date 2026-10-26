@@ -937,6 +937,49 @@ def _attached_documents(session: Session, document_ids: list[int]) -> list[Docum
 ATTACHED_FILE_CHARS = 12000
 
 
+#: The words of a title that do not name it: a kind, or too common to.
+_TITLE_FILLER = frozenset(
+    "a an the my of on in for and to with board boards whiteboard map maps mind mindmap document documents doc docs "
+    "note notes untitled new copy".split()
+)
+_KIND_SAID = re.compile(r"\b(?:(?:white)?boards?|mind ?maps?|maps?|documents?|docs?)\b", re.I)
+
+
+def _title_words(text: str) -> set[str]:
+    return {w.rstrip("s") for w in re.findall(r"[a-z0-9]+", (text or "").lower()) if len(w) > 2}
+
+
+def _named_sources(session: Session, question: str) -> tuple[list, list[int]]:
+    """Documents, boards and maps the question names by their title (INBOX
+    1357, class F: "what's on my revision board" found nothing, because the
+    note search reads notes only). A title counts as named when every word
+    of it that names it is in the question, and the question either says a
+    kind ("board", "map", "document") or the title has two such words, so a
+    one-word title does not match every question that uses the word. At most
+    three; the newest first."""
+    asked = _title_words(question)
+    if not asked or len(question or "") > 300:
+        return [], []
+    says_kind = bool(_KIND_SAID.search(question or ""))
+
+    def named(title: str) -> bool:
+        words = {w for w in _title_words(title) if w not in {f.rstrip("s") for f in _TITLE_FILLER}}
+        return bool(words) and words <= asked and (says_kind or len(words) >= 2)
+
+    documents = [
+        d for d in session.scalars(
+            select(Document).where(Document.deleted_at.is_(None)).order_by(Document.updated_at.desc()).limit(400)
+        ) if named(d.title or "")
+    ][:3]
+    boards = [
+        e.id for e in session.scalars(
+            select(Entry).where(Entry.is_board == True, Entry.is_deleted == False, Entry.is_private == False)  # noqa: E712
+            .order_by(Entry.created_at.desc()).limit(400)
+        ) if named(manager.extract_title(e.content) or "")
+    ][:3]
+    return documents, boards
+
+
 def _attached_files(session: Session, file_ids: list[int]) -> list[dict]:
     """The Library files the user attached, as note-shaped context rows.
 
@@ -1023,16 +1066,18 @@ def _attached_boards(session: Session, board_ids: list[int]) -> list[dict]:
         outline = "\n".join(lines) if lines else "(empty: no nodes yet)"
         if len(outline) > ATTACHED_MAP_CHARS:
             outline = outline[:ATTACHED_MAP_CHARS] + "\n[…truncated]"
+        #: A board is said as a board (INBOX 744: "a board must say board").
+        is_map = board_type == "map"
         found.append(
             {
                 "id": board_id,
                 "content": (
-                    f"Mind map: {title}\n"
-                    f"({len(objects)} node{'' if len(objects) == 1 else 's'}, "
-                    f"laid out as a {board_type})\n\n{outline}"
+                    f"{'Mind map' if is_map else 'Board'}: {title}\n"
+                    f"({len(objects)} {'node' if is_map else 'item'}{'' if len(objects) == 1 else 's'}"
+                    + (f", laid out as a {board_type})" if is_map else ")") + f"\n\n{outline}"
                 ),
-                "category": "Mind map",
-                "kind": "map",
+                "category": "Mind map" if is_map else "Board",
+                "kind": "map" if is_map else "board",
                 "attached": True,
                 "connected": False,
                 "match_info": None,
@@ -1055,7 +1100,8 @@ def _outline_into(nodes: list[dict], depth: int, out: list[str]) -> None:
     """
     for node in nodes:
         text = node["text"] or "(untitled)"
-        mark = "" if node["kind"] == "topic" else f" [{node['kind']}]"
+        #: A plain text box says nothing by its kind; a shape or a link does.
+        mark = "" if node["kind"] in ("topic", "text") else f" [{node['kind']}]"
         out.append(f"{'  ' * depth}- {text}{mark}")
         _outline_into(node["children"], depth + 1, out)
 
@@ -1518,6 +1564,17 @@ def _from_records(question: str, session: Session):
     return records.answer(question, session, now=user_now(config), data_dir=config.data_dir)
 
 
+def _activity(session: Session, question: str):
+    """**What the person did in a window, every kind** (owner-1026b K20):
+    notes, documents, boards, maps and reminders made, edited, binned or
+    ticked off, read from the rows (`ai/activity.py`); None when the
+    question is not an own-activity question with a window."""
+    from tessellate.ai import activity
+
+    now = user_now(deps.get_config())
+    return activity.answer(question, session, now=now) or activity.boards(question, session, now)
+
+
 def _computed_answer(session: Session, question: str, detected: str, as_of, attached: list) -> tuple[str, object]:  # noqa: ANN001
     #: **A question about the notebook's shape is answered by counting it**
     #: ("what are my most common tags", "categories with the most notes").
@@ -1528,6 +1585,9 @@ def _computed_answer(session: Session, question: str, detected: str, as_of, atta
     #: rows; the model still writes the sentence when it runs (the answer is
     #: handed to it as ground truth), and with the model stopped the computed
     #: sentence is a complete answer on its own.
+    stats = _activity(session, question) if as_of is None and not attached else None
+    if stats is not None:
+        return intent.NOTES, stats
     stats = notebook_stats.answer_chat(question, session) if detected == intent.NOTES and as_of is None else None
     if detected == intent.UTILITY:
         detected, stats = _worked_out(question)
@@ -1702,6 +1762,7 @@ def _document_row(document) -> dict:  # noqa: ANN001
     return {
         "id": document.id,
         "content": f"{document.title}\n\n{document.content}",
+        "created_at": document.created_at.isoformat() if document.created_at else None,
         "category": "Document",
         "kind": "document",
         "attached": True,
@@ -1857,6 +1918,21 @@ def _prepare(
     notes = _context_notes(session, found, attached, attached_docs, attached_files, attached_boards, as_of)
     #: Only the notes: a document or a file row has another table's id.
     _frame_matches(session, question, notes[: len(found.entries)], found.match_info, found.mode)
+    if not (attached or attached_docs or attached_files or attached_boards or skip_search) and found.stats is None and as_of is None:
+        #: A document, board or map the question names by title is read first,
+        #: as itself (not as an attachment the person picked).
+        named_docs, named_boards = _named_sources(session, question)
+        boards = _attached_boards(session, named_boards)
+        for row in boards:
+            #: Said by its title and words, as a note is: the "Mind map: X (4
+            #: nodes...)" head is for a model, and the composer quoted it.
+            head, _, outline = row["content"].partition("\n\n")
+            row["content"] = f"# {head.split(': ', 1)[-1].splitlines()[0]}\n\n{outline}"
+        named = [_document_row(d) for d in named_docs] + boards
+        for row in named:
+            row["attached"] = False
+            row["named"] = True
+        notes = named + notes
     config = deps.get_config()
 
     # Every entry this question surfaced counts as "used".
@@ -3132,18 +3208,24 @@ def _cited_titles(session: Session, result: dict) -> list[str]:
     """The titles of the notes an answer drew on, in the order it cited them."""
     from tessellate.ai.tools._common import _visible
 
-    ids: list[int] = []
+    #: (kind, id): a document's id is another table's, and reading it as a
+    #: note's named an unrelated note in the closing line (INBOX 1357).
+    ids: list[tuple[str, int]] = []
     for row in result.get("grounding") or []:
         try:
-            nid = int(row.get("note_id"))
+            key = ("document" if row.get("kind") == "document" else "entry", int(row.get("note_id")))
         except (TypeError, ValueError):
             continue
-        if nid not in ids:
-            ids.append(nid)
+        if key not in ids:
+            ids.append(key)
     titles: list[str] = []
-    for nid in ids[:3]:
-        row = session.query(Entry.content).filter(Entry.id == nid, *_visible()).first()
-        title = composer._title(str(row[0] or ""))[0].strip()[:60] if row else ""
+    for kind, nid in ids[:3]:
+        if kind == "document":
+            doc = session.query(Document.title).filter(Document.id == nid, Document.deleted_at.is_(None)).first()
+            title = str(doc[0] or "").strip()[:60] if doc else ""
+        else:
+            row = session.query(Entry.content).filter(Entry.id == nid, *_visible()).first()
+            title = composer._title(str(row[0] or ""))[0].strip()[:60] if row else ""
         if title:
             titles.append(title)
     return titles
@@ -3164,8 +3246,11 @@ def _with_next_step(text: str, size: str, req: _StreamRequest, cited: list[str] 
     #: Nor on a note the answer never used ("what caused ww1" ended with an
     #: offer to open the Biology note): a closer names a note the answer cited.
     newest = [] if req.body.note_ids else (cited if cited is not None else _newest_titles(req.session, 1))[:1]
+    #: A cited note is called the newest only when it is (INBOX 1357, class
+    #: K: "Your latest note is Hello" named the oldest note).
+    is_newest = cited is None or bool(newest and newest == _newest_titles(req.session, 1)[:1])
     line = (composer_aware.closing(_awareness(req), seed, recent) if req.body.screen else "") or composer_tone.closing(
-        recent=newest, seed=seed, avoid=recent, voice=_chat_voice(req), question=req.question or ""
+        recent=newest, seed=seed, avoid=recent, voice=_chat_voice(req), question=req.question or "", newest=is_newest
     )
     return f"{text}\n\n{line}" if line else text
 

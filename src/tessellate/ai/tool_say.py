@@ -27,7 +27,7 @@ import re
 from collections.abc import Callable
 from datetime import date, datetime
 
-from tessellate.ai.realise import count_noun, cut_title, join_items
+from tessellate.ai.realise import count_noun, cut_title, join_items, named_lead
 
 #: An app address for each kind of thing a tool names (router.js
 #: `ROUTE_OBJECTS`, `ROUTE_TABS`, `ROUTE_LIBRARY`).
@@ -331,8 +331,7 @@ def _named_counts(key: str, noun: str) -> Callable[[dict, dict], Said]:
         if not rows:
             return f"You have no {key} yet.", "", _chips(("Open your notes", NOTES))
         rows = sorted(rows, key=lambda r: -int(r.get("notes") or 0))
-        first = rows[0]
-        lead = f"You have {count_noun(len(rows), noun)}; {first.get('name')} has the most notes ({first.get('notes')})."
+        lead = named_lead(rows, noun)
         shown = [[("#" if noun == "tag" else "") + str(r.get("name")), r.get("notes")] for r in rows[:15]]
         more = f"\n\nAnd {len(rows) - 15} more." if len(rows) > 15 else ""
         return lead, _table([noun.capitalize(), "Notes"], shown) + more, _chips(("Open your notes", NOTES))
@@ -752,7 +751,8 @@ def _reminder_set(result: dict, args: dict) -> Said:
 
 
 def _lower_first(text: str) -> str:
-    return text[:1].lower() + text[1:] if text[:2] != text[:2].upper() else text
+    first = text.split(" ", 1)[0]
+    return text if any(c.isupper() for c in first[1:]) else text[:1].lower() + text[1:]
 
 
 def _reminder_done(result: dict, args: dict) -> Said:

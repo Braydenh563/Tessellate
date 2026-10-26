@@ -469,6 +469,21 @@ class _Out:
     framed: bool = False
 
 
+_KIND_NOUN = {"document": "document", "board": "board", "map": "mind map", "picture": "picture"}
+
+
+def _from_source(view, fact: str, today: date) -> str:  # noqa: ANN001
+    """"Fact, from your note of 3 March." for a note; a document, board or
+    map is said as itself by its title (INBOX 1357, class F: "Hamlet delays
+    ..., from your note of an undated day" for a document)."""
+    noun = _KIND_NOUN.get(getattr(view, "kind", "note") or "note")
+    if noun and view.title:
+        return f"{fact}, from your {noun} **{view.title}**."
+    if view.written is None:
+        return f"{fact}, from one of your notes."
+    return PHRASES["from_note"].format(fact=fact, day=_day(view.written, today))
+
+
 def _day(d: date | None, today: date) -> str:
     if d is None:
         return "an undated day"
@@ -525,7 +540,7 @@ def _lower_first(text: str, names: set[str]) -> str:
     if not first:
         return text
     word = first.group(0)
-    if word == "I" or word.lower() in names or (len(word) > 1 and word[1:].isupper()):
+    if word == "I" or word.lower() in names or any(c.isupper() for c in word[1:]):
         return text
     if re.match(r"[A-Z][\w'-]* (?!(?:Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day|January|February|March|April|May|June|July|August|September|October|November|December)[A-Z][\w'-]* [A-Z]", text):
         #: "Dune Part Two", "Gym Routine Overview": three capitals in a row are
@@ -603,7 +618,7 @@ def _pin(text: str, written: date) -> str:
     #: "Trimmed my first bowl today", written 2 September, is "on 2
     #: September"; under that day's own label the day is dropped (`_lines`).
     for found in reversed(_spans(text, written)):
-        if found.kind in ("date", "datetime") and found.text.lower() in _DEICTIC:
+        if found.kind in ("date", "datetime") and (found.text.lower() in _DEICTIC or (found.text.lower() == "tomorrow" and written != today)):
             day = found.value.date() if isinstance(found.value, datetime) else found.value
             text = f"{text[:found.start].rstrip()} on {_day(day, today)}{text[found.end:]}"
     return text
@@ -611,6 +626,8 @@ def _pin(text: str, written: date) -> str:
 
 #: The words for the day a note was written, said as that day once read:
 #: the recogniser gives the day each means from the note's own date.
+#: "Tomorrow" is said as its day too once that day is past (INBOX 1357, class
+#: D: "tomorrow you pick up your student card" from a July note).
 _DEICTIC = frozenset(("today", "tonight", "yesterday"))
 
 
@@ -1439,6 +1456,9 @@ def _row(said: str, fact: Fact) -> dict:
         "end": fact.sentence.end,
         "score": 1.0,
         "digest": True,
+        #: The source's kind, so a closing line reads a document's id in its
+        #: own table (INBOX 1357).
+        "kind": getattr(fact.view, "kind", "note"),
     }
 
 
@@ -2100,7 +2120,7 @@ def _say_fact(out: _Out, lead: Fact, today: date, question: str) -> None:
         #: a label the answer gave the fact ("How it went") does not.
         out.lines.append(f"From your {lead.label[0].lower() + lead.label[1:]} note, {_day(lead.view.written, today)}: {body}.")
     else:
-        out.lines.append(PHRASES["from_note"].format(fact=body[0].upper() + body[1:], day=_day(lead.view.written, today)))
+        out.lines.append(_from_source(lead.view, body[0].upper() + body[1:], today))
     out.rows.append(_row(body, lead))
 
 
@@ -2171,7 +2191,7 @@ def _single_when(out: _Out, lead: Fact, rest: list[Fact], question: str, today: 
         _say_fact(out, lead, today, question)
         return [f for f in rest if f.view.id == lead.view.id]
     said = days.group(0).strip(" ,")
-    out.lines.append(PHRASES["from_note"].format(fact=said[0].upper() + said[1:], day=_day(lead.view.written, today)))
+    out.lines.append(_from_source(lead.view, said[0].upper() + said[1:], today))
     out.rows.append(_row(said, lead))
     rest = [f for f in rest if re.search(r"\b(mon|tues|wednes|thurs|fri|satur|sun)days\b|\bafternoons\b|\bmornings\b|\bevenings\b", f.sentence.text, re.I)]
     return [Fact(f.view, f.sentence, "Also on your week", f.body, f.action) for f in rest]

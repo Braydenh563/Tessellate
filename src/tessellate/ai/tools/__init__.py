@@ -20,7 +20,7 @@ from typing import Callable
 
 from datetime import timedelta
 
-from sqlalchemy import func, or_, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import librarian, skills, toolrank, toolwords
@@ -826,7 +826,9 @@ def _count_notes(session: Session, args: dict) -> dict:
     # Total + per-category breakdown entirely in SQL.
     rows = session.execute(
         select(Category.name, func.count(Entry.id))
-        .outerjoin(Entry, (Entry.category_id == Category.id) & (Entry.is_deleted == False) & (Entry.is_private == False))  # noqa: E712
+        #: The same notes `_visible` counts everywhere else: boards and maps
+        #: counted here said "Uni (5)" beside /categories' "Uni (3)" (INBOX 1357).
+        .outerjoin(Entry, and_(Entry.category_id == Category.id, *_visible()))
         .group_by(Category.name)
     ).all()
     # Uncategorised entries (category_id IS NULL) aren't in the join above.
@@ -846,7 +848,9 @@ def _list_categories(session: Session, args: dict) -> dict:
     # SQL aggregation: no Python-side row iteration needed.
     rows = session.execute(
         select(Category.name, func.count(Entry.id))
-        .outerjoin(Entry, (Entry.category_id == Category.id) & (Entry.is_deleted == False) & (Entry.is_private == False))  # noqa: E712
+        #: The same notes `_visible` counts everywhere else: boards and maps
+        #: counted here said "Uni (5)" beside /categories' "Uni (3)" (INBOX 1357).
+        .outerjoin(Entry, and_(Entry.category_id == Category.id, *_visible()))
         .group_by(Category.name)
         .having(func.count(Entry.id) > 0)
         .order_by(Category.name)

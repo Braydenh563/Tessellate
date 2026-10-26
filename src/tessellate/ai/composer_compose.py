@@ -226,12 +226,12 @@ def frame(ability: str, mood: Mood, **facts: object) -> str:
 
 #: Abilities whose frames carry their own greeting or are clauses of one:
 #: a generic "Sure." before "Good morning." would be wrong.
-_NO_AROUND = frozenset({"next_due", "social_how", "social_sorry", "social_laugh", "social_reaction", "social_confused", "social_ack", "social_compliment", "quiz_right", "quiz_close", "quiz_wrong", "quiz_skip", "close_next", "act_card", "hello", "welcome_new", "w_due", "w_last", "w_streak", "w_quiet"})
+_NO_AROUND = frozenset({"next_due", "social_how", "social_sorry", "social_laugh", "social_reaction", "social_confused", "social_ack", "social_compliment", "quiz_right", "quiz_close", "quiz_wrong", "quiz_skip", "close_next", "close_cited", "act_card", "hello", "welcome_new", "w_due", "w_last", "w_streak", "w_quiet"})
 
 
 #: Abilities that take only their own openers and closers (an act's
 #: confirmation or question, where "Let me see." would read wrong).
-_OWN = frozenset({"close_next", "act_card", "act_done", "act_ask", "act_baddate", "act_none"})
+_OWN = frozenset({"close_next", "close_cited", "act_card", "act_done", "act_ask", "act_baddate", "act_none"})
 
 
 def opener(mood: Mood, ability: str = "") -> str:
@@ -300,7 +300,8 @@ def sentence_case(text: str) -> str:
 def _clause(lead: str, text: str) -> str:
     """`text` after a connective: lower-cased after a comma-ended or bare
     one ("Also, your last note"), left alone after a colon."""
-    if lead and (lead.endswith(",") or lead[-1].isalpha()) and text[:1].isupper() and not text[1:2].isupper():
+    first = text.split(" ", 1)[0]
+    if lead and (lead.endswith(",") or lead[-1].isalpha()) and text[:1].isupper() and not any(c.isupper() for c in first[1:]):
         text = text[0].lower() + text[1:]
     return f"{lead} {text}".strip()
 

@@ -235,7 +235,10 @@ TOOL_CUES: tuple[tuple[str, str], ...] = (
     ("list_reminders", r"\b(?:what|which|list|show)\b.*\breminders\b|^any reminders\b"
      r"|^(?:what|which|list|show)(?: me)?(?: are)?(?: all)? (?:my |the )?(?:open |outstanding )?(?:tasks|to-?dos)\b(?! (?:on|for|in|from|about) )"
      rf"|^(?:what(?:'s|s| is| are)?|which \w+|is (?:there )?anything|anything) (?:(?:is |are )?(?:still )?)?(?:over)?due{_WHEN}"
-     rf"|^what (?:do|have) i (?:got |have )?(?:over)?due{_WHEN}"),
+     rf"|^what (?:do|have) i (?:got |have )?(?:over)?due{_WHEN}"
+     #: The bare noun ("reminders", "my reminders", "tasks?"), as tags and
+     #: categories already are (INBOX 1357, class B).
+     r"|" + _listing("reminders?|tasks|to-?dos|to do list|todo list")),
     ("complete_reminder", r"\bmark\b.*\breminder\b.*\bdone\b|\btick off\b.*\breminder\b"),
     ("list_documents", r"^(?:list|show)(?: me)? (?:all )?my documents[?.]?$|" + _listing("documents|docs")),
     ("list_skills", r"\b(?:list|show) (?:me )?(?:all )?my skills\b|\bwhat skills\b|" + _listing("skills")),

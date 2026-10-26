@@ -41,6 +41,7 @@ FACTS: dict[str, dict] = {
     "w_quiet": {},
     "act_done": {"what": "set a reminder for Friday at 15:00"},
     "close_next": {"t": "Harbor launch plan"},
+    "close_cited": {"t": "Harbor launch plan"},
     "next_due": {"what": "Call the landlord", "when": "Monday 2 November 2026"},
     "social_how": {},
     "social_sorry": {},

@@ -397,6 +397,17 @@ FRAMES: dict[str, tuple[Cand, ...]] = {
         c("“{t}” is where you left off. Shall I dig out its open items or dates?", "p"), c("Fresh off your keyboard: “{t}”. Want the dates or what is left?", "p"),
         c("Your newest page, “{t}”, is still warm. Ask what is left on it.", "p"),
     ),
+    #: The same next step for a note the answer cited that is not the newest
+    #: one: no "latest" or "newest" (INBOX 1357, class K: "Your latest note is
+    #: Hello" under a gym answer, Hello being the oldest note).
+    "close_cited": (
+        c("Want me to open “{t}”, or pull out its dates?", "w"), c("Next, I can open “{t}” or pull out its dates.", "w"),
+        c("If it helps, ask me what is still open in “{t}”.", "w"), c("Say the word and I will go through “{t}” with you.", "w"),
+        c("I can summarise “{t}” or list what is left in it.", "w"),
+        c("Open “{t}”? Dates or tasks?", "t"), c("“{t}”: summary, dates or what is left?", "t"),
+        c("I can retrieve the dates or the open items in “{t}”.", "f"), c("Should you wish, I can summarise “{t}”.", "f"),
+        c("Fancy a closer look at “{t}”? I can dig out its dates.", "p"), c("“{t}” has more in it. Want the open items?", "p"),
+    ),
     "act_card": (
         c("Done: {what}.", "t"), c("Set: {what}.", "t"), c("{what}. Done.", "t"),
         c("All set, I will {what}.", "w"), c("Done. I will {what}.", "w"), c("Sure, I will {what}.", "w"), c("Got it, I will {what}.", "w"),

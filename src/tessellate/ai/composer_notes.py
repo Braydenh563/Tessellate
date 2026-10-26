@@ -155,6 +155,12 @@ def _read_recent(ctx: Ctx) -> tuple[list[str], date, date, str, str] | None:
     start, end, said, topic = window
     wanted = _wanted(topic)
     if any_topic and not wanted:
+        from tessellate.ai import activity
+
+        #: "what did I make last week" is the activity recap's (every kind,
+        #: owner-1026b K20); "what did I write last week" stays the notes'.
+        if activity.read(text, ctx.now.date()) is not None:
+            return None
         return [], start, end, said.strip(), "anything"  # no topic: every note of the window
     return (wanted, start, end, said.strip(), topic.strip() or "that") if wanted else None
 

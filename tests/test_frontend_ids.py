@@ -386,15 +386,17 @@ def test_every_model_gated_control_gives_a_reason_and_is_in_the_inventory():
         )
 
 
-def test_the_digest_says_why_it_is_off_on_the_page():
-    """UX-12 (audit 2026-10-05): a disabled button's `title` is the only
-    reason a keyboard or a phone could not reach. The widget carries a line
-    the status poll fills (`[data-offline-line]`), with the Settings link."""
+def test_the_digest_is_never_off_for_want_of_a_model():
+    """UX-12 (audit 2026-10-05) gave the digest's disabled button a reason
+    on the page. Since owner-1026b K3 it is not disabled at all: with no
+    model the composer says the week (`activity.week`), so the widget carries
+    no model gate and no offline line. The shared line the status poll fills
+    (`[data-offline-line]`, with the Settings link) stays for the others."""
     js = Path(__file__).resolve().parents[1] / "frontend" / "js"
     dashboard = (js / "dashboard.js").read_text(encoding="utf-8")
     widget = dashboard[dashboard.index("async function renderDigestWidget(") :]
     widget = widget[: widget.index("\n}\n")]
-    assert "dataset.offlineLine" in widget
+    assert "needsModel" not in widget and "offlineLine" not in widget
     status = (js / "status.js").read_text(encoding="utf-8")
     sync = status[status.index("function syncModelGatedControls(") :]
     sync = sync[: sync.index("\n}\n")]

@@ -224,12 +224,36 @@ def reply(question: str, titles: list[str], *, seed: str = "") -> dict:
     return {"text": _pick(list(_VAGUE_TEXT), question, seed), "asks": list(dict.fromkeys(asks))}
 
 
+#: The doing words of a request, which every help sentence shares; the
+#: thing asked for has to be in the help line itself.
+_ASK_VERBS = frozenset("set start make run open do give put add create begin use".split())
+
+
+def _app_tool(request: str) -> str | None:
+    """A request for one of the app's own tools that chat cannot run ("set
+    a timer"): how to run it, from the Guide's topic (INBOX 1357, class B,
+    where it got "The closest I can do is to set a reminder"). None unless
+    the thing asked for is named in the help line."""
+    from tessellate.ai import composer, help_chat
+
+    found = composer.help_line(request, help_chat.topics_for(request))
+    if found is None:
+        return None
+    things = [w for w in re.findall(r"[a-z]{4,}", request.lower()) if w not in _ASK_VERBS]
+    if not things or not all(re.search(rf"\b{w}", found[0], re.I) for w in things):
+        return None
+    return f"I cannot run that from chat, but you can: {found[0]}"
+
+
 def unknown_action(question: str, titles: list[str], *, embed=None, seed: str = "") -> dict | None:  # noqa: ANN001
     """For a request in the imperative that no act understood: the closest
     acts as choices, never a notes search for its words. None for a question."""
     q = " ".join((question or "").split())
     if not q or _ASKING.match(q) or not _IMPERATIVE.match(q):
         return None
+    tool = _app_tool(q)
+    if tool:
+        return {"text": tool, "asks": []}
     options = closest(q, embed=embed)
     if not options:
         found = reply("do smth cool", titles, seed=seed)

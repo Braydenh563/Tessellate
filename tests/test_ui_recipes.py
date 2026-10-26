@@ -5205,8 +5205,11 @@ def test_the_no_model_notice_is_one_row_on_the_notice_recipe() -> None:
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     for ident in ("chat-offline", "ask-offline", "draft-offline", "command-palette-offline"):
         assert re.search(rf'id="{ident}" class="ai-offline-note notice hidden"', html), ident
+    #: The dashboard's digest built one too until owner-1026b K3, when the
+    #: digest stopped needing a model; any offline box it builds is the recipe's.
     dashboard = with_pieces("dashboard.js")
-    assert 'offline.className = "ai-offline-note notice hidden"' in dashboard
+    built = re.findall(r'offline\.className = "([^"]+)"', dashboard)
+    assert all(c == "ai-offline-note notice hidden" for c in built), built
 
     #: One short sentence per surface (under 90 characters), no exclamation mark.
     sentences = re.findall(r'renderAiOfflineNotice\(\s*\$\("[a-z-]+"\),\s*"([^"]+)"', status)
