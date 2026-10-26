@@ -109,7 +109,9 @@ def test_a_note_left_on_a_line_is_pushed_off_it_and_the_map_ends_there() -> None
     loop = WORKER[WORKER.index("\nfunction loop() {") :]
     loop = loop[: loop.index("\n}\n")]
     # Once, after the last pass has rested, never after a drag, and no tick after it.
-    assert "untangle.passes > 0 && !untangle.cleaned && !dragging && nodes.length <= UNTANGLE_BIG" in loop
+    # At any size (round 5): above `UNTANGLE_BIG` notes it was skipped for its cost, a grid of lines made it cheap.
+    assert "untangle.passes > 0 && !untangle.cleaned && !dragging) {" in loop
+    assert "nodes.length <= UNTANGLE_BIG" not in loop
     assert loop.index("if (untangle.holding) {") < loop.index("simulation.tick();")
     drag = WORKER[WORKER.index('if (message.phase === "start") {') :]
     drag = drag[: drag.index('} else if (message.phase === "move")')]
@@ -215,3 +217,131 @@ def test_a_pass_gets_time_by_the_size_of_the_map_up_to_a_cap() -> None:
         + "console.log(JSON.stringify([at(36), at(100), at(186), at(2000)]));"
     )
     assert _node(script) == [200, 200, 372, 600]
+
+
+# Round 5 (INBOX 1400): the note-on-line cleanup runs above 100 notes, on a grid of lines.
+# 150 notes: six categories of 25 with a local hub and a chain in each, and bridges between them.
+GRID = r"""
+const fs = require("fs"), path = require("path"), vm = require("vm");
+const root = process.argv[1];
+const sb = { console, Math, Date, Float32Array, Float64Array, Int32Array, Uint8Array, Uint32Array, Map, Set,
+  setTimeout: () => 1, clearTimeout: () => {}, setInterval: () => 1, clearInterval: () => {}, postMessage: () => {} };
+sb.self = sb;
+sb.importScripts = (u) => vm.runInContext(fs.readFileSync(path.join(root, u.replace(/^\//, "")), "utf8"), sb);
+vm.createContext(sb);
+vm.runInContext(fs.readFileSync(path.join(root, "js", "graph-worker.js"), "utf8"), sb);
+const groups = ["Work", "Travel", "Cooking", "Reading", "Health", "Ideas"];
+const per = 25;
+const nodes = [], edges = [];
+groups.forEach((g, gi) => { for (let i = 0; i < per; i++) nodes.push({ id: gi * per + i, group: g, r: i ? 8 : 12 }); });
+groups.forEach((g, gi) => { for (let i = 1; i < per; i++) edges.push({ source: gi * per + (i % 3 ? 0 : i - 1), target: gi * per + i, kind: "link" }); });
+let seq = 7;
+for (let b = 0; b < 40; b++) { seq = (seq * 31 + 11) % 150; const a = seq; seq = (seq * 17 + 5) % 150; if (Math.floor(a / per) !== Math.floor(seq / per)) edges.push({ source: a, target: seq, kind: "link" }); }
+sb.onmessage({ data: { type: "init", epoch: 1, nodes, edges, alpha: 1,
+  params: { gravity: 50, spread: 50, linkForce: 50, lengthByScore: true, groupBy: true, orbit: true, curved: true, shape: "organic" },
+  world: { left: -1400, top: -1000, right: 1400, bottom: 1000, aspect: 0.6 } } });
+const run = (code) => vm.runInContext(code, sb);
+for (let t = 0; t < 2000 && run("simulation.alpha() >= simulation.alphaMin()"); t++) run("simulation.tick(); clampToWorld();");
+"""
+
+GRID_EXACT = (
+    GRID
+    + r"""
+// Every (note, line) pair, both ways: the grid's candidates hold every line the exact test says is near.
+run("untangleReach();");
+const check = (margin) => run(`(() => {
+  untangle.margin = ${margin};
+  lineGridBuild(untangle.widest + 15);
+  let near = 0, missed = 0, disagree = 0, offered = 0;
+  for (let i = 0; i < nodes.length; i++) {
+    const cands = new Set(lineGridNear(nodes[i].x, nodes[i].y));
+    offered += cands.size;
+    for (let k = 0; k < untangle.ea.length; k++) {
+      const a = untangle.ea[k], b = untangle.eb[k];
+      if (a === i || b === i) continue;
+      const exact = untangleNear(nodes[i], nodes[a], nodes[b]);
+      if (exact) { near++; if (!cands.has(k)) missed++; }
+      if (exact !== lineGridTouches(nodes[i], k)) disagree++;
+    }
+  }
+  return { near, missed, disagree, offered, all: nodes.length * untangle.ea.length };
+})()`);
+const first = check(0), second = check(15);
+// A note that moved takes its lines with it: filed again, the grid still holds every near line.
+const moved = run(`(() => {
+  untangle.margin = 3;
+  const i = 40;
+  nodes[i].x += 55; nodes[i].y -= 35;
+  lineGridRefile(i);
+  let missed = 0, disagree = 0;
+  for (let j = 0; j < nodes.length; j++) {
+    const cands = new Set(lineGridNear(nodes[j].x, nodes[j].y));
+    for (let k = 0; k < untangle.ea.length; k++) {
+      const a = untangle.ea[k], b = untangle.eb[k];
+      if (a === j || b === j) continue;
+      const exact = untangleNear(nodes[j], nodes[a], nodes[b]);
+      if (exact && !cands.has(k)) missed++;
+      if (exact !== lineGridTouches(nodes[j], k)) disagree++;
+    }
+  }
+  return { missed, disagree };
+})()`);
+console.log(JSON.stringify({ first, second, moved, edges: edges.length, count: nodes.length }));
+"""
+)
+
+GRID_CLEAN = (
+    GRID
+    + r"""
+// Put free notes dead on the middle of long lines they do not join, then clean up: 150 notes is above UNTANGLE_BIG.
+run("untangle.passes = 1");
+const put = run(`(() => {
+  const out = [];
+  const used = new Set();
+  for (let k = 0; k < untangle.edges.length && out.length < 12; k++) {
+    const [a, b] = untangle.edges[k];
+    if (Math.hypot(nodes[a].x - nodes[b].x, nodes[a].y - nodes[b].y) < 140 || used.has(a) || used.has(b)) continue;
+    const i = nodes.findIndex((n, j) => j !== a && j !== b && !used.has(j) && n.fx == null && untangle.incident[j].length < 3);
+    if (i < 0) continue;
+    nodes[i].x = (nodes[a].x + nodes[b].x) / 2; nodes[i].y = (nodes[a].y + nodes[b].y) / 2;
+    used.add(a); used.add(b); used.add(i);
+    out.push(i);
+  }
+  return out;
+})()`);
+const onLines = () => run(`(() => { untangle.margin = 0; return nodes.filter((_, i) => untangleOnLine(i)).length; })()`);
+const before = onLines();
+const t0 = Date.now();
+const moved = run("untangleCleanup()");
+const ms = Date.now() - t0;
+run("for (const n of nodes) if (n.tx !== undefined) { n.x = n.tx; n.y = n.ty; n.tx = undefined; n.ty = undefined; }");
+const after = onLines();
+const budget = run("untangleBudget()");
+console.log(JSON.stringify({ n: run("nodes.length"), planted: put.length, before, after, moved, ms, budget, live: run("lineGrid.live") }));
+"""
+)
+
+
+def test_the_grid_of_lines_offers_every_line_the_exact_test_finds_near() -> None:
+    """The grid is candidates only: nothing near may be missing from it, its cached
+    test agrees with `untangleNear` pair for pair, and a note that moved takes its
+    lines with it (`lineGridRefile`)."""
+    out = _node(GRID_EXACT)
+    assert out["count"] == 150, out
+    for key in ("first", "second"):
+        assert out[key]["near"] > 0, out
+        assert out[key]["missed"] == 0 and out[key]["disagree"] == 0, out
+        # It is a grid, not a list: far fewer pairs offered than the all-pairs scan.
+        assert out[key]["offered"] < out[key]["all"] / 4, out
+    assert out["moved"] == {"missed": 0, "disagree": 0}, out
+
+
+def test_a_map_of_150_notes_has_its_notes_cleared_off_lines_inside_the_budget() -> None:
+    out = _node(GRID_CLEAN)
+    assert out["n"] == 150 and out["planted"] >= 8, out
+    assert out["before"] >= out["planted"], out
+    assert out["after"] <= max(1, out["before"] // 4), out
+    assert out["moved"] > 0, out
+    # One cleanup is two halves of a pass's budget; the grid is dropped when it ends (`untangleOnLine` scans again).
+    assert out["ms"] <= out["budget"] * 1.5, out
+    assert out["live"] is False, out
