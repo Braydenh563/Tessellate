@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: a new document you typed in and then emptied again is removed when you switch to another tab, as it already was on New or opening another document, so the list does not collect empty "Untitled document" rows.
 - Documents: pasting a screenshot or dropping a picture into a document now uploads it and writes the image where the caret (paste) or pointer (drop) is; it did nothing before, although the "/" menu said both worked. A copy from a spreadsheet or Word keeps pasting its text, not its picture. Pasting a bulleted or numbered list from Word keeps the list and its levels (it arrived as "· item" lines).
 - Documents: Enter on an empty quote line ends the quote (a nested one steps out a level), and Tab on a numbered item renumbers it for its new level ("1." as the first of a nested list, the next number when brought back out) instead of keeping "2." in a list of one.
 - Documents: Ctrl+U underlines (it was CodeMirror's "undo selection" and looked dead; a second press takes it off, as does Superscript and Subscript), Ctrl+H opens Replace with the cursor in the Replace field, and hiding the formatting toolbar with Ctrl+Shift+X no longer drops the keyboard onto the page.

@@ -107,6 +107,7 @@ REACHED_AFTER_LOAD = {
     #: it is here a far move walks.
     "popupToolEquation": "POPUP_TOOLS' open, which waits on ensureModule('appPalette') before the call",
     "renderToolShortcutList": "openShortcuts, which waits on ensureModule('appPalette') before the call",
+    "docDropIfUntouched": "confirmLeavingUnsavedWork, past its `typeof docDirty` return: docDirty is declared by the same library bundle, so the call is reached only once it has loaded",
     "docTurnIntoMenu": "the selection bar's Turn into button, which selectionBarShow hides until the library bundle defines it",
     "wbSelectionBarFit": "selectionBarShow on a board box, which exists only once whiteboard.js (library bundle) has drawn the board; elsewhere there is nothing to fit",
     "findSettings":"settingsUi, called by filterSettings only when renderSettingResults (same bundle) returned a count",

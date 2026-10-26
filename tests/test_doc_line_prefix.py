@@ -96,3 +96,10 @@ def test_numbered_item_takes_its_place_when_the_level_changes():
     )
     # Nested under 1. a: 1; back out beside 1. a (nested children skipped): 2; a bullet parent: 1.
     assert json.loads(out.stdout) == [1, 2, 3, 1, 2, 1, 1, "", "", "> ", None, "", "- "]
+
+
+def test_leaving_a_tab_bins_an_untouched_document():
+    """dog3d-1026: a document made by a keystroke and emptied again stayed in the list."""
+    src = (ROOT / "frontend" / "js" / "navigation.js").read_text()
+    leave = src[src.index("async function confirmLeavingUnsavedWork") :][:2400]
+    assert leave.count("await docDropIfUntouched();") == 2

@@ -2,7 +2,7 @@
 
 Generated 2026-10-26 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6495, frontend ids 2548, CSS sections 504, backend routes 622, backend modules 6538, test files 1374, tests 12246, plan headings 974.
+Counts: frontend functions 6495, frontend ids 2548, CSS sections 504, backend routes 622, backend modules 6538, test files 1374, tests 12247, plan headings 974.
 
 ## Frontend functions (6495)
 
@@ -881,23 +881,23 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `activeNotesSection` | frontend/js/navigation.js:2262 |
+| `activeNotesSection` | frontend/js/navigation.js:2271 |
 | `arrowNavTarget` | frontend/js/navigation.js:201 |
-| `backgroundWriteFailed` | frontend/js/navigation.js:1778 |
-| `chatMessagesEl` | frontend/js/navigation.js:2408 |
+| `backgroundWriteFailed` | frontend/js/navigation.js:1787 |
+| `chatMessagesEl` | frontend/js/navigation.js:2417 |
 | `chatMidStream` | frontend/js/navigation.js:1728 |
 | `closeNavHistoryMenu` | frontend/js/navigation.js:859 |
 | `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1749 |
-| `coversAFormPrimary` | frontend/js/navigation.js:2567 |
+| `coversAFormPrimary` | frontend/js/navigation.js:2576 |
 | `entryLabel` | frontend/js/navigation.js:957 |
-| `formPrimaryButtons` | frontend/js/navigation.js:2528 |
+| `formPrimaryButtons` | frontend/js/navigation.js:2537 |
 | `goToTabHistory` | frontend/js/navigation.js:1048 |
 | `hasUnsavedWork` | frontend/js/navigation.js:1707 |
-| `initNotesSubtabs` | frontend/js/navigation.js:2322 |
-| `initScrollTopButton` | frontend/js/navigation.js:2587 |
+| `initNotesSubtabs` | frontend/js/navigation.js:2331 |
+| `initScrollTopButton` | frontend/js/navigation.js:2596 |
 | `insideClosedDetails` | frontend/js/navigation.js:1543 |
 | `loadSurface` | frontend/js/navigation.js:1291 |
-| `measureSpacingPx` | frontend/js/navigation.js:2558 |
+| `measureSpacingPx` | frontend/js/navigation.js:2567 |
 | `menuOfOpener` | frontend/js/navigation.js:1565 |
 | `menuRowsOf` | frontend/js/navigation.js:1550 |
 | `openHistoryEntry` | frontend/js/navigation.js:1108 |
@@ -906,32 +906,32 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openSelectionScope` | frontend/js/navigation.js:307 |
 | `paintTabHistory` | frontend/js/navigation.js:906 |
 | `placeDockMenuInWindow` | frontend/js/navigation.js:1362 |
-| `positionScrollTopForNested` | frontend/js/navigation.js:2430 |
+| `positionScrollTopForNested` | frontend/js/navigation.js:2439 |
 | `recordTabVisit` | frontend/js/navigation.js:994 |
 | `renderMarkdown` | frontend/js/navigation.js:355 |
-| `resetNavigationForNewSession` | frontend/js/navigation.js:2224 |
-| `resetNavigationToDefaults` | frontend/js/navigation.js:2243 |
+| `resetNavigationForNewSession` | frontend/js/navigation.js:2233 |
+| `resetNavigationToDefaults` | frontend/js/navigation.js:2252 |
 | `restoreSettingsScroll` | frontend/js/navigation.js:1095 |
 | `revealTab` | frontend/js/navigation.js:789 |
 | `rowMenuAtEvent` | frontend/js/navigation.js:123 |
-| `scrollTopTargetEl` | frontend/js/navigation.js:2412 |
-| `scrollingPage` | frontend/js/navigation.js:2361 |
-| `showNotesSection` | frontend/js/navigation.js:2267 |
-| `spacingPx` | frontend/js/navigation.js:2551 |
+| `scrollTopTargetEl` | frontend/js/navigation.js:2421 |
+| `scrollingPage` | frontend/js/navigation.js:2370 |
+| `showNotesSection` | frontend/js/navigation.js:2276 |
+| `spacingPx` | frontend/js/navigation.js:2560 |
 | `stepTabHistory` | frontend/js/navigation.js:1038 |
-| `stripMarkdownPreview` | frontend/js/navigation.js:2151 |
+| `stripMarkdownPreview` | frontend/js/navigation.js:2160 |
 | `surfaceFailed` | frontend/js/navigation.js:1222 |
 | `surfaceRecovered` | frontend/js/navigation.js:1269 |
-| `switchTab` | frontend/js/navigation.js:1827 |
-| `syncScrollLock` | frontend/js/navigation.js:2742 |
+| `switchTab` | frontend/js/navigation.js:1836 |
+| `syncScrollLock` | frontend/js/navigation.js:2751 |
 | `tabLabel` | frontend/js/navigation.js:945 |
-| `tabPlaceholder` | frontend/js/navigation.js:2087 |
-| `tabSkeletonBar` | frontend/js/navigation.js:2068 |
-| `tabSkeletonDock` | frontend/js/navigation.js:2078 |
-| `tabSkeletonPiece` | frontend/js/navigation.js:2057 |
-| `usageCount` | frontend/js/navigation.js:1788 |
-| `usageFeatureName` | frontend/js/navigation.js:1784 |
-| `usageFlush` | frontend/js/navigation.js:1792 |
+| `tabPlaceholder` | frontend/js/navigation.js:2096 |
+| `tabSkeletonBar` | frontend/js/navigation.js:2077 |
+| `tabSkeletonDock` | frontend/js/navigation.js:2087 |
+| `tabSkeletonPiece` | frontend/js/navigation.js:2066 |
+| `usageCount` | frontend/js/navigation.js:1797 |
+| `usageFeatureName` | frontend/js/navigation.js:1793 |
+| `usageFlush` | frontend/js/navigation.js:1801 |
 | `watchDockMenuPlacement` | frontend/js/navigation.js:1424 |
 | `wireLongPress` | frontend/js/navigation.js:24 |
 
@@ -19300,7 +19300,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12246)
+## Tests (12247)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19618,7 +19618,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_doc_format_back.py | 4 |
 | tests/test_doc_frontmatter.py | 2 |
 | tests/test_doc_image_options.py | 1 |
-| tests/test_doc_line_prefix.py | 3 |
+| tests/test_doc_line_prefix.py | 4 |
 | tests/test_doc_long.py | 5 |
 | tests/test_doc_math.py | 2 |
 | tests/test_doc_mermaid.py | 5 |
