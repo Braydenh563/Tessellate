@@ -107,10 +107,10 @@ const W = Number(process.env.W || 1440);
   check("the two-item ones are greyed with one item", arrange.muted.includes("align-left") && arrange.muted.includes("group"), arrange.muted);
 
   // Keyboard: the tabs walk with the arrows; Escape closes and returns focus.
-  await page.focus("#wb-format-tab-arrange");
+  await page.click("#wb-format-tab-data");
   await page.keyboard.press("ArrowRight");
   const walked = await page.evaluate(() => document.activeElement?.id);
-  check("Right from the last tab wraps to the first", walked === "wb-format-tab-style", walked);
+  check("Right from the last tab (Data) wraps to the first", walked === "wb-format-tab-style", walked);
   await page.keyboard.press("Escape");
   await page.waitForTimeout(300);
   const closed = await page.evaluate(() => ({ hidden: document.getElementById("wb-format").classList.contains("hidden"), focus: document.activeElement?.id || document.activeElement?.tagName }));
