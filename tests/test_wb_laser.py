@@ -28,3 +28,11 @@ def test_the_trail_fades_by_itself_and_respects_reduced_motion():
     assert "@keyframes wb-laser-fade" in CSS
     reduced = CSS[CSS.index("@keyframes wb-laser-fade") :]
     assert "prefers-reduced-motion" in reduced
+
+
+def test_the_laser_has_a_steady_head_and_the_count_cell_is_fixed():
+    assert "wb-laser-head" in _body("wbLaserTrail") and "pointerleave" in WB
+    assert ".wb-laser-head" in CSS
+    misc = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    cell = misc[misc.index(".wb-present-count {") :].split("}")[0]
+    assert "width: min(" in cell

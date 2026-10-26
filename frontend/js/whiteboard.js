@@ -9104,6 +9104,13 @@ function wbBuildContextMenu(kind) {
   const frameOn = commentOn?.kind === "object" && commentItem?.kind === "frame" ? commentItem : null;
   if (frameOn) item("Fit to contents", "Snug the frame to what is inside it, with a margin all round", () => wbFrameFit(frameOn, "nesw"));
   if (frameOn) item("Export this frame…", "The frame and what is inside it, as a picture, PDF or SVG", () => wbExportFrame(frameOn));
+  //: A selection leaves the board as a picture (K33): the dialog on its
+  //: Selection scope, or straight to the clipboard as a PNG or as SVG text.
+  if (wbMultiSelection.size > 0 || wbSelectedItem) {
+    item("Export selection…", "The selection as a PNG or SVG, with its links", () => wbExportBoard());
+    item("Copy as image", "A PNG of the selection on the clipboard", () => wbCopyAsImage());
+    item("Copy as SVG", "The selection as SVG text on the clipboard", () => wbCopyAsSvg());
+  }
   //: Into the library's "Yours" (decision 25): the rows the table says apply.
   subItem("Library", (sub) => {
     for (const id of ["save-selection", "save-branch", "save-shape", "save-style", "save-preset", "save-palette"]) {
@@ -12284,7 +12291,7 @@ function wbBoardBounds() {
 //: never populates `wbMultiSelection`. A link sketch has no bbox of its
 //: own (`wbItemBBox` returns null for one), `null` here means "nothing
 //: exportable selected", which the export menu's own gating already checks.
-function wbSelectionBounds() {
+function wbSelectionBounds(pad = 40) {
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   const boxes = wbMultiSelection.size > 0
     ? wbSelectionEntries().map((e) => e.bbox)
@@ -12298,7 +12305,6 @@ function wbSelectionBounds() {
     maxY = Math.max(maxY, box.maxY);
   }
   if (!Number.isFinite(minX)) return null;
-  const pad = 40;
   return { minX: minX - pad, minY: minY - pad, width: maxX - minX + pad * 2, height: maxY - minY + pad * 2 };
 }
 
@@ -12424,7 +12430,8 @@ function wbExportTopicGlyph(topicEl) {
 }
 
 function wbBuildExportSvg(scope, { transparent = false } = {}) {
-  const bounds = scope === "selection" ? wbSelectionBounds()
+  //: A selection export is the selection plus 24px, not the bar's 40.
+  const bounds = scope === "selection" ? wbSelectionBounds(24)
     : scope === "visible" ? wbVisibleBounds() : wbBoardBounds();
   const { minX, minY, width, height } = bounds || wbBoardBounds();
   const onlyKeys = scope === "selection" ? wbSelectedKeys() : null;
@@ -13272,13 +13279,18 @@ async function wbExportPicture(scope, kind) {
 //: write, not lost while the board is drawn.
 async function wbExportCopyImage(scope) {
   const { scale, transparent } = wbExportPngPrefs();
-  if (!navigator.clipboard?.write || typeof ClipboardItem === "undefined") {
-    throw new Error("This browser cannot copy a picture. Export a PNG instead.");
-  }
   const { svg, width, height } = wbBuildExportSvg(scope, { transparent });
   const picture = wbRasterizeSvg(svg, width * scale, height * scale, "image/png");
-  await navigator.clipboard.write([new ClipboardItem({ "image/png": picture })]);
-  toast("Copied the picture. Paste it into another app.");
+  //: No clipboard for pictures (an older browser, or a refused permission):
+  //: the same PNG is downloaded instead, and the toast says so.
+  try {
+    if (!navigator.clipboard?.write || typeof ClipboardItem === "undefined") throw new Error("no clipboard");
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": picture })]);
+    toast("Copied the picture. Paste it into another app.");
+  } catch {
+    await saveFile(wbExportFileName(scope, "png"), await picture);
+    toast("This browser would not copy a picture, so it was saved as a PNG instead.");
+  }
 }
 
 //: The command row's entry: the selection if there is one, else what the
@@ -24010,7 +24022,10 @@ function wbPresentCaption(at, steps) {
   count.title = count.textContent;
   Object.assign(count.style, { flex: "", order: "", whiteSpace: "", textAlign: "", maxHeight: "", overflowY: "" });
   if (bar) bar.style.flexWrap = "";
-  if (!bar || count.scrollWidth <= count.clientWidth) return;
+  //: A board's frame title keeps the cell's fixed width and ellipsis, so the
+  //: arrows sit at the same x on every page (INBOX K32); only a study note
+  //: (long question or answer) takes a line of its own.
+  if (!bar || !wbStudy.on || count.scrollWidth <= count.clientWidth) return;
   //: Up to about six lines, then it scrolls: a long note never takes the screen.
   Object.assign(count.style, {
     flex: "1 0 100%", order: "-1", whiteSpace: "normal", textAlign: "center", maxHeight: "9em", overflowY: "auto",
@@ -24050,11 +24065,17 @@ function wbPresentLaser(on = null) {
     layer.id = "wb-laser-layer";
     layer.className = "wb-laser-layer";
     layer.setAttribute("aria-hidden", "true");
+    const head = document.createElement("span");
+    head.className = "wb-laser-head";
+    head.hidden = true;
+    layer.append(head);
     document.body.append(layer);
     container.addEventListener("pointermove", wbLaserTrail);
+    container.addEventListener("pointerleave", wbLaserLeave);
   }
   if (!show && layer) {
     container.removeEventListener("pointermove", wbLaserTrail);
+    container.removeEventListener("pointerleave", wbLaserLeave);
     layer.remove();
   }
   if (on === null) wbAnnounce(show ? "Laser pointer on." : "Laser pointer off.");
@@ -24063,6 +24084,13 @@ function wbPresentLaser(on = null) {
 function wbLaserTrail(event) {
   const layer = document.getElementById("wb-laser-layer");
   if (!layer) return;
+  //: The head is the pointer itself: one element that follows every move and
+  //: is never faded, so it cannot flicker when the pointer slows or stops.
+  const head = layer.firstElementChild;
+  if (head?.classList.contains("wb-laser-head")) {
+    head.style.transform = `translate(${event.clientX}px, ${event.clientY}px)`;
+    head.hidden = false;
+  }
   const dot = document.createElement("span");
   dot.className = "wb-laser-dot";
   dot.style.left = `${event.clientX}px`;
@@ -24072,6 +24100,11 @@ function wbLaserTrail(event) {
   setTimeout(() => dot.remove(), 800);
   layer.append(dot);
   while (layer.childElementCount > 48) layer.firstElementChild.remove();
+}
+
+function wbLaserLeave() {
+  const head = document.querySelector("#wb-laser-layer .wb-laser-head");
+  if (head) head.hidden = true;
 }
 
 function wbStopPresenting() {

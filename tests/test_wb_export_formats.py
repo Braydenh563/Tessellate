@@ -63,8 +63,8 @@ def test_the_rasteriser_takes_a_quality():
 def test_copy_as_an_image_writes_a_png_to_the_clipboard():
     copy = _function("wbExportCopyImage", "async ")
     assert "navigator.clipboard" in copy and "ClipboardItem" in copy and '"image/png"' in copy
-    #: Without the API the person is told what to do instead, not left with nothing.
-    assert "Export a PNG instead" in copy
+    #: Without the API the PNG is downloaded and the person told (K33), not left with nothing.
+    assert "saveFile(" in copy and "saved as a PNG instead" in copy
     assert "wbBuildExportSvg(" in copy
 
 
