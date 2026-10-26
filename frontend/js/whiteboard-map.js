@@ -4582,7 +4582,7 @@ document.addEventListener("paste", (event) => {
   const text = data.getData("text/plain") || "";
   if (!text.trim()) return;
   event.preventDefault();
-  wbRecordGesture(wbMapPasteText, [text]);
+  wbMapPasteWithChip(text);
 });
 
 // MAP-DOC-BEGIN

@@ -6765,17 +6765,20 @@ input[type="color"].wb-mixed {
   line-height: 1.9;
 }
 
-/* Paste options chip (docpaste-1026): a small floating button at the caret
-   after a paste that changed form. Its menu is the pointer-menu recipe. */
-.doc-paste-chip {
+/* Paste options chip (docpaste-1026, wbpaste-1026): a small floating button at the caret
+   (or under what a board paste made) after a paste that changed form. Its menu is the pointer-menu recipe. */
+.doc-paste-chip,
+.wb-paste-chip {
   position: fixed;
   z-index: 2;
   max-width: calc(100vw - 2 * var(--space-4));
 }
-.doc-paste-chip.hidden {
+.doc-paste-chip.hidden,
+.wb-paste-chip.hidden {
   display: none;
 }
-.doc-paste-chip button {
+.doc-paste-chip button,
+.wb-paste-chip button {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
