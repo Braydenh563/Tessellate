@@ -1294,7 +1294,7 @@ const NM_MARK_PARTS = [
   ".nm-wave", ".nm-wing", ".nm-tentacle", ".nm-foot", ".nm-flame", ".nm-tail", ".nm-tails", ".nm-starfield",
   ".nm-aura", ".nm-earring",
 ].join(", ");
-const NM_FIGURE_PARTS = `${NM_MARK_PARTS}, .nmb-leg, .nmb-arm, .nmb-hold, .nm-buddy-head, .nmp, .nmp-lantern-glow, .nmc-shadow, .nmc-hair-crown`;
+const NM_FIGURE_PARTS = `${NM_MARK_PARTS}, .nmb-leg, .nmb-arm, .nmb-hold, .nm-buddy-head, .nmp, .nmp-lantern-glow, .nmc-shadow, .nmc-hair-crown, .nm-eyewear, .nmc-lids`;
 //: Where a covering hat's brim meets the head, in drawing units: the hair
 //: above it is under the hat (K25). The nightcap's is the line along its
 //: band, a little under the band's middle so the band covers the seam.
@@ -2345,7 +2345,15 @@ function drawCharacter(seed, size = 20, mode = "mark") {
     const [lx, ly] = eyes[0];
     const [rx2] = eyes[1];
     const rim = { glasses: "#2b2a33", squareglasses: "#2b2a33", monocle: "#b8860b", goggles: "#6b4a2f", threed: "#f5f4ef", starglasses: "#e36fa6", heartglasses: "#e8364f", visor: "#3fd0e0", shades: "#1c1b22" }[eyewear] || "#2b2a33";
-    const g = make("g", { class: "nm-eyewear" }, top);
+    //: On the face, not the crown: it goes with the head's tilt and turn
+    //: (K14, the owner: "the sunglasses ... dont move with the face"). A
+    //: figure in shades has no eyes drawn under them, so it has closed lids
+    //: of its own, shown only asleep, when the shades go up (K25b).
+    if (full && eyeStyle === "shades") {
+      const lids = make("g", { class: "nmc-lids" }, head);
+      for (const [x, y] of eyes) stroke(`M${x - 3.6} ${y - 0.6} Q${x} ${y + 3} ${x + 3.6} ${y - 0.6}`, lids, 2);
+    }
+    const g = make("g", { class: "nm-eyewear" }, head);
     if (eyewear === "visor") make("rect", { x: 9, y: ly - 5, width: 46, height: 10, rx: 5, fill: "#3fd0e0", "fill-opacity": 0.75, stroke: "#1b7f8c", "stroke-width": 1.2 }, g);
     else if (eyewear === "shades") {
       for (const x of [lx, rx2]) make("path", { d: `M${x - 6} ${ly - 3.5} L${x + 6} ${ly - 3.5} L${x + 5} ${ly + 3} Q${x} ${ly + 5.5} ${x - 5} ${ly + 3} Z`, fill: rim }, g);

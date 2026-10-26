@@ -981,13 +981,37 @@ def test_it_lies_only_where_its_whole_body_is_on_its_perch() -> None:
     assert "var(--atl-v1)); right: calc(-46px" not in CSS08
     # Hair under a hat: clipped at the brim; under the nightcap, its crown
     # is a piece of its own, hidden while the cap shows; no cap over a hat.
-    assert "const NM_HAT_BRIM = {" in AV and ".nmc-hair-crown`" in AV
+    assert "const NM_HAT_BRIM = {" in AV and ".nmc-hair-crown, " in AV
     assert "hairUnder(back, backHair);" in AV and "hairUnder(torso, frontHair);" in AV
     assert "if (capSlot) {" in AV
     assert ":not(.nmb-cap-off) .nmc-hair-crown," in CSS08
     assert "NMB_GAIT_PACE[buddy.dataset.gait]" in _fn("nameMarkBuddyGo")
     assert '&[data-gait="masculine"].nmb-walking .nm-buddy-char { animation: nmb-bob-heavy' in CSS08
     assert '&[data-gait="feminine"].nmb-walking .nm-buddy-char { animation: nmb-bob-light' in CSS08
+
+
+def test_asleep_reads_as_asleep_without_the_zs() -> None:
+    # K25b, the owner: "my character is sleeping but i cant tell other than
+    # for the zzzz". Measured asleep before: head 10deg, eyes open (the blink
+    # loop's `transform` outranked the sleep rule's scaleY), shades still on,
+    # hanging arms-up. Now (sleep.js probe, 1440 and 720, both themes): head
+    # 14deg with a breathing bob, eyes `scale: 1 0.12`, shades 10px up, and
+    # hanging by one hand with the sloth sway (slowed, not stopped, under
+    # reduced motion, as its other loops are: the switch decides).
+    sleepy = "#nm-buddy:is(.nmb-sleep, .nmb-act-nap, .nmb-act-lie)"
+    assert f"{sleepy} .nm-buddy-head {{ rotate: 14deg; }}" in CSS08
+    assert f"{sleepy} .nm-blinks {{ scale: 1 0.12; }}" in CSS08
+    assert ".name-mark .nm-blinks {\n  animation: none;\n  transform: scaleY(0.12)" not in CSS08
+    for state, k in (("night", "0.72"), ("drowsy", "0.55")):
+        assert f"#nm-buddy.nmb-{state} .name-mark .nm-blinks {{ scale: 1 {k}; }}" in CSS08
+    assert f"{sleepy} .nmc-lids {{ opacity: 1; }}" in CSS08
+    assert f"{sleepy} .nm-eyewear {{ translate: 0 -10px; }}" in CSS08
+    assert '[data-pose="hang"]:is(.nmb-act-scratch, .nmb-sleep)) .nmb-hold-r { opacity: 0; }' in CSS08
+    assert '&[data-pose="hang"].nmb-sleep .nm-buddy-char { animation: nmb-sloth 9s ease-in-out infinite; }' in CSS08
+    assert ".nm-char .nm-buddy-head { animation: nm-breathe 6.4s ease-in-out infinite; }" in CSS08
+    # The shades sit on the face, so they tilt with it (K14 too).
+    assert 'make("g", { class: "nm-eyewear" }, head)' in AV
+    assert ".nm-eyewear, .nmc-lids`" in AV
 
 
 @pytest.mark.skipif(not shutil.which("node"), reason="needs node")
