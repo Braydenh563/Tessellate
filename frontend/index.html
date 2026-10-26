@@ -2108,7 +2108,8 @@ Link to another note with [[its first few words]]."></textarea>
           <div class="help-body hidden" id="ask-source-help" role="dialog" aria-label="About AI answers">
             <p>
               Switch on: your model writes the answer from your notes, citing
-              them. Off: the answer is From your notes, with no AI. The app
+              them, and a From your notes line under it opens the quoted
+              answer to the same question beside it. Off: the answer is From your notes, with no AI. The app
               picks the sentences in your notes that answer the question and
               strings them together: the answer on the first line, then the
               other notes joined by how they relate (also, later, separately,
@@ -2304,12 +2305,15 @@ Link to another note with [[its first few words]]."></textarea>
               <!-- A chart for a counting or trend question (WORLD_CLASS_PLAN
                    section 17 row 4), drawn by ask-chart.js. -->
               <div id="ask-chart" class="ask-chart hidden" role="group" aria-label="Chart from your notes"></div>
+              <div id="ask-pre-answer"></div>
               <div id="ai-answer" class="answer"></div>
               <!-- ROADMAP.md item 36: which note backs which sentence of a
                    direct Q&A answer, one badge per grounded sentence, never
                    inside #ai-answer, which the final renderMarkdown() call
                    replaces wholesale after the stream ends. -->
               <div id="ai-answer-grounding" class="answer-grounding hidden"></div>
+              <!-- K26: the composer's answer beside a model's, one press (ask-compose.js). -->
+              <div id="ask-from-notes"></div>
               <!-- The answer object's foot (CHAT_PLAN.md Phase 3, decision 8:
                    "Ask = Chat in single-turn mode"). Three containers, one per
                    component, and the separation is the point: related items and

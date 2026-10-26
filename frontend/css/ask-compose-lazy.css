@@ -216,3 +216,18 @@
 .ask-ai-switch:has(input:disabled) {
   cursor: not-allowed;
 }
+
+/* **Both answers** (K26): the composer card above a model text and the
+   "From your notes" fold under it. The fold takes the web fold look; only
+   the body and the card spacing are its own. */
+.ask-pre-answer {
+  margin-block-end: var(--space-2);
+}
+
+.from-notes-body {
+  padding: var(--space-2) var(--space-3);
+}
+
+.from-notes-fold[open] > .from-notes-body {
+  border-top: 1px solid var(--border);
+}

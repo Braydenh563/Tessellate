@@ -2559,6 +2559,7 @@ async function streamChatEvents({
   onWebSources,
   onWhy,
   onOffer,
+  peek,
   attempt,
 }) {
   //: Fetched now, so a composed reply's reveal (`finishReply`) never waits on it.
@@ -2574,7 +2575,7 @@ async function streamChatEvents({
   //: The Ask box's answer switch (INBOX 688, ask-compose.js): "notes" asks
   //: for the answer composed from the notes; the server composes anyway when
   //: no model runs, so an unset switch needs no reading here.
-  if (notesOnly) Object.assign(body, { notes_only: true, answer_from: prefs.get("ask-answer-from") });
+  if (notesOnly) Object.assign(body, { notes_only: true, peek, answer_from: peek ? "notes" : prefs.get("ask-answer-from") });
   // The deliberately-closed-set case (Trace's "Generate story from path"):
   // retrieval must not add notes beyond the ones the caller attached.
   if (attachedNotesOnly) body.attached_notes_only = true;
@@ -2978,6 +2979,7 @@ async function askQuestion(preset) {
   const thinkingBox = thinkingFoldIn(thinkingHost);
   const thinkingText = thinkingBox.querySelector(".thinking");
   answerBox.textContent = "";
+  $("ask-pre-answer").textContent = $("ask-from-notes").textContent = "";
   //: A counting or trend question gets its chart beside the answer
   //: (WORLD_CLASS_PLAN section 17 row 4): asked in parallel, from the
   //: records, so it lands whether or not the model answers.
@@ -3251,7 +3253,7 @@ async function askQuestion(preset) {
       placeAnswerFigures(answerBox, answerMeta, question);
       renderAskAnswerFoot(answer, answerMeta);
       ensureModule("askCompose").then(() => renderAskInsights(groundedInsights)).catch(() => {});
-      ensureModule("askCompose").then(() => renderAskWhy(answerWhy)).catch(() => {});
+      ensureModule("askCompose").then(() => { renderAskWhy(answerWhy); renderAskBoth(question, answerMeta, answerPanels); }).catch(() => {});
       if (answerOffer) ensureModule("askCompose").then(() => digestOffer(answerBox, answerOffer)).catch(() => {});
       if (answerPanels.length) drawAnswerPanels(answerBox, answerPanels);
       //: `composed`, and `match_info` for each record's reason (INBOX 1310,

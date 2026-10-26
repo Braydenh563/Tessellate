@@ -1614,7 +1614,7 @@ MORE_TOPICS.extend(
             "body": (
                 (
                     "Ask on the Notes tab has an AI switch beside its answer-length picker. On, your model writes the "
-                    "answer; off, the answer is From your notes, with no AI. It opens with the answer, or for"
+                    "answer, with From your notes under it; off, the answer is From your notes, with no AI. It opens with the answer, or for"
                     " a topic with how many notes and over which days (You have four notes about uni, 17 July"
                     " to 4 August), then tells each note in a sentence (In your first psych lecture you "
                     "learned ...) or under a bold label, one source mark that lights its note. It says what "
@@ -1632,7 +1632,7 @@ MORE_TOPICS.extend(
                     "which of your words none of the notes found mention. The badge by the name says who "
                     "wrote it (From your notes, a model's name, or Composer); hover or click it for what "
                     "that means. The No model connected line above the Chat box "
-                    "and the Ask box has a close button (the small x at its end): it hides that line until "
+                    "and the Ask box has a close button: it hides that line until "
                     "the next time you start the app, a new session, and connecting a model in Settings, "
                     "Models always brings the answers back. Hide it for good under Model backend."
                 )
