@@ -994,7 +994,7 @@ const MIRRORED_UI_EXTRAS = [
   "graph-size",
   "graph-options-open",
   "graph-trace-open",
-  // The options panel's four folds, keyed `graph-fold-<the section's id>` by
+  // The options panel's folds, keyed `graph-fold-<the section's id>` by
   // `initGraphOptionFolds` far below. Written out rather than spread from a
   // constant beside that function: this array is read at module level and the
   // constant would be declared hundreds of lines later, which is the
@@ -1003,6 +1003,9 @@ const MIRRORED_UI_EXTRAS = [
   "graph-fold-graph-groups-section",
   "graph-fold-graph-minimap-section",
   "graph-fold-graph-display",
+  "graph-fold-graph-filter-section",
+  "graph-fold-graph-toggle-group",
+  "graph-fold-graph-temporal",
   "wb-bg-color",
 ];
 

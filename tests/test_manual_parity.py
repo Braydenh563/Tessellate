@@ -236,3 +236,16 @@ def test_the_open_packages_button_and_the_transcript_and_strip_controls_are_in_t
     assert "Open Packages button" in text and "Open Packages button" in html
     assert "Shift-click picks a run of" in text
     assert "Dates beside the strip" in text and "Dates beside the strip" in html
+
+
+def test_every_graph_options_section_has_a_question_mark_and_the_guide_says_so() -> None:
+    """INBOX 1400: Physics, Show, Display, Filter, Time, Groups and Minimap each
+    carry a '?' (`data-help-for`) in their head, and the Guide's graph topic
+    tells a reader that the sections have one."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    for help_id in ("physics", "show", "display", "filter", "time", "groups", "minimap"):
+        assert f'data-help-for="graph-{help_id}-help"' in html, f"Options has no '?' for {help_id}"
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "graph-options-help"))
+    assert "beside its name" in body and "Minimap" in body

@@ -466,3 +466,32 @@
   padding-block: var(--space-2);
   background: var(--modal-bg);
 }
+
+/* **A fold's '?' sits in its head, before the chevron** (INBOX 1400): the
+   '?' takes the free space and the chevron follows it, the same place as View's
+   '?'. The row's own height, not the button's 2rem, so a head stays 39px. */
+#graph-options .graph-options-fold > summary > .graph-help-toggle,
+#graph-options .dock-menu-section-head > .graph-help-toggle {
+  margin-left: auto;
+  flex: 0 0 auto;
+  width: max(var(--control-h), var(--target-min));
+  height: max(var(--control-h), var(--target-min));
+}
+#graph-options .graph-options-fold > summary:has(> .graph-help-toggle):not(.icon-only):not(.icon-button)::before {
+  margin-left: var(--space-2);
+}
+
+/* **Actions that pair up share a row** (INBOX 1400): Trace with Legend, Suggest
+   links with Reset to defaults, so the panel fits its cap with every fold closed. */
+.graph-options .graph-view-tools,
+.graph-options .graph-options-foot {
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-4);
+}
+.graph-options .graph-view-tools > .doc-dock-menu-item,
+.graph-options .graph-options-foot > .doc-dock-menu-item {
+  flex: 1 1 0;
+  min-width: 0;
+  white-space: nowrap;
+}
