@@ -31,14 +31,18 @@ lands in the panel; Esc closes it.
 
 - Composition: `landscapePull` (graph-worker.js `tuning`), hub rays (`gcHubSpokeMin`,
   `gcBowPoint`, `gcEdgeLook`), tests `tests/test_graph_compose_1400.py`.
+- Options worded, View help (index.html `#graph-options-toggle`, `#graph-view-help`; Guide `graph`, `graph-controls`, `graph-display`).
 - Node panel foot worded at every width, Pin added (graph.js `renderGraphPopupActions`,
   `graphPopupActionList`; 07-whiteboard-misc.css `.graph-popup-actions`).
 
 ## Left (owner's words, file:line)
 
-- "access to the tools and controls and different mechanisms in it aren't really easy to understand": the gear is an unlabelled icon (`#graph-options-toggle`, index.html ~3896, aria "Display options"); give it a visible word and a '?' (`data-help-for`) per section of `#graph-options` (View, Physics, Show, Display, Filter, Time, Groups, Minimap; only Show has one now). The panel scrolls 890 in 512 at 1440 with every fold closed (gp.js).
+- "access to the tools and controls and different mechanisms in it aren't really easy to understand": Options is worded and View has its ? (done, gd.js: dock 47px one row at 1440 and 1024, 111 at 390 as before; help on screen at all three). Left: a ? for Physics, Display, Filter, Time, Groups, Minimap (`#graph-options`, index.html ~4130 to 4400, the Show recipe at ~4182); the panel scrolls 890 in 512 at 1440 with every fold closed (gp.js).
 - "my graph is messy": crossings did not fall (64 to 64, 295 to 312 at 150); a hub's rays still cross every cluster. Next lever: hub-centred category placement (graph-worker.js `groupAnchorsOrganic`, the hub's category at the middle) or edge bundling of rays per category.
 - Label density: names drawn at the fit stay low on a phone (2 of 36, 0 of 150) and at 150 notes (9). `gcDraw` landmark pass (graph-canvas.js ~2579) and the label cut length.
 - Settle: 4.1 to 5.1 s to rest at 36 and 150 notes; first paint is framed (0 off-screen), the rest is motion.
 - Toast: clear of the legend's words but inside the legend row's box at 1440, and over the zoom strip at 390 (`#toast-box` lift for the Graph tab).
 - A click on the lowest note of the 150-note map opened no panel in gp.js (`low: null`); not reproduced by hand.
+
+done: 3444cbf (composition, node panel), next commit (Options worded, View help)
+next: the ? per options fold, index.html ~4130; hub-centred placement, graph-worker.js groupAnchorsOrganic ~771

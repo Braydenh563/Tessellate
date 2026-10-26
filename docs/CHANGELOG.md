@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Graph: the gear is a worded Options button at the front of the dock, and the View section (Layout, Shape, Colour, Size) has a ? that says what each one does.
 - Graph: the force view is calmer and easier to read. A landscape map is laid out wider (the 36-note seed at 1440x900 fills 0.54 of the width, was 0.49, and names 20 notes, was 10, none overlapping); a note with many links draws its lines straight and faint until you point at it; a note's panel has Open, Focus, Pin and Link as worded buttons with the rest under the ⋯, in place of nine bare icons.
 - Chat: a short message whose word only a Guide topic's bracketed or quoted examples hold ("what about running?", "who is Sam") is a missing word in your notes, not a request for an app tool.
 - No-model fallbacks for the AI-only buttons (owner-1026b K3, fixed as a class): Suggest a title takes the title from the draft's own words, and Split into notes, Extract notes (document, selection, note review, board cards) and Save notes cut the text at its headings and paragraphs with a preview, linked to the notes it came from; none is greyed out for want of a model, a failed model split falls back to the same cut, and Draft, Refine, Plan, Draft with Atlas and AI edit now answer a press with why and Set up a model instead of doing nothing. A title no longer ends on a word like "about" or "the".

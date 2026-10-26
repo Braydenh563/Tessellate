@@ -3872,6 +3872,11 @@ Link to another note with [[its first few words]]."></textarea>
                already folded them into the gear's sheet). A zone a surface
                does not have simply is not there. -->
           <div class="dock-actions">
+            <button type="button" id="graph-options-toggle" class="ghost small"
+              title="Display options" aria-label="Display options"
+              aria-expanded="false" aria-controls="graph-options" aria-haspopup="dialog">
+              <i class="ph ph-gear ph-lead" aria-hidden="true"></i> Options
+            </button>
             <button id="graph-refresh" class="ghost small icon-only" type="button" data-fold-narrow title="Reload the map from your notes" aria-label="Reload the map from your notes"><i class="ph ph-arrow-clockwise" aria-hidden="true"></i></button>
             <button type="button" id="graph-help-toggle" data-help-for="graph-help-panel" class="icon-only ghost small graph-help-toggle"
               title="How to use this map" aria-label="How to use this map"
@@ -3892,12 +3897,10 @@ Link to another note with [[its first few words]]."></textarea>
                  gear is not part of the refresh -> help -> more order it
                  enforces, and `icon-only` keeps it out of the one-filled-
                  button count that `#graph-add-node` holds. The kebab stays
-                 last, which is the grammar's own rule about the overflow. -->
-            <button type="button" id="graph-options-toggle" class="icon-only ghost small"
-              title="Display options" aria-label="Display options"
-              aria-expanded="false" aria-controls="graph-options" aria-haspopup="dialog">
-              <i class="ph ph-gear" aria-hidden="true"></i>
-            </button>
+                 last, which is the grammar's own rule about the overflow.
+                 INBOX 1400 (the owner: the tools "aren't really easy to
+                 understand"): the gear wears its word, Options, so it is
+                 worded and leads the actions, before the icon run. -->
             <details class="doc-dock-menu dock-menu dock-more" id="graph-more-menu">
               <summary class="ghost small icon-only doc-dock-menu-btn" title="More" aria-label="More"><i class="ph ph-dots-three" aria-hidden="true"></i></summary>
               <div class="doc-dock-menu-list dock-menu-list">
@@ -4016,7 +4019,25 @@ Link to another note with [[its first few words]]."></textarea>
                strip it opens is not under it. -->
           <div class="dock-menu-section graph-view-section" id="graph-view-section"
             role="group" aria-labelledby="graph-view-label">
-            <span class="muted dock-menu-label" id="graph-view-label">View</span>
+            <!-- INBOX 1400, the owner: the tools and "different mechanisms"
+                 are not easy to understand. The four pickers are the map's
+                 main mechanisms and had no words beyond their names; this is
+                 the Show section's `data-help-for` recipe, one line each. -->
+            <div class="dock-menu-section-head">
+              <span class="muted dock-menu-label" id="graph-view-label">View</span>
+              <button type="button" class="icon-only ghost small graph-help-toggle"
+                data-help-for="graph-view-help" aria-controls="graph-view-help"
+                aria-expanded="false" title="What Layout, Shape, Colour and Size do"
+                aria-label="What Layout, Shape, Colour and Size do">
+                <i class="ph ph-question" aria-hidden="true"></i>
+              </button>
+            </div>
+            <div class="help-body hidden" id="graph-view-help" role="dialog"
+              aria-label="What Layout, Shape, Colour and Size do">
+              <p>Layout is how the notes are placed: Force lets links pull them together, Tree, Radial and Arc lay them out from one note, and Treemap boxes them by category.</p>
+              <p>Shape is Force's own: Organic follows the links, Clusters gathers each category, Galaxy puts the best-connected notes in the middle.</p>
+              <p>Colour paints the dots by category, topic, note type, age, tag or another rule; Size makes a dot bigger for more connections, a longer note or a more recent one.</p>
+            </div>
             <div class="graph-option-row">
               <label for="graph-layout" id="graph-layout-label">Layout</label>
               <!-- A list like Colour and Size beside it (INBOX 670): four

@@ -1983,7 +1983,7 @@ HELP_TOPICS.extend(
                     "click a legend colour to hide that category. Shift and drag on empty map boxes notes, "
                     "and the selection bar can Pin, Unpin, Tag, Link together, Unlink (all undoable with Ctrl+Z) or make"
                     " a Mind map of them, built from their links round the picked or most connected note, "
-                    "with Open on the notice that follows. Display options, the gear, opens with View: Layout"
+                    "with Open on the notice that follows. Options (the gear) opens with View: Layout"
                     " (Force, Tree, Radial, Arc or Treemap; the dock names a fixed one), "
                     "Shape (Organic, Clusters or Galaxy; the Force layout's own, dimmed under the others), Colour, Size, Trace, which "
                     "finds how two notes connect, and Legend, which hides the key. Then Physics (Unpin all, "
@@ -2014,7 +2014,7 @@ HELP_TOPICS.extend(
                 "note type", "colour by type",
             ),
             "body": (
-                "More graph controls, in the gear. Show adds Tags (a node per tag), "
+                "More graph controls, under Options. Show adds Tags (a node per tag), "
                 "Attachments (a node per file or picture) and Unwritten links: each "
                 "[[name]] no note answers to is a faint node, and clicking it writes "
                 "that note, named in its heading, linked from every note that named "
