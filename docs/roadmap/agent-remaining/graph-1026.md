@@ -85,3 +85,6 @@ category's reach (crossings 245 but the map 1.9 times taller).
 - "?" help on Physics, Display, Filter, Time, Groups, Minimap (`#graph-options`, index.html ~4130 to 4400): not started.
 - Options panel scrolls 890 in 512 with every fold closed (gp.js): not started.
 - Toast over `.graph-legend-row` at 1440 and the zoom strip at 390 (`#toast-box`): still OVERLAP in gm2.js.
+
+done: 7812ece (untangle, ring by affinity, quick cooling, phone names)
+next: untangle on the warm-up, graph-worker.js warmLayout ~264; options ? per fold, index.html ~4130
