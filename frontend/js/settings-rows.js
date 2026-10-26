@@ -34,6 +34,7 @@ const SETTING_ROWS = [
   { key: "insight_level", id: "pref-insight" },
   { key: "smart_punctuation", id: "pref-smart-punctuation" },
   { key: "link_offers", id: "pref-link-offers" },
+  { key: "check_link_text", id: "pref-check-link-text" },
   { key: "autocorrect", id: "pref-autocorrect" },
   { key: "profile_enabled", id: "pref-profile-enabled" },
   { key: "notifications_muted_except_reminders", id: "pref-notif-mute-except-reminders" },

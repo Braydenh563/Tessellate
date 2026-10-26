@@ -361,6 +361,7 @@ class PreferencesBody(BaseModel):
     #: the names the writer put away with "Never offer a link to this name".
     #: The list is bounded because a client writes to it freely.
     link_offers: bool | None = None
+    check_link_text: bool | None = None
     link_offer_ignored: list[Annotated[str, Field(max_length=200)]] | None = Field(default=None, max_length=500)
     #: Autocorrect in the note boxes, the chat and Ask composers and the
     #: titles (Brief 94, autocorrect.js). On by default, unlike the line above:
@@ -794,6 +795,7 @@ def _preferences_from(config) -> dict:
         "grammar_check": config.get_preference("grammar_check", True),
         "smart_punctuation": config.get_preference("smart_punctuation", False),
         "link_offers": config.get_preference("link_offers", True),
+        "check_link_text": config.get_preference("check_link_text", False),
         "link_offer_ignored": config.get_preference("link_offer_ignored", []),
         "autocorrect": config.get_preference("autocorrect", True),
         "display_name": config.get_preference("display_name", ""),

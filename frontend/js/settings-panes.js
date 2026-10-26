@@ -767,6 +767,7 @@ async function renderPrefs() {
   $("pref-smart-punctuation").checked = prefsCache.smart_punctuation === true;
   $("pref-autocorrect").checked = prefsCache.autocorrect !== false;
   $("pref-link-offers").checked = prefsCache.link_offers !== false;
+  $("pref-check-link-text").checked = prefsCache.check_link_text === true;
   $("prefs-status").textContent = "";
   //: The fields now hold what the server holds, so nothing is unsaved: this
   //: also covers the reopen, since `showSettingsSection` re-renders.
@@ -952,6 +953,7 @@ async function savePrefs(options = {}) {
       smart_punctuation: $("pref-smart-punctuation").checked,
       autocorrect: $("pref-autocorrect").checked,
       link_offers: $("pref-link-offers").checked,
+      check_link_text: $("pref-check-link-text").checked,
     };
     // INBOX 73: "'Mute notifications except reminders' toggle disables
     // itself when the settings close." Reproduced two ways with Playwright
