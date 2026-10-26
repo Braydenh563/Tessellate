@@ -2883,35 +2883,20 @@ li.link-source {
   flex: 1 1 auto;
   min-width: 0;
 }
-/* **Use AI** (INBOX 714): one compact switch row in the header's control group,
-   on the app's pill-switch recipe (06-timeline-dialogs.css lists
-   `.ask-use-ai input` with the others). It replaced a two-segment pill that
-   "doesnt feel modern and professional". One control high (`--control-h`) and
-   centred on the header line like the History button and the model select
-   beside it; the input is the switch and is not clipped. Greyed with a reason
-   when no model runs (ask-compose.js). */
-.ask-use-ai {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  /* The touch floor is `--target-min` (44px below 820), the height History and
-     the '?' take there; on a desktop `--control-h` wins. */
+/* **Use AI** (K6, INBOX 714): the Chat dock's toggle chip (`#web-search-toggle`
+   is the recipe: a ghost small button, `aria-pressed`, `.active` the accent
+   fill), in the header's control group. It replaced a bare switch that drew as
+   on with no model running (the owner: "is there a bettwer ui way of changing
+   or redesigning that button or toggle"). Muted when off; disabled, with the
+   reason in its title, when no model answers (ask-compose.js). */
+#ask-use-ai {
   min-height: max(var(--control-h), var(--target-min));
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--ink);
-  white-space: nowrap;
-  cursor: pointer;
 }
-.ask-use-ai.is-off {
+#ask-use-ai:not(.active) {
   color: var(--muted);
-  cursor: not-allowed;
 }
-/* The AI's mark beside its word (INBOX 723, DESIGN.md "AI and agent icons"):
-   the sparkle every AI control wears, sat close to "Use AI" rather than a
-   gap's width away, so the switch reads as switch, then label. */
-.ask-use-ai .ask-use-ai-mark {
-  margin-inline-end: calc(var(--space-1) - var(--space-2));
+#ask-use-ai:disabled {
+  cursor: not-allowed;
 }
 #ask-history-toggle {
   position: relative;
@@ -4164,6 +4149,7 @@ html.modal-open body {
    messages: and two different "on" treatments in one strip is how a user
    learns that one of them means something else. */
 #web-search-toggle.active,
+#ask-use-ai.active,
 #chat-plan.active {
   background: var(--accent-surface);
   color: var(--on-accent);
@@ -4173,6 +4159,7 @@ html.modal-open body {
    web polls when active"): a ghost button's icon keeps the accent, which on
    the accent fill measured 1.00:1, so the globe and the compass vanished. */
 #web-search-toggle.active i,
+#ask-use-ai.active i,
 #chat-plan.active i {
   color: inherit;
 }

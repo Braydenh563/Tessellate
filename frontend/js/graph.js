@@ -87,6 +87,30 @@ async function graphSetPin(id, point) {
   }
 }
 
+//: **Pins are layout, not data, so releasing them is undoable** (K9, K10). The
+//: pinned notes as `{ id, x, y }`, read off the live nodes, so an Undo can put
+//: each one back exactly where it was held.
+function graphPinnedRows() {
+  const nodes = (typeof gcTab !== "undefined" && gcTab?.nodes) || graphNodesRef || [];
+  return nodes
+    .filter((n) => !n.isGroup && n.graph_pin_x != null && /^(document:)?\d+$/.test(String(n.id)))
+    .map((n) => ({ id: n.id, x: n.graph_pin_x, y: n.graph_pin_y }));
+}
+
+async function graphUnpinAllNow() {
+  const rows = graphPinnedRows();
+  const result = await apiJson("/graph/unpin-all", { method: "POST" });
+  graphHighlightIds = null;
+  await renderGraph();
+  return { rows, count: result.unpinned };
+}
+
+async function graphRestorePins(rows) {
+  if (!rows.length) return;
+  await apiJson("/graph/pins", { method: "PUT", body: JSON.stringify({ pins: rows }) });
+  await renderGraph();
+}
+
 function graphPinStep(label, changes) {
   const each = (key) => async () => {
     for (const change of changes) await graphSetPin(change.id, change[key]);
@@ -557,6 +581,17 @@ function arcPath(link) {
   return `M${a.x},${a.y}A${rx},${ry} 0 0,1 ${b.x},${b.y}`;
 }
 
+//: How far the widest arc stands off the baseline (`arcPath`: ry is 0.6 of
+//: half the span). The fits reserved 0.3 to 0.32 of the whole line for it,
+//: but the widest arc is the root to its last category, which is a small
+//: fraction of the line when the last category is big; the reserve was empty
+//: sky and the line sat low or high by that much (K7). Measured from the links.
+function arcRise(links, fallback) {
+  let rise = 0;
+  for (const l of links || []) rise = Math.max(rise, ((l.target.x - l.source.x) / 2) * 0.6);
+  return rise || fallback;
+}
+
 // A tall tree does not want to be squeezed into the panel: zoomed to fit, 29
 // rows of text become illegible. Fit the *width*, never magnify past 1:1, and
 // start at the top, the panel pans, and a readable tree you scroll beats a
@@ -628,8 +663,9 @@ function frameTree(svg, zoomBehavior, canvas, nodes, width, height, radial, arc 
   if (arc && !drawn.width) {
     const spanXs = Math.max(...xs) - Math.min(...xs);
     const spanYs = Math.max(...ys) - Math.min(...ys);
+    const rise = arcRise(typeof gcTab !== "undefined" ? gcTab.tree?.links : null, 0.3 * spanXs);
     box = spanXs >= spanYs
-      ? { x: Math.min(...xs) - 40, y: Math.min(...ys) - 0.3 * spanXs - 20, width: spanXs + 80, height: 0.3 * spanXs + 160 }
+      ? { x: Math.min(...xs) - 40, y: Math.min(...ys) - rise - 20, width: spanXs + 80, height: rise + 120 }
       : { x: Math.min(...xs) - 0.3 * spanYs - 20, y: Math.min(...ys) - 30, width: 0.3 * spanYs + 240, height: spanYs + 60 };
   }
   const minX = box.x - 10;
@@ -3519,7 +3555,7 @@ function fitGraphToView(svg, canvas, zoomBehavior, nodes, width, height, instant
   //: lower on the screen"). The widest arc stands about a third of the line's
   //: length over it; frame that too, so the line settles low and the arcs fit.
   if (graphLayout() === "arc" && nodes.length === (typeof gcTab !== "undefined" && gcTab.nodes ? gcTab.nodes.length : nodes.length)) {
-    box.minY -= (box.maxX - box.minX) * 0.32;
+    box.minY -= arcRise(typeof gcTab !== "undefined" ? gcTab.tree?.links : null, (box.maxX - box.minX) * 0.32);
   }
   const tab = typeof gcTab !== "undefined" && gcTab.svg === svg;
   //: Fitted to the whole map is a view a panel may refit (`gcRefitForPanels`);
@@ -6231,25 +6267,63 @@ function graphApplySettings(settings) {
   renderGraph();
 }
 
-function graphResetToDefaults() {
+//: Reset also lets go of every pinned note (K9, the owner: "resetting the
+//: graph to defaults doesnt unstick stuck nodes, should it?"): a pin is a
+//: layout the person made, and the Undo in the toast puts them back.
+async function graphResetToDefaults() {
   const before = graphCaptureSettings();
-  if (graphSettingsEqual(before, GRAPH_DEFAULTS)) {
+  const pins = graphPinnedRows();
+  if (graphSettingsEqual(before, GRAPH_DEFAULTS) && !pins.length) {
     toast("The map is already on its default settings.");
     return;
   }
-  graphApplySettings(GRAPH_DEFAULTS);
+  const reset = async () => {
+    if (pins.length) await graphUnpinAllNow().catch(() => null);
+    graphApplySettings(GRAPH_DEFAULTS);
+  };
+  await reset();
   offerUndo(
     "Reset the map's settings",
-    "Map settings reset to defaults.",
-    () => {
+    pins.length ? `Map settings reset, ${pins.length} pinned note${pins.length === 1 ? "" : "s"} released.` : "Map settings reset to defaults.",
+    async () => {
       graphApplySettings(before);
+      await graphRestorePins(pins);
       toast("Map settings restored.");
     },
-    () => graphApplySettings(GRAPH_DEFAULTS)
+    reset
   );
 }
 
 document.getElementById("graph-options-reset")?.addEventListener("click", graphResetToDefaults);
+
+//: (Moved from wiring.js: the helpers it calls live in this lazy bundle.)
+// Direct instruction: "I want to be able to unroot and reset the graph to
+// free float if I want with a button." One request releases every pinned
+// node at once (routes_graph.py's unpin_all_nodes) rather than tracking
+// each one down to double-click it individually; renderGraph() afterwards
+// re-fetches from /graph, which is what actually clears fx/fy, the same
+// path #graph-refresh already uses, so a freshly unpinned layout settles
+// through the ordinary simulation rather than a special-cased one.
+for (const id of ["graph-unpin-all", "graph-unpin-all-menu"]) document.getElementById(id)?.addEventListener("click", async (event) => {
+  // The first rides the Physics fold's own `<summary>` (index.html), so a
+  // press on it is also a press on the disclosure. `preventDefault` cancels
+  // the summary's activation behaviour and nothing else: a `type="button"`
+  // has no default action of its own to lose. The second is the ⋯ menu's.
+  event.preventDefault();
+  document.getElementById("graph-more-menu")?.removeAttribute("open");
+  try {
+    const { rows, count } = await graphUnpinAllNow();
+    if (!count) return toast("Nothing was pinned.");
+    offerUndo(
+      "Unpinned every note",
+      `${count} note${count === 1 ? "" : "s"} released: the layout can move freely again.`,
+      () => graphRestorePins(rows),
+      () => graphUnpinAllNow()
+    );
+  } catch (error) {
+    toast(error.message || "Couldn't unpin the graph.", true);
+  }
+});
 
 // --- the graph's controls on a phone: one sheet (moved from wiring.js) -------------------------------
 // UI_MODERNISATION_PLAN Phase 11 item 4, "the docks as one bottom sheet with

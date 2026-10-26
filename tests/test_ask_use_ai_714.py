@@ -1,4 +1,4 @@
-"""The Ask header's "Use AI" switch (INBOX 714, part 2).
+"""The Ask header's "Use AI" control (INBOX 714, part 2; a chip since K6).
 
 The owner, 2026-10-06, of the "AI | From your notes" segmented pill beside the
 Ask title: "that ai/from your notes toggle looks out of place and i dont like
@@ -35,19 +35,22 @@ def _ask_header() -> str:
     return HTML[start : HTML.index('id="ask-source-help"', start)]
 
 
-def test_the_pill_is_gone_and_one_switch_row_stands_in_its_place():
+def test_the_pill_is_gone_and_one_chip_stands_in_its_place():
+    # K6 (2026-10-26): the bare switch drew as on with no model; the Chat
+    # dock's toggle chip (`#web-search-toggle`) replaced it.
     header = _ask_header()
     assert "ask-source-seg" not in header
     assert "data-answer-from" not in header
     assert "From your notes</button>" not in header
-    match = re.search(r'<label class="ask-use-ai"[^>]*>(.*?)</label>', header, re.S)
-    assert match, "the header has no label.ask-use-ai"
-    inner = match.group(1)
-    assert 'type="checkbox"' in inner and 'id="ask-use-ai"' in inner
-    assert "<span>Use AI</span>" in inner
-    # In the right-hand control group, ahead of its '?' popover trigger.
-    assert header.index("ask-header-actions") < header.index('class="ask-use-ai"')
-    assert header.index('class="ask-use-ai"') < header.index('data-help-for="ask-source-help"')
+    assert 'type="checkbox"' not in header[header.index("ask-header-actions") :]
+    match = re.search(r'<button type="button" id="ask-use-ai"([^>]*)>(.*?)</button>', header, re.S)
+    assert match, "the header has no button#ask-use-ai"
+    attrs, inner = match.groups()
+    # Drawn from the provider status: unpressed and disabled until it answers.
+    assert 'aria-pressed="false"' in attrs and " disabled" in attrs
+    assert "Use AI" in inner and "ph-sparkle" in inner
+    assert header.index("ask-header-actions") < header.index('id="ask-use-ai"')
+    assert header.index('id="ask-use-ai"') < header.index('data-help-for="ask-source-help"')
 
 
 def test_the_help_popover_names_the_switch_and_says_what_off_means():
@@ -58,27 +61,22 @@ def test_the_help_popover_names_the_switch_and_says_what_off_means():
     assert "AI | From your notes" not in popover
 
 
-def test_the_switch_keeps_the_stored_choice_and_gives_the_reason_when_no_model_runs():
+def test_the_chip_keeps_the_stored_choice_and_gives_the_reason_when_no_model_runs():
     assert 'const ASK_ANSWER_FROM_KEY = "ask-answer-from";' in COMPOSE
-    assert 'prefs.set(ASK_ANSWER_FROM_KEY, box.checked ? "ai" : "notes")' in COMPOSE
+    assert 'prefs.set(ASK_ANSWER_FROM_KEY, askAnswerFrom() === "ai" ? "notes" : "ai")' in COMPOSE
     assert 'prefs.get(ASK_ANSWER_FROM_KEY) === "notes" ? "notes" : "ai"' in COMPOSE
-    assert "box.disabled = off;" in COMPOSE
+    assert "chip.disabled = off;" in COMPOSE
+    assert 'chip.setAttribute("aria-pressed"' in COMPOSE and 'classList.toggle("active", on)' in COMPOSE
     assert "ASK_AI_OFF_REASON" in COMPOSE
     assert "data-answer-from" not in COMPOSE
 
 
-def test_the_switch_is_in_every_list_of_the_pill_switch_recipe():
-    css = _css("06-timeline-dialogs.css")
-    for state in ("", "::after", ":hover", ":checked", ":checked::after", ":disabled"):
-        assert f'.ask-use-ai input[type="checkbox"]{state}' in css, state
-
-
-def test_the_row_is_a_control_high_row_on_the_header_line():
-    css = _css("01-forms-settings.css")
-    rule = re.search(r"\n\.ask-use-ai \{([^}]*)\}", css)
-    assert rule, "no .ask-use-ai rule"
-    assert "min-height: max(var(--control-h), var(--target-min))" in rule.group(1)
-    assert "align-items: center" in rule.group(1)
+def test_the_chip_wears_the_chat_toggles_on_state_and_the_old_switch_recipe_is_gone():
+    forms = _css("01-forms-settings.css")
+    assert "#ask-use-ai.active," in forms and "#ask-use-ai.active i," in forms
+    assert "#ask-use-ai:not(.active)" in forms
+    assert ".ask-use-ai" not in _css("06-timeline-dialogs.css")
+    assert "min-height: max(var(--control-h), var(--target-min))" in forms[forms.index("#ask-use-ai {") :][:200]
     assert ".ask-source-seg" not in _css("10-responsive.css")
 
 
