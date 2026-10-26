@@ -2356,7 +2356,9 @@ def _preview_fields(db: Session, board_id: int | None) -> dict:
     # caller, and a response model that a caller mutated in place would poison
     # every board list after it.
     fp = _thumb_fp(key)
-    stored = board_thumbs.stored_fp(deps.get_config().data_dir, board_id) if board_id else None
+    #: The default board has no note behind it, so no id: its file is stored
+    #: under 0 (`DEFAULT_BOARD_THUMB_ID`), the id the client sends for it.
+    stored = board_thumbs.stored_fp(deps.get_config().data_dir, board_id or DEFAULT_BOARD_THUMB_ID)
     return {
         "preview_items": [dict(item) for item in items],
         "preview_edges": [dict(edge) for edge in edges],
@@ -2371,17 +2373,29 @@ def _thumb_fp(key: tuple) -> str:
     return board_thumbs.fingerprint_hash(key[1:])
 
 
+#: The default board is the one board with no note, so no id to name it by in
+#: a URL or a file: its thumbnail travels as board 0 (the owner, 2026-10-26:
+#: "the default board doesnt get a thumbnail": the client skipped a falsy id).
+DEFAULT_BOARD_THUMB_ID = 0
+
+
+def _thumb_board(db: Session, board_id: int) -> None:
+    if board_id != DEFAULT_BOARD_THUMB_ID:
+        _board_entry(db, board_id)
+
+
 def _current_thumb_fp(db: Session, board_id: int) -> str:
-    entry = db.get(Entry, board_id)
+    entry = db.get(Entry, board_id) if board_id > 0 else None
     palette_name = (_board_theme(entry).get("palette") if entry else None) or "classic"
-    return _thumb_fp((*_preview_fingerprint(db, board_id), palette_name))
+    scope = board_id if board_id != DEFAULT_BOARD_THUMB_ID else None
+    return _thumb_fp((*_preview_fingerprint(db, scope), palette_name))
 
 
 @router.get("/boards/{board_id}/thumbnail/state")
 def thumbnail_state(board_id: int, db: Session = Depends(get_session)) -> dict:
     """What the client needs to decide whether to draw a thumbnail: the
     board's fingerprint now and the one the stored thumbnail was drawn at."""
-    _board_entry(db, board_id)
+    _thumb_board(db, board_id)
     return {
         "fp": _current_thumb_fp(db, board_id),
         "stored": board_thumbs.stored_fp(deps.get_config().data_dir, board_id),
@@ -2395,7 +2409,7 @@ async def put_thumbnail(
     fp: str = Query(...),
     db: Session = Depends(get_session),
 ) -> dict:
-    _board_entry(db, board_id)
+    _thumb_board(db, board_id)
     if not board_thumbs.valid_fp(fp):
         raise HTTPException(status_code=422, detail="That thumbnail version is not valid.")
     declared = int(request.headers.get("content-length") or 0)
@@ -2425,7 +2439,7 @@ def get_thumbnail(
 ):
     """The stored thumbnail. The `?v=` URL is immutable (a new fingerprint is a
     new URL), so it is cached for a year; without it the ETag still answers 304."""
-    _board_entry(db, board_id)
+    _thumb_board(db, board_id)
     found = board_thumbs.find(deps.get_config().data_dir, board_id)
     if found is None:
         raise HTTPException(status_code=404, detail="That board has no thumbnail yet.")

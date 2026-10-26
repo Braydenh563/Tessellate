@@ -83,3 +83,17 @@ def test_purge_removes_file(client):
     purged = client.delete(f"/entries/{bid}/purge")
     assert purged.status_code in (200, 204)
     assert board_thumbs.find(data_dir, bid) is None
+
+
+def test_default_board_thumbnail_travels_as_board_zero(client):
+    """The default board has no note and no id; the client sends 0 for it
+    (the owner, 2026-10-26: it only ever showed the schematic fallback)."""
+    row = next(b for b in client.get("/whiteboard/boards").json() if b["id"] is None)
+    assert row["thumb_v"] is None
+    state = _state(client, 0)
+    assert state["stored"] is None
+    assert _put(client, 0, WEBP, fp=state["fp"]).status_code == 200
+    assert client.get(f"/media/board-thumb/0?v={state['fp']}").content == WEBP
+    row = next(b for b in client.get("/whiteboard/boards").json() if b["id"] is None)
+    assert row["thumb_v"] == state["fp"]
+    assert _put(client, -1, WEBP).status_code == 404

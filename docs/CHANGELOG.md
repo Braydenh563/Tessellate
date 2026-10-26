@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fix: the default board now gets a stored thumbnail on the Boards list like every other board (its missing id was skipped by the thumbnail writer; it travels as board 0).
+- Fix: resizing a note card now moves its four arrows and its links with the box on every frame, as a text box or picture already did (the right arrow was 98px inside the box at +120, now 22px outside at every step).
 - CI: today's lint ratchets back in line (guards on boot functions dropped from the equation editor, one-off sweeps whose findings are in this log removed, the lag view read through prefs, the sketch button no longer hands its click event to openSketch).
 - Fix: turning Graph auto-fit back on after a resize with it off now frames the map again, instead of leaving the camera treated as moved for good.
 - Fix: the Web row in the palette and the slash menu always toggles web search; the Web button opens the panel first when web is on and the panel is shut, and its tooltip and the Guide say so.
