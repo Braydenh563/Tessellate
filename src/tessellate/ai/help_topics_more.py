@@ -92,7 +92,7 @@ MORE_TOPICS: list[dict] = [
             "Atlas is the assistant inside Tessellate. It answers questions from your notes and cites them, "
             "files new notes, sets reminders, finds, tags, moves and links notes (a change that cannot be "
             "taken back waits for your Confirm), and opens the part of the app you name. Ask lives in Notes, "
-            "Chat has its own tab, and Ctrl+Shift+A opens it over any tab. With no model connected it "
+            "Chat has its own tab, and Ctrl+Shift+A opens it over any tab, where its paperclip, a drop or a paste adds files as chips. With no model connected it "
             "answers from your notes by itself."
         ),
         "badge": {"label": "Chat", "tab": "chat"},

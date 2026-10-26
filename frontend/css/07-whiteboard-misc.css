@@ -1121,6 +1121,13 @@ body.has-agent-monitor #timeline-scroll {
   padding: var(--space-4) var(--card-pad-x);
   border-bottom: 1px solid var(--border-light);
 }
+/* The popup agent's staged files: the card's own inset, a strip of
+   `attachmentChip`s (DESIGN.md "A file waiting on the next message"). */
+.command-palette-attachments {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: var(--space-3) var(--card-pad-x) 0;
+}
 /* **Centred by its own box, not by the glyph's inline baseline.** Reported:
    the popup agent's icon and input row read as misaligned. Measured: the
    icon's centre sat 4px below the textarea's, `.ph`'s global

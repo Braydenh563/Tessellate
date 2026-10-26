@@ -902,12 +902,119 @@ function cmdPaletteLinkNotes(root, results) {
   }
 }
 
+//: **Files on the popup agent's next message** (attach-1026 A2, A3). The owner:
+//: "if i attach documents to the popup agent, they arent chipped so I cant
+//: remove them ... what if I upload a document but I dont want it saved to the
+//: app and I want to delete it before I send it", and "it only accepts images
+//: and pdfs".
+//:
+//: A file waits here, in the browser, as a chip (`attachmentChip`, the one
+//: recipe Chat uses). Nothing is uploaded until Enter, so removing a chip
+//: before sending leaves nothing on the server to delete. On send an image
+//: goes to `/media/upload` and anything else is imported as a document, the
+//: split the Chat tab's attach button makes (`attachChatFiles`); the ids ride
+//: on the request. If one fails, the uploads already made are deleted again
+//: and the message is not sent, so a failed send leaves nothing behind.
+const AGENT_MAX_FILES = 4;
+const agentStaged = [];
+
+function agentRenderChips() {
+  const box = $("command-palette-attachments");
+  if (!box) return;
+  box.replaceChildren();
+  box.classList.toggle("hidden", agentStaged.length === 0);
+  for (const item of agentStaged) {
+    const name = item.file.name;
+    box.appendChild(
+      attachmentChip({
+        name,
+        size: item.file.size,
+        thumb: item.objectUrl,
+        state: item.state,
+        progress: item.progress,
+        error: item.error,
+        title: `${name}: held in this window until you send, nothing is saved to the app before that`,
+        removeTitle: `Remove “${name}” (nothing was saved)`,
+        onRemove: item.state === "uploading" ? null : () => agentUnstage(item),
+      }),
+    );
+  }
+}
+
+function agentUnstage(item) {
+  if (item.objectUrl) URL.revokeObjectURL(item.objectUrl);
+  agentStaged.splice(agentStaged.indexOf(item), 1);
+  agentRenderChips();
+  announce(`Removed ${item.file.name}. ${agentStaged.length} file(s) attached.`);
+}
+
+function agentStageFiles(files) {
+  let skipped = 0;
+  for (const file of files) {
+    if (agentStaged.length >= AGENT_MAX_FILES) {
+      skipped++;
+      continue;
+    }
+    const objectUrl = isImageFile(file) ? URL.createObjectURL(file) : "";
+    agentStaged.push({ file, objectUrl, state: "ready", progress: 0, error: "" });
+  }
+  if (skipped) toast(`Four files at most go with one message, ${skipped} left out.`, "info");
+  agentRenderChips();
+  cmdPaletteInput.focus();
+}
+
+async function agentUploadOne(file) {
+  const form = new FormData();
+  form.append("file", file);
+  const init = { method: "POST", headers: authHeaders(), body: form };
+  if (isImageFile(file)) return { mediaId: (await apiJson("/media/upload", init)).id };
+  try {
+    return { documentId: (await apiJson("/documents/import", init)).id };
+  } catch (error) {
+    // A PDF whose words cannot be read is kept in the Library, as in Chat.
+    if (await keepUnreadableChatFile(file, error)) return {};
+    throw error;
+  }
+}
+
+//: Uploads the staged files for this message and returns what the request
+//: carries, or null when one failed (its chip then says why and stays).
+async function agentCommitFiles() {
+  const sent = { imageMediaIds: [], documentIds: [], chips: [] };
+  for (const [index, item] of agentStaged.entries()) {
+    Object.assign(item, { state: "uploading", progress: index / agentStaged.length });
+    agentRenderChips();
+    try {
+      const got = await agentUploadOne(item.file);
+      if (got.mediaId) sent.imageMediaIds.push(got.mediaId);
+      if (got.documentId) sent.documentIds.push(got.documentId);
+    } catch (error) {
+      for (const other of agentStaged) other.state = "ready";
+      Object.assign(item, { state: "error", error: error.message || "Could not attach" });
+      agentRenderChips();
+      for (const id of sent.imageMediaIds) await apiJson(`/media/${id}`, { method: "DELETE" }).catch(() => null);
+      return null;
+    }
+  }
+  sent.chips = agentStaged.map((item) => attachmentChip({ name: item.file.name, size: item.file.size, thumb: item.objectUrl }));
+  agentStaged.length = 0;
+  agentRenderChips();
+  return sent;
+}
+
 async function cmdPaletteAsk(text, { plan = null } = {}) {
+  const sentFiles = await agentCommitFiles();
+  if (!sentFiles) {
+    cmdPaletteInput.value = text;
+    cmdPaletteGrow();
+    return;
+  }
   $("command-palette-intro")?.classList.add("hidden");
 
   const userMsg = document.createElement("div");
   userMsg.className = "msg user";
   userMsg.textContent = text;
+  for (const chipEl of sentFiles.chips) userMsg.appendChild(chipEl);
   userMsg.appendChild(userMarkEl());
   //: **The same three actions the Chat tab's own bubbles carry.** Reported:
   //: *"I cant copy edit or resend any messages in the popup agent. it still
@@ -1126,6 +1233,7 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
   let why = "";
   const startedAt = performance.now();
   const run = (cmdPaletteRun = new AbortController());
+  const agentScope = agentScopeForRun(text);
   cmdPaletteBusy(true);
   //: What it is working on, in the person's own words, cut to a line. A
   //: status that says "Working…" over a thirty-second run is the app saying
@@ -1145,7 +1253,9 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
       //: time, not when the box was ticked: the palette stays open across a
       //: conversation and the person may well have opened something else
       //: between turns, and the tick means "whatever I am looking at".
-      ...agentScopeForRun(text),
+      ...agentScope,
+      imageMediaIds: sentFiles.imageMediaIds,
+      documentIds: [...(agentScope.documentIds || []), ...sentFiles.documentIds],
       useTools: true, // the palette is meant to act on the notebook, like Chat
       plan,
       onPlan: (event) => planTimeline().plan(event),
@@ -1446,6 +1556,13 @@ cmdPaletteInput.addEventListener("keydown", (e) => {
   cmdPaletteInput.value = "";
   cmdPaletteGrow();
   cmdPaletteAsk(text);
+});
+
+
+$("command-palette-attach")?.addEventListener("click", () => $("command-palette-attach-input").click());
+$("command-palette-attach-input")?.addEventListener("change", (e) => {
+  agentStageFiles(Array.from(e.target.files));
+  e.target.value = "";
 });
 
 //: Built at boot and again after every turn: see `renderCmdPaletteMenu`.

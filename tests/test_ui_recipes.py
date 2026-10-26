@@ -5968,3 +5968,41 @@ def test_the_file_viewer_is_two_docks_and_a_filmstrip() -> None:
         text = (ROOT / "frontend" / "css" / f"{boot}.css").read_text(encoding="utf-8")
         for name in ("lightbox-topbar", "lightbox-dock", "lightbox-filmstrip", "lightbox-thumb"):
             assert name not in text, f"{name} in {boot}.css: the viewer's chrome is lazy"
+
+
+def test_one_attachment_chip_serves_chat_and_the_popup_agent() -> None:
+    """DESIGN.md, "A file waiting on the next message" (attach-1026 A1): the
+    chip is built in exactly one function; Chat's images, documents and files
+    and the popup agent's staged files all call it, and no surface hand-builds
+    a second file chip (the old `attachment-chip-image` card is gone)."""
+    attach = frontend_text("chat-attach.js")
+    assert attach.count("function attachmentChip(") == 1
+    builder = attach[attach.index("function attachmentChip(") :][:2600]
+    for needle in (
+        '"att-chip-stem"',
+        '"att-chip-ext"',
+        '"att-chip-facts"',
+        'document.createElement("progress")',
+        '"att-chip-x"',
+        'setAttribute("aria-label", remove.title)',
+        "attachmentIconClass(",
+        "formatFileSize(",
+    ):
+        assert needle in builder, needle
+    for fn in ("renderImageAttachments", "renderFileAttachments", "renderDocumentAttachments"):
+        body = attach[attach.index(f"function {fn}(") :][:1800]
+        assert "attachmentChip(" in body, fn
+    assert "attachmentChip(" in frontend_text("palette.js")
+    assert "attachment-chip-image" not in frontend_text("chat-attach.js")
+    css = (ROOT / "frontend" / "css" / "04-chat-dock-appearance.css").read_text(encoding="utf-8")
+    stem = css[css.index(".att-chip-stem {") :][:200]
+    assert "text-overflow: ellipsis" in stem
+    ext = css[css.index(".att-chip-ext {") :][:120]
+    assert "flex: 0 0 auto" in ext
+    assert "min-width: var(--target-min)" in css[css.index(".att-chip-x {") :][:400]
+    # A staged file is not uploaded before Send, and a failed send deletes
+    # what it already uploaded (A2).
+    palette = frontend_text("palette.js")
+    commit = palette[palette.index("async function agentCommitFiles(") :][:1800]
+    assert 'method: "DELETE"' in commit
+    assert "agentStageFiles(" in frontend_text("settings-wiring.js")
