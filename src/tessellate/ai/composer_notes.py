@@ -12,7 +12,7 @@ from __future__ import annotations
 import re
 from datetime import date, datetime
 
-from tessellate.ai import study
+from tessellate.ai import question_noise, study
 from tessellate.ai import when as when_words
 from tessellate.ai import composer_compose as compose
 from tessellate.ai.composer_study import Ctx, Reply, pick, topic_notes
@@ -147,9 +147,12 @@ def _made(note: dict) -> datetime | None:
 
 def _matching(ctx: Ctx, wanted: list[str], start: date, end: date) -> list[dict]:
     out = []
+    #: Archived notes are out of a list by date, as of a count, unless asked
+    #: for (then only those).
+    archived = question_noise.asks_archived(ctx.asked or ctx.question)
     for note in ctx.notes:
         made = _made(note)
-        if made is None or not start <= made.date() <= end:
+        if made is None or not start <= made.date() <= end or bool(note.get("archived")) != archived:
             continue
         low = str(note.get("content") or "").lower()
         if all(w in low for w in wanted):

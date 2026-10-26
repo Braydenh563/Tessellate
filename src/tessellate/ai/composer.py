@@ -3786,16 +3786,10 @@ def _plan_kind(question: str, utility: str | None, shape: str, spanned: bool, ha
     return _SHAPE_KIND.get(shape, "fact")
 
 
-def plan(question: str, today: date | None = None, *, recent: bool = False, embed=None) -> Plan:  # noqa: ANN001
-    """The query plan for `question` on `today` (the person's own day), read
-    from its first `PLAN_CHARS` characters."""
-    question = _planned_text(question)
-    today = today or date.today()
-    utility = utilities.kind_of(question)
-    shape = "recent" if recent else classify(question, embed)
-    terms = subject_terms(question)
-    constraints, terms, source_kind = _plan_constraints(question, terms)
-    phrase = _plan_phrase(question, terms)
+def _plan_window(question: str, terms: list[str], phrase: str, today: date) -> tuple[tuple | None, list[str]]:
+    """The window the phrase names (None for none, or for one still ahead
+    that sits beside a subject) and the subject terms left once the phrase's
+    own words are taken out."""
     span = when_words.span(phrase, today, "past") if phrase else None
     if span and span[0] > today:
         span = None
@@ -3806,6 +3800,22 @@ def plan(question: str, today: date | None = None, *, recent: bool = False, embe
         terms = [t for t in terms if t.lower() not in said]
         if _RECALL.search(question or ""):
             terms = [t for t in terms if t.lower() not in _RECALL_VERBS]
+        if question_noise.asks_archived(question):
+            terms = [t for t in terms if t.lower() != "archived"]  # a state of the notes, not a subject
+    return span, terms
+
+
+def plan(question: str, today: date | None = None, *, recent: bool = False, embed=None) -> Plan:  # noqa: ANN001
+    """The query plan for `question` on `today` (the person's own day), read
+    from its first `PLAN_CHARS` characters."""
+    question = _planned_text(question)
+    today = today or date.today()
+    utility = utilities.kind_of(question)
+    shape = "recent" if recent else classify(question, embed)
+    terms = subject_terms(question)
+    constraints, terms, source_kind = _plan_constraints(question, terms)
+    phrase = _plan_phrase(question, terms)
+    span, terms = _plan_window(question, terms, phrase, today)
     kind = _plan_kind(question, utility, shape, bool(span), bool(terms))
     return Plan(
         kind=kind,

@@ -98,11 +98,13 @@ def recent_entries(session: Session, limit: int = RECENT_FALLBACK_LIMIT) -> list
     )
 
 
-def entries_between(session: Session, since, until, limit: int = 40) -> list[Entry]:
+def entries_between(session: Session, since, until, limit: int = 40, archived: bool = False) -> list[Entry]:
     """Non-deleted, non-private entries written from `since` to `until`
     (days, both kept), newest first: what "what did I do last week" is
     about (CHAT_PLAN decision 31, recall by time), every note of the window
-    rather than the five a similarity search would rank."""
+    rather than the five a similarity search would rank. Archived notes are
+    left out, as in every count, unless the question asks for them
+    (`archived=True`: only those; composer plan, "Decisions made")."""
     from datetime import datetime, time, timedelta
 
     start = datetime.combine(since, time(0))
@@ -115,6 +117,7 @@ def entries_between(session: Session, since, until, limit: int = 40) -> list[Ent
                 Entry.is_private == False,  # noqa: E712
                 Entry.created_at >= start,
                 Entry.created_at < end,
+                Entry.archived_at.is_not(None) if archived else Entry.archived_at.is_(None),
             )
             .order_by(Entry.created_at.desc(), Entry.id.desc())
             .limit(limit)

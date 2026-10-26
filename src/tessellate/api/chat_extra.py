@@ -21,11 +21,11 @@ log = logging.getLogger("tessellate.chat")
 
 def _notes(session: Session) -> list[dict]:
     rows = (
-        session.query(Entry.id, Entry.content, Entry.created_at, Category.name)
+        session.query(Entry.id, Entry.content, Entry.created_at, Category.name, Entry.archived_at)
         .outerjoin(Category, Entry.category_id == Category.id)
         .filter(*_visible()).order_by(Entry.created_at.desc()).limit(NOTE_LIMIT).all()
     )
-    return [{"id": i, "content": c or "", "created_at": made, "category": cat or ""} for i, c, made, cat in rows]
+    return [{"id": i, "content": c or "", "created_at": made, "category": cat or "", "archived": gone is not None} for i, c, made, cat, gone in rows]
 
 
 def _reminders(session: Session) -> list[dict]:
