@@ -155,16 +155,18 @@
 }
 .sp-swatches {
   display: grid;
-  grid-template-columns: repeat(6, 1.25rem);
+  grid-template-columns: repeat(6, 1.5rem);
   gap: var(--space-1);
 }
 .sp-recent {
-  grid-template-columns: repeat(3, 1.25rem);
+  grid-template-columns: repeat(3, 1.5rem);
 }
 /* A 20px disc 4px from the next: under the 24px target, inside WCAG 2.5.8's
    spacing allowance (a 24px circle round each one meets no other). */
 .sp-swatch {
-  width: 1.25rem;
+  /* 24px, the WCAG 2.2 target floor (2.5.8): at 20 with a 3px gap the
+     spacing exception did not hold. */
+  width: 1.5rem;
   aspect-ratio: 1;
   min-width: 0;
   min-height: 0;
@@ -305,7 +307,10 @@
 }
 .sp-viewport {
   display: flex;
-  flex: 1 1 auto;
+  /* A zero basis: with `auto` the page's own size was the basis, so on a
+     phone (the body a column) a zoom grew the viewport and a refit then
+     read a different room (34% at open, 35% after + and 0). */
+  flex: 1 1 0;
   min-width: 0;
   min-height: 0;
   overflow: auto;

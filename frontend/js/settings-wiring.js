@@ -674,7 +674,8 @@ document.addEventListener("keydown", (e) => {
     return;
   }
   if (e.key === "Escape" && !$("sketch-overlay").classList.contains("hidden")) {
-    closeSketch();
+    //: As the palette: an Escape that closed the pad's '?' leaves the pad.
+    if (!e.helpPopoverSpent) closeSketch();
     return;
   }
   if (e.key === "Escape" && !$("meeting-overlay").classList.contains("hidden")) {

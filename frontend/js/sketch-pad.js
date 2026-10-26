@@ -1271,10 +1271,20 @@
   //: nothing in hand reaches the page, which closes the pad.
   function onEscape(e) {
     if (e.target.closest?.("[role='menu'], .sp-help:not(.hidden)")) return;
-    const spent = cancelDrag() || cancelPolygon() || dropText() || clearSelection();
+    const spent = cancelDrag() || cancelPolygon() || dropText() || clearSelection() || closeOwnHelp();
     if (!spent) return;
     e.preventDefault();
     e.stopImmediatePropagation();
+  }
+
+  //: The pad's own '?' (no host help recipe, so the standalone page): the
+  //: app's popover takes its Escape in menus.js.
+  function closeOwnHelp() {
+    const panel = S.root.querySelector(".sp-help:not(.help-popover):not(.hidden)");
+    if (S.host.wireHelp || !panel) return false;
+    panel.classList.add("hidden");
+    S.root.querySelector("[data-sp=help-toggle]").setAttribute("aria-expanded", "false");
+    return true;
   }
 
   function clearSelection() {
@@ -1300,9 +1310,12 @@
     "=": () => stepZoom(1),
     "-": () => stepZoom(-1),
     "0": () => fit(),
-    Enter: () => (S.poly ? closePolygon() : null),
+    //: These three act only on a polygon or a selection in hand; otherwise
+    //: the key is left alone, so Enter still presses a focused button (it
+    //: was swallowed, and the help '?' would not open from the keyboard).
+    Enter: () => Boolean(S.poly) && (closePolygon(), true),
     Delete: () => deleteSelection(),
-    Backspace: () => (S.poly ? popPolygonPoint() : deleteSelection()),
+    Backspace: () => (S.poly ? (popPolygonPoint(), true) : deleteSelection()),
   };
   const NUDGE = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
 
@@ -1313,10 +1326,7 @@
       nudge(dx * step, dy * step);
       return true;
     }
-    if (PLAIN[e.key]) {
-      PLAIN[e.key]();
-      return true;
-    }
+    if (PLAIN[e.key]) return PLAIN[e.key]() !== false;
     if (!S.host.singleKeys()) return false;
     const k = e.key.toUpperCase();
     if (k === "X") {
@@ -1425,6 +1435,7 @@
       S.root = root;
       restorePrefs();
       build(root);
+      viewportWatch?.observe(S.el.viewport);
     }
     reset();
     S.open = true;
@@ -1475,9 +1486,18 @@
   }
 
   document.addEventListener("keydown", onKey, true);
-  window.addEventListener("resize", () => {
+  //: The viewport, not the window: the bar can rewrap after the pad opens
+  //: (the icon font arriving, a phone turning), which moves the page without
+  //: a window resize, and the fit and the pointer's box then went stale
+  //: (measured at 390: a refit read 35% against 34% at open, and the
+  //: pointer was 5px off).
+  const viewportWatch = typeof ResizeObserver === "function" ? new ResizeObserver(() => {
     S.rect = null;
     if (S.open && S.fitted) fit();
+  }) : null;
+  window.addEventListener("resize", () => {
+    S.rect = null;
+    if (!viewportWatch && S.open && S.fitted) fit();
   });
 
   window.SketchPad = {

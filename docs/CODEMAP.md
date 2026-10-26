@@ -1293,50 +1293,50 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `_isChatComposer` | frontend/js/settings-wiring.js:1907 |
-| `activeOverlay` | frontend/js/settings-wiring.js:889 |
-| `buildShortcutList` | frontend/js/settings-wiring.js:1398 |
-| `captureCountText` | frontend/js/settings-wiring.js:1707 |
-| `captureShortcutKey` | frontend/js/settings-wiring.js:1459 |
-| `clearStagedImages` | frontend/js/settings-wiring.js:2052 |
-| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1186 |
-| `closeShortcuts` | frontend/js/settings-wiring.js:1521 |
-| `comboFromEvent` | frontend/js/settings-wiring.js:1225 |
-| `commitCaptureImages` | frontend/js/settings-wiring.js:2037 |
-| `fileDropBox` | frontend/js/settings-wiring.js:1916 |
+| `_isChatComposer` | frontend/js/settings-wiring.js:1908 |
+| `activeOverlay` | frontend/js/settings-wiring.js:890 |
+| `buildShortcutList` | frontend/js/settings-wiring.js:1399 |
+| `captureCountText` | frontend/js/settings-wiring.js:1708 |
+| `captureShortcutKey` | frontend/js/settings-wiring.js:1460 |
+| `clearStagedImages` | frontend/js/settings-wiring.js:2053 |
+| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1187 |
+| `closeShortcuts` | frontend/js/settings-wiring.js:1522 |
+| `comboFromEvent` | frontend/js/settings-wiring.js:1226 |
+| `commitCaptureImages` | frontend/js/settings-wiring.js:2038 |
+| `fileDropBox` | frontend/js/settings-wiring.js:1917 |
 | `flashSaved` | frontend/js/settings-wiring.js:437 |
-| `handleFileUpload` | frontend/js/settings-wiring.js:2084 |
-| `hideChordGuide` | frontend/js/settings-wiring.js:1206 |
-| `loadForgottenOrder` | frontend/js/settings-wiring.js:1593 |
-| `loadShortcuts` | frontend/js/settings-wiring.js:1063 |
-| `localizeStaticChords` | frontend/js/settings-wiring.js:1106 |
+| `handleFileUpload` | frontend/js/settings-wiring.js:2085 |
+| `hideChordGuide` | frontend/js/settings-wiring.js:1207 |
+| `loadForgottenOrder` | frontend/js/settings-wiring.js:1594 |
+| `loadShortcuts` | frontend/js/settings-wiring.js:1064 |
+| `localizeStaticChords` | frontend/js/settings-wiring.js:1107 |
 | `lockRequest` | frontend/js/settings-wiring.js:317 |
-| `matchesShortcut` | frontend/js/settings-wiring.js:1243 |
-| `maybeShowOnboarding` | frontend/js/settings-wiring.js:910 |
+| `matchesShortcut` | frontend/js/settings-wiring.js:1244 |
+| `maybeShowOnboarding` | frontend/js/settings-wiring.js:911 |
 | `notebookLocked` | frontend/js/settings-wiring.js:422 |
-| `openShortcuts` | frontend/js/settings-wiring.js:1489 |
+| `openShortcuts` | frontend/js/settings-wiring.js:1490 |
 | `persistSavedSearches` | frontend/js/settings-wiring.js:53 |
-| `renderCaptureFiles` | frontend/js/settings-wiring.js:1680 |
-| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1660 |
-| `renderInstallRow` | frontend/js/settings-wiring.js:1831 |
+| `renderCaptureFiles` | frontend/js/settings-wiring.js:1681 |
+| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1661 |
+| `renderInstallRow` | frontend/js/settings-wiring.js:1832 |
 | `renderSavedSearches` | frontend/js/settings-wiring.js:17 |
-| `renderShortcutList` | frontend/js/settings-wiring.js:1386 |
-| `resetShortcuts` | frontend/js/settings-wiring.js:1357 |
-| `restampShortcutHints` | frontend/js/settings-wiring.js:1116 |
-| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2025 |
-| `runShortcut` | frontend/js/settings-wiring.js:1248 |
+| `renderShortcutList` | frontend/js/settings-wiring.js:1387 |
+| `resetShortcuts` | frontend/js/settings-wiring.js:1358 |
+| `restampShortcutHints` | frontend/js/settings-wiring.js:1117 |
+| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2026 |
+| `runShortcut` | frontend/js/settings-wiring.js:1249 |
 | `saveCurrentSearch` | frontend/js/settings-wiring.js:61 |
-| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1213 |
+| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1214 |
 | `saveWhatIsInFront` | frontend/js/settings-wiring.js:500 |
 | `savedSearches` | frontend/js/settings-wiring.js:13 |
-| `setShortcutStatus` | frontend/js/settings-wiring.js:1373 |
-| `setShortcutStatusError` | frontend/js/settings-wiring.js:1380 |
-| `singleKeysOn` | frontend/js/settings-wiring.js:2223 |
-| `stagedImageUrl` | frontend/js/settings-wiring.js:2002 |
-| `stampShortcutTitles` | frontend/js/settings-wiring.js:1092 |
+| `setShortcutStatus` | frontend/js/settings-wiring.js:1374 |
+| `setShortcutStatusError` | frontend/js/settings-wiring.js:1381 |
+| `singleKeysOn` | frontend/js/settings-wiring.js:2224 |
+| `stagedImageUrl` | frontend/js/settings-wiring.js:2003 |
+| `stampShortcutTitles` | frontend/js/settings-wiring.js:1093 |
 | `submitLockForm` | frontend/js/settings-wiring.js:247 |
-| `textCounts` | frontend/js/settings-wiring.js:1697 |
-| `uploadStagedFiles` | frontend/js/settings-wiring.js:2061 |
+| `textCounts` | frontend/js/settings-wiring.js:1698 |
+| `uploadStagedFiles` | frontend/js/settings-wiring.js:2062 |
 
 ### frontend/js/spaces-find.js (26)
 
@@ -9907,7 +9907,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | graph: physics sliders + node popup | frontend/css/04-chat-dock-appearance.css:1581 |
 | heading hierarchy (§35L) | frontend/css/01-forms-settings.css:1 |
 | held space pans, from any tool | frontend/css/07-whiteboard-misc.css:4813 |
-| help | frontend/css/sketch-pad.css:462 |
+| help | frontend/css/sketch-pad.css:467 |
 | help guide accordion | frontend/css/04-chat-dock-appearance.css:2365 |
 | help mini AI chat (item 40's second half) | frontend/css/04-chat-dock-appearance.css:2397 |
 | hovering a node | frontend/css/02-chat-graph.css:1306 |
@@ -9934,7 +9934,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | moved from 07-whiteboard-misc.css (canvasui, the boot CSS budget): board-only rules whose class names no boot file draws and no later boot rule competes with, in their old order | frontend/css/library-lazy.css:4848 |
 | moved from the boot sheets (Brief 101a, room under the boot CSS cap): rules whose selectors name only the Library | frontend/css/library-lazy.css:16 |
 | moved from the boot sheets (the boot CSS budget, test_boot_budget.py): rules only the Library | frontend/css/library-lazy.css:733 |
-| narrow windows | frontend/css/sketch-pad.css:507 |
+| narrow windows | frontend/css/sketch-pad.css:512 |
 | note card density (§36B) | frontend/css/06-timeline-dialogs.css:1555 |
 | note history | frontend/css/05-sidebars-themes.css:1722 |
 | notes page polish | frontend/css/03-dashboard-widgets.css:2028 |
@@ -9976,7 +9976,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | space dialogs | frontend/css/07-whiteboard-misc.css:2525 |
 | space switcher (top bar) | frontend/css/07-whiteboard-misc.css:2353 |
 | spacious density (third option alongside comfortable/compact) | frontend/css/04-chat-dock-appearance.css:1962 |
-| status and foot | frontend/css/sketch-pad.css:381 |
+| status and foot | frontend/css/sketch-pad.css:386 |
 | tab navigation (Wave A; pill style inside the top bar in Wave L) | frontend/css/00-tokens-shell.css:3510 |
 | text inputs (§36B) | frontend/css/01-forms-settings.css:225 |
 | the "/" menu and block frames | frontend/css/05-sidebars-themes.css:837 |
@@ -10123,7 +10123,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the whiteboard's tools become a bottom strip | frontend/css/07-whiteboard-misc.css:10244 |
 | the writing room | frontend/css/04-chat-dock-appearance.css:3327 |
 | tools & features browser | frontend/css/03-dashboard-widgets.css:1773 |
-| tools and page | frontend/css/sketch-pad.css:278 |
+| tools and page | frontend/css/sketch-pad.css:280 |
 | top bar polish | frontend/css/05-sidebars-themes.css:4357 |
 | transcluded notes (![[note]]) | frontend/css/05-sidebars-themes.css:1573 |
 | two-up cards in tablet portrait | frontend/css/07-whiteboard-misc.css:9884 |
@@ -10186,7 +10186,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/settings-controls-lazy.css | 110 |
 | frontend/css/settings-data-lazy.css | 60 |
 | frontend/css/sidebar-folds-lazy.css | 28 |
-| frontend/css/sketch-pad.css | 553 |
+| frontend/css/sketch-pad.css | 558 |
 | frontend/css/tidy-lazy.css | 333 |
 | frontend/css/timeline-calendar-lazy.css | 292 |
 | frontend/css/timeline-ticks-lazy.css | 42 |
