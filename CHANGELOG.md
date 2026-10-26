@@ -5,10 +5,11 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
+
+## [Unreleased]
 - Companion: thrown at the top bar it catches hold more often (it mostly bounced off), and on the way down it may catch the end of a panel it falls past, or catch the edge as it slides off one, and pull itself up; each catch hangs a different while before the pull.
 - Fix: the companion's face accessories (sunglasses, an eyepatch, a mask) turn and tilt with its face; reading glasses are no longer drawn over glasses it wears; it holds a book in both hands in front of it, and Atlas reads its book of light at its chest rather than sitting on it.
 - Fix: the companion looks asleep without its Zs: its head lolls with a slow breathing bob, its eyes shut (they never did, under the blink loop), sunglasses go up onto its forehead, and hanging it holds on by one hand and sways like a sloth.
-## [Unreleased]
 - Boards and mind maps: right-click a selection for Export selection, Copy as image (PNG, or a download with a note where the browser cannot copy pictures) and Copy as SVG; a selection export is the selection plus 24px of the canvas ground, with its links.
 - Presenter mode: the laser is one steady dot that follows every pointer move (it no longer fades out when the pointer slows), and the page bar's title cell has a fixed width with an ellipsis so the arrows sit at the same place on every page.
 - Ask: the Use AI chip is now a compact AI pill switch in the ask input row beside the answer length. It starts neutral (unchecked, enabled) until the first model status, so it never flips from active to disabled; greyed, its hover text and the Ask notice name the cause: Ollama not answering at its URL, answering with no models pulled, or the chosen chat model not installed. Measured with no model: neutral at 0 and 200 ms, disabled with the cause at 1000 and 3000 ms; text contrast 17.07 light, 14.61 dark; on-track 5.90 / 7.33; other controls in the row keep their widths.
