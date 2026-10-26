@@ -64,7 +64,8 @@ def test_with_no_model_the_summary_is_the_shared_terms(client, monkeypatch):
     ids = _notes(client, "# Glaze A\n\nshino", "# Glaze B\n\nceladon", "# Kiln log\n\ncone 6")
     body = _ask(client, ids).json()
     assert body["source"] == "terms"
-    assert body["summary"] == "3 notes about #glaze and kiln."
+    assert body["summary"].startswith("3 notes about #glaze and kiln. Written ")
+    assert "Most linked: " in body["summary"] and "Glaze A" in body["summary"]
 
 
 def test_the_model_writes_it_once_and_an_edit_asks_again(client, monkeypatch):
@@ -108,4 +109,18 @@ def test_no_notes_is_refused_and_a_topic_with_no_terms_still_reads(client, monke
     assert client.post("/graph/topics/summary", json={"ids": []}).status_code == 422
     ids = _notes(client, "a", "b", "c")
     body = client.post("/graph/topics/summary", json={"ids": ids, "name": "Topic 2", "terms": []}).json()
-    assert body["summary"] == "3 notes that link to each other more than to the rest."
+    assert body["summary"].startswith("3 notes that link to each other more than to the rest.")
+
+
+def test_the_extractive_sentence_is_pure_and_names_only_what_the_notes_hold():
+    from datetime import datetime
+
+    from tessellate.entry import topics
+
+    a, b = datetime(2026, 3, 1), datetime(2026, 4, 2)
+    assert topics.extractive_sentence(2, ["kiln"], a, b, ["Glaze A", "", "Third"]) == (
+        "2 notes about kiln. Written 2026-03-01 to 2026-04-02. Most linked: \u201cGlaze A\u201d; \u201cThird\u201d."
+    )
+    assert topics.extractive_sentence(1, [], a, a, []) == (
+        "1 notes that link to each other more than to the rest. Written 2026-03-01."
+    )

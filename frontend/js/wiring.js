@@ -984,32 +984,6 @@ $("graph-refresh").addEventListener("click", () => {
   renderGraph();
 });
 $("graph-export-png")?.addEventListener("click", exportGraphPng);
-// Direct instruction: "I want to be able to unroot and reset the graph to
-// free float if I want with a button." One request releases every pinned
-// node at once (routes_graph.py's unpin_all_nodes) rather than tracking
-// each one down to double-click it individually; renderGraph() afterwards
-// re-fetches from /graph, which is what actually clears fx/fy, the same
-// path #graph-refresh already uses, so a freshly unpinned layout settles
-// through the ordinary simulation rather than a special-cased one.
-$("graph-unpin-all")?.addEventListener("click", async (event) => {
-  // The button rides the Physics fold's own `<summary>` (index.html), so a
-  // press on it is also a press on the disclosure. `preventDefault` cancels
-  // the summary's activation behaviour and nothing else: a `type="button"`
-  // has no default action of its own to lose.
-  event.preventDefault();
-  try {
-    const result = await apiJson("/graph/unpin-all", { method: "POST" });
-    graphHighlightIds = null;
-    await renderGraph();
-    toast(
-      result.unpinned
-        ? `${result.unpinned} note${result.unpinned === 1 ? "" : "s"} released: the layout can move freely again.`
-        : "Nothing was pinned."
-    );
-  } catch (error) {
-    toast(error.message || "Couldn't unpin the graph.", true);
-  }
-});
 $("graph-similarity").addEventListener("change", renderGraph);
 $("graph-entities")?.addEventListener("change", renderGraph);
 $("graph-documents")?.addEventListener("change", renderGraph);

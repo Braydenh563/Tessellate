@@ -1426,6 +1426,20 @@ class TopicSummaryBody(BaseModel):
     terms: list[Annotated[str, Field(max_length=200)]] = Field(default_factory=list, max_length=10)
 
 
+def _extractive_summary(session: Session, rows: list, readable: list, terms: list[str]) -> str:
+    """The no-model summary: shared terms, the date span, and the opening
+    lines of the two most-linked readable notes (a private note lends nothing)."""
+    stamps = [e.created_at for e in rows if e.created_at]
+    leads: list[str] = []
+    if readable:
+        index = paths.build_light(session)
+        ranked = sorted(readable, key=lambda e: (-paths.degree(index, e.id), e.id))
+        leads = [manager.plain_label(e.content, 60) for e in ranked[:2]]
+    return topic_finder.extractive_sentence(
+        len(rows), terms, min(stamps) if stamps else None, max(stamps) if stamps else None, leads
+    )
+
+
 @router.post("/graph/topics/summary")
 def topic_summary(body: TopicSummaryBody, session: Session = Depends(get_session)) -> dict:
     """One sentence about a topic's notes, on demand (GRAPH_PLAN KG6).
@@ -1445,7 +1459,7 @@ def topic_summary(body: TopicSummaryBody, session: Session = Depends(get_session
         raise HTTPException(status_code=404, detail="Those notes could not be found.")
     readable = sorted((e for e in rows if not e.is_private), key=lambda e: e.id)
     key = tuple((e.id, str(e.updated_at or e.created_at)) for e in readable)
-    fallback = topic_finder.terms_sentence(len(rows), body.terms)
+    fallback = _extractive_summary(session, rows, readable, body.terms)
     with _cache_lock:
         hit = _summaries.get(key)
     if hit:

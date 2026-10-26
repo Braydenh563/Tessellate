@@ -1,4 +1,4 @@
-// ask-compose.js: the Ask box's "Use AI" switch (INBOX 688, 714).
+// ask-compose.js: the Ask box's "Use AI" chip (INBOX 688, 714, K6).
 //
 // The owner: "is there a way to do very good imitations of ai responses but
 // using string concatenation with the app when the ai isnt available with the
@@ -14,7 +14,7 @@
 //   device's (`prefs`, "ask-answer-from", "ai" or "notes"), read by
 //   `streamChatEvents` on every notes-only turn and sent as `answer_from`.
 // - With no model running "From your notes" is the answer whatever is stored,
-//   so the switch shows off and disabled with the reason; the stored choice is
+//   so the chip shows off and disabled with the reason; the stored choice is
 //   left alone, and Use AI comes back the moment a model does.
 // - Lazy and preloaded three seconds after boot (app.js), because the boot
 //   scripts are at their gzip cap; until it lands the markup's own state (on)
@@ -32,30 +32,29 @@ function askAnswerFrom() {
 }
 
 function renderAskUseAi() {
-  const box = $("ask-use-ai");
-  if (!box) return;
+  const chip = $("ask-use-ai");
+  if (!chip) return;
   const off = aiIsOff();
-  box.checked = askAnswerFrom() === "ai";
-  box.disabled = off;
-  const row = box.closest("label");
-  if (!row) return;
-  row.title = off ? ASK_AI_OFF_REASON : ASK_AI_ON_TITLE;
-  row.classList.toggle("is-off", off);
+  const on = askAnswerFrom() === "ai";
+  chip.classList.toggle("active", on);
+  chip.setAttribute("aria-pressed", on ? "true" : "false");
+  chip.disabled = off;
+  chip.title = off ? ASK_AI_OFF_REASON : ASK_AI_ON_TITLE;
 }
 
 function wireAskUseAi() {
-  const box = $("ask-use-ai");
-  if (!box || box.dataset.wired) return;
-  box.dataset.wired = "1";
-  box.addEventListener("change", () => {
-    if (box.disabled) return;
-    prefs.set(ASK_ANSWER_FROM_KEY, box.checked ? "ai" : "notes");
+  const chip = $("ask-use-ai");
+  if (!chip || chip.dataset.wired) return;
+  chip.dataset.wired = "1";
+  chip.addEventListener("click", () => {
+    if (chip.disabled) return;
+    prefs.set(ASK_ANSWER_FROM_KEY, askAnswerFrom() === "ai" ? "notes" : "ai");
     renderAskUseAi();
   });
   //: **Following the model without a hook in the boot scripts.** The status
   //: poll redraws `#ask-offline` on every tick (`renderAiOfflineNotice`),
   //: showing it exactly when no model answers; watching that one attribute
-  //: keeps the switch in step with the model starting and stopping.
+  //: keeps the chip in step with the model starting and stopping.
   const offline = $("ask-offline");
   if (offline) new MutationObserver(renderAskUseAi).observe(offline, { attributes: true, attributeFilter: ["class"] });
   renderAskUseAi();

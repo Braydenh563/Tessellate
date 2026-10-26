@@ -6,6 +6,11 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Ask: the Use AI switch is now the Chat dock's toggle chip (lit when on, muted when off) and is drawn from the model status from the first frame, disabled with the reason in its tooltip when no model answers. Measured with no model: off and disabled at 300 ms, 92x32 at 1440, 92x44 at 720, 160x44 at 390, no page overflow.
+- Graph: Reset to defaults also releases every pinned note, and the toast's Undo puts the settings and the pins back. Unpin all is now in the graph's ... menu too, and undoable.
+- Graph: Shift and drag on empty map draws a box (a straight drag used to catch nothing), and the selection bar has Pin and Unpin for the selected notes (Force layout, one Undo step).
+- Fix: the graph's Arc layout fits its real arcs. The fit reserved a third of the line's length above the baseline whatever the arcs did; it now reserves the widest arc's actual rise, so the free space above the top arc and below the labels is 230 and 226 px at 1440x900 (was 250 and 207).
+- The graph topic card's Summarise works with no model: the composer writes it from the shared terms, the date span and the two most-linked notes' opening lines, labelled "Summary (no AI)". With a model, the model writes it.
 - Fix: the dashboard subtext showed the same pattern every day. It now shows a different one each day.
 - Fix: with Web on in Chat, opening the web panel took turning Web off and on again. A click on Web while it is on and the panel is shut now opens the panel; a click with the panel open turns Web off.
 - Lag log: the app now notices its own slow moments and writes down what caused them. A frame that blocked the page for 200 ms or more (with the scripts and functions that ran in it, and any forced layout), a click or key that took 300 ms to answer (which control, and whether the time went waiting, running or drawing) and a request that took 3 s, each with the view on screen, the last thing pressed, the page size and memory. They show in Settings > Logs as "Lag:" lines and are kept in lag.log in the logs folder (Settings > Maintenance > Open logs folder), so they survive a restart and can be sent as a file.

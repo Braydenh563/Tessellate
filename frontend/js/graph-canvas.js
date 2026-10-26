@@ -1513,9 +1513,10 @@ function gcShowTopic(topic, colour) {
   const actions = document.createElement("div");
   actions.className = "row graph-topic-actions";
   const say = (row) => {
-    summary.textContent = row.summary + (row.source === "terms" ? " (No local model answered, so this is what the notes share.)" : "");
+    //: No model answered: the composer's extractive summary, said so (K8).
+    summary.textContent = (row.source === "terms" ? "Summary (no AI): " : "") + row.summary;
   };
-  const ask = smallButton("ph:sparkle Summarise", "Ask your local model for one sentence about these notes", async () => {
+  const ask = smallButton("ph:sparkle Summarise", "One sentence about these notes: your local model writes it, or the composer does when none answers", async () => {
     const controller = new AbortController();
     gcTopicAsk = controller;
     setBusy(ask, true, "Summarising…");
@@ -3997,18 +3998,25 @@ function gcArmTouchLasso(event, x, y, s = gcTab) {
   }
 }
 
+//: A rectangle's four corners from its start and the pointer (K10: Shift and
+//: drag is a box; a straight drag as a freehand loop encloses nothing).
+function gcBoxPoints(from, to) {
+  return [from, [to[0], from[1]], to, [from[0], to[1]]];
+}
+
 function gcWireLasso(s = gcTab) {
   s.canvas.addEventListener("pointerdown", (event) => {
     if (!event.shiftKey || event.button) return;
     const [x, y] = gcWorldPoint(event, s);
     if (gcNodeAtWorld(x, y, s)) return;
-    s.lasso = { points: [[x, y]] };
+    s.lasso = { points: [[x, y]], box: true, from: [x, y] };
     s.canvas.setPointerCapture(event.pointerId);
     event.preventDefault();
   });
   s.canvas.addEventListener("pointermove", (event) => {
     if (!s.lasso) return;
-    s.lasso.points.push(gcWorldPoint(event, s));
+    if (s.lasso.box) s.lasso.points = gcBoxPoints(s.lasso.from, gcWorldPoint(event, s));
+    else s.lasso.points.push(gcWorldPoint(event, s));
     gcRequestDraw(s);
   });
   const finish = (event) => {
@@ -4072,6 +4080,42 @@ function gcSelectionChanged(s = gcTab) {
   s.selected = new Set(live);
   dock.classList.toggle("hidden", !live.length);
   count.textContent = `${live.length} selected`;
+  //: Pins hold in the force layout only: the others compute every position.
+  const force = s.layoutKind === "force";
+  for (const id of ["graph-selection-pin", "graph-selection-unpin"]) {
+    const button = document.getElementById(id);
+    if (!button) continue;
+    button.disabled = !force;
+    button.title = force
+      ? (id.endsWith("unpin") ? "Let the selected notes move freely again (undoable)" : "Hold the selected notes where they are (undoable)")
+      : "Pins only hold in the Force layout";
+  }
+}
+
+//: Pin or unpin every selected note in one step (K10): one undo, one write.
+//: The same bookkeeping as `gcTogglePin`, for a set.
+function gcPinSelection(s, pinned) {
+  const changes = [];
+  for (const node of gcSelectedNodes(s)) {
+    if (node.isGroup || (node.fx != null) === pinned) continue;
+    const before = node.graph_pin_x == null ? null : { x: node.graph_pin_x, y: node.graph_pin_y };
+    node.fx = pinned ? node.x : null;
+    node.fy = pinned ? node.y : null;
+    gcPost(pinned ? { type: "pin", id: node.id, x: node.x, y: node.y } : { type: "unpin", id: node.id }, s);
+    node.graph_pin_x = pinned ? node.fx : null;
+    node.graph_pin_y = pinned ? node.fy : null;
+    changes.push({ id: node.id, before, after: pinned ? { x: node.x, y: node.y } : null });
+  }
+  gcRequestDraw(s);
+  if (!changes.length) return toast(pinned ? "Those notes are already pinned." : "None of those notes are pinned.");
+  const saved = changes.filter((c) => /^(document:)?\d+$/.test(String(c.id)));
+  const write = pinned
+    ? apiJson("/graph/pins", { method: "PUT", body: JSON.stringify({ pins: saved.map((c) => ({ id: c.id, x: c.after.x, y: c.after.y })) }) })
+    : Promise.all(saved.map((c) => graphPinSave(c.id, null, null)));
+  if (saved.length) write.catch(() => toast("The pins were not saved.", true));
+  const words = `${changes.length} note${changes.length === 1 ? "" : "s"}`;
+  graphPinStep(pinned ? `Pinned ${words}` : `Unpinned ${words}`, changes);
+  toast(pinned ? `Pinned ${words}.` : `Unpinned ${words}.`);
 }
 
 function gcSelectedNodes(s = gcTab) {
@@ -4085,6 +4129,8 @@ function gcWireSelectionDock(s = gcTab) {
     gcSelectionChanged(s);
     gcRequestDraw(s);
   });
+  on("graph-selection-pin", () => gcPinSelection(s, true));
+  on("graph-selection-unpin", () => gcPinSelection(s, false));
   on("graph-selection-tag", async () => {
     const nodes = gcSelectedNodes(s);
     if (!nodes.length) return;

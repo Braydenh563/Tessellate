@@ -2074,13 +2074,11 @@ Link to another note with [[its first few words]]."></textarea>
                    choice, wired and kept in step with the model by
                    ask-compose.js (lazy). The markup's own state (on) stands
                    until it lands. -->
-              <label class="ask-use-ai" id="ask-use-ai-row" title="Atlas answers with your model, citing your notes">
-                <input type="checkbox" id="ask-use-ai" checked>
-                <i class="ph ph-sparkle ask-use-ai-mark" aria-hidden="true"></i><span>Use AI</span>
-              </label>
+              <button type="button" id="ask-use-ai" class="ghost small" aria-pressed="false" disabled
+                title="Checking whether a model answers"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Use AI</button>
               <button type="button" class="icon-only ghost small graph-help-toggle"
                 data-help-for="ask-source-help" aria-controls="ask-source-help" aria-expanded="false"
-                title="About the Use AI switch" aria-label="About the Use AI switch">
+                title="About Use AI" aria-label="About Use AI">
                 <i class="ph ph-question" aria-hidden="true"></i>
               </button>
               <!-- The model this box answers on: the Ask tab row of Settings,
@@ -2102,7 +2100,7 @@ Link to another note with [[its first few words]]."></textarea>
                 title="Clear this conversation and start fresh">New chat</button>
             </span>
           </div>
-          <div class="help-body hidden" id="ask-source-help" role="dialog" aria-label="About the Use AI switch">
+          <div class="help-body hidden" id="ask-source-help" role="dialog" aria-label="About Use AI">
             <p>
               Use AI on: your model writes the answer from your notes, citing
               them. Off: the answer is From your notes, with no AI. The app
@@ -3900,6 +3898,8 @@ Link to another note with [[its first few words]]."></textarea>
                   title="Save the current layout, filters and position as a named view"><i class="ph ph-bookmark-simple ph-lead" aria-hidden="true"></i> Save this view</button>
                 <button id="graph-view-delete" class="doc-dock-menu-item" type="button"
                   title="Delete the selected saved view"><i class="ph ph-trash ph-lead" aria-hidden="true"></i> Delete saved view</button>
+                <button id="graph-unpin-all-menu" class="doc-dock-menu-item" type="button"
+                  title="Release every note you have pinned in place, so the layout can move freely again (undoable)"><i class="ph ph-arrows-out-cardinal ph-lead" aria-hidden="true"></i> Unpin all</button>
                 <button id="graph-export-png" class="doc-dock-menu-item" type="button" title="Save what's currently on screen as a PNG image"><i class="ph ph-download-simple ph-lead" aria-hidden="true"></i> Export as PNG</button>
               </div>
             </details>
@@ -3920,6 +3920,8 @@ Link to another note with [[its first few words]]."></textarea>
              minimap. -->
         <div class="dock graph-selection-dock hidden" id="graph-selection-dock" role="toolbar" aria-label="Selected notes">
           <span class="dock-chip" id="graph-selection-count" role="status">0 selected</span>
+          <button id="graph-selection-pin" class="ghost small" type="button" title="Hold the selected notes where they are (undoable)"><i class="ph ph-push-pin ph-lead" aria-hidden="true"></i> Pin</button>
+          <button id="graph-selection-unpin" class="ghost small" type="button" title="Let the selected notes move freely again (undoable)"><i class="ph ph-push-pin-slash ph-lead" aria-hidden="true"></i> Unpin</button>
           <button id="graph-selection-tag" class="ghost small" type="button" title="Add one tag to every selected note"><i class="ph ph-tag ph-lead" aria-hidden="true"></i> Tag</button>
           <button id="graph-selection-link" class="ghost small" type="button" title="Link the selected notes to each other"><i class="ph ph-link ph-lead" aria-hidden="true"></i> Link together</button>
           <button id="graph-selection-unlink" class="ghost small" type="button" title="Remove every link between the selected notes (undoable)"><i class="ph ph-link-break ph-lead" aria-hidden="true"></i> Unlink</button>
