@@ -33,6 +33,8 @@ DOCK_MENU_WORDS = {
     "doc-export-docx": ".docx",
     "doc-export-pdf": "PDF",
     "doc-width-menu": "page width",
+    "doc-text-size": "text size",
+    "doc-line-spacing": "line spacing",
     "doc-toolbar-mode": "toolbar row",
     "doc-code-wrap-row": "wrap",
     "doc-whitespace-row": "whitespace",

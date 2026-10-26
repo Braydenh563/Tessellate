@@ -1819,10 +1819,19 @@ HELP_TOPICS.extend(
                 "history of a document", "word goal", "typewriter", "footnote", "footnotes",
                 "page break", "newpage", "docx", "word document", "microsoft word",
                 "extract notes", "ai edit",
-                "serif", "full width",
+                "serif", "full width", "document statistics", "reading ease",
+                "change case", "sort lines", "number headings", "insert date",
+                "copy as formatted text", "text size", "line spacing",
             ),
             "body": (
-                "Document editor features. The document's menus hold History "
+                "Document editor features. Press the counts in the status bar "
+                "for Document statistics (words, sentences, reading and speaking "
+                "time, reading ease, the words you lean on). The command palette "
+                "(F1) changes the selection's case, sorts its lines or drops "
+                "duplicates, numbers the headings (1, 1.1) or takes the numbers "
+                "off, inserts today's date or the time, and copies the page or the "
+                "selection as formatted text to paste into Word or an email. "
+                "Text size and line spacing are rows in the document menu. The document's menus hold History "
                 "(every version, and a way back to any), Connections, Extract "
                 "notes, AI edit, a word goal, typewriter scrolling, dim all but "
                 "this paragraph, serif for reading and full width. With no model "
