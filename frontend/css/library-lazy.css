@@ -699,6 +699,15 @@ body.printing-doc #doc-preview p,
     overflow: visible;
   }
 
+/* Stacked, the sections have nothing beside them to divide from: the row
+     divider the strip draws stood as a hairline at x 21 on all but the first,
+     and shifted their centre 2px right of "Move" (dog3 item 18). */
+  .wb-tools-palette #wb-tool-group .wb-tool-section + .wb-tool-section {
+    border-left: 0;
+    padding-left: 0;
+    margin-left: 0;
+  }
+
 .wb-tools-palette .wb-tool-section-row {
     flex-wrap: wrap;
   }

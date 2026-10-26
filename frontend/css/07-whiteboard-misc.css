@@ -4477,7 +4477,9 @@ summary:not(.icon-only):not(.icon-button):not(.fold-summary, .chat-sources-summa
      half of the board to its right. */
   left: 0;
   right: 0;
-  width: min(44rem, 92%);
+  /* Clear of the sidebar rail on both sides, so the centred offer's first
+     tile is not under the rail (dog3 item 21: 34px of it at 720). */
+  width: min(44rem, calc(100% - 9rem));
   margin-inline: auto;
   display: flex;
   flex-direction: column;
@@ -4517,6 +4519,17 @@ summary:not(.icon-only):not(.icon-button):not(.fold-summary, .chat-sources-summa
   margin: 0;
   font-size: var(--text-sm);
   text-align: center;
+}
+/* A phone has no rail beside the offer: it takes the board's width. Its
+   hint line goes too: with it the offer ran 35px under the selected topic's
+   own bar (dog3 item 21, 390x844); the creation toast says the same. */
+@media (max-width: 599.98px) {
+  .wb-map-templates {
+    width: 92%;
+  }
+  .wb-map-first-hint {
+    display: none;
+  }
 }
 /* **The offer must not cover the thing it is an offer about.** Measured at
    390x844 on a new map: the old card wrapped to 335x237 at the top of the
@@ -7242,20 +7255,47 @@ button.connection-row:is(:hover, :focus-visible) {
     flex-shrink: 0;
   }
 }
+/* The rename field takes the picker's place (renameCurrentBoard), so it must
+   not be taller than the picker: with the page's input margin (9.6px under
+   it) the bar grew 10px and the whole header dropped 5px while a board was
+   renamed (dog3 item 19). */
+.wb-topbar .wb-name-field {
+  margin: 0;
+  padding-block: 0;
+  height: auto;
+  align-self: stretch;
+  min-width: 0;
+  max-width: 100%;
+}
 /* The map's chip is one short word; the picker beside it gives way first. */
 .wb-topbar #wb-map-chip {
   flex: none;
 }
 @media (max-width: 76rem) {
+  /* Visually hidden, not display:none: the word stays the button's accessible
+     name (dog3 item 21: it was the tooltip's description, 'Undo, select,
+     duplicate, delete', for Edit). */
   .wb-topbar #wb-add-note .wb-menu-label {
-    display: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 }
 /* Narrow boards: the menus keep their carets and the Library its icon;
    the words go, so the bar stays one row down to ~40rem. */
 @media (max-width: 56rem) {
   .wb-topbar .wb-menu-label {
-    display: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
   .wb-topbar .wb-menu-toggle {
     padding-inline: var(--space-2);
