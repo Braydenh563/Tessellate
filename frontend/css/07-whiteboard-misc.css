@@ -3135,6 +3135,8 @@ dialog::backdrop {
 .ask-query-row select,
 .ask-query-row button:not(.menu-item) {
   height: var(--control-h);
+  /* The touch floor: Ask was 36px beside 44px icon buttons below 820. */
+  min-height: var(--target-min);
   padding-block: 0;
   margin: 0;
 }

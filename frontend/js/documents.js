@@ -819,6 +819,7 @@ function setDocView(mode) {
 }
 
 async function loadDocuments(selectId = null) {
+  warmDocumentEngine();
   //: Placeholders while it loads (INBOX 435 (6)); cleared on either answer.
   const sideList = document.getElementById("doc-list");
   showSkeletons(sideList, 4, "li");
@@ -20673,6 +20674,26 @@ function docRedo() {
 // first: this file must never be able to tell which one it is talking to.
 
 const DOC_CM_BUNDLE = "/vendor/codemirror/codemirror.min.js";
+
+//: **Warm on idle** (perf-1026): the Documents list is the signal that a
+//: document is about to open, so the editor bundle (about 140 ms to evaluate)
+//: is loaded in a spare moment and the checker's files are fetched into the
+//: HTTP cache, rather than both on the first open. Never on a phone or a
+//: metered connection, where the bytes cost more than the wait.
+let docWarmed = false;
+function warmDocumentEngine() {
+  const link = navigator.connection || {};
+  if (docWarmed || link.saveData || window.matchMedia("(max-width: 720px)").matches) return;
+  docWarmed = true;
+  const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 400));
+  idle(() => {
+    loadCodeMirror();
+    for (const href of DOC_GRAMMAR_FILES.slice(1)) {
+      const el = Object.assign(document.createElement("link"), { rel: "prefetch", href });
+      document.head.appendChild(el);
+    }
+  }, { timeout: 2000 });
+}
 
 //: The in-flight load, so two documents opened quickly do not inject two
 //: script tags. Reset to null on failure, so a later attempt can retry after
