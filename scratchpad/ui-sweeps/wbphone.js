@@ -184,13 +184,20 @@ async function newBoard(page, name, type) {
       const small = buttons
         .filter((el) => { const b = el.getBoundingClientRect(); return b.width + 0.5 < 44 || b.height + 0.5 < 44; })
         .map((el) => `${el.dataset.tool} ${Math.round(el.getBoundingClientRect().width)}x${Math.round(el.getBoundingClientRect().height)}`);
-      return { rect: [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)], tools: buttons.length, small };
+      // dog3 item 18: stacked sections share one left edge and draw no row divider.
+      const lefts = [...card.querySelectorAll('.wb-tool-section')].filter(vis).map((el) => Math.round(el.getBoundingClientRect().left));
+      const rules = [...card.querySelectorAll('.wb-tool-section')].filter((el) => parseFloat(getComputedStyle(el).borderLeftWidth) > 0).length;
+      const opener = document.getElementById('wb-tools-opener').textContent.trim();
+      return { rect: [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)], tools: buttons.length, small, lefts, rules, opener };
     });
     console.log('tools sheet     ', JSON.stringify(sheet));
     check(Boolean(sheet), 'the tools opener opened no sheet');
     if (sheet) {
       check(sheet.tools >= 10, `the sheet holds ${sheet.tools} tools`);
       check(!sheet.small.length, 'tools under 44px in the sheet: ' + sheet.small.join(', '));
+      check(new Set(sheet.lefts).size === 1, 'the sheet sections start at different x: ' + sheet.lefts.join(','));
+      check(sheet.rules === 0, `${sheet.rules} sections draw a row divider in the stacked sheet`);
+      check(!/\(/.test(sheet.opener), `the opener shows a key hint: ${sheet.opener}`);
       // Picking a tool closes the sheet and selects it.
       await page.evaluate(() => {
         const vis = (el) => el.checkVisibility && el.checkVisibility({ visibilityProperty: true, opacityProperty: true }) && el.getBoundingClientRect().width > 0;
@@ -216,6 +223,27 @@ async function newBoard(page, name, type) {
 
   // --- the mind map's handles ----------------------------------------------
   await newBoard(page, 'Phone map ' + Date.now(), 'map');
+  // dog3 item 21: the template offer never runs under the selected topic's bar.
+  const offer = await page.evaluate(() => {
+    const box = (el) => (el && el.offsetParent ? el.getBoundingClientRect() : null);
+    const t = box(document.getElementById('wb-map-templates'));
+    const bar = box(document.getElementById('wb-map-strip'));
+    return t && bar ? Math.round(t.bottom - bar.top) : null;
+  });
+  console.log('offer vs bar    ', JSON.stringify(offer));
+  if (offer !== null) check(offer <= 0, `the template offer runs ${offer}px under the topic's bar`);
+  // dog3 item 19: renaming swaps a field for the picker without moving the bar.
+  const rename = await page.evaluate(async () => {
+    const h = () => Math.round(document.getElementById('wb-topbar').getBoundingClientRect().height);
+    const before = h();
+    setTimeout(renameCurrentBoard, 0);
+    await new Promise((r) => setTimeout(r, 300));
+    const during = h();
+    document.getElementById('wb-name-field')?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    return { before, during };
+  });
+  console.log('rename bar      ', JSON.stringify(rename));
+  check(rename.before === rename.during, `the bar was ${rename.before}px and ${rename.during}px while renaming`);
   // The camera is shared between boards in one visit, and the pinch above
   // left it at 3.5x: a handle measured through it would read 154x154 and say
   // nothing about its size. Reset, then bring the root into the middle of the

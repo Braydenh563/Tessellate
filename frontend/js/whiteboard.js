@@ -15061,7 +15061,8 @@ async function initWhiteboard() {
     //: The opener says which tool is in hand, because on a phone it is the
     //: only place the rail's own "active" mark can be read.
     const active = toolGroup.querySelector("button[data-tool].active");
-    const name = active?.getAttribute("aria-label") || active?.title?.split(" (")[0];
+    //: The key in brackets is for a keyboard; on a phone it read "Select (V)".
+    const name = (active?.getAttribute("aria-label") || active?.title || "").split(" (")[0];
     label.textContent = name ? name.replace(/ tool$/i, "") : "Tools";
   }
 
