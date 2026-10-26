@@ -888,7 +888,7 @@ HELP_TOPICS: list[dict] = [
             "grammar check too, and the dictionary dialog turns it off. Code, "
             "addresses, file paths, email addresses, units after a number "
             "(10 min, 5 km) and the words of a link are skipped; Check link "
-            "text (Settings, Writing, or the dictionary dialog) turns the "
+            "text (Settings, General, Writing; or the dictionary dialog) turns the "
             "link words back on. List items, headings and table cells are "
             "never judged as long sentences. It also "
             "checks accessibility: a skipped heading level, an image with no "
