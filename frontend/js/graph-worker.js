@@ -1699,10 +1699,16 @@ function untangleGroups(still) {
 }
 
 function untangleFree(node, x, y, gap) {
-  for (const other of nodes) {
-    if (other === node) continue;
+  // `wide` is the farthest any note can matter, so most notes are turned down on one comparison each.
+  const wide = gap + Math.max(untangle.widest, node.r || 8);
+  for (let i = 0; i < nodes.length; i++) {
+    const other = nodes[i];
+    const dx = other.x - x;
+    if (dx >= wide || dx <= -wide || other === node) continue;
+    const dy = other.y - y;
+    if (dy >= wide || dy <= -wide) continue;
     const need = gap + Math.max(other.r || 8, node.r || 8);
-    if (Math.abs(other.x - x) < need && Math.abs(other.y - y) < need && Math.hypot(other.x - x, other.y - y) < need) return false;
+    if (dx * dx + dy * dy < need * need) return false;
   }
   return true;
 }
@@ -1717,14 +1723,153 @@ function untangleFree(node, x, y, gap) {
 //: (`clearCurve`) or the chord (a hub's lines are drawn straight).
 const UNTANGLE_LINE_BOW = 30;
 function untangleNear(note, a, b) {
-  clearNearest(note, clearCurve(a, b));
-  let d2 = clearNear[0];
   const dx = b.x - a.x;
   const dy = b.y - a.y;
   const u = Math.max(0, Math.min(1, ((note.x - a.x) * dx + (note.y - a.y) * dy) / (dx * dx + dy * dy || 1)));
-  d2 = Math.min(d2, (note.x - a.x - u * dx) ** 2 + (note.y - a.y - u * dy) ** 2);
+  let d2 = (note.x - a.x - u * dx) ** 2 + (note.y - a.y - u * dy) ** 2;
   const need = (note.r || 8) + untangle.margin;
+  // The curve bows at most `UNTANGLE_LINE_BOW` from its chord: a note farther than that is not near, and the curve is not built.
+  const far = need + UNTANGLE_LINE_BOW;
+  if (d2 >= far * far) return false;
+  clearNearest(note, clearCurve(a, b));
+  d2 = Math.min(d2, clearNear[0]);
   return d2 < need * need;
+}
+
+//: **A uniform grid of line segments** (INBOX 1400, round 5). Asking every
+//: line about every note made the cleanup cost 220 to 320 ms at 186 notes for
+//: no gain, so it was skipped above `UNTANGLE_BIG` and about 45 notes stayed on
+//: lines. Each line (its chord and, when drawn curved, its 5-point curve) is
+//: filed in the cells a sample every half cell along it falls in; a cell is
+//: `LINE_GRID_FILL` of the reach a note can be from a line it overlaps (the
+//: widest note plus the largest margin), so the lines that can touch a note are
+//: all in the 3 by 3 cells round it. The grid is a list of candidates only:
+//: `untangleNear` still decides. It is exact while the notes stand where they
+//: did when `lineGridBuild` ran, so it is rebuilt after a note moves and
+//: `lineGrid.live` is cleared when the cleanup ends (`untangleOnLine` then scans).
+const LINE_GRID_FILL = 0.75;
+const LINE_GRID_MIN = 32;
+const LINE_GRID_ROW = 1048576;
+const lineGrid = { live: false, cell: 0, cells: new Map(), seen: null, stamp: 0, found: [], pts: null, count: null, box: null };
+
+function lineGridAdd(k, x0, y0, x1, y1) {
+  const grid = lineGrid;
+  const cell = grid.cell;
+  const dx = x1 - x0;
+  const dy = y1 - y0;
+  const steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / (cell / 2)));
+  for (let s = 0; s <= steps; s++) {
+    const key = Math.floor((x0 + (dx * s) / steps) / cell) * LINE_GRID_ROW + Math.floor((y0 + (dy * s) / steps) / cell);
+    let list = grid.cells.get(key);
+    if (!list) grid.cells.set(key, (list = []));
+    // Samples of one line run cell to cell: only the last entry can repeat.
+    if (list[list.length - 1] !== k) list.push(k);
+  }
+}
+
+// File line `k` where it stands now, and keep the points it is drawn through for `lineGridTouches`.
+function lineGridFile(k) {
+  const grid = lineGrid;
+  const a = nodes[untangle.ea[k]];
+  const b = nodes[untangle.eb[k]];
+  const points = clearCurve(a, b);
+  const at = k * 10;
+  let loX = Infinity;
+  let hiX = -Infinity;
+  let loY = Infinity;
+  let hiY = -Infinity;
+  for (let i = 0; i < points; i++) {
+    const x = clearPts[i * 2];
+    const y = clearPts[i * 2 + 1];
+    grid.pts[at + i * 2] = x;
+    grid.pts[at + i * 2 + 1] = y;
+    if (x < loX) loX = x;
+    if (x > hiX) hiX = x;
+    if (y < loY) loY = y;
+    if (y > hiY) hiY = y;
+    if (i) lineGridAdd(k, clearPts[i * 2 - 2], clearPts[i * 2 - 1], x, y);
+  }
+  // The chord is the line unless it is drawn curved, and then it is filed too.
+  if (points > 2) lineGridAdd(k, a.x, a.y, b.x, b.y);
+  grid.count[k] = points;
+  grid.box[k * 4] = loX;
+  grid.box[k * 4 + 1] = hiX;
+  grid.box[k * 4 + 2] = loY;
+  grid.box[k * 4 + 3] = hiY;
+}
+
+function lineGridBuild(reach) {
+  const grid = lineGrid;
+  const count = untangle.ea.length;
+  grid.cell = Math.max(LINE_GRID_MIN, Math.ceil(reach / LINE_GRID_FILL));
+  grid.cells.clear();
+  if (!grid.seen || grid.seen.length < count) {
+    grid.seen = new Uint32Array(count);
+    grid.pts = new Float64Array(count * 10);
+    grid.count = new Uint8Array(count);
+    grid.box = new Float64Array(count * 4);
+    grid.stamp = 0;
+  }
+  for (let k = 0; k < count; k++) lineGridFile(k);
+  grid.live = true;
+}
+
+// The lines of the note at `i` moved with it: file them again. The cells
+// they left keep their entry (a candidate that is not near is turned down by `lineGridTouches`).
+function lineGridRefile(i) {
+  for (const k of untangle.incident[i]) lineGridFile(k);
+}
+
+// `untangleNear` for line `k` from the points filed with it: the same distance to the curve and the chord, no curve rebuilt.
+function lineGridTouches(note, k) {
+  const grid = lineGrid;
+  const need = (note.r || 8) + untangle.margin;
+  const at = k * 10;
+  const bx = k * 4;
+  if (note.x < grid.box[bx] - need || note.x > grid.box[bx + 1] + need || note.y < grid.box[bx + 2] - need || note.y > grid.box[bx + 3] + need) return false;
+  const pts = grid.pts;
+  const last = at + grid.count[k] * 2 - 2;
+  const need2 = need * need;
+  let prevX = pts[at];
+  let prevY = pts[at + 1];
+  for (let i = at + 2; i <= last; i += 2) {
+    const dx = pts[i] - prevX;
+    const dy = pts[i + 1] - prevY;
+    const u = Math.max(0, Math.min(1, ((note.x - prevX) * dx + (note.y - prevY) * dy) / (dx * dx + dy * dy || 1)));
+    if ((note.x - prevX - u * dx) ** 2 + (note.y - prevY - u * dy) ** 2 < need2) return true;
+    prevX = pts[i];
+    prevY = pts[i + 1];
+  }
+  if (grid.count[k] > 2) {
+    const dx = pts[last] - pts[at];
+    const dy = pts[last + 1] - pts[at + 1];
+    const u = Math.max(0, Math.min(1, ((note.x - pts[at]) * dx + (note.y - pts[at + 1]) * dy) / (dx * dx + dy * dy || 1)));
+    if ((note.x - pts[at] - u * dx) ** 2 + (note.y - pts[at + 1] - u * dy) ** 2 < need2) return true;
+  }
+  return false;
+}
+
+// The lines that may be within the grid's reach of (x, y), each once. The list is reused by the next call.
+function lineGridNear(x, y) {
+  const grid = lineGrid;
+  const cx = Math.floor(x / grid.cell);
+  const cy = Math.floor(y / grid.cell);
+  const found = grid.found;
+  found.length = 0;
+  grid.stamp += 1;
+  for (let u = cx - 1; u <= cx + 1; u++) {
+    for (let v = cy - 1; v <= cy + 1; v++) {
+      const list = grid.cells.get(u * LINE_GRID_ROW + v);
+      if (!list) continue;
+      for (let at = 0; at < list.length; at++) {
+        const k = list[at];
+        if (grid.seen[k] === grid.stamp) continue;
+        grid.seen[k] = grid.stamp;
+        found.push(k);
+      }
+    }
+  }
+  return found;
 }
 
 // Does a line the note at `i` does not join pass over it?
@@ -1732,6 +1877,12 @@ function untangleOnLine(i) {
   const node = nodes[i];
   const ea = untangle.ea;
   const eb = untangle.eb;
+  if (lineGrid.live) {
+    for (const k of lineGridNear(node.x, node.y)) {
+      if (ea[k] !== i && eb[k] !== i && lineGridTouches(node, k)) return true;
+    }
+    return false;
+  }
   for (let k = 0; k < ea.length; k++) {
     const a = nodes[ea[k]];
     const b = nodes[eb[k]];
@@ -1768,8 +1919,10 @@ function untangleLineOver(i) {
 //: `UNTANGLE_CLEAN_ITERS` times, each note nearer a line than its radius and
 //: `UNTANGLE_CLEAN_MARGIN` steps straight off it (the note that is free, else
 //: the line's two ends), and notes pushed into each other part. Nothing
-//: pulls back, and no note travels past `UNTANGLE_CLEAN_FAR`.
-const UNTANGLE_CLEAN_ITERS = 60;
+//: pulls back, and no note travels past `UNTANGLE_CLEAN_FAR`. Half the turns
+//: of round 4 (60): 6 layouts offline left 15 notes on lines at 186 notes with 30
+//: and 18 with 60, 1.3 and 1.5 at 36, so the later turns cost time and moved nothing.
+const UNTANGLE_CLEAN_ITERS = 30;
 const UNTANGLE_CLEAN_MARGIN = 3;
 const UNTANGLE_CLEAN_FAR = 40;
 const UNTANGLE_CLEAN_SLACK = 12;
@@ -1809,7 +1962,9 @@ function untangleStepOff(i) {
 }
 
 function untangleCleanup() {
-  const until = Date.now() + UNTANGLE_MS / 2;
+  // Each half of the cleanup (the pushes, the step-offs) gets half of what a pass gets.
+  const half = untangleBudget() / 2;
+  const until = Date.now() + half;
   const free = (node) => node.fx == null && !node.placed;
   const startX = nodes.map((n) => n.x);
   const startY = nodes.map((n) => n.y);
@@ -1819,23 +1974,18 @@ function untangleCleanup() {
   // enough to meet, found once: a push moves a note a few steps, not across the map.
   untangleReach();
   untangle.margin = UNTANGLE_CLEAN_MARGIN + UNTANGLE_CLEAN_SLACK;
-  const near = [];
+  lineGridBuild(untangle.widest + untangle.margin);
+  // Line by line, then note by note, as the pushes below were tuned in that order.
+  const pairs = [];
   let stuck = false;
-  for (let k = 0; k < ea.length; k++) {
-    const a = nodes[ea[k]];
-    const b = nodes[eb[k]];
-    const reach = untangle.widest + untangle.margin + UNTANGLE_LINE_BOW;
-    const loX = Math.min(a.x, b.x) - reach;
-    const hiX = Math.max(a.x, b.x) + reach;
-    const loY = Math.min(a.y, b.y) - reach;
-    const hiY = Math.max(a.y, b.y) + reach;
-    for (let m = 0; m < nodes.length; m++) {
-      const node = nodes[m];
-      if (node === a || node === b) continue;
-      if (node.x < loX || node.x > hiX || node.y < loY || node.y > hiY) continue;
-      if (untangleNear(node, a, b)) near.push([a, b, node]);
+  for (let m = 0; m < nodes.length; m++) {
+    const node = nodes[m];
+    for (const k of lineGridNear(node.x, node.y)) {
+      if (ea[k] !== m && eb[k] !== m && lineGridTouches(node, k)) pairs.push(k * nodes.length + m);
     }
   }
+  pairs.sort((p, q) => p - q);
+  const near = pairs.map((at) => [nodes[ea[Math.floor(at / nodes.length)]], nodes[eb[Math.floor(at / nodes.length)]], nodes[at % nodes.length]]);
   untangle.margin = UNTANGLE_CLEAN_MARGIN;
   for (let i = 0; i < nodes.length && !stuck; i++) stuck = untangleOnLine(i);
   const meet = [];
@@ -1929,10 +2079,17 @@ function untangleCleanup() {
   });
   untangle.margin = 1;
   untangleReach();
-  const stepUntil = Date.now() + UNTANGLE_MS / 2;
+  lineGridBuild(untangle.widest + UNTANGLE_CLEAN_MARGIN + UNTANGLE_CLEAN_SLACK);
+  const stepUntil = Date.now() + half;
   for (let i = 0; i < nodes.length && Date.now() < stepUntil; i++) {
-    if (free(nodes[i]) && untangleOnLine(i)) untangleStepOff(i);
+    if (!free(nodes[i]) || !untangleOnLine(i)) continue;
+    const x0 = nodes[i].x;
+    const y0 = nodes[i].y;
+    untangleStepOff(i);
+    // Its lines moved with it: they are filed again for the next note.
+    if (nodes[i].x !== x0 || nodes[i].y !== y0) lineGridRefile(i);
   }
+  lineGrid.live = false;
   untangle.margin = 0;
   untangle.holding = untangleGlide(startX, startY) > 0;
   return untangle.holding ? 1 : 0;
@@ -2185,7 +2342,7 @@ function loop() {
     timer = setTimeout(loop, 16);
     return;
   }
-  if (settled && untangle.passes > 0 && !untangle.cleaned && !dragging && nodes.length <= UNTANGLE_BIG) {
+  if (settled && untangle.passes > 0 && !untangle.cleaned && !dragging) {
     untangle.cleaned = true;
     untangle.holding = false;
     if (untangleCleanup()) {

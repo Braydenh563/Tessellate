@@ -152,10 +152,56 @@ Decisions:
 - Slider moved, Show not opened: opening it costs the panel the height of its toggles (over the 11rem cap).
 
 Left:
-- The cleanup is skipped over 100 notes (measured 220 to 320 ms and no gain): at 186 notes about 45 notes stay on lines.
+- The cleanup is skipped over 100 notes (measured 220 to 320 ms and no gain): at 186 notes about 45 notes stay on lines. (Built in Round 5.)
 - Settle is at +9% / +11% / +5%, at the edge of the 10% cap; a fourth pass or a longer glide would break it.
 - Not verified: the phone sheet for Options at 390 (fit not measured), the canvas curve against the worker's 5-point
   polyline, and real inference (fake transport only).
 
 done: untangle (3 passes, cleanup, scaled budget), Match strength under Size
-next: cleanup for 100+ notes inside the time cap (a grid of line segments instead of the all-pairs near list), then re-measure settle
+next: moved to Round 5 (built there)
+
+
+## Round 5 (line grid: the note-on-line cleanup above 100 notes)
+
+Sweeps (session scratchpad): `g5_run.js` (browser, crossings and notes on lines at rest, `end` time), `g5ab.sh` (the head
+worker and the new one alternated on one server, so load drift cancels), `g5_prof.js` (cleanup helpers timed in node),
+`g5_nocl.sh` (cleanup on and off, 8 layouts offline). Data: `seedg.py` 186 notes (EXTRA 150) and 400 notes (EXTRA 364).
+Medians of 3 runs, port 8809.
+
+| Item | Before | After |
+| --- | --- | --- |
+| 186 notes, notes on lines at rest, 1440 / 390 | 45 / 52 | 19 / 23 |
+| 186 notes, crossings at rest, 1440 / 390 | 353 / 323 | 385 / 339 |
+| 186 notes, `end` after init, 1440 / 390 | 7.10 s / 5.68 s | 6.84 s / 5.82 s (round 4: 7.2 s at 1440) |
+| 400 notes, notes on lines, 1440 / 390 | 165 / 179 | 118 / 134 |
+| 400 notes, crossings, 1440 / 390 | 1482 / 1549 | 1549 / 1663 |
+| 400 notes, `end` after init, 1440 / 390 | 9.71 s / 9.79 s | 10.10 s / 11.33 s |
+| Cleanup time at 186 notes (node, one layout) | 221 to 320 ms, cut by its clock | 150 to 200 ms, not cut |
+
+Built: `lineGridBuild` / `lineGridNear` / `lineGridTouches` / `lineGridRefile` (graph-worker.js, above `untangleOnLine`): the
+lines (chord and 5-point curve) filed in cells of 1/0.75 of the largest reach, the cleanup's near list, its "is any note
+stuck" scan and its step-off checks ask the 3 by 3 cells round a note, then the exact test on the cached points. A moved
+note's lines are filed again. `untangleFree` turns most notes down on one comparison, `untangleNear` builds the curve only
+when the chord is within the bow. Each half of the cleanup gets half of `untangleBudget()` (was 100 ms flat), the guard
+`nodes.length <= UNTANGLE_BIG` is gone, and the pushes run 30 turns (was 60; 6 layouts offline: 15 on lines with 30, 18 with 60).
+Test: `tests/test_graph_untangle_1400.py` (grid against the all-pairs test, pair for pair; 150 notes cleared inside the budget).
+The test that read `nodes.length <= UNTANGLE_BIG` in the loop changed because its intent moved (the cleanup now runs at any size).
+
+Decisions:
+- Crossings rise with the clean-up: offline, 8 layouts at 186 notes, cleanup off 374 and 47 on lines, on 382 and 16. The
+  rest of the browser's +8% is the passes finishing more moves in their budget now that `untangleFree` is cheaper (the
+  head's 353 repeats exactly; the new code gives 361 or 385 by the clock). A note off a line is worth more than the
+  crossings it adds: not changed.
+- Settle at 186 notes is inside the +10% cap: alternated with the head worker at 1440, 6 pairs gave +3% (median) and 3 more
+  -4% to +5%; at 390, +2%. Load drifts the absolute times by 30% (a busy machine gave 7.3 to 8.5 s for the same head), so only pairs compare.
+
+Left:
+- At 400 notes the map rests 4% (1440) to 16% (390) later and about 120 notes still stand on a line: the cleanup is cut by
+  its half-budget (300 ms at 400). A node grid for `untangleLineOver` and `untangleFree`, and cached geometry in the push
+  turns, are the next costs (`untangleNear` builds a curve per near pair per turn).
+- The step-off runs for notes in index order; a note the budget reaches late stays on its line. Nearest-first would spend it better.
+- Not verified: the phone sheet for Options at 390, the canvas curve against the worker's 5-point polyline, an interactive
+  drag after the cleanup at 400 notes, and real inference (fake transport only).
+
+done: line grid and the cleanup above 100 notes
+next: the 400-note cost (above), if the owner wants the last 120 notes off lines
