@@ -1384,11 +1384,23 @@
     say("");
   }
 
+  //: True when the ink layer holds no paint: a Clear on it would only mark
+  //: an untouched page as changed. One read, on a press, never per frame.
+  function inkEmpty() {
+    const data = S.el.inkCtx.getImageData(0, 0, W, H).data;
+    for (let i = 3; i < data.length; i += 4) if (data[i]) return false;
+    return true;
+  }
+
   function clearInk() {
     commitText();
     cancelPolygon();
     S.sel = null;
     clearPreview();
+    if (inkEmpty()) {
+      say("Nothing to clear.");
+      return;
+    }
     snapshotInk();
     S.el.inkCtx.clearRect(0, 0, W, H);
     setDirty(true);

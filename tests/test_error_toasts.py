@@ -297,6 +297,7 @@ FAULTS = {
 #: Calls whose second argument is computed. Each is pinned to what it computes.
 DYNAMIC = {
     "status.js": {"isError"},  # agentActivityNotice and toast(): passes the caller's flag through
+    "media.js": {"isError"},  # the sketch pad's host toast: passes the pad's flag through (a failed save is red)
     "ai-tools.js": {'!/already running/i.test(error.message || "")'},  # a 409 "already running" is plain
     #: A failed request is red; the server's own refusal (started or removed false) is a plain notice.
     "settings-packages.js": {'result.failed ? true : result.started ? false : "info"', 'result.failed ? true : result.removed ? false : "info"'},
