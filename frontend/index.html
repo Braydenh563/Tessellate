@@ -4989,7 +4989,8 @@ Link to another note with [[its first few words]]."></textarea>
                 formatting toolbar (Ctrl+Shift+X). AI edit asks Atlas to rewrite the
                 document or the selection.</p>
               <p>A code file adds Format (Shift+Alt+F), Run (Ctrl+Shift+Enter),
-                Assistant and Snippets. Beside prose, Snippets reads Sections.
+                Go to line (Ctrl+G), Assistant and Snippets; on a phone the bar at
+                the foot holds Tab, Undo and the brackets instead of the writing buttons. Beside prose, Snippets reads Sections.
                 Focus hides everything but the page (F11).</p>
               <p>The ⋯ menu holds the file type, Connections, History, Replace in
                 every document, Copy app link, Paste special, Model for this feature, Extract
@@ -5295,7 +5296,7 @@ Link to another note with [[its first few words]]."></textarea>
              indent and outdent are four more controls on the surface with the
              least room for them, and a phone has no Ctrl+Z to match them to. -->
         <div class="thumb-bar doc-phone-bar" id="doc-phone-bar" role="toolbar"
-          aria-label="Formatting" data-md-target="doc-content" data-md-extras="1">
+          aria-label="Formatting and code keys" data-md-target="doc-content" data-md-extras="1">
           <button type="button" class="icon-only" data-md="bold" title="Bold"
             aria-label="Bold"><i class="ph ph-text-b" aria-hidden="true"></i></button>
           <button type="button" class="icon-only" data-md="italic" title="Italic"
@@ -5314,6 +5315,27 @@ Link to another note with [[its first few words]]."></textarea>
             title="Insert something (the / menu)" aria-label="Insert something">
             <i class="ph ph-plus" aria-hidden="true"></i>
           </button>
+          <!-- A code file's keys on the phone: the same bar, the markdown
+               buttons swapped for what a phone keyboard has no key for (Tab,
+               the brackets, undo). `.doc-is-code` on the tab picks which
+               half shows (10-responsive.css); wired in documents-code.js. -->
+          <button type="button" class="doc-code-key" data-code-key="tab" title="Indent" aria-label="Indent"><i class="ph ph-arrow-line-right" aria-hidden="true"></i></button>
+          <button type="button" class="doc-code-key" data-code-key="outdent" title="Outdent" aria-label="Outdent"><i class="ph ph-arrow-line-left" aria-hidden="true"></i></button>
+          <button type="button" class="doc-code-key" data-code-key="undo" title="Undo" aria-label="Undo"><i class="ph ph-arrow-u-up-left" aria-hidden="true"></i></button>
+          <button type="button" class="doc-code-key" data-code-key="redo" title="Redo" aria-label="Redo"><i class="ph ph-arrow-u-up-right" aria-hidden="true"></i></button>
+          <button type="button" class="doc-code-key" data-code-key="{}" title="Curly braces" aria-label="Curly braces">{ }</button>
+          <button type="button" class="doc-code-key" data-code-key="()" title="Brackets" aria-label="Brackets">( )</button>
+          <button type="button" class="doc-code-key" data-code-key="[]" title="Square brackets" aria-label="Square brackets">[ ]</button>
+          <button type="button" class="doc-code-key" data-code-key="&quot;&quot;" title="Double quotes" aria-label="Double quotes">" "</button>
+          <button type="button" class="doc-code-key" data-code-key="'" title="Single quote" aria-label="Single quote">'</button>
+          <button type="button" class="doc-code-key" data-code-key=";" title="Semicolon" aria-label="Semicolon">;</button>
+          <button type="button" class="doc-code-key" data-code-key=":" title="Colon" aria-label="Colon">:</button>
+          <button type="button" class="doc-code-key" data-code-key="=" title="Equals" aria-label="Equals">=</button>
+          <button type="button" class="doc-code-key" data-code-key="<" title="Less than" aria-label="Less than">&lt;</button>
+          <button type="button" class="doc-code-key" data-code-key=">" title="Greater than" aria-label="Greater than">&gt;</button>
+          <button type="button" class="doc-code-key" data-code-key="/" title="Slash" aria-label="Slash">/</button>
+          <button type="button" class="doc-code-key" data-code-key="#" title="Hash" aria-label="Hash">#</button>
+          <button type="button" class="doc-code-key" data-code-key="_" title="Underscore" aria-label="Underscore">_</button>
         </div>
         <!-- A textarea's own content is never in the DOM as searchable text
              (that's why the browser's native Ctrl+F can't reach into one),

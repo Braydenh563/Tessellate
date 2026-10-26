@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Code files, downloads (owner 1400): Download as .html of a Python or other code file saved an empty page named without its dot (apppy.html); it now saves the source as preformatted text named app.py.html, and the image bundle, Word export and Map the headings (which have nothing to work on in code) are out of a code file's menu.
+- Code files on a phone (owner 1400): the bar at the foot of a code file now holds Tab, Outdent, Undo, Redo and the brackets and common symbols (it held Bold, Italic and Heading), and Ctrl+G goes to a line in a code file.
 - Recordings (owner 1400): the library search now finds a recording by what was said in it, shows the matching line with its time and plays from there when pressed; and Transcribe is always in a recording's menu (it was missing until the recorder had run once in a session, and with no add-on it gave no reason) and says what to install.
 - Code files (owner 1400, fixed as a class): Ctrl+B, I, E, U, 1 to 3 and the list chords no longer write markdown into a Python, SQL or other code file, and the slash and double-bracket menus no longer open over one (a `//` comment raised Heading 1).
 - Chat: a short message whose word only a Guide topic's bracketed or quoted examples hold ("what about running?", "who is Sam") is a missing word in your notes, not a request for an app tool.
