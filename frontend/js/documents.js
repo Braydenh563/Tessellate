@@ -2819,6 +2819,8 @@ const DOC_COMMANDS = [
     run: () => docBlockMoveCommand(-1) },
   { id: "move-block-down", icon: "ph:arrow-down", label: "Move the block at the caret down: a paragraph, list item, table or section", keys: "Alt+↓",
     run: () => docBlockMoveCommand(1) },
+  { id: "turn-into", icon: "ph:swap", label: "Turn into: paragraph, heading, list, to-do, quote, callout or code", keys: "none", prose: true,
+    run: () => docTurnIntoMenu() },
   { id: "ul", icon: "ph:list-bullets", label: "Bulleted list", keys: "Ctrl+Shift+8", run: () => applyMarkdown("ul") },
   { id: "ol", icon: "ph:list-numbers", label: "Numbered list", keys: "Ctrl+Shift+7", run: () => applyMarkdown("ol") },
   { id: "task", icon: "ph:check-square", label: "Task list", keys: "Ctrl+Shift+9", run: () => applyMarkdown("task") },
@@ -14011,6 +14013,10 @@ function openDocPhoneInsert() {
 }
 
 $("doc-phone-insert").addEventListener("click", openDocPhoneInsert);
+$("doc-phone-turn").addEventListener("click", (event) => {
+  const at = event.currentTarget.getBoundingClientRect();
+  docTurnIntoMenu("doc-content", at.left, at.top - 8);
+});
 
 // NOTE-SURFACE-BEGIN
 //: =========================================================================

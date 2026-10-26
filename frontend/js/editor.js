@@ -1870,6 +1870,7 @@ const SELECTION_BAR_ACTIONS = [
   { md: "link", label: "ph:link", title: "Link" },
   { md: "h2", label: "ph:text-h", title: "Heading" },
   { md: "quote", label: "ph:quotes", title: "Quote" },
+  { turn: true, label: "ph:swap", title: "Turn into" },
   //: **Not a formatting action, and it says so with a rule beside it.**
   //: REDESIGN.md §R7.1 item 1, quoted from the request: *"able to highlight
   //: text and say something in the chat and the agent gets the context of
@@ -1919,6 +1920,7 @@ function selectionBarElement() {
       button.dataset.modelOffer = "Ask Atlas about this selection, beside it, answers from your notes without one.";
     }
     if (action.md) button.dataset.md = action.md;
+    if (action.turn) button.dataset.turn = "1";
     button.title = action.title;
     button.setAttribute("aria-label", action.title);
     setLabel(button, action.label);
@@ -1929,6 +1931,11 @@ function selectionBarElement() {
       event.preventDefault();
       const textarea = selectionBarState.textarea;
       if (!textarea) return;
+      if (action.turn) {
+        const at = button.getBoundingClientRect();
+        if (typeof docTurnIntoMenu === "function") docTurnIntoMenu(textarea.id, at.left, at.bottom + 4);
+        return;
+      }
       if (action.ask) {
         askAboutSelection(textarea);
         selectionBarHide();
@@ -1980,7 +1987,9 @@ function selectionBarShow(textarea) {
   //: rewrite in place; the formatting eight and their rule are hidden.
   const code = editorSurfaceKind(textarea) === "document"
     && typeof docFileType === "function" && docFileType().previewable === false;
-  for (const button of bar.querySelectorAll("[data-md], .selection-bar-rule")) button.hidden = code;
+  for (const button of bar.querySelectorAll("[data-md], [data-turn], .selection-bar-rule")) button.hidden = code;
+  const turn = bar.querySelector("[data-turn]");
+  if (turn && !code) turn.hidden = typeof docTurnIntoMenu !== "function";
   //: **Never a second copy of the phone's formatting bar.** Below 600 the
   //: document has its own bar at the foot (`#doc-phone-bar`, a `.thumb-bar`),
   //: and this one drew the same Bold, Italic, Heading and Link again over the

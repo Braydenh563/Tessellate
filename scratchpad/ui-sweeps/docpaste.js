@@ -4,7 +4,7 @@
 const { boot } = require('./lib.js');
 (async () => {
   const out = {};
-  for (const width of [1440, 720]) {
+  for (const width of (process.env.WIDTHS || "1440,720").split(",").map(Number)) {
     const { browser, page } = await boot({ viewport: { width, height: 900 } });
     const ev = (fn, a) => page.evaluate(fn, a);
     const id = await ev(async () => (await apiJson('/documents', { method: 'POST', body: JSON.stringify({ title: `Paste ${Date.now()}`, content: 'Intro line\n\nSee docs here\n\nend\n', file_type: 'md' }) })).id);
@@ -20,6 +20,38 @@ const { boot } = require('./lib.js');
     const chip = () => ev(() => { const c = document.querySelector('.doc-paste-chip'); if (!c || c.classList.contains('hidden')) return null; const b = c.getBoundingClientRect(); return { l: Math.round(b.left), t: Math.round(b.top), r: Math.round(b.right), b: Math.round(b.bottom), fits: b.left >= 0 && b.top >= 0 && b.right <= innerWidth && b.bottom <= innerHeight, w: Math.round(b.width), h: Math.round(b.height) }; });
     const text = () => ev(() => docText());
     const r = {};
+    const turnInto = async () => {
+    // 8. Turn into (INBOX docs5): menu from the selection bar, palette row, one undo.
+    r.turn = {};
+    if (width < 600) { await ev(() => setDocView('live')); await page.waitForTimeout(800); r.turn.footBtns = await ev(() => [...document.querySelectorAll('#doc-phone-bar button')].map((b) => { const x = b.getBoundingClientRect(); return [Math.round(x.width), Math.round(x.height), x.right <= innerWidth]; })); }
+    const setDoc = (t, a, b) => ev(({ t, a, b }) => { const v = docSurface().view; v.focus(); v.dispatch({ changes: { from: 0, to: v.state.doc.length, insert: t }, selection: { anchor: a, head: b } }); }, { t, a, b });
+    await setDoc('## Title\nplain words here\n', 12, 17); await page.waitForTimeout(500);
+    const sl = width < 600 ? '#doc-phone-turn' : '#selection-bar [data-turn]';
+    r.turn.barButton = await ev((sl) => { const b = document.querySelector(sl); if (!b || b.hidden) return null; const x = b.getBoundingClientRect(); return { w: Math.round(x.width), h: Math.round(x.height), inWindow: x.right <= innerWidth && x.left >= 0 }; }, sl);
+    if (width < 600) await page.click('#doc-phone-turn');
+    else await ev(() => { const b = document.querySelector('#selection-bar [data-turn]'); b.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true })); });
+    await page.waitForTimeout(300);
+    r.turn.rows = await ev(() => [...document.querySelectorAll('.action-menu:not(.hidden) .menu-item')].map((b) => b.textContent.trim()));
+    r.turn.menuFits = await ev(() => { const m = document.querySelector('.action-menu:not(.hidden)'); if (!m) return null; const b = m.getBoundingClientRect(); return { fits: b.left >= 0 && b.right <= innerWidth && b.bottom <= innerHeight, h: Math.round(b.height) }; });
+    await page.keyboard.press('ArrowDown'); await page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter'); await page.waitForTimeout(300);
+    r.turn.h2viaKeys = (await text()).split('\n').slice(0, 2).join('|');
+    for (const [kind, want] of [['task', '- [ ] Title\n'], ['ol', '1. Title\n'], ['callout', '> [!note] Title\n'], ['quote', '> Title\n'], ['paragraph', 'Title\n'], ['codeblock', '```\nTitle\n```\n'], ['h3', '### Title\n']]) {
+      await setDoc('## Title\nplain words here\n', 3, 3);
+      await ev((k) => docTurnInto(k), kind); await page.waitForTimeout(150);
+      r.turn[kind] = (await text()).startsWith(want);
+    }
+    await setDoc('- a\n- b\n', 0, 7); await ev(() => docTurnInto('h2'));
+    r.turn.multi = (await text()) === '## a\n## b\n';
+    await setDoc('para\n', 1, 1); await ev(() => docUndoBreak()); await ev(() => docTurnInto('h1'));
+    await ev(() => docUndo()); await page.waitForTimeout(150);
+    r.turn.oneUndo = (await text()) === 'para\n';
+    await setDoc('```\ncode\n```\n', 6, 6); await ev(() => docTurnInto('h1'));
+    r.turn.fenceRefused = (await text()) === '```\ncode\n```\n';
+    r.turn.paletteRow = await ev(() => DOC_COMMANDS.some((c) => c.id === 'turn-into'));
+    r.turn.paletteMenu = await ev(() => { docSurface().view.focus(); docTurnIntoMenu(); return document.querySelectorAll('.action-menu:not(.hidden) .menu-item').length; });
+    await page.keyboard.press('Escape');
+    };
+    if (width < 600) { await turnInto(); out[width] = r; await browser.close(); continue; }
     // 1. Rich paste -> chip -> Text only, one undo.
     await paste({ 'text/html': '<h2>Title</h2><p>Some <strong>bold</strong> text</p>', 'text/plain': 'Title\nSome bold text' }, [0, 0]);
     r.richText = (await text()).split('\n').slice(0, 3).join('|');
@@ -72,6 +104,7 @@ const { boot } = require('./lib.js');
     r.menuRow = await ev(() => !!document.getElementById('doc-paste-special'));
     r.specialMenu = await ev(() => { docPasteSpecialMenu(); return [...document.querySelectorAll('.action-menu:not(.hidden) .menu-item')].map((b) => b.textContent.trim()).length; });
     await page.keyboard.press('Escape');
+    await turnInto();
     // 7. Ctrl+Shift+V path leaves a multi-line paste alone (no chip).
     r.consoleErrors = 0;
     out[width] = r;
