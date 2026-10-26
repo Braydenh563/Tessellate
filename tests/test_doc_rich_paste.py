@@ -28,3 +28,24 @@ def test_only_safe_link_schemes_are_written():
 
 def test_ctrl_shift_v_pastes_plain_text():
     assert 'docPastePlain = (event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === "v"' in DOCS
+
+
+def test_word_list_paragraphs_become_a_list():
+    # Word has no <ul>: a list item is a <p style="mso-list:l0 level2"> with a nested marker span
+    # (mso-list:Ignore). Browser check (docdog-1026): bullets, a level-2 bullet and "1." items.
+    assert "|mso-list/i;" in DOCS
+    body = DOCS[DOCS.index("function docWordListLine("):DOCS.index("function docHtmlToMarkdown(")]
+    assert "level(" in body and '"ignore"' in body
+    assert "docWordListLine(child, styleOf, inline)" in DOCS
+
+
+def test_a_picture_pasted_or_dropped_into_a_document_is_uploaded():
+    # Before (docdog-1026): nothing happened: the document editor sits under #doc-editor, not a
+    # .note-surface, so the drop and paste listeners never answered it. After: a pasted 120x80 png
+    # became ![shot.png](/media/<id>.png) at the caret, a dropped one at the pointer.
+    from tests._app_js import app_js_text
+
+    code = app_js_text()
+    assert 'el?.closest?.("#doc-editor")' in code
+    assert 'box.kind === "codemirror" && e.clipboardData.getData("text/plain")' in code
+    assert "box.view.posAtCoords({ x: e.clientX, y: e.clientY })" in code

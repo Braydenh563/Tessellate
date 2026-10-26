@@ -5701,8 +5701,27 @@ function docTablePasteEvent(event, view) {
 // (a heading, emphasis, a list, a link, a quote, code, a picture, a table):
 // a code editor's copy is coloured spans and divs, and turning those into
 // paragraphs would break the code it was copying.
-const DOC_RICH_TAGS = /<(h[1-6]|strong|b|em|i|a\s[^>]*href|ul|ol|blockquote|pre|code|img|table|del|s)[\s>]/i;
+const DOC_RICH_TAGS = /<(h[1-6]|strong|b|em|i|a\s[^>]*href|ul|ol|blockquote|pre|code|img|table|del|s)[\s>]|mso-list/i;
 let docPastePlain = false;
+
+//: **Word's lists are paragraphs, not lists.** A pasted bullet from Word is a
+//: `<p>` with `mso-list: l0 level2 lfo1` and a hidden marker span
+//: (`mso-list: Ignore`) holding the bullet or "1.", so neither tag test saw a
+//: list and "· item" arrived as plain text. Returns the Markdown line, indented
+//: by the item's level, or "" for any other paragraph.
+function docWordListLine(el, styleOf, inline) {
+  const list = styleOf(el, "mso-list");
+  if (!list || list === "none") return "";
+  const level = Number(/level(\d+)/.exec(list)?.[1] || 1);
+  //: The marker span is nested (`<span Symbol><span mso-list:Ignore>`), so it
+  //: is found by its style wherever it sits, read, and taken out.
+  const marks = [...el.querySelectorAll("[data-mm-style]")].filter((c) => styleOf(c, "mso-list") === "ignore");
+  const mark = marks.map((c) => c.textContent).join("");
+  marks.forEach((c) => c.remove());
+  const number = /^\s*(\d+)[.)]/.exec(mark)?.[1] || (/^\s*[a-z]{1,4}[.)]/i.test(mark) ? "1" : "");
+  const text = [...el.childNodes].map(inline).join("").replace(/\s+/g, " ").trim();
+  return text ? `${"  ".repeat(Math.max(0, level - 1))}${number ? `${number}.` : "-"} ${text}` : "";
+}
 
 function docHtmlToMarkdown(html) {
   //: `style` renamed before parsing: the page's CSP refuses an inline style
@@ -5774,6 +5793,7 @@ function docHtmlToMarkdown(html) {
       for (const sub of li.children) if (/^(UL|OL)$/.test(sub.nodeName)) list(sub, depth + 1);
     }
   };
+  let wordRun = -1;
   const block = (el) => {
     let run = "";
     const flush = () => {
@@ -5794,8 +5814,16 @@ function docHtmlToMarkdown(html) {
         continue;
       }
       flush();
+      const wordItem = tag === "P" ? docWordListLine(child, styleOf, inline) : "";
       const heading = /^H([1-6])$/.exec(tag);
-      if (heading) {
+      if (wordItem) {
+        //: Word's list paragraphs run together as one tight list.
+        if (wordRun === out.length - 1) out[wordRun] += `\n${wordItem}`;
+        else {
+          out.push(wordItem);
+          wordRun = out.length - 1;
+        }
+      } else if (heading) {
         const text = inline(child).replace(/\s+/g, " ").trim();
         if (text) out.push(`${"#".repeat(Number(heading[1]))} ${text}`);
       } else if (tag === "UL" || tag === "OL") {

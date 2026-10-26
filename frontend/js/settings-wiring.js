@@ -1883,6 +1883,9 @@ document.addEventListener("dragover", (e) => {
   if (e.target.tagName && e.target.tagName.toLowerCase() === 'textarea') {
     e.preventDefault();
     e.target.classList.add("drag-over");
+  } else if (Array.from(e.dataTransfer?.types || []).includes("Files") && fileDropBox(e.target)?.kind === "codemirror") {
+    //: Taken, so the window's drop-to-Library veil does not claim it.
+    e.preventDefault();
   }
 });
 
@@ -1917,6 +1920,15 @@ function _isChatComposer(target) {
 //: listeners run in the capture phase, ahead of the editor's own handling.
 function fileDropBox(el) {
   if (el?.tagName === "TEXTAREA") return el;
+  //: **The document editor is neither** (docdog-1026): its engine sits under
+  //: `#doc-editor`, not `.note-surface`, so a screenshot pasted or a picture
+  //: dropped into a document did nothing at all, while the "/" menu's Image
+  //: row promised both. Its surface answers the same box interface. A code
+  //: document is text, and keeps what it was given.
+  if (el?.closest?.("#doc-editor")) {
+    const surface = window.docSurface?.();
+    return surface && !surface.classList.contains("doc-content-code") ? surface : null;
+  }
   const host = el?.closest?.(".note-surface")?.noteSurfaceHost;
   return host instanceof HTMLTextAreaElement ? host : null;
 }
@@ -1933,6 +1945,11 @@ document.addEventListener("drop", async (e) => {
   e.preventDefault();
   e.stopPropagation();
   box.classList.remove("drag-over");
+  //: Dropped where the pointer is, not where the caret was.
+  if (box.kind === "codemirror") {
+    const at = box.view.posAtCoords({ x: e.clientX, y: e.clientY });
+    if (at !== null) box.setSelection(at);
+  }
 
   if (box.id === "command-palette-input") return agentStageFiles(Array.from(e.dataTransfer.files));
   if (_isChatComposer(box)) {
@@ -1962,6 +1979,10 @@ document.addEventListener("paste", async (e) => {
     }
   }
   if (!files.length) return;
+  //: A spreadsheet or Word copy carries a picture of what it copied beside
+  //: the text; in a document the words win (table and rich paste), and only a
+  //: clipboard with no text at all is a picture to upload.
+  if (box.kind === "codemirror" && e.clipboardData.getData("text/plain")) return;
   // Don't prevent default entirely unless we have files, otherwise normal paste breaks
   e.preventDefault();
   e.stopPropagation();
