@@ -1761,7 +1761,7 @@ def _heading_sections(view: composer.NoteView) -> str:
     """The shape of a note in markdown sections, two or more, or ""."""
     content = str(view.note.get("content") or "")
     _, start = composer._title(content)
-    heads = [m.group(1).strip() for line in content[start:].splitlines() if (m := composer._HEADING.match(line))]
+    heads = [h for line in content[start:].splitlines() if (h := composer._heading_text(line)) is not None]
     if len(heads) < 2:
         return ""
     labelled = [_split_label(h) for h in heads]

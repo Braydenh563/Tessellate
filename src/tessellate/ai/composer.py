@@ -814,9 +814,9 @@ class NoteView:
         return self.note["id"]
 
 
-#: Spaces and tabs only, and the text must start with a non-space, so no two
-#: parts can share a run of whitespace (CodeQL: polynomial backtracking).
-_HEADING = re.compile(r"^[ \t]{0,3}#{1,6}[ \t]+(\S.*)?$")
+#: Only a heading's marks: the text after them is read in code, as a pattern
+#: running on to the line's end backtracks over runs of whitespace (CodeQL).
+_HEADING_LEAD = re.compile(r"[ \t]{0,3}#{1,6}[ \t]+")
 _ITEM = re.compile(r"^(\s*(?:[-*+]|\d{1,3}[.)])\s+)(\[[ xX]\]\s+)?")
 #: Where one sentence ends and the next begins: a stop (and the quote mark or
 #: bracket closing it), a space, and a capital or a digit. Misses some
@@ -868,15 +868,21 @@ def _written(note: dict) -> date | None:
         return None
 
 
+def _heading_text(line: str) -> str | None:
+    """A heading line's text ("" for a bare "# "), or None for another line."""
+    lead = _HEADING_LEAD.match(line)
+    return line[lead.end() :].rstrip("\r\n").strip() if lead else None
+
+
 def _title(content: str) -> tuple[str, int]:
     """The note's name and where its body starts: its first heading, or, with
     none, its first few words (the body then starts at the top, so those words
     are quotable too)."""
     end = content.find("\n")
     first = content if end == -1 else content[:end]
-    heading = _HEADING.match(first)
-    if heading:
-        name = _MARKS.sub("", heading.group(1) or "").strip().strip("#").strip()
+    heading = _heading_text(first)
+    if heading is not None:
+        name = _MARKS.sub("", heading).strip().strip("#").strip()
         if name:
             return name, len(content) if end == -1 else end
     words = _MARKS.sub("", first.strip().lstrip("-*+> ")).split()
@@ -1077,7 +1083,7 @@ def read_note(note: dict, rank: int) -> NoteView | None:
         if stripped.startswith("```"):
             in_fence = not in_fence
             continue
-        if in_fence or not stripped or _HEADING.match(line) or stripped.startswith(("![", "|")):
+        if in_fence or not stripped or _heading_text(line) is not None or stripped.startswith(("![", "|")):
             continue
         line_end = line_start + len(line.rstrip("\r\n"))
         if _PICTURE_ITEM.match(line):

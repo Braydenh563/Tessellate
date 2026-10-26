@@ -18,16 +18,16 @@ def _fast(call) -> None:
 
 
 def test_whitespace_runs_stay_linear():
-    _fast(lambda: composer._HEADING.match("#" + RUN + "\nx\ny"))
+    _fast(lambda: composer._heading_text("#" + RUN + "\xa0" * 40_000 + "\nx"))
     _fast(lambda: composer._picture_text_breaks("a" + RUN + "b" + RUN))
     _fast(lambda: composer._picture_groups("-" + RUN + "x:" + RUN + "shows" + RUN))
     _fast(lambda: composer._title("# " + RUN + "x\nbody"))
 
 
 def test_headings_read_as_before():
-    assert composer._HEADING.match("## Trip plan").group(1) == "Trip plan"
-    assert composer._HEADING.match("# ").group(1) is None
-    assert composer._HEADING.match("#hashtag") is None
+    assert composer._heading_text("## Trip plan\n") == "Trip plan"
+    assert composer._heading_text("# ") == ""
+    assert composer._heading_text("#hashtag") is None
     assert composer._title("# Trip plan\nbody") == ("Trip plan", 11)
 
 
