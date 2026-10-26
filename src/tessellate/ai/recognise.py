@@ -965,6 +965,10 @@ def days_since(phrase: str, now: datetime) -> int | None:
 _ORD = r"(\d{1,2})(?:st|nd|rd|th)"
 _MONTH_RE = r"(" + "|".join(sorted(_MONTHS, key=len, reverse=True)) + r")"
 _WEEKDAY_RE = r"(" + "|".join(sorted(_WEEKDAYS, key=len, reverse=True)) + r")"
+#: The year after a month: "November last year", "June of last year", "May
+#: next year", "March this year". One capture group where a reader needs it.
+_YEAR_WORD = r"(?:of )?(?:last|this|next) year"
+_YEAR_AFTER_MONTH = r"(?: (\d{4}|" + _YEAR_WORD + r"))?"
 #: "the first monday of november", "the last friday of next month": groups
 #: are the place, the weekday, this/next/last month, the month's name, a year.
 _NTH_IN_MONTH = (
@@ -1049,7 +1053,7 @@ _SEASON_FIND = (
 )
 #: A month with a year and no lead word ("March 2026 notes"); a day follows a
 #: month in "March 20 2026", which the day readers take first.
-_MONTH_YEAR = _MONTH_RE + r" (?:19|20)\d{2}"
+_MONTH_YEAR = _MONTH_RE + r" (?:(?:19|20)\d{2}|" + _YEAR_WORD + r")"
 _PERIODS = (_LEAD_IN + _PART_OF_MONTH, *_SEASON_FIND)
 
 #: Every phrase `span` reads, longest forms first, as one pattern for `find`
@@ -1106,7 +1110,7 @@ _DATE_PHRASE_SOURCE = (
             r"\d{1,2}(?:st|nd|rd|th)(?= (?:at \d|\d{1,2}(?::\d{2})? ?(?:am|pm|a\.m\.|p\.m\.)))",
             r"(?:mid|early|late|end of) " + _MONTH_RE,
             r"(?:the )?end of (?:the )?(?:day|week|month|year)|eod",
-            r"(?:in|during|from|by) " + _MONTH_RE + r"(?: \d{4})?",
+            r"(?:in|during|from|by) " + _MONTH_RE + r"(?: (?:\d{4}|" + _YEAR_WORD + r"))?",
             r"christmas(?: day| eve)?|new year'?s? (?:day|eve)|new year",
             r"later today|today|tonight|yesterday|tomorrow",
             _WEEKDAY_RE,
@@ -1168,6 +1172,16 @@ def _day_of_month(day: int, anchor: date, tense: str | None) -> date | None:
         except ValueError:
             continue
     return _nearest(options, anchor, tense) if options else None
+
+
+def _named_year(said: str | None, anchor: date) -> int | None:
+    """The year a month is said with: 2025, "last year", "of next year"; None
+    when it names none."""
+    if not said:
+        return None
+    if said[0].isdigit():
+        return int(said)
+    return anchor.year + {"last": -1, "this": 0, "next": 1}[said.split()[-2]]
 
 
 def _month_span(month: int, anchor: date, tense: str | None, year: int | None = None) -> tuple[date, date, str]:
@@ -1586,11 +1600,11 @@ def _span_end_of(text: str, a: date, tense: str | None) -> Any:
 
 
 def _span_month(text: str, a: date, tense: str | None) -> Any:
-    found = re.fullmatch(r"(?:in |during )?" + _MONTH_RE + r"(?: (\d{4}))?", text)
+    found = re.fullmatch(r"(?:in |during )?" + _MONTH_RE + _YEAR_AFTER_MONTH, text)
     # Three-letter month words that are also weekdays or "may" need a cue.
     if not found or not (found.group(1) not in ("may", "mar", "sat", "sun", "wed") or text.startswith(("in ", "during ")) or found.group(2)):
         return _MISS
-    return _month_span(_MONTHS[found.group(1)], a, tense, int(found.group(2)) if found.group(2) else None)
+    return _month_span(_MONTHS[found.group(1)], a, tense, _named_year(found.group(2), a))
 
 
 def _span_holiday(text: str, a: date, tense: str | None) -> Any:
@@ -1719,7 +1733,7 @@ _WINDOW_WORDS = re.compile(
                          r"since (?:" + _WEEKDAY_RE + r"|yesterday|" + _SINCE_PART + r"|last (?:week|month|year))")) + r"|(?:the\s+)?(?:last|this|next|past|previous|coming)\s+(?:few\s+|couple\s+of\s+|\d{1,3}\s+|two\s+|three\s+|four\s+|five\s+|six\s+|seven\s+|eight\s+|nine\s+|ten\s+|eleven\s+|twelve\s+)?"
     r"(?:days?|weeks?|weekend|months?|years?|night|morning|evening|monday|tuesday|wednesday|thursday|friday|saturday|sunday)"
     r"|(?:the\s+)?week\s+before\s+last|(?:\d{1,3}|a|an|one|two|three|four|five|six)\s+(?:days?|weeks?|months?|years?)\s+ago"
-    r"|(?:since|in|during)\s+(?:january|february|march|april|may|june|july|august|september|october|november|december))\b",
+    r"|(?:since|in|during)\s+(?:january|february|march|april|may|june|july|august|september|october|november|december)(?: (?:of )?(?:last|this|next) year)?)\b",
     re.I,
 )
 #: A sentence that looks dated: the composer's score for a "when" answer,
@@ -2543,7 +2557,7 @@ def _numeric_dates(low: str, today: date, locale: str | None, tense: str | None)
     return out
 
 
-_MONTH_ONLY = re.compile(r"(?:in |during )?" + _MONTH_RE + r"(?: (\d{4}))?")
+_MONTH_ONLY = re.compile(r"(?:in |during )?" + _MONTH_RE + _YEAR_AFTER_MONTH)
 _END_OF_DAY_WORDS = ("end of day", "end of the day", "the end of the day", "eod")
 
 

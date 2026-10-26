@@ -73,6 +73,40 @@ A_ASKED = [
     ("what archived notes did I write last week", r"Stale idea", NOT_FOUND),
 ]
 
+_NOV = (r"(?=.*Frost)", r"Gym routine|Midsummer|Blossom")
+_MARCH = (r"(?=.*Blossom walk)(?=.*Spring clean)(?=.*Taxes)", r"Frost|Midsummer|Ski trip")
+#: A month still ahead holds no note yet: said as that, no other month's notes.
+_MAY_NEXT = (r"nothing|no notes|none|not yet|haven't|yet to", r"Pancakes|Frost|Midsummer|Blossom|Standup|Hello|Quarterly|is not in anything")
+#: With a subject the subject is found, the month ahead is not a filter.
+_MAY_PLANS = (r"plans", r"Pancakes|Frost|Midsummer|Blossom|is not in anything")
+_JUNE = (r"Midsummer", r"Pancakes|Frost|Blossom")
+#: Class B, a month with last year, this year or next year is that month of
+#: that year, and the year words are no subject. (question, must, never)
+B_MONTH_YEAR = [
+    ("what did I write in November last year", *_NOV),
+    ("notes from November last year", *_NOV),
+    ("show me notes from November of last year", *_NOV),
+    ("anything I wrote in November last year?", *_NOV),
+    ("notes from March this year", *_MARCH),
+    ("what did I write in March this year", *_MARCH),
+    ("show me notes from March of this year", *_MARCH),
+    ("anything I wrote in March this year?", *_MARCH),
+    ("my plans for May next year", *_MAY_PLANS),
+    ("what did I write in May next year", *_MAY_NEXT),
+    ("notes from May of next year", *_MAY_NEXT),
+    ("notes for May next year", *_MAY_NEXT),
+    ("what did I write in June of last year", *_JUNE),
+    ("notes from June last year", *_JUNE),
+    ("notes from June of last year", *_JUNE),
+    ("show me what I wrote in June last year", *_JUNE),
+]
+B_COUNTS = [
+    ("how many notes did I write in November last year", r"\b3 notes\b"),
+    ("how many notes in March this year", r"\b3 notes\b"),
+    ("how many notes from June of last year", r"\b1 note\b"),
+    ("number of notes in November last year", r"\b3 notes\b"),
+]
+
 def _check(said: str, must: str, never: str | None, q: str, cls: str) -> None:
     ok = bool(re.search(must, said, re.I | re.S)) and not (never and re.search(never, said, re.I | re.S))
     assert ok, f"[{cls}] {q!r} -> {said[:600]!r}"
@@ -86,3 +120,13 @@ def test_a_list_by_date_leaves_archived_notes_out(ask, q, must, never):
 @pytest.mark.parametrize("q,must,never", A_ASKED, ids=[r[0] for r in A_ASKED])
 def test_a_list_by_date_keeps_archived_notes_when_asked(ask, q, must, never):
     _check(ask(q), must, never, q, "A")
+
+
+@pytest.mark.parametrize("q,must,never", B_MONTH_YEAR, ids=[r[0] for r in B_MONTH_YEAR])
+def test_a_month_with_last_this_or_next_year(ask, q, must, never):
+    _check(ask(q), must, never + "|" + NOT_FOUND, q, "B")
+
+
+@pytest.mark.parametrize("q,must", B_COUNTS, ids=[r[0] for r in B_COUNTS])
+def test_a_month_with_a_year_word_is_counted(ask, q, must):
+    _check(ask(q), must, NOT_FOUND, q, "B")

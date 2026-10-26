@@ -3786,13 +3786,23 @@ def _plan_kind(question: str, utility: str | None, shape: str, spanned: bool, ha
     return _SHAPE_KIND.get(shape, "fact")
 
 
+def _subject_left(question: str, terms: list[str], phrase: str) -> bool:
+    """Whether the question has a subject besides its time phrase. A window
+    still ahead ("May next year") is dropped when it has ("my trip next
+    month" is notes about the trip, written now) and kept when it has none
+    ("what did I write in May next year": nothing yet, said as that)."""
+    said = set(phrase.lower().split())
+    left = [t for t in terms if t.lower() not in said]
+    return bool([t for t in left if t.lower() not in _RECALL_VERBS] if _RECALL.search(question or "") else left)
+
+
 def _plan_window(question: str, terms: list[str], phrase: str, today: date) -> tuple[tuple | None, list[str]]:
     """The window the phrase names (None for none, or for one still ahead
     that sits beside a subject) and the subject terms left once the phrase's
     own words are taken out."""
     span = when_words.span(phrase, today, "past") if phrase else None
-    if span and span[0] > today:
-        span = None
+    if span and span[0] > today and _subject_left(question, terms, phrase):
+        return None, terms
     if span:
         #: "what did I write on Monday": the day is the window, not a subject
         #: to search the notes for (the phrase's own words, "monday", go).
