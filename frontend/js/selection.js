@@ -525,13 +525,13 @@ function pickMediaDialog() {
 
 // Turn the selection into a reminder, through the same parser the Reminders
 // tab's "magic add" box uses: not a second one.
-async function remindFromSelection(text) {
+async function remindFromSelection(text, entryId = null) {
   try {
     const reminder = await apiJson("/reminders/parse", {
       method: "POST",
       // Our clock, so "tomorrow evening" resolves against the time the user
       // can see rather than the server's UTC: same as magicAddReminder.
-      body: JSON.stringify({ text, tz_offset_minutes: -new Date().getTimezoneOffset() }),
+      body: JSON.stringify({ text, tz_offset_minutes: -new Date().getTimezoneOffset(), entry_id: entryId }),
     });
     reminderMadeUndo(reminder);
     toast(`Reminder set: ${relativeWhen(reminder.due_at)}.`);
@@ -586,9 +586,22 @@ function wrapFieldSelection(field, before, after) {
   el.setSelectionRange(start + before.length, start + before.length + text.length);
 }
 
+//: The note a selection was made in, so its reminder links back to it: the
+//: Notes list row holding the selection (or the editor field inside it), else
+//: the note page on a phone. null elsewhere (chat, a document), where the
+//: reminder stands alone.
+function selectionNoteId() {
+  const node = selectionPopupField?.el || window.getSelection()?.anchorNode;
+  const el = node && (node.nodeType === 1 ? node : node.parentElement);
+  const row = el?.closest?.("#entry-list li[data-id], .note-page-list li[data-id]");
+  return row ? Number(row.dataset.id) || null : null;
+}
+
 function selectionMenuItems() {
   const text = selectionPopupText;
   const source = selectionPopupSource;
+  //: Read now, while the selection stands: a press on the menu clears it.
+  const noteId = selectionNoteId();
   const items = [];
 
   // **Where highlighting is discovered** ("I still dont know how to highlight
@@ -665,8 +678,8 @@ function selectionMenuItems() {
         renderEntries();
       });
     }),
-    makeMenuItem("ph:bell Set a reminder", "Read a reminder out of the selection", () =>
-      remindFromSelection(text)
+    makeMenuItem("ph:bell Set a reminder", "Read a reminder out of the selection, linked to this note", () =>
+      remindFromSelection(text, noteId)
     )
   );
 

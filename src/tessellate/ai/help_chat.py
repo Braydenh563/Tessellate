@@ -232,7 +232,13 @@ HELP_TOPICS: list[dict] = [
             "browser blocks them, the list and the "
             "Notifications group in Settings say so, and their ? says how to allow them. "
             "Remind me is on a note's, a document's and a board's ⋯ "
-            "menu too, and the reminder's row opens what it is about."
+            "menu too, and the reminder's row opens what it is about. "
+            "Select words in a note and Set a reminder in the selection menu "
+            "reads a reminder out of them, linked to that note. When you tell "
+            "the chat you need to do something on a day (\"I need to call the "
+            "dentist on Friday\"), a Make this a reminder chip appears under "
+            "the reply; nothing is made until you press it, and a question or "
+            "something already done gets no chip."
         ),
         "badge": {"label": "Reminders", "tab": "reminders"},
     },
@@ -2278,7 +2284,11 @@ HELP_TOPICS.extend(
                 "edited in place (its early alert too), or ticked "
                 "done; completed ones page at the foot. Add to calendar (.ics), on "
                 "a reminder's menu, saves it as a calendar file, and Add all to "
-                "calendar (.ics) in the More menu saves every upcoming one; Import a "
+                "calendar (.ics) in the More menu saves every upcoming one (each event "
+                "carries an alert at its due time, or its early alert); Add to Google "
+                "Calendar and Add to Outlook, beside it, open that service's add-event "
+                "page filled in, only when you press them, and never with a private "
+                "note's words; Import a "
                 "calendar (.ics) there reads a calendar file as reminders and names "
                 "any event it skipped. Calendar beside List opens the Timeline's "
                 "calendar with only reminders, where one drags to another day. Press t "

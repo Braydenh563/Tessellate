@@ -2219,7 +2219,8 @@ header#top-bar select,
    are both a labelled row of chips appended to the same bubble, and giving
    them two different looks would make one turn's footer read as two unrelated
    widgets. */
-.chat-followups {
+.chat-followups,
+.chat-reminder-offer {
   display: flex;
   flex-wrap: wrap;
   align-items: center;

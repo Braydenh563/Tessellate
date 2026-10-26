@@ -15,6 +15,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from typing import Annotated, Literal
+from urllib.parse import quote, urlencode
 
 from tessellate.ai import recognise as rec
 from tessellate.core import deps, ics_import, reminder_token
@@ -66,6 +67,9 @@ class MagicAddBody(BaseModel):
     # be resolved against the user's clock, not the server's: without this the
     # model was told the time in UTC and every relative time landed hours out.
     tz_offset_minutes: int | None = Field(default=None, ge=-840, le=840)
+    #: The note the words were selected in, so the reminder links back to it
+    #: (the owner, 2026-10-27: a selection in a note becomes a reminder).
+    entry_id: int | None = None
 
 
 class ReminderUpdate(BaseModel):
@@ -303,6 +307,18 @@ def _ics_time(value: datetime) -> str:
     return moment.astimezone(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
 
+def _event_details(session: Session, reminder: Reminder) -> str:
+    """The note's opening as an event's description, or "". A private note's
+    words never leave in a file or a link: the calendar gets the reminder's
+    own text and nothing of the note behind it."""
+    if reminder.entry_id is None:
+        return ""
+    entry = session.get(Entry, reminder.entry_id)
+    if entry is None or entry.is_deleted or entry.is_private:
+        return ""
+    return " ".join(readable_content(entry).split())[:280]
+
+
 def _ics_event(session: Session, reminder: Reminder, stamp: str) -> list[str]:
     lines = [
         "BEGIN:VEVENT",
@@ -313,14 +329,9 @@ def _ics_event(session: Session, reminder: Reminder, stamp: str) -> list[str]:
         f"SUMMARY:{_ics_text(reminder.text)}",
         f"PRIORITY:{_ICS_PRIORITY.get(reminder.priority, 5)}",
     ]
-    if reminder.entry_id is not None:
-        entry = session.get(Entry, reminder.entry_id)
-        # A private note's words never leave in a file: the calendar gets the
-        # reminder's own text and nothing of the note behind it.
-        if entry is not None and not entry.is_deleted and not entry.is_private:
-            opening = " ".join(readable_content(entry).split())[:280]
-            if opening:
-                lines.append(f"DESCRIPTION:{_ics_text(opening)}")
+    opening = _event_details(session, reminder)
+    if opening:
+        lines.append(f"DESCRIPTION:{_ics_text(opening)}")
     rule = _ICS_RRULE.get(reminder.recurring)
     if rule:
         lines.append(f"RRULE:FREQ={rule}")
@@ -367,6 +378,48 @@ def export_one_ics(reminder_id: int, session: Session = Depends(get_session)) ->
     """One reminder as a calendar file."""
     reminder = _existing(session, reminder_id)
     return _ics_response(session, [reminder], f"reminder-{reminder.id}.ics")
+
+
+@router.get("/{reminder_id}/calendar-links")
+def calendar_links(reminder_id: int, session: Session = Depends(get_session)) -> dict:
+    """Where "Add to Google Calendar" and "Add to Outlook" open: the provider's
+    add-event page with this reminder filled in. Only addresses are built here;
+    the browser opens one when the person presses the item, so nothing is sent
+    before then. The details follow the .ics file's rule (`_event_details`)."""
+    reminder = _existing(session, reminder_id)
+    details = _event_details(session, reminder)
+    end = reminder.due_at + timedelta(minutes=15)
+    google = {
+        "action": "TEMPLATE",
+        "text": reminder.text,
+        "dates": f"{_ics_time(reminder.due_at)}/{_ics_time(end)}",
+    }
+    if details:
+        google["details"] = details
+    rule = _ICS_RRULE.get(reminder.recurring)
+    if rule:
+        google["recur"] = f"RRULE:FREQ={rule}"
+    elif reminder.recurring.startswith("FREQ="):
+        google["recur"] = f"RRULE:{reminder.recurring}"
+    outlook = {
+        "path": "/calendar/action/compose",
+        "rru": "addevent",
+        "subject": reminder.text,
+        "startdt": _outlook_time(reminder.due_at),
+        "enddt": _outlook_time(end),
+    }
+    if details:
+        outlook["body"] = details
+    return {
+        "google": f"https://calendar.google.com/calendar/render?{urlencode(google, quote_via=quote)}",
+        "outlook": f"https://outlook.live.com/calendar/0/deeplink/compose?{urlencode(outlook, quote_via=quote)}",
+    }
+
+
+def _outlook_time(value: datetime) -> str:
+    """Outlook's deep link reads ISO 8601 with its separators."""
+    moment = value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+    return moment.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 # --- .ics import (TIMELINE_PLAN section 9, decision 17) -----------------------
@@ -535,6 +588,38 @@ def read_when(body: WhenBody) -> dict:
     return {"date": at.strftime("%Y-%m-%d"), "time": at.strftime("%H:%M")}
 
 
+class SuggestBody(BaseModel):
+    text: str = Field(min_length=1, max_length=4000)
+    tz_offset_minutes: int | None = Field(default=None, ge=-840, le=840)
+
+
+@router.post("/suggest")
+def suggest_reminder(body: SuggestBody) -> dict:
+    """The reminder a chat message reads as, or `{"suggestion": null}`.
+
+    Makes nothing: the chat shows a chip from this and a press on it posts to
+    `POST /reminders`. Rules only (`ai/reminder_suggest`), on the person's
+    clock, so "on Friday" is their Friday."""
+    from tessellate.ai import reminder_suggest
+
+    zone = timezone(timedelta(minutes=body.tz_offset_minutes or 0))
+    found = reminder_suggest.suggest(body.text, utcnow().astimezone(zone))
+    if found is None:
+        return {"suggestion": None}
+    due = found["due_at"]
+    if due.tzinfo is None:
+        due = due.replace(tzinfo=zone)
+    return {
+        "suggestion": {
+            "text": found["text"],
+            "due_at": due.astimezone(timezone.utc).isoformat(),
+            "priority": found.get("priority", "normal"),
+            "recurring": found.get("recurring", "none"),
+            "alert_minutes": found.get("alert_minutes"),
+        }
+    }
+
+
 @router.post("/parse", status_code=201)
 def magic_add_reminder(body: MagicAddBody, session: Session = Depends(get_session)) -> dict:
     """Magic Add: parse natural language into a reminder and create it.
@@ -545,6 +630,8 @@ def magic_add_reminder(body: MagicAddBody, session: Session = Depends(get_sessio
     """
     from tessellate.ai import reminder_parser
 
+    if body.entry_id is not None:
+        deps.get_or_404(session, Entry, body.entry_id, "That note could not be found.")
     offset = timedelta(minutes=body.tz_offset_minutes or 0)
     # The user's clock, labelled with the offset it actually has.
     #
@@ -600,6 +687,7 @@ def magic_add_reminder(body: MagicAddBody, session: Session = Depends(get_sessio
         # once, as "Water the plants every").
         recurring=parsed.get("recurring", "none"),
         alert_minutes=parsed.get("alert_minutes"),
+        entry_id=body.entry_id,
     )
     session.add(reminder)
     session.flush()

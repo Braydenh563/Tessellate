@@ -1168,6 +1168,20 @@ function reminderItem(reminder, label) {
       run: () => downloadFromApi(`/reminders/${reminder.id}/export.ics`, `reminder-${reminder.id}.ics`),
       group: "go",
     },
+    //: The same event on a provider's own add-event page, filled in. The
+    //: server only builds the address (`GET /reminders/{id}/calendar-links`);
+    //: nothing is sent anywhere until this press opens the page, and a
+    //: private note's words are never in it.
+    {
+      label: "ph:google-logo Add to Google Calendar",
+      run: () => openCalendarPage(reminder.id, "google"),
+      group: "go",
+    },
+    {
+      label: "ph:microsoft-outlook-logo Add to Outlook",
+      run: () => openCalendarPage(reminder.id, "outlook"),
+      group: "go",
+    },
     { label: "ph:trash Delete", run: deleteReminder, group: "remove", danger: true }
   );
   actions.appendChild(kebabMenu(menuItems, `Actions for the reminder “${reminder.text}”`, { vertical: true }));
@@ -1184,6 +1198,24 @@ function reminderItem(reminder, label) {
     li.appendChild(linkRow);
   }
   return li;
+}
+
+//: Opens a reminder in Google Calendar's or Outlook's add-event page, in a new
+//: tab that cannot reach back. The tab is opened on the press, before the
+//: address is fetched, or a pop-up blocker refuses it; `noopener` in the
+//: features would return no handle to point at the address, so the link back
+//: is cut by hand.
+async function openCalendarPage(id, provider) {
+  const tab = window.open("about:blank", "_blank");
+  if (tab) tab.opener = null;
+  try {
+    const links = await apiJson(`/reminders/${id}/calendar-links`);
+    if (tab) tab.location.href = links[provider];
+    else window.open(links[provider], "_blank", "noopener,noreferrer");
+  } catch (error) {
+    tab?.close();
+    toast(error.message || "Couldn't open the calendar page.", true);
+  }
 }
 
 //: **What a reminder is about, and the way to it** (WORLD_CLASS_PLAN 1.3,

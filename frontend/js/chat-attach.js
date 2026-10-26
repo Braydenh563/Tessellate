@@ -2756,6 +2756,59 @@ async function chatSendTurn(preset, opts = {}) {
   // saved, and this is a second model call. See offerFollowups. A composed
   // answer (no model running) brings its own next questions (INBOX 725).
   offerFollowups(bubble, question, answerRaw, meta?.composed ? composedNext : null);
+  offerReminder(bubble, question);
+}
+
+// --- "Make this a reminder" under the answer to a dated intention ------------
+//
+// "I need to call the dentist on Friday" is a reminder said aloud (the owner,
+// 2026-10-27; CHAT_PLAN decision 79). `POST /reminders/suggest` reads the
+// message by rules alone, so the chip is the same with a model up or down,
+// and it makes nothing: one press creates, with the usual Undo. Like the
+// follow-ups it is fired after the turn is saved, never awaited, silent on
+// every failure, and only drawn if its bubble is still on screen.
+async function offerReminder(bubble, question) {
+  if (!bubble || !question) return;
+  let found = null;
+  try {
+    const read = await apiJson("/reminders/suggest", {
+      method: "POST",
+      silent: true,
+      body: JSON.stringify({ text: String(question).slice(0, 4000), tz_offset_minutes: -new Date().getTimezoneOffset() }),
+    });
+    found = read?.suggestion || null;
+  } catch {
+    return; // an offer that fails is no offer, not an error on a fine answer
+  }
+  if (!found || !bubble.isConnected) return;
+  bubble.querySelector(":scope > .chat-reminder-offer")?.remove();
+  const row = document.createElement("div");
+  row.className = "chat-reminder-offer";
+  const offer = chip(`ph:alarm Make this a reminder: ${found.text}, ${relativeWhen(found.due_at)}`, "", async () => {
+    offer.classList.add("hidden");
+    try {
+      const made = await apiJson("/reminders", {
+        method: "POST",
+        body: JSON.stringify({
+          text: found.text,
+          due_at: found.due_at,
+          priority: found.priority || "normal",
+          recurring: found.recurring || "none",
+          alert_minutes: found.alert_minutes ?? null,
+        }),
+      });
+      reminderMadeUndo(made);
+      loadReminders();
+      row.replaceChildren(Object.assign(document.createElement("span"), { className: "muted", textContent: `Reminder set: ${relativeWhen(made.due_at)}.` }));
+    } catch (error) {
+      offer.classList.remove("hidden");
+      toast(error.message || "Couldn't make that reminder.", true);
+    }
+  });
+  offer.title = "Makes a reminder from what you wrote; nothing is made until you press this";
+  row.appendChild(offer);
+  bubble.appendChild(row);
+  chatScrollToEnd();
 }
 
 // --- "what to ask next" chips under a finished answer -------------------------
