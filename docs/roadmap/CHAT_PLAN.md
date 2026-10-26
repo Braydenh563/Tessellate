@@ -512,7 +512,7 @@ the numbers. Decisions 30 to 45 stay above: later briefs build on them.
 #### Open from Phase 6 (one line each; the agent's ledger is `agent-remaining/engine-1010.md`)
 
 - The blind panel (decision 40): the owner's rating against the 1 to 3B model on the owner's notebook.
-- Probe P15 (`agent-remaining/engine-probe-1010.md`): the lead-in chosen after the parts. P10 to P13 and P16 are built: HISTORY.md "Moved from the plans, 2026-10-18 (chat-1018".
+- Probe P15 (`archive/agent-remaining/engine-probe-1010.md`): the lead-in chosen after the parts. P10 to P13 and P16 are built: HISTORY.md "Moved from the plans, 2026-10-18 (chat-1018".
 - The currency table's Settings editor (decision 43); the rates are dated and fixed.
 - The model choosing among the engine's numbered readings (decision 45): the readings are listed; with a model running it does not yet pick.
 - The currency table has no preference at all (`utilities.RATES` is a constant), so decision 43's editor has nothing to edit until the table is a preference.
@@ -1559,9 +1559,9 @@ catalogue above specifies the engine for chat. This section is the layer under
 every surface: what the research says it should be made of, where it joins each
 surface, the decisions, and the briefs. It remakes nothing decided in 17 to 45.
 "Today" is read from the code and from the probe tables in
-`agent-remaining/engine-probe-1010.md`, not observed in the app, except where a
+`archive/agent-remaining/engine-probe-1010.md`, not observed in the app, except where a
 number is given. The probe tables were re-run on the merged head by F0: every row is
-unchanged (`agent-remaining/found-1010.md` part 2).
+unchanged (`archive/agent-remaining/found-1010.md` part 2).
 
 - (Odysseus, fourth read 2026-10-10) 
 
@@ -1602,7 +1602,7 @@ unchanged (`agent-remaining/found-1010.md` part 2).
 4. **`ai/realise.py`**, the realiser: templates with protected spans, two voices plus help, salt per chat and turn, the variety floor measured. Every system sentence may route through it; chat first, then toasts and empty states surface by surface.
 5. **`ai/validate.py`**, the validators: `source_check`, grounding marks, the maxims lint, slot completeness and the computed-sentence rule, run on the engine's answer and the model's alike.
 
-Rule: a surface never reads language itself. `tests/test_one_reader.py` ratchets the count of files outside `recognise.py` and `timewords.py` that compile a date-word or unit pattern, from today's count down to zero. Today's count, measured 2026-10-10 by `scratchpad/reader_count.py` (F0): **6 files** (`ai/when.py`, `ai/reminder_parser.py`, `search/query.py`, `ai/notebook_stats.py`, `api/routes_vision.py` by substring, `ai/composer.py` as a date cue), 0 in `frontend/js`, and no unit reader anywhere; the lines are in `agent-remaining/found-1010.md`.
+Rule: a surface never reads language itself. `tests/test_one_reader.py` ratchets the count of files outside `recognise.py` and `timewords.py` that compile a date-word or unit pattern, from today's count down to zero. Today's count, measured 2026-10-10 by `scratchpad/reader_count.py` (F0): **6 files** (`ai/when.py`, `ai/reminder_parser.py`, `search/query.py`, `ai/notebook_stats.py`, `api/routes_vision.py` by substring, `ai/composer.py` as a date cue), 0 in `frontend/js`, and no unit reader anywhere; the lines are in `archive/agent-remaining/found-1010.md`.
 
 ### 4. Decisions, 2026-10-10 (not to be remade; numbered after Phase 6's 45)
 

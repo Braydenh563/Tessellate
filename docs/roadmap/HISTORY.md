@@ -9,7 +9,7 @@ that answers "has this been done?" before anyone starts.
 
 ## OPEN.md rows closed, 2026-10-18 (open-1018: Library, Notes, App wide, Timeline and Documents leftovers)
 
-Audit table in `docs/roadmap/agent-remaining/open-1018.md`.
+Audit table in `docs/roadmap/archive/agent-remaining/open-1018.md`.
 
 - **VC5, link offers in the document editor** (DOCUMENTS_PLAN Brief 75, OPEN 1171). `POST /documents/link-offers` (`routes_documents.py`, `entry/link_offers.py`): the vendored FlashText holds every name a `[[link]]` resolves to (a previewable document's title, a note's opening line without its heading mark) and one scan answers the first mention of each, in text order, at most 12. A one-word name needs its own capital, a name under four characters or with a bracket is not a name, code, existing links, markdown links, addresses and a name the text already links are never offered, and a private note, a binned or archived document and the document itself are not names. The trie is rebuilt only when a count, newest edit or newest id moves. The editor (`documents-prose.js`: `docLinkOfferRequest`, one ask per 700 ms pause, `docLinkOfferCurrent` remaps the last answer through the edits) draws each as a finding of its own kind, `link`: a 1px accent underline, the group "Links to your notes", the check on its row writes `[[Title]]` or `[[Title|as written]]`, Fix never applies it (`DOC_FIX_ALL_NEVER`), and it replaces a "likely typo" on the same span. Tag offers were not built: a document has no tags. Measured: `tests/test_link_offers.py` 15 tests; 5,000 titles cold index 31 ms, warm request 14 ms for 7,634 characters; in the app `linkoffers1018.js` found the 3 names in a probe document (a fenced mention and a second mention not offered), the underline computed `underline solid 1px`, Fix all left the text without a `[[`, the row's check wrote `[[Quarterly roadmap|quarterly roadmap]]`, and a 7,800-character POST took 25 ms.
 
@@ -928,11 +928,11 @@ The timeline-1018 agent's Built block (standing order 10); TIMELINE_PLAN section
 - Row 7, live chips: `scratchpad/ui-sweeps/remindersqa1018.js`, "dentist friday at 9am" shows its chip in 65 ms at 1440 and 129 ms at 390 (Brief 66 built it); at 390 the row is the FAB's sheet, 304 px wide, inside the viewport.
 - Row 6, the strip's labels (VC2): `frontend/js/timeline-ticks.js` and `timeline-ticks-lazy.css`, lazy (d3 is the graph's copy, fetched on the first strip; the boot carries one `lazyScript` line). `timelineTickPlan` picks the finest of day, week, month and year whose ticks sit 28 px apart on this strip's height and places them with `d3.scaleTime` and `timeMonth`, `timeYear` and the rest; `timeFormat` writes them ("Oct", "2026" on a January, "Oct 5" for a week or a day). There were no hand-rolled tick lines to delete: the strip drew a density path and no labels. `tests/test_timeline_ticks.py`: twelve fixed dates get d3's labels at each step, and 27 span-and-height pairs (1 day to 41 years, 240 to 900 px) never put two labels closer than 12 px or outside the strip. Measured in the app (`timelineticks1018.js`, 48 notes over six months): 7 month labels at 1440 and 1024, 0 overlaps, 0 outside the strip, closest 78 to 88 px; synthetic spans of 6, 30, 60, 700 and 4,000 days 0 overlaps and 0 outside; a click on the strip still scrolls the feed (1,570 px at 1440); the strip is 92 px wide (84 before it grew a 52 px gutter beside its 40) and the feed 1,268 of 1,276; hidden at 390 as before. Boot JS 588,399 to 588,393 gzipped: the hook line cost 16 bytes and the unneeded `IntersectionObserver` feature check in `timelineWatchRow` (the Notes list builds one unguarded) paid for it. d3's called count 19 to 25 (`test_vendor_utilisation.py`).
 - Phase 5's two unmeasured gates, measured (`calstress1018.js`, `seed-timeline-bulk.py` 1,000 notes in one month, port 8789): the month at 1440 draws 31 cells, 0 overflow (scrollHeight against clientHeight), 168 dots, 28 "+n", 672 chips, no horizontal scroll, 1,247 ms from the tab to cells (911 ms at 1024); the week at 1024 under a coarse pointer draws 168 hour cells, none under 56 px high (the 44 px line), 0 overflow, 413 ms. Found by it: the dock's count read "1000 items · October 2026", then "192 notes · 7 days", because `timelineLoadMore` appended a feed page into the hidden feed in calendar mode and the feed's painter writes the count. Now only the feed appends and only the table repaints (`tests/test_timeline_calendar_loadmore.py`, 3 views; `calcount1018.js`: the chip stays "1000 items · October 2026" over 5.6 s, 8 samples, and the cells hold 1,000 of the API's 1,000). Boot JS 588,399 to 588,390.
-- Row 5, typed entries: `tests/test_timeline_typed_day.py` holds twenty phrases against a fixed Sunday, save to `/timeline` row, 20 of 20 on the named day, placed "mentioned" with the phrase. Three phrases the audit found wrong or unresolved are owner questions in `agent-remaining/timeline-1018.md`, not in the set.
+- Row 5, typed entries: `tests/test_timeline_typed_day.py` holds twenty phrases against a fixed Sunday, save to `/timeline` row, 20 of 20 on the named day, placed "mentioned" with the phrase. Three phrases the audit found wrong or unresolved are owner questions in `archive/agent-remaining/timeline-1018.md`, not in the set.
 
 ## Moved from the plans, 2026-10-17 (TIMELINE B72)
 
-The calendar-b72-1017 agent's Built block (standing order 10); TIMELINE_PLAN section 12 row 6 and the INBOX 561 placement carry the pointer. The owner, INBOX 904 B72: "I wanna be able to double click on a date and be able to add an event and set a reminder ... scroll above today's date to see future dates ... recognise future date and time mentions and suggest to use magic add". Decisions taken are in `agent-remaining/calendar-b72-1017.md` (archived with it).
+The calendar-b72-1017 agent's Built block (standing order 10); TIMELINE_PLAN section 12 row 6 and the INBOX 561 placement carry the pointer. The owner, INBOX 904 B72: "I wanna be able to double click on a date and be able to add an event and set a reminder ... scroll above today's date to see future dates ... recognise future date and time mentions and suggest to use magic add". Decisions taken are in `archive/agent-remaining/calendar-b72-1017.md` (archived with it).
 
 - Step 1, the add sheet (row 6, decision 18): a double click on a month cell, a week or day hour cell, the head's new Add, or N on a focused day opens one sheet (`openSheet`, `timeline-cal-add.js`, lazy: the calendar's one-keydown lint) on that day: Reminder or Event (`.tabs-line.popup-kinds`), the words with quick add's chips, a date and a time (an hour cell's hour, else 09:00, today after 9 the next hour), "Remind me at the start" for an event. An event is a meeting note (decision 27) with a linked reminder, drawn as one chip ("with a reminder"); a time alone in the words keeps the pressed day. A single press waits 250 ms before the Day view so a double click adds. Measured (`scratchpad/ui-sweeps/caladd.js`, light and dark): "Dentist at 3pm" from a double click on 21 October saved due 2026-10-21 15:00, in that cell, Undo left 0; the week's 14:00 opened at 14:00; an event saved the note and its reminder as one chip, Undo binned both; at 390 the head's Add is 76 by 44, the sheet inside the window, 0 px horizontal scroll, 0 text in the sheet under 4.5:1; `calendar.js` still 0 overflowing cells at 1440, 1024, 768 and 390. `tests/test_timeline_cal_add.py` (4).
 - Step 2, the week ahead: the feed draws today and the next seven days above it (an empty day ahead is a head with an Add into the same sheet) and a fresh read lands on today (`timelineAheadBuckets`, `timelineScrollToToday`). Before: rows ahead sat above today at scrollTop 0, an empty today sat above later days, and an empty week ahead drew nothing. Measured (`feedahead.js`): today's head 0 px from the scroller's top at 1358 (scrollTop 750) and 390 (941), newest first, unique, 0 px horizontal scroll. A row's detail moved to the lazy `timeline-detail.js` to stay under the boot cap (588,462 to 587,787 gz bytes); `timelineZoom`, a const reassigned after a pause, now resets in place. `tests/test_timeline_feed_ahead.py` (3).
@@ -49386,7 +49386,7 @@ From WORLD_CLASS_PLAN's professional baseline list, every item built:
 Rows 3, 4, 5, 9 and 10 moved to HISTORY.md, "Moved from the plans, 2026-10-05 (nbf1005)".
 ## Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)
 
-The briefs agent (2026-10-11) checked every SESSION_BRIEFS brief not marked built against the code and HISTORY; the table with the evidence per brief is `docs/roadmap/archive/agent-remaining/briefs-1011.md` (while it runs, `agent-remaining/briefs-1011.md`). These were built or superseded; each block moved whole, in order, its headings demoted one level.
+The briefs agent (2026-10-11) checked every SESSION_BRIEFS brief not marked built against the code and HISTORY; the table with the evidence per brief is `docs/roadmap/archive/agent-remaining/briefs-1011.md` (while it runs, `archive/agent-remaining/briefs-1011.md`). These were built or superseded; each block moved whole, in order, its headings demoted one level.
 
 ### Brief 2 (Mon, Sonnet): the consistency lints
 
@@ -50399,7 +50399,7 @@ plans as rows; this brief fixes nothing. Budget 120 tool calls; split at 26a.
 Count the files compiling date-word or unit patterns outside
 `ai/recognise.py` and `entry/timewords.py` (a script in `scratchpad/`, its
 number into CHAT_PLAN section 3's ratchet); re-run the probe tables in
-`agent-remaining/engine-probe-1010.md` on the merged head; the variety
+`archive/agent-remaining/engine-probe-1010.md` on the merged head; the variety
 metric (twenty asks of ten questions from `showcase_725`, distinct openers)
 and the maxims count (facts per sentence, unsourced numbers) with
 `tests/_composer_eval.py`. Numbers into sections 2 and 3; no fixes.
@@ -50518,7 +50518,7 @@ Decisions: a recording row is a card: title, date, length and transcript state o
 ### Brief 99 (Sonnet, scan): every feature, element and action, used once (INBOX 862)
 
 Verbatim: "Can you put an agent on a full functionality and experience scan for absolutely every feature and element and action in the application to make sure nothing clashes, everything works, there are no errors, the setup experience is good, there are no issues like looping or never ending note filing, everything works as intended, everything actually works to a professional standard."
-Decisions: a fresh data dir; first run (welcome, model choice with none installed, the tour to its end); then every surface by the codemap's route and id lists: each button, menu item, tab, dialog and shortcut used once, with console errors, failed requests, layout findings (`errors.js`), and a check that each action did what its label says (a read back from the API). Filing: twenty notes added in a burst and while offline; filing must finish (no row stays "Filing..." over 60 s, no job repeats, `/jobs` drains). Each finding: fixed in the same commit with a test when small and local; otherwise a row in `agent-remaining/scan-1011.md` with the steps. Measured at 1440 and 390, light and dark.
+Decisions: a fresh data dir; first run (welcome, model choice with none installed, the tour to its end); then every surface by the codemap's route and id lists: each button, menu item, tab, dialog and shortcut used once, with console errors, failed requests, layout findings (`errors.js`), and a check that each action did what its label says (a read back from the API). Filing: twenty notes added in a burst and while offline; filing must finish (no row stays "Filing..." over 60 s, no job repeats, `/jobs` drains). Each finding: fixed in the same commit with a test when small and local; otherwise a row in `archive/agent-remaining/scan-1011.md` with the steps. Measured at 1440 and 390, light and dark.
 
 ### Brief 100 (Opus, graph): the graph's feel (INBOX 802, 864, 865)
 
@@ -50679,7 +50679,7 @@ Decision 62 built: the search model already loaded on first use (or at launch wi
     - D8: "can there also be a way to hover over and have a panel popup next to the sidebar to show a larger preview of the thing being hovered over in the elements library in the whiteboard?? is would dissappear once not hovered or dragging to place it on the whiteboard." **Fixed (fixes9).** The tile peek: opens 300 ms after hover (150 ms none, 500 ms shown), left 354 = sidebar edge 346 + 8, level with the tile centre (262), fully on screen, hidden on leave, drag, Escape; focus shows it at once.
     Triage: D5 Opus (CHAT_PLAN composer, first); D7 Sonnet bug (reproduce wheel on board and map); D8 Sonnet with D7 (whiteboard library peek, the note-peek recipe); D2, D3, D4 one Opus design batch after D5; D6 Opus companion batch (B87/B88 lineage) after that.
 
-1300. **The owner, 2026-10-18, verbatim** (a Word document of 36 items; 29 screenshots, described in `agent-remaining/bugs-1018b.md`, attached to the item they follow). Triage and per-item status: `docs/roadmap/agent-remaining/bugs-1018b.md`.
+1300. **The owner, 2026-10-18, verbatim** (a Word document of 36 items; 29 screenshots, described in `archive/agent-remaining/bugs-1018b.md`, attached to the item they follow). Triage and per-item status: `docs/roadmap/archive/agent-remaining/bugs-1018b.md`.
 
      C01. If I throw the companion or atlas across the screen and it lands on a ui element but
           then it decides to fall through to peep over the bottom bar, it does the peak
@@ -50871,7 +50871,7 @@ Decision 62 built: the search model already loaded on first use (or at launch wi
 
 ## Moved from the plans, 2026-10-18 (graph-1018)
 
-Built by the graph-1018 agent (GRAPH_PLAN open work; the audit table is `agent-remaining/graph-1018.md`).
+Built by the graph-1018 agent (GRAPH_PLAN open work; the audit table is `archive/agent-remaining/graph-1018.md`).
 
 - **VC11, D3 hierarchy layouts as a category overview.** The Layout picker's Treemap (`layoutTreemap`, graph.js; `gcDrawTreemap`, graph-canvas.js): one rectangle per category with its area in proportion to its notes, each note a dot in a cell of it, no lines (the rectangles are the filing), the fit framed by the rectangles (`gcTreeFrameNodes`), the dot kept inside its cell. Measured: `tests/test_graph_treemap.py` at 1,000 notes in six categories, worst area error under 1% and layout under 100 ms; in the app (`scratchpad/ui-sweeps/graphtreemap1018.js`, 200 notes, 8 categories, 1440x900): worst area error 0, 200 of 200 dots inside their rectangle, 0 overlapping dots, 0 dots larger than their cell, 0 category headers under the minimap, panel or zoom strip, 1,000 notes laid out in 1 to 4 ms, 0 console errors. `tests/test_vendor_utilisation.py` d3 floor 19 to 20. Help: the Layout list, the map's help panel and the Guide's graph topic name it.
 - **The graph is idle at rest.** `scratchpad/ui-sweeps/graphrest1018.js`: draws 31 to 60 a second for the first 6 s after the tab opens (the by-design settle), then 0 draws, 0 layouts, 0 script ms and 0 long tasks for as long as it is left.
@@ -50884,7 +50884,7 @@ Built by the graph-1018 agent (GRAPH_PLAN open work; the audit table is `agent-r
 
 From CHAT_PLAN, "Open from Phase 6", as it stood:
 
-> - Probe P10, P11, P13, P15, P16 (`agent-remaining/engine-probe-1010.md`): days until a note's date, mention counts, every date and what is due, lead-ins chosen after the parts, a note's open checklist items.
+> - Probe P10, P11, P13, P15, P16 (`archive/agent-remaining/engine-probe-1010.md`): days until a note's date, mention counts, every date and what is due, lead-ins chosen after the parts, a note's open checklist items.
 > - Probe P12: a list filtered by category or tag ("list my work notes").
 
 Built, judged against the decision-70 shape and measured:
@@ -50895,7 +50895,7 @@ Built, judged against the decision-70 shape and measured:
 - Still open, kept in the plan: P15 (the lead-in chosen after the parts).
 ## Moved from the plans, 2026-10-18 (whiteboard-1018, built Placed blocks)
 
-From WHITEBOARD_PLAN "Placed from INBOX, 2026-10-07 (next PR)" and "Placed from INBOX, 2026-10-11 (fit a frame to its contents)". Both were found built by the audit in `agent-remaining/whiteboard-1018.md` (each item's code comment cites its INBOX number; tests `test_wb_rotate_links.py`, `test_wb_clone_grips_follow.py`, `test_wb_guides.py`, `test_wb_pages.py`, `test_wb_line_ends.py`). Text kept verbatim.
+From WHITEBOARD_PLAN "Placed from INBOX, 2026-10-07 (next PR)" and "Placed from INBOX, 2026-10-11 (fit a frame to its contents)". Both were found built by the audit in `archive/agent-remaining/whiteboard-1018.md` (each item's code comment cites its INBOX number; tests `test_wb_rotate_links.py`, `test_wb_clone_grips_follow.py`, `test_wb_guides.py`, `test_wb_pages.py`, `test_wb_line_ends.py`). Text kept verbatim.
 
 ## Placed from INBOX, 2026-10-07 (next PR)
 
@@ -51090,7 +51090,7 @@ Missing, the three taken first:
 
 1308. **The owner, 2026-10-19, verbatim** (after 1307). "stuff like that, dont stop[ there, find what is missing on the whiteboard, mindmap and documents editor and add them"
      Owner: the surfaces agent (with 1307): a gap audit of whiteboard, mind map and documents against draw.io, Miro, Excalidraw, XMind and Obsidian/Notion, the gaps ranked, the small and medium ones built.
-     **Fixed** 2026-10-19 (surfaces agent, e40e222): gap lists placed in WHITEBOARD_PLAN, MINDMAP_PLAN and DOCUMENTS_PLAN 'Placed from INBOX, 2026-10-19'; built Select similar and Sort branches A to Z / Z to A; next S items in agent-remaining/surfaces-1019.md.
+     **Fixed** 2026-10-19 (surfaces agent, e40e222): gap lists placed in WHITEBOARD_PLAN, MINDMAP_PLAN and DOCUMENTS_PLAN 'Placed from INBOX, 2026-10-19'; built Select similar and Sort branches A to Z / Z to A; next S items in archive/agent-remaining/surfaces-1019.md.
 
 1305. **The owner, 2026-10-18, verbatim.** "and companion movement for bot small and large distances needs a lot of improvement, and reworking"
      Owner: the companion Opus agent (next Opus slot), with 1302. Measured for 1302 (chat, 1440x900, seeded throw down-right, seed 2 splat): came to rest at 1376,774 on the floor, ended at 1235,582 on a dock (`nameMarkBuddyDrop` finds no free place within 48 px of the landing among the composer controls, falls to `nameMarkBuddyChoose`, which can pick the top bar).
@@ -51195,3 +51195,10 @@ From DOCUMENTS_PLAN, "Placed from INBOX, 2026-10-19", row 16 (the guided equatio
 - Guided typing (`mathEditorAuto`): `a/` a fraction with the caret in the denominator (the term before it, Word's rule), `^` and `_` a slot, a space or an operator out of a filled script, symbol names and `sqrt` after a space, `>=`, `!=`, `->`, `+-`, `=>`, `~=` one sign; Tab to the next empty slot or out of a filled one; Backspace straight after a change undoes it. A palette of seven groups (structures drawn by the renderer, Greek, operators, relations, arrows, sets and logic, calculus; 111 tiles) with a search; a live MathML preview; Inline or Display; written as one-line `$...$` or `$$...$$` (the Live view draws no formula over lines); the caret in an equation reopens it as Edit equation.
 - The renderer (`docMathStructure`, documents.js) draws `\begin{pmatrix|bmatrix|Bmatrix|vmatrix|Vmatrix|matrix|cases|aligned}`, `\binom`, `\vec`, `\hat`, `\bar`, `\overline`, `\tilde`, `\dot`, and TeX's spaces (`\,` had printed a comma).
 - Measured with `scratchpad/ui-sweeps/mathedit.js` at 1440, 720 (dark) and 390: 59 checks each in Notes, a document, Chat and Ask, panel inside the window with no sideways page scroll, a 2x2 matrix drawn as 4 cells in the Live view. Tests: `tests/test_math_editor.py`, `tests/test_doc_math.py`.
+
+
+## Ledger rows confirmed done, 2026-10-26
+
+Rows moved out of `agent-remaining/OPEN.md` after a check of CHANGELOG.md and HISTORY.md for each row's INBOX number or phrase. Only a row with a matching fix line moves.
+
+- Row 296 (INBOX 743 tail, welcome card): "recheck the welcome card" is done. Evidence: CHANGELOG.md line 303, "Welcome card: Atlas's swirl no longer paints past its holder (4 px at 390 before, 0 to 1 px after) ... (INBOX 743 tail)."

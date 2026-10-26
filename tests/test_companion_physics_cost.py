@@ -20,7 +20,7 @@ style recalculation, not script. Two things made each frame's restyle of
 
 These are static checks because the number only shows in a browser; the
 sweep that measures it is described in
-`docs/roadmap/agent-remaining/companion-physics-1017.md`.
+`docs/roadmap/archive/agent-remaining/companion-physics-1017.md`.
 """
 
 from __future__ import annotations

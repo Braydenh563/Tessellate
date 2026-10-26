@@ -1,7 +1,7 @@
 """Dogfood round 1 (2026-10-25) whiteboard and mind map fixes, fixer B.
 
 Source-level checks the suite can see; the browser numbers are in the
-commit messages and `docs/roadmap/agent-remaining/fixb-1025.md`.
+commit messages and `docs/roadmap/archive/agent-remaining/fixb-1025.md`.
 """
 
 import json

@@ -1,7 +1,7 @@
 """Whiteboard and mind map upgrade, agent wb2 (2026-10-25).
 
 Source-level checks the suite can see; the browser numbers are in the
-commit messages and `docs/roadmap/agent-remaining/wb2-1025.md`.
+commit messages and `docs/roadmap/archive/agent-remaining/wb2-1025.md`.
 """
 
 from pathlib import Path

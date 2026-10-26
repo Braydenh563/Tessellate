@@ -52,7 +52,7 @@ with its owner named in the entry.
      **Fixed (a) 1333a.** The menu did open (19 rows, 610x386 at 480,235) but at `z-index: 60` under the popup's overlay (2000): `elementFromPoint` on it returned `.command-palette-intro`; typed `/help` was accepted and answered. `.editor-menu` is now 2550, the one menu Chat and the popup share; after the change `elementFromPoint` returns `.rich-picker-label`. (b), the categories bar card and the timeline strip, is open.
 
 1324. **The owner, 2026-10-19, verbatim.** "also is the ask ai quick link accurate if the composer can compensate?? also keep improving the composer and integrating it in the whole app, expand it, improve understanding, improve language and sentence generation, expand responses, make it smarter, have it flawless and robust, have every single possible response in all of its roles (guide, chat, popup agent, agent, ask, other integrated features) be very good and more."
-     Standing. Done (composer1324): "Ask AI" link is now "Ask your notes"; 40-question grade with no model 23 to 32 fully good (scratchpad/composer1324-grades.md). Open: fact questions answered with a quote, "five notes" showing one, "From today:" labels, compare as a table, fragment joins (agent-remaining/composer1324-1019.md).
+     Standing. Done (composer1324): "Ask AI" link is now "Ask your notes"; 40-question grade with no model 23 to 32 fully good (scratchpad/composer1324-grades.md). Open: fact questions answered with a quote, "five notes" showing one, "From today:" labels, compare as a table, fragment joins (archive/agent-remaining/composer1324-1019.md).
 
 1318. **The owner, 2026-10-19, verbatim** (screenshot, dark: the Dashboard Stats widget, "37 notes", a 14-day bar strip, five category chips). "and I want to be able to view the status popup from the stats widget and other related widgets as well like the streak."
      Orchestrator: Stats and Streak widgets got the heatmap's Statistics button (`dashStatsButton`), the Stats strip opens it too; not yet driven in the app (the test dashboard has no Stats widget). The statistics agent verifies it.
@@ -186,9 +186,9 @@ with its owner named in the entry.
      behaviour change (`_stream_lines` 105, `_plain_events` 81, `recognise.py` span 60, resolve 44,
      `_date_cands` 45, `_time_cands` 22, `parse_reminder_text` 27, `factgraph._note_facts` 105,
      `routes_tasks.collect` 74, `engine.search` 69, `composer._follow_one` 66 and `_compose` 77,
-     `lexical_filing.decide` 59; list in `agent-remaining/cx1298-1018.md`); cx1298b-1018 split the
+     `lexical_filing.decide` 59; list in `archive/agent-remaining/cx1298-1018.md`); cx1298b-1018 split the
      five largest (`run_agent` 78, `_retrieve` 60, `_run_one_step` 53, `_prepare` 52,
-     `restore_board` 49; `agent-remaining/cx1298b-1018.md`). Left, largest first:
+     `restore_board` 49; `archive/agent-remaining/cx1298b-1018.md`). Left, largest first:
      `routes_files.analyse_attachment` 47, `inbox.merge_candidates` 46 and the rest of
      `python scripts/complexity.py` (223 over 15): split each toward its seed, lower the row in
      `tests/complexity_seed.json`, start of the next PR.
@@ -197,7 +197,7 @@ with its owner named in the entry.
      Owner: a graph agent (GRAPH_PLAN): the toast over the map must be opaque and clear of the legend and controls (measure contrast and overlap); default layout and labels readable at 40 nodes (label collisions, edge crossings, hub spread), measured before and after.
      **Part fixed** 2026-10-19 (graph1306, c623544): toasts are opaque (dark rgb(24,27,37), about 14:1 text) and lifted clear of the zoom strip, legend and dock on the Graph tab. Default layout measured on a 36-note seed: 0 dot and 0 label overlaps, 77 link crossings (49 at the hub), fills 0.48 of the width; two tunings tried and reverted (no clear win). Open: crossings and hub spokes (graph-worker.js applyGrouping), label density (graph-canvas.js label gate); the owner's crowding did not reproduce without their data. Owner: next graph agent.
 
-904. **The owner, 2026-10-17, verbatim** (a OneNote bug list pasted into a Word document, 86 items, screenshots described in `agent-remaining/bugs-1017.md`; the pasted model-thinking transcript under B42 is elided). Triage and per-bug status: `docs/roadmap/agent-remaining/bugs-1017.md`.
+904. **The owner, 2026-10-17, verbatim** (a OneNote bug list pasted into a Word document, 86 items, screenshots described in `archive/agent-remaining/bugs-1017.md`; the pasted model-thinking transcript under B42 is elided). Triage and per-bug status: `docs/roadmap/archive/agent-remaining/bugs-1017.md`.
 
      B01. A first install setup popup showed as I was looking through the app but I accidentally clicked off it and idk what it was, there should be some way to access it, like a get started dropdown checklist to complete and maybe they can go in the notifications as well??
      B02. The composer needs more understanding, it still has a lot of flaws

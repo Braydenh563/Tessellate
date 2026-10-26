@@ -2,7 +2,7 @@
 (CHAT_PLAN "The deterministic foundation", phase F1, Brief 65).
 
 Grown outward from the engine probe's date, reminder and None phrases
-(`docs/roadmap/agent-remaining/engine-probe-1010.md`). Every expected value is
+(`docs/roadmap/archive/agent-remaining/engine-probe-1010.md`). Every expected value is
 worked out by hand against the clock below, never by running the recogniser.
 A row lists every span the recogniser should give at rank 0, as
 `kind|text|value`; `alt` lists the second readings of an ambiguous phrase.

@@ -2331,7 +2331,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
 #: (`ai/act_registry.py`, CHAT_PLAN decision 53), so a new act is in the Guide the
 #: moment it is in the registry, and a renamed one cannot drift.
 #: The Guide's gaps from the engine probe (CHAT_PLAN section 2, the help
-#: row; `agent-remaining/engine-probe-1010.md`): the phone, two computers,
+#: row; `archive/agent-remaining/engine-probe-1010.md`): the phone, two computers,
 #: encryption, deleting your data and sharing a note had no topic of their
 #: own. `tests/test_guide_gaps.py` holds the probe's table at 1.0.
 MORE_TOPICS.extend([
