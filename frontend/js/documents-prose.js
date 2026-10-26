@@ -2348,56 +2348,44 @@ async function docCopyFormatted() {
   }
 }
 
-// --- paste options and Paste special (docpaste-1026) --------------------------
+// --- Shared clipboard readings --------------------------------------------------
 //
-// **Paste is as good as Word's.** The owner: "What about different paste
-// options on the document editor??" Before this a paste was one thing: rich
-// HTML became Markdown, everything else went in as typed, and the only
-// alternative was Ctrl+Shift+V beforehand. Now a paste that changed form (rich
-// to Markdown, several lines, rows and columns, a web address) leaves a small
-// chip at the caret offering the other readings of the same clipboard, and
-// Paste special in the document menu and the palette applies one on purpose.
-// The pure half runs in node (tests/test_doc_paste.py); the wiring is checked
-// as text and driven by scratchpad/ui-sweeps/docpaste.js.
+// The reading of a clipboard's text that does not depend on where it lands:
+// rows and columns, a web address, list marks, an indented outline. The
+// document editor's paste options use them below and the board's use them from
+// whiteboard-commands.js (wbpaste-1026); they live here because this file loads
+// before both in the `library` bundle and app.js's gzip cap leaves no room for
+// another script line. Pure, so node tests them (tests/test_doc_paste.py).
 
-// DOC-PASTE-PURE-START
-const DOC_PASTE_URL = /^(?:https?:\/\/[^\s<>]+|mailto:[^\s<>]+)$/i;
-const DOC_PASTE_BULLET = /^\s*(?:[-*+•·▪●○◦]|\d+[.)]|\[[ xX]\])\s+/;
-const DOC_PASTE_LANGS = [
-  ["json", /^\s*[[{][\s\S]*[\]}]\s*$/],
-  ["python", /^\s*(?:def |import |from \w+ import |class \w+.*:|if __name__)/m],
-  ["sql", /^\s*(?:select|insert into|update|delete from|create table)\b/i],
-  ["bash", /^\s*(?:\$ |#!\/bin\/|sudo |git |npm |pip |cd )/m],
-  ["html", /^\s*<(?:!doctype|html|div|p|span|ul|a)\b[\s\S]*>/i],
-  ["css", /[\w.#-]+\s*\{[^}]*:[^}]*\}/],
-  ["javascript", /\b(?:const|let|function|console\.log)\b|=>/],
-];
+// PASTE-CORE-START
+const PASTE_URL = /^(?:https?:\/\/[^\s<>]+|mailto:[^\s<>]+)$/i;
+const PASTE_BULLET = /^\s*(?:[-*+•·▪●○◦]|\d+[.)]|\[[ xX]\])\s+/;
 
 //: A clipboard's text with the line ends and spaces a web page or Word leaves
 //: behind taken out: CRLF to LF, non-breaking spaces to spaces, no trailing
 //: spaces, no trailing newline.
-function docPasteClean(text) {
+function pasteClean(text) {
   return String(text || "").replace(/\r\n?/g, "\n").replace(/ /g, " ").replace(/[ \t]+$/gm, "").replace(/\n+$/, "");
 }
 
-function docPasteUrl(text) {
+function pasteUrl(text) {
   const value = String(text || "").trim();
-  return DOC_PASTE_URL.test(value) ? value : "";
+  return PASTE_URL.test(value) ? value : "";
 }
 
-function docPasteLinkLabel(url) {
+function pasteLinkLabel(url) {
   if (/^mailto:/i.test(url)) return url.slice(7);
   const m = /^https?:\/\/(?:www\.)?([^/?#]+)/i.exec(url);
   return m ? m[1] : url;
 }
 
-function docPasteLines(text) {
-  return docPasteClean(text).split("\n").filter((line) => line.trim());
+function pasteLines(text) {
+  return pasteClean(text).split("\n").filter((line) => line.trim());
 }
 
 //: Rows from comma- or tab-separated text, quotes honoured (a quoted cell may
 //: hold the delimiter, a doubled quote and a line break).
-function docPasteParseDelimited(text, delim) {
+function pasteParseDelimited(text, delim) {
   const rows = [[]];
   let cell = "";
   let quoted = false;
@@ -2420,14 +2408,63 @@ function docPasteParseDelimited(text, delim) {
 
 //: Rows and columns from a spreadsheet copy (tabs) or a CSV (commas, and then
 //: only when every row has the same number of cells). Null for anything else.
-function docPasteGrid(text) {
+function pasteGrid(text) {
   const clean = String(text || "").replace(/\r\n?/g, "\n").replace(/\n+$/, "");
   if (!clean.trim()) return null;
   const tabbed = clean.includes("\t");
-  const rows = docPasteParseDelimited(clean, tabbed ? "\t" : ",");
+  const rows = pasteParseDelimited(clean, tabbed ? "\t" : ",");
   if (!tabbed && (rows.length < 2 || rows[0].length < 2 || rows.some((r) => r.length !== rows[0].length))) return null;
   return rows.some((r) => r.length > 1) ? rows : null;
 }
+
+//: A line's list mark taken off: a bullet, a number or a checkbox.
+function pasteStripMark(line) {
+  return String(line || "").replace(PASTE_BULLET, "").trim();
+}
+
+//: Lines with their depth, for an indented list: a tab is one level, and
+//: leading spaces count by the smallest step the text uses (2 or 4), so a
+//: copy from an editor with either indent reads the same. Depth never jumps
+//: by more than one below its parent. Marks are taken off.
+function pasteOutline(text) {
+  const rows = pasteClean(text).split("\n").filter((line) => line.trim()).map((line) => {
+    const lead = /^[ \t]*/.exec(line)[0];
+    return { cols: lead.replace(/\t/g, "    ").length, text: pasteStripMark(line) };
+  }).filter((row) => row.text);
+  const steps = rows.map((r) => r.cols).filter((c) => c > 0);
+  const unit = steps.length ? Math.min(...steps) : 4;
+  const out = [];
+  for (const row of rows) {
+    const want = Math.round(row.cols / unit);
+    const cap = out.length ? out[out.length - 1].depth + 1 : 0;
+    out.push({ depth: Math.max(0, Math.min(want, cap)), text: row.text });
+  }
+  return out;
+}
+// PASTE-CORE-END
+
+// --- paste options and Paste special (docpaste-1026) --------------------------
+//
+// **Paste is as good as Word's.** The owner: "What about different paste
+// options on the document editor??" Before this a paste was one thing: rich
+// HTML became Markdown, everything else went in as typed, and the only
+// alternative was Ctrl+Shift+V beforehand. Now a paste that changed form (rich
+// to Markdown, several lines, rows and columns, a web address) leaves a small
+// chip at the caret offering the other readings of the same clipboard, and
+// Paste special in the document menu and the palette applies one on purpose.
+// The pure half runs in node (tests/test_doc_paste.py); the wiring is checked
+// as text and driven by scratchpad/ui-sweeps/docpaste.js.
+
+// DOC-PASTE-PURE-START
+const DOC_PASTE_LANGS = [
+  ["json", /^\s*[[{][\s\S]*[\]}]\s*$/],
+  ["python", /^\s*(?:def |import |from \w+ import |class \w+.*:|if __name__)/m],
+  ["sql", /^\s*(?:select|insert into|update|delete from|create table)\b/i],
+  ["bash", /^\s*(?:\$ |#!\/bin\/|sudo |git |npm |pip |cd )/m],
+  ["html", /^\s*<(?:!doctype|html|div|p|span|ul|a)\b[\s\S]*>/i],
+  ["css", /[\w.#-]+\s*\{[^}]*:[^}]*\}/],
+  ["javascript", /\b(?:const|let|function|console\.log)\b|=>/],
+];
 
 function docPasteGuessLang(text) {
   const hit = DOC_PASTE_LANGS.find(([lang, re]) => {
@@ -2449,7 +2486,7 @@ function docPasteFence(text, lang) {
 //: The prefix of the line the caret is on that a pasted second line should
 //: carry: a quote's ">" or a list item's hanging indent.
 function docPasteMatch(text, linePrefix) {
-  const lines = docPasteClean(text).split("\n");
+  const lines = pasteClean(text).split("\n");
   const m = /^(\s*(?:>\s?)+)|^(\s*(?:[-*+]|\d+[.)])\s+(?:\[[ xX]\]\s+)?)/.exec(linePrefix || "");
   if (!m) return lines.join("\n");
   const lead = m[1] ? m[1].replace(/\s*$/, " ") : " ".repeat(m[2].length);
@@ -2473,21 +2510,21 @@ function docPasteBlockPad(doc, from, to, kind) {
 }
 
 const DOC_PASTE_MODES = {
-  plain: (text) => docPasteClean(text),
+  plain: (text) => pasteClean(text),
   source: (text) => String(text || "").replace(/\r\n?/g, "\n"),
   code: (text) => {
-    const body = docPasteClean(text);
+    const body = pasteClean(text);
     return body ? docPasteFence(body, docPasteGuessLang(body)) : "";
   },
-  quote: (text) => docPasteLines(text).map((line) => `> ${line}`).join("\n"),
-  checklist: (text) => docPasteLines(text).map((line) => `- [ ] ${line.replace(DOC_PASTE_BULLET, "").trim()}`).join("\n"),
+  quote: (text) => pasteLines(text).map((line) => `> ${line}`).join("\n"),
+  checklist: (text) => pasteLines(text).map((line) => `- [ ] ${line.replace(PASTE_BULLET, "").trim()}`).join("\n"),
   table: (text) => {
-    const grid = docPasteGrid(text);
+    const grid = pasteGrid(text);
     return grid ? docTableFromGrid(grid.map((row) => row.map(docTableEscapeCell))) : "";
   },
   link: (text, ctx) => {
-    const url = docPasteUrl(text);
-    return url ? `[${ctx.selected || docPasteLinkLabel(url)}](${url})` : "";
+    const url = pasteUrl(text);
+    return url ? `[${ctx.selected || pasteLinkLabel(url)}](${url})` : "";
   },
   match: (text, ctx) => docPasteMatch(text, ctx.linePrefix),
 };
@@ -2718,11 +2755,11 @@ function docSmartPasteEvent(event, view) {
     return true;
   }
   if (docPastePlain || docPasteIsLinewise(plain)) return false;
-  const url = docPasteUrl(plain);
+  const url = pasteUrl(plain);
   if (url) return docPasteUrlEvent(event, view, url, plain);
   const html = data.getData("text/html") || "";
   if (html && DOC_RICH_TAGS.test(html)) return false;
-  if (docPasteLines(plain).length < 2) return false;
+  if (pasteLines(plain).length < 2) return false;
   const { from, to } = sel.main;
   const variants = docPasteTextVariants(plain, view.state.doc.toString(), from, to);
   event.preventDefault();
@@ -2735,7 +2772,7 @@ function docSmartPasteEvent(event, view) {
 function docPasteOfferRich(view, from, markdown, plain) {
   const doc = view.state.doc.toString();
   const prefix = doc.slice(doc.lastIndexOf("\n", from - 1) + 1, from);
-  const text = docPasteClean(plain || "");
+  const text = pasteClean(plain || "");
   const match = docPasteMatch(text, prefix);
   const variants = [docPasteVariant("keep", markdown)];
   if (text && text !== markdown) variants.push(docPasteVariant("text", text));

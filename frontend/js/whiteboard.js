@@ -7639,7 +7639,7 @@ async function wbDropCopies(befores) {
 //: paste, so a copy is the same thing however it was asked for: a group
 //: copied whole is a new group, and a shape moves by its path, not its x/y
 //: (see `wbTransformPathD`: a sketch's own x/y do not place it).
-async function wbCreateCopies(items, dx, dy) {
+async function wbCreateCopies(items, dx, dy, noComments = false) {
   const groups = new Map();
   const wire = items.map(({ kind, payload, key, src, dst }, i) => {
     const body = { ...payload, board_id: window.currentBoardId ?? null };
@@ -7649,10 +7649,12 @@ async function wbCreateCopies(items, dx, dy) {
         if (typeof parsed.d === "string") parsed.d = wbTransformPathD(parsed.d, { dx, dy });
         else wbShiftLinkGeometry(parsed, dx, dy);
       }
+      if (noComments) delete parsed.comments;
       body.data = JSON.stringify(parsed);
     } else {
       body.x = (body.x || 0) + dx;
       body.y = (body.y || 0) + dy;
+      if (noComments) wbWithoutComments(body);
     }
     if (body.group_id) {
       if (!groups.has(body.group_id)) {
@@ -7681,6 +7683,16 @@ async function wbCreateCopies(items, dx, dy) {
     ...res.objects.map((o) => ({ action: "create", kind: "object", id: o.id })),
     ...res.sketches.map((o) => ({ action: "create", kind: "sketch", id: o.id })),
   ];
+}
+
+//: A copy without the threads on it: a card's `comments` column, an object's
+//: `data.comments`.
+function wbWithoutComments(body) {
+  if ("comments" in body) body.comments = null;
+  if (body.data && typeof body.data === "object") {
+    const { comments, ...rest } = body.data;
+    body.data = rest;
+  }
 }
 
 //: A copied link carries its own free ends and bends in board units, so a
@@ -7942,12 +7954,12 @@ function wbCopySelection() {
 //: Make `copied` on the board, centred on `at` (board units) when given,
 //: else moved by `step` grid steps (0 is in place); select what was made
 //: and record it as one undo step.
-async function wbPlaceCopies(copied, at, step = 1) {
+async function wbPlaceCopies(copied, at, step = 1, noComments = false) {
   if (!copied?.items.length) return [];
   const { box } = copied;
   const dx = at ? at[0] - (box.minX + box.maxX) / 2 : step * WB_GRID_SPACING;
   const dy = at ? at[1] - (box.minY + box.maxY) / 2 : step * WB_GRID_SPACING;
-  const created = await wbCreateCopies(copied.items, dx, dy);
+  const created = await wbCreateCopies(copied.items, dx, dy, noComments);
   if (created.length === 0) return created;
   wbPushDragUndo(created);
   wbSelectToolRef?.("select");
@@ -7970,14 +7982,14 @@ async function wbPlaceCopies(copied, at, step = 1) {
 //: copy came from lands one step down and right, the next two, and so on; on
 //: another board the first lands in place. Ctrl+Shift+V is always in place,
 //: and "Paste here" in the canvas menu goes to the pointer.
-async function wbPasteClipboard({ at = null, inPlace = false } = {}) {
+async function wbPasteClipboard({ at = null, inPlace = false, noComments = false } = {}) {
   const clip = wbClipboard;
   if (!clip) return;
   const here = window.currentBoardId ?? 0;
   const seen = clip.pasted?.board === here ? clip.pasted.n : (clip.board === here ? 0 : -1);
   const n = inPlace ? 0 : seen + 1;
   if (!inPlace && !at) clip.pasted = { board: here, n };
-  await wbPlaceCopies(clip, at, n);
+  await wbPlaceCopies(clip, at, n, noComments);
 }
 
 // --- Paste from other apps (FEAT-09) ----------------------------------------
@@ -8020,80 +8032,6 @@ function wbOnBoardCopy(e) {
   e.clipboardData.setData("text/plain", text || " ");
   e.clipboardData.setData("text/html", `<meta name="memorymap-board" content="${wbClipboard.stamp}"><pre>${safe}</pre>`);
   e.preventDefault();
-}
-
-//: A pasted text's lines, list marks taken off.
-function wbPastedLines(text) {
-  return String(text || "")
-    .replace(/\r\n?/g, "\n")
-    .split("\n")
-    .map((line) => line.replace(/^\s*(?:[-*\u2022]|\d+[.)])\s+/, "").trim())
-    .filter(Boolean);
-}
-
-//: What a pasted text becomes: `{kind: "link" | "text" | "stickies", ...}`.
-//: Pure, so the rule can be tested without a board.
-function wbPastePlan(text) {
-  const lines = wbPastedLines(text);
-  if (!lines.length) return null;
-  if (lines.length === 1 && /^https?:\/\/\S+$/i.test(lines[0])) return { kind: "link", url: lines[0] };
-  if (lines.length === 1) return { kind: "text", text: lines[0] };
-  if (lines.length > 50) return { kind: "text", text: lines.join("\n") };
-  return { kind: "stickies", lines };
-}
-
-const WB_PASTE_STICKY = { w: 180, h: 140, gap: 24 };
-
-async function wbPasteText(text, at) {
-  const plan = wbPastePlan(text);
-  if (!plan) return 0;
-  const [cx, cy] = at || wbViewCentre();
-  const made = [];
-  await wbRecordGesture(async () => {
-    if (plan.kind === "link") {
-      let label = plan.url;
-      try {
-        const u = new URL(plan.url);
-        label = (u.host + u.pathname).replace(/\/$/, "");
-      } catch {
-        label = plan.url;
-      }
-      const box = await wbCreateObject("text", { content: `[${label.replace(/[[\]]/g, "")}](${plan.url})`, md: true }, cx - 140, cy - 30, 280, 60);
-      if (box) made.push(box);
-    } else if (plan.kind === "text") {
-      const width = 320;
-      const rows = Math.min(30, Math.ceil(plan.text.length / 40) + plan.text.split("\n").length - 1);
-      const height = Math.min(800, 24 + rows * 22);
-      const box = await wbCreateObject("text", { content: plan.text }, cx - width / 2, cy - height / 2, width, height);
-      if (box) made.push(box);
-    } else {
-      const cols = Math.min(5, Math.ceil(Math.sqrt(plan.lines.length)));
-      const rowsN = Math.ceil(plan.lines.length / cols);
-      const { w, h, gap } = WB_PASTE_STICKY;
-      const left = cx - (cols * w + (cols - 1) * gap) / 2;
-      const top = cy - (rowsN * h + (rowsN - 1) * gap) / 2;
-      for (const [i, line] of plan.lines.entries()) {
-        const x = left + (i % cols) * (w + gap);
-        const y = top + Math.floor(i / cols) * (h + gap);
-        const sticky = await wbCreateObject(
-          "text",
-          { content: line.slice(0, 2000), sticky: true, bg: WB_STICKY_PAPERS[0].value, color: "#2a2a1f", font_size: 16 },
-          x, y, w, h
-        );
-        if (sticky) made.push(sticky);
-      }
-    }
-  });
-  if (!made.length) return 0;
-  clearWbSelection();
-  if (made.length === 1) wbSelectedItem = { kind: "object", id: made[0].id };
-  else for (const item of made) wbMultiSelection.add(wbMultiKey("object", item.id));
-  wbApplySelectionHighlight();
-  wbUpdateSelectionBar();
-  const said = plan.kind === "stickies" ? `Pasted ${made.length} stickies.` : plan.kind === "link" ? "Pasted a link." : "Pasted a text box.";
-  wbAnnounce(said);
-  toast(`${said} Ctrl+Z takes ${made.length === 1 ? "it" : "them"} back.`);
-  return made.length;
 }
 
 //: **The middle of the canvas you can see, not of the box behind the chrome**
@@ -17115,8 +17053,11 @@ async function initWhiteboard() {
         img.onerror = () => resolve({ w: 300, h: 200 });
         img.src = mediaSrc(uploaded.url);
       });
-      const width = Math.min(400, naturalSize.w || 300);
-      const height = width * ((naturalSize.h || 200) / (naturalSize.w || 300));
+      //: Its own size, shrunk only to sit inside the view (wbpaste-1026).
+      const view = wbVisibleCanvasRect();
+      const [vx0, vy0] = wbClientToBoard(view.left, view.top);
+      const [vx1, vy1] = wbClientToBoard(view.right, view.bottom);
+      const { width, height } = wbPasteImageSize(naturalSize.w, naturalSize.h, vx1 - vx0, vy1 - vy0);
       await wbCreateObject("image", { url: uploaded.url }, x - width / 2, y - height / 2, width, height);
     } catch (err) {
       toast(err.message || voiceLine("failed", { what: "add that image" }), true);
@@ -17152,13 +17093,16 @@ async function initWhiteboard() {
     if (files.length) {
       e.preventDefault();
       const [x, y] = wbViewCentre();
-      for (const file of files) wbPlaceUploadedImage(file, x, y);
+      files.forEach((file, i) => wbPlaceUploadedImage(file, x + i * WB_GRID_SPACING, y + i * WB_GRID_SPACING));
       return;
     }
     const text = data?.getData("text/plain") || "";
     //: A map's paste of an outline under a topic is the map's own (MINDMAP
     //: §12.2, the map half of FEAT-09); here a map keeps its own clipboard.
-    if (text.trim() && !wbIsMap()) {
+    if (text.trim()) {
+      //: Text on a map is the map's alone: falling through to the board's own
+      //: clipboard pasted a stale copy beside the outline (wbpaste-1026 sweep).
+      if (wbIsMap()) return;
       e.preventDefault();
       wbPasteText(text, wbPointerOnBoard());
       return;

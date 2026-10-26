@@ -16,6 +16,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 PROSE = (ROOT / "frontend/js/documents-prose.js").read_text(encoding="utf-8")
+CORE = PROSE
 DOCUMENTS = (ROOT / "frontend/js/documents.js").read_text(encoding="utf-8")
 INDEX = (ROOT / "frontend/index.html").read_text(encoding="utf-8")
 
@@ -29,7 +30,8 @@ def _fn(name: str) -> str:
 
 def _pure() -> str:
     body = PROSE[PROSE.index("// DOC-PASTE-PURE-START") : PROSE.index("// DOC-PASTE-PURE-END")]
-    return _fn("docTableEscapeCell") + _fn("docTableFromGrid") + body
+    core = CORE[CORE.index("// PASTE-CORE-START") : CORE.index("// PASTE-CORE-END")]
+    return core + _fn("docTableEscapeCell") + _fn("docTableFromGrid") + body
 
 
 def _run(expr: str):
@@ -129,3 +131,12 @@ def test_paste_special_is_a_menu_row_and_palette_commands_all_prose_free_of_code
 def test_paste_special_works_without_clipboard_permission_by_arming_the_next_paste():
     body = PROSE[PROSE.index("async function docPasteSpecial(") :]
     assert "navigator.clipboard.readText()" in body and "docPasteArmed = mode" in body
+
+
+@needs_node
+def test_the_shared_outline_reader_nests_by_indent_and_never_skips_a_level():
+    core = CORE[CORE.index("// PASTE-CORE-START") : CORE.index("// PASTE-CORE-END")]
+    text = "- root\n  - a\n    - a1\n  - b\n\t\t\t\tdeep"
+    script = core + f"\nconsole.log(JSON.stringify(pasteOutline({json.dumps(text)})));"
+    out = json.loads(subprocess.run(["node", "-e", script], capture_output=True, text=True, timeout=60, check=True).stdout)
+    assert [(r["depth"], r["text"]) for r in out] == [(0, "root"), (1, "a"), (2, "a1"), (1, "b"), (2, "deep")]

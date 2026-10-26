@@ -1653,6 +1653,30 @@ HELP_TOPICS.extend(
             "badge": {"label": "Library", "tab": "library"},
         },
         {
+            "id": "board-paste",
+            "keywords": (
+                "paste on a board", "paste options on a board", "board paste special", "paste text on the board",
+                "paste a spreadsheet", "paste as a table on a board", "paste as stickies", "paste as a mind map branch",
+                "paste into a shape", "paste without comments", "pasted picture size", "paste a list onto a map",
+            ),
+            "body": (
+                "Paste on a board or map. Text from another app goes in at once: a web address as a link box, "
+                "one line as a text box, a few lines as a sticky each, and rows copied from a spreadsheet as a "
+                "table. A Paste options chip then appears under what was made; press Ctrl, then a letter, or "
+                "open it: Stickies (S), One text box (T), Bullet list in a shape (B), Mind map branch (M, "
+                "indentation is depth, joined by connectors), Table (A, from tabs or CSV) or Plain text (P). "
+                "A choice replaces the paste and is one Undo step; Esc, typing or a click closes the chip. "
+                "Paste special, in the Edit menu and Ctrl+K, pastes on purpose in one of those forms, and "
+                "Paste into the selected shape's text writes the clipboard into the shape or connector. "
+                "Paste without comments pastes copied items without their comment threads (Paste keeps them). "
+                "A pasted picture keeps its own size, shrunk only to fit the view. On a mind map, lines pasted "
+                "with a topic selected become its child branches, indentation as depth, and the chip offers "
+                "the lines as one topic instead. If the browser will not let the app read the clipboard, "
+                "Paste special applies to your next Ctrl+V."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
             "id": "mind-map-controls",
             "keywords": (
                 "cross-link", "cross link", "outdent", "fold", "unfold", "radial",
