@@ -616,10 +616,11 @@ def _window_words(words: str, grain: str, first: date, last: date | None = None)
     low = words.lower()
     if grain == "day" and last not in (None, first):
         return _MONTH_WORD.sub(lambda m: m.group(0).capitalize(), words if low.startswith(("from ", "between ", "since ")) else "from " + words)
-    if grain == "month" and low.startswith(("in ", "during ")):
+    if grain == "month" and (low.startswith(("in ", "during ")) or _MONTH_WORD.match(low)):
         return first.strftime("in %B %Y")
     if grain in ("season", "week", "half") and not low.startswith(("in ", "during ", "since ", "this ", "last ", "next ", "over ", "throughout ", "through ", "from ", "for ")):
-        return "in " + (words if low.startswith("the ") else "the " + words)
+        the = "" if low.startswith("the ") or (grain == "season" and re.search(r"\d{4}", low)) else "the "
+        return "in " + the + words
     if not low.startswith(("in ", "since ", "on ", "this ", "last ", "today", "yesterday")):
         return ("in the " if low.startswith(("past ", "previous ")) else "on ") + words
     return words

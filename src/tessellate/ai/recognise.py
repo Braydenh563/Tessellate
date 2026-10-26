@@ -1043,7 +1043,13 @@ _SEASON_FIND = (
     r"(?:in|during|over|throughout|through|from|for) (?:the )?(?:(?:last|this|next|previous|coming) )?"
     + _SEASON_RE + r"(?: \d{4})?",
     r"(?:the )?(?:last|this|next|previous|coming) " + _SEASON_RE + r"(?: \d{4})?",
+    #: With a year a season needs no lead word ("winter 2025"); without one it
+    #: stays a subject ("winter tyres").
+    r"(?:the )?" + _SEASON_RE + r" (?:19|20)\d{2}",
 )
+#: A month with a year and no lead word ("March 2026 notes"); a day follows a
+#: month in "March 20 2026", which the day readers take first.
+_MONTH_YEAR = _MONTH_RE + r" (?:19|20)\d{2}"
 _PERIODS = (_LEAD_IN + _PART_OF_MONTH, *_SEASON_FIND)
 
 #: Every phrase `span` reads, longest forms first, as one pattern for `find`
@@ -1072,6 +1078,7 @@ _DATE_PHRASE_SOURCE = (
             *_PART_OF_DAY,
             _BETWEEN,
             *_DAY_RUNS,
+            _MONTH_YEAR,
             _LATELY,
             _BEFORE_LAST,
             _QUARTER,
@@ -1670,10 +1677,10 @@ def _span_season(text: str, a: date, tense: str | None) -> Any:
     if not found:
         return _MISS
     which, name, year = found.groups()
-    cycles = _season_cycles(name, a)
     if year:
-        pick = next((c for c in cycles if c[0].year == int(year)), None)
-        return None if pick is None else (pick[0], pick[1], "season")
+        first = date(int(year), _SEASON_START[name], 1)
+        return first, _month_end(_shift_months(first, 2)), "season"
+    cycles = _season_cycles(name, a)
     first, last = _season_pick(which, tense, a, cycles)
     return first, last, "season"
 
@@ -1708,7 +1715,7 @@ def span(phrase: str, anchor: date, tense: str | None = None) -> tuple[date, dat
 #: ("last week", "3 days ago", "this month"), so "week 4" stays a subject
 #: and "last week" is not one. Moved from the composer (ledger row 453).
 _WINDOW_WORDS = re.compile(
-    r"\b(?:" + "|".join((*_PERIODS, _WEEKEND, *_ROLLING, *_TO_DATE, *_PART_OF_DAY, _BETWEEN, *_DAY_RUNS, _LATELY, _BEFORE_LAST, _QUARTER, _PREVIOUS_UNIT,
+    r"\b(?:" + "|".join((*_PERIODS, _WEEKEND, *_ROLLING, *_TO_DATE, *_PART_OF_DAY, _BETWEEN, *_DAY_RUNS, _MONTH_YEAR, _LATELY, _BEFORE_LAST, _QUARTER, _PREVIOUS_UNIT,
                          r"since (?:" + _WEEKDAY_RE + r"|yesterday|" + _SINCE_PART + r"|last (?:week|month|year))")) + r"|(?:the\s+)?(?:last|this|next|past|previous|coming)\s+(?:few\s+|couple\s+of\s+|\d{1,3}\s+|two\s+|three\s+|four\s+|five\s+|six\s+|seven\s+|eight\s+|nine\s+|ten\s+|eleven\s+|twelve\s+)?"
     r"(?:days?|weeks?|weekend|months?|years?|night|morning|evening|monday|tuesday|wednesday|thursday|friday|saturday|sunday)"
     r"|(?:the\s+)?week\s+before\s+last|(?:\d{1,3}|a|an|one|two|three|four|five|six)\s+(?:days?|weeks?|months?|years?)\s+ago"

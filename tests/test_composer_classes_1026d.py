@@ -206,7 +206,7 @@ E_COUNTS = [
 
 #: Classes still failing, each case a strict xfail until its fix lands (take
 #: the letter out when the class passes).
-OPEN: set[str] = {"D", "E"}
+OPEN: set[str] = {"E"}
 #: Phrasings of an open class that already worked before its fix.
 WORKED = {
     "notes between 10 and 12 September", "notes between 3 and 9 May", "what did I write May 3 to 9",
