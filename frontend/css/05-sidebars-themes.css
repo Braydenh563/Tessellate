@@ -2161,6 +2161,11 @@ body.resizing-sidebar {
 /* The group separators are furniture, not controls: they take the strip's
    height as a *rule*, and the sizing rule above must not turn them into 2rem
    blocks. */
+.doc-toolbar-pair {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
 .doc-toolbar .doc-toolbar-sep {
   align-self: center;
   height: calc(var(--control-h) - var(--space-2));

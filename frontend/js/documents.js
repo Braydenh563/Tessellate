@@ -2828,6 +2828,8 @@ const DOC_COMMANDS = [
     run: () => wrapDocSelection("**", "bold text") },
   { id: "italic", icon: "ph:text-italic", label: "Italic", keys: "Ctrl+I",
     run: () => wrapDocSelection("*", "italic text") },
+  { id: "underline", icon: "ph:text-underline", label: "Underline", keys: "Ctrl+U",
+    run: () => applyMarkdown("underline") },
   { id: "strike", icon: "ph:text-strikethrough", label: "Strike through", keys: "Ctrl+Shift+S",
     run: () => wrapDocSelection("~~", "struck through") },
   { id: "code", icon: "ph:code", label: "Inline code", keys: "Ctrl+E",
@@ -4559,6 +4561,26 @@ function docTakeTabEscape() {
 //: "- al|pha" plus Tab gave "- al  pha").
 const DOC_LIST_LINE = /^([ \t]*)([-*+]|\d+[.)])(\s)/;
 
+//: The number an ordered item at `indent` columns should carry, from the
+//: lines above `start`: its previous sibling's plus one, or 1 when a shallower
+//: line (the parent) or a break in the list comes first. Deeper lines are the
+//: sibling's children and are skipped over.
+function docOrderedNumberAt(value, start, indent) {
+  const above = value.slice(0, Math.max(0, start - 1)).split("\n");
+  for (let i = above.length - 1; i >= 0; i--) {
+    const line = above[i];
+    if (!line.trim()) continue;
+    const m = /^([ \t]*)(?:(\d+)[.)]|[-*+])\s/.exec(line);
+    if (!m) {
+      if (/^\s/.test(line)) continue;
+      return 1;
+    }
+    if (m[1].length > indent) continue;
+    return m[1].length === indent && m[2] ? Number(m[2]) + 1 : 1;
+  }
+  return 1;
+}
+
 function docCanOutdent(box) {
   if (!box) return false;
   if (box.selectionEnd > box.selectionStart) return true;
@@ -4594,8 +4616,14 @@ function indentDocSelection(box, outdent) {
       next = leading.slice(Math.min(leading.length, unit.length));
     }
     if (next === leading) return; // nothing to remove: the caller lets Tab go
-    docReplaceRange(box, start, start + leading.length, next);
-    const moved = next.length - leading.length;
+    //: A numbered item that changes level takes its place in the new list:
+    //: indented under "1. a" it is the first of a nested list ("1."), and
+    //: brought back out it is the parent's next number. Left alone it kept
+    //: "2." in a list of one, which renders as "2." and counts from there.
+    const digits = /^\d+/.exec(text.slice(leading.length))?.[0] || "";
+    const number = digits ? String(docOrderedNumberAt(box.value, start, next.length)) : "";
+    docReplaceRange(box, start, start + leading.length + digits.length, next + number);
+    const moved = next.length - leading.length + number.length - digits.length;
     const at = Math.max(start + next.length, caret + moved);
     box.setSelectionRange(at, at);
     markDocDirty();
@@ -5673,8 +5701,27 @@ function docTablePasteEvent(event, view) {
 // (a heading, emphasis, a list, a link, a quote, code, a picture, a table):
 // a code editor's copy is coloured spans and divs, and turning those into
 // paragraphs would break the code it was copying.
-const DOC_RICH_TAGS = /<(h[1-6]|strong|b|em|i|a\s[^>]*href|ul|ol|blockquote|pre|code|img|table|del|s)[\s>]/i;
+const DOC_RICH_TAGS = /<(h[1-6]|strong|b|em|i|a\s[^>]*href|ul|ol|blockquote|pre|code|img|table|del|s)[\s>]|mso-list/i;
 let docPastePlain = false;
+
+//: **Word's lists are paragraphs, not lists.** A pasted bullet from Word is a
+//: `<p>` with `mso-list: l0 level2 lfo1` and a hidden marker span
+//: (`mso-list: Ignore`) holding the bullet or "1.", so neither tag test saw a
+//: list and "· item" arrived as plain text. Returns the Markdown line, indented
+//: by the item's level, or "" for any other paragraph.
+function docWordListLine(el, styleOf, inline) {
+  const list = styleOf(el, "mso-list");
+  if (!list || list === "none") return "";
+  const level = Number(/level(\d+)/.exec(list)?.[1] || 1);
+  //: The marker span is nested (`<span Symbol><span mso-list:Ignore>`), so it
+  //: is found by its style wherever it sits, read, and taken out.
+  const marks = [...el.querySelectorAll("[data-mm-style]")].filter((c) => styleOf(c, "mso-list") === "ignore");
+  const mark = marks.map((c) => c.textContent).join("");
+  marks.forEach((c) => c.remove());
+  const number = /^\s*(\d+)[.)]/.exec(mark)?.[1] || (/^\s*[a-z]{1,4}[.)]/i.test(mark) ? "1" : "");
+  const text = [...el.childNodes].map(inline).join("").replace(/\s+/g, " ").trim();
+  return text ? `${"  ".repeat(Math.max(0, level - 1))}${number ? `${number}.` : "-"} ${text}` : "";
+}
 
 function docHtmlToMarkdown(html) {
   //: `style` renamed before parsing: the page's CSP refuses an inline style
@@ -5746,6 +5793,7 @@ function docHtmlToMarkdown(html) {
       for (const sub of li.children) if (/^(UL|OL)$/.test(sub.nodeName)) list(sub, depth + 1);
     }
   };
+  let wordRun = -1;
   const block = (el) => {
     let run = "";
     const flush = () => {
@@ -5766,8 +5814,16 @@ function docHtmlToMarkdown(html) {
         continue;
       }
       flush();
+      const wordItem = tag === "P" ? docWordListLine(child, styleOf, inline) : "";
       const heading = /^H([1-6])$/.exec(tag);
-      if (heading) {
+      if (wordItem) {
+        //: Word's list paragraphs run together as one tight list.
+        if (wordRun === out.length - 1) out[wordRun] += `\n${wordItem}`;
+        else {
+          out.push(wordItem);
+          wordRun = out.length - 1;
+        }
+      } else if (heading) {
         const text = inline(child).replace(/\s+/g, " ").trim();
         if (text) out.push(`${"#".repeat(Number(heading[1]))} ${text}`);
       } else if (tag === "UL" || tag === "OL") {
@@ -11278,6 +11334,60 @@ const MD_ACTIONS = {
 // would have been the third place in this app to independently decide what
 // `**` means: see MD_ACTIONS' own comment and editor.js's "/" menu, which
 // are already deliberately kept to one dialect.
+//: **A line prefix is a switch, not a stack.** The heading, list, task and
+//: quote buttons used to put their marker in front of whatever the line
+//: already began with, so H2 on a heading did nothing,
+//: Numbered on a bullet gave `1. - x` and H1 on `## x` gave `# ## x`. A
+//: second press on the same kind takes it off (every other editor's toggle);
+//: a different kind of the same family (heading, list) replaces it; a quote
+//: marker is its own layer and stays put under either. Blank lines in a
+//: multi-line selection are left blank; a numbered list counts 1, 2, 3.
+const MD_LINE_KINDS = {
+  h1: ["heading", "# "], h2: ["heading", "## "], h3: ["heading", "### "],
+  h4: ["heading", "#### "], h5: ["heading", "##### "], h6: ["heading", "###### "],
+  ul: ["list", "- "], ol: ["list", "1. "], task: ["list", "- [ ] "], quote: ["quote", "> "],
+};
+const MD_LINE_QUOTE = /^(?:>[ \t]?)+/;
+const MD_LINE_HEAD = /^( *)(#{1,6}[ \t]+)?(?:(?:([-*+])|(\d+[.)]))[ \t]+(\[[ xX]\][ \t]+)?)?/;
+
+//: What a line (past any quote marker) already is: "h1".."h6", "ul", "ol",
+//: "task" or "".
+function mdLineKind(rest) {
+  const m = MD_LINE_HEAD.exec(rest);
+  if (m[2]) return `h${m[2].trim().length}`;
+  if (m[4]) return "ol";
+  if (m[3]) return m[5] ? "task" : "ul";
+  return "";
+}
+
+function mdLinePrefixEdit(block, kind) {
+  const [family, marker] = MD_LINE_KINDS[kind];
+  const lines = block.split("\n");
+  const live = lines.filter((line) => line.trim());
+  const one = lines.length === 1;
+  const split = (line) => {
+    const lead = MD_LINE_QUOTE.exec(line)?.[0] || "";
+    return [lead, line.slice(lead.length)];
+  };
+  const has = (line) => {
+    const [lead, rest] = split(line);
+    return family === "quote" ? Boolean(lead) : mdLineKind(rest) === kind;
+  };
+  const off = (live.length > 0 || one) && (live.length ? live : lines).every(has);
+  let count = 0;
+  return lines.map((line) => {
+    if (!line.trim() && !one) return line;
+    const [lead, rest] = split(line);
+    if (family === "quote") return off ? rest : lead ? line : marker + line;
+    const head = MD_LINE_HEAD.exec(rest)[0];
+    const body = rest.slice(head.length);
+    if (off) return lead + body;
+    count += 1;
+    const indent = family === "list" ? /^ */.exec(rest)[0] : "";
+    return `${lead}${indent}${kind === "ol" ? `${count}. ` : marker}${body}`;
+  }).join("\n");
+}
+
 function applyMarkdown(kind, boxId = "doc-content") {
   const action = MD_ACTIONS[kind];
   const box = docSurfaceById(boxId);
@@ -11390,21 +11500,34 @@ function applyMarkdown(kind, boxId = "doc-content") {
     return;
   }
   if (action.pre) {
+    //: A second press takes the pair off, as Bold does: the selection sits
+    //: inside the pair, or is the pair with its words.
+    const post = action.post || "";
+    if (selected && value.slice(start - action.pre.length, start) === action.pre && value.slice(end, end + post.length) === post) {
+      box.value = value.slice(0, start - action.pre.length) + selected + value.slice(end + post.length);
+      box.setSelectionRange(start - action.pre.length, end - action.pre.length);
+      finishMarkdownEdit(box, boxId);
+      return;
+    }
+    if (selected.length > action.pre.length + post.length && selected.startsWith(action.pre) && selected.endsWith(post)) {
+      const bare = selected.slice(action.pre.length, selected.length - post.length);
+      box.value = value.slice(0, start) + bare + value.slice(end);
+      box.setSelectionRange(start, start + bare.length);
+      finishMarkdownEdit(box, boxId);
+      return;
+    }
     const body = selected || action.placeholder || "";
     insertAround(box, start, end, action.pre, action.post || "", body, action.pre.length);
     finishMarkdownEdit(box, boxId);
     return;
   }
   if (action.line) {
-    // Prefix every selected line, or the current one when nothing is selected.
+    // Every selected line, or the current one when nothing is selected.
     const lineStart = value.lastIndexOf("\n", start - 1) + 1;
     const lineEnd = end + (value.slice(end).indexOf("\n") === -1 ? 0 : value.slice(end).indexOf("\n"));
-    const target = value.slice(lineStart, Math.max(lineEnd, end)) || "";
-    const prefixed = target
-      .split("\n")
-      .map((line) => (line.startsWith(action.line) ? line : action.line + line))
-      .join("\n");
-    box.value = value.slice(0, lineStart) + prefixed + value.slice(Math.max(lineEnd, end));
+    const to = Math.max(lineEnd, end);
+    const prefixed = mdLinePrefixEdit(value.slice(lineStart, to), kind);
+    box.value = value.slice(0, lineStart) + prefixed + value.slice(to);
     box.setSelectionRange(lineStart, lineStart + prefixed.length);
   } else if (action.custom === "link") {
     const label = selected || "link text";
@@ -13985,7 +14108,18 @@ function mountEditorToolbarExtras(bar) {
     return el;
   };
   bar.appendChild(sep());
+  //: **A pair is one flex item.** Undo and redo (and outdent and indent) are
+  //: one decision; the strip wraps between items, and at 1440 it wrapped
+  //: between Undo and Redo, leaving Redo alone at the start of row two.
+  let pair = null;
   for (const spec of EDITOR_TOOLBAR_BUTTONS) {
+    if (!pair || pair.children.length > 1) {
+      pair = document.createElement("span");
+      pair.className = "doc-toolbar-pair";
+      pair.setAttribute("role", "group");
+      pair.dataset.mdExtra = "1";
+      bar.appendChild(pair);
+    }
     const button = document.createElement("button");
     button.type = "button";
     button.dataset.md = spec.md;
@@ -13993,7 +14127,7 @@ function mountEditorToolbarExtras(bar) {
     button.title = spec.title;
     button.setAttribute("aria-label", spec.title);
     setLabel(button, spec.icon);
-    bar.appendChild(button);
+    pair.appendChild(button);
   }
   for (const menu of EDITOR_TOOLBAR_MENUS) {
     const details = document.createElement("details");
@@ -15976,6 +16110,9 @@ function toggleDocToolbar() {
   const collapsed = !docToolbarCollapsed();
   setDocToolbarCollapsed(collapsed);
   if (!collapsed) $("doc-toolbar")?.querySelector("button:not([hidden])")?.focus({ preventScroll: true });
+  //: Hiding it from inside it must not strand the keyboard on <body>: the
+  //: focused button just vanished, and the next keystroke went nowhere.
+  else if (!document.activeElement || document.activeElement === document.body) docSurface()?.focus();
 }
 
 //: One strip's wrap/collapse group. Split out of the loop below so a bar that
@@ -22445,6 +22582,10 @@ function docCmKeymap(CM) {
     { key: "Mod-s", run: () => { saveDocument(); return true; } },
     { key: "Mod-b", run: () => { wrapDocSelection("**", "bold text"); return true; } },
     { key: "Mod-i", run: () => { wrapDocSelection("*", "italic text"); return true; } },
+    //: Underline, the one chord every word processor shares. CodeMirror binds
+    //: Mod-u to "undo selection", which on a prose page just collapses the
+    //: selection and reads as the key being dead.
+    { key: "Mod-u", run: () => { applyMarkdown("underline"); return true; } },
     { key: "Mod-e", run: () => { wrapDocSelection("`"); return true; } },
     { key: "Mod-1", run: () => { applyMarkdown("h1"); return true; } },
     { key: "Mod-2", run: () => { applyMarkdown("h2"); return true; } },
@@ -22457,6 +22598,9 @@ function docCmKeymap(CM) {
     //: panel here and the app's own bar on the fallback, so this binding does
     //: not have to know which is on screen.
     { key: "Mod-f", run: () => { toggleDocFindBar(true); return true; } },
+    //: Ctrl+H is Replace in every word processor and editor; the panel is the
+    //: same, with the cursor in its Replace field.
+    { key: "Mod-h", run: () => { toggleDocFindBar(true); docCmView?.dom.querySelector(".cm-search input[name=replace]")?.focus(); return true; } },
     //: Find in every document (INBOX 404), VS Code's search across files.
     { key: "Mod-Shift-f", run: () => docFindInDocuments() },
     //: The formatting toolbar, shown or hidden (INBOX 574).

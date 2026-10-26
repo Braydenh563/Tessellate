@@ -1757,9 +1757,18 @@ async function confirmLeavingUnsavedWork(name) {
   //: is not a departure; asking about it on every move was the bug. A
   //: document with edits in hand is saved now, and asked about only if
   //: that save fails.
-  if (typeof docDirty === "undefined" || !docDirty) return true;
+  if (typeof docDirty === "undefined") return true;
+  if (!docDirty) {
+    //: A document made by a keystroke and then emptied again (dog3d-1026) is
+    //: binned on leaving, as it already is on New or opening another.
+    await docDropIfUntouched();
+    return true;
+  }
   await saveDocument({ silent: true }).catch(() => {});
-  if (!docDirty) return true;
+  if (!docDirty) {
+    await docDropIfUntouched();
+    return true;
+  }
   const leave = await confirmDialog(
     "Leave without saving?\n\nWhat you were working on here hasn't been saved yet."
   );

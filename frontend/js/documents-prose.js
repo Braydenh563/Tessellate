@@ -1811,6 +1811,12 @@ function docPairBackspace(before, after) {
 //: Enter. Returns the line's new text, or null when the line is not an empty
 //: item (the keymap's continuation then runs as before).
 function docListEnter(line) {
+  //: An empty quote line ends the quote the same way (a nested one steps out
+  //: a level); the keymap's own answer left `>` and a fresh `> ` under it.
+  if (/^(?:>[ \t]?)+$/.test(line)) {
+    const depth = line.split(">").length - 1;
+    return depth > 1 ? "> ".repeat(depth - 1) : "";
+  }
   const m = /^(\s*)(?:[-*+]|\d{1,9}[.)])(?: \[[ xX]\])? ?$/.exec(line);
   if (!m) return null;
   const indent = m[1];
