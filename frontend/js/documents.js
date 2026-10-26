@@ -15767,7 +15767,7 @@ document.addEventListener("keydown", (event) => {
   const menuOpen = [...document.querySelectorAll('[role="menu"], .cm-tooltip')]
     .some((el) => el.getClientRects().length > 0);
   if (menuOpen) return;
-  if (event.target instanceof Element && event.target.closest("#doc-prose-panel, #doc-find-bar, .cm-search")) return;
+  if (event.target instanceof Element && event.target.closest("#doc-prose-panel, #doc-find-bar, .cm-search, .cm-goto-line")) return;
   //: The sidebar panel is the innermost layer, so it takes the first Escape
   //: and the mode leaves on the next. The focus goes to its toggle only when
   //: it was inside the panel, which is about to stop being drawn.

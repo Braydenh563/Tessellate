@@ -348,11 +348,6 @@
   margin-inline: var(--space-2);
   background: var(--border);
 }
-/* Bin is set apart inside its own group by a gap rather than a fourth
-   hairline: three groups is the structure. */
-.graph-popup-tool-bin {
-  margin-left: var(--space-3);
-}
 /* A category heading in a tree layout, a real node in the drawing, but not
    a note: hollow, so it never reads as something you can open. */
 .graph-core.graph-group {
