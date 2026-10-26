@@ -614,6 +614,8 @@ def _window_words(words: str, grain: str, first: date, last: date | None = None)
     """How a counted window is said back: "in March 2026", "in the first week
     of October", "last summer", "on Friday", "from 24 to 30 September"."""
     low = words.lower()
+    if low.startswith(("before ", "until ", "till ", "after ")):
+        return words
     if grain == "day" and last not in (None, first):
         return _MONTH_WORD.sub(lambda m: m.group(0).capitalize(), words if low.startswith(("from ", "between ", "since ")) else "from " + words)
     if grain == "month" and (low.startswith(("in ", "during ")) or _MONTH_WORD.match(low)):
