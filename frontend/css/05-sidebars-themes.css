@@ -1559,6 +1559,19 @@ button.rich-picker-row:is(:hover, :focus-visible) .rich-picker-tile {
   overflow-x: auto;
   text-align: center;
 }
+/* A numbered display equation, `\tag{1}`: the formula stays centred and its
+   number sits at the right edge of the line. */
+.md-math-numbered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.md-math-number {
+  position: absolute;
+  right: 0;
+  color: var(--muted);
+}
 /* Inline maths, `$x$`: sits in the line of prose it was written in, so it
    takes none of the display block's centring or margin. */
 .md-math-inline {

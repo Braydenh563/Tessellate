@@ -51,7 +51,27 @@ const { boot } = require('./lib.js');
     r.turn.paletteMenu = await ev(() => { docSurface().view.focus(); docTurnIntoMenu(); return document.querySelectorAll('.action-menu:not(.hidden) .menu-item').length; });
     await page.keyboard.press('Escape');
     };
-    if (width < 600) { await turnInto(); out[width] = r; await browser.close(); continue; }
+    // 9. Equation number (\tag) and the Read view's progress line.
+    const extras = async () => {
+      r.extras = {};
+      r.extras.tag = await ev(() => { const b = docMathRender('E=mc^2 \\tag{3}', true); return { cls: b.className, num: b.querySelector('.md-math-number')?.textContent, plain: docMathRender('x', true).tagName }; });
+      r.extras.treeLabel = await ev(() => docMathTree('a \\tag{1}', true).label + '|' + docMathTree('a \\tag{1}', false).label + '|' + docMathTree('a', true).label);
+      const lines = Array.from({ length: 80 }, (_, i) => `Paragraph ${i} with some words.`).join('\n\n');
+      await ev((t) => { const v = docSurface().view; v.dispatch({ changes: { from: 0, to: v.state.doc.length, insert: '$$\nE=mc^2 \\tag{3}\n$$\n\n' + t } }); setDocView('rendered'); }, lines);
+      await page.waitForTimeout(1200);
+      r.extras.read = await ev(() => {
+        const el = document.getElementById('doc-preview');
+        const num = el.querySelector('.md-math-number');
+        const at = () => getComputedStyle(el, '::before').transform;
+        const out = { numShown: num ? Math.round(num.getBoundingClientRect().right - el.getBoundingClientRect().left) : null, top: at(), scrollable: el.scrollHeight > el.clientHeight };
+        el.scrollTop = (el.scrollHeight - el.clientHeight) / 2; out.mid = null; return out;
+      });
+      await page.waitForTimeout(300);
+      r.extras.mid = await ev(() => getComputedStyle(document.getElementById('doc-preview'), '::before').transform);
+      await ev(() => { const el = document.getElementById('doc-preview'); el.scrollTop = el.scrollHeight; }); await page.waitForTimeout(300); r.extras.end = await ev(() => getComputedStyle(document.getElementById('doc-preview'), '::before').transform);
+      r.extras.barH = await ev(() => getComputedStyle(document.getElementById('doc-preview'), '::before').height);
+    };
+    if (width < 600) { await turnInto(); await extras(); out[width] = r; await browser.close(); continue; }
     // 1. Rich paste -> chip -> Text only, one undo.
     await paste({ 'text/html': '<h2>Title</h2><p>Some <strong>bold</strong> text</p>', 'text/plain': 'Title\nSome bold text' }, [0, 0]);
     r.richText = (await text()).split('\n').slice(0, 3).join('|');
@@ -105,6 +125,7 @@ const { boot } = require('./lib.js');
     r.specialMenu = await ev(() => { docPasteSpecialMenu(); return [...document.querySelectorAll('.action-menu:not(.hidden) .menu-item')].map((b) => b.textContent.trim()).length; });
     await page.keyboard.press('Escape');
     await turnInto();
+    await extras();
     // 7. Ctrl+Shift+V path leaves a multi-line paste alone (no chip).
     r.consoleErrors = 0;
     out[width] = r;
