@@ -2,7 +2,7 @@
 
 Generated 2026-10-26 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6277, frontend ids 2547, CSS sections 498, backend routes 619, backend modules 6511, test files 1353, tests 12061, plan headings 972.
+Counts: frontend functions 6277, frontend ids 2547, CSS sections 498, backend routes 619, backend modules 6511, test files 1353, tests 12062, plan headings 972.
 
 ## Frontend functions (6277)
 
@@ -19023,7 +19023,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12061)
+## Tests (12062)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19257,7 +19257,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_polish.py | 8 |
 | tests/test_composer_relevance_1310.py | 10 |
 | tests/test_composer_route_688.py | 20 |
-| tests/test_composer_seven_1026.py | 6 |
+| tests/test_composer_seven_1026.py | 7 |
 | tests/test_composer_social.py | 15 |
 | tests/test_composer_study_1025.py | 20 |
 | tests/test_composer_suggest_2210.py | 13 |

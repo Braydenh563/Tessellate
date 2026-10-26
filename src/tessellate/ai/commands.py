@@ -804,12 +804,12 @@ def not_done(skipped: list[dict]) -> str:
     return "Not done: " + ", ".join(said) + "."
 
 
-def summarise_done(labels: list[str], skipped: list[dict]) -> str:
+def summarise_done(labels: list[str], skipped: list[dict], say=None) -> str:  # noqa: ANN001
     """The one line a run ends with: what was done, then what was not."""
     #: A tool's label may open with its icon ("ph:trash Moved note 13 ..."),
     #: which the page draws only at the start of a line: taken off here.
     done = "; ".join(re.sub(r"^ph:[\w-]+\s+", "", label).rstrip(".") for label in labels if label)
-    line = f"Done: {done}." if done else "Nothing was changed."
+    line = (say(done) if say else f"Done: {done}.") if done else "Nothing was changed."
     return f"{line} {not_done(skipped)}".strip()
 
 
@@ -1141,7 +1141,7 @@ def _bin_reminder(session: Session, args: dict) -> dict:
     return {"binned": int(args["reminder_id"])}
 
 
-def run(session: Session, steps: list[dict], skipped: list[dict] | None = None) -> dict:
+def run(session: Session, steps: list[dict], skipped: list[dict] | None = None, say=None) -> dict:  # noqa: ANN001
     """Run a confirmed card's steps: {"summary", "undo", "open"?, "ok"}.
 
     Every step is tried even when one fails, and each failure is a "Not done"
@@ -1179,7 +1179,7 @@ def run(session: Session, steps: list[dict], skipped: list[dict] | None = None) 
         if isinstance(step_undo, dict):
             undo.extend(step_undo["steps"] if step_undo.get("tool") == "batch" else [step_undo])
         opened = result.get("open") or opened
-    summary = summarise_done([str(r.get("label") or n.replace("_", " ")) for n, _a, r in done], failed)
+    summary = summarise_done([str(r.get("label") or n.replace("_", " ")) for n, _a, r in done], failed, say)
     out = {
         "ok": bool(done),
         "summary": summary,

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: the line a command card ends on ("Done: moved note 3") is worded in the chat's voice and mood, like a reminder's.
 - Composer: a day or span with nothing dated ("due friday", "what's on friday") says so in the chat's voice and names the next dated item instead of "couldn't find any saved notes"; a bare "the next 7 days" is a what-is-due question.
 - Composer: small talk (how are you, sorry, laughter, reactions, confusion, acknowledgements, compliments) is built from a head and a tail in the chat's voice (persona included) and the emotion read from the message, 16 or more distinct lines a voice, instead of one stored line; the no-repeat and shape rules still hold.
 - Composer: a definition no longer volunteers unticked checklist items in its Also line; "what's my next exam" and "exam date" answer from the reminder; quiz feedback (right, close, wrong, skipped) is composed in the chosen voice and mood instead of picked from a list.

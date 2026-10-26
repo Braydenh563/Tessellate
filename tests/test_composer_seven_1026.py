@@ -52,3 +52,11 @@ def test_a_bare_span_is_a_due_question(ask, q):  # noqa: F811
     said = ask(q, notes_only=False)
     assert "Call the landlord" in said or "Nothing" in said or "dated" in said, said
     assert "newest notes" not in said, said
+
+
+def test_summarise_done_takes_a_voice():
+    from tessellate.ai import commands
+
+    assert commands.summarise_done(["Moved note 3"], []) == "Done: Moved note 3."
+    assert commands.summarise_done(["Moved note 3"], [], lambda w: f"All set, {w}.") == "All set, Moved note 3."
+    assert commands.summarise_done([], []) == "Nothing was changed."
