@@ -2838,6 +2838,32 @@ const DOC_COMMANDS = [
     run: () => docRunControl("doc-dim-others", "Dimming") },
   { id: "serif", icon: "ph:text-aa", label: "Serif reading face", keys: "none",
     run: () => docRunControl("doc-serif", "The serif face") },
+  { id: "stats", icon: "ph:chart-bar", label: "Document statistics: words, reading ease, repeated words", keys: "none",
+    run: () => docRunTextTool("stats") },
+  { id: "case-upper", icon: "ph:text-aa", label: "Selection to UPPER CASE", keys: "none",
+    run: () => docRunTextTool("upper") },
+  { id: "case-lower", icon: "ph:text-aa", label: "Selection to lower case", keys: "none",
+    run: () => docRunTextTool("lower") },
+  { id: "case-title", icon: "ph:text-aa", label: "Selection to Title Case", keys: "none",
+    run: () => docRunTextTool("title") },
+  { id: "case-sentence", icon: "ph:text-aa", label: "Selection to Sentence case", keys: "none",
+    run: () => docRunTextTool("sentence") },
+  { id: "sort-asc", icon: "ph:sort-ascending", label: "Sort the selected lines A to Z", keys: "none",
+    run: () => docRunTextTool("sort-asc") },
+  { id: "sort-desc", icon: "ph:sort-descending", label: "Sort the selected lines Z to A", keys: "none",
+    run: () => docRunTextTool("sort-desc") },
+  { id: "unique", icon: "ph:funnel", label: "Remove duplicate lines from the selection", keys: "none",
+    run: () => docRunTextTool("unique") },
+  { id: "number-headings", icon: "ph:list-numbers", label: "Number the headings (1, 1.1, 1.2)", keys: "none", prose: true,
+    run: () => docRunTextTool("number-headings") },
+  { id: "unnumber-headings", icon: "ph:list-numbers", label: "Remove the heading numbers", keys: "none", prose: true,
+    run: () => docRunTextTool("unnumber-headings") },
+  { id: "date-iso", icon: "ph:calendar-blank", label: "Insert today's date (2026-10-26)", keys: "none",
+    run: () => docRunTextTool("date-iso") },
+  { id: "date-long", icon: "ph:calendar-blank", label: "Insert today's date in words", keys: "none",
+    run: () => docRunTextTool("date-long") },
+  { id: "time", icon: "ph:clock", label: "Insert the time", keys: "none",
+    run: () => docRunTextTool("time") },
   { id: "goal", icon: "ph:target", label: "Set a word goal", keys: "none",
     run: () => docRunControl("doc-word-goal", "The word goal") },
   { id: "ai", icon: "ph:sparkle", label: "Ask Atlas to edit this document", keys: "none",
@@ -2980,7 +3006,7 @@ function docPaletteCommands() {
   }
   if (tab !== "documents" || !currentDoc) return [];
   const code = !docFileType().previewable;
-  return DOC_COMMANDS.filter((command) => command.run && (!command.code || code)).map((command) => ({
+  return DOC_COMMANDS.filter((command) => command.run && (!command.code || code) && (!command.prose || !code)).map((command) => ({
     group: "This document",
     label: `${command.icon} ${command.label}`,
     keys: command.keys === "none" ? "" : command.keys,
@@ -14564,6 +14590,12 @@ function initMarkdownToolbars() {
 initMarkdownToolbars();
 
 $("doc-word-goal").addEventListener("click", promptDocWordGoal);
+$("doc-counts")?.addEventListener("click", () => docRunTextTool("stats"));
+$("doc-counts")?.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  event.preventDefault();
+  docRunTextTool("stats");
+});
 $("doc-word-goal-submit").addEventListener("click", () => {
   if (!currentDoc) return;
   const goal = Math.max(0, Math.round(Number($("doc-word-goal-input").value)) || 0);

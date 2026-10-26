@@ -1257,6 +1257,17 @@
     </div>
   </dialog>
 
+  <dialog id="doc-stats-dialog" class="card space-dialog">
+    <div class="dialog-head">
+      <h2 class="dialog-head-title">Document statistics</h2>
+      <span class="dialog-head-actions">
+        <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="doc-stats-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
+      </span>
+    </div>
+    <p class="muted" id="doc-stats-scope">The whole document</p>
+    <dl class="doc-stats-list" id="doc-stats-list"></dl>
+  </dialog>
+
   <dialog id="doc-word-goal-dialog" class="card space-dialog">
     <div class="dialog-head">
       <h2 class="dialog-head-title">Word-count goal</h2>
@@ -5438,8 +5449,8 @@ Link to another note with [[its first few words]]."></textarea>
              which is the only way it can exist in an app whose whole claim is
              that it works with the plug pulled. -->
         <div class="doc-statusbar" id="doc-statusbar" role="group" aria-label="Document status">
-          <span id="doc-counts" class="doc-statusbar-item doc-statusbar-fact"
-            title="Characters, words, lines and roughly how long this takes to read"></span>
+          <span id="doc-counts" class="doc-statusbar-item doc-statusbar-fact doc-statusbar-link" role="button" tabindex="0"
+            title="Characters, words, lines and roughly how long this takes to read. Press for the full statistics"></span>
           <!-- The goal, where the count it is a goal for now lives. A button
                because it is also how you set one, a target with no way to
                change it from where it is shown is a number you have to go

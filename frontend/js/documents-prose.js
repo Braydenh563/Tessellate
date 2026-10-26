@@ -2030,3 +2030,288 @@ function docListFenceExtensions(CM, inDocument) {
 function docProseFillExtensions(CM) {
   return [docProseInputHandler(CM), docProseGhostPlugin(CM), docProsePairKeymap(CM), docListFenceExtensions(CM, true)];
 }
+
+// -----------------------------------------------------------------------------
+// Text tools: change case, sort and de-duplicate lines, number the headings,
+// the date, and the document's statistics (DOCUMENTS_PLAN, docs3-1026)
+// -----------------------------------------------------------------------------
+//
+// The owner: "did you improve and upgrade the documents editor?" Read against
+// Google Docs and Word, the editor had no Change case, no Sort, no heading
+// numbers, no date insert and no Word-count dialog (readability, speaking time,
+// the words a draft leans on). All are pure functions over text; the editor
+// reaches them through `DOC_COMMANDS` (palette) and the status bar's count.
+
+const DOC_STOP_WORDS = new Set(
+  ("that this with from have were been they them then than their there what when which would could should about into " +
+    "your will just also more some very only over such each other these those while where being because").split(" ")
+);
+
+//: Small words a title leaves lower-case unless first or last.
+const DOC_TITLE_SMALL = new Set("a an and as at but by for in nor of on or the to up via vs".split(" "));
+
+function docTitleCase(text) {
+  const parts = text.split(/(\s+)/);
+  const wordIdx = parts.map((p, i) => (/\S/.test(p) ? i : -1)).filter((i) => i >= 0);
+  const last = wordIdx[wordIdx.length - 1];
+  return parts
+    .map((part, i) => {
+      if (!/\S/.test(part)) return part;
+      const lower = part.toLowerCase();
+      if (i !== wordIdx[0] && i !== last && DOC_TITLE_SMALL.has(lower)) return lower;
+      return lower.replace(/[a-zÀ-ɏ]/, (c) => c.toUpperCase());
+    })
+    .join("");
+}
+
+function docSentenceCase(text) {
+  let start = true;
+  let out = "";
+  for (const ch of text.toLowerCase()) {
+    if (start && /[a-zÀ-ɏ]/.test(ch)) {
+      out += ch.toUpperCase();
+      start = false;
+    } else {
+      out += ch;
+      if (/[.!?\n]/.test(ch)) start = true;
+      else if (/[^\s"'(\[*_]/.test(ch)) start = false;
+    }
+  }
+  return out;
+}
+
+//: Lines sorted for a person, not a machine: "item 2" before "item 10", and
+//: accents beside their letters. Blank lines sort first and stay.
+function docSortLines(text, descending) {
+  const lines = text.split("\n");
+  const sorted = lines.slice().sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }));
+  return (descending ? sorted.reverse() : sorted).join("\n");
+}
+
+function docUniqueLines(text) {
+  const seen = new Set();
+  return text
+    .split("\n")
+    .filter((line) => {
+      const key = line.trim().toLowerCase();
+      if (!key) return true;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .join("\n");
+}
+
+const DOC_TEXT_TRANSFORMS = {
+  upper: (t) => t.toUpperCase(),
+  lower: (t) => t.toLowerCase(),
+  title: docTitleCase,
+  sentence: docSentenceCase,
+  "sort-asc": (t) => docSortLines(t, false),
+  "sort-desc": (t) => docSortLines(t, true),
+  unique: docUniqueLines,
+};
+
+//: Numbers the headings "1", "1.1", "1.2.1", or takes the numbers off again.
+//: The words are the text, so the numbers are written into it: they survive
+//: export, print and a Word file, which a display-only counter would not. A
+//: lone first `#` is the document's title and keeps no number. Fenced code and
+//: the frontmatter are left alone. Idempotent: running it twice renumbers.
+const DOC_HEADING_NUMBER = /^(#{1,6})\s+(?:\d+(?:\.\d+)*\.?\s+)?(.*\S.*)$/;
+
+function docNumberHeadings(text, on) {
+  const lines = text.split("\n");
+  const rows = docHeadingRows(lines);
+  const levels = rows.map((r) => r.level);
+  const skipTitle = levels.filter((l) => l === 1).length === 1 && levels[0] === 1;
+  const floor = skipTitle ? 2 : 1;
+  const counters = [0, 0, 0, 0, 0, 0];
+  for (const row of rows) {
+    if (row.level < floor) {
+      lines[row.index] = `${"#".repeat(row.level)} ${row.title}`;
+      continue;
+    }
+    counters[row.level - 1] += 1;
+    for (let d = row.level; d < 6; d += 1) counters[d] = 0;
+    const path = counters.slice(floor - 1, row.level).map((n) => n || 1).join(".");
+    lines[row.index] = `${"#".repeat(row.level)} ${on ? `${path} ` : ""}${row.title}`;
+  }
+  return lines.join("\n");
+}
+
+function docHeadingRows(lines) {
+  const rows = [];
+  let fence = "";
+  let front = lines[0] === "---";
+  lines.forEach((line, index) => {
+    if (front) {
+      if (index > 0 && line === "---") front = false;
+      return;
+    }
+    const mark = /^\s*(```|~~~)/.exec(line);
+    if (mark) fence = !fence ? mark[1] : fence === mark[1] ? "" : fence;
+    if (fence || mark) return;
+    const m = DOC_HEADING_NUMBER.exec(line);
+    if (m) rows.push({ index, level: m[1].length, title: m[2] });
+  });
+  return rows;
+}
+
+function docDateText(kind, now = new Date()) {
+  const pad = (n) => String(n).padStart(2, "0");
+  if (kind === "time") return `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  if (kind === "long") return now.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+}
+
+//: Prose only: fences, frontmatter, comments, images, link targets, bare URLs
+//: and the markers that are not words, so the statistics describe what is read.
+function docPlainText(text) {
+  return String(text || "")
+    .replace(/^---\n[\s\S]*?\n---\n/, "")
+    .replace(/(```|~~~)[\s\S]*?(\1|$)/g, " ")
+    .replace(/%%[\s\S]*?%%/g, " ")
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/https?:\/\/\S+/g, " ")
+    .replace(/^\s{0,3}(#{1,6}|[-*+>]|\d+[.)])\s+(\[[ xX]\]\s+)?/gm, "")
+    .replace(/[*_~`=|]+/g, " ");
+}
+
+function docSyllables(word) {
+  const w = word.toLowerCase().replace(/[^a-z]/g, "");
+  if (!w) return 0;
+  if (w.length <= 3) return 1;
+  const groups = w.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, "").replace(/^y/, "").match(/[aeiouy]{1,2}/g);
+  return Math.max(1, groups ? groups.length : 1);
+}
+
+function docTopWords(words, limit) {
+  const tally = new Map();
+  for (const word of words) {
+    const w = word.toLowerCase();
+    if (w.length < 4 || DOC_STOP_WORDS.has(w) || /\d/.test(w)) continue;
+    tally.set(w, (tally.get(w) || 0) + 1);
+  }
+  return [...tally].filter(([, n]) => n > 1).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, limit);
+}
+
+const DOC_WORD_RE = /[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu;
+
+function docStatistics(text) {
+  const raw = String(text || "");
+  const plain = docPlainText(raw);
+  const words = plain.match(DOC_WORD_RE) || [];
+  const sentences = plain.split(/(?<=[.!?])\s+|\n{2,}/).filter((s) => /[\p{L}\p{N}]/u.test(s));
+  const sentenceWords = sentences.map((s) => (s.match(DOC_WORD_RE) || []).length);
+  const syllables = words.reduce((n, w) => n + docSyllables(w), 0);
+  const perSentence = sentences.length ? words.length / sentences.length : 0;
+  const perWord = words.length ? syllables / words.length : 0;
+  const ease = words.length ? Math.max(0, Math.min(100, 206.835 - 1.015 * perSentence - 84.6 * perWord)) : 0;
+  const grade = words.length ? Math.max(0, 0.39 * perSentence + 11.8 * perWord - 15.59) : 0;
+  return {
+    words: words.length,
+    chars: [...raw].length,
+    charsNoSpaces: [...raw.replace(/\s/g, "")].length,
+    sentences: sentences.length,
+    paragraphs: plain.split(/\n{2,}/).filter((p) => p.trim()).length,
+    headings: docHeadingRows(raw.split("\n")).length,
+    readMinutes: words.length / 238,
+    speakMinutes: words.length / 130,
+    longest: sentenceWords.length ? Math.max(...sentenceWords) : 0,
+    perSentence,
+    ease,
+    grade,
+    top: docTopWords(words, 5),
+  };
+}
+
+function docMinutesLabel(minutes) {
+  if (!minutes) return "0 min";
+  if (minutes < 1) return "under a min";
+  return minutes < 60 ? `${Math.round(minutes)} min` : `${Math.floor(minutes / 60)} h ${Math.round(minutes % 60)} min`;
+}
+
+function docEaseLabel(ease) {
+  const bands = [[90, "very easy"], [70, "easy"], [60, "plain"], [50, "fairly hard"], [30, "hard"], [0, "very hard"]];
+  return bands.find(([floor]) => ease >= floor)[1];
+}
+
+function docStatsRows(s) {
+  const n = (v) => v.toLocaleString();
+  const rows = [
+    ["Words", n(s.words)],
+    ["Characters", `${n(s.chars)} (${n(s.charsNoSpaces)} without spaces)`],
+    ["Sentences", n(s.sentences)],
+    ["Paragraphs", n(s.paragraphs)],
+    ["Headings", n(s.headings)],
+    ["Reading time", docMinutesLabel(s.readMinutes)],
+    ["Speaking time", docMinutesLabel(s.speakMinutes)],
+  ];
+  if (s.words >= 30) {
+    rows.push(
+      ["Reading ease", `${Math.round(s.ease)} of 100, ${docEaseLabel(s.ease)}`],
+      ["Grade level", s.grade.toFixed(1)],
+      ["Longest sentence", `${n(s.longest)} words`]
+    );
+  }
+  if (s.top.length) rows.push(["Most repeated", s.top.map(([w, c]) => `${w} (${c})`).join(", ")]);
+  return rows;
+}
+
+function docOpenStatistics() {
+  const dialog = $("doc-stats-dialog");
+  const list = $("doc-stats-list");
+  if (!dialog || !list) return;
+  const box = docSurface();
+  const whole = docCommentStrip(box?.text ?? "");
+  const picked = box && box.selectionEnd > box.selectionStart ? box.text.slice(box.selectionStart, box.selectionEnd) : "";
+  $("doc-stats-scope").textContent = picked ? "The selection" : "The whole document";
+  list.replaceChildren();
+  for (const [label, value] of docStatsRows(docStatistics(picked || whole))) {
+    const dt = document.createElement("dt");
+    dt.textContent = label;
+    const dd = document.createElement("dd");
+    dd.textContent = value;
+    list.append(dt, dd);
+  }
+  dialog.showModal();
+}
+
+//: Replaces only the span that differs, so the caret and the undo step stay
+//: small and a whole-document tool does not jump the page.
+function docApplyWholeText(box, next) {
+  const before = box.text;
+  if (next === before) return false;
+  let head = 0;
+  while (head < before.length && head < next.length && before[head] === next[head]) head += 1;
+  let tail = 0;
+  while (tail < before.length - head && tail < next.length - head && before[before.length - 1 - tail] === next[next.length - 1 - tail]) tail += 1;
+  docReplaceRange(box, head, before.length - tail, next.slice(head, next.length - tail));
+  return true;
+}
+
+function docRunTextTool(id) {
+  const box = docSurface();
+  if (!box) return;
+  if (id === "stats") return docOpenStatistics();
+  if (id.startsWith("date-") || id === "time") {
+    docReplaceRange(box, box.selectionStart, box.selectionEnd, docDateText(id === "time" ? "time" : id.slice(5)));
+    return;
+  }
+  if (id === "number-headings" || id === "unnumber-headings") {
+    const on = id === "number-headings";
+    const changed = docApplyWholeText(box, docNumberHeadings(box.text, on));
+    toast(changed ? (on ? "Headings numbered." : "Heading numbers removed.") : "No headings to change.", "info");
+    return;
+  }
+  const from = box.selectionStart;
+  const to = box.selectionEnd;
+  if (to <= from) {
+    toast("Select some text first.", "info");
+    return;
+  }
+  const next = DOC_TEXT_TRANSFORMS[id](box.text.slice(from, to));
+  docReplaceRange(box, from, to, next);
+  box.setSelectionRange?.(from, from + next.length);
+}
