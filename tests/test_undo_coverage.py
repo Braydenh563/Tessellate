@@ -469,6 +469,7 @@ EXEMPT: dict[str, str] = {
     "lag-watch.js:lagFlush": "telemetry: sends lag reports to this app's own log file; nothing of the person's",
     "chat-attach.js:keepUnreadableChatFile": "send: keeps a dropped file the chat cannot read in Library > Files, which says so in its toast; deleting it there is the way back",
     "documents.js:docDropIfUntouched": "purge: bins only a document never written in, so there is nothing to restore",
+    "wiring.js:toggleWebSearch": "settings: the Web switch is its own on/off and toasts the new state; clicking again undoes it",
     "palette.js:agentCommitFiles": "send: stages files for the popup agent's turn, deleting them again if the send fails",
     "usage-ledger.js:(anonymous /usage)": "telemetry: telemetry or a background warm-up; no user data",
     "status.js:(anonymous /preferences)": "settings: a setting with its own Reset or the settings history",
