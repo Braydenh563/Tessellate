@@ -2281,7 +2281,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "documents-features", "documents-paste", "documents-turn-into", "callouts", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
+        "documents", "documents-controls", "documents-features", "documents-paste", "documents-turn-into", "callouts", "equation-editor", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
@@ -2759,3 +2759,30 @@ MORE_TOPICS.append({
     "badge": {"label": "Notes", "tab": "notes"},
 })
 TOPIC_META["quick-sketch"] = {"title": "Quick sketch", "path": "Notes, the sketch button; q or Ctrl+Shift+K anywhere"}
+
+
+#: DOCUMENTS_PLAN 16: the guided equation editor (math-editor.js).
+MORE_TOPICS.append({
+    "id": "equation-editor",
+    "keywords": (
+        "equation", "equations", "equation editor", "write an equation",
+        "maths", "math", "formula", "fraction", "square root", "greek letter",
+        "symbol", "integral", "matrix", "latex", "tex",
+    ),
+    "body": (
+        "The equation editor opens from /equation in a note, a document, a "
+        "board's text or the Chat box, from a document's Insert menu, or with "
+        "Alt+= there and in the Ask box. Type it plainly: a/b makes a "
+        "fraction, ^ and _ a power or a subscript, and a space or an operator "
+        "steps out of one; alpha, pi, sqrt, sum or sin become the symbol after "
+        "a space, and >=, != and -> one sign. Tab goes to the next empty box; "
+        "Backspace straight after a change undoes it. The palette inserts "
+        "Greek, operators, relations, arrows, sets, calculus and structures "
+        "such as a root, an integral, a limit, a matrix or cases, with a live "
+        "preview. Inline sits in the sentence, Display on its own line; "
+        "Ctrl+Enter inserts. It writes TeX between dollar signs, so the note "
+        "stays plain text; with the cursor in an equation it opens to edit it."
+    ),
+    "badge": {"label": "Library", "tab": "library"},
+})
+TOPIC_META["equation-editor"] = {"title": "Equation editor", "path": "Type /equation, or Alt+=, in a note, a document, a board's text or Chat"}

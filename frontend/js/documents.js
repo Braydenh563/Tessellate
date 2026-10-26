@@ -11182,6 +11182,7 @@ const MD_ACTIONS = {
   clearformat: { custom: "clearformat" },
   //: The one icon and emoji picker (MINDMAP_PLAN decision 46).
   emoji: { custom: "emoji" },
+  equation: { custom: "equation" },
   ul: { line: "- " },
   ol: { line: "1. " },
   task: { line: "- [ ] " },
@@ -11290,6 +11291,12 @@ function applyMarkdown(kind, boxId = "doc-content") {
     const anchor = document.querySelector(`[data-md-target="${boxId}"] [data-md="emoji"]`)
       || (boxId === "doc-content" ? document.querySelector('#doc-toolbar [data-md="emoji"]') : null);
     editorPickGlyph(box, anchor);
+    return;
+  }
+  if (action.custom === "equation") {
+    //: The guided equation editor (math-editor.js, DOCUMENTS_PLAN 16); from a
+    //: closed Insert menu it centres, as the picker above does.
+    openMathEditor({ target: box });
     return;
   }
   //: **Undo and redo go through the browser's own history, deliberately.**

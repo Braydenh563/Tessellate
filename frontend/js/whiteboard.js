@@ -10019,7 +10019,7 @@ const WB_EDITOR_SURFACES = { "wb-text-edit": "board", "wb-topic-edit": "topic" }
 //: date; a comment keeps links. Handed to editor.js's `EDITOR_CONTEXT_ROWS`
 //: with the surfaces, so they cost the boot nothing.
 const WB_EDITOR_CONTEXT_ROWS = {
-  board: ["bullets", "numbered", "checklist", "quote", "h1", "heading", "h3", "divider", "emoji", "wikilink", "bookmark-link", "link-card", "weblink", "math-inline", "stamp-date", "stamp-time", "stamp-datetime"],
+  board: ["bullets", "numbered", "checklist", "quote", "h1", "heading", "h3", "divider", "emoji", "wikilink", "bookmark-link", "link-card", "weblink", "math-inline", "equation", "stamp-date", "stamp-time", "stamp-datetime"],
   topic: ["emoji", "wikilink", "bookmark-link", "weblink", "stamp-date", "stamp-time"],
   comment: ["wikilink", "bookmark-link", "link-card", "weblink", "emoji", "stamp-date", "stamp-time"],
 };
