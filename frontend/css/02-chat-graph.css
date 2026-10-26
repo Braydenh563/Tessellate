@@ -5093,7 +5093,10 @@ button.ghost.danger:is(:focus-visible, :has(:focus-visible)) {
    zoom buttons with it, a panel that covers a control has removed that
    control. `--graph-chrome-top` is the dock's own room at the top (the same
    token the minimap's top corners use), and 12rem is the four zoom buttons
-   plus their gutter and a gap. What does not fit scrolls inside the panel,
+   plus their gutter and a gap (11rem since INBOX 1400: with the folds closed
+   the panel is 520px and the cap at 1440x900 was 512, so it scrolled with
+   nothing open; the panel now ends 34px above the zoom strip, not on it).
+   What does not fit scrolls inside the panel,
    with the cut-off row visible, which is the affordance; running off the
    card, or over the buttons, is not. */
 .graph-overlay .graph-options {
@@ -5102,7 +5105,7 @@ button.ghost.danger:is(:focus-visible, :has(:focus-visible)) {
      that shows up anywhere near the rule that caused it, it is a panel that
      opens with no height at all. 12rem is four rows and a heading, which is
      enough to see that a list is there and scroll it. */
-  max-height: max(12rem, calc(100% - var(--graph-chrome-top) - 12rem));
+  max-height: max(12rem, calc(100% - var(--graph-chrome-top) - 11rem));
   overflow-y: auto;
   /* Measured at 1440x900: 676px of list in a 492px panel, so the wheel does
      reach the end of it, and a wheel at the end of a scroller chains to what

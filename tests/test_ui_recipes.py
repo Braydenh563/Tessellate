@@ -2398,9 +2398,11 @@ def test_a_folded_group_of_settings_is_the_shared_disclosure_recipe() -> None:
         "group of settings is `details.settings-fold` (DESIGN.md, the recipe "
         "index), and this count may only fall"
     )
-    assert graph_folds == 5, (
-        "the graph options panel's five tuned-once sections (Physics, Display, "
-        "Filter, Groups, Minimap) are folds; see GRAPH_PLAN.md, 'Decision made, 2026-09-20', "
+    assert graph_folds == 7, (
+        "the graph options panel's seven sections that are set once and left "
+        "(Physics, Show, Display, Filter, Time, Groups, Minimap) are folds, so "
+        "the panel fits its cap with every fold closed (INBOX 1400); see "
+        "GRAPH_PLAN.md, 'Decision made, 2026-09-20', "
         "'Decision made, 2026-10-04: a Filter fold' "
         "and 'Decision made, 2026-10-04: a Display fold'"
     )

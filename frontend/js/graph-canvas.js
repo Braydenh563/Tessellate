@@ -291,6 +291,8 @@ const GC_LABEL_LANDMARK_SHARE = 0.35;
 //: A note with this many links is a hub, named at the overview of a grouped
 //: map besides each category's best-connected note (INBOX 693).
 const GC_LABEL_HUB_DEGREE = 5;
+const GC_LABEL_NARROW_W = 600;
+const GC_LABEL_NARROW_CUT = 14;
 //: How far a non-neighbour dims while something is hovered (§5 Phase 1).
 const GC_DIM_ALPHA = 0.2;
 
@@ -3353,7 +3355,17 @@ function gcLabelText(node, s = gcTab) {
   //: A hub (four links or more) has the room of its own halo and is the name
   //: the map is read by, so it keeps ten characters more than the crowd.
   const hub = (s.adj.get(node.id) || { size: 0 }).size >= 4;
-  const limit = s.tree ? (s.tree.arc ? 12 : s.tree.radial ? 16 : 30) : hub ? 36 : 26;
+  //: **A phone's names are shorter** (INBOX 1400: at the fit a 390 px map
+  //: named 2 of 36 notes, `gm.js`): a 26-character name is 170 px there, near
+  //: half the map's width, and the room pass turned nearly all of them away.
+  //: Below `GC_LABEL_NARROW_W` the cut is `GC_LABEL_NARROW_CUT` characters
+  //: (a hub's a few more); the whole name is on hover and in the panel.
+  const narrow = !s.tree && s.dims && s.dims.w < GC_LABEL_NARROW_W;
+  const limit = s.tree
+    ? s.tree.arc ? 12 : s.tree.radial ? 16 : 30
+    : narrow
+      ? GC_LABEL_NARROW_CUT + (hub ? 6 : 0)
+      : hub ? 36 : 26;
   const text = node.preview || "";
   const pointed = !s.tree && (node.id === s.hoveredId || node.id === gcKeyboardId(s));
   const cut = gcLabelCut(text, pointed ? GC_LABEL_FULL : limit);

@@ -2050,6 +2050,25 @@ HELP_TOPICS.extend(
             ),
             "badge": {"label": "Graph", "tab": "graph"},
         },
+        #: INBOX 1400, the owner: the graph's controls "aren't really easy to
+        #: understand". Its own entry, since graph-controls and graph-display
+        #: both sit at the reply budget.
+        {
+            "id": "graph-options-help",
+            "keywords": (
+                "what does gravity do", "what does spread do", "what do the options do",
+                "options panel", "question mark", "what is physics", "what is minimap",
+                "what does filter do", "what is groups", "time slider", "play through time",
+            ),
+            "body": (
+                "Every section of the graph's Options (View, Physics, Show, Display, Filter, Time, "
+                "Groups and Minimap) has a ? beside its name that says in a line what each of its "
+                "controls does to the map. Physics shapes only the Force layout. Show, "
+                "Display, Filter, Time, Groups and Minimap fold away; open one to change it, and "
+                "Reset to defaults puts them all back."
+            ),
+            "badge": {"label": "Graph", "tab": "graph"},
+        },
         #: GRAPH_PLAN KG4: note properties and note types.
         {
             "id": "properties",

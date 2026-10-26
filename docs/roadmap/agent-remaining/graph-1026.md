@@ -46,3 +46,76 @@ lands in the panel; Esc closes it.
 
 done: 3444cbf (composition, node panel), next commit (Options worded, View help)
 next: the ? per options fold, index.html ~4130; hub-centred placement, graph-worker.js groupAnchorsOrganic ~771
+
+## Round 2 (crossings, settle, phone names)
+
+Sweeps (session scratchpad): `gm2.js` (gm.js on this worktree), `runm.sh`, `cap.js` (captures the
+worker's init message), `off.js` (replays it through graph-worker.js in node: crossings by kind, H hub,
+B bridge, I inside a category; `UNT=0` skips the untangle), `draw.js` (a layout to PNG).
+
+| Map | crossings before | after | hub crossings before | after | names | settle ms before | after |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 36 dark 1440 (gm2.js) | 64 | 61 | 45 | 38 | 20 to 11 | 4,454 | 2,976 |
+| 36 dark 390 (gm2.js) | 64 | 55 | 45 | 38 | 2 to 10 | 4,115 | 2,387 |
+| 36, off.js seed 0 1440 / 390 | 64 / 64 | 45 / 46 | 45 / 45 | 33 / 38 | | | |
+| 36, off.js mean of 3 layouts | 90.7 | 48.3 | 57.3 | 32.7 | | | |
+| 150, off.js seed 0 1440 / 390 | 331 / 339 | 294 / 302 | 114 / 119 | 110 / 123 | | | |
+| 150, off.js mean of 3 layouts (before relax) | 437 | 278 | 190 | 102 | | | |
+| 150 dark 1440 / 390 (gm2.js, before only) | 347 / 353 | not run | 118 / 125 | not run | 10 / 1 | 5,681 / 4,751 | not run |
+
+0 overlapping names and 0 off-screen in every run. Built: `untangleLayout` (graph-worker.js; Organic
+only, after a new layout rests, never after a drag; swaps and turns inside a category's reach, then a
+glide and a 0.05 relax), the ring ordered by affinity in Organic, several cheap ticks a frame below
+`WARM_ALPHA`, `GC_LABEL_NARROW_CUT` (graph-canvas.js `gcLabelText`). Tests
+`tests/test_graph_untangle_1400.py`.
+
+Measured and dropped: the hub held at the ring's centre (`off.js`: 36 notes 64 to 67, 150 notes
+331 to 373; bridges then cross every ray); rim offsets in Organic (no gain); moves past 1.2 of a
+category's reach (crossings 245 but the map 1.9 times taller).
+
+## Left after round 2 (owner's words, file:line)
+
+- "my graph is messy": the targets are not met. Crossings fell 30 to 47% offline on the 36-note seed
+  but only 5 to 14% in the browser at seed 0 (61 and 55 of 64), and 11% at 150 notes after the relax
+  (294 of 331). The relax at `UNTANGLE_RELAX` gives back a third of the gain at 150; most crossings
+  left are bridges against the hub's rays (BH 26 of 45 at 36). Next: run the untangle on the warm-up
+  (graph-worker.js `warmLayout`) so the 0.3 update the Graph tab sends does not re-settle it, and a
+  move that checks a line's clearance instead of the relax.
+- 150-note browser after: not measured (server switch between data dirs costs a restart; `off.js` only).
+- "?" help on Physics, Display, Filter, Time, Groups, Minimap (`#graph-options`, index.html ~4130 to 4400): not started.
+- Options panel scrolls 890 in 512 with every fold closed (gp.js): not started.
+- Toast over `.graph-legend-row` at 1440 and the zoom strip at 390 (`#toast-box`): still OVERLAP in gm2.js.
+
+done: 7812ece (untangle, ring by affinity, quick cooling, phone names)
+next: untangle on the warm-up, graph-worker.js warmLayout ~264; options ? per fold, index.html ~4130
+
+## Round 3 (Options help and fit, toast, untangle passes)
+
+Sweeps (session scratchpad): `g3_opt.js` (panel fit), `g3_help.js` (every ? opens, fold unchanged),
+`g3_toast.js` (toast against chrome rects), `g3_init2.js` (worker messages and crossings at `end`),
+`g3_xcheck.js` (offline positions in the browser's counter), `g3_off5.js` (loop-driven offline, passes).
+
+| Item | Before | After |
+| --- | --- | --- |
+| Options panel, folds closed, 1440x900 | 904 in 512 (scrolls) | 520 in 520 (fits); 7 sections each with a ? |
+| Toast rect against legend row / zoom strip | 1440: overlaps legend; 390: overlaps both | 0 intersections at 1440, 1024, 820, 390 |
+| 36 notes, crossings at rest, 1440 / 390 | 63 / 55 | 62 / 53 (2 passes); 50 / 48 with 3 passes |
+| 186 notes, crossings at rest, 1440 / 390 | 722 / 677 | 683 / 617 |
+| `end` after init, 36 notes | 6.3 s | 3.8 s (1440), 3.4 s (390) |
+
+The "offline 45" was a capture artefact: `init36w.json` is a second init (alpha 0.3) from an earlier
+layout. On a fresh init the offline harness gives 55 to 58 (`g3init36.json`); the browser counter agrees
+with the offline one on the same positions (45 on offline's own positions, `g3_xcheck.js`).
+
+Left:
+- Three untangle passes reach 50 / 48 at 36 notes but `tests/test_graph_layout.py` (no link through a
+  note) finds 7: `untangleFree` (graph-worker.js ~1690) checks notes, not lines. Next: a move that checks
+  a line's clearance, then `UNTANGLE_PASSES = 3`. A pass is cut at `UNTANGLE_MS` 200, which truncates it at 186 notes.
+- The second init the brief named (alpha 0.3 on the Graph tab) did not appear on a cold open (one init, alpha 1);
+  it follows a render after the first layout settled. Not changed: `warmLayout` only steps to alpha 0.08.
+- Show and Time are folds now: Show's Similarity strength slider is hidden while Show is closed.
+- Phone sheet for Options (390): fit not measured (the sheet scrolls by design); ? popovers open in view.
+
+done: 444dd43 (? and fit), e4d28b1 (toast), next commit (two untangle passes, quick relax)
+next: line-clearance check in untangleLayout, then three passes
+

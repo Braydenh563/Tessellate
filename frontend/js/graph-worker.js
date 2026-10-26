@@ -568,16 +568,12 @@ function groupOrder() {
   const sizes = new Map();
   for (const node of nodes) sizes.set(node.group, (sizes.get(node.group) || 0) + 1);
   const bySize = [...sizes.keys()].sort((a, b) => sizes.get(b) - sizes.get(a) || a.localeCompare(b));
-  if (!clustered()) {
-    // Organic keeps its ring by size; a reshuffle deals it in a seeded order.
-    if (!ring.seed) return bySize;
-    const rand = seededRandom(ring.seed);
-    for (let i = bySize.length - 1; i > 0; i--) {
-      const j = Math.floor(rand() * (i + 1));
-      [bySize[i], bySize[j]] = [bySize[j], bySize[i]];
-    }
-    return bySize;
-  }
+  //: **Organic orders its ring by the links too** (INBOX 1400): categories
+  //: that share the most lines sit side by side, as Clusters has done, so a
+  //: line between two categories crosses the gap between neighbours rather
+  //: than the map. Measured with the untangle pass on the 150-note seed
+  //: (`off.js`, three layouts): 437 crossings by size, 284 with both. A
+  //: reshuffle starts the ring at a seeded category and leans on chance.
   if (bySize.length < 3) return bySize;
   const rand = ring.seed ? seededRandom(ring.seed) : null;
   const link = (a, b) => ring.affinity.get(a < b ? `${a}\u0000${b}` : `${b}\u0000${a}`) || 0;
@@ -1521,6 +1517,298 @@ function shuffleStep() {
   }
 }
 
+//: **A settled map is untangled once** (INBOX 1400 and 1306, the owner: the
+//: force view "feels very messy to look at"). The forces only know distance,
+//: never whether two lines cross, so a layout at rest keeps every crossing it
+//: happened to settle into: 64 on the 36-note seed, 331 on the 150-note one
+//: (`gm.js`). Once the layout is at rest, each note tries a few moves that
+//: keep the map's shape, and keeps one only when it strictly lowers the count
+//: of crossings on the lines it touches:
+//: - trading places with one of its `UNTANGLE_NEAR` nearest notes of the same
+//:   category (the clusters stay where and what they are), and
+//: - a note with one link going round the note it hangs from, at the same
+//:   distance, to a free spot (`UNTANGLE_TURNS` tries).
+//: At most `UNTANGLE_ROUNDS` rounds and `UNTANGLE_MS` of work; the notes then
+//: glide to their places (`shuffleStep`). Pinned and dropped notes stay.
+//: Organic, the default shape, only.
+const UNTANGLE_NEAR = 6;
+const UNTANGLE_TURNS = 16;
+const UNTANGLE_MOVE_LINKS = 4;
+const UNTANGLE_HUB_RINGS = 4;
+const UNTANGLE_ROUNDS = 4;
+const UNTANGLE_REACH = 1.2;
+const UNTANGLE_RELAX = 0.05;
+const UNTANGLE_MS = 200;
+//: **Two passes, with the relax between** (INBOX 1400): the second starts from
+//: where the first one's relax rested. Browser, at rest: 36 notes 63 to 62
+//: crossings at 1440 and 55 to 53 at 390; 186 notes 722 to 683 and 677 to 617.
+//: Three reach 50 and 48 at 36 notes but leave notes on lines (`untangleFree`
+//: checks notes, not lines: `tests/test_graph_layout.py` counts 7), so two
+//: until a move checks a line's clearance. Each is bounded by `UNTANGLE_MS`;
+//: a pass that moves nothing ends it.
+const UNTANGLE_PASSES = 2;
+const UNTANGLE_MAX_EDGES = 4000;
+const untangle = { edges: [], incident: [], done: false, passes: 0, relaxing: false, ea: null, eb: null, xs: null, ys: null, mark: null };
+
+function untangleSetup(edges) {
+  untangle.edges = [];
+  untangle.incident = nodes.map(() => []);
+  untangle.done = false;
+  untangle.passes = 0;
+  untangle.mark = null;
+  if (edges.length > UNTANGLE_MAX_EDGES) return;
+  for (const edge of edges) {
+    const a = indexById.get(edge.source);
+    const b = indexById.get(edge.target);
+    if (a === b) continue;
+    const at = untangle.edges.length;
+    untangle.edges.push([a, b]);
+    untangle.incident[a].push(at);
+    untangle.incident[b].push(at);
+  }
+  untangle.ea = Int32Array.from(untangle.edges, (e) => e[0]);
+  untangle.eb = Int32Array.from(untangle.edges, (e) => e[1]);
+  untangle.xs = new Float64Array(nodes.length);
+  untangle.ys = new Float64Array(nodes.length);
+}
+
+function segmentsCross(ax, ay, bx, by, cx, cy, dx, dy) {
+  const d1 = (dx - cx) * (ay - cy) - (dy - cy) * (ax - cx);
+  const d2 = (dx - cx) * (by - cy) - (dy - cy) * (bx - cx);
+  const d3 = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
+  const d4 = (bx - ax) * (dy - ay) - (by - ay) * (dx - ax);
+  return d1 * d2 < 0 && d3 * d4 < 0;
+}
+
+// Crossing pairs with at least one line in `mine` (a list of edge indices).
+function crossingsOn(mine) {
+  const list = untangle.edges;
+  const count0 = list.length;
+  const mark = untangle.mark || (untangle.mark = new Uint8Array(count0));
+  const ea = untangle.ea;
+  const eb = untangle.eb;
+  const xs = untangle.xs;
+  const ys = untangle.ys;
+  for (let i = 0; i < nodes.length; i++) {
+    xs[i] = nodes[i].x;
+    ys[i] = nodes[i].y;
+  }
+  for (const i of mine) mark[i] = 1;
+  let count = 0;
+  for (const i of mine) {
+    const a = ea[i];
+    const b = eb[i];
+    const ax = xs[a];
+    const ay = ys[a];
+    const bx = xs[b];
+    const by = ys[b];
+    const loX = Math.min(ax, bx);
+    const hiX = Math.max(ax, bx);
+    const loY = Math.min(ay, by);
+    const hiY = Math.max(ay, by);
+    for (let j = 0; j < count0; j++) {
+      if (j === i) continue;
+      const c = ea[j];
+      const d = eb[j];
+      if (c === a || c === b || d === a || d === b) continue;
+      // A pair inside `mine` is met twice: count it from its lower index.
+      if (j < i && mark[j]) continue;
+      const cx = xs[c];
+      const cy = ys[c];
+      const dx = xs[d];
+      const dy = ys[d];
+      if ((cx < loX && dx < loX) || (cx > hiX && dx > hiX) || (cy < loY && dy < loY) || (cy > hiY && dy > hiY)) continue;
+      if (segmentsCross(ax, ay, bx, by, cx, cy, dx, dy)) count += 1;
+    }
+  }
+  for (const i of mine) mark[i] = 0;
+  return count;
+}
+
+//: A whole category turns or mirrors about its middle when that lowers the
+//: crossings on its lines: its links out then face the categories they join.
+const UNTANGLE_TURN_STEPS = 8;
+function untangleGroups(still) {
+  const groups = new Map();
+  nodes.forEach((node, i) => {
+    if (still(node)) return;
+    if (!groups.has(node.group)) groups.set(node.group, []);
+    groups.get(node.group).push(i);
+  });
+  let gained = 0;
+  for (const members of groups.values()) {
+    if (members.length < 2) continue;
+    const lines = [...new Set(members.flatMap((i) => untangle.incident[i]))];
+    if (!lines.length) continue;
+    const x0 = members.map((i) => nodes[i].x);
+    const y0 = members.map((i) => nodes[i].y);
+    const cx = x0.reduce((a, b) => a + b, 0) / members.length;
+    const cy = y0.reduce((a, b) => a + b, 0) / members.length;
+    const before = crossingsOn(lines);
+    let best = before;
+    let bestAt = null;
+    for (let mirror = 0; mirror < 2; mirror++) {
+      for (let step = 0; step < UNTANGLE_TURN_STEPS; step++) {
+        if (!mirror && !step) continue;
+        const angle = (2 * Math.PI * step) / UNTANGLE_TURN_STEPS;
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        members.forEach((i, k) => {
+          const dx = (mirror ? -1 : 1) * (x0[k] - cx);
+          const dy = y0[k] - cy;
+          nodes[i].x = cx + dx * cos - dy * sin;
+          nodes[i].y = cy + dx * sin + dy * cos;
+        });
+        const after = crossingsOn(lines);
+        if (after < best) {
+          best = after;
+          bestAt = members.map((i) => [nodes[i].x, nodes[i].y]);
+        }
+      }
+    }
+    members.forEach((i, k) => {
+      nodes[i].x = bestAt ? bestAt[k][0] : x0[k];
+      nodes[i].y = bestAt ? bestAt[k][1] : y0[k];
+    });
+    gained += before - best;
+  }
+  return gained;
+}
+
+function untangleFree(node, x, y, gap) {
+  for (const other of nodes) {
+    if (other === node) continue;
+    const need = gap + Math.max(other.r || 8, node.r || 8);
+    if (Math.abs(other.x - x) < need && Math.abs(other.y - y) < need && Math.hypot(other.x - x, other.y - y) < need) return false;
+  }
+  return true;
+}
+
+// A moved note stays inside its category's reach (the farthest of its notes
+// from their middle when the pass began), so a move never stretches the map.
+function untangleReach() {
+  const groups = new Map();
+  for (const node of nodes) {
+    if (!groups.has(node.group)) groups.set(node.group, []);
+    groups.get(node.group).push(node);
+  }
+  untangle.reach = new Map();
+  for (const [group, list] of groups) {
+    const cx = list.reduce((a, n) => a + n.x, 0) / list.length;
+    const cy = list.reduce((a, n) => a + n.y, 0) / list.length;
+    const far = list.reduce((a, n) => Math.max(a, Math.hypot(n.x - cx, n.y - cy)), 0);
+    untangle.reach.set(group, { cx, cy, far });
+  }
+}
+function untangleInside(node) {
+  const home = untangle.reach && untangle.reach.get(node.group);
+  return !home || Math.hypot(node.x - home.cx, node.y - home.cy) <= home.far * UNTANGLE_REACH;
+}
+
+function untangleLayout() {
+  // Organic only: Clusters places its hubs at each category's heart and its
+  // bridges on the rim (`hubForce`, `rimOffset`), Galaxy by degree; a move
+  // here would undo what those shapes are for.
+  if (untangle.done || !untangle.edges.length || ring.shape !== "organic") return 0;
+  untangle.done = true;
+  const until = Date.now() + UNTANGLE_MS;
+  const still = (node) => node.fx != null || node.placed;
+  const startX = nodes.map((n) => n.x);
+  const startY = nodes.map((n) => n.y);
+  untangleReach();
+  for (let round = 0; round < UNTANGLE_ROUNDS && Date.now() < until; round++) {
+    let gained = untangleGroups(still);
+    for (let i = 0; i < nodes.length && Date.now() < until; i++) {
+      const node = nodes[i];
+      const mine = untangle.incident[i];
+      if (still(node) || !mine.length) continue;
+      // Trade places with a near note of the same category.
+      const near = [];
+      for (let j = 0; j < nodes.length; j++) {
+        const other = nodes[j];
+        if (j === i || other.group !== node.group || still(other)) continue;
+        near.push([Math.hypot(other.x - node.x, other.y - node.y), j]);
+      }
+      near.sort((p, q) => p[0] - q[0]);
+      for (const [, j] of near.slice(0, UNTANGLE_NEAR)) {
+        const other = nodes[j];
+        const both = [...new Set([...mine, ...untangle.incident[j]])];
+        const before = crossingsOn(both);
+        if (!before) continue;
+        [node.x, other.x] = [other.x, node.x];
+        [node.y, other.y] = [other.y, node.y];
+        const after = crossingsOn(both);
+        if (after < before) {
+          gained += before - after;
+          continue;
+        }
+        [node.x, other.x] = [other.x, node.x];
+        [node.y, other.y] = [other.y, node.y];
+      }
+      // A note with few links tries spots round each note it joins, at the
+      // distance it stands from it now; a well-linked one, spots across its
+      // category's reach (where its lines cross least is where it belongs).
+      const before = crossingsOn(mine);
+      if (!before) continue;
+      const x0 = node.x;
+      const y0 = node.y;
+      let best = before;
+      let bestAt = null;
+      if (mine.length > UNTANGLE_MOVE_LINKS) {
+        const home = untangle.reach.get(node.group);
+        if (!home) continue;
+        for (let ring = 1; ring <= UNTANGLE_HUB_RINGS; ring++) {
+          const r = (home.far * UNTANGLE_REACH * ring) / UNTANGLE_HUB_RINGS;
+          for (let t = 0; t < UNTANGLE_TURNS; t++) {
+            const angle = (2 * Math.PI * t) / UNTANGLE_TURNS;
+            node.x = home.cx + Math.cos(angle) * r;
+            node.y = home.cy + Math.sin(angle) * r;
+            const after = crossingsOn(mine);
+            if (after < best && untangleFree(node, node.x, node.y, COLLIDE_PAD)) {
+              best = after;
+              bestAt = [node.x, node.y];
+            }
+          }
+        }
+        node.x = bestAt ? bestAt[0] : x0;
+        node.y = bestAt ? bestAt[1] : y0;
+        if (bestAt) gained += before - best;
+        continue;
+      }
+      for (const line of mine) {
+        const other = nodes[untangle.ea[line] === i ? untangle.eb[line] : untangle.ea[line]];
+        const reach = Math.max(1, Math.hypot(x0 - other.x, y0 - other.y));
+        const from = Math.atan2(y0 - other.y, x0 - other.x);
+        for (let t = mine.length === 1 ? 1 : 0; t < UNTANGLE_TURNS; t++) {
+          const angle = from + (2 * Math.PI * t) / UNTANGLE_TURNS;
+          node.x = other.x + Math.cos(angle) * reach;
+          node.y = other.y + Math.sin(angle) * reach;
+          const after = crossingsOn(mine);
+          if (after < best && untangleInside(node) && untangleFree(node, node.x, node.y, COLLIDE_PAD)) {
+            best = after;
+            bestAt = [node.x, node.y];
+          }
+        }
+      }
+      node.x = bestAt ? bestAt[0] : x0;
+      node.y = bestAt ? bestAt[1] : y0;
+      if (bestAt) gained += before - best;
+    }
+    if (!gained) break;
+  }
+  // The move is shown, not jumped: back to the start, then a glide (`shuffleStep`).
+  let moved = 0;
+  nodes.forEach((node, i) => {
+    if (node.x === startX[i] && node.y === startY[i]) return;
+    moved += 1;
+    node.tx = node.x;
+    node.ty = node.y;
+    node.x = startX[i];
+    node.y = startY[i];
+  });
+  return moved;
+}
+
 function clampToWorld() {
   if (!world) return;
   for (const node of nodes) {
@@ -1559,6 +1847,9 @@ function post(final) {
   );
 }
 
+const LIVE_STEP_MS = 8;
+const LIVE_MAX_STEPS = 40;
+
 function stopLoop() {
   if (timer !== null) {
     clearTimeout(timer);
@@ -1586,13 +1877,42 @@ function loop() {
     return;
   }
   const started = Date.now();
-  simulation.tick();
-  ticks += 1;
+  //: **A cheap tick is not one a frame** (INBOX 1400: the map took 4.5 to
+  //: 5.8 s to come to rest, `gm.js`). Once nothing is held, ticks that cost
+  //: little run together up to `LIVE_STEP_MS` a frame, so the last of the
+  //: cooling, motion too small to follow, takes a few frames, not a few
+  //: hundred. Only the cooling of a new layout (an init, a reshuffle, new
+  //: settings: the runs `untangle` waits on); a drag and the ease after a
+  //: drop keep one tick a frame, their pace is the pointer's.
+  //: The relax after an untangle pass is cooling too (`untangle.relaxing`): one
+  //: tick a frame it took 2.8 s a pass, which three passes made 8 s.
+  const quick = !dragging && (!untangle.done || untangle.relaxing) && simulation.alpha() < WARM_ALPHA;
+  let steps = 0;
+  do {
+    simulation.tick();
+    ticks += 1;
+    steps += 1;
+  } while (quick && steps < LIVE_MAX_STEPS && Date.now() - started < LIVE_STEP_MS && simulation.alpha() >= simulation.alphaMin());
   const cost = Date.now() - started;
-  tickMs = ticks === 1 ? cost : tickMs * 0.9 + cost * 0.1;
+  tickMs = ticks === steps ? cost / steps : tickMs * 0.9 + (cost / steps) * 0.1;
   clampToWorld();
   const overBudget = !dragging && Date.now() - settleFrom > SETTLE_BUDGET_MS;
   const settled = !dragging && (simulation.alpha() < simulation.alphaMin() || overBudget);
+  //: The second pass waits for the first one's relax to rest.
+  if (settled && untangle.relaxing) untangle.relaxing = false;
+  if (settled && untangle.done && untangle.passes > 0 && untangle.passes < UNTANGLE_PASSES && !dragging) untangle.done = false;
+  if (settled && !untangle.done && untangleLayout()) {
+    untangle.passes += 1;
+    untangle.relaxing = true;
+    // At rest, untangled: the notes glide to their new places, then a low
+    // heat lets the collision and the line clearance settle what the moves
+    // brought close (a swap can put a hub where a small note stood).
+    shuffle.left = SHUFFLE_STEPS;
+    simulation.alpha(UNTANGLE_RELAX);
+    post(false);
+    timer = setTimeout(loop, 16);
+    return;
+  }
   if (settled) {
     post(true);
     self.postMessage({ type: "end", alpha: simulation.alpha(), epoch });
@@ -1699,6 +2019,7 @@ self.onmessage = (event) => {
         b.degree += 1;
       }
       cohesion = groupCohesion(edges);
+      untangleSetup(edges);
       // Each note's leaves: the notes linked to it and to nothing else (`leafForce`).
       for (const edge of edges) {
         const a = nodes[indexById.get(edge.source)];
@@ -1835,6 +2156,8 @@ self.onmessage = (event) => {
       break;
     }
     case "params":
+      untangle.done = false;
+      untangle.passes = 0;
       applyForces(message.params);
       if (simulation) simulation.alpha(Math.max(simulation.alpha(), 0.3));
       run();
@@ -1846,6 +2169,10 @@ self.onmessage = (event) => {
       const node = nodes[index];
       if (message.phase === "start") {
         dragging = true;
+        // A note the reader moves is not followed by a reshuffle of others.
+        untangle.done = true;
+        untangle.passes = UNTANGLE_PASSES;
+        untangle.relaxing = false;
         dragOrigin = { x: node.x, y: node.y };
         markFollowers(node, true);
         if (ring.params) applyGrouping(ring.params);
@@ -1935,6 +2262,8 @@ self.onmessage = (event) => {
       break;
     case "reshuffle":
       if (!simulation) break;
+      untangle.done = false;
+      untangle.passes = 0;
       reshuffle(message.seed, message.animate !== false);
       run();
       break;

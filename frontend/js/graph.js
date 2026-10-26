@@ -2270,6 +2270,7 @@ async function renderGraphSvg() {
   graphDims = { w: width, h: height };
   initGraphMinimap();
   initGraphDockHeightToken();
+  initGraphToastClearance();
   initGraphViews();
 
   // D3 mutates these (x/y/vx/vy), so work on copies.
@@ -5523,6 +5524,28 @@ function initGraphDockHeightToken() {
   write();
 }
 
+//: **A toast over the map stands above the legend** (INBOX 1400: it met the
+//: legend row's box at 1440 and the zoom strip at 390). The toast box's bottom
+//: is the legend row's own distance from the window's bottom plus a step, kept
+//: current by an observer and on resize; graph-lazy.css steps it left of the
+//: zoom strip. Written on the box itself, never as a property on the page, and
+//: cleared while the row is not drawn (another tab, or the legend hidden),
+//: where the toast keeps the place its stylesheet gives it.
+function initGraphToastClearance() {
+  const row = document.querySelector("#graph-card .graph-legend-row");
+  const box = document.getElementById("toast-box");
+  if (!row || !box || row._liftWired) return;
+  row._liftWired = true;
+  const write = () => {
+    const at = row.getBoundingClientRect();
+    const lift = at.height > 0 ? Math.max(0, Math.round(window.innerHeight - at.top)) : 0;
+    box.style.bottom = lift > 0 ? `${lift + 8}px` : "";
+  };
+  if (typeof ResizeObserver !== "undefined") new ResizeObserver(write).observe(row);
+  window.addEventListener("resize", write);
+  write();
+}
+
 function initGraphMinimap() {
   const svg = document.getElementById("graph-minimap-svg");
   if (!svg || svg._wired) return;
@@ -5884,6 +5907,7 @@ function initGraphViews() {
 // calls are idempotent (`_heightWired`), and the observer's first callback
 // arrives with a real height as soon as the card stops being display:none.
 initGraphDockHeightToken();
+initGraphToastClearance();
 
 //: The remembered on-by-default switches, restored when graph.js loads: the
 //: canvas renderer (the default) never ran the SVG render that used to do it,
