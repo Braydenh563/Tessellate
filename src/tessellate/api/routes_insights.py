@@ -687,6 +687,13 @@ def digest_structure_note(session: Session) -> str:
     )
 
 
+def composed_week(session: Session) -> str:
+    """The weekly digest with no model, from the rows (`activity.week`)."""
+    from tessellate.ai import activity
+
+    return activity.week(session, user_now(deps.get_config()))
+
+
 @router.post("/digest/stream")
 def weekly_digest_stream(session: Session = Depends(get_session)) -> StreamingResponse:
     """The weekly digest, streamed token by token (NDJSON).
@@ -708,7 +715,9 @@ def weekly_digest_stream(session: Session = Depends(get_session)) -> StreamingRe
             yield event({"type": "done", "cacheable": True})
             return
         if not ollama.is_running():
-            yield event({"type": "answer", "delta": librarian.OFFLINE_MESSAGE})
+            #: With no model the composer says the week (owner-1026b K3); not
+            #: cached, so a model, once on, writes the next one.
+            yield event({"type": "answer", "delta": composed_week(session)})
             yield event({"type": "done", "cacheable": False})
             return
 
@@ -738,7 +747,10 @@ def weekly_digest_stream(session: Session = Depends(get_session)) -> StreamingRe
                 elif "thinking_delta" in piece:
                     yield event({"type": "thinking", "delta": piece["thinking_delta"]})
         except OllamaError:
-            yield event({"type": "answer", "delta": f"\n\n{librarian.OFFLINE_MESSAGE}"})
+            #: A server up with no model that can answer: the composed week,
+            #: unless the model had already started on its own.
+            said = f"\n\n{librarian.OFFLINE_MESSAGE}" if answer else composed_week(session)
+            yield event({"type": "answer", "delta": said})
             yield event({"type": "done", "cacheable": False})
             return
         #: The greeting and the announcement come off, the same trim and the
@@ -776,10 +788,11 @@ def weekly_digest(session: Session = Depends(get_session)) -> dict:
         }
 
     config = deps.get_config()
-    # Only a genuine AI answer is worth caching, if Ollama is down the
-    # digest is just the offline notice, which should be retried, not
-    # frozen for the day.
+    # Only a genuine AI answer is worth caching: with no model the digest is
+    # the composed week (owner-1026b K3), which a model, once on, replaces.
     ollama_running = deps.get_ollama().is_running()
+    if not ollama_running:
+        return {"digest": composed_week(session), "thinking": None, "cacheable": False}
     digest, thinking = librarian.answer(
         digest_question(session),
         notes,

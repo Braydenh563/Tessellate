@@ -284,6 +284,9 @@ PHRASES: dict[str, str] = {
     "none_tagged": "No note found is tagged ",
     # A source that is not a note says its kind in its citation (decision 37):
     # "[board **Harbor board**]".
+    "your_board_cap": "Your board",
+    "your_map_cap": "Your mind map",
+    "your_document_cap": "Your document",
     "kind_board": "board ",
     "kind_map": "map ",
     "kind_document": "document ",
@@ -1842,9 +1845,15 @@ def _list_sentence(out: _Answer, items: list[Sentence], terms: list[str]) -> Non
     for i, s in enumerate(items):
         if i:
             out.t("and" if i == len(items) - 1 else "comma")
-        shown = s.text[0].lower() + s.text[1:] if lower else s.text
+        shown = decap(s.text) if lower else s.text
         out.q(s, terms, shown)
     out.t("stop")
+
+
+def _your_kind(view: NoteView) -> str:
+    """"Your note", or "Your board", "Your mind map", "Your document" for a
+    source that is not a note (INBOX 744: "a board must say board")."""
+    return f"your_{view.kind}_cap" if view.kind in ("board", "map", "document") else "your_note_cap"
 
 
 def _list_block(out: _Answer, view: NoteView, items: list[Sentence], terms: list[str], lead: str) -> None:
@@ -1855,7 +1864,7 @@ def _list_block(out: _Answer, view: NoteView, items: list[Sentence], terms: list
         done, total = out.count(sum(1 for s in tasks if s.done)), out.count(len(tasks))
         if lead == "opening":
             if view.titled:
-                out.t("your_note_cap", "space")
+                out.t(_your_kind(view), "space")
             out.name(view, cap=True).t("has").m(done).t("checklist_of").m(total).t("checklist_items_done")
         else:
             out.t("checklist").m(done).t("checklist_of").m(total).t("checklist_done")
@@ -1871,7 +1880,7 @@ def _list_block(out: _Answer, view: NoteView, items: list[Sentence], terms: list
         out.t("in_cap").name(view).t("you_listed")
     elif lead == "opening":
         if view.titled:
-            out.t("your_note_cap", "space")
+            out.t(_your_kind(view), "space")
         out.name(view, cap=True).t("lists")
     else:
         out.t("it_lists")
@@ -3736,6 +3745,47 @@ def plan(question: str, today: date | None = None, *, recent: bool = False, embe
     )
 
 
+#: A message this short that names one of the app's own tools ("timer",
+#: "countdown", "pomodoro") is a request for the tool as much as a search.
+_FEATURE_WORDS = 3
+
+
+def _feature_instead(question: str, absent: list[str]) -> dict | None:
+    """Nothing in the notes, and a two- or three-word message that names an
+    app feature (INBOX 1334, "timer\\" got "Which note might it be in?"):
+    say the notes are silent on it in one clause, then how to use the feature
+    from the Guide's topic. None for anything longer or no topic."""
+    words = re.findall(r"[a-z]+", (question or "").lower())
+    if not words or len(words) > _FEATURE_WORDS:
+        return None
+    from tessellate.ai import help_chat
+
+    best = help_line(question, help_chat.topics_for(question or ""))
+    if best is None:
+        return None
+    #: The thing asked for is named in the help line itself: "spare key
+    #: where" is a lost key, not the keyboard shortcuts (test_composer_eval_741).
+    wanted = absent or [w for w in words if len(w) >= 4]
+    if not wanted or not all(re.search(rf"\b{re.escape(w)}", best[0], re.I) for w in wanted):
+        return None
+    said = absent[0] if absent else " ".join(words)
+    #: The feature first: "Nothing in your notes mentions timer" was a
+    #: not-found answer to a request for the timer (INBOX 1357, class B).
+    lead = f"“{said[:1].upper()}{said[1:]}” is one of the app's own tools, not something in your notes. "
+    return _result([("template", lead), ("help", best[0], best[1])], "help")
+
+
+def decap(text: str) -> str:
+    """`text` with its first letter lowered for the middle of a sentence,
+    unless its first word is a name by its shape: "I", or a capital after
+    the first letter ("IaaS", "iPhone", "GPU"). INBOX 1357: a map's items
+    were said as "iaaS, paaS and saaS"."""
+    first = re.match(r"[A-Za-z][\w'-]*", text or "")
+    if first and (first.group(0) in ("I", "I'm", "I've", "I'd", "I'll") or any(c.isupper() for c in first.group(0)[1:])):
+        return text
+    return text[:1].lower() + text[1:]
+
+
 def _help_answer(question: str) -> dict | None:
     """A how-to answered by the step sentence of the Help topic it names
     (decision 36's help register): the sentence of the best topic that
@@ -4088,7 +4138,7 @@ def _overview_list(out: _Answer, units: list[Sentence], terms: list[str]) -> Non
         if n:
             out.t("and" if n == len(units) - 1 else between)
         text = s.text.rstrip(".")
-        out.q(s, terms, text[0].lower() + text[1:] if lower else text)
+        out.q(s, terms, decap(text) if lower else text)
     out.t("stop")
 
 
@@ -4177,6 +4227,17 @@ def _did_you_mean(unsure: list[dict]) -> list[list[tuple]]:
     if not unsure:
         return []
     return [[("template", PHRASES["did_you_mean_a"]), ("corrected", unsure[0]["alternative"]), ("template", PHRASES["did_you_mean_b"])]]
+
+
+def _as_phrase(absent: list[str], question: str) -> list[str]:
+    """Words side by side in the question said as the one phrase they are:
+    “quantum chromodynamics”, not “quantum” or “chromodynamics” (INBOX
+    1357, class H)."""
+    if len(absent) > 1:
+        joined = " ".join(absent)
+        if joined.lower() in " ".join(re.findall(r"[\w'-]+", (question or "").lower())):
+            return [joined]
+    return absent
 
 
 def _absent(terms: list[str], views: list[NoteView]) -> list[str]:
@@ -4656,7 +4717,8 @@ def _fill_selected(out: "_Answer", p, shape: str, question: str, terms: list, ty
     if not chosen:
         if _bare_title(out, terms, views_list) is not None:
             return _result(out.parts, shape, out.rows)
-        return _nothing(shape, unsure, voice, [_as_typed(w, question) for w in _absent(typed, views_list)], out)
+        absent = _as_phrase([_as_typed(w, question) for w in _absent(typed, views_list)], question)
+        return _feature_instead(question, absent) or _nothing(shape, unsure, voice, absent, out)
     if wish == "brief":
         chosen = [s for s in chosen if s.note_id == chosen[0].note_id]
         broad = False

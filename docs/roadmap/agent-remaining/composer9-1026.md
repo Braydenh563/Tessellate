@@ -25,16 +25,36 @@ removes its id.
 
 | Class | Before | After |
 | --- | --- | --- |
-| A | 9/10 | |
-| B | 3/10 | |
-| C | 0/11 | |
-| D | 1/6 | |
-| E | 5/7 | |
-| F | 0/8 | |
-| G | 4/8 | |
-| H | 6/7 | |
-| I | 4/7 | |
-| J | 3/4 | |
-| all | 34/77 (some passes only because the old checks were loose; tightened before counting) | |
+| A | 9/10 | 10/10 |
+| B | 3/10 | 10/10 |
+| C | 0/11 | 11/11 |
+| D | 1/6 | 6/6 |
+| E | 5/7 | 7/7 |
+| F | 0/8 | 8/8 |
+| G | 4/8 | 8/8 |
+| H | 6/7 | 6/6 (one case moved to B) |
+| I | 4/7 | 7/7 |
+| J | 3/4 | 3/4 |
+| all | 35/77 (checks tightened before counting) | 76/77 |
 
-Next: K closers (G, J fail on it), then C recap (K20), B tool words, F kinds, D Also lines, I lists, A, E.
+The fixes, each in the shared layer rather than for its case:
+
+- K closers: the closing line says "newest" only of the newest note (`close_cited` frames, `routes_chat._with_next_step`); a cited document resolves in its own table (`_cited_titles`, (kind, id)).
+- C recap (K20): `ai/activity.py`, first in `_computed_answer`; `composer_notes._read_recent` defers to it.
+- B tool words: `_feature_instead` (a two- or three-word message naming an app feature that is in the help line) and `composer_suggest._app_tool` (an imperative for a tool chat cannot run); reminders listing cue.
+- F kinds: `_named_sources` puts a board, map or document named by its title first; `activity.boards` lists boards or maps; `_from_source` and `_your_kind` say a source as its kind; `decap` keeps IaaS.
+- D: `composer_digest._pin` says a past "tomorrow" as its date.
+- E: `slash._inferred` reads "oldest note" as one.
+- I: `realise.named_lead` names every category or tag while six or fewer; `tools._list_categories` counts the notes `_visible` counts (boards were in it); "what's still to do" is the open checkboxes.
+- A: `capability._OVERVIEW` takes "even", "actually", "else".
+- H: `vocative._tail` keeps a subject word after "about X" ("chromodynamics"); `composer._as_phrase` names the words as one phrase.
+
+## Remaining
+
+- J "what have I saved about the gym?" then "tell me more": answers "That's all your notes say on gym so far". Both notes were already told, so this may be right and the case's check wrong; judge before fixing (`tests/test_composer_classes_1357.py` J_FOLLOW).
+- K3, the other AI-only buttons with no composer fallback, in order of use (`data-needs-model` in `frontend/index.html`): `draft-compose` 1876, `draft-title` 1853, the extract buttons (`draft-extract` 1856, `extract-commit` 9493, `doc-extract` 5043, `wb-extract-notes` 7705), `draft-refine` 2035, `doc-ai`/`doc-ai-run`/`doc-ai-instruction` 4934/5629/5626, `chat-plan` 3184, `template-draft` 10687, the code panel's explain, tests and refactor 5427-5435. Recommendation: title (first line or top terms) and extract (one note per paragraph or heading) first; drafting and refining stay model-only with their popover.
+- when_words does not read "over the weekend" or "last fortnight" (the recap answers neither).
+- "summarise my uni notes" mislabels a map's node as a heading ("**Service models:**"); seen in the dump, not in a class.
+- "0 distinct tags" in the stats wording; seen once, not cased.
+- Not verified: no browser run of the dashboard's composed digest or the recap's links; the API and tests only.
+

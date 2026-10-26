@@ -3303,21 +3303,11 @@ async function renderDigestWidget(outer) {
   } else if (digestPromise) {
     runGeneration(); // one is already running (from before a tab switch)
   } else {
+    //: Never gated on a model (owner-1026b K3): with none, the server
+    //: composes the week from the notes' own rows (`activity.week`), and a
+    //: model, once on, writes the next one.
     const generate = smallButton("Generate this week's digest", "", runGeneration, false);
-    //: Built here rather than in `index.html`, so it carries the reason on
-    //: itself and then asks the one gate to read it (INBOX 203). It used to
-    //: carry its own copy of the check and its own sentence, which said "start
-    //: Ollama" to somebody running llama.cpp; `syncModelGatedControls` owns
-    //: that wording for every AI control in the app, this one included.
-    generate.dataset.needsModel = "The weekly digest is written by the local AI";
-    //: UX-12 (audit 2026-10-05): the reason was only a `title` on a disabled
-    //: button, which a keyboard cannot focus and a phone cannot hover. The
-    //: same line and Settings link as Ask and Chat, kept by the status poll.
-    const offline = document.createElement("div");
-    offline.className = "ai-offline-note notice hidden";
-    offline.dataset.offlineLine = "No model connected, so the digest cannot be written yet.";
-    body.append(generate, offline);
-    syncModelGatedControls();
+    body.append(generate);
   }
 }
 

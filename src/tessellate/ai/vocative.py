@@ -188,6 +188,12 @@ def _addressed(name: str, greeting: str, after: str, alone: bool, kind: str | No
     return Address(question=question, names=[name], greeting=greeting)
 
 
+#: The words a subject follows, and the endings of a subject's own word
+#: ("chromodynamics", "photosynthesis", "ecology"), which no nickname has.
+_SUBJECT_HEADS = frozenset(("about", "regarding", "re", "on", "of"))
+_SUBJECT_ENDING = ("ics", "sis", "tion", "sion", "ology", "ism", "ment", "ness", "ity", "ance", "ence", "ure", "ship")
+
+
 def _tail(text: str, tokens: list[re.Match], known) -> Address | None:  # noqa: ANN001
     stripped = text.rstrip(" ?!.")
     mark = text[len(stripped) :].strip()
@@ -207,6 +213,11 @@ def _tail(text: str, tokens: list[re.Match], known) -> Address | None:  # noqa: 
         else:
             previous = tokens[-size - 1].group(0).lower()
             if previous in OBJECT_HEADS or len(tokens) - size < 2:
+                continue
+            #: "about quantum chromodynamics": a subject two words long, not
+            #: "quantum" and a nickname (INBOX 1357, class H).
+            if (len(tokens) - size >= 2 and tokens[-size - 2].group(0).lower() in _SUBJECT_HEADS
+                    and words[-1].lower().endswith(_SUBJECT_ENDING)):
                 continue
             #: A capital mid-sentence is someone talked about ("when did I
             #: meet Zorgblat"); a nickname is typed as it is said.

@@ -21,7 +21,7 @@ import pytest
 
 from tessellate.api import routes_chat
 from tessellate.core import config
-from tessellate.core.database import Document, Reminder
+from tessellate.core.database import Document, Reminder, WhiteboardObject
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
 
@@ -36,10 +36,16 @@ NOTES = [
     ("# Lecture 5: Operating systems\n\nA process is a program in execution. Round robin gives each process a fixed time slice. Exam on 12 November.", "Uni", dt.datetime(2026, 10, 20, 9), {}),
     ("# Gym routine\n\nPull, push, legs, then a rest day. Squats on Monday, deadlifts on Thursday.", "Hobbies", dt.datetime(2026, 10, 19, 8), {}),
     ("# Errands\n\n- [ ] Book the tram pass\n- [ ] Buy a notebook\n- [x] Pay rent", "Personal", dt.datetime(2026, 10, 14, 9), {}),
-    ("# Revision board\n\nCards for the operating systems exam.", "Uni", dt.datetime(2026, 10, 16, 15), {"is_board": True, "board_settings": json.dumps({"type": "board"})}),
-    ("# Cloud computing map\n\nService models: IaaS, PaaS and SaaS.", "Uni", dt.datetime(2026, 10, 13, 11), {"is_board": True, "board_settings": json.dumps({"type": "map"})}),
+    ("# Revision board", "Uni", dt.datetime(2026, 10, 16, 15), {"is_board": True, "board_settings": json.dumps({"type": "board"})}),
+    ("# Cloud computing map", "Uni", dt.datetime(2026, 10, 13, 11), {"is_board": True, "board_settings": json.dumps({"type": "map"})}),
     ("# Old shopping list\n\nMilk, eggs, bread.", "Personal", dt.datetime(2026, 10, 12, 9), {"is_deleted": True, "deleted_at": dt.datetime(2026, 10, 15, 12)}),
 ]
+#: A board's and a map's words live on their objects, not in the entry:
+#: (board title, [(text, parent index or None)]).
+OBJECTS = {
+    "# Revision board": [("Cards for the operating systems exam", None), ("Scheduling: round robin", None)],
+    "# Cloud computing map": [("Service models", None), ("IaaS", 0), ("PaaS", 0), ("SaaS", 0)],
+}
 DOCUMENTS = [
     ("Essay draft", "Hamlet delays because he doubts the ghost.", dt.datetime(2026, 10, 15, 14), dt.datetime(2026, 10, 17, 16)),
 ]
@@ -60,6 +66,13 @@ def ask(client, session, monkeypatch):
         entry.created_at = entry.updated_at = when
         for key, value in extra.items():
             setattr(entry, key, value)
+        made: list = []
+        for words, parent in OBJECTS.get(text, []):
+            obj = WhiteboardObject(board_id=entry.id, kind="text", data=json.dumps({"content": words}),
+                                   parent_id=made[parent].id if parent is not None else None)
+            session.add(obj)
+            session.flush()
+            made.append(obj)
     for title, content, made, edited in DOCUMENTS:
         session.add(Document(title=title, content=content, created_at=made, updated_at=edited))
     for text, due, done, done_at in REMINDERS:
@@ -148,7 +161,7 @@ C_RECAP = [
     ("what did I edit last week", r"Essay draft", None),
     ("show my activity this week", r"Gym routine|Lecture 5", None),
     ("what did I do in August?", r"August.*(17 July|2 October)", None),
-    ("what did I do yesterday", r"Gym routine|Monday|19 October|nothing", None),
+    ("what did I do yesterday", r"Lecture 5", None),
     ("what have I been up to this week", r"Gym routine|Lecture 5", NOT_FOUND),
 ]
 
@@ -237,42 +250,6 @@ J_FOLLOW = [
 #: the run until its id is taken out of this set (INBOX 1357 baseline: 35 of
 #: 77 passing before any fix).
 OPEN = {
-    'A-what can you even do',
-    'B-categories',
-    'B-countdown',
-    'B-reminder',
-    'B-reminders',
-    'B-set a timer',
-    'B-timer',
-    'B-timer\\',
-    'C-show my activity this week',
-    'C-wat did i do last wk',
-    'C-what did I delete last week?',
-    'C-what did I do in August?',
-    'C-what did I do last week?',
-    'C-what did I do yesterday',
-    'C-what did I edit last week',
-    'C-what did I make last week?',
-    'C-what did I work on last week',
-    'C-what did i get up to last week',
-    'C-what have I been up to this week',
-    'D-summarise my uni notes',
-    'D-tell me about my uni timetable',
-    'D-what are my uni days?',
-    'D-what have I saved about uni?',
-    "D-what's in my uni timetable note",
-    'E-whats my oldest note',
-    'F-show me my boards',
-    'F-what did I write in my essay draft document?',
-    'F-what does my cloud computing map say',
-    'F-what maps do I have',
-    "F-what's in my essay draft",
-    "F-what's on my revision board?",
-    'F-whats on the revision board',
-    'H-what did I write about quantum chromodynamics?',
-    'I-list my categories',
-    'I-what categories do I have',
-    "I-what's still to do",
     'J-what have I saved about the gym?->tell me more',
 }
 

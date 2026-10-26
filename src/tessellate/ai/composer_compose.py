@@ -300,7 +300,8 @@ def sentence_case(text: str) -> str:
 def _clause(lead: str, text: str) -> str:
     """`text` after a connective: lower-cased after a comma-ended or bare
     one ("Also, your last note"), left alone after a colon."""
-    if lead and (lead.endswith(",") or lead[-1].isalpha()) and text[:1].isupper() and not text[1:2].isupper():
+    first = text.split(" ", 1)[0]
+    if lead and (lead.endswith(",") or lead[-1].isalpha()) and text[:1].isupper() and not any(c.isupper() for c in first[1:]):
         text = text[0].lower() + text[1:]
     return f"{lead} {text}".strip()
 

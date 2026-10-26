@@ -212,8 +212,10 @@ def test_recall_by_time_reads_every_note_of_the_window(client, session):
     old.created_at = now - timedelta(days=60)
     session.commit()
     out = _ask(client, "what did I do last week", notes_only=True, use_tools=False, answer_from="notes")
-    assert out["text"].startswith("You wrote seven notes last week, newest first:"), out["text"]
-    assert "**Day 6**" in out["text"] and "**Old**" not in out["text"]
+    #: Since owner-1026b K20 the answer is the activity recap (every kind,
+    #: grouped by day); the window still holds every note of it and no other.
+    assert out["text"].startswith("Last week (") and "you made seven notes:" in out["text"], out["text"]
+    assert all(f"**Day {i}**" in out["text"] for i in range(7)) and "**Old**" not in out["text"]
 
 
 # Utilities worked out with no model and no search (CHAT_PLAN A1). The eval

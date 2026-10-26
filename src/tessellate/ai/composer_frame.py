@@ -165,6 +165,8 @@ def _lower(text: str) -> str:
     words = text.split()
     if len(words) > 1 and any(w[:1].isupper() for w in words[1:3]):
         return text
+    if words and any(c.isupper() for c in words[0][1:]):
+        return text  # "IaaS", "iPhone": a capital inside the word is its shape
     return text[:1].lower() + text[1:] if text[1:2].islower() else text
 
 
