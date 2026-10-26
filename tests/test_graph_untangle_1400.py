@@ -75,6 +75,47 @@ console.log(JSON.stringify({ before, after, moved, glideStart, again, pinAt, pin
 """
 
 
+CLEANUP = UNTANGLE.split("const run = (code)")[0] + r"""
+const run = (code) => vm.runInContext(code, sb);
+for (let t = 0; t < 2000 && run("simulation.alpha() >= simulation.alphaMin()"); t++) run("simulation.tick(); clampToWorld();");
+run("untangle.passes = 1");
+// A note put dead on the middle of a long line it does not join.
+const put = run(`(() => {
+  const k = untangle.edges.findIndex(([a, b]) => Math.hypot(nodes[a].x - nodes[b].x, nodes[a].y - nodes[b].y) > 120);
+  const [a, b] = untangle.edges[k];
+  const i = nodes.findIndex((n, j) => j !== a && j !== b && n.fx == null && !untangle.incident[j].length);
+  const at = i >= 0 ? i : nodes.findIndex((n, j) => j !== a && j !== b && n.fx == null);
+  clearNearest(nodes[at], clearCurve(nodes[a], nodes[b]));
+  nodes[at].x = clearPts[4]; nodes[at].y = clearPts[5];
+  return [at, nodes[at].x, nodes[at].y];
+})()`);
+const onBefore = run(`untangleOnLine(${put[0]})`);
+const moved = run("untangleCleanup()");
+const holding = run("untangle.holding");
+run("for (const n of nodes) if (n.tx !== undefined) { n.x = n.tx; n.y = n.ty; n.tx = undefined; n.ty = undefined; }");
+const onAfter = run(`untangleOnLine(${put[0]})`);
+const travelled = run(`Math.hypot(nodes[${put[0]}].x - ${put[1]}, nodes[${put[0]}].y - ${put[2]})`);
+console.log(JSON.stringify({ onBefore, onAfter, moved, holding, travelled }));
+"""
+
+
+def test_a_note_left_on_a_line_is_pushed_off_it_and_the_map_ends_there() -> None:
+    out = _node(CLEANUP)
+    assert out["onBefore"] is True, out
+    assert out["onAfter"] is False, out
+    assert out["moved"] > 0 and out["holding"] is True, out
+    # It clears the line, it does not travel across the map.
+    assert out["travelled"] <= 40, out
+    loop = WORKER[WORKER.index("\nfunction loop() {") :]
+    loop = loop[: loop.index("\n}\n")]
+    # Once, after the last pass has rested, never after a drag, and no tick after it.
+    assert "untangle.passes > 0 && !untangle.cleaned && !dragging && nodes.length <= UNTANGLE_BIG" in loop
+    assert loop.index("if (untangle.holding) {") < loop.index("simulation.tick();")
+    drag = WORKER[WORKER.index('if (message.phase === "start") {') :]
+    drag = drag[: drag.index('} else if (message.phase === "move")')]
+    assert "untangle.cleaned = true;" in drag and "untangle.holding = false;" in drag
+
+
 def test_a_settled_map_is_untangled_without_moving_a_category_or_a_pin() -> None:
     out = _node(UNTANGLE)
     # Measured: 25 crossings at rest, 0 after the pass.
@@ -93,7 +134,8 @@ def test_the_untangle_waits_for_rest_and_never_follows_a_drag() -> None:
     loop = WORKER[WORKER.index("\nfunction loop() {") :]
     loop = loop[: loop.index("\n}\n")]
     assert "settled && !untangle.done && untangleLayout()" in loop
-    assert "shuffle.left = SHUFFLE_STEPS" in loop  # glides, not jumps
+    assert "shuffle.left = UNTANGLE_GLIDE_STEPS" in loop  # glides, not jumps
+    assert "shuffle.left = UNTANGLE_CLEAN_STEPS" in loop
     drag = WORKER[WORKER.index('case "drag": {') :][:600]
     assert "untangle.done = true" in drag
     for case in ('case "params":', 'case "reshuffle":'):
@@ -143,17 +185,33 @@ def test_a_phone_cuts_names_shorter_so_more_of_them_fit() -> None:
     assert len(out["phone"]) < len(out["hub"]) <= 21, out
 
 
-def test_the_untangle_runs_two_passes_with_the_relax_between_and_never_after_a_drag() -> None:
+def test_the_untangle_runs_three_passes_with_the_relax_between_and_never_after_a_drag() -> None:
     """INBOX 1400: the second pass starts from where the first one's relax rested
-    (186 notes in the browser: 722 to 683 crossings at 1440), and the relax is
-    cooled several ticks a frame so the map rests sooner (`end` 3.8 s after
-    init at 36 notes, was 6.3). Three passes lower the crossings further but
-    put notes on lines, which `test_graph_layout.py` refuses, so two."""
-    assert "const UNTANGLE_PASSES = 2;" in WORKER
-    assert "untangle.passes < UNTANGLE_PASSES && !dragging) untangle.done = false;" in WORKER
+    and the relax is cooled several ticks a frame so the map rests sooner. A
+    third lowers the crossings further (36 notes, mean of 6 layouts offline: 53
+    to 50); a map over `UNTANGLE_BIG` notes gets two, a pass that gains little
+    ends them. The notes the passes leave on a line are cleared at the end
+    (`test_graph_layout.py` counted 7 on lines after three passes)."""
+    assert "const UNTANGLE_PASSES = 3;" in WORKER
+    assert "untangle.passes < untanglePasses() && !dragging) untangle.done = false;" in WORKER
+    assert "nodes.length > UNTANGLE_BIG ? UNTANGLE_BIG_PASSES : UNTANGLE_PASSES" in WORKER
+    assert "untangle.gain < Math.max(2, untangle.total * UNTANGLE_MIN_SHARE)" in WORKER
     # A drag marks the passes spent, so the ease after a drop is never untangled.
     drag = WORKER[WORKER.index('if (message.phase === "start") {') :]
     drag = drag[: drag.index('} else if (message.phase === "move")')]
     assert "untangle.passes = UNTANGLE_PASSES;" in drag and "untangle.relaxing = false;" in drag
     # Anything that lays the map out again starts the count over.
     assert WORKER.count("untangle.passes = 0;") == 3
+
+
+def test_a_pass_gets_time_by_the_size_of_the_map_up_to_a_cap() -> None:
+    budget = _fn(WORKER, "untangleBudget")
+    assert "UNTANGLE_MS_PER_NOTE" in budget and "UNTANGLE_MS_MAX" in budget and "Math.max(UNTANGLE_MS," in budget
+    assert "Date.now() + untangleBudget()" in _fn(WORKER, "untangleLayout")
+    script = (
+        "const UNTANGLE_MS = 200, UNTANGLE_MS_PER_NOTE = 2, UNTANGLE_MS_MAX = 600; let nodes = [];"
+        + budget
+        + "const at = (n) => { nodes = new Array(n); return untangleBudget(); };"
+        + "console.log(JSON.stringify([at(36), at(100), at(186), at(2000)]));"
+    )
+    assert _node(script) == [200, 200, 372, 600]

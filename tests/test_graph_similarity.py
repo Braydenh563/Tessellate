@@ -302,6 +302,13 @@ def test_the_cutoff_and_the_key_are_in_the_options_panel() -> None:
     panel = html[html.find('id="graph-options"') :]
     panel = panel[: panel.find('<!-- Trace:')]
     assert 'id="graph-similarity-min"' in panel, "no similarity cutoff slider"
+    # INBOX 1400: Show is a closed fold, so the slider sits with the controls that
+    # are always open (View, under Size), not inside the fold it would be hidden in.
+    slider = panel.index('id="graph-similarity-min-row"')
+    assert panel.index('id="graph-view-section"') < slider < panel.index('id="graph-toggle-group"'), (
+        "the strength slider must be in the View section, before the closed Show fold"
+    )
+    assert "Match strength" in panel[slider : slider + 400]
     help_body = panel[panel.find('id="graph-show-help"') :]
     help_body = help_body[: help_body.find("</div>")]
     assert "Similarity" in help_body and "solid" in help_body.lower(), (

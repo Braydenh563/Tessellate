@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Graph: the untangle runs up to three passes (two past 100 notes) and gives each pass time by the size of the map (200 ms to 36 notes, 372 ms at 186), and the notes the passes leave on a line are pushed off it once, at the end, so none stands on one at 36 notes at 1440 wide (was 10, in the browser). At rest in the browser, median of 3: 36 notes 62 to 53 crossings at 1440 and 53 to 51 at 390; 186 notes 372 to 353 and 355 to 323; the map rests in 4.1 s at 36 notes (was 3.8) and 7.2 s at 186 (was 6.8). The similarity slider is now "Match strength" under Size, shown while Similarity is on, not inside the closed Show fold.
 - Composer: the heading and picture-line readers no longer backtrack over long runs of tabs (CodeQL, 4 alerts).
 - Time words: seasons ("last summer", "in winter", "over the winter": June to August, December to February) and a week or half of a named month ("the first week of October", "the last week of September", "the second half of March") are read as dates, and "anything from September" asks what was written, not what is coming.
 - Chat: a window said twice in one question ("what did I write this week, I mean this week") is the same window, taken out once.
