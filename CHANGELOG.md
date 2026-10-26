@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Graph: a new Organic layout is untangled once it settles (notes trade places or turn within their category when that lowers the crossings, then glide there), the category ring is ordered by the links between categories, the last of the cooling runs several ticks a frame, and a phone cuts names to 14 characters so more of them fit.
 - Stats: counts of nothing are said as "no" ("You are not using any tags yet", "You have no documents"), and one note takes a singular verb ("1 note out of 3 has no tags").
 - Chat: a mind-map node or board card written "Label: text" is said as its own text in a summary, never as a bold heading over the rest.
 - Time words: "over the weekend", "last fortnight", "since Monday", "the other day", "earlier this week", "so far this month", "year to date" and the rest of the this/last/past N days, weeks, months forms are read as dates in recaps and searches.
