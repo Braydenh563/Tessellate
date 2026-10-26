@@ -2206,6 +2206,7 @@ TOPIC_META: dict[str, dict] = {
     "mind-map-controls": {"title": "Mind map keys and controls", "path": "Library tab, Boards & maps"},
     "documents-controls": {"title": "Document editor keys and controls", "path": "Library tab, Documents"},
     "documents-features": {"title": "Document editor features", "path": "Library tab, Documents"},
+    "documents-paste": {"title": "Paste options and Paste special", "path": "Library tab, Documents, document menu"},
     "mind-map-features": {"title": "Mind map features", "path": "Library tab, Boards & maps"},
     "mind-map-import-export": {"title": "Mind map templates, import and export", "path": "Library tab, Boards & maps"},
     "mind-map-study": {"title": "Study the map", "path": "Library tab, Boards & maps, a map's board menu"},
@@ -2278,7 +2279,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "documents-features", "callouts", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
+        "documents", "documents-controls", "documents-features", "documents-paste", "callouts", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (

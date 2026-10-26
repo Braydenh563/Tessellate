@@ -14,8 +14,9 @@ from pathlib import Path
 DOCS = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
 
 
-def test_the_editor_tries_the_table_paste_then_the_rich_one():
-    assert "docTablePasteEvent(event, view) || docRichPasteEvent(event, view)" in DOCS
+def test_the_editor_tries_the_table_paste_then_the_smart_one_then_the_rich_one():
+    # docpaste-1026 put the smart paste (web address, several lines, Paste special) between them.
+    assert "docTablePasteEvent(event, view) || docSmartPasteEvent(event, view) || docRichPasteEvent(event, view)" in DOCS
 
 
 def test_only_safe_link_schemes_are_written():
