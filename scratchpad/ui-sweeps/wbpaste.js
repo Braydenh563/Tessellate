@@ -168,6 +168,14 @@ async function run(viewport) {
   check("a plain paste keeps the threads", kept.o.length === 2 && kept.o[1] === 1 && kept.s.length === 2 && kept.s[1] === 1, kept);
   check("the originals keep theirs", await page.evaluate(() => wbItemComments("object", wbFindItem("object", window.__cm.o)).length === 1 && wbItemComments("sketch", wbFindItem("sketch", window.__cm.s)).length === 1));
 
+  // 10. the zoom dock stays at half-screen widths and clears the tools row (it was display:none under 820px)
+  const dock = await page.evaluate(() => {
+    const lvl = document.getElementById("wb-zoom-level");
+    const p = lvl.closest(".whiteboard-floating-panel").getBoundingClientRect();
+    const t = document.querySelector(".whiteboard-floating-panel.bottom-center").getBoundingClientRect();
+    return { shown: p.width > 0 && /%$/.test(lvl.textContent), clear: p.bottom <= t.top + 0.5 || p.left >= t.right, inView: p.right <= innerWidth && p.left >= 0 };
+  });
+  check("the zoom level is shown and clears the tools row", dock.shown && dock.clear && dock.inView, dock);
   check("no console errors", errors.length === 0, errors);
   const ok = summary();
   await browser.close();

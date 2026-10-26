@@ -73,6 +73,21 @@ async function drag(page, key, from, to, mods = []) {
     return r;
   });
   console.log("barFormat", JSON.stringify(fmt));
+  // A selected shape's resize and rotate grips with a text box lying over it: how many answer a press.
+  const grips = await page.evaluate(async () => {
+    const sk = await apiJson("/whiteboard/sketches", { method: "POST", body: JSON.stringify({ data: JSON.stringify({ d: "M 300 300 h 200 v 120 h -200 Z", shape: "rect", color: "#4a90d9", width: 2 }), x: 0, y: 0, z: 1, board_id: window.currentBoardId }) });
+    wbState.sketches.push(sk);
+    const obj = await apiJson("/whiteboard/objects", { method: "POST", body: JSON.stringify({ kind: "text", x: 380, y: 340, width: 300, height: 200, z: 9, board_id: window.currentBoardId, data: { content: "over it" } }) });
+    wbState.objects.push(obj);
+    wbScheduleRender();
+    await new Promise((r) => setTimeout(r, 800));
+    selectWbItem("sketch", sk.id);
+    await new Promise((r) => setTimeout(r, 800));
+    const hs = [...document.querySelectorAll(".wb-sketch-resize-handle, .wb-sketch-rotate-handle")];
+    const hit = hs.filter((el) => { const b = el.getBoundingClientRect(); return document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2) === el; });
+    return { grips: hs.length, answering: hit.length };
+  });
+  console.log("gripsUnderTextBox", JSON.stringify(grips));
   console.log("errors", errors.length, errors.slice(0, 3));
   await browser.close();
 })();

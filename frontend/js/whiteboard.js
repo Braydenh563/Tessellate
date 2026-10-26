@@ -20139,7 +20139,10 @@ function wbDrawSketchHandles(sketch, { outlineOnly = false } = {}) {
   const bbox = wbPathBBox(parsed.d);
   if (!bbox) return;
 
-  const group = d3.select("#wb-zoom-group")
+  //: A lone selection's grips go in the overlay, above the HTML objects that
+  //: can lie over the shape (3 of 8 grips were under a text box: measured
+  //: with `elementFromPoint`); a multi member's bare outline stays under.
+  const group = d3.select(outlineOnly ? "#wb-zoom-group" : "#wb-overlay-zoom-group")
     .append("g")
     .attr("class", "wb-sketch-handle-group")
     .attr("data-sketch-id", sketch.id);

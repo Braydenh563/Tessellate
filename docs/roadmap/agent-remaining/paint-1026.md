@@ -60,5 +60,7 @@ Sweeps: `scratchpad/ui-sweeps/paint1026-audit.js` (board, 1440), `paint1026-sket
 
 ## Remaining
 
+Ticked in wb4-1026: the HTML object layer over a sketch's grips (fixed), the phone zoom level (the dock stays under 820px), the phone resize 67 vs 60 (explained: the edge-pan band), wb1005-format's tab wrap (fixed).
+
 1. Quick sketch: the independent ux-auditor and blind-tester runs (orchestrator; this agent has no agent tool). Self-run a11y sweep is clean.
 2. Found, not fixed: CHAT_PLAN.md 1905 of 1900 lines (test_plan_hygiene, on the base); wb1005-format.js's tab-wrap check predates the Data tab; the HTML object layer covers a selected sketch's SVG grips where they overlap; the phone resize lands 7px over (67 against 60, not explained); the board's zoom level is not shown on a phone (the dock is hidden there).
