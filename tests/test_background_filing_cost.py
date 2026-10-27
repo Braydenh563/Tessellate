@@ -30,7 +30,7 @@ class _CountingEmbeddings(EmbeddingService):
 
     def __init__(self) -> None:
         super().__init__(
-            model_manager=types.SimpleNamespace(embedding_backend=lambda: "sentence-transformers"),
+            model_manager=types.SimpleNamespace(embedding_backend=lambda: "fastembed"),
             ollama_client=None,
         )
         self.encodes: list[str] = []

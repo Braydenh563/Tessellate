@@ -247,7 +247,7 @@ def test_a_phones_request_waits_for_this_computer_before_the_semantic_install(mo
     service = object.__new__(embeddings.EmbeddingService)
     service._auto_install_attempted = False
     service._models = SimpleNamespace(_config=SimpleNamespace(get_preference=lambda key, default=None: True))
-    missing = ModuleNotFoundError("No module named 'sentence_transformers'")
+    missing = ModuleNotFoundError("No module named 'fastembed'")
     with origin.acting_for(True):
         service._maybe_auto_install_missing_package(missing)
     assert started == [] and origin.has_deferred() and service._auto_install_attempted is False

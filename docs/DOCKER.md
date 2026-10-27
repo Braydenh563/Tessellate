@@ -61,12 +61,12 @@ Those the image or compose file sets, and the ones the code reads that make sens
 | `TESSELLATE_FIRST_PASSWORD` | unset (compose passes it through from your shell) | Seeds a password while none is set |
 | `TESSELLATE_ALLOWED_HOSTS` | unset (compose passes it through) | Host names a reverse proxy forwards |
 | `OLLAMA_URL` | `http://host.docker.internal:11434` | Where Ollama is |
-| `HF_HOME`, `SENTENCE_TRANSFORMERS_HOME` | `/models/hf` | Model cache, on the models volume |
+| `HF_HOME` | `/models/hf` | Model cache, on the models volume |
 | `TESSELLATE_RAM_GB` | detected | Overrides the memory the app thinks it has; set it if a container limit is lower than the host's |
 | `TESSELLATE_EMBED_THREADS` | `1` | Threads for the built-in search model |
 | `TESSELLATE_LAN_PORT` | `8443` | HTTPS port for LAN mode; not used in a container |
 
-The default image has no torch (search by keyword, plus an Ollama embedder). `--build-arg WITH_EMBEDDER=1` (or `WITH_EMBEDDER: "1"` in compose) adds the built-in search model and CPU torch, about 1.1 GB more.
+The default image has no built-in search engine (search by keyword, plus an Ollama embedder). `--build-arg WITH_EMBEDDER=1` (or `WITH_EMBEDDER: "1"` in compose) adds fastembed and ONNX Runtime, about 120 MB more; the model (67 MB) downloads after a yes in the app.
 
 ## Connect a model server on the host
 

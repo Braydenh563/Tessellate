@@ -199,10 +199,10 @@ a = Analysis(
     hooksconfig={},
     runtime_hooks=[],
     excludes=[
-        # Explicitly never bundled — see CLAUDE.md/requirements.txt: this
-        # app's own semantic search already falls back to keywords without
-        # them, and torch alone is a very large chunk of a download this
-        # build's whole point is to keep small and fast to fetch.
+        # Never bundled: search by meaning is an optional install from
+        # Settings > Packages, as in the Windows spec (see its comment).
+        "fastembed",
+        "onnxruntime",
         "torch",
         "sentence_transformers",
         # No tray on this build (see the module docstring above) — pystray

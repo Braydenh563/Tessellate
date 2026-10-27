@@ -154,7 +154,7 @@ for (const radio of document.querySelectorAll('input[name="emb-backend"]')) {
     //: taken. It says which backend is *selected*, which is the question the
     //: control is about; whether it is applied is what Apply is for.
     syncEmbeddingPickerState();
-    if (radio.checked && radio.value === "sentence-transformers") applyEmbeddingBackend();
+    if (radio.checked && radio.value === "fastembed") applyEmbeddingBackend();
   });
 }
 $("status-back").addEventListener("click", () => stepTabHistory(-1));

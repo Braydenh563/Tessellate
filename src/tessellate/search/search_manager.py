@@ -493,7 +493,7 @@ def semantic_search(
     # never recalibrated.
     #
     # Rather than guess a new fixed number for BGE specifically, unverified
-    # in this sandbox, which cannot run sentence-transformers at all per
+    # in this sandbox, which ran no local embedding engine at all per
     # CLAUDE.md: this adds a second, *relative* floor from the query's own
     # score distribution: a candidate has to beat what an unrelated note
     # typically scores for THIS query, not just clear an absolute number

@@ -81,7 +81,9 @@ def capabilities() -> dict:
     from tessellate.entry import importer
 
     config = deps.get_config()
-    backend = str(config.get_preference("embedding_backend", "sentence-transformers"))
+    from tessellate.core import embedmodels
+
+    backend = embedmodels.backend_name(config.get_preference("embedding_backend", embedmodels.BUILTIN_BACKEND))
     return {
         "version": __version__,
         "api": {
@@ -97,11 +99,11 @@ def capabilities() -> dict:
             "agent_header": "X-MemoryMap-Agent",
         },
         "features": {
-            # A local model for meaning (the sentence-transformers backend) is
-            # an optional install; the Ollama backend needs only the server.
+            # A local model for meaning (the fastembed backend) is an
+            # optional install; the Ollama backend needs only the server.
             "embeddings": {
                 "backend": backend,
-                "installed": backend == "ollama" or _installed("sentence_transformers"),
+                "installed": backend == "ollama" or _installed("fastembed"),
             },
             "voice": {"installed": voice.whisper_available()},
             "ocr": {

@@ -33,6 +33,7 @@ async function renderEmbedChoices() {
   const found = body.found || [];
   $("embed-found").replaceChildren(...found.map((row) => embedFoundRow(row, body)));
   $("embed-found-empty").classList.toggle("hidden", found.length > 0);
+  renderEmbedLegacy(body.legacy || {});
   const done = body.switch || {};
   $("embed-choices-status").textContent = done.running ? "" : done.message || "";
   //: Where they are, in as many words ("somewhere in your home directory" is
@@ -234,6 +235,54 @@ function embedFoundRow(row, body) {
     li.appendChild(why);
   }
   return li;
+}
+
+//: The previous engine's files (`legacy` in /embedding-models/choices): each
+//: catalogue model's PyTorch copy, and in a packaged app the packages. The
+//: server lists them only once the new build of the model in use is here, so
+//: Remove never takes away the way back to a working search.
+function renderEmbedLegacy(legacy) {
+  const items = [
+    ...(legacy.files || []).map((file) => ({ ...file, label: `${file.label}, old files`, where: file.folder })),
+    ...(legacy.engine ? [{ ...legacy.engine, where: "In the app's extras folder" }] : []),
+  ];
+  $("embed-legacy-box").classList.toggle("hidden", items.length === 0);
+  $("embed-legacy").replaceChildren(...items.map(embedLegacyRow));
+}
+
+function embedLegacyRow(item) {
+  const li = document.createElement("li");
+  li.className = "extras-row embed-choice";
+  const head = document.createElement("div");
+  head.className = "entry-meta";
+  const title = document.createElement("span");
+  title.className = "entry-title";
+  const name = document.createElement("strong");
+  name.textContent = item.label;
+  title.append(name, chip(`ph:hard-drives ${item.size}`, "item-label"));
+  head.append(
+    title,
+    rowActions([{ label: "ph:trash Remove", title: `Remove ${item.label}`, danger: true, run: () => embedLegacyRemove(item) }], `Actions for ${item.label}`)
+  );
+  const where = document.createElement("p");
+  where.className = "muted extras-meta";
+  where.textContent = item.where;
+  li.append(head, where);
+  return li;
+}
+
+async function embedLegacyRemove(item) {
+  const frees = item.id === "engine" ? `${item.size}, once Tessellate restarts,` : item.size;
+  if (!(await confirmDialog(
+    `Remove ${item.label}?\n\nThe previous search engine made them and Tessellate no longer uses them. ` +
+      `${frees} comes back; search and your notes do not change.`,
+    { confirmLabel: "Remove" }
+  ))) return;
+  const result = await apiJson(`/embedding-models/legacy/${encodeURIComponent(item.id)}`, { method: "DELETE" })
+    .catch((e) => ({ removed: false, failed: true, error: e, message: e.message }));
+  embedToast(result);
+  if (item.id === "engine") refreshBackgroundTasks();
+  renderEmbedChoices();
 }
 
 //: Pull a model by name: a Hugging Face repo or an Ollama name, checked

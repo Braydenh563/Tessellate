@@ -228,14 +228,15 @@ a = Analysis(
     hooksconfig={},
     runtime_hooks=[],
     excludes=[
-        # Explicitly never bundled — see CLAUDE.md/requirements.txt: this
-        # app's own semantic search already falls back to keywords without
-        # them, and torch alone is a very large chunk of a download this
-        # installer's whole point is to keep small and fast to fetch.
-        # (Belt-and-braces: nothing in this app imports them at module
-        # level, so PyInstaller's analysis should not pull them in on its
-        # own — this just makes the intent explicit and keeps a future
-        # accidental import from silently ballooning the build.)
+        # Never bundled: search by meaning is an optional install from
+        # Settings > Packages (core/extras.py id="semantic"), and the app
+        # falls back to keywords without it. fastembed and ONNX Runtime are
+        # about 60 MB; torch and sentence-transformers, the engine before
+        # it, stay listed so a stray install on the build machine is never
+        # picked up. (Nothing imports them at module level; this makes the
+        # intent explicit.)
+        "fastembed",
+        "onnxruntime",
         "torch",
         "sentence_transformers",
     ],

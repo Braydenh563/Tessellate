@@ -7,7 +7,7 @@ settings."*
 Every one of these is a feature the app already has a button for and cannot
 run: the dictation buttons need `faster-whisper`, `python -m tessellate
 --desktop` needs `pywebview`, semantic search falls back to keywords without
-`sentence-transformers`. Until now the only way to turn one on was a terminal
+`fastembed`. Until now the only way to turn one on was a terminal
 and a README, which for a local-first app aimed at somebody who is not a
 developer is the same as not having the feature.
 
@@ -427,15 +427,15 @@ EXTRAS: tuple[Extra, ...] = (
     ),
     Extra(
         id="semantic",
-        label="Search by meaning (sentence-transformers)",
+        label="Search by meaning (fastembed)",
         enables="Searching for what you meant rather than the words you used. "
         "Without it, search falls back to keywords and everything else works.",
-        packages=("sentence-transformers",),
-        module="sentence_transformers",
-        size="~2 GB: it pulls in PyTorch",
-        caveat="The big one. On Windows this needs the CPU build of torch; see "
-        "the README's troubleshooting section if the install fails with "
-        "a DLL error.",
+        packages=("fastembed",),
+        module="fastembed",
+        #: Measured 2026-10-27: fastembed 0.9.1 and its wheels are 57 MB on
+        #: Linux (onnxruntime 24 MB, numpy 17 MB), 40 MB beside the app's own
+        #: packages. The model is a separate 67 MB from huggingface.co.
+        size="~60 MB: ONNX Runtime, no PyTorch",
     ),
     Extra(
         id="documents",
@@ -1030,8 +1030,8 @@ def footprint(extra: Extra) -> tuple[str, int | None]:
     A pip extra is read from its packages' own metadata: the version of the
     first package it names (the one the label is about), and the size its
     RECORD files list for every package it names, never their dependencies,
-    the same line `_run_uninstall` draws: sentence-transformers is a few
-    megabytes, and the PyTorch it pulled in belongs to whoever else uses it.
+    the same line `_run_uninstall` draws: fastembed is a few hundred
+    kilobytes, and the ONNX Runtime it pulled in belongs to whoever else uses it.
     A packaged build reads its own folder (`frozen_extras_dir`). A download
     extra is its pinned version and its folder.
     """
@@ -1271,7 +1271,7 @@ def _run_uninstall(extra: Extra) -> None:
     """pip uninstall, with the same bookkeeping the install has.
 
     Only the packages this entry named, never their dependencies: removing
-    `sentence-transformers` leaves torch behind, which is right, it is 2 GB
+    `fastembed` leaves ONNX Runtime behind, which is right, it is 70 MB
     that something else may be using, and a button labelled "uninstall one
     thing" must not quietly take five.
     """
@@ -1326,6 +1326,9 @@ def _run_uninstall(extra: Extra) -> None:
         _state.outcome = "failed"
         _state.step = "Couldn't run pip: see Settings → Logs for why."
     finally:
+        #: Down with the process, as the installs do: a removal left it up, and
+        #: every install after it was refused as "already running".
+        _state.running = False
         _state.process = None
         if _state.cancelled:
             # Terminating pip mid-download makes it exit non-zero, which the
@@ -1459,8 +1462,8 @@ def _run_install(extra: Extra, reinstall: bool = False) -> None:
             "--disable-pip-version-check",
             # A reinstall is for the case the button exists to serve: it is
             # importable but broken: a half-finished download, a wheel built
-            # for the wrong platform, the Windows torch DLL the README warns
-            # about. `--upgrade` would look at the version, decide it already
+            # for the wrong platform, a native library that will not load (the
+            # Windows torch DLL once). `--upgrade` would look at the version, decide it already
             # has it and do nothing at all, which is the one outcome that
             # helps nobody. `--no-cache-dir` for the same reason: a corrupt
             # cached wheel would otherwise be reinstalled faithfully.
@@ -1734,6 +1737,45 @@ def remove(extra_id: str) -> tuple[bool, str]:
     worker = _run_download_uninstall if extra.kind == "download" else _run_uninstall
     _dispatch(_run_single, worker, extra, name=extra.label)
     return True, f"Removing {extra.label}."
+
+
+#: The old search engine, which a packaged build may still hold in its extras
+#: folder from before search by meaning moved to fastembed (2026-10-27). Not in
+#: EXTRAS: nothing offers to install it, only Settings, Search and index, Old
+#: search files offers to remove it, by the same RECORD-driven removal as any
+#: extra (`_run_uninstall`): these two packages and not their dependencies.
+LEGACY_ENGINE = Extra(
+    id="legacy-engine",
+    label="The old search engine (PyTorch)",
+    enables="",
+    packages=("sentence-transformers", "torch"),
+    module="torch",
+    size="~1.4 GB",
+)
+
+
+def legacy_engine() -> dict | None:
+    """What the old engine weighs in a packaged app's extras folder (`id`,
+    `label`, `bytes`), or None: outside a packaged build, or with neither
+    package there. A source install removes them with pip by hand
+    (docs/TROUBLESHOOTING.md), so the app does not offer to touch its own venv."""
+    if frozen_extras_dir() is None:
+        return None
+    _version, disk = footprint(LEGACY_ENGINE)
+    return {"id": "engine", "label": LEGACY_ENGINE.label, "bytes": disk} if disk else None
+
+
+def remove_legacy_engine() -> tuple[bool, str]:
+    """Remove the old engine from a packaged app's extras folder, as a
+    Background task. Same one-at-a-time rule as every install."""
+    if legacy_engine() is None:
+        return False, "The old search engine is not in this app's extras folder."
+    with _lock:
+        if _busy():
+            return False, "Another install is already running."
+        _claim(LEGACY_ENGINE, "Removing…")
+    _dispatch(_run_single, _run_uninstall, LEGACY_ENGINE, name=LEGACY_ENGINE.label)
+    return True, f"Removing {LEGACY_ENGINE.label}."
 
 
 def start_bulk(action: str, ids: list[str] | None = None, bundle: str = "") -> tuple[bool, str]:

@@ -285,7 +285,7 @@ def reload_llm_client() -> None:
     assert _config is not None
     _ollama = build_llm_client(_config)
     # **Re-pointed, not rebuilt.** A new `EmbeddingService` starts with no
-    # model loaded, and the built-in sentence-transformers model never uses
+    # model loaded, and the built-in fastembed model never uses
     # the chat client at all: measured (audit 2026-10-05, ARCH-06), after a
     # switch and back `embedding_ready` stayed false and search ran keyword
     # only for as long as nobody saved, then the next save paid the 5 s cold

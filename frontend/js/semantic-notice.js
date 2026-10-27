@@ -14,6 +14,21 @@
 // asked again; Settings, Search and index holds the switch either way, and
 // search uses keywords meanwhile, with nothing shown as an error.
 
+//: What the question says. `moved` is the server's `semantic_engine_moved`
+//: (set when the old PyTorch copy of the model is on this computer): the
+//: engine changed, so say what the one download replaces and whether the
+//: notes are read again.
+function semanticQuestionText(moved) {
+  if (!moved) {
+    return "Search by meaning needs a one-time download of about 130 MB from huggingface.co and pypi.org. Keyword search works meanwhile.";
+  }
+  const notes =
+    moved.vectors === "kept"
+      ? "Your notes keep their search data and nothing is embedded again."
+      : "Your notes are read again in the background once it is here.";
+  return `The search engine moved. A one-time download of ${moved.download} from huggingface.co and pypi.org replaces the old one. ${notes} Keyword search works meanwhile.`;
+}
+
 //: The open notice and whether this page has shown one. A host object, not
 //: two top-level lets (tests/test_global_scope_ratchet.py).
 const SEMANTIC_NOTICE = { note: null, shown: false };
@@ -47,10 +62,11 @@ async function semanticAnswer(on) {
   );
 }
 
-//: Called on every status poll with the server's `semantic_offer`, and with
+//: Called on every status poll with the server's `semantic_offer` (and its
+//: `semantic_engine_moved`), and with
 //: false when the notice is open and the question has been answered
 //: elsewhere (Settings), which closes it.
-function semanticOffer(offered) {
+function semanticOffer(offered, moved) {
   const open = SEMANTIC_NOTICE.note;
   if (!offered) {
     if (open && open.isConnected) dismissToast(open);
@@ -63,8 +79,7 @@ function semanticOffer(offered) {
   note.className = "toast semantic-install-toast";
   const text = document.createElement("span");
   text.className = "toast-msg";
-  text.textContent =
-    "Search by meaning needs a one-time download of about 2 GB from huggingface.co and pypi.org. Keyword search works meanwhile.";
+  text.textContent = semanticQuestionText(moved);
   const answer = (on) => {
     dismissToast(note);
     SEMANTIC_NOTICE.note = null;
@@ -99,7 +114,9 @@ async function semanticOnboardingOffer(box) {
   if (prefs.semantic_choice_made || prefs.semantic_auto_install) return;
   const button = smallButton(
     "Download search by meaning",
-    "A one-time download of about 2 GB from huggingface.co and pypi.org. Until then search uses keywords.",
+    prefs.semantic_engine_moved
+      ? semanticQuestionText(prefs.semantic_engine_moved)
+      : "A one-time download of about 130 MB from huggingface.co and pypi.org. Until then search uses keywords.",
     async () => {
       button.disabled = true;
       try {

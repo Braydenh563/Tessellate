@@ -850,6 +850,11 @@ def _preferences_from(config) -> dict:
         "searxng_autostart": config.get_preference("searxng_autostart", False),
         "semantic_auto_install": config.get_preference("semantic_auto_install", False),
         "semantic_choice_made": config.get_preference("semantic_choice_made", False) is True,
+        #: The old engine's copy of the model is here, the new one's is not:
+        #: the welcome card's question says the engine moved (semantic-notice.js).
+        "semantic_engine_moved": (
+            None if config.get_preference("semantic_choice_made", False) else deps.get_model_manager().semantic_engine_moved()
+        ),
         "search_provider": websearch.normalise_provider(
             config.get_preference("search_provider", websearch.DEFAULT_PROVIDER)
         ),
@@ -1104,12 +1109,16 @@ def _apply_preference(config, session: Session, key: str, value) -> None:
         config.set_preference("semantic_choice_made", True)
         if value:
             # A yes starts the download now, as a visible task, rather than
-            # at the next save: reset the "not allowed" state and embed once.
+            # at the next save: reset the "not allowed" state, embed once,
+            # then fill the notes saved while the question was open.
             service = deps.get_embeddings()
             service.reset_failure_state()
+            from tessellate.ai import embeddings
             from tessellate.core import jobs
 
-            jobs.enqueue("embed-warm", service.embed_text, "warm up", name="search by meaning")
+            jobs.enqueue(
+                "embed-warm", embeddings.warm_then_backfill, service, deps.get_db().session, name="search by meaning"
+            )
     if key in ("update_check_enabled", "auto_update_enabled"):
         # Either switch is an answer to the ask-once question (routes_update).
         config.set_preference("update_choice_made", True)
@@ -2128,6 +2137,18 @@ class EmbeddingChoiceBody(BaseModel):
     id: str = Field(max_length=80)
 
 
+def _legacy_search_files(backend: str, model: str) -> dict:
+    """The old engine's files Settings offers to remove: only once the new
+    build of the model search uses is in place (or search runs on Ollama), so
+    nothing is taken away while it is still the way back to a working search."""
+    if backend != "ollama" and not embedmodels.is_downloaded(model):
+        return {"files": [], "engine": None}
+    engine = extras.legacy_engine()
+    if engine is not None:
+        engine = {**engine, "size": embedmodels.size_in_words(engine["bytes"])}
+    return {"files": embedmodels.legacy_files(), "engine": engine}
+
+
 @router.get("/embedding-models/choices")
 def embedding_model_choices() -> dict:
     """Settings, Models' list (INBOX 700): every model on offer with its
@@ -2152,6 +2173,9 @@ def embedding_model_choices() -> dict:
             row["downloaded"] = row["model"] in pulled or f"{row['model']}:latest" in pulled
     return {
         "choices": choices,
+        #: The previous engine's files (PyTorch weights, and in a packaged app
+        #: the packages), offered for removal once nothing needs them.
+        "legacy": _legacy_search_files(backend, model),
         #: Where the built-in models are kept, said in words under the list.
         "cache": str(embedmodels.cache_root()),
         #: Already on this computer, outside the catalogue (the owner's
@@ -2240,6 +2264,22 @@ def download_embedding_model(model_id: str, reinstall: bool = False) -> dict:
     else:
         started, message = embedmodels.start(model_id)
     return {"started": started, "message": message}
+
+
+@router.delete("/embedding-models/legacy/{item_id}", dependencies=[Depends(this_computer_only)])
+def remove_legacy_search_files(item_id: str) -> dict:
+    """Remove the previous engine's files: one catalogue model's PyTorch copy
+    by its allowlist id, or "engine" for the packages in a packaged app's
+    extras folder. Refused until the new model is in place."""
+    manager = deps.get_model_manager()
+    model = manager.embedding_st_model()
+    if manager.embedding_backend() != "ollama" and not embedmodels.is_downloaded(model):
+        return {"removed": False, "message": "Download the new search model first: the old files stay until it is here."}
+    if item_id == "engine":
+        started, message = extras.remove_legacy_engine()
+        return {"removed": started, "message": message}
+    removed, message = embedmodels.remove_legacy(item_id)
+    return {"removed": removed, "message": message}
 
 
 @router.delete("/embedding-models/{model_id}", dependencies=[Depends(this_computer_only)])

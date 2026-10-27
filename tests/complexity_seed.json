@@ -174,7 +174,6 @@
  "src/tessellate/core/docview.py::docx_to_markdown": 32,
  "src/tessellate/core/docview.py::docx_to_markdown.paragraph": 25,
  "src/tessellate/core/egress.py::_hook": 18,
- "src/tessellate/core/embedmodels.py::hub_refusal": 21,
  "src/tessellate/core/embedswitch.py::_swap": 19,
  "src/tessellate/core/events.py::undo": 43,
  "src/tessellate/core/extras.py::_read_footprint": 20,

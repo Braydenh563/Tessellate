@@ -298,14 +298,14 @@ MORE_TOPICS: list[dict] = [
             "rebuild search index", "search index", "search is wrong",
             "too many results", "too few results", "search feels too strict",
             "download search by meaning", "no thanks", "refuse download", "turn on search by meaning",
-            "cancel install", "sentence-transformers", "2 gb download", "search model download",
+            "cancel install", "fastembed", "130 mb download", "search model download",
         ),
         "body": (
             (
-                "Settings, Search and index. Search engine: the built-in one (recommended, about 650 MB "
+                "Settings, Search and index. Search engine: the built-in one (recommended, about 300 MB "
                 "of memory while the app is open) or an Ollama embedding model such as nomic-embed-text. "
-                "The built-in one needs the sentence-transformers package (about 2 GB with PyTorch), "
-                "and a small model from huggingface.co. Nothing is downloaded without a yes: the first time a "
+                "The built-in one needs the fastembed package (ONNX Runtime, no PyTorch) and a small model "
+                "from huggingface.co, about 130 MB in all. Nothing is downloaded without a yes: the first time a "
                 "save needs it Tessellate asks once, with Download and No thanks, and search uses "
                 "keywords until you say yes. The switch Download search by meaning turns it on later, "
                 "or off again, and Settings, Packages keeps a manual Install. Changing the engine re-reads every note in the background "
@@ -324,6 +324,27 @@ MORE_TOPICS: list[dict] = [
                 "search stops finding notes you know are there. Search relevance: Minimum similarity and "
                 "Above-average margin; raise them for fewer, surer results, lower them if search feels "
                 "too strict, and Reset to default undoes both."
+            )
+        ),
+        "badge": {"label": "Search and index", "section": "searchindex"},
+    },
+    {
+        "id": "search-engine-moved",
+        "keywords": (
+            "search engine moved", "engine moved", "upgraded from pytorch", "old search engine",
+            "pytorch", "torch", "sentence-transformers", "old search files", "old model files",
+            "remove old models", "free disk space", "why download again", "download again",
+        ),
+        "body": (
+            (
+                "After an upgrade from a version that ran search by meaning on PyTorch, the question about "
+                "downloading it says the engine moved. The old model files do not work with the new engine, "
+                "so it is one download (about 130 MB for BGE Small) that replaces them, asked first, with "
+                "keyword search working meanwhile. Notes made with BGE Small or Multilingual E5 Small keep "
+                "their search data; notes made with any other model are read again in the background. Once "
+                "the new model is ready, Settings, Search and index, Old search files lists the old model "
+                "folders with their sizes and Remove deletes one; in the packaged app it also removes PyTorch "
+                "and sentence-transformers. Nothing else changes."
             )
         ),
         "badge": {"label": "Search and index", "section": "searchindex"},

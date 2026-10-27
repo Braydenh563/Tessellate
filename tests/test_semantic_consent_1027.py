@@ -99,17 +99,10 @@ def test_a_first_save_downloads_nothing_and_search_keeps_working(app_state, monk
 
 
 def test_a_yes_lets_the_next_save_start_the_download(app_state, monkeypatch):
-    import sys
-    import types
+    from tests import _fake_fastembed
 
     service = _service_with_nothing_on_disk(app_state, monkeypatch)
-    fake = types.ModuleType("sentence_transformers")
-
-    def not_cached(*args, **kwargs):
-        raise OSError("not in the cache")
-
-    fake.SentenceTransformer = not_cached
-    monkeypatch.setitem(sys.modules, "sentence_transformers", fake)
+    _fake_fastembed.install(monkeypatch)
     monkeypatch.setattr(embedmodels, "cache_health", lambda repo: {"state": "absent", "missing": []})
     fetched = []
 
@@ -125,6 +118,33 @@ def test_a_yes_lets_the_next_save_start_the_download(app_state, monkeypatch):
     assert [label for _repo, label in fetched] == ["Downloading the search model"]
 
 
+def test_a_yes_fills_the_notes_saved_while_the_question_was_open(client, session, fake_embeddings, monkeypatch):
+    """The yes warms the model and then backfills, so a note saved before the
+    answer is findable by meaning as soon as the download lands, not at the
+    next launch's warm-up or the next periodic pass."""
+    from sqlalchemy import select
+
+    from tessellate.core import jobs
+    from tessellate.core.database import EmbeddingRecord
+
+    note = client.post("/entries", json={"content": "saved before the yes"}).json()
+    session.query(EmbeddingRecord).delete()
+    session.commit()
+    ran = []
+
+    def run_now(kind, func, *args, name="", **kwargs):
+        ran.append(kind)
+        func(*args, **kwargs)
+        return 1
+
+    monkeypatch.setattr(jobs, "enqueue", run_now)
+    saved = client.put("/preferences", json={"semantic_auto_install": True})
+    assert saved.status_code == 200
+    assert ran == ["embed-warm"]
+    session.expire_all()
+    assert session.scalars(select(EmbeddingRecord.entry_id)).all() == [note["id"]]
+
+
 def test_a_model_already_on_disk_needs_no_yes(app_state, monkeypatch):
     monkeypatch.setattr(embedmodels, "is_downloaded", lambda repo: True)
     monkeypatch.setattr(embeddings_module, "_package_present", lambda: True)
@@ -136,7 +156,7 @@ def test_a_model_already_on_disk_needs_no_yes(app_state, monkeypatch):
 
 def test_an_explicit_switch_of_engine_is_not_held_back(app_state):
     """A service pinned by the person's own Install or model switch carries no preferences."""
-    service = deps.get_embeddings().pinned("sentence-transformers", "BAAI/bge-small-en-v1.5")
+    service = deps.get_embeddings().pinned("fastembed", "BAAI/bge-small-en-v1.5")
     assert service._download_allowed() is True
 
 
@@ -177,7 +197,7 @@ def _text(*parts: str) -> str:
 def test_the_offer_says_size_and_source_in_one_line_and_asks_before_anything():
     js = _text("frontend/js/semantic-notice.js")
     assert "function semanticOffer" in js
-    assert "about 2 GB" in js and "huggingface.co" in js
+    assert "about 130 MB" in js and "huggingface.co" in js
     assert "Download" in js and "No thanks" in js
     assert "semantic_auto_install" in js
     assert chr(0x2014) not in js

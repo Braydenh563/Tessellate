@@ -184,3 +184,40 @@ def test_stop_ends_the_backfill_between_batches_and_keeps_what_was_embedded(clie
     assert len(_embedded_ids(session)) == 1, "the batch done before Stop is kept"
     assert not passes.stop_requested("embeddings-backfill"), "a stale Stop must not end the next run"
     assert "embeddings-backfill" in passes.STOPPABLE
+
+
+def _label(session, entry_id, model_version):
+    """Mark a note's vector as made by another model, the state a model
+    switch or an engine change leaves behind."""
+    row = session.scalars(select(EmbeddingRecord).where(EmbeddingRecord.entry_id == entry_id)).one()
+    row.model_version = model_version
+    session.commit()
+
+
+def _versions(session):
+    session.expire_all()
+    return {row.entry_id: row.model_version for row in session.scalars(select(EmbeddingRecord))}
+
+
+def test_backfill_replaces_a_vector_from_another_model(client, session, fake_embeddings):
+    """Search drops a vector whose model_version is not the current one
+    (`search/engine.py`), so a note holding one is as unfindable by meaning
+    as a note with none, and the backfill fills it the same way."""
+    kept = client.post("/entries", json={"content": "made by this model"}).json()
+    stale = client.post("/entries", json={"content": "made by the old one"}).json()
+    _label(session, stale["id"], "fastembed:intfloat/multilingual-e5-small")
+
+    assert embeddings.backfill_missing(fake_embeddings, _factory(session)) == 1
+    current = fake_embeddings.backend_id()
+    assert _versions(session) == {kept["id"]: current, stale["id"]: current}
+
+
+def test_the_periodic_pass_replaces_a_vector_from_another_model(client, session, fake_embeddings):
+    from tessellate.core import passes
+
+    stale = client.post("/entries", json={"content": "made by the old engine"}).json()
+    _label(session, stale["id"], "sentence-transformers:BAAI/bge-base-en-v1.5")
+
+    passes._backfill()
+
+    assert _versions(session) == {stale["id"]: fake_embeddings.backend_id()}

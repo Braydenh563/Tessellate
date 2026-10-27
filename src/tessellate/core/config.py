@@ -25,7 +25,9 @@ from tessellate.core.atomic_io import atomic_write_json
 # place so the future Preferences screen has one list to show.
 DEFAULT_PREFERENCES: dict[str, Any] = {
     "chat_model": "llama3.2",  # any installed Ollama model
-    "embedding_backend": "sentence-transformers",  # or "ollama"
+    #: "fastembed" or "ollama"; a saved "sentence-transformers" (the engine
+    #: before 2026-10-27) reads as "fastembed" (`embedmodels.backend_name`).
+    "embedding_backend": "fastembed",
     "embedding_model": "nomic-embed-text",  # only used when backend == "ollama"
     "recycle_bin_days": 30,
     # Where a generated export (graph PNG, chat export, whiteboard PNG, see
@@ -109,8 +111,8 @@ DEFAULT_PREFERENCES: dict[str, Any] = {
     # container is not something a local-first app does unasked.
     "searxng_autostart": False,
     # Whether the app may download search by meaning by itself: the package
-    # `sentence-transformers` (about 2 GB with PyTorch) and the model from
-    # huggingface.co. Off until a yes (the owner, 2026-10-27: it used to
+    # `fastembed` (about 60 MB with ONNX Runtime) and the model from
+    # huggingface.co (67 MB). Off until a yes (the owner, 2026-10-27: it used to
     # download on the first save, unasked): off means nothing is fetched and
     # search stays on keywords, and Settings, Packages keeps its manual Install.
     "semantic_auto_install": False,

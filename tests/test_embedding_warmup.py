@@ -162,7 +162,7 @@ def test_no_request_yet_means_no_wait(fresh_warmup, monkeypatch):
 
 class _Models:
     def embedding_backend(self) -> str:
-        return "sentence-transformers"
+        return "fastembed"
 
     def embedding_st_model(self) -> str:
         return "BAAI/bge-small-en-v1.5"
@@ -175,7 +175,7 @@ class _Cold(EmbeddingService):
         super().__init__(_Models(), None)
         self.loads = 0
 
-    def _load_st_model(self):  # noqa: ANN202
+    def _load_builtin_model(self):  # noqa: ANN202
         self.loads += 1
         time.sleep(0.3)
         raise RuntimeError("no model in tests")

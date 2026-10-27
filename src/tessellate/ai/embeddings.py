@@ -1,6 +1,7 @@
 """The ONE active embedding backend (plan §2, resolution 1).
 
-Default: sentence-transformers `BAAI/bge-small-en-v1.5`, no Ollama needed.
+Default: fastembed (ONNX Runtime) running `BAAI/bge-small-en-v1.5`, no
+Ollama needed and no PyTorch: the engine and the model are about 130 MB.
 Optional: an Ollama embedding model (user's choice).
 
 Both hide behind `embed_text()`, which returns None whenever embeddings
@@ -35,8 +36,8 @@ if TYPE_CHECKING:
     # method that actually calls `np.*`, so importing this module (which
     # `core/deps.py` always does, to wire up the `EmbeddingService` class)
     # never pulls numpy into a process that has not embedded anything yet.
-    # Same shape as `_load_st_model`'s own deferred `sentence_transformers`
-    # import just below, one step further out.
+    # Same shape as `_load_builtin_model`'s own deferred `fastembed` import
+    # just below, one step further out.
     import numpy as np
 
 # The built-in embedding model. It was all-MiniLM-L6-v2 and is not any more,
@@ -50,7 +51,7 @@ DEFAULT_ST_MODEL = "BAAI/bge-small-en-v1.5"
 
 class EmbeddingCacheBroken(RuntimeError):
     """The model is on disk but will not load; the app stays offline rather
-    than fetching it again unasked (`_load_st_model`)."""
+    than fetching it again unasked (`_load_builtin_model`)."""
 
 class EmbeddingNeedsConsent(EmbeddingCacheBroken):
     """Search by meaning is not on this computer and the person has not said
@@ -58,17 +59,30 @@ class EmbeddingNeedsConsent(EmbeddingCacheBroken):
     cooldown, search runs on keywords."""
 
 
+#: The built-in engine's import name: the package Settings, Packages installs
+#: as "Search by meaning" (`core/extras.py`).
+ENGINE_MODULE = "fastembed"
+
+
 def _package_present() -> bool:
-    """Whether `sentence_transformers` can be imported, without importing it."""
+    """Whether `fastembed` can be imported, without importing it."""
     import importlib.util
     import sys
 
-    if sys.modules.get("sentence_transformers") is not None:
+    if sys.modules.get(ENGINE_MODULE) is not None:
         return True
     try:
-        return importlib.util.find_spec("sentence_transformers") is not None
+        return importlib.util.find_spec(ENGINE_MODULE) is not None
     except (ImportError, ValueError):
         return False
+
+
+def _engine_missing(exc: BaseException) -> bool:
+    """Whether `exc` says the engine's package is not installed at all (not a
+    broken install: a missing `onnxruntime` under it is that)."""
+    return isinstance(exc, ModuleNotFoundError) and (
+        getattr(exc, "name", None) == ENGINE_MODULE or f"'{ENGINE_MODULE}'" in str(exc)
+    )
 
 
 logger = logging.getLogger("tessellate.embeddings")
@@ -87,8 +101,9 @@ WARMUP_DELAY_SECONDS = 2.0
 #: the dashboard's counts "took a while for their stats to load, like the
 #: length it took the embedding model to warm up"). The fixed pause above
 #: let the first page through, but a person who logs in a few seconds after
-#: launch lands on the dashboard exactly as the torch import begins, and
-#: that import holds the GIL for seconds: a count query that takes
+#: launch lands on the dashboard exactly as the model's import began, and
+#: that import held the GIL for seconds (torch's, before fastembed; fastembed
+#: and the model load in about 0.6 s, measured 2026-10-27): a count query that takes
 #: milliseconds waits behind it. So after the pause the thread waits until
 #: no request has arrived for `WARMUP_IDLE_SECONDS` (the dashboard's burst
 #: is over), and at most `WARMUP_MAX_WAIT_SECONDS` in total, so a window
@@ -151,7 +166,7 @@ def start_warmup(service: "EmbeddingService", session_factory=None) -> None:  # 
     _warmup["started"] = True
 
     def run() -> None:
-        #: **The first page load goes first.** Importing torch is seconds of
+        #: **The first page load goes first.** Importing torch was seconds of
         #: C-extension initialisation that holds the GIL, and this thread used
         #: to start it the instant `create_app` returned: on a two-core CI
         #: runner the event loop stalled long enough that the shell's
@@ -170,7 +185,7 @@ def start_warmup(service: "EmbeddingService", session_factory=None) -> None:  # 
         #: search and no note to file, so loading a model for it costs the
         #: slowest part of startup for nothing; the first save loads it, which
         #: is the moment it is first needed. This is also what keeps a fresh
-        #: CI data dir from paying the torch import at all.
+        #: CI data dir from paying the model load at all.
         if session_factory is not None and not _notebook_has_notes(session_factory):
             logging.getLogger("tessellate.embeddings").info(
                 "embedding warm-up skipped: the notebook is empty"
@@ -246,7 +261,7 @@ BACKFILL_LIMIT = 200
 
 #: How many notes one batched encode takes when a whole notebook is being
 #: embedded (the startup backfill and the Settings re-index). `embed_many`
-#: hands the list to sentence-transformers as one `encode` call, which is
+#: hands the list to fastembed as one `embed` call, which is
 #: markedly cheaper per note than the same notes one at a time; the ceiling
 #: keeps a long note's tokens from making one batch spike memory and keeps the
 #: re-index's cancel check responsive (it looks between batches).
@@ -255,13 +270,15 @@ EMBED_BATCH = 16
 # Enough to cover the repeated embeds within a single save, with headroom.
 _EMBED_CACHE_MAX = 32
 
-#: **One torch thread for a note-sized encode** (INBOX 434: background filing
-#: took 1.2 to 4 seconds, nearly all of it this one call). `encode()` of one
-#: short note is a few tiny matrix products, and torch's default intra-op pool
+#: **One thread for a note-sized encode** (INBOX 434: background filing
+#: took 1.2 to 4 seconds, nearly all of it this one call). An encode of one
+#: short note is a few tiny matrix products, and a default intra-op pool
 #: (one thread per core) pays barrier waits that dwarf the arithmetic the
 #: moment any other process wants a core. Measured here, 70-character note,
-#: median per encode: 4 threads idle 39 ms; 4 threads on a busy machine
-#: 2,192 ms; 1 thread busy 79 ms; 2 threads busy 119 ms. A desktop app always
+#: median per encode (torch, before fastembed): 4 threads idle 39 ms; 4 threads
+#: on a busy machine 2,192 ms; 1 thread busy 79 ms; 2 threads busy 119 ms.
+#: fastembed's ONNX session at one thread: 13.7 ms a note (2026-10-27). The
+#: count is fixed when the session is made (`_open_snapshot`). A desktop app always
 #: shares its machine (the window, the browser, an indexer), so the pool's
 #: best case saves tens of milliseconds and its worst costs seconds.
 #: `TESSELLATE_EMBED_THREADS` raises it for a machine that is known to be idle.
@@ -276,23 +293,6 @@ def embed_threads() -> int:
         return max(1, int(raw)) if raw else EMBED_THREADS
     except ValueError:
         return EMBED_THREADS
-
-
-def _limit_torch_threads() -> None:
-    """Put the calling thread's torch pool at `embed_threads()` before an
-    encode. Set in the encoding thread itself, because an OpenMP build keeps
-    the count per thread and a new pool thread starts at the default; a call
-    that finds the count already right does nothing, so this costs one
-    getter per note. Never an error: no torch, or one without the setter,
-    only means the default pool."""
-    try:
-        import torch
-
-        wanted = embed_threads()
-        if torch.get_num_threads() != wanted:
-            torch.set_num_threads(wanted)
-    except Exception:  # noqa: BLE001  # a thread limit is an optimisation
-        logger.debug("couldn't limit torch's threads for an encode", exc_info=True)
 
 
 def backfill_missing(
@@ -319,6 +319,14 @@ def backfill_missing(
     return fixed
 
 
+def warm_then_backfill(service, session_factory) -> int:  # noqa: ANN001
+    """Load the model (the yes to the download fetches it here), then embed
+    the notes saved while the question was open: without the second step they
+    waited for the next launch's warm-up or the next periodic pass."""
+    service.embed_text("warm up")
+    return backfill_missing(service, session_factory)
+
+
 def _backfill_missing(service, session_factory, limit: int, run) -> int:  # noqa: ANN001
     from sqlalchemy import select
 
@@ -332,9 +340,18 @@ def _backfill_missing(service, session_factory, limit: int, run) -> int:  # noqa
         run.fail("Could not open the database.")
         return 0
     try:
+        #: "Missing" is "no vector for the model in use", not "no vector": a
+        #: vector from another model_version is dropped by search
+        #: (`search/engine.py`), so a note holding one (an engine change, a
+        #: model chosen earlier that now reads as the default) is filled here
+        #: like a note with none.
+        current = service.backend_id()
         missing = session.scalars(
             select(Entry)
-            .outerjoin(EmbeddingRecord, EmbeddingRecord.entry_id == Entry.id)
+            .outerjoin(
+                EmbeddingRecord,
+                (EmbeddingRecord.entry_id == Entry.id) & (EmbeddingRecord.model_version == current),
+            )
             .where(
                 Entry.is_deleted == False,  # noqa: E712
                 Entry.is_private == False,  # noqa: E712
@@ -687,6 +704,78 @@ def similar_pairs(
 REPAIR_ATTEMPTS = 2
 
 
+#: Models taught to fastembed this process (`_register`).
+_registered: set[str] = set()
+
+
+def _register(engine, repo: str, snapshot) -> None:  # noqa: ANN001
+    """Teach fastembed a model it does not know by name: a catalogue entry
+    with its own pooling (`OnnxBuild.pooling`), or a repo typed by name or
+    found on this disk, pooled the way its Pooling config says. Normalised
+    either way, so a vector compares by cosine like every other."""
+    from tessellate.core import embedmodels
+
+    build = embedmodels.build_for(repo)
+    known = repo in embedmodels.EMBED_MODELS_BY_REPO and not build.pooling
+    if known or repo in _registered:
+        return
+    from fastembed.common.model_description import ModelSource, PoolingType
+
+    try:
+        engine.add_custom_model(
+            model=repo,
+            pooling=PoolingType(build.pooling or embedmodels.pooling_of(snapshot)),
+            normalization=True,
+            sources=ModelSource(hf=build.source),
+            dim=build.dim or embedmodels.width_of(snapshot),
+            model_file=build.model_file,
+            additional_files=list(build.extra_files),
+        )
+    except ValueError:
+        logger.debug("fastembed already knows %s by name; using its description", repo)
+    _registered.add(repo)
+
+
+def _quiet_engine_log() -> None:
+    """fastembed logs through loguru straight to stderr; its lines say
+    nothing the app's own log does not, so they are switched off."""
+    try:
+        from loguru import logger as engine_log
+
+        engine_log.disable(ENGINE_MODULE)
+    except Exception:  # noqa: BLE001  # quieter logs are a nicety
+        logger.debug("couldn't quieten fastembed's log", exc_info=True)
+
+
+def _open_snapshot(engine, repo: str):  # noqa: ANN001, ANN202
+    """`repo` from its whole snapshot on this disk, never the network:
+    fastembed is handed the folder itself (`specific_model_path`), with its
+    session at `embed_threads()`."""
+    from tessellate.core import embedmodels
+
+    snapshot = embedmodels.snapshot_path(repo)
+    if snapshot is None:
+        raise FileNotFoundError(f"{repo} is not on this computer")
+    _quiet_engine_log()
+    _register(engine, repo, snapshot)
+    return engine(
+        model_name=repo,
+        cache_dir=str(embedmodels.cache_root()),
+        threads=embed_threads(),
+        local_files_only=True,
+        specific_model_path=str(snapshot),
+    )
+
+
+def _download_and_open(engine, repo: str):  # noqa: ANN001, ANN202
+    """Fetch `repo`'s ONNX files (`embedmodels.fetch`, said in the privacy
+    panel), then load them from disk."""
+    from tessellate.core import embedmodels
+
+    embedmodels.fetch(repo)
+    return _open_snapshot(engine, repo)
+
+
 def _fetch_model_as_a_task(loader, repo: str, title: str):  # noqa: ANN001, ANN202
     """`loader(repo)` online, as a run the Activity list shows by `title`, so a
     download or a fix is something a person can see happening (INBOX 1289)."""
@@ -735,7 +824,7 @@ class EmbeddingService:
 
     def use_client(self, ollama_client: OllamaClient) -> None:
         """Talk to a new chat client (Settings switched backend), keeping a
-        loaded sentence-transformers model. Embeddings served by the chat
+        loaded built-in model. Embeddings served by the chat
         backend are forgotten and retried at once: the same text may now map
         to a different server's vector, and a failure seen on the old one
         says nothing about the new."""
@@ -754,7 +843,7 @@ class EmbeddingService:
         """Forget a cached load/embed failure so the very next attempt
         retries immediately, and clear the stale error the Models screen
         shows. Called when the user switches search engine, they've
-        usually just fixed whatever was wrong (e.g. a broken torch), and
+        usually just fixed whatever was wrong (e.g. a broken install), and
         shouldn't have to wait out the 5-minute retry cooldown or stare at
         an out-of-date banner."""
         self.last_error = None
@@ -801,14 +890,16 @@ class EmbeddingService:
         """Stored as model_version next to every vector, so a backend
         switch is detectable: vectors from different models live in
         different spaces and must never be compared (plan §6.5)."""
+        from tessellate.core import embedmodels
+
         if self._models.embedding_backend() == "ollama":
             return f"ollama:{self._models.embedding_model()}"
-        return f"sentence-transformers:{self.st_repo()}"
+        return f"{embedmodels.BUILTIN_BACKEND}:{self.st_repo()}"
 
     def loads_cold(self) -> bool:
-        """Whether the next embed would first load the local model: torch's
-        import and the weights, measured 21.75 s cold here (INBOX, the
-        owner's trace: 27.06 s before the first step). A search does not
+        """Whether the next embed would first load the local model: the
+        engine's import and the weights (0.61 s warm here with fastembed;
+        torch's was 21.75 s cold, INBOX, the owner's trace). A search does not
         wait for that; it reads by words while the model loads behind it."""
         models = getattr(self, "_models", None)
         return (
@@ -827,13 +918,13 @@ class EmbeddingService:
         return self._st_model is not None or self._was_loaded
 
     #: Idle time after which the model is dropped, in seconds (decision 62; the
-    #: `embedder_idle_unload_minutes` preference, 0 turns it off). Torch holds
+    #: `embedder_idle_unload_minutes` preference, 0 turns it off). Torch held
     #: about 430 MB resident once loaded (WORLD_CLASS_PLAN 19.1).
     IDLE_UNLOAD_SECONDS = 3600
     _idle_watch_started = False
 
     def unload_if_idle(self, now: float | None = None) -> bool:
-        """Drop the sentence-transformers model when nothing has used it for the
+        """Drop the built-in model when nothing has used it for the
         idle window. True when it was dropped. The next embed loads it again."""
         if self._st_model is None:
             return False
@@ -907,33 +998,19 @@ class EmbeddingService:
             except OllamaError as exc:
                 self.last_error = str(exc)
                 return None
-        return self._embed_with_sentence_transformers(text)
+        return self._embed_builtin(text)
 
-    def _load_st_model(self):  # noqa: ANN202
-        """Load the sentence-transformers model, preferring what's already
-        on disk over a live hub round-trip.
+    def _load_builtin_model(self):  # noqa: ANN202
+        """Load the built-in model from its snapshot on this disk, with no
+        network at all.
 
-        This used to try online first, always, but `SentenceTransformer()`
-        with no `local_files_only` still asks the hub whether a cached
-        model is current before using it, and that's a real HTTP call this
-        offline-first app has no business making on every note save. On a
-        network that's merely slow or rate-limited (not simply down), that
-        call doesn't fail fast: `huggingface_hub` retries with backoff for
-        the better part of a minute before this code ever got a chance to
-        fall back to the cache. Trying the cache first sidesteps the
-        problem entirely for the common case (already downloaded once);
-        the online attempt below is now purely for the genuine first-ever
-        download."""
-        #: **Online only for a first download** (INBOX 439, the owner's
-        #: privacy panel: "huggingface.co, Embedding model, connected 1 time"
-        #: with the model already on the machine). A cache lookup that failed
-        #: used to fall straight through to an online load, logged at debug,
-        #: so a model on disk whose files would not load (a newer library
-        #: wanting a file the old download lacks, an interrupted download)
-        #: went to the internet on every launch with nothing saying why. Now:
-        #: never downloaded, it downloads, said in the log; on disk and not
-        #: loading, it stays offline, says why, and Settings' Reinstall is the
-        #: one way back online, a choice the person makes.
+        **Online only for a first download** (INBOX 439, the owner's privacy
+        panel: "huggingface.co, Embedding model, connected 1 time" with the
+        model already on the machine). The load is handed the snapshot's
+        folder, so a model on disk never asks the hub whether it is current;
+        one on disk whose files will not load stays offline, says why, and is
+        fetched again only as a visible repair or by Settings' Reinstall.
+        Never downloaded, it downloads once, through `embedmodels.fetch`."""
         os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")
         repo = self.st_repo()
         #: **No download without a yes** (the owner, 2026-10-27). Nothing is
@@ -947,59 +1024,66 @@ class EmbeddingService:
                 "Search by meaning is not installed yet; search uses keywords until you allow the download "
                 "in Settings, Search and index (or Reinstall in Settings, Models)."
             )
-        from sentence_transformers import SentenceTransformer
+        from fastembed import TextEmbedding
 
         try:
-            model = SentenceTransformer(repo, local_files_only=True)
+            model = _open_snapshot(TextEmbedding, repo)
             logger.info("embedding model loaded from local cache")
             return model
         except Exception as exc:  # noqa: BLE001  # not cached, stale or corrupt
-            #: **The off-switch for the one-off download** (docs/PRIVACY.md:
-            #: `TESSELLATE_NO_AUTO_INSTALL` stops the search model's first
-            #: fetch). Set, a note's first save on a machine without the model
-            #: made the Hub call anyway, so a suite run on a machine with no
-            #: cache (CI) reached huggingface.co from the first note any test
-            #: saved. Search uses keywords until the model is installed.
-            if os.environ.get("TESSELLATE_NO_AUTO_INSTALL"):
-                raise EmbeddingCacheBroken(
-                    "Search by meaning is not installed here and automatic downloads are switched off; search uses keywords."
-                ) from exc
-            from tessellate.core import embedmodels
+            return self._load_after_a_miss(TextEmbedding, repo, exc)
 
-            health = embedmodels.cache_health(repo)
-            if health["state"] == "incomplete":
-                self._mend_incomplete_cache(repo, health, exc)
-            if embedmodels.is_downloaded(repo):
-                #: **Repaired, not handed over** (the owner, 2026-10-07: "things
-                #: should be auto fixed for the user"; a fresh install had a
-                #: folder with no files). An online fetch fills what is
-                #: missing, as a visible task ("Fixing search by meaning"),
-                #: up to twice a process, unless the person switched
-                #: automatic installs off (`semantic_auto_install`); search
-                #: runs on keywords meanwhile, and the person is told to
-                #: reinstall only once two fixes have failed (INBOX 1289).
-                models = getattr(self, "_models", None)
-                allowed = models is None or models._config.get_preference("semantic_auto_install", False)
-                tried = getattr(self, "_repair_attempts", 0)
-                if allowed and tried < REPAIR_ATTEMPTS:
-                    self._repair_attempts = tried + 1
-                    logger.warning("%s is on this computer but would not load (%s); fetching its files again", repo, safe_value(str(exc), 200))
-                    try:
-                        return _fetch_model_as_a_task(SentenceTransformer, repo, "Fixing search by meaning")
-                    except Exception as again:  # noqa: BLE001  # offline, or the Hub refused
-                        logger.warning("%s could not be fetched again (%s)", repo, safe_value(str(again), 200))
-                    if self._repair_attempts < REPAIR_ATTEMPTS:
-                        raise EmbeddingCacheBroken(
-                            "Search by meaning is fixing its files; search uses keywords until it has."
-                        ) from exc
-                else:
-                    logger.warning("%s is on this computer but would not load (%s); staying offline", repo, safe_value(str(exc), 200))
-                raise EmbeddingCacheBroken(
-                    "The search-by-meaning model's files on this computer would not load. "
-                    "Reinstall it from Settings, Models."
-                ) from exc
+    def _load_after_a_miss(self, engine, repo: str, exc: Exception):  # noqa: ANN001, ANN202
+        """The model did not load from disk: download it once, mend it, or
+        stay offline and say why."""
+        #: **The off-switch for the one-off download** (docs/PRIVACY.md:
+        #: `TESSELLATE_NO_AUTO_INSTALL` stops the search model's first
+        #: fetch). Set, a note's first save on a machine without the model
+        #: made the Hub call anyway, so a suite run on a machine with no
+        #: cache (CI) reached huggingface.co from the first note any test
+        #: saved. Search uses keywords until the model is installed.
+        if os.environ.get("TESSELLATE_NO_AUTO_INSTALL"):
+            raise EmbeddingCacheBroken(
+                "Search by meaning is not installed here and automatic downloads are switched off; search uses keywords."
+            ) from exc
+        from tessellate.core import embedmodels
+
+        health = embedmodels.cache_health(repo)
+        if health["state"] == "incomplete":
+            self._mend_incomplete_cache(repo, health, exc)
+        if embedmodels.is_downloaded(repo):
+            return self._fetch_again(engine, repo, exc)
         logger.info("%s is not on this computer yet: downloading it once", repo)
-        return _fetch_model_as_a_task(SentenceTransformer, repo, "Downloading the search model")
+        return _fetch_model_as_a_task(lambda name: _download_and_open(engine, name), repo, "Downloading the search model")
+
+    def _fetch_again(self, engine, repo: str, exc: Exception):  # noqa: ANN001, ANN202
+        """**Repaired, not handed over** (the owner, 2026-10-07: "things should
+        be auto fixed for the user"; a fresh install had a folder with no
+        files). An online fetch fills what is missing, as a visible task
+        ("Fixing search by meaning"), up to twice a process, unless the person
+        switched automatic installs off (`semantic_auto_install`); search runs
+        on keywords meanwhile, and the person is told to reinstall only once
+        two fixes have failed (INBOX 1289)."""
+        models = getattr(self, "_models", None)
+        allowed = models is None or models._config.get_preference("semantic_auto_install", False)
+        tried = getattr(self, "_repair_attempts", 0)
+        if allowed and tried < REPAIR_ATTEMPTS:
+            self._repair_attempts = tried + 1
+            logger.warning("%s is on this computer but would not load (%s); fetching its files again", repo, safe_value(str(exc), 200))
+            try:
+                return _fetch_model_as_a_task(lambda name: _download_and_open(engine, name), repo, "Fixing search by meaning")
+            except Exception as again:  # noqa: BLE001  # offline, or the Hub refused
+                logger.warning("%s could not be fetched again (%s)", repo, safe_value(str(again), 200))
+            if self._repair_attempts < REPAIR_ATTEMPTS:
+                raise EmbeddingCacheBroken(
+                    "Search by meaning is fixing its files; search uses keywords until it has."
+                ) from exc
+        else:
+            logger.warning("%s is on this computer but would not load (%s); staying offline", repo, safe_value(str(exc), 200))
+        raise EmbeddingCacheBroken(
+            "The search-by-meaning model's files on this computer would not load. "
+            "Reinstall it from Settings, Models."
+        ) from exc
 
     @staticmethod
     def _model_on_disk(repo: str) -> bool:
@@ -1053,7 +1137,7 @@ class EmbeddingService:
             return
         self._load_failed_at = None
         self.last_error = None
-        self._embed_with_sentence_transformers("warm up")
+        self._embed_builtin("warm up")
 
     def _prefixed(self, text: str) -> str:
         """`text` with the prefix its model was trained with (E5, nomic)."""
@@ -1061,26 +1145,27 @@ class EmbeddingService:
 
         return embedmodels.prefix_for(self.st_repo()) + text
 
-    def _embed_with_sentence_transformers(self, text: str) -> np.ndarray | None:
+    def _encode(self, texts: list[str]) -> list[np.ndarray]:
+        """The loaded model's vectors for `texts`, in one `embed` call
+        (fastembed batches inside it; normalised, as the model was trained)."""
+        import numpy as np
+
+        rows = self._st_model.embed([self._prefixed(text) for text in texts], batch_size=EMBED_BATCH)
+        return [np.asarray(row, dtype="float32") for row in rows]
+
+    def _embed_builtin(self, text: str) -> np.ndarray | None:
         if self._st_model is None and self._load_failed_at is not None:
             if time.monotonic() - self._load_failed_at < self.RETRY_AFTER_SECONDS:
                 return None  # don't re-stall every save while it's broken
         try:
             if self._st_model is None:
-                # Heavy import (pulls in torch): deferred so the app
-                # starts fast and still runs if the package is missing.
-                self._st_model = self._load_st_model()
+                # Deferred so the app starts fast and still runs if the
+                # package is missing.
+                self._st_model = self._load_builtin_model()
                 self._was_loaded = True
                 self._load_failed_at = None
                 self.awaiting_consent = False
-            import numpy as np
-
-            _limit_torch_threads()
-            # No progress bar: a tqdm "Batches" bar on stderr for every one
-            # note is log noise in a packaged app and a little work besides.
-            result = np.asarray(
-                self._st_model.encode(self._prefixed(text), show_progress_bar=False), dtype="float32"
-            )
+            result = self._encode([text])[0]
             self.last_error = None
             self._last_used = time.monotonic()
             self._watch_idle()
@@ -1097,22 +1182,8 @@ class EmbeddingService:
             # looks like it's "warming up" forever (user-reported bug).
             self._load_failed_at = time.monotonic()
             self._maybe_auto_install_missing_package(exc)
-            if isinstance(exc, ModuleNotFoundError) and "sentence_transformers" in str(exc):
-                #: **Not installed is a state, not a crash** (owner's packaged-app
-                #: log: a full traceback for `No module named
-                #: 'sentence_transformers'`). The package is optional and the
-                #: line above has already started installing it, so the log
-                #: gets one sentence and Settings gets a reason a person can act
-                #: on, rather than a Python exception name.
-                from tessellate.core import extras
-
-                installing = extras.current().running
-                self.last_error = (
-                    "Search by meaning is being installed; search uses keywords until it finishes"
-                    if installing
-                    else "Search by meaning is not installed; search uses keywords"
-                )
-                logger.warning("sentence-transformers is not installed (%s)", self.last_error)
+            if _engine_missing(exc):
+                self._say_not_installed()
                 return None
             #: Our own sentence as it is; another library's error keeps its
             #: class name, which the Settings diagnosis reads (DLL, CUDA).
@@ -1120,20 +1191,29 @@ class EmbeddingService:
             logger.exception("embedding backend failed")
             return None
 
-    def _maybe_auto_install_missing_package(self, exc: Exception) -> None:
-        """Self-heal a missing `sentence-transformers` install, once per
-        process, instead of leaving it to the user to find Settings ->
-        Packages themselves.
+    def _say_not_installed(self) -> None:
+        """**Not installed is a state, not a crash** (owner's packaged-app log:
+        a full traceback for a missing package). The package is optional and
+        the auto-install has already started when it may, so the log gets one
+        sentence and Settings gets a reason a person can act on, rather than a
+        Python exception name."""
+        from tessellate.core import extras
 
-        Search-by-meaning is the *default* engine, it already silently
-        downloads its own ~130MB model from Hugging Face on first use with
-        no separate opt-in, so installing the one PyPI package that makes
-        it importable at all is the same "works without being asked" shape,
-        not a new consent-requiring action the way turning on web search or
-        checking GitHub for updates would be.
+        installing = extras.current().running
+        self.last_error = (
+            "Search by meaning is being installed; search uses keywords until it finishes"
+            if installing
+            else "Search by meaning is not installed; search uses keywords"
+        )
+        logger.warning("fastembed is not installed (%s)", self.last_error)
+
+    def _maybe_auto_install_missing_package(self, exc: Exception) -> None:
+        """Self-heal a missing `fastembed` install, once per process, instead
+        of leaving it to the user to find Settings -> Packages themselves,
+        once the person has said yes to the download (`semantic_auto_install`).
 
         Deliberately narrow: only a genuine "the package flat-out isn't
-        there" `ModuleNotFoundError` triggers this. A different failure: 
+        there" `ModuleNotFoundError` triggers this. A different failure:
         a corrupted install, an incompatible wheel, an out-of-memory crash
         - retrying the exact same `pip install` would do nothing but burn
         bandwidth and hide a real problem behind "installing…" forever;
@@ -1148,12 +1228,11 @@ class EmbeddingService:
         if self._auto_install_attempted:
             return
         # A developer's checkout and every UI sweep run with this set
-        # (scratchpad/ui-sweeps/serve.sh): CLAUDE.md section 7 forbids torch
-        # in the sandbox, and the first note a sweep saved used to start a
-        # multi-gigabyte pip install behind it.
+        # (scratchpad/ui-sweeps/serve.sh): the first note a sweep saved used
+        # to start a pip install behind it.
         if os.environ.get("TESSELLATE_NO_AUTO_INSTALL"):
             return
-        if not isinstance(exc, ModuleNotFoundError) or "sentence_transformers" not in str(exc):
+        if not _engine_missing(exc):
             return
         # The owner's refusal ("the user should be able to cancel or refuse
         # the auto install"): Settings, Search and index. Checked before the
@@ -1162,7 +1241,7 @@ class EmbeddingService:
         #: Through the model manager's own config, not `core.deps`, which
         #: imports this module (tests/test_no_import_cycles.py).
         if not self._models._config.get_preference("semantic_auto_install", False):
-            logger.info("sentence-transformers is missing and the auto-install is switched off")
+            logger.info("fastembed is missing and the auto-install is switched off")
             return
         #: Never started for another device (core/origin.py, secscan-1011's
         #: decision): a note saved from a phone waits for this computer.
@@ -1180,17 +1259,15 @@ class EmbeddingService:
             # but broken, `reinstall`'s job, not this one's), already
             # running (someone beat this to it), or genuinely unavailable
             # on this platform. Nothing safe to do automatically either way.
-            logger.info("sentence-transformers auto-install not started: %s", message)
+            logger.info("fastembed auto-install not started: %s", message)
             return
-        logger.info("sentence-transformers missing: installing it automatically")
+        logger.info("fastembed missing: installing it automatically")
 
         def _retry_once_installed() -> None:
             while extras.current().running:
                 time.sleep(1)
             if extras.current().outcome == "completed":
-                logger.info(
-                    "sentence-transformers auto-install finished: retrying the load"
-                )
+                logger.info("fastembed auto-install finished: retrying the load")
                 # CPython's path-based import finders cache directory
                 # listings for speed, so a package that didn't exist the
                 # first time this process looked can still come up
@@ -1279,7 +1356,7 @@ class EmbeddingService:
 
     def embed_many(self, texts: list[str]) -> list[np.ndarray | None]:
         """Vectors for several texts: one batched encode where the backend
-        has one (sentence-transformers), one call each otherwise."""
+        has one (the built-in engine), one call each otherwise."""
         if (
             texts
             and self._models is not None
@@ -1287,11 +1364,7 @@ class EmbeddingService:
             and self._st_model is not None
         ):
             try:
-                import numpy as np
-
-                _limit_torch_threads()
-                batch = self._st_model.encode([self._prefixed(text) for text in texts], show_progress_bar=False)
-                return [np.asarray(row, dtype="float32") for row in batch]
+                return self._encode(texts)
             except Exception:  # noqa: BLE001  # fall back to one at a time
                 logger.debug("batched encode failed; embedding one at a time", exc_info=True)
         return [self.embed_text(text) for text in texts]

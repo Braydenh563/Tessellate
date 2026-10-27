@@ -642,20 +642,20 @@ function renderEmbeddingPicker(status) {
     status.embedding_backend === "ollama"
       ? `${builtinName}, downloaded once on first use`
       : `${builtinName}, in use`;
-  //: The built-in model needs the sentence-transformers package, which the
-  //: app installs by itself, once, the first time it is needed: a download
-  //: of several hundred MB that needs the internet. Said here, with the
+  //: The built-in model needs the fastembed package, which the app installs
+  //: by itself, once, the first time it is needed (after a yes): a download
+  //: of about 60 MB that needs the internet. Said here, with the
   //: alternative that needs neither Python packages nor that download.
   const note = $("builtin-embed-note");
   if (note) {
     let text = "";
     if (status.builtin_embedding_installing) {
       text =
-        "Installing sentence-transformers for the built-in model. This happens once and " +
-        "can take several minutes. Prefer not to wait? Pick nomic-embed-text from Ollama below.";
+        "Installing fastembed for the built-in model. This happens once and " +
+        "takes a minute or so. Prefer not to wait? Pick nomic-embed-text from Ollama below.";
     } else if (status.builtin_embedding_installed === false) {
       text =
-        "The built-in model needs sentence-transformers, which the app installs by itself " +
+        "The built-in model needs fastembed, which the app installs by itself " +
         "the first time it is needed if the switch below is on (a one-time download that needs the internet). " +
         "Or pick nomic-embed-text from Ollama below instead.";
     }

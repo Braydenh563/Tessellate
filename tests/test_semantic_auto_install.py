@@ -26,8 +26,8 @@ def _no_dispatch(*args, **kwargs):
 def _missing_package(service, monkeypatch):
     monkeypatch.setattr(
         service,
-        "_load_st_model",
-        lambda: (_ for _ in ()).throw(ModuleNotFoundError("No module named 'sentence_transformers'")),
+        "_load_builtin_model",
+        lambda: (_ for _ in ()).throw(ModuleNotFoundError("No module named 'fastembed'")),
     )
 
 
@@ -178,7 +178,7 @@ def test_the_notice_is_lazy_and_reached_from_the_status_poll():
     assert 'semanticNotice: ["/js/semantic-notice.js"]' in (js / "app.js").read_text(encoding="utf-8")
     status = (js / "status.js").read_text(encoding="utf-8")
     assert "status.semantic_offer" in status
-    assert "semanticOffer(Boolean(status.semantic_offer))" in status
+    assert "semanticOffer(Boolean(status.semantic_offer), status.semantic_engine_moved)" in status
     assert '"semanticOffer", "semanticOnboardingOffer"' in (js / "app.js").read_text(encoding="utf-8")
     # Lazy means not a boot script.
     assert "semantic-notice.js" not in (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
@@ -186,7 +186,7 @@ def test_the_notice_is_lazy_and_reached_from_the_status_poll():
 
 def test_the_notice_says_the_size_and_source_and_can_say_no():
     text = (ROOT / "frontend" / "js" / "semantic-notice.js").read_text(encoding="utf-8")
-    assert "about 2 GB" in text and "Keyword search" in text and "huggingface.co" in text
+    assert "about 130 MB" in text and "Keyword search" in text and "huggingface.co" in text
     assert "Download" in text and "No thanks" in text
     assert "semanticSetAutoInstall" in text and "semantic_auto_install: on" in text
     assert '"Undo"' in text
