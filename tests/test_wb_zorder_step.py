@@ -116,4 +116,6 @@ def test_sketches_paint_in_z_order() -> None:
     """A shape's z was written and never read: SVG paints in DOM order."""
     render = SOURCE[SOURCE.index("function renderWhiteboard()") :]
     render = render[: render.index("// Render Nodes (Cards)")]
-    assert "sketchUpdate.sort(" in render
+    #: Placed in stack order by the bands (decision 43), which replaced d3's
+    #: `sort`: a stroke can paint between two cards now.
+    assert "wbPlaceSketchBands(" in render

@@ -2843,7 +2843,9 @@ def duplicate_board(board_id: int, db: Session = Depends(get_session)) -> BoardO
     for sketch in db.scalars(
         select(WhiteboardSketch).where(_board_filter(WhiteboardSketch, board_id))
     ).all():
-        db.add(WhiteboardSketch(board_id=copy.id, data=sketch.data))
+        #: With its z: a stroke stacks with the cards (WHITEBOARD_PLAN
+        #: decision 43), so a copy at z 0 could go under a card it was over.
+        db.add(WhiteboardSketch(board_id=copy.id, data=sketch.data, x=sketch.x, y=sketch.y, z=sketch.z))
 
     # **The copy's tree has to point at the copy.** A row-by-row copy carries
     # `parent_id` verbatim, which would leave every node in the duplicate

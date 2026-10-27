@@ -345,8 +345,26 @@ def _builtin_index() -> dict[str, dict]:
             continue
         key = data.get("key", path.stem)
         for entry in data.get("items") or []:
+            if isinstance(entry.get("payload"), dict):
+                entry = {**entry, "payload": {**entry["payload"], "items": drawings_under_cards(entry["payload"].get("items") or [])}}
             out[f"{key}/{entry['key']}"] = {**entry, "set": SHAPE_SET_NAMES.get(key, data.get("name", path.stem))}
     return out
+
+
+def drawings_under_cards(items: list) -> list:
+    """A stencil drawn when drawings were one layer under every card keeps
+    that look (WHITEBOARD_PLAN decision 43, the owner 2026-10-27: "each
+    stroke stacks"). The built-in sets give a drawing z 5 and a card z 1, so
+    with one order a shape would now cover the words on it: its drawings
+    move under its lowest card, their own order kept. A stencil with no card
+    or no drawing, or drawings already under the cards, is unchanged."""
+    zs = lambda rows: [int(i.get("z") or 0) for i in rows]  # noqa: E731
+    drawings = [i for i in items if isinstance(i, dict) and i.get("kind") == "sketch"]
+    cards = [i for i in items if isinstance(i, dict) and i.get("kind") != "sketch" and i.get("type") != "frame"]
+    if not drawings or not cards or max(zs(drawings)) < min(zs(cards)):
+        return items
+    shift = max(zs(drawings)) - min(zs(cards)) + 1
+    return [{**i, "z": int(i.get("z") or 0) - shift} if i in drawings else i for i in items]
 
 
 @lru_cache(maxsize=1)
@@ -1059,10 +1077,10 @@ def _place_branch(db: Session, board_id: int | None, payload: dict, body: PlaceB
     return {"sketches": [], "objects": made}
 
 
-def _band_tops(db: Session, board_id: int | None, made: dict) -> tuple[int, int, list[int]]:
-    """The highest z already on the board in the drawings band and in the
-    cards band (notes, boxes, pictures, tables), and the frames' z values,
-    leaving out the rows just placed."""
+def _band_tops(db: Session, board_id: int | None, made: dict) -> tuple[int, list[int]]:
+    """The highest z already on the board among the drawings and cards (one
+    band since decision 43: notes, boxes, pictures, tables and strokes), and
+    the frames' z values, leaving out the rows just placed."""
     here = (lambda col: col.is_(None)) if board_id is None else (lambda col: col == board_id)
     sketch_top = db.scalar(
         select(func.max(WhiteboardSketch.z)).where(here(WhiteboardSketch.board_id), WhiteboardSketch.id.not_in({r.id for r in made["sketches"]}))
@@ -1071,8 +1089,8 @@ def _band_tops(db: Session, board_id: int | None, made: dict) -> tuple[int, int,
     others = db.scalars(
         select(WhiteboardObject).where(here(WhiteboardObject.board_id), WhiteboardObject.id.not_in({r.id for r in made["objects"]}))
     ).all()
-    card_top = max([0, note_top or 0, *[o.z or 0 for o in others if o.kind != "frame"]])
-    return max(0, sketch_top or 0), card_top, [o.z or 0 for o in others if o.kind == "frame"]
+    top = max([0, sketch_top or 0, note_top or 0, *[o.z or 0 for o in others if o.kind != "frame"]])
+    return top, [o.z or 0 for o in others if o.kind == "frame"]
 
 
 def _stack_on_top(db: Session, board_id: int | None, made: dict) -> None:
@@ -1081,20 +1099,21 @@ def _stack_on_top(db: Session, board_id: int | None, made: dict) -> None:
 
     A stencil carries small fixed z values (a drawing 5, a card 1, a link 1),
     so a placement landed under, or tied with, anything already drawn above
-    them. The board's stacking (`wbStackOrder` in whiteboard.js) is three
-    bands: frames, then drawings, then cards; each placed row takes the next
-    z of its own band, frames under the frames already there, as one drawn
-    by hand does (`wbStackNewZ`)."""
-    sketch_top, card_top, frame_zs = _band_tops(db, board_id, made)
-    by_stencil = lambda r: (r.z or 0, r.id)  # noqa: E731
-    frames = sorted((r for r in made["objects"] if r.kind == "frame"), key=by_stencil)
-    cards = sorted((r for r in made["objects"] if r.kind != "frame"), key=by_stencil)
+    them. The board's stacking (`wbStackOrder` in whiteboard.js) is two
+    bands: frames, then drawings and cards together (decision 43); each
+    placed row takes the next z of its band in the stencil's order (z, then
+    drawings before cards, as a tie paints), frames under the frames already
+    there, as one drawn by hand does (`wbStackNewZ`)."""
+    top, frame_zs = _band_tops(db, board_id, made)
+    rank = {"sketch": 0, "object": 2}
+    by_stencil = lambda pair: (pair[1].z or 0, rank[pair[0]], pair[1].id)  # noqa: E731
+    frames = sorted((("object", r) for r in made["objects"] if r.kind == "frame"), key=by_stencil)
+    rest = sorted([*(("sketch", r) for r in made["sketches"]), *(("object", r) for r in made["objects"] if r.kind != "frame")], key=by_stencil)
     for rows, first in (
-        (sorted(made["sketches"], key=by_stencil), sketch_top + 1),
         (frames, (min(frame_zs) - len(frames)) if frame_zs else 0),
-        (cards, card_top + 1),
+        (rest, top + 1),
     ):
-        for i, row in enumerate(rows):
+        for i, (_, row) in enumerate(rows):
             row.z = first + i
     db.flush()
 

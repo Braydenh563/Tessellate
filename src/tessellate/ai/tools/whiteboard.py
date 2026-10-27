@@ -18,7 +18,7 @@ from tessellate.core.database import Entry
 from tessellate.entry import manager
 from tessellate.entry.properties import strip as strip_properties
 
-from ._common import DEFAULT_LIST_LIMIT, PREVIEW_CHARS, ToolError, _clip, _limit_arg, _require_note, mark_outside
+from ._common import DEFAULT_LIST_LIMIT, PREVIEW_CHARS, ToolError, _clip, _limit_arg, _require_note, board_top_z, mark_outside
 
 def _whiteboard_board_filter(model, board_id: int | None):
     """Same rule `routes_whiteboard.py`'s own `_board_filter` uses: `== None`
@@ -96,7 +96,7 @@ def _draw_link(session: Session, board_id: int | None, data: dict):
     drew and one a person dragged replay through the same events."""
     from tessellate.core.database import WhiteboardSketch
 
-    sketch = WhiteboardSketch(board_id=board_id, data=json.dumps(data), x=0, y=0, z=1)
+    sketch = WhiteboardSketch(board_id=board_id, data=json.dumps(data), x=0, y=0, z=board_top_z(session, board_id))
     session.add(sketch)
     session.flush()  # so the event can name the link's id
     events.record(

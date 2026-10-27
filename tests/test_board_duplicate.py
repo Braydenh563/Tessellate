@@ -42,6 +42,18 @@ def test_a_duplicate_carries_the_cards_and_their_positions(client):
     assert (state["nodes"][0]["x"], state["nodes"][0]["y"]) == (40.0, 90.0)
 
 
+def test_a_duplicate_keeps_each_strokes_place_in_the_stack(client):
+    """A stroke sits over or under a card by its z (WHITEBOARD_PLAN decision
+    43), so the copy has to carry it: it was dropped to 0, which put a stroke
+    drawn over a card (z 4 over z 2) under it in the copy."""
+    board, _ = _board_with_a_card(client)
+    client.post("/whiteboard/objects", json={"kind": "text", "data": {"content": "box"}, "board_id": board["id"], "x": 0, "y": 0, "z": 2, "width": 100, "height": 60})
+    client.post("/whiteboard/sketches", json={"data": '{"d": "M0 0 L9 9"}', "x": 3, "y": 5, "z": 4, "board_id": board["id"]})
+    copy = client.post(f"/whiteboard/boards/{board['id']}/duplicate").json()
+    sketch = client.get(f"/whiteboard/?board_id={copy['id']}").json()["sketches"][0]
+    assert (sketch["z"], sketch["x"], sketch["y"]) == (4, 3, 5)
+
+
 def test_editing_a_copied_card_does_not_change_the_original(client):
     """The whole reason this is a deep copy. A shared-note version passes the
     test above and loses the user's data the first time they edit the copy."""

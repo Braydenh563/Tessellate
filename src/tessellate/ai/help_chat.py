@@ -335,8 +335,8 @@ HELP_TOPICS: list[dict] = [
             "buttons into its More menu. Draw a link between "
             "cards with the connector (C), from one card to the other; it "
             "ends in an arrow, and the bar over the rail sets its ends while "
-            "the tool is held. Frames sit under drawings, drawings under cards; "
-            "a new item goes on top of its layer."
+            "the tool is held. Strokes and cards stack in one order; a new one "
+            "goes on top, frames under all."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },

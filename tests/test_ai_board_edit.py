@@ -138,6 +138,16 @@ def test_draw_shapes_and_a_frame(session):
     assert "shape is one of" in tools.execute_tool(session, "add_board_shape", {"shape": "star"})["error"]
 
 
+def test_a_shape_the_assistant_draws_lands_on_top(session):
+    """Strokes and cards stack in one order (WHITEBOARD_PLAN decision 43), so
+    a shape drawn at a fixed z 2 went under a card at z 7."""
+    session.add(WhiteboardObject(board_id=None, kind="text", data="{}", x=0, y=0, z=7, width=50, height=50))
+    session.add(WhiteboardObject(board_id=None, kind="frame", data="{}", x=0, y=0, z=40, width=50, height=50))
+    session.commit()
+    out = tools.execute_tool(session, "add_board_shape", {"shape": "rect", "x": 0, "y": 0, "width": 10, "height": 10})
+    assert session.get(WhiteboardSketch, out["item_id"]).z == 8
+
+
 def test_read_whiteboard_names_the_shapes_with_words(session):
     shape = WhiteboardSketch(data=json.dumps({"d": RECT, "shape": "rect", "label": "Launch"}))
     stroke = WhiteboardSketch(data=json.dumps({"d": "M 0 0 L 5 5", "shape": "pen"}))

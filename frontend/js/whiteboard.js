@@ -1678,7 +1678,7 @@ function wbRefreshHighlighterBlend() {
   for (const path of document.querySelectorAll(".sketch-path")) {
     if (path.style.mixBlendMode) path.style.mixBlendMode = blend;
   }
-  const drawing = document.querySelector("#wb-zoom-group > path.wb-live-highlighter");
+  const drawing = document.querySelector("#wb-overlay-zoom-group > path.wb-live-highlighter");
   if (drawing) drawing.style.mixBlendMode = blend;
 }
 
@@ -7225,16 +7225,17 @@ function deleteWbSelection() {
 //: tests, the order commands, the Layers tab and the export all read this.
 //: Bottom to top:
 //:   0  frames (decision 14: under everything they hold);
-//:   1  drawings: shapes, lines, connectors and pen strokes, the SVG layer,
-//:      which the browser paints under the card layer as a whole;
-//:   2  notes, text boxes, stickies, tables and pictures, the HTML layer.
+//:   1  everything else: drawings (shapes, lines, connectors, pen strokes)
+//:      and cards (notes, text boxes, stickies, tables, pictures) in one
+//:      band, so a stroke sits over or under a card by its z (decision 43,
+//:      the owner 2026-10-27: "each stroke stacks"; drawings were one band
+//:      under every card before). `wbSketchBands` paints it.
 //: Within a band, `z`; a tie (a fresh board has many items at one z) goes
-//: the way a reload paints it: notes under objects, then by id.
+//: the way a reload paints it: drawings, then notes, then objects, then id.
 const WB_STACK_KIND_RANK = { sketch: 0, node: 1, object: 2 };
 
 function wbStackBand(kind, item) {
-  if (kind === "sketch") return 1;
-  return kind === "object" && item?.kind === "frame" ? 0 : 2;
+  return kind === "object" && item?.kind === "frame" ? 0 : 1;
 }
 
 function wbStackCompare(a, b) {
@@ -7270,15 +7271,88 @@ function wbStackRanks(state = wbState) {
   return new Map(wbStackOrder(state).map((e, i) => [e.key, i + 1]));
 }
 
+//: **Where each stroke paints** (decision 43). SVG children take no
+//: z-index, so a stroke can only go between two cards inside an `<svg>` of
+//: its own in the card layer. One per stroke would be 300 roots on a busy
+//: board; one per *run* of strokes with no card between them is at most one
+//: more than the cards. The run under every HTML item stays in the base
+//: layer (`#wb-zoom-group`), which is every stroke on a board migrated from
+//: the old one-layer order, so such a board pays nothing new. Each band's
+//: z-index is the stack rank of its first stroke, a rank no card holds.
+function wbSketchBands(order) {
+  const base = [];
+  const bands = [];
+  let overCard = false;
+  let run = null;
+  order.forEach((e, i) => {
+    if (e.kind !== "sketch") {
+      overCard = true;
+      run = null;
+      return;
+    }
+    if (!overCard) {
+      base.push(e.item.id);
+      return;
+    }
+    if (!run) {
+      run = { rank: i + 1, ids: [] };
+      bands.push(run);
+    }
+    run.ids.push(e.item.id);
+  });
+  return { base, bands };
+}
+
+//: Moves each stroke's group to its band, in stack order, touching only the
+//: groups out of place, so a render with no order change moves nothing (a
+//: pan never renders). A map keeps every line in the base layer: its lines
+//: run under the topics they join. Returns the groups in paint order, which
+//: the line jumps read.
+function wbPlaceSketchBands(groups, order = wbStackOrder()) {
+  const base = document.getElementById("wb-zoom-group");
+  const layer = document.getElementById("wb-html-layer");
+  const sketches = order.filter((e) => e.kind === "sketch");
+  const plan = wbIsMap() ? { base: sketches.map((e) => e.item.id), bands: [] } : wbSketchBands(order);
+  const nodes = (ids) => ids.map((id) => groups.get(id)).filter(Boolean);
+  //: The base run, the way d3's `order` does it: from the last up, each
+  //: before the one after it, so the base layer's other children stay put.
+  let next = null;
+  for (const node of nodes(plan.base).reverse()) {
+    if (next) {
+      if (node.nextSibling !== next) base.insertBefore(node, next);
+    } else if (node.parentNode !== base) {
+      base.appendChild(node);
+    }
+    next = node;
+  }
+  const hosts = [...layer.querySelectorAll(":scope > svg.wb-sketch-band")];
+  plan.bands.forEach((band, k) => {
+    let host = hosts[k];
+    if (!host) {
+      host = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      host.setAttribute("class", "wb-sketch-band");
+      host.setAttribute("width", "1");
+      host.setAttribute("height", "1");
+      layer.appendChild(host);
+      hosts.push(host);
+    }
+    if (host.style.zIndex !== String(band.rank)) host.style.zIndex = String(band.rank);
+    nodes(band.ids).forEach((node, j) => {
+      const at = host.childNodes[j] || null;
+      if (at !== node) host.insertBefore(node, at);
+    });
+  });
+  for (const extra of hosts.slice(plan.bands.length)) extra.remove();
+  return nodes(sketches.map((e) => e.item.id));
+}
+
 // --- Layer order: bring to front / send to back (asked for directly) ------
 //
 // `z` is on every kind's own row and the stack above (`wbStackOrder`) turns
-// it into paint order, so these commands only change the number. Nodes and
-// objects share one HTML stacking context (`canvas` in renderWhiteboard),
-// so they interleave against each other; a sketch renders in the separate
-// SVG layer beneath both (wbShowAnchorHints's own comment explains why), so
-// it only ever reorders against other sketches, never in front of a card.
-// An honest limit of this app's layering, which the stack's bands say.
+// it into paint order, so these commands only change the number. Strokes,
+// notes and objects are one band (decision 43), so a mixed selection moves
+// past cards and strokes alike; `wbPlaceSketchBands` paints a stroke between
+// two cards. Frames move among frames only (decision 14).
 
 //: An item's peers for an order command: its own band of the stack, bottom
 //: first, as `{ kind, item, key }`.
@@ -8524,7 +8598,7 @@ function wbPlacedBounds(rows) {
     if (kind === "sketch") {
       const parsed = wbSketchParsedData(item);
       if (!parsed) continue;
-      const path = document.querySelector(`#wb-svg-layer .sketch-group[data-id="${item.id}"] .sketch-path`);
+      const path = document.querySelector(`.sketch-group[data-id="${item.id}"] .sketch-path`);
       try {
         const b = path?.getBBox();
         if (b && (b.width || b.height)) box = { minX: b.x, minY: b.y, maxX: b.x + b.width, maxY: b.y + b.height };
@@ -17820,7 +17894,8 @@ async function initWhiteboard() {
     const dashArray = wbDashArray(window.currentDashStyle, WB_STROKE_WIDTH);
     if (dashArray) currentDrawPath.setAttribute("stroke-dasharray", dashArray);
     currentDrawPath.setAttribute("d", `M ${x} ${y}`);
-    document.getElementById("wb-zoom-group").appendChild(currentDrawPath);
+    //: Over the cards while it is drawn: it lands on top (decision 43).
+    document.getElementById("wb-overlay-zoom-group").appendChild(currentDrawPath);
   });
   
   containerEl.addEventListener("pointermove", (e) => {
@@ -20903,7 +20978,9 @@ function renderWhiteboard() {
 
   // Render Sketches (SVG)
   const svgGroup = d3.select("#wb-zoom-group");
-  const sketchSelection = svgGroup.selectAll("g.sketch-group")
+  //: Every stroke's group wherever its band put it (decision 43); a new one
+  //: is made in the base layer and `wbPlaceSketchBands` moves it.
+  const sketchSelection = svgGroup.selectAll(() => document.querySelectorAll("#wb-zoom-group > g.sketch-group, #wb-html-layer > svg.wb-sketch-band > g.sketch-group"))
     .data((wbState.sketches || []).filter(wbSketchIsDrawable), d => d.id);
     
   // Deleting a sketch two ways: "delete" is a click on the one thing you
@@ -21348,14 +21425,15 @@ function renderWhiteboard() {
   sketchSelection.exit().remove();
   //: **A shape's z is its paint order** (found with FEAT-07). SVG paints in
   //: document order, and a new sketch was appended last whatever its z, so
-  //: Bring forward on a shape wrote a number nothing read. `sort` reorders
-  //: the groups by the stack order (`wbStackCompare`: z, then id);
-  //: d3 moves only the groups that are out of place. Not on a map, whose
-  //: lines have no order to keep.
-  //: Then each connector that jumps hops over the lines under it (wb-phase2
-  //: step 1), in paint order: `sort` returns a new, sorted selection and
-  //: leaves this one in data order, so it is read off the sorted one.
-  if (!wbIsMap()) wbApplyLineJumps(sketchUpdate.sort((a, b) => wbStackCompare({ kind: "sketch", item: a }, { kind: "sketch", item: b })).nodes());
+  //: Bring forward on a shape wrote a number nothing read. The groups are
+  //: placed in the stack order by `wbPlaceSketchBands`, into the base layer
+  //: or a band between two cards (decision 43), not by d3's `sort`, whose
+  //: `order` would pull every group into one parent. Then each connector
+  //: that jumps hops over the lines under it (wb-phase2 step 1), in paint
+  //: order. Not on a map, whose lines have no order to keep.
+  const sketchGroups = new Map(sketchUpdate.nodes().map((el) => [el.__data__.id, el]));
+  const painted = wbPlaceSketchBands(sketchGroups);
+  if (!wbIsMap()) wbApplyLineJumps(painted);
 
   // Render Nodes (Cards)
   const canvas = d3.select("#wb-html-layer");
