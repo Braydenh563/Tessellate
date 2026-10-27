@@ -120,6 +120,28 @@ def test_prose_that_contradicts_the_facts_is_refused(ai_client, fake_ollama, ses
     assert not any(e["type"] == "stats" and e.get("model") for e in events)
 
 
+def test_a_refused_reply_streams_none_of_its_thinking(ai_client, fake_ollama, session, fixed_clock):
+    """The thinking of a reply that is then refused was streamed before the
+    check (the review of 2026-10-27): it is held with the prose, dropped on a
+    refusal, and the tokens it cost are still reported, with no model named."""
+    _seed(session)
+    fake_ollama.librarian_thinking = "Counting two reminders."
+    fake_ollama.librarian_reply = "You have two reminders."
+    events, _answer = _stream(ai_client, "What is due?", True)
+    assert not [e for e in events if e["type"] == "thinking"]
+    stats = [e for e in events if e["type"] == "stats"]
+    assert stats and not any(e.get("model") for e in stats) and stats[-1].get("output_tokens") is not None
+
+
+def test_a_kept_reply_streams_its_thinking_before_its_words(ai_client, fake_ollama, session, fixed_clock):
+    _seed(session)
+    fake_ollama.librarian_thinking = "Three are waiting."
+    fake_ollama.librarian_reply = "Three things are waiting, and call mum comes first."
+    events, _answer = _stream(ai_client, "What is due?", True)
+    kinds = [e["type"] for e in events if e["type"] in ("thinking", "answer")]
+    assert kinds[0] == "thinking" and "answer" in kinds
+
+
 def test_a_count_that_drops_the_figure_is_refused(ai_client, fake_ollama, session, fixed_clock):
     _seed(session, reminders=False)
     fake_ollama.librarian_reply = "You have a lovely notebook."

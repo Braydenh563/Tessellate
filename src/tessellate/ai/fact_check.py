@@ -196,6 +196,15 @@ def merged(*parts: dict[str, set[str]]) -> dict[str, set[str]]:
     return out
 
 
+def _kept(value: str, noun: str | None, counts: dict[str, set[str]], every: set[str], stated: set[str]) -> bool:
+    """One figure of the prose against the engine's counts (`keeps`)."""
+    if noun is None:
+        return value == "1" or value in every or value in stated
+    if counts:
+        return value in (every if noun == "*" else counts.get(noun, set()))
+    return value in stated
+
+
 def keeps(prose: str, facts: str, question: str, counts: dict[str, set[str]], needs_figure: bool) -> bool:
     """Whether the prose keeps to the engine's facts.
 
@@ -211,15 +220,8 @@ def keeps(prose: str, facts: str, question: str, counts: dict[str, set[str]], ne
     said = _figures(prose)
     stated = {v for v, _n in _figures(facts)} | {v for v, _n in _figures(question)}
     every = set().union(*counts.values()) if counts else set()
-    for value, noun in said:
-        if noun is None:
-            if not (value == "1" or value in every or value in stated):
-                return False
-        elif counts:
-            if value not in (every if noun == "*" else counts.get(noun, set())):
-                return False
-        elif value not in stated:
-            return False
+    if not all(_kept(value, noun, counts, every, stated) for value, noun in said):
+        return False
     if not needs_figure:
         return True
     asked_for = every or ({v for v, _n in _figures(facts)} - {v for v, _n in _figures(question)})

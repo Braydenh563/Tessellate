@@ -3020,26 +3020,34 @@ def _fact_events(req: _StreamRequest, prepared: dict, t: _Turn) -> Iterator[dict
     engine = list(_exact_events(req, prepared, True) or [])
     answers = [e for e in engine if e.get("type") == "answer"]
     listed = [{"type": "answer", "delta": e["delta"]} for e in answers if e.get("attached")]
-    if not listed and prepared["stats"] is not None:
-        listed = _stats_listed(prepared["stats"])
+    listed = listed or (_stats_listed(prepared["stats"]) if prepared["stats"] is not None else [])
     facts = "".join(str(e.get("delta") or "") for e in answers)
     counts = _engine_counts(prepared, answers)
     messages = librarian.build_facts_messages(
         _in_full(req), facts, style=prepared["style"], profile=prepared["profile"], history=req.history,
         persona_prompt=req.persona_prompt, mode=req.mode,
     )
-    held: dict = {"prose": "", "stats": None}
-    yield from _held_reply(req, messages, held)
+    held = _held_reply(req, messages)
     prose = trim_assistant_padding(held["prose"]).strip()
     needs_figure = prepared["stats"] is not None and not listed
     if facts and fact_check.keeps(prose, facts, req.question or "", counts, needs_figure):
+        yield from held["thinking"]
         yield from _model_said(prose, listed, engine, held["stats"])
         return
-    if prose:
+    yield from _engine_stands(req, prepared, t, engine, held)
+
+
+def _engine_stands(req: _StreamRequest, prepared: dict, t: _Turn, engine: list, held: dict) -> Iterator[dict]:
+    """A refused or failed reply: the engine's own answer, a `meta` naming no
+    model, and what the reply cost, with no model named either (the badge and
+    the facts line read `stats.model` first, `chat-attach.js`, `palette.js`)."""
+    if held["prose"]:
         logging.getLogger("tessellate.chat").warning("chat: the model's words did not keep to the app's answer, which stands")
     t.will_answer = False
     yield _meta_event(req, prepared, t)
     yield from engine
+    if held["stats"] is not None:
+        yield {k: v for k, v in held["stats"].items() if k != "model"}
 
 
 #: Rows that sum a count up rather than list what was counted ("untagged",
@@ -3082,13 +3090,15 @@ def _model_said(prose: str, listed: list, engine: list, stats: dict | None) -> I
         yield stats
 
 
-def _held_reply(req: _StreamRequest, messages: list, held: dict) -> Iterator[dict]:
-    """The model's reply into `held` (its words, its token counts), its
-    thinking passed on as it comes; a model that fails leaves no words."""
+def _held_reply(req: _StreamRequest, messages: list) -> dict:
+    """The model's reply, held whole until it is checked: its words, its
+    thinking (shown only with words that are kept), its token counts. A model
+    that fails leaves no words."""
+    held: dict = {"prose": "", "thinking": [], "stats": None}
     try:
         for piece in req.ollama.chat_stream(req.model_manager.chat_model(), messages, req.mode):
             if "thinking_delta" in piece:
-                yield {"type": "thinking", "delta": piece["thinking_delta"]}
+                held["thinking"].append({"type": "thinking", "delta": piece["thinking_delta"]})
             elif "stats" in piece:
                 held["stats"] = {"type": "stats", **piece["stats"]}
             else:
@@ -3096,6 +3106,7 @@ def _held_reply(req: _StreamRequest, messages: list, held: dict) -> Iterator[dic
     except OllamaError as exc:
         logging.getLogger("tessellate.chat").warning("chat: the model could not say the app's answer: %s", safe_value(exc))
         held["prose"] = ""
+    return held
 
 
 def _no_notes_line(req: _StreamRequest, ollama_running: bool) -> str:
