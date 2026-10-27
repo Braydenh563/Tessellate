@@ -51,12 +51,22 @@ function dashMapFeature(board) {
   button.appendChild(caption);
   button.addEventListener("click", () => openWhiteboardBoard(board.id));
   const items = Array.isArray(board.preview_items) ? board.preview_items.length : 0;
-  const size = () => {
-    const width = button.clientWidth;
-    if (width > 0) svg.style.height = `${dashMapFeatureHeight(width, board.preview_aspect, items)}px`;
+  //: INBOX 1415: the width comes from the observer entry (no layout read), and
+  //: nothing is written when the height is the one already set, so a resize
+  //: tick is one style write at most and never feeds the observer again.
+  let lastHeight = 0;
+  const size = (width) => {
+    if (!(width > 0)) return;
+    const height = dashMapFeatureHeight(width, board.preview_aspect, items);
+    if (height === lastHeight) return;
+    lastHeight = height;
+    svg.style.height = `${height}px`;
   };
-  if (typeof ResizeObserver === "function") new ResizeObserver(size).observe(button);
-  requestAnimationFrame(size);
+  if (typeof ResizeObserver === "function") {
+    new ResizeObserver((entries) => size(entries[entries.length - 1].contentRect.width)).observe(button);
+  } else {
+    requestAnimationFrame(() => size(button.clientWidth));
+  }
   return button;
 }
 

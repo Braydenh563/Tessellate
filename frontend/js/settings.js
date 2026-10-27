@@ -2269,7 +2269,14 @@ DENSITY_SHORT.addEventListener("change", () => {
 //: baseline and needs no font's metrics. Measured again when Settings
 //: changes the font (`applyAppearance`, below). Here and not in app.js, whose
 //: gzipped size is a ratchet; nothing calls it before this file loads.
-function measureLabelOptics() {
+//: Read again only when the answer can have changed (INBOX 1415: it was a forced
+//: layout inside every `applyAppearance`, so a zoom keypress paid for it): the
+//: key is the font choice, the loaded faces and the custom CSS. `force` skips it.
+let labelOpticsKey = "";
+function measureLabelOptics(force) {
+  const key = `${document.documentElement.dataset.font}|${document.fonts?.size ?? 0}|${document.fonts?.status}|${prefs.get("custom-css", null)?.length ?? 0}`;
+  if (force !== true && key === labelOpticsKey) return;
+  labelOpticsKey = key;
   const probe = document.createElement("div");
   probe.setAttribute("aria-hidden", "true");
   for (const [key, value] of [["position", "fixed"], ["top", "0"], ["left", "0"], ["visibility", "hidden"],
@@ -2304,6 +2311,12 @@ function measureLabelOptics() {
 
 measureLabelOptics();
 document.fonts?.ready?.then(measureLabelOptics);
+
+//: The interface zoom alone, so a zoom keypress writes one custom property and
+//: does not re-run every appearance read (INBOX 1415).
+function applyZoomVar() {
+  document.documentElement.style.setProperty("--zoom", Number(appearancePref("zoom")) / 100);
+}
 
 function applyAppearance() {
   const root = document.documentElement;
@@ -2344,7 +2357,7 @@ function applyAppearance() {
   root.style.setProperty("--radius", `${appearancePref("radius")}px`);
   root.style.setProperty("--glass-blur", `${appearancePref("glass-blur")}px`);
   root.style.setProperty("--glass-opacity", Number(appearancePref("glass-opacity")) / 100);
-  root.style.setProperty("--zoom", Number(appearancePref("zoom")) / 100);
+  applyZoomVar();
   root.style.setProperty("--border-style", appearancePref("border-style", "solid"));
   // Belt and braces over the two fixes above. A custom property will happily
   // hold the string "NaN"; it is only invalid where it gets *used*, which here

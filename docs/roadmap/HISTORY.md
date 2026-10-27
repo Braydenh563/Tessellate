@@ -7,6 +7,10 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-10-27 (lag 1415)
+
+- 2026-10-27, INBOX 1415 forced layouts (first pass), measured at 4x CPU throttle with CDP Performance metrics and long tasks on a 580-note scratch notebook: Settings, Help section long task 2101 ms to 313 ms, 190 layouts to 9 (`toastYield`, status.js, laid out every button inside a skipped `content-visibility` window; now `checkVisibility` first and one class write); Appearance section 774 ms to 386 ms, 555 rects to 117; Ctrl+plus zoom `applyAppearance` replaced by `applyZoomVar` once per frame, `measureLabelOptics` cached by font key (4 presses: layout 409 ms to 310 ms, long tasks 696/495/702 to 528/398); boot `renderBrandLogo` 835 ms to 406 ms inclusive (six `getClientRects` reads before any draw); OCR `ocrFitLiveText` read pass then write pass, OCR pinch wheel one `ocrZoomAbout` per frame, dashboard map card sized from the `ResizeObserver` entry. Pinned by `tests/test_lag_1415.py`. Not reproduced here (small data, Linux fonts): Quick sketch plain keydown (71 ms at 4x), Library OCR `Response.json.then` layout, tab-switch click handler (no long task on desktop or at 390 wide), Timeline first load (580 notes: 3 layouts, 3 ms), boot `status.js` build (`build` 89 ms), settings-find build.
+
 ## Moved from the plans, 2026-10-27 (guide-1414)
 
 - 2026-10-27, guide follow-ups (1cd81bf): "how do I pin a note" leads with the pin act and Favourites, never the Graph's node pin (keywords "pin a node", "pin on the graph"; the lock screen's PIN keywords no longer match pinning; `ACT_HELP_TOPICS` drops pin). With a model running, a social message gets a system brief built from its offline reply. Decided: Chat keeps the 1414 closing (a finished act is not resumed there either), `tests/test_guide_social_1414.py`.

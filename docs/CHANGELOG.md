@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Interface: forced layouts the owner's lag log named are out of the key, frame and tab paths: a zoom keypress writes one property per frame and no longer re-runs the font probe, Settings no longer lays out every skipped button on each focus (Help section 2.1 s to 0.3 s at 4x CPU), the OCR pinch zooms once per frame and fits words in one read pass, the dashboard map card is sized from its observer entry, and boot draws the brand emblems after asking all six slots (INBOX 1415).
 
 ## [0.6.2] - 2026-10-27
 - Whiteboard: a text box or sticky linked to a note saves again (it was refused as not a web address), and a pasted item that carried stray link ends is no longer dropped. Answers from facts: a date in a tool's time stamp (2026-10-30T17:00) counts as named, so a correct reply giving that day is kept.

@@ -957,12 +957,29 @@ function toastYield(target = document.activeElement) {
   const box = $("toast-box");
   if (!box?.children.length || !target || box.contains(target) || target === document.body) return box?.classList.remove("is-yielding");
   const meets = (b, r) => r.width > 0 && b.left < r.right && b.right > r.left && b.top < r.bottom && b.bottom > r.top;
+  //: The section's buttons are measured only when a lasting toast is there to
+  //: be covered by one, and once (INBOX 1415: 521 rects on the Appearance
+  //: section and 189 layouts on Help came from measuring them on every focus).
+  //: Every read comes before the one class write, and the write is skipped
+  //: when it would change nothing.
   const focused = target.getBoundingClientRect();
-  const work = [...(target.closest("form, section")?.querySelectorAll("button") || [])].map((el) => el.getBoundingClientRect());
-  box.classList.toggle("is-yielding", [...box.children].some((el) => {
+  const work = {
+    rects: null,
+    some(test) {
+      //: A button in a window `content-visibility` has skipped is not drawn, so it
+      //: cannot be under a toast; measuring one lays it out alone (188 layouts, 1.4 s
+      //: at 4x on Settings, Help).
+      this.rects ||= [...(target.closest("form, section")?.querySelectorAll("button") || [])]
+        .filter((el) => el.checkVisibility({ contentVisibilityAuto: true }))
+        .map((el) => el.getBoundingClientRect());
+      return this.rects.some(test);
+    },
+  };
+  const yielding = [...box.children].some((el) => {
     const b = el.getBoundingClientRect();
     return meets(b, focused) || (!el.toastTimer && work.some((r) => meets(b, r)));
-  }));
+  });
+  if (box.classList.contains("is-yielding") !== yielding) box.classList.toggle("is-yielding", yielding);
 }
 document.addEventListener("focusin", (e) => toastYield(e.target));
 

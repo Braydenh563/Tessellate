@@ -4250,12 +4250,18 @@ function ocrFitLiveText() {
   const layer = $("ocr-live-text");
   if (!layer) return;
   const range = document.createRange();
-  for (const span of layer.querySelectorAll(".ocr-live-word:not([data-fitted])")) {
+  //: Read every word, then write every ratio (INBOX 1415, 65 to 253 ms): one
+  //: write between two reads made each of hundreds of words a forced layout.
+  const todo = layer.querySelectorAll(".ocr-live-word:not([data-fitted])");
+  const fits = [];
+  for (const span of todo) {
     range.selectNodeContents(span);
     const ink = range.getBoundingClientRect().width;
     const room = span.getBoundingClientRect().width;
-    if (!room || !ink) continue;
-    span.style.setProperty("--word-sx", String(room / ink));
+    if (room && ink) fits.push([span, room / ink]);
+  }
+  for (const [span, ratio] of fits) {
+    span.style.setProperty("--word-sx", String(ratio));
     span.dataset.fitted = "1";
   }
 }
@@ -6131,6 +6137,8 @@ function ocrShownZoom() {
 //: point of the page under (clientX, clientY) stays under it, the way a
 //: photo viewer pinches, where the buttons keep the middle (`ocrKeepCentre`).
 //: Continuous between the strip's first and last steps.
+let ocrWheelPending = null;
+
 function ocrZoomAbout(level, clientX, clientY) {
   const pane = $("ocr-page-pane");
   const next = Math.min(OCR_ZOOM_STEPS.at(-1), Math.max(OCR_ZOOM_STEPS[0], level));
@@ -7699,8 +7707,22 @@ onDomReady(() => {
   $("ocr-page-pane")?.addEventListener("wheel", (event) => {
     if (!event.ctrlKey) return;
     event.preventDefault();
-    const delta = Math.max(-100, Math.min(100, event.deltaY));
-    ocrZoomAbout(ocrShownZoom() * Math.exp(-delta / 500), event.clientX, event.clientY);
+    //: One zoom per frame (INBOX 1415, wheel 70 to 176 ms): a pinch delivers
+    //: events faster than the page can lay out, so their deltas are summed and
+    //: the last pointer position is used; each event used to flush layout.
+    if (ocrWheelPending) {
+      ocrWheelPending.deltaY += event.deltaY;
+      ocrWheelPending.clientX = event.clientX;
+      ocrWheelPending.clientY = event.clientY;
+      return;
+    }
+    ocrWheelPending = { deltaY: event.deltaY, clientX: event.clientX, clientY: event.clientY };
+    requestAnimationFrame(() => {
+      const event = ocrWheelPending;
+      ocrWheelPending = null;
+      const delta = Math.max(-100, Math.min(100, event.deltaY));
+      ocrZoomAbout(ocrShownZoom() * Math.exp(-delta / 500), event.clientX, event.clientY);
+    });
   }, { passive: false });
   //: Two fingers on a touch screen: the level follows the distance between
   //: them, about their midpoint. One finger still scrolls the page or draws
