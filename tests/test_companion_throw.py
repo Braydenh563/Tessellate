@@ -188,6 +188,7 @@ def _drop(obstacles: str):
             'function nameMarkBuddyTab() { return "chat"; }',
             "function nameMarkBuddyObstacles() { return OBS; }",
             "function nameMarkBuddyEdges() { return []; }",
+            "function nameMarkBuddyLedges() { return { top: null, bottom: null }; }",
             "function nameMarkBuddyYoursObstacles(o) { return o; }",
             "function nameMarkBuddyStepAside(spot) { return spot; }",
             "function nameMarkBuddyHits(x, y, pose, obs) { return obs.some((b) => x < b.right && x + NMB_W > b.left && y < b.bottom && y + NMB_H > b.top); }",

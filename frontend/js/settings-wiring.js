@@ -651,7 +651,7 @@ document.addEventListener("keydown", (e) => {
     $("notif-btn").setAttribute("aria-expanded", "false");
     return;
   }
-  if (e.key === "Escape" && !$("onboarding-overlay").classList.contains("hidden")) {
+  if (e.key === "Escape" && $("onboarding-overlay")?.classList.contains("hidden") === false) {
     closeOnboarding();
     return;
   }
