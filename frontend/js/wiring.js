@@ -950,7 +950,7 @@ $("status-agent")?.addEventListener("click", () => toggleAgentPalette());
 //: is deferred to the click rather than taken now. The same shape the phone's
 //: More sheet already uses for the same function.
 $("status-guide")?.addEventListener("click", () => {
-  openHelpChat();
+  toggleHelpChat();
 });
 
 $("status-find")?.addEventListener("click", () => openFinder());

@@ -96,3 +96,32 @@ def test_the_image_tile_menu_chip_outranks_the_bare_icon_reset():
     assert "color: var(--ink);" in body and "backdrop-filter: var(--glass-filter-clear);" in body
     off = (ROOT / "frontend/css/03-dashboard-widgets.css").read_text(encoding="utf-8")
     assert ':root[data-glass="off"] .library-image-tile .library-image-actions > .menu-wrap > button.ghost,' in off
+
+
+def test_the_guide_leads_with_how_to_change_not_what_changed():
+    """The owner, 2026-10-27: "How do I change the widgets?" answered with the
+    Dashboard's 134-word inventory, which says "what changed" and "edited",
+    over the sentence that says how. A past form of the doing asked
+    describes; it does not instruct."""
+    from tessellate.ai import composer, help_chat
+
+    q = "How do I change the widgets?"
+    line, _ = composer.help_line(q, help_chat.topics_for(q, "dashboard"))
+    assert line.startswith("Customise, beside the search box, has Edit layout and Widgets")
+
+
+def test_opening_the_guide_never_closes_it():
+    """The owner, 2026-10-27: a starter chip pressed inside the open Guide
+    ("How do I change the widgets?") shut the panel, since `openHelpChat`
+    had become a toggle and the chip opens before it asks. Measured
+    (scratchpad guidechip.js): after, the panel stays with the answer, and
+    the status button still opens and closes it."""
+    js = (ROOT / "frontend/js/help-chat.js").read_text(encoding="utf-8")
+    body = js[js.index("function openHelpChat() {"):]
+    body = body[: body.index("helpChatHome = {")]
+    assert "if (document.querySelector('[data-sheet=\"guide\"]')) return null;" in body
+    assert "helpChatSheetClose" not in body
+    toggle = js[js.index("function toggleHelpChat() {"):]
+    assert "helpChatSheetClose?.();" in toggle[: toggle.index("\n}\n")]
+    wiring = (ROOT / "frontend/js/wiring.js").read_text(encoding="utf-8")
+    assert '$("status-guide")?.addEventListener("click", () => {\n  toggleHelpChat();' in wiring

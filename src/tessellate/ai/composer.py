@@ -3974,12 +3974,17 @@ def help_line(question: str, topics: list[dict]) -> tuple[str, str] | None:
     #: Two content words side by side in the question and the sentence are
     #: the control's name ("back up", "hide unlinked"): half a word more.
     pairs = _help_pairs(question)
+    doing = {verb, *_HELP_DOING.get(verb, ())} if verb else set()
 
     def shared(line: str) -> float:
         #: A word and its longer form ("remind", "reminder") are one word here;
         #: a verb of the same doing ("make" for "set") is half a word (INBOX
         #: 787: "how do I make a reminder" led with how the tab is laid out).
-        have = set(_words(line))
+        #: The doing asked in a past form describes, it does not instruct:
+        #: "how do I change the widgets" led with the Dashboard's inventory
+        #: sentence, on "what changed" and "edited" (the owner, 2026-10-27),
+        #: over the one that says how ("Edit layout and Widgets").
+        have = {_stem(w) for w in query_understanding.search_terms(line) if not (w.endswith("ed") and any(d.startswith(_stem(w)) for d in doing))}
         def one(w: str, h: str) -> bool:
             return h == w or (min(len(h), len(w)) >= 5 and (h.startswith(w) or w.startswith(h)))
 

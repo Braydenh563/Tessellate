@@ -2150,7 +2150,7 @@ const LAZY_ENTRY_POINTS = {
   atlasMotion: ["atlasBlinkStart", "atlasRigAttach", "atlasRigWake"],
   companionMenu: ["nameMarkBuddyMenu", "openNameMarkViewer", "mountBuddyPresets"],
   //: Opened, asked or drawn for their effect; `openHelpChat`'s close is read by no caller.
-  helpChat: ["openHelpChat", "askAtlas", "renderAtlasStarters"],
+  helpChat: ["openHelpChat", "toggleHelpChat", "askAtlas", "renderAtlasStarters"],
   batchSpace: ["batchMoveToSpace"],
   notifications: ["openNotifications"],
   sharedIntake: ["takeSharedIntake"],
