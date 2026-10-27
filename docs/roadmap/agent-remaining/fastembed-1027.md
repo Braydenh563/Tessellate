@@ -1,0 +1,17 @@
+# fastembed-1027: search by meaning on fastembed (the owner, 2026-10-27)
+
+"Replace sentence-transformers + torch with fastembed (onnxruntime) for search by meaning, keeping the same model family (BAAI/bge-small-en-v1.5; fastembed's ONNX build of it)."
+
+Scratch (session scratchpad): `fe-venv` (fastembed 0.9.1 and the app's deps), `st-venv` (torch CPU and sentence-transformers), `fe-scripts/` (embed2.py, st_vectors.py, custom.py, native.py, rss.py).
+
+## Done
+- Engine: `ai/embeddings.py` loads `fastembed.TextEmbedding` from the snapshot folder (`specific_model_path`, offline), threads at load; `core/embedmodels.py` `OnnxBuild` per catalogue row (fastembed's own sources), `fetch` downloads only the ONNX build; `embedfind` needs an ONNX export; `hub_refusal` split (`_format_refusal`).
+- Persisted values: backend "sentence-transformers" reads as "fastembed" (`embedmodels.backend_name`); migration `f1b3c5d7e9a2` renames stored vectors, so no re-embed.
+- Measured: wheels 57 MB (Linux, py3.13), model 66 MB, RSS +244 MB loaded (+315 after long notes), cosine torch vs fastembed 0.9999987 min over 8 texts, one embed 13.7 ms vs 257 ms.
+
+## Left
+- Not run: the app end to end with fastembed (consent, download, embed, search) in a browser.
+- Old torch-format folders (`models--BAAI--bge-small-en-v1.5`, safetensors) stay on disk; Remove deletes only the ONNX build's folder (`embedmodels.remove`).
+- A model chosen from this computer with PyTorch weights only now reads as the default; its renamed vectors are stranded until a switch (`model_manager.embedding_st_model`).
+- nomic-embed-text-v1.5 is native in fastembed and could be one press (embedmodels.py nomic row, why_not).
+- Qwen3 and bge-m3 builds untested for real; `scripts/system_site_packages.py` still checks torch, which the app no longer uses.

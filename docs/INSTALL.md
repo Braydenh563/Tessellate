@@ -39,7 +39,7 @@ Packages shows the desktop window as installed but no tray icon appears,
 reinstall that package from the same pane.
 
 **Optional packages.** The installer's last page offers three boxes: search by
-meaning (about 2 GB), voice notes, and document import with scanned-PDF
+meaning (about 130 MB), voice notes, and document import with scanned-PDF
 reading and Word export. All are optional, and each can be installed or
 removed later from **Settings, Packages**. Setup finishes at once and does
 not wait on them: the app downloads the ones you ticked the first time it
@@ -148,12 +148,12 @@ Next time:    open a terminal there and run ./start.sh again
 **A first install needs the internet once.** The first setup downloads the packages you chose; after that Tessellate works offline. Search by meaning is a separate download that waits for your yes.
 
 **Search by meaning asks before it downloads.** The built-in search model
-(filing and search by meaning) needs `sentence-transformers`, which the
-launcher installs with the other requirements. A packaged Windows or Linux app
-asks once, the first time a saved note needs it (Download or No thanks); after
-a yes it installs it itself: a one-time download of about 2 GB (the package,
-and on Windows torch with it, plus the model from huggingface.co) that needs
-the internet and can take several minutes. Settings, Search and index,
+(filing and search by meaning) needs `fastembed`, which the launcher
+installs with the other requirements. A packaged Windows or Linux app asks
+once, the first time a saved note needs it (Download or No thanks); after a
+yes it installs it itself: a one-time download of about 130 MB (the package
+with ONNX Runtime, plus the model from huggingface.co) that needs the
+internet. Settings, Search and index,
 Download search by meaning turns it on later, and Settings, Background tasks
 shows it running; until then search uses keywords. To avoid it, install [Ollama](https://ollama.com), run
 `ollama pull nomic-embed-text`, and pick that model under Ollama embedding
@@ -247,7 +247,7 @@ For a server or a NAS. From the repository root, `TESSELLATE_FIRST_PASSWORD=choo
 - Two volumes: `/data` (database, files, certificate, backups) and `/models` (downloaded models), so resetting a notebook never downloads a model again.
 - The compose file publishes the port on the host's loopback only. For other devices, put a reverse proxy with TLS in front.
 - Behind a reverse proxy, set `TESSELLATE_ALLOWED_HOSTS` to the public name it forwards (`memory.example.com`; several are comma-separated, names only). Without it the app answers 421 to a Host that is not the container's own. A page on that name, on port 443 or 80, is then treated as the app's own page.
-- The default image has no torch (about 400 MB on disk): search by keyword and an Ollama embedder on the host (`OLLAMA_URL`). `--build-arg WITH_EMBEDDER=1` adds the built-in search model and CPU torch (about 1.6 GB).
+- The default image has no built-in search engine (about 400 MB on disk): search by keyword and an Ollama embedder on the host (`OLLAMA_URL`). `--build-arg WITH_EMBEDDER=1` adds fastembed and ONNX Runtime (about 120 MB more); the model downloads after a yes in the app.
 - What a container cannot do: the desktop window and tray, native file dialogs, the Start menu shortcuts and Repair, and the "Allow other devices" switch (use the port mapping instead).
 - Not built in the sandbox it was written in (no Docker daemon, needs device); `tests/test_docker_files.py` reads the files as text. Report what the first build says.
 

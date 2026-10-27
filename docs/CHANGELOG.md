@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Search by meaning runs on fastembed (ONNX Runtime) instead of sentence-transformers and PyTorch, with the same BAAI models. The one-time download is about 130 MB where it was about 2 GB (57 MB of packages, a 66 MB model), the engine holds about 300 MB of memory where it held 650, and one note embeds in 14 ms where it took 257 (measured here). Vectors are unchanged (cosine 0.999999 between the two engines for one text), so existing notes are renamed to the new engine by migration f1b3c5d7e9a2 and none is embedded again; a saved "sentence-transformers" setting reads as the new engine. A model chosen from this computer or typed by name needs an ONNX export now; one with PyTorch weights only says so.
 - Fixes: "how do I make a reminder" leads with Magic add again; every hello invite says what to ask; the packaged builds install certifi; the reminder offer leaves past times to the date reader; a failed new-tab link says why, with Try again.
 - Security: certifi is held at 2026.10.23 or newer, the first CA bundle without the eight compromised eMudhra CAs (distrusted by Chrome and Mozilla, 19 to 20 October 2026). Web search, model downloads and extras installs verify HTTPS against it.
 - Reminders: the reminder phrase reader moved beside the parser, so the chat suggestion no longer forms an import cycle with the routes.

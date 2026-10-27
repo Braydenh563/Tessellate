@@ -3,22 +3,22 @@
 # from a venv measured with pip. Build from the repo root:
 #   docker build -f docker/Dockerfile -t memorymap .
 #
-# Two variants from one file: the default has no torch (the deterministic
-# engine, FTS5 search, an Ollama embedder on the host); --build-arg
-# WITH_EMBEDDER=1 adds sentence-transformers and CPU torch (about +1.1 GB).
+# Two variants from one file: the default has no built-in search model (the
+# deterministic engine, FTS5 search, an Ollama embedder on the host);
+# --build-arg WITH_EMBEDDER=1 adds fastembed and ONNX Runtime (about +120 MB
+# installed; the model itself, 67 MB, downloads after a yes in the app).
 FROM python:3.13-slim AS build
 ARG WITH_EMBEDDER=0
 ENV PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
 WORKDIR /app
 COPY requirements.txt pyproject.toml ./
-# requirements.txt lists sentence-transformers, which pulls torch. The default
-# image filters it out; the embedder build keeps it and takes the CPU wheels.
+# requirements.txt lists fastembed, which pulls ONNX Runtime. The default
+# image filters it out; the embedder build keeps it.
 RUN python -m venv /venv \
  && if [ "$WITH_EMBEDDER" = "1" ]; then \
-      /venv/bin/pip install --extra-index-url https://download.pytorch.org/whl/cpu torch \
-      && /venv/bin/pip install -r requirements.txt; \
+      /venv/bin/pip install -r requirements.txt; \
     else \
-      grep -vE '^(sentence-transformers|pytest|httpx|torch)' requirements.txt > /tmp/req.txt \
+      grep -vE '^(fastembed|pytest|httpx)' requirements.txt > /tmp/req.txt \
       && /venv/bin/pip install -r /tmp/req.txt; \
     fi
 COPY src ./src
@@ -41,7 +41,6 @@ ENV PATH=/venv/bin:$PATH \
     PYTHONPATH=/app/src \
     TESSELLATE_DATA_DIR=/data \
     HF_HOME=/models/hf \
-    SENTENCE_TRANSFORMERS_HOME=/models/hf \
     OLLAMA_URL=http://host.docker.internal:11434
 VOLUME ["/data", "/models"]
 EXPOSE 8000 8443

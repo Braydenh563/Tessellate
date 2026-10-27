@@ -6,7 +6,6 @@ rows say "Files missing" with Reinstall."""
 
 from __future__ import annotations
 
-import json
 import sys
 import types
 from pathlib import Path
@@ -15,9 +14,12 @@ import pytest
 
 from tessellate.ai import embeddings
 from tessellate.core import embedmodels
+from tests import _fake_fastembed as fake
 
-BGE = "BAAI/bge-small-en-v1.5"
-WEIGHT_BYTES = 120 * 1024 * 1024  # sparse on disk, so the test costs nothing
+BGE = fake.BGE
+WEIGHT_BYTES = fake.WEIGHT_BYTES  # sparse on disk, so the test costs nothing
+#: bge's ONNX build's cache folder (`OnnxBuild.source`).
+FOLDER = "models--Qdrant--bge-small-en-v1.5-onnx-Q"
 
 
 @pytest.fixture(autouse=True)
@@ -30,38 +32,7 @@ def _clean(tmp_path, monkeypatch):
 
 def _cache(tmp_path: Path, repo: str = BGE, *, weights: int | None = WEIGHT_BYTES, skip: tuple[str, ...] = ()) -> Path:
     """A snapshot laid out as the hub writes it: blobs behind symlinks."""
-    root = tmp_path / "hub" / ("models--" + repo.replace("/", "--"))
-    snap = root / "snapshots" / "abc123"
-    blobs = root / "blobs"
-    snap.mkdir(parents=True)
-    blobs.mkdir(parents=True)
-    files = {
-        #: bge's real modules.json: a Transformer, a Pooling and a Normalize
-        #: whose folder the hub does not hold (found on a real cache).
-        "modules.json": json.dumps(
-            [
-                {"idx": 0, "name": "0", "path": "", "type": "sentence_transformers.models.Transformer"},
-                {"idx": 1, "name": "1", "path": "1_Pooling", "type": "sentence_transformers.models.Pooling"},
-                {"idx": 2, "name": "2", "path": "2_Normalize", "type": "sentence_transformers.models.Normalize"},
-            ]
-        ),
-        "config.json": "{}",
-        "tokenizer.json": "{}",
-        "1_Pooling/config.json": "{}",
-    }
-    for name, text in files.items():
-        if name in skip:
-            continue
-        blob = blobs / (name.replace("/", "_") + "-blob")
-        blob.write_text(text)
-        (snap / name).parent.mkdir(parents=True, exist_ok=True)
-        (snap / name).symlink_to(blob)
-    if weights is not None and "model.safetensors" not in skip:
-        blob = blobs / "weights-blob"
-        with blob.open("wb") as handle:
-            handle.truncate(weights)
-        (snap / "model.safetensors").symlink_to(blob)
-    return root
+    return fake.snapshot(tmp_path / "hub", repo, weights=weights, skip=skip)
 
 
 def test_a_complete_cache_is_complete(tmp_path):
@@ -75,7 +46,7 @@ def test_no_folder_is_absent(tmp_path):
 
 
 def test_an_empty_folder_is_not_installed(tmp_path):
-    (tmp_path / "hub" / "models--BAAI--bge-small-en-v1.5").mkdir(parents=True)
+    (tmp_path / "hub" / FOLDER).mkdir(parents=True)
     health = embedmodels.cache_health(BGE)
     assert health["state"] == "incomplete"
     assert "model weights" in health["missing"]
@@ -85,12 +56,13 @@ def test_an_empty_folder_is_not_installed(tmp_path):
 
 @pytest.mark.parametrize(
     "skipped, word",
+    #: What fastembed reads: the config, the tokenizer and the ONNX file.
+    #: (sentence-transformers' modules.json and Pooling config were the old
+    #: engine's; the ONNX build has none.)
     [
-        ("modules.json", "modules.json"),
         ("config.json", "config.json"),
         ("tokenizer.json", "tokenizer"),
-        ("1_Pooling/config.json", "1_Pooling/config.json"),
-        ("model.safetensors", "model weights"),
+        ("model weights", "model weights"),
     ],
 )
 def test_each_missing_required_file_is_named(tmp_path, skipped, word):
@@ -126,8 +98,19 @@ def test_a_model_outside_the_catalogue_needs_only_non_empty_weights(tmp_path):
     assert embedmodels.cache_health(repo)["state"] == "complete"
 
 
+def test_split_onnx_weights_are_part_of_the_model(tmp_path):
+    """An export too big for one file keeps its weights beside it
+    (`model.onnx_data`); without that file the model will not open."""
+    repo = "Qwen/Qwen3-Embedding-0.6B"
+    _cache(tmp_path, repo, weights=3 * 1024**3)
+    assert embedmodels.cache_health(repo)["state"] == "complete"
+    (tmp_path / "hub").joinpath("models--Qdrant--Qwen3-Embedding-0.6B-onnx", "snapshots", "abc123", "onnx", "model.onnx_data").unlink()
+    health = embedmodels.cache_health(repo)
+    assert health["state"] == "incomplete" and "onnx/model.onnx_data" in health["missing"]
+
+
 def test_the_choices_list_marks_a_partial_cache_not_downloaded(client, tmp_path):
-    (tmp_path / "hub" / "models--BAAI--bge-small-en-v1.5").mkdir(parents=True)
+    (tmp_path / "hub" / FOLDER).mkdir(parents=True)
     rows = client.get("/embedding-models/choices").json()["choices"]
     bge = next(r for r in rows if r["id"] == "bge-small")
     assert bge["downloaded"] is False and bge["files_missing"] is True
@@ -136,42 +119,32 @@ def test_the_choices_list_marks_a_partial_cache_not_downloaded(client, tmp_path)
 # -- loading --------------------------------------------------------------------
 
 
-class _FakeST:
-    calls: list[bool] = []
-
-    def __init__(self, name, local_files_only=False):  # noqa: ANN001
-        type(self).calls.append(bool(local_files_only))
-        raise OSError("cache incomplete")
-
-
 @pytest.fixture
-def fake_st(monkeypatch):
-    module = types.ModuleType("sentence_transformers")
-    module.SentenceTransformer = _FakeST
-    monkeypatch.setitem(sys.modules, "sentence_transformers", module)
-    _FakeST.calls = []
-    return _FakeST
+def fetched(monkeypatch, tmp_path):
+    """The engine, and every online fetch recorded (there should be none)."""
+    fake.install(monkeypatch).local_works = False
+    return fake.fake_fetch(monkeypatch, tmp_path / "hub")
 
 
 def _service():
     return embeddings.EmbeddingService.__new__(embeddings.EmbeddingService)
 
 
-def test_an_incomplete_cache_is_repaired_as_a_visible_task_not_inline(fake_st, tmp_path, monkeypatch):
-    (tmp_path / "hub" / "models--BAAI--bge-small-en-v1.5").mkdir(parents=True)
+def test_an_incomplete_cache_is_repaired_as_a_visible_task_not_inline(fetched, tmp_path, monkeypatch):
+    (tmp_path / "hub" / FOLDER).mkdir(parents=True)
     spawned = []
     monkeypatch.setattr(embedmodels, "_spawn_download", lambda model: spawned.append(model.id))
     monkeypatch.setattr(embedmodels, "can_download", lambda: True)
     with pytest.raises(embeddings.EmbeddingCacheBroken, match="repaired"):
-        _service()._load_st_model()
-    assert fake_st.calls == [True]  # no hidden online fetch
+        _service()._load_builtin_model()
+    assert fetched == []  # no hidden online fetch
     assert spawned == ["bge-small"]
     state = embedmodels.current()
     assert state.running and state.repair is True
 
 
 def test_the_repair_row_in_the_task_list_says_fixing_search_by_meaning(client, tmp_path, monkeypatch):
-    (tmp_path / "hub" / "models--BAAI--bge-small-en-v1.5").mkdir(parents=True)
+    (tmp_path / "hub" / FOLDER).mkdir(parents=True)
     monkeypatch.setattr(embedmodels, "_spawn_download", lambda model: None)
     monkeypatch.setattr(embedmodels, "can_download", lambda: True)
     started, _ = embedmodels.repair(BGE)
@@ -197,16 +170,16 @@ def test_a_repair_never_touches_a_complete_cache(tmp_path, monkeypatch):
     assert started is False and (root / "snapshots").exists()
 
 
-def test_with_automatic_installs_off_an_incomplete_cache_is_left_for_reinstall(fake_st, tmp_path, monkeypatch):
-    (tmp_path / "hub" / "models--BAAI--bge-small-en-v1.5").mkdir(parents=True)
+def test_with_automatic_installs_off_an_incomplete_cache_is_left_for_reinstall(fetched, tmp_path, monkeypatch):
+    (tmp_path / "hub" / FOLDER).mkdir(parents=True)
     spawned = []
     monkeypatch.setattr(embedmodels, "_spawn_download", lambda model: spawned.append(model.id))
     monkeypatch.setattr(embedmodels, "can_download", lambda: True)
     service = _service()
     service._models = types.SimpleNamespace(_config=types.SimpleNamespace(get_preference=lambda key, default=None: False))
     with pytest.raises(embeddings.EmbeddingCacheBroken, match="Reinstall"):
-        service._load_st_model()
-    assert spawned == []
+        service._load_builtin_model()
+    assert spawned == [] and fetched == []
 
 
 def test_finishing_the_repair_lets_the_model_load_again(tmp_path, monkeypatch):
@@ -214,7 +187,7 @@ def test_finishing_the_repair_lets_the_model_load_again(tmp_path, monkeypatch):
     returns without waiting out the retry interval or a restart."""
     called = []
     embedmodels.on_download_finished(lambda repo: called.append(repo))
-    sys.modules["huggingface_hub"] = types.SimpleNamespace(snapshot_download=lambda repo_id: _cache(tmp_path))
+    sys.modules["huggingface_hub"] = types.SimpleNamespace(snapshot_download=lambda **kwargs: _cache(tmp_path))
     try:
         embedmodels._begin_download(embedmodels.EMBED_MODELS_BY_ID["bge-small"])
         import time
@@ -262,17 +235,17 @@ def test_a_whole_model_in_use_is_not_deleted_by_reinstall(tmp_path, monkeypatch,
     assert (root / "snapshots").exists()
 
 
-def test_a_process_fixes_an_incomplete_cache_twice_and_then_asks_the_person(fake_st, tmp_path, monkeypatch):
+def test_a_process_fixes_an_incomplete_cache_twice_and_then_asks_the_person(fetched, tmp_path, monkeypatch):
     """The owner: ask only after two failed fixes. Each failed fix leaves the
     folder incomplete; the third load says Reinstall and starts nothing."""
-    (tmp_path / "hub" / "models--BAAI--bge-small-en-v1.5").mkdir(parents=True)
+    (tmp_path / "hub" / FOLDER).mkdir(parents=True)
     spawned = []
     monkeypatch.setattr(embedmodels, "_spawn_download", lambda model: spawned.append(model.id))
     monkeypatch.setattr(embedmodels, "can_download", lambda: True)
     service = _service()
     for expected in ("repaired", "repaired", "Reinstall"):
         embedmodels.reset_for_tests()  # the previous fix has ended, unsuccessfully
-        (tmp_path / "hub" / "models--BAAI--bge-small-en-v1.5").mkdir(parents=True, exist_ok=True)
+        (tmp_path / "hub" / FOLDER).mkdir(parents=True, exist_ok=True)
         with pytest.raises(embeddings.EmbeddingCacheBroken, match=expected):
-            service._load_st_model()
-    assert spawned == ["bge-small", "bge-small"]
+            service._load_builtin_model()
+    assert spawned == ["bge-small", "bge-small"] and fetched == []

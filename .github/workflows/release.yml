@@ -144,13 +144,11 @@ jobs:
           python-version: "3.13"
 
       - name: Install build dependencies
-        # The base app's own deps, minus sentence-transformers/torch:
-        # Settings -> Packages already treats semantic search as an
-        # optional install fetched after the app is running (core/extras.py
-        # id="semantic"), same as voice dictation and the desktop window
-        # itself — bundling a torch download into the base installer would
-        # be inconsistent with that and a few hundred MB for a feature this
-        # build already has a working path to install on demand.
+        # The base app's own deps, minus fastembed: Settings -> Packages
+        # treats search by meaning as an optional install fetched after the
+        # app is running (core/extras.py id="semantic"), same as voice
+        # dictation and the desktop window itself, so the installer stays
+        # small and ONNX Runtime's native libraries stay out of the freeze.
         shell: bash
         run: |
           python -m pip install --upgrade pip
@@ -264,8 +262,8 @@ jobs:
             python3-gi python3-gi-cairo gir1.2-gtk-3.0 gir1.2-webkit2-4.1
 
       - name: Install build dependencies
-        # Same trimmed set as the Windows job (no sentence-transformers/
-        # torch — see that job's own comment) and no pystray/Pillow: this
+        # Same trimmed set as the Windows job (no fastembed, see that
+        # job's own comment) and no pystray/Pillow: this
         # build ships without a system tray, see packaging/linux/
         # tessellate.spec's own comment for why.
         run: |

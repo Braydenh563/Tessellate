@@ -5,8 +5,9 @@ section and then pull in a model that is typed in the box if it exists??
 like from ollama or huggingface."
 
 Pull a model by name: a Hugging Face repo (owner/name) is checked against the
-Hub's metadata on the click, and only a sentence-transformers model with an
-open licence and no code of its own is fetched; an Ollama name goes through
+Hub's metadata on the click, and only an embedding model with an ONNX export
+and its tokenizer (what fastembed runs), an open licence and no code of its
+own is fetched; an Ollama name goes through
 Ollama's own pull. The network is mocked throughout.
 """
 
@@ -41,7 +42,13 @@ def _hub(monkeypatch, answer):
 
 _GOOD = {
     "id": "thenlper/gte-small",
-    "siblings": [{"rfilename": "modules.json"}, {"rfilename": "model.safetensors"}, {"rfilename": "config.json"}],
+    "siblings": [
+        {"rfilename": "modules.json"},
+        {"rfilename": "model.safetensors"},
+        {"rfilename": "config.json"},
+        {"rfilename": "onnx/model.onnx"},
+        {"rfilename": "tokenizer.json"},
+    ],
     "tags": ["sentence-transformers", "license:mit"],
     "cardData": {"license": "mit"},
     "gated": False,
@@ -69,6 +76,8 @@ def test_a_good_hub_model_is_fetched_as_a_background_download(ai_client, monkeyp
     assert body["started"] is True, body
     assert calls == ["thenlper/gte-small"]
     assert [model.repo for model in _clean] == ["thenlper/gte-small"]
+    #: Only the export the engine runs is fetched, never the PyTorch weights.
+    assert _clean[0].onnx.model_file == "onnx/model.onnx" and _clean[0].onnx.extra_files == ()
     row = next(t for t in ai_client.get("/tasks").json()["tasks"] if t["kind"] == "embedding-model")
     assert row["label"] == "Downloading thenlper/gte-small"
 
@@ -78,7 +87,9 @@ def test_a_good_hub_model_is_fetched_as_a_background_download(ai_client, monkeyp
     [
         (None, "No model called"),
         ({**_GOOD, "siblings": [{"rfilename": "model.gguf"}]}, "GGUF"),
-        ({**_GOOD, "siblings": [{"rfilename": "model.safetensors"}, {"rfilename": "config.json"}]}, "sentence-transformers"),
+        ({**_GOOD, "siblings": [{"rfilename": "model.safetensors"}, {"rfilename": "config.json"}], "tags": ["license:mit"]}, "embedding model"),
+        #: PyTorch weights only: the engine runs ONNX exports.
+        ({**_GOOD, "siblings": [{"rfilename": "modules.json"}, {"rfilename": "model.safetensors"}, {"rfilename": "tokenizer.json"}]}, "ONNX"),
         ({**_GOOD, "tags": ["custom_code", "license:mit"]}, "code"),
         ({**_GOOD, "gated": "manual"}, "terms"),
         ({**_GOOD, "cardData": {"license": "cc-by-nc-4.0"}, "tags": []}, "cc-by-nc-4.0"),
@@ -123,11 +134,11 @@ def test_listing_the_choices_never_touches_the_network(ai_client, monkeypatch):
 
 def test_the_model_in_use_cannot_be_uninstalled(app_state, tmp_path, monkeypatch):
     monkeypatch.setenv("HF_HUB_CACHE", str(tmp_path))
-    (tmp_path / "models--BAAI--bge-small-en-v1.5").mkdir()
+    (tmp_path / "models--Qdrant--bge-small-en-v1.5-onnx-Q").mkdir()
     assert deps.get_model_manager().embedding_st_model() == "BAAI/bge-small-en-v1.5"
     removed, message = embedmodels.remove("bge-small")
     assert removed is False and "in use" in message
-    assert (tmp_path / "models--BAAI--bge-small-en-v1.5").is_dir()
+    assert (tmp_path / "models--Qdrant--bge-small-en-v1.5-onnx-Q").is_dir()
 
 
 def test_hub_metadata_asks_through_huggingface_hub_and_refuses_a_bad_id(monkeypatch):

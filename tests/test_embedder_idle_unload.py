@@ -27,7 +27,7 @@ def test_the_model_is_kept_inside_the_idle_window_and_dropped_after_it():
 def test_an_unloaded_model_still_counts_as_ready():
     service = _service()
     service.unload_if_idle(now=1000.0 + 3700)
-    service._models.embedding_backend = lambda: "sentence-transformers"
+    service._models.embedding_backend = lambda: "fastembed"
     assert service.is_ready() is True
 
 

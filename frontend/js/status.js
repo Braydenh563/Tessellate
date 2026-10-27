@@ -1795,11 +1795,10 @@ function resetStatusCadence() {
 }
 
 // The Ollama embedding model offered as a one-click fallback when the
-// built-in (sentence-transformers) engine can't load: asked for directly,
-// after a real support-bundle report: the built-in engine needs
-// sentence-transformers, which isn't bundled (see CLAUDE.md/requirements.txt
-//, installing it has broken past sessions, and a packaged Windows build
-// excludes torch on purpose), so a fresh install with no working Python on
+// built-in (fastembed) engine can't load: asked for directly, after a real
+// support-bundle report: the built-in engine needs fastembed, which isn't
+// bundled (a packaged build excludes it on purpose, see
+// packaging/windows/tessellate.spec), so a fresh install with no working Python on
 // PATH for Settings -> Packages to fall back to has no way to make the
 // built-in engine work at all. nomic-embed-text: small, well-known, and
 // exactly what Settings -> Models' own "quick fix" sentence already named

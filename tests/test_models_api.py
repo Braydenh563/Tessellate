@@ -30,7 +30,7 @@ def test_status_with_all_ai_down(client):
     assert body["installed_models"] == []
     assert body["chat_model"] == "llama3.2"
     assert body["chat_model_installed"] is None  # unknown while Ollama is off
-    assert body["embedding_backend"] == "sentence-transformers"
+    assert body["embedding_backend"] == "fastembed"
     assert body["embedding_ready"] is False
     assert body["pulls"] == {}
 
@@ -61,7 +61,7 @@ def test_embedding_failure_is_recorded_not_swallowed(app_state, monkeypatch):
     def boom():
         raise RuntimeError("no embedding model available (forced for test)")
 
-    monkeypatch.setattr(service, "_load_st_model", boom)
+    monkeypatch.setattr(service, "_load_builtin_model", boom)
     assert service.embed_text("hello") is None
     assert service.last_error is not None
     assert service.is_ready() is False

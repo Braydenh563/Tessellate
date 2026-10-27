@@ -115,7 +115,7 @@ def test_a_running_download_appears_in_the_shared_task_list(client, monkeypatch)
 def test_a_failed_download_is_recorded_in_task_history(monkeypatch):
     taskhistory.clear()
 
-    def _boom(repo_id):
+    def _boom(repo_id, **kwargs):
         raise ValueError("Repository Not Found for url")
 
     import sys
@@ -176,11 +176,11 @@ def test_the_size_on_disk_ignores_the_cache_symlinks(tmp_path, monkeypatch):
     so a walk that follows them reports twice the real size, and this screen
     exists to tell the truth about disk."""
     monkeypatch.setattr(embedmodels, "cache_root", lambda: tmp_path)
-    blobs = tmp_path / "models--BAAI--bge-small-en-v1.5" / "blobs"
+    blobs = tmp_path / "models--Qdrant--bge-small-en-v1.5-onnx-Q" / "blobs"
     blobs.mkdir(parents=True)
     real = blobs / "weights"
     real.write_bytes(b"x" * 2048)
-    snap = tmp_path / "models--BAAI--bge-small-en-v1.5" / "snapshots" / "abc"
+    snap = tmp_path / "models--Qdrant--bge-small-en-v1.5-onnx-Q" / "snapshots" / "abc"
     snap.mkdir(parents=True)
     (snap / "weights").symlink_to(real)
     row = next(m for m in embedmodels.status() if m["id"] == "bge-small")
@@ -198,12 +198,12 @@ def test_the_size_on_disk_counts_weights_kept_in_a_shared_blob_store(tmp_path, m
     shared.mkdir(parents=True)
     weights = shared / "abc123"
     weights.write_bytes(b"x" * (3 * 1024 * 1024))
-    model = tmp_path / "models--BAAI--bge-small-en-v1.5"
+    model = tmp_path / "models--Qdrant--bge-small-en-v1.5-onnx-Q"
     (model / "blobs").mkdir(parents=True)
     (model / "blobs" / "abc123").symlink_to(weights)
     snap = model / "snapshots" / "abc"
     snap.mkdir(parents=True)
-    (snap / "model.safetensors").symlink_to(weights)
+    (snap / "model_optimized.onnx").symlink_to(weights)
     (snap / "config.json").write_text("{}", encoding="utf-8")
     assert embedmodels.disk_size_of("BAAI/bge-small-en-v1.5") == "3 MB"
 
@@ -216,7 +216,7 @@ def test_a_dropped_connection_is_retried_and_then_explained(monkeypatch):
     since the last completed file rather than starting again."""
     calls = []
 
-    def _boom(repo_id):
+    def _boom(repo_id, **kwargs):
         calls.append(repo_id)
         raise OSError("[WinError 10054] An existing connection was forcibly closed")
 
@@ -240,7 +240,7 @@ def test_a_failure_that_is_not_the_network_is_not_retried(monkeypatch):
     the real reason under two identical attempts."""
     calls = []
 
-    def _boom(repo_id):
+    def _boom(repo_id, **kwargs):
         calls.append(repo_id)
         raise ValueError("Repository Not Found for url")
 

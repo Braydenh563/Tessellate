@@ -149,9 +149,10 @@ def test_the_windows_build_carries_the_time_zone_database():
 
 # --- the build installs what the app imports ---------------------------------
 
-#: In requirements.txt and deliberately not in a packaged build: the two
-#: optional-install giants (Settings > Packages fetches them) and the test tools.
-NOT_BUNDLED = {"sentence-transformers", "torch", "pytest", "httpx", "pytest-xdist"}
+#: In requirements.txt and deliberately not in a packaged build: search by
+#: meaning's engine (an optional install Settings > Packages fetches; it was
+#: sentence-transformers and torch until 2026-10-27) and the test tools.
+NOT_BUNDLED = {"fastembed", "pytest", "httpx", "pytest-xdist"}
 
 
 def _runtime_requirements() -> set[str]:

@@ -3495,7 +3495,7 @@ $("log-level").addEventListener("change", renderActiveLogView);
 $("log-requests").addEventListener("change", renderActiveLogView);
 //: **A finished task's log** (Background tasks' history, its Logs button):
 //: Logs, with the filter set to the most particular words the row has, the
-//: package or model in its brackets ("sentence-transformers"), else the
+//: package or model in its brackets ("fastembed"), else the
 //: model it names, else its label. A log line names what it worked on, not
 //: the sentence the row says, so the brackets are tried first.
 function taskLogButton(item) {

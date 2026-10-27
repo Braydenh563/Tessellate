@@ -39,7 +39,9 @@ class ChatModelBody(BaseModel):
 
 
 class EmbeddingBackendBody(BaseModel):
-    backend: Literal["sentence-transformers", "ollama"]
+    #: "sentence-transformers" is the engine's name before fastembed, still
+    #: taken from a page or script that has not reloaded, and read as fastembed.
+    backend: Literal["fastembed", "sentence-transformers", "ollama"]
     model: str | None = None  # required when backend == "ollama"
 
 
@@ -496,9 +498,9 @@ def status(session: Session = Depends(get_session)) -> dict:
         # screenshot, 0.3.31: "Built-in (recommended): mxbai-embed-large").
         "builtin_embedding_model": embeddings_module.DEFAULT_ST_MODEL,
         # Whether the built-in model's package is here, and whether the
-        # one-time install of it is running: the app installs
-        # sentence-transformers by itself the first time the built-in model
-        # is needed, and said so only in the log.
+        # one-time install of it is running: the app installs fastembed by
+        # itself the first time the built-in model is needed (after a yes),
+        # and said so only in the log.
         **_builtin_embedding_install_state(),
         "embedding_ready": embeddings.is_ready(),
         # Lets the UI tell "still loading" from "failed" (pill fix).
@@ -1021,10 +1023,10 @@ def set_embedding_backend(
 
     # Switching backend is a fresh start: drop any cached failure so the
     # switch retries right away and the stale error banner clears at once
-    # instead of lingering for the retry-cooldown (bug: a fixed torch/Ollama
+    # instead of lingering for the retry-cooldown (bug: a fixed install/Ollama
     # still showed the old "search engine problem" until the cooldown lapsed).
     deps.get_embeddings().reset_failure_state()
-    started, message = embedswitch.start(body.backend, model)
+    started, message = embedswitch.start(embedmodels.backend_name(body.backend), model)
     log_action(
         session,
         "edited",

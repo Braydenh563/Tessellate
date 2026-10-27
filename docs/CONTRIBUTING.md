@@ -38,8 +38,8 @@ pip install -e .            # editable install, do not forget the dot
 Run the app with `python -m tessellate` and open <http://localhost:8000>, or use
 `./start.sh` (`start.bat` on Windows), which does all of the above.
 
-`requirements.txt` includes `sentence-transformers`, which brings PyTorch (about
-2 GB). The test suite fakes every embedding and does not need it. If you only want
+`requirements.txt` includes `fastembed`, which brings ONNX Runtime (about
+60 MB). The test suite fakes every embedding and does not need it. If you only want
 to run the tests, install the packages by hand, as `CLAUDE.md` section 7 lists them.
 
 ## Before you open a PR

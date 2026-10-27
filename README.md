@@ -368,8 +368,8 @@ version for first-time terminal users.
 **A first install needs the internet once.** The first setup downloads the packages you chose; after that Tessellate works offline. Search by meaning is a separate download that waits for your yes.
 
 **Search by meaning asks before it downloads.** Search and filing by meaning
-use a built-in model that needs the `sentence-transformers` package and a small
-model from huggingface.co: about 2 GB, once, and several minutes. Nothing is
+use a built-in model that needs the `fastembed` package (ONNX Runtime, no
+PyTorch) and a small model from huggingface.co: about 130 MB, once. Nothing is
 fetched until you say yes. The first saved note offers it once (Download or No
 thanks), and Settings, Search and index, Download search by meaning turns it on
 later; until then search uses keywords. To avoid the download, pull
@@ -386,7 +386,7 @@ later; until then search uses keywords. To avoid the download, pull
 
 | Extra | What it adds |
 | --- | --- |
-| Search by meaning (sentence-transformers) | Matching ideas rather than words; about 2 GB with torch |
+| Search by meaning (fastembed) | Matching ideas rather than words; about 60 MB, plus a 67 MB model |
 | Voice notes (faster-whisper) | Local dictation for the microphone buttons |
 | Desktop window (pywebview) | The app in its own window, and a tray icon on Windows |
 | Import documents (markitdown) | PDF, Word and slide decks become notes |

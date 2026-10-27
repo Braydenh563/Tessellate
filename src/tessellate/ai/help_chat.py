@@ -1176,7 +1176,7 @@ HELP_TOPICS.extend(
             "body": (
                 "If the app feels slow, turn on Performance mode in Settings, "
                 "Appearance: it switches off the glass, the background art and most "
-                "animation. The built-in search engine uses about 650 MB of memory "
+                "animation. The built-in search engine uses about 300 MB of memory "
                 "while the app is open; choosing Ollama's nomic-embed-text for "
                 "embeddings in Settings, Search and index keeps Tessellate itself near 100 MB."
             ),

@@ -6,13 +6,11 @@ answer is the reason this file is small:
 > *"the embedding model doesn't redownload every time I load up the app
 > right?"*
 
-**No.** `sentence_transformers.SentenceTransformer("BAAI/bge-small-en-v1.5")`
-resolves through the HuggingFace hub cache, which is a directory on disk. On
-every start it makes a handful of *metadata* requests, the `HEAD .../config.json`
-and `GET .../api/models/...` lines that show up in Settings → Logs and look
-alarming: and then loads the weights it already has. The weights are fetched
-once. With no network it falls back to `local_files_only=True`, which is the
-same cache with the metadata check skipped.
+**No.** The built-in engine is fastembed (ONNX Runtime), and the model is a
+snapshot in the HuggingFace hub cache, a directory on disk: fetched once, by
+`fetch` below, and from then on loaded from that folder with no network at
+all (`ai/embeddings.py` hands fastembed the snapshot's path). Nothing asks the
+hub whether a cached model is current; Reinstall is the one way back online.
 
 What there was no way to do was *see* that, or undo it. A model is the largest
 thing this app ever puts on a disk and it arrived invisibly, with no size, no
@@ -44,6 +42,44 @@ from pathlib import Path
 from tessellate.core import egress
 
 logger = logging.getLogger("tessellate.embedmodels")
+
+#: The built-in engine's name, stored as the `embedding_backend` preference
+#: and in front of every vector's `model_version` (`ai/embeddings.py`).
+BUILTIN_BACKEND = "fastembed"
+#: What the preference said before fastembed replaced sentence-transformers
+#: (2026-10-27). The same models in the same space (measured: cosine 0.999999
+#: between the two engines' vectors for one text), so a saved setting reads as
+#: the new engine and migration f1b3c5d7e9a2 renames the stored vectors.
+LEGACY_BACKENDS = frozenset({"sentence-transformers"})
+
+
+def backend_name(value: object) -> str:
+    """The engine a saved `embedding_backend` means: "ollama", or the
+    built-in one for anything else (an old "sentence-transformers" included),
+    which is what every `!= "ollama"` check already read it as."""
+    return "ollama" if value == "ollama" else BUILTIN_BACKEND
+
+
+@dataclass(frozen=True)
+class OnnxBuild:
+    """Where a model's ONNX files are and how fastembed reads them.
+
+    `source` is the Hub repo the files come from (fastembed's own export,
+    `Qdrant/...`, for most of the catalogue); `model_file` and `extra_files`
+    are what a snapshot must hold besides its tokenizer and config. `pooling`
+    is empty for a model fastembed knows by name, else how the loader
+    registers it ("CLS", "MEAN"), with `dim` its width."""
+
+    source: str
+    model_file: str = "onnx/model.onnx"
+    extra_files: tuple[str, ...] = ()
+    pooling: str = ""
+    dim: int = 0
+
+
+#: The small files every snapshot is fetched with: fastembed reads the
+#: tokenizer from these, and a Pooling config says how a typed model pools.
+CONFIG_FILES = ("config.json", "tokenizer.json", "tokenizer_config.json", "special_tokens_map.json", "1_Pooling/config.json")
 
 
 @dataclass(frozen=True)
@@ -83,6 +119,9 @@ class EmbedModel:
     #: through one call, and the symmetric form is the one E5's card names
     #: for similarity between texts of the same kind.
     prefix: str = ""
+    #: The ONNX build fastembed runs (`build_for`); None for a typed repo,
+    #: whose files are read from its own snapshot.
+    onnx: OnnxBuild | None = None
 
 
 #: The allowlist, and the catalogue Settings, Models offers (INBOX 700, the
@@ -102,6 +141,7 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
         context="256 tokens",
         licence="Apache-2.0",
         best_for="An old or small machine: the fastest here, a little less precise.",
+        onnx=OnnxBuild("Qdrant/all-MiniLM-L6-v2-onnx", "model.onnx"),
     ),
     EmbedModel(
         id="bge-small",
@@ -109,11 +149,12 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
         label="BGE Small (English)",
         about="The default. Fast enough to embed a note as you save it, and "
         "good enough that searching by meaning beats searching by keyword.",
-        size="~130 MB",
+        size="~67 MB",
         default=True,
         params="33M",
         licence="MIT",
         best_for="Most notebooks in English: quick on any laptop, good matches.",
+        onnx=OnnxBuild("Qdrant/bge-small-en-v1.5-onnx-Q", "model_optimized.onnx"),
     ),
     EmbedModel(
         id="me5-small",
@@ -127,6 +168,7 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
         licence="MIT",
         best_for="Notes in more than one language on an ordinary laptop.",
         prefix="query: ",
+        onnx=OnnxBuild("intfloat/multilingual-e5-small", pooling="MEAN", dim=384),
     ),
     EmbedModel(
         id="bge-base",
@@ -134,10 +176,11 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
         label="BGE Base (English)",
         about="Noticeably better matches on long notes, at roughly three times "
         "the size and about twice the time to embed one.",
-        size="~440 MB",
+        size="~220 MB",
         params="110M",
         licence="MIT",
         best_for="English notes when better matches are worth a slower save.",
+        onnx=OnnxBuild("Qdrant/bge-base-en-v1.5-onnx-Q", "model_optimized.onnx"),
     ),
     EmbedModel(
         id="nomic-v1.5",
@@ -152,9 +195,9 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
         best_for="Long notes and documents in English.",
         one_press=False,
         terms_url="https://huggingface.co/nomic-ai/nomic-embed-text-v1.5",
-        why_not="Built in, it runs Python code from its own repository, which "
-        "Tessellate never does. The same model is nomic-embed-text in Ollama.",
+        why_not="Not offered built in yet. The same model is nomic-embed-text in Ollama.",
         prefix="search_query: ",
+        onnx=OnnxBuild("nomic-ai/nomic-embed-text-v1.5"),
     ),
     EmbedModel(
         id="qwen3-0.6b",
@@ -162,12 +205,13 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
         label="Qwen3 Embedding 0.6B",
         about="The best matches here on the public benchmarks, in over a "
         "hundred languages, at the cost of memory and a slower save.",
-        size="~1.2 GB",
+        size="~2.4 GB",
         params="596M",
         languages="Over 100 languages",
         context="32,768 tokens",
         licence="Apache-2.0",
         best_for="The best matches, with 8 GB of memory or more to spare.",
+        onnx=OnnxBuild("Qdrant/Qwen3-Embedding-0.6B-onnx", extra_files=("onnx/model.onnx_data",)),
     ),
     EmbedModel(
         id="bge-m3",
@@ -180,6 +224,9 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
         context="8,192 tokens",
         licence="MIT",
         best_for="Long notes in many languages on a well-equipped machine.",
+        onnx=OnnxBuild(
+            "BAAI/bge-m3", extra_files=("onnx/model.onnx_data", "onnx/Constant_7_attr__value"), pooling="CLS", dim=1024
+        ),
     ),
     EmbedModel(
         id="embeddinggemma",
@@ -197,6 +244,7 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
         why_not="Under Google's Gemma terms rather than an open licence, and "
         "gated on the Hub: read and accept them first, then it is "
         "embeddinggemma in Ollama.",
+        onnx=OnnxBuild("onnx-community/embeddinggemma-300m-ONNX", extra_files=("onnx/model.onnx_data",)),
     ),
 )
 
@@ -279,7 +327,7 @@ def catalogue() -> list[dict]:
         rows.append(
             {
                 "id": model.id,
-                "backend": "sentence-transformers",
+                "backend": BUILTIN_BACKEND,
                 "model": model.repo,
                 "label": model.label,
                 "size": model.size,
@@ -333,7 +381,7 @@ def resolve_choice(choice_id: str) -> tuple[str, str] | None:
         entry = OLLAMA_EMBED_MODELS_BY_NAME.get(choice_id.removeprefix("ollama:"))
         return ("ollama", entry.name) if entry and entry.one_press else None
     model = EMBED_MODELS_BY_ID.get(choice_id)
-    return ("sentence-transformers", model.repo) if model and model.one_press else None
+    return (BUILTIN_BACKEND, model.repo) if model and model.one_press else None
 
 
 @dataclass
@@ -368,8 +416,8 @@ def cache_root() -> Path:
 
     Read from the environment exactly as `huggingface_hub` reads it, rather
     than imported from it: this has to answer "how much disk is this using"
-    on an install where `sentence-transformers` was never installed, which is
-    the install where the question matters most.
+    on an install where `fastembed` was never installed, which is the install
+    where the question matters most.
     """
     for name in ("HF_HUB_CACHE", "HUGGINGFACE_HUB_CACHE"):
         value = os.environ.get(name)
@@ -381,16 +429,52 @@ def cache_root() -> Path:
     return Path.home() / ".cache" / "huggingface" / "hub"
 
 
+def _folder_for(source: str) -> Path:
+    """The cache directory for one Hub repo. `org/name` becomes
+    `models--org--name`: HuggingFace's own scheme, and the reason this is a
+    function rather than a string in the dataclass: it is their layout, not
+    ours, and if it ever changes there is one place to say so."""
+    return cache_root() / ("models--" + source.replace("/", "--"))
+
+
+def _snapshots(source: str) -> list[Path]:
+    snapshots = _folder_for(source) / "snapshots"
+    try:
+        return sorted(path for path in snapshots.iterdir() if path.is_dir())
+    except OSError:
+        return []
+
+
+def _typed_build(repo: str) -> OnnxBuild:
+    """A repo outside the catalogue, read from what its snapshot holds: the
+    ONNX file at `onnx/model.onnx` (the usual export) or the repo's root, and
+    the external weights beside it when the export split them out."""
+    found = [snap for snap in _snapshots(repo) if (snap / "onnx" / "model.onnx").is_file() or (snap / "model.onnx").is_file()]
+    model_file = "model.onnx" if found and not (found[0] / "onnx" / "model.onnx").is_file() else "onnx/model.onnx"
+    split = any((snap / f"{model_file}_data").is_file() for snap in found)
+    return OnnxBuild(repo, model_file, (f"{model_file}_data",) if split else ())
+
+
+def build_for(repo: str) -> OnnxBuild:
+    """The ONNX build a built-in model runs from: the catalogue's, or a typed
+    repo's own files."""
+    entry = EMBED_MODELS_BY_REPO.get(repo)
+    if entry is not None and entry.onnx is not None:
+        return entry.onnx
+    return _typed_build(repo)
+
+
+def model_folder(repo: str) -> Path:
+    """The cache folder `repo`'s files live in (its ONNX source's)."""
+    return _folder_for(build_for(repo).source)
+
+
 def _model_dir(model: EmbedModel) -> Path:
-    """The cache directory for one repo. `org/name` becomes `models--org--name`
-    - HuggingFace's own scheme, and the reason this is a function rather than
-    a string in the dataclass: it is their layout, not ours, and if it ever
-    changes there is one place to say so."""
-    return cache_root() / ("models--" + model.repo.replace("/", "--"))
+    return _folder_for((model.onnx or build_for(model.repo)).source)
 
 
 def snapshot_state(repo: str) -> str:
-    """"ready" when a snapshot holds the model's weights and its config,
+    """"ready" when a snapshot holds the model's ONNX file and its config,
     "partial" when the cache folder exists without them (the folder an
     interrupted first request leaves, or weights cut off before the config),
     "absent" when there is no folder at all.
@@ -398,19 +482,12 @@ def snapshot_state(repo: str) -> str:
     Both files, because the load runs offline once the folder is there: weights
     alone fail with `EmbeddingCacheBroken` and the person is told to reinstall
     (INBOX 1288)."""
-    folder = cache_root() / ("models--" + repo.replace("/", "--"))
-    if not folder.is_dir():
+    build = build_for(repo)
+    if not _folder_for(build.source).is_dir():
         return "absent"
-    snapshots = folder / "snapshots"
-    if snapshots.is_dir():
-        for snapshot in (path for path in snapshots.iterdir() if path.is_dir()):
-            files = {path.name: path for path in snapshot.rglob("*")}
-            weights = any(
-                path.suffix in (".safetensors", ".bin") and name.startswith(("model", "pytorch_model"))
-                for name, path in files.items()
-            )
-            if weights and "config.json" in files:
-                return "ready"
+    for snapshot in _snapshots(build.source):
+        if _file_size(snapshot / build.model_file) and (snapshot / "config.json").is_file():
+            return "ready"
     return "partial"
 
 
@@ -423,18 +500,13 @@ def is_downloaded(repo: str) -> bool:
 
 def disk_size_of(repo: str) -> str:
     """What the model's cache folder takes on disk, in words, or "" for none."""
-    folder = cache_root() / ("models--" + repo.replace("/", "--"))
+    folder = model_folder(repo)
     return _human_size(_dir_size(folder)) if folder.is_dir() else ""
 
 
-#: Files a sentence-transformers snapshot cannot load without, besides the
-#: weights and the files `modules.json` lists (101c). A tokenizer is any one
-#: of these.
-_TOKENIZER_FILES = ("tokenizer.json", "vocab.txt", "vocab.json", "spiece.model", "sentencepiece.bpe.model")
-_WEIGHT_FILES = ("model.safetensors", "pytorch_model.bin")
 #: A weights file smaller than this share of the catalogue's stated size is
-#: truncated. Generous on purpose (the stated size is approximate and may
-#: count several formats), so only a file that is plainly short is refused.
+#: truncated. Generous on purpose (the stated size is approximate), so only a
+#: file that is plainly short is refused.
 _WEIGHTS_FLOOR_SHARE = 0.3
 
 
@@ -457,43 +529,22 @@ def _file_size(path: Path) -> int:
         return 0
 
 
-def _snapshot_modules(snapshot: Path) -> tuple[list, list[str]]:
-    """A snapshot's `modules.json` list, and "modules.json" when it is empty or unreadable."""
-    if _file_size(snapshot / "modules.json") == 0:
-        return [], ["modules.json"]
-    try:
-        parsed = json.loads((snapshot / "modules.json").read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        return [], ["modules.json"]
-    return (parsed if isinstance(parsed, list) else []), []
+def _weights_floor(repo: str) -> int:
+    """The fewest bytes `repo`'s weights may hold. A model outside the
+    catalogue (typed by name) has no stated size, so only "non-empty" can be
+    asked of it."""
+    entry = EMBED_MODELS_BY_REPO.get(repo)
+    return max(int(_declared_bytes(entry.size) * _WEIGHTS_FLOOR_SHARE) if entry else 0, 1)
 
 
-def _module_configs_missing(snapshot: Path, modules: list) -> list[str]:
-    """The config.json a Pooling or Dense layer keeps in its folder, when absent."""
-    missing = []
-    for module in modules:
-        if not isinstance(module, dict):
-            continue
-        sub, kind = module.get("path"), str(module.get("type") or "")
-        #: Pooling and Dense layers keep a config.json in their folder. A
-        #: Normalize layer lists a folder (bge's `2_Normalize`) that the hub
-        #: does not hold at all, so asking for it called a whole cache broken.
-        if sub and isinstance(sub, str) and ".." not in sub.split("/") and kind.endswith((".Pooling", ".Dense")):
-            if _file_size(snapshot / sub / "config.json") == 0:
-                missing.append(f"{sub}/config.json")
-    return missing
-
-
-def _snapshot_missing(snapshot: Path, floor: int) -> list[str]:
-    """What this one snapshot lacks to load: empty when it is whole."""
-    modules, missing = _snapshot_modules(snapshot)
-    if _file_size(snapshot / "config.json") == 0:
-        missing.append("config.json")
-    if not any(_file_size(snapshot / name) > 0 for name in _TOKENIZER_FILES):
-        missing.append("tokenizer")
-    missing.extend(_module_configs_missing(snapshot, modules))
-    weights = max((_file_size(snapshot / name) for name in _WEIGHT_FILES), default=0)
-    if weights == 0:
+def _snapshot_missing(snapshot: Path, build: OnnxBuild, floor: int) -> list[str]:
+    """What this one snapshot lacks to load: empty when it is whole. fastembed
+    reads `config.json`, `tokenizer.json` and the ONNX file (with its external
+    weights, when the export split them out)."""
+    missing = [name for name in ("config.json", "tokenizer.json") if _file_size(snapshot / name) == 0]
+    missing.extend(name for name in build.extra_files if _file_size(snapshot / name) == 0)
+    weights = sum(_file_size(snapshot / name) for name in (build.model_file, *build.extra_files))
+    if _file_size(snapshot / build.model_file) == 0:
         missing.append("model weights")
     elif weights < floor:
         missing.append("model weights (cut short)")
@@ -504,37 +555,89 @@ def cache_health(repo: str) -> dict:
     """Whether `repo`'s cache can load: `absent` (no folder), `complete`, or
     `incomplete` with `missing` naming what is not there (101c).
 
-    The owner (2026-10-07): an empty or partial `models--BAAI--bge-small-en-v1.5`
-    was treated as present and failed with `EmbeddingCacheBroken`. A folder is
-    not a model: it needs `modules.json`, `config.json`, a tokenizer, every
-    module folder `modules.json` lists, and weights of a believable size. A
-    file whose link points at nothing counts as missing, and so does any
-    `.incomplete` blob the hub leaves while a download is still running."""
-    root = cache_root() / ("models--" + repo.replace("/", "--"))
+    The owner (2026-10-07): an empty or partial model folder was treated as
+    present and failed with `EmbeddingCacheBroken`. A folder is not a model:
+    it needs `config.json`, a tokenizer, and an ONNX file (and any external
+    weights) of a believable size. A file whose link points at nothing counts
+    as missing, and so does any `.incomplete` blob the hub leaves while a
+    download is still running."""
+    build = build_for(repo)
+    root = _folder_for(build.source)
     if not root.is_dir():
         return {"state": "absent", "missing": []}
     try:
         unfinished = any(root.joinpath("blobs").glob("*.incomplete"))
     except OSError:
         unfinished = False
-    entry = EMBED_MODELS_BY_REPO.get(repo)
-    floor = int(_declared_bytes(entry.size) * _WEIGHTS_FLOOR_SHARE) if entry else 0
-    #: A model outside the catalogue (typed by name) has no stated size, so
-    #: only "non-empty" can be asked of its weights.
-    floor = max(floor, 1)
-    snapshots = root / "snapshots"
     best: list[str] | None = None
-    if snapshots.is_dir():
-        for snapshot in sorted(p for p in snapshots.iterdir() if p.is_dir()):
-            gaps = _snapshot_missing(snapshot, floor)
-            if not gaps and not unfinished:
-                return {"state": "complete", "missing": []}
-            if best is None or len(gaps) < len(best):
-                best = gaps
+    for snapshot in _snapshots(build.source):
+        gaps = _snapshot_missing(snapshot, build, _weights_floor(repo))
+        if not gaps and not unfinished:
+            return {"state": "complete", "missing": []}
+        if best is None or len(gaps) < len(best):
+            best = gaps
     missing = best if best is not None else ["model weights"]
     if unfinished:
         missing = [*missing, "an unfinished download"]
     return {"state": "incomplete", "missing": missing}
+
+
+def snapshot_path(repo: str) -> Path | None:
+    """The whole snapshot fastembed loads `repo` from, or None: the folder the
+    loader hands over, so a load never touches the network."""
+    build = build_for(repo)
+    if cache_health(repo)["state"] != "complete":
+        return None
+    floor = _weights_floor(repo)
+    return next((snap for snap in _snapshots(build.source) if not _snapshot_missing(snap, build, floor)), None)
+
+
+def _read_json(path: Path) -> dict:
+    try:
+        parsed = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return parsed if isinstance(parsed, dict) else {}
+
+
+def pooling_of(snapshot: Path) -> str:
+    """How a typed model pools, from its sentence-transformers Pooling config:
+    "CLS", "LAST_TOKEN" or "MEAN" (the usual, and the default)."""
+    pooling = _read_json(snapshot / "1_Pooling" / "config.json")
+    if pooling.get("pooling_mode_cls_token"):
+        return "CLS"
+    if pooling.get("pooling_mode_lasttoken"):
+        return "LAST_TOKEN"
+    return "MEAN"
+
+
+def width_of(snapshot: Path) -> int:
+    """A typed model's vector width, from its configs; 0 when neither says."""
+    for value in (
+        _read_json(snapshot / "1_Pooling" / "config.json").get("word_embedding_dimension"),
+        _read_json(snapshot / "config.json").get("hidden_size"),
+    ):
+        if isinstance(value, int) and value > 0:
+            return value
+    return 0
+
+
+def fetch(repo: str, build: OnnxBuild | None = None) -> None:
+    """Download `repo`'s ONNX build into the cache: only the files fastembed
+    reads, never the repo's other formats (a sentence-transformers repo also
+    holds PyTorch and safetensors weights, several times the size). The one
+    way a built-in model reaches this computer, so every fetch is said in the
+    privacy panel. `build` is a typed repo's, read from the Hub's file list
+    before anything is on disk."""
+    from huggingface_hub import snapshot_download
+
+    build = build or build_for(repo)
+    with egress.purpose(f"Downloading the embedding model {repo}"):
+        snapshot_download(
+            repo_id=build.source,
+            allow_patterns=[build.model_file, *build.extra_files, *CONFIG_FILES],
+            cache_dir=str(cache_root()),
+        )
 
 
 def _dir_size(path: Path) -> int:
@@ -572,7 +675,7 @@ def _human_size(size: int) -> str:
 def can_download() -> bool:
     """Whether anything here can actually fetch a model.
 
-    `huggingface_hub` arrives with `sentence-transformers`, so on a notebook
+    `huggingface_hub` arrives with `fastembed`, so on a notebook
     that never installed the semantic-search extra the answer is no, and
     saying so is much better than a download that fails with an ImportError
     the user has no way to read.
@@ -677,8 +780,6 @@ def _looks_like_a_dropped_connection(exc: Exception) -> bool:
 
 def _run_download(model: EmbedModel) -> None:
     try:
-        from huggingface_hub import snapshot_download
-
         last: Exception | None = None
         for attempt in range(1, DOWNLOAD_ATTEMPTS + 1):
             if _state.cancel_requested:
@@ -691,8 +792,7 @@ def _run_download(model: EmbedModel) -> None:
                     if attempt == 1
                     else f"Connection dropped: resuming ({attempt} of {DOWNLOAD_ATTEMPTS})…"
                 )
-                with egress.purpose(f"Downloading the embedding model {model.repo}"):
-                    snapshot_download(repo_id=model.repo)
+                fetch(model.repo, model.onnx)
                 if _state.cancel_requested:
                     _state.outcome = "cancelled"
                     _state.step = "Stopped just as it finished, the files are on disk."
@@ -851,7 +951,12 @@ _HF_REPO = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,95}/[A-Za-z0-9][A-Za-z0-9_.
 #: open ones, the rule the catalogue keeps (Apache-2.0, MIT and their kin).
 OPEN_LICENCES = frozenset({"apache-2.0", "mit", "bsd-2-clause", "bsd-3-clause", "cc-by-4.0", "cc-by-sa-4.0", "cc0-1.0"})
 
+#: What marks a repo as an embedding model: sentence-transformers' own
+#: files, or the Hub's task tags for one.
 _ST_FILES = ("modules.json", "config_sentence_transformers.json")
+_EMBEDDING_TAGS = frozenset({"sentence-similarity", "feature-extraction", "sentence-transformers"})
+#: Where an ONNX export keeps its model, in the order the loader prefers.
+_ONNX_FILES = ("onnx/model.onnx", "model.onnx")
 
 
 def parse_typed_name(text: str) -> tuple[str | None, str]:
@@ -900,19 +1005,26 @@ def hub_metadata(repo: str) -> dict | None:
     }
 
 
+def _format_refusal(names: set[str], tags: set[str]) -> str:
+    """Why the engine cannot read this repo's files, or "": it runs an ONNX
+    export with its tokenizer, of a repo that is an embedding model."""
+    runnable = any(name in names for name in _ONNX_FILES) and "tokenizer.json" in names
+    if not runnable and any(name.lower().endswith(".gguf") for name in names):
+        return "It holds GGUF files, which the built-in engine can't load. Pull it in Ollama instead."
+    if not any(name in names for name in _ST_FILES) and not _EMBEDDING_TAGS & tags:
+        return "It isn't an embedding model the built-in engine knows how to read."
+    if not runnable:
+        return "It has no ONNX export with a tokenizer, which is what the built-in engine runs. Use it in Ollama instead."
+    return ""
+
+
 def hub_refusal(meta: dict) -> str:
     """Why the built-in engine cannot use this repo, or "" when it can."""
     names = {str(item.get("rfilename", "")) for item in meta.get("siblings") or []}
     tags = {str(tag) for tag in meta.get("tags") or []}
-    if not any(name in names for name in _ST_FILES):
-        if any(name.lower().endswith(".gguf") for name in names):
-            return "It holds GGUF files, which the built-in engine can't load. Pull it in Ollama instead."
-        return "It isn't in sentence-transformers' format, so the built-in engine can't load it."
-    if not any(
-        name.rsplit("/", 1)[-1].startswith(("model", "pytorch_model")) and name.endswith((".safetensors", ".bin"))
-        for name in names
-    ):
-        return "It has no weights the built-in engine can read."
+    why = _format_refusal(names, tags)
+    if why:
+        return why
     if "custom_code" in tags:
         return "It needs Python code from its own repository to load, which Tessellate never runs."
     if meta.get("gated"):
@@ -952,7 +1064,15 @@ def start_typed(repo: str) -> tuple[bool, str]:
     why = hub_refusal(meta)
     if why:
         return False, why
-    return _begin_download(EmbedModel(id="typed", repo=repo, label=repo, about="", size=""))
+    return _begin_download(EmbedModel(id="typed", repo=repo, label=repo, about="", size="", onnx=_build_from_hub(repo, meta)))
+
+
+def _build_from_hub(repo: str, meta: dict) -> OnnxBuild:
+    """A typed repo's ONNX build from the Hub's file list: which export file,
+    and its external weights when it has them."""
+    names = {str(item.get("rfilename", "")) for item in meta.get("siblings") or []}
+    model_file = next(name for name in _ONNX_FILES if name in names)
+    return OnnxBuild(repo, model_file, (f"{model_file}_data",) if f"{model_file}_data" in names else ())
 
 
 def remove(model_id: str) -> tuple[bool, str]:

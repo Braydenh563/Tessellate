@@ -5,7 +5,7 @@
 //
 // Each extra is a feature the app already offers and cannot run: the
 // microphone buttons need faster-whisper, the desktop window needs pywebview,
-// search by meaning needs sentence-transformers. The catalogue is the
+// search by meaning needs fastembed. The catalogue is the
 // **server's**, and every install is chosen by id from an allowlist there:
 // the client never sends a package name. See `core/extras.py` for why that
 // is the whole security property; a bundle is a list of those same ids,

@@ -164,7 +164,7 @@ def _cancel_tidy_link_reasons(_name: str) -> tuple[bool, str]:
 
 
 #: kind (as `/tasks` reports it) → canceller. `embeddings` is deliberately
-#: absent: the warmup is one blocking model load inside sentence-transformers
+#: absent: the warmup is one blocking model load inside fastembed
 #: with nothing to check a flag between, so the panel says so rather than
 #: offering a button that would do nothing.
 CANCELLERS: dict[str, Callable[[str], tuple[bool, str]]] = {

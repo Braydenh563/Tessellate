@@ -10292,11 +10292,13 @@ Link to another note with [[its first few words]]."></textarea>
                   then downloads it as a background task.
                 </p>
                 <!-- INBOX 266 (5), measured: 104MB before the built-in model
-                     loads, 774MB after. The only memory lever left once the
-                     imports were lazy, so it is said where the choice is. -->
+                     loads, 774MB after, with torch. fastembed, 2026-10-27:
+                     244MB more once loaded, 315MB after long notes. The only
+                     memory lever left once the imports were lazy, so it is
+                     said where the choice is. -->
                 <p>
                   The built-in engine runs inside Tessellate, so the app holds
-                  it in memory while it is open: about 650 MB with the default
+                  it in memory while it is open: about 300 MB with the default
                   model. With Ollama the model lives in Ollama instead and
                   Tessellate itself stays near 100 MB.
                 </p>
@@ -10305,10 +10307,10 @@ Link to another note with [[its first few words]]."></textarea>
                    one control with one answer, rather than two loose dots
                    (§35L). `.check-row` is where that lives. -->
               <label class="check-row">
-                <input type="radio" name="emb-backend" value="sentence-transformers">
+                <input type="radio" name="emb-backend" value="fastembed">
                 <span>Built-in (recommended): <span id="builtin-model-name" class="muted">…</span></span>
               </label>
-              <!-- The one-time install of sentence-transformers, which the app
+              <!-- The one-time install of fastembed, which the app
                    starts by itself the first time the built-in model is needed
                    (embeddings._maybe_auto_install_missing_package). -->
               <p id="builtin-embed-note" class="muted small hidden" role="status"></p>
@@ -10327,12 +10329,12 @@ Link to another note with [[its first few words]]."></textarea>
                   <i class="ph ph-question" aria-hidden="true"></i>
                 </button>
               </div>
-              <p class="muted small">Off, search uses keywords. About 2 GB, once, from huggingface.co and pypi.org.</p>
+              <p class="muted small">Off, search uses keywords. About 130 MB, once, from huggingface.co and pypi.org.</p>
               <div class="help-body hidden" id="semantic-auto-install-help" role="dialog" aria-label="About downloading search by meaning">
                 <p>
-                  Search by meaning needs one Python package, sentence-transformers,
-                  which brings PyTorch with it, and a small model from
-                  huggingface.co: about 2 GB in all, downloaded once, and it needs
+                  Search by meaning needs one Python package, fastembed, which
+                  brings ONNX Runtime with it (no PyTorch), and a small model from
+                  huggingface.co: about 130 MB in all, downloaded once, and it needs
                   the internet. Tessellate asks before it downloads anything. Turn
                   this on and it starts at once, in the background (Settings,
                   Background tasks shows it, with Stop); search uses keywords until

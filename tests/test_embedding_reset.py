@@ -23,18 +23,18 @@ def test_switch_backend_clears_stale_error(ai_client):
     deps.get_embeddings().last_error = "stale torch error"
     response = ai_client.post(
         "/models/embedding-backend",
-        json={"backend": "sentence-transformers", "model": None},
+        json={"backend": "fastembed", "model": None},
     )
     assert response.status_code == 200
     assert deps.get_embeddings().last_error is None
 
 
-# --- auto-installing a genuinely missing sentence-transformers -------------
+# --- auto-installing a genuinely missing fastembed --------------------------
 
 
 def test_a_missing_package_triggers_extras_start_once(app_state, monkeypatch):
-    """`_load_st_model` is mocked to raise the exact failure this sandbox
-    produces naturally when sentence-transformers isn't installed (CLAUDE.md's
+    """`_load_builtin_model` is mocked to raise the exact failure this sandbox
+    produces naturally when fastembed isn't installed (CLAUDE.md's
     own instruction): mocked explicitly, not left to the ambient
     environment, since CI's own workflow installs the full requirements.txt
     including the real package, where the natural failure never happens and
@@ -46,8 +46,8 @@ def test_a_missing_package_triggers_extras_start_once(app_state, monkeypatch):
     service = deps.get_embeddings()
     monkeypatch.setattr(
         service,
-        "_load_st_model",
-        lambda: (_ for _ in ()).throw(ModuleNotFoundError("No module named 'sentence_transformers'")),
+        "_load_builtin_model",
+        lambda: (_ for _ in ()).throw(ModuleNotFoundError("No module named 'fastembed'")),
     )
     calls = []
     monkeypatch.setattr(
@@ -67,7 +67,7 @@ def test_a_different_failure_never_triggers_an_install(app_state, monkeypatch):
     real problem."""
     service = deps.get_embeddings()
     monkeypatch.setattr(
-        service, "_load_st_model", lambda: (_ for _ in ()).throw(RuntimeError("out of memory"))
+        service, "_load_builtin_model", lambda: (_ for _ in ()).throw(RuntimeError("out of memory"))
     )
     started = []
     monkeypatch.setattr(extras, "start", lambda extra_id, reinstall=False, auto=False: (started.append(1), (False, ""))[1])
@@ -82,16 +82,16 @@ def test_auto_install_does_nothing_when_extras_refuses_to_start(app_state, monke
     genuinely unavailable: extras.start says so via its own return value,
     and this must not crash or loop on any of those, just accept it.
 
-    `_load_st_model` mocked explicitly: see the sibling test above for why
-    relying on the ambient environment (no sentence-transformers installed)
+    `_load_builtin_model` mocked explicitly: see the sibling test above for why
+    relying on the ambient environment (no fastembed installed)
     silently stopped exercising this on CI, where the real package is
     present."""
     deps.get_config().set_preference("semantic_auto_install", True)  # a yes was given (2026-10-27: no download without one)
     service = deps.get_embeddings()
     monkeypatch.setattr(
         service,
-        "_load_st_model",
-        lambda: (_ for _ in ()).throw(ModuleNotFoundError("No module named 'sentence_transformers'")),
+        "_load_builtin_model",
+        lambda: (_ for _ in ()).throw(ModuleNotFoundError("No module named 'fastembed'")),
     )
     monkeypatch.setattr(extras, "start", lambda extra_id, reinstall=False, auto=False: (False, "Already installed."))
 
@@ -109,17 +109,17 @@ def test_auto_install_retries_the_load_once_the_background_install_finishes(
     cached failure so the *next* embed attempt actually retries, without the
     caller having to do anything.
 
-    `_load_st_model` mocked explicitly: see the first test above in this
-    file for why relying on the ambient environment (no sentence-
-    transformers installed) silently stopped exercising this on CI, where
+    `_load_builtin_model` mocked explicitly: see the first test above in this
+    file for why relying on the ambient environment (no fastembed
+    installed) silently stopped exercising this on CI, where
     the real package is present and the load just succeeds instead of
     raising."""
     deps.get_config().set_preference("semantic_auto_install", True)  # a yes was given (2026-10-27: no download without one)
     service = deps.get_embeddings()
     monkeypatch.setattr(
         service,
-        "_load_st_model",
-        lambda: (_ for _ in ()).throw(ModuleNotFoundError("No module named 'sentence_transformers'")),
+        "_load_builtin_model",
+        lambda: (_ for _ in ()).throw(ModuleNotFoundError("No module named 'fastembed'")),
     )
     fake_state = extras.InstallState(running=True, extra_id="semantic")
     monkeypatch.setattr(extras, "current", lambda: fake_state)
@@ -141,14 +141,14 @@ def test_auto_install_retries_the_load_once_the_background_install_finishes(
 
 def test_a_missing_package_is_a_sentence_not_a_traceback(app_state, monkeypatch, caplog):
     """Owner's packaged-app log carried a full traceback for
-    `No module named 'sentence_transformers'`, an optional package the app
+    `No module named 'sentence_transformers'` (the engine then), an optional package the app
     was already installing. It is a state: one warning line, and a reason in
     Settings a person can act on."""
     service = deps.get_embeddings()
     monkeypatch.setattr(
         service,
-        "_load_st_model",
-        lambda: (_ for _ in ()).throw(ModuleNotFoundError("No module named 'sentence_transformers'")),
+        "_load_builtin_model",
+        lambda: (_ for _ in ()).throw(ModuleNotFoundError("No module named 'fastembed'")),
     )
     monkeypatch.setattr(extras, "start", lambda extra_id, reinstall=False, auto=False: (False, "unavailable"))
 

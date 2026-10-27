@@ -64,7 +64,7 @@ function semanticOffer(offered) {
   const text = document.createElement("span");
   text.className = "toast-msg";
   text.textContent =
-    "Search by meaning needs a one-time download of about 2 GB from huggingface.co and pypi.org. Keyword search works meanwhile.";
+    "Search by meaning needs a one-time download of about 130 MB from huggingface.co and pypi.org. Keyword search works meanwhile.";
   const answer = (on) => {
     dismissToast(note);
     SEMANTIC_NOTICE.note = null;
@@ -99,7 +99,7 @@ async function semanticOnboardingOffer(box) {
   if (prefs.semantic_choice_made || prefs.semantic_auto_install) return;
   const button = smallButton(
     "Download search by meaning",
-    "A one-time download of about 2 GB from huggingface.co and pypi.org. Until then search uses keywords.",
+    "A one-time download of about 130 MB from huggingface.co and pypi.org. Until then search uses keywords.",
     async () => {
       button.disabled = true;
       try {

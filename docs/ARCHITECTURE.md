@@ -1170,8 +1170,8 @@ its JSON API, and `websearch.probe_searxng` returns True against it.
 - **Chat model:** any model installed in **[Ollama](https://ollama.com)**
   (default `llama3.2`). Talked to over the local REST API via
   `ai/ollama_client.py`. Used by the janitor, librarian, and agent.
-- **Embeddings:** default `BAAI/bge-small-en-v1.5` via `sentence-transformers`
-  (auto-downloads on first use). **Nothing user-facing may hard-code that
+- **Embeddings:** default `BAAI/bge-small-en-v1.5` via `fastembed` (its ONNX
+  build, `Qdrant/bge-small-en-v1.5-onnx-Q`, downloaded after a yes). **Nothing user-facing may hard-code that
   name**: it was `all-MiniLM-L6-v2` once, and the Models screen went on
   saying so long after it changed, so the only way to find out what was
   really running was to watch it download in the log. Ask

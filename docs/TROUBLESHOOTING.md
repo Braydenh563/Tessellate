@@ -4,7 +4,7 @@
 - [The port is already in use](#the-port-is-already-in-use)
 - [A phone or another computer cannot open it, or warns about the certificate](#a-phone-or-another-computer-cannot-open-it-or-warns-about-the-certificate)
 - [The first launch is slow or downloads something](#the-first-launch-is-slow-or-downloads-something)
-- [Windows: "torch_xpu.dll ... WinError 127" and search falls back to keywords](#windows-torch_xpudll--winerror-127-and-search-falls-back-to-keywords)
+- [Upgraded from a version with PyTorch: the old files](#upgraded-from-a-version-with-pytorch-the-old-files)
 - [Linux: the packaged app has no window](#linux-the-packaged-app-has-no-window)
 - [The AI status says the AI is off](#the-ai-status-says-the-ai-is-off)
 - [Web search returns nothing, or says DuckDuckGo is rate-limiting](#web-search-returns-nothing-or-says-duckduckgo-is-rate-limiting)
@@ -59,43 +59,31 @@ again. If nothing answers, check that this computer's firewall allows port 8443.
 ## The first launch is slow or downloads something
 
 Search and filing by meaning use a built-in model that needs the
-`sentence-transformers` package. The first time it is needed, and it is not
+`fastembed` package. The first time it is needed, and it is not
 installed, the app asks once (Download or No thanks). After a yes it installs it by
 itself, and Settings, Search and index, Download search by meaning turns it on
-later: a one-time download of several hundred
-MB (more on Windows, where it brings torch) that needs the internet and can take
-several minutes. Settings, Search and index, Search engine says when it is
+later: a one-time download of about 130 MB that needs the internet. Settings, Search and index, Search engine says when it is
 running, and Settings, Background tasks lists the job. Search falls back to
 keywords until it finishes, and nothing else waits for it.
 
 To avoid the download, pick an Ollama embedding model (`nomic-embed-text`) in the
 same place, or set `TESSELLATE_NO_AUTO_INSTALL` to stop the download whatever the answer.
 
-## Windows: "torch_xpu.dll ... WinError 127" and search falls back to keywords
+## Upgraded from a version with PyTorch: the old files
 
-You see a banner like *"The specified procedure could not be found. Error loading
-...\torch\lib\torch_xpu.dll"*. The app is fine. torch's default Windows wheel
-ships an Intel GPU library that cannot load on your machine, and Tessellate needs
-only the **CPU** build.
-
-**Fresh installs are already handled.** `requirements.txt` installs the CPU-only
-torch on Windows.
-
-**Already installed the broken wheel?** Swap it, from the project folder's
-virtual environment:
+Search by meaning ran on `sentence-transformers` and PyTorch until October
+2026; it runs on `fastembed` (ONNX Runtime) now, with the same models. Your
+notes keep their vectors and nothing is embedded again. The old engine's
+files stay where they were, and Tessellate no longer uses them:
 
 ```
-pip uninstall -y torch
-pip install torch --index-url https://download.pytorch.org/whl/cpu
+pip uninstall -y sentence-transformers torch
 ```
 
-Then restart the app. In the packaged app, Settings, Packages has a reinstall
-for Search by meaning (sentence-transformers) that does the same job without a
-terminal.
-
-**Or go torch-free.** In **Settings, Models**, download `nomic-embed-text`, then
-pick it under Ollama embedding model in **Settings, Search and index**. It runs
-entirely through Ollama, needs no torch, and your notes re-index automatically.
+from the project folder's virtual environment frees about 1.4 GB, and the old
+model folder (`models--BAAI--bge-small-en-v1.5` in the Hugging Face cache,
+about 130 MB) can be deleted by hand. The new one is
+`models--Qdrant--bge-small-en-v1.5-onnx-Q`.
 
 ## Linux: the packaged app has no window
 

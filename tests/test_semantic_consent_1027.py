@@ -99,17 +99,10 @@ def test_a_first_save_downloads_nothing_and_search_keeps_working(app_state, monk
 
 
 def test_a_yes_lets_the_next_save_start_the_download(app_state, monkeypatch):
-    import sys
-    import types
+    from tests import _fake_fastembed
 
     service = _service_with_nothing_on_disk(app_state, monkeypatch)
-    fake = types.ModuleType("sentence_transformers")
-
-    def not_cached(*args, **kwargs):
-        raise OSError("not in the cache")
-
-    fake.SentenceTransformer = not_cached
-    monkeypatch.setitem(sys.modules, "sentence_transformers", fake)
+    _fake_fastembed.install(monkeypatch)
     monkeypatch.setattr(embedmodels, "cache_health", lambda repo: {"state": "absent", "missing": []})
     fetched = []
 
@@ -136,7 +129,7 @@ def test_a_model_already_on_disk_needs_no_yes(app_state, monkeypatch):
 
 def test_an_explicit_switch_of_engine_is_not_held_back(app_state):
     """A service pinned by the person's own Install or model switch carries no preferences."""
-    service = deps.get_embeddings().pinned("sentence-transformers", "BAAI/bge-small-en-v1.5")
+    service = deps.get_embeddings().pinned("fastembed", "BAAI/bge-small-en-v1.5")
     assert service._download_allowed() is True
 
 
@@ -177,7 +170,7 @@ def _text(*parts: str) -> str:
 def test_the_offer_says_size_and_source_in_one_line_and_asks_before_anything():
     js = _text("frontend/js/semantic-notice.js")
     assert "function semanticOffer" in js
-    assert "about 2 GB" in js and "huggingface.co" in js
+    assert "about 130 MB" in js and "huggingface.co" in js
     assert "Download" in js and "No thanks" in js
     assert "semantic_auto_install" in js
     assert chr(0x2014) not in js
