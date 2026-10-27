@@ -4929,7 +4929,7 @@ _COERCERS = {
     "number": _coerce_number,
     "boolean": _coerce_boolean,
     "string": _coerce_string,
-    "array": lambda value, schema: _coerce_array(value, schema),
+    "array": _coerce_array,
     "object": _coerce_object,
 }
 
