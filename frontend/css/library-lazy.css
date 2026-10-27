@@ -7302,15 +7302,38 @@ input[type="color"].wb-mixed {
 /* The image tile's ⋯ chip reads on any picture, either theme. The selector
    outranks the bare-icon reset (0,6,1), which kept it transparent (the
    owner, 2026-10-27). */
-.library-image-tile .library-image-actions > .menu-wrap > button.ghost.icon-only:not(.active):not([aria-pressed="true"]):not([aria-expanded="true"]) {
+.library-image-tile .library-image-actions > .menu-wrap > button.ghost.icon-only:not(.active):not([aria-pressed="true"]):not([aria-expanded="true"]):not(:hover):not(:focus-visible) {
   background: var(--modal-bg);
   border-color: var(--divider);
   color: var(--ink);
   box-shadow: var(--shadow-sm);
 }
 /* Glass only while the glass look is on (the owner, 2026-10-27). */
-:root:not([data-glass="off"]) .library-image-tile .library-image-actions > .menu-wrap > button.ghost.icon-only:not(.active):not([aria-pressed="true"]):not([aria-expanded="true"]) {
+:root:not([data-glass="off"]) .library-image-tile .library-image-actions > .menu-wrap > button.ghost.icon-only:not(.active):not([aria-pressed="true"]):not([aria-expanded="true"]):not(:hover):not(:focus-visible) {
   background: color-mix(in srgb, var(--panel) 80%, transparent);
   backdrop-filter: var(--glass-filter-clear);
   -webkit-backdrop-filter: var(--glass-filter-clear);
+}
+/* The chip's lit states keep a solid fill and an edge (the owner, 2026-10-27,
+   dark theme: on a white picture the open chip was a pale lavender square with
+   a light glyph, the generic kebab tint at 16% showing the picture through).
+   Opaque panel, ink glyph, an ink border and a panel ring outside it, so the
+   chip stands off a white and a black picture alike; open or pressed adds an
+   accent mix, still opaque. Glass never touches these. */
+.library-image-tile .library-image-actions > .menu-wrap > button.ghost.icon-only:hover,
+.library-image-tile .library-image-actions > .menu-wrap > button.ghost.icon-only:focus-visible,
+.library-image-tile .library-image-actions > .menu-wrap > button.ghost.icon-only[aria-expanded="true"],
+.library-image-tile .library-image-actions > .menu-wrap > button.ghost.icon-only.active,
+.library-image-tile .library-image-actions > .menu-wrap > button.ghost.icon-only[aria-pressed="true"] {
+  background: var(--modal-bg-opaque);
+  border-color: var(--ink);
+  color: var(--ink);
+  box-shadow: 0 0 0 1px var(--modal-bg-opaque);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.library-image-tile .library-image-actions > .menu-wrap > button.ghost.icon-only[aria-expanded="true"],
+.library-image-tile .library-image-actions > .menu-wrap > button.ghost.icon-only.active,
+.library-image-tile .library-image-actions > .menu-wrap > button.ghost.icon-only[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--accent) 22%, var(--modal-bg-opaque));
 }
