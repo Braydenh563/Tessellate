@@ -131,7 +131,34 @@ _installed_known: dict[tuple[str, str], list[dict] | None] = {}
 _installed_flights: dict[tuple[str, str], _ListFlight] = {}
 
 
-def _installed_or_last_known(client) -> list[dict] | None:  # noqa: ANN001
+def prewarm_installed() -> None:
+    """Ask the runner for its model list at launch, on a thread of its own, so
+    the first /models/status and /models/suggested find an answer known
+    (INBOX 1419: both waited 4s for a runner busy loading). Never raises."""
+    try:
+        client = deps.get_ollama()
+        key = _flight_key(client)
+        with _installed_lock:
+            if key in _installed_flights or key in _installed_known:
+                return
+            _start_flight(client, key)
+    except Exception:  # noqa: BLE001  # a warm-up must never stop the launch
+        return
+
+
+def _start_flight(client, key: tuple[str, str]) -> "_ListFlight":  # noqa: ANN001
+    """Begin the one list request for `key`; the caller holds `_installed_lock`."""
+    flight = _installed_flights[key] = _ListFlight()
+    threading.Thread(target=_run_list_flight, args=(client, key, flight), name="models-list", daemon=True).start()
+    return flight
+
+
+def _flight_key(client) -> tuple[str, str]:  # noqa: ANN001
+    inner = getattr(client, "_client", client)  # the capability wrapper shares its runner's flight
+    return (type(inner).__name__, str(getattr(inner, "base_url", "")))
+
+
+def _installed_or_last_known(client, *, patient: bool = True) -> list[dict] | None:  # noqa: ANN001
     """The runner's installed models: None when it is not answering.
 
     The poll used to make this call itself, so a runner that was merely busy
@@ -146,17 +173,16 @@ def _installed_or_last_known(client) -> list[dict] | None:  # noqa: ANN001
     runner that refuses the connection answers at once, and is reported down
     on that poll.
     """
-    key = (type(client).__name__, str(getattr(client, "base_url", "")))
+    key = _flight_key(client)
     with _installed_lock:
         flight = _installed_flights.get(key)
         if flight is None:
-            flight = _installed_flights[key] = _ListFlight()
-            threading.Thread(
-                target=_run_list_flight, args=(client, key, flight), name="models-list", daemon=True
-            ).start()
+            flight = _start_flight(client, key)
         has_known = key in _installed_known
         last_known = _installed_known.get(key)
-    flight.done.wait(INSTALLED_REFRESH_BUDGET if has_known else None)
+    #: `patient=False` (the shortlist) never waits past the budget: sizes fall
+    #: back to the shipped figures, which is better than a 4s blank card list.
+    flight.done.wait(INSTALLED_REFRESH_BUDGET if has_known or not patient else None)
     if not flight.done.is_set():
         return last_known
     if flight.error is not None:
@@ -673,7 +699,7 @@ def suggested() -> dict:
     #: here, a busy runner held the shortlist 4.1s).
     installed: dict[str, int] = {}
     try:
-        for model in _installed_or_last_known(deps.get_ollama()) or []:
+        for model in _installed_or_last_known(deps.get_ollama(), patient=False) or []:
             size = model.get("size")
             if size:
                 installed[str(model.get("name", ""))] = int(size)
@@ -706,10 +732,27 @@ def _hardware_profile() -> dict:
 
 def _loaded_names() -> set[str]:
     """Models Ollama holds in memory now, without `:latest`; empty when unknown."""
-    try:
-        names = deps.get_ollama().loaded_models() or []
-    except Exception:  # noqa: BLE001  # the backend being off is not an error here
-        names = []
+    #: Under the same short budget as the list: /api/ps is one more call to a
+    #: runner that may be busy loading, and "loaded" only tints a card.
+    box: list[list[str]] = []
+
+    def ask() -> None:
+        try:
+            box.append(deps.get_ollama().loaded_models() or [])
+        except Exception:  # noqa: BLE001  # the backend being off is not an error here
+            box.append([])
+
+    from tessellate.core import jobs
+
+    finished = threading.Event()
+
+    def run() -> None:
+        ask()
+        finished.set()
+
+    jobs.enqueue("model-info", run, name="loaded models")
+    finished.wait(INSTALLED_REFRESH_BUDGET)
+    names = box[0] if box else []
     return {str(n).removesuffix(":latest") for n in names if n}
 
 

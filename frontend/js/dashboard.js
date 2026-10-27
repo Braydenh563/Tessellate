@@ -1953,10 +1953,15 @@ function dashFillingSkeleton(grid, count) {
   //: By `translate`, which the compositor moves without a layout: writing
   //: `top` here counted as 0.077 of layout shift at boot.
   const top0 = grid.offsetTop;
+  //: Read after a paint (INBOX 1419): in a timer it landed while the widgets
+  //: filling in had left the layout dirty, and each read laid the page out.
   const follow = () => {
     if (!outline.isConnected) return;
-    outline.style.translate = `0 ${grid.offsetTop - top0}px`;
-    setTimeout(follow, 80);
+    afterFrames(() => setTimeout(() => {
+      if (!outline.isConnected) return;
+      outline.style.translate = `0 ${grid.offsetTop - top0}px`;
+      setTimeout(follow, 80);
+    }, 0), 1);
   };
   setTimeout(follow, 80);
   return outline;

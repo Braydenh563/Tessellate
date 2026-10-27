@@ -35,7 +35,7 @@ import re
 import sys
 import zlib
 from collections import Counter
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from contextvars import ContextVar
 from dataclasses import dataclass, field
 from typing import NamedTuple
@@ -354,18 +354,23 @@ _CUES: tuple[tuple[str, re.Pattern], ...] = (
 #: landed, whatever the note is called.
 _STRONG_CUES = 4
 #: Words that frame a topic without saying anything about it.
-_FRAME_WORDS = frozenset(composer._stem(w) for w in "look looking new idea ideas thought thinking about some".split())
+#: Stemmed on first use, not at import: the first stem builds the spelling-pair
+#: table (about 0.3s), which a launch that never composes should not pay.
+def _stems(words: str) -> "Callable[[], frozenset[str]]":
+    return lru_cache(maxsize=1)(lambda: frozenset(composer._stem(w) for w in words.split()))
+
+
+_FRAME_WORDS = _stems("look looking new idea ideas thought thinking about some")
 #: Words a question asks with that are not its subject ("what have I learned
 #: in psych" is about psych; "when are my uni days" about uni).
-_ASKING = frozenset(
-    composer._stem(w)
-    for w in "learned learnt saved save written wrote noted kept think thought know day days week weeks time times "
-    "thing things stuff note notes plan plans going".split()
+_ASKING = _stems(
+    "learned learnt saved save written wrote noted kept think thought know day days week weeks time times "
+    "thing things stuff note notes plan plans going"
 )
 
 #: Verbs a question names its subject with ("spend on groceries"): never the
 #: subject's missing word.
-_VERBS = frozenset(composer._stem(w) for w in "spend spent buy get make do go like want need try see say use pay cost".split())
+_VERBS = _stems("spend spent buy get make do go like want need try see say use pay cost")
 
 _ASKS = {
     "compare": re.compile(r"^\s*(?:the\s+)?(?P<a>[\w' -]{2,30}?)\s+or\s+(?:the\s+)?(?P<b>[\w' -]{2,30}?)\s*\??\s*$", re.I),
@@ -784,7 +789,7 @@ def _only_the_subject(body: str, own: bool, subject: set[str] | None) -> bool:
     question, so it says nothing."""
     if not subject or own or len(body.split()) > 7:
         return False
-    content = {composer._stem(w) for w in composer._words(body)} - _FRAME_WORDS
+    content = {composer._stem(w) for w in composer._words(body)} - _FRAME_WORDS()
     return bool(content) and all(any(composer._holds(st, {w}) for st in subject) for w in content)
 
 
@@ -846,7 +851,7 @@ def _facts(view: composer.NoteView, names: set[str], subject: set[str] | None = 
 
 
 def _subject(question: str) -> list[str]:
-    return [st for st in (composer._stem(t) for t in composer.subject_terms(clean(question))) if st not in _ASKING]
+    return [st for st in (composer._stem(t) for t in composer.subject_terms(clean(question))) if st not in _ASKING()]
 
 
 def _pool(v: composer.NoteView) -> set[str]:
@@ -871,7 +876,7 @@ def _unanswerable(stems: list[str], views: list[composer.NoteView]) -> bool:
     """"the weather on Mars": a subject word no note holds is a question
     the notes cannot answer, and the composer says which word is missing."""
     everywhere = set().union(*(_pool(v) for v in views))
-    return any(st not in _VERBS and not composer._holds(st, everywhere) for st in stems)
+    return any(st not in _VERBS() and not composer._holds(st, everywhere) for st in stems)
 
 
 def _members(question: str, views: list[composer.NoteView]) -> list[composer.NoteView]:

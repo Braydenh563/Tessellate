@@ -242,7 +242,20 @@ const EMBLEM_SLOTS = [
   ["about-emblem", 96, true],
 ];
 
+let brandLogoBooting = true;
+
 function renderBrandLogo() {
+  //: Until the page has loaded the calls become one, after it: drawing needs
+  //: to know which slots have a box, which lays the whole page out in the
+  //: middle of the scripts (INBOX 1419: 58 and 80ms at 4x CPU).
+  if (brandLogoBooting && document.readyState !== "complete") {
+    if (brandLogoBooting === true) {
+      brandLogoBooting = 1;
+      window.addEventListener("load", () => setTimeout(() => ((brandLogoBooting = false), renderBrandLogo()), 0), { once: true });
+    }
+    return;
+  }
+  brandLogoBooting = false;
   for (const [id, size, animate] of EMBLEM_SLOTS) {
     const holder = document.getElementById(id);
     if (holder) renderEmblemWhenShown(holder, size, animate);
@@ -569,8 +582,9 @@ function initNotesSubtabHeightToken() {
     //: stylesheet's value standing until there is a real one.
     if (h > 0) page.style.setProperty("--notes-sticky-top", `${h}px`);
   };
+  //: No first call of its own: an observer reports a new target at once, and
+  //: there the layout is clean (a direct read forced the page's first layout).
   new ResizeObserver(write).observe(strip);
-  write();
 }
 
 initNotesSubtabHeightToken();

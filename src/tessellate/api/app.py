@@ -1568,6 +1568,7 @@ def create_app() -> FastAPI:
         # On the pool, not a thread of its own (the THREAD_SITES ratchet in
         # tests/test_flaw_class_lints.py): it is the app's housekeeping, a
         # quiet kind, after the server is up (ARCH-19).
+        routes_models.prewarm_installed()
         jobs.enqueue("maintenance", _startup_maintenance, name="startup maintenance")
         yield
         # Never raises: `stop_all` swallows per-job failures itself, and a
