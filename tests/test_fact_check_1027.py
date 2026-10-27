@@ -11,6 +11,7 @@ from datetime import datetime
 
 import pytest
 
+from tessellate.ai import fact_check
 from tessellate.api import routes_chat
 from tessellate.core.database import Entry, Reminder
 
@@ -149,3 +150,10 @@ def test_a_single_note_is_one(ai_client, fake_ollama, session, notes, prose, ok)
         session.add(Entry(content=f"Gym plan {n}"))
     session.commit()
     assert _kept(ai_client, fake_ollama, "how many notes do I have", prose) is ok
+
+
+def test_only_a_breakdown_counts_inside_a_nested_dict():
+    """Any int in a nested dict was a count of notes, so a filter's limit
+    of 10 excused "10 notes"."""
+    assert fact_check.result_counts("search_notes", {"filters": {"limit": 10}, "notes": [{"id": 1}, {"id": 2}]}) == {"note": {"2"}}
+    assert fact_check.result_counts("count_notes", {"total": 5, "by_category": {"Work": 3, "Home": 2}}) == {"note": {"5", "3", "2"}}

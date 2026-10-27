@@ -2,7 +2,7 @@
 
 Generated 2026-10-27 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6585, frontend ids 2556, CSS sections 504, backend routes 625, backend modules 6737, test files 1410, tests 12518, plan headings 977.
+Counts: frontend functions 6585, frontend ids 2556, CSS sections 504, backend routes 625, backend modules 6737, test files 1410, tests 12519, plan headings 977.
 
 ## Frontend functions (6585)
 
@@ -12627,19 +12627,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_clock_or_year` | src/tessellate/ai/fact_check.py:169 |
 | `_dated` | src/tessellate/ai/fact_check.py:127 |
 | `_figures` | src/tessellate/ai/fact_check.py:174 |
-| `_is_span` | src/tessellate/ai/fact_check.py:273 |
-| `_kept` | src/tessellate/ai/fact_check.py:293 |
+| `_is_span` | src/tessellate/ai/fact_check.py:274 |
+| `_kept` | src/tessellate/ai/fact_check.py:294 |
 | `_noun_after` | src/tessellate/ai/fact_check.py:117 |
 | `_noun_of_key` | src/tessellate/ai/fact_check.py:207 |
 | `_pronoun_one` | src/tessellate/ai/fact_check.py:135 |
-| `_says_asked` | src/tessellate/ai/fact_check.py:324 |
-| `_span_kept` | src/tessellate/ai/fact_check.py:282 |
-| `_spans` | src/tessellate/ai/fact_check.py:277 |
+| `_says_asked` | src/tessellate/ai/fact_check.py:325 |
+| `_span_kept` | src/tessellate/ai/fact_check.py:283 |
+| `_spans` | src/tessellate/ai/fact_check.py:278 |
 | `_value` | src/tessellate/ai/fact_check.py:99 |
-| `keeps` | src/tessellate/ai/fact_check.py:304 |
-| `merged` | src/tessellate/ai/fact_check.py:265 |
+| `keeps` | src/tessellate/ai/fact_check.py:305 |
+| `merged` | src/tessellate/ai/fact_check.py:266 |
 | `result_counts` | src/tessellate/ai/fact_check.py:214 |
-| `rows_counts` | src/tessellate/ai/fact_check.py:250 |
+| `rows_counts` | src/tessellate/ai/fact_check.py:251 |
 | `said_counts` | src/tessellate/ai/fact_check.py:197 |
 
 ### src/tessellate/ai/factgraph.py (18)
@@ -19635,7 +19635,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12518)
+## Tests (12519)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20086,7 +20086,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_extras_desktop_locked.py | 5 |
 | tests/test_extras_download.py | 22 |
 | tests/test_f7_pool_moves.py | 2 |
-| tests/test_fact_check_1027.py | 7 |
+| tests/test_fact_check_1027.py | 8 |
 | tests/test_factgraph.py | 11 |
 | tests/test_facts_over_time.py | 10 |
 | tests/test_failure_remedies.py | 4 |

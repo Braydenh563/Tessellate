@@ -214,8 +214,9 @@ def _noun_of_key(key: str) -> str | None:
 def result_counts(tool: str, result: object) -> dict[str, set[str]]:
     """The totals a read tool's result holds, by what they count: an int or a
     list's length under a key that names a noun ("total_notes", "tags"), or
-    under a plain total the tool's own noun; a row's "notes" or "count" is
-    a count of notes."""
+    under a plain total the tool's own noun; a row's "notes" or "count", and
+    each figure of a breakdown ("by_category"), is a count of notes. Any
+    other nested dict ("filters": {"limit": 10}) holds no counts."""
     out: dict[str, set[str]] = {}
     if not isinstance(result, dict):
         return out
@@ -235,7 +236,7 @@ def result_counts(tool: str, result: object) -> dict[str, set[str]]:
                 if isinstance(row, dict):
                     add("note", row.get("notes"))
                     add("note", row.get("count"))
-        elif isinstance(value, dict):
+        elif isinstance(value, dict) and key.startswith("by_"):
             for n in value.values():
                 add("note", n)
         else:
