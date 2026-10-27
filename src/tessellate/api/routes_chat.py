@@ -21,7 +21,7 @@ import time
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 from dataclasses import replace as with_changes
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timezone
 from itertools import chain
 from pathlib import Path
 from typing import Annotated, Literal
@@ -33,7 +33,7 @@ from sqlalchemy import or_, select
 from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
-from tessellate.ai import budget as run_budget, capability, fact_check, composer, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, neighbours, personal, phrasing, verdicts, toolwords, vocative, why
+from tessellate.ai import budget as run_budget, capability, fact_check, composer, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, neighbours, personal, phrasing, verdicts, toolwords, vocative, why
 from tessellate.ai import (
     acts,
     agent,
@@ -2674,14 +2674,23 @@ def _filed_or_counted_events(req: _StreamRequest, asked: str, now: datetime) -> 
 
 
 def _reminder_window(asked: str, now: datetime) -> tuple | None:
-    """(phrase, first day, last day) of the window a reminders question names."""
-    window = composer.plan(asked, now.date())
+    """(phrase, first day, last day) of the window a reminders question names.
+    What is due is read forwards (`composer_plan.window`: "tomorrow", "next
+    week", "on friday", "the next 3 days", "this week" to Sunday); a window
+    in the past ("last week") is the recall plan's."""
+    today = now.date()
+    window = composer.plan(asked, today)
+    ahead = composer_plan.window(asked, today)
+    if ahead:
+        start, end, phrase = ahead
+        #: "this week" keeps the days already gone: what was due on Monday
+        #: and is still waiting is this week's.
+        if phrase in ("this week", "this month") and window.window and window.window_phrase == phrase:
+            start = min(start, window.window[0])
+        return phrase, start, end
     if not (window.window and window.window_phrase):
         return None
     start, end = window.window
-    if window.window_phrase == "this week":
-        #: A recall window stops at today; what is due runs to Sunday.
-        end = max(end, start - timedelta(days=start.weekday()) + timedelta(days=6))
     return window.window_phrase, start, end
 
 

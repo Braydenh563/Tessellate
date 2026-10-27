@@ -57,6 +57,18 @@ SURFACES = pytest.mark.parametrize("use_tools", [False, True], ids=["chat", "pop
         ("what reminders do I have this week", "You have 2 reminders this week.", True),
         ("what reminders do I have today", "You have 3 reminders today.", False),
         ("what reminders do I have today", "You have no reminders today.", True),
+        # The third review: "tomorrow" and "next week" were no windows, so the
+        # whole list's 3 stood. Only call mum is due tomorrow; none next week.
+        ("what reminders do I have tomorrow", "You have 3 reminders tomorrow.", False),
+        ("what reminders do I have tomorrow", "You have 1 reminder tomorrow.", True),
+        ("what reminders do I have next week", "You have 3 reminders next week.", False),
+        ("what reminders do I have next week", "You have no reminders next week.", True),
+        ("what reminders do I have on thursday", "You have 3 reminders on Thursday.", False),
+        ("what reminders do I have on thursday", "You have 1 reminder on Thursday.", True),
+        ("what reminders do I have in the next 3 days", "You have 3 reminders in the next 3 days.", False),
+        ("what reminders do I have in the next 3 days", "You have 2 reminders in the next 3 days.", True),
+        ("what reminders do I have next month", "You have 3 reminders next month.", False),
+        ("what reminders do I have next month", "You have 1 reminder next month.", True),
     ],
 )
 def test_a_windowed_list_is_checked_against_the_window(ai_client, fake_ollama, session, question, prose, ok, use_tools):
@@ -216,3 +228,4 @@ def test_only_a_breakdown_counts_inside_a_nested_dict():
     of 10 excused "10 notes"."""
     assert fact_check.result_counts("search_notes", {"filters": {"limit": 10}, "notes": [{"id": 1}, {"id": 2}]}) == {"note": {"2"}}
     assert fact_check.result_counts("count_notes", {"total": 5, "by_category": {"Work": 3, "Home": 2}}) == {"note": {"5", "3", "2"}}
+
