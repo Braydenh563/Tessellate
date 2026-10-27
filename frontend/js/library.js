@@ -4250,8 +4250,7 @@ function ocrFitLiveText() {
   const layer = $("ocr-live-text");
   if (!layer) return;
   const range = document.createRange();
-  //: Read every word, then write every ratio (INBOX 1415, 65 to 253 ms): one
-  //: write between two reads made each of hundreds of words a forced layout.
+  //: Reads then writes (INBOX 1415): a write between reads was a layout per word.
   const todo = layer.querySelectorAll(".ocr-live-word:not([data-fitted])");
   const fits = [];
   for (const span of todo) {
@@ -7707,9 +7706,7 @@ onDomReady(() => {
   $("ocr-page-pane")?.addEventListener("wheel", (event) => {
     if (!event.ctrlKey) return;
     event.preventDefault();
-    //: One zoom per frame (INBOX 1415, wheel 70 to 176 ms): a pinch delivers
-    //: events faster than the page can lay out, so their deltas are summed and
-    //: the last pointer position is used; each event used to flush layout.
+    //: One zoom per frame (INBOX 1415).
     if (ocrWheelPending) {
       ocrWheelPending.deltaY += event.deltaY;
       ocrWheelPending.clientX = event.clientX;

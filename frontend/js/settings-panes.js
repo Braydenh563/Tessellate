@@ -1133,9 +1133,7 @@ function currentZoom() {
   return prefs.number("zoom", 100, { min: ZOOM_MIN, max: ZOOM_MAX }) || 100;
 }
 
-//: One write per frame (INBOX 1415): a held Ctrl+plus repeats faster than the
-//: page can re-lay-out, and each repeat used to restyle the whole document
-//: before the next key was even read. The pref and readout update at once.
+//: One write per frame (INBOX 1415); the pref and readout update at once.
 let zoomFrame = 0;
 
 function setZoom(percent) {

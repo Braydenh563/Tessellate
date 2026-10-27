@@ -51,9 +51,7 @@ function dashMapFeature(board) {
   button.appendChild(caption);
   button.addEventListener("click", () => openWhiteboardBoard(board.id));
   const items = Array.isArray(board.preview_items) ? board.preview_items.length : 0;
-  //: INBOX 1415: the width comes from the observer entry (no layout read), and
-  //: nothing is written when the height is the one already set, so a resize
-  //: tick is one style write at most and never feeds the observer again.
+  //: INBOX 1415: width from the observer entry, no write when unchanged.
   let lastHeight = 0;
   const size = (width) => {
     if (!(width > 0)) return;

@@ -2269,9 +2269,7 @@ DENSITY_SHORT.addEventListener("change", () => {
 //: baseline and needs no font's metrics. Measured again when Settings
 //: changes the font (`applyAppearance`, below). Here and not in app.js, whose
 //: gzipped size is a ratchet; nothing calls it before this file loads.
-//: Read again only when the answer can have changed (INBOX 1415: it was a forced
-//: layout inside every `applyAppearance`, so a zoom keypress paid for it): the
-//: key is the font choice, the loaded faces and the custom CSS. `force` skips it.
+//: Re-measured only when the font key changes (INBOX 1415); `force` skips the key.
 let labelOpticsKey = "";
 function measureLabelOptics(force) {
   const key = `${document.documentElement.dataset.font}|${document.fonts?.size ?? 0}|${document.fonts?.status}|${prefs.get("custom-css", null)?.length ?? 0}`;
@@ -2312,8 +2310,7 @@ function measureLabelOptics(force) {
 measureLabelOptics();
 document.fonts?.ready?.then(measureLabelOptics);
 
-//: The interface zoom alone, so a zoom keypress writes one custom property and
-//: does not re-run every appearance read (INBOX 1415).
+//: Zoom alone, so a keypress writes one property (INBOX 1415).
 function applyZoomVar() {
   document.documentElement.style.setProperty("--zoom", Number(appearancePref("zoom")) / 100);
 }

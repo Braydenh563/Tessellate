@@ -243,9 +243,7 @@ const EMBLEM_SLOTS = [
 ];
 
 function renderBrandLogo() {
-  //: Every slot is asked whether it has a box before any is drawn (INBOX 1415,
-  //: 524 ms at boot): drawing one dirties the layout the next slot's question
-  //: would have to flush, six times over.
+  //: All slots asked before any is drawn (INBOX 1415): a draw dirties the next ask.
   const slots = [];
   for (const [id, size, animate] of EMBLEM_SLOTS) {
     const holder = document.getElementById(id);
