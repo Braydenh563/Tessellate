@@ -297,7 +297,7 @@ with its owner named in the entry.
 
 ## Placed (last 20, newest first)
 
-- 2026-10-27: 1403 (rich text runs on the whiteboard: size, font, colour on selected text; the ⋯ menu top) placed in WHITEBOARD_PLAN; next free slot.
+- 2026-10-27: 1403 (rich text runs on the whiteboard: size, font, colour on selected text; the ⋯ menu top) and 1404 (drag a connector label by its words) placed in WHITEBOARD_PLAN; next free slot.
 - 2026-10-27: 1402 (Atlas looks grumpy at rest; a thrown companion flies back across the screen) placed in UI_MODERNISATION_PLAN; one agent now.
 - 2026-10-26: 1400 (force graph composition, node popups, controls; code editor and recordings; composer) placed in GRAPH_PLAN; graph redesign next free Opus slot.
 - 2026-10-26: 1357 (world-class composer, fix the class, open inventory, grammar) placed in WORLD_CLASS_PLAN; 1358 (whiteboard, mind map, document editor dogfood passes) placed in WHITEBOARD_PLAN; both running now.
