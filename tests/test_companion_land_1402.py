@@ -47,8 +47,8 @@ def _land(calls: str):
             "function nameMarkBuddyObstacles() { measured += 1; return OBS; }",
             "function nameMarkBuddyLedges() { return { top: { bottom: 44 }, bottom: { top: 683 } }; }",
             # The float's hit shape as drawn: head, body to its feet, Atlas's tail.
-            "function nameMarkBuddyHits(x, y, pose, obs) { const parts = [[x + 5, y, x + 59, y + 46], [x + 8, y + 43, x + 56, y + 90], [x + 30, y + 50, x + 82, y + 94]];"
-            " return parts.some(([l, t, r, b]) => obs.some((o) => r > o.left - 4 && l < o.right + 4 && b > o.top - 4 && t < o.bottom + 4)); }",
+            "function nameMarkBuddyHits(x, y, pose, obs) { const parts = [[x + 5, y, x + 59, y + 46], [x + 8, y + 43, x + 56, y + 90], [x + 30, y + 50, x + 82, y + 94]]; "
+            + "return parts.some(([l, t, r, b]) => obs.some((o) => r > o.left - 4 && l < o.right + 4 && b > o.top - 4 && t < o.bottom + 4)); }",
             _const("NMB_LAND_NEAR"),
             _const("NMB_LAND_STEP"),
             _fn("nameMarkBuddyLandNear"),
