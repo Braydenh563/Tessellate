@@ -188,7 +188,7 @@ try {
   $form.BackColor       = $bg
   $form.TopMost         = $true
   $form.ShowInTaskbar   = $true
-  $form.Text            = "Starting Tessellate Notes"
+  $form.Text            = "Starting Tessellate"
   # Invisible until the first status read has filled the rows and the bar
   # (the Shown handler below), so the first frame is never an empty card.
   $form.Opacity         = 0
@@ -224,13 +224,9 @@ try {
 
   $centre = [System.Drawing.ContentAlignment]::MiddleCenter
 
-  # The name with a small "notes" beside it (the owner, 2026-10-12: the
-  # name alone read like a game), drawn as one lockup: two Labels padded
-  # their text differently and sat "notes" off the name's baseline, with a
-  # gap wider than a word space (owner, 2026-10-12: "looks awkward").
-  # One panel draws both on a shared baseline, a word space apart.
+  # The name alone, centred under the mark and over the tagline (the owner,
+  # 2026-10-27: the small word beside it made the lockup lopsided).
   $titleFont = New-Object System.Drawing.Font -ArgumentList "Segoe UI", ([float]17), ([System.Drawing.FontStyle]::Bold)
-  $noteFont  = New-Object System.Drawing.Font -ArgumentList "Segoe UI", ([float]12)
   $title           = New-Object System.Windows.Forms.Panel
   $title.Location  = New-Object System.Drawing.Point(0, 94)
   $title.Size      = New-Object System.Drawing.Size($WIDTH, 34)
@@ -244,19 +240,10 @@ try {
     $g.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit
     $fmt = [System.Drawing.StringFormat]::GenericTypographic
     $nameW = $g.MeasureString("Tessellate", $titleFont, 1000, $fmt).Width
-    $noteW = $g.MeasureString("notes", $noteFont, 1000, $fmt).Width
-    # A typographic measure of " " is near zero (trailing spaces are not
-    # counted), which ran "notes" into the name; a third of an em instead.
-    $gap   = $noteFont.SizeInPoints * $g.DpiY / 72 * 0.33
-    $x = ($WIDTH - $nameW - $gap - $noteW) / 2
-    # Baseline: the cell ascent in pixels, per font.
-    $asc = { param($f) $f.SizeInPoints * $g.DpiY / 72 * $f.FontFamily.GetCellAscent($f.Style) / $f.FontFamily.GetEmHeight($f.Style) }
-    $base = 2 + (& $asc $titleFont)
-    $inkBrush  = New-Object System.Drawing.SolidBrush $ink
-    $noteBrush = New-Object System.Drawing.SolidBrush $muted
-    $g.DrawString("Tessellate", $titleFont, $inkBrush, [float]$x, [float]($base - (& $asc $titleFont)), $fmt)
-    $g.DrawString("notes", $noteFont, $noteBrush, [float]($x + $nameW + $gap), [float]($base - (& $asc $noteFont)), $fmt)
-    $inkBrush.Dispose(); $noteBrush.Dispose()
+    $x = ($WIDTH - $nameW) / 2
+    $inkBrush = New-Object System.Drawing.SolidBrush $ink
+    $g.DrawString("Tessellate", $titleFont, $inkBrush, [float]$x, [float]2, $fmt)
+    $inkBrush.Dispose()
   })
 
   $tag             = New-Object System.Windows.Forms.Label

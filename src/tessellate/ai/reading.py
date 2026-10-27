@@ -255,7 +255,7 @@ def read(text: str, *, now: datetime, context: dict | None = None) -> Reading:
     #: A timeline entry is something that happened: "on 3 october" is the one before.
     tense = context.get("tense") or ("past" if surface == "timeline" else None)
     dated = surface in DATED_SURFACES
-    spans = rec.recognise(raw, now=now, locale=locale, tense=tense, known=known, bare_hours=dated)
+    spans = rec.recognise(raw, now=now, locale=context.get("locale"), tense=tense, known=known, bare_hours=dated)
 
     if dated:
         slots, used = _reminder_slots(raw, spans, now, locale, known, tense or "future")

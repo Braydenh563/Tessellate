@@ -36,8 +36,8 @@ These are the constraints that shaped every decision. When in doubt, they win.
    opt-in features can reach the internet, web search and the update check:
    web search is off by default, the update check waits for the answer to a
    question the first start asks once, and both are clearly marked. The rest is a short list of
-   one-off downloads that you start (a model, an optional package) or that the
-   search model makes on first use; [PRIVACY.md](PRIVACY.md) lists them all and
+   one-off downloads that you start (a model, an optional package) or say yes to
+   (the search model, asked once); [PRIVACY.md](PRIVACY.md) lists them all and
    Settings, Privacy records every connection the app makes. When web search
    *is* on it is built to reveal as little as possible: an ordinary
    browser User-Agent rather than one naming the app, no cookie jar, no
@@ -511,7 +511,7 @@ job is not a task, and a screen that accumulates them is the Logs screen.
 `ai/tools/` (a package now: `__init__.py` plus `categories.py`,
 `documents.py`, `files.py`, `whiteboard.py`, `_common.py`, split out once the
 registry outgrew one file) defines a registry the chat model can call:
-**65 tools**. Read-only tools run inline; the **destructive** ones (marked
+**72 tools**. Read-only tools run inline; the **destructive** ones (marked
 ⚠️ below) emit a confirmation event to the UI instead of executing. The
 registry's `destructive` flag is the one list: a change after a turn has read
 text from outside (a web page, a clipped or imported note) waits for the same
@@ -569,6 +569,14 @@ notebook's structure rather than only search it
 instead of guessing which note you meant; `compress_chat` ·
 `save_user_preference`: a standing instruction ("always answer in British
 English") remembered across conversations
+
+*Help, sums and checks:* `search_help`: how a feature or setting works, from the Guide;
+`calculate`: a sum, percentage, unit or currency conversion, or count of days, worked out the
+way the app does; `check_answer`: a draft answer against its sources, naming any number or
+name they do not contain
+
+*Proposing a change:* `propose_act` (one change in the person's words, shown as a card they
+confirm) and `move_notes` (into a category or a space; the app asks first)
 
 *Online (opt-in, off by default):* `web_search` · `read_url`
 
@@ -1381,7 +1389,7 @@ style, optional AI profile, …) live in `data/preferences.json`, managed by
 
 ## 12. Testing & CI
 
-- **Run locally:** `PYTHONPATH=src pytest -n auto` (about 830 files, 9,200+ tests,
+- **Run locally:** `PYTHONPATH=src pytest -n auto` (about 1,400 files, 12,400+ tests,
   under nine minutes on four cores and about 25 serially). Uses a throwaway database and fakes every AI call
   (`tests/fakes.py` + `tests/conftest.py`), so it is fully offline. The
   routine local gate is `bash scripts/gate.sh --changed` (the lint set,

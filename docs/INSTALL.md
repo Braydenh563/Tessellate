@@ -145,16 +145,17 @@ Installed at: /home/you/Tessellate
 Next time:    open a terminal there and run ./start.sh again
 ```
 
-**A first install needs the internet once.** The first setup downloads the search model and the packages you chose; after that Tessellate works offline.
+**A first install needs the internet once.** The first setup downloads the packages you chose; after that Tessellate works offline. Search by meaning is a separate download that waits for your yes.
 
-**The first launch also fetches the search model's package.** The built-in
-search model (filing and search by meaning) needs `sentence-transformers`.
-The launcher installs it with the other requirements. A packaged Windows or
-Linux app installs it itself the first time it is needed: a one-time download
-of several hundred MB (more on Windows, where it brings torch) that needs the
-internet and can take several minutes. Settings, Search and index, Search
-engine says when it is running, and Settings, Background tasks shows it. To
-avoid it, install [Ollama](https://ollama.com), run
+**Search by meaning asks before it downloads.** The built-in search model
+(filing and search by meaning) needs `sentence-transformers`, which the
+launcher installs with the other requirements. A packaged Windows or Linux app
+asks once, the first time a saved note needs it (Download or No thanks); after
+a yes it installs it itself: a one-time download of about 2 GB (the package,
+and on Windows torch with it, plus the model from huggingface.co) that needs
+the internet and can take several minutes. Settings, Search and index,
+Download search by meaning turns it on later, and Settings, Background tasks
+shows it running; until then search uses keywords. To avoid it, install [Ollama](https://ollama.com), run
 `ollama pull nomic-embed-text`, and pick that model under Ollama embedding
 model in the same place.
 
@@ -298,7 +299,7 @@ install.
 | `TESSELLATE_LAN_PORT` | `8443` | The HTTPS port other devices use, when Settings, Account & security allows them |
 | `OLLAMA_URL` | `http://localhost:11434` | Where Ollama listens |
 | `TESSELLATE_SEARXNG_PORT` | `8888` | The port for the SearXNG instance the app can run for web search |
-| `TESSELLATE_NO_AUTO_INSTALL` | unset | Set it to stop the app installing the search model's package by itself |
+| `TESSELLATE_NO_AUTO_INSTALL` | unset | Set it to stop the search model's download for good, whatever the answer to the one-time question |
 | `TESSELLATE_EMBED_THREADS` | automatic | How many threads the built-in search model may use |
 | `TESSELLATE_RAM_GB` | detected | Overrides the memory the app thinks it has, for a container |
 | `TESSELLATE_EXTRAS_MIRROR` | unset | A mirror for the pinned downloads in Settings, Packages |

@@ -498,6 +498,12 @@ def status(session: Session = Depends(get_session)) -> dict:
         "embedding_warming": embeddings_module.warmup_running(),
         "embedding_warming_failed": embeddings_module.warmup_failed(),
         "embedding_error": embeddings.last_error,
+        #: The one-time offer to download search by meaning: a save wanted it,
+        #: nothing is on this computer, and the question is still unanswered.
+        "semantic_offer": bool(
+            getattr(embeddings, "awaiting_consent", False)
+            and not config.get_preference("semantic_choice_made", False)
+        ),
         "reindex": jobs.reindex_status(),
         "embedding_coverage": _embedding_coverage(session),
         #: How the last search found its notes (`search_manager.last_search`).

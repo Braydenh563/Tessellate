@@ -42,6 +42,7 @@ def test_a_missing_package_triggers_extras_start_once(app_state, monkeypatch):
     `embed_text` for real, downloading the model from Hugging Face, so
     `extras.start` was never called at all). `extras.start` is also mocked
     so this stays a unit test, not a network call either way."""
+    deps.get_config().set_preference("semantic_auto_install", True)  # a yes was given (2026-10-27: no download without one)
     service = deps.get_embeddings()
     monkeypatch.setattr(
         service,
@@ -85,6 +86,7 @@ def test_auto_install_does_nothing_when_extras_refuses_to_start(app_state, monke
     relying on the ambient environment (no sentence-transformers installed)
     silently stopped exercising this on CI, where the real package is
     present."""
+    deps.get_config().set_preference("semantic_auto_install", True)  # a yes was given (2026-10-27: no download without one)
     service = deps.get_embeddings()
     monkeypatch.setattr(
         service,
@@ -112,6 +114,7 @@ def test_auto_install_retries_the_load_once_the_background_install_finishes(
     transformers installed) silently stopped exercising this on CI, where
     the real package is present and the load just succeeds instead of
     raising."""
+    deps.get_config().set_preference("semantic_auto_install", True)  # a yes was given (2026-10-27: no download without one)
     service = deps.get_embeddings()
     monkeypatch.setattr(
         service,

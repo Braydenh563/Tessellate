@@ -2156,7 +2156,7 @@ const LAZY_ENTRY_POINTS = {
   sharedIntake: ["takeSharedIntake"],
   undoKit: ["pushEntryCreateUndo", "pushLinkCreateUndo", "pushRequestUndo", "pushEntriesPutUndo", "pushBinPairUndo", "pushRoutePairUndo", "pushTensionLinkUndo", "pushTokenUndo", "pushUploadUndo", "pushCorrectionUndo", "pushMadeUndo", "pushTextUndo", "pushWikiRenameUndo"],
   tidy: ["openTidySheet"],
-  semanticNotice: ["semanticInstallNotice", "semanticOnboardingOffer"],
+  semanticNotice: ["semanticOffer", "semanticOnboardingOffer"],
   questionsView: ["initQuestionsView", "loadQuestions"],
   //: 2026-10-05, the next six: async or unread, reached by a gesture.
   reveal: ["revealFeature", "packagesNoticeOpen"],

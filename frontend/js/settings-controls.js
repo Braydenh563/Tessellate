@@ -573,6 +573,7 @@ $("pref-warm-search-model").addEventListener("change", (e) =>
   setPreference("warm_search_model_at_launch", e.target.checked)
 );
 $("pref-week-start").addEventListener("change", (e) => setPreference("week_start", e.target.value));
+$("pref-season-hemisphere").addEventListener("change", (e) => setPreference("season_hemisphere", e.target.value));
 //: The voice's live sample (CHAT_PLAN decision 72): the same three lines
 //: `composer_digest.sample` writes, kept equal by tests/test_answer_voice.py.
 const VOICE_SAMPLES = {

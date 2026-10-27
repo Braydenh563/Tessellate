@@ -100,6 +100,8 @@ def test_import_refuses_a_file_that_is_not_settings(client):
 NO_ROW = {
     "embedder_idle_unload_minutes": "an advanced key (decision 62), set by hand; 0 keeps the model loaded",
     "week_start_locale": "reported by the browser at startup; the First day of the week row overrides it",
+    "season_locale": "reported by the browser at startup; the Seasons row overrides it",
+    "semantic_choice_made": "set by the one-time download question; Download search by meaning is the row that changes the answer",
     # Edited as lists or documents in their own panes, not one control.
     "writing_dictionary": "the dictionary editor (Documents)",
     "link_offer_ignored": "the Ignore answer on a link offer, with its count and reset in Settings, Writing",

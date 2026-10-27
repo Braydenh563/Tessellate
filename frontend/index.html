@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content, viewport-fit=cover">
-  <title>Tessellate Notes</title>
+  <title>Tessellate</title>
   <!-- The SVG is the icon; the PNG is the fallback for the handful of places
        that still won't take one: Safari's touch icon in particular, which
        also composites onto white, so the mark carries its own tile. -->
@@ -10312,37 +10312,36 @@ Link to another note with [[its first few words]]."></textarea>
                    starts by itself the first time the built-in model is needed
                    (embeddings._maybe_auto_install_missing_package). -->
               <p id="builtin-embed-note" class="muted small hidden" role="status"></p>
-              <!-- The owner: "the user should be able to cancel or refuse the
-                   auto install of sentence transformers". Off means it is
-                   never started on its own; Settings, Packages keeps its
-                   Install, and a running one is stopped from Background
-                   tasks (or the first-time notice's Don't install). -->
+              <!-- The owner, 2026-10-27: nothing downloads without a yes. The
+                   question is asked once, in a notice; this row turns
+                   the download on later, or off again. Off, search stays on
+                   keywords and Settings, Packages keeps its manual Install. -->
               <div class="row help-head">
                 <label class="check-row">
                   <input type="checkbox" id="pref-semantic-auto-install">
-                  <span>Install search by meaning automatically</span>
+                  <span>Download search by meaning</span>
                 </label>
                 <button type="button" class="icon-only ghost small graph-help-toggle"
                   data-help-for="semantic-auto-install-help" aria-controls="semantic-auto-install-help" aria-expanded="false"
-                  title="About installing search by meaning" aria-label="About installing search by meaning">
+                  title="About downloading search by meaning" aria-label="About downloading search by meaning">
                   <i class="ph ph-question" aria-hidden="true"></i>
                 </button>
               </div>
-              <p class="muted small">Off, search stays on keywords until you press Install in Settings, Packages.</p>
-              <div class="help-body hidden" id="semantic-auto-install-help" role="dialog" aria-label="About installing search by meaning">
+              <p class="muted small">Off, search uses keywords. About 2 GB, once, from huggingface.co and pypi.org.</p>
+              <div class="help-body hidden" id="semantic-auto-install-help" role="dialog" aria-label="About downloading search by meaning">
                 <p>
                   Search by meaning needs one Python package, sentence-transformers,
-                  which brings PyTorch with it: about 2 GB, downloaded once, and
-                  it needs the internet. With this on, Tessellate starts that
-                  install by itself the first time it is needed. It runs in the
-                  background (Settings, Background tasks shows it, with Stop)
-                  and search uses keywords until it finishes.
+                  which brings PyTorch with it, and a small model from
+                  huggingface.co: about 2 GB in all, downloaded once, and it needs
+                  the internet. Tessellate asks before it downloads anything. Turn
+                  this on and it starts at once, in the background (Settings,
+                  Background tasks shows it, with Stop); search uses keywords until
+                  it finishes.
                 </p>
                 <p>
-                  Turn it off to refuse the install. Nothing is downloaded, and
-                  search by keywords keeps working. You can still install it
-                  yourself from Settings, Packages, or pick an Ollama embedding
-                  model below instead.
+                  Off, nothing is downloaded and search by keywords keeps working.
+                  You can still install it yourself from Settings, Packages, or
+                  pick an Ollama embedding model below instead.
                 </p>
               </div>
               <label class="check-row">
@@ -12325,6 +12324,14 @@ Link to another note with [[its first few words]]."></textarea>
                   <option value="sunday">Sunday</option>
                 </select>
               </div>
+              <div class="row">
+                <label for="pref-season-hemisphere" class="muted">Seasons</label>
+                <select id="pref-season-hemisphere" title="Which half of the year summer and winter mean">
+                  <option value="auto">From my language and region (default)</option>
+                  <option value="north">Northern hemisphere</option>
+                  <option value="south">Southern hemisphere</option>
+                </select>
+              </div>
               <h3>Chat history</h3>
               <div class="row">
                 <label for="pref-chat-retention" class="muted">Delete saved chats after</label>
@@ -14274,7 +14281,7 @@ Link to another note with [[its first few words]]."></textarea>
                  question it answers. -->
             <div class="settings-group about-hero">
               <div id="about-emblem" class="emblem" aria-hidden="true"></div>
-              <h3>Tessellate Notes</h3>
+              <h3>Tessellate</h3>
               <p class="muted">
                 A 100% offline, local-first notebook where a local AI files your
                 thoughts and answers questions about them. Your data never leaves

@@ -52,6 +52,25 @@ class EmbeddingCacheBroken(RuntimeError):
     """The model is on disk but will not load; the app stays offline rather
     than fetching it again unasked (`_load_st_model`)."""
 
+class EmbeddingNeedsConsent(EmbeddingCacheBroken):
+    """Search by meaning is not on this computer and the person has not said
+    yes to downloading it. A state, not a failure: no traceback, no retry
+    cooldown, search runs on keywords."""
+
+
+def _package_present() -> bool:
+    """Whether `sentence_transformers` can be imported, without importing it."""
+    import importlib.util
+    import sys
+
+    if sys.modules.get("sentence_transformers") is not None:
+        return True
+    try:
+        return importlib.util.find_spec("sentence_transformers") is not None
+    except (ImportError, ValueError):
+        return False
+
+
 logger = logging.getLogger("tessellate.embeddings")
 
 # Warm-up bookkeeping so the UI can tell "still loading" from "failed"
@@ -701,6 +720,9 @@ class EmbeddingService:
         # Guards _maybe_auto_install_missing_package: try the self-heal at
         # most once per process, not once per failed embed.
         self._auto_install_attempted = False
+        #: Set when a save wanted the model and found no yes to download it:
+        #: `/models/status` turns it into the one-time offer (`semantic_offer`).
+        self.awaiting_consent = False
         # text -> vector, bounded and FIFO. See embed_text for why.
         self._embed_cache: dict[str, np.ndarray] = {}
         # Written from request threads and the re-index thread at once. A
@@ -737,6 +759,16 @@ class EmbeddingService:
         an out-of-date banner."""
         self.last_error = None
         self._load_failed_at = None
+
+    def _download_allowed(self) -> bool:
+        """Whether the person has said yes to downloading search by meaning
+        (`semantic_auto_install`, asked once). A service with no settings
+        behind it (one pinned by an explicit Install or model switch) is the
+        person's own action and is not held back."""
+        config = getattr(getattr(self, "_models", None), "_config", None)
+        if config is None:
+            return True
+        return bool(config.get_preference("semantic_auto_install", False))
 
     def active_model(self) -> str:
         """The model actually doing the work right now, whichever backend."""
@@ -903,9 +935,20 @@ class EmbeddingService:
         #: loading, it stays offline, says why, and Settings' Reinstall is the
         #: one way back online, a choice the person makes.
         os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")
+        repo = self.st_repo()
+        #: **No download without a yes** (the owner, 2026-10-27). Nothing is
+        #: fetched, neither the package nor the model, until the one-time
+        #: question has been answered yes; what is already on this computer
+        #: loads as before. Checked before the import so a missing package is
+        #: the same state as a missing model.
+        if not self._download_allowed() and not (_package_present() and self._model_on_disk(repo)):
+            self.awaiting_consent = True
+            raise EmbeddingNeedsConsent(
+                "Search by meaning is not installed yet; search uses keywords until you allow the download "
+                "in Settings, Search and index (or Reinstall in Settings, Models)."
+            )
         from sentence_transformers import SentenceTransformer
 
-        repo = self.st_repo()
         try:
             model = SentenceTransformer(repo, local_files_only=True)
             logger.info("embedding model loaded from local cache")
@@ -936,7 +979,7 @@ class EmbeddingService:
                 #: runs on keywords meanwhile, and the person is told to
                 #: reinstall only once two fixes have failed (INBOX 1289).
                 models = getattr(self, "_models", None)
-                allowed = models is None or models._config.get_preference("semantic_auto_install", True)
+                allowed = models is None or models._config.get_preference("semantic_auto_install", False)
                 tried = getattr(self, "_repair_attempts", 0)
                 if allowed and tried < REPAIR_ATTEMPTS:
                     self._repair_attempts = tried + 1
@@ -958,6 +1001,12 @@ class EmbeddingService:
         logger.info("%s is not on this computer yet: downloading it once", repo)
         return _fetch_model_as_a_task(SentenceTransformer, repo, "Downloading the search model")
 
+    @staticmethod
+    def _model_on_disk(repo: str) -> bool:
+        from tessellate.core import embedmodels
+
+        return embedmodels.is_downloaded(repo)
+
     def _mend_incomplete_cache(self, repo: str, health: dict, cause: Exception) -> None:
         """The folder is there but its files are not all (an empty folder, an
         interrupted download): mend it as a visible task and say so. Always
@@ -971,7 +1020,7 @@ class EmbeddingService:
         from tessellate.core import embedmodels
 
         models = getattr(self, "_models", None)
-        allowed = models is None or models._config.get_preference("semantic_auto_install", True)
+        allowed = models is None or models._config.get_preference("semantic_auto_install", False)
         running = embedmodels.current()
         mending = bool(running.running and running.repair)
         #: Two fixes a process (the owner: "ask the person only after two
@@ -1023,6 +1072,7 @@ class EmbeddingService:
                 self._st_model = self._load_st_model()
                 self._was_loaded = True
                 self._load_failed_at = None
+                self.awaiting_consent = False
             import numpy as np
 
             _limit_torch_threads()
@@ -1035,6 +1085,12 @@ class EmbeddingService:
             self._last_used = time.monotonic()
             self._watch_idle()
             return result
+        except EmbeddingNeedsConsent as exc:
+            #: Asked for, not failed: no cooldown (a yes takes effect on the
+            #: next save), no traceback, the sentence for the Models screen.
+            self.last_error = str(exc)
+            logger.info("search by meaning waits for a yes before downloading")
+            return None
         except Exception as exc:
             # No semantic features right now; the rest of the app must
             # keep working: but record and LOG why, or a broken install
@@ -1105,7 +1161,7 @@ class EmbeddingService:
         # next failed embed install without a restart.
         #: Through the model manager's own config, not `core.deps`, which
         #: imports this module (tests/test_no_import_cycles.py).
-        if not self._models._config.get_preference("semantic_auto_install", True):
+        if not self._models._config.get_preference("semantic_auto_install", False):
             logger.info("sentence-transformers is missing and the auto-install is switched off")
             return
         #: Never started for another device (core/origin.py, secscan-1011's

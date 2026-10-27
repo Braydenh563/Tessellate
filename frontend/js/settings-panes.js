@@ -687,6 +687,10 @@ async function reportTimezone() {
   if (weekDay !== null && !(prefsCache && prefsCache.week_start_locale === weekDay)) {
     body.week_start_locale = weekDay;
   }
+  //: The browser's language and region, so "automatic" seasons can follow
+  //: it (southern for en-AU, en-NZ, en-ZA ...) when a call carries no locale.
+  const tag = String(navigator.language || "").slice(0, 35);
+  if (tag && !(prefsCache && prefsCache.season_locale === tag)) body.season_locale = tag;
   if (!Object.keys(body).length) return;
   prefsCache = await apiJson("/preferences", {
     method: "PUT",
@@ -740,7 +744,7 @@ async function renderPrefs() {
   if (prefsSaveInFlight) await prefsSaveInFlight.catch(() => {});
   prefsCache = await apiJson("/preferences");
   $("pref-display-name").value = prefsCache.display_name || "";
-  $("pref-semantic-auto-install").checked = prefsCache.semantic_auto_install ?? true;
+  $("pref-semantic-auto-install").checked = prefsCache.semantic_auto_install ?? false;
   //: The saved look, and its controls (avatars.js).
   if (typeof setOwnNameMarkStyle === "function") {
     setOwnNameMarkStyle(prefsCache.avatar_style || {});
@@ -753,6 +757,7 @@ async function renderPrefs() {
   $("pref-style").value = prefsCache.communication_style;
   $("pref-voice").value = prefsCache.composer_voice;
   $("pref-week-start").value = prefsCache.week_start || "auto";
+  $("pref-season-hemisphere").value = prefsCache.season_hemisphere || "auto";
   $("pref-insight").value = prefsCache.insight_level || "one";
   $("pref-profile").value = prefsCache.user_profile;
   $("pref-profile-enabled").checked = prefsCache.profile_enabled;

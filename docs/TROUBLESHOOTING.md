@@ -60,14 +60,16 @@ again. If nothing answers, check that this computer's firewall allows port 8443.
 
 Search and filing by meaning use a built-in model that needs the
 `sentence-transformers` package. The first time it is needed, and it is not
-installed, the app installs it by itself: a one-time download of several hundred
+installed, the app asks once (Download or No thanks). After a yes it installs it by
+itself, and Settings, Search and index, Download search by meaning turns it on
+later: a one-time download of several hundred
 MB (more on Windows, where it brings torch) that needs the internet and can take
 several minutes. Settings, Search and index, Search engine says when it is
 running, and Settings, Background tasks lists the job. Search falls back to
 keywords until it finishes, and nothing else waits for it.
 
 To avoid the download, pick an Ollama embedding model (`nomic-embed-text`) in the
-same place, or set `TESSELLATE_NO_AUTO_INSTALL` to stop the automatic install.
+same place, or set `TESSELLATE_NO_AUTO_INSTALL` to stop the download whatever the answer.
 
 ## Windows: "torch_xpu.dll ... WinError 127" and search falls back to keywords
 

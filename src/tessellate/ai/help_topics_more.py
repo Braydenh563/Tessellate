@@ -268,10 +268,13 @@ MORE_TOPICS: list[dict] = [
         "keywords": (
             "smart quotes", "link offers", "offer links", "auto clear",
             "empty the bin", "delete old chats", "chat history", "mute notifications",
-            "general settings",
+            "general settings", "seasons", "hemisphere", "southern hemisphere", "summer", "winter",
         ),
         "body": (
-            "Settings, General. Bin: auto-clear binned notes, documents, reminders and OCR readings after a "
+            "Settings, General. Calendar: First day of the week, and Seasons, which half of the year "
+            "summer, winter, spring and autumn mean (northern or southern hemisphere; automatic follows "
+            "your language and region, so en-AU, en-NZ and en-ZA read summer as December to February). "
+            "Bin: auto-clear binned notes, documents, reminders and OCR readings after a "
             "number of days. Chat history: delete saved chats after a number "
             "of days (0 keeps every chat; pinned chats are never deleted). "
             "Notifications: mute everything except reminders. Writing: smart "
@@ -294,18 +297,18 @@ MORE_TOPICS: list[dict] = [
             "files missing", "model files incomplete",
             "rebuild search index", "search index", "search is wrong",
             "too many results", "too few results", "search feels too strict",
-            "install search by meaning automatically", "dont install", "refuse install",
-            "cancel install", "sentence-transformers", "2 gb download",
+            "download search by meaning", "no thanks", "refuse download", "turn on search by meaning",
+            "cancel install", "sentence-transformers", "2 gb download", "search model download",
         ),
         "body": (
             (
                 "Settings, Search and index. Search engine: the built-in one (recommended, about 650 MB "
                 "of memory while the app is open) or an Ollama embedding model such as nomic-embed-text. "
                 "The built-in one needs the sentence-transformers package (about 2 GB with PyTorch), "
-                "which Tessellate installs in the background the first time it is needed, with a notice "
-                "that says so and a Don't install button; the switch Install search by meaning "
-                "automatically turns that off, and search then uses keywords until you press Install in "
-                "Settings, Packages. Changing the engine re-reads every note in the background "
+                "and a small model from huggingface.co. Nothing is downloaded without a yes: the first time a "
+                "save needs it Tessellate asks once, with Download and No thanks, and search uses "
+                "keywords until you say yes. The switch Download search by meaning turns it on later, "
+                "or off again, and Settings, Packages keeps a manual Install. Changing the engine re-reads every note in the background "
                 "(Background tasks shows it, with Stop) and search keeps using the current model until "
                 "the new one has read every note. Embedding models lists the choices, from MiniLM "
                 "(smallest, fastest) and BGE Small (the default) to multilingual ones (Multilingual E5, "
