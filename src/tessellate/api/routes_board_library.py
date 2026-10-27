@@ -1269,13 +1269,14 @@ def paste_board_items(board_id: int, body: PasteBody, db: Session = Depends(get_
     made_objects, made_sketches = [], []
 
     # Links last: their ends have to exist before they can point at them.
-    for item in body.items:
-        if item.object:  # an object has no ends: a stray src or dst is ignored, never a silent drop
-            made_objects.append(_paste_object(db, target, item, keys))
+    # An object has no ends: a stray src or dst is ignored, never a silent drop.
+    made_objects.extend(_paste_object(db, target, item, keys) for item in body.items if item.object)
     for linked in (False, True):
-        for item in body.items:
-            if item.sketch and bool(item.src or item.dst) == linked:
-                made_sketches.append(_paste_sketch(db, target, item, keys))
+        made_sketches.extend(
+            _paste_sketch(db, target, item, keys)
+            for item in body.items
+            if item.sketch and bool(item.src or item.dst) == linked
+        )
     _record_paste(db, board_id, made_sketches, made_objects)
     db.commit()
     for row in made_sketches + made_objects:

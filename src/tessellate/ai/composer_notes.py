@@ -238,11 +238,7 @@ def recent(ctx: Ctx) -> Reply | None:
 
 def _heading_lines(content: str) -> list[tuple[int, str, int]]:
     """(level, title, words) for each heading, in order."""
-    out = []
-    for sec in study.sections(content):
-        if sec.level:
-            out.append((sec.level, sec.title, len(sec.text.split())))
-    return out
+    return [(sec.level, sec.title, len(sec.text.split())) for sec in study.sections(content) if sec.level]
 
 
 def _outline_note(ctx: Ctx) -> dict | None:

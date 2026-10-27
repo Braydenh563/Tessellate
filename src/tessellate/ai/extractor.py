@@ -310,8 +310,10 @@ def _model_links(session, notes, source_entries, embeddings, model_manager, olla
             reason = _reason_for(note.content, entry.content, model_manager, ollama)
             if reason is not None:
                 links.append(_link(ref, f"existing:{entry.id}", _short_preview(entry.content), reason, "source"))
-        for related in find_related(session, note.content, embeddings, model_manager, ollama, exclude_ids):
-            links.append(_link(ref, f"existing:{related['entry_id']}", related["preview"], related["reason"], "related"))
+        links.extend(
+            _link(ref, f"existing:{related['entry_id']}", related["preview"], related["reason"], "related")
+            for related in find_related(session, note.content, embeddings, model_manager, ollama, exclude_ids)
+        )
     for i in range(len(notes) - 1):
         reason = _reason_for(notes[i].content, notes[i + 1].content, model_manager, ollama)
         if reason is not None:
