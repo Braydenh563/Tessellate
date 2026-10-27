@@ -163,6 +163,21 @@ def unfinished(aw: Awareness) -> bool:
     return bool(aw.open_title or aw.topic)
 
 
+_THIS = re.compile(r"\b(?:this|it|that|the open)\b(?:\s+(?:note|doc|document|page|draft|one))?|\bwhat(?:'s| is) left\b", re.I)
+_SMALL = frozenset("the a an of to in on and or for my your what about is are do does i me with".split())
+
+
+def about_open(title: str, asked: str) -> bool:
+    """Whether the question is about the open note: it names the note's
+    words, or points at it ("this", "what is left"). An answer on cloud
+    computing does not end on "You have “test draft” open" (INBOX 1420)."""
+    if not asked:
+        return True
+    named = {w for w in re.findall(r"[a-z0-9]+", title.lower()) if w not in _SMALL}
+    words = set(re.findall(r"[a-z0-9]+", asked.lower()))
+    return bool(named & words) or bool(_THIS.search(asked))
+
+
 def _asked_already(howto: str, asked: str) -> bool:
     """The suggested how-to is the question just answered."""
     words = set(re.findall(r"[a-z]+", howto.lower()))
@@ -176,6 +191,7 @@ def closing(
     *,
     related: bool = True,
     asked: str = "",
+    cited: tuple[str, ...] | list[str] = (),
 ) -> str:
     """The "here's how you might do that" step: a resume line only when
     something is unfinished, then one thing to ask. The thing to ask is the
@@ -190,10 +206,12 @@ def closing(
     howto = TAB_HOWTO.get(tab_key, "") if related else ""
     if howto and _asked_already(howto, asked):
         howto = ""
+    #: The answer drew on the open note, or the question is about it.
+    open_said = bool(aw.open_title) and (aw.open_title in cited or about_open(aw.open_title, asked))
     for step in range(4):
         lines: list[str] = []
         salted = f"{seed}:{step}"
-        if aw.open_title:
+        if open_said:
             lines.append(_pick(_PICK_UP_OPEN, salted, "title").format(title=aw.open_title))
         elif aw.topic:
             lines.append(_pick(_TOPIC, salted, "topic").format(topic=aw.topic))
