@@ -115,6 +115,7 @@ REACHED_AFTER_LOAD = {
     "findSettings":"settingsUi, called by filterSettings only when renderSettingResults (same bundle) returned a count",
     "companionPathPlan": "companionMenu, fetched with the mind at the first tick; a far move walks until then (typeof check)",
     "nameMarkBuddyThrow": "companionThrow, fetched on the carry's first move; the release checks typeof and drops otherwise",
+    "companionThrowPlan": "companionThrow, called by the release only when `thrown`, which is false unless typeof nameMarkBuddyThrow (same bundle) is a function",
     #: Back closing an open overlay (router-overlays.js): preloaded three seconds
     #: after boot; before that Back steps the tab history as it always did. A
     #: stand-in would return a promise, which is truthy, and swallow every Back.

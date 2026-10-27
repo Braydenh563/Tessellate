@@ -8,6 +8,7 @@ below). Versioning is `0.x` while the app stabilises.
 ## [Unreleased]
 
 ## [0.6.2] - 2026-10-27
+- Companion: a throw is smooth again. Its whole flight and where it comes down are worked out the moment it is let go, on one measure of the page, so no frame of the flight reads the page (the landing's search had run in the last frame, 11 to 40ms, and 217ms on a slowed machine), and the check for popups waits until it is down.
 - Whiteboard: a text box or sticky linked to a note saves again (it was refused as not a web address), and a pasted item that carried stray link ends is no longer dropped. Answers from facts: a date in a tool's time stamp (2026-10-30T17:00) counts as named, so a correct reply giving that day is kept.
 - Guide: "how do I pin a note" is answered with pinning a note (it had the Graph's node pin), a PIN for the lock screen no longer matches pinning, and with a model running a greeting, thanks, "who are you" or "that didn't help" is answered in the first person instead of "not sure".
 - Guide: open and social questions are answered in the first person (what can you help me with, who are you, thanks, that didn't help, a vague organise, a request outside the app); a composed answer adds a Where line only when a place is asked for and no longer repeats "From the app's help" (the byline says it); a finished action such as a pin is no longer offered as work to resume, and the next-question suggestion follows the question.

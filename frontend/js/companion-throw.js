@@ -211,27 +211,69 @@ function companionThrowSettle(kind, pose, roll) {
   return list[Math.min(list.length - 1, Math.floor(roll * list.length))] || "";
 }
 
-//: The throw itself (moved here from avatars.js, INBOX 882): let go at `vx`,
-//: `vy` (px per ms), the flight one frame at a time on transforms only, then
-//: its place. Reduce motion: the plain flight worked out at once and a
-//: crossfade to where it comes down, with none of the above.
-function nameMarkBuddyThrow(buddy, vx, vy, world) {
-  nmb.flight?.stop();
-  nmb.home = null;
-  const tab = nameMarkBuddyTab();
+//: **The whole flight is worked out when it is let go** (the owner,
+//: 2026-10-27: "throwing the companion is now framey, not clean or smooth
+//: and glitchy"). Its path, 16ms steps from (`x`, `y`) at `vx`, `vy` (px
+//: per ms) to rest, and where it comes down (`nameMarkBuddyThrowSpot`, the
+//: page measured once) are fixed here, in the release, before it writes
+//: anything; the frames only draw the path. Measured (throw5.js, Atlas,
+//: 1440x900): the landing was worked out in the frame it came to rest, 11
+//: to 40ms at 1x CPU and 217ms (122 of it forced layout) at 4x, in a frame
+//: the drawing had already dirtied. Reduce motion: the plain flight, no fates.
+function companionThrowPlan(x, y, vx, vy, world) {
   const rand = companionThrowSeed.seed ? companionThrowRng(companionThrowSeed.seed) : Math.random;
   const feel = nameMarkBuddyThrowFeel([rand(), rand(), rand()], Math.hypot(vx, vy));
   const room = { ...world, w: NMB_W, hang: world.top > 0 ? world.top - NMB_GRIP : null, climb: NMB_FEET - 1 - NMB_GRIP };
-  let s = { x: nmb.x, y: nmb.y, vx, vy, rot: 0, t: 0, on: null, rest: false, tried: {} };
-  nmb.thrown = { v: [+vx.toFixed(2), +vy.toFixed(2)], from: [Math.round(nmb.x), Math.round(nmb.y)] };
-  if (nameMarkBuddyNoTravel()) {
-    while (!s.rest) s = nameMarkBuddyFlightStep(s, 16, world, feel);
-    nameMarkBuddyThrowLand(buddy, s, tab, nameMarkBuddyThrowSpot(s));
+  const still = nameMarkBuddyNoTravel();
+  let s = { x, y, vx, vy, rot: 0, t: 0, on: null, rest: false, tried: {} };
+  const path = [s];
+  //: A cap past any flight's own (1.2 s, a splat's slide): it always ends.
+  while (!s.rest && path.length < 400) {
+    s = still ? nameMarkBuddyFlightStep(s, 16, world, feel) : companionThrowStep(s, 16, room, feel, nameMarkBuddyFlightStep, rand);
+    path.push(s);
+  }
+  if (!s.rest) path[path.length - 1] = s = { ...s, rest: true };
+  return { path, still, rand, v: [vx, vy], spot: nameMarkBuddyMeasureOnce(() => nameMarkBuddyThrowSpot(companionThrowAt(s))) };
+}
+
+//: Where the path has it `ms` into the flight: between its two steps, so
+//: a frame that is not a multiple of 16ms is drawn where it is, not where
+//: the last step left it. A step that moves it far (round to the other
+//: side, on to a ledge's end) is taken as it is, never swept across.
+function companionThrowAtTime(path, ms) {
+  const i = Math.min(path.length - 1, Math.max(0, Math.floor(ms / 16)));
+  const a = path[i];
+  const b = path[i + 1];
+  if (!b || Math.hypot(b.x - a.x, b.y - a.y) > 60 || Math.abs(b.rot - a.rot) > 90) return a;
+  const f = Math.min(1, Math.max(0, (ms - a.t) / Math.max(1, b.t - a.t)));
+  return { ...a, x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f, rot: a.rot + (b.rot - a.rot) * f };
+}
+
+//: The throw itself (moved here from avatars.js, INBOX 882): `plan` from
+//: `companionThrowPlan` (made here when a sweep throws it), drawn a frame
+//: at a time on transforms only, then its place. Reduce motion: straight
+//: to where it comes down, a crossfade.
+function nameMarkBuddyThrow(buddy, vx, vy, world, plan = companionThrowPlan(nmb.x, nmb.y, vx, vy, world)) {
+  nmb.flight?.stop();
+  nmb.home = null;
+  const tab = nameMarkBuddyTab();
+  const { path, rand } = plan;
+  const end = path[path.length - 1];
+  const landing = plan.spot;
+  nmb.thrown = { v: [+vx.toFixed(2), +vy.toFixed(2)], from: [Math.round(path[0].x), Math.round(path[0].y)] };
+  if (plan.still) {
+    nameMarkBuddyThrowLand(buddy, end, tab, landing);
     return;
   }
   const char = buddy.querySelector(".nm-buddy-char");
   buddy.classList.add("nm-buddy-dragging");
-  let then = performance.now();
+  //: The flight's own clock: hidden, frames stop and it waits in the air;
+  //: back, it flies on from there rather than jumping a long step. Its
+  //: first frame is one step: the release's own task (20 to 100ms at 1x
+  //: CPU) is not flight, and counted it drew a 55 to 70px jump (throw5.js).
+  let then = 0;
+  let flown = 0;
+  let step = 0;
   const flight = {
     raf: 0,
     timer: 0,
@@ -252,21 +294,19 @@ function nameMarkBuddyThrow(buddy, vx, vy, world) {
       if (Math.abs(r) > 1 && typeof char.animate === "function") char.animate([{ rotate: `${r}deg` }, { rotate: "0deg" }], { duration: 260, easing: "ease-out" });
     },
   };
+  //: Writes only: nothing in a frame reads the page.
   const frame = (now) => {
     if (nmb.flight !== flight) return;
     if (!buddy.isConnected) return flight.stop();
-    //: Hidden, frames stop and it waits in the air; back, it flies on from
-    //: there rather than jumping a long step.
-    let dt = Math.min(32, Math.max(0, now - then));
+    flown = Math.min(end.t, flown + (then ? Math.min(32, Math.max(0, now - then)) : 16));
     then = now;
+    //: The hardest landing among the 16ms steps this frame passed.
     let hit = 0;
-    while (dt > 0 && !s.rest) {
-      s = companionThrowStep(s, Math.min(16, dt), room, feel, nameMarkBuddyFlightStep, rand);
-      hit = Math.max(hit, s.hit);
-      dt -= 16;
+    while (step + 1 < path.length && path[step + 1].t <= flown) {
+      step += 1;
+      hit = Math.max(hit, path[step].hit || 0);
     }
-    //: The landing spot is read before this frame's writes (read after, it restyled the drawing).
-    const landing = s.rest ? nameMarkBuddyThrowSpot(companionThrowAt(s)) : null;
+    const s = flown >= end.t ? end : companionThrowAtTime(path, flown);
     nameMarkBuddyPut(buddy, Math.round(s.x), Math.round(s.y));
     if (char) char.style.rotate = `${s.rot.toFixed(1)}deg`;
     nameMarkBuddySway(buddy, Math.max(-28, Math.min(28, -s.vx * 10)));

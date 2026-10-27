@@ -122,7 +122,8 @@ def test_it_comes_down_on_a_ledge_under_its_path_and_never_through_one() -> None
 def test_the_flight_is_one_frame_loop_on_transforms_and_lands_as_a_drop() -> None:
     build = AV[AV.index("function nameMarkBuddyBuild(") :]
     assert "nameMarkBuddyReleaseVelocity(drag.samples || [], event?.timeStamp ?? performance.now())" in build
-    assert "nameMarkBuddyThrow(buddy, v[0], v[1], world);" in build
+    # The flight and its landing are planned at the release (`companionThrowPlan`, 2026-10-27).
+    assert "nameMarkBuddyThrow(buddy, v[0], v[1], world, plan);" in build
     throw = _fn("nameMarkBuddyThrow")
     # One requestAnimationFrame, its step capped so a hidden tab resumes in
     # place, drawn by `nameMarkBuddyPut` (a transform) and a rotate.
@@ -131,7 +132,7 @@ def test_the_flight_is_one_frame_loop_on_transforms_and_lands_as_a_drop() -> Non
     assert "nameMarkBuddyPut(buddy, Math.round(s.x), Math.round(s.y));" in throw
     assert ".style.left" not in throw and ".style.top" not in throw
     # Reduce motion: the same flight worked out at once, then a crossfade.
-    assert "if (nameMarkBuddyNoTravel()) {" in throw
+    assert "const still = nameMarkBuddyNoTravel();" in _fn("companionThrowPlan") and "if (plan.still) {" in throw
     # A grab or any other move ends the flight where it is.
     assert "nmb.flight?.stop();" in _fn("nameMarkBuddyMoveTo")
     land = _fn("nameMarkBuddyThrowLand")
