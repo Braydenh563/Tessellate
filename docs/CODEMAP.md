@@ -327,96 +327,96 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addInlineCitations` | frontend/js/capture-ask.js:1177 |
+| `addInlineCitations` | frontend/js/capture-ask.js:1174 |
 | `announce` | frontend/js/capture-ask.js:827 |
-| `answerFigure` | frontend/js/capture-ask.js:2009 |
-| `answerObject` | frontend/js/capture-ask.js:2102 |
-| `askAsOf` | frontend/js/capture-ask.js:3390 |
-| `askNotesOnTheRight` | frontend/js/capture-ask.js:2226 |
+| `answerFigure` | frontend/js/capture-ask.js:2006 |
+| `answerObject` | frontend/js/capture-ask.js:2099 |
+| `askAsOf` | frontend/js/capture-ask.js:3387 |
+| `askNotesOnTheRight` | frontend/js/capture-ask.js:2223 |
 | `askOpenContext` | frontend/js/capture-ask.js:880 |
-| `askQuestion` | frontend/js/capture-ask.js:2949 |
-| `askStatusBusy` | frontend/js/capture-ask.js:2919 |
-| `askStatusText` | frontend/js/capture-ask.js:2904 |
+| `askQuestion` | frontend/js/capture-ask.js:2946 |
+| `askStatusBusy` | frontend/js/capture-ask.js:2916 |
+| `askStatusText` | frontend/js/capture-ask.js:2901 |
 | `captureCategoryChip` | frontend/js/capture-ask.js:504 |
-| `citationInsertionPoint` | frontend/js/capture-ask.js:1146 |
+| `citationInsertionPoint` | frontend/js/capture-ask.js:1144 |
 | `citationKey` | frontend/js/capture-ask.js:1097 |
-| `citationMarker` | frontend/js/capture-ask.js:1269 |
+| `citationMarker` | frontend/js/capture-ask.js:1266 |
 | `citationNumbers` | frontend/js/capture-ask.js:1064 |
-| `citationPeekText` | frontend/js/capture-ask.js:1440 |
+| `citationPeekText` | frontend/js/capture-ask.js:1437 |
 | `citationTextIndex` | frontend/js/capture-ask.js:1111 |
-| `clearAskAnswerFoot` | frontend/js/capture-ask.js:2153 |
+| `clearAskAnswerFoot` | frontend/js/capture-ask.js:2150 |
 | `clearCaptureStatusOnInput` | frontend/js/capture-ask.js:574 |
 | `clearCaptureTagSuggestions` | frontend/js/capture-ask.js:491 |
-| `clearCitedPassage` | frontend/js/capture-ask.js:1650 |
+| `clearCitedPassage` | frontend/js/capture-ask.js:1647 |
 | `clickableResult` | frontend/js/capture-ask.js:1023 |
-| `closeCitationPeek` | frontend/js/capture-ask.js:1551 |
-| `collapseCitationRuns` | frontend/js/capture-ask.js:1244 |
-| `copyAnswer` | frontend/js/capture-ask.js:3319 |
+| `closeCitationPeek` | frontend/js/capture-ask.js:1548 |
+| `collapseCitationRuns` | frontend/js/capture-ask.js:1241 |
+| `copyAnswer` | frontend/js/capture-ask.js:3316 |
 | `createDocumentNamed` | frontend/js/capture-ask.js:287 |
-| `drawAnswerPanels` | frontend/js/capture-ask.js:2278 |
-| `everyRowScored` | frontend/js/capture-ask.js:2438 |
-| `evidenceBlock` | frontend/js/capture-ask.js:1408 |
-| `evidenceChecksOn` | frontend/js/capture-ask.js:1881 |
-| `evidenceRows` | frontend/js/capture-ask.js:1933 |
-| `evidenceSignals` | frontend/js/capture-ask.js:1386 |
-| `evidenceSpan` | frontend/js/capture-ask.js:1379 |
-| `evidenceSwitchReset` | frontend/js/capture-ask.js:1893 |
-| `evidenceToggle` | frontend/js/capture-ask.js:1900 |
+| `drawAnswerPanels` | frontend/js/capture-ask.js:2275 |
+| `everyRowScored` | frontend/js/capture-ask.js:2435 |
+| `evidenceBlock` | frontend/js/capture-ask.js:1405 |
+| `evidenceChecksOn` | frontend/js/capture-ask.js:1878 |
+| `evidenceRows` | frontend/js/capture-ask.js:1930 |
+| `evidenceSignals` | frontend/js/capture-ask.js:1383 |
+| `evidenceSpan` | frontend/js/capture-ask.js:1376 |
+| `evidenceSwitchReset` | frontend/js/capture-ask.js:1890 |
+| `evidenceToggle` | frontend/js/capture-ask.js:1897 |
 | `filedByText` | frontend/js/capture-ask.js:220 |
 | `filingOutcomeText` | frontend/js/capture-ask.js:181 |
-| `finishReply` | frontend/js/capture-ask.js:2285 |
+| `finishReply` | frontend/js/capture-ask.js:2282 |
 | `flashCategory` | frontend/js/capture-ask.js:993 |
 | `flashEntry` | frontend/js/capture-ask.js:889 |
 | `flashReminder` | frontend/js/capture-ask.js:967 |
 | `focusCaptureBox` | frontend/js/capture-ask.js:454 |
-| `groundingThumbs` | frontend/js/capture-ask.js:1741 |
+| `groundingThumbs` | frontend/js/capture-ask.js:1738 |
 | `heldOffline` | frontend/js/capture-ask.js:588 |
-| `holdPictureTokens` | frontend/js/capture-ask.js:2003 |
-| `liveMarkdownRenderer` | frontend/js/capture-ask.js:2802 |
-| `loadAskHistoryBadge` | frontend/js/capture-ask.js:3351 |
+| `holdPictureTokens` | frontend/js/capture-ask.js:2000 |
+| `liveMarkdownRenderer` | frontend/js/capture-ask.js:2799 |
+| `loadAskHistoryBadge` | frontend/js/capture-ask.js:3348 |
 | `loadCaptureDocuments` | frontend/js/capture-ask.js:276 |
-| `loadSuggestions` | frontend/js/capture-ask.js:3325 |
-| `loadTemplates` | frontend/js/capture-ask.js:3423 |
-| `matchReasonBadge` | frontend/js/capture-ask.js:2442 |
-| `newChat` | frontend/js/capture-ask.js:2883 |
-| `notePictures` | frontend/js/capture-ask.js:1726 |
+| `loadSuggestions` | frontend/js/capture-ask.js:3322 |
+| `loadTemplates` | frontend/js/capture-ask.js:3420 |
+| `matchReasonBadge` | frontend/js/capture-ask.js:2439 |
+| `newChat` | frontend/js/capture-ask.js:2880 |
+| `notePictures` | frontend/js/capture-ask.js:1723 |
 | `noteSurfaceIfAny` | frontend/js/capture-ask.js:419 |
 | `noteTemplateForUse` | frontend/js/capture-ask.js:401 |
 | `noteTemplateText` | frontend/js/capture-ask.js:390 |
-| `numberMatchingRecords` | frontend/js/capture-ask.js:1667 |
+| `numberMatchingRecords` | frontend/js/capture-ask.js:1664 |
 | `offerJumpToNewNote` | frontend/js/capture-ask.js:12 |
-| `openCitationPeek` | frontend/js/capture-ask.js:1463 |
+| `openCitationPeek` | frontend/js/capture-ask.js:1460 |
 | `openDocumentFromNote` | frontend/js/capture-ask.js:423 |
 | `openNoteAtPassage` | frontend/js/capture-ask.js:962 |
-| `pictureItems` | frontend/js/capture-ask.js:1738 |
-| `placeAnswerFigures` | frontend/js/capture-ask.js:2044 |
+| `pictureItems` | frontend/js/capture-ask.js:1735 |
+| `placeAnswerFigures` | frontend/js/capture-ask.js:2041 |
 | `placeResultBadge` | frontend/js/capture-ask.js:1018 |
-| `renderAnswerGrounding` | frontend/js/capture-ask.js:1776 |
-| `renderAnswerSupport` | frontend/js/capture-ask.js:1696 |
-| `renderAskAnswerFoot` | frontend/js/capture-ask.js:2172 |
-| `renderAskHint` | frontend/js/capture-ask.js:2253 |
-| `renderAskTrail` | frontend/js/capture-ask.js:2857 |
+| `renderAnswerGrounding` | frontend/js/capture-ask.js:1773 |
+| `renderAnswerSupport` | frontend/js/capture-ask.js:1693 |
+| `renderAskAnswerFoot` | frontend/js/capture-ask.js:2169 |
+| `renderAskHint` | frontend/js/capture-ask.js:2250 |
+| `renderAskTrail` | frontend/js/capture-ask.js:2854 |
 | `renderCaptureDocumentAdder` | frontend/js/capture-ask.js:350 |
 | `renderCaptureDocuments` | frontend/js/capture-ask.js:312 |
 | `renderCaptureTagSuggestions` | frontend/js/capture-ask.js:520 |
-| `renderChatMeta` | frontend/js/capture-ask.js:2306 |
-| `renderEvidenceView` | frontend/js/capture-ask.js:1955 |
+| `renderChatMeta` | frontend/js/capture-ask.js:2303 |
+| `renderEvidenceView` | frontend/js/capture-ask.js:1952 |
 | `resetCaptureForm` | frontend/js/capture-ask.js:461 |
-| `retryAnswer` | frontend/js/capture-ask.js:3315 |
+| `retryAnswer` | frontend/js/capture-ask.js:3312 |
 | `saveEntry` | frontend/js/capture-ask.js:602 |
 | `saveEntryAsDraft` | frontend/js/capture-ask.js:727 |
 | `scheduleCaptureTagSuggestions` | frontend/js/capture-ask.js:548 |
-| `scheduleCitationPeek` | frontend/js/capture-ask.js:1421 |
-| `scheduleCitationPeekClose` | frontend/js/capture-ask.js:1432 |
+| `scheduleCitationPeek` | frontend/js/capture-ask.js:1418 |
+| `scheduleCitationPeekClose` | frontend/js/capture-ask.js:1429 |
 | `scrollEditingEntryIntoView` | frontend/js/capture-ask.js:851 |
-| `setAnsweredBy` | frontend/js/capture-ask.js:2297 |
-| `setAsking` | frontend/js/capture-ask.js:2843 |
+| `setAnsweredBy` | frontend/js/capture-ask.js:2294 |
+| `setAsking` | frontend/js/capture-ask.js:2840 |
 | `settleCaptureStatus` | frontend/js/capture-ask.js:125 |
-| `showAskAsOf` | frontend/js/capture-ask.js:3396 |
-| `showCitedPassage` | frontend/js/capture-ask.js:1619 |
-| `stopAnswer` | frontend/js/capture-ask.js:2849 |
-| `streamChat` | frontend/js/capture-ask.js:2473 |
-| `streamChatEvents` | frontend/js/capture-ask.js:2516 |
+| `showAskAsOf` | frontend/js/capture-ask.js:3393 |
+| `showCitedPassage` | frontend/js/capture-ask.js:1616 |
+| `stopAnswer` | frontend/js/capture-ask.js:2846 |
+| `streamChat` | frontend/js/capture-ask.js:2470 |
+| `streamChatEvents` | frontend/js/capture-ask.js:2513 |
 | `watchFiling` | frontend/js/capture-ask.js:48 |
 | `withTitle` | frontend/js/capture-ask.js:439 |
 
@@ -21925,7 +21925,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E3 · Model calls are scattered across request handlers, background threads and module singletons, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:666 |
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
 | Earlier morning summary (away run 2026-10-18b, branch claude/magical-feynman-7bgj7j, PR 192, 0.6.0) | docs/roadmap/HANDOVER.md:37 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:589 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:591 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4261 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
@@ -21960,7 +21960,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Harper (Automattic) | docs/roadmap/ANALYSIS.md:1783 |
 | Headroom: evaluated, not adopted | docs/roadmap/BACKLOG.md:710 |
 | How far each plan actually is (honest, as of 2026-10-03) | docs/roadmap/HANDOVER.md:364 |
-| How to proceed after PR 149 (the owner asked, 2026-09-14) | docs/roadmap/HANDOVER.md:543 |
+| How to proceed after PR 149 (the owner asked, 2026-09-14) | docs/roadmap/HANDOVER.md:545 |
 | How to proceed after PR 149 (written 2026-09-14; the live order is CLAUDE.md standing order 1 and HANDOVER's Now line) | docs/ROADMAP.md:295 |
 | How to read the evidence in here | docs/roadmap/MODERNISATION_AUDIT.md:23 |
 | How to work on this repo | docs/ROADMAP.md:364 |
