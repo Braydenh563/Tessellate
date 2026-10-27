@@ -233,7 +233,10 @@ function companionThrowPlan(x, y, vx, vy, world) {
     path.push(s);
   }
   if (!s.rest) path[path.length - 1] = s = { ...s, rest: true };
-  return { path, still, rand, v: [vx, vy], spot: nameMarkBuddyMeasureOnce(() => nameMarkBuddyThrowSpot(companionThrowAt(s))) };
+  //: The landing is worked out after the first frame (`land`, below), on the
+  //: path's end: the obstacle measure (7ms clean, 20 to 45ms behind the
+  //: release's own restyle) was the pause between letting go and moving.
+  return { path, still, rand, v: [vx, vy], land: () => nameMarkBuddyMeasureOnce(() => nameMarkBuddyThrowSpot(companionThrowAt(s))) };
 }
 
 //: Where the path has it `ms` into the flight: between its two steps, so
@@ -259,10 +262,13 @@ function nameMarkBuddyThrow(buddy, vx, vy, world, plan = companionThrowPlan(nmb.
   const tab = nameMarkBuddyTab();
   const { path, rand } = plan;
   const end = path[path.length - 1];
-  const landing = plan.spot;
+  //: Worked out once, when first asked: after the first frame, in idle time,
+  //: or by the landing itself if the flight is shorter than that.
+  let landing = null;
+  const spotNow = () => (landing ||= plan.land());
   nmb.thrown = { v: [+vx.toFixed(2), +vy.toFixed(2)], from: [Math.round(path[0].x), Math.round(path[0].y)] };
   if (plan.still) {
-    nameMarkBuddyThrowLand(buddy, end, tab, landing);
+    nameMarkBuddyThrowLand(buddy, end, tab, spotNow());
     return;
   }
   const char = buddy.querySelector(".nm-buddy-char");
@@ -277,8 +283,10 @@ function nameMarkBuddyThrow(buddy, vx, vy, world, plan = companionThrowPlan(nmb.
   const flight = {
     raf: 0,
     timer: 0,
+    idle: 0,
     stop() {
       cancelAnimationFrame(flight.raf);
+      if (flight.idle && typeof cancelIdleCallback === "function") cancelIdleCallback(flight.idle);
       clearTimeout(flight.timer);
       if (nmb.flight !== flight) return;
       nmb.flight = null;
@@ -320,10 +328,11 @@ function nameMarkBuddyThrow(buddy, vx, vy, world, plan = companionThrowPlan(nmb.
       const land = () => {
         flight.stop();
         nmb.thrown.fate = s.fate?.kind || "";
-        nameMarkBuddyThrowLand(buddy, s, tab, landing);
-        companionThrowSettleSoon(buddy, s, landing, rand);
+        const spot = spotNow();
+        nameMarkBuddyThrowLand(buddy, s, tab, spot);
+        companionThrowSettleSoon(buddy, s, spot, rand);
       };
-      if (COMPANION_THROW_PULLS.includes(s.fate?.kind) && landing.y < s.y) companionThrowClimb(buddy, flight, land, s.fate);
+      if (COMPANION_THROW_PULLS.includes(s.fate?.kind) && spotNow().y < s.y) companionThrowClimb(buddy, flight, land, s.fate);
       else land();
       return;
     }
@@ -335,7 +344,16 @@ function nameMarkBuddyThrow(buddy, vx, vy, world, plan = companionThrowPlan(nmb.
     flight.raf = requestAnimationFrame(frame);
   };
   nmb.flight = flight;
+  //: A flight too short to have idle time in (an up throw onto the top bar is
+  //: one frame) is worked out here, before any frame has written.
+  if (end.t <= 200) spotNow();
   next();
+  //: A longer one in idle time (its frames use 3ms of their 16), else soon;
+  //: `stop` clears either.
+  if (end.t > 200) {
+    if (typeof requestIdleCallback === "function") flight.idle = requestIdleCallback(spotNow, { timeout: 200 });
+    else flight.timer = setTimeout(spotNow, 48);
+  }
 }
 
 //: Flat against a side while it holds and slides (the lazy CSS,
@@ -350,7 +368,9 @@ function companionThrowFlat(buddy, char, s) {
     return;
   }
   buddy.dataset.splat = s.splat.side;
-  nameMarkBuddyExpress("surprised", 1400, { drift: true });
+  //: Its face a few frames on: the mood change is a restyle of the whole rig
+  //: (38ms at 1x CPU), and shared the frame the splat's class change was.
+  setTimeout(() => nmb.flight && nameMarkBuddyExpress("surprised", 1400, { drift: true }), 48);
   if (char && typeof char.animate === "function") char.animate([{ scale: "0.6 1.2" }, { scale: "0.84 1.08" }], { duration: 240, easing: "ease-out" });
 }
 

@@ -895,6 +895,10 @@ function initSelectionPopup() {
   // still feels instant rather than delayed by the debounce.
   document.addEventListener("mouseup", (event) => {
     if (event.target.closest(".selection-popup")) return;
+    //: Letting go of the companion (pointer-captured, so it is the target)
+    //: selects nothing, and the read below forced a layout of 15 to 30ms in
+    //: the frame its throw was planned.
+    if (event.target.closest("#nm-buddy")) return;
     selectionPointerPoint = { x: event.clientX, y: event.clientY };
     syncSelectionPopup();
   });

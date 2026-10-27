@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- A thrown companion lands without the hitch: the landing spot is worked out after the first frame (not in the release), its landing act waits one frame after the move, the splat face a few frames after the splat, the whiteboard box is not measured off its tab, and letting go no longer forces the selection popup's layout read (landing call 26 to 83ms before, 0 to 7ms after at 1x CPU).
 - Settings' suggested model list no longer waits on a busy model runner or the graphics card probe (INBOX 1415).
 
 ## [0.6.2] - 2026-10-27
