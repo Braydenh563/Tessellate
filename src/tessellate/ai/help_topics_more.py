@@ -355,6 +355,23 @@ MORE_TOPICS: list[dict] = [
         "badge": {"label": "Answer style", "section": "personas", "target": "pref-style"},
     },
     {
+        "id": "wrap-lines",
+        "keywords": (
+            "wrap lines", "wrap text", "wrap a table", "wrap code", "wrap a code block",
+            "table scrolls sideways", "code scrolls sideways", "long lines in code",
+            "wide table", "horizontal scroll", "don't wrap",
+        ),
+        "body": (
+            "A wide table or a code block in an answer (and in a note's Read view) "
+            "scrolls sideways. The Wrap lines button in the card's top bar, beside "
+            "Copy, breaks the long lines instead, so nothing scrolls; Don't wrap "
+            "(the same button, pressed) puts the scrolling back, which is what you "
+            "want for code you mean to paste. Tables and code remember their own "
+            "choice for the next one."
+        ),
+        "badge": {"label": "Chat", "tab": "chat"},
+    },
+    {
         "id": "background-tasks",
         "keywords": (
             "background tasks", "running now", "what is it doing", "job", "jobs",

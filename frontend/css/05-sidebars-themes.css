@@ -2622,42 +2622,14 @@ body.resizing-sidebar {
   border-radius: var(--radius-pill);
   background: var(--chip-bg);
 }
-.code-actions > .code-copy {
-  border: 0;
-  border-radius: var(--radius-in-pill);
-  background: transparent;
-  box-shadow: none;
-  color: var(--muted);
-  padding-inline: var(--space-3);
-}
-.code-actions > .code-copy + .code-copy {
-  box-shadow: inset 1px 0 0 var(--border);
-}
-.code-actions > .code-copy:hover,
-.code-actions > .code-copy:focus-visible {
-  background: var(--surface-2);
-  color: var(--ink);
-  box-shadow: none;
-}
-.code-actions > .code-copy + .code-copy:hover,
-.code-actions > .code-copy + .code-copy:focus-visible {
-  box-shadow: inset 1px 0 0 transparent;
-}
-/* **The ⋯ is the second half of that one control, not a chip beside it**
-   (INBOX 188: the table bar is Copy plus a `kebabMenu` now). `kebabMenu`
-   returns its opener inside a `.menu-wrap`, which is what anchors the menu,
-   so the shell's rules above cannot reach the button with a child combinator
-   and it arrived wearing the app's normal ghost chrome: a bordered pill
-   inside a tinted pill. The wrap is made transparent and the opener is given
-   the same treatment its neighbour gets, with the hairline seam moved onto
-   the wrap so the divider still falls between the two items. */
-.code-actions > .menu-wrap {
-  display: inline-flex;
-  align-items: stretch;
-}
-.code-actions > * + .menu-wrap {
-  box-shadow: inset 1px 0 0 var(--border);
-}
+/* **One look for every item of the shell** (the Copy buttons, the wrap toggle,
+   the close X and the ⋯ opener). `kebabMenu` returns its opener inside a
+   `.menu-wrap`, which is what anchors the menu, so the opener is reached
+   through the wrap (INBOX 188: it arrived wearing the app's ghost chrome, a
+   bordered pill inside a tinted pill). The hairline seam falls between every
+   pair of items and sits on the wrap for the ⋯, on the button for the rest;
+   the button under the pointer or the focus drops its own seam. */
+.code-actions > .code-copy,
 .code-actions > .menu-wrap > button {
   border: 0;
   border-radius: var(--radius-in-pill);
@@ -2665,21 +2637,32 @@ body.resizing-sidebar {
   box-shadow: none;
   color: var(--muted);
 }
+.code-actions > .code-copy {
+  padding-inline: var(--space-3);
+}
+.code-actions > .menu-wrap {
+  display: inline-flex;
+  align-items: stretch;
+}
+.code-actions > * + .code-copy,
+.code-actions > * + .menu-wrap {
+  box-shadow: inset 1px 0 0 var(--border);
+}
+.code-actions > .code-copy:hover,
+.code-actions > .code-copy:focus-visible,
 .code-actions > .menu-wrap > button:hover,
 .code-actions > .menu-wrap > button:focus-visible {
   background: var(--surface-2);
   color: var(--ink);
 }
-/* The seam falls between every pair of items in the shell, and the pair the
-   two rules above cannot see is a `.code-copy` following the ⋯ (INBOX 239's
-   close X, which is last in the bar). Written as the general case so the next
-   button appended after the menu gets its divider too. */
-.code-actions > .menu-wrap + .code-copy {
-  box-shadow: inset 1px 0 0 var(--border);
-}
-.code-actions > .menu-wrap + .code-copy:hover,
-.code-actions > .menu-wrap + .code-copy:focus-visible {
+.code-actions > * + .code-copy:hover,
+.code-actions > * + .code-copy:focus-visible {
   box-shadow: inset 1px 0 0 transparent;
+}
+/* A toggle that is on (the wrap switch) reads as the accent's soft fill. */
+.code-actions > .code-copy[aria-pressed="true"] {
+  background: var(--accent-soft);
+  color: var(--accent-text);
 }
 /* In full view the bar is the panel's title row: it sits still while the
    table scrolls under it. */
@@ -2799,6 +2782,13 @@ body.resizing-sidebar {
   background: none;
   padding: 0;
   font-size: var(--text-md);
+}
+/* Wrapped (the card head's toggle): the long line breaks where it must and
+   nothing scrolls sideways. */
+.code-block[data-wrap="on"] pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  overflow-x: hidden;
 }
 /* Editing an answer in place. */
 .answer-editor {

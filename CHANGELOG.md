@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Tables and code blocks in a reply (and a note's Read view) have a Wrap lines button in the card's top bar, beside Copy: pressed, long lines break and nothing scrolls sideways (a wide reply table 679 over 656 becomes 656 over 656, a code line 1245 over 656 becomes 656). Tables and code each remember their choice. The table's old Fit to panel row left the ⋯ menu for the button.
 - Reminders: a row's ⋯ is always drawn and takes a plain click, and the date stops a gap short of it (they shared 28px at 1280; now a 6px gap), while the snoozes and Edit still come in on hover.
 - Reminders: the reminder phrase reader moved beside the parser, so the chat suggestion no longer forms an import cycle with the routes.
 - The popup agent has a Send button beside the box (Enter still sends), and the graph Options section chevrons sit a gap short of their "?" instead of touching it.

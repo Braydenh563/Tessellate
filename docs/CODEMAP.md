@@ -2,9 +2,9 @@
 
 Generated 2026-10-27 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6587, frontend ids 2558, CSS sections 504, backend routes 625, backend modules 6722, test files 1413, tests 12528, plan headings 977.
+Counts: frontend functions 6588, frontend ids 2558, CSS sections 504, backend routes 625, backend modules 6722, test files 1414, tests 12533, plan headings 977.
 
-## Frontend functions (6587)
+## Frontend functions (6588)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -842,20 +842,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wikiLinkShown` | frontend/js/shell-reminders.js:744 |
 | `wikiLinkTarget` | frontend/js/shell-reminders.js:735 |
 
-### frontend/js/markdown.js (33)
+### frontend/js/markdown.js (34)
 
 | Name | File:line |
 |---|---|
 | `boardEmbedElement` | frontend/js/markdown.js:694 |
 | `boardEmbedFill` | frontend/js/markdown.js:752 |
 | `boardEmbedMarkdown` | frontend/js/markdown.js:830 |
-| `buildTableBlock` | frontend/js/markdown.js:858 |
+| `buildTableBlock` | frontend/js/markdown.js:891 |
 | `columnAlign` | frontend/js/markdown.js:48 |
 | `isTableSeparator` | frontend/js/markdown.js:15 |
-| `linkAtEvent` | frontend/js/markdown.js:1388 |
-| `linkCard` | frontend/js/markdown.js:1258 |
-| `linkCardPath` | frontend/js/markdown.js:1226 |
-| `linkMenuItems` | frontend/js/markdown.js:1345 |
+| `linkAtEvent` | frontend/js/markdown.js:1422 |
+| `linkCard` | frontend/js/markdown.js:1292 |
+| `linkCardPath` | frontend/js/markdown.js:1260 |
+| `linkMenuItems` | frontend/js/markdown.js:1379 |
 | `mdCalloutElement` | frontend/js/markdown.js:212 |
 | `mdCalloutHead` | frontend/js/markdown.js:193 |
 | `mdColumnsElement` | frontend/js/markdown.js:286 |
@@ -877,65 +877,66 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `mdRuleElement` | frontend/js/markdown.js:316 |
 | `mdTocElement` | frontend/js/markdown.js:387 |
 | `mdTocEntries` | frontend/js/markdown.js:157 |
-| `openMenuAtPoint` | frontend/js/markdown.js:1295 |
+| `openMenuAtPoint` | frontend/js/markdown.js:1329 |
 | `splitTableRow` | frontend/js/markdown.js:24 |
+| `wrapToggle` | frontend/js/markdown.js:860 |
 
 ### frontend/js/navigation.js (53)
 
 | Name | File:line |
 |---|---|
-| `activeNotesSection` | frontend/js/navigation.js:2271 |
+| `activeNotesSection` | frontend/js/navigation.js:2279 |
 | `arrowNavTarget` | frontend/js/navigation.js:201 |
-| `backgroundWriteFailed` | frontend/js/navigation.js:1787 |
-| `chatMessagesEl` | frontend/js/navigation.js:2417 |
-| `chatMidStream` | frontend/js/navigation.js:1728 |
-| `closeNavHistoryMenu` | frontend/js/navigation.js:859 |
-| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1749 |
-| `coversAFormPrimary` | frontend/js/navigation.js:2576 |
-| `entryLabel` | frontend/js/navigation.js:957 |
-| `formPrimaryButtons` | frontend/js/navigation.js:2537 |
-| `goToTabHistory` | frontend/js/navigation.js:1048 |
-| `hasUnsavedWork` | frontend/js/navigation.js:1707 |
-| `initNotesSubtabs` | frontend/js/navigation.js:2331 |
-| `initScrollTopButton` | frontend/js/navigation.js:2596 |
-| `insideClosedDetails` | frontend/js/navigation.js:1543 |
-| `loadSurface` | frontend/js/navigation.js:1291 |
-| `measureSpacingPx` | frontend/js/navigation.js:2567 |
-| `menuOfOpener` | frontend/js/navigation.js:1565 |
-| `menuRowsOf` | frontend/js/navigation.js:1550 |
-| `openHistoryEntry` | frontend/js/navigation.js:1108 |
-| `openNavHistoryMenu` | frontend/js/navigation.js:879 |
+| `backgroundWriteFailed` | frontend/js/navigation.js:1795 |
+| `chatMessagesEl` | frontend/js/navigation.js:2425 |
+| `chatMidStream` | frontend/js/navigation.js:1736 |
+| `closeNavHistoryMenu` | frontend/js/navigation.js:867 |
+| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1757 |
+| `coversAFormPrimary` | frontend/js/navigation.js:2584 |
+| `entryLabel` | frontend/js/navigation.js:965 |
+| `formPrimaryButtons` | frontend/js/navigation.js:2545 |
+| `goToTabHistory` | frontend/js/navigation.js:1056 |
+| `hasUnsavedWork` | frontend/js/navigation.js:1715 |
+| `initNotesSubtabs` | frontend/js/navigation.js:2339 |
+| `initScrollTopButton` | frontend/js/navigation.js:2604 |
+| `insideClosedDetails` | frontend/js/navigation.js:1551 |
+| `loadSurface` | frontend/js/navigation.js:1299 |
+| `measureSpacingPx` | frontend/js/navigation.js:2575 |
+| `menuOfOpener` | frontend/js/navigation.js:1573 |
+| `menuRowsOf` | frontend/js/navigation.js:1558 |
+| `openHistoryEntry` | frontend/js/navigation.js:1116 |
+| `openNavHistoryMenu` | frontend/js/navigation.js:887 |
 | `openRowMenu` | frontend/js/navigation.js:144 |
 | `openSelectionScope` | frontend/js/navigation.js:307 |
-| `paintTabHistory` | frontend/js/navigation.js:906 |
-| `placeDockMenuInWindow` | frontend/js/navigation.js:1362 |
-| `positionScrollTopForNested` | frontend/js/navigation.js:2439 |
-| `recordTabVisit` | frontend/js/navigation.js:994 |
+| `paintTabHistory` | frontend/js/navigation.js:914 |
+| `placeDockMenuInWindow` | frontend/js/navigation.js:1370 |
+| `positionScrollTopForNested` | frontend/js/navigation.js:2447 |
+| `recordTabVisit` | frontend/js/navigation.js:1002 |
 | `renderMarkdown` | frontend/js/navigation.js:355 |
-| `resetNavigationForNewSession` | frontend/js/navigation.js:2233 |
-| `resetNavigationToDefaults` | frontend/js/navigation.js:2252 |
-| `restoreSettingsScroll` | frontend/js/navigation.js:1095 |
-| `revealTab` | frontend/js/navigation.js:789 |
+| `resetNavigationForNewSession` | frontend/js/navigation.js:2241 |
+| `resetNavigationToDefaults` | frontend/js/navigation.js:2260 |
+| `restoreSettingsScroll` | frontend/js/navigation.js:1103 |
+| `revealTab` | frontend/js/navigation.js:797 |
 | `rowMenuAtEvent` | frontend/js/navigation.js:123 |
-| `scrollTopTargetEl` | frontend/js/navigation.js:2421 |
-| `scrollingPage` | frontend/js/navigation.js:2370 |
-| `showNotesSection` | frontend/js/navigation.js:2276 |
-| `spacingPx` | frontend/js/navigation.js:2560 |
-| `stepTabHistory` | frontend/js/navigation.js:1038 |
-| `stripMarkdownPreview` | frontend/js/navigation.js:2160 |
-| `surfaceFailed` | frontend/js/navigation.js:1222 |
-| `surfaceRecovered` | frontend/js/navigation.js:1269 |
-| `switchTab` | frontend/js/navigation.js:1836 |
-| `syncScrollLock` | frontend/js/navigation.js:2751 |
-| `tabLabel` | frontend/js/navigation.js:945 |
-| `tabPlaceholder` | frontend/js/navigation.js:2096 |
-| `tabSkeletonBar` | frontend/js/navigation.js:2077 |
-| `tabSkeletonDock` | frontend/js/navigation.js:2087 |
-| `tabSkeletonPiece` | frontend/js/navigation.js:2066 |
-| `usageCount` | frontend/js/navigation.js:1797 |
-| `usageFeatureName` | frontend/js/navigation.js:1793 |
-| `usageFlush` | frontend/js/navigation.js:1801 |
-| `watchDockMenuPlacement` | frontend/js/navigation.js:1424 |
+| `scrollTopTargetEl` | frontend/js/navigation.js:2429 |
+| `scrollingPage` | frontend/js/navigation.js:2378 |
+| `showNotesSection` | frontend/js/navigation.js:2284 |
+| `spacingPx` | frontend/js/navigation.js:2568 |
+| `stepTabHistory` | frontend/js/navigation.js:1046 |
+| `stripMarkdownPreview` | frontend/js/navigation.js:2168 |
+| `surfaceFailed` | frontend/js/navigation.js:1230 |
+| `surfaceRecovered` | frontend/js/navigation.js:1277 |
+| `switchTab` | frontend/js/navigation.js:1844 |
+| `syncScrollLock` | frontend/js/navigation.js:2759 |
+| `tabLabel` | frontend/js/navigation.js:953 |
+| `tabPlaceholder` | frontend/js/navigation.js:2104 |
+| `tabSkeletonBar` | frontend/js/navigation.js:2085 |
+| `tabSkeletonDock` | frontend/js/navigation.js:2095 |
+| `tabSkeletonPiece` | frontend/js/navigation.js:2074 |
+| `usageCount` | frontend/js/navigation.js:1805 |
+| `usageFeatureName` | frontend/js/navigation.js:1801 |
+| `usageFlush` | frontend/js/navigation.js:1809 |
+| `watchDockMenuPlacement` | frontend/js/navigation.js:1432 |
 | `wireLongPress` | frontend/js/navigation.js:24 |
 
 ### frontend/js/router.js (12)
@@ -10051,19 +10052,19 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Atlas, the app's guide (INBOX 224) | frontend/css/08-consistency.css:1805 |
 | Atlas, the assistant's own character (atlas.js) | frontend/css/08-consistency.css:6677 |
 | BOARD NAVIGATOR AND BOARD SEARCH | frontend/css/07-whiteboard-misc.css:6305 |
-| BREADCRUMBS: WHERE THE CARET IS | frontend/css/05-sidebars-themes.css:6035 |
+| BREADCRUMBS: WHERE THE CARET IS | frontend/css/05-sidebars-themes.css:6025 |
 | Boards, 2026-10-10 (boardmap-1010): lazy with the board, off the boot | frontend/css/library-lazy.css:4320 |
 | Capture: the add tools as a quiet toolbar (INBOX 395) | frontend/css/08-consistency.css:4571 |
 | Capture: the two labelled rows under the note box | frontend/css/07-whiteboard-misc.css:2749 |
 | Capture: three families, three rows | frontend/css/07-whiteboard-misc.css:4795 |
-| Carbon: near-monochrome, minimal colour, maximum text contrast. | frontend/css/05-sidebars-themes.css:3498 |
+| Carbon: near-monochrome, minimal colour, maximum text contrast. | frontend/css/05-sidebars-themes.css:3488 |
 | Chat sources: every card reads from the top | frontend/css/08-consistency.css:8467 |
 | Chat: the user's bubble as a quiet surface, not an accent slab | frontend/css/08-consistency.css:4883 |
 | Columns and image options (DOCUMENTS_PLAN Phase 3 item 5) | frontend/css/09-editor.css:350 |
-| Curated palettes (Settings → Appearance → Theme) | frontend/css/05-sidebars-themes.css:3255 |
+| Curated palettes (Settings → Appearance → Theme) | frontend/css/05-sidebars-themes.css:3245 |
 | Documents: focus mode | frontend/css/07-whiteboard-misc.css:6005 |
-| Editorial paper: off-white paper, black type, one red-orange for what | frontend/css/05-sidebars-themes.css:3656 |
-| Ember: warm oranges over a dim ground. Best in the evening. | frontend/css/05-sidebars-themes.css:3428 |
+| Editorial paper: off-white paper, black type, one red-orange for what | frontend/css/05-sidebars-themes.css:3646 |
+| Ember: warm oranges over a dim ground. Best in the evening. | frontend/css/05-sidebars-themes.css:3418 |
 | Files as a reading list | frontend/css/library-lazy.css:2016 |
 | Files sub-tab: rows, not cards | frontend/css/library-lazy.css:2043 |
 | Find anything | frontend/css/07-whiteboard-misc.css:10764 |
@@ -10076,20 +10077,20 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | INBOX 68: the board and map previews | frontend/css/10-responsive.css:355 |
 | Icons | frontend/css/07-whiteboard-misc.css:2313 |
 | Inline AI (editor.js) | frontend/css/07-whiteboard-misc.css:6411 |
-| Lagoon: indigo and teal together | frontend/css/05-sidebars-themes.css:3376 |
+| Lagoon: indigo and teal together | frontend/css/05-sidebars-themes.css:3366 |
 | Library -> Contents: an outline (INBOX 496) | frontend/css/01-forms-settings.css:2485 |
 | Library → Documents | frontend/css/03-dashboard-widgets.css:4014 |
 | Library → Whiteboards | frontend/css/03-dashboard-widgets.css:4039 |
 | Live preview | frontend/css/04-chat-dock-appearance.css:4626 |
 | MICRO-ANIMATIONS | frontend/css/07-whiteboard-misc.css:618 |
-| Midnight: deep navy and gold (Brief 95, INBOX 858: "truly good themes"). | frontend/css/05-sidebars-themes.css:3533 |
-| Ocean: cool teal and deep blue. Crisp rather than cosy. | frontend/css/05-sidebars-themes.css:3341 |
+| Midnight: deep navy and gold (Brief 95, INBOX 858: "truly good themes"). | frontend/css/05-sidebars-themes.css:3523 |
+| Ocean: cool teal and deep blue. Crisp rather than cosy. | frontend/css/05-sidebars-themes.css:3331 |
 | On paper (DOCUMENTS_PLAN Phase 5 item 4, the print stylesheet) | frontend/css/09-editor.css:930 |
 | On this day | frontend/css/03-dashboard-widgets.css:4303 |
 | One sidebar row recipe for every rail (INBOX 702) | frontend/css/08-consistency.css:10567 |
 | One ⋯ opener, styled once (INBOX 722) | frontend/css/08-consistency.css:10643 |
 | PLAN.md D1: the documents dock's formatting strip hides entirely | frontend/css/07-whiteboard-misc.css:7958 |
-| Parchment: paper, ink and a little gold. Made for long writing. | frontend/css/05-sidebars-themes.css:3268 |
+| Parchment: paper, ink and a little gold. Made for long writing. | frontend/css/05-sidebars-themes.css:3258 |
 | Phase 10, INBOX 100: the scroll edge effect | frontend/css/10-responsive.css:159 |
 | Phase 10, INBOX 101: concentric corners | frontend/css/10-responsive.css:185 |
 | Phase 11 item 12: a dock's head is one row on a phone | frontend/css/10-responsive.css:1569 |
@@ -10108,25 +10109,25 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Phase 11 items 2 and 3: no rail on a phone, an opener in the head | frontend/css/10-responsive.css:1317 |
 | Phase 5: quick access + toasts | frontend/css/01-forms-settings.css:2846 |
 | Phase 5: the three things a map says about itself | frontend/css/07-whiteboard-misc.css:4409 |
-| Phones (roadmap §8: the layout had breakpoints but had never been driven at | frontend/css/05-sidebars-themes.css:3985 |
+| Phones (roadmap §8: the layout had breakpoints but had never been driven at | frontend/css/05-sidebars-themes.css:3975 |
 | Placed at the end of this file on purpose. A panel keeps its original class | frontend/css/03-dashboard-widgets.css:4050 |
-| Plum: deep violet and magenta. The most saturated. | frontend/css/05-sidebars-themes.css:3463 |
+| Plum: deep violet and magenta. The most saturated. | frontend/css/05-sidebars-themes.css:3453 |
 | Progress that keeps moving (INBOX 95) | frontend/css/08-consistency.css:2216 |
 | Quick access, and arranging it (INBOX 461) | frontend/css/03-dashboard-widgets.css:1691 |
-| Quiet utilitarian: the default look (UI_MODERNISATION_PLAN decisions, | frontend/css/05-sidebars-themes.css:3606 |
+| Quiet utilitarian: the default look (UI_MODERNISATION_PLAN decisions, | frontend/css/05-sidebars-themes.css:3596 |
 | RESPONSIVE BY DEVICE (UI_MODERNISATION_PLAN.md: Phase 9) | frontend/css/07-whiteboard-misc.css:9577 |
 | RESPONSIVE, CONTINUED, AND THE LIQUID GLASS ADOPTIONS | frontend/css/10-responsive.css:1 |
 | Reading and focus (DOCUMENTS_PLAN Phase 5 item 4, PLAN D9) | frontend/css/library-lazy.css:554 |
 | Reminders: the time at the row's end, actions over it on hover | frontend/css/08-consistency.css:4456 |
 | Ring room (INBOX 685, "a lot of borders get cut off on an edge") | frontend/css/08-consistency.css:10245 |
-| Rosewood: dusty rose and wine. Warm without being orange. | frontend/css/05-sidebars-themes.css:3571 |
+| Rosewood: dusty rose and wine. Warm without being orange. | frontend/css/05-sidebars-themes.css:3561 |
 | Rows: the default way a list of notes is shown | frontend/css/01-forms-settings.css:1473 |
 | Rules that used to be inline style="" attributes. | frontend/css/06-timeline-dialogs.css:642 |
 | SETTINGS: one control height, one right edge | frontend/css/01-forms-settings.css:5113 |
 | SETTINGS: spacing, hierarchy and proximity | frontend/css/01-forms-settings.css:5261 |
 | SIDEBAR COLLAPSE & PEEK | frontend/css/07-whiteboard-misc.css:414 |
 | SKILLS TAB | frontend/css/07-whiteboard-misc.css:771 |
-| Sage: quiet greens. The calmest of the set. | frontend/css/05-sidebars-themes.css:3306 |
+| Sage: quiet greens. The calmest of the set. | frontend/css/05-sidebars-themes.css:3296 |
 | Sans-serif system font override (macOS fix) | frontend/css/00-tokens-shell.css:1235 |
 | Settings at phone width: nothing scrolls sideways (Phase 5.1, 390px) | frontend/css/07-whiteboard-misc.css:8051 |
 | Settings form rows share a label column (Phase 5.1) | frontend/css/07-whiteboard-misc.css:7845 |
@@ -10140,9 +10141,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | THE QUIET SIDE OF THE BUTTON RAMP: A RUN OF ROW ACTIONS | frontend/css/08-consistency.css:2320 |
 | THE WRITE WITH AI ROW, ON A NARROW COLUMN | frontend/css/04-chat-dock-appearance.css:5680 |
 | THE WRITING PHASE: nodes, and an edge drawing itself | frontend/css/01-forms-settings.css:4980 |
-| Technical mono: a cool graphite ground, monospace for the numbers and | frontend/css/05-sidebars-themes.css:3694 |
+| Technical mono: a cool graphite ground, monospace for the numbers and | frontend/css/05-sidebars-themes.css:3684 |
 | Templates (INBOX 715) | frontend/css/library-lazy.css:3458 |
-| Text on accent-coloured surfaces (roadmap §7: colour contrast was listed as | frontend/css/05-sidebars-themes.css:4102 |
+| Text on accent-coloured surfaces (roadmap §7: colour contrast was listed as | frontend/css/05-sidebars-themes.css:4092 |
 | The Ask tab's records speak in the Notes list's voice (INBOX 510) | frontend/css/08-consistency.css:10077 |
 | The Library's hover tick says what it is (INBOX 722) | frontend/css/library-lazy.css:4292 |
 | The OCR workspace tool row (INBOX 717). Here rather than in the boot | frontend/css/library-lazy.css:3797 |
@@ -10158,7 +10159,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | The m guide: one panel of key rows | frontend/css/08-consistency.css:4628 |
 | The note surface (DOCUMENTS_PLAN Phase 8): one editor everywhere | frontend/css/09-editor.css:829 |
 | The properties panel (DOCUMENTS_PLAN Phase 3 item 4) | frontend/css/09-editor.css:185 |
-| The second level: `.tabs-line` (INBOX 522) | frontend/css/05-sidebars-themes.css:4142 |
+| The second level: `.tabs-line` (INBOX 522) | frontend/css/05-sidebars-themes.css:4132 |
 | The surface model pickers on a phone | frontend/css/10-responsive.css:2177 |
 | The thumb bar (DESIGN.md's recipe index: a bar of actions above the | frontend/css/09-editor.css:768 |
 | The two dialogs reported as off the modal recipe | frontend/css/08-consistency.css:1477 |
@@ -10233,10 +10234,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | activity heatmap + tag cloud widgets | frontend/css/03-dashboard-widgets.css:1845 |
 | activity log | frontend/css/01-forms-settings.css:2821 |
 | activity, as a timeline rather than as cards | frontend/css/library-lazy.css:3188 |
-| an embedded document, drawn as a card (INBOX 421 b) | frontend/css/05-sidebars-themes.css:6143 |
-| and inside a small phone | frontend/css/05-sidebars-themes.css:5921 |
+| an embedded document, drawn as a card (INBOX 421 b) | frontend/css/05-sidebars-themes.css:6133 |
+| and inside a small phone | frontend/css/05-sidebars-themes.css:5911 |
 | appearance settings: grouped, scannable rows | frontend/css/04-chat-dock-appearance.css:1971 |
-| assistant message layout | frontend/css/05-sidebars-themes.css:4428 |
+| assistant message layout | frontend/css/05-sidebars-themes.css:4418 |
 | attaching notes to a chat message | frontend/css/04-chat-dock-appearance.css:2846 |
 | back / forward through pages | frontend/css/00-tokens-shell.css:4082 |
 | back-to-top button | frontend/css/04-chat-dock-appearance.css:2665 |
@@ -10269,8 +10270,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | dashboard widgets, de-vibecoded | frontend/css/08-consistency.css:4231 |
 | document formatting toolbar | frontend/css/05-sidebars-themes.css:1947 |
 | documents tab | frontend/css/04-chat-dock-appearance.css:3706 |
-| documents: outline, live stats, and where the file actually is | frontend/css/05-sidebars-themes.css:2823 |
-| documents: the comments panel (DOCUMENTS_PLAN Phase 5 item 1) | frontend/css/05-sidebars-themes.css:3114 |
+| documents: outline, live stats, and where the file actually is | frontend/css/05-sidebars-themes.css:2813 |
+| documents: the comments panel (DOCUMENTS_PLAN Phase 5 item 1) | frontend/css/05-sidebars-themes.css:3104 |
 | drag to delete (INBOX 660) | frontend/css/library-lazy.css:3423 |
 | duplicate tidy-up | frontend/css/05-sidebars-themes.css:1693 |
 | editing a question in place | frontend/css/05-sidebars-themes.css:315 |
@@ -10426,7 +10427,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the dock (UI_MODERNISATION_PLAN.md Phase 8) | frontend/css/07-whiteboard-misc.css:9215 |
 | the dock above the editor | frontend/css/04-chat-dock-appearance.css:4142 |
 | the dock row below 1100 | frontend/css/07-whiteboard-misc.css:9820 |
-| the document editor's instruments | frontend/css/05-sidebars-themes.css:4662 |
+| the document editor's instruments | frontend/css/05-sidebars-themes.css:4652 |
 | the document history, side by side (DOCUMENTS 24 row 4, Brief 76) | frontend/css/library-lazy.css:4741 |
 | the document toolbar's two folds | frontend/css/07-whiteboard-misc.css:5250 |
 | the documents editor | frontend/css/library-lazy.css:3276 |
@@ -10436,7 +10437,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the faded notes card (WORLD_CLASS_PLAN 15, I4) | frontend/css/03-dashboard-widgets.css:4462 |
 | the field: the glyph inside, Stop only while something is loading | frontend/css/03-dashboard-widgets.css:1056 |
 | the file picker, in the app's own clothes | frontend/css/08-consistency.css:8957 |
-| the first steps (first-run.js; the head row, the fold and the bar are | frontend/css/05-sidebars-themes.css:3904 |
+| the first steps (first-run.js; the head row, the fold and the bar are | frontend/css/05-sidebars-themes.css:3894 |
 | the flat looks carry no glow on a button | frontend/css/08-consistency.css:3700 |
 | the flat looks: a selected tab is a place, not an action | frontend/css/08-consistency.css:2903 |
 | the formatting strip says what the caret is already in | frontend/css/09-editor.css:998 |
@@ -10469,8 +10470,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the page scrollers scroll on the compositor | frontend/css/08-consistency.css:4346 |
 | the page shell (§35L) | frontend/css/00-tokens-shell.css:3592 |
 | the palette on a touch screen (INBOX 464) | frontend/css/10-responsive.css:2502 |
-| the phone header fits inside the phone | frontend/css/05-sidebars-themes.css:5890 |
-| the picker itself | frontend/css/05-sidebars-themes.css:3787 |
+| the phone header fits inside the phone | frontend/css/05-sidebars-themes.css:5880 |
+| the picker itself | frontend/css/05-sidebars-themes.css:3777 |
 | the primary action floats, where a dock has one | frontend/css/07-whiteboard-misc.css:10282 |
 | the quick-nav chord's guide | frontend/css/10-responsive.css:421 |
 | the reader: one scroller, the page set as prose | frontend/css/03-dashboard-widgets.css:1368 |
@@ -10493,7 +10494,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the strip's three doors (MINDMAP_PLAN.md §13b) | frontend/css/07-whiteboard-misc.css:8628 |
 | the strips that appear only when they apply | frontend/css/00-tokens-shell.css:1879 |
 | the structural blocks (INBOX 421 b) | frontend/css/05-sidebars-themes.css:1435 |
-| the suggestion menu, the dictionary, and the goal | frontend/css/05-sidebars-themes.css:5179 |
+| the suggestion menu, the dictionary, and the goal | frontend/css/05-sidebars-themes.css:5169 |
 | the switch's hit target (MODERNISATION_AUDIT.md Brief 8) | frontend/css/07-whiteboard-misc.css:7937 |
 | the tab strip is centred on the window, not on whatever is left of it | frontend/css/07-whiteboard-misc.css:7660 |
 | the timeline, de-vibecoded | frontend/css/08-consistency.css:3128 |
@@ -10510,7 +10511,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the writing room | frontend/css/04-chat-dock-appearance.css:3404 |
 | tools & features browser | frontend/css/03-dashboard-widgets.css:1773 |
 | tools and page | frontend/css/sketch-pad.css:307 |
-| top bar polish | frontend/css/05-sidebars-themes.css:4383 |
+| top bar polish | frontend/css/05-sidebars-themes.css:4373 |
 | transcluded notes (![[note]]) | frontend/css/05-sidebars-themes.css:1594 |
 | two-up cards in tablet portrait | frontend/css/07-whiteboard-misc.css:9987 |
 | type to filter a long list (row 1643, `listFilter` in sheets-selects.js) | frontend/css/08-consistency.css:10737 |
@@ -10535,7 +10536,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/02-chat-graph.css | 5346 |
 | frontend/css/03-dashboard-widgets.css | 4843 |
 | frontend/css/04-chat-dock-appearance.css | 6557 |
-| frontend/css/05-sidebars-themes.css | 6276 |
+| frontend/css/05-sidebars-themes.css | 6266 |
 | frontend/css/06-timeline-dialogs.css | 3682 |
 | frontend/css/07-whiteboard-misc.css | 11942 |
 | frontend/css/08-consistency.css | 10821 |
@@ -12885,8 +12886,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2658 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2760 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2675 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2777 |
 
 ### src/tessellate/ai/inbox.py (7)
 
@@ -19619,7 +19620,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12528)
+## Tests (12533)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -21032,6 +21033,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_word_files_b42.py | 4 |
 | tests/test_words_review.py | 7 |
 | tests/test_worker_guard.py | 6 |
+| tests/test_wrap_toggle.py | 5 |
 | tests/test_wrapup_0927_visuals.py | 6 |
 | tests/test_write_lock_during_passes.py | 3 |
 | tests/test_writing_desk_save.py | 2 |
