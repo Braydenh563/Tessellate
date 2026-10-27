@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The graph popup's Save row no longer covers the action footer (INBOX 1421): both are pinned at the panel's foot and Save, one layer higher, was drawn 36px over Open, Focus, Pin and Link after a picture was resized; Save now stands above the footer by its measured height (Save bottom 567 against a footer top of 531, now 526). Pictures already resize in every Live note editor (Capture, the Notes edit form, the graph's two boxes, Write with the AI, concept cards), one shared grip that writes the width into the picture's alt text.
 - The companion's landing after a throw no longer hands over idle motion that is not moving: the land act's call fell from a median 8.2ms (max 18.8) to 1.6ms (max 9.4).
 - A model server that accepts the connection and never answers no longer holds every turn (INBOX 1420): each liveness check of a turn waited its own 2 s, five or more per turn, 4 to 9 s before the first step on a silent runner; one silence is now remembered for 10 s (Ollama and OpenAI-compatible), the probe waits 1 s, and a second question answers in 0.04 s.
 - A hard, steep upward throw now leaves the top of the window from anywhere on screen (its climb is lighter on the way up) and falls back in; a moderate one still hangs from the top bar or bounces off it.
