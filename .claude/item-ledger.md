@@ -45,3 +45,5 @@ date | item | type | rung | rework | note
 2026-10-27 | Over-tier: 4 Opus agents (fix rounds and review inherited Opus); now Sonnet for fix rounds and reviews, one Opus for design | process | opus | 1 | 
 2026-10-27 | image kebab chip + thumbnails light mode | ui-bug | opus | 1 | 
 2026-10-27 | guide chip closes panel; how-to lead past forms | bug | opus | 0 | 
+2026-10-27 | picture deleted mid-read StaleDataError | bug | opus | 0 | 
+2026-10-27 | merge fastembed, facts r3, atlas 1402 | merge | opus | 1 | 

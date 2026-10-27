@@ -1,9 +1,9 @@
 mode: continue
-status: stopped (waiting on agents; reactivate on their reports)
+status: stopped (usage: owner's 48% line, 2026-10-27)
 max-continues: 40
 max-idle-minutes: 90
 started: 2026-10-25 night
-stop: owner's 25% weekly usage line
+stop: owner's 48% weekly usage line
 
 - [x] Merge wb, docs, composer agents; gate; push; open PR (PR 204)
 - [x] INBOX 1350: phone/LAN security review + fixes (lansec merged 99cb7a7)
