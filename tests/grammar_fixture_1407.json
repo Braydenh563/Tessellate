@@ -1,0 +1,170 @@
+{
+ "clean": [
+  {
+   "tag": "to-too",
+   "text": "Once the update finishes, things go back to normal."
+  },
+  {
+   "tag": "to-too",
+   "text": "After a restart the sidebar goes back to normal."
+  },
+  {
+   "tag": "to-too",
+   "text": "Switch back to the previous tab."
+  },
+  {
+   "tag": "to-too",
+   "text": "The cursor jumps back to the start of the line."
+  },
+  {
+   "tag": "to-too",
+   "text": "She wants to go to the park too."
+  },
+  {
+   "tag": "to-too",
+   "text": "We plan to get back to basics."
+  },
+  {
+   "tag": "to-too",
+   "text": "I went to the shop and got back to work."
+  },
+  {
+   "tag": "file",
+   "text": "Double-click start.bat to launch the app on Windows."
+  },
+  {
+   "tag": "file",
+   "text": "Run start.bat. Then open the browser."
+  },
+  {
+   "tag": "file",
+   "text": "Open the file called run.bat. Then check output.log."
+  },
+  {
+   "tag": "file",
+   "text": "See notes.md. Next, read todo.txt."
+  },
+  {
+   "tag": "file",
+   "text": "Open notes.txt and check the scrollbars."
+  },
+  {
+   "tag": "file",
+   "text": "Edit config.json, then run setup.sh to finish."
+  },
+  {
+   "tag": "file",
+   "text": "Edit .gitignore and Makefile."
+  },
+  {
+   "tag": "file",
+   "text": "Open app.js and style.css and index.html."
+  },
+  {
+   "tag": "file",
+   "text": "Open README.md and read the changelog."
+  },
+  {
+   "tag": "file",
+   "text": "Rename it to v1.2.3 and push."
+  },
+  {
+   "tag": "file",
+   "text": "The v2 API returns JSON over HTTPS."
+  },
+  {
+   "tag": "tech",
+   "text": "The card is draggable and the handle is draggable too."
+  },
+  {
+   "tag": "tech",
+   "text": "Click on the draggable resizable panel."
+  },
+  {
+   "tag": "tech",
+   "text": "The scrollbars are sortable and clickable."
+  },
+  {
+   "tag": "tech",
+   "text": "The tooltips are hoverable."
+  },
+  {
+   "tag": "tech",
+   "text": "Retry with exponential backoff."
+  },
+  {
+   "tag": "tech",
+   "text": "Use a debounce on the searchable dropdown."
+  },
+  {
+   "tag": "tech",
+   "text": "Run pytest then ruff."
+  },
+  {
+   "tag": "tech",
+   "text": "Set up the cron job and the webhook."
+  },
+  {
+   "tag": "tech",
+   "text": "We use camelCase for variables."
+  },
+  {
+   "tag": "tech",
+   "text": "Press Ctrl+S to save, or use the autosave toggle."
+  },
+  {
+   "tag": "tech",
+   "text": "Clone the repo, then run npm install and git commit."
+  },
+  {
+   "tag": "tech",
+   "text": "Tessellate stores notes in SQLite on localhost."
+  },
+  {
+   "tag": "plain",
+   "text": "I went to the shop and got back to work."
+  },
+  {
+   "tag": "plain",
+   "text": "Open Settings, then click Save."
+  },
+  {
+   "tag": "plain",
+   "text": "Enable dark mode in the settings menu, then reload the page."
+  }
+ ],
+ "planted": [
+  {
+   "text": "Me to, I will come along.",
+   "expect": "to"
+  },
+  {
+   "text": "I want to go over their to.",
+   "expect": "their"
+  },
+  {
+   "text": "I need to to fix it.",
+   "expect": "to to"
+  },
+  {
+   "text": "Their is a problem with this sentence.",
+   "expect": "Their"
+  },
+  {
+   "text": "I has an apple and a orange.",
+   "expect": "I has"
+  },
+  {
+   "text": "The cat sat on the the mat.",
+   "expect": "the the"
+  },
+  {
+   "text": "She dont like it when it rains.",
+   "expect": "dont"
+  },
+  {
+   "text": "This is a example of a error.",
+   "expect": "a example"
+  }
+ ]
+}

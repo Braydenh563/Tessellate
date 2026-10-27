@@ -1548,5 +1548,5 @@ Read from the code against Notion and Obsidian. Sizes S, M, L. Nothing here is b
 
 ## Placed from INBOX, 2026-10-27
 
-- INBOX 1407. **The owner, 2026-10-27, verbatim.** "a lot of the suggestions are innaccurate?? is that a harper issue? should e update the vendored harper". Measured: harper.js 2.13.0 and 3.0.0 give the same false positives as the vendored 2.10.0 (to/too on "back to normal", "draggable", a capital after "start.bat"); "scrollbars" and ".txt" come from the app's own spell check. Recommendation (taken): keep 2.10.0; filter app-side in `harper-worker.js` and `documents-prose.js`: file names and extensions, identifiers with digits or inner capitals, a tech word list, Harper's to/too before a noun phrase. Next free Sonnet slot.
+- INBOX 1407 (Harper false positives): built 2026-10-27, see HISTORY.md "Moved from the plans, 2026-10-27 (docs-1027)".
 - INBOX 1408. **The owner, 2026-10-27, verbatim.** "cant change the width of the document editor sidebars on full screen mode?" Recommendation (taken): the same drag handles as the windowed editor, widths shared; next free Sonnet slot with 1407.

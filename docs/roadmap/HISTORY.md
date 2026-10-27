@@ -7,6 +7,12 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-10-27 (docs-1027)
+
+DOCUMENTS_PLAN "Placed from INBOX, 2026-10-27".
+
+- **INBOX 1407, Harper's false positives filtered app-side** (vendored 2.10.0 kept: 2.13.0 and 3.0.0 gave the same ones). `docGrammarKeeps` (`documents-prose.js`) now drops: a Typo on a word the app already knows (`docWordKnown`: list, extra words, the writer's dictionary), a capital-letter lint after a file extension ("start.bat. Then"), Harper's "use too" when a word follows the "to" ("back to normal"), "unnecessary space" before a dotfile, and the "go better together" compound nag. `DOC_EXTRA_WORDS` gained the interface words (draggable, resizable, scrollbars, backoff, debounce, pytest and others); `docSpellable` skips a dotfile; the `space-before-punctuation` rule skips " .gitignore". Measured on `tests/grammar_fixture_1407.json` (33 clean lines, 8 planted errors, `tests/test_grammar_filter_1407.py`): 20 findings on 15 clean lines before, 0 on 0 after; 8 of 8 planted errors still caught. Not built: note titles and tags as known words (no such list reaches the checker today).
+
 ## Moved from the plans, 2026-10-27 (mermaid)
 
 BACKLOG "Diagrams: mermaid as the interchange format", step 8 (for documents, chat and Ask), the drawing half of 12b, and step 13; DOCUMENTS_PLAN decisions 3 and 6.

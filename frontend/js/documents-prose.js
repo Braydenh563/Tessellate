@@ -200,10 +200,29 @@ const DOC_GRAMMAR_ABBREVIATION = /^(?:e\.g|i\.e|etc|vs|cf|approx|ca|resp)\b/i;
 
 //: Whether one of Harper's lints is worth showing. Each line is a class the
 //: fixture measured, not a case (`tests/test_grammar_classes_1026.py`).
-function docGrammarKeeps(lint, span, structural) {
+function docGrammarKeeps(lint, span, structural, text) {
   //: An identifier in prose: `docSurface`, `parse_document`, `getItems`.
   if (lint.kind === "Typo" && /[a-z][A-Z]|[_\d]/.test(span)) return false;
+  //: A word this app already knows (its list, its extra words, the writer's
+  //: dictionary) is not a typo whatever Harper's smaller list says:
+  //: "draggable" was offered as "drag gable" (INBOX 1407). Before the first
+  //: list loads `docWordKnown` says yes, which drops these too; Harper's
+  //: Typo lints come back with the next pass.
+  if (lint.kind === "Typo" && /^[A-Za-z]+$/.test(span) && docWordKnown(span)) return false;
   const message = String(lint.message || "");
+  //: A file name's extension is not a new sentence: "start.bat", "run.bat.".
+  if (/does not start with a capital letter/i.test(message) && /[A-Za-z0-9]\./.test(text.slice(Math.max(0, lint.start - 2), lint.start))) {
+    return false;
+  }
+  //: A dotfile after a space (" .gitignore") reads to Harper as the end of a
+  //: sentence with a stray space.
+  if (/unnecessary space/i.test(message) && /^\.[A-Za-z0-9]/.test(text.slice(lint.end))) return false;
+  //: "These words would go better together" asks to join a tech term
+  //: ("cron job" to "cronjob"); a style nag, and the writer's term is theirs.
+  if (/go better together/i.test(message)) return false;
+  //: Harper's "use too" for "to": right when "to" ends the clause ("me to,"),
+  //: wrong when a word follows it ("back to normal", "back to the start").
+  if (/use\W+too\b/i.test(message) && /^to$/i.test(span) && /^[ \t]*[A-Za-z0-9]/.test(text.slice(lint.end))) return false;
   //: "Sam" is not S.A.M.: the dictionary lists some names as all-caps words.
   if (/all-caps/i.test(message) && /^[A-Z][a-z]/.test(span)) return false;
   if (/does not start with a capital letter/i.test(message)) {
@@ -231,7 +250,7 @@ function docGrammarFindings(lints, text) {
     if (!(lint.end > lint.start) || lint.end > text.length) continue;
     if (!outside(lint) || skip[lint.start] === 1) continue;
     const span = text.slice(lint.start, lint.end);
-    if (!docGrammarKeeps(lint, span, structure[lint.start] === 1)) continue;
+    if (!docGrammarKeeps(lint, span, structure[lint.start] === 1, text)) continue;
     const alternatives = [];
     for (const suggestion of lint.suggestions || []) {
       const option = suggestion.kind === "InsertAfter" ? span + suggestion.text : suggestion.text;
