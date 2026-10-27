@@ -2633,9 +2633,10 @@ def _counted_lead(req: _StreamRequest, asked: str) -> str:
     return ""
 
 
-def _filed_said(req: _StreamRequest, asked: str, now: datetime) -> str:
+def _filed_said(req: _StreamRequest, asked: str, now: datetime) -> tuple[str, str]:
     """"list my work notes": the Work notes, or the notes tagged work
-    (ledger row 442); a name that is neither is the composer's."""
+    (ledger row 442), as (lead, the list under it); a name that is neither
+    is the composer's ("", "")."""
     from tessellate.ai import commands, tool_say
     from tessellate.ai import tools as agent_tools
 
@@ -2644,15 +2645,25 @@ def _filed_said(req: _StreamRequest, asked: str, now: datetime) -> str:
         args = {key: filed}
         result = agent_tools.execute_tool(req.session, "list_notes", args)
         if isinstance(result, dict) and result.get("total_matching"):
-            return tool_say.say("list_notes", result, args, now.date())["text"]
-    return ""
+            said = tool_say.say("list_notes", result, args, now.date())
+            return said["lead"], "\n\n".join(p for p in (said["body"], said["chips"]) if p)
+    return "", ""
+
+
+def _said_events(lead: str, rest: str = "") -> list[dict]:
+    """An engine answer as its lead and, apart, the list under it: the same
+    text as one answer, but a model that writes the lead (decision 75) keeps
+    the list as the engine drew it (`_fact_events`, the `attached` flag)."""
+    if not lead:
+        return [{"type": "answer", "delta": rest}] if rest else []
+    return [{"type": "answer", "delta": lead}, *([{"type": "answer", "delta": f"\n\n{rest}", "attached": True}] if rest else [])]
 
 
 def _filed_or_counted_events(req: _StreamRequest, asked: str, now: datetime) -> list[dict]:
     """A filed listing or a count of notes, said from the tool's figures;
     empty when the sentence is neither."""
-    text = _filed_said(req, asked, now) or _counted_lead(req, asked)
-    return [{"type": "answer", "delta": text}] if text else []
+    lead, rest = _filed_said(req, asked, now)
+    return _said_events(lead, rest) if lead else _said_events(_counted_lead(req, asked))
 
 
 def _reminder_window(asked: str, now: datetime) -> tuple | None:
@@ -2701,8 +2712,7 @@ def _tool_read_events(req: _StreamRequest, notes: list | None = None) -> list[di
             drawn = None
     said = tool_say.say(got.tool, result, say_args, now.date())
     chart = drawn["chart"] if drawn else None
-    parts = (said["lead"], "" if chart else said["body"], said["chips"])
-    out = [{"type": "answer", "delta": "\n\n".join(p for p in parts if p)}]
+    out = _said_events(said["lead"], "\n\n".join(p for p in ("" if chart else said["body"], said["chips"]) if p))
     if chart:
         out.append({"type": "chart", "chart": chart})
     return out
@@ -2981,6 +2991,102 @@ def _exact_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> 
         if shown:
             return list(shown)
     return None
+
+
+#: A figure said in prose: digits, or a number word. "one" is read only as
+#: the figure a count must carry ("you have one note"), never as a
+#: contradiction ("one of them is due tomorrow").
+_FIGURE_WORDS = {
+    "one": "1", "two": "2", "three": "3", "four": "4", "five": "5", "six": "6", "seven": "7", "eight": "8", "nine": "9",
+    "ten": "10", "eleven": "11", "twelve": "12", "twenty": "20", "thirty": "30", "forty": "40", "fifty": "50", "hundred": "100",
+}
+_FIGURE = re.compile(r"\d+(?:\.\d+)?|\b(?:" + "|".join(_FIGURE_WORDS) + r")\b", re.I)
+
+
+def _figures(text: str, ones: bool = True) -> set[str]:
+    out: set[str] = set()
+    for match in _FIGURE.finditer(text or ""):
+        said = match.group(0).lower()
+        if said == "one" and not ones:
+            continue
+        said = _FIGURE_WORDS.get(said, said)
+        out.add(said.lstrip("0") or "0")
+    return out
+
+
+def _prose_keeps_facts(prose: str, facts: str, question: str, needs_figure: bool) -> bool:
+    """Whether a model's prose keeps to the engine's facts (decision 75: the
+    model's words may not contradict them): every figure it says is in the
+    facts, the question or today's date, and, for an answer with no list
+    under it (a count, a sum), it says the figure the facts were asked for."""
+    if not prose.strip():
+        return False
+    clock = user_now(deps.get_config()).strftime("%A %d %B %Y %H:%M")
+    known = _figures(facts) | _figures(question) | _figures(clock)
+    if _figures(prose, ones=False) - known:
+        return False
+    asked_for = _figures(facts) - _figures(question)
+    return not (needs_figure and asked_for and not (_figures(prose) & asked_for))
+
+
+def _fact_events(req: _StreamRequest, prepared: dict, t: _Turn) -> Iterator[dict]:
+    """**The engine's facts, the model's words** (CHAT_PLAN decision 75; the
+    owner, 2026-10-27: "I want the ai to be able to do what the composer can
+    do but better"). The engine's exact answer (`_exact_events`: a count, a
+    worked sum, the app's records, a read tool's rows) goes to the model as
+    facts (`librarian.build_facts_messages`); the model writes the reply, and
+    the engine's own parts ride under it unchanged: the list it drew (the
+    `attached` answer), its chart, its panel, its offer.
+
+    The reply is held until it is checked, never streamed then withdrawn: a
+    reply of one or two sentences, against a figure the person may act on.
+    Prose that states a figure the facts lack, or a count without its figure,
+    or a model that fails, leaves the engine's own answer, with no model named
+    under it (a second `meta`, which every client reads as the latest)."""
+    engine = list(_exact_events(req, prepared, True) or [])
+    answers = [e for e in engine if e.get("type") == "answer"]
+    listed = [{"type": "answer", "delta": e["delta"]} for e in answers if e.get("attached")]
+    facts = "".join(str(e.get("delta") or "") for e in answers)
+    messages = librarian.build_facts_messages(
+        _in_full(req), facts, style=prepared["style"], profile=prepared["profile"], history=req.history,
+        persona_prompt=req.persona_prompt, mode=req.mode,
+    )
+    held: dict = {"prose": "", "stats": None}
+    yield from _held_reply(req, messages, held)
+    prose = trim_assistant_padding(held["prose"]).strip()
+    if facts and _prose_keeps_facts(prose, facts, req.question or "", needs_figure=prepared["stats"] is not None and not listed):
+        yield from _model_said(prose, listed, engine, held["stats"])
+        return
+    if prose:
+        logging.getLogger("tessellate.chat").warning("chat: the model's words did not keep to the app's answer, which stands")
+    t.will_answer = False
+    yield _meta_event(req, prepared, t)
+    yield from engine
+
+
+def _model_said(prose: str, listed: list, engine: list, stats: dict | None) -> Iterator[dict]:
+    """The model's words, then the engine's list, chart, panel and offer."""
+    yield {"type": "answer", "delta": prose}
+    yield from listed
+    yield from (e for e in engine if e.get("type") != "answer")
+    if stats is not None:
+        yield stats
+
+
+def _held_reply(req: _StreamRequest, messages: list, held: dict) -> Iterator[dict]:
+    """The model's reply into `held` (its words, its token counts), its
+    thinking passed on as it comes; a model that fails leaves no words."""
+    try:
+        for piece in req.ollama.chat_stream(req.model_manager.chat_model(), messages, req.mode):
+            if "thinking_delta" in piece:
+                yield {"type": "thinking", "delta": piece["thinking_delta"]}
+            elif "stats" in piece:
+                held["stats"] = {"type": "stats", **piece["stats"]}
+            else:
+                held["prose"] += piece.get("content_delta") or ""
+    except OllamaError as exc:
+        logging.getLogger("tessellate.chat").warning("chat: the model could not say the app's answer: %s", safe_value(exc))
+        held["prose"] = ""
 
 
 def _no_notes_line(req: _StreamRequest, ollama_running: bool) -> str:
@@ -3740,6 +3846,7 @@ def _first_events(req: _StreamRequest, prepared: dict, ollama_running: bool, too
     """The turn's events before the agent is asked: an act, a starter the
     engine answers with no model, or the plain answer."""
     if _BULK_DELETE.match(" ".join((req.question or "").split())):
+        #: A refusal in fixed words, model or none: the guard is the point.
         return iter([{"type": "answer", "delta": (
             "I will not delete everything in one go. Name one note instead, for example “delete the boiler note”: "
             "it waits for your Confirm, and Undo brings it back."
@@ -3751,6 +3858,10 @@ def _first_events(req: _StreamRequest, prepared: dict, ollama_running: bool, too
         prepared["app_first"] = True
         return iter(own)
     if prepared["intent"] == intent.ACT:
+        #: Kept the engine's with a model up, deliberately (decision 75's one
+        #: exception): an act with no tools to hand (Chat's Ask mode, the Ask
+        #: box) is done, not discussed, and its confirmation is the card's own
+        #: line. With tools, `_plan_turn` gives the act to the agent instead.
         return _act_events(req, prepared)
     starter = _starter_read(req, ollama_running or tools_only)
     if starter:
@@ -3907,25 +4018,14 @@ def _spoken_act(req: _StreamRequest) -> str | None:
     return resolved[0]
 
 
-def _lists_reminders(req: _StreamRequest) -> bool:
-    """A reminder, task or due question ("what reminders do I have", "whats
-    due this week"): answered from the reminders themselves with a model up
-    too (decision 75, the model must not do worse than the composer). A
-    1.5B model read the notes and said "two reminders" when there were
-    three; a list is exact data, like a count, so it is never retold."""
-    from tessellate.ai import act_registry, question_noise, reading
-
-    if req.skill:
-        return False
-    asked = question_noise.repair(question_noise.tidy(req.question or ""))
-    got = reading.read(asked, now=user_now(deps.get_config()))
-    return got.tool == "list_reminders" and got.intent not in act_registry.ACTS
-
-
-def _note_tool_read(req: _StreamRequest, prepared: dict, ollama_running: bool) -> None:
-    """A read tool answered with no model (decision 59) is the whole
-    notebook's, so the notes retrieval found are not its sources."""
-    if prepared["stats"] is None and prepared["intent"] != intent.ACT and (not ollama_running or _lists_reminders(req)):
+def _note_tool_read(req: _StreamRequest, prepared: dict) -> None:
+    """A read tool's answer (decision 59) is the whole notebook's, so the
+    notes retrieval found are not its sources. Read with a model up too: a
+    list is exact data, like a count, and the model is handed it as facts to
+    say (`_fact_events`, decision 75) rather than reading the notes and
+    miscounting (a 1.5B model said "two reminders" when there were three,
+    2026-10-12). Not for a skill, whose steps read their own way."""
+    if prepared["stats"] is None and prepared["intent"] != intent.ACT and not req.skill:
         prepared["tool_read"] = _tool_read_events(req, prepared["notes"])
         if prepared["tool_read"]:
             #: Not composed from them either: the Ask box's "Composed from
@@ -4005,6 +4105,8 @@ class _Turn:
     composing: bool = False
     conversational: bool = False
     will_answer: bool = False
+    #: The engine has the exact answer and a model says it (`_fact_events`).
+    facts: bool = False
     agentic: bool = False
     #: B30: the seconds each stage landed at, for "Why this answer".
     started: float = 0.0
@@ -4099,13 +4201,42 @@ def _plan_turn(req: _StreamRequest, prepared: dict) -> _Turn:
         #: same, and it can ask and plan (decision 38 is for no model).
         prepared["intent"] = intent.NOTES
     t.composed = _composed(req, t.ollama_running)
-    _note_tool_read(req, prepared, t.ollama_running)
+    _note_tool_read(req, prepared)
     t.tools_provider = _tools_provider(req, prepared, t.ollama_running)
     t.tools_only = t.tools_provider is not req.ollama
     t.composing = _is_composing(prepared, t.composed, t.ollama_running, t.tools_only)
     t.conversational = not intent.needs_retrieval(prepared["intent"])
-    t.will_answer = _will_answer(req, prepared, t)
+    t.facts = _facts_turn(req, prepared, t)
+    t.will_answer = t.facts or _will_answer(req, prepared, t)
     return t
+
+
+def _facts_turn(req: _StreamRequest, prepared: dict, t: _Turn) -> bool:
+    """Whether a model writes this turn from the engine's exact answer (CHAT_PLAN
+    decision 75; the owner, 2026-10-27: "why is it responding as the composer
+    when my ai is in use??"): a count, a worked sum, the app's records or a
+    read tool's rows, with a model up, on every surface but the Ask box's From
+    your notes (`_composed`). Not a skill run, which reads its own way.
+
+    Not "nothing matched" (`_no_notes_events`): the check on the model's words
+    (`_prose_keeps_facts`) reads figures, and that answer has none, so a model
+    saying "here is what I found" over it could not be caught. With tools (the
+    popup agent, Chat's Agent mode) the agent has that turn and can search."""
+    if not t.ollama_running or t.composed or req.skill:
+        return False
+    if req.use_tools and _ASKS_TO_DO.match(req.question or ""):
+        #: "save my first note" read as the first-note count: a request to do
+        #: something is the agent's, which has the tools to do it.
+        return False
+    return prepared["stats"] is not None or bool(prepared.get("tool_read"))
+
+
+#: A sentence that asks for a change, not a figure (`_facts_turn`).
+_ASKS_TO_DO = re.compile(
+    r"^\s*(?:please |pls |can you |could you |would you )?(?:save|create|make|add|write|draft|delete|remove|bin|move|tag|untag|"
+    r"rename|pin|unpin|set|remind|link|unlink|file|archive|edit|update|change|mark|tick|complete|merge|split|tidy|clean)\b",
+    re.I,
+)
 
 
 def _prime_model_notes(req: _StreamRequest, prepared: dict, t: _Turn) -> None:
@@ -4147,6 +4278,8 @@ def _choose_events(req: _StreamRequest, prepared: dict, t: _Turn) -> tuple:
 
     Small talk never goes near the agent: "hey" is not a request to do
     anything, and handing it a toolbox invites it to invent an errand."""
+    if t.facts:
+        return _fact_events(req, prepared, t), None
     events = _first_events(req, prepared, t.ollama_running, t.tools_only)
     can_agent = (
         not t.composed
@@ -4237,7 +4370,8 @@ def _relay_events(req: _StreamRequest, prepared: dict, t: _Turn, events) -> Iter
             kind = payload.get("type")
             _note_kind(t, kind, payload)
             if kind == "answer":
-                payload = {**payload, "delta": scrubber.feed(payload.get("delta") or "")}
+                #: `attached` is the server's own mark (`_said_events`), not the client's.
+                payload = {**{k: v for k, v in payload.items() if k != "attached"}, "delta": scrubber.feed(payload.get("delta") or "")}
                 if not payload["delta"]:
                     continue
             else:

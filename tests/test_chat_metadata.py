@@ -50,7 +50,10 @@ def test_agent_mode_reports_stats_for_every_round(ai_client, fake_ollama):
         [{"name": "count_notes", "arguments": {}}],
         [{"name": "list_categories", "arguments": {}}],
     ]
-    events = _events(ai_client, "how many notes do I have and in what categories?")
+    #: Not a question the engine counts itself: with a model up, "how many
+    #: notes do I have" is the model's from the app's count (`_fact_events`,
+    #: 2026-10-27), and this test is about the agent's own rounds.
+    events = _events(ai_client, "use your tools to look over my notebook and its categories")
     stats = [e for e in events if e["type"] == "stats"]
     assert len(stats) >= 2  # one per round, so the totals can accumulate
 
@@ -69,7 +72,10 @@ def test_agent_mode_stats_carry_a_per_stage_token_estimate(ai_client, fake_ollam
         [{"name": "count_notes", "arguments": {}}],
         [{"name": "list_categories", "arguments": {}}],
     ]
-    events = _events(ai_client, "how many notes do I have and in what categories?")
+    #: Not a question the engine counts itself: with a model up, "how many
+    #: notes do I have" is the model's from the app's count (`_fact_events`,
+    #: 2026-10-27), and this test is about the agent's own rounds.
+    events = _events(ai_client, "use your tools to look over my notebook and its categories")
     stats = [e for e in events if e["type"] == "stats"]
     assert len(stats) >= 2
     first, rest = stats[0], stats[1:]

@@ -190,9 +190,16 @@ def test_the_weather_is_said_not_known_never_guessed():
 
 
 def test_a_utility_is_worked_out_even_with_a_model_running(ai_client, fake_ollama, session):
+    """Worked out by the engine, model or not. Changed 2026-10-27 (decision 75,
+    the owner: the model writes every answer when it runs): the result now
+    goes to the model as a fact (`_fact_events`), and a reply without the
+    figure, as the fake's is, leaves the engine's sentence with no model named
+    under it (the latest `meta`). The model-written case is
+    `tests/test_model_writes_facts_1027.py`."""
     out = _ask(ai_client, "what is 12 * 7", use_tools=False)
+    assert "84" in json.dumps(fake_ollama.chat_calls[-1])
     assert out["text"] == "12 * 7 is 84."
-    assert out["meta"][0]["answered_by"] is None
+    assert out["meta"][-1]["answered_by"] is None
     assert fake_ollama.librarian_reply not in out["text"]
 
 

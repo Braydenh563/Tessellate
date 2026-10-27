@@ -2,8 +2,14 @@
 with a model up (CHAT_PLAN decision 75: the model must not do worse than the
 composer). Measured 2026-10-12 against Qwen2.5-1.5B: "What reminders do I
 have?" was answered from the notes as "two reminders" when there were three;
-the no-model path lists the real ones. A list is exact data, like a count
-(`_stats_events`), so it is never handed to a model to retell.
+the no-model path lists the real ones.
+
+Changed 2026-10-27 (the owner: "why is it responding as the composer when my
+ai is in use??"): the model now writes the words from the real list
+(`_fact_events`), and a reply that miscounts, like the one faked here, is
+refused for the engine's own, with a second `meta` naming no model. The
+intent is unchanged: the miscount never reaches the reader. The model-written
+case is `tests/test_model_writes_facts_1027.py`.
 """
 
 from __future__ import annotations
@@ -43,7 +49,8 @@ def test_a_reminder_question_lists_the_real_reminders_with_a_model_up(ai_client,
     assert "two reminders" not in answer, answer
     for text in ("call mum", "pay rent", "book dentist"):
         assert text in answer, (question, answer)
-    meta = next(e for e in events if e["type"] == "meta")
+    #: The latest `meta` is the one every client reads (`_fact_events`).
+    meta = [e for e in events if e["type"] == "meta"][-1]
     assert meta["raw_results"] == [] and meta["answered_by"] is None
 
 
