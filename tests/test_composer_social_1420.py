@@ -152,7 +152,11 @@ def test_the_citation_goes_after_an_emoticon_not_before_it():
 
     app_js = app_js_text()
     #: `citationInsertionPoint` steps over ":(" as it steps over a stop.
-    assert "CITATION_EMOTICON" in app_js and "CITATION_EMOTICON.exec" in app_js
+    face = re.search(r"end \+= \(/(.+?)/\.exec\(node\.data\.slice\(end\)\)", app_js)
+    assert face, "citationInsertionPoint steps over an emoticon"
+    for tail in [" :(", ":)", " ;-)", " :D"]:
+        assert re.match(face.group(1), tail), tail
+    assert not re.match(face.group(1), " and more")
 
 
 @pytest.mark.skipif(not os.environ.get("COMPOSER_1420_DUMP"), reason="grading dump, run by hand")

@@ -54,7 +54,7 @@ def test_the_head_buttons_have_a_pressed_ground_from_tokens() -> None:
 
 def test_a_lone_alt_release_is_cancelled_and_a_modifier_use_is_not() -> None:
     js = (ROOT / "frontend/js/lazy-entries.js").read_text(encoding="utf-8")
-    assert 'event.key === "Alt" && altPressedAlone) event.preventDefault()' in js
+    assert 'e.key === "Alt" && altAlone) e.preventDefault()' in js
     # Any other key between press and release clears it, as does the window losing focus.
-    assert 'altPressedAlone = event.key === "Alt"' in js
-    assert 'window.addEventListener("blur", () => { altPressedAlone = false; })' in js
+    assert 'altAlone = e.key === "Alt"' in js
+    assert 'addEventListener("blur", () => { altAlone = false; })' in js

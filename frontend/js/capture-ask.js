@@ -1141,14 +1141,11 @@ function citationTextIndex(targets) {
 //: ended inside, so the digit is not drawn bold because the last word was.
 const CITATION_CLOSING = /[.!?:;,)\]"'”’]/;
 const CITATION_INLINE_TAGS = new Set(["STRONG", "EM", "B", "I", "A", "CODE", "MARK", "S", "DEL", "SPAN"]);
-//: An emoticon ends its sentence with the words (INBOX 1420: "for a bit9 :(").
-const CITATION_EMOTICON = /^ ?(?:[:;=][-']?[()DPpOo3|/\\[\]]+|<3)(?![\p{L}\p{N}])/u;
 function citationInsertionPoint(node, offset, targets) {
   let end = offset + 1;
   while (end < node.data.length && CITATION_CLOSING.test(node.data[end])) end += 1;
-  const face = CITATION_EMOTICON.exec(node.data.slice(end));
-  if (face) end += face[0].length;
-  while (face && end < node.data.length && CITATION_CLOSING.test(node.data[end])) end += 1;
+  //: An emoticon ends its sentence with the words (INBOX 1420: "for a bit9 :(").
+  end += (/^ ?[:;=]-?[()DPp]+/.exec(node.data.slice(end)) || [""])[0].length;
   if (end < node.data.length) {
     const tail = node.splitText(end);
     return { parent: tail.parentNode, before: tail };
