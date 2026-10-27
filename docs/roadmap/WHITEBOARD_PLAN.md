@@ -1709,7 +1709,6 @@ Missing (items 1 to 5, zoom to the selection, tidy as a tree, change the shape, 
 
 ## Placed from INBOX, 2026-10-27
 
-1403. **The owner, 2026-10-27, verbatim** (screenshots, dark: a sticky with "test note" selected and the inline bar B, I, S, highlight, code, link, list over it; a connector's context bar "Line, Curved, Label, duplicate, delete, ⋯" with its ⋯ menu open, whose top holds Start: None, End: Filled triangle, Medium, Solid as pills wrapping onto three ragged rows, Solid alone and indented after a stray divider). "I wan tot be able to change more things liek the text sise, font and other things like I can change on adobe indesign. and I want to be able to highlight specific text and change only that. also the top of this menu is poorly formatted and structured"
-     Placed: (1) the inline bar on selected text gains size, font, colour and highlight colour that apply to the selected run only (stored as runs, survives save, export and undo), with the Format panel's object-wide text controls (size, font, align, line height, letter spacing) reachable from it; (2) the ⋯ menu's top is one labelled grid (Start, End, Weight, Dash), aligned, no orphan row or stray divider, measured at 1280 and 390 wide; fix the class across every context bar's ⋯ menu. One Sonnet agent when a slot frees.
+1403. Rich text runs on a board card and the ⋯ menu top: built (`wb-1027`); moved to HISTORY.md, "Moved from the plans, 2026-10-27 (wb-1027)".
 
 1404. Drag a connector label by its words: built (`wb-1027`); moved to HISTORY.md, "Moved from the plans, 2026-10-27 (wb-1027)".

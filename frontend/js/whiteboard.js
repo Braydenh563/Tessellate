@@ -10206,6 +10206,176 @@ function wbWrapTextSelection(marker) {
   wbScheduleRender();
 }
 
+//: **Runs** (INBOX 1403). Every character of `text` with the run it sits in
+//: (`{}` for none) and where it starts in `text`, the run marks themselves
+//: dropped. Shared by the editor below and the export.
+function wbRunChars(text) {
+  const chars = [];
+  const re = new RegExp(MD_RUN.source, "g");
+  let cursor = 0;
+  let hit;
+  const plain = (end) => {
+    for (; cursor < end; cursor += 1) chars.push({ ch: text[cursor], attrs: {}, at: cursor });
+  };
+  while ((hit = re.exec(text)) !== null) {
+    plain(hit.index);
+    const attrs = mdRunParse(hit[1]);
+    const inner = hit.index + hit[0].indexOf("|") + 1;
+    for (let i = 0; i < hit[2].length; i += 1) chars.push({ ch: hit[2][i], attrs, at: inner + i });
+    cursor = re.lastIndex;
+  }
+  plain(text.length);
+  return chars;
+}
+
+//: `patch` (`size`, `font`, `ink`, `hl`; a value sets it, null clears it, a
+//: missing key leaves it) applied to the characters in `text[from, to)` only,
+//: and the whole text written back with its runs rebuilt: neighbours with
+//: equal values share one run, a line break or a `}` ends a run (neither can
+//: sit inside one), and what lay outside the selection reads as it did. Pure,
+//: so a test can run it. `from`/`to` come back around the same words.
+function wbRunApply(text, from, to, patch) {
+  const chars = wbRunChars(text);
+  const n = chars.length;
+  const first = chars.findIndex((c) => c.at >= from);
+  const last = chars.findIndex((c) => c.at >= to);
+  const cf = first === -1 ? n : first;
+  const ct = last === -1 ? n : last;
+  if (cf >= ct) return { text, from, to };
+  for (let i = cf; i < ct; i += 1) {
+    const next = { ...chars[i].attrs };
+    for (const key of ["size", "font", "ink", "hl"]) {
+      if (patch[key] === null) delete next[key];
+      else if (patch[key] !== undefined) next[key] = patch[key];
+    }
+    chars[i] = { ...chars[i], attrs: next };
+  }
+  const bare = (c) => c.ch === "\n" || c.ch === "}";
+  const pos = [];
+  let out = "";
+  let i = 0;
+  while (i < n) {
+    const key = bare(chars[i]) ? "" : mdRunFormat(chars[i].attrs);
+    if (!key) {
+      pos[i] = out.length;
+      out += chars[i].ch;
+      i += 1;
+      continue;
+    }
+    let j = i;
+    let body = "";
+    while (j < n && !bare(chars[j]) && mdRunFormat(chars[j].attrs) === key) {
+      body += chars[j].ch;
+      j += 1;
+    }
+    const head = `{{${key}|`;
+    for (let k = i; k < j; k += 1) pos[k] = out.length + head.length + (k - i);
+    out += `${head}${body}}}`;
+    i = j;
+  }
+  return { text: out, from: pos[cf], to: pos[ct - 1] + 1 };
+}
+
+//: The colours a run's swatches show (the stylesheet draws the real ones, in
+//: both themes); the export's fills are `WB_RUN_INK` and these at a quarter.
+const WB_RUN_SWATCHES = {
+  yellow: "#eab308", green: "#22c55e", blue: "#3b82f6", pink: "#ec4899",
+  purple: "#a855f7", orange: "#f97316", red: "#ef4444", grey: "#94a3b8",
+};
+const WB_RUN_INK = {
+  yellow: "#b45309", green: "#15803d", blue: "#1d4ed8", pink: "#be185d",
+  purple: "#7e22ce", orange: "#c2410c", red: "#b91c1c", grey: "#6b7280",
+};
+const WB_RUN_SIZES = [12, 16, 20, 28, 40];
+
+//: **The selection bar's Text style** (INBOX 1403): size, font, text colour
+//: and highlight colour for the selected words only, as a run in the text.
+//: The picks go through the editing surface (`wbSpliceEditable`, so the
+//: browser's Undo holds them), and the menu is the colour popover's own
+//: element, built the way `wbOpenPaperMenu` builds the paper row. The whole
+//: box's text settings, which are object-wide, are one press from here.
+async function wbOpenRunMenu(button) {
+  const surface = document.activeElement?.wbEditorSurface;
+  if (!surface) return;
+  const span = surface.selection();
+  if (span.from === span.to) return;
+  if (typeof swatchPicker !== "function" && !(await ensureModule("categories"))) return;
+  const state = { from: span.from, to: span.to };
+  const apply = (patch) => {
+    closeActionMenus();
+    surface.el.focus({ preventScroll: true });
+    const before = surface.text;
+    const out = wbRunApply(before, state.from, state.to, patch);
+    if (out.text === before) return;
+    surface.el.dataset.wbFormatted = "1";
+    wbSpliceEditable(surface, before, out.text);
+    surface.setSelectionRange(out.from, out.to);
+  };
+  const menu = wbColourMenu();
+  wbStopEyedrop();
+  wbColourState.input = null;
+  menu.setAttribute("aria-label", "Text style");
+  const head = document.createElement("p");
+  head.className = "wb-colour-head";
+  head.textContent = "Text style";
+  const row = (words, buttons) => {
+    const box = document.createElement("div");
+    box.className = "wb-colour-actions";
+    box.setAttribute("role", "group");
+    box.setAttribute("aria-label", words);
+    box.append(...buttons);
+    return box;
+  };
+  //: A press on the menu must not take focus from the box: that ends the
+  //: edit (the blur saves and drops the editing surface) before the pick runs.
+  //: The selection bar's own buttons are `mousedown` for the same reason.
+  const keepFocus = (el) => {
+    el.addEventListener("mousedown", (event) => event.preventDefault());
+    return el;
+  };
+  const choice = (words, title, patch, face) => {
+    const b = keepFocus(document.createElement("button"));
+    b.type = "button";
+    b.className = "ghost small";
+    b.title = title;
+    b.textContent = words;
+    if (face) b.style.fontFamily = MD_RUN_FONTS[face];
+    b.addEventListener("click", () => apply(patch));
+    return b;
+  };
+  const sizes = WB_RUN_SIZES.map((px) => choice(String(px), `Size ${px} for the selected words`, { size: px }));
+  sizes.push(choice("Default", "The box's own size for the selected words", { size: null }));
+  const fonts = Object.entries({ serif: "Serif", mono: "Mono", wide: "Wide", hand: "Hand" }).map(([key, words]) =>
+    choice(words, `${words} for the selected words`, { font: key }, key));
+  fonts.push(choice("Default", "The box's own font for the selected words", { font: null }));
+  const colours = (label, field, none) =>
+    keepFocus(swatchPicker({ label, value: undefined, palette: WB_RUN_SWATCHES, none, onChoose: (key) => apply({ [field]: key }) }));
+  const whole = keepFocus(document.createElement("button"));
+  whole.type = "button";
+  whole.className = "ghost small";
+  whole.title = "Size, colour and font for all the text in the box";
+  whole.textContent = "Text settings for the whole box";
+  whole.addEventListener("click", () => {
+    closeActionMenus();
+    wbFormatOpen("text");
+  });
+  menu.replaceChildren(
+    head,
+    wbColourHeading("Size"), row("Size", sizes),
+    wbColourHeading("Font"), row("Font", fonts),
+    wbColourHeading("Text colour"), colours("Text colour", "ink", "Default"),
+    wbColourHeading("Highlight"), colours("Highlight colour", "hl", "None"),
+    whole
+  );
+  closeActionMenus();
+  window._menuOpenedAt = performance.now();
+  menu._escapedOpener = button;
+  menu.classList.add("action-menu-escaped");
+  menu.classList.remove("hidden");
+  button.setAttribute("aria-expanded", "true");
+  placeEscapedMenu(menu, button);
+}
+
 function wbBulletTextLines() {
   const item = wbSelectedTextObjectOrNull();
   if (!item) return;
@@ -10491,15 +10661,33 @@ function wbSelectionBarFit(bar, surface) {
     });
     bar.querySelector('[data-md="link"]')?.after(list);
   }
+  //: Text style: a run's size, font and colours, on a text box or sticky only.
+  let run = bar.querySelector("[data-board-run]");
+  if (!run) {
+    run = document.createElement("button");
+    run.type = "button";
+    run.className = "ghost small icon-button";
+    run.dataset.boardRun = "1";
+    run.title = "Text style: size, font, colour and highlight for the selection";
+    run.setAttribute("aria-label", "Text style");
+    run.setAttribute("aria-haspopup", "dialog");
+    setLabel(run, "ph:text-aa");
+    run.addEventListener("mousedown", (event) => {
+      event.preventDefault();
+      wbOpenRunMenu(run);
+    });
+    list.after(run);
+  }
+  run.hidden = surface?.id !== "wb-text-edit";
   const keep = surface?.id === "wb-text-edit" ? WB_BAR_TEXT : surface?.id === "wb-topic-edit" ? WB_BAR_TOPIC : null;
   list.hidden = !keep?.has("ul");
   //: Ask carries no data mark, so editor.js never shows it again by itself.
-  const ask = bar.querySelector("button:not([data-md]):not([data-turn]):not([data-inline-ai]):not([data-board-md])");
+  const ask = bar.querySelector("button:not([data-md]):not([data-turn]):not([data-inline-ai]):not([data-board-md]):not([data-board-run])");
   if (!keep) {
     if (ask) ask.hidden = false;
     return;
   }
-  for (const button of bar.querySelectorAll("button:not([data-board-md])")) button.hidden = !keep.has(button.dataset.md);
+  for (const button of bar.querySelectorAll("button:not([data-board-md]):not([data-board-run])")) button.hidden = !keep.has(button.dataset.md);
   for (const rule of bar.querySelectorAll(".selection-bar-rule")) rule.hidden = true;
 }
 
@@ -12605,6 +12793,66 @@ function wbSvgText(lines, x, y, { fontSize = 13, fill = "#1f2430", lineHeight, f
 }
 
 
+//: A text box's words with their runs, as SVG (INBOX 1403): wrapped by the
+//: same rough character count as `wbSvgWrapLines` but per word, each word a
+//: run of pieces, and every piece its own `<tspan>` with its own size, face
+//: and fill; a highlight is a rect behind it, at the position that count
+//: gives. `x`, `y` are the first line's left and baseline.
+function wbSvgRunLines(text, { x, y, maxWidth, maxLines, fontSize, fill, lineHeight, charWidth }) {
+  const words = [];
+  let word = null;
+  for (const c of wbRunChars(text)) {
+    if (/\s/.test(c.ch)) {
+      word = null;
+    } else {
+      if (!word) words.push((word = []));
+      const last = word[word.length - 1];
+      if (last && JSON.stringify(last.attrs) === JSON.stringify(c.attrs)) last.text += c.ch;
+      else word.push({ text: c.ch, attrs: c.attrs });
+    }
+  }
+  const wide = (piece) => piece.text.length * charWidth * ((piece.attrs.size || fontSize) / fontSize);
+  const lines = [];
+  let line = [];
+  let used = 0;
+  for (const pieces of words) {
+    const w = pieces.reduce((sum, piece) => sum + wide(piece), 0);
+    const gap = line.length ? charWidth : 0;
+    if (line.length && used + gap + w > maxWidth) {
+      lines.push(line);
+      line = [];
+      used = 0;
+    }
+    if (lines.length >= maxLines) break;
+    line.push(pieces);
+    used += (line.length > 1 ? charWidth : 0) + w;
+  }
+  if (line.length && lines.length < maxLines) lines.push(line);
+  const rects = [];
+  const spans = [];
+  let top = y;
+  lines.forEach((words, row) => {
+    const tallest = Math.max(fontSize, ...words.flat().map((p) => p.attrs.size || 0));
+    if (row) top += lineHeight * (tallest / fontSize);
+    let at = x;
+    words.forEach((pieces, index) => {
+      if (index) at += charWidth;
+      for (const piece of pieces) {
+        const size = piece.attrs.size || fontSize;
+        const w = wide(piece);
+        if (piece.attrs.hl) {
+          rects.push(`<rect x="${at}" y="${top - size * 0.85}" width="${w}" height="${size * 1.15}" rx="2" fill="${WB_RUN_SWATCHES[piece.attrs.hl]}" fill-opacity="0.25"/>`);
+        }
+        const face = piece.attrs.font ? ` font-family="${wbSvgEscape(MD_RUN_FONTS[piece.attrs.font])}"` : "";
+        const ink = piece.attrs.ink ? WB_RUN_INK[piece.attrs.ink] : fill;
+        spans.push(`<tspan x="${at}" y="${top}" font-size="${size}"${face} fill="${ink}">${wbSvgEscape(piece.text)}</tspan>`);
+        at += w;
+      }
+    });
+  });
+  return `${rects.join("")}<text font-family="sans-serif" font-size="${fontSize}" fill="${fill}">${spans.join("")}</text>`;
+}
+
 // The board's full extent, every card and sketch, with padding, computed
 // from what's actually rendered (`getBBox`/`offsetWidth`) rather than
 // guessed constants, so it stays right if a card's real size ever changes.
@@ -13099,12 +13347,14 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       const boxEl = document.querySelector(`#wb-html-layer .wb-object[data-id="${obj.id}"]`);
       parts.push(wbSvgBoxBackdrop(boxEl, obj.data, obj.width, obj.height));
       parts.push(wbSvgStickyFold(boxEl, obj.width, obj.height));
+      const inkFill = obj.data.color || textInk || "#1f2430";
       parts.push(
-        wbSvgText(lines, pad, fontSize + pad - 2, {
-          fontSize,
-          fill: obj.data.color || textInk || "#1f2430",
-          lineHeight: fontSize * 1.25,
-        })
+        new RegExp(MD_RUN.source).test(obj.data.content || "")
+          ? wbSvgRunLines(obj.data.content, {
+              x: pad, y: fontSize + pad - 2, maxWidth: obj.width - 2 * pad, maxLines: 20,
+              fontSize, fill: inkFill, lineHeight: fontSize * 1.25, charWidth: fontSize * 0.55,
+            })
+          : wbSvgText(lines, pad, fontSize + pad - 2, { fontSize, fill: inkFill, lineHeight: fontSize * 1.25 })
       );
     } else if (obj.kind === "table") {
       parts.push(wbSvgTable(document.querySelector(`#wb-html-layer .wb-object[data-id="${obj.id}"]`), obj));
@@ -19194,7 +19444,7 @@ function wbSyncFillDefs(groupEl, id, parsed) {
 //: systems this app runs on already ship, by name so no CSS is ever stored.
 const WB_ITEM_FONTS = Object.freeze({
   ...WB_MAP_FONTS,
-  hand: '"Segoe Print", "Bradley Hand", "Chalkboard SE", "Comic Sans MS", cursive',
+  hand: MD_RUN_FONTS.hand,
 });
 
 //: Pure (node-tested): `%name%` in a label shows the item's own value of
@@ -22883,6 +23133,10 @@ function renderWbObjects(canvas) {
         d.data = formatted ? { ...d.data, content: edited, md: true } : { ...d.data, content: edited };
         wbGrowBoxToWords(this, d);
         wbSaveObject(d);
+        //: A formatted edit is shown rendered (K24), and nothing else asked for
+        //: that: the box kept its raw `**x**` or `{{size=24|x}}` source on
+        //: screen until some other change repainted the board.
+        if (formatted) wbScheduleRender();
       });
       content.on("input", function () {
         if (this.isContentEditable) wbGrowBoxToWords(this, d);

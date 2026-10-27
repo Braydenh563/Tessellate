@@ -803,10 +803,11 @@ function notePreviewText(content) {
       // m[4] is the optional colour group and was being read as the text.
       // Verified against the live pattern: g1 code, g2 bold, g3 strike,
       // g4 highlight colour, g5 highlight text, g6 ++colour, g7 ++text,
-      // g8 italic, g9/g10 image alt+url, g11/g12 link text+url.
+      // g8 italic, g9/g10 image alt+url, g11/g12 link text+url, g13/g14 run
+      // attributes+words (a run previews as its words).
       (...m) =>
         m[1] ?? m[2] ?? m[3] ?? m[5] ?? m[7] ?? m[8] ??
-        (m[10] !== undefined ? m[9] || "image" : m[11])
+        (m[10] !== undefined ? m[9] || "image" : m[14] !== undefined ? notePreviewText(m[14]) : m[11])
     );
 }
 

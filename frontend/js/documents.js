@@ -14074,6 +14074,57 @@ docBoxEl().addEventListener("scroll", (event) => {
 // leaving "green" showing afterwards would claim a state that does not exist.
 const MD_COLOURS = ["yellow", "green", "blue", "pink", "purple", "orange", "red", "grey"];
 
+//: **A run** (INBOX 1403): `{{size=24 font=serif ink=red hl=yellow|words}}`, the
+//: size, face, text colour and highlight of just those words, written in the
+//: text itself like `==x==` so save, search, undo, export and the AI all read
+//: it with no new column. The grammar is one alternative of `INLINE_MD` and
+//: `INLINE_MD_LEGACY` (notes-list.js, at boot); what draws and edits it is
+//: here, in the Library's scripts, out of the boot budget. Every value is
+//: checked on the way out of the text (`mdRunParse`): a size is 8 to 200, a
+//: face is one of `MD_RUN_FONTS` (the board's Font row builds from it), a
+//: colour one of `MD_COLOURS`.
+const MD_RUN = /\{\{((?:(?:size|font|ink|hl)=[a-z0-9]{1,12} ?){1,4})\|([^}\n]{1,2000}?)\}\}/;
+const MD_RUN_FONTS = Object.freeze({
+  serif: 'Georgia, "Iowan Old Style", "Times New Roman", serif',
+  mono: 'ui-monospace, "Cascadia Code", "SF Mono", Consolas, "Liberation Mono", "DejaVu Sans Mono", monospace',
+  wide: 'Verdana, "DejaVu Sans", Geneva, sans-serif',
+  hand: '"Segoe Print", "Bradley Hand", "Chalkboard SE", "Comic Sans MS", cursive',
+});
+
+function mdRunParse(spec) {
+  const out = {};
+  for (const pair of String(spec).trim().split(/\s+/)) {
+    const [key, value] = pair.split("=");
+    if (key === "size" && /^\d{1,3}$/.test(value) && value >= 8 && value <= 200) out.size = Number(value);
+    else if (key === "font" && Object.prototype.hasOwnProperty.call(MD_RUN_FONTS, value)) out.font = value;
+    else if ((key === "ink" || key === "hl") && MD_COLOURS.includes(value)) out[key] = value;
+  }
+  return out;
+}
+
+//: The attributes as the text between `{{` and `|`, in one fixed order so the
+//: same run is always the same characters.
+function mdRunFormat(attrs) {
+  return ["size", "font", "ink", "hl"].filter((key) => attrs[key] !== undefined && attrs[key] !== null).map((key) => `${key}=${attrs[key]}`).join(" ");
+}
+
+//: A run's element and the element its words go into, `[node, host]`. Classes
+//: for the colours (the stylesheet has a theme-aware rule for each), CSSOM for
+//: the size and face, never a `style` attribute (the CSP rejects one). A
+//: highlight is a `<mark>`, whose own `color: inherit` would beat a text
+//: colour on the same element, so the colour sits on a span inside it.
+function mdRunNode(spec) {
+  const attrs = mdRunParse(spec);
+  const node = document.createElement(attrs.hl ? "mark" : "span");
+  if (attrs.hl) node.classList.add("text-highlight", `text-highlight-${attrs.hl}`);
+  if (attrs.size) node.style.fontSize = `${attrs.size}px`;
+  if (attrs.font) node.style.fontFamily = MD_RUN_FONTS[attrs.font];
+  if (!attrs.ink) return [node, node];
+  const host = attrs.hl ? node.appendChild(document.createElement("span")) : node;
+  host.classList.add("text-ink", `text-ink-${attrs.ink}`);
+  return [node, host];
+}
+
 //: **A colour pick on text that is already coloured switches the colour.**
 //: Reported: blue picked on yellow text "shows markdown" (`==blue|==x====`).
 //: The mark around the selection, or the one the selection is exactly, is
