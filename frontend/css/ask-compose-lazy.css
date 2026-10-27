@@ -233,3 +233,10 @@
 .from-notes-fold[open] > .from-notes-body {
   border-top: 1px solid var(--border);
 }
+
+/* The Ask head's buttons show a press, an open menu, a toggle, a done tick
+   (INBOX 1423). Lazy with the answer's other pieces: boot CSS is capped. */
+#chat-results .answer-actions .ghost:is(:active, .is-done, [aria-pressed="true"], [aria-expanded="true"]) {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}

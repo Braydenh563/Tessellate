@@ -2,7 +2,7 @@
 
 Generated 2026-10-27 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6657, frontend ids 2562, CSS sections 505, backend routes 628, backend modules 6886, test files 1443, tests 12787, plan headings 984.
+Counts: frontend functions 6657, frontend ids 2562, CSS sections 505, backend routes 628, backend modules 6886, test files 1444, tests 12792, plan headings 984.
 
 ## Frontend functions (6657)
 
@@ -331,7 +331,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `announce` | frontend/js/capture-ask.js:827 |
 | `answerFigure` | frontend/js/capture-ask.js:2004 |
 | `answerObject` | frontend/js/capture-ask.js:2097 |
-| `askAsOf` | frontend/js/capture-ask.js:3381 |
+| `askAsOf` | frontend/js/capture-ask.js:3385 |
 | `askNotesOnTheRight` | frontend/js/capture-ask.js:2221 |
 | `askOpenContext` | frontend/js/capture-ask.js:880 |
 | `askQuestion` | frontend/js/capture-ask.js:2944 |
@@ -351,7 +351,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `clickableResult` | frontend/js/capture-ask.js:1023 |
 | `closeCitationPeek` | frontend/js/capture-ask.js:1546 |
 | `collapseCitationRuns` | frontend/js/capture-ask.js:1239 |
-| `copyAnswer` | frontend/js/capture-ask.js:3310 |
+| `copyAnswer` | frontend/js/capture-ask.js:3314 |
 | `createDocumentNamed` | frontend/js/capture-ask.js:287 |
 | `drawAnswerPanels` | frontend/js/capture-ask.js:2273 |
 | `everyRowScored` | frontend/js/capture-ask.js:2433 |
@@ -373,10 +373,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `heldOffline` | frontend/js/capture-ask.js:588 |
 | `holdPictureTokens` | frontend/js/capture-ask.js:1998 |
 | `liveMarkdownRenderer` | frontend/js/capture-ask.js:2797 |
-| `loadAskHistoryBadge` | frontend/js/capture-ask.js:3342 |
+| `loadAskHistoryBadge` | frontend/js/capture-ask.js:3346 |
 | `loadCaptureDocuments` | frontend/js/capture-ask.js:276 |
-| `loadSuggestions` | frontend/js/capture-ask.js:3316 |
-| `loadTemplates` | frontend/js/capture-ask.js:3414 |
+| `loadSuggestions` | frontend/js/capture-ask.js:3320 |
+| `loadTemplates` | frontend/js/capture-ask.js:3418 |
 | `matchReasonBadge` | frontend/js/capture-ask.js:2437 |
 | `newChat` | frontend/js/capture-ask.js:2878 |
 | `notePictures` | frontend/js/capture-ask.js:1721 |
@@ -402,7 +402,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderChatMeta` | frontend/js/capture-ask.js:2301 |
 | `renderEvidenceView` | frontend/js/capture-ask.js:1950 |
 | `resetCaptureForm` | frontend/js/capture-ask.js:461 |
-| `retryAnswer` | frontend/js/capture-ask.js:3306 |
+| `retryAnswer` | frontend/js/capture-ask.js:3310 |
 | `saveEntry` | frontend/js/capture-ask.js:602 |
 | `saveEntryAsDraft` | frontend/js/capture-ask.js:727 |
 | `scheduleCaptureTagSuggestions` | frontend/js/capture-ask.js:548 |
@@ -412,7 +412,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `setAnsweredBy` | frontend/js/capture-ask.js:2292 |
 | `setAsking` | frontend/js/capture-ask.js:2838 |
 | `settleCaptureStatus` | frontend/js/capture-ask.js:125 |
-| `showAskAsOf` | frontend/js/capture-ask.js:3387 |
+| `showAskAsOf` | frontend/js/capture-ask.js:3391 |
 | `showCitedPassage` | frontend/js/capture-ask.js:1614 |
 | `stopAnswer` | frontend/js/capture-ask.js:2844 |
 | `streamChat` | frontend/js/capture-ask.js:2468 |
@@ -424,88 +424,88 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aiWritingTrace` | frontend/js/chat.js:2202 |
-| `applyCompression` | frontend/js/chat.js:2062 |
-| `askAboutPage` | frontend/js/chat.js:1468 |
+| `aiWritingTrace` | frontend/js/chat.js:2209 |
+| `applyCompression` | frontend/js/chat.js:2069 |
+| `askAboutPage` | frontend/js/chat.js:1475 |
 | `assistantLabel` | frontend/js/chat.js:55 |
 | `assistantMessageActions` | frontend/js/chat.js:165 |
-| `atlasSuggestion` | frontend/js/chat.js:678 |
-| `batteryModeOn` | frontend/js/chat.js:2104 |
-| `bookmarkWebResult` | frontend/js/chat.js:1271 |
-| `buildWebResultRow` | frontend/js/chat.js:1148 |
-| `chatEmptySettle` | frontend/js/chat.js:699 |
+| `atlasSuggestion` | frontend/js/chat.js:685 |
+| `batteryModeOn` | frontend/js/chat.js:2111 |
+| `bookmarkWebResult` | frontend/js/chat.js:1278 |
+| `buildWebResultRow` | frontend/js/chat.js:1155 |
+| `chatEmptySettle` | frontend/js/chat.js:706 |
 | `chatHistoryToSend` | frontend/js/chat.js:39 |
 | `chatMessageActions` | frontend/js/chat.js:68 |
-| `chatTranscriptText` | frontend/js/chat.js:2000 |
+| `chatTranscriptText` | frontend/js/chat.js:2007 |
 | `chatTurnTranscript` | frontend/js/chat.js:128 |
-| `citeWebPage` | frontend/js/chat.js:1525 |
-| `clearChatEmptyState` | frontend/js/chat.js:827 |
-| `clearWebSearchHistory` | frontend/js/chat.js:1339 |
-| `closeWebReader` | frontend/js/chat.js:897 |
+| `citeWebPage` | frontend/js/chat.js:1532 |
+| `clearChatEmptyState` | frontend/js/chat.js:834 |
+| `clearWebSearchHistory` | frontend/js/chat.js:1346 |
+| `closeWebReader` | frontend/js/chat.js:904 |
 | `compactTokens` | frontend/js/chat.js:494 |
-| `compressChatContext` | frontend/js/chat.js:2028 |
+| `compressChatContext` | frontend/js/chat.js:2035 |
 | `continueRunControls` | frontend/js/chat.js:230 |
-| `copyToClipboard` | frontend/js/chat.js:551 |
+| `copyToClipboard` | frontend/js/chat.js:558 |
 | `copyViaTextarea` | frontend/js/chat.js:518 |
-| `copyWebLink` | frontend/js/chat.js:1263 |
-| `fillPersonaMark` | frontend/js/chat.js:1802 |
+| `copyWebLink` | frontend/js/chat.js:1270 |
+| `fillPersonaMark` | frontend/js/chat.js:1809 |
 | `flashCopied` | frontend/js/chat.js:540 |
-| `forkFromBubble` | frontend/js/chat.js:630 |
-| `livingInterval` | frontend/js/chat.js:2188 |
-| `loadResponseModes` | frontend/js/chat.js:1757 |
-| `loadWebSearchHistory` | frontend/js/chat.js:1314 |
+| `forkFromBubble` | frontend/js/chat.js:637 |
+| `livingInterval` | frontend/js/chat.js:2195 |
+| `loadResponseModes` | frontend/js/chat.js:1764 |
+| `loadWebSearchHistory` | frontend/js/chat.js:1321 |
 | `manualPauseControls` | frontend/js/chat.js:276 |
 | `messageMetaLine` | frontend/js/chat.js:344 |
 | `metaItem` | frontend/js/chat.js:310 |
-| `mountChatActionsMenu` | frontend/js/chat.js:1947 |
-| `openWebPageExternally` | frontend/js/chat.js:1259 |
-| `openWebReader` | frontend/js/chat.js:1485 |
-| `personaOptions` | frontend/js/chat.js:1819 |
-| `progressLine` | frontend/js/chat.js:2530 |
-| `progressMotionWanted` | frontend/js/chat.js:2140 |
-| `progressPhaseText` | frontend/js/chat.js:2398 |
-| `pushWebSearchHistory` | frontend/js/chat.js:1323 |
-| `questionForBubble` | frontend/js/chat.js:584 |
-| `reducedMotionWanted` | frontend/js/chat.js:2110 |
-| `refreshWebSearxngStrip` | frontend/js/chat.js:1068 |
-| `regenerateFromBubble` | frontend/js/chat.js:602 |
-| `regenerateLastAnswer` | frontend/js/chat.js:657 |
+| `mountChatActionsMenu` | frontend/js/chat.js:1954 |
+| `openWebPageExternally` | frontend/js/chat.js:1266 |
+| `openWebReader` | frontend/js/chat.js:1492 |
+| `personaOptions` | frontend/js/chat.js:1826 |
+| `progressLine` | frontend/js/chat.js:2537 |
+| `progressMotionWanted` | frontend/js/chat.js:2147 |
+| `progressPhaseText` | frontend/js/chat.js:2405 |
+| `pushWebSearchHistory` | frontend/js/chat.js:1330 |
+| `questionForBubble` | frontend/js/chat.js:591 |
+| `reducedMotionWanted` | frontend/js/chat.js:2117 |
+| `refreshWebSearxngStrip` | frontend/js/chat.js:1075 |
+| `regenerateFromBubble` | frontend/js/chat.js:609 |
+| `regenerateLastAnswer` | frontend/js/chat.js:664 |
 | `removeChatBubble` | frontend/js/chat.js:504 |
-| `renderChatContextMeter` | frontend/js/chat.js:1897 |
-| `renderChatEmptyState` | frontend/js/chat.js:709 |
-| `renderChatTurnCount` | frontend/js/chat.js:1927 |
-| `renderChatUsage` | frontend/js/chat.js:1880 |
-| `renderCompressionState` | frontend/js/chat.js:2075 |
-| `renderModelContextBox` | frontend/js/chat.js:1618 |
-| `renderModelHealthNote` | frontend/js/chat.js:1720 |
-| `renderModelSpec` | frontend/js/chat.js:1648 |
-| `renderWebPageAttachment` | frontend/js/chat.js:1552 |
-| `renderWebPanelMenu` | frontend/js/chat.js:1002 |
-| `renderWebSearchHistory` | frontend/js/chat.js:1348 |
-| `rewriteAnswerWith` | frontend/js/chat.js:621 |
-| `runWebSearch` | frontend/js/chat.js:1383 |
-| `scheduleThinkingWordTick` | frontend/js/chat.js:2316 |
-| `setResponseMode` | frontend/js/chat.js:1780 |
-| `setWebEngineDot` | frontend/js/chat.js:988 |
-| `setWebSearxngRunning` | frontend/js/chat.js:1053 |
-| `showCompressReview` | frontend/js/chat.js:2050 |
-| `startThinkingWordRotation` | frontend/js/chat.js:2344 |
-| `stopThinkingWordRotation` | frontend/js/chat.js:2366 |
-| `stopWebRequest` | frontend/js/chat.js:882 |
-| `togglePersonaPrompt` | frontend/js/chat.js:1872 |
-| `toggleWebPanel` | frontend/js/chat.js:910 |
-| `toolPhaseVerb` | frontend/js/chat.js:2413 |
-| `typingDots` | frontend/js/chat.js:2427 |
-| `webEngineWords` | frontend/js/chat.js:971 |
-| `webPageContextBlock` | frontend/js/chat.js:1583 |
-| `webPageMarkdown` | frontend/js/chat.js:1492 |
-| `webQueryTerms` | frontend/js/chat.js:1135 |
-| `webReaderIsOpen` | frontend/js/chat.js:893 |
-| `webRequestEnd` | frontend/js/chat.js:872 |
-| `webRequestStart` | frontend/js/chat.js:863 |
-| `webResultMark` | frontend/js/chat.js:1114 |
-| `wheelScrollsHorizontally` | frontend/js/chat.js:2251 |
-| `wireHorizontalWheelScrolling` | frontend/js/chat.js:2284 |
+| `renderChatContextMeter` | frontend/js/chat.js:1904 |
+| `renderChatEmptyState` | frontend/js/chat.js:716 |
+| `renderChatTurnCount` | frontend/js/chat.js:1934 |
+| `renderChatUsage` | frontend/js/chat.js:1887 |
+| `renderCompressionState` | frontend/js/chat.js:2082 |
+| `renderModelContextBox` | frontend/js/chat.js:1625 |
+| `renderModelHealthNote` | frontend/js/chat.js:1727 |
+| `renderModelSpec` | frontend/js/chat.js:1655 |
+| `renderWebPageAttachment` | frontend/js/chat.js:1559 |
+| `renderWebPanelMenu` | frontend/js/chat.js:1009 |
+| `renderWebSearchHistory` | frontend/js/chat.js:1355 |
+| `rewriteAnswerWith` | frontend/js/chat.js:628 |
+| `runWebSearch` | frontend/js/chat.js:1390 |
+| `scheduleThinkingWordTick` | frontend/js/chat.js:2323 |
+| `setResponseMode` | frontend/js/chat.js:1787 |
+| `setWebEngineDot` | frontend/js/chat.js:995 |
+| `setWebSearxngRunning` | frontend/js/chat.js:1060 |
+| `showCompressReview` | frontend/js/chat.js:2057 |
+| `startThinkingWordRotation` | frontend/js/chat.js:2351 |
+| `stopThinkingWordRotation` | frontend/js/chat.js:2373 |
+| `stopWebRequest` | frontend/js/chat.js:889 |
+| `togglePersonaPrompt` | frontend/js/chat.js:1879 |
+| `toggleWebPanel` | frontend/js/chat.js:917 |
+| `toolPhaseVerb` | frontend/js/chat.js:2420 |
+| `typingDots` | frontend/js/chat.js:2434 |
+| `webEngineWords` | frontend/js/chat.js:978 |
+| `webPageContextBlock` | frontend/js/chat.js:1590 |
+| `webPageMarkdown` | frontend/js/chat.js:1499 |
+| `webQueryTerms` | frontend/js/chat.js:1142 |
+| `webReaderIsOpen` | frontend/js/chat.js:900 |
+| `webRequestEnd` | frontend/js/chat.js:879 |
+| `webRequestStart` | frontend/js/chat.js:870 |
+| `webResultMark` | frontend/js/chat.js:1121 |
+| `wheelScrollsHorizontally` | frontend/js/chat.js:2258 |
+| `wireHorizontalWheelScrolling` | frontend/js/chat.js:2291 |
 
 ### frontend/js/chat-agent.js (71)
 
@@ -1013,7 +1013,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openSketch` | frontend/js/media.js:97 |
 | `saveSketch` | frontend/js/media.js:125 |
 | `sketchHost` | frontend/js/media.js:76 |
-| `speakText` | frontend/js/media.js:364 |
+| `speakText` | frontend/js/media.js:365 |
 | `startMicLevelMeter` | frontend/js/media.js:212 |
 | `toggleDictation` | frontend/js/media.js:293 |
 
@@ -10631,7 +10631,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/08-consistency.css | 10822 |
 | frontend/css/09-editor.css | 1102 |
 | frontend/css/10-responsive.css | 2712 |
-| frontend/css/ask-compose-lazy.css | 235 |
+| frontend/css/ask-compose-lazy.css | 242 |
 | frontend/css/atlas-lazy.css | 62 |
 | frontend/css/captions-lazy.css | 95 |
 | frontend/css/companion-throw-lazy.css | 32 |
@@ -19883,7 +19883,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12787)
+## Tests (12792)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19937,6 +19937,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_ask_focus.py | 12 |
 | tests/test_ask_from_notes_k26.py | 6 |
 | tests/test_ask_head_714.py | 1 |
+| tests/test_ask_head_press_1423.py | 5 |
 | tests/test_ask_history.py | 17 |
 | tests/test_ask_locale.py | 2 |
 | tests/test_ask_overview_brief.py | 5 |
@@ -22039,7 +22040,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1274 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:301 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:296 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4167 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

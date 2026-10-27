@@ -47,6 +47,17 @@ installStandIns({
   mathEditor: ["openMathEditor"],
   gestureKit: ["openChatModelPanel", "editChatAnswer", "explainNote"],
 });
+//: A lone Alt is nobody's (INBOX 1422): its release hands focus to the window's
+//: own menu, which stays until blur. Cancelled; Alt+key is untouched.
+let altPressedAlone = false;
+document.addEventListener("keydown", (event) => {
+  altPressedAlone = event.key === "Alt" && (event.repeat ? altPressedAlone : true);
+}, true);
+document.addEventListener("keyup", (event) => {
+  if (event.key === "Alt" && altPressedAlone) event.preventDefault();
+  altPressedAlone = false;
+}, true);
+window.addEventListener("blur", () => { altPressedAlone = false; });
 //: Alt+= opens the equation editor, as in Word, in the boxes that write
 //: markdown and in the Ask box (math-editor.js).
 document.addEventListener("keydown", (event) => {

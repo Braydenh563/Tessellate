@@ -51300,6 +51300,13 @@ Quick sketch, the same day (the owner's screenshots): a thick arrow's shaft ran 
 
 1312. **The owner, 2026-10-19, verbatim.** "maybe assign haiku agents to go the grunt work and catalog everything, haiku must be used a lot for grunt work and repo exploring so that I can maximise usage and progress. make the agents use haiku for those tasks as well."
      Standing order, recorded in HANDOVER's owner notes; the catalogue is a Haiku agent rebuilding agent-remaining/OPEN.md.
+1422. **The owner, 2026-10-27, verbatim:** "also I juist pressed alt and now i cant press it again to hide the popups oh i just alt tabbed and went to a different page and it went away??"
+     This PR, agent pressfx-1027 (Sonnet): find what Alt shows; a second Alt hides it, as does Escape and blur.
+     **Fixed 4457e65.** pressfx-1027 result: the app binds no bare Alt (grep of every Alt/altKey handler); the popup is the window's own menu, taking focus on Alt's release and kept until blur, which no page code can toggle. Fixed in `lazy-entries.js`: a release with no key between press and release is `preventDefault`ed (Alt+=, held Alt on the board untouched); measured in Chromium: lone Alt keyup defaultPrevented true, Alt+= and its Alt false. Not verified: the Windows webview's own menu (no Windows here).
+
+1423. **The owner, 2026-10-27, verbatim:** "also these button at the top of the ai/composer response int he ask tab have no active or temporary icon change  or indicatior that they have been activated or pressed or successful." (screenshot: the answer head's regenerate, copy, read aloud and more buttons.)
+     This PR, agent pressfx-1027 (Sonnet): a pressed state and a brief success swap (copy to a tick, read aloud to a stop icon while speaking, regenerate spinning while it runs).
+     **Fixed 4457e65.** pressfx-1027 result (dark, Playwright): pressed bg 0.09 white to 0.16 accent with colour to accent text; Copy tick `ph-check` on the accent ground at +150 ms, icon back by +1450 ms; Read aloud `ph-stop`, `aria-pressed` true then false on the second press; Regenerate `aria-busy`, disabled, ring, restored after the answer. Not verified: real voices (a fake speechSynthesis was used).
 
 ## Moved from the plans, 2026-10-27 (wb-1027)
 
