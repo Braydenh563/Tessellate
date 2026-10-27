@@ -41,12 +41,6 @@ with its owner named in the entry.
      Placed: (1) dogfood rounds: blind-tester agents use the app as a uni student with no model for a set script per surface (lecture notes, deadlines, revision, a document, a board), log every bug with a repro, and an implement agent fixes them by cause; repeated until a round finds under three. (2) Battery: measure idle CPU and wakeups with no model (polling, timers, animations) and cut them. (3) Composer round 3 after composer2. The companion throw and page scroll ride with the shell agent.
      Companion throw (shell2, 2026-10-25): not reproduced in Chromium, 8 runs, mouse and touch, 5 directions, 4 poses; page scrollTop and selection unchanged, release 0.74 to 2.3 px/ms. Next: ask for the device (Windows webview, touchpad or phone) and repeat there.
 
-1339. **The owner, 2026-10-19, verbatim** (screenshot, dark: an Ask answer "You have ten notes about courses & study, 17 July to 15 October." whose theme paragraph reads "Your university notes share #university: your uni days this week are Tuesday, Cloud computing is the delivery of computing, I had three lectures for my cloud, ... and you linked your uni days this week are Tuesday to I had three lectures for my cloud.", while the dated lines below correctly say "On 17 July, your uni days the week of 13 July are Tuesday and Thursday."; Matching records cards beside it). "it is not this week anymore like said at the top of the composer"
-     For the next PR. Recommendation: the theme summary and link phrases go through the same relative-time rewrite as the dated lines ("this week" in a 17 July note becomes "the week of 13 July"); the summary also reads as clipped title fragments joined by commas, so it should name the shared theme and two or three topics, not chain note openings.
-
-1338. **The owner, 2026-10-19, verbatim** (screenshot, dark: a "Use AI" switch, off, with a sparkle icon and a "?" button). "this button should be disabled when the ai isnt available"
-     For the next PR. Recommendation: the switch is disabled with the reason as its description (no model set up) while no model is reachable, and comes back on its own when one is.
-
 1334. **The owner, 2026-10-19, verbatim** (screenshot, dark: Chat, the owner sent "timer\\"; Atlas "From your notes" answered "Your notes don't mention “timer”. Which note would it be in, or how else might you have put it?" with "Sources: 10 notes · meaning + keywords", 19.1s, Agent). "the composer also needs to handle short requests for tools and commands but also in the case that they may be asking for a note or keyword search, it should probably ask and provide buttons to click to go that route or do a probability assumption and user intent analysis"
      For the next PR. Recommendation: a one- or two-word message that names a tool or command (timer, reminder, stats, categories), with stray punctuation stripped, is scored for intent; a clear winner runs, a close call answers with choice buttons (run the tool, search notes for the word), and a note search that finds nothing offers the tool instead of asking which note.
 
@@ -299,7 +293,7 @@ with its owner named in the entry.
      B86. The compsoer guide didn’t answer my question :(
 
 ## Placed (last 20, newest first)
-- 1416 (companion biological motion) and 1417 (spaces as AI context): BACKLOG "Placed from INBOX, 2026-10-27 (next PR)".
+- 1416 (companion biological motion), 1417 (spaces as AI context), 1338 (Use AI switch disabled without a model), 1339 (relative times in Ask theme summaries): BACKLOG "Placed from INBOX, 2026-10-27 (next PR)".
 - 1415 (2026-10-27, speed and smoothness, with a lag log): UI_MODERNISATION_PLAN "Placed from INBOX, 2026-10-27". Next PR.
 - 2026-10-27: 1411 (the Ask box's AI pill is tight) fixed in the sketch round, recorded in HISTORY. 1412 (a confirmed plan line that never closes), 1414 (the guide's answers) placed in BACKLOG's "Placed from INBOX, 2026-10-27" (CHAT_PLAN is at its cap); 1413 (drag a graph popup, or have it follow its node) in GRAPH_PLAN's.
 
