@@ -2,7 +2,7 @@
 
 Generated 2026-10-27 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6643, frontend ids 2562, CSS sections 504, backend routes 627, backend modules 6814, test files 1433, tests 12707, plan headings 983.
+Counts: frontend functions 6643, frontend ids 2562, CSS sections 504, backend routes 627, backend modules 6818, test files 1434, tests 12719, plan headings 983.
 
 ## Frontend functions (6643)
 
@@ -11287,7 +11287,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (6814)
+## Backend modules (6818)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -11964,20 +11964,22 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `last_used` | src/tessellate/ai/composer_ack.py:48 |
 | `reading_of` | src/tessellate/ai/composer_ack.py:75 |
 
-### src/tessellate/ai/composer_aware.py (10)
+### src/tessellate/ai/composer_aware.py (12)
 
 | Name | File:line |
 |---|---|
 | `Awareness` | src/tessellate/ai/composer_aware.py:62 |
+| `_asked_already` | src/tessellate/ai/composer_aware.py:166 |
 | `_lower` | src/tessellate/ai/composer_aware.py:105 |
 | `_pick` | src/tessellate/ai/composer_aware.py:100 |
 | `_where` | src/tessellate/ai/composer_aware.py:109 |
 | `build` | src/tessellate/ai/composer_aware.py:94 |
 | `clean_actions` | src/tessellate/ai/composer_aware.py:74 |
-| `closing` | src/tessellate/ai/composer_aware.py:164 |
-| `model_context` | src/tessellate/ai/composer_aware.py:190 |
+| `closing` | src/tessellate/ai/composer_aware.py:172 |
+| `model_context` | src/tessellate/ai/composer_aware.py:208 |
 | `opening` | src/tessellate/ai/composer_aware.py:132 |
 | `tab_name` | src/tessellate/ai/composer_aware.py:90 |
+| `unfinished` | src/tessellate/ai/composer_aware.py:158 |
 
 ### src/tessellate/ai/composer_calc.py (25)
 
@@ -12968,45 +12970,47 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `surface` | src/tessellate/ai/guide_intent.py:167 |
 | `topics` | src/tessellate/ai/guide_intent.py:257 |
 
-### src/tessellate/ai/help_chat.py (35)
+### src/tessellate/ai/help_chat.py (37)
 
 | Name | File:line |
 |---|---|
+| `_about_the_guide` | src/tessellate/ai/help_chat.py:2874 |
 | `_act_of` | src/tessellate/ai/help_chat.py:2642 |
-| `_aware` | src/tessellate/ai/help_chat.py:3176 |
+| `_aware` | src/tessellate/ai/help_chat.py:3251 |
+| `_beyond` | src/tessellate/ai/help_chat.py:3077 |
 | `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2573 |
-| `_guide_lead` | src/tessellate/ai/help_chat.py:3090 |
-| `_guide_opening` | src/tessellate/ai/help_chat.py:3106 |
-| `_help_sentences` | src/tessellate/ai/help_chat.py:3073 |
+| `_guide_lead` | src/tessellate/ai/help_chat.py:3165 |
+| `_guide_opening` | src/tessellate/ai/help_chat.py:3181 |
+| `_help_sentences` | src/tessellate/ai/help_chat.py:3148 |
 | `_keyword_in` | src/tessellate/ai/help_chat.py:2563 |
 | `_keyword_pattern` | src/tessellate/ai/help_chat.py:2495 |
 | `_keyword_regex` | src/tessellate/ai/help_chat.py:2559 |
 | `_matching_topics` | src/tessellate/ai/help_chat.py:2692 |
 | `_meaning_topics` | src/tessellate/ai/help_chat.py:2772 |
 | `_normalise_keys` | src/tessellate/ai/help_chat.py:2518 |
-| `_place` | src/tessellate/ai/help_chat.py:3047 |
-| `_preference` | src/tessellate/ai/help_chat.py:3129 |
-| `_prompt_for` | src/tessellate/ai/help_chat.py:2920 |
-| `_read_as` | src/tessellate/ai/help_chat.py:3241 |
+| `_place` | src/tessellate/ai/help_chat.py:3122 |
+| `_preference` | src/tessellate/ai/help_chat.py:3204 |
+| `_prompt_for` | src/tessellate/ai/help_chat.py:2931 |
+| `_read_as` | src/tessellate/ai/help_chat.py:3323 |
 | `_reading_topics` | src/tessellate/ai/help_chat.py:2664 |
 | `_repaired` | src/tessellate/ai/help_chat.py:2681 |
-| `_second_sentence` | src/tessellate/ai/help_chat.py:3077 |
-| `_state_line` | src/tessellate/ai/help_chat.py:3138 |
-| `_stated_lead` | src/tessellate/ai/help_chat.py:3147 |
-| `answer` | src/tessellate/ai/help_chat.py:3321 |
-| `answer_stream` | src/tessellate/ai/help_chat.py:3256 |
+| `_second_sentence` | src/tessellate/ai/help_chat.py:3152 |
+| `_state_line` | src/tessellate/ai/help_chat.py:3213 |
+| `_stated_lead` | src/tessellate/ai/help_chat.py:3222 |
+| `answer` | src/tessellate/ai/help_chat.py:3403 |
+| `answer_stream` | src/tessellate/ai/help_chat.py:3338 |
 | `badges_for` | src/tessellate/ai/help_chat.py:2860 |
-| `composed_answer` | src/tessellate/ai/help_chat.py:3158 |
-| `help_block_for` | src/tessellate/ai/help_chat.py:3402 |
+| `composed_answer` | src/tessellate/ai/help_chat.py:3233 |
+| `help_block_for` | src/tessellate/ai/help_chat.py:3484 |
 | `help_listing` | src/tessellate/ai/help_chat.py:2831 |
-| `help_sentences` | src/tessellate/ai/help_chat.py:3056 |
-| `names_app` | src/tessellate/ai/help_chat.py:3386 |
-| `offline_answer` | src/tessellate/ai/help_chat.py:3188 |
-| `social_reply` | src/tessellate/ai/help_chat.py:3020 |
+| `help_sentences` | src/tessellate/ai/help_chat.py:3131 |
+| `names_app` | src/tessellate/ai/help_chat.py:3468 |
+| `offline_answer` | src/tessellate/ai/help_chat.py:3269 |
+| `social_reply` | src/tessellate/ai/help_chat.py:3081 |
 | `source_names` | src/tessellate/ai/help_chat.py:2827 |
 | `system_answer` | src/tessellate/ai/help_chat.py:2809 |
 | `topic_title` | src/tessellate/ai/help_chat.py:2795 |
-| `topics_for` | src/tessellate/ai/help_chat.py:2874 |
+| `topics_for` | src/tessellate/ai/help_chat.py:2882 |
 
 ### src/tessellate/ai/help_topics_more.py (2)
 
@@ -19790,7 +19794,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12707)
+## Tests (12719)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20370,6 +20374,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_guide_composed_787.py | 18 |
 | tests/test_guide_gaps.py | 3 |
 | tests/test_guide_intent.py | 9 |
+| tests/test_guide_social_1414.py | 12 |
 | tests/test_hardware_profile.py | 15 |
 | tests/test_harness_evals.py | 3 |
 | tests/test_harness_plan_card.py | 9 |

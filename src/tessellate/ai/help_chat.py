@@ -2871,6 +2871,14 @@ def badges_for(topics: list[dict]) -> list[dict]:
     return out
 
 
+def _about_the_guide(question: str) -> list[dict]:
+    """Who and what the Guide is: its own topic grounds a model's answer (the
+    offline reply is first person and needs none)."""
+    if _WHO.match(question or "") or _CAPABLE.match(question or ""):
+        return [topic for topic in HELP_TOPICS if topic["id"] == "guide"]
+    return []
+
+
 def topics_for(question: str, tab: str | None = None) -> list[dict]:
     """The reference entries for one question, asked from one tab.
 
@@ -2890,6 +2898,9 @@ def topics_for(question: str, tab: str | None = None) -> list[dict]:
     of its own ("the person asking has the notes tab open"), which is the part
     of the context that was worth having.
     """
+    about_guide = _about_the_guide(question)
+    if about_guide:
+        return about_guide
     if social_reply(question):
         #: A greeting names no feature, so the open tab's topics are not its
         #: answer either (INBOX 787: "hey" was answered with the Dashboard).
@@ -3015,15 +3026,75 @@ GREETING_REPLY = (
     "what a setting does or how to do something here. Three to start with:"
 )
 THANKS_REPLY = "You're welcome. Ask me about any tab or setting."
+THANKS_WORKED_REPLY = "Glad that worked. Ask me if anything else gets in the way."
+
+#: **Open and social questions** (INBOX 1414), read from the words and answered
+#: in the first person, in a line or two, with no help dump and no resume
+#: offer. The tab's three starters go under the ones that flag `greeting`.
+_THANKS_LONG = re.compile(r"^\W*(?:thanks|thank you|thx|cheers)\b[^?]{0,40}$", re.I)
+_WORKED = re.compile(r"\b(?:worked|helped|great|perfect|brilliant|solved|fixed|got it)\b", re.I)
+_CAPABLE = re.compile(
+    r"^\W*(?:so )?(?:what (?:can|could) you (?:help (?:me )?(?:with|do)|do(?: for me)?)"
+    r"|what do you (?:do|know)|what are you (?:for|good for|able to do)|what is your (?:job|purpose))\W*$",
+    re.I,
+)
+_WHO = re.compile(r"^\W*(?:who|what) are you\W*$|^\W*who (?:is|are) (?:atlas|you)\W*$|^\W*what is atlas\W*$", re.I)
+_MISSED = re.compile(
+    r"^\W*(?:that|this|it)(?:'s| is| was)? ?(?:didn'?t|did not|doesn'?t|does not|isn'?t|is not|wasn'?t|was not|not)"
+    r" (?:help|work|right|what i (?:asked|meant|wanted)|helpful|useful|it|correct|answer)\b[^?]{0,30}$"
+    r"|^\W*(?:you(?:'re| are)|that(?:'s| is)|this is) (?:wrong|incorrect|useless|not right|no help|not helpful)\W*$"
+    r"|^\W*(?:wrong|not helpful|useless|that'?s not what i (?:asked|meant|wanted))\W*$",
+    re.I,
+)
+_ORGANISE = re.compile(
+    r"^\W*(?:how (?:do|can|should) (?:i|we)|help me|can you help me|i want to|i need to)\s+"
+    r"(?:organi[sz]e|sort|tidy(?: up)?|clean up|arrange)\s+(?:this|it|things|everything|my stuff|stuff|all this)\W*$",
+    re.I,
+)
+_CAN_YOU = re.compile(r"^\W*(?:can|could|would|will) you\b", re.I)
+WHO_REPLY = (
+    f"I'm {GUIDE_NAME}, the app's guide, named for a book of maps. I answer questions about "
+    "Tessellate from its own help: where a feature lives, what a setting does, how to do something."
+)
+CAPABLE_REPLY = (
+    "I can tell you where a feature lives, what a setting does and the steps for most things "
+    "in the app. Ask in your own words, or pick one of these:"
+)
+MISSED_REPLY = (
+    "Sorry, that missed. What are you trying to do? A few words is enough, such as "
+    "\u201cadd a reminder\u201d, and I will look for the steps. Or pick one of these:"
+)
+ORGANISE_REPLY = (
+    "I can help with that. Do you mean tags and categories on your notes, links between "
+    "notes, or the layout of the Graph? Tell me which and I will show you the steps."
+)
+BEYOND_REPLY = (
+    "I can't do that one. I answer questions about using Tessellate: where things are, "
+    "what a setting does and how to do something in it. Is there something in the app I can help you find?"
+)
+
+
+def _beyond(question: str) -> dict:
+    return {"content": BEYOND_REPLY, "badges": [], "sources": [], "social": True}
 
 
 def social_reply(question: str) -> dict | None:
-    """The Guide's reply to a greeting or a thanks, or None for a question."""
+    """The Guide's reply to a greeting, thanks, complaint or open question
+    about itself, or None for a question about the app."""
     text = (question or "").strip()
     if _GREETING.match(text):
         return {"content": GREETING_REPLY, "badges": [], "sources": [], "greeting": True}
-    if _THANKS.match(text):
-        return {"content": THANKS_REPLY, "badges": [], "sources": []}
+    if _THANKS.match(text) or _THANKS_LONG.match(text):
+        reply = THANKS_WORKED_REPLY if _WORKED.search(text) else THANKS_REPLY
+        return {"content": reply, "badges": [], "sources": [], "social": True}
+    if _WHO.match(text):
+        return {"content": WHO_REPLY, "badges": [], "sources": [], "social": True}
+    if _CAPABLE.match(text):
+        return {"content": CAPABLE_REPLY, "badges": [], "sources": [], "greeting": True}
+    if _MISSED.match(text):
+        return {"content": MISSED_REPLY, "badges": [], "sources": [], "greeting": True}
+    if _ORGANISE.match(text):
+        return {"content": ORGANISE_REPLY, "badges": [], "sources": [], "social": True}
     return None
 
 
@@ -3034,6 +3105,10 @@ def social_reply(question: str) -> dict | None:
 #: steps or one more sentence, then where the feature lives. Every sentence is
 #: the help text's own or a fixed phrase around its path; the topic word for
 #: word is the other side of the answer's toggle (`system_answer`).
+#: A place is added only to a question that wants one (INBOX 1414: "what can
+#: you help me with" was given the guide's own button). A how-to carries its
+#: place in its steps.
+_FIND_ASKED = re.compile(r"\b(?:where|find|locate|get to|go to|navigate|located|which (?:tab|menu|setting))\b", re.I)
 _WHERE_ASKED = re.compile(r"^\s*(?:where(?:'s| is| are| do| can| would)?|which (?:tab|setting|menu))\b", re.I)
 
 
@@ -3165,7 +3240,7 @@ def composed_answer(question: str, topics: list[dict]) -> str:
     lines, where, walk = _guide_opening(question, path, steps, lead)
     more = "" if steps else _second_sentence(question, first["body"], lead)
     lines += ["\n".join(f"{n}. {step}" for n, step in enumerate(steps, 1))] if steps else [more] if more else []
-    if path and not where and not walk:
+    if path and not where and not walk and _FIND_ASKED.search(question):
         lines.append(f"**Where:** {path}")
     related = [topic_title(topic) for topic in topics[1:]]
     if related:
@@ -3174,14 +3249,20 @@ def composed_answer(question: str, topics: list[dict]) -> str:
 
 
 def _aware(reply: dict, question: str, tab: str | None, actions: list[str] | None) -> dict:
-    """A composed Guide reply ends with where the person was and what they
+    """A composed Guide reply may end with where the person was and what they
     could ask next (`composer_aware`, local only). Nothing is added when the
-    client sent no actions: a bare tab is already what the topics use."""
+    client sent no actions, or to a social reply. The next question is the
+    tab's how-to only when the answer was about that tab (INBOX 1414: a web
+    search answer ended on "how do I tag a note")."""
     from tessellate.ai import composer_aware
 
-    if not actions or reply.get("greeting"):
+    if not actions or reply.get("greeting") or reply.get("social"):
         return reply
-    line = composer_aware.closing(composer_aware.build(tab=tab, actions=actions), seed=question.lower())
+    matched = topics_for(question, tab)
+    related = bool(matched) and matched[0]["id"] in TAB_TOPICS.get(tab or "", ())
+    line = composer_aware.closing(
+        composer_aware.build(tab=tab, actions=actions), seed=question.lower(), related=related, asked=question
+    )
     return {**reply, "content": f"{reply['content']}\n\n{line}"} if line else reply
 
 
@@ -3209,10 +3290,11 @@ def offline_answer(
 
     read = guide_intent.reply(question, tab, {topic["id"]: topic for topic in HELP_TOPICS})
     if read:
-        read["content"] = f"{read['content']}\n\n{OFFLINE_LEAD}" if not read.get("greeting") else read["content"]
         return read
     if guide_intent.read(question):
         said = ""
+    if _CAN_YOU.match(question) and not _reading_topics(question) and not guide_intent.read(question):
+        return _beyond(question)
     topics = topics_for(question, tab) if question else []
     if not topics:
         #: The app's help text for whatever is on screen, when there is any:
@@ -3221,7 +3303,7 @@ def offline_answer(
         on_screen = (context or "").strip()[:MAX_CONTEXT_CHARS]
         if on_screen:
             return {
-                "content": f"{on_screen}\n\n{OFFLINE_LEAD}",
+                "content": on_screen,
                 "badges": [],
                 "sources": [],
             }
@@ -3231,7 +3313,7 @@ def offline_answer(
     #: (INBOX 430's layout), which the client offers as "From the help".
     system = system_answer(topics)
     return {
-        "content": f"{said}{composed_answer(question, topics)}\n\n{OFFLINE_LEAD}",
+        "content": f"{said}{composed_answer(question, topics)}",
         "badges": badges_for(topics),
         "sources": source_names(topics),
         "system": system,

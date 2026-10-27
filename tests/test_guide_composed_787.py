@@ -74,7 +74,8 @@ def test_the_default_answer_is_composed_and_the_help_text_is_the_other_view():
     #: The composed side is shorter than the whole topic and names where it is.
     assert len(reply["content"]) < len(reply["system"]["content"])
     assert "Reminders tab" in reply["content"]
-    assert reply["content"].rstrip().endswith(help_chat.OFFLINE_LEAD)
+    #: INBOX 1414: the byline says it, once; the text does not repeat it.
+    assert help_chat.OFFLINE_LEAD not in reply["content"]
 
 
 def test_a_topic_with_steps_gives_its_steps():

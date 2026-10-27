@@ -22,10 +22,10 @@ def test_ask_without_ai_answers_from_the_help_text_never_5xx(client):
     response = client.post("/help/ask", json={"question": "how do I set a reminder?"})
     assert response.status_code == 200
     body = response.json()
-    assert help_chat.OFFLINE_LEAD in body["content"], (
-        "the reply has to say it is the app's help text rather than an answer "
-        "written for the question"
-    )
+    #: INBOX 1414: the reply says it is the app's help through its byline
+    #: (`composed`) and its "From the help" tab, not a second time in the text.
+    assert body["composed"] is True and "system" in body
+    assert help_chat.OFFLINE_LEAD not in body["content"]
     assert "reminder" in body["content"].lower()
     assert {"label": "Reminders", "tab": "reminders"} in body["badges"]
 
@@ -489,10 +489,9 @@ def test_a_stopped_provider_still_answers_the_streamed_turn():
 #: holding the exact paragraph that answered the question.
 def test_the_guide_answers_from_its_own_help_text_with_no_model():
     reply = help_chat.offline_answer("how do I set a reminder?")
-    assert help_chat.OFFLINE_LEAD in reply["content"], (
-        "an offline reply must say that this is the app's help text rather "
-        "than an answer written for the question"
-    )
+    #: INBOX 1414: that it is the app's help is said by the byline and the
+    #: "From the help" tab (`system`), once, not repeated in the text.
+    assert "system" in reply and help_chat.OFFLINE_LEAD not in reply["content"]
     #: The body of the topic the keywords reached, not a paraphrase of it:
     #: the answer's "From the help" view (INBOX 787; the composed answer is
     #: the default view).

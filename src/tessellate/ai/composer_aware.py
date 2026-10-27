@@ -139,12 +139,6 @@ def opening(aw: Awareness, seed: str) -> str:
     return ""
 
 
-_PICK_UP = (
-    "Last you {did}. Want to pick up from there?",
-    "You were part-way through something: you {did}. I can carry on from there with you.",
-    "Since you {did} a moment ago, I can help with what comes next.",
-    "Pick up where you left off? You {did} last.",
-)
 _PICK_UP_OPEN = (
     "Shall we carry on with “{title}”? I can summarise it or list what is left in it.",
     "You have “{title}” open. Ask me what is left on it, or what it links to.",
@@ -161,22 +155,46 @@ _HOWTO = (
 )
 
 
-def closing(aw: Awareness, seed: str, avoid: tuple[str, ...] | list[str] = ()) -> str:
-    """The "here's how you might do that" step: what you were doing, then one
-    thing to ask. "" when the app sees nothing to build on, or when every
-    wording has been said in the last replies (`avoid`)."""
+def unfinished(aw: Awareness) -> bool:
+    """Whether there is something to carry on with: a note or document still
+    open, or a chat topic still being talked about. An action label (the undo
+    stack's "Pinned a note") is a finished act, so it is never a resume
+    (INBOX 1414: a pin was offered as "part-way through something")."""
+    return bool(aw.open_title or aw.topic)
+
+
+def _asked_already(howto: str, asked: str) -> bool:
+    """The suggested how-to is the question just answered."""
+    words = set(re.findall(r"[a-z]+", howto.lower()))
+    return bool(asked) and words <= set(re.findall(r"[a-z]+", asked.lower()))
+
+
+def closing(
+    aw: Awareness,
+    seed: str,
+    avoid: tuple[str, ...] | list[str] = (),
+    *,
+    related: bool = True,
+    asked: str = "",
+) -> str:
+    """The "here's how you might do that" step: a resume line only when
+    something is unfinished, then one thing to ask. The thing to ask is the
+    tab's how-to, offered only when it follows from the question just
+    answered (`related`) and is not that question. "" when there is nothing
+    to build on, or when every wording has been said in the last replies
+    (`avoid`)."""
     if not aw.known:
         return ""
     said = "\n".join(avoid)
     tab_key = next((k for k, v in TAB_NAMES.items() if v == aw.tab), "")
-    howto = TAB_HOWTO.get(tab_key, "")
+    howto = TAB_HOWTO.get(tab_key, "") if related else ""
+    if howto and _asked_already(howto, asked):
+        howto = ""
     for step in range(4):
         lines: list[str] = []
         salted = f"{seed}:{step}"
         if aw.open_title:
             lines.append(_pick(_PICK_UP_OPEN, salted, "title").format(title=aw.open_title))
-        elif aw.actions:
-            lines.append(_pick(_PICK_UP, salted, "pick").format(did=_lower(aw.actions[0])))
         elif aw.topic:
             lines.append(_pick(_TOPIC, salted, "topic").format(topic=aw.topic))
         if howto and not aw.open_title:

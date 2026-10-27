@@ -51,9 +51,13 @@ def test_closing_picks_up_the_open_note():
     assert "“Dentist”" in line
 
 
-def test_closing_picks_up_the_last_action_and_offers_a_howto():
+def test_closing_offers_a_howto_but_never_resumes_a_finished_action():
+    #: INBOX 1414: an undo label is a finished act, so it is not "part-way through".
     line = aware.closing(aware.build(tab="graph", actions=["Cleared a box"]), "s")
-    assert "cleared a box" in line and "how do I link two notes" in line
+    assert "cleared a box" not in line and "how do I link two notes" in line
+    assert not aware.unfinished(aware.build(tab="graph", actions=["Cleared a box"]))
+    assert aware.unfinished(aware.build(open_title="Dentist"))
+    assert aware.closing(aware.build(tab="graph", actions=["Cleared a box"]), "s", related=False) == ""
 
 
 def test_closing_uses_the_chat_topic_without_an_action():
@@ -127,11 +131,10 @@ def test_without_a_screen_nothing_changes(client, session):
     assert "I can see" not in text and "Looks like" not in text
 
 
-def test_the_guide_picks_up_the_last_action_without_a_model(client):
+def test_the_guide_does_not_resume_a_finished_action_without_a_model(client):
     reply = client.post("/help/ask", json={"question": "how do I tag a note", "tab": "notes", "actions": ["Cleared a box"]}).json()
-    assert reply["composed"] and "cleared a box" in reply["content"]
-    plain = client.post("/help/ask", json={"question": "how do I tag a note", "tab": "notes"}).json()
-    assert "cleared a box" not in plain["content"]
+    assert reply["composed"] and "cleared a box" not in reply["content"]
+    assert not reply["content"].rstrip().endswith("tag a note and I will show you.")
 
 
 def test_the_client_sends_the_screen_with_ask_and_the_guide():
