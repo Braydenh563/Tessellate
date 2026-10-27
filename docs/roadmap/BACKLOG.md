@@ -4411,3 +4411,6 @@ Owner's list, in one place (each is also logged above where it has detail):
 Pin retrieval, the model-side social brief and the Chat closing decision: built 1cd81bf, see HISTORY.
 
 - The plan Done flow (1412) has not been driven in a browser; the reminder windows for "this weekend" have no test.
+- Mermaid frame sandbox (review 2026-10-27, low, defence in depth): `sandbox="allow-scripts"` gives the frame an opaque origin, so its script loads lose the media cookie (SameSite) and the frame would 401; needs a ticketed script URL and `event.source` checks on both sides, driven in a browser. Mitigated today by `securityLevel: "strict"`, `htmlLabels: false`, the frame CSP and the blob `<img>`.
+- Calendar web links carry a plain note's opening as the details (`routes_reminders.calendar_links`, by design, `tests/test_reminder_calendar_links*.py`); the review asks whether that text should leave the machine or the menu should say so. Owner's call.
+- pdfpages page cache is not cleared on lock (registered with the singleton reset since 2026-10-27; routes are gated).

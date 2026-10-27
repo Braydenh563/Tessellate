@@ -49,6 +49,7 @@ router = APIRouter(prefix="/whiteboard", tags=["whiteboard"])
 #: `upload_media` produces (a uuid4 hex plus a short suffix) closes it at the
 #: door; the purge (`manager`) checks containment again.
 MEDIA_URL_RE = re.compile(r"^/media/[A-Za-z0-9][A-Za-z0-9._-]{0,119}$")
+_APP_ROUTE_LINK = re.compile(r"^#/[a-z][a-z-]{0,30}(?:/[A-Za-z0-9_.%-]{1,120}){0,4}$")
 
 #: A sketch is a path list, not an image. Big enough for a page of scribble,
 #: small enough that a runaway client can't fill the disk one PUT at a time.
@@ -726,8 +727,10 @@ class WhiteboardObjectData(BaseModel):
         if not text:
             return None
         lowered = text.lower()
-        if not lowered.startswith(("http://", "https://", "mailto:")):
-            raise ValueError("A topic's link must be an http, https or mailto address")
+        #: A note link from Link..., A note... is the app's own route hash
+        #: ("#/notes/12", `wbItemLink`); it was refused with 422 (review, 2026-10-27).
+        if not (lowered.startswith(("http://", "https://", "mailto:")) or _APP_ROUTE_LINK.match(text)):
+            raise ValueError("A link must be an http, https or mailto address, or a link to something in this notebook")
         return text
 
 

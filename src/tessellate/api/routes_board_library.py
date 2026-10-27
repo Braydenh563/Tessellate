@@ -1270,7 +1270,7 @@ def paste_board_items(board_id: int, body: PasteBody, db: Session = Depends(get_
 
     # Links last: their ends have to exist before they can point at them.
     for item in body.items:
-        if item.object and not (item.src or item.dst):
+        if item.object:  # an object has no ends: a stray src or dst is ignored, never a silent drop
             made_objects.append(_paste_object(db, target, item, keys))
     for linked in (False, True):
         for item in body.items:

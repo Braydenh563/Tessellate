@@ -38,3 +38,12 @@ def test_paste_refuses_an_empty_list_and_a_missing_board(client):
     missing = client.post("/whiteboard/boards/999999/paste", json={"items": [{"key": "a", "object": _obj("A")}]})
     assert empty.status_code == 422
     assert missing.status_code == 404
+
+
+def test_an_object_carrying_stray_link_ends_is_still_made(client):
+    # Review, 2026-10-27: an object with src or dst was neither made nor refused.
+    board = _board(client)
+    body = {"items": [{"key": "a", "object": _obj("A")}, {"key": "b", "src": "a", "object": _obj("B", 300)}]}
+    res = client.post(f"/whiteboard/boards/{board['id']}/paste", json=body)
+    assert res.status_code == 201, res.text
+    assert set(res.json()["keys"]) == {"a", "b"} and len(res.json()["objects"]) == 2

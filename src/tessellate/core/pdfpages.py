@@ -35,6 +35,8 @@ import time
 from collections import OrderedDict
 from pathlib import Path
 
+from tessellate.core.deps import register_cache_reset
+
 logger = logging.getLogger(__name__)
 
 #: Serialises every call into pypdfium2. Not a performance nicety, a real
@@ -252,6 +254,11 @@ def _cache_clear() -> None:
     with _page_cache_lock:
         _page_cache.clear()
         _page_cache_bytes = 0
+
+
+#: Dropped with the app's singletons, so one test's pages never answer the next
+#: (review, 2026-10-27; tests used to clear it by hand).
+register_cache_reset(_cache_clear)
 
 
 def render_page(path: Path, index: int, thumb: bool = False) -> bytes | None:

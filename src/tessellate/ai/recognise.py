@@ -250,7 +250,7 @@ _WD_PREFIX = rf"(?:\b({_WD_WORD})\.?,?\s+)?"
 _YEAR_SUFFIX = r"(?:,?\s+((?:19|20)\d\d)\b)?"
 _MENTION_DM = re.compile(rf"{_WD_PREFIX}\b(\d{{1,2}})(?:st|nd|rd|th)?\s+(?:of\s+)?({_MO_WORD})\b{_YEAR_SUFFIX}")
 _MENTION_MD = re.compile(rf"{_WD_PREFIX}\b({_MO_WORD})\.?\s+(\d{{1,2}})(?:st|nd|rd|th)?\b(?![\d:])(?!\s*(?:am|pm)\b){_YEAR_SUFFIX}")
-_MENTION_ISO = re.compile(rf"{_WD_PREFIX}\b(\d{{4}})-(\d\d)-(\d\d)\b")
+_MENTION_ISO = re.compile(rf"{_WD_PREFIX}\b(\d{{4}})-(\d\d)-(\d\d)(?=\b|t\d)")
 #: "Thursday 29": a weekday and a day number, no month, not a clock time
 #: or a count ("friday 2 notes").
 _MENTION_WD_DAY = re.compile(

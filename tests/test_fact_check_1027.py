@@ -340,3 +340,12 @@ def test_a_date_the_rows_do_not_have_is_refused(prose, ok):
     """Rows on Wed 28 Oct and Fri 30 Oct: Thursday 29 is invented, a clock time is not checked."""
     facts = "You have 2 reminders: call mum (Wed 28 Oct, 9:00) and book dentist (Fri 30 Oct, 11:00)."
     assert fact_check.keeps(prose, facts, "what reminders do I have", {"reminder": {"2"}}, False, NOW) is ok
+
+
+def test_a_tool_stamp_with_a_clock_still_names_its_date():
+    # Review, 2026-10-27: "2026-10-30T17:00:00" had no word boundary before T,
+    # so a reply's correct "Fri 30 Oct" was judged invented.
+    from tessellate.ai import recognise
+
+    assert recognise.date_mentions("due 2026-10-30T17:00:00") == [(2026, 10, 30, None)]
+    assert recognise.date_mentions("ref 2026-10-301") == []
