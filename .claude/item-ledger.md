@@ -43,3 +43,5 @@ date | item | type | rung | rework | note
 2026-10-27 | 11 CI reds on 75cdd0a fixed in 3e25f15 | ci-fix | opus | 0 | 
 2026-10-27 | E2E first-run: lasting toast covered Save; yields for section buttons | bugfix | opus | 0 | 
 2026-10-27 | Over-tier: 4 Opus agents (fix rounds and review inherited Opus); now Sonnet for fix rounds and reviews, one Opus for design | process | opus | 1 | 
+2026-10-27 | image kebab chip + thumbnails light mode | ui-bug | opus | 1 | 
+2026-10-27 | guide chip closes panel; how-to lead past forms | bug | opus | 0 | 
