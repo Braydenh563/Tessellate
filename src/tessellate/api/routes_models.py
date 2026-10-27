@@ -330,6 +330,11 @@ def _model_ready(running: bool, installed: list[dict], provider: str, chat_model
     return running and bool(installed) and (provider != "ollama" or _name_matches(chat_model, installed))
 
 
+def _engine_moved(manager, offered: bool) -> dict | None:  # noqa: ANN001
+    """The old engine's files, only beside the search offer (complexity seed of `status`)."""
+    return manager.semantic_engine_moved() if offered else None
+
+
 def _semantic_offer(embeddings, config) -> bool:  # noqa: ANN001
     """Whether to ask once about downloading search by meaning (see `status`)."""
     return bool(
@@ -514,7 +519,7 @@ def status(session: Session = Depends(get_session)) -> dict:
         #: Set when the old engine's copy of the model is on this computer:
         #: the one-time question then says the engine moved (semantic-notice.js).
         #: Read only while the question is open: it is a folder listing.
-        "semantic_engine_moved": manager.semantic_engine_moved() if semantic_offer else None,
+        "semantic_engine_moved": _engine_moved(manager, semantic_offer),
         "reindex": jobs.reindex_status(),
         "embedding_coverage": _embedding_coverage(session),
         #: How the last search found its notes (`search_manager.last_search`).
