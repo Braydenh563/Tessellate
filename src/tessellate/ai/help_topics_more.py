@@ -333,7 +333,7 @@ MORE_TOPICS: list[dict] = [
         "keywords": (
             "search engine moved", "engine moved", "upgraded from pytorch", "old search engine",
             "pytorch", "torch", "sentence-transformers", "old search files", "old model files",
-            "why download again", "download again",
+            "remove old models", "free disk space", "why download again", "download again",
         ),
         "body": (
             (
@@ -341,7 +341,10 @@ MORE_TOPICS: list[dict] = [
                 "downloading it says the engine moved. The old model files do not work with the new engine, "
                 "so it is one download (about 130 MB for BGE Small) that replaces them, asked first, with "
                 "keyword search working meanwhile. Notes made with BGE Small or Multilingual E5 Small keep "
-                "their search data; notes made with any other model are read again in the background."
+                "their search data; notes made with any other model are read again in the background. Once "
+                "the new model is ready, Settings, Search and index, Old search files lists the old model "
+                "folders with their sizes and Remove deletes one; in the packaged app it also removes PyTorch "
+                "and sentence-transformers. Nothing else changes."
             )
         ),
         "badge": {"label": "Search and index", "section": "searchindex"},

@@ -1326,6 +1326,9 @@ def _run_uninstall(extra: Extra) -> None:
         _state.outcome = "failed"
         _state.step = "Couldn't run pip: see Settings → Logs for why."
     finally:
+        #: Down with the process, as the installs do: a removal left it up, and
+        #: every install after it was refused as "already running".
+        _state.running = False
         _state.process = None
         if _state.cancelled:
             # Terminating pip mid-download makes it exit non-zero, which the
@@ -1734,6 +1737,45 @@ def remove(extra_id: str) -> tuple[bool, str]:
     worker = _run_download_uninstall if extra.kind == "download" else _run_uninstall
     _dispatch(_run_single, worker, extra, name=extra.label)
     return True, f"Removing {extra.label}."
+
+
+#: The old search engine, which a packaged build may still hold in its extras
+#: folder from before search by meaning moved to fastembed (2026-10-27). Not in
+#: EXTRAS: nothing offers to install it, only Settings, Search and index, Old
+#: search files offers to remove it, by the same RECORD-driven removal as any
+#: extra (`_run_uninstall`): these two packages and not their dependencies.
+LEGACY_ENGINE = Extra(
+    id="legacy-engine",
+    label="The old search engine (PyTorch)",
+    enables="",
+    packages=("sentence-transformers", "torch"),
+    module="torch",
+    size="~1.4 GB",
+)
+
+
+def legacy_engine() -> dict | None:
+    """What the old engine weighs in a packaged app's extras folder (`id`,
+    `label`, `bytes`), or None: outside a packaged build, or with neither
+    package there. A source install removes them with pip by hand
+    (docs/TROUBLESHOOTING.md), so the app does not offer to touch its own venv."""
+    if frozen_extras_dir() is None:
+        return None
+    _version, disk = footprint(LEGACY_ENGINE)
+    return {"id": "engine", "label": LEGACY_ENGINE.label, "bytes": disk} if disk else None
+
+
+def remove_legacy_engine() -> tuple[bool, str]:
+    """Remove the old engine from a packaged app's extras folder, as a
+    Background task. Same one-at-a-time rule as every install."""
+    if legacy_engine() is None:
+        return False, "The old search engine is not in this app's extras folder."
+    with _lock:
+        if _busy():
+            return False, "Another install is already running."
+        _claim(LEGACY_ENGINE, "Removing…")
+    _dispatch(_run_single, _run_uninstall, LEGACY_ENGINE, name=LEGACY_ENGINE.label)
+    return True, f"Removing {LEGACY_ENGINE.label}."
 
 
 def start_bulk(action: str, ids: list[str] | None = None, bundle: str = "") -> tuple[bool, str]:

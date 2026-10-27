@@ -10345,7 +10345,9 @@ Link to another note with [[its first few words]]."></textarea>
                   model files do not work with the new engine, so this is one
                   download that replaces them. Your notes keep their search data
                   (BGE Small, Multilingual E5 Small) or are read again in the
-                  background (any other model).
+                  background (any other model). Once the new model is ready,
+                  Embedding models, Old search files lists what the old engine
+                  left on this computer, with Remove.
                 </p>
                 <p>
                   Off, nothing is downloaded and search by keywords keeps working.
@@ -10383,6 +10385,13 @@ Link to another note with [[its first few words]]."></textarea>
               <h4 class="setting-subhead">Found on this computer</h4>
               <ul id="embed-found" class="extras-list" aria-label="Embedding models found on this computer"></ul>
               <p id="embed-found-empty" class="muted empty-line hidden">None found outside the list above.</p>
+              <!-- The previous engine's files (embed-choices.js, lazy), listed only
+                   once the new build of the model in use is here. -->
+              <div id="embed-legacy-box" class="hidden">
+                <h4 class="setting-subhead">Old search files</h4>
+                <p class="muted">Left by the previous search engine, which Tessellate no longer uses. Remove frees the space and changes nothing else.</p>
+                <ul id="embed-legacy" class="extras-list" aria-label="Old search files"></ul>
+              </div>
               <h4 class="setting-subhead">Pull a model by name</h4>
               <p class="muted">A Hugging Face repo (owner/name) or an Ollama name (name:tag); Pull checks it online, nothing is sent before.</p>
               <div class="row embed-pull">

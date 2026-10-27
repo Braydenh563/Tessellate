@@ -553,6 +553,73 @@ def engine_moved(repo: str) -> dict | None:
     }
 
 
+def _shares_onnx_folder(model: EmbedModel) -> bool:
+    """Whether the old copy's folder is also a folder the new engine reads
+    (E5, BGE M3 and Gemma's ONNX sources are their own repos), so only the
+    weight files may go."""
+    folder = _folder_for(model.repo)
+    return any(_folder_for(other.onnx.source) == folder for other in EMBED_MODELS if other.onnx is not None)
+
+
+def legacy_files() -> list[dict]:
+    """The old engine's model files still on disk, one row per catalogue model
+    (`id`, `label`, the `folder` name, `bytes` and `size`): what Settings,
+    Search and index offers to remove once the new build is in place."""
+    rows = []
+    for model in EMBED_MODELS:
+        files = _torch_files(model)
+        if not files:
+            continue
+        folder = _folder_for(model.repo)
+        if _shares_onnx_folder(model):
+            size = sum({path.resolve(): _file_size(path) for path in files}.values())
+        else:
+            size = _dir_size(folder)
+        rows.append({"id": model.id, "label": model.label, "folder": folder.name, "bytes": size, "size": _human_size(size)})
+    return rows
+
+
+def remove_legacy(model_id: str) -> tuple[bool, str]:
+    """Delete one catalogue model's old engine files, by allowlist id: the
+    whole old folder, or only the weights when the new engine reads the same
+    folder. Inside the cache root or nothing."""
+    model = EMBED_MODELS_BY_ID.get(model_id)
+    if model is None or model.onnx is None:
+        return False, "No such embedding model."
+    files = _torch_files(model)
+    if not files:
+        return False, "Those files are not on this computer."
+    if _state.running:
+        return False, "A model is downloading right now. Try again when it has finished."
+    root = cache_root().resolve()
+    folder = _folder_for(model.repo)
+    try:
+        if not folder.resolve().is_relative_to(root):
+            return False, "Refusing to delete outside the model cache."
+        if _shares_onnx_folder(model):
+            _unlink_weights(files, root)
+        else:
+            shutil.rmtree(folder)
+    except OSError:
+        logger.warning("couldn't remove the old files of %s", model.id, exc_info=True)
+        return False, "Couldn't remove them: see Settings, Logs for why."
+    return True, f"The old files for {model.label} are removed."
+
+
+def _unlink_weights(files: list[Path], root: Path) -> None:
+    """Remove weight links and the blobs behind them, a blob only when no other
+    link in the cache still points at it."""
+    targets = {path.resolve() for path in files}
+    for path in files:
+        path.unlink()
+    still_linked = {
+        link.resolve() for link in root.glob("models--*/snapshots/*/**/*") if link.is_symlink()
+    }
+    for target in targets - still_linked:
+        if target.is_relative_to(root) and target.is_file():
+            target.unlink()
+
+
 #: A weights file smaller than this share of the catalogue's stated size is
 #: truncated. Generous on purpose (the stated size is approximate), so only a
 #: file that is plainly short is refused.
@@ -719,6 +786,11 @@ def _human_size(size: int) -> str:
     if size < 1024 * 1024 * 1024:
         return f"{size / (1024 * 1024):.0f} MB"
     return f"{size / (1024 * 1024 * 1024):.1f} GB"
+
+
+def size_in_words(size: int) -> str:
+    """A byte count as the screens say it (`128 MB`)."""
+    return _human_size(size)
 
 
 def can_download() -> bool:

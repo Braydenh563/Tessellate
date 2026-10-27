@@ -82,15 +82,18 @@ embedded again; notes embedded with any other model are read again in the
 background once the download lands.
 
 The old engine's files stay where they were, and Tessellate no longer uses
-them:
+them. Once the new model is ready, Settings, Search and index, Old search files
+lists the old model folders with their sizes, and Remove deletes one; in the
+packaged app it also removes PyTorch and sentence-transformers from the
+extras folder. From a source install, remove the packages by hand:
 
 ```
 pip uninstall -y sentence-transformers torch
 ```
 
-from the project folder's virtual environment frees about 1.4 GB, and the old
+from the project folder's virtual environment frees about 1.4 GB. The old
 model folder (`models--BAAI--bge-small-en-v1.5` in the Hugging Face cache,
-about 130 MB) can be deleted by hand. The new one is
+about 130 MB) is what Remove deletes; the new one is
 `models--Qdrant--bge-small-en-v1.5-onnx-Q`.
 
 ## Linux: the packaged app has no window
