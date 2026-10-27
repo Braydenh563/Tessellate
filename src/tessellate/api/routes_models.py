@@ -276,6 +276,10 @@ def warm_filing() -> dict:
     from tessellate.api import routes_entries
     from tessellate.core import jobs
 
+    #: The graphics card is read by starting a program (up to 3s, cached five
+    #: minutes): read it now, so Settings' first model list does not wait on it
+    #: (INBOX 1415).
+    threading.Thread(target=hardware.detect_gpus, name="gpu-probe", daemon=True).start()
     ollama = deps.get_ollama()
     #: Only when a model answers: with none the job returned at once, yet
     #: still showed "Warming up the filing model" in the bell and Activity on
@@ -665,9 +669,11 @@ def suggested() -> dict:
     The alternative, asking a registry over the network, is a call this app
     should not make just to draw a settings list.
     """
+    #: The status poll's own list, under its budget (INBOX 1415: asked inline
+    #: here, a busy runner held the shortlist 4.1s).
     installed: dict[str, int] = {}
     try:
-        for model in deps.get_ollama().list_models():
+        for model in _installed_or_last_known(deps.get_ollama()) or []:
             size = model.get("size")
             if size:
                 installed[str(model.get("name", ""))] = int(size)
