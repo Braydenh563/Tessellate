@@ -257,3 +257,28 @@ def test_only_a_breakdown_counts_inside_a_nested_dict():
 def test_a_figure_after_by_a_range_and_a_year_are_verified(ai_client, fake_ollama, session, prose, ok, use_tools):
     _seed(session)
     assert _kept(ai_client, fake_ollama, "what reminders do I have", prose, use_tools) is ok
+
+
+@pytest.mark.parametrize(
+    ("prose", "facts", "counts", "ok"),
+    [
+        ("Not a single one is tagged.", "You have 0 tagged notes.", {"note": {"0"}}, True),
+        ("Not a single one is tagged.", "You have 3 tagged notes.", {"note": {"3"}}, False),
+        ("Not a single note is tagged.", "You have 0 tagged notes.", {"note": {"0"}}, True),
+        ("Only a single note, nothing else.", "You have 1 note.", {"note": {"1"}}, True),
+        ("Only a single note, nothing else.", "You have 2 notes.", {"note": {"2"}}, False),
+        ("A single note and nothing more.", "You have 1 note.", {"note": {"1"}}, True),
+        ("You have one hundred and five notes.", "You have 105 notes.", {"note": {"105"}}, True),
+        ("You have one hundred and five notes.", "You have 5 notes.", {"note": {"5"}}, False),
+        ("You have a hundred and twenty-one notes.", "You have 121 notes.", {"note": {"121"}}, True),
+        ("You have two thousand three hundred and four notes.", "You have 2304 notes.", {"note": {"2304"}}, True),
+        ("You have twenty one notes.", "You have 21 notes.", {"note": {"21"}}, True),
+        ("You have one or two notes.", "You have 2 notes.", {"note": {"2"}}, False),
+        ("Every single note is filed.", "You have 3 notes.", {"note": {"3"}}, True),
+    ],
+)
+def test_an_amount_in_words_is_read_whole(prose, facts, counts, ok):
+    """The third review: "not a single one" was 0 and then a stray "one",
+    "nothing else" was a count of none, and "one hundred and five" was 100
+    and 5."""
+    assert fact_check.keeps(prose, facts, "how many notes", counts, False) is ok

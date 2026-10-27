@@ -99,7 +99,10 @@ _DETERMINERS = {
 }
 #: Amounts said as words: "a couple of reminders" is 2 reminders, "two
 #: dozen" is 24, "not a single note" is none (`_amounts`).
-_AMOUNTS = {"single": 1, "couple": 2, "pair": 2, "dozen": 12, "hundred": 100, "thousand": 1000}
+_AMOUNTS = {"single": 1, "couple": 2, "pair": 2, "dozen": 12}
+#: After "nothing" or "none", the word that makes it no count: "nothing
+#: else", "none other" say nothing more, not that there are none.
+_NOT_A_COUNT = {"else", "more", "other", "further", "besides"}
 #: Result keys that are positions, not counts.
 _NOT_COUNTS = {"offset", "limit", "page", "id", "seed"}
 
@@ -166,28 +169,86 @@ def _pronoun_one(tokens: list[str], i: int) -> bool:
     return False
 
 
+def _spoken(tokens: list[str], i: int) -> tuple[int, int] | None:
+    """(the number, the index after it) of a number said in several words
+    from `i`: "one hundred and five", "a hundred and twenty-one", "two
+    thousand three hundred", "twenty one". None for one plain word."""
+    total = current = 0
+    last, j = "", i
+    while j < len(tokens):
+        word = tokens[j]
+        small = (word in _UNITS and _UNITS[word] > 0) or bool(_NUMBER_WORD.match(word))
+        ahead = tokens[j + 1] if j + 1 < len(tokens) else ""
+        if word in ("a", "an") and j == i and ahead in ("hundred", "thousand"):
+            last = "a"
+        elif small and last in ("", "hundred", "thousand", "and"):
+            current += int(_value(word) or 0)
+            last = "tens" if word in _TENS else "small"
+        elif small and last == "tens" and word in _UNITS and _UNITS[word] < 10:
+            current += _UNITS[word]
+            last = "small"
+        elif word in ("hundred", "thousand") and last in ("", "a", "small", "tens"):
+            if word == "hundred":
+                current = (current or 1) * 100
+            else:
+                total, current = total + (current or 1) * 1000, 0
+            last = word
+        elif word == "and" and last in ("hundred", "thousand") and ahead and (ahead in _UNITS or _NUMBER_WORD.match(ahead)):
+            last = "and"
+        else:
+            break
+        j += 1
+    if last == "and":
+        j -= 1
+    if j == i or (j - i < 2 and tokens[i] not in ("hundred", "thousand")):
+        return None
+    return total + current, j
+
+
 def _amounts(tokens: list[str]) -> list[str]:
-    """The tokens with each amount said in words made one figure: "a" or a
-    figure before it is taken in, and the "of" after it ("a couple of
-    notes" reads as "2 notes")."""
+    """The tokens with each amount said in words made one figure: "one
+    hundred and five" is 105; "a" or a figure before "couple", "dozen" or
+    "single" is taken in, and the "of" after it ("a couple of notes" reads
+    as "2 notes"); "not a single one" is 0; "nothing else" is no figure; an
+    intensifier ("every single note") is none."""
     out: list[str] = []
     taken = False
-    for token in tokens:
+    i = 0
+    while i < len(tokens):
+        token = tokens[i]
+        ahead = tokens[i + 1] if i + 1 < len(tokens) else ""
+        spoken = _spoken(tokens, i)
+        if spoken:
+            out.append(str(spoken[0]))
+            i, taken = spoken[1], False
+            continue
+        i += 1
         if taken and token == "of":
             taken = False
+            continue
+        if token in _NONE_WORDS and ahead in _NOT_A_COUNT:
+            i += 1
             continue
         taken = token in _AMOUNTS
         if not taken:
             out.append(token)
             continue
         before = out[-1] if out else ""
-        times = 1 if before in ("a", "an") else _value(before) if token in ("dozen", "hundred", "thousand") else None
+        if token == "single":
+            taken = False
+            if before not in ("a", "an"):
+                continue
+            out[-1] = "1"
+            if len(out) > 1 and out[-2] == "not":
+                out[-2:] = ["0"]
+            if ahead == "one":
+                i += 1
+            continue
+        times = 1 if before in ("a", "an") else _value(before) if token == "dozen" else None
         if times is None:
             out.append(str(_AMOUNTS[token]))
             continue
         out[-1] = str(int(float(times) * _AMOUNTS[token]))
-        if token == "single" and len(out) > 1 and out[-2] == "not":
-            out[-2:] = ["0"]
     return out
 
 
