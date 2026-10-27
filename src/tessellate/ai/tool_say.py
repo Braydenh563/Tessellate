@@ -393,6 +393,7 @@ def _reminders(result: dict, args: dict) -> Said:
     within = args.get("within")
     if within:
         phrase, start, end = within
+        phrase = _window_said(phrase)
         rows = [r for r in rows if _due_day(r.get("due_at")) is not None and start <= _due_day(r.get("due_at")) <= end]
         if not rows:
             return f"You have no reminders {phrase}.", "", _chips(("Open Reminders", REMINDERS))
@@ -402,6 +403,18 @@ def _reminders(result: dict, args: dict) -> Said:
         return "You have no reminders waiting.", "", _chips(("Open Reminders", REMINDERS))
     table = _table(["Reminder", "When"], [[r.get("text"), _when(r.get("due_at"))] for r in rows[:12]])
     return f"You have {count_noun(len(rows), 'reminder')} waiting.", table, _chips(("Open Reminders", REMINDERS))
+
+
+def _window_said(phrase: str) -> str:
+    """A window as it follows "You have 2 reminders": "the next 3 days" is
+    "in the next 3 days", "the day after tomorrow" is "on" it."""
+    if phrase.startswith("the next"):
+        return f"in {phrase}"
+    if phrase.startswith("the rest"):
+        return f"for {phrase}"
+    if phrase.startswith("the day"):
+        return f"on {phrase}"
+    return phrase
 
 
 def _due_day(value: object):  # noqa: ANN202

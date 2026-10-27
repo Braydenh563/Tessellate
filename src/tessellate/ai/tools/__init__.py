@@ -1802,6 +1802,22 @@ def _set_reminder(session: Session, args: dict) -> dict:
     }
 
 
+#: What a reminder linked to a private note is called to a model and in chat:
+#: its words may be the note's own (a reminder made from a selection), and a
+#: private note's words never leave it (the .ics and calendar-link rule,
+#: `routes_reminders._event_details`). The Reminders tab still shows them.
+PRIVATE_REMINDER = "A reminder on a private note"
+
+
+def private_note_ids(session: Session, ids: list) -> set[int]:
+    """Which of these note ids are private (`PRIVATE_REMINDER`; the day's
+    activity reads it too, `ai/activity.py`)."""
+    wanted = {i for i in ids if i is not None}
+    if not wanted:
+        return set()
+    return set(session.scalars(select(Entry.id).where(Entry.id.in_(wanted), Entry.is_private.is_(True))).all())
+
+
 def _list_reminders(session: Session, args: dict) -> dict:
     """A page of reminders, soonest first, like every other list tool.
 
@@ -1824,10 +1840,11 @@ def _list_reminders(session: Session, args: dict) -> dict:
     rows = session.scalars(
         select(Reminder).where(*filters).order_by(Reminder.due_at).limit(limit).offset(offset)
     ).all()
+    private = private_note_ids(session, [r.entry_id for r in rows])
     reminders = [
         {
             "id": r.id,
-            "text": r.text,
+            "text": PRIVATE_REMINDER if r.entry_id in private else r.text,
             "due_at": r.due_at.isoformat(),
             "done": r.done,
             "note_id": r.entry_id,

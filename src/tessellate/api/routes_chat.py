@@ -21,7 +21,7 @@ import time
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 from dataclasses import replace as with_changes
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timezone
 from itertools import chain
 from pathlib import Path
 from typing import Annotated, Literal
@@ -33,7 +33,7 @@ from sqlalchemy import or_, select
 from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
-from tessellate.ai import budget as run_budget, capability, composer, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, neighbours, personal, phrasing, verdicts, toolwords, vocative, why
+from tessellate.ai import budget as run_budget, capability, fact_check, composer, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, neighbours, personal, phrasing, verdicts, toolwords, vocative, why
 from tessellate.ai import recognise
 from tessellate.ai import (
     acts,
@@ -2621,23 +2621,25 @@ def _count_lead(result: dict, args: dict, counted: str) -> str:
     return lead
 
 
-def _counted_lead(req: _StreamRequest, asked: str) -> str:
-    """"how many notes do I have about work": a figure, not a quote."""
+def _counted_lead(req: _StreamRequest, asked: str) -> tuple[str, dict]:
+    """"how many notes do I have about work": a figure, not a quote, with
+    the counts it was said from (`fact_check.result_counts`)."""
     from tessellate.ai import tools as agent_tools
 
     counted = composer_lists.counted_filing(asked)
     if counted is None:
-        return ""
+        return "", {}
     for args in ({"category": counted}, {"tag": counted}) if counted else ({},):
         result = agent_tools.execute_tool(req.session, "count_notes", args)
         if isinstance(result, dict) and (result.get("total") or result.get("count")) and not result.get("error"):
-            return _count_lead(result, args, counted)
-    return ""
+            return _count_lead(result, args, counted), fact_check.result_counts("count_notes", result)
+    return "", {}
 
 
-def _filed_said(req: _StreamRequest, asked: str, now: datetime) -> str:
+def _filed_said(req: _StreamRequest, asked: str, now: datetime) -> tuple[str, str, dict]:
     """"list my work notes": the Work notes, or the notes tagged work
-    (ledger row 442); a name that is neither is the composer's."""
+    (ledger row 442), as (lead, the list under it, its counts); a name that
+    is neither is the composer's ("", "", {})."""
     from tessellate.ai import commands, tool_say
     from tessellate.ai import tools as agent_tools
 
@@ -2646,26 +2648,51 @@ def _filed_said(req: _StreamRequest, asked: str, now: datetime) -> str:
         args = {key: filed}
         result = agent_tools.execute_tool(req.session, "list_notes", args)
         if isinstance(result, dict) and result.get("total_matching"):
-            return tool_say.say("list_notes", result, args, now.date())["text"]
-    return ""
+            said = tool_say.say("list_notes", result, args, now.date())
+            return said["lead"], "\n\n".join(p for p in (said["body"], said["chips"]) if p), fact_check.result_counts("list_notes", result)
+    return "", "", {}
+
+
+def _said_events(lead: str, rest: str = "", counts: dict | None = None) -> list[dict]:
+    """An engine answer as its lead and, apart, the list under it: the same
+    text as one answer, but a model that writes the lead (decision 75) keeps
+    the list as the engine drew it (`_fact_events`, the `attached` flag),
+    and its words are checked against the counts the lead was said from
+    (`counts`). Both marks are the server's own, taken off in `_relay_events`."""
+    if not lead:
+        return [{"type": "answer", "delta": rest}] if rest else []
+    first = {"type": "answer", "delta": lead, **({"counts": counts} if counts else {})}
+    return [first, *([{"type": "answer", "delta": f"\n\n{rest}", "attached": True}] if rest else [])]
 
 
 def _filed_or_counted_events(req: _StreamRequest, asked: str, now: datetime) -> list[dict]:
     """A filed listing or a count of notes, said from the tool's figures;
     empty when the sentence is neither."""
-    text = _filed_said(req, asked, now) or _counted_lead(req, asked)
-    return [{"type": "answer", "delta": text}] if text else []
+    lead, rest, counts = _filed_said(req, asked, now)
+    if lead:
+        return _said_events(lead, rest, counts)
+    lead, counts = _counted_lead(req, asked)
+    return _said_events(lead, counts=counts)
 
 
 def _reminder_window(asked: str, now: datetime) -> tuple | None:
-    """(phrase, first day, last day) of the window a reminders question names."""
-    window = composer.plan(asked, now.date())
+    """(phrase, first day, last day) of the window a reminders question names.
+    What is due is read forwards (`composer_plan.window`: "tomorrow", "next
+    week", "on friday", "the next 3 days", "this week" to Sunday); a window
+    in the past ("last week") is the recall plan's."""
+    today = now.date()
+    window = composer.plan(asked, today)
+    ahead = composer_plan.window(asked, today)
+    if ahead:
+        start, end, phrase = ahead
+        #: "this week" keeps the days already gone: what was due on Monday
+        #: and is still waiting is this week's.
+        if phrase in ("this week", "this month") and window.window and window.window_phrase == phrase:
+            start = min(start, window.window[0])
+        return phrase, start, end
     if not (window.window and window.window_phrase):
         return None
     start, end = window.window
-    if window.window_phrase == "this week":
-        #: A recall window stops at today; what is due runs to Sunday.
-        end = max(end, start - timedelta(days=start.weekday()) + timedelta(days=6))
     return window.window_phrase, start, end
 
 
@@ -2703,8 +2730,10 @@ def _tool_read_events(req: _StreamRequest, notes: list | None = None) -> list[di
             drawn = None
     said = tool_say.say(got.tool, result, say_args, now.date())
     chart = drawn["chart"] if drawn else None
-    parts = (said["lead"], "" if chart else said["body"], said["chips"])
-    out = [{"type": "answer", "delta": "\n\n".join(p for p in parts if p)}]
+    #: A window's rows are the count the engine said ("You have 2 reminders
+    #: this week", or none), not the whole list's total.
+    counts = fact_check.said_counts(said["lead"]) if "within" in say_args else fact_check.result_counts(got.tool, result)
+    out = _said_events(said["lead"], "\n\n".join(p for p in ("" if chart else said["body"], said["chips"]) if p), counts)
     if chart:
         out.append({"type": "chart", "chart": chart})
     return out
@@ -2983,6 +3012,112 @@ def _exact_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> 
         if shown:
             return list(shown)
     return None
+
+
+def _fact_events(req: _StreamRequest, prepared: dict, t: _Turn) -> Iterator[dict]:
+    """**The engine's facts, the model's words** (CHAT_PLAN decision 75; the
+    owner, 2026-10-27: "I want the ai to be able to do what the composer can
+    do but better"). The engine's exact answer (`_exact_events`: a count, a
+    worked sum, the app's records, a read tool's rows) goes to the model as
+    facts (`librarian.build_facts_messages`); the model writes the reply, and
+    the engine's own parts ride under it unchanged: the list it drew (the
+    `attached` answer), its chart, its panel, its offer.
+
+    The reply is held until it is checked, never streamed then withdrawn: a
+    reply of one or two sentences, against a figure the person may act on.
+    Prose that states a figure the facts lack, or a count without its figure,
+    or a model that fails, leaves the engine's own answer, with no model named
+    under it (a second `meta`, which every client reads as the latest)."""
+    engine = list(_exact_events(req, prepared, True) or [])
+    answers = [e for e in engine if e.get("type") == "answer"]
+    listed = [{"type": "answer", "delta": e["delta"]} for e in answers if e.get("attached")]
+    listed = listed or (_stats_listed(prepared["stats"]) if prepared["stats"] is not None else [])
+    facts = "".join(str(e.get("delta") or "") for e in answers)
+    counts = _engine_counts(prepared, answers)
+    messages = librarian.build_facts_messages(
+        _in_full(req), facts, style=prepared["style"], profile=prepared["profile"], history=req.history,
+        persona_prompt=req.persona_prompt, mode=req.mode,
+    )
+    held = _held_reply(req, messages)
+    prose = trim_assistant_padding(held["prose"]).strip()
+    needs_figure = prepared["stats"] is not None and not listed
+    if facts and fact_check.keeps(prose, facts, req.question or "", counts, needs_figure, user_now(deps.get_config())):
+        yield from held["thinking"]
+        yield from _model_said(prose, listed, engine, held["stats"])
+        return
+    yield from _engine_stands(req, prepared, t, engine, held)
+
+
+def _engine_stands(req: _StreamRequest, prepared: dict, t: _Turn, engine: list, held: dict) -> Iterator[dict]:
+    """A refused or failed reply: the engine's own answer, a `meta` naming no
+    model, and what the reply cost, with no model named either (the badge and
+    the facts line read `stats.model` first, `chat-attach.js`, `palette.js`)."""
+    if held["prose"]:
+        logging.getLogger("tessellate.chat").warning("chat: the model's words did not keep to the app's answer, which stands")
+    t.will_answer = False
+    yield _meta_event(req, prepared, t)
+    yield from engine
+    if held["stats"] is not None:
+        yield {k: v for k, v in held["stats"].items() if k != "model"}
+
+
+#: Rows that sum a count up rather than list what was counted ("untagged",
+#: "total"): a figure for the words, not a list to show.
+_SUMMARY_ROWS = {"total", "untagged", "unlinked"}
+
+
+def _stats_listed(stats: dict) -> list[dict]:
+    """A statistic that is itself a list, as the list to show under the
+    model's words (`_fact_events`): the lines under a first line that leads
+    into them ("You have 3 boards, last changed first:"), or its named rows
+    ("- Work (3)"). Not a sum's "Read as ..." line, which explains, not lists.
+    The no-model answer stays the engine's own (`_stats_events`)."""
+    first, _sep, rest = str(stats.get("text") or "").partition("\n")
+    if first.rstrip().endswith(":") and rest.strip():
+        return [{"type": "answer", "delta": "\n\n" + rest.strip()}]
+    rows = [r for r in stats.get("facts") or [] if isinstance(r, dict) and r.get("label") and isinstance(r.get("count"), int)]
+    if len(rows) < 2 or any(str(r["label"]).lower() in _SUMMARY_ROWS for r in rows):
+        return []
+    return [{"type": "answer", "delta": "\n\n" + "\n".join(f"- {r['label']} ({r['count']})" for r in rows)}]
+
+
+def _engine_counts(prepared: dict, answers: list) -> dict:
+    """What the engine counted, by noun: the counts carried from the tool
+    result (`_said_events`), the statistic's rows, and the counted statements
+    of its own lead sentences (never the list under them, never a date)."""
+    return fact_check.merged(
+        *(e.get("counts") or {} for e in answers),
+        *(fact_check.said_counts(str(e.get("delta") or "")) for e in answers if not e.get("attached")),
+        fact_check.rows_counts(prepared["stats"]) if prepared["stats"] is not None else {},
+    )
+
+
+def _model_said(prose: str, listed: list, engine: list, stats: dict | None) -> Iterator[dict]:
+    """The model's words, then the engine's list, chart, panel and offer."""
+    yield {"type": "answer", "delta": prose}
+    yield from listed
+    yield from (e for e in engine if e.get("type") != "answer")
+    if stats is not None:
+        yield stats
+
+
+def _held_reply(req: _StreamRequest, messages: list) -> dict:
+    """The model's reply, held whole until it is checked: its words, its
+    thinking (shown only with words that are kept), its token counts. A model
+    that fails leaves no words."""
+    held: dict = {"prose": "", "thinking": [], "stats": None}
+    try:
+        for piece in req.ollama.chat_stream(req.model_manager.chat_model(), messages, req.mode):
+            if "thinking_delta" in piece:
+                held["thinking"].append({"type": "thinking", "delta": piece["thinking_delta"]})
+            elif "stats" in piece:
+                held["stats"] = {"type": "stats", **piece["stats"]}
+            else:
+                held["prose"] += piece.get("content_delta") or ""
+    except OllamaError as exc:
+        logging.getLogger("tessellate.chat").warning("chat: the model could not say the app's answer: %s", safe_value(exc))
+        held["prose"] = ""
+    return held
 
 
 def _no_notes_line(req: _StreamRequest, ollama_running: bool) -> str:
@@ -3742,6 +3877,7 @@ def _first_events(req: _StreamRequest, prepared: dict, ollama_running: bool, too
     """The turn's events before the agent is asked: an act, a starter the
     engine answers with no model, or the plain answer."""
     if _BULK_DELETE.match(" ".join((req.question or "").split())):
+        #: A refusal in fixed words, model or none: the guard is the point.
         return iter([{"type": "answer", "delta": (
             "I will not delete everything in one go. Name one note instead, for example “delete the boiler note”: "
             "it waits for your Confirm, and Undo brings it back."
@@ -3753,6 +3889,12 @@ def _first_events(req: _StreamRequest, prepared: dict, ollama_running: bool, too
         prepared["app_first"] = True
         return iter(own)
     if prepared["intent"] == intent.ACT:
+        #: Kept the engine's with a model up, deliberately (decision 75's one
+        #: exception): an act with no tools to hand (Chat's Ask mode, the Ask
+        #: box) is done, not discussed, and its confirmation is the card's own
+        #: line. With tools, `_plan_turn` gives the act to the agent instead.
+        #: `_facts_turn` never takes an act, even one whose words also count,
+        #: but a read said as one ("list my work notes", `_note_tool_read`).
         return _act_events(req, prepared)
     starter = _starter_read(req, ollama_running or tools_only)
     if starter:
@@ -3909,25 +4051,18 @@ def _spoken_act(req: _StreamRequest) -> str | None:
     return resolved[0]
 
 
-def _lists_reminders(req: _StreamRequest) -> bool:
-    """A reminder, task or due question ("what reminders do I have", "whats
-    due this week"): answered from the reminders themselves with a model up
-    too (decision 75, the model must not do worse than the composer). A
-    1.5B model read the notes and said "two reminders" when there were
-    three; a list is exact data, like a count, so it is never retold."""
-    from tessellate.ai import act_registry, question_noise, reading
+def _note_tool_read(req: _StreamRequest, prepared: dict, t: _Turn) -> None:
+    """A read tool's answer (decision 59) is the whole notebook's, so the
+    notes retrieval found are not its sources. Read with a model up too: a
+    list is exact data, like a count, and the model is handed it as facts to
+    say (`_fact_events`, decision 75) rather than reading the notes and
+    miscounting (a 1.5B model said "two reminders" when there were three,
+    2026-10-12). Not for a skill, whose steps read their own way.
 
-    if req.skill:
-        return False
-    asked = question_noise.repair(question_noise.tidy(req.question or ""))
-    got = reading.read(asked, now=user_now(deps.get_config()))
-    return got.tool == "list_reminders" and got.intent not in act_registry.ACTS
-
-
-def _note_tool_read(req: _StreamRequest, prepared: dict, ollama_running: bool) -> None:
-    """A read tool answered with no model (decision 59) is the whole
-    notebook's, so the notes retrieval found are not its sources."""
-    if prepared["stats"] is None and prepared["intent"] != intent.ACT and (not ollama_running or _lists_reminders(req)):
+    An act is the act's own (`_first_events`), except a read said as one
+    ("list my work notes") with a model up to say it: that is facts too."""
+    reads = prepared["intent"] != intent.ACT or (t.ollama_running and not t.composed and not _asks_change(req.question or ""))
+    if prepared["stats"] is None and reads and not req.skill:
         prepared["tool_read"] = _tool_read_events(req, prepared["notes"])
         if prepared["tool_read"]:
             #: Not composed from them either: the Ask box's "Composed from
@@ -4007,6 +4142,8 @@ class _Turn:
     composing: bool = False
     conversational: bool = False
     will_answer: bool = False
+    #: The engine has the exact answer and a model says it (`_fact_events`).
+    facts: bool = False
     agentic: bool = False
     #: B30: the seconds each stage landed at, for "Why this answer".
     started: float = 0.0
@@ -4102,13 +4239,99 @@ def _plan_turn(req: _StreamRequest, prepared: dict) -> _Turn:
         #: same, and it can ask and plan (decision 38 is for no model).
         prepared["intent"] = intent.NOTES
     t.composed = _composed(req, t.ollama_running)
-    _note_tool_read(req, prepared, t.ollama_running)
+    _note_tool_read(req, prepared, t)
     t.tools_provider = _tools_provider(req, prepared, t.ollama_running)
     t.tools_only = t.tools_provider is not req.ollama
     t.composing = _is_composing(prepared, t.composed, t.ollama_running, t.tools_only)
     t.conversational = not intent.needs_retrieval(prepared["intent"])
-    t.will_answer = _will_answer(req, prepared, t)
+    t.facts = _facts_turn(req, prepared, t)
+    t.will_answer = t.facts or _will_answer(req, prepared, t)
     return t
+
+
+def _facts_turn(req: _StreamRequest, prepared: dict, t: _Turn) -> bool:
+    """Whether a model writes this turn from the engine's exact answer (CHAT_PLAN
+    decision 75; the owner, 2026-10-27: "why is it responding as the composer
+    when my ai is in use??"): a count, a worked sum, the app's records or a
+    read tool's rows, with a model up, on every surface but the Ask box's From
+    your notes (`_composed`). Not a skill run, which reads its own way.
+
+    Not "nothing matched" (`_no_notes_events`): the check on the model's words
+    (`fact_check.keeps`) reads figures, and that answer has none, so a model
+    saying "here is what I found" over it could not be caught. With tools (the
+    popup agent, Chat's Agent mode) the agent has that turn and can search."""
+    if not t.ollama_running or t.composed or req.skill:
+        return False
+    if _asks_change(req.question or "") or (prepared["intent"] == intent.ACT and not prepared.get("tool_read")):
+        #: "save my first note" read as the first-note count: a request to do
+        #: something is never a figure to say. With tools it is the agent's,
+        #: which has the tools to do it; with none it is the act's own path
+        #: (`_first_events`), done rather than discussed, on every mode. A
+        #: read said as an act ("list my work notes") is facts (`_note_tool_read`).
+        return False
+    return prepared["stats"] is not None or bool(prepared.get("tool_read"))
+
+
+#: The words before a request ("can you please", "hey, could you"), any
+#: number of them, then the verb of a change, then its object (`_asks_change`).
+_LEAD_IN = re.compile(
+    r"^\s*(?:(?:please|pls|plz|kindly|hey|hi|ok|okay|so|now|just|can you|could you|would you|will you|go ahead and)\b[\s,]*)*",
+    re.I,
+)
+_CHANGE_VERB = re.compile(
+    r"(?:save|create|make|add(?!\s+(?:up|together)\b)|write|draft|delete|remove|bin|move|tag|untag|rename|pin|unpin|set|"
+    r"link|unlink|file|archive|restore|edit|update|change|mark|tick|complete|merge|split|tidy|clean|clear|put|jot)\b"
+    r"(?:\s+(?:up|down|off|away|out)\b)?",
+    re.I,
+)
+#: "remind me" is a change only with what to be reminded of or when
+#: ("remind me to call mum", "remind me tomorrow"), not "remind me how many".
+_REMIND = re.compile(r"remind\s+me\s+(?:to|at|in|on|by|tomorrow|tonight|today|next|every|this|before|after)\b", re.I)
+#: "remind me about my first note", "remind me of ..." name what to be
+#: reminded of; "remind me of what is due" asks (`_QUESTION_WORDS`).
+_REMIND_OF = re.compile(r"remind\s+me\s+(?:about|of)\s+(?!(?:how|what|when|where|which|who|whether|why)\b)\w", re.I)
+#: What a change can be done to: the app's things, or a word pointing at one.
+_CHANGE_OBJECTS = {
+    "note", "notes", "entry", "entries", "reminder", "reminders", "task", "tasks", "to-do", "to-dos", "todo", "todos",
+    "tag", "tags", "label", "labels", "category", "categories", "folder", "folders", "document", "documents", "doc",
+    "docs", "file", "files", "pdf", "pdfs", "board", "boards", "map", "maps", "link", "links", "skill", "skills",
+    "page", "pages", "checklist", "checklists", "item", "items", "it", "them", "this", "that", "these", "those",
+    "everything",
+    #: What of a note a change is done to ("change the title of my first note").
+    "title", "name", "body", "text", "date", "contents", "content", "description", "summary", "colour", "color",
+}
+#: After an object, the word that makes it a figure asked for ("clean my
+#: notes count", "mark my reminders count"), not a thing to change.
+_COUNT_WORDS = {"count", "counts", "total", "totals", "number", "tally", "size", "length"}
+#: Words that end the object before a thing is named ("set of tags", "make
+#: sense of", "update on", "add three and four", "update me on").
+_OBJECT_STOPS = {
+    "of", "on", "in", "for", "about", "with", "and", "or", "me", "us", "how", "what", "when", "where",
+    "which", "who", "whether", "why", "is", "are", "do", "does", "i",
+}
+
+
+def _asks_change(question: str) -> bool:
+    """Whether a sentence asks for a change, not a figure (`_facts_turn`): an
+    imperative verb whose object, within four words and before a stop, is a
+    thing the app can change ("save my first note", "tag it work"). "to" and
+    "from" are passed ("add to my first note"); "of" is a stop unless a part
+    of a note was named first ("change the title of my first note").
+    "tag cloud of my notes", "file count", "clean my notes count" and "add
+    three and four" name none."""
+    start = _LEAD_IN.match(question).end()
+    if _REMIND.match(question, start) or _REMIND_OF.match(question, start):
+        return True
+    verb = _CHANGE_VERB.match(question, start)
+    if not verb:
+        return False
+    words = re.findall(r"[a-z]+(?:-[a-z]+)*|\d+", question[verb.end():].lower())[:5]
+    for i, word in enumerate(words[:4]):
+        if word in _CHANGE_OBJECTS:
+            return not (i + 1 < len(words) and words[i + 1] in _COUNT_WORDS)
+        if word in _OBJECT_STOPS:
+            return False
+    return False
 
 
 def _prime_model_notes(req: _StreamRequest, prepared: dict, t: _Turn) -> None:
@@ -4150,6 +4373,8 @@ def _choose_events(req: _StreamRequest, prepared: dict, t: _Turn) -> tuple:
 
     Small talk never goes near the agent: "hey" is not a request to do
     anything, and handing it a toolbox invites it to invent an errand."""
+    if t.facts:
+        return _fact_events(req, prepared, t), None
     events = _first_events(req, prepared, t.ollama_running, t.tools_only)
     can_agent = (
         not t.composed
@@ -4240,7 +4465,8 @@ def _relay_events(req: _StreamRequest, prepared: dict, t: _Turn, events) -> Iter
             kind = payload.get("type")
             _note_kind(t, kind, payload)
             if kind == "answer":
-                payload = {**payload, "delta": scrubber.feed(payload.get("delta") or "")}
+                #: `attached` and `counts` are the server's own marks (`_said_events`), not the client's.
+                payload = {**{k: v for k, v in payload.items() if k not in ("attached", "counts")}, "delta": scrubber.feed(payload.get("delta") or "")}
                 if not payload["delta"]:
                     continue
             else:

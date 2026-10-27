@@ -2,23 +2,41 @@
 with a model up (CHAT_PLAN decision 75: the model must not do worse than the
 composer). Measured 2026-10-12 against Qwen2.5-1.5B: "What reminders do I
 have?" was answered from the notes as "two reminders" when there were three;
-the no-model path lists the real ones. A list is exact data, like a count
-(`_stats_events`), so it is never handed to a model to retell.
+the no-model path lists the real ones.
+
+Changed 2026-10-27 (the owner: "why is it responding as the composer when my
+ai is in use??"): the model now writes the words from the real list
+(`_fact_events`), and a reply that miscounts, like the one faked here, is
+refused for the engine's own, with a second `meta` naming no model. The
+intent is unchanged: the miscount never reaches the reader. The model-written
+case is `tests/test_model_writes_facts_1027.py`.
 """
 
 from __future__ import annotations
 
 import json
+from datetime import datetime
 
 import pytest
 
 from tessellate.ai import reading, tools
+from tessellate.api import routes_chat
+from tessellate.core.database import Reminder
+
+#: A fixed clock (CLAUDE.md section 8): with the real one, reminders set "in
+#: 3 days" and a minute with a 2 in it changed what the fact check read.
+NOW = datetime(2026, 10, 27, 9, 30)
+
+
+@pytest.fixture(autouse=True)
+def _fixed_clock(monkeypatch):
+    monkeypatch.setattr(routes_chat, "user_now", lambda _config=None: NOW)
 
 
 def _seed(session):
     tools.execute_tool(session, "create_note", {"content": "Reminders: I have two reminders this week", "tags": ["home"]})
-    for text, when in (("call mum", "tomorrow at 9"), ("pay rent", "in 3 days at 10am"), ("book dentist", "in 5 days at 11am")):
-        tools.execute_tool(session, "set_reminder", {"text": text, "when": when})
+    for text, due in (("call mum", datetime(2026, 10, 28, 9)), ("pay rent", datetime(2026, 10, 30, 10)), ("book dentist", datetime(2026, 11, 1, 11))):
+        session.add(Reminder(text=text, due_at=due))
     session.commit()
 
 
@@ -43,7 +61,8 @@ def test_a_reminder_question_lists_the_real_reminders_with_a_model_up(ai_client,
     assert "two reminders" not in answer, answer
     for text in ("call mum", "pay rent", "book dentist"):
         assert text in answer, (question, answer)
-    meta = next(e for e in events if e["type"] == "meta")
+    #: The latest `meta` is the one every client reads (`_fact_events`).
+    meta = [e for e in events if e["type"] == "meta"][-1]
     assert meta["raw_results"] == [] and meta["answered_by"] is None
 
 
