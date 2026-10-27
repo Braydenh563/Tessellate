@@ -177,3 +177,38 @@ def test_a_stroke_never_raises_the_text_kebab():
     pad = PAD.read_text(encoding="utf-8")
     down = re.search(r"function onDown\(e\) \{[\s\S]*?\n  \}", pad).group(0)
     assert "e.preventDefault()" in down
+
+
+# --- the arrow and the paper picker (the owner, 2026-10-27, screenshots) ------------
+
+
+@needs_node
+def test_a_thick_arrows_shaft_stops_under_its_head():
+    """The shaft ran to the tip with a round cap, so a thick arrow poked a
+    rounded stub out past its head. It now stops at the head's base, and its
+    cap is still inside the head."""
+    a = _geometry("g.spArrow({x1: 0, y1: 0, x2: 200, y2: 0}, 27)")
+    tip, left, right = a["head"]
+    assert tip == {"x": 200, "y": 0}
+    assert a["shaft"]["x2"] == pytest.approx(left["x"]) == pytest.approx(right["x"])
+    cap_front = a["shaft"]["x2"] + 27 / 2
+    half_width_there = abs(left["y"]) * (200 - cap_front) / (200 - left["x"])
+    assert cap_front < 200 and half_width_there > 27 / 2
+
+
+@needs_node
+def test_a_short_arrows_head_never_reaches_behind_its_start():
+    a = _geometry("g.spArrow({x1: 0, y1: 0, x2: 20, y2: 0}, 27)")
+    assert a["shaft"]["x2"] >= 0 and min(p["x"] for p in a["head"]) >= 0
+
+
+def test_the_paper_picker_is_anchored_to_the_bar_not_hidden():
+    """A `display: none` colour input has no box, so the browser opened its
+    picker at the window's top left corner."""
+    pad = PAD.read_text(encoding="utf-8")
+    paper = re.search(r'h\("input", \{ type: "color",[^\n]*"data-sp": "paper"[^\n]*', pad).group(0)
+    assert "sp-hidden" not in paper and "sp-picker-anchor" in paper
+    css = PAD_CSS.read_text(encoding="utf-8")
+    anchor = re.search(r"(?m)^\.sp-picker-anchor \{([^}]*)\}", css).group(1)
+    assert "display" not in anchor and "position: absolute" in anchor
+    assert re.search(r"(?m)^\.sp-actions \{[^}]*position: relative", css)

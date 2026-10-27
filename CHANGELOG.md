@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Quick sketch: a thick arrow ends at its point (the line no longer pokes out past the head), and the paper colour picker opens by the More button, not the window's top left corner. The Ask box's AI switch has room inside its pill.
 - Documents: in focus mode the sidebar and the suggestions panel can be resized by dragging their edge (or the arrow keys), and the sidebar width is the one it has outside focus mode.
 - Grammar: fewer wrong suggestions; a file name (start.bat), an interface word (draggable, scrollbars), a dotfile and "back to normal" are no longer marked, and real errors still are.
 - Settings, Appearance: Glass controls (off by default) puts icon buttons in the image chip's frosted glass, only while the glass blur is on; its styles are fetched only when it is on.

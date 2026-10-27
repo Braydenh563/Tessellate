@@ -109,3 +109,15 @@ def test_the_switch_is_drawn_from_the_first_status_not_the_preload():
     assert status.index('"No model connected. Ask shows the matching records below."') < status.index(
         'ensureModule("askCompose");'
     )
+
+
+def test_the_switch_pill_leaves_room_round_its_content():
+    """The owner, 2026-10-27 (INBOX 1411): "this pill is very tight to the
+    content". The hover and focus fill is a pill; at 4px inline padding its
+    round end touched the switch's track."""
+    import re
+    from pathlib import Path
+
+    css = (Path(__file__).resolve().parents[1] / "frontend" / "css" / "ask-compose-lazy.css").read_text(encoding="utf-8")
+    rule = re.search(r"(?m)^\.ask-ai-switch \{([^}]*)\}", css).group(1)
+    assert "padding-inline: var(--space-2) var(--space-3);" in rule

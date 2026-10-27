@@ -131,8 +131,23 @@
   min-width: 0;
 }
 .sp-actions {
+  position: relative;
   margin-inline-start: auto;
   gap: var(--space-1);
+}
+/* The paper's colour input: kept in the layout, under the More button, because
+   the browser opens a colour picker at its input's box, and a display: none
+   input has none, so the picker landed in the window's top left corner. */
+.sp-picker-anchor {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-end: 0;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 .sp-colours {
   gap: var(--space-3);

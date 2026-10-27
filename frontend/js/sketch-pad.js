@@ -119,6 +119,18 @@
     return { x1: start.x, y1: start.y, x2: end.x, y2: end.y };
   }
 
+  //: An arrow's shaft and head. The shaft stops at the head's base: run to
+  //: the tip, its round cap poked out past a thick arrow's point. A head
+  //: longer than the line shrinks to it, so it never reaches behind the start.
+  function spArrow(l, size) {
+    const angle = Math.atan2(l.y2 - l.y1, l.x2 - l.x1);
+    const len = Math.min(size * 3 + 8, Math.hypot(l.x2 - l.x1, l.y2 - l.y1));
+    const wing = (turn) => ({ x: l.x2 - len * Math.cos(angle + turn), y: l.y2 - len * Math.sin(angle + turn) });
+    const back = len * Math.cos(Math.PI / 6);
+    const shaft = { x1: l.x1, y1: l.y1, x2: l.x2 - back * Math.cos(angle), y2: l.y2 - back * Math.sin(angle) };
+    return { shaft, head: [{ x: l.x2, y: l.y2 }, wing(-Math.PI / 6), wing(Math.PI / 6)] };
+  }
+
   //: The pixels a fill from (sx, sy) reaches: every 4-connected pixel whose
   //: colour is within `tol` of the seed's on each channel, then one pixel
   //: more, so the fill tucks under an antialiased edge instead of leaving a
@@ -372,7 +384,7 @@
     //: only what has no button of its own.
     const items = [
       { label: "Add a picture under the ink", run: () => S.el.image.click() },
-      { label: "Paper colour", run: () => S.el.paper.click() },
+      { label: "Paper colour", run: () => (S.el.paper.showPicker ? S.el.paper.showPicker() : S.el.paper.click()) },
     ];
     const menu = S.host.menu ? S.host.menu(items.map((i) => ({ ...i, title: i.label })), "More for this sketch") : fallbackMenu(items);
     return h("div", { class: "dock-actions sp-group sp-actions", role: "group", "aria-label": "The sheet", "data-rove": "" },
@@ -381,7 +393,7 @@
       iconButton("trash", "Clear the ink", clearInk, { data: { sp: "clear" } }),
       menu,
       h("input", { type: "file", accept: "image/png, image/jpeg, image/gif, image/webp", class: "sp-hidden", "data-sp": "image", "aria-label": "Choose a picture to draw over", onchange: onImagePicked }),
-      h("input", { type: "color", class: "sp-hidden", "data-sp": "paper", "aria-label": "Paper colour", value: S.paper, oninput: (e) => setPaper(e.target.value), onchange: (e) => S.host.prefs.set("paper", e.target.value) }));
+      h("input", { type: "color", class: "sp-picker-anchor", tabindex: "-1", "data-sp": "paper", "aria-label": "Paper colour", value: S.paper, oninput: (e) => setPaper(e.target.value), onchange: (e) => S.host.prefs.set("paper", e.target.value) }));
   }
 
   //: The menu the pad draws when the page gives it none: a button, a list,
@@ -972,11 +984,13 @@
     let label;
     if (kind === "line" || kind === "arrow") {
       const l = spLineEnds(x0, y0, x, y, m);
+      const arrow = kind === "arrow" ? spArrow(l, S.size) : null;
+      const shaft = arrow ? arrow.shaft : l;
       ctx.beginPath();
-      ctx.moveTo(l.x1, l.y1);
-      ctx.lineTo(l.x2, l.y2);
+      ctx.moveTo(shaft.x1, shaft.y1);
+      ctx.lineTo(shaft.x2, shaft.y2);
       ctx.stroke();
-      if (kind === "arrow") arrowHead(ctx, l);
+      if (arrow) arrowHead(ctx, arrow.head);
       const deg = Math.round((Math.atan2(l.y2 - l.y1, l.x2 - l.x1) * 180) / Math.PI);
       label = `${Math.round(Math.hypot(l.x2 - l.x1, l.y2 - l.y1))} px, ${(360 - deg) % 360}°`;
     } else {
@@ -996,13 +1010,11 @@
     if (S.mode !== "fill") ctx.stroke();
   }
 
-  function arrowHead(ctx, l) {
-    const angle = Math.atan2(l.y2 - l.y1, l.x2 - l.x1);
-    const len = S.size * 3 + 8;
+  function arrowHead(ctx, [tip, left, right]) {
     ctx.beginPath();
-    ctx.moveTo(l.x2, l.y2);
-    ctx.lineTo(l.x2 - len * Math.cos(angle - Math.PI / 6), l.y2 - len * Math.sin(angle - Math.PI / 6));
-    ctx.lineTo(l.x2 - len * Math.cos(angle + Math.PI / 6), l.y2 - len * Math.sin(angle + Math.PI / 6));
+    ctx.moveTo(tip.x, tip.y);
+    ctx.lineTo(left.x, left.y);
+    ctx.lineTo(right.x, right.y);
     ctx.closePath();
     ctx.fillStyle = S.ink;
     ctx.fill();
@@ -1724,7 +1736,7 @@
     isOpen: () => S.open,
     isDirty: () => S.dirty,
     //: For tests and sweeps: the pure helpers and the live state.
-    _geometry: { spBox, spSnap45, spLineEnds, spFloodMask },
+    _geometry: { spBox, spSnap45, spLineEnds, spArrow, spFloodMask },
     _state: S,
   };
 })();

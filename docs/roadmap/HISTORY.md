@@ -51260,6 +51260,11 @@ Rows moved out of `agent-remaining/OPEN.md` after a check of CHANGELOG.md and HI
 
 1409. **The owner, 2026-10-27, verbatim.** "those glass styles were pretty cool, cna they be applied as a glass aesthetic globally in the appearances?. also they should only be glass is the glass aesthetic is enabled". Second half built (image ⋯ chip: glass with glass on, solid `--modal-bg` off). Open, recommendation (taken): one `.glass-chip` recipe in DESIGN.md (80% panel, `--glass-filter-clear`, ink glyph, hairline, solid off) for icon controls resting on content (canvas toolbars, tile actions, floating icon buttons), under Settings, Appearance, Glass as a "Glass controls" switch, off by default; recipe lint in `test_ui_recipes.py`. Next free Sonnet slot. **Fixed 3e876c0.** Built as a lazy sheet (css/glass-controls-lazy.css) on the icon buttons, off by default; sweep glasscontrols1409.js: switch off 0 blurred, on 1 (Dashboard), glass off 0.
 
+1411. **The owner, 2026-10-27, verbatim** (screenshot, dark: the Ask box's "AI" switch in its hover pill). "this pill is very tight tot the content".
+     **Fixed.** `.ask-ai-switch` (`ask-compose-lazy.css`) kept the recipe's pill fill but cut its inline padding to 4px, so the fill's round end touched the switch's track; now `var(--space-2) var(--space-3)` (6.4px and 8px measured). `tests/test_ask_use_ai_714.py`.
+
+Quick sketch, the same day (the owner's screenshots): a thick arrow's shaft ran to the tip with a round cap and poked out past its head; it now stops at the head's base (`spArrow`, sketch-pad.js; alpha 0 measured 2 to 12px past the tip at size 27). The paper colour's picker opened in the window's top left corner because its input was `display: none`; it is now a 1px anchor under the More button (`.sp-picker-anchor`, measured at x 1264, y 94) and opens with `showPicker()`. `tests/test_sketch_pad.py`.
+
 ## Moved from the plans, 2026-10-27 (wb-1027)
 
 1404. **The owner, 2026-10-27, verbatim** (screenshot, dark: "test Label" beside a green curved connector, no grip visible). "I cant drag labels on arrows or connectors around"
