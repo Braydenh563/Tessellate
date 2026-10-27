@@ -14,6 +14,9 @@ import pytest
 
 from tessellate.ai import composer_aware, help_chat, reading  # noqa: F401  (reading sets the act reader hook)
 
+#: The composed answers read preferences, which would make the repo data/ folder.
+pytestmark = pytest.mark.usefixtures("app_state")
+
 PINNED = ["Pinned a note"]
 THIRD_PERSON = re.compile(r"\b(?:It answers|Atlas is this app|it still answers)\b")
 HELP_DUMP = re.compile(r"\*\*(?:Where|Related):\*\*|\n1\. ")
