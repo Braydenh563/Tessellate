@@ -4275,6 +4275,9 @@ _CHANGE_VERB = re.compile(
 #: "remind me" is a change only with what to be reminded of or when
 #: ("remind me to call mum", "remind me tomorrow"), not "remind me how many".
 _REMIND = re.compile(r"remind\s+me\s+(?:to|at|in|on|by|tomorrow|tonight|today|next|every|this|before|after)\b", re.I)
+#: "remind me about my first note", "remind me of ..." name what to be
+#: reminded of; "remind me of what is due" asks (`_QUESTION_WORDS`).
+_REMIND_OF = re.compile(r"remind\s+me\s+(?:about|of)\s+(?!(?:how|what|when|where|which|who|whether|why)\b)\w", re.I)
 #: What a change can be done to: the app's things, or a word pointing at one.
 _CHANGE_OBJECTS = {
     "note", "notes", "entry", "entries", "reminder", "reminders", "task", "tasks", "to-do", "to-dos", "todo", "todos",
@@ -4282,11 +4285,16 @@ _CHANGE_OBJECTS = {
     "docs", "file", "files", "pdf", "pdfs", "board", "boards", "map", "maps", "link", "links", "skill", "skills",
     "page", "pages", "checklist", "checklists", "item", "items", "it", "them", "this", "that", "these", "those",
     "everything",
+    #: What of a note a change is done to ("change the title of my first note").
+    "title", "name", "body", "text", "date", "contents", "content", "description", "summary", "colour", "color",
 }
+#: After an object, the word that makes it a figure asked for ("clean my
+#: notes count", "mark my reminders count"), not a thing to change.
+_COUNT_WORDS = {"count", "counts", "total", "totals", "number", "tally", "size", "length"}
 #: Words that end the object before a thing is named ("set of tags", "make
 #: sense of", "update on", "add three and four", "update me on").
 _OBJECT_STOPS = {
-    "of", "on", "in", "for", "about", "from", "with", "to", "and", "or", "me", "us", "how", "what", "when", "where",
+    "of", "on", "in", "for", "about", "with", "and", "or", "me", "us", "how", "what", "when", "where",
     "which", "who", "whether", "why", "is", "are", "do", "does", "i",
 }
 
@@ -4294,17 +4302,21 @@ _OBJECT_STOPS = {
 def _asks_change(question: str) -> bool:
     """Whether a sentence asks for a change, not a figure (`_facts_turn`): an
     imperative verb whose object, within four words and before a stop, is a
-    thing the app can change ("save my first note", "tag it work"). "tag
-    cloud of my notes", "file count" and "add three and four" name none."""
+    thing the app can change ("save my first note", "tag it work"). "to" and
+    "from" are passed ("add to my first note"); "of" is a stop unless a part
+    of a note was named first ("change the title of my first note").
+    "tag cloud of my notes", "file count", "clean my notes count" and "add
+    three and four" name none."""
     start = _LEAD_IN.match(question).end()
-    if _REMIND.match(question, start):
+    if _REMIND.match(question, start) or _REMIND_OF.match(question, start):
         return True
     verb = _CHANGE_VERB.match(question, start)
     if not verb:
         return False
-    for word in re.findall(r"[a-z]+(?:-[a-z]+)*|\d+", question[verb.end():].lower())[:4]:
+    words = re.findall(r"[a-z]+(?:-[a-z]+)*|\d+", question[verb.end():].lower())[:5]
+    for i, word in enumerate(words[:4]):
         if word in _CHANGE_OBJECTS:
-            return True
+            return not (i + 1 < len(words) and words[i + 1] in _COUNT_WORDS)
         if word in _OBJECT_STOPS:
             return False
     return False

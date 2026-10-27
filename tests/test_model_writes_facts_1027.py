@@ -277,6 +277,22 @@ CHANGE_CASES = [
     ("clean up my tags", True),
     ("jot down that the boiler needs a service", True),
     ("file this note under work", True),
+    # The third review: "of", "to" and "from" sit between a verb and its object.
+    ("change the title of my first note", True),
+    ("edit the body of my newest note", True),
+    ("update the date of my first note", True),
+    ("change the name of my oldest note", True),
+    ("add to my first note", True),
+    ("remind me about my first note", True),
+    ("remind me of my first note tomorrow", True),
+    ("move the gym note to work", True),
+    ("remove the tag from my first note", True),
+    # And still reads.
+    ("remind me how many notes", False),
+    ("tag cloud of my notes", False),
+    ("set of tags", False),
+    ("clean my notes count", False),
+    ("mark my reminders count", False),
 ]
 
 
@@ -311,6 +327,21 @@ def test_a_change_with_a_count_in_it_is_never_a_facts_turn(ai_client, fake_ollam
     _seed(session, reminders=False)
     fake_ollama.librarian_reply = "Your first note is from today."
     _stream(ai_client, "can you please save my first note", use_tools)
+    assert not _facts_prompted(fake_ollama)
+
+
+@SURFACES
+@pytest.mark.parametrize(
+    "question",
+    ["change the title of my first note", "edit the body of my newest note", "update the date of my first note", "add to my first note",
+     "remind me about my first note", "remind me of my first note tomorrow"],
+)
+def test_a_change_with_of_in_it_is_never_a_facts_turn(ai_client, fake_ollama, session, fixed_clock, question, use_tools):
+    """The third review: "of" ended the object, so these went to the model as
+    the first note's date to say."""
+    _seed(session, reminders=False)
+    fake_ollama.librarian_reply = "Your first note is from today."
+    _stream(ai_client, question, use_tools)
     assert not _facts_prompted(fake_ollama)
 
 
