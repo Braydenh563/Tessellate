@@ -156,6 +156,37 @@ def _pronoun_one(tokens: list[str], i: int) -> bool:
     return False
 
 
+def _small_word(word: str, last: str) -> tuple[int, str] | None:
+    """(what a small number word adds, what it is) after `last`, or None if it
+    does not continue a number here ("twenty" then "one", never "five" then
+    "three")."""
+    if not ((word in _UNITS and _UNITS[word] > 0) or _NUMBER_WORD.match(word)):
+        return None
+    if last in ("", "hundred", "thousand", "and"):
+        return int(_value(word) or 0), ("tens" if word in _TENS else "small")
+    if last == "tens" and word in _UNITS and _UNITS[word] < 10:
+        return _UNITS[word], "small"
+    return None
+
+
+def _spoken_step(word: str, ahead: str, first: bool, last: str, total: int, current: int) -> tuple[str, int, int] | None:
+    """One word of a spoken number: the state (what the last word was, the
+    thousands so far, the running part) after it, or None if it ends the
+    number."""
+    if word in ("a", "an") and first and ahead in ("hundred", "thousand"):
+        return "a", total, current
+    small = _small_word(word, last)
+    if small:
+        return small[1], total, current + small[0]
+    if word in ("hundred", "thousand") and last in ("", "a", "small", "tens"):
+        if word == "hundred":
+            return word, total, (current or 1) * 100
+        return word, total + (current or 1) * 1000, 0
+    if word == "and" and last in ("hundred", "thousand") and ahead and (ahead in _UNITS or _NUMBER_WORD.match(ahead)):
+        return "and", total, current
+    return None
+
+
 def _spoken(tokens: list[str], i: int) -> tuple[int, int] | None:
     """(the number, the index after it) of a number said in several words
     from `i`: "one hundred and five", "a hundred and twenty-one", "two
@@ -163,33 +194,40 @@ def _spoken(tokens: list[str], i: int) -> tuple[int, int] | None:
     total = current = 0
     last, j = "", i
     while j < len(tokens):
-        word = tokens[j]
-        small = (word in _UNITS and _UNITS[word] > 0) or bool(_NUMBER_WORD.match(word))
         ahead = tokens[j + 1] if j + 1 < len(tokens) else ""
-        if word in ("a", "an") and j == i and ahead in ("hundred", "thousand"):
-            last = "a"
-        elif small and last in ("", "hundred", "thousand", "and"):
-            current += int(_value(word) or 0)
-            last = "tens" if word in _TENS else "small"
-        elif small and last == "tens" and word in _UNITS and _UNITS[word] < 10:
-            current += _UNITS[word]
-            last = "small"
-        elif word in ("hundred", "thousand") and last in ("", "a", "small", "tens"):
-            if word == "hundred":
-                current = (current or 1) * 100
-            else:
-                total, current = total + (current or 1) * 1000, 0
-            last = word
-        elif word == "and" and last in ("hundred", "thousand") and ahead and (ahead in _UNITS or _NUMBER_WORD.match(ahead)):
-            last = "and"
-        else:
+        step = _spoken_step(tokens[j], ahead, j == i, last, total, current)
+        if step is None:
             break
+        last, total, current = step
         j += 1
     if last == "and":
         j -= 1
     if j == i or (j - i < 2 and tokens[i] not in ("hundred", "thousand")):
         return None
     return total + current, j
+
+
+def _single(out: list[str], ahead: str) -> int:
+    """"a single" in `out`: "a" becomes 1, "not a" 0; returns how many tokens
+    after it to skip (the "one" of "a single one"). An intensifier ("every
+    single note") changes nothing."""
+    if (out[-1] if out else "") not in ("a", "an"):
+        return 0
+    out[-1] = "1"
+    if len(out) > 1 and out[-2] == "not":
+        out[-2:] = ["0"]
+    return 1 if ahead == "one" else 0
+
+
+def _fold_amount(out: list[str], token: str) -> None:
+    """An amount word ("couple", "dozen") into `out`: it multiplies the "a"
+    or figure before it, or stands as its own figure."""
+    before = out[-1] if out else ""
+    times = 1 if before in ("a", "an") else _value(before) if token == "dozen" else None
+    if times is None:
+        out.append(str(_AMOUNTS[token]))
+        return
+    out[-1] = str(int(float(times) * _AMOUNTS[token]))
 
 
 def _amounts(tokens: list[str]) -> list[str]:
@@ -220,22 +258,11 @@ def _amounts(tokens: list[str]) -> list[str]:
         if not taken:
             out.append(token)
             continue
-        before = out[-1] if out else ""
         if token == "single":
             taken = False
-            if before not in ("a", "an"):
-                continue
-            out[-1] = "1"
-            if len(out) > 1 and out[-2] == "not":
-                out[-2:] = ["0"]
-            if ahead == "one":
-                i += 1
+            i += _single(out, ahead)
             continue
-        times = 1 if before in ("a", "an") else _value(before) if token == "dozen" else None
-        if times is None:
-            out.append(str(_AMOUNTS[token]))
-            continue
-        out[-1] = str(int(float(times) * _AMOUNTS[token]))
+        _fold_amount(out, token)
     return out
 
 
@@ -283,6 +310,39 @@ def _compound(tokens: list[str], i: int) -> tuple[float, float, int]:
     return total, last, j
 
 
+def _span_figures(tokens: list[str], i: int, values: list, ranged: bool, out: list[tuple[str, str | None]]) -> int:
+    """The span figures at `i` (a figure before a unit) into `out`; returns
+    the index a compound span ends at, or 0 for a range."""
+    after = tokens[i + 1]
+    hedged = "h" if any(w in _HEDGES for w in tokens[max(0, i - 2) : i]) else ""
+    if ranged:
+        out.extend((v, f"~{_SPAN_MINUTES[after]:.10g}{hedged}") for v in values)
+        return 0
+    minutes, unit, end = _compound(tokens, i)
+    out.append((f"{minutes / unit:.6g}", f"~{unit:.10g}{hedged}"))
+    return end
+
+
+def _figure_at(tokens: list[str], i: int, known: set[str] | None, out: list[tuple[str, str | None]]) -> int:
+    """The figures the token at `i` says into `out`; returns the index a
+    compound span ends at (tokens to skip to), else 0."""
+    token = tokens[i]
+    pair = _RANGE.match(token)
+    parts = list(pair.groups()) if pair else [token]
+    values = ["0" if token == "no" else _value(part) for part in parts]
+    if None in values or _dated(tokens, i):
+        return 0
+    after = tokens[i + 1] if i + 1 < len(tokens) else ""
+    if after in _SPAN_MINUTES:
+        return _span_figures(tokens, i, values, bool(pair), out)
+    noun = _noun_after(tokens, i)
+    for part, value in zip(parts, values):
+        if noun is None and (token == "no" or _pronoun_one(tokens, i) or _clock_or_year(tokens, i, part, known)):
+            continue
+        out.append((value, noun))
+    return 0
+
+
 def _figures(text: str, known: set[str] | None = None) -> list[tuple[str, str | None]]:
     """Every figure the text says that is not a date, a time or an id, as
     (value, the noun it counts, "~<minutes>" for a span, or None for a bare
@@ -298,25 +358,7 @@ def _figures(text: str, known: set[str] | None = None) -> list[tuple[str, str | 
     for i, token in enumerate(tokens):
         if token[0] in "#/" or i < skip:
             continue
-        pair = _RANGE.match(token)
-        parts = list(pair.groups()) if pair else [token]
-        values = ["0" if token == "no" else _value(part) for part in parts]
-        if None in values or _dated(tokens, i):
-            continue
-        after = tokens[i + 1] if i + 1 < len(tokens) else ""
-        if after in _SPAN_MINUTES:
-            hedged = "h" if any(w in _HEDGES for w in tokens[max(0, i - 2) : i]) else ""
-            if pair:
-                out.extend((v, f"~{_SPAN_MINUTES[after]:.10g}{hedged}") for v in values)
-                continue
-            minutes, unit, skip = _compound(tokens, i)
-            out.append((f"{minutes / unit:.6g}", f"~{unit:.10g}{hedged}"))
-            continue
-        noun = _noun_after(tokens, i)
-        for part, value in zip(parts, values):
-            if noun is None and (token == "no" or _pronoun_one(tokens, i) or _clock_or_year(tokens, i, part, known)):
-                continue
-            out.append((value, noun))
+        skip = _figure_at(tokens, i, known, out) or skip
     return out
 
 
@@ -434,25 +476,35 @@ _MONTH_FIRST = re.compile(rf"\b({_MONTH_WORD})\s+(\d{{1,2}})(?:st|nd|rd|th)?\b(?
 _ISO = re.compile(r"\b(\d{4})-(\d\d)-(\d\d)(?:[t ](\d\d):(\d\d))?")
 
 
+def _clock_hour(m: re.Match) -> int | None:
+    """The 24-hour hour a `_DAY_FIRST` match names, or None for no time."""
+    hour = int(m[4]) if m[4] and (m[5] or m[6]) else None
+    if hour is not None and m[6]:
+        hour = hour % 12 + (12 if m[6] == "pm" else 0)
+    return hour
+
+
+def _add_moment(found: list[tuple[datetime, bool]], now: datetime, year: int | None, month: int, day: int, hour: int | None, minute: int) -> None:
+    """A date into `found`; with no year, the year that puts it nearest `now`."""
+    years = (year,) if year else (now.year - 1, now.year, now.year + 1)
+    tries = [datetime(y, month, day, hour or 0, minute) for y in years if _valid(y, month, day)]
+    if tries:
+        found.append((min(tries, key=lambda m: abs(m - now)), hour is not None))
+
+
 def _moments(text: str, now: datetime) -> list[tuple[datetime, bool]]:
     """The dates a text carries, as (when, whether it names a time of day).
     A date with no year is the year that puts it nearest to `now`."""
     found: list[tuple[datetime, bool]] = []
 
     def add(year: int | None, month: int, day: int, hour: int | None = None, minute: int = 0) -> None:
-        years = (year,) if year else (now.year - 1, now.year, now.year + 1)
-        tries = [datetime(y, month, day, hour or 0, minute) for y in years if _valid(y, month, day)]
-        if tries:
-            found.append((min(tries, key=lambda m: abs(m - now)), hour is not None))
+        _add_moment(found, now, year, month, day, hour, minute)
 
     lowered = (text or "").lower()
     for m in _ISO.finditer(lowered):
         add(int(m[1]), int(m[2]), int(m[3]), int(m[4]) if m[4] else None, int(m[5] or 0))
     for m in _DAY_FIRST.finditer(lowered):
-        hour = int(m[4]) if m[4] and (m[5] or m[6]) else None
-        if hour is not None and m[6]:
-            hour = hour % 12 + (12 if m[6] == "pm" else 0)
-        add(int(m[3]) if m[3] else None, _MONTH_NUMBER[m[2][:3]], int(m[1]), hour, int(m[5] or 0))
+        add(int(m[3]) if m[3] else None, _MONTH_NUMBER[m[2][:3]], int(m[1]), _clock_hour(m), int(m[5] or 0))
     for m in _MONTH_FIRST.finditer(lowered):
         add(int(m[3]) if m[3] else None, _MONTH_NUMBER[m[1][:3]], int(m[2]))
     return found

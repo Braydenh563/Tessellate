@@ -2,7 +2,7 @@
 
 Generated 2026-10-27 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6636, frontend ids 2560, CSS sections 504, backend routes 627, backend modules 6791, test files 1424, tests 12651, plan headings 980.
+Counts: frontend functions 6636, frontend ids 2560, CSS sections 504, backend routes 627, backend modules 6799, test files 1424, tests 12651, plan headings 980.
 
 ## Frontend functions (6636)
 
@@ -11277,7 +11277,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (6791)
+## Backend modules (6799)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -12693,35 +12693,43 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `offline_message` | src/tessellate/ai/extractor.py:103 |
 | `propose_split` | src/tessellate/ai/extractor.py:142 |
 
-### src/tessellate/ai/fact_check.py (25)
+### src/tessellate/ai/fact_check.py (33)
 
 | Name | File:line |
 |---|---|
-| `_amounts` | src/tessellate/ai/fact_check.py:195 |
-| `_clock_or_year` | src/tessellate/ai/fact_check.py:242 |
-| `_compound` | src/tessellate/ai/fact_check.py:269 |
+| `_add_moment` | src/tessellate/ai/fact_check.py:487 |
+| `_amounts` | src/tessellate/ai/fact_check.py:233 |
+| `_clock_hour` | src/tessellate/ai/fact_check.py:479 |
+| `_clock_or_year` | src/tessellate/ai/fact_check.py:269 |
+| `_compound` | src/tessellate/ai/fact_check.py:296 |
 | `_dated` | src/tessellate/ai/fact_check.py:131 |
-| `_dated_spans` | src/tessellate/ai/fact_check.py:469 |
-| `_figures` | src/tessellate/ai/fact_check.py:286 |
-| `_is_span` | src/tessellate/ai/fact_check.py:400 |
-| `_kept` | src/tessellate/ai/fact_check.py:489 |
-| `_known` | src/tessellate/ai/fact_check.py:256 |
-| `_moments` | src/tessellate/ai/fact_check.py:437 |
+| `_dated_spans` | src/tessellate/ai/fact_check.py:521 |
+| `_figure_at` | src/tessellate/ai/fact_check.py:326 |
+| `_figures` | src/tessellate/ai/fact_check.py:346 |
+| `_fold_amount` | src/tessellate/ai/fact_check.py:222 |
+| `_is_span` | src/tessellate/ai/fact_check.py:442 |
+| `_kept` | src/tessellate/ai/fact_check.py:541 |
+| `_known` | src/tessellate/ai/fact_check.py:283 |
+| `_moments` | src/tessellate/ai/fact_check.py:495 |
 | `_noun_after` | src/tessellate/ai/fact_check.py:121 |
-| `_noun_of_key` | src/tessellate/ai/fact_check.py:333 |
-| `_per` | src/tessellate/ai/fact_check.py:404 |
+| `_noun_of_key` | src/tessellate/ai/fact_check.py:375 |
+| `_per` | src/tessellate/ai/fact_check.py:446 |
 | `_pronoun_one` | src/tessellate/ai/fact_check.py:139 |
-| `_says_asked` | src/tessellate/ai/fact_check.py:521 |
-| `_span_kept` | src/tessellate/ai/fact_check.py:414 |
-| `_spans` | src/tessellate/ai/fact_check.py:409 |
-| `_spoken` | src/tessellate/ai/fact_check.py:159 |
-| `_valid` | src/tessellate/ai/fact_check.py:461 |
+| `_says_asked` | src/tessellate/ai/fact_check.py:573 |
+| `_single` | src/tessellate/ai/fact_check.py:210 |
+| `_small_word` | src/tessellate/ai/fact_check.py:159 |
+| `_span_figures` | src/tessellate/ai/fact_check.py:313 |
+| `_span_kept` | src/tessellate/ai/fact_check.py:456 |
+| `_spans` | src/tessellate/ai/fact_check.py:451 |
+| `_spoken` | src/tessellate/ai/fact_check.py:190 |
+| `_spoken_step` | src/tessellate/ai/fact_check.py:172 |
+| `_valid` | src/tessellate/ai/fact_check.py:513 |
 | `_value` | src/tessellate/ai/fact_check.py:103 |
-| `keeps` | src/tessellate/ai/fact_check.py:500 |
-| `merged` | src/tessellate/ai/fact_check.py:392 |
-| `result_counts` | src/tessellate/ai/fact_check.py:340 |
-| `rows_counts` | src/tessellate/ai/fact_check.py:377 |
-| `said_counts` | src/tessellate/ai/fact_check.py:323 |
+| `keeps` | src/tessellate/ai/fact_check.py:552 |
+| `merged` | src/tessellate/ai/fact_check.py:434 |
+| `result_counts` | src/tessellate/ai/fact_check.py:382 |
+| `rows_counts` | src/tessellate/ai/fact_check.py:419 |
+| `said_counts` | src/tessellate/ai/fact_check.py:365 |
 
 ### src/tessellate/ai/factgraph.py (18)
 
