@@ -4405,3 +4405,10 @@ Owner's list, in one place (each is also logged above where it has detail):
 - **A span is matched to any gap in the facts, not the row it names:** "Rent is due in 4 days" passes when some other pair of dates is four days apart. Pair a span with the nearest named row before accepting it.
 - **Counts are pooled per noun:** a breakdown's row count (4 in Work) is accepted as the total (12), and the total as a row count. Tie a figure to its label or row when the reply names one.
 - **The noun is found only within three words:** "4 really big important reminders" has no noun, so 4 passes when it is any count in the facts. Widen the look-ahead to the clause.
+
+## Placed from the guide round, 2026-10-27 (INBOX 1414 follow-ups)
+
+- Guide retrieval: "how do I pin a note" is answered with the Graph's pin text; rank the Notes topic first for "note" nouns (`ai/help_chat.py`).
+- Model-side guide rule: with a model running, "who are you", "what can you do" and "that didn't help" have no rule in the guide's prompt; reuse the 1414 social replies as the model's instructions.
+- `composer_aware.closing` now applies to Chat too: Chat no longer resumes finished actions. Confirm with the owner that this is wanted there.
+- The plan Done flow (1412) has not been driven in a browser; the reminder windows for "this weekend" have no test.
