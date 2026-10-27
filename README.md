@@ -21,7 +21,7 @@
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-green)](LICENSE)
 
 [![Last commit](https://img.shields.io/github/last-commit/Braydenh563/Tessellate)](https://github.com/Braydenh563/Tessellate/commits/main)
-[![Tests](https://img.shields.io/badge/tests-10%2C200%2B%20offline-brightgreen)](tests)
+[![Tests](https://img.shields.io/badge/tests-12%2C400%2B%20offline-brightgreen)](tests)
 [![Complexity](https://github.com/Braydenh563/Tessellate/actions/workflows/complexity.yml/badge.svg)](https://github.com/Braydenh563/Tessellate/actions/workflows/complexity.yml)
 [![Performance](https://github.com/Braydenh563/Tessellate/actions/workflows/performance.yml/badge.svg)](https://github.com/Braydenh563/Tessellate/actions/workflows/performance.yml)
 
@@ -486,7 +486,7 @@ Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) first: the
 one rule is that every feature must work with no cloud service. In short:
 
 ```
-pytest -n auto                  # 12,200+ tests, fully offline, every AI call faked
+pytest -n auto                  # 12,400+ tests, fully offline, every AI call faked
 bash scripts/gate.sh --changed  # lints, node --check, ruff, and the tests that name your files
 ruff check .                    # what CI lints with
 ```
