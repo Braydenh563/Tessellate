@@ -10554,7 +10554,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/05-sidebars-themes.css | 6266 |
 | frontend/css/06-timeline-dialogs.css | 3682 |
 | frontend/css/07-whiteboard-misc.css | 11945 |
-| frontend/css/08-consistency.css | 10826 |
+| frontend/css/08-consistency.css | 10813 |
 | frontend/css/09-editor.css | 1130 |
 | frontend/css/10-responsive.css | 2687 |
 | frontend/css/ask-compose-lazy.css | 233 |
@@ -10571,7 +10571,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/improve-lazy.css | 110 |
 | frontend/css/inbox-lazy.css | 306 |
 | frontend/css/lan-lazy.css | 131 |
-| frontend/css/library-lazy.css | 7254 |
+| frontend/css/library-lazy.css | 7270 |
 | frontend/css/lightbox-lazy.css | 427 |
 | frontend/css/manual-lazy.css | 161 |
 | frontend/css/math-editor-lazy.css | 108 |

@@ -89,11 +89,15 @@ def test_the_image_tile_menu_chip_outranks_the_bare_icon_reset():
     light theme. The chip rule of 2026-10-26 lost to the bare-icon reset
     (0,6,1) and drew transparent with a grey glyph. Measured after: panel at
     80% with blur, ink glyph, in both themes; glass off drops the blur."""
-    css = (ROOT / "frontend/css/08-consistency.css").read_text(encoding="utf-8")
-    sel = '.library-image-tile .library-image-actions > .menu-wrap > button.ghost.kebab-opener.icon-only:not(.active):not([aria-pressed="true"]) {'
+    css = (ROOT / "frontend/css/library-lazy.css").read_text(encoding="utf-8")
+    sel = '.library-image-tile .library-image-actions > .menu-wrap > button.ghost.icon-only:not(.active):not([aria-pressed="true"]):not([aria-expanded="true"]) {'
     body = css[css.index(sel):]
     body = body[: body.index("}")]
-    assert "color: var(--ink);" in body and "backdrop-filter: var(--glass-filter-clear);" in body
+    assert "color: var(--ink);" in body and "background: var(--modal-bg);" in body
+    assert "backdrop-filter" not in body
+    #: Glass only while the glass look is on (the owner, 2026-10-27).
+    glass = css[css.index(':root:not([data-glass="off"]) ' + sel):]
+    assert "backdrop-filter: var(--glass-filter-clear);" in glass[: glass.index("}")]
     off = (ROOT / "frontend/css/03-dashboard-widgets.css").read_text(encoding="utf-8")
     assert ':root[data-glass="off"] .library-image-tile .library-image-actions > .menu-wrap > button.ghost,' in off
 

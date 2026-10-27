@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Library: the image ⋯ chip is glass only while the glass look is on; with it off the chip is solid.
 - Atlas guide: a suggestion chip pressed inside the open guide no longer closes it, and a how-to question leads with the sentence that says how (not one that only mentions what "changed").
 - Library: board and map thumbnails no longer fade to grey on the light theme, and the image tiles' ⋯ is a glass chip with a full-strength glyph in both themes (it had stayed transparent).
 - Whiteboard: dragging a connector between two cards no longer leaves "Drop here to delete" on screen.
