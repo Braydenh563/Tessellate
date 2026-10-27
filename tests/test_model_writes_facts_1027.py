@@ -355,6 +355,42 @@ def test_the_counted_list_is_one_line_with_no_model(client, session, fixed_clock
     assert answer.startswith("Notes per category: ") and "\n" not in answer
 
 
+def _private_reminder(client, session) -> None:
+    """A reminder made from a selection in a note that is then made private:
+    its words are the note's own (the review of 2026-10-27)."""
+    from tessellate.core import vault
+
+    vault.create(session, "a passphrase")
+    session.commit()
+    note = client.post("/entries", json={"content": "The safe code is 4471"}).json()
+    private = client.post(f"/entries/{note['id']}/privacy", json={"private": True})
+    assert private.status_code == 200
+    session.add(Reminder(text="Change the safe code 4471", due_at=datetime(2026, 10, 28, 9), entry_id=note["id"]))
+    session.add(Reminder(text="pay rent", due_at=datetime(2026, 10, 29, 10)))
+    session.commit()
+
+
+def test_the_reminder_list_withholds_a_private_notes_words(client, session) -> None:
+    from tessellate.ai import tools
+
+    _private_reminder(client, session)
+    texts = [r["text"] for r in tools.execute_tool(session, "list_reminders", {})["reminders"]]
+    assert texts == [tools.PRIVATE_REMINDER, "pay rent"]
+
+
+@SURFACES
+def test_a_private_notes_reminder_sends_no_words_to_the_model(ai_client, fake_ollama, session, fixed_clock, use_tools):
+    _private_reminder(ai_client, session)
+    #: Filing the note when it was written read it, before it was private.
+    fake_ollama.chat_calls.clear()
+    fake_ollama.librarian_reply = "Two things are waiting."
+    _events, answer = _stream(ai_client, "What is due?", use_tools)
+    assert fake_ollama.chat_calls
+    sent = "\n".join(str(m.get("content") or "") for call in fake_ollama.chat_calls for m in call)
+    assert "4471" not in sent and "4471" not in answer
+    assert "pay rent" in sent
+
+
 def test_the_facts_prompt_is_budgeted() -> None:
     """Prompt text is budgeted (CLAUDE.md section 7): the brief is one short
     paragraph, and the facts are cut to a fixed size however long the list."""
