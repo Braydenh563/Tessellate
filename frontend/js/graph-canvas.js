@@ -2967,6 +2967,10 @@ function gcDraw(s = gcTab) {
     s.fitCheck = 0;
     gcBalanceFit(s, placedLabels, left);
   }
+  if (s.revealAfterFit && !(s.fitCheck > 0)) {
+    s.revealAfterFit = false;
+    gcReveal(s);
+  }
 
   // --- the pointed-at note's similarity scores -------------------------------
   //: Kumu's focus and Obsidian's hover both answer "what is this one joined
@@ -4776,6 +4780,7 @@ function gcStartWorker(nodes, edges, world, s = gcTab, viewSeed = null) {
       //: one skipped frame's worth of pool.
       if (message.epoch !== s.epoch) return;
       if (message.type === "tick") {
+        s.ticksSeen = (s.ticksSeen || 0) + 1;
         s.alpha = message.alpha;
         s.ticks = message.ticks || 0;
         s.tickMs = message.tickMs || 0;
@@ -4853,7 +4858,8 @@ function gcStartWorker(nodes, edges, world, s = gcTab, viewSeed = null) {
             //: (k 2.5, the clamp, on 60 notes).
             gcGlideFinish(s);
             fitGraphToView(s.svg, null, s.zoom, s.nodes, s.dims.w, s.dims.h, true);
-            gcReveal(s);
+            s.fitTicks = s.ticksSeen;
+            gcRevealAfterBalance(s);
           } else if (message.alpha < 0.08) {
             gcSetAutoFitDone(s, true);
             if (!s.userZoomed) {
@@ -4885,12 +4891,15 @@ function gcStartWorker(nodes, edges, world, s = gcTab, viewSeed = null) {
         if (s.size === "full") graphMinimapQueuePaint();
         if (!gcAutoFitDone(s) && s.nodes.length) {
           gcSetAutoFitDone(s, true);
-          fitGraphToView(s.svg, null, s.zoom, s.nodes, s.dims.w, s.dims.h);
+          //: Nothing moved since the first fit (the settled map as the one
+          //: frame, less motion): framing it again from the guess undid its
+          //: balance, a hop just after the cut-in.
+          if (s.ticksSeen !== s.fitTicks) fitGraphToView(s.svg, null, s.zoom, s.nodes, s.dims.w, s.dims.h);
         } else if (s.fitAgainAtEnd && !s.userZoomed && s.nodes.length) {
           fitGraphToView(s.svg, null, s.zoom, s.nodes, s.dims.w, s.dims.h);
         }
         s.fitAgainAtEnd = false;
-        gcReveal(s);
+        if (!s.revealAfterFit) gcReveal(s);
         // GRAPH_PLAN Phase 5: the settle a restored view's unplaced notes
         // forced is over, so the notes it held still (`viewSeed.freezeIds`,
         // below) are released the same way a drag's freeze is: `thaw`, no
@@ -4912,6 +4921,8 @@ function gcStartWorker(nodes, edges, world, s = gcTab, viewSeed = null) {
   }
   s.fittedOnce = false;
   s.intro = false;
+  s.ticksSeen = 0;
+  s.fitTicks = -1;
   //: Hidden until the first fit (the owner, 2026-10-07: "the crazy starting
   //: zoom in on the graph before it fits"): the first frames drew at the
   //: default camera. Shown at that fit, or after 4 s whatever happens (a
@@ -6399,6 +6410,23 @@ function gcArriving(s, on) {
   box.classList.toggle("graph-arriving", on);
   clearTimeout(s.arrivingTimer);
   if (on) s.arrivingTimer = setTimeout(() => box.classList.remove("graph-arriving"), 6000);
+}
+
+//: Shown once the first fit has balanced on the names it drew
+//: (`gcBalanceFit`, hidden, so instant): shown at the guess, the balance was a
+//: 3.5% zoom hop 50 ms after the first paint (36 notes, less motion, where the
+//: reveal is a cut). The draw that balances reveals (`gcDraw`); the
+//: timer is for a draw that never comes.
+function gcRevealAfterBalance(s) {
+  if (s.canvas?.style.opacity !== "0") return gcReveal(s);
+  s.revealAfterFit = true;
+  gcRequestDraw(s);
+  clearTimeout(s.revealTimer);
+  s.revealTimer = setTimeout(() => {
+    if (!s.revealAfterFit) return;
+    s.revealAfterFit = false;
+    gcReveal(s);
+  }, 250);
 }
 
 function gcReveal(s) {

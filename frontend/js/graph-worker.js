@@ -2724,11 +2724,13 @@ function settleGlideCancel() {
 //: not settled by `WARM_MS` is shown at rest and the rest glided to later;
 //: no pass begins after `PENDING_MAX_MS` less the cleanup's time, and one
 //: still cooling at `PENDING_CUT_MS` is shown as it is (less motion waits
-//: for the settled map up to then).
+//: for the settled map, to `PENDING_STILL_MS` and `PENDING_STILL_CUT_MS`).
 const PENDING_SLICE_MS = 12;
 const PENDING_TICKS = 150;
 const PENDING_MAX_MS = 4000;
 const PENDING_CUT_MS = 6000;
+const PENDING_STILL_MS = 2400;
+const PENDING_STILL_CUT_MS = 3000;
 const pending = { on: false, open: false, record: false, bloom: false, from: 0, sx: null, sy: null, alpha: 0, untangle: null };
 
 function pendingStart(open, record, bloom) {
@@ -2771,9 +2773,12 @@ function pendingCancel() {
 function pendingStep() {
   //: Less motion waits for the settled map (`cap`) instead of a paint at
   //: `WARM_MS` followed by a glide: one frame, a little later at 300 notes.
+  //: Its own cap is shorter: the canvas shows itself at 4 s whatever happens
+  //: (`gcStartWorker`), which would show the spiral and then the map.
   const still = pending.open && !pending.record;
   const deadline = pending.open && !still ? pending.from + WARM_MS : 0;
-  const done = settleUntangled(Date.now() + PENDING_SLICE_MS, deadline, pending.from + PENDING_MAX_MS);
+  const cap = pending.from + (still ? PENDING_STILL_MS : PENDING_MAX_MS);
+  const done = settleUntangled(Date.now() + PENDING_SLICE_MS, deadline, cap);
   if (done === true) {
     pendingEnd();
     if (pending.open) introInto(pending.sx, pending.sy, pending.record, pending.bloom);
@@ -2790,7 +2795,7 @@ function pendingStep() {
     pending.alpha = simulation.alpha();
     pending.untangle = { done: untangle.done, passes: untangle.passes, cleaned: untangle.cleaned };
     post(false);
-  } else if (pending.open && spent > (still ? PENDING_CUT_MS : WARM_MS)) {
+  } else if (pending.open && spent > (still ? PENDING_STILL_CUT_MS : WARM_MS)) {
     // Too big to cool out of sight: shown as it is, the rest cooled live.
     pendingEnd();
     untangle.holding = false;
