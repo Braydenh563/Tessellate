@@ -210,9 +210,6 @@ async function loadLibrary() {
   showSkeletons(grid);
   const body = await apiJson("/library").catch(() => null);
   clearSkeletons(grid);
-  //: Same distinction the Timeline draws: nothing came back is not the same
-  //: fact as there is nothing to show, and only one of them is about the
-  //: person's own library. See `surfaceFailed` in navigation.js.
   if (!body) {
     surfaceFailed(document.getElementById("library-empty"), "library", loadLibrary);
     return;
@@ -3174,12 +3171,13 @@ async function renderLibraryDocuments() {
       needle ? `/documents?q=${encodeURIComponent(needle)}` : "/documents",
       DOCUMENTS_PAGE_SIZE
     );
-  } catch (error) {
-    toast(error.message || voiceLine("failed", { what: "load documents" }), true);
-    return;
+  } catch {
+    list.replaceChildren();
+    return surfaceFailed(empty, "documents", renderLibraryDocuments);
   } finally {
     clearSkeletons(list);
   }
+  surfaceRecovered(empty);
 
   //: The property filter's options come from what the *search* left, so the
   //: control offers the properties of the documents on screen rather than of
@@ -8519,9 +8517,11 @@ async function renderLibraryImagesGallery({ ifUnchanged = "render" } = {}) {
   if (unchanged && ifUnchanged === "skip") return;
   if (!images && !attachments?.length) {
     grid.replaceChildren();
-    empty?.classList.remove("hidden");
+    if (!images && empty) surfaceFailed(empty, "images", renderLibraryImagesGallery);
+    else empty?.classList.remove("hidden");
     return;
   }
+  surfaceRecovered(empty);
   filterLibraryImagesGallery();
 }
 
@@ -10874,12 +10874,13 @@ async function renderBookmarks() {
   showSkeletons(list, 4);
   try {
     bookmarksCache = await fetchAllBookmarks();
-  } catch (error) {
-    toast(error.message, true);
-    return;
+  } catch {
+    list.replaceChildren();
+    return surfaceFailed(empty, "bookmarks", renderBookmarks);
   } finally {
     clearSkeletons(list);
   }
+  surfaceRecovered(empty);
   // A reload can drop a link that was ticked (deleted from its own ⋯, or by
   // the bulk action just below), same prune renderLibraryDocuments does for
   // libraryDocsSelection, and for the same reason: otherwise the bar's count
@@ -12311,6 +12312,11 @@ async function renderContents() {
   outline.replaceChildren();
   hint?.classList.add("hidden");
   if (summary) summary.textContent = "";
+  if (!active.length && $("empty-message")?.classList.contains("is-failed")) {
+    surfaceFailed(empty, "contents", renderContents);
+    return;
+  }
+  surfaceRecovered(empty);
   empty.classList.toggle("hidden", active.length + docs.length > 0);
   noMatch?.classList.add("hidden");
   if (active.length + docs.length === 0) return;
