@@ -111,7 +111,7 @@ def _drop(calls: str):
             "const nmb = { scale: 1 };",
             "const BAR = 863.2;",
             "const OBS = [[1254,868,1282,896],[1286,868,1314,896],[1318,868,1346,896],[936,868,1081,896]]"
-            ".map(([left, top, right, bottom]) => ({ left, top, right, bottom }));",
+            + ".map(([left, top, right, bottom]) => ({ left, top, right, bottom }));",
             'function nameMarkBuddyTab() { return "dashboard"; }',
             "function nameMarkBuddyObstacles() { return OBS; }",
             "function nameMarkBuddyLedges() { return { top: { bottom: 44 }, bottom: { top: BAR, bottom: 900 } }; }",
@@ -119,8 +119,8 @@ def _drop(calls: str):
             "function nameMarkBuddyChoose() { return null; }",
             # Hit shape as drawn: head, body (to the soles when standing, the seat otherwise), tail.
             "function nameMarkBuddyHits(x, y, pose, obs, legs) { const b = pose === 'stand' ? y + 82 : y + 90; "
-            "const parts = [[x + 5, y, x + 59, y + 46], [x + 8, y + 43, x + 56, b], [x + 30, y + 50, x + 82, pose === 'stand' ? y + 90 : y + 94]]; "
-            "return parts.some(([l, t, r, bt]) => obs.some((o) => r > o.left - 4 && l < o.right + 4 && bt > o.top - 4 && t < o.bottom + 4)); }",
+            + "const parts = [[x + 5, y, x + 59, y + 46], [x + 8, y + 43, x + 56, b], [x + 30, y + 50, x + 82, pose === 'stand' ? y + 90 : y + 94]]; "
+            + "return parts.some(([l, t, r, bt]) => obs.some((o) => r > o.left - 4 && l < o.right + 4 && bt > o.top - 4 && t < o.bottom + 4)); }",
             _fn("nameMarkBuddyStances"),
             _fn("nameMarkBuddyStepAside"),
             _fn("nameMarkBuddyYoursObstacles"),
