@@ -271,6 +271,49 @@ def test_add_up_takes_the_facts_path_with_its_calculator(ai_client, fake_ollama,
     assert [e["panel"] for e in events if e["type"] == "panel"] == ["calculator"]
 
 
+def _seed_filed(session) -> None:
+    from tessellate.core.database import Category
+
+    cats = [Category(name=n) for n in ("Work", "Home", "Health", "Uni")]
+    session.add_all(cats)
+    session.commit()
+    for i in range(12):
+        session.add(Entry(content=f"Note number {i} about things", category_id=cats[i % 4].id, tags=json.dumps(["work"] if i % 2 else ["home", "gym"])))
+    session.commit()
+
+
+@pytest.mark.parametrize(
+    ("question", "rows"),
+    [("how many notes in each category", ("Work", "Home", "Health", "Uni")), ("which tags do I use most", ("home", "gym", "work"))],
+)
+@SURFACES
+def test_a_counted_list_keeps_its_rows_under_the_models_words(ai_client, fake_ollama, session, fixed_clock, question, rows, use_tools):
+    """The statistic was one answer, so the model's one line replaced the
+    whole list ("Each one holds 3 notes.", the review of 2026-10-27), while
+    the brief promises the list is shown under it."""
+    _seed_filed(session)
+    fake_ollama.librarian_reply = "Each one holds 3 notes." if "category" in question else "Three tags share the top spot."
+    events, answer = _stream(ai_client, question, use_tools)
+    assert answer.startswith(fake_ollama.librarian_reply), answer
+    for label in rows:
+        assert f"{label} (" in answer, (label, answer)
+    assert _last_meta(events)["answered_by"]
+
+
+def test_which_statistics_are_lists() -> None:
+    boards = {"kind": "boards", "text": "You have 2 boards, last changed first:\n- [Plan](#/board/1)\n- [Trip](#/board/2)", "facts": []}
+    assert routes_chat._stats_listed(boards) == [{"type": "answer", "delta": "\n\n- [Plan](#/board/1)\n- [Trip](#/board/2)"}]
+    worked = {"kind": "utility", "text": "The total of 12, 30, 5 is 47.\nRead as the sum of 3 numbers.", "facts": []}
+    untagged = {"kind": "untagged", "text": "2 notes out of 5 have no tags.", "facts": [{"label": "untagged", "count": 2}, {"label": "total", "count": 5}]}
+    assert routes_chat._stats_listed(worked) == routes_chat._stats_listed(untagged) == []
+
+
+def test_the_counted_list_is_one_line_with_no_model(client, session, fixed_clock) -> None:
+    _seed_filed(session)
+    _events, answer = _stream(client, "how many notes in each category", False)
+    assert answer.startswith("Notes per category: ") and "\n" not in answer
+
+
 def test_the_facts_prompt_is_budgeted() -> None:
     """Prompt text is budgeted (CLAUDE.md section 7): the brief is one short
     paragraph, and the facts are cut to a fixed size however long the list."""

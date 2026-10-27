@@ -3020,6 +3020,8 @@ def _fact_events(req: _StreamRequest, prepared: dict, t: _Turn) -> Iterator[dict
     engine = list(_exact_events(req, prepared, True) or [])
     answers = [e for e in engine if e.get("type") == "answer"]
     listed = [{"type": "answer", "delta": e["delta"]} for e in answers if e.get("attached")]
+    if not listed and prepared["stats"] is not None:
+        listed = _stats_listed(prepared["stats"])
     facts = "".join(str(e.get("delta") or "") for e in answers)
     counts = _engine_counts(prepared, answers)
     messages = librarian.build_facts_messages(
@@ -3038,6 +3040,26 @@ def _fact_events(req: _StreamRequest, prepared: dict, t: _Turn) -> Iterator[dict
     t.will_answer = False
     yield _meta_event(req, prepared, t)
     yield from engine
+
+
+#: Rows that sum a count up rather than list what was counted ("untagged",
+#: "total"): a figure for the words, not a list to show.
+_SUMMARY_ROWS = {"total", "untagged", "unlinked"}
+
+
+def _stats_listed(stats: dict) -> list[dict]:
+    """A statistic that is itself a list, as the list to show under the
+    model's words (`_fact_events`): the lines under a first line that leads
+    into them ("You have 3 boards, last changed first:"), or its named rows
+    ("- Work (3)"). Not a sum's "Read as ..." line, which explains, not lists.
+    The no-model answer stays the engine's own (`_stats_events`)."""
+    first, _sep, rest = str(stats.get("text") or "").partition("\n")
+    if first.rstrip().endswith(":") and rest.strip():
+        return [{"type": "answer", "delta": "\n\n" + rest.strip()}]
+    rows = [r for r in stats.get("facts") or [] if isinstance(r, dict) and r.get("label") and isinstance(r.get("count"), int)]
+    if len(rows) < 2 or any(str(r["label"]).lower() in _SUMMARY_ROWS for r in rows):
+        return []
+    return [{"type": "answer", "delta": "\n\n" + "\n".join(f"- {r['label']} ({r['count']})" for r in rows)}]
 
 
 def _engine_counts(prepared: dict, answers: list) -> dict:
