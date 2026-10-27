@@ -45,10 +45,10 @@ def _plan(body: str):
             "const W = { left: 0, right: 1376, top: 48, floor: 780, ledges: [{ left: 300, right: 700, y: 420 }] };",
             # Drawn the way the frame draws it: a capped clock, a frame `ms` long (hitches every `hitch`th).
             "function draw(plan, ms, hitch = 0) { const end = plan.path[plan.path.length - 1]; let flown = 0, i = 0, last = null, worst = 0, wraps = 0;"
-            " while (flown < end.t && i < 5000) { i += 1; flown = Math.min(end.t, flown + Math.min(32, hitch && i % hitch === 0 ? 120 : ms));"
-            "  const s = flown >= end.t ? end : companionThrowAtTime(plan.path, flown);"
-            "  if (last) { const d = Math.hypot(s.x - last.x, s.y - last.y); if (d > 300) wraps += 1; else worst = Math.max(worst, d); } last = s; }"
-            " return { worst: +worst.toFixed(1), wraps, x: last.x, y: last.y, endX: end.x, endY: end.y, rest: end.rest }; }",
+            + " while (flown < end.t && i < 5000) { i += 1; flown = Math.min(end.t, flown + Math.min(32, hitch && i % hitch === 0 ? 120 : ms));"
+            + "  const s = flown >= end.t ? end : companionThrowAtTime(plan.path, flown);"
+            + "  if (last) { const d = Math.hypot(s.x - last.x, s.y - last.y); if (d > 300) wraps += 1; else worst = Math.max(worst, d); } last = s; }"
+            + " return { worst: +worst.toFixed(1), wraps, x: last.x, y: last.y, endX: end.x, endY: end.y, rest: end.rest }; }",
         ]
     )
     script = "\n".join([consts, base, pure, harness, f"console.log(JSON.stringify({body}));"])
@@ -122,7 +122,7 @@ def test_one_landing_measures_the_obstacles_once() -> None:
             _fn(AV, "nameMarkBuddyObstacles"),
             _fn(AV, "nameMarkBuddyMeasureOnce"),
             "const once = nameMarkBuddyMeasureOnce(() => { const a = nameMarkBuddyObstacles('notes'); a.push('x');"
-            " nameMarkBuddyMeasureOnce(() => nameMarkBuddyObstacles('notes')); return nameMarkBuddyObstacles('notes').length; });",
+            + " nameMarkBuddyMeasureOnce(() => nameMarkBuddyObstacles('notes')); return nameMarkBuddyObstacles('notes').length; });",
             "const inside = reads; nameMarkBuddyObstacles('notes'); nameMarkBuddyObstacles('notes');",
             "console.log(JSON.stringify({ inside, after: reads - inside, once, held: nmb.obstaclesHeld || null }));",
         ]
