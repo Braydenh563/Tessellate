@@ -107,6 +107,10 @@ function applySidebarWidth(aside, width, { remember = true } = {}) {
   // reacting rather than the user choosing.
   if (remember) prefs.set(`sidebarWidth:${aside.id}`, String(clamped));
   aside.style.setProperty("--saved-width", `${clamped}px`);
+  //: The documents list as focus mode's side panel is not a grid column, so
+  //: its width is the page's own property (INBOX 1408): one number, the one
+  //: the windowed editor's grip sets, held to 40vw as the stylesheet holds it.
+  if (aside.id === "doc-sidebar") aside.closest("#tab-documents")?.style.setProperty("--doc-focus-sidebar-w", `min(${clamped}px, 40vw)`);
 
   if (layoutIsStacked()) {
     aside.parentElement.style.removeProperty("grid-template-columns");

@@ -15489,6 +15489,8 @@ function toggleDocFocus(force) {
   const on = typeof force === "boolean" ? force : !tab.classList.contains("doc-focus");
   tab.classList.toggle("doc-focus", on);
   tab.classList.remove("doc-focus-idle");
+  //: The suggestions panel's grip is offered in the mode as well (INBOX 1408).
+  applyDocProseDock();
   try {
     if (on) sessionStorage.setItem(DOC_FOCUS_KEY, "1");
     else sessionStorage.removeItem(DOC_FOCUS_KEY);
@@ -17001,7 +17003,9 @@ const DOC_PROSE_RULES = [
   {
     id: "space-before-punctuation",
     //: Not before `![[embed]]`: that `!` is the embed's own, not punctuation.
-    test: /\s+([,.;:!?])(?!\[\[)/g,
+    //: Nor before a dotfile or an extension (" .gitignore", " .env"): the dot
+    //: opens a name there (INBOX 1407).
+    test: /\s+([,.;:!?])(?!\[\[)(?!(?<=\.)[A-Za-z0-9])/g,
     message: "A space before punctuation",
     fix: (match) => match.trim(),
   },
@@ -17135,6 +17139,12 @@ const DOC_EXTRA_WORDS = [
   //: The tools this app talks to by name. They appear in its own screens, so
   //: they will appear in notes about them.
   "gmail", "markitdown", "nomic", "ollama", "qwen", "searxng", "tesseract",
+  //: INBOX 1407: the words an interface note uses (a draggable, resizable
+  //: panel with scrollbars and a debounce) and the file names' own parts,
+  //: found by the false-positive fixture `tests/grammar_fixture_1407.json`.
+  "backoff", "clickable", "cron", "debounce", "draggable", "gitignore",
+  "hoverable", "makefile", "pytest", "resizable", "scrollbars", "searchable",
+  "sortable", "txt", "md", "bat",
 ];
 
 let docWordlist = null;
@@ -17222,6 +17232,9 @@ function docSpellable(text, word, start, end) {
   if (/[0-9_/@\\#$%&*+=<>~]/.test(before) || /[0-9_/@\\#$%&*+=<>~]/.test(after)) return false;
   if (after === "." && /[A-Za-z]/.test(text[end + 1] || "")) return false;
   if (before === "." && /[A-Za-z]/.test(text[start - 2] || "")) return false;
+  //: A dotfile (" .gitignore", ".env"): a dot that opens a name, with nothing
+  //: but space or the line's start before it (INBOX 1407).
+  if (before === "." && (start < 2 || /\s/.test(text[start - 2]))) return false;
   //: A short piece of a hyphenated word is a fragment of a compound that the
   //: word list holds whole or not at all: the "Fi" of Wi-Fi, the "x" of x-ray.
   //: Longer pieces ("anti-inflamatory") are still checked.
@@ -19784,12 +19797,20 @@ function applyDocProseDock() {
   if (!panel || !panes || !bar) return;
   const right = docProseDockSide() === "right";
   const handle = docProseResizeHandle();
+  const focus = $("tab-documents")?.classList.contains("doc-focus") === true;
   if (right) {
     if (panel.parentElement !== panes) panes.append(handle, panel);
     docProseApplyWidth(docProseSavedWidth());
-  } else if (panel.previousElementSibling !== bar) {
-    bar.after(panel);
+  } else {
+    //: In focus mode the panel is a fixed side panel whatever side was chosen,
+    //: so it has the grip and the remembered width too (INBOX 1408); the grip
+    //: is fixed there, so it only has to sit before the panel.
     handle.remove();
+    if (panel.previousElementSibling !== bar) bar.after(panel);
+    if (focus) {
+      panel.before(handle);
+      docProseApplyWidth(docProseSavedWidth());
+    }
   }
   panes.classList.toggle("doc-prose-right", right);
   panel.classList.toggle("doc-prose-right", right);

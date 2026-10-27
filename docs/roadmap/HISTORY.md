@@ -7,6 +7,13 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-10-27 (docs-1027)
+
+DOCUMENTS_PLAN "Placed from INBOX, 2026-10-27".
+
+- **INBOX 1407, Harper's false positives filtered app-side** (vendored 2.10.0 kept: 2.13.0 and 3.0.0 gave the same ones). `docGrammarKeeps` (`documents-prose.js`) now drops: a Typo on a word the app already knows (`docWordKnown`: list, extra words, the writer's dictionary), a capital-letter lint after a file extension ("start.bat. Then"), Harper's "use too" when a word follows the "to" ("back to normal"), "unnecessary space" before a dotfile, and the "go better together" compound nag. `DOC_EXTRA_WORDS` gained the interface words (draggable, resizable, scrollbars, backoff, debounce, pytest and others); `docSpellable` skips a dotfile; the `space-before-punctuation` rule skips " .gitignore". Measured on `tests/grammar_fixture_1407.json` (33 clean lines, 8 planted errors, `tests/test_grammar_filter_1407.py`): 20 findings on 15 clean lines before, 0 on 0 after; 8 of 8 planted errors still caught. Not built: note titles and tags as known words (no such list reaches the checker today).
+- **INBOX 1408, the document editor's side panels resizable in focus mode.** The documents sidebar keeps its `.sidebar-resize` grip in the mode (the CSS hid it) and `applySidebarWidth` also writes `--doc-focus-sidebar-w` on the tab, so the width is the windowed sidebar's own, remembered under `sidebarWidth:doc-sidebar`. The suggestions panel's grip (`.doc-prose-resize`) is placed before the panel in the mode whatever side was chosen (`applyDocProseDock`, called from `toggleDocFocus`) and drawn fixed on the panel's outer edge (`library-lazy.css`); both are hidden below 820 where the panels are sheets. Measured at 1440x900 (`scratchpad/ui-sweeps/docfocusresize.js`, 10 of 10): sidebar 320 to 400 on a +80 drag and to the 170 floor on -400, the page's text moved to the panel's edge, the width back in the windowed sidebar (170) after leaving the mode, reopened at the same width; suggestions panel 320 to 400 on a -80 drag. Help: the Documents topic in `ai/help_chat.py`. Test: `tests/test_doc_focus_resize_1408.py`.
+
 ## Moved from the plans, 2026-10-27 (mermaid)
 
 BACKLOG "Diagrams: mermaid as the interchange format", step 8 (for documents, chat and Ask), the drawing half of 12b, and step 13; DOCUMENTS_PLAN decisions 3 and 6.

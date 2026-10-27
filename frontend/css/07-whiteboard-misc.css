@@ -6243,7 +6243,6 @@ button.connection-row:is(:hover, :focus-visible) {
   pointer-events: auto;
   visibility: visible;
 }
-#tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar > .sidebar-resize,
 #tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar > .sidebar-collapse-toggle,
 #tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar > .sidebar-rail-name {
   display: none;
