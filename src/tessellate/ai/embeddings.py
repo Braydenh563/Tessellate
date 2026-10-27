@@ -319,6 +319,14 @@ def backfill_missing(
     return fixed
 
 
+def warm_then_backfill(service, session_factory) -> int:  # noqa: ANN001
+    """Load the model (the yes to the download fetches it here), then embed
+    the notes saved while the question was open: without the second step they
+    waited for the next launch's warm-up or the next periodic pass."""
+    service.embed_text("warm up")
+    return backfill_missing(service, session_factory)
+
+
 def _backfill_missing(service, session_factory, limit: int, run) -> int:  # noqa: ANN001
     from sqlalchemy import select
 

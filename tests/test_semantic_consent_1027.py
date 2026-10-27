@@ -118,6 +118,33 @@ def test_a_yes_lets_the_next_save_start_the_download(app_state, monkeypatch):
     assert [label for _repo, label in fetched] == ["Downloading the search model"]
 
 
+def test_a_yes_fills_the_notes_saved_while_the_question_was_open(client, session, fake_embeddings, monkeypatch):
+    """The yes warms the model and then backfills, so a note saved before the
+    answer is findable by meaning as soon as the download lands, not at the
+    next launch's warm-up or the next periodic pass."""
+    from sqlalchemy import select
+
+    from tessellate.core import jobs
+    from tessellate.core.database import EmbeddingRecord
+
+    note = client.post("/entries", json={"content": "saved before the yes"}).json()
+    session.query(EmbeddingRecord).delete()
+    session.commit()
+    ran = []
+
+    def run_now(kind, func, *args, name="", **kwargs):
+        ran.append(kind)
+        func(*args, **kwargs)
+        return 1
+
+    monkeypatch.setattr(jobs, "enqueue", run_now)
+    saved = client.put("/preferences", json={"semantic_auto_install": True})
+    assert saved.status_code == 200
+    assert ran == ["embed-warm"]
+    session.expire_all()
+    assert session.scalars(select(EmbeddingRecord.entry_id)).all() == [note["id"]]
+
+
 def test_a_model_already_on_disk_needs_no_yes(app_state, monkeypatch):
     monkeypatch.setattr(embedmodels, "is_downloaded", lambda repo: True)
     monkeypatch.setattr(embeddings_module, "_package_present", lambda: True)

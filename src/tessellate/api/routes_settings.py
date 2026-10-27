@@ -1104,12 +1104,16 @@ def _apply_preference(config, session: Session, key: str, value) -> None:
         config.set_preference("semantic_choice_made", True)
         if value:
             # A yes starts the download now, as a visible task, rather than
-            # at the next save: reset the "not allowed" state and embed once.
+            # at the next save: reset the "not allowed" state, embed once,
+            # then fill the notes saved while the question was open.
             service = deps.get_embeddings()
             service.reset_failure_state()
+            from tessellate.ai import embeddings
             from tessellate.core import jobs
 
-            jobs.enqueue("embed-warm", service.embed_text, "warm up", name="search by meaning")
+            jobs.enqueue(
+                "embed-warm", embeddings.warm_then_backfill, service, deps.get_db().session, name="search by meaning"
+            )
     if key in ("update_check_enabled", "auto_update_enabled"):
         # Either switch is an answer to the ask-once question (routes_update).
         config.set_preference("update_choice_made", True)
