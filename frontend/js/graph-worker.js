@@ -207,12 +207,13 @@ function dragHeat(x, y) {
 //: hundred ticks; the first fit framed the spiral (k 2.5, the clamp) and the
 //: camera then pulled back to k 0.79 as the map spread. Asked for by `init`
 //: (`warm`, only while the canvas is still hidden for its first fit), the
-//: worker steps without posting until the layout is as cool as the settle fit
-//: wants (`WARM_ALPHA`, the main thread's own 0.08) or the budget is spent,
-//: so the first frame anyone sees is framed on the spread shape. A small or
-//: middling notebook is there inside the budget; a big one spends it and
-//: eases out the rest of the way, as before.
-const WARM_MS = 450;
+//: worker steps without posting until the layout is at rest and untangled
+//: (`pending`, `introInto`) or the budget is spent, so the first frame anyone
+//: sees is framed on the settled shape. A small or middling notebook is
+//: there inside the budget; a big one spends it and eases out the rest of
+//: the way, as before. `WARM_ALPHA` (the main thread's own 0.08) is where a
+//: live layout's cooling starts to take several ticks a frame (`loop`).
+const WARM_MS = 1200;
 const WARM_ALPHA = 0.08;
 //: **The warm-up is then shown, not skipped** (INBOX 775, the owner: "I
 //: prefered the force and movement how the graph used to be, theres no
@@ -224,13 +225,8 @@ const WARM_ALPHA = 0.08;
 //: own ticks are kept and played back, one a frame as the live layout
 //: steps (the owner, round 2: "look at how the movement is in main"; main's
 //: live settle and this playback have the same physics at the same pace),
-//: once the camera is framed on where they end (`frame`, posted first):
-//: from the spiral or from where the notes last stood, eased by its own
-//: cooling, then the live layout carries on from the last of them.
+//: once the camera is framed on where they end (`frame`, posted first).
 const INTRO_FRAME_MS = 16;
-//: At most this many frames are played (a warm-up of a small map is about
-//: 110 ticks); a longer one is thinned evenly.
-const INTRO_MAX_FRAMES = 160;
 //: The first frame is held this many frames while the canvas fades in, so
 //: the start of the movement is seen rather than spent behind the fade.
 const INTRO_HOLD = 8;
@@ -238,55 +234,98 @@ const INTRO_HOLD = 8;
 //: warm-up is not recorded (it spends its budget in a few ticks anyway,
 //: and the live layout is what moves).
 const INTRO_MAX_FLOATS = 2000000;
-const intro = { frames: [], alphas: [] };
+const intro = { frames: [], alphas: [], shown: null };
 
-//: Which of `count` recorded frames to show in `slots` display frames:
-//: evenly spread, always the first and the last. Fewer frames than slots
-//: plays each once.
-function introPick(count, slots) {
-  if (count <= slots) return Array.from({ length: count }, (_, i) => i);
-  const picked = [];
-  for (let i = 0; i < slots; i++) picked.push(Math.round((i * (count - 1)) / (slots - 1)));
-  return picked;
-}
+//: **The settled map is the last frame, and the playback flows into it**
+//: (the owner, 2026-10-27: "the opening of the graph is very very not
+//: plesant to look at all the adjusting and it is very ridgid and
+//: mechanical. I want it to be smooth and flowy"). The warm-up now goes all
+//: the way: cooled to rest, untangled and cleaned (`settleUntangled`, run in
+//: slices by `pending`) before the first post, inside `WARM_MS`. The
+//: playback then starts near that map,
+//: a little drawn in about its middle (`BLOOM`) behind the fade, or from
+//: where the notes stood on a map already showing, and lets the forces move
+//: it, one tick a frame, while each frame is drawn toward the settled map by
+//: a smoothstep (`frame = physics + (settled - physics) * s`): the forces'
+//: own motion at the start, exactly the settled map, at rest, at the end.
+//: Nothing ticks after it. A map too big to settle in the budget is shown
+//: where the budget left it and cools live, as before.
+const BLOOM = 0.9;
+const BLOOM_ALPHA = 0.1;
+const BLOOM_FRAMES = 60;
+//: From where the notes stood (a relayout of a map on screen): more heat and
+//: longer, since the way can be the width of the map.
+const RESTART_ALPHA = 0.3;
+const RESTART_FRAMES = 90;
 
-function introSnapshot() {
-  const frame = new Float32Array(nodes.length * 2);
-  for (let i = 0; i < nodes.length; i++) {
-    frame[i * 2] = nodes[i].x;
-    frame[i * 2 + 1] = nodes[i].y;
-  }
-  return frame;
-}
-
-//: The warm-up (`WARM_MS`), recording its ticks when `record` is asked for
-//: and the map is small enough to keep them.
-function warmLayout(record) {
-  const keep = record && nodes.length * 2 * 160 <= INTRO_MAX_FLOATS;
-  const frames = keep ? [introSnapshot()] : [];
-  const alphas = keep ? [simulation.alpha()] : [];
-  const until = Date.now() + WARM_MS;
-  while (simulation.alpha() > WARM_ALPHA && Date.now() < until) {
-    simulation.tick();
-    ticks += 1;
-    clampToWorld();
-    if (keep) {
-      frames.push(introSnapshot());
-      alphas.push(simulation.alpha());
-    }
-  }
+//: The playback into the settled map the notes now stand on, from where they
+//: stood (`startX`, `startY`) or, behind the fade, from the settled map drawn in.
+function introInto(startX, startY, record, bloom) {
   intro.frames = [];
   intro.alphas = [];
-  if (frames.length < 2) return;
-  self.postMessage({ type: "frame", epoch, positions: introSnapshot() });
+  const count = bloom ? BLOOM_FRAMES : RESTART_FRAMES;
+  if (!record || nodes.length * 2 * (count + INTRO_HOLD) > INTRO_MAX_FLOATS) return;
+  const endX = nodes.map((n) => n.x);
+  const endY = nodes.map((n) => n.y);
+  let cx = 0;
+  let cy = 0;
+  for (const node of nodes) {
+    cx += node.x / nodes.length;
+    cy += node.y / nodes.length;
+  }
+  nodes.forEach((node, i) => {
+    if (node.fx != null) return;
+    node.x = bloom ? cx + (endX[i] - cx) * BLOOM : startX[i];
+    node.y = bloom ? cy + (endY[i] - cy) * BLOOM : startY[i];
+  });
+  simulation.alpha(bloom ? BLOOM_ALPHA : RESTART_ALPHA);
+  // The forces' own path, one tick per frame of playback.
+  const path = [];
+  const heat = [];
+  for (let t = 0; t <= count; t++) {
+    path.push(Float32Array.from(nodes.flatMap((n) => [n.x, n.y])));
+    heat.push(simulation.alpha());
+    simulation.tick();
+    clampToWorld();
+  }
+  //: Walked at an eased pace (`smoothstep` of the time, so the first frames
+  //: leave rest slowly: one tick a frame from the start was a 12 px step out
+  //: of the hold, 36 notes) and drawn toward the settled map by the same
+  //: curve, so the last frames come to rest on it.
+  const frames = [];
+  const alphas = [];
+  for (let f = 0; f <= count; f++) {
+    const u = f / count;
+    const s = smoothstep(u);
+    const at = count * s;
+    const k = Math.min(count - 1, Math.floor(at));
+    const w = at - k;
+    const p = path[k];
+    const q = path[k + 1];
+    const frame = new Float32Array(nodes.length * 2);
+    for (let i = 0; i < frame.length; i++) {
+      const x = p[i] + (q[i] - p[i]) * w;
+      const end = i % 2 ? endY[(i - 1) / 2] : endX[i / 2];
+      frame[i] = x + (end - x) * s;
+    }
+    frames.push(frame);
+    alphas.push(heat[k]);
+  }
+  nodes.forEach((node, i) => {
+    node.x = endX[i];
+    node.y = endY[i];
+    node.vx = 0;
+    node.vy = 0;
+  });
+  simulation.alpha(0);
+  // Framed on where it ends, drawn from where it starts.
+  self.postMessage({ type: "frame", epoch, positions: Float32Array.from(endX.flatMap((x, i) => [x, endY[i]])), start: frames[0].slice() });
   for (let i = 0; i < INTRO_HOLD; i++) {
     intro.frames.push(frames[0].slice());
     intro.alphas.push(alphas[0]);
   }
-  for (const i of introPick(frames.length, INTRO_MAX_FRAMES)) {
-    intro.frames.push(frames[i]);
-    intro.alphas.push(alphas[i]);
-  }
+  intro.frames.push(...frames);
+  intro.alphas.push(...alphas);
 }
 
 //: One frame of the playback. While the main thread is behind, the frame is
@@ -295,13 +334,25 @@ function introStep() {
   if (inFlight > MAX_IN_FLIGHT) return;
   const frame = intro.frames.shift();
   const alpha = intro.alphas.shift();
+  intro.shown = frame.slice();
   inFlight += 1;
   self.postMessage({ type: "tick", epoch, positions: frame, alpha, ticks, tickMs, running: true, intro: true }, [frame.buffer]);
 }
 
+//: A playback stopped part way leaves the notes where it showed them, so a
+//: drag starts from the map on screen, not from the settled one under it.
 function introCancel() {
+  if (intro.frames.length && intro.shown && intro.shown.length === nodes.length * 2) {
+    untangle.holding = false;
+    nodes.forEach((node, i) => {
+      if (node.fx != null) return;
+      node.x = intro.shown[i * 2];
+      node.y = intro.shown[i * 2 + 1];
+    });
+  }
   intro.frames = [];
   intro.alphas = [];
+  intro.shown = null;
 }
 //: Collide radius = the node's drawn radius + this. The SVG renderer used
 //: +24, which on a 2,000-note map is a collision field an order of magnitude
@@ -1173,28 +1224,28 @@ function clearanceForce() {
     const a = link.source;
     const b = link.target;
     const count = clearCurve(a, b);
-    let minX = Infinity;
-    let minY = Infinity;
-    let maxX = -Infinity;
-    let maxY = -Infinity;
-    for (let i = 0; i < count; i++) {
-      minX = Math.min(minX, clearPts[i * 2]);
-      maxX = Math.max(maxX, clearPts[i * 2]);
-      minY = Math.min(minY, clearPts[i * 2 + 1]);
-      maxY = Math.max(maxY, clearPts[i * 2 + 1]);
-    }
     clear.stamp += 1;
-    const x1 = Math.floor((maxX + reach) / CLEAR_CELL);
-    const y1 = Math.floor((maxY + reach) / CLEAR_CELL);
-    for (let gx = Math.floor((minX - reach) / CLEAR_CELL); gx <= x1; gx++) {
-      for (let gy = Math.floor((minY - reach) / CLEAR_CELL); gy <= y1; gy++) {
-        const list = grid.get(gx * 100003 + gy);
-        if (!list) continue;
-        for (const node of list) {
-          if (node === a || node === b || node._clear === clear.stamp) continue;
-          node._clear = clear.stamp;
-          clearNearest(node, count);
-          clearPush(node, a, b);
+    //: Chord by chord, not the whole line's box: a note within `reach` of the
+    //: line is within it of a chord, so the cells round each chord hold every
+    //: note the box did. A long diagonal line's box is mostly empty air (the
+    //: 300-note seed: this force was 64% of a tick, 7 of 11 ms).
+    for (let c = 1; c < count; c++) {
+      const ax = clearPts[c * 2 - 2];
+      const ay = clearPts[c * 2 - 1];
+      const bx = clearPts[c * 2];
+      const by = clearPts[c * 2 + 1];
+      const x1 = Math.floor((Math.max(ax, bx) + reach) / CLEAR_CELL);
+      const y1 = Math.floor((Math.max(ay, by) + reach) / CLEAR_CELL);
+      for (let gx = Math.floor((Math.min(ax, bx) - reach) / CLEAR_CELL); gx <= x1; gx++) {
+        for (let gy = Math.floor((Math.min(ay, by) - reach) / CLEAR_CELL); gy <= y1; gy++) {
+          const list = grid.get(gx * 100003 + gy);
+          if (!list) continue;
+          for (const node of list) {
+            if (node === a || node === b || node._clear === clear.stamp) continue;
+            node._clear = clear.stamp;
+            clearNearest(node, count);
+            clearPush(node, a, b);
+          }
         }
       }
     }
@@ -1554,13 +1605,8 @@ function untangleBudget() {
 //: 53 and 57 crossings (1440 and 390 wide) with two passes, 50 and 49 with three. Past `UNTANGLE_BIG` notes a pass
 //: costs a second of relax for a tenth of the crossings, so there are two; and a
 //: pass that gained under `UNTANGLE_MIN_SHARE` of the crossings, or moved
-//: nothing, ends them.
-//: The glide after a pass is shorter than a reshuffle's (`SHUFFLE_STEPS`, 18
-//: frames): three passes and the cleanup at 18 each would be 1.1 s of the map's
-//: rest (4.8 s against 3.8 at 36 notes), and a note that has covered 97% of its
-//: way in 12 frames is not seen to jump the rest (4.1 s with these). The cleanup moves a note a few steps, so 8.
-const UNTANGLE_GLIDE_STEPS = 12;
-const UNTANGLE_CLEAN_STEPS = 8;
+//: nothing, ends them. The passes, their relax and the cleanup run in one go
+//: (`settleUntangled`), never one shown glide after another.
 const UNTANGLE_PASSES = 3;
 const UNTANGLE_BIG = 100;
 const UNTANGLE_BIG_PASSES = 2;
@@ -1569,7 +1615,7 @@ function untanglePasses() {
   return nodes.length > UNTANGLE_BIG ? UNTANGLE_BIG_PASSES : UNTANGLE_PASSES;
 }
 const UNTANGLE_MAX_EDGES = 4000;
-const untangle = { holding: false, margin: 0, cleaned: false, widest: 8, edges: [], incident: [], done: false, passes: 0, relaxing: false, ea: null, eb: null, xs: null, ys: null, mark: null };
+const untangle = { holding: false, margin: 0, cleaned: false, widest: 8, edges: [], incident: [], done: false, passes: 0, ea: null, eb: null, xs: null, ys: null, mark: null };
 
 function untangleSetup(edges) {
   untangle.edges = [];
@@ -2319,8 +2365,88 @@ function untangleCleanup() {
   lineGrid.live = false;
   nodeGrid.live = false;
   untangle.margin = 0;
+  untangleUntouch(startX, startY);
   untangle.holding = untangleGlide(startX, startY) > 0;
   return untangle.holding ? 1 : 0;
+}
+
+//: The pushes' last quarter lets the lines win over the spacing, and the
+//: put-back above ignores who moved into the old spot, so a cleanup could leave
+//: two notes touching with nothing ticking after it (`untangle.holding`):
+//: 3 seeds in 12 of tests/test_graph_layout.py's map before 2026-10-27, 0 now.
+//: A moved note within 2 px of another is first parted from it by the shortfall
+//: (a few px, so it stays off its line); one still touching after that goes back
+//: to where it rested. Putting back alone cost 10 to 20 more notes on a line at
+//: 300 notes. Each put-back round puts at least one note back, so it ends.
+const UNTANGLE_TOUCH = 2;
+const UNTANGLE_PART_ROUNDS = 6;
+function untangleTouching(i) {
+  const node = nodes[i];
+  const ri = node.r || 8;
+  for (let j = 0; j < nodes.length; j++) {
+    const other = nodes[j];
+    const need = ri + (other.r || 8) + UNTANGLE_TOUCH;
+    const dx = other.x - node.x;
+    if (other === node || dx >= need || dx <= -need) continue;
+    const dy = other.y - node.y;
+    if (dy >= need || dy <= -need || dx * dx + dy * dy >= need * need) continue;
+    return j;
+  }
+  return -1;
+}
+function untangleUntouch(startX, startY) {
+  const moved = (i) => nodes[i].x !== startX[i] || nodes[i].y !== startY[i];
+  const free = (node) => node.fx == null && !node.placed;
+  for (let round = 0, any = true; any && round < UNTANGLE_PART_ROUNDS; round++) {
+    any = false;
+    for (let i = 0; i < nodes.length; i++) {
+      if (!moved(i)) continue;
+      const j = untangleTouching(i);
+      if (j < 0) continue;
+      const p = nodes[i];
+      const q = nodes[j];
+      const dx = q.x - p.x;
+      const dy = q.y - p.y;
+      const d = Math.hypot(dx, dy);
+      const nx = d > 1e-6 ? dx / d : 1;
+      const ny = d > 1e-6 ? dy / d : 0;
+      const short = (p.r || 8) + (q.r || 8) + UNTANGLE_TOUCH - d + 0.5;
+      const share = (free(p) ? 1 : 0) + (free(q) ? 1 : 0);
+      if (!share) continue;
+      if (free(p)) {
+        p.x -= (nx * short) / share;
+        p.y -= (ny * short) / share;
+      }
+      if (free(q)) {
+        q.x += (nx * short) / share;
+        q.y += (ny * short) / share;
+      }
+      any = true;
+    }
+  }
+  for (let any = true; any; ) {
+    any = false;
+    for (let i = 0; i < nodes.length; i++) {
+      if (!moved(i)) continue;
+      const j = untangleTouching(i);
+      if (j < 0) continue;
+      //: Of the two, the one that does not land back on a line, if the other moved too.
+      let back = i;
+      if (moved(j)) {
+        const x = nodes[i].x;
+        const y = nodes[i].y;
+        nodes[i].x = startX[i];
+        nodes[i].y = startY[i];
+        const onLine = untangleOnLine(i);
+        nodes[i].x = x;
+        nodes[i].y = y;
+        if (onLine) back = j;
+      }
+      nodes[back].x = startX[back];
+      nodes[back].y = startY[back];
+      any = true;
+    }
+  }
 }
 
 // A moved note stays inside its category's reach (the farthest of its notes
@@ -2342,7 +2468,9 @@ function untangleReach() {
 }
 function untangleInside(node) {
   const home = untangle.reach && untangle.reach.get(node.group);
-  return !home || Math.hypot(node.x - home.cx, node.y - home.cy) <= home.far * UNTANGLE_REACH;
+  //: The hub's outer ring is placed on this very edge, so a hair of slack keeps
+  //: it inside whichever way the last bit rounds (one ulp flipped a test).
+  return !home || Math.hypot(node.x - home.cx, node.y - home.cy) <= home.far * UNTANGLE_REACH + 1e-6;
 }
 
 function untangleLayout() {
@@ -2456,6 +2584,235 @@ function untangleGlide(startX, startY) {
   return moved;
 }
 
+//: **Settled, untangled and cleaned before anything is shown** (the owner,
+//: 2026-10-27: "a bunch of nodes started individually rearranging themselves
+//: sliding instantly into position one after the other and then it just
+//: stayed like that"). The passes waited for rest and each glided its moves
+//: in 12 frames, the first closing a quarter of the way (134 px in one frame
+//: on the 36-note seed, 37 frames over 20 px), with a relax, a second pass, a
+//: third and the cleanup after it: four bursts over 4 s, 10.6 s to rest at
+//: 300 notes (`graphopen.js`). Now the cooling, every pass with its relax and
+//: the cleanup run here in one go, nothing posted, and whoever called shows
+//: the result as one motion. False when `until` came first (a big map): the
+//: live loop cools the rest and calls this again at rest.
+function landTargets() {
+  for (const node of nodes) {
+    if (node.tx === undefined) continue;
+    node.x = node.tx;
+    node.y = node.ty;
+    node.tx = undefined;
+    node.ty = undefined;
+  }
+}
+
+function coolToRest(until) {
+  while (simulation.alpha() >= simulation.alphaMin() && Date.now() < until) {
+    simulation.tick();
+    ticks += 1;
+    clampToWorld();
+  }
+  return simulation.alpha() < simulation.alphaMin();
+}
+
+//: Passes not yet run, or the cleanup after them. A drag marks them spent.
+function untangleOwed() {
+  return !untangle.done || (untangle.passes > 0 && (untangle.passes < untanglePasses() || !untangle.cleaned));
+}
+
+//: `deadline`: a pass or cleanup that would not end by then is not begun,
+//: and the answer is "late" (the opening shows the map at rest and goes on
+//: out of sight, `pendingStep`). `cap`: no pass is begun that would leave the
+//: cleanup no time before it; the passes left are given up, the cleanup runs
+//: (notes left on a line show more than a crossing a pass would have saved).
+function settleUntangled(until, deadline, cap) {
+  if (!coolToRest(until)) return false;
+  const late = () => deadline && Date.now() + untangleBudget() > deadline;
+  while (!untangle.done || (untangle.passes > 0 && untangle.passes < untanglePasses())) {
+    if (late()) return "late";
+    if (cap && Date.now() + 2 * untangleBudget() > cap) {
+      untangle.done = true;
+      untangle.passes = UNTANGLE_PASSES;
+      break;
+    }
+    untangle.done = false;
+    if (!untangleLayout()) break;
+    landTargets();
+    untangle.passes += 1;
+    if (untangle.gain < Math.max(2, untangle.total * UNTANGLE_MIN_SHARE)) untangle.passes = UNTANGLE_PASSES;
+    // A low heat lets the collision and the line clearance settle what the
+    // moves brought close (a swap can put a hub where a small note stood).
+    simulation.alpha(UNTANGLE_RELAX);
+    if (!coolToRest(until)) return false;
+  }
+  untangle.done = true;
+  if (untangle.passes > 0 && !untangle.cleaned) {
+    if (late()) return "late";
+    untangle.cleaned = true;
+    if (untangleCleanup()) landTargets();
+  }
+  for (const node of nodes) {
+    node.vx = 0;
+    node.vy = 0;
+  }
+  //: The cleanup has the last word: no tick after it (a tick would let the
+  //: links draw the notes it pushed off a line back onto it).
+  untangle.holding = true;
+  return true;
+}
+
+//: **One motion to the settled map, every note together** (the same report:
+//: "I want it to be smooth and flowy"). A layout untangled at rest, after a
+//: change of settings, a reshuffle or a big map's live settle, moves from
+//: where it stands to where `settleUntangled` put it along one smoothstep:
+//: from rest, to rest, no first frame that jumps and no last one that snaps.
+//: 45 frames is 0.75 s; a swap of 100 px peaks at 3.3 px a frame.
+const SETTLE_GLIDE_FRAMES = 45;
+const settleGlide = { left: 0, sx: null, sy: null };
+
+function settleGlideFrom(startX, startY) {
+  let moved = 0;
+  nodes.forEach((node, i) => {
+    if (node.x === startX[i] && node.y === startY[i]) return;
+    moved += 1;
+    node.tx = node.x;
+    node.ty = node.y;
+  });
+  if (!moved) return 0;
+  settleGlide.sx = Float64Array.from(startX);
+  settleGlide.sy = Float64Array.from(startY);
+  settleGlide.left = SETTLE_GLIDE_FRAMES;
+  settleGlideStep();
+  return moved;
+}
+
+function smoothstep(u) {
+  return u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u);
+}
+
+function settleGlideStep() {
+  settleGlide.left -= 1;
+  const e = smoothstep(1 - settleGlide.left / SETTLE_GLIDE_FRAMES);
+  nodes.forEach((node, i) => {
+    if (node.tx === undefined) return;
+    node.x = settleGlide.sx[i] + (node.tx - settleGlide.sx[i]) * e;
+    node.y = settleGlide.sy[i] + (node.ty - settleGlide.sy[i]) * e;
+    if (settleGlide.left === 0) {
+      node.tx = undefined;
+      node.ty = undefined;
+    }
+  });
+}
+
+//: Stopped where it is: a drag or new settings act on the map on screen.
+function settleGlideCancel() {
+  if (!settleGlide.left) return;
+  settleGlide.left = 0;
+  for (const node of nodes) {
+    node.tx = undefined;
+    node.ty = undefined;
+  }
+}
+
+//: **The settle out of sight runs in slices** (`PENDING_SLICE_MS` a turn),
+//: so the worker still hears a drag or new settings while it works, and
+//: nothing is posted until it is done: the screen keeps what it showed (the
+//: map at rest, or nothing behind the first fade). Nobody watches it cool,
+//: so it cools faster than a live layout (`PENDING_TICKS` from full heat to
+//: rest, d3's formula, against about 300 live, where the slow decay is what
+//: makes the motion look alive). Done, it hands over: the opening's playback
+//: (`introInto`) or the one glide (`settleGlideFrom`). An opening that has
+//: not settled by `WARM_MS` is shown at rest and the rest glided to later;
+//: no pass begins after `PENDING_MAX_MS` less the cleanup's time, and one
+//: still cooling at `PENDING_CUT_MS` is shown as it is (less motion waits
+//: for the settled map, to `PENDING_STILL_MS` and `PENDING_STILL_CUT_MS`).
+const PENDING_SLICE_MS = 12;
+const PENDING_TICKS = 150;
+const PENDING_MAX_MS = 4000;
+const PENDING_CUT_MS = 6000;
+const PENDING_STILL_MS = 2400;
+const PENDING_STILL_CUT_MS = 3000;
+const pending = { on: false, open: false, record: false, bloom: false, from: 0, sx: null, sy: null, alpha: 0, untangle: null };
+
+function pendingStart(open, record, bloom) {
+  pending.on = true;
+  pending.open = open;
+  pending.record = record;
+  pending.bloom = bloom;
+  pending.from = Date.now();
+  pending.sx = nodes.map((n) => n.x);
+  pending.sy = nodes.map((n) => n.y);
+  pending.alpha = simulation.alpha();
+  pending.untangle = { done: untangle.done, passes: untangle.passes, cleaned: untangle.cleaned };
+  simulation.alphaDecay(1 - Math.pow(0.001, 1 / PENDING_TICKS));
+}
+
+function pendingEnd() {
+  pending.on = false;
+  simulation.alphaDecay(alphaDecayFor(nodes.length));
+}
+
+//: Called off by a message: the notes go back to where the screen shows
+//: them, at the heat they had, and the passes are owed again.
+function pendingCancel() {
+  if (!pending.on) return;
+  pendingEnd();
+  nodes.forEach((node, i) => {
+    node.tx = undefined;
+    node.ty = undefined;
+    if (node.fx != null) return;
+    node.x = pending.sx[i];
+    node.y = pending.sy[i];
+    node.vx = 0;
+    node.vy = 0;
+  });
+  simulation.alpha(pending.alpha);
+  Object.assign(untangle, pending.untangle);
+  untangle.holding = false;
+}
+
+function pendingStep() {
+  //: Less motion waits for the settled map (`cap`) instead of a paint at
+  //: `WARM_MS` followed by a glide: one frame, a little later at 300 notes.
+  //: Its own cap is shorter: the canvas shows itself at 4 s whatever happens
+  //: (`gcStartWorker`), which would show the spiral and then the map.
+  const still = pending.open && !pending.record;
+  const deadline = pending.open && !still ? pending.from + WARM_MS : 0;
+  const cap = pending.from + (still ? PENDING_STILL_MS : PENDING_MAX_MS);
+  const done = settleUntangled(Date.now() + PENDING_SLICE_MS, deadline, cap);
+  if (done === true) {
+    pendingEnd();
+    if (pending.open) introInto(pending.sx, pending.sy, pending.record, pending.bloom);
+    else settleGlideFrom(pending.sx, pending.sy);
+    return;
+  }
+  const spent = Date.now() - pending.from;
+  if (pending.open && !still && (done === "late" || (spent > WARM_MS && untangle.passes > 0))) {
+    // Cooled but not untangled by the budget (300 notes): shown as it
+    // stands, the rest worked out of sight and glided to (`settleGlideFrom`).
+    pending.open = false;
+    pending.sx = nodes.map((n) => n.x);
+    pending.sy = nodes.map((n) => n.y);
+    pending.alpha = simulation.alpha();
+    pending.untangle = { done: untangle.done, passes: untangle.passes, cleaned: untangle.cleaned };
+    post(false);
+  } else if (pending.open && spent > (still ? PENDING_STILL_CUT_MS : WARM_MS)) {
+    // Too big to cool out of sight: shown as it is, the rest cooled live.
+    pendingEnd();
+    untangle.holding = false;
+    post(false);
+  } else if (!pending.open && spent > PENDING_CUT_MS) {
+    // Still cooling well past the cap (thousands of notes): what the passes
+    // moved lands, the rest is given up, one glide.
+    pendingEnd();
+    untangle.done = true;
+    untangle.passes = UNTANGLE_PASSES;
+    untangle.cleaned = true;
+    untangle.holding = false;
+    landTargets();
+    settleGlideFrom(pending.sx, pending.sy);
+  }
+}
+
 function clampToWorld() {
   if (!world) return;
   for (const node of nodes) {
@@ -2511,6 +2868,11 @@ function stopLoop() {
 function loop() {
   timer = null;
   if (!simulation) return;
+  if (pending.on) {
+    pendingStep();
+    timer = setTimeout(loop, pending.on ? 0 : 16);
+    return;
+  }
   if (intro.frames.length) {
     introStep();
     timer = setTimeout(loop, INTRO_FRAME_MS);
@@ -2523,9 +2885,14 @@ function loop() {
     timer = setTimeout(loop, 16 * (perf ? 2 : 1));
     return;
   }
-  //: The cleanup's glide is the last thing: a tick after it would let the links
-  //: draw the notes it pushed off a line back onto it, so the map ends where
-  //: the glide does.
+  if (settleGlide.left > 0) {
+    settleGlideStep();
+    post(false);
+    timer = setTimeout(loop, 16 * (perf ? 2 : 1));
+    return;
+  }
+  //: Untangled and cleaned is the last thing (`settleUntangled`): the map
+  //: ends where it put the notes, with no tick after.
   if (untangle.holding) {
     untangle.holding = false;
     post(true);
@@ -2540,9 +2907,7 @@ function loop() {
   //: hundred. Only the cooling of a new layout (an init, a reshuffle, new
   //: settings: the runs `untangle` waits on); a drag and the ease after a
   //: drop keep one tick a frame, their pace is the pointer's.
-  //: The relax after an untangle pass is cooling too (`untangle.relaxing`): one
-  //: tick a frame it took 2.8 s a pass, which three passes made 8 s.
-  const quick = !dragging && (!untangle.done || untangle.relaxing) && simulation.alpha() < WARM_ALPHA;
+  const quick = !dragging && untangleOwed() && simulation.alpha() < WARM_ALPHA;
   let steps = 0;
   do {
     simulation.tick();
@@ -2554,31 +2919,13 @@ function loop() {
   clampToWorld();
   const overBudget = !dragging && Date.now() - settleFrom > SETTLE_BUDGET_MS;
   const settled = !dragging && (simulation.alpha() < simulation.alphaMin() || overBudget);
-  //: The second pass waits for the first one's relax to rest.
-  if (settled && untangle.relaxing) untangle.relaxing = false;
-  if (settled && untangle.done && untangle.passes > 0 && untangle.passes < untanglePasses() && !dragging) untangle.done = false;
-  if (settled && !untangle.done && untangleLayout()) {
-    untangle.passes += 1;
-    if (untangle.gain < Math.max(2, untangle.total * UNTANGLE_MIN_SHARE)) untangle.passes = UNTANGLE_PASSES;
-    untangle.relaxing = true;
-    // At rest, untangled: the notes glide to their new places, then a low
-    // heat lets the collision and the line clearance settle what the moves
-    // brought close (a swap can put a hub where a small note stood).
-    shuffle.left = UNTANGLE_GLIDE_STEPS;
-    simulation.alpha(UNTANGLE_RELAX);
+  //: At rest and not yet untangled: the passes, their relax and the cleanup
+  //: run out of sight (`pending`) and the map moves to the result in one glide.
+  if (settled && !dragging && untangleOwed()) {
     post(false);
-    timer = setTimeout(loop, 16);
+    pendingStart(false, false, false);
+    timer = setTimeout(loop, 0);
     return;
-  }
-  if (settled && untangle.passes > 0 && !untangle.cleaned && !dragging) {
-    untangle.cleaned = true;
-    untangle.holding = false;
-    if (untangleCleanup()) {
-      shuffle.left = UNTANGLE_CLEAN_STEPS;
-      post(false);
-      timer = setTimeout(loop, 16);
-      return;
-    }
   }
   if (settled) {
     post(true);
@@ -2632,12 +2979,19 @@ function run() {
 }
 
 //: Anything the person does stops the playback where it is: a drag, a pin,
-//: a reshuffle act on the live layout, which is already at the playback's end.
+//: a reshuffle act on the live layout, from where the notes are on screen.
+//: The settle glide stops the same way, and the hold with it: the message
+//: moves the map again.
 const INTRO_KEEPS = new Set(["recycle", "init"]);
 
 self.onmessage = (event) => {
   const message = event.data || {};
-  if (!INTRO_KEEPS.has(message.type)) introCancel();
+  if (!INTRO_KEEPS.has(message.type)) {
+    introCancel();
+    settleGlideCancel();
+    pendingCancel();
+    untangle.holding = false;
+  }
   switch (message.type) {
     case "init": {
       stopLoop();
@@ -2817,8 +3171,14 @@ self.onmessage = (event) => {
       }
       applyGrouping(message.params);
       simulation.alpha(message.alpha == null ? 1 : message.alpha);
-      if (message.warm) warmLayout(message.intro === true);
-      else introCancel();
+      // New notes: a playback, glide or settle of the old ones is dropped, not restored.
+      intro.frames = [];
+      intro.alphas = [];
+      intro.shown = null;
+      settleGlide.left = 0;
+      pending.on = false;
+      untangle.holding = false;
+      if (message.warm) pendingStart(true, message.intro === true, message.bloom === true);
       run();
       break;
     }
@@ -2843,7 +3203,6 @@ self.onmessage = (event) => {
         untangle.passes = UNTANGLE_PASSES;
         untangle.cleaned = true;
         untangle.holding = false;
-        untangle.relaxing = false;
         dragOrigin = { x: node.x, y: node.y };
         markFollowers(node, true);
         if (ring.params) applyGrouping(ring.params);

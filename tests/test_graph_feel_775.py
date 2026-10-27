@@ -47,14 +47,23 @@ def _run(scenario: dict) -> dict:
 
 
 @needs_node
-def test_a_warmed_layout_is_played_back_from_full_heat_after_its_frame():
-    got = _run(_scenario(warm=True, intro=True))
-    assert got["framed"]
-    # One recorded tick a frame, as the live layout steps (round 2: "look at
-    # how the movement is in main"), after the first frame held through the
-    # canvas's fade: INTRO_HOLD + up to INTRO_MAX_FRAMES.
-    assert 8 + 20 <= got["introTicks"] <= 8 + 160, got["introTicks"]
-    assert got["firstIntroAlpha"] > 0.9
+def test_a_warmed_layout_is_played_back_as_a_short_flow_after_its_frame():
+    """The intent moved on 2026-10-27: the owner saw the playback from full heat
+    as "very very not plesant to look at all the adjusting" and asked for it
+    "smooth and flowy". The opening is now settled and untangled out of sight
+    and played as one short flow into that map (`introInto`): a hidden map
+    blooms in from a slight contraction at a low heat (`BLOOM_ALPHA`), one on
+    screen flows on from where it stands (`RESTART_ALPHA`). There is still
+    motion (owner, 2026-10-10: "theres no movement to it now"), held through the
+    canvas's fade first: INTRO_HOLD + the recorded frames."""
+    bloom = _run(_scenario(warm=True, intro=True, bloom=True))
+    assert bloom["framed"]
+    assert 8 + 30 <= bloom["introTicks"] <= 8 + 61, bloom["introTicks"]
+    assert abs(bloom["firstIntroAlpha"] - 0.1) < 0.01, bloom["firstIntroAlpha"]
+    shown = _run(_scenario(warm=True, intro=True))
+    assert shown["framed"]
+    assert 8 + 45 <= shown["introTicks"] <= 8 + 91, shown["introTicks"]
+    assert abs(shown["firstIntroAlpha"] - 0.3) < 0.01, shown["firstIntroAlpha"]
 
 
 @needs_node
@@ -90,7 +99,9 @@ def test_the_frame_is_fitted_before_the_playback_and_the_fits_wait_for_it():
 
 def test_a_drag_stops_the_playback():
     assert 'const INTRO_KEEPS = new Set(["recycle", "init"]);' in WORKER
-    assert "if (!INTRO_KEEPS.has(message.type)) introCancel();" in WORKER
+    # 2026-10-27: the same message also stops the settle glide and the settle out
+    # of sight, so the cancel became a block; the playback is still stopped first.
+    assert "if (!INTRO_KEEPS.has(message.type)) {\n    introCancel();\n    settleGlideCancel();\n    pendingCancel();" in WORKER
 
 
 def _small_spread(n: int) -> float:
