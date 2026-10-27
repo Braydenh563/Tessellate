@@ -446,6 +446,8 @@ def uncovered() -> dict[str, list[int]]:
 
 
 EXEMPT: dict[str, str] = {
+    "chat-attach.js:offerReminder": "read: reads a reminder out of the message (/reminders/suggest); the chip that makes one pushes Undo",
+    "lightbox-view.js:openLightbox": "auth: a two-minute link to one file for the system browser; no user data",
     "statistics.js:ask": "read: a counted answer to a question about the notebook (readOnly); nothing is written",
     "whiteboard-interchange.js:wbThumbFlush": "board: stores the board's preview picture, rebuilt from the board itself; nothing of the person's changes",
     "documents-prose.js:docLinkOfferAsk": "read: asks which note names the text mentions; applying an offer is an editor change, undone by the editor's own history",
@@ -618,8 +620,6 @@ EXEMPT: dict[str, str] = {
     "quickadd.js:noteOffersFetch": "read: reads or asks the model; shows a result, writes nothing",
     "reminder-notify.js:showReminderNotification": "telemetry: telemetry or a background warm-up; no user data",
     "search.js:persistSavedFinds": "settings: a setting with its own Reset or the settings history",
-    "semantic-notice.js:semanticDecline": "job: starts or stops work or a model; deletes no user data",
-    "semantic-notice.js:semanticOnboardingOffer": "job: starts or stops work or a model; deletes no user data",
     "semantic-notice.js:semanticSetAutoInstall": "settings: a setting with its own Reset or the settings history",
     "settings-controls.js:addPersona": "settings: a setting with its own Reset or the settings history",
     "settings-controls.js:applyBackendChoice": "settings: a setting with its own Reset or the settings history",

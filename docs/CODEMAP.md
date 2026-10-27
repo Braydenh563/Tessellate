@@ -2,7 +2,7 @@
 
 Generated 2026-10-27 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6587, frontend ids 2558, CSS sections 504, backend routes 625, backend modules 6722, test files 1412, tests 12526, plan headings 977.
+Counts: frontend functions 6587, frontend ids 2558, CSS sections 504, backend routes 625, backend modules 6722, test files 1412, tests 12527, plan headings 977.
 
 ## Frontend functions (6587)
 
@@ -4724,9 +4724,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `codeFamilyFor` | frontend/js/lightbox-view.js:2421 |
-| `codeScanner` | frontend/js/lightbox-view.js:2402 |
-| `highlightCodeInto` | frontend/js/lightbox-view.js:2375 |
+| `codeFamilyFor` | frontend/js/lightbox-view.js:2424 |
+| `codeScanner` | frontend/js/lightbox-view.js:2405 |
+| `highlightCodeInto` | frontend/js/lightbox-view.js:2378 |
 | `openLightbox` | frontend/js/lightbox-view.js:33 |
 
 ### frontend/js/link-types.js (8)
@@ -13956,9 +13956,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_reads_as_intention` | src/tessellate/ai/reminder_suggest.py:48 |
-| `_sentences` | src/tessellate/ai/reminder_suggest.py:44 |
-| `suggest` | src/tessellate/ai/reminder_suggest.py:56 |
+| `_reads_as_intention` | src/tessellate/ai/reminder_suggest.py:47 |
+| `_sentences` | src/tessellate/ai/reminder_suggest.py:43 |
+| `suggest` | src/tessellate/ai/reminder_suggest.py:55 |
 
 ### src/tessellate/ai/resurface.py (12)
 
@@ -19619,7 +19619,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12526)
+## Tests (12527)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19859,7 +19859,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_overview_787.py | 18 |
 | tests/test_composer_owner_1017.py | 15 |
 | tests/test_composer_parts.py | 4 |
-| tests/test_composer_phrasings_1025.py | 10 |
+| tests/test_composer_phrasings_1025.py | 11 |
 | tests/test_composer_polish.py | 8 |
 | tests/test_composer_redos_1026.py | 4 |
 | tests/test_composer_relevance_1310.py | 10 |

@@ -1070,8 +1070,11 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     //: link to this one file goes instead (`/auth/media-link`).
     const path = new URL(href, location.href);
     if (path.origin === location.origin && /^\/(media|files)\//.test(path.pathname) && (await desktopShell())) {
-      const link = await apiJson("/auth/media-link", { method: "POST", body: JSON.stringify({ path: path.pathname }) }).catch(() => null);
-      if (!link) return toast("Couldn't open that in a tab.", true);
+      const link = await apiJson("/auth/media-link", { method: "POST", body: JSON.stringify({ path: path.pathname }) }).catch((error) => {
+        toast(error.message, true, { action: ["Try again", () => openTabBtn.click()] });
+        return null;
+      });
+      if (!link) return;
       href = link.url + path.search.replace(/^\?/, "&");
     }
     window.open(href, "_blank", "noopener");

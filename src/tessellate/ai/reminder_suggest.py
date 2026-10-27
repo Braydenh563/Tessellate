@@ -38,7 +38,6 @@ _QUESTION_FIRST = re.compile(
     r"^(?:what|who|where|when|how|why|which|whether|do|does|did|can|could|should|would|will|is|are|am|shall|may|have|has)\b",
     re.IGNORECASE,
 )
-_PAST = re.compile(r"\b(?:yesterday|last (?:week|month|year|night|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|ago)\b", re.IGNORECASE)
 
 
 def _sentences(text: str) -> list[str]:
@@ -46,7 +45,7 @@ def _sentences(text: str) -> list[str]:
 
 
 def _reads_as_intention(sentence: str) -> bool:
-    if sentence.endswith("?") or _QUESTION_FIRST.match(sentence) or _PAST.search(sentence):
+    if sentence.endswith("?") or _QUESTION_FIRST.match(sentence):
         return False
     if not _INTENT.search(sentence):
         return False
@@ -65,6 +64,8 @@ def suggest(text: str, now: datetime) -> dict | None:
         #: tomorrow" is "Email Priya", whatever the verb that carried it.
         task = _INTENT.sub(" ", sentence, count=1)
         parsed = reminder_parser.read_by_rule(" ".join(task.split()), now)
+        #: A time already gone ("yesterday", "a week ago") is the recogniser's
+        #: to read (tests/test_one_reader.py): a due time not ahead is no offer.
         if parsed is None or parsed["due_at"] <= now.replace(tzinfo=parsed["due_at"].tzinfo):
             continue
         return parsed

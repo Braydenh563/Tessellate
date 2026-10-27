@@ -76,7 +76,7 @@ def test_every_toast_builder_puts_its_buttons_in_one_actions_row():
     for head in ("function toast(", "function toastAction(", "function toastProgress(", "function showServerDownBanner("):
         assert "toastActions(" in _body(STATUS, head), head
     notice = (JS / "semantic-notice.js").read_text(encoding="utf-8")
-    assert "toastActions(decline)" in notice
+    assert "toastActions(yes, no)" in notice
 
 
 # --- every toast action is kept in the bell ----------------------------------

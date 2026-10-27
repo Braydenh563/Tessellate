@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fixes: "how do I make a reminder" leads with Magic add again; every hello invite says what to ask; the packaged builds install certifi; the reminder offer leaves past times to the date reader; a failed new-tab link says why, with Try again.
 - Security: certifi is held at 2026.10.23 or newer, the first CA bundle without the eight compromised eMudhra CAs (distrusted by Chrome and Mozilla, 19 to 20 October 2026). Web search, model downloads and extras installs verify HTTPS against it.
 - Reminders: the reminder phrase reader moved beside the parser, so the chat suggestion no longer forms an import cycle with the routes.
 - The popup agent has a Send button beside the box (Enter still sends), and the graph Options section chevrons sit a gap short of their "?" instead of touching it.
