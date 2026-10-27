@@ -56,16 +56,17 @@ def _plan(body: str):
 
 
 @needs_node
-def test_the_landing_is_worked_out_once_at_the_release_and_the_path_ends_there() -> None:
+def test_the_release_plans_the_path_only_and_the_landing_is_asked_for_later_at_the_paths_end() -> None:
     got = _plan(
         "[[1.6, -0.4], [-1.4, -0.3], [0.1, -2.0], [1.2, -1.2], [0.2, 1.4]].map(([vx, vy], n) => {"
         " companionThrowSeed.seed = n + 3; spots = 0; const p = companionThrowPlan(600, 400, vx, vy, W);"
-        " const end = p.path[p.path.length - 1];"
-        " return { spots, rest: end.rest, steps: p.path.length, fixed: p.path.every((s, i) => i === 0 || Math.abs(s.t - p.path[i - 1].t - 16) < 1e-9 || s.rest),"
-        " landAt: [p.spot.x, p.spot.y], endAt: [Math.round(end.x), Math.round(end.y)] }; })"
+        " const end = p.path[p.path.length - 1]; const atRelease = spots; p.land(); p.land();"
+        " return { atRelease, spots, rest: end.rest, steps: p.path.length, fixed: p.path.every((s, i) => i === 0 || Math.abs(s.t - p.path[i - 1].t - 16) < 1e-9 || s.rest),"
+        " landAt: [p.land().x, p.land().y], endAt: [Math.round(end.x), Math.round(end.y)] }; })"
     )
     for r in got:
-        assert r["spots"] == 1, r
+        # The release measures nothing (the landing is asked for later, once per ask).
+        assert r["atRelease"] == 0 and r["spots"] == 2, r
         assert r["rest"] and 2 <= r["steps"] < 400, r
         assert r["fixed"], r
         assert r["landAt"] == r["endAt"], r
@@ -138,3 +139,36 @@ def test_the_popup_check_waits_until_it_is_down() -> None:
     dodge = _fn(AV, "nameMarkBuddyDodge")
     wait = dodge.index('if (nmb.flight || buddy.classList.contains("nm-buddy-dragging")) {')
     assert wait < dodge.index("getBoundingClientRect") and "setTimeout(nameMarkBuddyDodge, 400)" in dodge[wait:]
+
+
+def test_the_landing_is_worked_out_after_the_first_frame_or_before_it_when_the_flight_is_one_frame() -> None:
+    # The owner, 2026-10-27: "when it calculates the landing, it pauses for a split sec then goes".
+    throw = _fn(THROW, "nameMarkBuddyThrow")
+    assert "let landing = null;" in throw and "const spotNow = () => (landing ||= plan.land());" in throw
+    tail = throw[throw.index("nmb.flight = flight;") :]
+    assert tail.index("if (end.t <= 200) spotNow();") < tail.index("next();") < tail.index("requestIdleCallback(spotNow")
+    assert "ThrowSpot" not in _fn(THROW, "companionThrowPlan").split("land:")[0]
+
+
+def test_the_landing_frame_splits_its_restyles_and_reads_no_layout() -> None:
+    land = _fn(AV, "nameMarkBuddyThrowLand")
+    # The act is the next frame's, not the move's.
+    assert land.index("nameMarkBuddyMoveTo(buddy, spot);") < land.index("requestAnimationFrame(() => {") < land.index('nameMarkBuddyAct("land")')
+    assert 'nameMarkBuddyAct("land");\n  const spots' not in land
+    # Nothing to hand over after a throw: the blend (two restyles) is skipped.
+    move = _fn(AV, "nameMarkBuddyMoveTo")
+    assert 'if (buddy.classList.contains("nmb-poofing") || buddy.classList.contains("nmb-walking")) nameMarkBuddyBlend(buddy, stop);' in move
+    # The board's box is read before the move's writes, and not at all off its tab.
+    assert move.index("const board = nameMarkBuddyCanvasAt(") < move.index("nameMarkBuddyPut(buddy, x, y);")
+    canvas = _fn(AV, "nameMarkBuddyCanvasAt")
+    assert canvas.index('board.closest(".hidden")') < canvas.index("nameMarkBuddyShown(board)")
+    # The splat's face is a few frames after its class change.
+    flat = _fn(THROW, "companionThrowFlat")
+    assert 'setTimeout(() => nmb.flight && nameMarkBuddyExpress("surprised"' in flat
+
+
+def test_letting_go_of_the_companion_does_not_read_layout_for_the_selection_popup() -> None:
+    sel = (ROOT / "frontend" / "js" / "selection.js").read_text(encoding="utf-8")
+    up = sel[sel.index('document.addEventListener("mouseup", (event) => {') :]
+    up = up[: up.index("});")]
+    assert up.index('event.target.closest("#nm-buddy")') < up.index("syncSelectionPopup()")

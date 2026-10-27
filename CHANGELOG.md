@@ -8,6 +8,7 @@ below). Versioning is `0.x` while the app stabilises.
 ## [Unreleased]
 - Motion and failed reads (INBOX 1415): ten floating panels (Spaces, the bell, the clock, the history lists, the model, skills, More and Attach panels, Find on this page, the graph's note card) open and close on the menu's fade and grow instead of between two frames; Boards, Images, Contents, Bookmarks, Documents and Recordings now say they could not load, with Try again, instead of claiming nothing is there or printing the server's line; the dashboard's loading outline follows the grid by `translate` and the "Add your name" offer is not drawn under the Get started card, which took layout shift at boot from 0.105 to 0.011.
 
+- A thrown companion lands without the hitch: the landing spot is worked out after the first frame (not in the release), its landing act waits one frame after the move, the splat face a few frames after the splat, the whiteboard box is not measured off its tab, and letting go no longer forces the selection popup's layout read (landing call 26 to 83ms before, 0 to 7ms after at 1x CPU).
 - Settings' suggested model list no longer waits on a busy model runner or the graphics card probe (INBOX 1415).
 
 ## [0.6.2] - 2026-10-27

@@ -5378,6 +5378,9 @@ for (const type of ["pointerdown", "pointerup", "keydown", "transitionrun", "ani
 function nameMarkBuddyCanvasAt(spot, x, y) {
   const board = document.getElementById("whiteboard-container");
   if (spot.edge?.el && !board?.contains(spot.edge.el)) return null;
+  //: A class check first: off its tab, the box below was a forced layout for
+  //: nothing (20 to 30ms in a landing, behind the flight's own writes).
+  if (!board || board.closest(".hidden")) return null;
   const r = nameMarkBuddyShown(board);
   const cx = x + NMB_W / 2;
   const cy = y + NMB_H / 2;
@@ -5428,13 +5431,15 @@ function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
   //: after the whole change of move, and what differs eased off with the
   //: lift below, whatever moved it.
   const leaning = char && nmb.hopAnim?.playState === "running" ? Number.parseFloat(getComputedStyle(char).rotate) || 0 : null;
+  //: The board's box is a layout read: before the writes below, not after
+  //: them, where it paid for the restyle they caused (a landing, 20 to 30ms).
+  const board = nameMarkBuddyCanvasAt(spot, x, y);
   nmb.liftAnim?.cancel();
   nmb.glideAnim?.cancel();
   nmb.glideAnim = null;
   nameMarkBuddyPut(buddy, x, y);
   //: Its size for this perch: smaller where it had to fit, its own
   //: elsewhere, eased either way (`nmb-fitting`).
-  const board = nameMarkBuddyCanvasAt(spot, x, y);
   nmb.canvas = !!board;
   document.getElementById("nm-buddy-band")?.classList.toggle("nmb-canvas", nmb.canvas);
   const size = board ? nameMarkBuddyScaleSaved() * nameMarkBuddyCanvasScale(board.__zoom?.k) : spot.fit || nameMarkBuddyScaleSaved();
@@ -5490,7 +5495,9 @@ function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
     stop();
     return;
   }
-  nameMarkBuddyBlend(buddy, stop);
+  //: Nothing to hand over when it was neither walking nor poofing (a landing
+  //: from a throw): the blend's reads are two restyles of the rig.
+  if (buddy.classList.contains("nmb-poofing") || buddy.classList.contains("nmb-walking")) nameMarkBuddyBlend(buddy, stop);
   nameMarkBuddyGo(buddy, dx, dy, spot, poseChanged, was, underway);
   if (buddy.dataset.legs !== (spot.legs || "")) {
     const end = Number(nmb.anim?.effect?.getComputedTiming?.().endTime);
@@ -6101,7 +6108,11 @@ function nameMarkBuddyThrowLand(buddy, s, tab, spot) {
   nmb.placedAt = Date.now();
   nmb.afterLand = true;
   nameMarkBuddyMoveTo(buddy, spot);
-  if (!nmb.anim || nmb.anim.playState !== "running") nameMarkBuddyAct("land");
+  //: Its landing act in the next frame, not this one: the move's restyle and
+  //: the act's were one 27 to 81ms frame (throw5.js), two now.
+  requestAnimationFrame(() => {
+    if (nmb.spot === spot && !nmb.flight && (!nmb.anim || nmb.anim.playState !== "running")) nameMarkBuddyAct("land");
+  });
   const spots = nameMarkBuddySpots();
   delete spots["*"];
   spots[tab] = nameMarkBuddySpotFor(spot);

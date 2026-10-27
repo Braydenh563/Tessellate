@@ -159,9 +159,12 @@ def test_the_landing_reads_the_page_before_the_landing_frame_writes() -> None:
     # last frame, which the drawing had dirtied (217ms at 4x CPU, throw5.js).
     throw = _fn("nameMarkBuddyThrow")
     frame = throw[throw.index("const frame = (now) =>") : throw.index("const next = () =>")]
-    assert "nameMarkBuddyThrowSpot(" not in frame and "const landing = plan.spot;" in throw
+    # Stated intent unchanged (no measuring in a frame after its writes); the
+    # spot is now asked for by `spotNow` (idle time, or before the first frame
+    # of a flight too short to have any), and the frame only takes its cache.
+    assert "nameMarkBuddyThrowSpot(" not in frame and "plan.land()" in throw and "const spot = spotNow();" in frame
     assert "nameMarkBuddyThrowSpot(companionThrowAt(s))" in _fn("companionThrowPlan")
-    assert "nameMarkBuddyThrowLand(buddy, s, tab, landing)" in frame
+    assert "nameMarkBuddyThrowLand(buddy, s, tab, spot)" in frame
     land = _fn("nameMarkBuddyThrowLand")
     assert "(buddy, s, tab, spot)" in land and "nameMarkBuddyDrop(" not in land, "the landing is handed its spot, never reads it after the writes"
     assert "nameMarkBuddyDrop(" in _fn("nameMarkBuddyThrowSpot")
