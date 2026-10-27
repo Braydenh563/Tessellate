@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+
+- Companion: a drop or throw that comes down at the bottom bar stands above it instead of sitting with its box 20px into the bar and over its buttons, and over the bar's buttons it floats just above them instead of being sent across the screen; Escape no longer throws when the onboarding overlay is gone.
 - Documents: in focus mode the sidebar and the suggestions panel can be resized by dragging their edge (or the arrow keys), and the sidebar width is the one it has outside focus mode.
 - Grammar: fewer wrong suggestions; a file name (start.bat), an interface word (draggable, scrollbars), a dotfile and "back to normal" are no longer marked, and real errors still are.
 - Settings, Appearance: Glass controls (off by default) puts icon buttons in the image chip's frosted glass, only while the glass blur is on; its styles are fetched only when it is on.

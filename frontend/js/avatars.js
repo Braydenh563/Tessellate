@@ -4538,7 +4538,11 @@ function nameMarkBuddyDrop(x, y, reach = 48) {
   const obstacles = nameMarkBuddyObstacles(tab);
   const edges = nameMarkBuddyEdges(tab);
   const cx = x + NMB_W / 2;
-  const fits = (spot) => spot.x >= 0 && spot.x <= innerWidth - NMB_W && spot.y >= 0 && spot.y <= innerHeight - NMB_H + 8
+  //: Never into the bottom bar (INBOX 1402): a seat on its top edge left the
+  //: 92px box 20px into it, over its buttons, so on the bar it stands.
+  const bar = nameMarkBuddyLedges().bottom;
+  const lowest = bar ? bar.top - NMB_FEET + 1 : innerHeight - NMB_H + 8;
+  const fits = (spot) => spot.x >= 0 && spot.x <= innerWidth - NMB_W && spot.y >= 0 && spot.y <= lowest
     && !nameMarkBuddyHits(spot.x, spot.y, spot.pose, nameMarkBuddyYoursObstacles(obstacles, spot), spot.legs);
   const touch = { sit: NMB_SEAT, stand: NMB_FEET, hang: NMB_GRIP };
   let best = null;
@@ -4583,7 +4587,16 @@ function nameMarkBuddyDrop(x, y, reach = 48) {
   if (fall) return fall;
   //: Nothing under it: it floats, stepped aside from a control; one it cannot
   //: clear (chat's mode switch) gets the nearest good perch instead.
-  const open = nameMarkBuddyStepAside({ kind: "yours", pose: "float", legs: "", x, y }, obstacles);
+  //: Over the bottom bar's buttons (a row with no gap): just above them, a
+  //: few px up, before any step along them or the chooser's perch across
+  //: the screen (INBOX 1402). Over any other control it is still the chooser's.
+  const at = { kind: "yours", pose: "float", legs: "", x, y: Math.min(y, lowest) };
+  if (!nameMarkBuddyHits(at.x, at.y, "float", obstacles)) return at;
+  const onBar = bar && nameMarkBuddyHits(at.x, at.y, "float", obstacles.filter((b) => b.top >= bar.top));
+  for (let up = 8; onBar && up <= 120 && at.y - up >= 0; up += 8) {
+    if (!nameMarkBuddyHits(at.x, at.y - up, "float", obstacles)) return { ...at, y: at.y - up };
+  }
+  const open = nameMarkBuddyStepAside(at, obstacles);
   return nameMarkBuddyHits(open.x, open.y, "float", obstacles) ? nameMarkBuddyChoose(tab, obstacles, [x, y], 4) || open : open;
 }
 
