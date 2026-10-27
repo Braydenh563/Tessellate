@@ -129,6 +129,14 @@ def test_less_motion_gets_the_settled_map_as_its_one_and_only_frame() -> None:
     assert out["kinds"] == ["tick", "end"] and out["ticks"] == 1, out
     assert out["firstTick"]["passes"] > 0 and out["firstTick"]["cleaned"], out
     assert out["firstTick"]["alpha"] < 0.08 and out["lastRunning"] is False, out
+    # A map too big for `WARM_MS` (300 notes in the browser: shown at rest at
+    # 1.6 s, then a 13 px-a-frame glide) waits for the settled map instead.
+    step = _fn("pendingStep")
+    assert "const deadline = pending.open && !still ? pending.from + WARM_MS : 0;" in step
+    # No pass is begun that would leave the cleanup no time before the cap.
+    settle = _fn("settleUntangled")
+    assert "if (cap && Date.now() + 2 * untangleBudget() > cap) {" in settle
+    assert settle.index("2 * untangleBudget() > cap") < settle.index("untangleCleanup()")
 
 
 def test_a_layout_settled_live_is_untangled_out_of_sight_and_glided_to_once() -> None:

@@ -2621,12 +2621,19 @@ function untangleOwed() {
 
 //: `deadline`: a pass or cleanup that would not end by then is not begun,
 //: and the answer is "late" (the opening shows the map at rest and goes on
-//: out of sight, `pendingStep`).
-function settleUntangled(until, deadline) {
+//: out of sight, `pendingStep`). `cap`: no pass is begun that would leave the
+//: cleanup no time before it; the passes left are given up, the cleanup runs
+//: (notes left on a line show more than a crossing a pass would have saved).
+function settleUntangled(until, deadline, cap) {
   if (!coolToRest(until)) return false;
   const late = () => deadline && Date.now() + untangleBudget() > deadline;
   while (!untangle.done || (untangle.passes > 0 && untangle.passes < untanglePasses())) {
     if (late()) return "late";
+    if (cap && Date.now() + 2 * untangleBudget() > cap) {
+      untangle.done = true;
+      untangle.passes = UNTANGLE_PASSES;
+      break;
+    }
     untangle.done = false;
     if (!untangleLayout()) break;
     landTargets();
@@ -2714,11 +2721,14 @@ function settleGlideCancel() {
 //: rest, d3's formula, against about 300 live, where the slow decay is what
 //: makes the motion look alive). Done, it hands over: the opening's playback
 //: (`introInto`) or the one glide (`settleGlideFrom`). An opening that has
-//: not settled by `WARM_MS` is shown where it got to and cools live; any
-//: other is cut at `PENDING_MAX_MS`, the passes it has not run given up.
+//: not settled by `WARM_MS` is shown at rest and the rest glided to later;
+//: no pass begins after `PENDING_MAX_MS` less the cleanup's time, and one
+//: still cooling at `PENDING_CUT_MS` is shown as it is (less motion waits
+//: for the settled map up to then).
 const PENDING_SLICE_MS = 12;
 const PENDING_TICKS = 150;
 const PENDING_MAX_MS = 4000;
+const PENDING_CUT_MS = 6000;
 const pending = { on: false, open: false, record: false, bloom: false, from: 0, sx: null, sy: null, alpha: 0, untangle: null };
 
 function pendingStart(open, record, bloom) {
@@ -2759,7 +2769,11 @@ function pendingCancel() {
 }
 
 function pendingStep() {
-  const done = settleUntangled(Date.now() + PENDING_SLICE_MS, pending.open ? pending.from + WARM_MS : 0);
+  //: Less motion waits for the settled map (`cap`) instead of a paint at
+  //: `WARM_MS` followed by a glide: one frame, a little later at 300 notes.
+  const still = pending.open && !pending.record;
+  const deadline = pending.open && !still ? pending.from + WARM_MS : 0;
+  const done = settleUntangled(Date.now() + PENDING_SLICE_MS, deadline, pending.from + PENDING_MAX_MS);
   if (done === true) {
     pendingEnd();
     if (pending.open) introInto(pending.sx, pending.sy, pending.record, pending.bloom);
@@ -2767,7 +2781,7 @@ function pendingStep() {
     return;
   }
   const spent = Date.now() - pending.from;
-  if (pending.open && (done === "late" || (spent > WARM_MS && untangle.passes > 0))) {
+  if (pending.open && !still && (done === "late" || (spent > WARM_MS && untangle.passes > 0))) {
     // Cooled but not untangled by the budget (300 notes): shown as it
     // stands, the rest worked out of sight and glided to (`settleGlideFrom`).
     pending.open = false;
@@ -2776,12 +2790,14 @@ function pendingStep() {
     pending.alpha = simulation.alpha();
     pending.untangle = { done: untangle.done, passes: untangle.passes, cleaned: untangle.cleaned };
     post(false);
-  } else if (pending.open && spent > WARM_MS) {
+  } else if (pending.open && spent > (still ? PENDING_CUT_MS : WARM_MS)) {
     // Too big to cool out of sight: shown as it is, the rest cooled live.
     pendingEnd();
     untangle.holding = false;
     post(false);
-  } else if (!pending.open && spent > PENDING_MAX_MS) {
+  } else if (!pending.open && spent > PENDING_CUT_MS) {
+    // Still cooling well past the cap (thousands of notes): what the passes
+    // moved lands, the rest is given up, one glide.
     pendingEnd();
     untangle.done = true;
     untangle.passes = UNTANGLE_PASSES;
