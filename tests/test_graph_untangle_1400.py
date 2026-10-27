@@ -110,8 +110,14 @@ def test_a_note_left_on_a_line_is_pushed_off_it_and_the_map_ends_there() -> None
     loop = loop[: loop.index("\n}\n")]
     # Once, after the last pass has rested, never after a drag, and no tick after it.
     # At any size (round 5): above `UNTANGLE_BIG` notes it was skipped for its cost, a grid of lines made it cheap.
-    assert "untangle.passes > 0 && !untangle.cleaned && !dragging) {" in loop
-    assert "nodes.length <= UNTANGLE_BIG" not in loop
+    # The passes and the cleanup now run together out of sight (`settleUntangled`, the
+    # owner 2026-10-27: no burst a pass), so the cleanup's gate is read there.
+    settle = WORKER[WORKER.index("\nfunction settleUntangled(") :]
+    settle = settle[: settle.index("\n}\n")]
+    assert "if (untangle.passes > 0 && !untangle.cleaned) {" in settle
+    assert settle.index("untangleCleanup()") < settle.index("untangle.holding = true;")
+    assert "settled && !dragging && untangleOwed()" in loop
+    assert "nodes.length <= UNTANGLE_BIG" not in loop and "nodes.length <= UNTANGLE_BIG" not in settle
     assert loop.index("if (untangle.holding) {") < loop.index("simulation.tick();")
     drag = WORKER[WORKER.index('if (message.phase === "start") {') :]
     drag = drag[: drag.index('} else if (message.phase === "move")')]
@@ -135,9 +141,14 @@ def test_a_settled_map_is_untangled_without_moving_a_category_or_a_pin() -> None
 def test_the_untangle_waits_for_rest_and_never_follows_a_drag() -> None:
     loop = WORKER[WORKER.index("\nfunction loop() {") :]
     loop = loop[: loop.index("\n}\n")]
-    assert "settled && !untangle.done && untangleLayout()" in loop
-    assert "shuffle.left = UNTANGLE_GLIDE_STEPS" in loop  # glides, not jumps
-    assert "shuffle.left = UNTANGLE_CLEAN_STEPS" in loop
+    # At rest, out of sight, then one glide of every note together (the owner,
+    # 2026-10-27: a glide per pass and one for the cleanup read as notes
+    # "sliding instantly into position one after the other";
+    # tests/test_graph_open_flow.py measures it).
+    assert "settled && !dragging && untangleOwed()" in loop
+    assert "pendingStart(false, false, false);" in loop
+    step = WORKER[WORKER.index("\nfunction pendingStep(") :]
+    assert "settleGlideFrom(pending.sx, pending.sy);" in step[: step.index("\n}\n")]  # glides, not jumps
     drag = WORKER[WORKER.index('case "drag": {') :][:600]
     assert "untangle.done = true" in drag
     for case in ('case "params":', 'case "reshuffle":'):
@@ -146,7 +157,9 @@ def test_the_untangle_waits_for_rest_and_never_follows_a_drag() -> None:
 
 def test_a_new_layout_cools_several_ticks_a_frame_but_a_drag_one() -> None:
     loop = WORKER[WORKER.index("\nfunction loop() {") :]
-    assert "const quick = !dragging && (!untangle.done || untangle.relaxing) && simulation.alpha() < WARM_ALPHA;" in loop
+    # The relax after a pass is no longer cooled live (it runs out of sight), so
+    # "owed an untangle" is what marks a new layout's cooling.
+    assert "const quick = !dragging && untangleOwed() && simulation.alpha() < WARM_ALPHA;" in loop
     assert re.search(r"^const LIVE_STEP_MS = 8;$", WORKER, re.M)
 
 

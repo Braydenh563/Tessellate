@@ -4873,7 +4873,7 @@ function gcStartWorker(nodes, edges, world, s = gcTab, viewSeed = null) {
           if (graphMinimapTick % 8 === 0) graphMinimapQueuePaint();
         }
       } else if (message.type === "frame") {
-        gcFrameIntro(s, message.positions);
+        gcFrameIntro(s, message.positions, message.start);
       } else if (message.type === "end") {
         //: At rest is where the last tick said: the glide is finished here,
         //: not by the next paint, so the fit below frames the final shape.
@@ -4982,6 +4982,10 @@ function gcStartWorker(nodes, edges, world, s = gcTab, viewSeed = null) {
     //: worker's `INTRO_HOLD`), unless the reader asked for less motion: they
     //: get the settled map at once, as before.
     intro: !gcStill() && !restoring,
+    //: Behind the first fade the playback starts near the settled map
+    //: (the worker's `BLOOM`); on a map already showing, from where its
+    //: notes stand.
+    bloom: hidden,
   };
   //: **A layout that already settled is held, not settled again** (INBOX
   //: 424c/d). Every visit to the Graph tab refetched the map and restarted
@@ -5072,10 +5076,26 @@ function gcCachedPositions(s) {
   }
 }
 
-function gcFrameIntro(s, positions) {
+function gcFrameIntro(s, positions, start) {
   if (gcAutoFitDone(s) || !s.nodes.length || positions.length < s.nodes.length * 2) return;
   s.fittedOnce = true;
   s.intro = true;
+  //: The playback's first frame is where the notes are drawn from the
+  //: reveal on: a glide from where the canvas last had them (the starting
+  //: spiral, behind the fade) was a 327 px jump in its first frame.
+  if (start && start.length >= s.nodes.length * 2) {
+    s.nodes.forEach((node, i) => {
+      if (node === s.dragNode) return;
+      node.x = start[i * 2];
+      node.y = start[i * 2 + 1];
+      node._toX = undefined;
+      node._toY = undefined;
+    });
+    s.gliding = false;
+    s.glideMs = 0;
+    s.quadtreeDirty = true;
+    gcRequestDraw(s);
+  }
   const target = s.nodes.map((node, i) => ({ x: positions[i * 2], y: positions[i * 2 + 1], r: node.r }));
   //: Instant behind the fade of a first open; on a map already showing, the
   //: camera eases to the new frame while the notes move.
