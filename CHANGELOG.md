@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The Ask answer's head shows what was pressed (INBOX 1423): a press, an open menu and Read aloud while it speaks take the accent ground (pressed bg 0.09 white to 0.16 accent), Copy swaps to a tick for 1.2 s, Read aloud shows a stop icon with `aria-pressed` and a second press stops it, Regenerate stays and shows the ring while the answer runs. A lone Alt press is no longer handed to the window (INBOX 1422), so it cannot leave the window's own menu open until an Alt-Tab.
 - The companion's landing after a throw no longer hands over idle motion that is not moving: the land act's call fell from a median 8.2ms (max 18.8) to 1.6ms (max 9.4).
 - A model server that accepts the connection and never answers no longer holds every turn (INBOX 1420): each liveness check of a turn waited its own 2 s, five or more per turn, 4 to 9 s before the first step on a silent runner; one silence is now remembered for 10 s (Ollama and OpenAI-compatible), the probe waits 1 s, and a second question answers in 0.04 s.
 - A hard, steep upward throw now leaves the top of the window from anywhere on screen (its climb is lighter on the way up) and falls back in; a moderate one still hangs from the top bar or bounces off it.

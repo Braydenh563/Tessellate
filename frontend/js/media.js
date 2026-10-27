@@ -361,7 +361,8 @@ async function toggleDictation(button, targetInput) {
 
 // --- Wave H: read-aloud (the browser's local voices) --------------------------------
 
-function speakText(text) {
+//: `button` shows a stop icon and `aria-pressed` while it speaks (INBOX 1423).
+function speakText(text, button = null) {
   if (!("speechSynthesis" in window)) {
     toast("This browser has no text-to-speech voices.", "info");
     return;
@@ -372,6 +373,16 @@ function speakText(text) {
   }
   if (!text.trim()) return;
   const utterance = new SpeechSynthesisUtterance(text);
+  if (button) {
+    const rest = button.innerHTML;
+    const paint = (on) => {
+      button.setAttribute("aria-pressed", String(on));
+      if (on) setLabel(button, "ph:stop");
+      else button.innerHTML = rest;
+    };
+    utterance.addEventListener("start", () => paint(true));
+    for (const type of ["end", "error"]) utterance.addEventListener(type, () => paint(false));
+  }
   //: Read aloud is sound this app makes, so the companion can hear it.
   if (typeof nameMarkBuddySound === "function") {
     utterance.addEventListener("start", () => nameMarkBuddySound("speech", true));

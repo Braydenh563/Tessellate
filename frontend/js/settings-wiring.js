@@ -1797,7 +1797,7 @@ $("mic-note").addEventListener("click", () =>
 $("mic-chat").addEventListener("click", () =>
   toggleDictation($("mic-chat"), $("chat-input"))
 );
-$("speak-btn").addEventListener("click", () => speakText($("ai-answer").textContent));
+$("speak-btn").addEventListener("click", (e) => speakText($("ai-answer").textContent, e.currentTarget));
 
 // PWA (WORLD_CLASS_PLAN decision 49): sw.js caches stamped files, vendored
 // libraries and icons, and shows offline.html when the server is not

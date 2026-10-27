@@ -2969,7 +2969,10 @@ async function askQuestion(preset) {
   // A new answer is coming, hide the suggestion/recent chips and the
   // per-answer action buttons until it lands.
   $("suggested-questions").classList.add("hidden");
-  hide("retry-btn", "copy-btn", "speak-btn", "ask-answer-more");
+  hide("copy-btn", "speak-btn", "ask-answer-more");
+  //: Regenerate stays and shows the ring while it runs (INBOX 1423).
+  const retryBtn = $("retry-btn");
+  if (!retryBtn.classList.contains("hidden")) setBusy(retryBtn, true, "");
   askKept = null;
   setAsking(true);
   status.classList.remove("error");
@@ -3293,6 +3296,7 @@ async function askQuestion(preset) {
     // an answer that stopped arriving is worse than never showing one.
     answerBox.classList.remove("is-streaming", "is-generating");
     progress?.remove();
+    setBusy($("retry-btn"), false);
     askController = null;
     setAsking(false);
     // The question used to be cleared here, which left an answer on screen with
@@ -3308,7 +3312,7 @@ function retryAnswer() {
 }
 
 async function copyAnswer() {
-  if (await copyToClipboard($("ai-answer").textContent)) toast("Answer copied.");
+  if (await copyToClipboard($("ai-answer").textContent, $("copy-btn"))) toast("Answer copied.");
 }
 
 // --- suggested questions (Round 1) ----------------------------------------------

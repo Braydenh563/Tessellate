@@ -543,9 +543,16 @@ function flashCopied(button) {
   // with no trailing text) renders as a bare <i> with empty textContent, so
   // saving/restoring textContent silently wiped the icon back to blank once
   // the checkmark's timeout fired instead of putting it back.
-  const original = button.innerHTML;
+  //: A second press inside 1.2 s keeps the real icon (INBOX 1423).
+  if (!button._copiedWas) button._copiedWas = button.innerHTML;
+  clearTimeout(button._copiedTimer);
   setLabel(button, "ph:check");
-  setTimeout(() => (button.innerHTML = original), 1200);
+  button.classList.add("is-done");
+  button._copiedTimer = setTimeout(() => {
+    button.innerHTML = button._copiedWas;
+    button._copiedWas = null;
+    button.classList.remove("is-done");
+  }, 1200);
 }
 
 async function copyToClipboard(text, button) {
