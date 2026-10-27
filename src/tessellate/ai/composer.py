@@ -879,6 +879,29 @@ def _heading_text(line: str) -> str | None:
     return line[lead.end() :].rstrip("\r\n").strip() if lead else None
 
 
+#: A line that is only bold ("**After making an initial connection**") is a
+#: heading the person made without "#" (INBOX 1420): a name, never a sentence.
+_BOLD_LINE = re.compile(r"[ \t]{0,3}(\*\*|__)(?=\S)([^*_\n]{1,80}?)\1:?[ \t]*\r?\n?$")
+#: "Follow- Up" as typed on a phone: the hyphen's word goes on (INBOX 1420).
+_SPLIT_HYPHEN = re.compile(r"(?<=[A-Za-z])- (?=[A-Z][a-z])")
+#: A short first line ending in a colon, with lines under it: "Ice Breakers:"
+#: over its list is the note's name (INBOX 1420).
+_COLON_TITLE = re.compile(r"[ \t]*([^\s:.!?][^:.!?\n]{0,48}?):[ \t]*$")
+
+
+def bold_line(line: str) -> str | None:
+    """A wholly bold line's words, or None for another line."""
+    found = _BOLD_LINE.match(line)
+    return found.group(2).strip() if found else None
+
+
+def plain_words(text: str) -> str:
+    """A note's words without its emphasis marks or a split hyphen: what the
+    page shows, which is what an answer says."""
+    text = re.sub(r"(\*\*|__)(?=\S)(.+?)(?<=\S)\1", r"\2", text).replace("**", "")
+    return _SPLIT_HYPHEN.sub("-", text)
+
+
 def _title(content: str) -> tuple[str, int]:
     """The note's name and where its body starts: its first heading, or, with
     none, its first few words (the body then starts at the top, so those words
@@ -886,8 +909,13 @@ def _title(content: str) -> tuple[str, int]:
     end = content.find("\n")
     first = content if end == -1 else content[:end]
     heading = _heading_text(first)
+    if heading is None:
+        heading = bold_line(first)
+    if heading is None and end != -1 and content[end:].strip():
+        colon = _COLON_TITLE.match(first)
+        heading = colon.group(1) if colon and len(colon.group(1).split()) <= 6 else None
     if heading is not None:
-        name = _MARKS.sub("", heading).strip().strip("#").strip()
+        name = plain_words(_MARKS.sub("", heading).strip().strip("#").strip())
         if name:
             return name, len(content) if end == -1 else end
     words = _MARKS.sub("", first.strip().lstrip("-*+> ")).split()
@@ -913,7 +941,7 @@ def _unit(view: NoteView, content: str, start: int, end: int, kind: str, done: b
         start += discourse.end()
         raw = raw[discourse.end():]
     end = start + len(raw)
-    text = " ".join(raw.split())
+    text = plain_words(" ".join(raw.split()))
     if not text:
         return None
     if len(text) > MAX_QUOTE_CHARS:
@@ -1088,7 +1116,7 @@ def read_note(note: dict, rank: int) -> NoteView | None:
         if stripped.startswith("```"):
             in_fence = not in_fence
             continue
-        if in_fence or not stripped or _heading_text(line) is not None or stripped.startswith(("![", "|")):
+        if in_fence or not stripped or _heading_text(line) is not None or bold_line(line) is not None or stripped.startswith(("![", "|")):
             continue
         _line_units(view, content, line_start, line)
     for i, sentence in enumerate(view.sentences):

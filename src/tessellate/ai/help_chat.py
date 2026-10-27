@@ -967,7 +967,7 @@ HELP_TOPICS: list[dict] = [
             "gets a question back with choices you can press; an instruction "
             "the app does not understand is matched to the closest things it can do. "
             "With no model running, an answer ends with a line pointing at what to do next, "
-            "from your newest note; the Length picker applies (Quick keeps the first line only, "
+            "from your newest note, or from the note you have open when the question is about it; the Length picker applies (Quick keeps the first line only, "
             "Detailed keeps everything). A persona is an instruction for a model, so with no "
             "model it changes nothing: the app answers in its own voice."
         ),
