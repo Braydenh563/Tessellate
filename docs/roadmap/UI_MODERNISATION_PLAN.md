@@ -1593,5 +1593,3 @@ Rows: T1 and T2 (owner: voiceup, with V7's dialog work); T3 learnaudit; T4 gramm
 
 ## Placed from INBOX, 2026-10-27
 
-1402. **The owner, 2026-10-27, verbatim** (screenshot, dark: Atlas, the spirit companion, over a chat answer, mouth a small frown, brows down, arms held stiffly). "atlas looks like a bored or grumpy gangster with its facial expressions and arm positioning half the time. also ill trow the companions sometimes but then it tll fly back to some position someitmes across the screen."
-     Placed: one agent, both halves, fix the class. (1) Every resting and idle face and pose of every companion reads friendly at rest (measured over the mood and idle cycle, not one frame); (2) a thrown companion settles where it lands, or comes back along a short visible path to its own perch, never across the screen.

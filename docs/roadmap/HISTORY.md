@@ -51229,3 +51229,9 @@ From DOCUMENTS_PLAN, "Placed from INBOX, 2026-10-19", row 16 (the guided equatio
 Rows moved out of `agent-remaining/OPEN.md` after a check of CHANGELOG.md and HISTORY.md for each row's INBOX number or phrase. Only a row with a matching fix line moves.
 
 - Row 296 (INBOX 743 tail, welcome card): "recheck the welcome card" is done. Evidence: CHANGELOG.md line 303, "Welcome card: Atlas's swirl no longer paints past its holder (4 px at 390 before, 0 to 1 px after) ... (INBOX 743 tail)."
+## INBOX resolved, 2026-10-27
+
+1402. **The owner, 2026-10-27, verbatim** (screenshot, dark: Atlas, the spirit companion, over a chat answer, mouth a small frown, brows down, arms held stiffly). "atlas looks like a bored or grumpy gangster with its facial expressions and arm positioning half the time. also ill trow the companions sometimes but then it tll fly back to some position someitmes across the screen."
+     Placed: one agent, both halves, fix the class. (1) Every resting and idle face and pose of every companion reads friendly at rest (measured over the mood and idle cycle, not one frame); (2) a thrown companion settles where it lands, or comes back along a short visible path to its own perch, never across the screen.
+     **Fixed 55bea4b, bb2d432.** Measured: a grumpy face or pose over a scripted 3.5 minute session 92.3% to 1.4% (his look), 100% to 1.3% (hers), only brief yawns left (`scratchpad/ui-sweeps/atlasrest1402.js`). 84 seeded throws at 1280x720, 1440x900 and 390x844 (`throwsettle1402.js`): the furthest landing move 256 to 65px (climbs aside), total 3,875 to 1,487px; moves after settling 0 at 5s and 15s, and a reload keeps the spot (0px), before and after.
+
