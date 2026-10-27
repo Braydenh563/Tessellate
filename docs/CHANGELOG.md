@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The graph popup's Save row no longer covers the action footer (INBOX 1421): both are pinned at the panel's foot and Save, one layer higher, was drawn 36px over Open, Focus, Pin and Link after a picture was resized; Save now stands above the footer by its measured height (Save bottom 567 against a footer top of 531, now 526). Pictures already resize in every Live note editor (Capture, the Notes edit form, the graph's two boxes, Write with the AI, concept cards), one shared grip that writes the width into the picture's alt text.
 - The companion's landing after a throw no longer hands over idle motion that is not moving: the land act's call fell from a median 8.2ms (max 18.8) to 1.6ms (max 9.4).
 - A hard, steep upward throw now leaves the top of the window from anywhere on screen (its climb is lighter on the way up) and falls back in; a moderate one still hangs from the top bar or bounces off it.
 - The default board keeps its picture (INBOX 1418): a board thumbnail was fingerprinted on the newest write to any note on its cards, so a pin, a body edit or the janitor re-filing a note retired the stored picture and the Library card went back to the drawn preview until the board was opened again; it is now fingerprinted on the card titles it shows, and boards of drawings were never affected.

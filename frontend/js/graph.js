@@ -4301,6 +4301,16 @@ function placeGraphPopup() {
   watchGraphPopupSize(popup, placeGraphPopup);
   if (!graphPopupAnchor || popup.classList.contains("hidden")) return;
   const { box, room } = graphPanelRoom();
+  //: **Save stands above the dock, not under it** (INBOX 1421). Both are pinned
+  //: at the panel's foot and Save is one layer higher, so at `bottom: 0` it was
+  //: drawn over the dock for as tall as the dock is. The dock's own offset
+  //: already has the panel's padding inside it, so that comes off.
+  const dock = popup.querySelector(".graph-popup-actions");
+  const saveRow = $("graph-popup-saverow");
+  if (dock && saveRow) {
+    const pad = parseFloat(getComputedStyle(popup).paddingBottom) || 0;
+    saveRow.style.bottom = `${Math.max(0, dock.offsetHeight - pad)}px`;
+  }
   //: **On a phone the panel is a sheet, and JS has to be the one to say so**
   //: (GRAPH_PLAN Phase 6). The position is inline `left`/`top` written here,
   //: which no stylesheet rule can override without `!important`, so a media
