@@ -15488,6 +15488,8 @@ function toggleDocFocus(force) {
   const on = typeof force === "boolean" ? force : !tab.classList.contains("doc-focus");
   tab.classList.toggle("doc-focus", on);
   tab.classList.remove("doc-focus-idle");
+  //: The suggestions panel's grip is offered in the mode as well (INBOX 1408).
+  applyDocProseDock();
   try {
     if (on) sessionStorage.setItem(DOC_FOCUS_KEY, "1");
     else sessionStorage.removeItem(DOC_FOCUS_KEY);
@@ -19794,12 +19796,20 @@ function applyDocProseDock() {
   if (!panel || !panes || !bar) return;
   const right = docProseDockSide() === "right";
   const handle = docProseResizeHandle();
+  const focus = $("tab-documents")?.classList.contains("doc-focus") === true;
   if (right) {
     if (panel.parentElement !== panes) panes.append(handle, panel);
     docProseApplyWidth(docProseSavedWidth());
-  } else if (panel.previousElementSibling !== bar) {
-    bar.after(panel);
+  } else {
+    //: In focus mode the panel is a fixed side panel whatever side was chosen,
+    //: so it has the grip and the remembered width too (INBOX 1408); the grip
+    //: is fixed there, so it only has to sit before the panel.
     handle.remove();
+    if (panel.previousElementSibling !== bar) bar.after(panel);
+    if (focus) {
+      panel.before(handle);
+      docProseApplyWidth(docProseSavedWidth());
+    }
   }
   panes.classList.toggle("doc-prose-right", right);
   panel.classList.toggle("doc-prose-right", right);

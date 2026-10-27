@@ -115,10 +115,24 @@ button.outline-twist {
   overflow: visible;
 }
 
-/* Neither the grip nor the bottom/right choice means anything while the
-   panel is this side panel, so neither is offered. */
-#tab-documents.doc-focus .doc-prose-resize {
-  display: none;
+/* The bottom/right choice means nothing while the panel is this side panel,
+   but its width does: the grip is drawn fixed on the panel's left edge, the
+   same width the page's padding reads, just outside it (INBOX 1408). Where the panel is the
+   window's width less its gutters (below 820) there is nothing to size. */
+#tab-documents.doc-focus .doc-prose-resize.sidebar-resize {
+  position: fixed;
+  top: var(--doc-focus-panel-top);
+  bottom: var(--space-4);
+  right: calc(var(--space-4) + min(var(--doc-focus-prose-w), 100vw - var(--space-4) * 2));
+  flex: none;
+  width: var(--space-3);
+  height: auto;
+  z-index: 2;
+}
+@media (max-width: 819.98px) {
+  #tab-documents.doc-focus .doc-prose-resize.sidebar-resize {
+    display: none;
+  }
 }
 
 /* The overview used to step left of the properties drawer while the drawer
