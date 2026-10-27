@@ -160,3 +160,32 @@ def test_use_on_an_unusable_found_model_is_refused(ai_client, disk):
     assert refused.status_code == 400
     missing = ai_client.post("/embedding-models/use", json={"id": "found:nobody/not-here"})
     assert missing.status_code == 400
+
+
+def test_a_pytorch_only_model_chosen_earlier_is_re_embedded_with_the_default(client, session, disk):
+    """Chosen from this computer when the engine ran PyTorch weights, it now
+    reads as the default (no ONNX export), and the vectors it made are filled
+    again by the backfill rather than left stranded."""
+    from sqlalchemy import select
+
+    from tessellate.ai import embeddings
+    from tessellate.core.database import EmbeddingRecord
+
+    deps.get_config().set_preference("embedding_st_model", "sentence-transformers/all-mpnet-base-v2")
+    real = embeddings.EmbeddingService(model_manager=deps.get_model_manager(), ollama_client=None)
+    assert real.backend_id() == f"fastembed:{embedmodels.DEFAULT_REPO}"
+
+    class Default(FakeEmbeddingService):
+        def backend_id(self) -> str:
+            return real.backend_id()
+
+    service = Default(available=True)
+    deps.override_ai(embeddings=service)
+    note = client.post("/entries", json={"content": "embedded by the old choice"}).json()
+    row = session.scalars(select(EmbeddingRecord).where(EmbeddingRecord.entry_id == note["id"])).one()
+    row.model_version = "fastembed:sentence-transformers/all-mpnet-base-v2"
+    session.commit()
+
+    assert embeddings.backfill_missing(service, lambda: session) == 1
+    session.expire_all()
+    assert session.scalars(select(EmbeddingRecord.model_version)).all() == [real.backend_id()]

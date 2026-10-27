@@ -332,9 +332,18 @@ def _backfill_missing(service, session_factory, limit: int, run) -> int:  # noqa
         run.fail("Could not open the database.")
         return 0
     try:
+        #: "Missing" is "no vector for the model in use", not "no vector": a
+        #: vector from another model_version is dropped by search
+        #: (`search/engine.py`), so a note holding one (an engine change, a
+        #: model chosen earlier that now reads as the default) is filled here
+        #: like a note with none.
+        current = service.backend_id()
         missing = session.scalars(
             select(Entry)
-            .outerjoin(EmbeddingRecord, EmbeddingRecord.entry_id == Entry.id)
+            .outerjoin(
+                EmbeddingRecord,
+                (EmbeddingRecord.entry_id == Entry.id) & (EmbeddingRecord.model_version == current),
+            )
             .where(
                 Entry.is_deleted == False,  # noqa: E712
                 Entry.is_private == False,  # noqa: E712

@@ -2,7 +2,7 @@
 
 Generated 2026-10-27 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6587, frontend ids 2558, CSS sections 504, backend routes 625, backend modules 6742, test files 1414, tests 12543, plan headings 977.
+Counts: frontend functions 6587, frontend ids 2558, CSS sections 504, backend routes 625, backend modules 6742, test files 1414, tests 12546, plan headings 977.
 
 ## Frontend functions (6587)
 
@@ -12557,33 +12557,33 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `EmbeddingCacheBroken` | src/tessellate/ai/embeddings.py:52 |
 | `EmbeddingNeedsConsent` | src/tessellate/ai/embeddings.py:56 |
-| `EmbeddingService` | src/tessellate/ai/embeddings.py:772 |
-| `_PinnedModels` | src/tessellate/ai/embeddings.py:1411 |
-| `_backfill_chunks` | src/tessellate/ai/embeddings.py:395 |
+| `EmbeddingService` | src/tessellate/ai/embeddings.py:781 |
+| `_PinnedModels` | src/tessellate/ai/embeddings.py:1420 |
+| `_backfill_chunks` | src/tessellate/ai/embeddings.py:404 |
 | `_backfill_missing` | src/tessellate/ai/embeddings.py:322 |
-| `_digest` | src/tessellate/ai/embeddings.py:581 |
-| `_download_and_open` | src/tessellate/ai/embeddings.py:753 |
+| `_digest` | src/tessellate/ai/embeddings.py:590 |
+| `_download_and_open` | src/tessellate/ai/embeddings.py:762 |
 | `_engine_missing` | src/tessellate/ai/embeddings.py:80 |
-| `_fetch_model_as_a_task` | src/tessellate/ai/embeddings.py:762 |
+| `_fetch_model_as_a_task` | src/tessellate/ai/embeddings.py:771 |
 | `_notebook_has_notes` | src/tessellate/ai/embeddings.py:136 |
-| `_open_snapshot` | src/tessellate/ai/embeddings.py:733 |
+| `_open_snapshot` | src/tessellate/ai/embeddings.py:742 |
 | `_package_present` | src/tessellate/ai/embeddings.py:67 |
-| `_quiet_engine_log` | src/tessellate/ai/embeddings.py:722 |
-| `_register` | src/tessellate/ai/embeddings.py:694 |
+| `_quiet_engine_log` | src/tessellate/ai/embeddings.py:731 |
+| `_register` | src/tessellate/ai/embeddings.py:703 |
 | `_wait_for_idle` | src/tessellate/ai/embeddings.py:125 |
 | `backfill_missing` | src/tessellate/ai/embeddings.py:298 |
-| `bytes_to_vector` | src/tessellate/ai/embeddings.py:592 |
-| `chunk_text` | src/tessellate/ai/embeddings.py:568 |
-| `clean_orphaned_vectors` | src/tessellate/ai/embeddings.py:438 |
-| `cosine_similarity` | src/tessellate/ai/embeddings.py:598 |
+| `bytes_to_vector` | src/tessellate/ai/embeddings.py:601 |
+| `chunk_text` | src/tessellate/ai/embeddings.py:577 |
+| `clean_orphaned_vectors` | src/tessellate/ai/embeddings.py:447 |
+| `cosine_similarity` | src/tessellate/ai/embeddings.py:607 |
 | `embed_threads` | src/tessellate/ai/embeddings.py:288 |
-| `embedding_text` | src/tessellate/ai/embeddings.py:483 |
+| `embedding_text` | src/tessellate/ai/embeddings.py:492 |
 | `note_request` | src/tessellate/ai/embeddings.py:119 |
-| `similar_pairs` | src/tessellate/ai/embeddings.py:619 |
+| `similar_pairs` | src/tessellate/ai/embeddings.py:628 |
 | `start_warmup` | src/tessellate/ai/embeddings.py:156 |
-| `vector_to_bytes` | src/tessellate/ai/embeddings.py:585 |
-| `warmup_failed` | src/tessellate/ai/embeddings.py:434 |
-| `warmup_running` | src/tessellate/ai/embeddings.py:430 |
+| `vector_to_bytes` | src/tessellate/ai/embeddings.py:594 |
+| `warmup_failed` | src/tessellate/ai/embeddings.py:443 |
+| `warmup_running` | src/tessellate/ai/embeddings.py:439 |
 
 ### src/tessellate/ai/entities.py (10)
 
@@ -19639,7 +19639,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12543)
+## Tests (12546)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20030,12 +20030,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_egress_ledger_writes.py | 7 |
 | tests/test_egress_purposes.py | 9 |
 | tests/test_embedder_idle_unload.py | 3 |
-| tests/test_embedding_backfill.py | 11 |
+| tests/test_embedding_backfill.py | 13 |
 | tests/test_embedding_batches.py | 5 |
 | tests/test_embedding_batches_reindex.py | 2 |
 | tests/test_embedding_cache_health.py | 20 |
 | tests/test_embedding_errors.py | 6 |
-| tests/test_embedding_found.py | 10 |
+| tests/test_embedding_found.py | 11 |
 | tests/test_embedding_models.py | 15 |
 | tests/test_embedding_offline.py | 11 |
 | tests/test_embedding_pull.py | 9 |
