@@ -850,6 +850,11 @@ def _preferences_from(config) -> dict:
         "searxng_autostart": config.get_preference("searxng_autostart", False),
         "semantic_auto_install": config.get_preference("semantic_auto_install", False),
         "semantic_choice_made": config.get_preference("semantic_choice_made", False) is True,
+        #: The old engine's copy of the model is here, the new one's is not:
+        #: the welcome card's question says the engine moved (semantic-notice.js).
+        "semantic_engine_moved": (
+            None if config.get_preference("semantic_choice_made", False) else deps.get_model_manager().semantic_engine_moved()
+        ),
         "search_provider": websearch.normalise_provider(
             config.get_preference("search_provider", websearch.DEFAULT_PROVIDER)
         ),

@@ -178,7 +178,7 @@ def test_the_notice_is_lazy_and_reached_from_the_status_poll():
     assert 'semanticNotice: ["/js/semantic-notice.js"]' in (js / "app.js").read_text(encoding="utf-8")
     status = (js / "status.js").read_text(encoding="utf-8")
     assert "status.semantic_offer" in status
-    assert "semanticOffer(Boolean(status.semantic_offer))" in status
+    assert "semanticOffer(Boolean(status.semantic_offer), status.semantic_engine_moved)" in status
     assert '"semanticOffer", "semanticOnboardingOffer"' in (js / "app.js").read_text(encoding="utf-8")
     # Lazy means not a boot script.
     assert "semantic-notice.js" not in (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")

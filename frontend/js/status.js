@@ -2841,7 +2841,7 @@ function renderSettings() {
   //: The one-time question before search by meaning is downloaded
   //: (semantic-notice.js, lazy): opened while the server says it is owed,
   //: closed once it is answered.
-  if (status.semantic_offer || lazyModuleLoads.has("semanticNotice")) semanticOffer(Boolean(status.semantic_offer));
+  if (status.semantic_offer || lazyModuleLoads.has("semanticNotice")) semanticOffer(Boolean(status.semantic_offer), status.semantic_engine_moved);
   const embeddingError = $("embedding-error");
   embeddingError.classList.toggle("hidden", !status.embedding_error);
   //: A missing optional package arrives as a sentence the backend wrote for

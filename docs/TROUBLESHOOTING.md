@@ -72,9 +72,17 @@ same place, or set `TESSELLATE_NO_AUTO_INSTALL` to stop the download whatever th
 ## Upgraded from a version with PyTorch: the old files
 
 Search by meaning ran on `sentence-transformers` and PyTorch until October
-2026; it runs on `fastembed` (ONNX Runtime) now, with the same models. Your
-notes keep their vectors and nothing is embedded again. The old engine's
-files stay where they were, and Tessellate no longer uses them:
+2026; it runs on `fastembed` (ONNX Runtime) now. The old model files do not
+work with it, so after an upgrade search by meaning needs one download (about
+130 MB, replacing the old engine) and Tessellate asks first: the notice and
+the welcome card say the engine moved, and search uses keywords until you
+answer yes. Nothing is downloaded without that yes. Notes embedded with
+BGE Small or Multilingual E5 Small keep their search data and none is
+embedded again; notes embedded with any other model are read again in the
+background once the download lands.
+
+The old engine's files stay where they were, and Tessellate no longer uses
+them:
 
 ```
 pip uninstall -y sentence-transformers torch

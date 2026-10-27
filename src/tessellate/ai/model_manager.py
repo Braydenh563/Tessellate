@@ -782,6 +782,17 @@ class ModelManager:
         """Only meaningful when the backend is 'ollama'."""
         return self._config.get_preference("embedding_model", "nomic-embed-text")
 
+    def semantic_engine_moved(self) -> dict | None:
+        """Set when this computer holds the old engine's copy of the model
+        search would use but not the new one's (`embedmodels.engine_moved`),
+        so the one-time question can say the engine moved. None otherwise,
+        and for the Ollama backend, which has no download of ours."""
+        from tessellate.core import embedmodels
+
+        if self.embedding_backend() == "ollama":
+            return None
+        return embedmodels.engine_moved(self.embedding_st_model())
+
     def embedding_st_model(self) -> str:
         """The built-in backend's model (INBOX 700), a repo from the allowlist
         in `core/embedmodels.py`. Anything else in the preference, an entry

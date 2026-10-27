@@ -329,6 +329,24 @@ MORE_TOPICS: list[dict] = [
         "badge": {"label": "Search and index", "section": "searchindex"},
     },
     {
+        "id": "search-engine-moved",
+        "keywords": (
+            "search engine moved", "engine moved", "upgraded from pytorch", "old search engine",
+            "pytorch", "torch", "sentence-transformers", "old search files", "old model files",
+            "why download again", "download again",
+        ),
+        "body": (
+            (
+                "After an upgrade from a version that ran search by meaning on PyTorch, the question about "
+                "downloading it says the engine moved. The old model files do not work with the new engine, "
+                "so it is one download (about 130 MB for BGE Small) that replaces them, asked first, with "
+                "keyword search working meanwhile. Notes made with BGE Small or Multilingual E5 Small keep "
+                "their search data; notes made with any other model are read again in the background."
+            )
+        ),
+        "badge": {"label": "Search and index", "section": "searchindex"},
+    },
+    {
         "id": "answer-style",
         "keywords": (
             "answer style", "concise", "detailed", "shorter answers",

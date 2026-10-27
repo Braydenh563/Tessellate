@@ -363,6 +363,7 @@ def status(session: Session = Depends(get_session)) -> dict:
     resolved_vision = manager.resolve_vision_model(ollama, installed) if running else None
 
     config = deps.get_config()
+    semantic_offer = _semantic_offer(embeddings, config)
     provider = str(config.get_preference("llm_provider", "ollama") or "ollama")
     # Judged on every status poll, not only when the address is changed. A
     # warning that appears once and vanishes on the next reload is a warning
@@ -509,7 +510,11 @@ def status(session: Session = Depends(get_session)) -> dict:
         "embedding_error": embeddings.last_error,
         #: The one-time offer to download search by meaning: a save wanted it,
         #: nothing is on this computer, and the question is still unanswered.
-        "semantic_offer": _semantic_offer(embeddings, config),
+        "semantic_offer": semantic_offer,
+        #: Set when the old engine's copy of the model is on this computer:
+        #: the one-time question then says the engine moved (semantic-notice.js).
+        #: Read only while the question is open: it is a folder listing.
+        "semantic_engine_moved": manager.semantic_engine_moved() if semantic_offer else None,
         "reindex": jobs.reindex_status(),
         "embedding_coverage": _embedding_coverage(session),
         #: How the last search found its notes (`search_manager.last_search`).

@@ -509,6 +509,50 @@ def disk_size_of(repo: str) -> str:
     return _human_size(_dir_size(folder)) if folder.is_dir() else ""
 
 
+#: What the old engine (sentence-transformers) kept in the cache: PyTorch
+#: weights, which fastembed never reads. The ONNX build is a different file in
+#: a different folder (or, for E5 and BGE M3, beside these in the same one).
+_TORCH_WEIGHTS = ("model.safetensors", "pytorch_model.bin")
+#: What the engine's own download adds to a model's: fastembed 0.9.1 and the
+#: wheels it needs on Linux, measured 2026-10-27 (57 MB, rounded up).
+_ENGINE_BYTES = 60 * 1024**2
+
+
+def _torch_files(model: EmbedModel) -> list[Path]:
+    """The old engine's weight files for one catalogue model, as they sit in
+    its repo's snapshots (links into the blob store)."""
+    found = []
+    for snapshot in _snapshots(model.repo):
+        found.extend(snapshot / name for name in _TORCH_WEIGHTS if _file_size(snapshot / name))
+    return found
+
+
+def _round_download(size: int) -> str:
+    """`about 130 MB`, rounded to ten, or `about 2.4 GB` for a large one."""
+    megabytes = round(size / 1024**2 / 10) * 10
+    return f"about {megabytes} MB" if megabytes < 1000 else f"about {size / 1024**3:.1f} GB"
+
+
+def engine_moved(repo: str) -> dict | None:
+    """Whether this computer holds the old engine's copy of `repo` but not the
+    new engine's, and what the person is told then (the owner's decision,
+    2026-10-27: keep the ask, since nothing downloads without a yes, and say
+    the engine moved).
+
+    `vectors` is "kept" for a model whose notes were renamed by migration
+    f1b3c5d7e9a2 (`VECTORS_KEPT`) and "again" for one whose notes the
+    backfill embeds again; `download` is the one-time size in words, the
+    engine plus the model's ONNX build. None when the new build is here, when
+    there is no old copy, or for a model outside the catalogue."""
+    entry = EMBED_MODELS_BY_REPO.get(repo)
+    if entry is None or entry.onnx is None or is_downloaded(repo) or not _torch_files(entry):
+        return None
+    return {
+        "vectors": "kept" if repo in VECTORS_KEPT else "again",
+        "download": _round_download(_ENGINE_BYTES + _declared_bytes(entry.size)),
+    }
+
+
 #: A weights file smaller than this share of the catalogue's stated size is
 #: truncated. Generous on purpose (the stated size is approximate), so only a
 #: file that is plainly short is refused.
