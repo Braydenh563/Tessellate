@@ -3296,9 +3296,13 @@ const NMB_FACELESS_ACTS = ["blink", "look", "glance", "turn", "land", "shift", "
 //: for feminine), used at rest"). Long, quiet acts, only standing or
 //: floating, only for Atlas and only in the look named: the arms ease into
 //: them (the pose transition) and out again when the act ends, and the sway
-//: is the figure's box on the compositor.
+//: is the figure's box on the compositor. **Hands on the hips, not arms
+//: folded** (INBOX 1402, the owner: "a bored or grumpy gangster with its
+//: facial expressions and arm positioning"): folded across the chest for
+//: 16s at a time was the sulk; both hands to the hips is the same at-ease
+//: stance, open.
 const NMB_STANCES = {
-  fold: { ms: 16000, w: 1.4, cool: 40000, poses: ["stand", "float"], look: "masculine" },
+  hips: { ms: 16000, w: 1.4, cool: 40000, poses: ["stand", "float"], look: "masculine" },
   hip: { ms: 14000, w: 1.4, cool: 40000, poses: ["stand"], look: "masculine" },
   clasp: { ms: 16000, w: 1.4, cool: 40000, poses: ["stand", "float"], look: "feminine" },
   sway: { ms: 14000, w: 1.4, cool: 40000, poses: ["stand", "float"], look: "feminine" },
@@ -7619,13 +7623,17 @@ function nameMarkBuddyTick() {
 //: nothing between changes. Atlas has its own moods (atlas.js) and only
 //: gets the drift, and only when it is calm. `nmb.exprHold` is the one it
 //: comes back to (sleepy while you are away, intent while it thinks).
+//: A drift is never sourer than the face it leaves (INBOX 1402, "a bored or
+//: grumpy gangster"): a friendly face wanders only among friendly ones (a
+//: calm one went sly a third of the time, arms folded with it), and a sour
+//: one only toward kinder; a scowl is for an event.
 const NMB_EXPR_NEAR = {
-  happy: ["calm", "love", "cute"], calm: ["happy", "sly", "cute"], excited: ["happy", "starstruck"],
-  sad: ["calm", "nervous"], angry: ["unimpressed", "serious"], serious: ["calm", "unimpressed"],
-  sly: ["calm", "evil", "cool"], cool: ["sly", "calm"], nervous: ["calm", "confused"], sleepy: ["calm"],
+  happy: ["calm", "love", "cute"], calm: ["happy", "cute"], excited: ["happy", "starstruck"],
+  sad: ["calm", "nervous"], angry: ["unimpressed", "serious"], serious: ["calm", "happy"],
+  sly: ["calm", "cool"], cool: ["sly", "calm"], nervous: ["calm", "confused"], sleepy: ["calm"],
   love: ["happy", "cute"], laughing: ["happy", "excited"], unimpressed: ["serious", "sly"],
   confused: ["calm", "nervous"], cute: ["happy", "uwu"], uwu: ["cute", "happy"], starstruck: ["excited", "happy"],
-  "": ["happy", "calm", "sly"],
+  "": ["happy", "calm", "cute"],
 };
 const NMB_ATLAS_NEAR = ["curious", "happy", "proud", "shy"];
 function nameMarkBuddyExpress(expr, ms = 0, { drift = false } = {}) {
@@ -8113,6 +8121,10 @@ function nameMarkBuddyFeel(delta, now = Date.now()) {
 //: itself (`nmb.pokes` keeps twenty seconds), so after a pause it is a
 //: hello again. `last` is the previous answer, `rand` the draw (a function,
 //: so a test fixes it).
+//: A sulk is brief (INBOX 1402): a scowl only while the poke that called
+//: for it is fresh.
+const NMB_GRUMPY_MS = 8000;
+const NMB_POUT_MS = 3000;
 const NMB_POKE_GENTLE = ["pleased", "curious", "wave"];
 const NMB_POKE_POOL = ["pleased", "playful", "curious", "wave", "spin", "laugh"];
 function nameMarkBuddyClickReaction(asleep, pokes, sinceLast, groggy = false, last = "", rand = Math.random) {
@@ -9279,20 +9291,23 @@ function nameMarkBuddyBuild() {
       if (how === "pout") {
         nameMarkBuddyFeel(-0.15);
         nmb.groggyUntil = Math.max(nmb.groggyUntil || 0, now + 4000);
-        nameMarkBuddyPout(buddy, 6000);
+        nameMarkBuddyPout(buddy, NMB_POUT_MS);
         return;
       }
-      //: **Poked too often** (four times in twenty seconds): grumpy for half
-      //: a minute. It turns away, says so, and will not look at you.
+      //: **Poked too often** (four times in twenty seconds): grumpy, briefly.
+      //: It turns away, says so, and will not look at you. It was half a
+      //: minute and a pout after it, 35s of a scowl (INBOX 1402, the owner:
+      //: "a bored or grumpy gangster ... half the time"): now `NMB_GRUMPY_MS`
+      //: and a short pout on the way back.
       if (how === "grumpy") {
         nameMarkBuddyFeel(-0.4);
-        nmb.grumpyUntil = now + 30000;
+        nmb.grumpyUntil = now + NMB_GRUMPY_MS;
         nmb.mood.sociability = Math.max(0, nmb.mood.sociability - 0.25);
         nameMarkBuddyRelease();
         buddy.classList.remove("nmb-pout");
         nameMarkBuddyEase(buddy, 2400);
         buddy.classList.add("nmb-grumpy");
-        nameMarkBuddyExpress("unimpressed", 30000);
+        nameMarkBuddyExpress("unimpressed", NMB_GRUMPY_MS);
         buddy.dataset.turn = nmb.pointer && nmb.pointer[0] > nmb.x + NMB_W / 2 ? "l" : "r";
         setTimeout(() => {
           //: And it comes down through a pout, not straight back (unless it
@@ -9300,9 +9315,9 @@ function nameMarkBuddyBuild() {
           //: rub has made up already).
           if (!buddy.isConnected || (nmb.rubbedAt || 0) > now) return;
           buddy.classList.remove("nmb-grumpy");
-          nameMarkBuddyPout(buddy, 5000);
+          nameMarkBuddyPout(buddy, 2000);
           if (buddy.dataset.turn && !buddy.classList.contains("nmb-walking")) delete buddy.dataset.turn;
-        }, 30000);
+        }, NMB_GRUMPY_MS);
         nameMarkSay(buddy, ["Hmph.", "Okay, that's enough.", "I'm not talking to you."][Math.floor(Math.random() * 3)]);
         return;
       }

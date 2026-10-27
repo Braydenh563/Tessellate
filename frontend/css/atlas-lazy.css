@@ -46,9 +46,11 @@
    variants: every one of its three hung straight down. Now the companion's
    variant pick (avatars.js, `data-atlas-variant`) gives it a relaxed arm a
    little out, a hand on the hip (the rig bends the elbow for a raise past
-   8 degrees) and hands brought together in front; the rig eases between
-   them as it does every pose. */
-.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="calm"] { --atl-ar0: -16deg; --atl-al0: 12deg; --atl-ar1: -52deg; --atl-al1: 8deg; --atl-ar2: 34deg; --atl-al2: -30deg; }
+   8 degrees) and, for her, hands brought together in front; the rig eases
+   between them as it does every pose. His third had his hands together low
+   in front too, a doorman's stance (INBOX 1402: "a bored or grumpy
+   gangster"): now both arms a little out, one further than the other. */
+.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="calm"] { --atl-ar0: -16deg; --atl-al0: 12deg; --atl-ar1: -52deg; --atl-al1: 8deg; --atl-ar2: -24deg; --atl-al2: 30deg; }
 .nm-atlas[data-atlas-look="feminine"][data-atlas-mood="calm"] { --atl-ar0: -26deg; --atl-al0: 8deg; --atl-ar1: -48deg; --atl-al1: 10deg; --atl-ar2: 24deg; --atl-al2: -34deg; }
 /* Carried or thrown (B87a), the slow idle loops hold where they are and
    go on from there when it lands. While a main frame is drawn every

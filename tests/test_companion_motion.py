@@ -584,7 +584,7 @@ def test_reduce_actions_and_atlas_stances_at_rest():
     # Fewer is a third, except in its large view, where it is watched.
     assert "if (!NMB_QUIET_ACTS.includes(act)) w *= { off: 0, fewer: nmb.visit ? 1 : 0.33, normal: 1 }[actions] ?? 0.33;" in decide
     assert "if (stance && (!nmb.atlasLook || nmb.atlasLook !== stance.look)) w = 0;" in decide
-    for stance, look in (("fold", "masculine"), ("hip", "masculine"), ("clasp", "feminine"), ("sway", "feminine")):
+    for stance, look in (("hips", "masculine"), ("hip", "masculine"), ("clasp", "feminine"), ("sway", "feminine")):
         assert f'{stance}: {{ ms:' in AV and f'look: "{look}" }}' in AV
         assert f"#nm-buddy.nmb-act-{stance} " in CSS08
 
@@ -1179,8 +1179,8 @@ def test_sleep_holds_through_input_moves_and_tab_switches() -> None:
     css = CSS08
     assert ":is(.nm-atlas.atl-easing, #nm-buddy.nmb-easing .nm-atlas) :is(.atl-eye-open," in css
     assert "#nm-buddy.nmb-pout .nm-atlas {" in css and "#nm-buddy.nmb-grumpy .nm-atlas {" in css
-    # Grumpy comes down through a pout.
-    assert "nameMarkBuddyPout(buddy, 5000);" in AV
+    # Grumpy comes down through a short pout (INBOX 1402: a sulk is brief).
+    assert "nameMarkBuddyPout(buddy, 2000);" in AV
 
 
 def test_out_of_sight_never_cancels_the_tab_follow() -> None:

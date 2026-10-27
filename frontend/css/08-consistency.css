@@ -5266,11 +5266,12 @@ body .chip.item-label,
 #nm-buddy { transition: opacity var(--motion-base) var(--ease-out); touch-action: none; }
 #nm-buddy.nmb-dodge { opacity: 0.12; }
 /* Atlas's stances at rest (avatars.js, `NMB_STANCES`), eased in and out
-   by the limbs' own transition. The arms turn about the shoulder: folded
-   across the chest, a hand brought to the hip, the hands clasped low in
-   front; the feminine sway is the figure's box, on the compositor. */
-#nm-buddy.nmb-act-fold .atl-figure .nmb-arm-r { transform: rotate(66deg); }
-#nm-buddy.nmb-act-fold .atl-figure .nmb-arm-l { transform: rotate(-60deg); }
+   by the limbs' own transition. The arms turn about the shoulder: both
+   hands to the hips, one hand to the hip, the hands clasped low in front;
+   the feminine sway is the figure's box, on the compositor. Arms folded
+   across the chest read as a sulk (INBOX 1402) and are gone. */
+#nm-buddy.nmb-act-hips .atl-figure .nmb-arm-r { transform: rotate(-26deg); }
+#nm-buddy.nmb-act-hips .atl-figure .nmb-arm-l { transform: rotate(24deg); }
 #nm-buddy.nmb-act-hip .atl-figure .nmb-arm-r { transform: rotate(-24deg); }
 #nm-buddy.nmb-act-clasp .atl-figure .nmb-arm-r { transform: rotate(46deg); }
 #nm-buddy.nmb-act-clasp .atl-figure .nmb-arm-l { transform: rotate(-46deg); }
@@ -7139,7 +7140,9 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="happy"] { --atl-ar0: -28deg; --atl-al0: 28deg; --atl-chin0: 0; --atl-ar1: -120deg; --atl-al1: 18deg; --atl-chin1: 0; --atl-ar2: -40deg; --atl-al2: 40deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="delighted"] { --atl-ar0: -70deg; --atl-al0: 70deg; --atl-chin0: 0; --atl-ar1: -130deg; --atl-al1: 130deg; --atl-chin1: 0; --atl-ar2: -50deg; --atl-al2: 50deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="laughing"] { --atl-ar0: -38deg; --atl-al0: 38deg; --atl-chin0: 0; --atl-ar1: 0deg; --atl-al1: 16deg; --atl-chin1: 1; --atl-ar2: 50deg; --atl-al2: -50deg; --atl-chin2: 0; }
-.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="thinking"] { --atl-ar0: 0deg; --atl-al0: -10deg; --atl-chin0: 1; --atl-ar1: 66deg; --atl-al1: -60deg; --atl-chin1: 0; --atl-ar2: 0deg; --atl-al2: -30deg; --atl-chin2: 1; }
+/* Thinking's second way folded both arms across the chest for the whole
+   turn, the stance INBOX 1402 read as a sulk: now a hand at the chest. */
+.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="thinking"] { --atl-ar0: 0deg; --atl-al0: -10deg; --atl-chin0: 1; --atl-ar1: -18deg; --atl-al1: -36deg; --atl-chin1: 0; --atl-ar2: 0deg; --atl-al2: -30deg; --atl-chin2: 1; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="curious"] { --atl-ar0: -40deg; --atl-al0: 0deg; --atl-chin0: 0; --atl-ar1: 0deg; --atl-al1: 40deg; --atl-chin1: 0; --atl-ar2: -60deg; --atl-al2: 10deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="surprised"] { --atl-ar0: -120deg; --atl-al0: 120deg; --atl-chin0: 0; --atl-ar1: -95deg; --atl-al1: 95deg; --atl-chin1: 0; --atl-ar2: -140deg; --atl-al2: 60deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="confused"] { --atl-ar0: 0deg; --atl-al0: 163deg; --atl-chin0: 0; --atl-ar1: -163deg; --atl-al1: 0deg; --atl-chin1: 0; --atl-ar2: -20deg; --atl-al2: 163deg; --atl-chin2: 0; }
@@ -7154,7 +7157,7 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="sad"] { --atl-ar0: 8deg; --atl-al0: -8deg; --atl-chin0: 0; --atl-ar1: 10deg; --atl-al1: -10deg; --atl-chin1: 0; --atl-ar2: 6deg; --atl-al2: -6deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="proud"] { --atl-ar0: -24deg; --atl-al0: 24deg; --atl-chin0: 0; --atl-ar1: -28deg; --atl-al1: 28deg; --atl-chin1: 0; --atl-ar2: -24deg; --atl-al2: 24deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="shy"] { --atl-ar0: 46deg; --atl-al0: -46deg; --atl-chin0: 0; --atl-ar1: 60deg; --atl-al1: -60deg; --atl-chin1: 0; --atl-ar2: 40deg; --atl-al2: -40deg; --atl-chin2: 0; }
-.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="determined"] { --atl-ar0: -14deg; --atl-al0: 14deg; --atl-chin0: 0; --atl-ar1: -18deg; --atl-al1: 18deg; --atl-chin1: 0; --atl-ar2: 40deg; --atl-al2: -40deg; --atl-chin2: 0; }
+.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="determined"] { --atl-ar0: -14deg; --atl-al0: 14deg; --atl-chin0: 0; --atl-ar1: -18deg; --atl-al1: 18deg; --atl-chin1: 0; --atl-ar2: -30deg; --atl-al2: 22deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="love"] { --atl-ar0: 60deg; --atl-al0: -60deg; --atl-chin0: 0; --atl-ar1: 70deg; --atl-al1: -66deg; --atl-chin1: 0; --atl-ar2: -120deg; --atl-al2: 0deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="worried"] { --atl-ar0: 70deg; --atl-al0: -70deg; --atl-chin0: 0; --atl-ar1: 58deg; --atl-al1: -58deg; --atl-chin1: 0; --atl-ar2: 76deg; --atl-al2: -20deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="feminine"][data-atlas-mood="happy"] { --atl-ar0: -105deg; --atl-al0: 25deg; --atl-chin0: 0; --atl-ar1: -150deg; --atl-al1: 20deg; --atl-chin1: 0; --atl-ar2: -80deg; --atl-al2: 30deg; --atl-chin2: 0; }
@@ -7915,7 +7918,7 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .nm-atlas[data-atlas-mood="sleepy"] {
   --atl-tail: 30deg; --atl-star: 0.35;
   --atl-crest: 10deg;
-  --atl-brow-y: 0.4px; --atl-knit: -2deg; --atl-open: 0; --atl-doze: 1;
+  --atl-brow-y: 0px; --atl-knit: -2deg; --atl-open: 0; --atl-doze: 1;
   --atl-m-smile: 0; --atl-m-rest: 1; --atl-cheek: 0.14;
   --atl-tilt: 7deg; --atl-sx: 1.03; --atl-sy: 0.97;
   --atl-halo-o: 0.55; --atl-glow: 0.7; --atl-fx-zz: 1; --atl-nightcap: 1;
@@ -7944,11 +7947,17 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
   --atl-m-smile: 0; --atl-m-cat: 1; --atl-cheek: 1;
   --atl-tilt: 10deg; --atl-sx: 0.97; --atl-sy: 1.01;
 }
+/* Determined ("on it": a long chat turn, a focus while you type) is keen,
+   never cross (INBOX 1402, the owner: "a bored or grumpy gangster"): it
+   wore knit brows 14deg down at the nose, dropped 0.8px, and a set mouth,
+   for a quarter of every typing minute and all of a long answer
+   (atlasrest1402.js). Now the brows lift a little, the lower lids smile,
+   and the mouth is the small closed smile of the doze. */
 .nm-atlas[data-atlas-mood="determined"] {
   --atl-tail: -6deg; --atl-star: 1.25;
   --atl-crest: -4deg;
-  --atl-brow-y: 0.8px; --atl-knit: 14deg; --atl-lid: 0.02; --atl-lid-r: 12deg; --atl-low: 0.18; --atl-eye-s: 0.98;
-  --atl-m-smile: 0; --atl-m-set: 1; --atl-cheek: 0.2;
+  --atl-brow-y: -0.6px; --atl-knit: -3deg; --atl-lid: 0; --atl-low: 0.16; --atl-eye-s: 0.98; --atl-ps: 0.94;
+  --atl-m-smile: 0; --atl-m-rest: 1; --atl-cheek: 0.3;
   --atl-sx: 1.03; --atl-sy: 0.99; --atl-glow: 1.2;
 }
 .nm-atlas[data-atlas-mood="love"] {
@@ -7985,14 +7994,14 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
   --atl-m-wavy: 0; --atl-m-frown: 0; --atl-m-smug: 0; --atl-m-cat: 0; --atl-m-set: 0; --atl-m-o: 1;
 }
 #nm-buddy.nmb-act-startle .nm-atlas { --atl-brow-y: -3.4px; --atl-lid: 0; --atl-eye-s: 1.12; --atl-ps: 0.7; }
-#nm-buddy.nmb-act-yawn .nm-atlas { --atl-open: 0; --atl-happy: 0; --atl-squeeze: 0; --atl-shut: 0; --atl-doze: 1; --atl-brow-y: 0.6px; }
+#nm-buddy.nmb-act-yawn .nm-atlas { --atl-open: 0; --atl-happy: 0; --atl-squeeze: 0; --atl-shut: 0; --atl-doze: 1; --atl-brow-y: 0px; }
 /* Just woken (avatars.js, `nmb-groggy`, 5s): eyes open with a soft
    squint from below and slow blinks as it comes round, never a half-shut
    stare (INBOX 1301 D4; `tests/test_atlas_lids_1301.py` holds every lid
    under 30% closed). Poked again while waking (`nmb-pout`): sleepy-annoyed,
    a squint, brows knit, a small pout. Poked a third time (`nmb-grumpy`,
    30s, then a pout on the way back): unimpressed, a set mouth. */
-#nm-buddy.nmb-groggy .nm-atlas { --atl-lid: 0.08; --atl-low: 0.1; --atl-ps: 0.86; --atl-py: 1px; --atl-brow-y: 0.4px; }
+#nm-buddy.nmb-groggy .nm-atlas { --atl-lid: 0.08; --atl-low: 0.1; --atl-ps: 0.86; --atl-py: 1px; --atl-brow-y: 0px; }
 #nm-buddy:is(.nmb-pout, .nmb-grumpy) .nm-atlas {
   --atl-open: 1; --atl-happy: 0; --atl-squeeze: 0; --atl-shut: 0; --atl-doze: 0; --atl-hearteye: 0;
   --atl-m-smile: 0; --atl-m-grin: 0; --atl-m-big: 0; --atl-m-laugh: 0; --atl-m-o: 0; --atl-m-tinyo: 0; --atl-m-rest: 0;

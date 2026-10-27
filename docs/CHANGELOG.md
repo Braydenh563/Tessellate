@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Atlas looks friendly at rest: its brows no longer slope down to the nose, focus and a long answer wear a steady look instead of a scowl, its arms rest a little out instead of folding across the chest, and a sulk after too many pokes lasts 8 seconds, not 30. The other companions only drift between friendly faces. Measured over a scripted 3.5 minute session: a grumpy face or pose 92% of the time before, 1% after (his look); 100% to 1% (hers).
 - A question toast kept up until answered steps aside for the buttons of the form or section in use (it covered Save at 1280 by 720).
 - Command palette: words typed while it was still opening now list their matching notes too.
 - Get started: the first answer ticks step three even if you left for the dashboard before it finished.
