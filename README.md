@@ -170,6 +170,9 @@ Open a section for the detail.
   spelling and grammar checks that run on your computer, version history,
   focus mode, and code files with line numbers, the line you are on lightly
   highlighted. A document reopens where you left it.
+- A ```mermaid block draws as a diagram (flowchart, sequence, class, state, Gantt, pie and
+  more) in documents, chat and exports, with Mermaid 12.2.0 shipped in the app and loaded on
+  first use, so it works offline.
 - The Writing room turns rough thoughts into a proper note, or a pasted block
   into several linked notes, before anything is saved.
 - Export a document as Markdown, HTML, PDF or Word, and your notes as JSON,
