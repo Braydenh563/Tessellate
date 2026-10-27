@@ -201,7 +201,9 @@ HELP_TOPICS: list[dict] = [
             "\"connected to Harbor\", \"untouched since June\", \"tagged work\", "
             "\"pinned\", \"with pictures\", \"edited last week\"; any other "
             "words still have to match. Click a note for its panel: Open, Focus, "
-            "Pin and Link are at its foot and the ⋯ holds the rest. A hub's lines "
+            "Pin and Link are at its foot and the ⋯ holds the rest. The panel stands "
+            "beside its note and follows it as you pan and zoom; drag its title to "
+            "put it somewhere else and it stays there until you close it. A hub's lines "
             "run straight and faint until you point at it."
         ),
         "badge": {"label": "Graph", "tab": "graph"},

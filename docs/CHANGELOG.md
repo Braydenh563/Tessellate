@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Graph: a note's popup follows its note as the map pans, zooms and settles (beside it, flipping side at the edge, hidden while the note is out of view), and its title row drags it to wherever you put it, by mouse or finger, until it is closed.
 - Quick sketch: a thick arrow ends at its point (the line no longer pokes out past the head), and the paper colour picker opens by the More button, not the window's top left corner. The Ask box's AI switch has room inside its pill.
 - Companion: a drop or throw that comes down at the bottom bar stands above it instead of sitting with its box 20px into the bar and over its buttons, and over the bar's buttons it floats just above them instead of being sent across the screen; Escape no longer throws when the onboarding overlay is gone.
 - Answers from facts: a model reply is refused when "a reminder" or "both reminders" miscounts the facts, or when it states a calendar date (28 Oct, 2026-12-01, Thursday 29) the facts, the question and the clock do not name; clock times stay unchecked.

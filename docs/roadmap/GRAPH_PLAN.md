@@ -663,7 +663,3 @@ The owner: "I'm thinking next pr we should add another graph view which better r
 ## Decision made, 2026-10-26: a landscape map is laid out landscape, a hub's lines are rays
 
 INBOX 1400 and 1306, measured with `gm.js` (numbers in `agent-remaining/graph-1026.md`). The 430 rule shaped portrait only, so a 1440x900 map came out 0.49 of the canvas wide and 0.80 tall. Now the y pull rises and the x pull falls by one root (`landscapePull`, graph-worker.js, capped at 3), so the cloud keeps its size and takes the canvas's shape. A hub (`gcHubSpokeMin`: three times the mean degree, at least 8) draws its lines straight, and a line from it to another category at 0.55 of the quiet bridge until pointed at. The node panel's foot is worded at every width (Open, Focus, Pin, Link, then the ⋯), replacing Phase 6's nine bare icons.
-
-## Placed from INBOX, 2026-10-27 (the note popup)
-
-1413. **The owner, 2026-10-27, verbatim** (screenshot, dark: a note's popup on the graph covering the nodes to its right). "can it be possible to drag the graph popups?? or have them move with the node it showed for or smth?" Recommendation, taken: the popup's head drags it (then it stays where put until closed), and an undragged popup follows its node as the map pans and zooms, flipping side at the edge; GRAPH_PLAN Phase 6 owns the popup.

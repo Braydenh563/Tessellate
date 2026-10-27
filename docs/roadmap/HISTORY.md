@@ -7,6 +7,12 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-10-27 (graph popup)
+
+1413. **The owner, 2026-10-27, verbatim** (screenshot, dark: a note's popup on the graph covering the nodes to its right). "can it be possible to drag the graph popups?? or have them move with the node it showed for or smth?" Recommendation, taken: the popup's head drags it (then it stays where put until closed), and an undragged popup follows its node as the map pans and zooms, flipping side at the edge; GRAPH_PLAN Phase 6 owns the popup.
+
+**Built.** The note popup follows its node (`graphPopupFollowSpot`, graph.js; placed once a canvas frame from `gcDraw`, so no new loop): beside the node, flipping to the left, under or over at the pane edge, never covering it, hidden (not closed) while the node is out of view. Its title row drags it (pointer and touch, clamped to the map) and a dragged popup stays until closed. Measured with `scratchpad/ui-sweeps/graphpopupfollow.js`: offset to the node 17 px before and after a 200 px pan, 20 px after a 1.6x zoom, overlap 0, drag moved the asked 140 px sideways (the vertical 90 px clamped to 17 by the map's foot), 0 px drift after a further pan. Tests: `tests/test_graph_popup_follow.py`.
+
 ## Moved from the plans, 2026-10-27 (docs-1027)
 
 DOCUMENTS_PLAN "Placed from INBOX, 2026-10-27".

@@ -1608,6 +1608,21 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   flex-wrap: nowrap;
 }
 
+/* The head is the drag handle (INBOX 1413); touch-action keeps a finger from
+   scrolling the page instead. Away: the node is out of view, the popup waits. */
+.graph-popup:not(.graph-popup-sheet) .graph-popup-head {
+  cursor: grab;
+  touch-action: none;
+}
+
+.graph-popup.graph-popup-dragging .graph-popup-head {
+  cursor: grabbing;
+}
+
+.graph-popup.graph-popup-away {
+  visibility: hidden;
+}
+
 .graph-popup-ident {
   display: flex;
   flex-wrap: wrap;
