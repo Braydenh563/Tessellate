@@ -175,7 +175,8 @@ def test_jumps_are_a_format_field_for_connectors_and_the_render_applies_them() -
     row = INDEX[INDEX.index('data-fmt="jumps"') :][:800]
     for value in ("none", "arc", "gap", "sharp"):
         assert f'<option value="{value}">' in row
-    assert "wbApplyLineJumps(sketchUpdate.sort(" in SOURCE
+    #: In paint order: the groups as the bands placed them (decision 43).
+    assert "const painted = wbPlaceSketchBands(" in SOURCE and "wbApplyLineJumps(painted)" in SOURCE
     # The label and its grip measure the plain line, never a gap's cut shaft.
     layout = SOURCE[SOURCE.index("function wbLayoutLinkLabel(") :]
     assert '.sketch-hitbox")?.getAttribute("d")' in layout[: layout.index("\n}\n")]
