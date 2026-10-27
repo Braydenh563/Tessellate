@@ -6,7 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
-- Motion and failed reads (INBOX 1415): ten floating panels (Spaces, the bell, the clock, the history lists, the model, skills, More and Attach panels, Find on this page, the graph's note card) open and close on the menu's fade and grow instead of between two frames; Boards, Images, Contents, Bookmarks, Documents and Recordings now say they could not load, with Try again, instead of claiming nothing is there or printing the server's line.
+- Motion and failed reads (INBOX 1415): ten floating panels (Spaces, the bell, the clock, the history lists, the model, skills, More and Attach panels, Find on this page, the graph's note card) open and close on the menu's fade and grow instead of between two frames; Boards, Images, Contents, Bookmarks, Documents and Recordings now say they could not load, with Try again, instead of claiming nothing is there or printing the server's line; the dashboard's loading outline follows the grid by `translate` and the "Add your name" offer is not drawn under the Get started card, which took layout shift at boot from 0.105 to 0.011.
 
 ## [0.6.2] - 2026-10-27
 - Whiteboard: a text box or sticky linked to a note saves again (it was refused as not a web address), and a pasted item that carried stray link ends is no longer dropped. Answers from facts: a date in a tool's time stamp (2026-10-30T17:00) counts as named, so a correct reply giving that day is kept.

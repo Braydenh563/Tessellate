@@ -744,7 +744,10 @@ function renderNameNudge(greetingEl) {
   const existing = document.getElementById("dash-name-nudge");
   if (existing) existing.remove();
   const name = ((prefsCache && prefsCache.display_name) || "").trim();
+  //: Not while the Get started card is, or is about to be, up: it carries the same
+  //: offer and removes this one when it lands, which moved the page 32px.
   if (name || prefs.get("nameNudgeDismissed", null) === "1") return;
+  if (!prefs.get("getStartedHidden", null) && !prefs.get("firstStepsHidden", null)) return;
 
   const wrap = document.createElement("span");
   wrap.id = "dash-name-nudge";
@@ -1947,12 +1950,12 @@ function dashFillingSkeleton(grid, count) {
   //: fill in after this is placed and push the grid down, which left the
   //: placeholder over them with their text showing through (owner,
   //: 2026-10-12). Cheap: two reads and two writes a frame for a second.
+  //: By `translate`, which the compositor moves without a layout: writing
+  //: `top` here counted as 0.077 of layout shift at boot.
+  const top0 = grid.offsetTop;
   const follow = () => {
     if (!outline.isConnected) return;
-    const top = `${grid.offsetTop}px`;
-    const left = `${grid.offsetLeft}px`;
-    if (outline.style.top !== top) outline.style.top = top;
-    if (outline.style.left !== left) outline.style.left = left;
+    outline.style.translate = `0 ${grid.offsetTop - top0}px`;
     setTimeout(follow, 80);
   };
   setTimeout(follow, 80);

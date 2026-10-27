@@ -4405,6 +4405,22 @@ def test_sub_views_whose_read_failed_say_so_instead_of_claiming_empty() -> None:
     assert "error.message" not in body("async function renderRecordings(", 1200), "no raw server line on the page"
 
 
+def test_the_dashboard_does_not_move_itself_while_it_loads() -> None:
+    """INBOX 1415, layout shift at boot measured with a PerformanceObserver
+    (`layout-shift`): 0.105 at boot, 0.077 of it the loading outline moving by
+    `top` every 80ms to follow the grid, and 32px of the greeting lost when the
+    Get started card removed the "Add your name" offer after the page had
+    painted. The outline follows by `translate` (no layout), and the offer is
+    not drawn while the card that carries it is, or is about to be, up."""
+    dash = (ROOT / "frontend" / "js" / "dashboard.js").read_text(encoding="utf-8")
+    at = dash.index("function dashFillingSkeleton(")
+    body = dash[at : dash.index("\n}\n", at)]
+    assert "outline.style.translate" in body
+    assert "outline.style.top =" not in body and "outline.style.left =" not in body
+    nudge = dash[dash.index("function renderNameNudge(") :][:700]
+    assert 'prefs.get("getStartedHidden", null)' in nudge and 'prefs.get("firstStepsHidden", null)' in nudge
+
+
 def test_a_locked_load_is_not_logged_as_a_failure() -> None:
     """The lock screen is the expected state at boot, not a failed load: the
     browser log used to open with `WARN browser: [notes] could not load:
