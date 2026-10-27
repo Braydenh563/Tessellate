@@ -81,6 +81,9 @@ _ONE_PRONOUN = {
     "the", "this", "that", "each", "every", "which", "any", "first", "next", "last", "other", "another", "same",
     "latest", "earliest", "newest", "oldest", "soonest",
 }
+#: Amounts said as words: "a couple of reminders" is 2 reminders, "two
+#: dozen" is 24, "not a single note" is none (`_amounts`).
+_AMOUNTS = {"single": 1, "couple": 2, "pair": 2, "dozen": 12, "hundred": 100, "thousand": 1000}
 #: Result keys that are positions, not counts.
 _NOT_COUNTS = {"offset", "limit", "page", "id", "seed"}
 
@@ -133,12 +136,37 @@ def _pronoun_one(tokens: list[str], i: int) -> bool:
     return after == "of" or (i > 0 and tokens[i - 1] in _ONE_PRONOUN)
 
 
+def _amounts(tokens: list[str]) -> list[str]:
+    """The tokens with each amount said in words made one figure: "a" or a
+    figure before it is taken in, and the "of" after it ("a couple of
+    notes" reads as "2 notes")."""
+    out: list[str] = []
+    taken = False
+    for token in tokens:
+        if taken and token == "of":
+            taken = False
+            continue
+        taken = token in _AMOUNTS
+        if not taken:
+            out.append(token)
+            continue
+        before = out[-1] if out else ""
+        times = 1 if before in ("a", "an") else _value(before) if token in ("dozen", "hundred", "thousand") else None
+        if times is None:
+            out.append(str(_AMOUNTS[token]))
+            continue
+        out[-1] = str(int(float(times) * _AMOUNTS[token]))
+        if token == "single" and len(out) > 1 and out[-2] == "not":
+            out[-2:] = ["0"]
+    return out
+
+
 def _figures(text: str) -> list[tuple[str, str | None]]:
     """Every figure the text says that is not a date, a time or an id, as
     (value, the noun it counts, "~<minutes>" for a span, or None for a bare
     figure). "no" is
     a figure only before a counted noun ("no reminders"), never "No, ..."."""
-    tokens = _TOKEN.findall((text or "").lower())
+    tokens = _amounts(_TOKEN.findall((text or "").lower()))
     out: list[tuple[str, str | None]] = []
     for i, token in enumerate(tokens):
         if token[0] in "#/":

@@ -108,3 +108,20 @@ def test_a_bare_one_counts_unless_it_points(ai_client, fake_ollama, session, pro
     """A bare "one" always stood, so "Only one is waiting" passed with 3."""
     _seed(session)
     assert _kept(ai_client, fake_ollama, "what reminders do I have", prose, use_tools) is ok
+
+
+@SURFACES
+@pytest.mark.parametrize(
+    ("prose", "ok"),
+    [
+        ("You have a couple of reminders.", False),
+        ("You have a dozen reminders.", False),
+        ("You have a hundred reminders.", False),
+        ("You have two dozen reminders.", False),
+        ("You have three reminders.", True),
+    ],
+)
+def test_an_amount_said_in_words_is_a_figure(ai_client, fake_ollama, session, prose, ok, use_tools):
+    """"a couple of", "a dozen" and "a hundred" passed with 3."""
+    _seed(session)
+    assert _kept(ai_client, fake_ollama, "what reminders do I have", prose, use_tools) is ok
