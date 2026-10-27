@@ -1090,38 +1090,43 @@ def read_note(note: dict, rank: int) -> NoteView | None:
             continue
         if in_fence or not stripped or _heading_text(line) is not None or stripped.startswith(("![", "|")):
             continue
-        line_end = line_start + len(line.rstrip("\r\n"))
-        if _PICTURE_ITEM.match(line):
-            #: "- shed.jpg: shows a wet wooden roof": a picture's caption
-            #: listed in the note is content, read as the picture's
-            #: (decision 37; the owner: "note captions arent counted").
-            _picture_units(view, content, line_start, line)
-            continue
-        item = _ITEM.match(line)
-        if item:
-            box = item.group(2)
-            unit = _unit(
-                view, content, line_start + item.end(), line_end,
-                "task" if box else "item",
-                None if not box else box.strip("[] \t").lower() == "x",
-            )
-            if unit:
-                unit.depth = _depth(line)
-                view.sentences.append(unit)
-            continue
-        body = line_start + (len(line) - len(line.lstrip(" >")))
-        cursor = body
-        for match in _SPLIT.finditer(content, body, line_end):
-            unit = _unit(view, content, cursor, match.end(1), "prose", None)
-            if unit:
-                view.sentences.append(unit)
-            cursor = match.end()
-        unit = _unit(view, content, cursor, line_end, "prose", None)
-        if unit:
-            view.sentences.append(unit)
+        _line_units(view, content, line_start, line)
     for i, sentence in enumerate(view.sentences):
         sentence.order = i
     return view
+
+
+def _line_units(view: NoteView, content: str, line_start: int, line: str) -> None:
+    """The units of one body line: a picture's caption, a list item, or prose sentences."""
+    line_end = line_start + len(line.rstrip("\r\n"))
+    if _PICTURE_ITEM.match(line):
+        #: "- shed.jpg: shows a wet wooden roof": a picture's caption
+        #: listed in the note is content, read as the picture's
+        #: (decision 37; the owner: "note captions arent counted").
+        _picture_units(view, content, line_start, line)
+        return
+    item = _ITEM.match(line)
+    if item:
+        box = item.group(2)
+        unit = _unit(
+            view, content, line_start + item.end(), line_end,
+            "task" if box else "item",
+            None if not box else box.strip("[] \t").lower() == "x",
+        )
+        if unit:
+            unit.depth = _depth(line)
+            view.sentences.append(unit)
+        return
+    body = line_start + (len(line) - len(line.lstrip(" >")))
+    cursor = body
+    for match in _SPLIT.finditer(content, body, line_end):
+        unit = _unit(view, content, cursor, match.end(1), "prose", None)
+        if unit:
+            view.sentences.append(unit)
+        cursor = match.end()
+    unit = _unit(view, content, cursor, line_end, "prose", None)
+    if unit:
+        view.sentences.append(unit)
 
 
 # --- scoring --------------------------------------------------------------------

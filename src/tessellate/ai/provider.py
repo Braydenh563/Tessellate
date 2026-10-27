@@ -1035,6 +1035,44 @@ def _first_json_object_after(text: str, start: int, window: int = 4000) -> tuple
     return None
 
 
+def _call_end(content: str, paren: int) -> int:
+    """The index just past the `)` that closes the `(` at `paren`, or -1.
+    Parentheses inside a quoted string do not count."""
+    depth, in_string, quote, escape = 0, False, "", False
+    for index in range(paren, len(content)):
+        char = content[index]
+        if in_string:
+            if escape:
+                escape = False
+            elif char == "\\":
+                escape = True
+            elif char == quote:
+                in_string = False
+            continue
+        if char in "\"'":
+            in_string, quote = True, char
+        elif char == "(":
+            depth += 1
+        elif char == ")":
+            depth -= 1
+            if depth == 0:
+                return index + 1
+    return -1
+
+
+def _literal_keywords(node: ast.Call) -> dict:
+    """The keyword arguments of a call that are plain literals."""
+    arguments: dict = {}
+    for keyword in node.keywords:
+        if keyword.arg is None:
+            continue
+        try:
+            arguments[keyword.arg] = ast.literal_eval(keyword.value)
+        except (ValueError, SyntaxError):
+            continue
+    return arguments
+
+
 def _python_style_calls(content: str, tool_names: set[str]) -> list[tuple[int, int, dict]]:
     """Calls written as Python rather than JSON, as (start, end, call).
 
@@ -1046,27 +1084,7 @@ def _python_style_calls(content: str, tool_names: set[str]) -> list[tuple[int, i
     found: list[tuple[int, int, dict]] = []
     for name in sorted(tool_names):
         for match in re.finditer(rf"\b{re.escape(name)}\s*\(", content):
-            depth, in_string, quote, escape = 0, False, "", False
-            end = -1
-            for index in range(match.end() - 1, len(content)):
-                char = content[index]
-                if in_string:
-                    if escape:
-                        escape = False
-                    elif char == "\\":
-                        escape = True
-                    elif char == quote:
-                        in_string = False
-                    continue
-                if char in "\"'":
-                    in_string, quote = True, char
-                elif char == "(":
-                    depth += 1
-                elif char == ")":
-                    depth -= 1
-                    if depth == 0:
-                        end = index + 1
-                        break
+            end = _call_end(content, match.end() - 1)
             if end == -1:
                 continue
             try:
@@ -1075,17 +1093,8 @@ def _python_style_calls(content: str, tool_names: set[str]) -> list[tuple[int, i
                 continue
             if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Name):
                 continue
-            arguments: dict = {}
-            for keyword in node.keywords:
-                if keyword.arg is None:
-                    continue
-                try:
-                    arguments[keyword.arg] = ast.literal_eval(keyword.value)
-                except (ValueError, SyntaxError):
-                    continue
-            found.append((match.start(), end, {"name": node.func.id, "arguments": arguments}))
+            found.append((match.start(), end, {"name": node.func.id, "arguments": _literal_keywords(node)}))
     return found
-
 
 
 #: The write tools' names, set by `tessellate.ai.tools` as it loads; read by
@@ -1095,6 +1104,154 @@ _WRITE_TOOLS: dict[str, frozenset[str] | None] = {"names": None}
 
 def set_write_tools(names) -> None:  # noqa: ANN001
     _WRITE_TOOLS["names"] = frozenset(names)
+
+#: What one recovery pass finds: the calls, and the text each came from, to be
+#: cut out of the answer.
+_Recovered = tuple[list[dict], list[str]]
+
+
+def _calls_in_blob(blob: str, tool_names: set[str]) -> list[dict]:
+    """The calls one JSON blob holds: an object or a list, either shape."""
+    try:
+        data = loads_lenient(blob)
+    except ValueError:
+        return []
+    found: list[dict] = []
+    for item in data if isinstance(data, list) else [data]:
+        if not isinstance(item, dict):
+            continue
+        # Accept {"name","arguments"} and OpenAI-ish {"function":{...}}.
+        fn = item.get("function") if isinstance(item.get("function"), dict) else item
+        name = fn.get("name") if isinstance(fn, dict) else None
+        name = resolve_tool_name(name, tool_names)
+        if name in tool_names:
+            args = fn.get("arguments") or fn.get("parameters") or {}
+            if isinstance(args, str):
+                try:
+                    args = loads_lenient(args)
+                except ValueError:
+                    args = {}
+            found.append({"name": name, "arguments": args if isinstance(args, dict) else {}})
+    return found
+
+
+def _tagged_calls(content: str, tool_names: set[str]) -> _Recovered:
+    """1) explicit <tool_call>…</tool_call> blocks (Qwen/Hermes style). The
+    object inside is found by scanning from the opening tag rather than a
+    `.*?` regex, which stops at the first `}`, the *first nested one* the
+    moment `arguments` is itself an object, well short of the call's own
+    close."""
+    calls: list[dict] = []
+    removals: list[str] = []
+    for tag_match in re.finditer(r"<tool_call>\s*(.*?)\s*</tool_call>", content, re.S):
+        # All of them, not just the first: a model that puts more than one
+        # call inside one pair of tags (`<tool_call>[{...}, {...}]</tool_call>`,
+        # or just two objects back to back) still means every call, not only
+        # the first it wrote.
+        for _start, _end, blob in _balanced_json_objects(tag_match.group(1)):
+            found = _calls_in_blob(blob, tool_names)
+            if found:
+                calls.extend(found)
+                removals.append(tag_match.group(0))
+    return calls, removals
+
+
+def _bare_json_calls(content: str, tool_names: set[str]) -> _Recovered:
+    """2) a bare top-level JSON object naming a known tool. `_balanced_json_
+    objects` only ever emits the outermost `{...}` at each position (it
+    jumps past a whole matched span rather than re-entering it), so a
+    call's own nested `arguments` object is never separately offered as a
+    second, spurious call."""
+    calls: list[dict] = []
+    removals: list[str] = []
+    for _start, _end, blob in _balanced_json_objects(content):
+        if '"name"' not in blob:
+            continue
+        found = _calls_in_blob(blob, tool_names)
+        if found:
+            calls.extend(found)
+            removals.append(blob)
+    return calls, removals
+
+
+def _named_calls(content: str, tool_names: set[str]) -> _Recovered:
+    """3) the name outside the JSON: Llama's `<function=name>{...}</function>`
+    and DeepSeek's `function<|tool_sep|>name` followed by its object. The
+    object here is the *arguments*, not the call, so it carries no "name"
+    key and pass 2 skips it on purpose rather than by accident."""
+    calls: list[dict] = []
+    removals: list[str] = []
+    for match in _NAMED_CALL_RE.finditer(content):
+        name = resolve_tool_name(match.group(1) or match.group(2), tool_names)
+        if name not in tool_names:
+            continue
+        nearby = _first_json_object_after(content, match.end())
+        if nearby is None:
+            continue
+        _begin, end, blob = nearby
+        try:
+            arguments = loads_lenient(blob)
+        except ValueError:
+            continue
+        if not isinstance(arguments, dict):
+            continue
+        calls.append({"name": name, "arguments": arguments})
+        removals.append(content[match.start() : end])
+    return calls, removals
+
+
+def _python_calls(content: str, tool_names: set[str]) -> _Recovered:
+    """4) a Python call rather than JSON, which is what LFM2 emits inside
+    `<|tool_call_start|>` and what Gemma's own documented recipe puts in a
+    ```tool_code fence. Gated on one of those markers being present: a
+    model that merely *mentions* `create_note(title="x")` in prose is
+    explaining itself, not calling anything, and this app's chat does that
+    far more often than it writes Python."""
+    if not (_CALL_MARKER_RE.search(content) or "tool_code" in content):
+        return [], []
+    found = _python_style_calls(content, tool_names)
+    return [call for _b, _e, call in found], [content[begin:end] for begin, end, _c in found]
+
+
+def _prose_read_calls(content: str, tool_names: set[str]) -> _Recovered:
+    """5) a read written with its JSON arguments in prose, `list_notes({...})`
+    (Qwen2.5-3B, the loose-ends eval, 2026-10-05: it wrote the call, then
+    "I cannot execute the tool call as I am a text-based AI"). A JSON object
+    as the one argument is the schema's own shape, which a model describing
+    a tool rarely writes; still, a description taken as a call must cost a
+    round and never a change, so only the reads are taken without a
+    marker. The write list is the tools module's, which registers it here
+    when it loads (`set_write_tools`): importing it from here closed an
+    import cycle through the whole tools package (ARCH-10's ratchet). Not
+    registered, nothing is taken, since a write must never pass as a read."""
+    writes = _WRITE_TOOLS["names"]
+    reads = set() if writes is None else {name for name in tool_names if name not in writes}
+    calls: list[dict] = []
+    removals: list[str] = []
+    for match in re.finditer(r"\b([a-z_]{3,40})\s*\(\s*(?=\{)", content):
+        name = match.group(1)
+        if name not in reads:
+            continue
+        nearby = _first_json_object_after(content, match.end() - 1, window=2000)
+        if nearby is None or nearby[0] != match.end():
+            continue
+        _begin, end, blob = nearby
+        close = re.match(r"\s*\)", content[end:])
+        if not close:
+            continue
+        try:
+            arguments = loads_lenient(blob)
+        except ValueError:
+            continue
+        if isinstance(arguments, dict):
+            calls.append({"name": name, "arguments": arguments})
+            removals.append(content[match.start() : end + close.end()])
+    return calls, removals
+
+
+#: The recovery passes in the order they are tried; the first to find a call wins.
+_RECOVERY_PASSES = (_tagged_calls, _bare_json_calls, _named_calls, _python_calls, _prose_read_calls)
+
 
 def extract_text_tool_calls(
     content: str, tool_names: set[str]
@@ -1114,123 +1271,13 @@ def extract_text_tool_calls(
     the user."""
     calls: list[dict] = []
     cleaned = content
-
-    def _consume(blob: str, whole: str) -> bool:
-        try:
-            data = loads_lenient(blob)
-        except ValueError:
-            return False
-        candidates = data if isinstance(data, list) else [data]
-        matched = False
-        for item in candidates:
-            if not isinstance(item, dict):
-                continue
-            # Accept {"name","arguments"} and OpenAI-ish {"function":{...}}.
-            fn = item.get("function") if isinstance(item.get("function"), dict) else item
-            name = fn.get("name") if isinstance(fn, dict) else None
-            name = resolve_tool_name(name, tool_names)
-            if name in tool_names:
-                args = fn.get("arguments") or fn.get("parameters") or {}
-                if isinstance(args, str):
-                    try:
-                        args = loads_lenient(args)
-                    except ValueError:
-                        args = {}
-                calls.append({"name": name, "arguments": args if isinstance(args, dict) else {}})
-                matched = True
-        if matched:
-            nonlocal cleaned
-            cleaned = cleaned.replace(whole, "")
-        return matched
-
-    # 1) explicit <tool_call>…</tool_call> blocks (Qwen/Hermes style). The
-    # object inside is found by scanning from the opening tag rather than a
-    # `.*?` regex, which stops at the first `}`, the *first nested one* the
-    # moment `arguments` is itself an object, well short of the call's own
-    # close.
-    for tag_match in re.finditer(r"<tool_call>\s*(.*?)\s*</tool_call>", content, re.S):
-        inner = tag_match.group(1)
-        # All of them, not just the first: a model that puts more than one
-        # call inside one pair of tags (`<tool_call>[{...}, {...}]</tool_call>`,
-        # or just two objects back to back) still means every call, not only
-        # the first it wrote.
-        for _start, _end, blob in _balanced_json_objects(inner):
-            _consume(blob, tag_match.group(0))
-    # 2) a bare top-level JSON object naming a known tool. `_balanced_json_
-    # objects` only ever emits the outermost `{...}` at each position (it
-    # jumps past a whole matched span rather than re-entering it), so a
-    # call's own nested `arguments` object is never separately offered as a
-    # second, spurious call.
-    if not calls:
-        for _start, _end, blob in _balanced_json_objects(content):
-            if '"name"' not in blob:
-                continue
-            _consume(blob, blob)
-
-    # 3) the name outside the JSON: Llama's `<function=name>{...}</function>`
-    # and DeepSeek's `function<|tool_sep|>name` followed by its object. The
-    # object here is the *arguments*, not the call, so it carries no "name"
-    # key and pass 2 skips it on purpose rather than by accident.
-    if not calls:
-        for match in _NAMED_CALL_RE.finditer(content):
-            name = resolve_tool_name(match.group(1) or match.group(2), tool_names)
-            if name not in tool_names:
-                continue
-            nearby = _first_json_object_after(content, match.end())
-            if nearby is None:
-                continue
-            begin, end, blob = nearby
-            try:
-                arguments = loads_lenient(blob)
-            except ValueError:
-                continue
-            if not isinstance(arguments, dict):
-                continue
-            calls.append({"name": name, "arguments": arguments})
-            cleaned = cleaned.replace(content[match.start() : end], "")
-
-    # 4) a Python call rather than JSON, which is what LFM2 emits inside
-    # `<|tool_call_start|>` and what Gemma's own documented recipe puts in a
-    # ```tool_code fence. Gated on one of those markers being present: a
-    # model that merely *mentions* `create_note(title="x")` in prose is
-    # explaining itself, not calling anything, and this app's chat does that
-    # far more often than it writes Python.
-    if not calls and (_CALL_MARKER_RE.search(content) or "tool_code" in content):
-        for begin, end, call in _python_style_calls(content, tool_names):
-            calls.append(call)
-            cleaned = cleaned.replace(content[begin:end], "")
-
-    # 5) a read written with its JSON arguments in prose, `list_notes({...})`
-    # (Qwen2.5-3B, the loose-ends eval, 2026-10-05: it wrote the call, then
-    # "I cannot execute the tool call as I am a text-based AI"). A JSON object
-    # as the one argument is the schema's own shape, which a model describing
-    # a tool rarely writes; still, a description taken as a call must cost a
-    # round and never a change, so only the reads are taken without a
-    # marker. The write list is the tools module's, which registers it here
-    # when it loads (`set_write_tools`): importing it from here closed an
-    # import cycle through the whole tools package (ARCH-10's ratchet). Not
-    # registered, nothing is taken, since a write must never pass as a read.
-    if not calls:
-        writes = _WRITE_TOOLS["names"]
-        reads = set() if writes is None else {name for name in tool_names if name not in writes}
-        for match in re.finditer(r"\b([a-z_]{3,40})\s*\(\s*(?=\{)", content):
-            name = match.group(1)
-            if name not in reads:
-                continue
-            nearby = _first_json_object_after(content, match.end() - 1, window=2000)
-            if nearby is None or nearby[0] != match.end():
-                continue
-            begin, end, blob = nearby
-            close = re.match(r"\s*\)", content[end:])
-            if not close:
-                continue
-            try:
-                arguments = loads_lenient(blob)
-            except ValueError:
-                continue
-            if isinstance(arguments, dict):
-                calls.append({"name": name, "arguments": arguments})
-                cleaned = cleaned.replace(content[match.start() : end + close.end()], "")
+    for recover in _RECOVERY_PASSES:
+        found, removals = recover(content, tool_names)
+        calls.extend(found)
+        for text in removals:
+            cleaned = cleaned.replace(text, "")
+        if calls:
+            break
 
     # The markers themselves are special tokens, never prose, so once a call
     # has been lifted out they are noise in the answer: `<|python_tag|>` or a

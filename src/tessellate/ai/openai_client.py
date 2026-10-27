@@ -407,9 +407,7 @@ class OpenAICompatClient(Provider):
         # no place in the OpenAI schema, a strict server rejects the whole
         # request for an unknown field, so sending them would break every turn
         # against exactly the backends this dialect exists to support.
-        for key, value in resolved.items():
-            if key in _OPENAI_SAMPLING:
-                options[key] = value
+        options.update({key: value for key, value in resolved.items() if key in _OPENAI_SAMPLING})
         return options
 
     # --- message translation ------------------------------------------------
@@ -492,8 +490,7 @@ class OpenAICompatClient(Provider):
                 text = message.get("content") or ""
                 if text:
                     parts.append({"type": "text", "text": text})
-                for uri in message["images"]:
-                    parts.append({"type": "image_url", "image_url": {"url": uri}})
+                parts.extend({"type": "image_url", "image_url": {"url": uri}} for uri in message["images"])
                 out.append({"role": message.get("role"), "content": parts})
             else:
                 out.append(

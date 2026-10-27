@@ -196,9 +196,8 @@ def contrast(notes: list[dict], today: date) -> list[Insight]:
         written = _written(note)
         if written is None:
             continue
-        for fact in factgraph.facts(note):
-            if fact.kind == "preference" and fact.attrs.get("object"):
-                said.append((written, note, fact))
+        said.extend((written, note, fact) for fact in factgraph.facts(note)
+                    if fact.kind == "preference" and fact.attrs.get("object"))
     said.sort(key=lambda row: row[0])
     out: list[Insight] = []
     for i, (first_day, first_note, first) in enumerate(said):

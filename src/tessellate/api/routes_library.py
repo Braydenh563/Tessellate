@@ -423,90 +423,60 @@ def _archive(session: Session) -> list[dict]:
     items.extend(_other_binned(session))
     return items
 
+def _bin_row(subtype: str, row, title: str, preview: str, noun: str, size: int, mime=None) -> dict:
+    """One `_archive` item for something in the bin; the keys every kind shares."""
+    return {
+        "kind": "archived",
+        "subtype": subtype,
+        "id": row.id,
+        "title": title,
+        "preview": preview,
+        "updated_at": row.deleted_at.isoformat(),
+        "detail": f"{noun}, in the bin",
+        "size": size,
+        "entry_id": None,
+        "mime": mime,
+        "pinned": False,
+        "thumb_attachment_id": None,
+        "thumb_url": None,
+    }
+
+
+def _reading_title(reading) -> str:
+    where = f"page {reading.page + 1} of " if reading.field == "page" else ""
+    return f"Reading of {where}{reading.label or 'a file'}"
+
+
 def _other_binned(session: Session) -> list[dict]:
     """The documents, reminders and OCR readings in the bin, as `_archive`
     lists them (each kind has its own routes; `subtype` tells them apart)."""
-    items: list[dict] = []
     from tessellate.entry import bin as other_bin
 
     documents, reminders = other_bin.binned(session)
-    for doc in documents[:PER_KIND_LIMIT]:
-        items.append(
-            {
-                "kind": "archived",
-                "subtype": "document",
-                "id": doc.id,
-                "title": doc.title or "Untitled",
-                "preview": _clip(doc.content or ""),
-                "updated_at": doc.deleted_at.isoformat(),
-                "detail": "a document, in the bin",
-                "size": len(doc.content or ""),
-                "entry_id": None,
-                "mime": None,
-                "pinned": False,
-                "thumb_attachment_id": None,
-                "thumb_url": None,
-            }
-        )
-    for reminder in reminders[:PER_KIND_LIMIT]:
-        items.append(
-            {
-                "kind": "archived",
-                "subtype": "reminder",
-                "id": reminder.id,
-                "title": reminder.text or "Reminder",
-                "preview": "",
-                "updated_at": reminder.deleted_at.isoformat(),
-                "detail": "a reminder, in the bin",
-                "size": len(reminder.text or ""),
-                "entry_id": None,
-                "mime": None,
-                "pinned": False,
-                "thumb_attachment_id": None,
-                "thumb_url": None,
-            }
-        )
+    items: list[dict] = [
+        _bin_row("document", doc, doc.title or "Untitled", _clip(doc.content or ""),
+                 "a document", len(doc.content or ""))
+        for doc in documents[:PER_KIND_LIMIT]
+    ]
+    items.extend(
+        _bin_row("reminder", reminder, reminder.text or "Reminder", "",
+                 "a reminder", len(reminder.text or ""))
+        for reminder in reminders[:PER_KIND_LIMIT]
+    )
     #: A deleted OCR reading too (WORLD_CLASS_PLAN 28.4 row 2), restored to
     #: the page or the file it was read from.
-    for reading in reading_bin.binned(session)[:PER_KIND_LIMIT]:
-        where = f"page {reading.page + 1} of " if reading.field == "page" else ""
-        items.append(
-            {
-                "kind": "archived",
-                "subtype": "reading",
-                "id": reading.id,
-                "title": f"Reading of {where}{reading.label or 'a file'}",
-                "preview": _clip(reading.text or ""),
-                "updated_at": reading.deleted_at.isoformat(),
-                "detail": "a reading, in the bin",
-                "size": len(reading.text or ""),
-                "entry_id": None,
-                "mime": None,
-                "pinned": False,
-                "thumb_attachment_id": None,
-                "thumb_url": None,
-            }
-        )
+    items.extend(
+        _bin_row("reading", reading, _reading_title(reading), _clip(reading.text or ""),
+                 "a reading", len(reading.text or ""))
+        for reading in reading_bin.binned(session)[:PER_KIND_LIMIT]
+    )
     #: A deleted recording (WORLD_CLASS_PLAN 28.5 row 6), its audio kept
     #: until the bin is emptied.
-    for recording in recordings.binned(session)[:PER_KIND_LIMIT]:
-        items.append(
-            {
-                "kind": "archived",
-                "subtype": "recording",
-                "id": recording.id,
-                "title": recording.title or "Recording",
-                "preview": "",
-                "updated_at": recording.deleted_at.isoformat(),
-                "detail": "a recording, in the bin",
-                "size": recording.size_bytes,
-                "entry_id": None,
-                "mime": recording.mime,
-                "pinned": False,
-                "thumb_attachment_id": None,
-                "thumb_url": None,
-            }
-        )
+    items.extend(
+        _bin_row("recording", recording, recording.title or "Recording", "",
+                 "a recording", recording.size_bytes, recording.mime)
+        for recording in recordings.binned(session)[:PER_KIND_LIMIT]
+    )
     return items
 
 
@@ -604,27 +574,27 @@ def _shelved(session: Session) -> list[dict]:
                 "pinned": False,
             }
         )
-    for doc in session.scalars(
-        select(Document)
-        .where(Document.archived_at.is_not(None))
-        .order_by(Document.archived_at.desc())
-        .limit(PER_KIND_LIMIT)
-    ).all():
-        items.append(
-            {
-                "kind": "shelved",
-                "subtype": "document",
-                "id": doc.id,
-                "title": doc.title or "Untitled",
-                "preview": _clip(doc.content),
-                "updated_at": doc.archived_at.isoformat(),
-                "detail": "archived",
-                "size": len(doc.content.split()),
-                "entry_id": None,
-                "mime": None,
-                "pinned": False,
-            }
-        )
+    items.extend(
+        {
+            "kind": "shelved",
+            "subtype": "document",
+            "id": doc.id,
+            "title": doc.title or "Untitled",
+            "preview": _clip(doc.content),
+            "updated_at": doc.archived_at.isoformat(),
+            "detail": "archived",
+            "size": len(doc.content.split()),
+            "entry_id": None,
+            "mime": None,
+            "pinned": False,
+        }
+        for doc in session.scalars(
+            select(Document)
+            .where(Document.archived_at.is_not(None))
+            .order_by(Document.archived_at.desc())
+            .limit(PER_KIND_LIMIT)
+        ).all()
+    )
     return items
 
 

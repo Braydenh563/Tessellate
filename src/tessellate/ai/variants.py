@@ -122,8 +122,7 @@ def pairs() -> dict[str, str]:
             continue
         for us in _us_forms(word, words):
             table.setdefault(word, us)
-    for uk, us in NAMED:
-        table[uk] = us
+    table.update(NAMED)
     return table
 
 

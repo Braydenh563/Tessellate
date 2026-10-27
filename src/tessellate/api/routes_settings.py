@@ -1502,24 +1502,23 @@ def list_skills() -> dict:
     from tessellate.api.routes_debug import shown_path
 
     config = deps.get_config()
-    catalog = []
     #: Phase E, decision 2: on a small model, a skill measured below the bar
     #: is labelled with why, rather than offered and hoped.
     rates = skills.measured_rates() if _small_class(config) else {}
-    for skill in skills.catalog(config, set(tools.TOOLS)):
-        # "This one changes things" is a different question from "this one
-        # uses tools", and the UI marks it as such. A skill with steps but no
-        # declared tools could do anything, so it counts.
-        catalog.append(
-            {
-                **skill,
-                "changes": bool(set(skill["tools"]) & tools.WRITE_TOOLS)
-                or (not skill["tools"] and bool(skill["steps"])),
-                "needs_larger_model": skills.larger_model_reason(skill["name"], rates) if rates else "",
-                #: Runs with no model, composed from the notes (O7, `ai/skill_composer.py`).
-                "composer": skill_composer.can_run(skill),
-            }
-        )
+    # "This one changes things" is a different question from "this one
+    # uses tools", and the UI marks it as such. A skill with steps but no
+    # declared tools could do anything, so it counts.
+    catalog = [
+        {
+            **skill,
+            "changes": bool(set(skill["tools"]) & tools.WRITE_TOOLS)
+            or (not skill["tools"] and bool(skill["steps"])),
+            "needs_larger_model": skills.larger_model_reason(skill["name"], rates) if rates else "",
+            #: Runs with no model, composed from the notes (O7, `ai/skill_composer.py`).
+            "composer": skill_composer.can_run(skill),
+        }
+        for skill in skills.catalog(config, set(tools.TOOLS))
+    ]
     where = skill_folder.folder(config)
     return {
         "skills": catalog,

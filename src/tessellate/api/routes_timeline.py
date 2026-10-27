@@ -322,31 +322,31 @@ def _place_documents(documents_found: list, placed: list[dict], scale: str, spac
     that plotted at `updated_at` would walk forwards through the feed every
     time it was opened, which is the one thing a journal must not do.
     """
-    for document in documents_found:
-        placed.append(
-            {
-                "id": document.id,
-                "kind": "document",
-                "key": f"document:{document.id}",
-                "_at": _naive(document.created_at),
-                "at": document.created_at.isoformat(),
-                "bucket": _bucket_start(document.created_at, scale),
-                "placed_by": "written",
-                "phrase": "",
-                "written_at": document.created_at.isoformat(),
-                "updated_at": document.updated_at.isoformat(),
-                "category": "",
-                "tags": [],
-                "parent_id": None,
-                "pinned": False,
-                "space": spaces.get(document.workspace_id, document.workspace_id),
-                "words": len((document.content or "").split()),
-                "links": 0,
-                "preview": _clip(_first_line(document.content or "")),
-                "title": document.title or "Untitled",
-                "file_type": document.file_type,
-            }
-        )
+    placed.extend(
+        {
+            "id": document.id,
+            "kind": "document",
+            "key": f"document:{document.id}",
+            "_at": _naive(document.created_at),
+            "at": document.created_at.isoformat(),
+            "bucket": _bucket_start(document.created_at, scale),
+            "placed_by": "written",
+            "phrase": "",
+            "written_at": document.created_at.isoformat(),
+            "updated_at": document.updated_at.isoformat(),
+            "category": "",
+            "tags": [],
+            "parent_id": None,
+            "pinned": False,
+            "space": spaces.get(document.workspace_id, document.workspace_id),
+            "words": len((document.content or "").split()),
+            "links": 0,
+            "preview": _clip(_first_line(document.content or "")),
+            "title": document.title or "Untitled",
+            "file_type": document.file_type,
+        }
+        for document in documents_found
+    )
 
 
 
@@ -355,35 +355,35 @@ def _place_reminders(reminders_found: list, placed: list[dict], scale: str, spac
 
     Lifted out of `timeline` unchanged (WORLD_CLASS_PLAN A5).
     """
-    for reminder in reminders_found:
-        placed.append(
-            {
-                "id": reminder.id,
-                "kind": "reminder",
-                "key": f"reminder:{reminder.id}",
-                "_at": _naive(reminder.due_at),
-                "at": reminder.due_at.isoformat(),
-                "bucket": _bucket_start(reminder.due_at, scale),
-                #: The same word a note gets when it sits on a date it only
-                #: talks about, because it is the same claim: this row is here
-                #: for what it is about, not for when it was typed.
-                "placed_by": "due",
-                "phrase": "",
-                "written_at": reminder.created_at.isoformat(),
-                "category": "",
-                "tags": [],
-                "parent_id": None,
-                "pinned": False,
-                "space": spaces.get(reminder.workspace_id, reminder.workspace_id),
-                "words": len((reminder.text or "").split()),
-                "links": 0,
-                "preview": _clip(reminder.text or ""),
-                "title": reminder.text or "Reminder",
-                "done": reminder.done,
-                "priority": reminder.priority,
-                "entry_id": reminder.entry_id,
-            }
-        )
+    placed.extend(
+        {
+            "id": reminder.id,
+            "kind": "reminder",
+            "key": f"reminder:{reminder.id}",
+            "_at": _naive(reminder.due_at),
+            "at": reminder.due_at.isoformat(),
+            "bucket": _bucket_start(reminder.due_at, scale),
+            #: The same word a note gets when it sits on a date it only
+            #: talks about, because it is the same claim: this row is here
+            #: for what it is about, not for when it was typed.
+            "placed_by": "due",
+            "phrase": "",
+            "written_at": reminder.created_at.isoformat(),
+            "category": "",
+            "tags": [],
+            "parent_id": None,
+            "pinned": False,
+            "space": spaces.get(reminder.workspace_id, reminder.workspace_id),
+            "words": len((reminder.text or "").split()),
+            "links": 0,
+            "preview": _clip(reminder.text or ""),
+            "title": reminder.text or "Reminder",
+            "done": reminder.done,
+            "priority": reminder.priority,
+            "entry_id": reminder.entry_id,
+        }
+        for reminder in reminders_found
+    )
 
 
 @router.get("")

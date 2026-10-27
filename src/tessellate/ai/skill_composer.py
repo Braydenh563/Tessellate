@@ -129,8 +129,8 @@ def _findings(found: dict) -> list[tuple[str, str]]:
     out: list[tuple[str, str]] = []
     if found["untagged"]:
         out.append((f"{realise.count_noun(found['untagged'], 'note')} with no tag", "say “tag my untagged notes”"))
-    for group in found["duplicate_tags"][:3]:
-        out.append((f"{' and '.join('#' + t for t in group[:3])} look like one tag", f"keep #{group[0]} by retagging the others, or ask me to tag the notes"))
+    out.extend((f"{' and '.join('#' + t for t in group[:3])} look like one tag", f"keep #{group[0]} by retagging the others, or ask me to tag the notes")
+               for group in found["duplicate_tags"][:3])
     if found["unfiled"]:
         out.append((f"{realise.count_noun(found['unfiled'], 'note')} not filed in a category of its own", "open Notes, Tidy to file them"))
     if found["orphans"]:

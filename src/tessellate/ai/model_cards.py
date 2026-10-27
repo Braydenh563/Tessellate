@@ -246,64 +246,51 @@ def _bad(message: str) -> dict:
     return {"valid": False, "error": message}
 
 
-def inspect_model_name(raw: str) -> dict:
-    """What a typed model name is, or why Ollama could not pull it.
-
-    Returns ``{"valid": True, "name", "source", "title", "detail", "warnings"}``
-    (``name`` is what to pass to Ollama, normalised) or ``{"valid": False,
-    "error"}``. Never touches the network: a name that is well formed but does
-    not exist is found out by Ollama when the download starts, and the card
-    shows its answer.
-    """
-    text = (raw or "").strip()
+def _malformed(text: str) -> str | None:
+    """Why a typed name cannot be a model at all, or None."""
     if not text:
-        return _bad("Type a model name, for example qwen2.5:3b.")
+        return "Type a model name, for example qwen2.5:3b."
     if len(text) > MAX_NAME:
-        return _bad("That name is too long to be a model.")
+        return "That name is too long to be a model."
     if re.search(r"\s", text):
-        return _bad("A model name has no spaces. Paste just the name or the repository link.")
+        return "A model name has no spaces. Paste just the name or the repository link."
     if ".." in text or text.startswith(("/", "\\")) or re.match(r"^[A-Za-z]:[\\/]", text):
-        return _bad("That looks like a file path. Ollama downloads by name; for a Hugging Face model paste its repository link.")
+        return "That looks like a file path. Ollama downloads by name; for a Hugging Face model paste its repository link."
+    return None
 
-    warnings: list[str] = []
 
-    url = _HF_URL.match(text)
-    if url:
-        owner, repo, file = url.group("owner"), url.group("repo"), url.group("file")
-        quant = None
-        if file:
-            if not file.lower().endswith(".gguf"):
-                return _bad("That link points at a file that is not a .gguf model. Paste the repository link instead.")
-            found = _QUANT.search(file)
-            if found:
-                quant = found.group(1).upper()
-            else:
-                warnings.append("The file name does not say its quantisation, so Ollama will choose one from the repository.")
-        text = f"hf.co/{owner}/{repo}" + (f":{quant}" if quant else "")
+def _from_hf_url(url: re.Match, warnings: list[str]) -> tuple[str, str | None]:
+    """A huggingface.co link as the `hf.co/owner/repo[:quant]` name Ollama takes, or an error."""
+    owner, repo, file = url.group("owner"), url.group("repo"), url.group("file")
+    quant = None
+    if file:
+        if not file.lower().endswith(".gguf"):
+            return "", "That link points at a file that is not a .gguf model. Paste the repository link instead."
+        found = _QUANT.search(file)
+        if found:
+            quant = found.group(1).upper()
+        else:
+            warnings.append("The file name does not say its quantisation, so Ollama will choose one from the repository.")
+    return f"hf.co/{owner}/{repo}" + (f":{quant}" if quant else ""), None
 
-    if text.lower().endswith(".gguf") and "/" not in text:
-        return _bad("That is a model file. Ollama needs the repository it lives in: paste the Hugging Face link or hf.co/owner/name.")
 
-    hf = _HF.match(text)
-    if not hf and re.match(r"^[A-Za-z0-9][A-Za-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._-]*(?::[A-Za-z0-9_.-]+)?$", text) and "gguf" in text.lower().split(":")[0]:
-        #: ``owner/repo-GGUF`` with no host: a Hugging Face repository, read as one.
-        hf = _HF.match("hf.co/" + text)
-        warnings.append("Read as a Hugging Face repository, because the name says GGUF.")
-    if hf:
-        owner, repo, quant = hf.group("owner"), hf.group("repo"), hf.group("quant")
-        name = f"hf.co/{owner}/{repo}" + (f":{quant}" if quant else "")
-        if "gguf" not in repo.lower():
-            warnings.append("Ollama can only download repositories that hold GGUF files. If this one does not, the download will fail.")
-        where = f"the {quant} file" if quant else "the repository's default file"
-        return {
-            "valid": True,
-            "name": name,
-            "source": "huggingface",
-            "title": f"Hugging Face model {owner}/{repo}",
-            "detail": f"Ollama downloads {where} from huggingface.co. The size is not known until the download starts.",
-            "warnings": warnings,
-        }
+def _hf_card(hf: re.Match, warnings: list[str]) -> dict:
+    owner, repo, quant = hf.group("owner"), hf.group("repo"), hf.group("quant")
+    name = f"hf.co/{owner}/{repo}" + (f":{quant}" if quant else "")
+    if "gguf" not in repo.lower():
+        warnings.append("Ollama can only download repositories that hold GGUF files. If this one does not, the download will fail.")
+    where = f"the {quant} file" if quant else "the repository's default file"
+    return {
+        "valid": True,
+        "name": name,
+        "source": "huggingface",
+        "title": f"Hugging Face model {owner}/{repo}",
+        "detail": f"Ollama downloads {where} from huggingface.co. The size is not known until the download starts.",
+        "warnings": warnings,
+    }
 
+
+def _ollama_card(text: str, warnings: list[str]) -> dict:
     lowered = text.lower()
     if lowered != text:
         warnings.append("Written in lower case, which is how Ollama names models.")
@@ -329,3 +316,38 @@ def inspect_model_name(raw: str) -> dict:
         "detail": detail,
         "warnings": warnings,
     }
+
+
+def inspect_model_name(raw: str) -> dict:
+    """What a typed model name is, or why Ollama could not pull it.
+
+    Returns ``{"valid": True, "name", "source", "title", "detail", "warnings"}``
+    (``name`` is what to pass to Ollama, normalised) or ``{"valid": False,
+    "error"}``. Never touches the network: a name that is well formed but does
+    not exist is found out by Ollama when the download starts, and the card
+    shows its answer.
+    """
+    text = (raw or "").strip()
+    problem = _malformed(text)
+    if problem:
+        return _bad(problem)
+
+    warnings: list[str] = []
+
+    url = _HF_URL.match(text)
+    if url:
+        text, problem = _from_hf_url(url, warnings)
+        if problem:
+            return _bad(problem)
+
+    if text.lower().endswith(".gguf") and "/" not in text:
+        return _bad("That is a model file. Ollama needs the repository it lives in: paste the Hugging Face link or hf.co/owner/name.")
+
+    hf = _HF.match(text)
+    if not hf and re.match(r"^[A-Za-z0-9][A-Za-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._-]*(?::[A-Za-z0-9_.-]+)?$", text) and "gguf" in text.lower().split(":")[0]:
+        #: ``owner/repo-GGUF`` with no host: a Hugging Face repository, read as one.
+        hf = _HF.match("hf.co/" + text)
+        warnings.append("Read as a Hugging Face repository, because the name says GGUF.")
+    if hf:
+        return _hf_card(hf, warnings)
+    return _ollama_card(text, warnings)

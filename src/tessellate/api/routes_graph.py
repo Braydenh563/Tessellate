@@ -470,15 +470,15 @@ def _add_document_nodes(
                     "graph_pin_y": document.graph_pin_y,
                 }
             )
-        for link in doc_links:
-            if link.document_id in documents:
-                edges.append(
-                    {
-                        "source": f"document:{link.document_id}",
-                        "target": link.entry_id,
-                        "kind": "document",
-                    }
-                )
+        edges.extend(
+            {
+                "source": f"document:{link.document_id}",
+                "target": link.entry_id,
+                "kind": "document",
+            }
+            for link in doc_links
+            if link.document_id in documents
+        )
 
 
 

@@ -198,6 +198,67 @@ def _outline_extras(text_boxes: list[dict], shapes: list[dict], links: list[dict
     return lines
 
 
+def _links_and_shapes(sketches: list) -> tuple[list[dict], list[dict]]:
+    """The links drawn between cards, and the drawn shapes with words in them."""
+    from .board_edit import _path_corner
+
+    links = []
+    #: The drawn shapes with words in them, by id and corner (FEAT-12): what
+    #: `move_board_item`, `edit_board_item` and `delete_board_item` act on.
+    #: Pen strokes without words are left out; they are many and say nothing.
+    shapes = []
+    for sketch in sketches:
+        try:
+            parsed = json.loads(sketch.data)
+        except (TypeError, ValueError):
+            continue
+        if isinstance(parsed, dict) and str(parsed.get("type", "")).startswith("link-"):
+            links.append({"from_card_id": parsed.get("sourceId"), "to_card_id": parsed.get("targetId")})
+        elif isinstance(parsed, dict) and parsed.get("label") and isinstance(parsed.get("d"), str):
+            x, y = _path_corner(parsed["d"])
+            shapes.append({
+                "shape_id": sketch.id, "shape": parsed.get("shape") or "shape",
+                "text": _clip(str(parsed["label"]), PREVIEW_CHARS), "x": round(x), "y": round(y),
+            })
+    return links, shapes
+
+
+def _object_summary(objects: list, nodes: list) -> tuple[list[dict], list[dict], int]:
+    """Text boxes, frames (with the cards under each) and the count of pictures."""
+    text_boxes = []
+    frames = []
+    image_count = 0
+    for obj in objects:
+        try:
+            data = json.loads(obj.data)
+        except (TypeError, ValueError):
+            data = {}
+        if obj.kind == "text":
+            text_boxes.append({"object_id": obj.id, "text": _clip(str(data.get("content") or ""), PREVIEW_CHARS)})
+        elif obj.kind == "image":
+            image_count += 1
+        elif obj.kind == "frame":
+            #: A frame's title is how a board is divided up ("Ideas", "Done"),
+            #: and the region it covers says which cards sit under it.
+            frames.append({
+                "object_id": obj.id,
+                "title": _clip(str(data.get("content") or ""), PREVIEW_CHARS),
+                "card_ids": [n.id for n in nodes if _inside(n, obj)],
+            })
+    return text_boxes, frames, image_count
+
+
+def _board_title(session: Session, board_id: int | None) -> str:
+    if board_id is None:
+        return "Default board"
+    board_entry = session.get(Entry, board_id)
+    # Same rule as a card's own note: a board is itself an Entry, and it can
+    # be marked private after being used as one.
+    if board_entry is not None and not board_entry.is_private:
+        return manager.extract_title(board_entry.content) or _clip(board_entry.content, 40)
+    return "Default board"
+
+
 def _read_whiteboard(session: Session, args: dict) -> dict:
     """The read half of ROADMAP item 11's AI+whiteboard integration: lets the
     agent answer "what's on my project-planning board?" without a human
@@ -244,55 +305,9 @@ def _read_whiteboard(session: Session, args: dict) -> dict:
         for n in nodes
     ]
 
-    from .board_edit import _path_corner
-
-    links = []
-    #: The drawn shapes with words in them, by id and corner (FEAT-12): what
-    #: `move_board_item`, `edit_board_item` and `delete_board_item` act on.
-    #: Pen strokes without words are left out; they are many and say nothing.
-    shapes = []
-    for sketch in sketches:
-        try:
-            parsed = json.loads(sketch.data)
-        except (TypeError, ValueError):
-            continue
-        if isinstance(parsed, dict) and str(parsed.get("type", "")).startswith("link-"):
-            links.append({"from_card_id": parsed.get("sourceId"), "to_card_id": parsed.get("targetId")})
-        elif isinstance(parsed, dict) and parsed.get("label") and isinstance(parsed.get("d"), str):
-            x, y = _path_corner(parsed["d"])
-            shapes.append({
-                "shape_id": sketch.id, "shape": parsed.get("shape") or "shape",
-                "text": _clip(str(parsed["label"]), PREVIEW_CHARS), "x": round(x), "y": round(y),
-            })
-
-    text_boxes = []
-    frames = []
-    image_count = 0
-    for obj in objects:
-        try:
-            data = json.loads(obj.data)
-        except (TypeError, ValueError):
-            data = {}
-        if obj.kind == "text":
-            text_boxes.append({"object_id": obj.id, "text": _clip(str(data.get("content") or ""), PREVIEW_CHARS)})
-        elif obj.kind == "image":
-            image_count += 1
-        elif obj.kind == "frame":
-            #: A frame's title is how a board is divided up ("Ideas", "Done"),
-            #: and the region it covers says which cards sit under it.
-            frames.append({
-                "object_id": obj.id,
-                "title": _clip(str(data.get("content") or ""), PREVIEW_CHARS),
-                "card_ids": [n.id for n in nodes if _inside(n, obj)],
-            })
-
-    board_title = "Default board"
-    if board_id is not None:
-        board_entry = session.get(Entry, board_id)
-        # Same rule as a card's own note above: a board is itself an Entry,
-        # and it can be marked private after being used as one.
-        if board_entry is not None and not board_entry.is_private:
-            board_title = manager.extract_title(board_entry.content) or _clip(board_entry.content, 40)
+    links, shapes = _links_and_shapes(sketches)
+    text_boxes, frames, image_count = _object_summary(objects, nodes)
+    board_title = _board_title(session, board_id)
 
     return {
         "board_id": board_id,

@@ -352,30 +352,30 @@ def catalogue() -> list[dict]:
                 "on_disk": disk_size_of(model.repo),
             }
         )
-    for model in OLLAMA_EMBED_MODELS:
-        rows.append(
-            {
-                "id": f"ollama:{model.name}",
-                "backend": "ollama",
-                "model": model.name,
-                "label": model.label,
-                "size": model.size,
-                "params": "",
-                "languages": model.languages,
-                "context": model.context,
-                "licence": model.licence,
-                "best_for": model.best_for,
-                "one_press": model.one_press,
-                "terms_url": model.terms_url,
-                "why_not": model.why_not,
-                "default": False,
-                "downloaded": False,
-                "files_missing": False,
-                "missing": [],
-                "state": "absent",
-                "on_disk": "",
-            }
-        )
+    rows.extend(
+        {
+            "id": f"ollama:{model.name}",
+            "backend": "ollama",
+            "model": model.name,
+            "label": model.label,
+            "size": model.size,
+            "params": "",
+            "languages": model.languages,
+            "context": model.context,
+            "licence": model.licence,
+            "best_for": model.best_for,
+            "one_press": model.one_press,
+            "terms_url": model.terms_url,
+            "why_not": model.why_not,
+            "default": False,
+            "downloaded": False,
+            "files_missing": False,
+            "missing": [],
+            "state": "absent",
+            "on_disk": "",
+        }
+        for model in OLLAMA_EMBED_MODELS
+    )
     return rows
 
 
@@ -962,7 +962,7 @@ def _run_download(model: EmbedModel) -> None:
             duration_ms=(time.time() - _state.started) * 1000 if _state.started else None,
         )
         if _state.outcome == "completed":
-            for hook in list(_finished_hooks):
+            for hook in list(_finished_hooks):  # noqa: PERF101  # a hook may unregister itself
                 try:
                     hook(model.repo)
                 except Exception:  # noqa: BLE001  # a listener must not undo a finished download
