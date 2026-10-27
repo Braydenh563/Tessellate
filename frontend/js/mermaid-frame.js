@@ -48,7 +48,7 @@ function mermaidReasonLine(error) {
   const last = lines[lines.length - 1];
   if (lines.length > 1 && /^(Expecting|Got|Unexpected)/.test(last)) line = `${line.replace(/:$/, "")}. ${last}`;
   const clean = line.replace(/\s+/g, " ").trim();
-  return clean.length > 160 ? `${clean.slice(0, 157)}...` : clean;
+  return clean.length > 160 ? `${clean.slice(0, 159)}…` : clean;
 }
 // MERMAID-FRAME-PROTOCOL-END
 

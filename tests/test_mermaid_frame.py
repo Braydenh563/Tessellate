@@ -54,7 +54,9 @@ def test_nothing_that_loads_at_boot_names_mermaid() -> None:
 
 def test_the_client_module_is_a_lazy_bundle_and_the_library_is_only_in_the_frame() -> None:
     app = (ROOT / "frontend" / "js" / "app.js").read_text(encoding="utf-8")
-    block = app.split("const LAZY_MODULES = {", 1)[1].split("\n};", 1)[0]
+    # app.js is at its gzip cap, so the entry is registered in lazy-entries.js.
+    entries = (ROOT / "frontend" / "js" / "lazy-entries.js").read_text(encoding="utf-8")
+    block = entries.split("Object.assign(LAZY_MODULES, {", 1)[1].split("\n});", 1)[0]
     assert re.search(r'mermaid:\s*\[[^\]]*"/js/mermaid-draw\.js"', block)
     assert "/vendor/mermaid/" not in app, "only the frame's page may load the library"
     from tessellate.core import security
