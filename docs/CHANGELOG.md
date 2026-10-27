@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Atlas: standing on the status bar, its tail no longer counts as touching the bar's buttons (it is tested down to the soles); 19 of 31 stands along the bar read as blocked, now none.
 - Diagrams: every ```mermaid fence now draws (flowchart, sequence, class, state, entity relationship, Gantt, pie, mind map, timeline, journey and the rest) in Read, Live, a print, the HTML export, chat and Ask replies, using the vendored Mermaid 12.2.0 loaded on first use inside a hidden same-origin frame with its own policy (the app's policy is unchanged); pictures take the app's colours, redraw on a theme or contrast switch, and a fence Mermaid cannot read stays code with one line of reason under it.
 - Pictures: deleting a picture while a model is captioning or reading it no longer raises an error; the read is skipped, and a slow read no longer holds the database open.
 - Library: the image ⋯ chip is glass only while the glass look is on; with it off the chip is solid.

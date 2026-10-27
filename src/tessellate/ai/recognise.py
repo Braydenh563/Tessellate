@@ -1017,6 +1017,9 @@ _ROLLING = (
     rf"(?:(?:{_PRE})(?:the |these |this )?|the |these |this )(?:last|past) {_RECENT_UNIT}(?! of\b)",
     r"(?:the |this |these )?(?:last|past|previous) fortnight",
 )
+#: The fortnight ahead, the mirror of "the last fortnight": fourteen days
+#: from today. ("next week" is the calendar week; a fortnight has none.)
+_FORTNIGHT_AHEAD = rf"(?:{_PRE})?(?:the )?(?:next|coming) fortnight"
 #: The weekend just gone ("last weekend" stays the calendar reading).
 _WEEKEND = r"(?:(?:in|over|during|throughout|across|through|for|at|on) the|the|this past|this last|the past) week[- ]?end(?: just (?:gone|past))?"
 _TO_DATE = (
@@ -1124,6 +1127,7 @@ _DATE_PHRASE_SOURCE = (
             *_PERIODS,
             _WEEKEND,
             *_ROLLING,
+            _FORTNIGHT_AHEAD,
             *_TO_DATE,
             *_PART_OF_DAY,
             _BETWEEN,
@@ -1333,6 +1337,7 @@ _AHEAD_WORDS = (
     (re.compile(r"\btoday\b"), "today", 0),
     (re.compile(r"\btomorrow\b"), "tomorrow", 1),
     (re.compile(r"\bnext week\b"), "next week", 14),
+    (re.compile(r"\b(?:next|coming) fortnight\b"), "in the next fortnight", 14),
     (re.compile(r"\bthis week\b"), "in the next seven days", 7),
     (re.compile(r"\bthis month\b"), "this month", -1),
     (re.compile(r"\bsoon\b"), "in the next two weeks", 14),
@@ -1525,6 +1530,13 @@ def _span_recent(text: str, a: date, tense: str | None) -> Any:
     else:
         start = _back(a, amount, unit)
     return start, a, "day"
+
+
+def _span_ahead(text: str, a: date, tense: str | None) -> Any:
+    """"the next fortnight": the fourteen days after today (so no question's past window)."""
+    if not re.fullmatch(_FORTNIGHT_AHEAD, text):
+        return _MISS
+    return a + timedelta(days=1), a + timedelta(days=14), "day"
 
 
 def _span_weekend(text: str, a: date, tense: str | None) -> Any:
@@ -1875,7 +1887,7 @@ def _span_season(text: str, a: date, tense: str | None) -> Any:
 
 #: Tried in this order: an earlier reader's pattern can be a prefix of a later one's.
 _SPAN_READERS = (
-    _span_edge, _span_fixed, _span_day_run, _span_between, _span_week_before_last, _span_calendar_unit, _span_weekend, _span_recent, _span_lately, _span_to_date,
+    _span_edge, _span_fixed, _span_day_run, _span_between, _span_week_before_last, _span_calendar_unit, _span_weekend, _span_ahead, _span_recent, _span_lately, _span_to_date,
     _span_other_day, _span_same_day, _span_ago, _span_in,
     _span_nth, _span_weekday, _span_iso, _span_month_day, _span_day_and_month, _span_ordinal,
     _span_part_of_period, _span_season, _span_part_of_month, _span_end_of, _span_month, _span_holiday,
@@ -1936,7 +1948,7 @@ def _window_words() -> re.Pattern[str]:
     global _WINDOW_WORDS
     if _WINDOW_WORDS is None:
         _WINDOW_WORDS = re.compile(
-            r"\b(?:" + "|".join((*_EDGES, *_PERIODS, _WEEKEND, *_ROLLING, *_TO_DATE, *_PART_OF_DAY, _BETWEEN, *_DAY_RUNS, *_DAY_FORMS, _PART_WORD, _MONTH_YEAR, _LATELY, _BEFORE_LAST,
+            r"\b(?:" + "|".join((*_EDGES, *_PERIODS, _WEEKEND, *_ROLLING, _FORTNIGHT_AHEAD, *_TO_DATE, *_PART_OF_DAY, _BETWEEN, *_DAY_RUNS, *_DAY_FORMS, _PART_WORD, _MONTH_YEAR, _LATELY, _BEFORE_LAST,
                                  _QUARTER, _PREVIOUS_UNIT)) + r"|(?:the\s+)?(?:last|this|next|past|previous|coming)\s+(?:few\s+|couple\s+of\s+|\d{1,3}\s+|two\s+|three\s+|four\s+|five\s+|six\s+|seven\s+|eight\s+|nine\s+|ten\s+|eleven\s+|twelve\s+)?"
             r"(?:days?|weeks?|weekend|months?|years?|night|morning|evening|monday|tuesday|wednesday|thursday|friday|saturday|sunday)"
             r"|(?:the\s+)?week\s+before\s+last|(?:\d{1,3}|a|an|one|two|three|four|five|six)\s+(?:days?|weeks?|months?|years?)\s+ago"
@@ -1949,7 +1961,7 @@ def _window_words() -> re.Pattern[str]:
 #: A sentence that looks dated: the composer's score for a "when" answer,
 #: never turned into a value (that is `find` and `span`).
 _DATED = re.compile(
-    r"\b(\d{1,2}(st|nd|rd|th)|\d{4}|today|tomorrow|tonight|yesterday|next (week|month|year)|"
+    r"\b(\d{1,2}(st|nd|rd|th)|\d{4}|today|tomorrow|tonight|yesterday|next (week|month|year|fortnight)|coming fortnight|"
     r"last (week|month|year)|this (week|month|year)|weekend|january|february|march|april|may|june|july|"
     r"august|september|october|november|december|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b",
     re.I,
@@ -2312,7 +2324,7 @@ def question_day(text: str, today: date, locale: str | None = None) -> tuple[dat
     return None
 
 
-_AHEAD = re.compile(r"\bnext (?:week|month|year)\b|\btomorrow\b", re.IGNORECASE)
+_AHEAD = re.compile(r"\b(?:next (?:week|month|year|fortnight)|coming fortnight)\b|\btomorrow\b", re.IGNORECASE)
 
 
 def says_ahead(text: str) -> bool:

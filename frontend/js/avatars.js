@@ -3872,9 +3872,11 @@ function nameMarkBuddyShapeAt1(x, y, pose, legs = "") {
   //: still hangs 22px below its seat, from x + 32 to x + 78
   //: (companionchat.js): sitting tucked on the chat's dock it covered the
   //: input by 13px, and reading along an answer it covered Stop by 29.
-  //: Standing, it reaches 6px under its soles (companionchat.js), which
-  //: still fits the chat's dock, whose controls start 13px under its top.
-  if (document.querySelector("#nm-buddy .atl-figure-box")) shape.push({ left: x + 30, top: y + drop + 50, right: x + 82, bottom: y + drop + NMB_FEET + (pose === "stand" ? 6 : 4) });
+  //: Standing, the tail is tested down to the soles and no further: it
+  //: curls 6px under them (companionchat.js) onto the floor it stands on,
+  //: and counted, that floor's own controls were hit (the status bar's
+  //: buttons start 4.9px under it: 19 of 31 stands along the bar "hit").
+  if (document.querySelector("#nm-buddy .atl-figure-box")) shape.push({ left: x + 30, top: y + drop + 50, right: x + 82, bottom: y + drop + NMB_FEET + (pose === "stand" ? 0 : 4) });
   return shape;
 }
 
