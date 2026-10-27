@@ -67,3 +67,17 @@ def test_a_window_never_ends_after_now():
 
 def test_the_fortnight_behind_still_reads():
     assert recognise.span("last fortnight", TODAY, "past")[:2] == (d(10, 7), d(10, 21))
+
+
+#: Mon 19 to Sun 25 October 2026: whichever day it is asked, "last weekend" is
+#: the Saturday and Sunday before the current week's end, never the one under way.
+@pytest.mark.parametrize("day", range(19, 26))
+def test_the_weekends_are_the_right_ones_on_every_weekday(day):
+    today = date(2026, 10, day)
+    last = recognise.span("last weekend", today, None)
+    assert (last[0], last[1]) == (d(10, 17), d(10, 18))
+    assert last[0].weekday() == 5 and (last[1] - last[0]).days == 1
+    this = recognise.span("this weekend", today, None)
+    assert (this[0], this[1]) == ((d(10, 24), d(10, 25)))
+    following = recognise.span("next weekend", today, None)
+    assert (following[0], following[1]) == (d(10, 31), d(11, 1))

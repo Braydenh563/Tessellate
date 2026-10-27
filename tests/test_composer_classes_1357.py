@@ -255,6 +255,7 @@ J_FOLLOW = [
 K_WINDOWS = [
     ("what did I do over the weekend?", r"Essay draft", r"Gym routine|Lecture 5|Errands|" + NOT_FOUND),
     ("what did i get up to at the weekend", r"Essay draft", r"Gym routine|Lecture 5|" + NOT_FOUND),
+    ("what did I do last weekend?", r"Essay draft", r"Gym routine|Lecture 5|Errands|" + NOT_FOUND),
     ("what did I do last fortnight?", r"(?=.*Errands)(?=.*Essay draft)(?=.*Gym routine)", r"Bubble tea|" + NOT_FOUND),
     ("what did I do in the last fortnight", r"(?=.*Errands)(?=.*Gym routine)", r"Bubble tea|" + NOT_FOUND),
     ("what did I make over the past fortnight", r"Errands", r"Bubble tea|" + NOT_FOUND),

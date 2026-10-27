@@ -2,7 +2,7 @@
 
 Generated 2026-10-27 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6644, frontend ids 2562, CSS sections 504, backend routes 628, backend modules 6818, test files 1433, tests 12710, plan headings 983.
+Counts: frontend functions 6644, frontend ids 2562, CSS sections 504, backend routes 628, backend modules 6818, test files 1433, tests 12711, plan headings 983.
 
 ## Frontend functions (6644)
 
@@ -19796,7 +19796,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12710)
+## Tests (12711)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -21209,7 +21209,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_websearch_reader.py | 7 |
 | tests/test_webview2_detection.py | 8 |
 | tests/test_when.py | 37 |
-| tests/test_when_ahead_1027.py | 4 |
+| tests/test_when_ahead_1027.py | 5 |
 | tests/test_when_class_1026.py | 7 |
 | tests/test_when_windows.py | 7 |
 | tests/test_whiteboard.py | 44 |
