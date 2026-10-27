@@ -7945,6 +7945,14 @@ window.addEventListener("pointermove", (e) => {
   }
 }, true);
 window.addEventListener("pointercancel", () => wbTrashHide(), true);
+//: Any drag whose end returns before its own `wbTrashTake` and
+//: `wbEndGesture` would leave the target up and the move live until the next
+//: drag (INBOX 1405), so after every release, once the drags' own end
+//: handlers have run, a move still carried is let go and the target hidden.
+window.addEventListener("pointerup", () => setTimeout(() => {
+  if (wbGesture?.move) wbGesture = null;
+  wbTrashHide();
+}), true);
 
 //: Called first thing by each item drag's end, while the drag still holds
 //: what `restore` needs. True when the drop was on the target: the move is
@@ -21040,7 +21048,10 @@ function renderWhiteboard() {
       d._dragOriginalD = parsed ? parsed.d : null;
       d._moveUndoBefore = WB_KIND_INFO.sketch.payload(d);
       d._altCopy = Boolean(event.sourceEvent?.altKey);
-      d._gesture = wbBeginGesture(() => wbRestoreMove("sketch", d), true);
+      //: A connector drawn between two cards has no path of its own to
+      //: carry (its ends follow the cards), so it starts no move: the delete
+      //: target came up on its drag and stayed (INBOX 1405).
+      d._gesture = d._dragOriginalD == null ? null : wbBeginGesture(() => wbRestoreMove("sketch", d), true);
       // Raw (never-snapped) running totals, applied fresh from the
       // *original* d each frame, the same fix as `dragging`'s own comment
       // above: re-snapping an already-snapped value every frame discards

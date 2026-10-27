@@ -60,3 +60,15 @@ def test_a_lasting_toast_steps_aside_for_the_buttons_of_the_section_in_use():
     assert "!el.toastTimer && work.some(" in body
     stack = js[js.index("function toastStack(box, change) {"):]
     assert 'if (box.id === "toast-box") toastYield();' in stack[: stack.index("\n}\n")]
+
+
+def test_a_connector_drag_never_leaves_the_delete_target_up():
+    """INBOX 1405, the owner 2026-10-27: dragging a connector drawn between
+    two cards brought up "Drop here to delete" and it stayed until another
+    object was clicked. Measured (scratchpad wbtrash.js): before, the target
+    and the move gesture were still live after release; after, both clear,
+    and a card dropped on the target is still deleted."""
+    js = (ROOT / "frontend/js/whiteboard.js").read_text(encoding="utf-8")
+    assert 'd._gesture = d._dragOriginalD == null ? null : wbBeginGesture(() => wbRestoreMove("sketch", d), true);' in js
+    net = js[js.index('window.addEventListener("pointerup", () => setTimeout(() => {'):][:160]
+    assert "if (wbGesture?.move) wbGesture = null;" in net and "wbTrashHide();" in net

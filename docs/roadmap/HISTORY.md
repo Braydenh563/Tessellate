@@ -7,6 +7,10 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Fixed from INBOX, 2026-10-27
+
+- 1405. The owner, 2026-10-27, verbatim: "if I clcik on a link on a board between two objects, then try to drag it down, it starts selecting and then the \"drop here to delete\" button appears and becasue there was nothing to put in it, it stays permanently showing until i click on another object". Fixed: a connector bound to two cards starts no move; any release lets a leftover move go and hides the target (whiteboard.js, tests/test_small_fixes_1027.py).
+
 ## Handover session record, 2026-10-17 to 2026-10-26g (moved from HANDOVER)
 
 **Now (2026-10-26g, branch claude/loving-edison-4d0din, PR 204, budget: stop at 40% weekly, then report open items and a recommendation):** Since 10-26f: composer classes merged (ff8d30d: 35 to 76 of 77 class cases, K3 no-model weekly digest, K20 activity recap; leftovers in composer9-1026.md: K3 remaining AI-only buttons, when_words "over the weekend"/"last fortnight", map node shown as heading, stats "0 distinct tags", J "tell me more"), grammar merge's Guide path fixed (74dac0e), whiteboard dogfood merged (7 fixes: wrap by offset, ghost selection pruned, boxes and shapes grow to fit, Find reads table cells, Enter places held tool, export draws boxes and tables; leftovers in wbdog-1026.md: layer order needs Opus pair sweep, picture radii and sticky fold in export, K16, K24 Live view, table column widths; Guide topic whiteboard-controls at 1599 of 1600). Ledger archive merged (c83a62d). Running: document editor dogfood (docdog-1026.md), mind map dogfood plus K15 (mapdog-1026.md). Next: agent harness and Needle, chat issues, OCR O1-O3, rows 17 and 18. Found-not-fixed: Writing Room `#draft-text` Save at 1464px on a 844px phone.
