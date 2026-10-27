@@ -6108,11 +6108,12 @@ function nameMarkBuddyThrowLand(buddy, s, tab, spot) {
   nmb.placedAt = Date.now();
   nmb.afterLand = true;
   nameMarkBuddyMoveTo(buddy, spot);
-  //: Its landing act in the next frame, not this one: the move's restyle and
-  //: the act's were one 27 to 81ms frame (throw5.js), two now.
-  requestAnimationFrame(() => {
+  //: Its landing act a frame later, not in this one: the move's restyle and
+  //: the act's were one 27 to 81ms frame (throw5.js), two now. A one-shot
+  //: timer, not a frame request (the wake-source ratchet).
+  setTimeout(() => {
     if (nmb.spot === spot && !nmb.flight && (!nmb.anim || nmb.anim.playState !== "running")) nameMarkBuddyAct("land");
-  });
+  }, 16);
   const spots = nameMarkBuddySpots();
   delete spots["*"];
   spots[tab] = nameMarkBuddySpotFor(spot);

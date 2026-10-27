@@ -7703,16 +7703,17 @@ onDomReady(() => {
   $("ocr-page-pane")?.addEventListener("wheel", (event) => {
     if (!event.ctrlKey) return;
     event.preventDefault();
-    //: One zoom per frame (INBOX 1415).
+    //: One zoom per frame (INBOX 1415), by a one-shot timer rather than a
+    //: frame request (the wake-source ratchet).
     const queued = ocrWheelPending;
     ocrWheelPending = { deltaY: event.deltaY + (queued?.deltaY || 0), clientX: event.clientX, clientY: event.clientY };
     if (queued) return;
-    requestAnimationFrame(() => {
+    setTimeout(() => {
       const event = ocrWheelPending;
       ocrWheelPending = null;
       const delta = Math.max(-100, Math.min(100, event.deltaY));
       ocrZoomAbout(ocrShownZoom() * Math.exp(-delta / 500), event.clientX, event.clientY);
-    });
+    }, 16);
   }, { passive: false });
   //: Two fingers on a touch screen: the level follows the distance between
   //: them, about their midpoint. One finger still scrolls the page or draws

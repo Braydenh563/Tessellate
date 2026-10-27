@@ -49,7 +49,7 @@ def test_a_pinch_zooms_once_per_frame():
     lib = frontend_text("library.js")
     start = lib.index('$("ocr-page-pane")?.addEventListener("wheel"')
     wheel = lib[start : lib.index("{ passive: false });", start)]
-    assert "ocrWheelPending" in wheel and "requestAnimationFrame" in wheel
+    assert "ocrWheelPending" in wheel and "setTimeout(" in wheel
     assert wheel.count("ocrZoomAbout(") == 1
 
 

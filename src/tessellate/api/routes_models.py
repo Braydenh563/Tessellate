@@ -6,6 +6,8 @@ absent turns into flags in /models/status, never an error.
 
 from __future__ import annotations
 
+import functools
+
 import logging
 import threading
 from typing import Literal
@@ -149,7 +151,7 @@ def prewarm_installed() -> None:
 def _start_flight(client, key: tuple[str, str]) -> "_ListFlight":  # noqa: ANN001
     """Begin the one list request for `key`; the caller holds `_installed_lock`."""
     flight = _installed_flights[key] = _ListFlight()
-    threading.Thread(target=_run_list_flight, args=(client, key, flight), name="models-list", daemon=True).start()
+    background.start("models-list", functools.partial(_run_list_flight, client, key, flight))
     return flight
 
 

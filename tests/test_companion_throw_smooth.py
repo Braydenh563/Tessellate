@@ -153,7 +153,7 @@ def test_the_landing_is_worked_out_after_the_first_frame_or_before_it_when_the_f
 def test_the_landing_frame_splits_its_restyles_and_reads_no_layout() -> None:
     land = _fn(AV, "nameMarkBuddyThrowLand")
     # The act is the next frame's, not the move's.
-    assert land.index("nameMarkBuddyMoveTo(buddy, spot);") < land.index("requestAnimationFrame(() => {") < land.index('nameMarkBuddyAct("land")')
+    assert land.index("nameMarkBuddyMoveTo(buddy, spot);") < land.index("setTimeout(() => {") < land.index('nameMarkBuddyAct("land")')
     assert 'nameMarkBuddyAct("land");\n  const spots' not in land
     # Nothing to hand over after a throw: the blend (two restyles) is skipped.
     move = _fn(AV, "nameMarkBuddyMoveTo")

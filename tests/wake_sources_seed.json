@@ -30,7 +30,7 @@
  "companion-menu.js::mutation-observer": 1,
  "companion-menu.js::raf": 3,
  "companion-throw.js::raf": 1,
- "dash-boards.js::raf": 1,
+ "dash-boards.js::raf": 0,
  "dash-boards.js::resize-observer": 1,
  "dashboard.js::interval": 1,
  "dashboard.js::mutation-observer": 1,
