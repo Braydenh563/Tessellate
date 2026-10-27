@@ -884,9 +884,11 @@ def _heading_text(line: str) -> str | None:
 _BOLD_LINE = re.compile(r"[ \t]{0,3}(\*\*|__)(?=\S)([^*_\n]{1,80}?)\1:?[ \t]*\r?\n?$")
 #: "Follow- Up" as typed on a phone: the hyphen's word goes on (INBOX 1420).
 _SPLIT_HYPHEN = re.compile(r"(?<=[A-Za-z])- (?=[A-Z][a-z])")
+_BOLD_STARS = re.compile(r"\*\*(?=\S)([^*\n]+?)(?<=\S)\*\*")
+_BOLD_UNDERS = re.compile(r"__(?=\S)([^_\n]+?)(?<=\S)__")
 #: A short first line ending in a colon, with lines under it: "Ice Breakers:"
 #: over its list is the note's name (INBOX 1420).
-_COLON_TITLE = re.compile(r"[ \t]*([^\s:.!?][^:.!?\n]{0,48}?):[ \t]*$")
+_COLON_TITLE = re.compile(r"([^\s:.!?][^:.!?\n]{0,48}?):$")
 
 
 def bold_line(line: str) -> str | None:
@@ -898,7 +900,9 @@ def bold_line(line: str) -> str | None:
 def plain_words(text: str) -> str:
     """A note's words without its emphasis marks or a split hyphen: what the
     page shows, which is what an answer says."""
-    text = re.sub(r"(\*\*|__)(?=\S)(.+?)(?<=\S)\1", r"\2", text).replace("**", "")
+    #: One pass per mark, each inner run unable to cross its own mark: linear
+    #: on a line of unclosed marks (CodeQL's polynomial-regex alert).
+    text = _BOLD_STARS.sub(r"\1", _BOLD_UNDERS.sub(r"\1", text)).replace("**", "")
     return _SPLIT_HYPHEN.sub("-", text)
 
 
@@ -912,7 +916,7 @@ def _title(content: str) -> tuple[str, int]:
     if heading is None:
         heading = bold_line(first)
     if heading is None and end != -1 and content[end:].strip():
-        colon = _COLON_TITLE.match(first)
+        colon = _COLON_TITLE.match(first.strip(" \t"))
         heading = colon.group(1) if colon and len(colon.group(1).split()) <= 6 else None
     if heading is not None:
         name = plain_words(_MARKS.sub("", heading).strip().strip("#").strip())

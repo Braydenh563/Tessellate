@@ -225,3 +225,16 @@ def test_the_open_note_is_offered_only_when_the_question_is_about_it():
         assert "test draft" not in aware.closing(seen, seed, asked="what do I know about cloud computing")
     assert "test draft" in aware.closing(seen, "a", asked="what is left on the test draft")
     assert "test draft" in aware.closing(seen, "a", asked="summarise this")
+
+
+def test_note_names_stay_linear_on_unclosed_marks_and_tabs():
+    #: CodeQL alerts 1846 and 1847: a pasted line of unclosed marks or tabs.
+    import time
+
+    from tessellate.ai import composer
+
+    started = time.perf_counter()
+    composer.plain_words("__" + "**a" * 20000)
+    composer._title("\t" * 20000 + "x:\nbody")
+    assert time.perf_counter() - started < 1.0
+    assert composer.plain_words("**Phase 1:** the __Opener__") == "Phase 1: the Opener"
