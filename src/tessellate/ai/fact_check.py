@@ -72,6 +72,11 @@ _SPAN_MINUTES = {
 }
 #: Before a figure, the word that makes it a time or a place ("at 9", "#12").
 _BEFORE_TIME = {"at", "#", "/", "no.", "number"}
+#: Before a figure that counts nothing, the word that makes it a time ("due
+#: Thursday by 10", "until 9.30"); "by 3 notes" still counts.
+_BEFORE_CLOCK = {"by", "until", "till", "before", "after", "around"}
+#: A figure that counts nothing and reads as a year ("October 28, 2026").
+_YEAR = re.compile(r"(?:19|20)\d\d$")
 #: Words that end the reach from a figure to its noun ("one of the notes"
 #: does not say there is one note).
 _STOPS = {"of", "is", "are", "was", "were", "has", "have", "had", "be", "in", "on", "at", "from", "until", "by", "for", "to", "and", "or"}
@@ -87,7 +92,7 @@ _AMOUNTS = {"single": 1, "couple": 2, "pair": 2, "dozen": 12, "hundred": 100, "t
 #: Result keys that are positions, not counts.
 _NOT_COUNTS = {"offset", "limit", "page", "id", "seed"}
 
-_TOKEN = re.compile(r"[#/]?\d+(?:[.,:/]\d+)*(?:st|nd|rd|th|am|pm|%)?|[a-z]+(?:['-][a-z]+)*|[^\sa-z0-9]")
+_TOKEN = re.compile(r"[#/]?\d+(?:[.,:/-]\d+)*(?:st|nd|rd|th|am|pm|%)?|[a-z]+(?:['-][a-z]+)*|[^\sa-z0-9]")
 _NUMBER_WORD = re.compile(r"(" + "|".join(_TENS) + r")(?:-(" + "|".join(k for k in _UNITS if 0 < _UNITS[k] < 10) + r"))?$")
 
 
@@ -95,7 +100,7 @@ def _value(token: str) -> str | None:
     """A figure token's value as text ("3", "84", "2.5", "0"), or None when
     the token is not a figure or is a time, a date or an id by its own shape."""
     if token[0].isdigit():
-        if re.search(r"[:/]|(?:st|nd|rd|th|am|pm)$", token):
+        if re.search(r"[:/-]|(?:st|nd|rd|th|am|pm)$", token):
             return None
         plain = token.rstrip("%").replace(",", "")
         return plain.rstrip("0").rstrip(".") if "." in plain else (plain.lstrip("0") or "0")
@@ -161,6 +166,11 @@ def _amounts(tokens: list[str]) -> list[str]:
     return out
 
 
+def _clock_or_year(tokens: list[str], i: int) -> bool:
+    """Whether a figure that counts nothing is a time ("by 10") or a year."""
+    return bool(_YEAR.match(tokens[i])) or (i > 0 and tokens[i - 1] in _BEFORE_CLOCK)
+
+
 def _figures(text: str) -> list[tuple[str, str | None]]:
     """Every figure the text says that is not a date, a time or an id, as
     (value, the noun it counts, "~<minutes>" for a span, or None for a bare
@@ -178,7 +188,7 @@ def _figures(text: str) -> list[tuple[str, str | None]]:
             continue
         after = tokens[i + 1] if i + 1 < len(tokens) else ""
         noun = f"~{_SPAN_MINUTES[after]}" if after in _SPAN_MINUTES else _noun_after(tokens, i)
-        if (token == "no" and noun is None) or (noun is None and _pronoun_one(tokens, i)):
+        if noun is None and (token == "no" or _pronoun_one(tokens, i) or _clock_or_year(tokens, i)):
             continue
         out.append((value, noun))
     return out

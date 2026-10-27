@@ -12,7 +12,7 @@ from datetime import datetime
 import pytest
 
 from tessellate.api import routes_chat
-from tessellate.core.database import Reminder
+from tessellate.core.database import Entry, Reminder
 
 #: A fixed clock (CLAUDE.md section 8), Tuesday 27 October 2026, 9:30.
 NOW = datetime(2026, 10, 27, 9, 30)
@@ -125,3 +125,27 @@ def test_an_amount_said_in_words_is_a_figure(ai_client, fake_ollama, session, pr
     """"a couple of", "a dozen" and "a hundred" passed with 3."""
     _seed(session)
     assert _kept(ai_client, fake_ollama, "what reminders do I have", prose, use_tools) is ok
+
+
+@SURFACES
+@pytest.mark.parametrize(
+    "prose",
+    [
+        "Call mum is due October 28, 2026; you have 3 reminders.",
+        "You have 3 reminders; pay rent is due Thursday by 10.",
+        "You have 3 reminders; call mum is due by 9.30 tomorrow.",
+        "Call mum is due 2026-10-28; you have 3 reminders.",
+    ],
+)
+def test_a_year_a_time_and_an_iso_date_are_no_figures(ai_client, fake_ollama, session, prose, use_tools):
+    """Each was refused for a figure that counts nothing."""
+    _seed(session)
+    assert _kept(ai_client, fake_ollama, "what reminders do I have", prose, use_tools)
+
+
+@pytest.mark.parametrize(("notes", "prose", "ok"), [(1, "You have a single note.", True), (2, "You have a single note.", False)])
+def test_a_single_note_is_one(ai_client, fake_ollama, session, notes, prose, ok):
+    for n in range(notes):
+        session.add(Entry(content=f"Gym plan {n}"))
+    session.commit()
+    assert _kept(ai_client, fake_ollama, "how many notes do I have", prose) is ok
