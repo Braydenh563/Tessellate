@@ -43,6 +43,10 @@ tzdata>=2026.5
 
 # AI (Phase 2)
 requests>=2.34.2,<3.0      # talks to the local Ollama REST API
+# requests verifies HTTPS against certifi's bundle (web search, model and
+# extras downloads). 2026.10.23 is the first bundle after Chrome and Mozilla
+# dropped the eight compromised eMudhra CAs (19 to 20 October 2026).
+certifi>=2026.10.23
 numpy>=2.5.4,<3.0; python_version >= "3.12"  # vectors stored as raw float32 bytes
 numpy>=2.4.6,<3.0; python_version < "3.12"   # 2.5 needs Python 3.12; CI still runs 3.11
 sentence-transformers>=6.2.0,<7.0
