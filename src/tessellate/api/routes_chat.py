@@ -3849,6 +3849,7 @@ def _first_events(req: _StreamRequest, prepared: dict, ollama_running: bool, too
         #: exception): an act with no tools to hand (Chat's Ask mode, the Ask
         #: box) is done, not discussed, and its confirmation is the card's own
         #: line. With tools, `_plan_turn` gives the act to the agent instead.
+        #: `_facts_turn` never takes an act, even one whose words also count.
         return _act_events(req, prepared)
     starter = _starter_read(req, ollama_running or tools_only)
     if starter:
@@ -4211,19 +4212,33 @@ def _facts_turn(req: _StreamRequest, prepared: dict, t: _Turn) -> bool:
     popup agent, Chat's Agent mode) the agent has that turn and can search."""
     if not t.ollama_running or t.composed or req.skill:
         return False
-    if req.use_tools and _ASKS_TO_DO.match(req.question or ""):
+    if _asks_change(req.question or "") or prepared["intent"] == intent.ACT:
         #: "save my first note" read as the first-note count: a request to do
-        #: something is the agent's, which has the tools to do it.
+        #: something is never a figure to say. With tools it is the agent's,
+        #: which has the tools to do it; with none it is the act's own path
+        #: (`_first_events`), done rather than discussed, on every mode.
         return False
     return prepared["stats"] is not None or bool(prepared.get("tool_read"))
 
 
-#: A sentence that asks for a change, not a figure (`_facts_turn`).
-_ASKS_TO_DO = re.compile(
-    r"^\s*(?:please |pls |can you |could you |would you )?(?:save|create|make|add|write|draft|delete|remove|bin|move|tag|untag|"
-    r"rename|pin|unpin|set|remind|link|unlink|file|archive|edit|update|change|mark|tick|complete|merge|split|tidy|clean)\b",
+#: The words before a request ("can you please", "hey, could you"), any
+#: number of them, then the verb of a change. Not "update me on", "add up"
+#: or "add 3 and 4" (a sum), "complete list of": those ask for a figure.
+_LEAD_IN = re.compile(
+    r"^\s*(?:(?:please|pls|plz|kindly|hey|hi|ok|okay|so|now|just|can you|could you|would you|will you|go ahead and)\b[\s,]*)*",
     re.I,
 )
+_CHANGE_VERB = re.compile(
+    r"(?:save|create|make|add(?!\s+(?:up|together)\b|\s+\d)|write|draft|delete|remove|bin|move|tag|untag|rename|pin|unpin|set|"
+    r"remind|link|unlink|file|archive|restore|edit|update(?!\s+me\b)|change|mark|tick|complete(?!\s+(?:list|set|count)\b)|"
+    r"merge|split|tidy|clean|clear|put|jot)\b",
+    re.I,
+)
+
+
+def _asks_change(question: str) -> bool:
+    """Whether a sentence asks for a change, not a figure (`_facts_turn`)."""
+    return bool(_CHANGE_VERB.match(question, _LEAD_IN.match(question).end()))
 
 
 def _prime_model_notes(req: _StreamRequest, prepared: dict, t: _Turn) -> None:

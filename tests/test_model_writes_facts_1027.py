@@ -212,6 +212,65 @@ def test_a_2_in_the_clock_does_not_excuse_two_reminders(ai_client, fake_ollama, 
     assert _last_meta(events)["answered_by"] is None
 
 
+#: Which sentences ask for a change, not a figure (`_asks_change`): the review
+#: of 2026-10-27 found double lead-ins missed and "update me on", "complete
+#: list of" and "add up" taken for changes.
+CHANGE_CASES = [
+    ("save my first note", True),
+    ("can you please save my first note", True),
+    ("please, could you tag my first note work", True),
+    ("hey can you delete the gym note", True),
+    ("remind me to call mum at 5", True),
+    ("add a tag to the gym note", True),
+    ("update the gym note", True),
+    ("complete the dentist reminder", True),
+    ("update me on what is due", False),
+    ("complete list of my tags", False),
+    ("add up my expenses", False),
+    ("add up 12, 30 and 5", False),
+    ("add 3 and 4", False),
+    ("what is due", False),
+    ("how many notes do I have", False),
+    ("addresses in my notes", False),
+    ("settings for reminders", False),
+]
+
+
+@pytest.mark.parametrize(("question", "change"), CHANGE_CASES)
+def test_which_sentences_ask_for_a_change(question: str, change: bool) -> None:
+    assert routes_chat._asks_change(question) is change
+
+
+def _facts_prompted(fake) -> bool:
+    from tessellate.ai import librarian
+
+    return any(librarian.FACTS_BRIEF[:60] in str(m.get("content") or "") for call in fake.chat_calls for m in call)
+
+
+@SURFACES
+def test_a_change_with_a_count_in_it_is_never_a_facts_turn(ai_client, fake_ollama, session, fixed_clock, use_tools):
+    """"can you please save my first note" read as the first-note statistic:
+    the model was handed the first note's date to say (the review measured
+    it on both surfaces)."""
+    _seed(session, reminders=False)
+    fake_ollama.librarian_reply = "Your first note is from today."
+    _stream(ai_client, "can you please save my first note", use_tools)
+    assert not _facts_prompted(fake_ollama)
+
+
+@SURFACES
+def test_add_up_takes_the_facts_path_with_its_calculator(ai_client, fake_ollama, session, fixed_clock, use_tools):
+    """"add up" asks for a sum: the model says it from the worked total and the
+    calculator still rides under it ("add" alone was read as a change, so the
+    popup agent lost both)."""
+    fake_ollama.librarian_reply = "Those come to 47."
+    events, answer = _stream(ai_client, "add up 12, 30 and 5", use_tools)
+    assert _facts_prompted(fake_ollama) and "47" in _prompt(fake_ollama)
+    assert answer == "Those come to 47."
+    assert _last_meta(events)["answered_by"]
+    assert [e["panel"] for e in events if e["type"] == "panel"] == ["calculator"]
+
+
 def test_the_facts_prompt_is_budgeted() -> None:
     """Prompt text is budgeted (CLAUDE.md section 7): the brief is one short
     paragraph, and the facts are cut to a fixed size however long the list."""
