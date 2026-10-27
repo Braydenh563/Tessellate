@@ -8,6 +8,7 @@ below). Versioning is `0.x` while the app stabilises.
 ## [Unreleased]
 - Quick sketch: a thick arrow ends at its point (the line no longer pokes out past the head), and the paper colour picker opens by the More button, not the window's top left corner. The Ask box's AI switch has room inside its pill.
 - Companion: a drop or throw that comes down at the bottom bar stands above it instead of sitting with its box 20px into the bar and over its buttons, and over the bar's buttons it floats just above them instead of being sent across the screen; Escape no longer throws when the onboarding overlay is gone.
+- Answers from facts: a model reply is refused when "a reminder" or "both reminders" miscounts the facts, or when it states a calendar date (28 Oct, 2026-12-01, Thursday 29) the facts, the question and the clock do not name; clock times stay unchecked.
 - Documents: in focus mode the sidebar and the suggestions panel can be resized by dragging their edge (or the arrow keys), and the sidebar width is the one it has outside focus mode.
 - Grammar: fewer wrong suggestions; a file name (start.bat), an interface word (draggable, scrollbars), a dotfile and "back to normal" are no longer marked, and real errors still are.
 - Settings, Appearance: Glass controls (off by default) puts icon buttons in the image chip's frosted glass, only while the glass blur is on; its styles are fetched only when it is on.
