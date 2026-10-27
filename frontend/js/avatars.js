@@ -7211,12 +7211,12 @@ function nameMarkBuddyAct(act, ms) {
     buddy.dataset.variant = String(v);
   } else delete buddy.dataset.variant;
   if (act === "tilt") nameMarkBuddyTilt(Math.random() < 0.5 ? -0.7 : 0.7, (ms || spec.ms) - 400);
-  //: **Into an act eased, as out of one** (INBOX 619, the owner: "it still
-  //: snaps between behaviours and no behaviours"). An act's class takes
-  //: over parts whose idle loop was mid-swing, and its first frame put them
-  //: at the act's start in one frame; `nameMarkBuddyBlend` hands each such
-  //: part over from where it was, in `NMB_BLEND_IN_MS`.
-  nameMarkBuddyBlend(buddy, () => buddy.classList.add(`nmb-act-${act}`), NMB_BLEND_IN_MS);
+  //: **Into an act eased** (INBOX 619): parts mid-swing are handed over from
+  //: where they were. Down from a throw nothing swings (its loops restart
+  //: with the flight's end), so the land skips the 8 to 40ms read.
+  const into = () => buddy.classList.add(`nmb-act-${act}`);
+  if (act === "land" && nmb.afterLand) into();
+  else nameMarkBuddyBlend(buddy, into, NMB_BLEND_IN_MS);
   //: A new act starts with its arms (INBOX 469): a small lift and back.
   if (act !== was && !NMB_FACELESS_ACTS.includes(act) && !NMB_RESTING_ACTS.has(act) && !nameMarkBuddyStill()) nameMarkBuddyLimbs(buddy, "cue", 420);
   nmb.mind?.start(buddy, act, ms || spec?.ms || 1200);

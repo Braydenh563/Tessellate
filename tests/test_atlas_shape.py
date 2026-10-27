@@ -1295,8 +1295,11 @@ def test_in_its_large_view_the_companion_floats_free_of_its_perch():
 def test_an_act_is_eased_into_as_well_as_out_of():
     # INBOX 619 (the owner: "it still snaps between behaviours and no
     # behaviours"): the act's class goes on inside the hand-over, as it
-    # comes off inside one (INBOX 497).
-    assert "nameMarkBuddyBlend(buddy, () => buddy.classList.add(`nmb-act-${act}`), NMB_BLEND_IN_MS);" in AVATARS
+    # comes off inside one (INBOX 497). The one exception is the land straight
+    # after a throw (throwsmooth-1027: nothing is mid-swing there, and the
+    # hand-over's reads were that frame's 8 to 40ms).
+    assert "const into = () => buddy.classList.add(`nmb-act-${act}`);" in AVATARS
+    assert 'if (act === "land" && nmb.afterLand) into();\n  else nameMarkBuddyBlend(buddy, into, NMB_BLEND_IN_MS);' in AVATARS
     assert "if (was) nameMarkBuddyBlend(buddy, () => buddy.classList.remove(`nmb-act-${was}`));" in AVATARS
     ms = int(re.search(r"const NMB_BLEND_IN_MS = (\d+);", AVATARS).group(1))
     assert 250 <= ms <= 500
