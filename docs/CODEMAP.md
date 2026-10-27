@@ -2,7 +2,7 @@
 
 Generated 2026-10-27 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6585, frontend ids 2556, CSS sections 504, backend routes 625, backend modules 6737, test files 1410, tests 12521, plan headings 977.
+Counts: frontend functions 6585, frontend ids 2556, CSS sections 504, backend routes 625, backend modules 6742, test files 1410, tests 12524, plan headings 977.
 
 ## Frontend functions (6585)
 
@@ -11209,7 +11209,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (6737)
+## Backend modules (6742)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -12619,28 +12619,33 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `offline_message` | src/tessellate/ai/extractor.py:103 |
 | `propose_split` | src/tessellate/ai/extractor.py:142 |
 
-### src/tessellate/ai/fact_check.py (18)
+### src/tessellate/ai/fact_check.py (23)
 
 | Name | File:line |
 |---|---|
-| `_amounts` | src/tessellate/ai/fact_check.py:161 |
-| `_clock_or_year` | src/tessellate/ai/fact_check.py:186 |
-| `_dated` | src/tessellate/ai/fact_check.py:133 |
-| `_figures` | src/tessellate/ai/fact_check.py:191 |
-| `_is_span` | src/tessellate/ai/fact_check.py:291 |
-| `_kept` | src/tessellate/ai/fact_check.py:311 |
-| `_noun_after` | src/tessellate/ai/fact_check.py:123 |
-| `_noun_of_key` | src/tessellate/ai/fact_check.py:224 |
-| `_pronoun_one` | src/tessellate/ai/fact_check.py:141 |
-| `_says_asked` | src/tessellate/ai/fact_check.py:342 |
-| `_span_kept` | src/tessellate/ai/fact_check.py:300 |
-| `_spans` | src/tessellate/ai/fact_check.py:295 |
-| `_value` | src/tessellate/ai/fact_check.py:105 |
-| `keeps` | src/tessellate/ai/fact_check.py:322 |
-| `merged` | src/tessellate/ai/fact_check.py:283 |
-| `result_counts` | src/tessellate/ai/fact_check.py:231 |
-| `rows_counts` | src/tessellate/ai/fact_check.py:268 |
-| `said_counts` | src/tessellate/ai/fact_check.py:214 |
+| `_amounts` | src/tessellate/ai/fact_check.py:166 |
+| `_clock_or_year` | src/tessellate/ai/fact_check.py:191 |
+| `_compound` | src/tessellate/ai/fact_check.py:196 |
+| `_dated` | src/tessellate/ai/fact_check.py:138 |
+| `_dated_spans` | src/tessellate/ai/fact_check.py:390 |
+| `_figures` | src/tessellate/ai/fact_check.py:213 |
+| `_is_span` | src/tessellate/ai/fact_check.py:321 |
+| `_kept` | src/tessellate/ai/fact_check.py:407 |
+| `_moments` | src/tessellate/ai/fact_check.py:358 |
+| `_noun_after` | src/tessellate/ai/fact_check.py:128 |
+| `_noun_of_key` | src/tessellate/ai/fact_check.py:254 |
+| `_per` | src/tessellate/ai/fact_check.py:325 |
+| `_pronoun_one` | src/tessellate/ai/fact_check.py:146 |
+| `_says_asked` | src/tessellate/ai/fact_check.py:439 |
+| `_span_kept` | src/tessellate/ai/fact_check.py:335 |
+| `_spans` | src/tessellate/ai/fact_check.py:330 |
+| `_valid` | src/tessellate/ai/fact_check.py:382 |
+| `_value` | src/tessellate/ai/fact_check.py:110 |
+| `keeps` | src/tessellate/ai/fact_check.py:418 |
+| `merged` | src/tessellate/ai/fact_check.py:313 |
+| `result_counts` | src/tessellate/ai/fact_check.py:261 |
+| `rows_counts` | src/tessellate/ai/fact_check.py:298 |
+| `said_counts` | src/tessellate/ai/fact_check.py:244 |
 
 ### src/tessellate/ai/factgraph.py (18)
 
@@ -19635,7 +19640,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12521)
+## Tests (12524)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20086,7 +20091,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_extras_desktop_locked.py | 5 |
 | tests/test_extras_download.py | 22 |
 | tests/test_f7_pool_moves.py | 2 |
-| tests/test_fact_check_1027.py | 8 |
+| tests/test_fact_check_1027.py | 11 |
 | tests/test_factgraph.py | 11 |
 | tests/test_facts_over_time.py | 10 |
 | tests/test_failure_remedies.py | 4 |

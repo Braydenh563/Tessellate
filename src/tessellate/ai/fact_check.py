@@ -8,15 +8,17 @@ and row counts of the tool result or the statistic (`result_counts`,
 `rows_counts`) and the counted statements of the engine's own lead sentence
 (`said_counts`). A date ("Mon 2 Nov"), a time ("14:02", "at 9"), an id
 ("#/notes/12") are never counts, so a digit there can neither excuse a
-miscount nor be one. A span ("120 minutes", "59 days") is checked against
-the spans the facts state, in any unit, and stands when they state none.
+miscount nor be one. A span ("120 minutes", "59 days", "8 weeks and 3 days")
+is checked against the spans the facts state, in any unit and with the
+rounding a person would use ("about 2 months"), and against the dates the
+facts carry (`_dated_spans`); a span from neither is the model's invention.
 "one", "no", "none", "nothing" and "zero" are figures like any other.
 """
 
 from __future__ import annotations
 
-import math
 import re
+from datetime import datetime
 
 _UNITS = {
     "zero": 0, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
@@ -58,8 +60,8 @@ _WEEKDAYS = {
 _CLOCK = {"am", "pm", "o'clock", "oclock"}
 #: After a figure, the unit that makes it a span ("3 days", "120 minutes"),
 #: in minutes. A span is read as (value, "~<minutes>") and checked only
-#: against spans the facts state (`_span_kept`): "in 3 days" under a list
-#: of reminders is the model's, "59 days away" is the engine's.
+#: against the spans the facts state and the dates they carry
+#: (`_span_kept`, `_dated_spans`).
 _SPAN_MINUTES = {
     **dict.fromkeys(("second", "seconds", "sec", "secs"), 1 / 60),
     **dict.fromkeys(("minute", "minutes", "min", "mins"), 1),
@@ -70,6 +72,9 @@ _SPAN_MINUTES = {
     **dict.fromkeys(("month", "months"), 43830),
     **dict.fromkeys(("year", "years"), 525960),
 }
+#: Before a span, the word that says it is rounded: "roughly 60 days" may be
+#: 5% off, "60 days" may not (`_span_kept`).
+_HEDGES = {"about", "roughly", "almost", "nearly", "around", "approximately", "approx", "circa", "some", "over", "under", "~"}
 #: Before a figure, the word that makes it a time or a place ("at 9", "#12").
 _BEFORE_TIME = {"at", "#", "/", "no.", "number"}
 #: Before a figure that counts nothing, the word that makes it a time ("due
@@ -188,15 +193,35 @@ def _clock_or_year(tokens: list[str], i: int) -> bool:
     return bool(_YEAR.match(tokens[i])) or (i > 0 and tokens[i - 1] in _BEFORE_CLOCK)
 
 
+def _compound(tokens: list[str], i: int) -> tuple[float, float, int]:
+    """The span a run of figure-and-unit pairs says from `i`, as (minutes,
+    its smallest unit in minutes, the index after it): "8 weeks and 3 days",
+    "2 hours 30 minutes". A pair that is not a smaller unit than the one
+    before it ends the run ("3 days 2 weeks" is two spans)."""
+    total, last, j = 0.0, float("inf"), i
+    while j + 1 < len(tokens):
+        value = _value(tokens[j])
+        unit = _SPAN_MINUTES.get(tokens[j + 1])
+        if value is None or unit is None or unit >= last or _dated(tokens, j):
+            break
+        total, last, j = total + float(value) * unit, unit, j + 2
+        while j < len(tokens) and tokens[j] in ("and", ",", "&"):
+            j += 1
+    return total, last, j
+
+
 def _figures(text: str) -> list[tuple[str, str | None]]:
     """Every figure the text says that is not a date, a time or an id, as
     (value, the noun it counts, "~<minutes>" for a span, or None for a bare
-    figure). "no" is
-    a figure only before a counted noun ("no reminders"), never "No, ..."."""
+    figure). A span said in two units is one span, in the smaller
+    ("8 weeks and 3 days" is 59 days); a rounded one ("roughly 60 days") ends
+    in "h" (`_per`). "no" is a figure only before a counted noun ("no
+    reminders"), never "No, ..."."""
     tokens = _amounts(_TOKEN.findall((text or "").lower()))
     out: list[tuple[str, str | None]] = []
+    skip = 0
     for i, token in enumerate(tokens):
-        if token[0] in "#/":
+        if token[0] in "#/" or i < skip:
             continue
         value = "0" if token == "no" else _value(token)
         if value is None:
@@ -204,7 +229,12 @@ def _figures(text: str) -> list[tuple[str, str | None]]:
         if _dated(tokens, i):
             continue
         after = tokens[i + 1] if i + 1 < len(tokens) else ""
-        noun = f"~{_SPAN_MINUTES[after]}" if after in _SPAN_MINUTES else _noun_after(tokens, i)
+        if after in _SPAN_MINUTES:
+            minutes, unit, skip = _compound(tokens, i)
+            hedged = any(w in _HEDGES for w in tokens[max(0, i - 2) : i])
+            out.append((f"{minutes / unit:.6g}", f"~{unit:.10g}{'h' if hedged else ''}"))
+            continue
+        noun = _noun_after(tokens, i)
         if noun is None and (token == "no" or _pronoun_one(tokens, i) or _clock_or_year(tokens, i)):
             continue
         out.append((value, noun))
@@ -292,26 +322,92 @@ def _is_span(noun: str | None) -> bool:
     return bool(noun) and noun.startswith("~")
 
 
+def _per(noun: str) -> float:
+    """A span's unit in minutes, from its tag ("~1440", "~1440h")."""
+    return float(noun[1:].rstrip("h"))
+
+
 def _spans(text: str) -> list[float]:
     """The spans a text states, in minutes."""
-    return [float(v) * float(n[1:]) for v, n in _figures(text) if _is_span(n)]
+    return [float(v) * _per(n) for v, n in _figures(text) if _is_span(n)]
 
 
-def _span_kept(value: str, unit: float, spans: list[float]) -> bool:
-    """Whether a span the prose says is one the facts state, in any unit:
-    "59 days" is "8 weeks" or "about 2 months" too, never "90 days"."""
-    said = float(value)
+def _span_kept(value: str, noun: str, spans: list[float]) -> bool:
+    """Whether a span the prose says is one of `spans`: the same length, or
+    the length rounded to the nearest of the unit the prose uses ("8 weeks"
+    for 59 days, "2 months" for 59 days, never "1 month" or "1 year"), or,
+    when the prose says it is rounded ("roughly 60 days"), within 5%."""
+    said, unit = float(value), _per(noun)
     for span in spans:
-        whole = span / unit
-        if abs(said * unit - span) < 1e-6 or said in (math.floor(whole), round(whole), math.ceil(whole)):
+        if abs(said * unit - span) < 1e-6 or abs(said - span / unit) <= 0.5 + 1e-9:
+            return True
+        if noun.endswith("h") and span and abs(said * unit - span) / span <= 0.05:
             return True
     return False
+
+
+_MONTH_NUMBER = {name: n + 1 for n, name in enumerate(("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"))}
+_MONTH_WORD = "|".join(sorted(_MONTHS, key=len, reverse=True))
+_AT_TIME = r"(?:,?\s+(?:at\s+)?(\d{1,2})(?::(\d\d))?\s*(am|pm)?\b)?"
+#: "Monday 12 October at 9am", "28 Oct", "Oct 28, 2026", "2026-10-28 09:00".
+_DAY_FIRST = re.compile(rf"\b(\d{{1,2}})(?:st|nd|rd|th)?\s+({_MONTH_WORD})\b(?:,?\s+(\d{{4}}))?{_AT_TIME}")
+_MONTH_FIRST = re.compile(rf"\b({_MONTH_WORD})\s+(\d{{1,2}})(?:st|nd|rd|th)?\b(?:,?\s+(\d{{4}}))?")
+_ISO = re.compile(r"\b(\d{4})-(\d\d)-(\d\d)(?:[t ](\d\d):(\d\d))?")
+
+
+def _moments(text: str, now: datetime) -> list[tuple[datetime, bool]]:
+    """The dates a text carries, as (when, whether it names a time of day).
+    A date with no year is the year that puts it nearest to `now`."""
+    found: list[tuple[datetime, bool]] = []
+
+    def add(year: int | None, month: int, day: int, hour: int | None = None, minute: int = 0) -> None:
+        years = (year,) if year else (now.year - 1, now.year, now.year + 1)
+        tries = [datetime(y, month, day, hour or 0, minute) for y in years if _valid(y, month, day)]
+        if tries:
+            found.append((min(tries, key=lambda m: abs(m - now)), hour is not None))
+
+    lowered = (text or "").lower()
+    for m in _ISO.finditer(lowered):
+        add(int(m[1]), int(m[2]), int(m[3]), int(m[4]) if m[4] else None, int(m[5] or 0))
+    for m in _DAY_FIRST.finditer(lowered):
+        hour = int(m[4]) if m[4] and (m[5] or m[6]) else None
+        if hour is not None and m[6]:
+            hour = hour % 12 + (12 if m[6] == "pm" else 0)
+        add(int(m[3]) if m[3] else None, _MONTH_NUMBER[m[2][:3]], int(m[1]), hour, int(m[5] or 0))
+    for m in _MONTH_FIRST.finditer(lowered):
+        add(int(m[3]) if m[3] else None, _MONTH_NUMBER[m[1][:3]], int(m[2]))
+    return found
+
+
+def _valid(year: int, month: int, day: int) -> bool:
+    try:
+        datetime(year, month, day)
+    except ValueError:
+        return False
+    return True
+
+
+def _dated_spans(facts: str, now: datetime | None) -> list[float]:
+    """The spans the dates in the facts make, in minutes: each date from
+    `now`, each from each, by the clock where it names a time and by the
+    calendar day where it does not ("in 2 days" for a date two days off)."""
+    if now is None:
+        return []
+    moments = _moments(facts, now)
+    out: list[float] = []
+    points = [(now, True)] + moments
+    for a in range(len(points)):
+        for b in range(a + 1, len(points)):
+            first, second = points[a][0], points[b][0]
+            out.append(abs((second - first).total_seconds()) / 60)
+            out.append(abs((second.date() - first.date()).days) * 1440.0)
+    return out
 
 
 def _kept(value: str, noun: str | None, counts: dict[str, set[str]], every: set[str], stated: set[str], spans: list[float]) -> bool:
     """One figure of the prose against the engine's counts and spans (`keeps`)."""
     if _is_span(noun):
-        return not spans or _span_kept(value, float(noun[1:]), spans)
+        return _span_kept(value, noun, spans)
     if noun is None:
         return value in every or value in stated
     if counts:
@@ -319,7 +415,7 @@ def _kept(value: str, noun: str | None, counts: dict[str, set[str]], every: set[
     return value in stated
 
 
-def keeps(prose: str, facts: str, question: str, counts: dict[str, set[str]], needs_figure: bool) -> bool:
+def keeps(prose: str, facts: str, question: str, counts: dict[str, set[str]], needs_figure: bool, now: datetime | None = None) -> bool:
     """Whether the prose keeps to the engine's facts.
 
     With counts: every count the prose says matches the engine's count of
@@ -334,7 +430,8 @@ def keeps(prose: str, facts: str, question: str, counts: dict[str, set[str]], ne
     said = _figures(prose)
     stated = {v for v, _n in _figures(facts)} | {v for v, _n in _figures(question)}
     every = set().union(*counts.values()) if counts else set()
-    if not all(_kept(value, noun, counts, every, stated, _spans(facts)) for value, noun in said):
+    spans = _spans(facts) + _spans(question) + _dated_spans(facts, now)
+    if not all(_kept(value, noun, counts, every, stated, spans) for value, noun in said):
         return False
     return not needs_figure or _says_asked(said, facts, question, every)
 
@@ -346,10 +443,10 @@ def _says_asked(said: list[tuple[str, str | None]], facts: str, question: str, e
     asked = _figures(question)
     stated = [(v, n) for v, n in _figures(facts) if (v, n) not in asked]
     asked_for = every or {v for v, n in stated if not _is_span(n)} - {v for v, _n in asked}
-    asked_spans = [float(v) * float(n[1:]) for v, n in stated if _is_span(n)]
+    asked_spans = [float(v) * _per(n) for v, n in stated if _is_span(n)]
     if not asked_for and not asked_spans:
         return True
     return any(
-        value in asked_for or (_is_span(noun) and (value, noun) not in asked and _span_kept(value, float(noun[1:]), asked_spans))
+        value in asked_for or (_is_span(noun) and (value, noun) not in asked and _span_kept(value, noun, asked_spans))
         for value, noun in said
     )

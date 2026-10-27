@@ -3030,7 +3030,7 @@ def _fact_events(req: _StreamRequest, prepared: dict, t: _Turn) -> Iterator[dict
     held = _held_reply(req, messages)
     prose = trim_assistant_padding(held["prose"]).strip()
     needs_figure = prepared["stats"] is not None and not listed
-    if facts and fact_check.keeps(prose, facts, req.question or "", counts, needs_figure):
+    if facts and fact_check.keeps(prose, facts, req.question or "", counts, needs_figure, user_now(deps.get_config())):
         yield from held["thinking"]
         yield from _model_said(prose, listed, engine, held["stats"])
         return

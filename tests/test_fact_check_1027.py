@@ -88,6 +88,56 @@ def test_a_span_the_engine_computed_is_checked(ai_client, fake_ollama, session, 
     assert _kept(ai_client, fake_ollama, question, prose) is ok
 
 
+@pytest.mark.parametrize(
+    ("question", "prose", "ok"),
+    [
+        # The third review: right spans said another way, and a wrong one the
+        # ceil let through.
+        ("how many days until christmas", "Christmas is 8 weeks and 3 days away.", True),
+        ("how many days until christmas", "Christmas is 1 month and 29 days away.", True),
+        ("how many days until christmas", "Christmas is roughly 60 days away.", True),
+        ("how many days until christmas", "Christmas is almost 60 days away.", True),
+        ("how many days until christmas", "Christmas is 1 year away.", False),
+        ("how many days until christmas", "Christmas is 1 month away.", False),
+        ("how many days until christmas", "Christmas is about 3 months away.", False),
+        ("how many days until christmas", "Christmas is 65 days away.", False),
+        ("how many days until christmas", "Christmas is 8 weeks and 6 days away.", False),
+        ("convert 2.5 hours to minutes", "That is 150 minutes, or 2 hours 30 minutes.", True),
+        ("convert 2.5 hours to minutes", "That is 150 minutes, or 2 hours 45 minutes.", False),
+    ],
+)
+def test_a_span_said_another_way_is_checked_with_a_tolerance(ai_client, fake_ollama, session, question, prose, ok):
+    _seed(session)
+    assert _kept(ai_client, fake_ollama, question, prose) is ok
+
+
+@SURFACES
+@pytest.mark.parametrize(
+    ("prose", "ok"),
+    [
+        ("You have 3 reminders; pay rent is in 2 days.", True),
+        ("You have 3 reminders; call mum is in 1 day.", True),
+        ("You have 3 reminders; book dentist is in 3 weeks.", True),
+        ("You have 3 reminders; book dentist is in about 24 days.", True),
+        ("You have 3 reminders; pay rent is in 5 days.", False),
+        ("You have 3 reminders; book dentist is in 3 months.", False),
+        ("You have 3 reminders; the oldest was last edited 400 days ago.", False),
+    ],
+)
+def test_a_span_the_facts_do_not_state_is_checked_against_their_dates(ai_client, fake_ollama, session, prose, ok, use_tools):
+    """"last edited 400 days ago" stood because the facts held no span; now a
+    span is read against the dates the facts carry, and refused with none."""
+    _seed(session)
+    assert _kept(ai_client, fake_ollama, "what reminders do I have", prose, use_tools) is ok
+
+
+def test_a_span_with_no_dates_in_the_facts_is_refused(ai_client, fake_ollama, session):
+    session.add(Entry(content="Gym plan"))
+    session.commit()
+    assert not _kept(ai_client, fake_ollama, "how many notes do I have", "You have 1 note, last edited 400 days ago.")
+    assert _kept(ai_client, fake_ollama, "how many notes do I have", "You have 1 note.")
+
+
 @SURFACES
 def test_a_span_the_engine_did_not_compute_is_the_models(ai_client, fake_ollama, session, use_tools):
     """Under a list of dated reminders, "in 2 days" is the model's reading."""
