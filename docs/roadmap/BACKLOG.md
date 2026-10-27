@@ -4405,7 +4405,3 @@ Owner's list, in one place (each is also logged above where it has detail):
 - **A span is matched to any gap in the facts, not the row it names:** "Rent is due in 4 days" passes when some other pair of dates is four days apart. Pair a span with the nearest named row before accepting it.
 - **Counts are pooled per noun:** a breakdown's row count (4 in Work) is accepted as the total (12), and the total as a row count. Tie a figure to its label or row when the reply names one.
 - **The noun is found only within three words:** "4 really big important reminders" has no noun, so 4 passes when it is any count in the facts. Widen the look-ahead to the clause.
-
-## Placed from INBOX, 2026-10-27 (Patterns and the guide; CHAT_PLAN is at its size cap)
-
-1412. **The owner, 2026-10-27, verbatim** (screenshot: a Patterns line, "This plan is still open: need to lock-in for my assignments lmao (confirmed by you, 17 October)"). "how do I confirm that a plan is now closed? make a note?" Found: the drift rule drops a plan once a later note shares half its words, but Confirm stored the line as the owner's own fact, so it stays said after the plan is done, and no verdict says "done". Recommendation, taken: plan lines gain a Done verdict that retires the confirmed fact (a `dismiss_insight` of reason done, said once as "Marked done"), and a later note sharing the plan's words retires a confirmed drift fact too.

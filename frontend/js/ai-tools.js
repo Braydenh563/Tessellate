@@ -84,37 +84,6 @@ function taskElapsed(seconds) {
   return `${Math.floor(s / 3600)} h ${Math.floor((s % 3600) / 60)} min`;
 }
 
-//: One line per package of a bulk action: waiting, in hand, done or not.
-//: Shared with the bundle rows in Settings, Packages (settings-packages.js).
-const TASK_STEP_ICONS = {
-  queued: "ph:hourglass-medium",
-  running: "ph:spin",
-  completed: "ph:check-circle",
-  failed: "ph:warning",
-  skipped: "ph:minus-circle",
-  cancelled: "ph:stop-circle",
-};
-const TASK_STEP_WORDS = { queued: "waiting", running: "installing", completed: "done" };
-function taskSteps(steps) {
-  const list = document.createElement("ul");
-  list.className = "task-steps";
-  for (const step of steps) {
-    const li = document.createElement("li");
-    li.className = `task-step is-${step.outcome}`;
-    setLabel(li, `${TASK_STEP_ICONS[step.outcome] || "ph:info"} ${step.label}: ${step.word || TASK_STEP_WORDS[step.outcome] || step.outcome}`);
-    if (step.message) li.title = step.message;
-    //: pip reports no fraction, so the package in hand has an indeterminate bar.
-    if (step.outcome === "running") {
-      const bar = document.createElement("progress");
-      bar.className = "task-progress task-step-bar";
-      bar.setAttribute("aria-label", step.label);
-      li.appendChild(bar);
-    }
-    list.appendChild(li);
-  }
-  return list;
-}
-
 // What has stopped, newest first. Separate from the running list on purpose:
 // mixing them means a finished job and a running one look alike at a glance,
 // and the question this screen answers most often is "is it still going?".

@@ -1404,6 +1404,14 @@ const INSIGHT_VERDICT_ITEMS = [
   { verdict: "dismiss", label: "ph:x Not right", title: "Not right: never show this or anything like it again" },
 ];
 
+//: Done is for a plan line (INBOX 1412); a confirmed one keeps only it.
+const INSIGHT_DONE_ITEM = { verdict: "done", label: "ph:check-circle Done", title: "This plan is finished: stop saying it is open" };
+
+function insightVerdictItems({ rule, confirmed } = {}) {
+  const base = confirmed ? [] : INSIGHT_VERDICT_ITEMS;
+  return rule === "drift" ? [...base, INSIGHT_DONE_ITEM] : base;
+}
+
 function insightSend(insight, verdict) {
   return apiJson(`/insights/${verdict}`, { method: "POST", body: JSON.stringify(insight) });
 }
@@ -1415,7 +1423,7 @@ function insightVerdicts(insight, onDone, send = insightSend) {
   group.className = "insight-verdicts";
   group.setAttribute("role", "group");
   group.setAttribute("aria-label", "Is this right?");
-  for (const item of INSIGHT_VERDICT_ITEMS) {
+  for (const item of insightVerdictItems(insight)) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = `insight-verdict is-${item.verdict}`;
@@ -1423,7 +1431,7 @@ function insightVerdicts(insight, onDone, send = insightSend) {
     setLabel(button, item.label);
     button.addEventListener("click", () =>
       send(insight, item.verdict)
-        .then((result) => onDone?.(item.verdict === "confirm" ? "confirmed" : "dismissed", result))
+        .then((result) => onDone?.(item.verdict === "confirm" ? "confirmed" : item.verdict === "done" ? "done" : "dismissed", result))
         .catch((error) => toast(error.message, true))
     );
     group.appendChild(button);

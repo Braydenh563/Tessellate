@@ -707,7 +707,7 @@ function renderAskInsights(found) {
       //: Said in the answer already (the owner, 2026-10-11: say it once):
       //: the row only asks whether it is right.
       insightLine(insight, insight.in_answer ? (insight.rule === "drift" ? "Is that open plan right?" : "Is that pattern right?") : `Pattern: ${insight.short}.`, (row, verdict, result) => {
-        row.textContent = verdict === "confirmed" ? `Confirmed: ${result.line}` : "Not right: it will not be shown again.";
+        row.textContent = verdict === "confirmed" ? `Confirmed: ${result.line}` : verdict === "done" ? "Marked done" : "Not right: it will not be shown again.";
       }, "muted")
     );
   }

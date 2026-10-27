@@ -169,14 +169,14 @@ async function tidyPatterns(state) {
   //: confirmed one is said as the person's word and carries neither.
   state.patterns.replaceChildren(
     ...body.patterns.map((pattern) => {
-      if (pattern.confirmed) {
+      if (pattern.confirmed && pattern.rule !== "drift") {
         const line = document.createElement("p");
         line.className = "insight-line";
         line.textContent = `Patterns: ${pattern.text}`;
         return line;
       }
       return insightLine(pattern, `Patterns: ${pattern.text}`, (line, verdict, result) => {
-        if (verdict === "dismissed") line.remove();
+        if (verdict === "dismissed" || verdict === "done") line.remove();
         else line.textContent = `Patterns: ${result.line}`;
       });
     })

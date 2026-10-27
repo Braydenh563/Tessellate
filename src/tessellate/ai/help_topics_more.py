@@ -2797,7 +2797,9 @@ MORE_TOPICS.append({
         "pattern on the dashboard's line to see the notes behind it; Notes, Tidy "
         "lists every pattern whole. Its ... menu has Confirm, which says it as a "
         "fact from then on, and Not right, which never shows it or anything like "
-        "it again."
+        "it again. A plan still open also has Done: it removes your Confirm and "
+        "never shows that plan again, and a later note that shares the plan's "
+        "words does the same on its own."
     ),
     "badge": {"label": "Dashboard", "tab": "dashboard"},
 })

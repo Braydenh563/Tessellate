@@ -4,7 +4,7 @@
 // load (a widget table's `render`, a listener), so the stand-ins must exist.
 Object.assign(LAZY_MODULES, {
   //: Settings, Tasks (chat-tasks.js), About's health block (settings-health.js), Personas (personas-pane.js).
-  settingsPanes: ["/js/chat-tasks.js", "/js/settings-health.js", "/js/personas-pane.js"],
+  settingsPanes: ["/js/task-steps.js", "/js/chat-tasks.js", "/js/settings-health.js", "/js/personas-pane.js"],
   //: Improve (improve-panel.js) and a note's re-check and attach actions (lightbox-actions.js).
   noteActions: ["/css/improve-lazy.css", "/js/improve-panel.js", "/js/lightbox-actions.js"],
   //: The Library item picker (library-pick.js).
@@ -31,6 +31,9 @@ Object.assign(LAZY_MODULES, {
   //: Every ```mermaid fence, in documents, chat and Ask (mermaid-draw.js). The 5 MB
   //: library is not here: it loads inside the hidden frame mermaid-draw.js creates.
   mermaid: ["/css/mermaid-lazy.css", "/js/mermaid-draw.js"],
+  //: Settings, Packages, with the package steps it shares with Settings, Tasks
+  //: (task-steps.js); named here, not in app.js, whose gzip cap is tight.
+  packages: ["/js/task-steps.js", "/js/settings-packages.js"],
 });
 installStandIns({
   settingsPanes: ["renderTasks", "renderTaskHistory", "renderHealthBlock", "renderSamplingRows", "renderPersonas", "savePersonaList"],
