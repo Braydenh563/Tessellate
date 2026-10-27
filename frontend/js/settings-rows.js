@@ -99,6 +99,7 @@ const LOOK_ROWS = [
   { key: "perf", id: "perf-mode" },
   { key: "glass", id: "glass-toggle", on: "on", off: "off" },
   { key: "glass-sheen", id: "glass-sheen-toggle", on: "on", off: "off" },
+  { key: "glass-controls", id: "glass-controls-toggle", on: "on", off: "off" },
   { key: "page-wash", id: "page-wash-toggle", on: "on", off: "off" },
   { key: "glass-sheen-strength", id: "glass-sheen-strength" },
   { key: "glass-blur", id: "glass-blur" },

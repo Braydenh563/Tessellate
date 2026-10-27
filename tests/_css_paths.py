@@ -118,6 +118,8 @@ CSS_FILES = [
     CSS_DIR / "math-editor-lazy.css",
     #: Mermaid diagrams: the figure, its placeholder and the hidden frame (mermaid-draw.js).
     CSS_DIR / "mermaid-lazy.css",
+    #: Settings, Appearance, Glass controls: icon buttons in glass (lazy-entries.js `glassControls`, INBOX 1409).
+    CSS_DIR / "glass-controls-lazy.css",
 ]
 
 

@@ -129,3 +129,58 @@ def test_opening_the_guide_never_closes_it():
     assert "helpChatSheetClose?.();" in toggle[: toggle.index("\n}\n")]
     wiring = (ROOT / "frontend/js/wiring.js").read_text(encoding="utf-8")
     assert '$("status-guide")?.addEventListener("click", () => {\n  toggleHelpChat();' in wiring
+
+
+def test_the_guide_never_leads_with_a_whole_long_sentence():
+    """INBOX 1406: "how do I see what changed" led with the Dashboard's
+    134-word inventory. A lead is short: the Dashboard's first sentence is
+    split, and any other sentence over 40 words leads with its best clause
+    (the `;` clauses outside brackets), capitalised and ended."""
+    from tessellate.ai import composer, help_chat
+
+    for q, tab in (
+        ("How do I see what changed?", "dashboard"),
+        ("how do I see my streak", "dashboard"),
+        ("how do I see the week digest", "dashboard"),
+    ):
+        line, topic = composer.help_line(q, help_chat.topics_for(q, tab))
+        assert topic == "dashboard" and len(line.split()) <= 40, (q, line)
+    q = "how do I see what changed"
+    line, _ = composer.help_line(q, help_chat.topics_for(q, "dashboard"))
+    assert "what changed since yesterday" in line
+    #: Other questions that drew a long sentence: the voice topic's 45-word
+    #: opener, and the slash commands, a 213-word list ended on "/".
+    q = "how do I use voice"
+    line, topic = composer.help_line(q, help_chat.topics_for(q, "notes"))
+    assert topic == "voice" and len(line.split()) <= 40, line
+    q = "how do I list my pinned notes with a slash command"
+    line, topic = composer.help_line(q, help_chat.topics_for(q, "notes"))
+    assert topic == "slash-commands" and line.startswith("/pinned"), line
+
+
+def test_a_long_sentence_leads_with_the_clause_that_answers():
+    from tessellate.ai import composer
+
+    long = (
+        "The panel has a tidy lead about layout and colour and other things that nobody asked about, "
+        "with a great many words in it to run past the budget of forty words in all, and then some more; "
+        "press Ctrl+K to open the palette from anywhere in the app; "
+        "the rest of the sentence rambles on about unrelated features of the panel for a good while longer."
+    )
+    line, _ = composer.help_line("how do I open the palette", [{"id": "panel", "body": long}])
+    assert line == "Press Ctrl+K to open the palette from anywhere in the app."
+    short = "Press Ctrl+K to open the palette; Esc closes it again."
+    line, _ = composer.help_line("how do I open the palette", [{"id": "panel", "body": short}])
+    assert line == short
+
+
+def test_a_clause_split_ignores_semicolons_in_brackets():
+    from tessellate.ai import composer
+
+    text = (
+        "Pick a subject (a topic you keep writing about; a busy week; anything else you like to see) "
+        "and the list narrows to it, which is useful when a great many notes pile up over the months and years; "
+        "clear the filter to see every note again, whatever the subject was, in the order you wrote them."
+    )
+    clauses = composer._clauses(text)
+    assert len(clauses) == 2 and clauses[0].count(";") == 2

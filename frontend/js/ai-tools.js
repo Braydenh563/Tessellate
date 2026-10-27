@@ -1251,7 +1251,7 @@ window.addEventListener("storage", lookFromOtherWindow);
 // the UI so "why isn't the theme's colour showing?" has a visible answer.
 const OVERRIDABLE_KEYS = [
   "theme", "palette", "accent", "accent-custom", "page-bg", "font", "fontsize",
-  "density", "radius", "glass", "glass-blur", "glass-opacity", "glass-sheen", "page-wash",
+  "density", "radius", "glass", "glass-blur", "glass-opacity", "glass-sheen", "glass-controls", "page-wash",
   "glass-sheen-strength", "bg-style", "bg-motion", "bg-intensity", "zoom",
 ];
 

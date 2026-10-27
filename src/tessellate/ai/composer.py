@@ -3948,20 +3948,8 @@ def _help_pairs(question: str) -> set[str]:
     return {f"{typed[i]} {typed[i + 1]}" for i in range(len(typed) - 1) if content[i] and content[i + 1]}
 
 
-def help_line(question: str, topics: list[dict]) -> tuple[str, str] | None:
-    """The one sentence of the best topic that answers a how-to (its step
-    sentence sharing the most of the question's words) and the topic's id:
-    Chat's help register and the Guide's first line (decision 59, step 4),
-    so help and chat say it in one voice. None with no topic."""
-    if not topics:
-        return None
-    topic = topics[0]
-    body = str(topic.get("body") or "")
-    from tessellate.ai import help_chat
-
-    sentences = help_chat.help_sentences(body)
-    if not sentences:
-        return None
+def _help_ask(question: str, topic: dict) -> dict:
+    """What a question asks of one topic, for scoring its sentences."""
     #: Every word of the question counts here, "note" included: the asking
     #: words that are noise in a notebook ("note") name the control in Help.
     wanted = set(_words(question))
@@ -3971,32 +3959,103 @@ def help_line(question: str, topics: list[dict]) -> tuple[str, str] | None:
     #: led with Tidy up duplicates, since "notes" outweighed a halved "export".
     verb = _help_verb(question)
     named = set(_words(str(topic.get("id", "")).replace("-", " "))) - {verb}
-    #: Two content words side by side in the question and the sentence are
-    #: the control's name ("back up", "hide unlinked"): half a word more.
-    pairs = _help_pairs(question)
     doing = {verb, *_HELP_DOING.get(verb, ())} if verb else set()
+    return {"wanted": wanted, "named": named, "pairs": _help_pairs(question), "doing": doing}
 
-    def shared(line: str) -> float:
-        #: A word and its longer form ("remind", "reminder") are one word here;
-        #: a verb of the same doing ("make" for "set") is half a word (INBOX
-        #: 787: "how do I make a reminder" led with how the tab is laid out).
-        #: The doing asked in a past form describes, it does not instruct:
-        #: "how do I change the widgets" led with the Dashboard's inventory
-        #: sentence, on "what changed" and "edited" (the owner, 2026-10-27),
-        #: over the one that says how ("Edit layout and Widgets").
-        have = {_stem(w) for w in query_understanding.search_terms(line) if not (w.endswith("ed") and any(d.startswith(_stem(w)) for d in doing))}
-        def one(w: str, h: str) -> bool:
-            return h == w or (min(len(h), len(w)) >= 5 and (h.startswith(w) or w.startswith(h)))
 
-        hits = sum(0.25 if w in _HELP_WEAK else 0.5 if w in named else 1 for w in wanted if any(one(w, h) for h in have))
-        kin = sum(1 for w in wanted if not any(one(w, h) for h in have) and any(one(g, h) for g in _HELP_DOING.get(w, ()) for h in have))
-        said = " " + " ".join(re.findall(r"[a-z0-9]+", line.lower())) + " "
-        return hits + 0.5 * kin + 0.5 * sum(1 for p in pairs if f" {p} " in said)
+def _help_have(line: str, doing: set[str]) -> set[str]:
+    """The stems a sentence says. The doing asked in a past form describes, it
+    does not instruct: "how do I change the widgets" led with the Dashboard's
+    inventory sentence, on "what changed" and "edited" (the owner,
+    2026-10-27), over the one that says how ("Edit layout and Widgets")."""
+    return {_stem(w) for w in query_understanding.search_terms(line) if not (w.endswith("ed") and any(d.startswith(_stem(w)) for d in doing))}
 
-    #: A later sentence must say more to lead: the topic opens on its point
-    #: ("Link one note to another by typing [[" over the Suggestions sheet,
-    #: which says "link" and "notes" too: the Guide's gold, 2026-10-11).
-    return max(sentences, key=lambda line: (shared(line) - 0.05 * sentences.index(line), -sentences.index(line))), str(topic.get("id", ""))
+
+def _help_one(w: str, h: str) -> bool:
+    """A word and its longer form ("remind", "reminder") are one word here."""
+    return h == w or (min(len(h), len(w)) >= 5 and (h.startswith(w) or w.startswith(h)))
+
+
+def _help_shared(line: str, ask: dict) -> float:
+    """How much of the question a sentence says: a word each, a weak or topic
+    word less, a verb of the same doing ("make" for "set") half a word (INBOX
+    787: "how do I make a reminder" led with how the tab is laid out), two
+    content words side by side ("back up", "hide unlinked": the control's
+    name) half a word more."""
+    wanted, named = ask["wanted"], ask["named"]
+    have = _help_have(line, ask["doing"])
+    hits = sum(0.25 if w in _HELP_WEAK else 0.5 if w in named else 1 for w in wanted if any(_help_one(w, h) for h in have))
+    kin = sum(1 for w in wanted if not any(_help_one(w, h) for h in have) and any(_help_one(g, h) for g in _HELP_DOING.get(w, ()) for h in have))
+    said = " " + " ".join(re.findall(r"[a-z0-9]+", line.lower())) + " "
+    return hits + 0.5 * kin + 0.5 * sum(1 for p in ask["pairs"] if f" {p} " in said)
+
+
+def _help_best(lines: list[str], ask: dict, doing: float = 0.0) -> str:
+    """The line that says the most; a later one must say more to lead (the
+    topic opens on its point: "Link one note to another by typing [[" over
+    the Suggestions sheet, which says "link" and "notes" too: the Guide's
+    gold, 2026-10-11). `doing` is the extra a line earns for saying the verb
+    asked, which picks among the clauses of one sentence."""
+    def score(line: str) -> float:
+        verb = bool(ask["doing"]) and any(_stem(d) in _help_have(line, set()) for d in ask["doing"])
+        return _help_shared(line, ask) + (doing if verb else 0.0) - 0.05 * lines.index(line)
+
+    return max(lines, key=lambda line: (score(line), -lines.index(line)))
+
+
+def help_line(question: str, topics: list[dict]) -> tuple[str, str] | None:
+    """The one sentence of the best topic that answers a how-to (its step
+    sentence sharing the most of the question's words) and the topic's id:
+    Chat's help register and the Guide's first line (decision 59, step 4),
+    so help and chat say it in one voice. None with no topic."""
+    if not topics:
+        return None
+    topic = topics[0]
+    from tessellate.ai import help_chat
+
+    sentences = help_chat.help_sentences(str(topic.get("body") or ""))
+    if not sentences:
+        return None
+    ask = _help_ask(question, topic)
+    lead = _help_best(sentences, ask)
+    #: A lead is a line, not an inventory (INBOX 1406: "how do I see what
+    #: changed" got a 134-word sentence): over the budget, its best clause.
+    if len(lead.split()) > _HELP_LEAD_WORDS:
+        clauses = _clauses(lead)
+        if len(clauses) > 1:
+            lead = _help_best(clauses, ask, doing=0.5)
+    return lead, str(topic.get("id", ""))
+
+
+#: The longest sentence the Guide and Chat lead with whole.
+_HELP_LEAD_WORDS = 40
+
+
+def _semicolon_parts(sentence: str) -> list[str]:
+    """A sentence cut at its `;` outside brackets and quotes."""
+    parts, depth, quote, start = [], 0, False, 0
+    for i, ch in enumerate(sentence):
+        depth = max(0, depth + (ch in "([") - (ch in ")]"))
+        quote ^= ch in "\"“”"
+        if ch == ";" and not depth and not quote:
+            parts.append(sentence[start:i])
+            start = i + 1
+    return [*parts, sentence[start:]]
+
+
+def _clauses(sentence: str) -> list[str]:
+    """A sentence's `;` clauses outside brackets and quotes, each a sentence
+    of its own (capital first, its stop kept): "(a busy week; Tidy lists
+    them)" is one thought, not two. One too short to answer alone belongs to
+    the clause before."""
+    out: list[str] = []
+    for part in (p.strip() for p in _semicolon_parts(sentence)):
+        if len(part.split()) < 5 and out:
+            out[-1] += "; " + part
+        elif part:
+            out.append(part)
+    ended = [c if c.endswith((".", "!", "?")) else c + "." for c in out]
+    return [c[:1].upper() + c[1:] for c in ended]
 
 
 def _result(parts: list[tuple], shape: str, rows: list[dict] | None = None, next_parts: list | None = None) -> dict:

@@ -1484,6 +1484,9 @@ const APPEARANCE_DEFAULTS = {
   // up without a second trip to Settings; unchecking #glass-sheen-toggle
   // afterward turns just the sheen back off without touching glass itself.
   "glass-sheen": "off",
+  // Icon buttons in the same glass (css/glass-controls-lazy.css, fetched only
+  // while this is on), and only while the glass look itself is on.
+  "glass-controls": "off",
   // The flat looks' soft ground light (owner: "maybe it can be togglable").
   "page-wash": "on",
   // 0-100, how strong the sheen reads when it's on: its own dial, separate
@@ -2316,6 +2319,8 @@ function applyAppearance() {
   // what the page shows, not what the person chose.
   root.dataset.glass = perf ? "off" : appearancePref("glass");
   root.dataset.glassSheen = appearancePref("glass-sheen");
+  root.dataset.glassControls = appearancePref("glass-controls");
+  if (appearancePref("glass-controls") === "on") ensureModule("glassControls");
   root.dataset.pageWash = appearancePref("page-wash");
   root.style.setProperty("--glass-sheen-strength", Number(appearancePref("glass-sheen-strength")) / 100);
   root.dataset.themePreset = activeThemePreset();
@@ -2593,6 +2598,8 @@ function renderAppearance() {
   $("glass-row").classList.toggle("disabled-row", perfModeOn());
   $("reduce-motion-row").classList.toggle("disabled-row", perfModeOn());
   $("glass-sheen-toggle").checked = appearancePref("glass-sheen") === "on";
+  $("glass-controls-toggle").checked = appearancePref("glass-controls") === "on";
+  $("glass-controls-row").classList.toggle("disabled-row", appearancePref("glass") !== "on" || perfModeOn());
   if ($("page-wash-toggle")) $("page-wash-toggle").checked = appearancePref("page-wash") === "on";
   $("glass-sheen-row").classList.toggle("disabled-row", appearancePref("glass") !== "on" || perfModeOn());
   $("glass-sheen-strength").value = appearancePref("glass-sheen-strength");
@@ -2860,7 +2867,7 @@ function resetAppearance() {
   for (const key of [
     "fontsize", "font", "density", "glass", "perf", "motion", "ui-motion", "reply-motion", "progress-motion", "avatar-motion", "avatar-follow", "avatar-buddy", "avatar-buddy-size", "avatar-buddy-actions", "atlas-style", "assistant-avatar", "atlas-look", "face-look", "dash-mark", "bg-intensity", "accent",
     "contrast", "bgArt", "theme", "radius", "glass-blur", "glass-opacity",
-    "glass-sheen", "glass-sheen-strength", "page-wash", "bg-style", "bg-motion", "palette", "themePreset",
+    "glass-sheen", "glass-sheen-strength", "glass-controls", "page-wash", "bg-style", "bg-motion", "palette", "themePreset",
     "accent-custom", "page-bg", "custom-css", "zoom",
   ]) {
     prefs.remove(key);
@@ -3152,6 +3159,10 @@ $("glass-sheen-toggle").addEventListener("change", (e) => {
   prefs.set("glass-sheen", e.target.checked ? "on" : "off");
   applyAppearance();
   $("glass-sheen-strength-row")?.classList.toggle("disabled-row", !e.target.checked);
+});
+$("glass-controls-toggle").addEventListener("change", (e) => {
+  prefs.set("glass-controls", e.target.checked ? "on" : "off");
+  applyAppearance();
 });
 $("glass-sheen-strength").addEventListener("input", (e) => {
   prefs.set("glass-sheen-strength", e.target.value);
