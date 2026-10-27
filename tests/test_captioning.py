@@ -252,3 +252,40 @@ def test_running_captions_reports_the_upload_while_the_model_call_is_in_flight(
     assert seen_mid_call[0][0]["started"] > 0
     # Cleared once the call returns, not left stuck "running" forever.
     assert captioning.running_captions() == []
+
+
+def _delete_mid_call(upload_id, reply):
+    def _call(*args, **kwargs):
+        with deps.get_db().session() as other:
+            other.delete(other.get(MediaUpload, upload_id))
+            other.commit()
+        return reply
+    return _call
+
+
+def test_a_picture_deleted_while_it_is_being_read_is_skipped_quietly(
+    app_state, session, fake_ollama, tmp_path, monkeypatch
+):
+    """The owner, 2026-10-27: "what happens if an image is being read and I
+    delete the image mid process??" The read held its session across the
+    model call and then wrote to a row another request had deleted, which
+    raised on the commit. The row is now read again after the call."""
+    from tessellate.ai import vision_ocr
+
+    image_path = tmp_path / "a.png"
+    image_path.write_bytes(b"\x89PNG\r\n\x1a\n")
+    fake_ollama.capabilities_declared = ["vision"]
+    deps.override_ai(ollama=fake_ollama)
+    first = _upload(session)
+    monkeypatch.setattr(captioning, "caption_text", _delete_mid_call(first, "a cat"))
+    assert captioning.caption_and_store(first, image_path) is None
+    assert captioning.running_captions() == []
+    with deps.get_db().session() as fresh:
+        second = MediaUpload(filename="b.png", original_name="b.png")
+        fresh.add(second)
+        fresh.commit()
+        second_id = second.id
+    monkeypatch.setattr(vision_ocr, "vision_ocr_text", _delete_mid_call(second_id, "some text"))
+    assert vision_ocr.vision_ocr_and_store(second_id, image_path) is None
+    with deps.get_db().session() as check:
+        assert check.get(MediaUpload, first) is None and check.get(MediaUpload, second_id) is None

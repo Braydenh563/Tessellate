@@ -309,19 +309,26 @@ def vision_ocr_and_store(upload_id: int, image_path: Path, force: bool = False) 
             return None  # deleted (or its upload never committed) before this ran
         if upload.vision_ocr_text and not force:
             return upload.vision_ocr_text
-        model = deps.get_model_manager().resolve_vision_model(deps.get_ollama())
-        if not model:
-            return None
-        started = time.monotonic()
-        text = vision_ocr_text(image_path, model, deps.get_ollama())
-        elapsed_ms = (time.monotonic() - started) * 1000
+        original = upload.original_name
+    model = deps.get_model_manager().resolve_vision_model(deps.get_ollama())
+    if not model:
+        return None
+    #: Outside any session, the row read again after it, as the PDF reader
+    #: below: a picture deleted while it was being read is skipped.
+    started = time.monotonic()
+    text = vision_ocr_text(image_path, model, deps.get_ollama())
+    elapsed_ms = (time.monotonic() - started) * 1000
+    with deps.get_db().session() as session:
+        upload = session.get(MediaUpload, upload_id)
+        if upload is None:
+            return None  # deleted while it was being read
         if text is None:
             # The attempt itself failed (unreachable backend, request
             # error): the genuine failure case, distinct from "asked the
             # model and it found no text" just below.
             taskhistory.record(
                 "vision_ocr",
-                f"Reading text from {upload.original_name}",
+                f"Reading text from {original}",
                 "failed",
                 name=model,
                 duration_ms=elapsed_ms,
@@ -332,7 +339,7 @@ def vision_ocr_and_store(upload_id: int, image_path: Path, force: bool = False) 
         session.commit()
         taskhistory.record(
             "vision_ocr",
-            f"Reading text from {upload.original_name}",
+            f"Reading text from {original}",
             "completed",
             name=model,
             detail="no legible text found" if not text else "",

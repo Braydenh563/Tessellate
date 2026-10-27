@@ -285,23 +285,32 @@ def caption_and_store(upload_id: int, image_path: Path, force: bool = False) -> 
             return None  # deleted (or its upload never committed) before this ran
         if upload.caption and not force:
             return upload.caption
-        model = deps.get_model_manager().resolve_vision_model(deps.get_ollama())
-        if not model:
-            # Not a failure worth a history entry, every upload on a
-            # notebook with no vision model installed would otherwise fill
-            # the ring with the same expected, non-actionable line.
-            return None
+        original = upload.original_name
+    model = deps.get_model_manager().resolve_vision_model(deps.get_ollama())
+    if not model:
+        # Not a failure worth a history entry, every upload on a
+        # notebook with no vision model installed would otherwise fill
+        # the ring with the same expected, non-actionable line.
+        return None
+    #: The model call runs outside any session, and the row is read again
+    #: after it: a picture deleted while it was being read (the owner,
+    #: 2026-10-27) is skipped rather than written to, which raised on the
+    #: commit, and a session held across a slow call blocks requests.
+    with _running_lock:
+        _running[upload_id] = original
+        _details[upload_id] = (model, time.time())
+    started = time.monotonic()
+    try:
+        text = caption_text(image_path, model, deps.get_ollama())
+    finally:
         with _running_lock:
-            _running[upload_id] = upload.original_name
-            _details[upload_id] = (model, time.time())
-        started = time.monotonic()
-        try:
-            text = caption_text(image_path, model, deps.get_ollama())
-        finally:
-            with _running_lock:
-                _running.pop(upload_id, None)
-                _details.pop(upload_id, None)
-        elapsed_ms = (time.monotonic() - started) * 1000
+            _running.pop(upload_id, None)
+            _details.pop(upload_id, None)
+    elapsed_ms = (time.monotonic() - started) * 1000
+    with deps.get_db().session() as session:
+        upload = session.get(MediaUpload, upload_id)
+        if upload is None:
+            return None  # deleted while it was being read
         if not text:
             # A real attempt was made (a model was resolved) and produced
             # nothing: the actual failure the report was about: a caption
@@ -310,7 +319,7 @@ def caption_and_store(upload_id: int, image_path: Path, force: bool = False) -> 
             # captioning as if it had never run at all.
             taskhistory.record(
                 "caption",
-                f"Captioning {upload.original_name}",
+                f"Captioning {original}",
                 "failed",
                 name=model,
                 duration_ms=elapsed_ms,
@@ -325,7 +334,7 @@ def caption_and_store(upload_id: int, image_path: Path, force: bool = False) -> 
         session.commit()
         taskhistory.record(
             "caption",
-            f"Captioning {upload.original_name}",
+            f"Captioning {original}",
             "completed",
             name=model,
             duration_ms=elapsed_ms,
