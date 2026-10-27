@@ -4692,7 +4692,10 @@ img.board-minimap {
 .library-list .library-board-card .library-card-menu {
   margin-left: auto;
 }
-.board-minimap-card,
+/* `rect.`: a stored thumbnail is an <img> carrying the size class
+   `board-minimap-card` (pick-row.js `mapRaster`), and this rule faded the
+   whole picture to 0.55, grey on the light theme (the owner, 2026-10-27). */
+rect.board-minimap-card,
 .board-minimap-object {
   fill: var(--accent);
   opacity: 0.55;
@@ -4778,13 +4781,13 @@ img.board-minimap {
    board's ghost is not lifted either. Pointer and keyboard name the same
    marks by class, in one rule: a `:has(:focus-visible)` before a bare `rect`
    or `path` is an unkeyed rule (tests/test_has_invalidation.py). */
-.library-board-card:hover .board-minimap-card,
+.library-board-card:hover rect.board-minimap-card,
 .library-board-card:hover .board-minimap-object,
 .library-board-card:hover .board-minimap-image,
 .library-board-card:hover .board-minimap-image-mark,
 .library-board-card:hover .board-minimap-edge,
 .library-board-card:hover .board-minimap-sketch,
-.library-board-card:is(:focus-visible, :has(:focus-visible)) .board-minimap-card,
+.library-board-card:is(:focus-visible, :has(:focus-visible)) rect.board-minimap-card,
 .library-board-card:is(:focus-visible, :has(:focus-visible)) .board-minimap-object,
 .library-board-card:is(:focus-visible, :has(:focus-visible)) .board-minimap-image,
 .library-board-card:is(:focus-visible, :has(:focus-visible)) .board-minimap-image-mark,

@@ -72,3 +72,27 @@ def test_a_connector_drag_never_leaves_the_delete_target_up():
     assert 'd._gesture = d._dragOriginalD == null ? null : wbBeginGesture(() => wbRestoreMove("sketch", d), true);' in js
     net = js[js.index('window.addEventListener("pointerup", () => setTimeout(() => {'):][:160]
     assert "if (wbGesture?.move) wbGesture = null;" in net and "wbTrashHide();" in net
+
+
+def test_board_thumbnails_are_not_faded_by_the_minimap_card_fill():
+    """The owner, 2026-10-27: board and map thumbnails looked paled out on
+    the light theme. A stored thumbnail is an element carrying the size class
+    `board-minimap-card`, and the minimap's card fill (opacity 0.55) matched
+    the whole picture. Measured: thumbnail opacity 0.55 before, 1 after."""
+    css = (ROOT / "frontend/css/07-whiteboard-misc.css").read_text(encoding="utf-8")
+    assert "rect.board-minimap-card,\n.board-minimap-object {" in css
+    assert not re.search(r"(^|[\s,])\.board-minimap-card\s*[{,:]", css, re.M)
+
+
+def test_the_image_tile_menu_chip_outranks_the_bare_icon_reset():
+    """The owner, 2026-10-27: the image tiles' ⋯ could not be seen on the
+    light theme. The chip rule of 2026-10-26 lost to the bare-icon reset
+    (0,6,1) and drew transparent with a grey glyph. Measured after: panel at
+    80% with blur, ink glyph, in both themes; glass off drops the blur."""
+    css = (ROOT / "frontend/css/08-consistency.css").read_text(encoding="utf-8")
+    sel = '.library-image-tile .library-image-actions > .menu-wrap > button.ghost.kebab-opener.icon-only:not(.active):not([aria-pressed="true"]) {'
+    body = css[css.index(sel):]
+    body = body[: body.index("}")]
+    assert "color: var(--ink);" in body and "backdrop-filter: var(--glass-filter-clear);" in body
+    off = (ROOT / "frontend/css/03-dashboard-widgets.css").read_text(encoding="utf-8")
+    assert ':root[data-glass="off"] .library-image-tile .library-image-actions > .menu-wrap > button.ghost,' in off
