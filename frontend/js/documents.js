@@ -10148,29 +10148,25 @@ function docColumnsArrowKeymap(CM) {
 
 
 // -----------------------------------------------------------------------------
-// Mermaid flowcharts, drawn by this file (DOCUMENTS_PLAN decision 20.3, 20.6)
+// Mermaid fences (DOCUMENTS_PLAN decisions 3 and 6, BACKLOG steps 8 and 12b)
 // -----------------------------------------------------------------------------
 //
-//: **A ```mermaid fence that is a flowchart draws as one**, in Read, in Live
-//: (while the caret is outside it), in a print and in the HTML export, with
-//: no library: the fully-local rule keeps Mermaid's 2.6 MB bundle out of
-//: `frontend/vendor/`, and a flowchart is the one Mermaid diagram most notes
-//: carry. The subset (decision 20.6): `flowchart` or `graph` with TD, TB, BT,
-//: LR or RL; nodes as `id`, `id[text]`, `id(text)`, `id([text])`,
-//: `id((text))`, `id{text}` and `id{{text}}`, text optionally in quotes; links
-//: `-->`, `---`, `-.->`, `-.-`, `==>` and `===`, labelled `-->|text|` or
-//: `-- text -->`, chained (`a --> b --> c`) and fanned (`a & b --> c`);
-//: `%%` comments; `style`, `classDef`, `class`, `linkStyle` and `click` lines
-//: are read and ignored. Anything else (a subgraph, another diagram type, a
-//: line it cannot read) leaves the fence as the code it is, so nothing is
-//: ever drawn half right.
+//: **Every ```mermaid fence is drawn by Mermaid itself**, in Read (so in a print
+//: and the HTML export) and in Live while the caret is outside the fence. The
+//: library is vendored (`frontend/vendor/mermaid/`) and lives in a hidden
+//: same-origin frame that the lazy `mermaid` module (mermaid-draw.js) creates
+//: on the first fence; nothing of it is in the boot scripts. This file only
+//: hands a fence over (`docRenderMermaidIn`, the Live widget below) and waits
+//: for the picture when a page is printed or saved.
 //:
-//: The region is pure (no DOM): `mermaidFlowParse` reads the text,
-//: `mermaidFlowLayout` places it in layers (ranks by longest path with the
-//: cycles' back links reversed, a few barycentre sweeps to order each layer,
-//: each layer centred), and `mermaidFlowSvgTree` describes the SVG as plain
-//: objects, which `docMermaidSvg` turns into elements. Node runs the region
-//: (`tests/test_doc_mermaid.py`).
+//: What stays here is the small in-house flowchart reader, pure and node-tested
+//: (`tests/test_doc_mermaid.py`): `mermaidFlowParse` reads a flowchart fence
+//: into nodes and links (flowchart or graph, TD, TB, BT, LR or RL, seven
+//: shapes, six link kinds, labels, chains, fans) and `mermaidFlowLayout`
+//: places it in layers (ranks by longest path with the cycles' back links
+//: reversed, barycentre sweeps, each layer centred). They no longer draw
+//: anything; the diagram verifier and a board import are what they are kept
+//: for. Anything the reader does not read whole is still handed to Mermaid.
 // DOC-MERMAID-BEGIN
 const MERMAID_SHAPES = [
   ["([", "])", "stadium"], ["((", "))", "circle"], ["{{", "}}", "hexagon"],
@@ -10434,97 +10430,26 @@ function mermaidFlowLayout(graph, measure = (t) => t.length * 7.4) {
   }
   return { x0: Math.floor(x0), y0: Math.floor(y0), width: Math.ceil(width - x0), height: Math.ceil(height - y0), boxes, lines };
 }
-
-//: The SVG as plain objects: `{ tag, attrs, kids, text }`.
-function mermaidFlowSvgTree(graph, layout, label = "Flowchart") {
-  const el = (tag, attrs = {}, kids = [], text = null) => ({ tag, attrs, kids, text });
-  const kids = [el("title", {}, [], label)];
-  const marker = el("marker", { id: "md-mermaid-arrow", viewBox: "0 0 10 10", refX: "9", refY: "5", markerWidth: "7", markerHeight: "7", orient: "auto-start-reverse" },
-    [el("path", { d: "M0 0 L10 5 L0 10 z", fill: "currentColor" })]);
-  kids.push(el("defs", {}, [marker]));
-  for (const line of layout.lines) {
-    const attrs = { d: line.d, class: `md-mermaid-edge md-mermaid-${line.style}`, fill: "none", stroke: "currentColor", "stroke-width": line.style === "thick" ? "2.5" : "1.4" };
-    if (line.style === "dotted") attrs["stroke-dasharray"] = "4 4";
-    if (line.arrow) attrs["marker-end"] = "url(#md-mermaid-arrow)";
-    kids.push(el("path", attrs));
-  }
-  for (const b of layout.boxes) {
-    const x = b.x - b.w / 2;
-    const y = b.y - b.h / 2;
-    const common = { class: `md-mermaid-node md-mermaid-${b.shape}`, fill: "Canvas", stroke: "currentColor", "stroke-width": "1.4" };
-    let shape;
-    if (b.shape === "diamond") shape = el("path", { ...common, d: `M${b.x} ${y} L${x + b.w} ${b.y} L${b.x} ${y + b.h} L${x} ${b.y} z` });
-    else if (b.shape === "circle") shape = el("circle", { ...common, cx: b.x, cy: b.y, r: b.w / 2 });
-    else if (b.shape === "hexagon") {
-      const k = Math.min(14, b.w / 4);
-      shape = el("path", { ...common, d: `M${x + k} ${y} L${x + b.w - k} ${y} L${x + b.w} ${b.y} L${x + b.w - k} ${y + b.h} L${x + k} ${y + b.h} L${x} ${b.y} z` });
-    } else {
-      const r = b.shape === "stadium" ? b.h / 2 : b.shape === "round" ? 10 : 3;
-      shape = el("rect", { ...common, x, y, width: b.w, height: b.h, rx: r, ry: r });
-    }
-    kids.push(shape);
-    kids.push(el("text", { x: b.x, y: b.y, "text-anchor": "middle", "dominant-baseline": "central", fill: "currentColor", class: "md-mermaid-text" }, [], b.text));
-  }
-  for (const line of layout.lines) {
-    if (!line.label) continue;
-    const w = line.label.length * 6.6 + 10;
-    kids.push(el("rect", { x: line.mid.x - w / 2, y: line.mid.y - 9, width: w, height: 18, rx: 3, fill: "Canvas", class: "md-mermaid-label-bg" }));
-    kids.push(el("text", { x: line.mid.x, y: line.mid.y, "text-anchor": "middle", "dominant-baseline": "central", fill: "currentColor", class: "md-mermaid-label" }, [], line.label));
-  }
-  return el("svg", {
-    xmlns: "http://www.w3.org/2000/svg", viewBox: `${layout.x0 || 0} ${layout.y0 || 0} ${layout.width} ${layout.height}`,
-    width: layout.width, height: layout.height, role: "img", "aria-label": label, class: "md-mermaid-svg",
-  }, kids);
-}
-
-//: The words a screen reader hears for a flowchart: its links, in order.
-function mermaidFlowSummary(graph) {
-  const name = new Map(graph.nodes.map((n) => [n.id, n.text]));
-  const said = graph.edges.slice(0, 12).map((e) => `${name.get(e.from)} to ${name.get(e.to)}${e.label ? ` (${e.label})` : ""}`);
-  const more = graph.edges.length > 12 ? `, and ${graph.edges.length - 12} more` : "";
-  return `Flowchart of ${graph.nodes.length} step${graph.nodes.length === 1 ? "" : "s"}${said.length ? `: ${said.join("; ")}${more}` : ""}`;
-}
 // DOC-MERMAID-END
 
-//: The tree as elements: `createElementNS` and `textContent`, never markup,
-//: so a node's text can hold anything and stays text.
-function docMermaidSvg(source) {
-  const graph = mermaidFlowParse(source);
-  if (!graph) return null;
-  let measure;
-  try {
-    const ctx = document.createElement("canvas").getContext("2d");
-    ctx.font = "13px system-ui, sans-serif";
-    measure = (t) => ctx.measureText(t).width;
-  } catch {
-    measure = undefined;
-  }
-  const layout = mermaidFlowLayout(graph, measure);
-  const tree = mermaidFlowSvgTree(graph, layout, mermaidFlowSummary(graph));
-  const NS = "http://www.w3.org/2000/svg";
-  const build = (node) => {
-    const made = document.createElementNS(NS, node.tag);
-    for (const [k, v] of Object.entries(node.attrs)) if (k !== "xmlns") made.setAttribute(k, String(v));
-    if (node.text != null) made.textContent = node.text;
-    for (const kid of node.kids) made.appendChild(build(kid));
-    return made;
-  };
-  return build(tree);
+//: Read (and so the print and the HTML export, which are drawn from it): each
+//: mermaid fence is handed to the lazy `mermaid` module (mermaid-draw.js), which
+//: asks the diagram frame and swaps the fence for its picture; one the parser
+//: refuses stays the code block with the reason under it. The promise is kept
+//: so an export or a print can wait for the pictures before it saves the page.
+let docMermaidDrawn = Promise.resolve();
+
+function docRenderMermaidIn(container) {
+  if (!container.querySelector('.code-block code[data-lang="mermaid"]')) return;
+  docMermaidDrawn = ensureModule("mermaid")
+    .then((ok) => (ok && typeof mermaidDrawIn === "function" ? mermaidDrawIn(container) : null))
+    .catch(() => null);
 }
 
-//: Read (and so the print and the HTML export, which are drawn from it):
-//: each mermaid fence that reads whole becomes its figure; the rest stay code.
-function docRenderMermaidIn(container) {
-  for (const code of container.querySelectorAll('.code-block code[data-lang="mermaid"]')) {
-    const svg = docMermaidSvg(code.textContent);
-    if (!svg) continue;
-    const block = code.closest(".code-block");
-    const figure = document.createElement("figure");
-    figure.className = "md-mermaid";
-    if (block.dataset.srcLine) figure.dataset.srcLine = block.dataset.srcLine;
-    figure.appendChild(svg);
-    block.replaceWith(figure);
-  }
+//: Resolves when the pictures of the page being saved or printed are in.
+async function docMermaidWhenDrawn() {
+  await docMermaidDrawn;
+  if (typeof mermaidSettled === "function") await mermaidSettled();
 }
 
 //: Live: a mermaid fence the caret is outside of is its figure, through a
@@ -10544,8 +10469,11 @@ function docMermaidBlocks(text) {
 
 function docMermaidField(CM) {
   if (docPhase2State.mermaidFieldCache) return docPhase2State.mermaidFieldCache;
-  const { StateField } = CM.state;
+  const { StateField, StateEffect } = CM.state;
   const { Decoration, EditorView, WidgetType } = CM.view;
+  //: Sent when a fence the frame refused is known, so the field draws it as the
+  //: code it is (with the reason) instead of leaving a figure that never fills.
+  const recheck = StateEffect.define();
   class DocMermaidWidget extends WidgetType {
     constructor(source, from) {
       super();
@@ -10555,15 +10483,27 @@ function docMermaidField(CM) {
     eq(other) {
       return other.source === this.source && other.from === this.from;
     }
+    //: What CodeMirror assumes for a widget it has not measured; the figure's
+    //: placeholder is about this tall (mermaid-lazy.css), so the page does not jump.
+    get estimatedHeight() {
+      return 160;
+    }
     ignoreEvent(event) {
       return event.type !== "mousedown";
     }
     toDOM(view) {
       const figure = document.createElement("figure");
-      figure.className = "md-mermaid cm-md-mermaid";
-      const svg = docMermaidSvg(this.source);
-      if (svg) figure.appendChild(svg);
+      figure.className = "md-mermaid cm-md-mermaid md-mermaid-pending";
       figure.title = "Press to edit the diagram's text";
+      //: Async: the placeholder holds the room, then the picture replaces it
+      //: and the editor measures the widget again.
+      ensureModule("mermaid").then((ok) => {
+        if (!ok || typeof mermaidFill !== "function") return;
+        mermaidFill(figure, this.source, (result) => {
+          if (result.svg) view.requestMeasure();
+          else view.dispatch({ effects: recheck.of(this.source) });
+        });
+      });
       figure.addEventListener("mousedown", (event) => {
         event.preventDefault();
         const at = Math.min(this.from + 4, view.state.doc.length);
@@ -10573,21 +10513,41 @@ function docMermaidField(CM) {
       return figure;
     }
   }
+  class DocMermaidReason extends WidgetType {
+    constructor(reason) {
+      super();
+      this.reason = reason;
+    }
+    eq(other) {
+      return other.reason === this.reason;
+    }
+    toDOM() {
+      const note = document.createElement("p");
+      note.className = "md-mermaid-reason";
+      note.textContent = `Could not draw this diagram: ${this.reason}`;
+      return note;
+    }
+  }
   const build = (state) => {
     const text = state.doc.toString();
     if (!text.includes("```mermaid") && !/```[ \t]+mermaid/.test(text)) return Decoration.none;
     const sel = state.selection.main;
     const ranges = [];
     for (const block of docMermaidBlocks(text)) {
+      const reason = typeof mermaidFailure === "function" ? mermaidFailure(block.source) : "";
+      //: A fence the frame refused stays the code it is, with its reason under it.
+      if (reason) {
+        ranges.push(Decoration.widget({ widget: new DocMermaidReason(reason), block: true, side: 1 }).range(block.to));
+        continue;
+      }
       if (sel.from <= block.to && sel.to >= block.from) continue;
-      if (!mermaidFlowParse(block.source)) continue;
       ranges.push(Decoration.replace({ widget: new DocMermaidWidget(block.source, block.from), block: true }).range(block.from, block.to));
     }
     return Decoration.set(ranges, true);
   };
   docPhase2State.mermaidFieldCache = StateField.define({
     create: (state) => build(state),
-    update: (value, tr) => (tr.docChanged || tr.selection ? build(tr.state) : value),
+    update: (value, tr) => (tr.docChanged || tr.selection || tr.effects.some((e) => e.is(recheck)) ? build(tr.state) : value),
     provide: (field) => EditorView.decorations.from(field),
   });
   return docPhase2State.mermaidFieldCache;
@@ -11922,9 +11882,8 @@ details.callout[open] > .callout-head::before { content: "\\25BE\\2002"; }
   font-size: 0.85rem;
 }
 .md-mermaid { margin: 1.2em 0; overflow-x: auto; color: var(--ink); }
-.md-mermaid svg { display: block; max-width: 100%; height: auto; margin: 0 auto; font: 13px system-ui, sans-serif; }
-.md-mermaid .md-mermaid-node, .md-mermaid .md-mermaid-label-bg { fill: var(--ground); }
-.md-mermaid .md-mermaid-label { font-size: 12px; }
+.md-mermaid img { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+.md-mermaid-reason { color: var(--muted); font-size: 0.85em; }
 `;
 
 function docExportEscape(text) {
@@ -12111,9 +12070,13 @@ async function exportDocumentHtml() {
   });
   withDocPreviewShown(async (restore) => {
     try {
+      await docMermaidWhenDrawn();
       const clone = $("doc-preview").cloneNode(true);
       clone.removeAttribute("id");
       clone.removeAttribute("class");
+      //: A saved file outlives this page's blob: URLs, so each diagram goes in as
+      //: a data: URL of its own SVG, before the image pass below can drop it.
+      if (typeof mermaidInlineForExport === "function") mermaidInlineForExport($("doc-preview"), clone);
       docExportClean(clone);
       const images = await docExportInlineImages(clone);
       const savedOn = `${currentDoc.title || "Untitled"} · exported ${new Date().toLocaleDateString()}`;
@@ -12456,7 +12419,8 @@ async function exportDocumentPdf() {
       window.removeEventListener("afterprint", cleanup);
     };
     window.addEventListener("afterprint", cleanup);
-    setTimeout(() => window.print(), 150);
+    //: A diagram still being drawn would print as its placeholder.
+    docMermaidWhenDrawn().then(() => setTimeout(() => window.print(), 150));
   });
 }
 

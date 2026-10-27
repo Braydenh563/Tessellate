@@ -1419,6 +1419,26 @@ def _add_system_routes(app: FastAPI, locked: list) -> None:
         because `RevalidatedStatic` lives here and that import would be a cycle."""
         return {"cleared": True, "files": clear_static_cache()}
 
+    @app.get("/mermaid-frame", include_in_schema=False)
+    def mermaid_frame() -> Response:
+        """The page the diagram frame loads (frontend/js/mermaid-frame.js).
+
+        A route, not a file under frontend/, because it must answer with a
+        policy of its own: the middleware only `setdefault`s the app's policy,
+        so this one wins, and `X-Frame-Options` is relaxed to SAMEORIGIN for the
+        same reason (the app frames it, nothing else may). No data is behind
+        it, so it is not behind the lock either.
+        """
+        return Response(
+            content=security.MERMAID_FRAME_HTML,
+            media_type="text/html; charset=utf-8",
+            headers={
+                "Content-Security-Policy": security.MERMAID_FRAME_CSP,
+                "X-Frame-Options": "SAMEORIGIN",
+                "Cache-Control": "no-cache",
+            },
+        )
+
     @app.get("/health", tags=["system"])
     def health(request: Request) -> dict[str, str | bool]:
         from tessellate.core import reminder_notifier

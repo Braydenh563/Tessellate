@@ -1077,9 +1077,13 @@ open; the decisions stay.
    so a ` ```mermaid ` fence renders as code with its language label;
    BACKLOG 29c's "already renders" is corrected. A flowchart-subset parser
    (the audit's D3) is the way in if it is built, not a vendored bundle.
-   **Reopened by the owner, 2026-10-06**: mermaid.js is to be vendored and
-   lazy-loaded; BACKLOG, "Diagrams: mermaid as the interchange format",
-   steps 8 to 13.
+   **Reopened by the owner, 2026-10-06, and built 2026-10-27: mermaid now
+   draws.** mermaid.js 12.2.0 is vendored (`frontend/vendor/mermaid/`) and
+   lazy-loaded inside a hidden same-origin frame (`/mermaid-frame`, a route
+   whose response carries its own policy, so the app's `style-src 'self'` is
+   unchanged); every kind draws in Read, Live, a print, the HTML export, chat
+   and Ask, as an image of the finished SVG. BACKLOG, "Diagrams: mermaid as
+   the interchange format", steps 9 to 13 stay open.
 4. **A hidden formatting toolbar always shows its way back** (INBOX 574,
    2026-10-05): the dock's Formatting button while it is hidden (not on a
    phone, which formats from the thumb bar), Ctrl+Shift+X, the ⋯ row and
@@ -1090,7 +1094,12 @@ open; the decisions stay.
    line on screen, the break itself in a print and in the HTML export, the
    "/" menu's Page break in a document (not in a note, which is not
    printed as pages). Page size, margins and page numbers are decision 7.
-6. **A flowchart fence draws as one, by a parser of our own** (2026-10-05,
+6. **A flowchart fence draws as one, by a parser of our own** (2026-10-05;
+   **superseded 2026-10-27 for drawing: Mermaid draws every kind, flowcharts
+   included, see decision 3; `mermaidFlowParse` and `mermaidFlowLayout` stay
+   as the pure reader the verifier and board import use, and the SVG-tree and
+   `docMermaidSvg` drawing path is gone**; the rest of this item is the
+   reader's record,
    the audit's D3, inside decision 3's terms). `mermaidFlowParse`,
    `mermaidFlowLayout` and `mermaidFlowSvgTree` (documents.js, the
    `DOC-MERMAID` region, node-tested): `flowchart` or `graph` in any of the

@@ -1,0 +1,9 @@
+mermaid 12.2.0 (MIT, see LICENSE), dist/mermaid.min.js unchanged from the npm tarball.
+
+Fetched with:
+  curl -sS -o mermaid.tgz https://registry.npmjs.org/mermaid/-/mermaid-12.2.0.tgz
+  tar xzf mermaid.tgz package/dist/mermaid.min.js package/LICENSE
+
+It is loaded only by the mermaid frame (/mermaid-frame, js/mermaid-frame.js), a
+same-origin iframe the app creates when the first diagram is on screen. It is
+never in index.html or the boot scripts, and nothing is fetched from a CDN.

@@ -1,11 +1,12 @@
-"""Mermaid flowcharts drawn without Mermaid (DOCUMENTS_PLAN decisions 20.3 and
-20.6, the audit's D3).
+"""The in-house flowchart reader (DOCUMENTS_PLAN decisions 20.3 and 20.6, the
+audit's D3), kept pure after Mermaid itself took over the drawing.
 
-The marked region of documents.js (`DOC-MERMAID-BEGIN` to `-END`) is pure: it
-reads a fence, lays the chart out in layers and describes the SVG as plain
-objects. Node runs it here. The rule worth a test above all is the fallback:
-anything the subset does not read whole stays code, so nothing is ever drawn
-half right.
+The marked region of documents.js (`DOC-MERMAID-BEGIN` to `-END`) reads a
+flowchart fence and lays it out in layers; it draws nothing (the SVG-tree test
+went with the drawing it tested, when every kind began to be drawn by the
+vendored library, tests/test_mermaid_frame.py). Node runs it here. The rule
+worth a test above all is the fallback: what the subset does not read whole is
+reported as unread, never half parsed.
 """
 
 from __future__ import annotations
@@ -97,18 +98,3 @@ console.log(JSON.stringify(out));
     assert lr["A"][0] < lr["B"][0] < lr["C"][0], lr
     assert rl["A"][0] > rl["B"][0] > rl["C"][0], rl
     assert out["TD"]["lines"] == 4
-
-
-def test_the_svg_tree_names_itself_and_holds_text_as_text():
-    body = """
-const g = mermaidFlowParse('flowchart TD\\nA["<b>bold</b>"] -->|go| B');
-const t = mermaidFlowSvgTree(g, mermaidFlowLayout(g), mermaidFlowSummary(g));
-const texts = [];
-const walk = (n) => { if (n.text != null) texts.push([n.tag, n.text]); n.kids.forEach(walk); };
-walk(t);
-console.log(JSON.stringify({ tag: t.tag, role: t.attrs.role, label: t.attrs["aria-label"], texts }));
-"""
-    out = _run(body)
-    assert out["tag"] == "svg" and out["role"] == "img"
-    assert out["label"] == "Flowchart of 2 steps: <b>bold</b> to B (go)"
-    assert ["text", "<b>bold</b>"] in out["texts"] and ["text", "go"] in out["texts"]

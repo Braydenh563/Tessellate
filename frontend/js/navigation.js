@@ -352,6 +352,19 @@ document.addEventListener("keydown", (event) => {
   else scope.remove();
 });
 
+//: A ```mermaid fence is drawn by the lazy `mermaid` module (mermaid-draw.js).
+//: After a settle, and only if the block is still on the page: a streaming
+//: reply renders again per chunk, and the blocks it throws away are not drawn.
+//: A block the document editor already took (`data-mermaid-state`) is left.
+function mermaidSoon(block) {
+  setTimeout(() => {
+    if (!block.isConnected || block.dataset.mermaidState) return;
+    ensureModule("mermaid").then((ok) => {
+      if (ok && block.isConnected && typeof mermaidDrawBlock === "function") mermaidDrawBlock(block);
+    });
+  }, 400);
+}
+
 function renderMarkdown(container, text, depth = 0) {
   container.replaceChildren();
   let lines = unlatex(text).replace(/\r\n/g, "\n").split("\n");
@@ -479,6 +492,7 @@ function renderMarkdown(container, text, depth = 0) {
       pre.appendChild(codeEl);
       block.append(bar, pre);
       container.appendChild(block);
+      if (language === "mermaid") mermaidSoon(block);
       continue;
     }
 

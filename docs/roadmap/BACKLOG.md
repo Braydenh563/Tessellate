@@ -2599,11 +2599,7 @@ is large; never in the boot scripts or their gzip budget), with
 `test_no_innerhtml_interpolation` rule). The in-house flowchart parser stays
 as the board import path (`wbMermaidParse`) and the verifier in step 5.
 
-8. **Every Mermaid kind renders** where Markdown renders: documents, chat,
-   Ask answers, note previews and the print view: flowchart, sequence, class,
-   state, ER, Gantt, timeline, mind map, pie, quadrant, journey, git graph.
-   Themed from the app's tokens (light, dark, high contrast), re-drawn on a
-   theme switch.
+8. ~~**Every Mermaid kind renders** where Markdown renders.~~ **Built** for documents (Read, Live, print, HTML export), chat and Ask replies (HISTORY.md, "Moved from the plans, 2026-10-27 (mermaid)"). **Open:** note previews (notes render through the editor surface, not `renderMarkdown`).
 9. **A Mermaid editor**: a Live and Split view for a fence (source beside the
    drawing, errors inline with the line), snippets per kind from the "/" menu,
    and a "Diagram" block in the document toolbar.
@@ -2627,11 +2623,7 @@ as the board import path (`wbMermaidParse`) and the verifier in step 5.
     mind map branch (through their Mermaid form). Every proposal passes the
     step 5 verifier before it is shown.
 12b. **Diagrams in chat, Ask and documents** (the owner: "as well as the
-    documents"): a ` ```mermaid ` block in any document (Read, Live, Split and
-    print), chat message, Ask answer or agent reply is drawn (step 8), with Copy, Download
-    (SVG, PNG, `.mmd`), Open in whiteboard and Insert into a document under
-    its ⋯ menu; a block that fails to parse shows as code with the parser's
-    one-line reason.
+    documents"): ~~a ` ```mermaid ` block is drawn, and a block that fails to parse shows as code with the parser's one-line reason~~ **Built** (HISTORY.md, "Moved from the plans, 2026-10-27 (mermaid)"). **Open:** Copy, Download (SVG, PNG, `.mmd`), Open in whiteboard and Insert into a document under the figure's ⋯ menu, and Split view's drawing.
 12c. **A diagram maker in the whiteboard** (the owner, 2026-10-06, verbatim:
     "a specialise diagram maker in the whiteboard with assisted and easier
     creation"). A third board kind beside Board and Mind map, "Diagram",
@@ -2655,10 +2647,7 @@ as the board import path (`wbMermaidParse`) and the verifier in step 5.
     - **Accessible**: every shape reachable by arrow keys along its links, a
       text outline of the diagram for screen readers, labels never below the
       4.5:1 contrast line.
-13. **Tests and guards**: a lazy-load test (not in `app_js_files`), a
-    vendored-file licence notice test, a CSP test that no inline style or
-    script is injected, and a sweep that renders one of each kind in light
-    and dark with no console errors.
+13. ~~**Tests and guards**~~ **Built** (`tests/test_mermaid_frame.py`: lazy, licence row, the frame's own CSP with the page CSP unchanged, the message protocol; `scratchpad/ui-sweeps/mermaid.js`: one of each kind in light and dark, no console errors).
 
 ### Related, and cheap: finish the rendering story
 

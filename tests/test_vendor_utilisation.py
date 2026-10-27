@@ -57,6 +57,8 @@ CALLED_FLOOR = {
     "flashtext": 2,
     "stencils": 7,
     "mammoth": 2,
+    #: initialize, render and parse, in the diagram frame (mermaid-frame.js).
+    "mermaid": 3,
     "docx": 12,
     #: Brief 83: the Translate worker, a download extra (its WASM engine is not vendored).
     "translate": 11,

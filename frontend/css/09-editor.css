@@ -1100,31 +1100,3 @@
   }
 }
 
-/* A Mermaid flowchart drawn by documents.js (DOCUMENTS_PLAN decision 20.6),
-   in Read, in Live and in a print: the ink of the text around it, the boxes
-   on the card so a line never shows through a label, wider than the page
-   only by scrolling sideways. The SVG carries its own fallbacks (Canvas,
-   currentColor) for the HTML export, which has its own stylesheet. */
-.md-mermaid {
-  margin: var(--space-4) 0;
-  overflow-x: auto;
-  color: var(--ink);
-}
-
-.md-mermaid .md-mermaid-node,
-.md-mermaid .md-mermaid-label-bg {
-  fill: var(--card);
-}
-
-@media print {
-  .md-mermaid .md-mermaid-node,
-  .md-mermaid .md-mermaid-label-bg {
-    fill: #fff;
-  }
-
-  .md-mermaid {
-    color: #000;
-    break-inside: avoid;
-  }
-}
-
