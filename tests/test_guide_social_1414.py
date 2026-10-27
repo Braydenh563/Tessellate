@@ -12,7 +12,7 @@ import re
 
 import pytest
 
-from tessellate.ai import composer_aware, help_chat
+from tessellate.ai import composer_aware, help_chat, reading  # noqa: F401  (reading sets the act reader hook)
 
 PINNED = ["Pinned a note"]
 THIRD_PERSON = re.compile(r"\b(?:It answers|Atlas is this app|it still answers)\b")
