@@ -78,7 +78,8 @@ function companionThrowStep(s, dt, world, k, base, rand) {
   if (s.splat) return companionThrowSlide(s, dt, world, k);
   if (s.wrap) return companionThrowWrapOn(base(s, dt, { ...world, left: -Infinity, right: Infinity }, k), world, dt);
   const [p, room] = companionThrowLedges(s, dt, world, k, rand);
-  const n = companionThrowDown(p, companionThrowUp(p, companionThrowSide(p, base(p, dt, room, k), world, rand), world, rand), world, rand);
+  const kk = p.sky && p.vy < 0 && k.lift ? { ...k, g: k.lift } : k;
+  const n = companionThrowDown(p, companionThrowUp(p, companionThrowSide(p, base(p, dt, room, kk), world, rand), world, rand), world, rand);
   //: Gone up off the top: the bar is a bar again once it falls back past it.
   if (n.sky && n.vy > 0 && n.y > world.top) n.sky = false;
   companionThrowArrive(p, n, dt);
@@ -309,7 +310,7 @@ function companionThrowSettle(kind, pose, roll) {
 //: Weighted rolls, and never the aim the last throw alike had
 //: (`companionThrowMemo`, by direction): the next one along instead.
 const COMPANION_THROW_AIMS = {
-  up: [["sky", 0.5], ["hang", 0.3], ["bounce", 0.2]],
+  up: [["sky", 0.75], ["hang", 0.15], ["bounce", 0.1]],
   low: [["hang", 0.6], ["bounce", 0.4]],
   side: [["far", 0.3], ["wrap", 0.3], ["corner", 0.22], ["splat", 0.15]],
 };
@@ -332,14 +333,24 @@ function companionThrowAim(y, vx, vy, rand) {
   const memo = companionThrowMemo.aim;
   const up = vy < -1.2 && -vy >= Math.abs(vx);
   if (!up && Math.abs(vx) < 1.2) return "near";
-  //: The top of the arc, near enough (drag takes about a third off it).
-  const sky = y - ((vy * vy) / (2 * NMB_THROW.g)) * 0.7 < -120;
-  const key = up ? "up" : vx > 0 ? "r" : "l";
+  //: Hard and steep, it goes up off the top from anywhere (its climb is
+  //: carried, `companionThrowLift`); a moderate one hangs or bounces.
+  const sky = vy <= -1.8 && -vy >= 1.5 * Math.abs(vx);
+  const key = up ? (sky ? "up" : "low") : vx > 0 ? "r" : "l";
   const list = up ? COMPANION_THROW_AIMS[sky ? "up" : "low"] : COMPANION_THROW_AIMS.side;
   let aim = companionThrowPick(list, rand, vy < -0.3 ? "up" : "");
   if (aim === memo[key]) aim = list[(list.findIndex(([name]) => name === aim) + 1) % list.length][0];
   memo[key] = aim;
   return aim;
+}
+
+//: Gravity on the way up for a throw that leaves the top: light enough that
+//: from `y` its arc clears the top by `COMPANION_THROW_CLEAR` (the thinner
+//: air leaves about four fifths of the drag-free climb), never heavier than
+//: its own, never under `[1]` (a float, not a throw).
+const COMPANION_THROW_CLEAR = [180, 0.0012];
+function companionThrowLift(y, vy, g) {
+  return Math.min(g, Math.max(COMPANION_THROW_CLEAR[1], (vy * vy * 0.75) / (2 * (y + COMPANION_THROW_CLEAR[0]))));
 }
 
 //: **The whole flight is worked out when it is let go** (the owner,
@@ -363,6 +374,7 @@ function companionThrowPlan(x, y, vx, vy, world) {
   if (aim === "far" || aim === "wrap" || aim === "sky") feel.air *= 0.45;
   if (aim === "far") feel.ground *= 0.5;
   if (!still) feel.ms = aim === "sky" ? 3600 : 2000;
+  if (aim === "sky") feel.lift = companionThrowLift(y, vy, feel.g);
   let s = { x, y, vx, vy, rot: 0, t: 0, on: null, rest: false, tried: {}, ...(still ? {} : { aim, arrive, sky: aim === "sky" }) };
   const path = [s];
   //: A cap past any flight's own (1.2 s, a splat's slide): it always ends.

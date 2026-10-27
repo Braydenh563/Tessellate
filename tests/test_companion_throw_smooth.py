@@ -254,6 +254,24 @@ def test_reduce_motion_has_no_aim() -> None:
 
 
 @needs_node
+def test_a_hard_steep_throw_leaves_the_top_from_mid_screen_and_falls_back_in() -> None:
+    # The owner: "or maybe even to go off the top of the screen and fall back
+    # down". From y 500 the arc used to top out at about y -78, so it never
+    # chose to; now the climb is carried (lighter on the way up) to clear the
+    # top by its height. A moderate upward throw still hangs or bounces.
+    got = _many("{ mid: many(12, 600, 500, 0.2, -2.3), high: many(12, 600, 300, -0.3, -2.0), low: many(12, 600, 700, 0.1, -2.3), soft: many(12, 600, 500, 0.1, -1.4) }")
+    for name in ("mid", "high", "low"):
+        sky = [r for r in got[name] if r["aim"] == "sky"]
+        assert len(sky) >= 4, (name, [r["aim"] for r in got[name]])
+        for r in sky:
+            # Wholly off the top (its corner its height and more above 0), then down inside.
+            assert r["minY"] < -100 and 48 <= r["y"] <= 780 and 0 <= r["x"] <= 1376, r
+        aims = [r["aim"] for r in got[name]]
+        assert all(a != b for a, b in zip(aims, aims[1:])), aims
+    assert {r["aim"] for r in got["soft"]} <= {"hang", "bounce"}, got["soft"]
+
+
+@needs_node
 def test_a_hand_catch_holds_even_mid_tumble_or_slide() -> None:
     # Landed near a ledge's end tumbling or sliding, then caught by its hands
     # as it went off: it stays hanging there (a tumble once carried it on down).

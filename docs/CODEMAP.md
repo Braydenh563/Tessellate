@@ -2,9 +2,9 @@
 
 Generated 2026-10-27 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6656, frontend ids 2562, CSS sections 505, backend routes 628, backend modules 6878, test files 1441, tests 12774, plan headings 984.
+Counts: frontend functions 6657, frontend ids 2562, CSS sections 505, backend routes 628, backend modules 6878, test files 1441, tests 12775, plan headings 984.
 
-## Frontend functions (6656)
+## Frontend functions (6657)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -2704,30 +2704,31 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkViewerNear` | frontend/js/companion-menu.js:473 |
 | `openNameMarkViewer` | frontend/js/companion-menu.js:30 |
 
-### frontend/js/companion-throw.js (20)
+### frontend/js/companion-throw.js (21)
 
 | Name | File:line |
 |---|---|
-| `companionThrowAim` | frontend/js/companion-throw.js:331 |
-| `companionThrowArrive` | frontend/js/companion-throw.js:131 |
-| `companionThrowAt` | frontend/js/companion-throw.js:278 |
-| `companionThrowAtTime` | frontend/js/companion-throw.js:391 |
-| `companionThrowClimb` | frontend/js/companion-throw.js:529 |
-| `companionThrowDown` | frontend/js/companion-throw.js:250 |
-| `companionThrowFlat` | frontend/js/companion-throw.js:509 |
-| `companionThrowHold` | frontend/js/companion-throw.js:270 |
-| `companionThrowLedges` | frontend/js/companion-throw.js:98 |
-| `companionThrowPick` | frontend/js/companion-throw.js:323 |
-| `companionThrowPlan` | frontend/js/companion-throw.js:354 |
+| `companionThrowAim` | frontend/js/companion-throw.js:332 |
+| `companionThrowArrive` | frontend/js/companion-throw.js:132 |
+| `companionThrowAt` | frontend/js/companion-throw.js:279 |
+| `companionThrowAtTime` | frontend/js/companion-throw.js:403 |
+| `companionThrowClimb` | frontend/js/companion-throw.js:541 |
+| `companionThrowDown` | frontend/js/companion-throw.js:251 |
+| `companionThrowFlat` | frontend/js/companion-throw.js:521 |
+| `companionThrowHold` | frontend/js/companion-throw.js:271 |
+| `companionThrowLedges` | frontend/js/companion-throw.js:99 |
+| `companionThrowLift` | frontend/js/companion-throw.js:352 |
+| `companionThrowPick` | frontend/js/companion-throw.js:324 |
+| `companionThrowPlan` | frontend/js/companion-throw.js:365 |
 | `companionThrowRng` | frontend/js/companion-throw.js:59 |
-| `companionThrowSettle` | frontend/js/companion-throw.js:294 |
-| `companionThrowSettleSoon` | frontend/js/companion-throw.js:547 |
-| `companionThrowSide` | frontend/js/companion-throw.js:162 |
-| `companionThrowSlide` | frontend/js/companion-throw.js:203 |
+| `companionThrowSettle` | frontend/js/companion-throw.js:295 |
+| `companionThrowSettleSoon` | frontend/js/companion-throw.js:559 |
+| `companionThrowSide` | frontend/js/companion-throw.js:163 |
+| `companionThrowSlide` | frontend/js/companion-throw.js:204 |
 | `companionThrowStep` | frontend/js/companion-throw.js:76 |
-| `companionThrowUp` | frontend/js/companion-throw.js:223 |
-| `companionThrowWrapOn` | frontend/js/companion-throw.js:185 |
-| `nameMarkBuddyThrow` | frontend/js/companion-throw.js:404 |
+| `companionThrowUp` | frontend/js/companion-throw.js:224 |
+| `companionThrowWrapOn` | frontend/js/companion-throw.js:186 |
+| `nameMarkBuddyThrow` | frontend/js/companion-throw.js:416 |
 
 ### frontend/js/connections.js (6)
 
@@ -19874,7 +19875,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12774)
+## Tests (12775)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20080,7 +20081,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_companion_stacking.py | 4 |
 | tests/test_companion_throw.py | 8 |
 | tests/test_companion_throw_fates.py | 15 |
-| tests/test_companion_throw_smooth.py | 15 |
+| tests/test_companion_throw_smooth.py | 16 |
 | tests/test_companion_toggle.py | 3 |
 | tests/test_companion_viewer_face.py | 1 |
 | tests/test_companion_viewer_sleep.py | 6 |
