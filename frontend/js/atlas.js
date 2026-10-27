@@ -1508,7 +1508,10 @@ const ATLAS_MOUTHS = {
   //: than `smile`, where sleepy wore `tinyo`, which read as a pout or a kiss
   //: (the owner: "also what is this face").
   rest: { d: "M29.4 37.4Q32 39.3 34.6 37.4" },
-  hmm: { d: "M29.8 38.6Q32.4 37.4 35.2 38.1" },
+  //: Thinking's: lopsided, one corner up (INBOX 1402). It sagged in the
+  //: middle (its handle 0.95 above the corners), so every chat turn wore a
+  //: small frown.
+  hmm: { d: "M29.8 38.3Q32.4 39.4 35.2 37.6" },
   wavy: { d: "M27.8 38.4Q29.2 37 30.6 38.4Q32 39.8 33.4 38.4Q34.8 37 36.2 38.4" },
   frown: { d: "M28.8 39.8Q32 36.8 35.2 39.8" },
   smug: { d: "M28.2 37.6Q32.2 40.2 36.4 35.8" },
@@ -2115,11 +2118,17 @@ function atlasHead(parent, id, level, look, hairAt = null) {
   for (const eye of ATLAS_GEO.eyes) atlasEye(sway, id, eye, tiny, spec.lashes);
   //: Brows at every size: the tiny bust had none, and a brow is what tells
   //: worried, sad and determined apart at 20px (atlas-lazy.css makes them bold).
+  //: **The inner end no lower than the outer** (INBOX 1402, the owner:
+  //: "atlas looks like a bored or grumpy gangster"): both brows were drawn
+  //: sloping down to the nose, 6 degrees (his) and 11 (hers), a scowl in
+  //: every mood that did not lift them (atlasrest1402.js). Now a soft arch
+  //: whose inner end sits a touch higher, so the rest face is open and a
+  //: mood's knit is the only thing that lowers it.
   for (const [x, y, side] of ATLAS_GEO.brows) {
     const brow = atlasGroup(sway, `atl-brow atl-brow-${side > 0 ? "l" : "r"}`, [x, y]);
     const d = spec.brow === "straight"
-      ? `M${x - 2.8 * side} ${y - 0.1}Q${x} ${y - 0.8} ${x + 2.8 * side} ${y + 0.5}`
-      : `M${x - 2.6 * side} ${y - 0.2}Q${x - 0.3 * side} ${y - 1.9} ${x + 2.6 * side} ${y + 0.8}`;
+      ? `M${x - 2.8 * side} ${y + 0.3}Q${x} ${y - 0.6} ${x + 2.8 * side} ${y + 0.1}`
+      : `M${x - 2.6 * side} ${y + 0.4}Q${x - 0.3 * side} ${y - 1.6} ${x + 2.6 * side} ${y + 0.2}`;
     atlasMake("path", { class: `atl-stroke atl-brow-line atl-brow-${spec.brow}`, d }, brow);
   }
   const [mx, my] = ATLAS_GEO.mouth;

@@ -3296,9 +3296,13 @@ const NMB_FACELESS_ACTS = ["blink", "look", "glance", "turn", "land", "shift", "
 //: for feminine), used at rest"). Long, quiet acts, only standing or
 //: floating, only for Atlas and only in the look named: the arms ease into
 //: them (the pose transition) and out again when the act ends, and the sway
-//: is the figure's box on the compositor.
+//: is the figure's box on the compositor. **Hands on the hips, not arms
+//: folded** (INBOX 1402, the owner: "a bored or grumpy gangster with its
+//: facial expressions and arm positioning"): folded across the chest for
+//: 16s at a time was the sulk; both hands to the hips is the same at-ease
+//: stance, open.
 const NMB_STANCES = {
-  fold: { ms: 16000, w: 1.4, cool: 40000, poses: ["stand", "float"], look: "masculine" },
+  hips: { ms: 16000, w: 1.4, cool: 40000, poses: ["stand", "float"], look: "masculine" },
   hip: { ms: 14000, w: 1.4, cool: 40000, poses: ["stand"], look: "masculine" },
   clasp: { ms: 16000, w: 1.4, cool: 40000, poses: ["stand", "float"], look: "feminine" },
   sway: { ms: 14000, w: 1.4, cool: 40000, poses: ["stand", "float"], look: "feminine" },
@@ -6009,17 +6013,46 @@ function nameMarkBuddyWorld(tab) {
 function nameMarkBuddyThrowSpot(s) {
   nameMarkBuddyIndexReset();
   let spot = nameMarkBuddyDrop(s.x, s.y);
-  //: Landed where it cannot stand: step along that surface, not up to the top bar (INBOX 1302).
-  if (s.on && spot.y < s.y - 40) {
-    for (const reach of [400, innerWidth]) {
-      const along = nameMarkBuddyDrop(s.x, s.y, reach);
-      if (Math.abs(along.y - s.y) <= 40) {
-        spot = along;
-        break;
-      }
+  //: Landed where it cannot stand: along that surface a little way first,
+  //: not up to the top bar (INBOX 1302); further than that, the nearest
+  //: open air (`nameMarkBuddyLandNear`), never across the screen.
+  if (s.on && spot.y < s.y - 40) spot = nameMarkBuddyDrop(s.x, s.y, NMB_LAND_NEAR);
+  spot = nameMarkBuddyLandNear(s.x, s.y, spot);
+  if (spot.y >= s.y + 2) spot.falls = true;
+  return spot;
+}
+
+//: **It settles where it lands** (INBOX 1402, the owner: "ill trow the
+//: companions sometimes but then it tll fly back to some position
+//: someitmes across the screen"). Measured (throwsettle1402.js, 1280x720):
+//: come down on the window's foot over the bottom bar's buttons, it went
+//: 224 to 256px along the bar to the first place a line search reached,
+//: and from x 938 it went 256px. Where the drop's own choice is further
+//: than `NMB_LAND_NEAR` and is not straight down (a fall is the way it was
+//: going), it takes the nearest open air instead, searched in rings out
+//: from where it landed, up first: just above the bar's buttons, a few px
+//: away. Nothing nearer, the drop's choice stands. Pure geometry: a few
+//: thousand box tests at most, once, on landing.
+const NMB_LAND_NEAR = 96;
+const NMB_LAND_STEP = 8;
+function nameMarkBuddyLandNear(x, y, spot) {
+  const far = Math.hypot(spot.x - x, spot.y - y);
+  if (far <= NMB_LAND_NEAR || (spot.y > y && Math.abs(spot.x - x) <= NMB_LAND_NEAR)) return spot;
+  const obstacles = nameMarkBuddyObstacles(nameMarkBuddyTab());
+  const { top, bottom } = nameMarkBuddyLedges();
+  const lo = top ? top.bottom : 0;
+  const hi = (bottom ? bottom.top : innerHeight) - NMB_FEET;
+  for (let r = NMB_LAND_STEP; r < far; r += NMB_LAND_STEP) {
+    const n = Math.max(8, Math.ceil((2 * Math.PI * r) / 12));
+    //: From straight up, then either side of it in turn, round to down.
+    for (let k = 0; k < n; k += 1) {
+      const a = -Math.PI / 2 + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * ((2 * Math.PI) / n);
+      const px = Math.round(x + r * Math.cos(a));
+      const py = Math.round(y + r * Math.sin(a));
+      if (px < 0 || px > innerWidth - NMB_W || py < lo || py > hi) continue;
+      if (!nameMarkBuddyHits(px, py, "float", obstacles)) return { kind: "yours", pose: "float", legs: "", x: px, y: py };
     }
   }
-  if (spot.y >= s.y + 2) spot.falls = true;
   return spot;
 }
 function nameMarkBuddyThrowLand(buddy, s, tab, spot) {
@@ -7619,13 +7652,17 @@ function nameMarkBuddyTick() {
 //: nothing between changes. Atlas has its own moods (atlas.js) and only
 //: gets the drift, and only when it is calm. `nmb.exprHold` is the one it
 //: comes back to (sleepy while you are away, intent while it thinks).
+//: A drift is never sourer than the face it leaves (INBOX 1402, "a bored or
+//: grumpy gangster"): a friendly face wanders only among friendly ones (a
+//: calm one went sly a third of the time, arms folded with it), and a sour
+//: one only toward kinder; a scowl is for an event.
 const NMB_EXPR_NEAR = {
-  happy: ["calm", "love", "cute"], calm: ["happy", "sly", "cute"], excited: ["happy", "starstruck"],
-  sad: ["calm", "nervous"], angry: ["unimpressed", "serious"], serious: ["calm", "unimpressed"],
-  sly: ["calm", "evil", "cool"], cool: ["sly", "calm"], nervous: ["calm", "confused"], sleepy: ["calm"],
+  happy: ["calm", "love", "cute"], calm: ["happy", "cute"], excited: ["happy", "starstruck"],
+  sad: ["calm", "nervous"], angry: ["unimpressed", "serious"], serious: ["calm", "happy"],
+  sly: ["calm", "cool"], cool: ["sly", "calm"], nervous: ["calm", "confused"], sleepy: ["calm"],
   love: ["happy", "cute"], laughing: ["happy", "excited"], unimpressed: ["serious", "sly"],
   confused: ["calm", "nervous"], cute: ["happy", "uwu"], uwu: ["cute", "happy"], starstruck: ["excited", "happy"],
-  "": ["happy", "calm", "sly"],
+  "": ["happy", "calm", "cute"],
 };
 const NMB_ATLAS_NEAR = ["curious", "happy", "proud", "shy"];
 function nameMarkBuddyExpress(expr, ms = 0, { drift = false } = {}) {
@@ -8113,6 +8150,10 @@ function nameMarkBuddyFeel(delta, now = Date.now()) {
 //: itself (`nmb.pokes` keeps twenty seconds), so after a pause it is a
 //: hello again. `last` is the previous answer, `rand` the draw (a function,
 //: so a test fixes it).
+//: A sulk is brief (INBOX 1402): a scowl only while the poke that called
+//: for it is fresh.
+const NMB_GRUMPY_MS = 8000;
+const NMB_POUT_MS = 3000;
 const NMB_POKE_GENTLE = ["pleased", "curious", "wave"];
 const NMB_POKE_POOL = ["pleased", "playful", "curious", "wave", "spin", "laugh"];
 function nameMarkBuddyClickReaction(asleep, pokes, sinceLast, groggy = false, last = "", rand = Math.random) {
@@ -9182,7 +9223,8 @@ function nameMarkBuddyBuild() {
       const thrown = !!v && Math.hypot(v[0], v[1]) > NMB_TOSS_SPEED && typeof nameMarkBuddyThrow === "function";
       if (thrown) nameMarkBuddyIndexReset();
       const world = thrown && nameMarkBuddyWorld(nameMarkBuddyTab());
-      const landed = !thrown && nameMarkBuddyDrop(Math.round(box.left), Math.round(box.top));
+      //: Let go too slowly to fly, it comes down the same way: near, or straight down.
+      const landed = !thrown && nameMarkBuddyLandNear(box.left, box.top, nameMarkBuddyDrop(Math.round(box.left), Math.round(box.top)));
       buddy.style.translate = "";
       buddy.classList.remove("nm-buddy-dragging");
       clearTimeout(drag.settle);
@@ -9279,20 +9321,23 @@ function nameMarkBuddyBuild() {
       if (how === "pout") {
         nameMarkBuddyFeel(-0.15);
         nmb.groggyUntil = Math.max(nmb.groggyUntil || 0, now + 4000);
-        nameMarkBuddyPout(buddy, 6000);
+        nameMarkBuddyPout(buddy, NMB_POUT_MS);
         return;
       }
-      //: **Poked too often** (four times in twenty seconds): grumpy for half
-      //: a minute. It turns away, says so, and will not look at you.
+      //: **Poked too often** (four times in twenty seconds): grumpy, briefly.
+      //: It turns away, says so, and will not look at you. It was half a
+      //: minute and a pout after it, 35s of a scowl (INBOX 1402, the owner:
+      //: "a bored or grumpy gangster ... half the time"): now `NMB_GRUMPY_MS`
+      //: and a short pout on the way back.
       if (how === "grumpy") {
         nameMarkBuddyFeel(-0.4);
-        nmb.grumpyUntil = now + 30000;
+        nmb.grumpyUntil = now + NMB_GRUMPY_MS;
         nmb.mood.sociability = Math.max(0, nmb.mood.sociability - 0.25);
         nameMarkBuddyRelease();
         buddy.classList.remove("nmb-pout");
         nameMarkBuddyEase(buddy, 2400);
         buddy.classList.add("nmb-grumpy");
-        nameMarkBuddyExpress("unimpressed", 30000);
+        nameMarkBuddyExpress("unimpressed", NMB_GRUMPY_MS);
         buddy.dataset.turn = nmb.pointer && nmb.pointer[0] > nmb.x + NMB_W / 2 ? "l" : "r";
         setTimeout(() => {
           //: And it comes down through a pout, not straight back (unless it
@@ -9300,9 +9345,9 @@ function nameMarkBuddyBuild() {
           //: rub has made up already).
           if (!buddy.isConnected || (nmb.rubbedAt || 0) > now) return;
           buddy.classList.remove("nmb-grumpy");
-          nameMarkBuddyPout(buddy, 5000);
+          nameMarkBuddyPout(buddy, 2000);
           if (buddy.dataset.turn && !buddy.classList.contains("nmb-walking")) delete buddy.dataset.turn;
-        }, 30000);
+        }, NMB_GRUMPY_MS);
         nameMarkSay(buddy, ["Hmph.", "Okay, that's enough.", "I'm not talking to you."][Math.floor(Math.random() * 3)]);
         return;
       }

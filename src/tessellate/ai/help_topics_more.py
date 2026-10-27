@@ -79,7 +79,8 @@ MORE_TOPICS: list[dict] = [
             "down to the panel below, or goes off one side and comes back on "
             "the other. Once down it settles in its own way: sitting with its "
             "legs dangling or kicking, lying down, stretching, or swinging "
-            "from the bar. Wherever it ends, it never covers a button. With "
+            "from the bar. Wherever it ends, it never covers a button: come "
+            "down on one and it moves only to the nearest clear place. With "
             "Reduce motion on, it simply appears where it lands."
         ),
         "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
