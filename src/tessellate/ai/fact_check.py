@@ -7,8 +7,12 @@ A count is a figure attached to a counted noun ("3 reminders", "no notes",
 and row counts of the tool result or the statistic (`result_counts`,
 `rows_counts`) and the counted statements of the engine's own lead sentence
 (`said_counts`). A date ("Mon 2 Nov"), a time ("14:02", "at 9"), an id
-("#/notes/12") are never counts, so a digit there can neither excuse a
-miscount nor be one. A span ("120 minutes", "59 days", "8 weeks and 3 days")
+("#/notes/12") are never counts. A calendar date (a day with a month, an ISO
+date, a weekday with a day number) is checked on its own: it must be a day
+the facts, the question or the clock name (`_dates_kept`), else the reply is
+the model's invention. A clock time ("3pm") is not checked. "a reminder"
+after "you have", "there is", "only" or "just" is one, and "both" before a
+counted noun is two (`_article_counts`). A span ("120 minutes", "59 days", "8 weeks and 3 days")
 is checked against the spans the facts state, in any unit and with the
 rounding a person would use ("about 2 months"), and against the dates the
 facts carry (`_dated_spans`); a span from neither is the model's invention.
@@ -230,6 +234,24 @@ def _fold_amount(out: list[str], token: str) -> None:
     out[-1] = str(int(float(times) * _AMOUNTS[token]))
 
 
+#: Before "a"/"an" and a counted noun, the words that make it a count of
+#: one ("you have a reminder", "there's a reminder", "only a reminder").
+_ARTICLE_LEADS = {"have", "has", "only", "just", "there's"}
+
+
+def _article_counts(tokens: list[str], i: int, out: list[str]) -> bool:
+    """Whether the token at `i` is a count said as a word before a counted
+    noun: "both reminders" (2), or "a reminder" after a lead (1). Elsewhere
+    "a" is ordinary prose ("including a reminder on Friday")."""
+    ahead = tokens[i + 1] if i + 1 < len(tokens) else ""
+    if _NOUNS.get(ahead, "*") == "*" or tokens[i] not in ("both", "a", "an"):
+        return False
+    if tokens[i] == "both":
+        return True
+    lead = out[-1] if out else ""
+    return lead in _ARTICLE_LEADS or (lead == "is" and len(out) > 1 and out[-2] == "there")
+
+
 def _amounts(tokens: list[str]) -> list[str]:
     """The tokens with each amount said in words made one figure: "one
     hundred and five" is 105; "a" or a figure before "couple", "dozen" or
@@ -248,6 +270,9 @@ def _amounts(tokens: list[str]) -> list[str]:
             i, taken = spoken[1], False
             continue
         i += 1
+        if _article_counts(tokens, i - 1, out):
+            out.append("2" if token == "both" else "1")
+            continue
         if taken and token == "of":
             taken = False
             continue
@@ -565,9 +590,32 @@ def keeps(prose: str, facts: str, question: str, counts: dict[str, set[str]], ne
     stated = {v for v, _n in _figures(facts)} | {v for v, _n in _figures(question)}
     every = set().union(*counts.values()) if counts else set()
     spans = _spans(facts) + _spans(question) + _dated_spans(facts, now)
+    if not _dates_kept(prose, f"{facts} {question}", now):
+        return False
     if not all(_kept(value, noun, counts, every, stated, spans) for value, noun in said):
         return False
     return not needs_figure or _says_asked(said, facts, question, every)
+
+
+def _dates_kept(prose: str, stated: str, now: datetime | None) -> bool:
+    """Whether every calendar date the prose states is a day the facts or the
+    question name (or today, or a relative word or weekday they use). Read
+    through the recogniser; a weekday with a date must be that date's weekday.
+    A clock time is not a date and is not checked."""
+    said = recognise.date_mentions(prose)
+    if not said or now is None:
+        return True
+    days = recognise.days_named(stated, now.replace(tzinfo=None))
+    return all(_date_named(mention, days) for mention in said)
+
+
+def _date_named(mention: recognise.DateMention, days: set) -> bool:
+    year, month, day, weekday = mention
+    return any(
+        d.day == day and (month is None or d.month == month) and (year is None or d.year == year)
+        and (weekday is None or d.weekday() == weekday)
+        for d in days
+    )
 
 
 def _says_asked(said: list[tuple[str, str | None]], facts: str, question: str, every: set[str]) -> bool:

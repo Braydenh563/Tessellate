@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Answers from facts: a model reply is refused when "a reminder" or "both reminders" miscounts the facts, or when it states a calendar date (28 Oct, 2026-12-01, Thursday 29) the facts, the question and the clock do not name; clock times stay unchecked.
 - Documents: in focus mode the sidebar and the suggestions panel can be resized by dragging their edge (or the arrow keys), and the sidebar width is the one it has outside focus mode.
 - Grammar: fewer wrong suggestions; a file name (start.bat), an interface word (draggable, scrollbars), a dotfile and "back to normal" are no longer marked, and real errors still are.
 - Settings, Appearance: Glass controls (off by default) puts icon buttons in the image chip's frosted glass, only while the glass blur is on; its styles are fetched only when it is on.

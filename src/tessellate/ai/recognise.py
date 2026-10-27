@@ -244,6 +244,84 @@ def asks_computed(question: str) -> bool:
     return bool(_COMPUTED.search(question))
 
 
+_WD_WORD = "|".join(sorted(_WEEKDAYS, key=len, reverse=True))
+_MO_WORD = "|".join(sorted(_MONTHS, key=len, reverse=True))
+_WD_PREFIX = rf"(?:\b({_WD_WORD})\.?,?\s+)?"
+_YEAR_SUFFIX = r"(?:,?\s+((?:19|20)\d\d)\b)?"
+_MENTION_DM = re.compile(rf"{_WD_PREFIX}\b(\d{{1,2}})(?:st|nd|rd|th)?\s+(?:of\s+)?({_MO_WORD})\b{_YEAR_SUFFIX}")
+_MENTION_MD = re.compile(rf"{_WD_PREFIX}\b({_MO_WORD})\.?\s+(\d{{1,2}})(?:st|nd|rd|th)?\b(?![\d:])(?!\s*(?:am|pm)\b){_YEAR_SUFFIX}")
+_MENTION_ISO = re.compile(rf"{_WD_PREFIX}\b(\d{{4}})-(\d\d)-(\d\d)\b")
+#: "Thursday 29": a weekday and a day number, no month, not a clock time
+#: or a count ("friday 2 notes").
+_MENTION_WD_DAY = re.compile(
+    rf"\b({_WD_WORD})\.?,?\s+(\d{{1,2}})(?:st|nd|rd|th)?\b(?![\d:])(?!\s*(?:am|pm)\b)(?!\s+(?!at\b|by\b|for\b|and\b|is\b|to\b|the\b)[a-z])"
+)
+#: (year or None, month or None, day, weekday or None)
+DateMention = tuple[int | None, int | None, int, int | None]
+
+
+def date_mentions(text: str) -> list[DateMention]:
+    """The calendar dates a text states: a day with a month ("28 Oct",
+    "October 28, 2026"), an ISO date, or a weekday with a day number
+    ("Thursday 29"). Clock times and spans are no dates; a day that no month
+    has (31 Feb) is skipped. The caller decides what they must match."""
+    low = (text or "").lower()
+    found: list[DateMention] = []
+
+    def add(year: str | None, month: int | None, day: str, weekday: str | None) -> None:
+        number = int(day)
+        if 1 <= number <= 31:
+            found.append((int(year) if year else None, month, number, _WEEKDAYS[weekday] if weekday else None))
+
+    for m in _MENTION_ISO.finditer(low):
+        if 1 <= int(m[3]) <= 12 and 1 <= int(m[4]) <= 31:
+            add(m[2], int(m[3]), m[4], m[1])
+    for m in _MENTION_DM.finditer(low):
+        add(m[4], _MONTHS[m[3]], m[2], m[1])
+    for m in _MENTION_MD.finditer(low):
+        add(m[4], _MONTHS[m[2]], m[3], m[1])
+    for m in _MENTION_WD_DAY.finditer(low):
+        add(None, None, m[2], m[1])
+    return found
+
+
+def _nearest_year(month: int, day: int, now: datetime) -> date | None:
+    """The date a year-less "28 Oct" is: the year that puts it nearest `now`."""
+    tries = []
+    for year in (now.year - 1, now.year, now.year + 1):
+        try:
+            tries.append(date(year, month, day))
+        except ValueError:
+            continue
+    return min(tries, key=lambda d: abs((d - now.date()).days)) if tries else None
+
+
+_RELATIVE_DAYS = (("day after tomorrow", 2), ("tomorrow", 1), ("today", 0), ("tonight", 0), ("yesterday", -1))
+
+
+def days_named(text: str, now: datetime) -> set[date]:
+    """The days a text names: its stated dates (a year-less one in the year
+    nearest `now`), "today", "tomorrow", "yesterday", and each weekday word
+    as its next and its last occurrence."""
+    low = (text or "").lower()
+    today = now.date()
+    days: set[date] = {today}
+    for year, month, day, _weekday in date_mentions(low):
+        if month is None:
+            continue
+        try:
+            named = date(year, month, day) if year else _nearest_year(month, day, now)
+        except ValueError:
+            continue
+        if named:
+            days.add(named)
+    days.update(today + timedelta(days=offset) for word, offset in _RELATIVE_DAYS if word in low)
+    for word in set(re.findall(rf"\b(?:{_WD_WORD})\b", low)):
+        ahead = (_WEEKDAYS[word] - today.weekday()) % 7
+        days.update((today + timedelta(days=ahead), today + timedelta(days=ahead - 7)))
+    return days
+
+
 #: A stamp as a tool result prints it, "2026-10-30T17:00:00".
 _ISO_STAMP = re.compile(r"(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2}))?)?")
 

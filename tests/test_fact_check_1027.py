@@ -282,3 +282,61 @@ def test_an_amount_in_words_is_read_whole(prose, facts, counts, ok):
     "nothing else" was a count of none, and "one hundred and five" was 100
     and 5."""
     assert fact_check.keeps(prose, facts, "how many notes", counts, False) is ok
+
+
+@SURFACES
+@pytest.mark.parametrize(
+    ("prose", "ok"),
+    [
+        # The article and "both" as counts: each passed on three reminders.
+        ("You have a reminder this week.", False),
+        ("You only have a reminder: call mum.", False),
+        ("There is a reminder this week.", False),
+        ("Both reminders are this week.", False),
+        ("You have 3 reminders; both are this week.", True),
+        # "a" in ordinary prose claims no total.
+        ("You have 3 reminders, including a reminder on Friday.", True),
+        ("You have 3 reminders; the first is a reminder to call mum.", True),
+    ],
+)
+def test_the_article_and_both_are_counts(ai_client, fake_ollama, session, prose, ok, use_tools):
+    _seed(session)
+    assert _kept(ai_client, fake_ollama, "what reminders do I have", prose, use_tools) is ok
+
+
+@SURFACES
+@pytest.mark.parametrize(
+    ("prose", "ok"),
+    [
+        # Reminders on Wed 28 Oct and Fri 30 Oct (and one on 20 Nov).
+        ("You have 3 reminders; rent is due on 12 November.", False),
+        ("You have 3 reminders; rent is due 2026-12-01.", False),
+        ("You have 3 reminders; rent is due on 30 Oct 2025.", False),
+        ("You have 3 reminders; call mum is due Wed 28 Oct.", True),
+        ("You have 3 reminders; call mum is due 28 October 2026.", True),
+        ("You have 3 reminders; book dentist is due on 20 November.", True),
+        ("You have 3 reminders; book dentist is due on 2026-11-20.", True),
+        ("You have 3 reminders; call mum is due Thursday 28 Oct.", False),
+        ("Today is 27 Oct; you have 3 reminders.", True),
+    ],
+)
+def test_a_calendar_date_must_be_one_the_facts_name(ai_client, fake_ollama, session, prose, ok, use_tools):
+    """Clock times ("3pm") stay unchecked; only the calendar date is."""
+    _seed(session)
+    assert _kept(ai_client, fake_ollama, "what reminders do I have", prose, use_tools) is ok
+
+
+@pytest.mark.parametrize(
+    ("prose", "ok"),
+    [
+        ("Rent is due Thursday 29 Oct at 3pm. You have 2 reminders.", False),
+        ("Rent is due Thursday 29. You have 2 reminders.", False),
+        ("Rent is due at 3pm. You have 2 reminders.", True),
+        ("Call mum is due Wed 28 Oct at 3pm. You have 2 reminders.", True),
+        ("Rent is due Friday 30. You have 2 reminders.", True),
+    ],
+)
+def test_a_date_the_rows_do_not_have_is_refused(prose, ok):
+    """Rows on Wed 28 Oct and Fri 30 Oct: Thursday 29 is invented, a clock time is not checked."""
+    facts = "You have 2 reminders: call mum (Wed 28 Oct, 9:00) and book dentist (Fri 30 Oct, 11:00)."
+    assert fact_check.keeps(prose, facts, "what reminders do I have", {"reminder": {"2"}}, False, NOW) is ok
