@@ -45,3 +45,18 @@ def test_words_typed_before_the_palette_loaded_still_ask_for_their_notes():
     body = js[js.index("async function openPalette()"):]
     body = body[: body.index("\n}\n")]
     assert body.index('paletteAskNotes($("palette-input").value);') > body.index('renderPalette($("palette-input").value);')
+
+
+def test_a_lasting_toast_steps_aside_for_the_buttons_of_the_section_in_use():
+    """E2E first-run, 2026-10-27: at 1280 by 720 the search-by-meaning
+    question (kept up until answered) covered the composer's Save, and the
+    click landed on the toast for 90 s. A toast without a timer fades for
+    the buttons of the focused control's form or section, and the check
+    runs again when a toast arrives over a control already focused."""
+    js = (ROOT / "frontend/js/status.js").read_text(encoding="utf-8")
+    body = js[js.index("function toastYield(target = document.activeElement) {"):]
+    body = body[: body.index("\n}\n")]
+    assert 'target.closest("form, section")?.querySelectorAll("button")' in body
+    assert "!el.toastTimer && work.some(" in body
+    stack = js[js.index("function toastStack(box, change) {"):]
+    assert 'if (box.id === "toast-box") toastYield();' in stack[: stack.index("\n}\n")]

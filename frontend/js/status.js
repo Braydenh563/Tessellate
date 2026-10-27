@@ -864,6 +864,7 @@ function toastStack(box, change) {
   //: the stack hangs from the top.
   for (const t of [...box.children]) if (!before.has(t) && top) box.prepend(t);
   toastLayout(box);
+  if (box.id === "toast-box") toastYield();
   const cs = getComputedStyle(box);
   const ms = parseFloat(cs.getPropertyValue("--ui-base")) * 1000;
   if (!ms || toastReduced()) return;
@@ -947,15 +948,23 @@ document.addEventListener("keydown", (e) => lockFieldWants(e)?.focus(), true);
 //: Tab stop under it on six tabs). Fades and lets clicks through until focus
 //: moves off it; focus inside the toast itself never counts, nor the body
 //: (the first-Tab reset focuses it, and its box covers every toast).
-document.addEventListener("focusin", (e) => {
+//: A lasting toast (no timer: a question kept up until it is answered) also
+//: steps aside for the buttons of the form or section being worked in: at
+//: 1280 by 720 the search-by-meaning question sat on the composer's Save
+//: and Save as draft for as long as it went unanswered (E2E first-run,
+//: 2026-10-27). Checked again when a toast arrives over a focused control.
+function toastYield(target = document.activeElement) {
   const box = $("toast-box");
-  if (!box?.children.length || box.contains(e.target) || e.target === document.body) return box?.classList.remove("is-yielding");
-  const r = e.target.getBoundingClientRect();
+  if (!box?.children.length || !target || box.contains(target) || target === document.body) return box?.classList.remove("is-yielding");
+  const meets = (b, r) => r.width > 0 && b.left < r.right && b.right > r.left && b.top < r.bottom && b.bottom > r.top;
+  const focused = target.getBoundingClientRect();
+  const work = [...(target.closest("form, section")?.querySelectorAll("button") || [])].map((el) => el.getBoundingClientRect());
   box.classList.toggle("is-yielding", [...box.children].some((el) => {
     const b = el.getBoundingClientRect();
-    return b.left < r.right && b.right > r.left && b.top < r.bottom && b.bottom > r.top;
+    return meets(b, focused) || (!el.toastTimer && work.some((r) => meets(b, r)));
   }));
-});
+}
+document.addEventListener("focusin", (e) => toastYield(e.target));
 
 //: **Where a toast goes** (INBOX 470): inside the open modal dialog while
 //: there is one, because a modal makes everything outside it inert and draws

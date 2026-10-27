@@ -31,5 +31,6 @@ def test_a_focused_body_does_not_fade_the_toasts():
     WCAG 2.4.11 yield then faded the reload's "Open them" toast and let its
     clicks through (E2E notes.spec.js:61, documents.spec.js:115)."""
     js = app_js_text()
-    handler = js[js.index('document.addEventListener("focusin", (e) => {\n  const box = $("toast-box");'):][:400]
-    assert "e.target === document.body" in handler
+    handler = js[js.index("function toastYield(target = document.activeElement) {"):][:400]
+    assert "target === document.body" in handler
+    assert 'document.addEventListener("focusin", (e) => toastYield(e.target));' in js

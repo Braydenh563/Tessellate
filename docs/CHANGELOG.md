@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- A question toast kept up until answered steps aside for the buttons of the form or section in use (it covered Save at 1280 by 720).
 - Command palette: words typed while it was still opening now list their matching notes too.
 - Get started: the first answer ticks step three even if you left for the dashboard before it finished.
 - Fixes: "how do I make a reminder" leads with Magic add again; every hello invite says what to ask; the packaged builds install certifi; the reminder offer leaves past times to the date reader; a failed new-tab link says why, with Try again.

@@ -2,9 +2,9 @@
 
 Generated 2026-10-27 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6601, frontend ids 2558, CSS sections 504, backend routes 625, backend modules 6722, test files 1415, tests 12541, plan headings 977.
+Counts: frontend functions 6602, frontend ids 2558, CSS sections 504, backend routes 625, backend modules 6722, test files 1415, tests 12542, plan headings 977.
 
-## Frontend functions (6601)
+## Frontend functions (6602)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -1017,130 +1017,131 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `startMicLevelMeter` | frontend/js/media.js:212 |
 | `toggleDictation` | frontend/js/media.js:293 |
 
-### frontend/js/status.js (120)
+### frontend/js/status.js (121)
 
 | Name | File:line |
 |---|---|
 | `agentActivityNotice` | frontend/js/status.js:650 |
 | `agentActivityQuiet` | frontend/js/status.js:642 |
-| `agentModeAvailable` | frontend/js/status.js:2719 |
-| `aiIsOff` | frontend/js/status.js:1990 |
-| `aiOffGlyph` | frontend/js/status.js:2389 |
-| `aiOfflineDismissed` | frontend/js/status.js:2191 |
-| `aiOfflineNoticeHidden` | frontend/js/status.js:2187 |
-| `aiStatusState` | frontend/js/status.js:2276 |
+| `agentModeAvailable` | frontend/js/status.js:2728 |
+| `aiIsOff` | frontend/js/status.js:1999 |
+| `aiOffGlyph` | frontend/js/status.js:2398 |
+| `aiOfflineDismissed` | frontend/js/status.js:2200 |
+| `aiOfflineNoticeHidden` | frontend/js/status.js:2196 |
+| `aiStatusState` | frontend/js/status.js:2285 |
 | `announcedReminders` | frontend/js/status.js:42 |
-| `appStackIsNewer` | frontend/js/status.js:1535 |
+| `appStackIsNewer` | frontend/js/status.js:1544 |
 | `armReminderTimer` | frontend/js/status.js:507 |
 | `askNotificationPermission` | frontend/js/status.js:378 |
-| `backendLabel` | frontend/js/status.js:2782 |
-| `boardHistoryActive` | frontend/js/status.js:1500 |
+| `backendLabel` | frontend/js/status.js:2791 |
+| `boardHistoryActive` | frontend/js/status.js:1509 |
 | `checkDueReminders` | frontend/js/status.js:523 |
-| `closeModelGate` | frontend/js/status.js:2009 |
+| `closeModelGate` | frontend/js/status.js:2018 |
 | `closeNotifications` | frontend/js/status.js:358 |
-| `dismissAiOffline` | frontend/js/status.js:2199 |
-| `dismissToast` | frontend/js/status.js:892 |
+| `dismissAiOffline` | frontend/js/status.js:2208 |
+| `dismissToast` | frontend/js/status.js:893 |
 | `dismissedNotificationIds` | frontend/js/status.js:232 |
 | `forcedReadIds` | frontend/js/status.js:187 |
 | `forcedUnreadIds` | frontend/js/status.js:156 |
-| `insightLine` | frontend/js/status.js:1427 |
-| `insightSend` | frontend/js/status.js:1398 |
-| `insightVerdicts` | frontend/js/status.js:1404 |
-| `integrityWords` | frontend/js/status.js:1237 |
+| `insightLine` | frontend/js/status.js:1436 |
+| `insightSend` | frontend/js/status.js:1407 |
+| `insightVerdicts` | frontend/js/status.js:1413 |
+| `integrityWords` | frontend/js/status.js:1246 |
 | `isNotificationUnread` | frontend/js/status.js:211 |
-| `jobsRunning` | frontend/js/status.js:1843 |
+| `jobsRunning` | frontend/js/status.js:1852 |
 | `keepToastAction` | frontend/js/status.js:337 |
-| `lastAnswerLine` | frontend/js/status.js:2411 |
-| `loadMostUsed` | frontend/js/status.js:1708 |
-| `loadRecentQuestions` | frontend/js/status.js:1681 |
-| `lockFieldWants` | frontend/js/status.js:935 |
-| `noteDamagedNotebook` | frontend/js/status.js:1241 |
-| `noteServerDown` | frontend/js/status.js:1297 |
-| `noteServerUp` | frontend/js/status.js:1306 |
-| `noticeTaskTransitions` | frontend/js/status.js:3026 |
+| `lastAnswerLine` | frontend/js/status.js:2420 |
+| `loadMostUsed` | frontend/js/status.js:1717 |
+| `loadRecentQuestions` | frontend/js/status.js:1690 |
+| `lockFieldWants` | frontend/js/status.js:936 |
+| `noteDamagedNotebook` | frontend/js/status.js:1250 |
+| `noteServerDown` | frontend/js/status.js:1306 |
+| `noteServerUp` | frontend/js/status.js:1315 |
+| `noticeTaskTransitions` | frontend/js/status.js:3035 |
 | `noticeUnwatchedAnswer` | frontend/js/status.js:685 |
 | `notificationsMuted` | frontend/js/status.js:627 |
 | `notificationsReadAt` | frontend/js/status.js:138 |
 | `notify` | frontend/js/status.js:451 |
-| `nudgeEmbeddingProblem` | frontend/js/status.js:2454 |
-| `offerUndo` | frontend/js/status.js:1442 |
+| `nudgeEmbeddingProblem` | frontend/js/status.js:2463 |
+| `offerUndo` | frontend/js/status.js:1451 |
 | `openLanPanel` | frontend/js/status.js:587 |
-| `openModelGate` | frontend/js/status.js:2019 |
-| `openModelOffer` | frontend/js/status.js:2026 |
-| `paintPrivacyChip` | frontend/js/status.js:3122 |
-| `paintStatusItem` | frontend/js/status.js:2508 |
+| `openModelGate` | frontend/js/status.js:2028 |
+| `openModelOffer` | frontend/js/status.js:2035 |
+| `paintPrivacyChip` | frontend/js/status.js:3131 |
+| `paintStatusItem` | frontend/js/status.js:2517 |
 | `paintTitle` | frontend/js/status.js:484 |
-| `paintUndoDoor` | frontend/js/status.js:1631 |
-| `performRedo` | frontend/js/status.js:1556 |
-| `performRedoNow` | frontend/js/status.js:1585 |
-| `performUndo` | frontend/js/status.js:1550 |
-| `performUndoNow` | frontend/js/status.js:1562 |
-| `plainHttpError` | frontend/js/status.js:995 |
+| `paintUndoDoor` | frontend/js/status.js:1640 |
+| `performRedo` | frontend/js/status.js:1565 |
+| `performRedoNow` | frontend/js/status.js:1594 |
+| `performUndo` | frontend/js/status.js:1559 |
+| `performUndoNow` | frontend/js/status.js:1571 |
+| `plainHttpError` | frontend/js/status.js:1004 |
 | `playReminderChime` | frontend/js/status.js:417 |
-| `pollServerHealth` | frontend/js/status.js:1334 |
+| `pollServerHealth` | frontend/js/status.js:1343 |
 | `primeReminderAudio` | frontend/js/status.js:392 |
-| `pushEntryPutUndo` | frontend/js/status.js:1475 |
-| `pushUndo` | frontend/js/status.js:1371 |
+| `pushEntryPutUndo` | frontend/js/status.js:1484 |
+| `pushUndo` | frontend/js/status.js:1380 |
 | `recordNotification` | frontend/js/status.js:97 |
-| `refreshBackgroundTasks` | frontend/js/status.js:2946 |
-| `refreshModelStatus` | frontend/js/status.js:1871 |
-| `refreshPrivacyChip` | frontend/js/status.js:3136 |
+| `refreshBackgroundTasks` | frontend/js/status.js:2955 |
+| `refreshModelStatus` | frontend/js/status.js:1880 |
+| `refreshPrivacyChip` | frontend/js/status.js:3145 |
 | `rememberAnnounced` | frontend/js/status.js:50 |
 | `reminderNoticeKey` | frontend/js/status.js:228 |
 | `renderAgentActivityMode` | frontend/js/status.js:721 |
-| `renderAiOfflineNotice` | frontend/js/status.js:2214 |
-| `renderAiPill` | frontend/js/status.js:2419 |
-| `renderChatModeSeg` | frontend/js/status.js:2723 |
+| `renderAiOfflineNotice` | frontend/js/status.js:2223 |
+| `renderAiPill` | frontend/js/status.js:2428 |
+| `renderChatModeSeg` | frontend/js/status.js:2732 |
 | `renderNotifMuteToggle` | frontend/js/status.js:267 |
 | `renderNotificationBadge` | frontend/js/status.js:247 |
-| `renderSettings` | frontend/js/status.js:2793 |
-| `renderStatusBar` | frontend/js/status.js:2551 |
-| `renderUndoBar` | frontend/js/status.js:1616 |
+| `renderSettings` | frontend/js/status.js:2802 |
+| `renderStatusBar` | frontend/js/status.js:2560 |
+| `renderUndoBar` | frontend/js/status.js:1625 |
 | `reopenAnswerPanel` | frontend/js/status.js:700 |
-| `resetStatusCadence` | frontend/js/status.js:1793 |
-| `retryServerNow` | frontend/js/status.js:1347 |
-| `sayChatModelChosen` | frontend/js/status.js:1756 |
-| `scheduleServerDownRetry` | frontend/js/status.js:1321 |
-| `scheduleUndoBar` | frontend/js/status.js:1608 |
-| `setChatMode` | frontend/js/status.js:2766 |
+| `resetStatusCadence` | frontend/js/status.js:1802 |
+| `retryServerNow` | frontend/js/status.js:1356 |
+| `sayChatModelChosen` | frontend/js/status.js:1765 |
+| `scheduleServerDownRetry` | frontend/js/status.js:1330 |
+| `scheduleUndoBar` | frontend/js/status.js:1617 |
+| `setChatMode` | frontend/js/status.js:2775 |
 | `setForcedReadIds` | frontend/js/status.js:196 |
 | `setForcedUnreadIds` | frontend/js/status.js:165 |
 | `setTitleCount` | frontend/js/status.js:489 |
 | `setTitleView` | frontend/js/status.js:494 |
-| `settingsOpen` | frontend/js/status.js:1810 |
+| `settingsOpen` | frontend/js/status.js:1819 |
 | `settleNotification` | frontend/js/status.js:116 |
-| `settleUndoFromToast` | frontend/js/status.js:1463 |
-| `showAgentNoModelHint` | frontend/js/status.js:2761 |
-| `showServerDownBanner` | frontend/js/status.js:1280 |
-| `startPrivacyChip` | frontend/js/status.js:3146 |
+| `settleUndoFromToast` | frontend/js/status.js:1472 |
+| `showAgentNoModelHint` | frontend/js/status.js:2770 |
+| `showServerDownBanner` | frontend/js/status.js:1289 |
+| `startPrivacyChip` | frontend/js/status.js:3155 |
 | `startReminderWatch` | frontend/js/status.js:594 |
 | `storedNotifications` | frontend/js/status.js:84 |
-| `surfaceHistory` | frontend/js/status.js:1517 |
-| `syncAgentPaletteAvailability` | frontend/js/status.js:2258 |
-| `syncModelGatedControls` | frontend/js/status.js:2073 |
+| `surfaceHistory` | frontend/js/status.js:1526 |
+| `syncAgentPaletteAvailability` | frontend/js/status.js:2267 |
+| `syncModelGatedControls` | frontend/js/status.js:2082 |
 | `syncNotifBlocked` | frontend/js/status.js:373 |
 | `taskEndingWords` | frontend/js/status.js:130 |
-| `taskKey` | frontend/js/status.js:3007 |
-| `toast` | frontend/js/status.js:1071 |
-| `toastAction` | frontend/js/status.js:1213 |
-| `toastActionButton` | frontend/js/status.js:1193 |
-| `toastActions` | frontend/js/status.js:1184 |
+| `taskKey` | frontend/js/status.js:3016 |
+| `toast` | frontend/js/status.js:1080 |
+| `toastAction` | frontend/js/status.js:1222 |
+| `toastActionButton` | frontend/js/status.js:1202 |
+| `toastActions` | frontend/js/status.js:1193 |
 | `toastAtTop` | frontend/js/status.js:756 |
-| `toastCloseButton` | frontend/js/status.js:900 |
-| `toastHost` | frontend/js/status.js:964 |
+| `toastCloseButton` | frontend/js/status.js:901 |
+| `toastHost` | frontend/js/status.js:973 |
 | `toastLayout` | frontend/js/status.js:770 |
 | `toastLive` | frontend/js/status.js:760 |
 | `toastMark` | frontend/js/status.js:839 |
 | `toastMerge` | frontend/js/status.js:813 |
-| `toastName` | frontend/js/status.js:1059 |
-| `toastProgress` | frontend/js/status.js:1148 |
+| `toastName` | frontend/js/status.js:1068 |
+| `toastProgress` | frontend/js/status.js:1157 |
 | `toastReduced` | frontend/js/status.js:851 |
 | `toastStack` | frontend/js/status.js:856 |
-| `toggleAiStatusPopup` | frontend/js/status.js:2693 |
+| `toastYield` | frontend/js/status.js:956 |
+| `toggleAiStatusPopup` | frontend/js/status.js:2702 |
 | `toggleNotificationMute` | frontend/js/status.js:283 |
 | `unreadNotifications` | frontend/js/status.js:241 |
-| `voiceLine` | frontend/js/status.js:1065 |
-| `whenText` | frontend/js/status.js:1054 |
+| `voiceLine` | frontend/js/status.js:1074 |
+| `whenText` | frontend/js/status.js:1063 |
 
 ### frontend/js/ai-tools.js (40)
 
@@ -19633,7 +19634,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12541)
+## Tests (12542)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20758,7 +20759,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_slash.py | 19 |
 | tests/test_slash_falls_through.py | 1 |
 | tests/test_small_fixes_1019.py | 8 |
-| tests/test_small_fixes_1027.py | 4 |
+| tests/test_small_fixes_1027.py | 5 |
 | tests/test_smooth_boot.py | 16 |
 | tests/test_snippet_drag.py | 7 |
 | tests/test_snippet_word_boundaries.py | 8 |
