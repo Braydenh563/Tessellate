@@ -4261,23 +4261,53 @@ def _facts_turn(req: _StreamRequest, prepared: dict, t: _Turn) -> bool:
 
 
 #: The words before a request ("can you please", "hey, could you"), any
-#: number of them, then the verb of a change. Not "update me on", "add up"
-#: or "add 3 and 4" (a sum), "complete list of": those ask for a figure.
+#: number of them, then the verb of a change, then its object (`_asks_change`).
 _LEAD_IN = re.compile(
     r"^\s*(?:(?:please|pls|plz|kindly|hey|hi|ok|okay|so|now|just|can you|could you|would you|will you|go ahead and)\b[\s,]*)*",
     re.I,
 )
 _CHANGE_VERB = re.compile(
-    r"(?:save|create|make|add(?!\s+(?:up|together)\b|\s+\d)|write|draft|delete|remove|bin|move|tag|untag|rename|pin|unpin|set|"
-    r"remind|link|unlink|file|archive|restore|edit|update(?!\s+me\b)|change|mark|tick|complete(?!\s+(?:list|set|count)\b)|"
-    r"merge|split|tidy|clean|clear|put|jot)\b",
+    r"(?:save|create|make|add(?!\s+(?:up|together)\b)|write|draft|delete|remove|bin|move|tag|untag|rename|pin|unpin|set|"
+    r"link|unlink|file|archive|restore|edit|update|change|mark|tick|complete|merge|split|tidy|clean|clear|put|jot)\b"
+    r"(?:\s+(?:up|down|off|away|out)\b)?",
     re.I,
 )
+#: "remind me" is a change only with what to be reminded of or when
+#: ("remind me to call mum", "remind me tomorrow"), not "remind me how many".
+_REMIND = re.compile(r"remind\s+me\s+(?:to|at|in|on|by|tomorrow|tonight|today|next|every|this|before|after)\b", re.I)
+#: What a change can be done to: the app's things, or a word pointing at one.
+_CHANGE_OBJECTS = {
+    "note", "notes", "entry", "entries", "reminder", "reminders", "task", "tasks", "to-do", "to-dos", "todo", "todos",
+    "tag", "tags", "label", "labels", "category", "categories", "folder", "folders", "document", "documents", "doc",
+    "docs", "file", "files", "pdf", "pdfs", "board", "boards", "map", "maps", "link", "links", "skill", "skills",
+    "page", "pages", "checklist", "checklists", "item", "items", "it", "them", "this", "that", "these", "those",
+    "everything",
+}
+#: Words that end the object before a thing is named ("set of tags", "make
+#: sense of", "update on", "add three and four", "update me on").
+_OBJECT_STOPS = {
+    "of", "on", "in", "for", "about", "from", "with", "to", "and", "or", "me", "us", "how", "what", "when", "where",
+    "which", "who", "whether", "why", "is", "are", "do", "does", "i",
+}
 
 
 def _asks_change(question: str) -> bool:
-    """Whether a sentence asks for a change, not a figure (`_facts_turn`)."""
-    return bool(_CHANGE_VERB.match(question, _LEAD_IN.match(question).end()))
+    """Whether a sentence asks for a change, not a figure (`_facts_turn`): an
+    imperative verb whose object, within four words and before a stop, is a
+    thing the app can change ("save my first note", "tag it work"). "tag
+    cloud of my notes", "file count" and "add three and four" name none."""
+    start = _LEAD_IN.match(question).end()
+    if _REMIND.match(question, start):
+        return True
+    verb = _CHANGE_VERB.match(question, start)
+    if not verb:
+        return False
+    for word in re.findall(r"[a-z]+(?:-[a-z]+)*|\d+", question[verb.end():].lower())[:4]:
+        if word in _CHANGE_OBJECTS:
+            return True
+        if word in _OBJECT_STOPS:
+            return False
+    return False
 
 
 def _prime_model_notes(req: _StreamRequest, prepared: dict, t: _Turn) -> None:

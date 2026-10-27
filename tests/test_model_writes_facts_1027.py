@@ -255,6 +255,28 @@ CHANGE_CASES = [
     ("how many notes do I have", False),
     ("addresses in my notes", False),
     ("settings for reminders", False),
+    # The second review: a verb with no object the app can change is a read.
+    ("remind me how many notes I have", False),
+    ("remind me what is due this week", False),
+    ("tag cloud of my notes", False),
+    ("set of tags I use", False),
+    ("file count", False),
+    ("make sense of my reminders", False),
+    ("update on my reminders", False),
+    ("clear list of my tasks", False),
+    ("add three and four", False),
+    ("complete set of my notes", False),
+    # A verb and its object, however it is said.
+    ("remind me tomorrow to call mum", True),
+    ("set a reminder for 5", True),
+    ("delete 3 notes", True),
+    ("tag it work", True),
+    ("could you save this", True),
+    ("make a map of my notes", True),
+    ("clear my reminders", True),
+    ("clean up my tags", True),
+    ("jot down that the boiler needs a service", True),
+    ("file this note under work", True),
 ]
 
 
@@ -267,6 +289,18 @@ def _facts_prompted(fake) -> bool:
     from tessellate.ai import librarian
 
     return any(librarian.FACTS_BRIEF[:60] in str(m.get("content") or "") for call in fake.chat_calls for m in call)
+
+
+@SURFACES
+def test_a_read_that_starts_with_a_verb_is_a_facts_turn(ai_client, fake_ollama, session, fixed_clock, use_tools):
+    """"remind me how many notes I have" was read as a change, so the model
+    never had the engine's count and nothing was changed either (the second
+    review's probe)."""
+    _seed(session)
+    fake_ollama.librarian_reply = "You have 3 notes."
+    events, answer = _stream(ai_client, "remind me how many notes I have", use_tools)
+    assert _facts_prompted(fake_ollama)
+    assert answer.startswith("You have 3 notes.") and _last_meta(events)["answered_by"]
 
 
 @SURFACES
