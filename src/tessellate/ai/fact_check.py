@@ -20,6 +20,8 @@ from __future__ import annotations
 import re
 from datetime import datetime
 
+from tessellate.ai import recognise
+
 _UNITS = {
     "zero": 0, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
     "ten": 10, "eleven": 11, "twelve": 12, "thirteen": 13, "fourteen": 14, "fifteen": 15, "sixteen": 16,
@@ -48,30 +50,15 @@ TOOL_NOUNS = {
     "list_reminders": "reminder", "list_tags": "tag", "list_categories": "category", "count_notes": "note",
     "list_notes": "note", "list_documents": "document", "list_skills": "skill",
 }
-_MONTHS = {
-    "january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november",
-    "december", "jan", "feb", "mar", "apr", "jun", "jul", "aug", "sep", "sept", "oct", "nov", "dec",
-}
-_WEEKDAYS = {
-    "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
-    "mon", "tue", "tues", "wed", "thu", "thur", "thurs", "fri", "sat", "sun",
-}
+_MONTHS = recognise.MONTH_NAMES
+_WEEKDAYS = recognise.WEEKDAY_NAMES
 #: After a figure, the word that makes it a time of day, never a count.
 _CLOCK = {"am", "pm", "o'clock", "oclock"}
 #: After a figure, the unit that makes it a span ("3 days", "120 minutes"),
 #: in minutes. A span is read as (value, "~<minutes>") and checked only
 #: against the spans the facts state and the dates they carry
 #: (`_span_kept`, `_dated_spans`).
-_SPAN_MINUTES = {
-    **dict.fromkeys(("second", "seconds", "sec", "secs"), 1 / 60),
-    **dict.fromkeys(("minute", "minutes", "min", "mins"), 1),
-    **dict.fromkeys(("hour", "hours", "hr", "hrs"), 60),
-    **dict.fromkeys(("day", "days"), 1440),
-    **dict.fromkeys(("week", "weeks"), 10080),
-    **dict.fromkeys(("fortnight", "fortnights"), 20160),
-    **dict.fromkeys(("month", "months"), 43830),
-    **dict.fromkeys(("year", "years"), 525960),
-}
+_SPAN_MINUTES = recognise.SPAN_MINUTES
 #: Before a span, the word that says it is rounded: "roughly 60 days" may be
 #: 5% off, "60 days" may not (`_span_kept`).
 _HEDGES = {"about", "roughly", "almost", "nearly", "around", "approximately", "approx", "circa", "some", "over", "under", "~"}
@@ -485,6 +472,9 @@ def _dated_spans(facts: str, now: datetime | None) -> list[float]:
     calendar day where it does not ("in 2 days" for a date two days off)."""
     if now is None:
         return []
+    # The facts' dates are wall-clock dates with no zone; `user_now` is
+    # aware, so compare on the user's wall clock.
+    now = now.replace(tzinfo=None)
     moments = _moments(facts, now)
     out: list[float] = []
     points = [(now, True)] + moments

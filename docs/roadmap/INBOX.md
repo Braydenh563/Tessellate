@@ -297,6 +297,7 @@ with its owner named in the entry.
 
 ## Placed (last 20, newest first)
 
+- 2026-10-27: 1410 (the AI and composer make and edit Mermaid diagrams, in every main feature, easy to build) placed in BACKLOG's mermaid section as 12d; step 8 is with one agent now.
 - 2026-10-27: 1409 (glass controls as an Appearance option; glass only when on) placed in UI_MODERNISATION_PLAN, half built.
 - 2026-10-27: 1406 (the Guide dumps a whole help sentence) placed in CHAT_PLAN, half fixed; 1407 (Harper false positives, app-side filter) and 1408 (doc sidebars not resizable in full screen) placed in DOCUMENTS_PLAN.
 - 2026-10-27: 1403 (rich text runs on the whiteboard: size, font, colour on selected text; the ⋯ menu top) and 1404 (drag a connector label by its words) placed in WHITEBOARD_PLAN; next free slot.

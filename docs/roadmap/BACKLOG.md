@@ -2655,6 +2655,10 @@ as the board import path (`wbMermaidParse`) and the verifier in step 5.
     - **Accessible**: every shape reachable by arrow keys along its links, a
       text outline of the diagram for screen readers, labels never below the
       4.5:1 contrast line.
+12d. **INBOX 1410, the owner 2026-10-27, verbatim:** "can the ai and composer make mermaid diagrams?? cna it be
+    wired and integrated into all the main features?? a way for the user to easily build and edit them?"
+    Placed here: steps 9 (editor), 10 (boards and maps), 12 and 12a (the AI and composer draft and edit
+    through the verifier), 12b (every surface) and 12c (diagram maker) are that ask; next after step 8 lands.
 13. **Tests and guards**: a lazy-load test (not in `app_js_files`), a
     vendored-file licence notice test, a CSP test that no inline style or
     script is injected, and a sweep that renders one of each kind in light

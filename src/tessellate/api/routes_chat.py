@@ -4286,7 +4286,10 @@ _CHANGE_VERB = re.compile(
 )
 #: "remind me" is a change only with what to be reminded of or when
 #: ("remind me to call mum", "remind me tomorrow"), not "remind me how many".
-_REMIND = re.compile(r"remind\s+me\s+(?:to|at|in|on|by|tomorrow|tonight|today|next|every|this|before|after)\b", re.I)
+#: A time phrase straight after it is the recogniser's to find (the one
+#: reader of date words, tests/test_one_reader.py).
+_REMIND = re.compile(r"remind\s+me\s+(?:to|at|in|on|by|every|before|after)\b", re.I)
+_REMIND_ME = re.compile(r"remind\s+me\s+", re.I)
 #: "remind me about my first note", "remind me of ..." name what to be
 #: reminded of; "remind me of what is due" asks (`_QUESTION_WORDS`).
 _REMIND_OF = re.compile(r"remind\s+me\s+(?:about|of)\s+(?!(?:how|what|when|where|which|who|whether|why)\b)\w", re.I)
@@ -4321,6 +4324,9 @@ def _asks_change(question: str) -> bool:
     three and four" name none."""
     start = _LEAD_IN.match(question).end()
     if _REMIND.match(question, start) or _REMIND_OF.match(question, start):
+        return True
+    remind = _REMIND_ME.match(question, start)
+    if remind and any(at == 0 for at, _, _ in recognise.find(question[remind.end():])):
         return True
     verb = _CHANGE_VERB.match(question, start)
     if not verb:

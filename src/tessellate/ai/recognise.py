@@ -193,6 +193,23 @@ _MONTHS = {
     )
     for name in names
 }
+#: The names alone, for a reader that only asks whether a word is a month
+#: or a weekday (`ai/fact_check.py`), so no second table of them exists.
+MONTH_NAMES = frozenset(_MONTHS)
+WEEKDAY_NAMES = frozenset(_WEEKDAYS) | {"thur"}
+#: A span's unit in minutes, for checking a stated span against the facts
+#: (`ai/fact_check.py`): kept here as the one table of time units.
+SPAN_MINUTES = {
+    **dict.fromkeys(("second", "seconds", "sec", "secs"), 1 / 60),
+    **dict.fromkeys(("minute", "minutes", "min", "mins"), 1),
+    **dict.fromkeys(("hour", "hours", "hr", "hrs"), 60),
+    **dict.fromkeys(("day", "days"), 1440),
+    **dict.fromkeys(("week", "weeks"), 10080),
+    **dict.fromkeys(("fortnight", "fortnights"), 20160),
+    **dict.fromkeys(("month", "months"), 43830),
+    **dict.fromkeys(("year", "years"), 525960),
+}
+
 _PARTS = {"morning": 9, "afternoon": 15, "evening": 18, "night": 20, "tonight": 20}
 _NUMBERS = {
     "a": 1, "an": 1, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5,

@@ -587,6 +587,7 @@ EXEMPT: dict[str, str] = {
     "editor.js:inlineAiSubmit": "read: asks the model for a revision shown for review; accepting it is an editor change with the document's own history",
     "embed-choices.js:embedChoiceInstall": "job: starts or stops work or a model; deletes no user data",
     "embed-choices.js:embedChoiceUninstall": "job: starts or stops work or a model; deletes no user data",
+    "embed-choices.js:embedLegacyRemove": "job: removes the old engine's program and model files after a confirm; deletes no user data",
     "embed-choices.js:embedChoiceUse": "settings: a setting with its own Reset or the settings history",
     "embed-choices.js:embedPullTyped": "job: starts or stops work or a model; deletes no user data",
     "first-run.js:firstStepName": "settings: a setting with its own Reset or the settings history",
