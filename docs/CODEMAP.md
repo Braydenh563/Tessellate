@@ -2,7 +2,7 @@
 
 Generated 2026-10-27 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6585, frontend ids 2556, CSS sections 504, backend routes 625, backend modules 6729, test files 1409, tests 12510, plan headings 977.
+Counts: frontend functions 6585, frontend ids 2556, CSS sections 504, backend routes 625, backend modules 6729, test files 1410, tests 12511, plan headings 977.
 
 ## Frontend functions (6585)
 
@@ -19627,7 +19627,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12510)
+## Tests (12511)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20078,6 +20078,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_extras_desktop_locked.py | 5 |
 | tests/test_extras_download.py | 22 |
 | tests/test_f7_pool_moves.py | 2 |
+| tests/test_fact_check_1027.py | 1 |
 | tests/test_factgraph.py | 11 |
 | tests/test_facts_over_time.py | 10 |
 | tests/test_failure_remedies.py | 4 |

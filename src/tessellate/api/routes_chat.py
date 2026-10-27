@@ -2719,10 +2719,10 @@ def _tool_read_events(req: _StreamRequest, notes: list | None = None) -> list[di
             drawn = None
     said = tool_say.say(got.tool, result, say_args, now.date())
     chart = drawn["chart"] if drawn else None
-    out = _said_events(
-        said["lead"], "\n\n".join(p for p in ("" if chart else said["body"], said["chips"]) if p),
-        fact_check.result_counts(got.tool, result),
-    )
+    #: A window's rows are the count the engine said ("You have 2 reminders
+    #: this week", or none), not the whole list's total.
+    counts = fact_check.said_counts(said["lead"]) if "within" in say_args else fact_check.result_counts(got.tool, result)
+    out = _said_events(said["lead"], "\n\n".join(p for p in ("" if chart else said["body"], said["chips"]) if p), counts)
     if chart:
         out.append({"type": "chart", "chart": chart})
     return out
