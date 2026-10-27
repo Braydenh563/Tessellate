@@ -2,9 +2,9 @@
 
 Generated 2026-10-27 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6599, frontend ids 2557, CSS sections 504, backend routes 625, backend modules 6711, test files 1411, tests 12503, plan headings 977.
+Counts: frontend functions 6600, frontend ids 2557, CSS sections 504, backend routes 625, backend modules 6711, test files 1411, tests 12503, plan headings 977.
 
-## Frontend functions (6599)
+## Frontend functions (6600)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -4110,7 +4110,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderGraphCanvas` | frontend/js/graph-canvas.js:5246 |
 | `renderGraphPane` | frontend/js/graph-canvas.js:6167 |
 
-### frontend/js/graph-worker.js (101)
+### frontend/js/graph-worker.js (102)
 
 | Name | File:line |
 |---|---|
@@ -4121,14 +4121,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `bridgeGroup` | frontend/js/graph-worker.js:689 |
 | `carryForce` | frontend/js/graph-worker.js:186 |
 | `centreScale` | frontend/js/graph-worker.js:477 |
-| `clampToWorld` | frontend/js/graph-worker.js:2759 |
+| `clampToWorld` | frontend/js/graph-worker.js:2795 |
 | `clearCurve` | frontend/js/graph-worker.js:1131 |
 | `clearNearest` | frontend/js/graph-worker.js:1158 |
 | `clearPush` | frontend/js/graph-worker.js:1179 |
 | `clearanceForce` | frontend/js/graph-worker.js:1210 |
 | `clustered` | frontend/js/graph-worker.js:677 |
 | `collidePadFor` | frontend/js/graph-worker.js:375 |
-| `coolToRest` | frontend/js/graph-worker.js:2572 |
+| `coolToRest` | frontend/js/graph-worker.js:2608 |
 | `crossStrength` | frontend/js/graph-worker.js:443 |
 | `crossingsOn` | frontend/js/graph-worker.js:1653 |
 | `densityScale` | frontend/js/graph-worker.js:453 |
@@ -4145,7 +4145,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `introCancel` | frontend/js/graph-worker.js:344 |
 | `introInto` | frontend/js/graph-worker.js:263 |
 | `introStep` | frontend/js/graph-worker.js:333 |
-| `landTargets` | frontend/js/graph-worker.js:2562 |
+| `landTargets` | frontend/js/graph-worker.js:2598 |
 | `landscapePull` | frontend/js/graph-worker.js:543 |
 | `leafForce` | frontend/js/graph-worker.js:1399 |
 | `lineCurveFile` | frontend/js/graph-worker.js:1947 |
@@ -4158,7 +4158,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `lineGridRefile` | frontend/js/graph-worker.js:1999 |
 | `lineGridTouches` | frontend/js/graph-worker.js:2004 |
 | `linkStrength` | frontend/js/graph-worker.js:446 |
-| `loop` | frontend/js/graph-worker.js:2811 |
+| `loop` | frontend/js/graph-worker.js:2847 |
 | `markFollowers` | frontend/js/graph-worker.js:171 |
 | `median` | frontend/js/graph-worker.js:1306 |
 | `nodeGridBox` | frontend/js/graph-worker.js:1868 |
@@ -4172,49 +4172,50 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `orbitReach` | frontend/js/graph-worker.js:930 |
 | `orbitUpdate` | frontend/js/graph-worker.js:1036 |
 | `orbitUpdateGrouped` | frontend/js/graph-worker.js:982 |
-| `pendingCancel` | frontend/js/graph-worker.js:2708 |
-| `pendingEnd` | frontend/js/graph-worker.js:2701 |
-| `pendingStart` | frontend/js/graph-worker.js:2688 |
-| `pendingStep` | frontend/js/graph-worker.js:2725 |
+| `pendingCancel` | frontend/js/graph-worker.js:2744 |
+| `pendingEnd` | frontend/js/graph-worker.js:2737 |
+| `pendingStart` | frontend/js/graph-worker.js:2724 |
+| `pendingStep` | frontend/js/graph-worker.js:2761 |
 | `portraitPull` | frontend/js/graph-worker.js:549 |
-| `post` | frontend/js/graph-worker.js:2768 |
+| `post` | frontend/js/graph-worker.js:2804 |
 | `reshuffle` | frontend/js/graph-worker.js:1529 |
 | `rimOffset` | frontend/js/graph-worker.js:1351 |
 | `ringFor` | frontend/js/graph-worker.js:802 |
-| `run` | frontend/js/graph-worker.js:2919 |
+| `run` | frontend/js/graph-worker.js:2955 |
 | `seededRandom` | frontend/js/graph-worker.js:712 |
 | `segmentsCross` | frontend/js/graph-worker.js:1644 |
 | `setRingSeed` | frontend/js/graph-worker.js:723 |
-| `settleGlideCancel` | frontend/js/graph-worker.js:2664 |
-| `settleGlideFrom` | frontend/js/graph-worker.js:2629 |
-| `settleGlideStep` | frontend/js/graph-worker.js:2649 |
-| `settleUntangled` | frontend/js/graph-worker.js:2589 |
+| `settleGlideCancel` | frontend/js/graph-worker.js:2700 |
+| `settleGlideFrom` | frontend/js/graph-worker.js:2665 |
+| `settleGlideStep` | frontend/js/graph-worker.js:2685 |
+| `settleUntangled` | frontend/js/graph-worker.js:2625 |
 | `shapeForce` | frontend/js/graph-worker.js:1373 |
 | `shuffleStep` | frontend/js/graph-worker.js:1555 |
 | `smallSpread` | frontend/js/graph-worker.js:467 |
-| `smoothstep` | frontend/js/graph-worker.js:2645 |
-| `stopLoop` | frontend/js/graph-worker.js:2800 |
+| `smoothstep` | frontend/js/graph-worker.js:2681 |
+| `stopLoop` | frontend/js/graph-worker.js:2836 |
 | `tetherForce` | frontend/js/graph-worker.js:1310 |
 | `tuning` | frontend/js/graph-worker.js:487 |
 | `untangleBudget` | frontend/js/graph-worker.js:1600 |
 | `untangleChordD2` | frontend/js/graph-worker.js:1893 |
 | `untangleCleanup` | frontend/js/graph-worker.js:2205 |
 | `untangleFree` | frontend/js/graph-worker.js:1747 |
-| `untangleGlide` | frontend/js/graph-worker.js:2538 |
+| `untangleGlide` | frontend/js/graph-worker.js:2574 |
 | `untangleGroups` | frontend/js/graph-worker.js:1700 |
-| `untangleInside` | frontend/js/graph-worker.js:2433 |
-| `untangleLayout` | frontend/js/graph-worker.js:2440 |
+| `untangleInside` | frontend/js/graph-worker.js:2469 |
+| `untangleLayout` | frontend/js/graph-worker.js:2476 |
 | `untangleLineOver` | frontend/js/graph-worker.js:2092 |
 | `untangleNear` | frontend/js/graph-worker.js:1906 |
 | `untangleNearCurve` | frontend/js/graph-worker.js:1901 |
 | `untangleOnLine` | frontend/js/graph-worker.js:2078 |
-| `untangleOwed` | frontend/js/graph-worker.js:2582 |
+| `untangleOwed` | frontend/js/graph-worker.js:2618 |
 | `untanglePasses` | frontend/js/graph-worker.js:1614 |
-| `untangleReach` | frontend/js/graph-worker.js:2418 |
+| `untangleReach` | frontend/js/graph-worker.js:2454 |
 | `untangleSetup` | frontend/js/graph-worker.js:1620 |
 | `untangleStepOff` | frontend/js/graph-worker.js:2177 |
 | `untangleStepOrder` | frontend/js/graph-worker.js:2158 |
-| `untangleUntouch` | frontend/js/graph-worker.js:2381 |
+| `untangleTouching` | frontend/js/graph-worker.js:2383 |
+| `untangleUntouch` | frontend/js/graph-worker.js:2397 |
 
 ### frontend/js/graph.js (130)
 

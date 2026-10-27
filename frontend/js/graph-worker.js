@@ -2373,42 +2373,78 @@ function untangleCleanup() {
 //: The pushes' last quarter lets the lines win over the spacing, and the
 //: put-back above ignores who moved into the old spot, so a cleanup could leave
 //: two notes touching with nothing ticking after it (`untangle.holding`):
-//: 3 seeds in 12 of tests/test_graph_layout.py's map before 2026-10-27, 0 now
-//: (a link through a note: 0 and 1). A moved note within 2 px of another goes
-//: back to where it rested, until none is (a wider gap put more back on lines);
-//: each round puts at least one note back, so it ends.
+//: 3 seeds in 12 of tests/test_graph_layout.py's map before 2026-10-27, 0 now.
+//: A moved note within 2 px of another is first parted from it by the shortfall
+//: (a few px, so it stays off its line); one still touching after that goes back
+//: to where it rested. Putting back alone cost 10 to 20 more notes on a line at
+//: 300 notes. Each put-back round puts at least one note back, so it ends.
 const UNTANGLE_TOUCH = 2;
+const UNTANGLE_PART_ROUNDS = 6;
+function untangleTouching(i) {
+  const node = nodes[i];
+  const ri = node.r || 8;
+  for (let j = 0; j < nodes.length; j++) {
+    const other = nodes[j];
+    const need = ri + (other.r || 8) + UNTANGLE_TOUCH;
+    const dx = other.x - node.x;
+    if (other === node || dx >= need || dx <= -need) continue;
+    const dy = other.y - node.y;
+    if (dy >= need || dy <= -need || dx * dx + dy * dy >= need * need) continue;
+    return j;
+  }
+  return -1;
+}
 function untangleUntouch(startX, startY) {
+  const moved = (i) => nodes[i].x !== startX[i] || nodes[i].y !== startY[i];
+  const free = (node) => node.fx == null && !node.placed;
+  for (let round = 0, any = true; any && round < UNTANGLE_PART_ROUNDS; round++) {
+    any = false;
+    for (let i = 0; i < nodes.length; i++) {
+      if (!moved(i)) continue;
+      const j = untangleTouching(i);
+      if (j < 0) continue;
+      const p = nodes[i];
+      const q = nodes[j];
+      const dx = q.x - p.x;
+      const dy = q.y - p.y;
+      const d = Math.hypot(dx, dy);
+      const nx = d > 1e-6 ? dx / d : 1;
+      const ny = d > 1e-6 ? dy / d : 0;
+      const short = (p.r || 8) + (q.r || 8) + UNTANGLE_TOUCH - d + 0.5;
+      const share = (free(p) ? 1 : 0) + (free(q) ? 1 : 0);
+      if (!share) continue;
+      if (free(p)) {
+        p.x -= (nx * short) / share;
+        p.y -= (ny * short) / share;
+      }
+      if (free(q)) {
+        q.x += (nx * short) / share;
+        q.y += (ny * short) / share;
+      }
+      any = true;
+    }
+  }
   for (let any = true; any; ) {
     any = false;
     for (let i = 0; i < nodes.length; i++) {
-      const node = nodes[i];
-      if (node.x === startX[i] && node.y === startY[i]) continue;
-      const ri = node.r || 8;
-      for (let j = 0; j < nodes.length; j++) {
-        const other = nodes[j];
-        const need = ri + (other.r || 8) + UNTANGLE_TOUCH;
-        const dx = other.x - node.x;
-        if (other === node || dx >= need || dx <= -need) continue;
-        const dy = other.y - node.y;
-        if (dy >= need || dy <= -need || dx * dx + dy * dy >= need * need) continue;
-        //: Of the two, the one that does not land back on a line, if the other moved too.
-        let back = i;
-        if (other.x !== startX[j] || other.y !== startY[j]) {
-          const x = node.x;
-          const y = node.y;
-          node.x = startX[i];
-          node.y = startY[i];
-          const onLine = untangleOnLine(i);
-          node.x = x;
-          node.y = y;
-          if (onLine) back = j;
-        }
-        nodes[back].x = startX[back];
-        nodes[back].y = startY[back];
-        any = true;
-        break;
+      if (!moved(i)) continue;
+      const j = untangleTouching(i);
+      if (j < 0) continue;
+      //: Of the two, the one that does not land back on a line, if the other moved too.
+      let back = i;
+      if (moved(j)) {
+        const x = nodes[i].x;
+        const y = nodes[i].y;
+        nodes[i].x = startX[i];
+        nodes[i].y = startY[i];
+        const onLine = untangleOnLine(i);
+        nodes[i].x = x;
+        nodes[i].y = y;
+        if (onLine) back = j;
       }
+      nodes[back].x = startX[back];
+      nodes[back].y = startY[back];
+      any = true;
     }
   }
 }
