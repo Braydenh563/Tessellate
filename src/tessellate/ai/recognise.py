@@ -2754,15 +2754,20 @@ _MONTH_ONLY = re.compile(r"(?:in |during )?" + _MONTH_RE + _YEAR_AFTER_MONTH)
 _END_OF_DAY_WORDS = ("end of day", "end of the day", "the end of the day", "eod")
 
 
+def _without_edge(start: int, phrase: str, tense: str | None) -> tuple[int, str]:
+    """A reminder's or an action's "before 14 November" is due that day, not
+    a stretch from 1970 (`span` reads edges for questions about the past)."""
+    lead, _, rest = phrase.partition(" ")
+    if lead.lower() in ("before", "until", "till") and rest and tense != "past":
+        return start + len(lead) + 1, rest
+    return start, phrase
+
+
 def _one_phrase(start: int, end: int, phrase: str, now: datetime, tense: str | None, out: list, bases: list) -> None:
     """One date phrase `find` located: a ready candidate, or a day that waits
     in `bases` for a clock beside it."""
     today = now.date()
-    lead, _, rest = phrase.partition(" ")
-    if lead.lower() in ("before", "until", "till") and rest and tense != "past":
-        #: A reminder's or an action's "before 14 November" is due that day, not
-        #: a stretch from 1970 (`span` reads edges for questions about the past).
-        start, phrase = start + len(lead) + 1, rest
+    start, phrase = _without_edge(start, phrase, tense)
     words = phrase.lower()
     if words == "later today":
         out.append((start, end, "datetime", resolve("later today", now), "", 0))

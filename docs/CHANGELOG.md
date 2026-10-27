@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Reminders: the reminder phrase reader moved beside the parser, so the chat suggestion no longer forms an import cycle with the routes.
 - The popup agent has a Send button beside the box (Enter still sends), and the graph Options section chevrons sit a gap short of their "?" instead of touching it.
 - Picture viewer: Open in a new tab works from the desktop window. The system browser has no session there, so it gets a two-minute link to that one file. The lag log no longer counts the other-devices long-poll as a slow request every 25 seconds.
 - Chat: the weather goes to the model or the web when either is on (it came back as the app's own "not something this app knows"), and a local web search carries the city of your timezone. The no-model badge's help no longer nudges the bubble 2px taller on hover.

@@ -9,7 +9,7 @@ is never the model's job), and it offers, never creates.
 It stays quiet when the person is asking (a question mark, a question word,
 "do I have to"), when it is over (past tense, "I didn't need to"), when no
 time is said, and when the chat already acts on the words ("remind me to ...",
-`commands._reminder`), so one message never gets both a reminder and an offer.
+`commands._reminder`, through `reminder_parser.reminder_head`), so one message never gets both a reminder and an offer.
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ from __future__ import annotations
 import re
 from datetime import datetime
 
-from tessellate.ai import commands, reminder_parser
+from tessellate.ai import reminder_parser
 
 _MAX = 400
 
@@ -59,7 +59,7 @@ def suggest(text: str, now: datetime) -> dict | None:
     clock, as everywhere a time is read."""
     said = " ".join((text or "").replace("’", "'").split())[:_MAX]
     for sentence in _sentences(said):
-        if not _reads_as_intention(sentence) or commands._reminder_head(sentence)[1] is not None:
+        if not _reads_as_intention(sentence) or reminder_parser.reminder_head(sentence)[1] is not None:
             continue
         #: The task is what follows the intention: "I should email Priya
         #: tomorrow" is "Email Priya", whatever the verb that carried it.

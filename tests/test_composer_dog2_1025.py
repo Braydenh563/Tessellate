@@ -90,7 +90,9 @@ def test_whats_left_with_nothing_open(client, session, monkeypatch):
     monkeypatch.setattr(config, "user_now", lambda _c: NOW)
     monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
     said = _ask(client, "what's left to do", notes_only=True, answer_from="notes", history=[])["text"]
-    assert "general knowledge" not in said and "Nothing" in said
+    #: The "left_none" lines rotate (composer_lines.py); any of them says nothing is open.
+    assert "general knowledge" not in said
+    assert any(w in said for w in ("Nothing", "nothing", "clear", "All done", "No reminders", "empty")), said
 
 
 # --- 4: windows and grounding ----------------------------------------------------------------

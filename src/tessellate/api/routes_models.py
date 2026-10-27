@@ -328,6 +328,13 @@ def _model_ready(running: bool, installed: list[dict], provider: str, chat_model
     return running and bool(installed) and (provider != "ollama" or _name_matches(chat_model, installed))
 
 
+def _semantic_offer(embeddings, config) -> bool:  # noqa: ANN001
+    """Whether to ask once about downloading search by meaning (see `status`)."""
+    return bool(
+        getattr(embeddings, "awaiting_consent", False) and not config.get_preference("semantic_choice_made", False)
+    )
+
+
 @router.get("/status")
 def status(session: Session = Depends(get_session)) -> dict:
     """One call that tells the UI everything: is Ollama up, what's
@@ -500,10 +507,7 @@ def status(session: Session = Depends(get_session)) -> dict:
         "embedding_error": embeddings.last_error,
         #: The one-time offer to download search by meaning: a save wanted it,
         #: nothing is on this computer, and the question is still unanswered.
-        "semantic_offer": bool(
-            getattr(embeddings, "awaiting_consent", False)
-            and not config.get_preference("semantic_choice_made", False)
-        ),
+        "semantic_offer": _semantic_offer(embeddings, config),
         "reindex": jobs.reindex_status(),
         "embedding_coverage": _embedding_coverage(session),
         #: How the last search found its notes (`search_manager.last_search`).

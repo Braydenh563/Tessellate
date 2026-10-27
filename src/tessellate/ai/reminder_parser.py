@@ -286,3 +286,25 @@ def worded(text: str) -> str:
     said = _CAL.sub(lambda m: f"{m.group(1)}all {m.group(2)}", said)
     said = proofread.proofread(said)[0].strip(" ,;:")
     return said[:1].upper() + said[1:] if said else (text or "")
+
+
+_TIME_FIRST = ("on ", "at ", "this ", "next ", "tomorrow", "today", "tonight", "in ", "monday", "tuesday",
+               "wednesday", "thursday", "friday", "saturday", "sunday")
+
+
+_REMINDER_HEADS = (
+    "remind me", "set me a reminder", "set a reminder", "make a reminder", "add a reminder",
+    "create a reminder", "new reminder", "reminder", "don't let me forget", "dont let me forget", "do not let me forget",
+)
+
+
+def reminder_head(text: str) -> tuple[str, str | None]:
+    """The text with a time said first moved last (where the time readers
+    look), and the reminder phrase it opens with, or None."""
+    low = text.lower()
+    cut = low.find(" remind me ")
+    if 0 < cut <= 40 and low.startswith(_TIME_FIRST):
+        text = f"{text[cut + 1:]} {text[:cut]}"
+        low = text.lower()
+    head = next((w for w in _REMINDER_HEADS if low == w or low.startswith((w + " ", w + ":"))), None)
+    return text, head
