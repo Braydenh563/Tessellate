@@ -6133,7 +6133,7 @@ function ocrShownZoom() {
 //: point of the page under (clientX, clientY) stays under it, the way a
 //: photo viewer pinches, where the buttons keep the middle (`ocrKeepCentre`).
 //: Continuous between the strip's first and last steps.
-let ocrWheelPending = null;
+const ocrWheel = { pending: null };
 
 function ocrZoomAbout(level, clientX, clientY) {
   const pane = $("ocr-page-pane");
@@ -7705,12 +7705,12 @@ onDomReady(() => {
     event.preventDefault();
     //: One zoom per frame (INBOX 1415), by a one-shot timer rather than a
     //: frame request (the wake-source ratchet).
-    const queued = ocrWheelPending;
-    ocrWheelPending = { deltaY: event.deltaY + (queued?.deltaY || 0), clientX: event.clientX, clientY: event.clientY };
+    const queued = ocrWheel.pending;
+    ocrWheel.pending = { deltaY: event.deltaY + (queued?.deltaY || 0), clientX: event.clientX, clientY: event.clientY };
     if (queued) return;
     setTimeout(() => {
-      const event = ocrWheelPending;
-      ocrWheelPending = null;
+      const event = ocrWheel.pending;
+      ocrWheel.pending = null;
       const delta = Math.max(-100, Math.min(100, event.deltaY));
       ocrZoomAbout(ocrShownZoom() * Math.exp(-delta / 500), event.clientX, event.clientY);
     }, 16);

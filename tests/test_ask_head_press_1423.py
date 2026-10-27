@@ -10,7 +10,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from _app_js import app_js_text
+from tests._app_js import app_js_text
 
 ROOT = Path(__file__).resolve().parents[1]
 CSS = (ROOT / "frontend/css/ask-compose-lazy.css").read_text(encoding="utf-8")
@@ -54,10 +54,10 @@ def test_the_head_buttons_have_a_pressed_ground_from_tokens() -> None:
 
 def test_a_lone_alt_release_is_cancelled_and_a_modifier_use_is_not() -> None:
     js = (ROOT / "frontend/js/lazy-entries.js").read_text(encoding="utf-8")
-    assert 'e.key === "Alt" && altAlone) e.preventDefault()' in js
+    assert 'e.key === "Alt" && document.altAlone) e.preventDefault()' in js
     # Any other key between press and release clears it, as does the window losing focus.
-    assert 'altAlone = e.key === "Alt"' in js
-    assert 'addEventListener("blur", () => { altAlone = false; })' in js
+    assert 'document.altAlone = e.key === "Alt"' in js
+    assert 'window.addEventListener("blur", () => { document.altAlone = false; })' in js
 
 
 def test_a_reopened_answer_loads_the_pressed_states_too():

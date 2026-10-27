@@ -145,7 +145,7 @@ def prewarm_installed() -> None:
                 return
             _start_flight(client, key)
     except Exception:  # noqa: BLE001  # a warm-up must never stop the launch
-        return
+        logging.getLogger(__name__).info("model list warm-up skipped; Settings asks again when opened", exc_info=True)
 
 
 def _start_flight(client, key: tuple[str, str]) -> "_ListFlight":  # noqa: ANN001

@@ -242,20 +242,17 @@ const EMBLEM_SLOTS = [
   ["about-emblem", 96, true],
 ];
 
-let brandLogoBooting = true;
-
 function renderBrandLogo() {
   //: Until the page has loaded the calls become one, after it: drawing needs
   //: to know which slots have a box, which lays the whole page out in the
   //: middle of the scripts (INBOX 1419: 58 and 80ms at 4x CPU).
-  if (brandLogoBooting && document.readyState !== "complete") {
-    if (brandLogoBooting === true) {
-      brandLogoBooting = 1;
-      window.addEventListener("load", () => setTimeout(() => ((brandLogoBooting = false), renderBrandLogo()), 0), { once: true });
+  if (document.readyState !== "complete") {
+    if (!renderBrandLogo.waits) {
+      renderBrandLogo.waits = 1;
+      window.addEventListener("load", () => setTimeout(renderBrandLogo, 0), { once: true });
     }
     return;
   }
-  brandLogoBooting = false;
   for (const [id, size, animate] of EMBLEM_SLOTS) {
     const holder = document.getElementById(id);
     if (holder) renderEmblemWhenShown(holder, size, animate);

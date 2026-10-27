@@ -1086,6 +1086,11 @@ def source_kind(note: dict) -> str:
     return _SOURCE_CATEGORIES.get(str(note.get("category") or "").strip().lower(), "note")
 
 
+def _not_prose(line: str, stripped: str) -> bool:
+    """A heading, a bold-only line, a picture or a table row: no sentence of the note's."""
+    return _heading_text(line) is not None or bold_line(line) is not None or stripped.startswith(("![", "|"))
+
+
 def read_note(note: dict, rank: int) -> NoteView | None:
     """A note as its units: prose split into sentences, each list item one."""
     content = str(note.get("content") or "")
@@ -1120,7 +1125,7 @@ def read_note(note: dict, rank: int) -> NoteView | None:
         if stripped.startswith("```"):
             in_fence = not in_fence
             continue
-        if in_fence or not stripped or _heading_text(line) is not None or bold_line(line) is not None or stripped.startswith(("![", "|")):
+        if in_fence or not stripped or _not_prose(line, stripped):
             continue
         _line_units(view, content, line_start, line)
     for i, sentence in enumerate(view.sentences):

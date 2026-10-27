@@ -1060,14 +1060,17 @@ _HERE_ARE = re.compile(r"^here(?:'s| is| are)\s+((?:some|a few|a list of|a|an)\s
 _WH_SUBJECT = re.compile(r"(?:what|how|why|which|who|where)\b", re.I)
 
 
-def _dated_line(line_body: str, label: str, i: int, by_day: date | None, written: date | None, before: date | None) -> tuple[str, str]:
-    """A day's line is said as that day, not under it (the owner,
-    2026-10-11: no label lines), the time since the last one first."""
+def _dated_lead(label: str, i: int, by_day: date | None, written: date | None, before: date | None) -> str:
+    """The line's lead: the time since the line before, a recent day, or its date."""
     gap = (written - before).days if i and before and written else 0
     #: The time since the line before reads first; a run's first line, or
     #: one the same days as the last, says a recent day as a person would.
     recent = _recent(written, by_day) if not gap or (by_day and written and (by_day - written).days <= 7) else ""
-    lead = recent or (_gap_on(gap, label) if gap >= 2 else f"on {label}, ")
+    return recent or (_gap_on(gap, label) if gap >= 2 else f"on {label}, ")
+
+
+def _cleaned_body(line_body: str, label: str) -> str:
+    """The note's words with its own date, a pasted "however" and a "here are" opener taken out."""
     #: A note that opens on its own day ("on 21 September, you have work")
     #: already has it in the lead: kept, it read "on 21 September, on 21
     #: September, you have work", and the present tense went unshifted.
@@ -1075,19 +1078,29 @@ def _dated_line(line_body: str, label: str, i: int, by_day: date | None, written
     #: A pasted summary's "however" answers text that is not there (1420).
     line_body = re.sub(r",\s*however,", "", line_body)
     #: "Here are some refined ... starters" is what was saved, not said.
-    line_body = _HERE_ARE.sub(lambda m: "you saved " + (m.group(1) or "") , line_body, count=1)
+    return _HERE_ARE.sub(lambda m: "you saved " + (m.group(1) or ""), line_body, count=1)
+
+
+def _said_as_written(line_body: str, i: int) -> str:
+    """The body as reported speech: shorthand noted, a statement about something else written, else retold."""
     #: "What your notes leave out is how ...": a clause of its own, its verb late.
     asked_clause = bool(_WH_SUBJECT.match(line_body) and _FINITE.search(line_body))
     if _SHORTHAND.match(line_body) and not _FINITE.search(line_body.split(",")[0]) and not asked_clause:
         #: "golf practice after work, hit a bucket ...": shorthand with no
         #: verb is what the person wrote down, never a dated fragment.
-        reported = f"{_pick('noted', i)} {line_body}"
-    elif _SHORTHAND.match(line_body) and not _CLAUSE_HEAD.match(line_body):
+        return f"{_pick('noted', i)} {line_body}"
+    if _SHORTHAND.match(line_body) and not _CLAUSE_HEAD.match(line_body):
         #: "by 20 July, Cloud computing is the delivery of ...": a statement
         #: about something else is what the person wrote (INBOX 1420).
-        reported = _REPORTS[i % len(_REPORTS)] + _lower_first(line_body, _NAMES.get())
-    else:
-        reported = _reported(line_body, i)
+        return _REPORTS[i % len(_REPORTS)] + _lower_first(line_body, _NAMES.get())
+    return _reported(line_body, i)
+
+
+def _dated_line(line_body: str, label: str, i: int, by_day: date | None, written: date | None, before: date | None) -> tuple[str, str]:
+    """A day's line is said as that day, not under it (the owner,
+    2026-10-11: no label lines), the time since the last one first."""
+    lead = _dated_lead(label, i, by_day, written, before)
+    reported = _said_as_written(_cleaned_body(line_body, label), i)
     line_body = lead[0].upper() + lead[1:] + reported
     return line_body, line_body + _relate(line_body, by_day)
 

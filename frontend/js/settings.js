@@ -2270,11 +2270,11 @@ DENSITY_SHORT.addEventListener("change", () => {
 //: changes the font (`applyAppearance`, below). Here and not in app.js, whose
 //: gzipped size is a ratchet; nothing calls it before this file loads.
 //: Re-measured only when the font or the loaded faces change (INBOX 1415).
-let labelOpticsKey = "";
+const labelOptics = { key: "" };
 function measureLabelOptics() {
   const key = `${document.documentElement.dataset.font}${document.fonts?.size}${document.fonts?.status}`;
-  if (key === labelOpticsKey) return;
-  labelOpticsKey = key;
+  if (key === labelOptics.key) return;
+  labelOptics.key = key;
   const probe = document.createElement("div");
   probe.setAttribute("aria-hidden", "true");
   for (const [key, value] of [["position", "fixed"], ["top", "0"], ["left", "0"], ["visibility", "hidden"],

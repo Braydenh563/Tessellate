@@ -254,15 +254,25 @@ def short_name(note: dict, lower=_lower) -> str:  # noqa: ANN001
     title = _title_of(content)
     if title:
         return _titled(title)
-    first = _plain(content.splitlines()[0]).rstrip(".") if content else ""
-    #: A heading's own marks are not part of its name: "the # Trains" (1324).
-    first = re.sub(r"^#{1,6}\s+", "", first)
-    first = _EMOTICON_END.sub("", first).rstrip(".")
+    first = _first_line(content)
     head = _PREFIX.match(first)
     category = str(note.get("category") or "").lower()
     if head and len(head.group(1).split()) <= 5 and head.group(1).strip().lower() != category:
         return f"the {lower(head.group(1).strip())} note"
     body = head.group(2) if head else first
+    return _named_by_subject(body, lower) or _named_by_clause(body, note, lower)
+
+
+def _first_line(content: str) -> str:
+    """The note's first line, plain, without a heading's marks or a closing emoticon."""
+    first = _plain(content.splitlines()[0]).rstrip(".") if content else ""
+    #: A heading's own marks are not part of its name: "the # Trains" (1324).
+    first = re.sub(r"^#{1,6}\s+", "", first)
+    return _EMOTICON_END.sub("", first).rstrip(".")
+
+
+def _named_by_subject(body: str, lower) -> str:  # noqa: ANN001
+    """What the note presents, or the subject its first sentence defines; "" with neither."""
     if _PRESENTING.match(body):
         presented = _presented(body)
         if presented:
@@ -271,6 +281,11 @@ def short_name(note: dict, lower=_lower) -> str:  # noqa: ANN001
     about = _SUBJECT_VERB.match(sentence)
     if about and not re.match(r"(?:i|it|this|that|there|here|they|we|he|she|you)\b", about.group(1), re.I):
         return "the note on " + re.sub(r"\bmy\b", "your", lower(about.group(1)), flags=re.I)
+    return ""
+
+
+def _named_by_clause(body: str, note: dict, lower) -> str:  # noqa: ANN001
+    """The note's first clause: quoted when an instruction or the person's own sentence, else as a phrase."""
     clause = re.split(r"[,;.!?]", body, maxsplit=1)[0].strip()
     if _IMPERATIVE.match(clause):
         return "“" + lower(clause) + "”"
@@ -280,8 +295,7 @@ def short_name(note: dict, lower=_lower) -> str:  # noqa: ANN001
         whole = _whole_clause(clause)
         return "“" + whole + "”" if whole else _dated(note)
     clause = _DOING.sub("", clause).strip() or clause
-    words = clause.split()
-    if len(words) > _NAME_WORDS:
+    if len(clause.split()) > _NAME_WORDS:
         whole = _whole_clause(clause)
         if not whole or len(whole.split()) > _NAME_WORDS:
             return _dated(note)

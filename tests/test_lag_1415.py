@@ -4,7 +4,7 @@ named stay out. Source-shape pins; the measured numbers are in HISTORY.md
 
 from __future__ import annotations
 
-from _app_js import frontend_text
+from tests._app_js import frontend_text
 
 
 def _body(js: str, head: str) -> str:
@@ -27,7 +27,7 @@ def test_a_zoom_keypress_writes_one_property_and_reads_no_layout():
 def test_the_font_probe_is_measured_again_only_when_its_answer_can_change():
     settings = frontend_text("settings.js")
     probe = _body(settings, "function measureLabelOptics(")
-    assert "labelOpticsKey" in probe
+    assert "labelOptics.key" in probe
 
 
 def test_the_dashboard_map_card_is_sized_from_the_observer_entry():
@@ -49,7 +49,7 @@ def test_a_pinch_zooms_once_per_frame():
     lib = frontend_text("library.js")
     start = lib.index('$("ocr-page-pane")?.addEventListener("wheel"')
     wheel = lib[start : lib.index("{ passive: false });", start)]
-    assert "ocrWheelPending" in wheel and "setTimeout(" in wheel
+    assert "ocrWheel.pending" in wheel and "setTimeout(" in wheel
     assert wheel.count("ocrZoomAbout(") == 1
 
 

@@ -4,7 +4,7 @@ entry's result line."""
 
 from __future__ import annotations
 
-from _app_js import frontend_text
+from tests._app_js import frontend_text
 
 
 def _body(js: str, head: str) -> str:
@@ -35,7 +35,7 @@ def test_the_dashboard_outline_follows_the_grid_after_a_paint():
 def test_the_brand_logo_waits_for_the_page_to_load_before_it_reads_layout():
     body = _body(frontend_text("phone-shell.js"), "function renderBrandLogo(")
     assert 'document.readyState !== "complete"' in body
-    assert body.index("brandLogoBooting") < body.index("renderEmblemWhenShown")
+    assert body.index("document.readyState") < body.index("renderEmblemWhenShown")
 
 
 def test_the_digest_words_are_stemmed_on_first_use_not_at_import():

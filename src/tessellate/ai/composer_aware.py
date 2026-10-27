@@ -202,25 +202,33 @@ def closing(
     if not aw.known:
         return ""
     said = "\n".join(avoid)
-    tab_key = next((k for k, v in TAB_NAMES.items() if v == aw.tab), "")
-    howto = TAB_HOWTO.get(tab_key, "") if related else ""
-    if howto and _asked_already(howto, asked):
-        howto = ""
+    howto = _closing_howto(aw, related, asked)
     #: The answer drew on the open note, or the question is about it.
     open_said = bool(aw.open_title) and (aw.open_title in cited or about_open(aw.open_title, asked))
     for step in range(4):
-        lines: list[str] = []
-        salted = f"{seed}:{step}"
-        if open_said:
-            lines.append(_pick(_PICK_UP_OPEN, salted, "title").format(title=aw.open_title))
-        elif aw.topic:
-            lines.append(_pick(_TOPIC, salted, "topic").format(topic=aw.topic))
-        if howto and not aw.open_title:
-            lines.append(_pick(_HOWTO, salted, "howto").format(howto=howto))
-        line = " ".join(lines)
+        line = _closing_line(aw, f"{seed}:{step}", open_said, howto)
         if line and line not in said:
             return line
     return ""
+
+
+def _closing_howto(aw: Awareness, related: bool, asked: str) -> str:
+    """The tab's how-to, when it follows from the question and is not it."""
+    tab_key = next((k for k, v in TAB_NAMES.items() if v == aw.tab), "")
+    howto = TAB_HOWTO.get(tab_key, "") if related else ""
+    return "" if howto and _asked_already(howto, asked) else howto
+
+
+def _closing_line(aw: Awareness, salted: str, open_said: bool, howto: str) -> str:
+    """One wording of the closing for one salt."""
+    lines: list[str] = []
+    if open_said:
+        lines.append(_pick(_PICK_UP_OPEN, salted, "title").format(title=aw.open_title))
+    elif aw.topic:
+        lines.append(_pick(_TOPIC, salted, "topic").format(topic=aw.topic))
+    if howto and not aw.open_title:
+        lines.append(_pick(_HOWTO, salted, "howto").format(howto=howto))
+    return " ".join(lines)
 
 
 def model_context(aw: Awareness) -> str:
