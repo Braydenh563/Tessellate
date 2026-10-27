@@ -343,7 +343,13 @@ function glideStrip(strip) {
   //: closing above the chosen row moves the row and not its size, so neither
   //: observer saw it and the fill stayed where the row had been (measured: 20
   //: px under it after an 18 px insert).
-  new MutationObserver(() => place(true)).observe(strip, {
+  //: Placed a frame later, not in the mutation's microtask: there it read
+  //: the new page's layout before the click's own work had finished, and the
+  //: frame laid it out a second time (INBOX 1419: 100 to 250ms at 4x CPU).
+  let queued = 0;
+  new MutationObserver(() => {
+    queued ||= setTimeout(() => ((queued = 0), place(true)), 16);
+  }).observe(strip, {
     attributes: true,
     attributeFilter: ["class", "aria-selected", "aria-current"],
     childList: true,
