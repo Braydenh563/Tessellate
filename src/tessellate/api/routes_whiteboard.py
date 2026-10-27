@@ -1786,8 +1786,10 @@ def _map_branch_colors(
             colour = inherited
         if colour:
             colors[node_id] = colour
-        for child_id in reversed(children.get(node_id, [])):
-            stack.append((child_id, colour, depth + 1))
+        stack.extend(
+            (child_id, colour, depth + 1)
+            for child_id in reversed(children.get(node_id, []))
+        )
     return colors
 
 
@@ -3701,7 +3703,7 @@ def _build_tree(db: Session, objects: list[WhiteboardObject]) -> list[dict]:
             reachable.add(node["id"])
             frontier.extend(node["children"])
 
-    for root in list(roots):
+    for root in roots:
         claim(root)
     for obj in objects:
         if obj.id not in reachable:
@@ -4387,8 +4389,10 @@ def _outline_rows(roots: list[dict]) -> list[tuple[int, dict]]:
             continue
         seen.add(node["id"])
         rows.append((min(depth, MAX_MAP_DEPTH), node))
-        for child in reversed(node["children"]):
-            stack.append((depth + 1, child))
+        stack.extend(
+            (depth + 1, child)
+            for child in reversed(node["children"])
+        )
     return rows
 
 
@@ -4427,8 +4431,10 @@ def _export_tree(root_element, roots: list[dict], build) -> None:
         seen.add(node["id"])
         element = build(parent_element, node)
         below = element if depth < MAX_MAP_DEPTH else parent_element
-        for child in reversed(node["children"]):
-            stack.append((below, depth + 1, child))
+        stack.extend(
+            (below, depth + 1, child)
+            for child in reversed(node["children"])
+        )
 
 
 def _outline_numbers(roots: list[dict]) -> dict:

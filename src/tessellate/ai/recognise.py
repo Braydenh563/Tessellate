@@ -3200,8 +3200,8 @@ def _duration_cands(low: str) -> list[tuple]:
                 continue  # "3 kWh a day" is a rate, not a day
             seconds = n * UNITS[found.group(4).rstrip("s") if found.group(4).rstrip("s") in UNITS else found.group(4)][1]
         out.append((found.start(), found.end(), "duration", timedelta(seconds=seconds), "", 0))
-    for found in _rx("hm").finditer(low):
-        out.append((found.start(), found.end(), "duration", timedelta(hours=int(found.group(1)), minutes=int(found.group(2))), "", 0))
+    out.extend((f.start(), f.end(), "duration", timedelta(hours=int(f.group(1)), minutes=int(f.group(2))), "", 0)
+               for f in _rx("hm").finditer(low))
     return out
 
 
@@ -3225,8 +3225,8 @@ def _measure_cands(raw: str, low: str, locale: str | None) -> list[tuple]:
         amount = _figure(found.group(2))
         scale = {"k": 1000, "m": 1_000_000, "bn": 1_000_000_000}.get((found.group(3) or "").strip(), 1)
         out.append((found.start(), found.end(), "money", (amount * scale, CURRENCY_NAMES[found.group(1)]), "", 0))
-    for found in _rx("money_code").finditer(low):
-        out.append((found.start(), found.end(), "money", (_figure(found.group(2)), CURRENCY_NAMES[found.group(1)]), "", 0))
+    out.extend((f.start(), f.end(), "money", (_figure(f.group(2)), CURRENCY_NAMES[f.group(1)]), "", 0)
+               for f in _rx("money_code").finditer(low))
     for found in _rx("money_post").finditer(low):
         name = found.group(2)
         both = name in UNITS  # "5 pounds": money or weight, by where the person is
@@ -3272,10 +3272,8 @@ def _contact_cands(raw: str, low: str) -> list[tuple]:
         if re.fullmatch(r"\d{4}-\d{2}-\d{2}", text):
             continue
         out.append((found.start(), found.end(), "phone", ("+" if lead == "+" else "") + digits, "", 0))
-    for found in _rx("tag").finditer(low):
-        out.append((found.start(), found.end(), "tag", raw[found.start(1):found.end(1)].lower(), "", 0))
-    for found in _rx("at_person").finditer(low):
-        out.append((found.start(), found.end(), "person", raw[found.start(1):found.end(1)], "", 0))
+    out.extend((f.start(), f.end(), "tag", raw[f.start(1):f.end(1)].lower(), "", 0) for f in _rx("tag").finditer(low))
+    out.extend((f.start(), f.end(), "person", raw[f.start(1):f.end(1)], "", 0) for f in _rx("at_person").finditer(low))
     for kind in ("person", "place"):
         for found in _rx(kind).finditer(raw):
             name = found.group(1)
@@ -3297,13 +3295,9 @@ def _contact_cands(raw: str, low: str) -> list[tuple]:
 
 
 def _number_cands(low: str) -> list[tuple]:
-    out = []
-    for found in _rx("number").finditer(low):
-        out.append((found.start(), found.end(), "number", _figure(found.group(1)), "", 0))
-    for found in _rx("ordinal").finditer(low):
-        out.append((found.start(), found.end(), "ordinal", int(found.group(1)), "", 0))
-    for found in _rx("ordinal_word").finditer(low):
-        out.append((found.start(1), found.end(1), "ordinal", _ORDINAL_WORDS[found.group(1)], "", 0))
+    out = [(f.start(), f.end(), "number", _figure(f.group(1)), "", 0) for f in _rx("number").finditer(low)]
+    out.extend((f.start(), f.end(), "ordinal", int(f.group(1)), "", 0) for f in _rx("ordinal").finditer(low))
+    out.extend((f.start(1), f.end(1), "ordinal", _ORDINAL_WORDS[f.group(1)], "", 0) for f in _rx("ordinal_word").finditer(low))
     return out
 
 

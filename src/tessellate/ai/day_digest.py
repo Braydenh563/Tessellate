@@ -76,9 +76,8 @@ def _due(session: Session, now: datetime) -> list[dict]:
         parts.append(f"{realise.count_word(late)} overdue")
     lines = [{"part": "due", "kind": "count", "text": " and ".join(parts).capitalize() + ".",
               "counts": [n for n in (today, late) if n]}]
-    for row in rows[:QUOTES]:
-        lines.append({"part": "due", "kind": "quote", "quote": _cut(row.text), "source": {"reminder_id": row.id},
-                      "text": f"“{_cut(row.text)}”"})
+    lines.extend({"part": "due", "kind": "quote", "quote": _cut(row.text), "source": {"reminder_id": row.id},
+                  "text": f"“{_cut(row.text)}”"} for row in rows[:QUOTES])
     return lines
 
 

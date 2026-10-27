@@ -232,9 +232,7 @@ def near(query: str, texts: list[str], embed_many) -> list[dict]:  # noqa: ANN00
     vectors = embed_many([query, *fresh])
     if not vectors or vectors[0] is None:
         return []
-    for text, vector in zip(fresh, vectors[1:]):
-        if vector is not None:
-            _VECTORS[text] = vector
+    _VECTORS.update({text: vector for text, vector in zip(fresh, vectors[1:]) if vector is not None})
     asked = np.asarray(vectors[0], dtype="float32")
     asked = asked / (np.linalg.norm(asked) or 1.0)
     scored = []

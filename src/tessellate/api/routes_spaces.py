@@ -271,6 +271,27 @@ class SpaceDeleted(SpaceResponse):
     restore: dict | None = None
 
 
+def _delete_space_moving(session: Session, space: Space, move_to: str) -> SpaceDeleted:
+    """Delete a space after moving everything in it to another one."""
+    space_id = space.id
+    if move_to == space_id:
+        raise HTTPException(400, "Pick a different space to move its contents to.")
+    deps.get_or_404(session, Space, move_to, "The space to move to could not be found.")
+    response = SpaceResponse.model_validate(space)
+    manifest = _move_space_contents(session, space_id, move_to)
+    session.delete(space)
+    session.commit()
+    from tessellate.search import index as search_index
+
+    # Every moved row's index entry still names the old space.
+    search_index.rebuild(session)
+    session.commit()
+    return SpaceDeleted(
+        **response.model_dump(),
+        restore={"space": response.model_dump(), "move_to": move_to, **manifest},
+    )
+
+
 @router.delete("/spaces/{space_id}", response_model=SpaceDeleted)
 def delete_space(
     space_id: str,
@@ -285,22 +306,7 @@ def delete_space(
         raise HTTPException(400, "The default spaces cannot be deleted.")
     space = deps.get_or_404(session, Space, space_id, "That space could not be found.")
     if move_to:
-        if move_to == space_id:
-            raise HTTPException(400, "Pick a different space to move its contents to.")
-        deps.get_or_404(session, Space, move_to, "The space to move to could not be found.")
-        response = SpaceResponse.model_validate(space)
-        manifest = _move_space_contents(session, space_id, move_to)
-        session.delete(space)
-        session.commit()
-        from tessellate.search import index as search_index
-
-        # Every moved row's index entry still names the old space.
-        search_index.rebuild(session)
-        session.commit()
-        return SpaceDeleted(
-            **response.model_dump(),
-            restore={"space": response.model_dump(), "move_to": move_to, **manifest},
-        )
+        return _delete_space_moving(session, space, move_to)
 
     # Capture the response body before deleting: reading attributes off an
     # instance after session.delete()+commit() raises ObjectDeletedError,

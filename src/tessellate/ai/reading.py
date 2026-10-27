@@ -258,29 +258,13 @@ def read(text: str, *, now: datetime, context: dict | None = None) -> Reading:
     spans = rec.recognise(raw, now=now, locale=context.get("locale"), tense=tense, known=known, bare_hours=dated)
 
     if dated:
-        slots, used = _reminder_slots(raw, spans, now, locale, known, tense or "future")
-        _repeat_slots(slots, spans)
-        if slots["due_at"] is None:
-            return Reading(surface, slots, spans, SCORES["missing_slot"], "reminder", question=DATED_SURFACES[surface])
-        if surface != "timeline" and not any(s.rank == 0 and s.kind in _CLOCKED for s in spans):
-            #: A day with no time is asked, never filled with 9:00 (decision 50).
-            day = slots["due_at"]
-            return Reading(surface, slots, spans, SCORES["missing_slot"], "reminder",
-                           question=f"What time on {rec._WEEKDAY_NAMES[day.weekday()]} {day.day} {rec._MONTH_NAMES[day.month - 1]}?")
-        return _weigh(Reading(surface, slots, spans, SCORES["act"], "reminder"), used, context)
+        return _read_dated(raw, surface, spans, now, locale, known, tense or "future", context)
 
     from tessellate.ai import commands, intent, utilities
 
     act = commands.read(raw, now, context.get("locale"))
     if act is not None:
-        slots = {k: v for k, v in act.items() if k != "intent"}
-        if act["intent"] == "reminder":
-            _repeat_slots(slots, spans)
-            if not act.get("time_given"):
-                slots["due_at"] = None
-                return Reading("reminder", slots, spans, SCORES["missing_slot"], "commands", question="Remind you when?")
-        used = [s for s in spans if s.rank == 0 and s.kind in _TIME_KINDS]
-        return _weigh(Reading(act["intent"], slots, spans, SCORES["act"], "commands"), used, context)
+        return _read_act(act, spans, context)
 
     kind = utilities.kind_of(raw)
     if kind and kind != "until_note":
@@ -294,6 +278,37 @@ def read(text: str, *, now: datetime, context: dict | None = None) -> Reading:
     if routed == intent.ABOUT_APP:
         return Reading("about_app", {}, spans, SCORES["about_app"], "intent")
 
+    return _read_question(raw, spans, now, locale, context)
+
+
+def _read_dated(raw: str, surface: str, spans: list, now: datetime, locale: str, known, tense: str, context: dict) -> Reading:
+    """A line on a surface that dates what it holds (quick add, the timeline): one reminder-shaped reading."""
+    slots, used = _reminder_slots(raw, spans, now, locale, known, tense)
+    _repeat_slots(slots, spans)
+    if slots["due_at"] is None:
+        return Reading(surface, slots, spans, SCORES["missing_slot"], "reminder", question=DATED_SURFACES[surface])
+    if surface != "timeline" and not any(s.rank == 0 and s.kind in _CLOCKED for s in spans):
+        #: A day with no time is asked, never filled with 9:00 (decision 50).
+        day = slots["due_at"]
+        return Reading(surface, slots, spans, SCORES["missing_slot"], "reminder",
+                       question=f"What time on {rec._WEEKDAY_NAMES[day.weekday()]} {day.day} {rec._MONTH_NAMES[day.month - 1]}?")
+    return _weigh(Reading(surface, slots, spans, SCORES["act"], "reminder"), used, context)
+
+
+def _read_act(act: dict, spans: list, context: dict) -> Reading:
+    """A command the app can carry out, with the slots it named."""
+    slots = {k: v for k, v in act.items() if k != "intent"}
+    if act["intent"] == "reminder":
+        _repeat_slots(slots, spans)
+        if not act.get("time_given"):
+            slots["due_at"] = None
+            return Reading("reminder", slots, spans, SCORES["missing_slot"], "commands", question="Remind you when?")
+    used = [s for s in spans if s.rank == 0 and s.kind in _TIME_KINDS]
+    return _weigh(Reading(act["intent"], slots, spans, SCORES["act"], "commands"), used, context)
+
+
+def _read_question(raw: str, spans: list, now: datetime, locale: str, context: dict) -> Reading:
+    """Anything else is a question about the notes."""
     from tessellate.search import query
 
     understood = query.understand(raw, now, locale)

@@ -223,11 +223,8 @@ def suggest_categories_explained(
     session: Session, content: str, exclude_entry_id: int | None = None, limit: int = 3
 ) -> list[tuple[str, str]]:
     """`suggest_categories` with each one's why ("" for a recent one)."""
-    out: list[tuple[str, str]] = []
     decision = decide(session, content, exclude_entry_id)
-    for candidate in decision.ranked:
-        if candidate.score > 0:
-            out.append((candidate.name, candidate.why))
+    out: list[tuple[str, str]] = [(c.name, c.why) for c in decision.ranked if c.score > 0]
     if len(out) < limit:
         recent = session.execute(
             select(Category.name)
@@ -803,7 +800,7 @@ def _category_aggregates(corpus, names, scope, scope_key):  # noqa: ANN001, ANN2
     sums: dict[str, dict[str, float]] = {}
     profiles: dict[str, dict[str, float]] = {}
     held: dict[str, int] = {}
-    for _entry_id, doc in corpus.docs.items():
+    for doc in corpus.docs.values():
         if doc.board or not scope(doc):
             continue
         name = names.get(doc.category_id, UNCATEGORISED)

@@ -227,10 +227,8 @@ def _decode_samples(audio_path: Path, rate: int = 16000):  # noqa: ANN202
     chunks = []
     with av.open(str(audio_path), mode="r") as container:
         for frame in container.decode(audio=0):
-            for out in resampler.resample(frame):
-                chunks.append(out.to_ndarray().reshape(-1))
-        for out in resampler.resample(None):
-            chunks.append(out.to_ndarray().reshape(-1))
+            chunks.extend(out.to_ndarray().reshape(-1) for out in resampler.resample(frame))
+        chunks.extend(out.to_ndarray().reshape(-1) for out in resampler.resample(None))
     if not chunks:
         return np.zeros(0, dtype=np.float32)
     return np.concatenate(chunks).astype(np.float32) / 32768.0

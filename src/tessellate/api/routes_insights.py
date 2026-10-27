@@ -552,18 +552,17 @@ def on_this_day(session: Session = Depends(get_session)) -> list[dict]:
             .limit(5)
         )
     )
-    matches = []
     category_names = manager.bulk_category_names(session, matched_entries)
-    
-    for entry in matched_entries:
-        matches.append(
-            {
-                "id": entry.id,
-                "content": entry.content,
-                "category": category_names.get(entry.category_id, manager.UNCATEGORISED),
-                "created_at": entry.created_at.isoformat(),
-            }
-        )
+
+    matches = [
+        {
+            "id": entry.id,
+            "content": entry.content,
+            "category": category_names.get(entry.category_id, manager.UNCATEGORISED),
+            "created_at": entry.created_at.isoformat(),
+        }
+        for entry in matched_entries
+    ]
     return matches[:5]
 
 

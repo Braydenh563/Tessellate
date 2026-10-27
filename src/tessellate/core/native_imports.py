@@ -101,6 +101,62 @@ def _cstr(blob: bytes, start: int) -> str:
 # --- ELF ---------------------------------------------------------------------
 
 
+def _elf_sections(data: bytes, bits: int, endian: str) -> list[dict]:
+    """The section table: each section's type, offset, size, link and entry size."""
+    try:
+        if bits == 2:
+            shoff, = struct.unpack_from(endian + "Q", data, 0x28)
+            shentsize, shnum = struct.unpack_from(endian + "HH", data, 0x3A)
+            layout = "IIQQQQIIQQ"
+        else:
+            shoff, = struct.unpack_from(endian + "I", data, 0x20)
+            shentsize, shnum = struct.unpack_from(endian + "HH", data, 0x2E)
+            layout = "IIIIIIIIII"
+        sections = []
+        for i in range(shnum):
+            f = struct.unpack_from(endian + layout, data, shoff + i * shentsize)
+            sections.append({"type": f[1], "offset": f[4], "size": f[5], "link": f[6], "entsize": f[9]})
+        return sections
+    except struct.error as exc:
+        raise NotANativeLibrary("truncated ELF section table") from exc
+
+
+def _elf_strings(data: bytes, sections: list[dict], sec: dict) -> bytes | None:
+    """The string table a section links to, or None when the link is bad."""
+    if not 0 <= sec["link"] < len(sections):
+        return None
+    strtab = sections[sec["link"]]
+    return data[strtab["offset"] : strtab["offset"] + strtab["size"]]
+
+
+def _elf_imported_symbols(data: bytes, sec: dict, names: bytes, bits: int, endian: str) -> set[str]:
+    """The undefined (imported) symbols of one dynamic symbol table."""
+    symbols: set[str] = set()
+    size = sec["entsize"] or (24 if bits == 2 else 16)
+    for off in range(sec["offset"], sec["offset"] + sec["size"] - size + 1, size):
+        if bits == 2:
+            st_name, _info, _other, shndx = struct.unpack_from(endian + "IBBH", data, off)
+        else:
+            st_name, _value, _sz, _info, _other, shndx = struct.unpack_from(endian + "IIIBBH", data, off)
+        if shndx == 0 and st_name:  # SHN_UNDEF: imported
+            symbols.add(_cstr(names, st_name))
+    return symbols
+
+
+def _elf_needed_libraries(data: bytes, sec: dict, names: bytes, bits: int, endian: str) -> set[str]:
+    """The DT_NEEDED entries of one dynamic section."""
+    libraries: set[str] = set()
+    width = 16 if bits == 2 else 8
+    fmt = endian + ("qQ" if bits == 2 else "iI")
+    for off in range(sec["offset"], sec["offset"] + sec["size"] - width + 1, width):
+        tag, val = struct.unpack_from(fmt, data, off)
+        if tag == 0:
+            break
+        if tag == 1:  # DT_NEEDED
+            libraries.add(_cstr(names, val))
+    return libraries
+
+
 def _elf(data: bytes) -> tuple[set[str], set[str]]:
     if len(data) < 64:
         raise NotANativeLibrary("truncated ELF header")
@@ -108,54 +164,20 @@ def _elf(data: bytes) -> tuple[set[str], set[str]]:
     endian = "<" if data[5] == 1 else ">"
     if bits not in (1, 2) or data[5] not in (1, 2):
         raise NotANativeLibrary("bad ELF class")
-    try:
-        if bits == 2:
-            shoff, = struct.unpack_from(endian + "Q", data, 0x28)
-            shentsize, shnum = struct.unpack_from(endian + "HH", data, 0x3A)
-        else:
-            shoff, = struct.unpack_from(endian + "I", data, 0x20)
-            shentsize, shnum = struct.unpack_from(endian + "HH", data, 0x2E)
-        sections = []
-        for i in range(shnum):
-            base = shoff + i * shentsize
-            if bits == 2:
-                f = struct.unpack_from(endian + "IIQQQQIIQQ", data, base)
-                sections.append({"type": f[1], "offset": f[4], "size": f[5], "link": f[6], "entsize": f[9]})
-            else:
-                f = struct.unpack_from(endian + "IIIIIIIIII", data, base)
-                sections.append({"type": f[1], "offset": f[4], "size": f[5], "link": f[6], "entsize": f[9]})
-    except struct.error as exc:
-        raise NotANativeLibrary("truncated ELF section table") from exc
+    sections = _elf_sections(data, bits, endian)
 
     symbols: set[str] = set()
     libraries: set[str] = set()
     for sec in sections:
-        if sec["type"] == 11:  # SHT_DYNSYM
-            if not 0 <= sec["link"] < len(sections):
-                continue
-            strtab = sections[sec["link"]]
-            names = data[strtab["offset"] : strtab["offset"] + strtab["size"]]
-            size = sec["entsize"] or (24 if bits == 2 else 16)
-            for off in range(sec["offset"], sec["offset"] + sec["size"] - size + 1, size):
-                if bits == 2:
-                    st_name, _info, _other, shndx = struct.unpack_from(endian + "IBBH", data, off)
-                else:
-                    st_name, _value, _sz, _info, _other, shndx = struct.unpack_from(endian + "IIIBBH", data, off)
-                if shndx == 0 and st_name:  # SHN_UNDEF: imported
-                    symbols.add(_cstr(names, st_name))
-        elif sec["type"] == 6:  # SHT_DYNAMIC: DT_NEEDED entries
-            if not 0 <= sec["link"] < len(sections):
-                continue
-            strtab = sections[sec["link"]]
-            names = data[strtab["offset"] : strtab["offset"] + strtab["size"]]
-            width = 16 if bits == 2 else 8
-            fmt = endian + ("qQ" if bits == 2 else "iI")
-            for off in range(sec["offset"], sec["offset"] + sec["size"] - width + 1, width):
-                tag, val = struct.unpack_from(fmt, data, off)
-                if tag == 0:
-                    break
-                if tag == 1:  # DT_NEEDED
-                    libraries.add(_cstr(names, val))
+        if sec["type"] not in (11, 6):  # SHT_DYNSYM, SHT_DYNAMIC
+            continue
+        names = _elf_strings(data, sections, sec)
+        if names is None:
+            continue
+        if sec["type"] == 11:
+            symbols |= _elf_imported_symbols(data, sec, names, bits, endian)
+        else:
+            libraries |= _elf_needed_libraries(data, sec, names, bits, endian)
     symbols.discard("")
     if not any(sec["type"] == 11 for sec in sections):
         # A library with no dynamic symbol table cannot be checked, so it is

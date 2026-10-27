@@ -135,15 +135,57 @@ def _clean_number(value: Any, default: float = 0.0) -> float:
     return number if math.isfinite(number) and abs(number) < 1e7 else default
 
 
-def _clean_element(payload: dict) -> dict:
-    """An element payload as stored: known kinds, bounded sizes, object data
-    through the board's own validator, links only between items it holds."""
-    items = payload.get("items")
-    if not isinstance(items, list) or not items:
-        raise _fail("A saved selection needs at least one item.")
-    if len(items) > MAX_PAYLOAD_ITEMS:
-        raise _fail(f"A library item holds at most {MAX_PAYLOAD_ITEMS} things.")
-    clean, keys = [], set()
+def _clean_sketch_item(raw: dict, item: dict[str, Any]) -> None:
+    """A drawing's path data, without the links and references a copy must not carry."""
+    data = raw.get("data")
+    if isinstance(data, str):
+        try:
+            data = json.loads(data)
+        except ValueError:
+            raise _fail("A drawing's data is not JSON.") from None
+    if not isinstance(data, dict) or not isinstance(data.get("d", ""), str):
+        raise _fail("A drawing needs its path.")
+    data.pop("sourceId", None)
+    data.pop("targetId", None)
+    data.pop("library_ref", None)
+    if len(json.dumps(data)) > MAX_SKETCH_DATA_CHARS:
+        raise _fail("One drawing in this item is too large.")
+    item.update(kind="sketch", data=data)
+
+
+def _clean_object_item(raw: dict, item: dict[str, Any]) -> None:
+    """A text, picture or frame, its data through the board's own validator."""
+    kind = raw.get("type")
+    if kind not in OBJECT_TYPES:
+        raise _fail(f"A library item holds text, pictures and frames, not {kind}.")
+    data = dict(raw.get("data") or {})
+    data.pop("library_ref", None)
+    data.pop("comments", None)
+    try:
+        checked = WhiteboardObjectData(**data).model_dump(exclude_none=True)
+    except ValueError as err:
+        logger.info("board library: an item did not validate: %s", err)
+        raise _fail("An item's data is not valid.") from None
+    if kind == "image" and not MEDIA_URL_RE.match(checked.get("url") or ""):
+        raise _fail("A picture in the library is one of this notebook's uploads.")
+    item.update(
+        kind="object", type=kind, data=checked,
+        x=_clean_number(raw.get("x")), y=_clean_number(raw.get("y")),
+        w=max(20.0, min(4000.0, _clean_number(raw.get("w"), 200))),
+        h=max(20.0, min(4000.0, _clean_number(raw.get("h"), 120))),
+    )
+    rotation = raw.get("rotation")
+    if rotation is not None:
+        item["rotation"] = max(-360.0, min(360.0, _clean_number(rotation)))
+
+
+#: How each kind of item is cleaned; a kind not here is refused.
+_ITEM_CLEANERS = {"sketch": _clean_sketch_item, "object": _clean_object_item}
+
+
+def _clean_items(items: list, keys: set) -> list[dict]:
+    """The items of an element payload, each with a unique key; fills `keys`."""
+    clean: list[dict] = []
     for raw in items:
         if not isinstance(raw, dict):
             raise _fail("Each item is an object.")
@@ -155,49 +197,19 @@ def _clean_element(payload: dict) -> dict:
         item: dict[str, Any] = {"key": key, "z": int(_clean_number(raw.get("z"), 0))}
         if isinstance(group, str) and group:
             item["group"] = group[:40]
-        if raw.get("kind") == "sketch":
-            data = raw.get("data")
-            if isinstance(data, str):
-                try:
-                    data = json.loads(data)
-                except ValueError:
-                    raise _fail("A drawing's data is not JSON.") from None
-            if not isinstance(data, dict) or not isinstance(data.get("d", ""), str):
-                raise _fail("A drawing needs its path.")
-            data.pop("sourceId", None)
-            data.pop("targetId", None)
-            data.pop("library_ref", None)
-            if len(json.dumps(data)) > MAX_SKETCH_DATA_CHARS:
-                raise _fail("One drawing in this item is too large.")
-            item.update(kind="sketch", data=data)
-        elif raw.get("kind") == "object":
-            kind = raw.get("type")
-            if kind not in OBJECT_TYPES:
-                raise _fail(f"A library item holds text, pictures and frames, not {kind}.")
-            data = dict(raw.get("data") or {})
-            data.pop("library_ref", None)
-            data.pop("comments", None)
-            try:
-                checked = WhiteboardObjectData(**data).model_dump(exclude_none=True)
-            except ValueError as err:
-                logger.info("board library: an item did not validate: %s", err)
-                raise _fail("An item's data is not valid.") from None
-            if kind == "image" and not MEDIA_URL_RE.match(checked.get("url") or ""):
-                raise _fail("A picture in the library is one of this notebook's uploads.")
-            item.update(
-                kind="object", type=kind, data=checked,
-                x=_clean_number(raw.get("x")), y=_clean_number(raw.get("y")),
-                w=max(20.0, min(4000.0, _clean_number(raw.get("w"), 200))),
-                h=max(20.0, min(4000.0, _clean_number(raw.get("h"), 120))),
-            )
-            rotation = raw.get("rotation")
-            if rotation is not None:
-                item["rotation"] = max(-360.0, min(360.0, _clean_number(rotation)))
-        else:
+        kind = raw.get("kind")
+        cleaner = _ITEM_CLEANERS.get(kind) if isinstance(kind, str) else None
+        if cleaner is None:
             raise _fail("An item is a drawing or an object.")
+        cleaner(raw, item)
         clean.append(item)
+    return clean
+
+
+def _clean_links(raw_links: list, keys: set) -> list[dict]:
+    """Links between items this payload holds, each a straight link at least."""
     links = []
-    for raw in payload.get("links") or []:
+    for raw in raw_links:
         if not isinstance(raw, dict) or raw.get("from") not in keys or raw.get("to") not in keys:
             continue
         data = raw.get("data") if isinstance(raw.get("data"), dict) else {}
@@ -205,6 +217,20 @@ def _clean_element(payload: dict) -> dict:
         if not str(data.get("type", "")).startswith("link-"):
             data["type"] = "link-straight"
         links.append({"from": raw["from"], "to": raw["to"], "data": data})
+    return links
+
+
+def _clean_element(payload: dict) -> dict:
+    """An element payload as stored: known kinds, bounded sizes, object data
+    through the board's own validator, links only between items it holds."""
+    items = payload.get("items")
+    if not isinstance(items, list) or not items:
+        raise _fail("A saved selection needs at least one item.")
+    if len(items) > MAX_PAYLOAD_ITEMS:
+        raise _fail(f"A library item holds at most {MAX_PAYLOAD_ITEMS} things.")
+    keys: set = set()
+    clean = _clean_items(items, keys)
+    links = _clean_links(payload.get("links") or [], keys)
     box = payload.get("box") if isinstance(payload.get("box"), dict) else {}
     return {
         "box": {"w": max(1.0, _clean_number(box.get("w"), 100)), "h": max(1.0, _clean_number(box.get("h"), 100))},
@@ -241,33 +267,23 @@ def _clean_branch(payload: dict) -> dict:
     return {"nodes": [walk(n, 0) for n in roots]}
 
 
-def _clean_payload(kind: str, payload: Any) -> dict:
-    if kind not in ITEM_KINDS:
-        raise _fail(f"A library item is one of: {', '.join(ITEM_KINDS)}.")
-    if not isinstance(payload, dict):
-        raise _fail("A library item's payload is an object.")
-    if len(json.dumps(payload)) > MAX_PAYLOAD_BYTES:
-        raise _fail("This is too large for the library (512 KB at most).")
-    for url in _media_urls(payload):
-        if not MEDIA_URL_RE.match(url):
-            raise _fail("A picture in the library is one of this notebook's uploads.")
-    if kind in ("element", "shape", "preset"):
-        return _clean_element(payload)
-    if kind == "branch":
-        return _clean_branch(payload)
-    if kind == "style":
-        style = payload.get("style") if isinstance(payload.get("style"), dict) else {}
-        clean = {k: v for k, v in style.items() if k in STYLE_KEYS and isinstance(v, (str, int, float, bool))}
-        if not clean:
-            raise _fail("A saved style needs at least one property.")
-        target = payload.get("target") if payload.get("target") in ("shape", "line", "text", "link") else "shape"
-        return {"target": target, "style": clean}
-    if kind == "palette":
-        colours = [c.lower() for c in payload.get("colours") or [] if isinstance(c, str) and HEX_RE.match(c)]
-        if not colours:
-            raise _fail("A palette needs at least one #rrggbb colour.")
-        return {"colours": list(dict.fromkeys(colours))[:16]}
-    # template
+def _clean_style(payload: dict) -> dict:
+    style = payload.get("style") if isinstance(payload.get("style"), dict) else {}
+    clean = {k: v for k, v in style.items() if k in STYLE_KEYS and isinstance(v, (str, int, float, bool))}
+    if not clean:
+        raise _fail("A saved style needs at least one property.")
+    target = payload.get("target") if payload.get("target") in ("shape", "line", "text", "link") else "shape"
+    return {"target": target, "style": clean}
+
+
+def _clean_palette(payload: dict) -> dict:
+    colours = [c.lower() for c in payload.get("colours") or [] if isinstance(c, str) and HEX_RE.match(c)]
+    if not colours:
+        raise _fail("A palette needs at least one #rrggbb colour.")
+    return {"colours": list(dict.fromkeys(colours))[:16]}
+
+
+def _clean_template(payload: dict) -> dict:
     board = payload.get("board") if isinstance(payload.get("board"), dict) else {}
     out: dict[str, Any] = {"board": {
         "type": board.get("type") if board.get("type") in ("board", "map") else "board",
@@ -289,6 +305,26 @@ def _clean_payload(kind: str, payload: Any) -> dict:
     if "element" not in out and "branch" not in out:
         raise _fail("A template needs something on it.")
     return out
+
+
+#: One cleaner per kind of library item; `template` is the one left over.
+_PAYLOAD_CLEANERS = {
+    "element": _clean_element, "shape": _clean_element, "preset": _clean_element,
+    "branch": _clean_branch, "style": _clean_style, "palette": _clean_palette,
+}
+
+
+def _clean_payload(kind: str, payload: Any) -> dict:
+    if kind not in ITEM_KINDS:
+        raise _fail(f"A library item is one of: {', '.join(ITEM_KINDS)}.")
+    if not isinstance(payload, dict):
+        raise _fail("A library item's payload is an object.")
+    if len(json.dumps(payload)) > MAX_PAYLOAD_BYTES:
+        raise _fail("This is too large for the library (512 KB at most).")
+    for url in _media_urls(payload):
+        if not MEDIA_URL_RE.match(url):
+            raise _fail("A picture in the library is one of this notebook's uploads.")
+    return _PAYLOAD_CLEANERS.get(kind, _clean_template)(payload)
 
 
 def _clean_tags(tags: Any) -> list[str]:

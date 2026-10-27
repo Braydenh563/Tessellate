@@ -936,18 +936,20 @@ def _backlinks(session: Session, document: Document) -> dict:
 
     like = f"%{like_escape(title)}%"
     sources: list[tuple[str, int, str, str]] = []
-    for row in session.scalars(
-        select(Document)
-        .where(
-            Document.id != document.id,
-            Document.archived_at.is_(None),
-            Document.content.ilike(like, escape=LIKE_ESCAPE),
+    sources.extend(
+        ("document", row.id, row.title or "Untitled", row.content or "")
+        for row in session.scalars(
+            select(Document)
+            .where(
+                Document.id != document.id,
+                Document.archived_at.is_(None),
+                Document.content.ilike(like, escape=LIKE_ESCAPE),
+            )
+            .order_by(Document.updated_at.desc(), Document.id.desc())
+            .limit(BACKLINK_SOURCES_MAX)
         )
-        .order_by(Document.updated_at.desc(), Document.id.desc())
-        .limit(BACKLINK_SOURCES_MAX)
-    ):
-        sources.append(("document", row.id, row.title or "Untitled", row.content or ""))
-    for row in session.scalars(
+    )
+    note_rows = session.scalars(
         select(Entry)
         .where(
             Entry.is_deleted == False,  # noqa: E712
@@ -959,10 +961,11 @@ def _backlinks(session: Session, document: Document) -> dict:
         )
         .order_by(Entry.id.desc())
         .limit(BACKLINK_SOURCES_MAX)
-    ):
-        sources.append(
-            ("note", row.id, plain_label(row.content, 60) or "Untitled note", row.content or "")
-        )
+    )
+    sources.extend(
+        ("note", row.id, plain_label(row.content, 60) or "Untitled note", row.content or "")
+        for row in note_rows
+    )
 
     links: list[dict] = []
     mentions: list[dict] = []
