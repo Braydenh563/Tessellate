@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- A thrown companion goes where the throw sends it: a soft toss lands near; a hard one sideways goes far, into a corner, or off one side and in at the other; a hard one upwards can leave the top of the window and fall back in. A panel catches it only when it comes down slowly (otherwise it passes or glances off an end), and it comes down caught, sliding off or tumbling and getting up, never the same way twice running. All planned at the release; the drawn step stays under 40px a frame.
 - Lighter Python, same behaviour: the CI complexity and perf scan fell from 86 findings to 27 (every PERF finding fixed; fourteen long functions split into named steps or lookup tables), and `tests/test_complexity_ratchet.py` keeps the count from rising.
 - Motion and failed reads (INBOX 1415): ten floating panels (Spaces, the bell, the clock, the history lists, the model, skills, More and Attach panels, Find on this page, the graph's note card) open and close on the menu's fade and grow instead of between two frames; Boards, Images, Contents, Bookmarks, Documents and Recordings now say they could not load, with Try again, instead of claiming nothing is there or printing the server's line; the dashboard's loading outline follows the grid by `translate` and the "Add your name" offer is not drawn under the Get started card, which took layout shift at boot from 0.105 to 0.011.
 

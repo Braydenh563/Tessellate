@@ -172,3 +172,93 @@ def test_letting_go_of_the_companion_does_not_read_layout_for_the_selection_popu
     up = sel[sel.index('document.addEventListener("mouseup", (event) => {') :]
     up = up[: up.index("});")]
     assert up.index('event.target.closest("#nm-buddy")') < up.index("syncSelectionPopup()")
+
+
+# The owner, 2026-10-27: "I dont want it to always get caught or slide on exactly
+# what is above or below it, sometimes i want it to go far, or into the corner,
+# ro even off one edge and onto the other, or maybe even to go off the top of
+# the screen and fall back down. it needs ot be mroe biological, natural and
+# varied." The release's speed and angle choose the flight's aim, planned there.
+_MANY = (
+    "function many(n, x, y, vx, vy, world = W) { companionThrowMemo.aim = {}; companionThrowMemo.arrive = ''; const out = [];"
+    " for (let i = 1; i <= n; i += 1) { companionThrowSeed.seed = 100 + i; const p = companionThrowPlan(x, y, vx, vy, world); const end = p.path[p.path.length - 1];"
+    "  out.push({ aim: p.aim, kind: end.fate && end.fate.kind, arrive: end.arrived || '', minY: Math.round(Math.min(...p.path.map((s) => s.y))),"
+    "   minX: Math.round(Math.min(...p.path.map((s) => s.x))), maxX: Math.round(Math.max(...p.path.map((s) => s.x))), x: Math.round(end.x), y: Math.round(end.y),"
+    "   on: end.on === 'floor' ? 'floor' : end.on ? end.on.y : null, d60: draw(p, 1000 / 60) }); } return out; }"
+)
+
+
+def _many(body: str):
+    return _plan(f"(() => {{ {_MANY}; return {body}; }})()")
+
+
+@needs_node
+def test_a_soft_throw_lands_near_and_a_hard_one_is_aimed_by_its_angle() -> None:
+    got = _many("{ soft: many(12, 600, 400, 0.5, -0.4), up: many(16, 600, 400, 0.2, -2.3), right: many(16, 600, 400, 2.3, -0.4), left: many(16, 700, 400, -2.3, -0.6) }")
+    for r in got["soft"]:
+        assert r["aim"] == "near" and abs(r["x"] - 600) < 420, r
+    up = {r["aim"] for r in got["up"]}
+    assert {"sky", "hang"} <= up, up
+    for r in got["up"]:
+        if r["aim"] == "sky":
+            # Up off the top of the window (its whole height past it) and back down inside.
+            assert r["minY"] < -120 and 48 <= r["y"] <= 780 and r["kind"] != "hang", r
+    for side in ("right", "left"):
+        aims = {r["aim"] for r in got[side]}
+        assert {"far", "wrap", "corner"} <= aims, (side, aims)
+        for r in got[side]:
+            if r["kind"] == "wrap":
+                assert r["d60"]["wraps"] >= 1 and r["maxX"] > 1376 and r["minX"] < 0, r
+            if r["kind"] == "corner":
+                assert r["x"] in (0, 1376), r
+        far = [r for r in got[side] if r["aim"] == "far"]
+        assert all(abs(r["x"] - (600 if side == "right" else 700)) > 450 for r in far), far
+    # Never the same aim twice running for throws alike.
+    for runs in got.values():
+        aims = [r["aim"] for r in runs if r["aim"] != "near"]
+        assert all(a != b for a, b in zip(aims, aims[1:])), aims
+
+
+@needs_node
+def test_a_ledge_catches_a_slow_fall_and_a_fast_one_passes_or_glances_off() -> None:
+    got = _many("{ slow: many(20, 500, 380, 0.05, 0.1), fast: many(20, 500, 60, 0.05, 1.8), edge: many(20, 690, 60, 0.05, 1.8) }")
+    # A slow fall on to it is caught (the ledge, or a slide or tumble off its end).
+    assert sum(r["on"] == 420 or r["kind"] in ("slip", "grab") for r in got["slow"]) >= 16, got["slow"]
+    # Falling fast past it, it goes on down.
+    assert sum(r["on"] == 420 for r in got["fast"]) <= 2, [r["on"] for r in got["fast"]]
+    # Near its end it glances off, out past the end.
+    assert sum(r["x"] > 700 for r in got["edge"]) >= 10, [r["x"] for r in got["edge"]]
+
+
+@needs_node
+def test_it_comes_down_in_varied_ways_never_the_same_twice_running() -> None:
+    got = _many("many(16, 480, 380, 0.3, -0.5).map((r) => r.arrive)")
+    seen = [a for a in got if a]
+    assert len(seen) >= 12 and {"catch", "slide", "tumble"} <= set(seen), got
+    assert all(a != b for a, b in zip(seen, seen[1:])), seen
+
+
+@needs_node
+def test_the_varied_flights_still_draw_under_40px_a_frame_except_a_wrap() -> None:
+    got = _many(
+        "[...many(10, 600, 400, 0.2, -2.3), ...many(10, 600, 400, 2.3, -0.4), ...many(10, 480, 380, 0.3, -0.5), ...many(10, 690, 60, 0.05, 1.8)].map((r) => r.d60)"
+    )
+    for r in got:
+        assert r["worst"] < 40 and r["rest"] and (r["x"], r["y"]) == (r["endX"], r["endY"]), r
+
+
+@needs_node
+def test_reduce_motion_has_no_aim() -> None:
+    got = _plan("(() => { still = true; return companionThrowPlan(600, 400, 0.2, -2.3, W).aim; })()")
+    assert got == ""
+
+
+@needs_node
+def test_a_hand_catch_holds_even_mid_tumble_or_slide() -> None:
+    # Landed near a ledge's end tumbling or sliding, then caught by its hands
+    # as it went off: it stays hanging there (a tumble once carried it on down).
+    got = _many("many(30, 620, 400, 0.15, -0.2)")
+    slips = [r for r in got if r["kind"] in ("slip", "grab")]
+    assert slips and {r["arrive"] for r in slips} & {"slide", "tumble"}, [(r["kind"], r["arrive"]) for r in got]
+    for r in slips:
+        assert r["y"] == 420 + 81 and r["x"] in (300, 700), r
