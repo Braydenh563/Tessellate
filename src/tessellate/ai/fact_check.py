@@ -104,6 +104,9 @@ _AMOUNTS = {"single": 1, "couple": 2, "pair": 2, "dozen": 12, "hundred": 100, "t
 _NOT_COUNTS = {"offset", "limit", "page", "id", "seed"}
 
 _TOKEN = re.compile(r"[#/]?\d+(?:[.,:/-]\d+)*(?:st|nd|rd|th|am|pm|%)?|[a-z]+(?:['-][a-z]+)*|[^\sa-z0-9]")
+#: "10-12": two figures, where "2026-10-28" (two hyphens) and "9-10am" are
+#: dates and times.
+_RANGE = re.compile(r"(\d+(?:[.,]\d+)?)-(\d+(?:[.,]\d+)?)$")
 _NUMBER_WORD = re.compile(r"(" + "|".join(_TENS) + r")(?:-(" + "|".join(k for k in _UNITS if 0 < _UNITS[k] < 10) + r"))?$")
 
 
@@ -188,9 +191,31 @@ def _amounts(tokens: list[str]) -> list[str]:
     return out
 
 
-def _clock_or_year(tokens: list[str], i: int) -> bool:
-    """Whether a figure that counts nothing is a time ("by 10") or a year."""
-    return bool(_YEAR.match(tokens[i])) or (i > 0 and tokens[i - 1] in _BEFORE_CLOCK)
+def _clock_or_year(tokens: list[str], i: int, part: str, known: set[str] | None) -> bool:
+    """Whether a figure that counts nothing is a time ("by 10") or a year.
+    With `known` (the hours and years of the facts and the question, and
+    this year's) it must be one of them, or a time with minutes ("9.30"), or
+    follow a month ("October 28, 2026"); without, it is taken as said."""
+    if _YEAR.match(part):
+        before = tokens[i - 1] if i else ""
+        month_day = i > 2 and before == "," and tokens[i - 3] in _MONTHS
+        return known is None or before in _MONTHS or month_day or part in known
+    if i > 0 and tokens[i - 1] in _BEFORE_CLOCK:
+        return known is None or bool(re.match(r"\d{1,2}\.\d\d$", part)) or part in known
+    return False
+
+
+def _known(facts: str, question: str, now: datetime | None) -> set[str]:
+    """The hours and the years the facts and the question state, as the text
+    of a figure: "at 10am" is 10, "2026-10-28" has 2026."""
+    text = f"{facts or ''} {question or ''}".lower()
+    known = set(re.findall(r"\b(?:19|20)\d\d\b", text))
+    if now:
+        known |= {str(now.year + n) for n in (-1, 0, 1)}
+    for m in re.finditer(r"\b(\d{1,2})(?::\d\d)?\s*(am|pm)\b|\bat\s+(\d{1,2})\b|\b(\d{1,2}):\d\d\b", text):
+        hour = int(m[1] or m[3] or m[4])
+        known |= {str(hour), str(hour % 12 or 12), str(hour % 12 + (12 if m[2] == "pm" else 0))}
+    return known
 
 
 def _compound(tokens: list[str], i: int) -> tuple[float, float, int]:
@@ -210,34 +235,40 @@ def _compound(tokens: list[str], i: int) -> tuple[float, float, int]:
     return total, last, j
 
 
-def _figures(text: str) -> list[tuple[str, str | None]]:
+def _figures(text: str, known: set[str] | None = None) -> list[tuple[str, str | None]]:
     """Every figure the text says that is not a date, a time or an id, as
     (value, the noun it counts, "~<minutes>" for a span, or None for a bare
     figure). A span said in two units is one span, in the smaller
     ("8 weeks and 3 days" is 59 days); a rounded one ("roughly 60 days") ends
-    in "h" (`_per`). "no" is a figure only before a counted noun ("no
-    reminders"), never "No, ..."."""
+    in "h" (`_per`); a range ("10-12") is two figures. "no" is a figure only
+    before a counted noun ("no reminders"), never "No, ...". A bare figure
+    that reads as a time after "by" or as a year is none when `known`
+    (`_clock_or_year`) says it is one."""
     tokens = _amounts(_TOKEN.findall((text or "").lower()))
     out: list[tuple[str, str | None]] = []
     skip = 0
     for i, token in enumerate(tokens):
         if token[0] in "#/" or i < skip:
             continue
-        value = "0" if token == "no" else _value(token)
-        if value is None:
-            continue
-        if _dated(tokens, i):
+        pair = _RANGE.match(token)
+        parts = list(pair.groups()) if pair else [token]
+        values = ["0" if token == "no" else _value(part) for part in parts]
+        if None in values or _dated(tokens, i):
             continue
         after = tokens[i + 1] if i + 1 < len(tokens) else ""
         if after in _SPAN_MINUTES:
+            hedged = "h" if any(w in _HEDGES for w in tokens[max(0, i - 2) : i]) else ""
+            if pair:
+                out.extend((v, f"~{_SPAN_MINUTES[after]:.10g}{hedged}") for v in values)
+                continue
             minutes, unit, skip = _compound(tokens, i)
-            hedged = any(w in _HEDGES for w in tokens[max(0, i - 2) : i])
-            out.append((f"{minutes / unit:.6g}", f"~{unit:.10g}{'h' if hedged else ''}"))
+            out.append((f"{minutes / unit:.6g}", f"~{unit:.10g}{hedged}"))
             continue
         noun = _noun_after(tokens, i)
-        if noun is None and (token == "no" or _pronoun_one(tokens, i) or _clock_or_year(tokens, i)):
-            continue
-        out.append((value, noun))
+        for part, value in zip(parts, values):
+            if noun is None and (token == "no" or _pronoun_one(tokens, i) or _clock_or_year(tokens, i, part, known)):
+                continue
+            out.append((value, noun))
     return out
 
 
@@ -427,7 +458,7 @@ def keeps(prose: str, facts: str, question: str, counts: dict[str, set[str]], ne
     figure it was asked for."""
     if not prose.strip():
         return False
-    said = _figures(prose)
+    said = _figures(prose, _known(facts, question, now))
     stated = {v for v, _n in _figures(facts)} | {v for v, _n in _figures(question)}
     every = set().union(*counts.values()) if counts else set()
     spans = _spans(facts) + _spans(question) + _dated_spans(facts, now)

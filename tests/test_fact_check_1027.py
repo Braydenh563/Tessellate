@@ -229,3 +229,31 @@ def test_only_a_breakdown_counts_inside_a_nested_dict():
     assert fact_check.result_counts("search_notes", {"filters": {"limit": 10}, "notes": [{"id": 1}, {"id": 2}]}) == {"note": {"2"}}
     assert fact_check.result_counts("count_notes", {"total": 5, "by_category": {"Work": 3, "Home": 2}}) == {"note": {"5", "3", "2"}}
 
+
+
+@SURFACES
+@pytest.mark.parametrize(
+    ("prose", "ok"),
+    [
+        # The third review: a figure after by/after/until/around that is no
+        # time of the facts is a figure like any other.
+        ("You have 3 reminders, up by 5.", False),
+        ("You have 3 reminders; pay rent is due after 4.", False),
+        ("You have 3 reminders; call mum is due until 7.", False),
+        ("You have 3 reminders; pay rent is due Thursday by 10.", True),
+        ("You have 3 reminders; call mum is due by 9.30 tomorrow.", True),
+        ("You have 3 reminders; call mum is due around 9 tomorrow.", True),
+        # A range is two figures, each checked.
+        ("You have 10-12 reminders.", False),
+        ("You have 2-3 reminders.", False),
+        ("You have 3 reminders; call mum is due 9-10am.", True),
+        # A year counts nothing only where it is a year.
+        ("You have 3 reminders, up from 2000.", False),
+        ("You have 3 reminders; call mum is due on 28 October 2026.", True),
+        ("You have 3 reminders; call mum is due October 28, 2026.", True),
+        ("You have 3 reminders; the dentist is due in 2026.", True),
+    ],
+)
+def test_a_figure_after_by_a_range_and_a_year_are_verified(ai_client, fake_ollama, session, prose, ok, use_tools):
+    _seed(session)
+    assert _kept(ai_client, fake_ollama, "what reminders do I have", prose, use_tools) is ok
