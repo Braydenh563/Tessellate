@@ -3757,6 +3757,7 @@ function renderGraphPopupHeader(entry, node) {
 async function openGraphPopup(event, node) {
   event.stopPropagation();
   graphPopupId = node.id;
+  graphLate.popupDragged = false;
   //: The open note wears the focus ring (graph-canvas.js `openId`).
   if (typeof gcTab !== "undefined" && gcTab.canvas) gcRequestDraw(gcTab);
   const popup = $("graph-popup");
@@ -4273,6 +4274,10 @@ function graphPanelRoom() {
 const graphLate = {
   newAt: null,
   popupResize: null,
+  //: The popup's own placement (INBOX 1413): `popupDragged` once the head has
+  //: moved it (it then stays where put until closed), `popupDrag` the live gesture.
+  popupDragged: false,
+  popupDrag: null,
 };
 function watchGraphPopupSize(popup, place) {
   if (typeof ResizeObserver !== "function" || popup.dataset.placeWatch) return;
@@ -4316,16 +4321,107 @@ function placeGraphPopup() {
   // it and the action dock stays pinned at its foot (the CSS's sticky row).
   popup.style.maxHeight = `${Math.max(120, room - 16)}px`;
   const size = popup.getBoundingClientRect();
-  const left = Math.min(
-    Math.max(graphPopupAnchor.x - box.left + 12, 8),
-    Math.max(8, box.width - size.width - 8)
-  );
-  const top = Math.min(
-    Math.max(graphPopupAnchor.y - box.top + 12, 8),
-    Math.max(8, room - size.height - 8)
-  );
-  popup.style.left = `${left}px`;
-  popup.style.top = `${top}px`;
+  const maxLeft = Math.max(8, box.width - size.width - 8);
+  const maxTop = Math.max(8, room - size.height - 8);
+  let spot = null;
+  if (graphLate.popupDragged) {
+    //: Where the person put it: only kept inside the map when the map or
+    //: the popup changes size.
+    spot = { left: parseFloat(popup.style.left) || 8, top: parseFloat(popup.style.top) || 8 };
+    spot.left = Math.min(Math.max(spot.left, 0), Math.max(0, box.width - size.width));
+    spot.top = Math.min(Math.max(spot.top, 0), Math.max(0, room - size.height));
+  } else {
+    spot = graphPopupFollowSpot(box, room, size);
+  }
+  if (!spot) {
+    spot = {
+      left: Math.min(Math.max(graphPopupAnchor.x - box.left + 12, 8), maxLeft),
+      top: Math.min(Math.max(graphPopupAnchor.y - box.top + 12, 8), maxTop),
+    };
+  }
+  const left = `${Math.round(spot.left)}px`;
+  const top = `${Math.round(spot.top)}px`;
+  if (popup.style.left !== left) popup.style.left = left;
+  if (popup.style.top !== top) popup.style.top = top;
+}
+
+//: **An undragged popup stands beside its own node** (INBOX 1413), on the
+//: right, else the left, else under or over it, so it never covers the node it
+//: is about; it follows the node as the map pans, zooms and settles
+//: (`gcDraw` calls `placeGraphPopup` once a frame, so it costs nothing when
+//: nothing moves) and is hidden (not closed) while the node is out of view.
+function graphPopupFollowSpot(box, room, size) {
+  const popup = $("graph-popup");
+  const s = typeof gcTab !== "undefined" ? gcTab : null;
+  const node = s && s.byId && graphPopupId != null ? s.byId.get(graphPopupId) : null;
+  if (!node || !Number.isFinite(node.x) || !s.canvas || s.size !== "full") return null;
+  const c = s.canvas.getBoundingClientRect();
+  const t = s.transform;
+  const sx = c.left - box.left + node.x * t.k + t.x;
+  const sy = c.top - box.top + node.y * t.k + t.y;
+  const r = Math.max(4, (node.r || 6) * t.k);
+  const gone = sx < 0 || sy < 0 || sx > box.width || sy > room;
+  popup.classList.toggle("graph-popup-away", gone);
+  const gap = 12;
+  const w = size.width;
+  const h = size.height;
+  const clampX = (v) => Math.min(Math.max(v, 8), Math.max(8, box.width - w - 8));
+  const clampY = (v) => Math.min(Math.max(v, 8), Math.max(8, room - h - 8));
+  const tries = [
+    [sx + r + gap, sy - 20],
+    [sx - r - gap - w, sy - 20],
+    [sx - w / 2, sy + r + gap],
+    [sx - w / 2, sy - r - gap - h],
+  ];
+  const clear = (x, y) => x + w < sx - r || x > sx + r || y + h < sy - r || y > sy + r;
+  let best = null;
+  for (const [x, y] of tries) {
+    const spot = { left: clampX(x), top: clampY(y) };
+    if (clear(spot.left, spot.top)) return spot;
+    best = best || spot;
+  }
+  return best;
+}
+
+//: The head drags the popup (pointer and touch); the buttons and fields keep
+//: their own clicks. Once moved it stays put, inside the map, until closed.
+function graphPopupDragStart(ev) {
+  const popup = $("graph-popup");
+  if (ev.button > 0 || ev.target.closest("button, input, textarea, a")) return;
+  if (popup.classList.contains("graph-popup-sheet")) return;
+  const at = popup.getBoundingClientRect();
+  graphLate.popupDrag = { id: ev.pointerId, dx: ev.clientX - at.left, dy: ev.clientY - at.top };
+  try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (e) { /* synthetic events */ }
+  popup.classList.add("graph-popup-dragging");
+  ev.preventDefault();
+}
+function graphPopupDragMove(ev) {
+  const d = graphLate.popupDrag;
+  if (!d || d.id !== ev.pointerId) return;
+  const popup = $("graph-popup");
+  const { box, room } = graphPanelRoom();
+  const size = popup.getBoundingClientRect();
+  const left = Math.min(Math.max(ev.clientX - d.dx - box.left, 0), Math.max(0, box.width - size.width));
+  const top = Math.min(Math.max(ev.clientY - d.dy - box.top, 0), Math.max(0, room - size.height));
+  graphLate.popupDragged = true;
+  popup.classList.remove("graph-popup-away");
+  popup.style.left = `${Math.round(left)}px`;
+  popup.style.top = `${Math.round(top)}px`;
+}
+function graphPopupDragEnd(ev) {
+  const d = graphLate.popupDrag;
+  if (!d || d.id !== ev.pointerId) return;
+  graphLate.popupDrag = null;
+  $("graph-popup").classList.remove("graph-popup-dragging");
+}
+{
+  const head = document.querySelector("#graph-popup .graph-popup-head");
+  if (head) {
+    head.addEventListener("pointerdown", graphPopupDragStart);
+    head.addEventListener("pointermove", graphPopupDragMove);
+    head.addEventListener("pointerup", graphPopupDragEnd);
+    head.addEventListener("pointercancel", graphPopupDragEnd);
+  }
 }
 
 //: The facts about a note, as **one muted line**.
@@ -4778,8 +4874,10 @@ try {
 
 function closeGraphPopup() {
   graphPopupId = null;
+  graphLate.popupDragged = false;
   if (typeof gcTab !== "undefined" && gcTab.canvas) gcRequestDraw(gcTab);
   $("graph-popup").classList.add("hidden");
+  $("graph-popup").classList.remove("graph-popup-away");
   clearGraphKeyboardFocus();
 }
 

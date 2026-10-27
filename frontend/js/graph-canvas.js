@@ -3034,6 +3034,7 @@ function gcDraw(s = gcTab) {
 
   ctx.restore();
   gcHoverCardFrame(s);
+  if (s === gcTab && typeof graphPopupId !== "undefined" && graphPopupId !== null) placeGraphPopup();
   s.timing.lastFrame = performance.now() - started;
   s.timing.frames += 1;
   // **Only a frame with something in it stops the clock.** A frame drawn
