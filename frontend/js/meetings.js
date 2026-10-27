@@ -1466,8 +1466,11 @@ async function renderRecordings() {
     const ask = ++recordingsAsk;
     body = await apiJson(`/recordings?limit=500${q ? `&q=${encodeURIComponent(q)}` : ""}`);
     if (ask !== recordingsAsk) return;
-  } catch (error) {
-    list.replaceChildren(recordingsEmpty("failed", error.message));
+  } catch {
+    const failed = list.appendChild(document.createElement("li"));
+    list.replaceChildren(failed);
+    failed.className = "empty-state recordings-empty";
+    surfaceFailed(failed, "recordings", renderRecordings);
     return;
   }
   noteRecoveredRecordings(body.recovered);
@@ -1481,14 +1484,13 @@ async function renderRecordings() {
 //: was here, "can you add like an icon or smth to this page so it doesnt look
 //: so empty??". `kind` is "none", "match" (the search found nothing) or
 //: "failed" (the list did not load, the recipe's warn mood).
-function recordingsEmpty(kind, detail = "") {
+function recordingsEmpty(kind) {
   const copy = {
     none: ["ph-microphone", "Nothing recorded yet", "Record keeps a voice note here; a meeting's recording lands here too."],
     match: ["ph-magnifying-glass", "No recordings match", "No recording has that in its name or its transcript."],
-    failed: ["ph-warning-circle", "Recordings did not load", detail || "Couldn't load your recordings."],
   }[kind];
   const li = document.createElement("li");
-  li.className = `empty-state recordings-empty${kind === "failed" ? " is-failed" : ""}`;
+  li.className = "empty-state recordings-empty";
   const icon = document.createElement("span");
   icon.className = "empty-icon";
   icon.setAttribute("aria-hidden", "true");

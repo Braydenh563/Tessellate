@@ -296,6 +296,31 @@ header#top-bar[data-scrolled="1"],
   transition: opacity var(--ui-exit) var(--ease-out), scale var(--ui-exit) var(--ease-out),
     display var(--ui-exit) linear allow-discrete;
 }
+/* --- motion: the floating panels join the menu's recipe (INBOX 1415) -------
+   Panels that hang off an opener and show by `.hidden` took no part in the
+   fade and grow (audit: `animation: none`), so they take the same two rules.
+   In-flow panels are not here: a fade does not cure the shift. */
+:is(.space-menu, .notif-panel, #status-clock-detail, .nav-history-menu, .chat-model-panel, .global-find-bar,
+  .note-picker-panel, .chat-skills-panel, .chat-dock-more-panel, .graph-popup):not(.hidden) {
+  --menu-origin-x: 100%;
+  --menu-origin-y: 0%;
+  transform-origin: var(--menu-origin-x) var(--menu-origin-y);
+  animation: ui-fade var(--ui-base) var(--ease-out), ui-grow var(--ui-base) var(--ease-out) 1ms;
+}
+:is(.space-menu, .note-picker-panel, .chat-skills-panel, .nav-history-menu):not(.hidden) {
+  --menu-origin-x: 0%;
+}
+:is(.note-picker-panel, .chat-skills-panel, .chat-dock-more-panel, .nav-history-menu, #status-clock-detail):not(.hidden) {
+  --menu-origin-y: 100%;
+}
+:is(.space-menu, .notif-panel, #status-clock-detail, .nav-history-menu, .chat-model-panel, .global-find-bar,
+  .note-picker-panel, .chat-skills-panel, .chat-dock-more-panel, .graph-popup).hidden {
+  opacity: 0;
+  scale: 0.96;
+  pointer-events: none;
+  transition: opacity var(--ui-exit) var(--ease-out), scale var(--ui-exit) var(--ease-out),
+    display var(--ui-exit) linear allow-discrete;
+}
 /* --- dark glass reads flatter, and here is which half of it does ----------
    The owner: "glass looks better on light mode and not dark but idk if thats
    an actual thing or if the values are different." It is an actual thing, and

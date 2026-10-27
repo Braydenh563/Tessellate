@@ -4353,6 +4353,58 @@ def test_a_menu_fades_out_through_the_one_class_every_close_path_sets() -> None:
     assert "function menuExitMs(menu)" in menus
 
 
+#: INBOX 1415: the floating panels that opened and closed between two frames
+#: (audit: computed `animation: none`, `transition: all 0s`) now take the
+#: menu's two rules. A new floating panel shown by `.hidden` joins this list.
+FLOATING_PANELS = (
+    ".space-menu", ".notif-panel", "#status-clock-detail", ".nav-history-menu", ".chat-model-panel",
+    ".global-find-bar", ".note-picker-panel", ".chat-skills-panel", ".chat-dock-more-panel", ".graph-popup",
+)
+
+
+def test_floating_panels_open_and_close_on_the_menu_recipe() -> None:
+    css = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+    enter = css.index(":is(.space-menu, .notif-panel,")
+    enter_block = css[enter : css.index("}", enter)]
+    assert "animation: ui-fade var(--ui-base) var(--ease-out), ui-grow var(--ui-base) var(--ease-out) 1ms;" in enter_block
+    assert ":not(.hidden)" in enter_block.split("{")[0]
+    leave = css.index(").hidden {\n  opacity: 0;\n  scale: 0.96;", enter)
+    head = css[css.rindex(":is(", 0, leave) : leave]
+    leave_block = css[leave : css.index("}", leave)]
+    assert "opacity var(--ui-exit) var(--ease-out)" in leave_block
+    assert "display var(--ui-exit) linear allow-discrete" in leave_block
+    assert "pointer-events: none;" in leave_block
+    for sel in FLOATING_PANELS:
+        assert sel in enter_block.split("{")[0], f"{sel} must grow in with the menu recipe"
+        assert sel in head, f"{sel} must leave with the menu recipe"
+
+
+def test_sub_views_whose_read_failed_say_so_instead_of_claiming_empty() -> None:
+    """INBOX 1415, measured with every request failing (a fresh load, then each
+    Library sub-view): Boards, Images, Contents, Bookmarks and Documents drew
+    "No ... yet" over a full notebook and Recordings printed the server's raw
+    line. Each now takes `surfaceFailed` (a plain line and Try again) and
+    `surfaceRecovered`. Not here: the chat list, the notes list's skeleton
+    rows and the skills list, whose fixes are in boot scripts that sit at the
+    gzip ratchet (OPEN.md)."""
+    js = "\n".join(
+        (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8")
+        for name in ("library.js", "whiteboard.js", "meetings.js")
+    )
+
+    def body(start: str, length: int = 5200) -> str:
+        at = js.index(start)
+        return js[at : at + length]
+
+    assert 'surfaceFailed(empty, "images"' in body("async function renderLibraryImagesGallery(", 9000)
+    assert 'surfaceFailed(empty, "contents", renderContents)' in body("async function renderContents(")
+    assert 'surfaceFailed(empty, "bookmarks", renderBookmarks)' in body("async function renderBookmarks(")
+    assert 'surfaceFailed(empty, "documents", renderLibraryDocuments)' in body("async function renderLibraryDocuments(")
+    assert 'surfaceFailed(empty, "boards"' in body("function drawLibraryBoardsGallery(")
+    assert 'surfaceFailed(failed, "recordings", renderRecordings)' in body("async function renderRecordings(", 1500)
+    assert "error.message" not in body("async function renderRecordings(", 1200), "no raw server line on the page"
+
+
 def test_a_locked_load_is_not_logged_as_a_failure() -> None:
     """The lock screen is the expected state at boot, not a failed load: the
     browser log used to open with `WARN browser: [notes] could not load:

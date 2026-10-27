@@ -24129,7 +24129,13 @@ function drawLibraryBoardsGallery(listed) {
   const noMatch = $("library-boards-no-match");
   if (!grid) return;
   const boards = listed && listed.filter(libraryListsBoard);
-  if (!boards) { grid.replaceChildren(); empty?.classList.remove("hidden"); noMatch?.classList.add("hidden"); return; }
+  if (!boards) {
+    grid.replaceChildren();
+    if (empty) surfaceFailed(empty, "boards", renderLibraryBoardsGallery);
+    noMatch?.classList.add("hidden");
+    return;
+  }
+  surfaceRecovered(empty);
   // See `createNewBoard`'s own comment: a board with nothing on it yet
   // doesn't come back from the server at all.
   const created = window.wbLastCreatedBoard;
