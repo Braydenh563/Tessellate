@@ -583,7 +583,7 @@ def test_suggested_shares_the_status_polls_model_list(client, monkeypatch):
     ollama = OllamaClient("http://127.0.0.1:9")
     monkeypatch.setattr(deps, "get_ollama", lambda: ollama)
     monkeypatch.setattr(routes_models, "INSTALLED_REFRESH_BUDGET", 0.3)
-    monkeypatch.setattr(routes_models, "_loaded_names", lambda: set())
+    monkeypatch.setattr(routes_models, "_loaded_names", set)
     release = threading.Event()
     calls: list[int] = []
     name = next(iter(routes_models.SUGGESTED_MODELS.values()))[0]["name"]
