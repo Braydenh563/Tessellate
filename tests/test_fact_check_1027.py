@@ -92,3 +92,19 @@ def test_a_span_the_engine_did_not_compute_is_the_models(ai_client, fake_ollama,
     """Under a list of dated reminders, "in 2 days" is the model's reading."""
     _seed(session)
     assert _kept(ai_client, fake_ollama, "what reminders do I have", "You have 3 reminders; pay rent is in 2 days.", use_tools)
+
+
+@SURFACES
+@pytest.mark.parametrize(
+    ("prose", "ok"),
+    [
+        ("Only one is waiting.", False),
+        ("One is due soon.", False),
+        ("You have 3 reminders. One of them, call mum, is due tomorrow.", True),
+        ("You have 3 reminders; the first one is call mum.", True),
+    ],
+)
+def test_a_bare_one_counts_unless_it_points(ai_client, fake_ollama, session, prose, ok, use_tools):
+    """A bare "one" always stood, so "Only one is waiting" passed with 3."""
+    _seed(session)
+    assert _kept(ai_client, fake_ollama, "what reminders do I have", prose, use_tools) is ok

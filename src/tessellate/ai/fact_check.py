@@ -75,6 +75,12 @@ _BEFORE_TIME = {"at", "#", "/", "no.", "number"}
 #: Words that end the reach from a figure to its noun ("one of the notes"
 #: does not say there is one note).
 _STOPS = {"of", "is", "are", "was", "were", "has", "have", "had", "be", "in", "on", "at", "from", "until", "by", "for", "to", "and", "or"}
+#: Before a bare "one", the words that make it a pronoun ("the first one",
+#: "each one"), not a count; "one of them" is one too (`_pronoun_one`).
+_ONE_PRONOUN = {
+    "the", "this", "that", "each", "every", "which", "any", "first", "next", "last", "other", "another", "same",
+    "latest", "earliest", "newest", "oldest", "soonest",
+}
 #: Result keys that are positions, not counts.
 _NOT_COUNTS = {"offset", "limit", "page", "id", "seed"}
 
@@ -118,6 +124,15 @@ def _dated(tokens: list[str], i: int) -> bool:
     return before in _BEFORE_TIME or before in _MONTHS or before in _WEEKDAYS or after in _MONTHS or after in _CLOCK
 
 
+def _pronoun_one(tokens: list[str], i: int) -> bool:
+    """Whether a bare "one" points at a thing rather than counting them:
+    "one of them is due", "the first one". "Only one is waiting" counts."""
+    if tokens[i] != "one":
+        return False
+    after = tokens[i + 1] if i + 1 < len(tokens) else ""
+    return after == "of" or (i > 0 and tokens[i - 1] in _ONE_PRONOUN)
+
+
 def _figures(text: str) -> list[tuple[str, str | None]]:
     """Every figure the text says that is not a date, a time or an id, as
     (value, the noun it counts, "~<minutes>" for a span, or None for a bare
@@ -135,7 +150,7 @@ def _figures(text: str) -> list[tuple[str, str | None]]:
             continue
         after = tokens[i + 1] if i + 1 < len(tokens) else ""
         noun = f"~{_SPAN_MINUTES[after]}" if after in _SPAN_MINUTES else _noun_after(tokens, i)
-        if token == "no" and noun is None:
+        if (token == "no" and noun is None) or (noun is None and _pronoun_one(tokens, i)):
             continue
         out.append((value, noun))
     return out
@@ -242,7 +257,7 @@ def _kept(value: str, noun: str | None, counts: dict[str, set[str]], every: set[
     if _is_span(noun):
         return not spans or _span_kept(value, float(noun[1:]), spans)
     if noun is None:
-        return value == "1" or value in every or value in stated
+        return value in every or value in stated
     if counts:
         return value in (every if noun == "*" else counts.get(noun, set()))
     return value in stated
@@ -254,7 +269,7 @@ def keeps(prose: str, facts: str, question: str, counts: dict[str, set[str]], ne
     With counts: every count the prose says matches the engine's count of
     that noun (a noun the engine did not count is refused), and a bare
     figure is one of the counts, or a figure the facts or the question state
-    outside a date or a time; a bare "one" ("one of them is due") stands.
+    outside a date or a time; "one of them" and "the first one" are no figure.
     With none (a worked sum, a conversion): every figure is one the facts or
     the question state. Either way, an answer with no list under it says the
     figure it was asked for."""
