@@ -596,7 +596,10 @@ def _resolve_day(text: str, now: datetime, locale: str | None) -> tuple:
             continue  # a clock (17:00), not a day: `_clock` reads it
         found = span(phrase, now.date(), "future")
         if found is not None:
-            return found[0], text[:start] + " " + text[end:]
+            #: A weekend under way on its Sunday began yesterday: a reminder
+            #: for it is today, never a Saturday already gone.
+            first = now.date() if found[0] < now.date() <= found[1] else found[0]
+            return first, text[:start] + " " + text[end:]
     return day, rest
 
 

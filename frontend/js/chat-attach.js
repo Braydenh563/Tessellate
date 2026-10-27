@@ -2108,6 +2108,9 @@ async function chatSendTurn(preset, opts = {}) {
             row.textContent = verdict === "confirmed" ? `Confirmed: ${result.line}` : verdict === "done" ? "Marked done" : "Not right: it will not be shown again.";
           }, "muted");
           groundingHolder.appendChild(line);
+          //: A digest answer hides this holder (its marks are inline), and the
+          //: rows are not citations: show it for them.
+          groundingHolder.classList.remove("hidden");
         }
       },
       onPlan: (event) => {
