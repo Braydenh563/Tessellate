@@ -227,9 +227,11 @@ def test_the_moments_are_transforms_on_the_figure_and_block_nothing() -> None:
 
 def test_a_throw_that_lands_on_a_surface_stays_on_it():
     """INBOX 1302: thrown onto the bottom bar where it cannot stand, it went up
-    to the top bar; now it steps along the surface it landed on, however far."""
+    to the top bar; now it steps along the surface it landed on. INBOX 1402:
+    "however far" took it 224 to 320px along the bar, so a little way along
+    it, and past that the nearest open air (tests/test_companion_land_1402.py)."""
     spot = _fn(AV, "nameMarkBuddyThrowSpot")
     assert 'fate?.kind === "splat"' not in spot
-    assert "if (s.on && spot.y < s.y - 40)" in spot and "innerWidth" in spot
+    assert "if (s.on && spot.y < s.y - 40)" in spot and "NMB_LAND_NEAR" in spot and "innerWidth" not in spot
     assert "far = 320" in _fn(AV, "nameMarkBuddyStepAside")
     assert "Math.max(320, reach)" in _fn(AV, "nameMarkBuddyDrop")

@@ -141,9 +141,13 @@ def test_the_flight_is_one_frame_loop_on_transforms_and_lands_as_a_drop() -> Non
     spot = _fn("nameMarkBuddyThrowSpot")
     assert "nameMarkBuddyDrop(s.x, s.y)" in spot and "nameMarkBuddyChoose" not in land + spot
     assert "spots[tab] = nameMarkBuddySpotFor(spot);" in land
-    # Any landing on a surface it cannot stand on steps along it, never up to
-    # the top bar (seed 2 of throwfates.js; INBOX 1302 widened it from splats).
-    assert "s.on && spot.y < s.y - 40" in spot and "nameMarkBuddyDrop(s.x, s.y, reach)" in spot
+    # Any landing on a surface it cannot stand on steps along it a little way,
+    # never up to the top bar (seed 2 of throwfates.js; INBOX 1302 widened it
+    # from splats); further than that, the nearest open air (INBOX 1402: it
+    # went "across the screen" along the bar, so the reach is no longer the
+    # window's width).
+    assert "s.on && spot.y < s.y - 40" in spot and "nameMarkBuddyDrop(s.x, s.y, NMB_LAND_NEAR)" in spot
+    assert "nameMarkBuddyLandNear(s.x, s.y, spot)" in spot and "innerWidth" not in spot
     assert "nameMarkBuddyToss" not in AV
 
 

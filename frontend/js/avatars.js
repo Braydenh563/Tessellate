@@ -6013,17 +6013,46 @@ function nameMarkBuddyWorld(tab) {
 function nameMarkBuddyThrowSpot(s) {
   nameMarkBuddyIndexReset();
   let spot = nameMarkBuddyDrop(s.x, s.y);
-  //: Landed where it cannot stand: step along that surface, not up to the top bar (INBOX 1302).
-  if (s.on && spot.y < s.y - 40) {
-    for (const reach of [400, innerWidth]) {
-      const along = nameMarkBuddyDrop(s.x, s.y, reach);
-      if (Math.abs(along.y - s.y) <= 40) {
-        spot = along;
-        break;
-      }
+  //: Landed where it cannot stand: along that surface a little way first,
+  //: not up to the top bar (INBOX 1302); further than that, the nearest
+  //: open air (`nameMarkBuddyLandNear`), never across the screen.
+  if (s.on && spot.y < s.y - 40) spot = nameMarkBuddyDrop(s.x, s.y, NMB_LAND_NEAR);
+  spot = nameMarkBuddyLandNear(s.x, s.y, spot);
+  if (spot.y >= s.y + 2) spot.falls = true;
+  return spot;
+}
+
+//: **It settles where it lands** (INBOX 1402, the owner: "ill trow the
+//: companions sometimes but then it tll fly back to some position
+//: someitmes across the screen"). Measured (throwsettle1402.js, 1280x720):
+//: come down on the window's foot over the bottom bar's buttons, it went
+//: 224 to 256px along the bar to the first place a line search reached,
+//: and from x 938 it went 256px. Where the drop's own choice is further
+//: than `NMB_LAND_NEAR` and is not straight down (a fall is the way it was
+//: going), it takes the nearest open air instead, searched in rings out
+//: from where it landed, up first: just above the bar's buttons, a few px
+//: away. Nothing nearer, the drop's choice stands. Pure geometry: a few
+//: thousand box tests at most, once, on landing.
+const NMB_LAND_NEAR = 96;
+const NMB_LAND_STEP = 8;
+function nameMarkBuddyLandNear(x, y, spot) {
+  const far = Math.hypot(spot.x - x, spot.y - y);
+  if (far <= NMB_LAND_NEAR || (spot.y > y && Math.abs(spot.x - x) <= NMB_LAND_NEAR)) return spot;
+  const obstacles = nameMarkBuddyObstacles(nameMarkBuddyTab());
+  const { top, bottom } = nameMarkBuddyLedges();
+  const lo = top ? top.bottom : 0;
+  const hi = (bottom ? bottom.top : innerHeight) - NMB_FEET;
+  for (let r = NMB_LAND_STEP; r < far; r += NMB_LAND_STEP) {
+    const n = Math.max(8, Math.ceil((2 * Math.PI * r) / 12));
+    //: From straight up, then either side of it in turn, round to down.
+    for (let k = 0; k < n; k += 1) {
+      const a = -Math.PI / 2 + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * ((2 * Math.PI) / n);
+      const px = Math.round(x + r * Math.cos(a));
+      const py = Math.round(y + r * Math.sin(a));
+      if (px < 0 || px > innerWidth - NMB_W || py < lo || py > hi) continue;
+      if (!nameMarkBuddyHits(px, py, "float", obstacles)) return { kind: "yours", pose: "float", legs: "", x: px, y: py };
     }
   }
-  if (spot.y >= s.y + 2) spot.falls = true;
   return spot;
 }
 function nameMarkBuddyThrowLand(buddy, s, tab, spot) {
@@ -9194,7 +9223,8 @@ function nameMarkBuddyBuild() {
       const thrown = !!v && Math.hypot(v[0], v[1]) > NMB_TOSS_SPEED && typeof nameMarkBuddyThrow === "function";
       if (thrown) nameMarkBuddyIndexReset();
       const world = thrown && nameMarkBuddyWorld(nameMarkBuddyTab());
-      const landed = !thrown && nameMarkBuddyDrop(Math.round(box.left), Math.round(box.top));
+      //: Let go too slowly to fly, it comes down the same way: near, or straight down.
+      const landed = !thrown && nameMarkBuddyLandNear(box.left, box.top, nameMarkBuddyDrop(Math.round(box.left), Math.round(box.top)));
       buddy.style.translate = "";
       buddy.classList.remove("nm-buddy-dragging");
       clearTimeout(drag.settle);
