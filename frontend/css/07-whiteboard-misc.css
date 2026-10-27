@@ -11892,13 +11892,6 @@ button.finder-row:is(:focus-visible, :has(:focus-visible)) {
   cursor: copy;
   pointer-events: auto;
 }
-.wb-link-label-handle {
-  fill: var(--card);
-  stroke: var(--accent);
-  stroke-width: 1.5px;
-  cursor: ew-resize;
-  pointer-events: auto;
-}
 /* Clone and connect: an arrow a little outside each side of the one
    selected shape, the accent's, quiet until the pointer is on it. */
 .wb-clone-grip {

@@ -839,7 +839,6 @@ const WB_INV_ZOOM_GRIPS = [
   ".wb-link-bend-handle",
   ".wb-link-waypoint-handle",
   ".wb-link-waypoint-add",
-  ".wb-link-label-handle",
   ".wb-clone-grip",
   ".wb-map-edge-handle",
   ".wb-map-resize-grip",
@@ -18040,7 +18039,15 @@ async function initWhiteboard() {
       // or erased until a full reload re-fetched it from the server and
       // rendered it "properly" the first time.
       currentDrawPath.remove();
-      wbScheduleRender();
+      //: A drawn shape is selected and the tool returns to Select (decision
+      //: 44); the pen and highlighter keep their tool so strokes continue.
+      if (!isFreehand) {
+        renderWhiteboardNow();
+        wbSelectToolRef?.("select");
+        selectWbItem("sketch", res.id);
+      } else {
+        wbScheduleRender();
+      }
     } catch (err) {
       console.error("Failed to save sketch:", err);
       if (currentDrawPath) currentDrawPath.remove();
@@ -19430,6 +19437,56 @@ function wbLayoutLinkLabel(groupEl) {
   label.setAttribute("y", String(p.y));
 }
 
+//: **A connector's label slides along its line by its own words** (INBOX
+//: 1404; Miro and Lucid do this; draw.io keeps the place as a share of the
+//: line's length). The drag moves the label to the nearest point of the
+//: drawn line and saves it as `label_t` (0 at the start, 1 at the end), so
+//: the label keeps its place when either end moves. A press that does not
+//: move is a click, which bubbles to the connector (select); a double-click
+//: edits the words. Only the Select tool drags, so the other tools still
+//: reach the connector under the label.
+function wbWireLinkLabelDrag(label, groupEl) {
+  const sketchOf = () => d3.select(groupEl).datum();
+  let t = 0.5, moved = false, before = null;
+  d3.select(label)
+    .on("dblclick", (event) => {
+      if (window.currentTool !== "select") return;
+      event.stopPropagation();
+      event.preventDefault();
+      const sketch = sketchOf();
+      selectWbItem("sketch", sketch.id);
+      wbEditLinkLabel(sketch);
+    })
+    .call(
+      d3.drag()
+        .clickDistance(WB_CLICK_SLOP)
+        .filter((event) => !event.button && !wbIsSecondTouch(event) && window.currentTool === "select")
+        .on("start", (event) => {
+          event.sourceEvent.stopPropagation();
+          moved = false;
+          before = WB_KIND_INFO.sketch.payload(sketchOf());
+          t = Number(groupEl.dataset.labelT) || 0.5;
+        })
+        .on("drag", (event) => {
+          moved = true;
+          const [px, py] = d3.pointer(event, groupEl);
+          t = wbLinkNearestT(groupEl.querySelector(".sketch-hitbox")?.getAttribute("d"), { x: px, y: py });
+          groupEl.dataset.labelT = String(t);
+          wbLayoutLinkLabel(groupEl);
+        })
+        .on("end", async () => {
+          if (!moved) return;
+          moved = false;
+          const sketch = sketchOf();
+          const rounded = Math.round(t * 100) / 100;
+          await wbSaveSketchProps(sketch, { label_t: Math.abs(rounded - 0.5) < 0.01 ? undefined : rounded });
+          wbPushUndo({ action: "move", kind: "sketch", id: sketch.id, before });
+          selectWbItem("sketch", sketch.id);
+          wbScheduleRender();
+        })
+    );
+}
+
 function wbPaintLinkLabel(groupEl, sketch, parsed) {
   const text = wbLinkTakesLabel(sketch, parsed) && typeof parsed.label === "string" ? wbExpandPlaceholders(parsed.label, parsed.props, wbPlaceholderBuiltins("sketch", sketch)) : "";
   let label = groupEl.querySelector(":scope > .wb-link-label");
@@ -19442,8 +19499,8 @@ function wbPaintLinkLabel(groupEl, sketch, parsed) {
     label.setAttribute("class", "wb-link-label");
     label.setAttribute("text-anchor", "middle");
     label.setAttribute("dominant-baseline", "central");
-    label.setAttribute("pointer-events", "none");
     groupEl.appendChild(label);
+    wbWireLinkLabelDrag(label, groupEl);
   }
   if (label.textContent !== text) label.textContent = text;
   groupEl.dataset.labelT = String(wbLinkLabelT(parsed));
@@ -19843,7 +19900,6 @@ function wbRenderLinkEndpointHandles(sketch, parsed) {
           })
       );
   }
-  if (!look) wbRenderLinkLabelGrip(group, sketch, parsed);
 }
 
 //: **A connector's bends, as grips** (the features audit W4, then the same
@@ -19904,7 +19960,12 @@ function wbRenderWaypointHandles(group, sketch, parsed, endpoints) {
       save("Bend taken out.");
     });
   }
-  for (const add of wbWaypointAddSpots(live(), ends(), groupEl()?.querySelector(".sketch-hitbox")?.getAttribute("d"))) {
+  //: A label is pressed by its words (INBOX 1404), so a ring that would sit
+  //: on them waits: the press would otherwise land on the ring.
+  let labelBox = null;
+  try { labelBox = groupEl()?.querySelector(":scope > .wb-link-label")?.getBBox() || null; } catch { labelBox = null; }
+  const underLabel = (a) => Boolean(labelBox && labelBox.width && a.x > labelBox.x - 6 && a.x < labelBox.x + labelBox.width + 6 && a.y > labelBox.y - 6 && a.y < labelBox.y + labelBox.height + 6);
+  for (const add of wbWaypointAddSpots(live(), ends(), groupEl()?.querySelector(".sketch-hitbox")?.getAttribute("d")).filter((a) => !underLabel(a))) {
     const grip = group.append("circle")
       .attr("class", "wb-link-waypoint-add")
       .attr("cx", add.x).attr("cy", add.y).attr("r", 4);
@@ -20000,58 +20061,6 @@ function wbWaypointAddSpots(parsed, ends, drawnD) {
     spots.push({ x: mid.x, y: mid.y, index: i });
   }
   return spots;
-}
-
-//: **A connector's label slides along its line** (the features audit W4;
-//: draw.io keeps a label's place as a share of the edge's length). The grip
-//: sits on the label; dragging it moves the label to the nearest point of
-//: the drawn line, saved as `label_t` (0 at the start, 1 at the end), so the
-//: label keeps its place along the line when either card moves.
-function wbRenderLinkLabelGrip(group, sketch, parsed) {
-  const groupEl = document.querySelector(`.sketch-group[data-id="${sketch.id}"]`);
-  const label = groupEl?.querySelector(":scope > .wb-link-label");
-  if (!label || !wbLinkMeasurePath) return;
-  //: At the label's leading edge rather than its middle: the middle of a
-  //: connector is where an elbow's add-a-bend grip sits, and two grips on
-  //: one point leave the one underneath unreachable (measured: the press
-  //: landed on this one).
-  const place = () => {
-    let box = null;
-    try {
-      box = label.getBBox();
-    } catch {
-      box = null;
-    }
-    return box && box.width ? { x: box.x - 9, y: box.y + box.height / 2 } : null;
-  };
-  const at = place();
-  if (!at) return;
-  let t = wbLinkLabelT(parsed);
-  const grip = group.append("rect")
-    .attr("class", "wb-link-label-handle")
-    .attr("x", at.x - 5).attr("y", at.y - 5).attr("width", 10).attr("height", 10)
-    .attr("rx", 2);
-  grip.append("title").text("Drag to slide the label along the line");
-  grip.on("contextmenu", (event) => wbForwardGripContextMenu(event, sketch.id));
-  grip.call(
-    d3.drag()
-      .on("start", (event) => event.sourceEvent.stopPropagation())
-      .on("drag", function (event) {
-        const [px, py] = d3.pointer(event, this.parentNode);
-        t = wbLinkNearestT(groupEl.querySelector(".sketch-hitbox")?.getAttribute("d"), { x: px, y: py });
-        groupEl.dataset.labelT = String(t);
-        wbLayoutLinkLabel(groupEl);
-        const now = place();
-        if (now) d3.select(this).attr("x", now.x - 5).attr("y", now.y - 5);
-      })
-      .on("end", async () => {
-        const before = WB_KIND_INFO.sketch.payload(sketch);
-        const rounded = Math.round(t * 100) / 100;
-        await wbSaveSketchProps(sketch, { label_t: Math.abs(rounded - 0.5) < 0.01 ? undefined : rounded });
-        wbPushUndo({ action: "move", kind: "sketch", id: sketch.id, before });
-        wbScheduleRender();
-      })
-  );
 }
 
 //: Where a label sits along its line: 0 at the start, 1 at the end, the

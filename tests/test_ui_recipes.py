@@ -2468,7 +2468,6 @@ CANVAS_GRIPS = (
     ".wb-link-bend-handle",
     ".wb-link-waypoint-handle",
     ".wb-link-waypoint-add",
-    ".wb-link-label-handle",
     ".wb-clone-grip",
     ".wb-map-edge-handle",
 )
