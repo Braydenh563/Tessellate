@@ -4408,7 +4408,6 @@ Owner's list, in one place (each is also logged above where it has detail):
 
 ## Placed from the guide round, 2026-10-27 (INBOX 1414 follow-ups)
 
-- Guide retrieval: "how do I pin a note" is answered with the Graph's pin text; rank the Notes topic first for "note" nouns (`ai/help_chat.py`).
-- Model-side guide rule: with a model running, "who are you", "what can you do" and "that didn't help" have no rule in the guide's prompt; reuse the 1414 social replies as the model's instructions.
-- `composer_aware.closing` now applies to Chat too: Chat no longer resumes finished actions. Confirm with the owner that this is wanted there.
+Pin retrieval, the model-side social brief and the Chat closing decision: built 1cd81bf, see HISTORY.
+
 - The plan Done flow (1412) has not been driven in a browser; the reminder windows for "this weekend" have no test.
