@@ -8,11 +8,16 @@ question. No clock is read."""
 
 from __future__ import annotations
 
+import importlib
 import re
 
 import pytest
 
-from tessellate.ai import composer_aware, help_chat, reading  # noqa: F401  (reading sets the act reader hook)
+from tessellate.ai import composer_aware, help_chat
+
+#: Loading the reading sets the act registry's reader hook, which the pin
+#: how-tos are read through (act_registry.py); a lone run lacked it.
+importlib.import_module("tessellate.ai.reading")
 
 #: The composed answers read preferences, which would make the repo data/ folder.
 pytestmark = pytest.mark.usefixtures("app_state")
