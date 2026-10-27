@@ -3676,8 +3676,11 @@ function nameMarkBuddyLedges() {
 }
 
 //: Every box it must stay clear of, measured once per placement: the tab's
-//: own controls, the chrome's, and whatever floats over the page.
+//: own controls, the chrome's, and whatever floats over the page. Inside
+//: `nameMarkBuddyMeasureOnce`, measured the first time only.
 function nameMarkBuddyObstacles(tab) {
+  const held = nmb.obstaclesHeld;
+  if (held?.tab === tab) return held.boxes.slice();
   nameMarkBuddyTextCache = new WeakMap();
   const roots = [
     document.getElementById(`tab-${tab}`), document.getElementById("top-bar"), document.getElementById("status-bar"),
@@ -3705,7 +3708,21 @@ function nameMarkBuddyObstacles(tab) {
     const last = msgs.length ? nameMarkBuddyShown(msgs[msgs.length - 1]) : null;
     if (last) boxes.push(last);
   }
+  if (held) Object.assign(held, { tab, boxes: boxes.slice() });
   return boxes;
+}
+
+//: One landing's worth of choosing (`fn`) on one measure of the page: a
+//: throw's landing asked for the obstacles two to four times (the drop, the
+//: step along, the open-air search), 8 to 88ms at 1x CPU on Notes (throw5.js).
+function nameMarkBuddyMeasureOnce(fn) {
+  const outer = nmb.obstaclesHeld;
+  nmb.obstaclesHeld = outer || { tab: null, boxes: null };
+  try {
+    return fn();
+  } finally {
+    nmb.obstaclesHeld = outer;
+  }
 }
 
 //: **Out of the way of a popup** (INBOX 430, the owner: "move out of the
@@ -3739,6 +3756,14 @@ function nameMarkBuddyPopups() {
 function nameMarkBuddyDodge() {
   const buddy = document.getElementById("nm-buddy");
   if (!buddy || nmb.visit) return;
+  //: Not mid-flight or carried: the press that let it go is a click too,
+  //: and its look (a layout read, 7 to 56ms) landed in the flight's frames
+  //: (the owner's lag log, 2026-10-27). Looked at once it is down.
+  if (nmb.flight || buddy.classList.contains("nm-buddy-dragging")) {
+    clearTimeout(nmbDodgeTimer);
+    nmbDodgeTimer = setTimeout(nameMarkBuddyDodge, 400);
+    return;
+  }
   //: The drawn figure's box, not the face button's: the tail and the
   //: skirt hang below the button, and a tour ring under them was missed.
   const face = buddy.querySelector(".nm-figure") || buddy.querySelector(".nm-buddy-face") || buddy;
@@ -6025,8 +6050,9 @@ function nameMarkBuddyWorld(tab) {
 //: as your spot on `tab`, the tab it was thrown on. Never the tab's own
 //: choice near there: on Notes with 24 notes, thrown right from x 44 and
 //: left from x 1168, both came down on one dock perch at x 763 (throw.js).
+//: Worked out once, at the release (`companionThrowPlan`), on the surfaces
+//: the release has just indexed for the flight's world, on one measure.
 function nameMarkBuddyThrowSpot(s) {
-  nameMarkBuddyIndexReset();
   let spot = nameMarkBuddyDrop(s.x, s.y);
   //: Landed where it cannot stand: along that surface a little way first,
   //: not up to the top bar (INBOX 1302); further than that, the nearest
@@ -9238,8 +9264,10 @@ function nameMarkBuddyBuild() {
       const thrown = !!v && Math.hypot(v[0], v[1]) > NMB_TOSS_SPEED && typeof nameMarkBuddyThrow === "function";
       if (thrown) nameMarkBuddyIndexReset();
       const world = thrown && nameMarkBuddyWorld(nameMarkBuddyTab());
+      //: The whole flight and where it comes down, before any write (companion-throw.js).
+      const plan = thrown && companionThrowPlan(Math.round(box.left), Math.round(box.top), v[0], v[1], world);
       //: Let go too slowly to fly, it comes down the same way: near, or straight down.
-      const landed = !thrown && nameMarkBuddyLandNear(box.left, box.top, nameMarkBuddyDrop(Math.round(box.left), Math.round(box.top)));
+      const landed = !thrown && nameMarkBuddyMeasureOnce(() => nameMarkBuddyLandNear(box.left, box.top, nameMarkBuddyDrop(Math.round(box.left), Math.round(box.top))));
       buddy.style.translate = "";
       buddy.classList.remove("nm-buddy-dragging");
       clearTimeout(drag.settle);
@@ -9249,7 +9277,7 @@ function nameMarkBuddyBuild() {
       //: **Thrown** (INBOX 882): let go while still moving fast, it flies
       //: (`nameMarkBuddyThrow`).
       if (thrown) {
-        nameMarkBuddyThrow(buddy, v[0], v[1], world);
+        nameMarkBuddyThrow(buddy, v[0], v[1], world, plan);
         face.dataset.dragged = "1";
         drag = null;
         return;

@@ -80,9 +80,15 @@ def test_the_flight_frame_is_time_based_capped_and_writes_no_layout_properties()
     src = AV[AV.index("function nameMarkBuddyThrow(") :][:4200]
     frame = src[src.index("const frame = (now) =>") : src.index("const next = () =>")]
     assert "Math.min(32, Math.max(0, now - then))" in frame
-    # The flight's own step, wrapped by the throw's fates (INBOX 1301 D6), at a fixed 16ms.
-    assert re.search(r"companionThrowStep\(s, Math\.min\(16, dt\), room, feel, nameMarkBuddyFlightStep", frame)
-    for forbidden in ("getBoundingClientRect", "offsetWidth", "offsetHeight", "style.left", "style.top", "setInterval", "setTimeout"):
+    # The flight's own step, wrapped by the throw's fates (INBOX 1301 D6), at a fixed 16ms:
+    # stepped once at the release (`companionThrowPlan`, 2026-10-27); the frame draws the path.
+    assert re.search(r"companionThrowStep\(s, 16, room, feel, nameMarkBuddyFlightStep", _fn("companionThrowPlan"))
+    assert "companionThrowAtTime(path, flown)" in frame
+    # Nothing in a frame reads the page: the owner's lag log (2026-10-27) had
+    # the landing's obstacle search in the flight's last frame.
+    for forbidden in ("getBoundingClientRect", "offsetWidth", "offsetHeight", "style.left", "style.top", "setInterval", "setTimeout",
+                      "nameMarkBuddyThrowSpot", "nameMarkBuddyDrop", "nameMarkBuddyObstacles", "nameMarkBuddyLandNear", "nameMarkBuddyWorld",
+                      "nameMarkBuddyLedges", "nameMarkBuddyEdges", "getComputedStyle", "companionThrowStep"):
         assert forbidden not in frame
     assert src.count("requestAnimationFrame(") == 1
 
@@ -139,18 +145,22 @@ def test_the_release_reads_the_page_before_it_writes_the_companion() -> None:
     first_write = release.index('buddy.style.translate = ""')
     assert release.index("const box = buddy.getBoundingClientRect()") < release.index("nameMarkBuddyDrop(") < first_write
     assert release.index("nameMarkBuddyWorld(") < first_write
-    assert "nameMarkBuddyThrow(buddy, v[0], v[1], world);" in release
+    assert "nameMarkBuddyThrow(buddy, v[0], v[1], world, plan);" in release
+    # The whole flight and its landing, planned before the first write (2026-10-27).
+    assert release.index("companionThrowPlan(") < first_write
     assert release.count("nameMarkBuddyDrop(") == 1, "the drop's spot is worked out once, up front"
     assert "nameMarkBuddyMoveTo(buddy, landed)" in release
 
 
 def test_the_landing_reads_the_page_before_the_landing_frame_writes() -> None:
     # The same for a flight's last frame: the landing's spot is worked out from
-    # the step that came to rest, before the frame's own transform, rotate and
-    # lean writes, so the obstacle reads do not restyle the drawing they just wrote.
+    # the step that comes to rest, before any write. Since 2026-10-27 that is at
+    # the release (`companionThrowPlan`, before the release's writes), not in the
+    # last frame, which the drawing had dirtied (217ms at 4x CPU, throw5.js).
     throw = _fn("nameMarkBuddyThrow")
     frame = throw[throw.index("const frame = (now) =>") : throw.index("const next = () =>")]
-    assert frame.index("nameMarkBuddyThrowSpot(") < frame.index("nameMarkBuddyPut(")
+    assert "nameMarkBuddyThrowSpot(" not in frame and "const landing = plan.spot;" in throw
+    assert "nameMarkBuddyThrowSpot(companionThrowAt(s))" in _fn("companionThrowPlan")
     assert "nameMarkBuddyThrowLand(buddy, s, tab, landing)" in frame
     land = _fn("nameMarkBuddyThrowLand")
     assert "(buddy, s, tab, spot)" in land and "nameMarkBuddyDrop(" not in land, "the landing is handed its spot, never reads it after the writes"

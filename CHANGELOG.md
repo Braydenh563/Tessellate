@@ -10,6 +10,7 @@ below). Versioning is `0.x` while the app stabilises.
 - Settings' suggested model list no longer waits on a busy model runner or the graphics card probe (INBOX 1415).
 
 ## [0.6.2] - 2026-10-27
+- Companion: a throw is smooth again. Its whole flight and where it comes down are worked out the moment it is let go, on one measure of the page, so no frame of the flight reads the page (the landing's search had run in the last frame, 11 to 40ms, and 217ms on a slowed machine), and the check for popups waits until it is down.
 - Whiteboard: a text box or sticky linked to a note saves again (it was refused as not a web address), and a pasted item that carried stray link ends is no longer dropped. Answers from facts: a date in a tool's time stamp (2026-10-30T17:00) counts as named, so a correct reply giving that day is kept.
 - Digest: a linked title in the weekly digest draws bold inside the link instead of showing its asterisks (a link label now reads bold, italic and code, in every surface that renders markdown), and an overdue reminder reads "Do my tax return when I get home (due 20 October)" with no stray space before a comma, dangling "around" or bracketed date.
 - Chat: the Confirm, Not right and Done row under an answer that cites a plan is shown (it sat in a hidden holder on a digest answer), and a plan confirmed in place keeps its Done in Chat, the Ask box and Tidy without a reload.

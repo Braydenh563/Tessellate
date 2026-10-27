@@ -209,9 +209,10 @@ def test_the_throw_is_lazy_and_boot_only_opens_the_door() -> None:
 
 
 def test_reduce_motion_gets_the_plain_flight_and_no_fates() -> None:
-    throw = _fn(THROW, "nameMarkBuddyThrow")
-    still = throw[throw.index("if (nameMarkBuddyNoTravel()) {") : throw.index("const char =")]
-    assert "nameMarkBuddyFlightStep(s, 16, world, feel)" in still and "companionThrowStep" not in still
+    # The plan (2026-10-27) steps the plain flight when motion is reduced, the fates otherwise.
+    plan = _fn(THROW, "companionThrowPlan")
+    assert "const still = nameMarkBuddyNoTravel();" in plan
+    assert "s = still ? nameMarkBuddyFlightStep(s, 16, world, feel) : companionThrowStep(" in plan
 
 
 def test_the_moments_are_transforms_on_the_figure_and_block_nothing() -> None:
