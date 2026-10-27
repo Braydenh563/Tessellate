@@ -3882,7 +3882,8 @@ def _first_events(req: _StreamRequest, prepared: dict, ollama_running: bool, too
         #: exception): an act with no tools to hand (Chat's Ask mode, the Ask
         #: box) is done, not discussed, and its confirmation is the card's own
         #: line. With tools, `_plan_turn` gives the act to the agent instead.
-        #: `_facts_turn` never takes an act, even one whose words also count.
+        #: `_facts_turn` never takes an act, even one whose words also count,
+        #: but a read said as one ("list my work notes", `_note_tool_read`).
         return _act_events(req, prepared)
     starter = _starter_read(req, ollama_running or tools_only)
     if starter:
@@ -4039,14 +4040,18 @@ def _spoken_act(req: _StreamRequest) -> str | None:
     return resolved[0]
 
 
-def _note_tool_read(req: _StreamRequest, prepared: dict) -> None:
+def _note_tool_read(req: _StreamRequest, prepared: dict, t: _Turn) -> None:
     """A read tool's answer (decision 59) is the whole notebook's, so the
     notes retrieval found are not its sources. Read with a model up too: a
     list is exact data, like a count, and the model is handed it as facts to
     say (`_fact_events`, decision 75) rather than reading the notes and
     miscounting (a 1.5B model said "two reminders" when there were three,
-    2026-10-12). Not for a skill, whose steps read their own way."""
-    if prepared["stats"] is None and prepared["intent"] != intent.ACT and not req.skill:
+    2026-10-12). Not for a skill, whose steps read their own way.
+
+    An act is the act's own (`_first_events`), except a read said as one
+    ("list my work notes") with a model up to say it: that is facts too."""
+    reads = prepared["intent"] != intent.ACT or (t.ollama_running and not t.composed and not _asks_change(req.question or ""))
+    if prepared["stats"] is None and reads and not req.skill:
         prepared["tool_read"] = _tool_read_events(req, prepared["notes"])
         if prepared["tool_read"]:
             #: Not composed from them either: the Ask box's "Composed from
@@ -4222,7 +4227,7 @@ def _plan_turn(req: _StreamRequest, prepared: dict) -> _Turn:
         #: same, and it can ask and plan (decision 38 is for no model).
         prepared["intent"] = intent.NOTES
     t.composed = _composed(req, t.ollama_running)
-    _note_tool_read(req, prepared)
+    _note_tool_read(req, prepared, t)
     t.tools_provider = _tools_provider(req, prepared, t.ollama_running)
     t.tools_only = t.tools_provider is not req.ollama
     t.composing = _is_composing(prepared, t.composed, t.ollama_running, t.tools_only)
@@ -4245,11 +4250,12 @@ def _facts_turn(req: _StreamRequest, prepared: dict, t: _Turn) -> bool:
     popup agent, Chat's Agent mode) the agent has that turn and can search."""
     if not t.ollama_running or t.composed or req.skill:
         return False
-    if _asks_change(req.question or "") or prepared["intent"] == intent.ACT:
+    if _asks_change(req.question or "") or (prepared["intent"] == intent.ACT and not prepared.get("tool_read")):
         #: "save my first note" read as the first-note count: a request to do
         #: something is never a figure to say. With tools it is the agent's,
         #: which has the tools to do it; with none it is the act's own path
-        #: (`_first_events`), done rather than discussed, on every mode.
+        #: (`_first_events`), done rather than discussed, on every mode. A
+        #: read said as an act ("list my work notes") is facts (`_note_tool_read`).
         return False
     return prepared["stats"] is not None or bool(prepared.get("tool_read"))
 

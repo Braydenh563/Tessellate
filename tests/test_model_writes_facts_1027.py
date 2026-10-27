@@ -322,6 +322,25 @@ def test_a_counted_list_keeps_its_rows_under_the_models_words(ai_client, fake_ol
     assert _last_meta(events)["answered_by"]
 
 
+@SURFACES
+def test_a_read_said_as_an_act_is_written_by_the_model(ai_client, fake_ollama, session, fixed_clock, use_tools):
+    """"list my work notes" in Ask mode reads as an act (`intent.ACT`), so the
+    composer answered it with the model up (the review of 2026-10-27): a read
+    is facts like any other, and its list rides under the model's words."""
+    _seed_filed(session)
+    fake_ollama.librarian_reply = "Three Work notes, newest first."
+    events, answer = _stream(ai_client, "list my work notes", use_tools)
+    assert _facts_prompted(fake_ollama)
+    assert answer.startswith(fake_ollama.librarian_reply) and "#/notes/" in answer, answer
+    assert _last_meta(events)["answered_by"]
+
+
+def test_a_read_said_as_an_act_is_the_engines_with_no_model(client, session, fixed_clock) -> None:
+    _seed_filed(session)
+    events, answer = _stream(client, "list my work notes", False)
+    assert answer.startswith("Here are your three Work notes") and _last_meta(events)["answered_by"] is None
+
+
 def test_which_statistics_are_lists() -> None:
     boards = {"kind": "boards", "text": "You have 2 boards, last changed first:\n- [Plan](#/board/1)\n- [Trip](#/board/2)", "facts": []}
     assert routes_chat._stats_listed(boards) == [{"type": "answer", "delta": "\n\n- [Plan](#/board/1)\n- [Trip](#/board/2)"}]
