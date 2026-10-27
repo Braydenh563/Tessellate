@@ -318,9 +318,9 @@ function wbMapDrawn(data, field) {
 //: app runs on, since nothing here is fetched: a font that is not installed
 //: would be a choice that visibly does nothing.
 const WB_MAP_FONTS = Object.freeze({
-  serif: 'Georgia, "Iowan Old Style", "Times New Roman", serif',
-  mono: 'ui-monospace, "Cascadia Code", "SF Mono", Consolas, "Liberation Mono", "DejaVu Sans Mono", monospace',
-  wide: 'Verdana, "DejaVu Sans", Geneva, sans-serif',
+  serif: MD_RUN_FONTS.serif,
+  mono: MD_RUN_FONTS.mono,
+  wide: MD_RUN_FONTS.wide,
 });
 
 function wbMapFontStack() {

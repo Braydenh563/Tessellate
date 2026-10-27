@@ -3393,7 +3393,7 @@ async function renderRemindersWidget(body) {
     at.className = "dash-reminder-when muted";
     at.textContent = when;
     li.append(what, at);
-    if (typeof relativeWhen === "function") li.title = relativeWhen(reminder.due_at);
+    li.title = relativeWhen(reminder.due_at);
     if (due < new Date()) li.classList.add("overdue");
     li.addEventListener("click", () => switchTab("reminders"));
     ul.appendChild(li);

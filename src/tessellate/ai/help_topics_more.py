@@ -1927,6 +1927,7 @@ MORE_TOPICS.extend(
                 "sticky", "sticky note", "stickies", "note colour", "note color", "sticky colour",
                 "text box or note", "text box vs sticky", "paper colour",
                 "bold in a sticky", "format a text box", "selection bar on a board",
+                "text size for some words", "different font for some words", "colour some words", "highlight colour on a board",
             ),
             "body": (
                 "Sticky notes and text boxes on a board. A sticky (N, or the note "
@@ -1941,7 +1942,11 @@ MORE_TOPICS.extend(
                 "lists, a to-do, headings, links and an emoji, and [[ links a note. "
                 "To format part of the text while typing, select words: the "
                 "selection bar offers bold, italic, strike, highlight, code, link "
-                "and a list, and Ctrl+B, Ctrl+I and Ctrl+K work too. The box keeps "
+                "and a list, and Ctrl+B, Ctrl+I and Ctrl+K work too. Text style (Aa) on that "
+                "bar sets a size, a font, a text colour and a highlight for the "
+                "selected words only, kept in the text as {{size=24|words}}; its "
+                "last button opens the Format panel's Text tab for the whole box. "
+                "The box keeps "
                 "markdown and shows it rendered once you finish (Format panel, "
                 "Rendered markdown, to see the marks)."
             ),

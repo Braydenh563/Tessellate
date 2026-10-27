@@ -459,10 +459,6 @@ const MD_INLINE_MARKS = {
   highlight: "==",
 };
 
-// Inline markdown in note text, deliberately only the inline kind: block
-// markdown (headings, tables, lists) makes a list of notes very tall, and
-// what people type in a note is bold, a little italic, the odd `code`.
-//
 // Code spans match first and are never re-read, so `**x**` in backticks stays
 // literal; `_` italics are left out because snake_case is common in notes.
 // Images and links come after the original four groups so callers keyed to
@@ -476,14 +472,16 @@ const MD_INLINE_MARKS = {
 // excluding their own delimiter. The eight colours are the toolbars' eight
 // (MD_COLOURS, documents.js) and the stylesheet's: a missing one printed its
 // own name ("red|text"). tests/test_highlight_colours.py pins all three.
+// The last alternative is a board text run, `{{size=24 ink=red|words}}`: the
+// grammar is read here, at boot, and drawn by documents.js (`MD_RUN`, `mdRunNode`).
 const INLINE_MD =
-  /`([^`\n]+)`|\*\*([^*\n]+?)\*\*|~~([^~\n]+?)~~|==(?:(yellow|green|blue|pink|purple|orange|red|grey)\|)?([^=\n]+?)==|\+\+(yellow|green|blue|pink|purple|orange|red|grey)\|([^+\n]+?)\+\+|\*([^*\n]+?)\*|!\[([^\]\n]{0,200})\]\(([^)\n]{1,500})\)|\[([^\]\n]{0,200})\]\(([^)\n]{1,500})\)/g;
+  /`([^`\n]+)`|\*\*([^*\n]+?)\*\*|~~([^~\n]+?)~~|==(?:(yellow|green|blue|pink|purple|orange|red|grey)\|)?([^=\n]+?)==|\+\+(yellow|green|blue|pink|purple|orange|red|grey)\|([^+\n]+?)\+\+|\*([^*\n]+?)\*|!\[([^\]\n]{0,200})\]\(([^)\n]{1,500})\)|\[([^\]\n]{0,200})\]\(([^)\n]{1,500})\)|\{\{((?:(?:size|font|ink|hl)=[a-z0-9]{1,12} ?){1,4})\|([^}\n]{1,2000}?)\}\}/g;
 
 // `appendInline`'s own grammar, before it was merged into renderInlineMarkdown
 // below: adds `__bold__`/`_italic_` and bare `https://…` autolinking, and its
 // Kept textually separate from INLINE_MD so neither caller's matching moves; selected by `options.underscoreSyntax`.
 const INLINE_MD_LEGACY =
-  /`([^`]+)`|\*\*([^*]+)\*\*|__([^_]+)__|~~([^~]+)~~|==(?:(yellow|green|blue|pink|purple|orange|red|grey)\|)?([^=]+?)==|\+\+(yellow|green|blue|pink|purple|orange|red|grey)\|([^+]+?)\+\+|\*([^*]+)\*|(?<![\w])_([^_]+)_(?![\w])|!\[([^\]]{0,200})\]\(([^)\s]{1,500})\)|\[([^\]]{0,200})\]\(([^)\s]{1,500})\)|(https?:\/\/[^\s)]+)/g;
+  /`([^`]+)`|\*\*([^*]+)\*\*|__([^_]+)__|~~([^~]+)~~|==(?:(yellow|green|blue|pink|purple|orange|red|grey)\|)?([^=]+?)==|\+\+(yellow|green|blue|pink|purple|orange|red|grey)\|([^+]+?)\+\+|\*([^*]+)\*|(?<![\w])_([^_]+)_(?![\w])|!\[([^\]]{0,200})\]\(([^)\s]{1,500})\)|\[([^\]]{0,200})\]\(([^)\s]{1,500})\)|(https?:\/\/[^\s)]+)|\{\{((?:(?:size|font|ink|hl)=[a-z0-9]{1,12} ?){1,4})\|([^}\n]{1,2000}?)\}\}/g;
 
 // Same allowlist an <img src> or <a href> built from note text has to pass:
 // an absolute http(s) URL, or a same-origin relative path (one leading
@@ -971,17 +969,17 @@ function appendInlineRun(element, text, terms, compact, options) {
         element.appendChild(before);
       }
     }
-    let code, bold, strike, markColour, mark, inkColour, ink, italic, imageAlt, imageUrl, linkText, linkUrl, bareUrl;
+    let code, bold, strike, markColour, mark, inkColour, ink, italic, imageAlt, imageUrl, linkText, linkUrl, bareUrl, runSpec, runText;
     if (underscoreSyntax) {
       let boldStar, boldUnderscore, italicStar, italicUnderscore;
       [
         , code, boldStar, boldUnderscore, strike, markColour, mark, inkColour, ink, italicStar, italicUnderscore,
-        imageAlt, imageUrl, linkText, linkUrl, bareUrl,
+        imageAlt, imageUrl, linkText, linkUrl, bareUrl, runSpec, runText,
       ] = match;
       bold = boldStar ?? boldUnderscore;
       italic = italicStar ?? italicUnderscore;
     } else {
-      [, code, bold, strike, markColour, mark, inkColour, ink, italic, imageAlt, imageUrl, linkText, linkUrl] = match;
+      [, code, bold, strike, markColour, mark, inkColour, ink, italic, imageAlt, imageUrl, linkText, linkUrl, runSpec, runText] = match;
     }
     // Images and links are their own element kinds, not a wrap-in-a-tag like
     // the four above: built and appended directly rather than falling
@@ -1122,6 +1120,17 @@ function appendInlineRun(element, text, terms, compact, options) {
         highlightInto(span, bareUrl, terms);
         element.appendChild(span);
       }
+      cursor = pattern.lastIndex;
+      continue;
+    }
+    //: A run (`{{size=24 ink=red|words}}`, documents.js `mdRunNode`): its words
+    //: are read as inline text again, so bold or a link inside it still draws.
+    //: Drawn plain until the Library's scripts are in (the grammar is here so
+    //: a preview and a search read the words either way).
+    if (runText !== undefined) {
+      const [node, host] = typeof mdRunNode === "function" ? mdRunNode(runSpec) : Array(2).fill(document.createElement("span"));
+      appendInlineRun(host, runText, terms, compact, options);
+      element.appendChild(node);
       cursor = pattern.lastIndex;
       continue;
     }

@@ -5209,7 +5209,6 @@ button.ghost.doc-template-choice.wb-template-choice {
 
 .wb-link-waypoint-handle,
 .wb-link-waypoint-add,
-.wb-link-label-handle,
 .wb-clone-grip {
   transform-box: fill-box;
   transform-origin: center;
@@ -6809,19 +6808,69 @@ input[type="color"].wb-mixed {
   }
 }
 /* --- the context bar's folded groups (`wbFoldContextBar`) ----------------
-   The groups a narrow bar moves into its "..." menu keep their controls and
-   lose the bar's hairline grammar: in the menu they are rows of one section. */
+   What a narrow bar moves into its "..." menu is one labelled grid: every
+   folded group is a row (its `data-fold-label` in the first column, its
+   controls in the second), the caps group is two rows, Start and End, and
+   nothing keeps the bar's hairline grammar (INBOX 1403: the top of the menu
+   was pills wrapping onto ragged rows with a stray rule and an indented
+   orphan). On the bar the wrappers are transparent (`display: contents`), so
+   the same markup lays out as before. */
+.wb-fold-row,
+.wb-fold-controls {
+  display: contents;
+}
 .wb-context-overflow {
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: var(--space-1);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-2);
   padding-bottom: var(--space-2);
   border-bottom: 1px solid var(--divider);
 }
-.wb-context-overflow > .wb-context-group:not(.hidden) {
+/* By id: the bar's own "hairline before every group after the first" rule is
+   four classes deep, and it is what indented a lone group in the menu. */
+#wb-context-overflow > .wb-context-group:not(.hidden) {
   border-left: 0;
   padding-left: 0;
   margin-left: 0;
+}
+#wb-context-overflow > .wb-context-group:not([data-fold-label]) {
+  display: contents;
+}
+#wb-context-overflow > .wb-context-group[data-fold-label]:not(.hidden),
+.wb-context-overflow .wb-fold-row {
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr);
+  align-items: start;
+  column-gap: var(--space-2);
+}
+/* The label sits level with the row's first line of controls, which wrap
+   under each other when they must. */
+.wb-context-overflow [data-fold-label]::before {
+  content: attr(data-fold-label);
+  color: var(--muted);
+  font-size: var(--text-sm);
+  line-height: var(--control-h);
+}
+.wb-context-overflow .wb-fold-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+}
+/* The row's label says Start or End, so the closed face drops its own word,
+   and a field's own caption (Fill, Size) is the row's label too. */
+#wb-context-overflow #wb-prop-startcap ~ .select-opener .select-value::before,
+#wb-context-overflow #wb-prop-endcap ~ .select-opener .select-value::before {
+  content: none;
+}
+.wb-context-overflow .wb-context-label {
+  display: none;
+}
+/* Wide enough for the longest row, a line end and its size side by side. */
+.wb-context-menu:has(#wb-context-overflow:not(.hidden)) {
+  min-width: 20rem;
 }
 
 /* A shape's own link (wb2, draw.io Edit link): a quiet chip up and left of

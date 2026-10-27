@@ -2468,7 +2468,6 @@ CANVAS_GRIPS = (
     ".wb-link-bend-handle",
     ".wb-link-waypoint-handle",
     ".wb-link-waypoint-add",
-    ".wb-link-label-handle",
     ".wb-clone-grip",
     ".wb-map-edge-handle",
 )
@@ -6086,3 +6085,17 @@ def test_the_foot_under_a_growing_field_is_pinned_to_the_scroll() -> None:
     ):
         body = _sheet_rule(sheet, selector)
         assert "position: sticky" in body and "bottom: 0" in body, selector
+
+
+def test_a_text_run_is_the_documented_recipe_and_never_a_style_attribute() -> None:
+    """INBOX 1403: part of a card's text is a run in the text, set from the
+    selection bar's Text style through the colour popover's own element."""
+    design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    docs = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    board = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    assert "**A run**" in design and "wbOpenRunMenu" in design, "DESIGN.md lost the text-run recipe"
+    style = docs[docs.index("function mdRunNode(") : docs.index("\n}\n", docs.index("function mdRunNode(")) + 3]
+    assert "setAttribute" not in style, "a run's size and face are CSSOM: the CSP rejects a style attribute"
+    menu = board[board.index("async function wbOpenRunMenu(") : board.index("function wbBulletTextLines(")]
+    assert "wbColourMenu()" in menu and "swatchPicker(" in menu, "a run's menu is the colour popover, not a hand-built one"
+    assert "createElement(\"div\")" not in menu.replace("const box = document.createElement(\"div\");", ""), "a hand-built menu shell"
