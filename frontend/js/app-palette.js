@@ -138,6 +138,9 @@ async function openPalette() {
   const first = early?.enter && paletteMatches(typed)[0];
   if (first) return paletteRun(first);
   renderPalette($("palette-input").value);
+  //: Words typed while this file loaded had no input listener to ask for
+  //: their notes (E2E shell, 2026-10-27: only "Search everything for" showed).
+  paletteAskNotes($("palette-input").value);
   quickAddAttach($("palette-input"), "palette");
 
   apiJson("/usage/summary", { method: "POST", body: JSON.stringify({ known: [] }), silent: true })
