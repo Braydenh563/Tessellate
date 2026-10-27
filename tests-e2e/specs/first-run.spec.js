@@ -43,7 +43,9 @@ test("a new notebook starts in three steps, and the sample notebook comes and go
   await steps.locator(".start-step").nth(2).click();
   await page.fill("#question", "where is the spare key?");
   await page.press("#question", "Enter");
-  await expect(page.locator("#tab-notes")).toContainText("blue flowerpot");
+  //: The answer itself: the sample note in the list says it too, so the tab
+  //: matched before the answer was in (2026-10-27).
+  await expect(page.locator("#ai-answer")).toContainText("blue flowerpot");
 
   await openTab(page, "dashboard");
   // Your name and an answer; the sample notes are not your first note.

@@ -3347,6 +3347,9 @@ async function loadAskHistoryBadge() {
     badge.classList.add("hidden");
     return;
   }
+  //: The first answer ticks Get started's third step even when the person
+  //: left for the dashboard before it finished (E2E first-run, 2026-10-27).
+  if (stats.total === 1) renderFirstStepsLazy();
   badge.textContent = stats.total > 99 ? "99+" : String(stats.total);
   badge.classList.remove("hidden");
 }

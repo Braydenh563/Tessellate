@@ -2,7 +2,7 @@
 
 Generated 2026-10-27 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6588, frontend ids 2558, CSS sections 504, backend routes 625, backend modules 6722, test files 1414, tests 12534, plan headings 977.
+Counts: frontend functions 6588, frontend ids 2558, CSS sections 504, backend routes 625, backend modules 6722, test files 1414, tests 12535, plan headings 977.
 
 ## Frontend functions (6588)
 
@@ -331,7 +331,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `announce` | frontend/js/capture-ask.js:827 |
 | `answerFigure` | frontend/js/capture-ask.js:2004 |
 | `answerObject` | frontend/js/capture-ask.js:2097 |
-| `askAsOf` | frontend/js/capture-ask.js:3378 |
+| `askAsOf` | frontend/js/capture-ask.js:3381 |
 | `askNotesOnTheRight` | frontend/js/capture-ask.js:2221 |
 | `askOpenContext` | frontend/js/capture-ask.js:880 |
 | `askQuestion` | frontend/js/capture-ask.js:2944 |
@@ -376,7 +376,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `loadAskHistoryBadge` | frontend/js/capture-ask.js:3342 |
 | `loadCaptureDocuments` | frontend/js/capture-ask.js:276 |
 | `loadSuggestions` | frontend/js/capture-ask.js:3316 |
-| `loadTemplates` | frontend/js/capture-ask.js:3411 |
+| `loadTemplates` | frontend/js/capture-ask.js:3414 |
 | `matchReasonBadge` | frontend/js/capture-ask.js:2437 |
 | `newChat` | frontend/js/capture-ask.js:2878 |
 | `notePictures` | frontend/js/capture-ask.js:1721 |
@@ -412,7 +412,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `setAnsweredBy` | frontend/js/capture-ask.js:2292 |
 | `setAsking` | frontend/js/capture-ask.js:2838 |
 | `settleCaptureStatus` | frontend/js/capture-ask.js:125 |
-| `showAskAsOf` | frontend/js/capture-ask.js:3384 |
+| `showAskAsOf` | frontend/js/capture-ask.js:3387 |
 | `showCitedPassage` | frontend/js/capture-ask.js:1614 |
 | `stopAnswer` | frontend/js/capture-ask.js:2844 |
 | `streamChat` | frontend/js/capture-ask.js:2468 |
@@ -19620,7 +19620,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12534)
+## Tests (12535)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20744,7 +20744,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_slash.py | 19 |
 | tests/test_slash_falls_through.py | 1 |
 | tests/test_small_fixes_1019.py | 8 |
-| tests/test_small_fixes_1027.py | 2 |
+| tests/test_small_fixes_1027.py | 3 |
 | tests/test_smooth_boot.py | 16 |
 | tests/test_snippet_drag.py | 7 |
 | tests/test_snippet_word_boundaries.py | 8 |

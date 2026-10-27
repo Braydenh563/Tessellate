@@ -25,3 +25,13 @@ def test_the_graph_fold_chevron_stops_a_gap_short_of_the_help_button():
     rule = css[css.index("#graph-options .graph-fold-wrap > details > summary"):]
     rule = rule[: rule.index("}")]
     assert "max(var(--control-h), var(--target-min)) + var(--space-" in rule
+
+
+def test_the_first_answer_ticks_get_started_even_after_leaving_for_the_dashboard():
+    """E2E first-run, 2026-10-27: the answer took 2.4 s in CI, the dashboard
+    was opened at 0.8 s and drew "1 of 3 done" for good. The badge refresh
+    that follows every saved answer redraws the steps on the first one."""
+    js = (ROOT / "frontend/js/capture-ask.js").read_text(encoding="utf-8")
+    body = js[js.index("async function loadAskHistoryBadge()"):]
+    body = body[: body.index("\n}\n")]
+    assert "if (stats.total === 1) renderFirstStepsLazy();" in body

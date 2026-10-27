@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Get started: the first answer ticks step three even if you left for the dashboard before it finished.
 - Fixes: "how do I make a reminder" leads with Magic add again; every hello invite says what to ask; the packaged builds install certifi; the reminder offer leaves past times to the date reader; a failed new-tab link says why, with Try again.
 - Security: certifi is held at 2026.10.23 or newer, the first CA bundle without the eight compromised eMudhra CAs (distrusted by Chrome and Mozilla, 19 to 20 October 2026). Web search, model downloads and extras installs verify HTTPS against it.
 - Tables and code blocks in a reply (and a note's Read view) have a Wrap lines button in the card's top bar, beside Copy: pressed, long lines break and nothing scrolls sideways (a wide reply table 679 over 656 becomes 656 over 656, a code line 1245 over 656 becomes 656). Tables and code each remember their choice. The table's old Fit to panel row left the ⋯ menu for the button.
