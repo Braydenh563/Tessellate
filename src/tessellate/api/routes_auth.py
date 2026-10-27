@@ -101,7 +101,8 @@ _active_tokens: dict[str, list[float]] = {}
 # A ticket lives exactly as long as its session: it names one, and the gate
 # checks that session is still live on every use.
 MEDIA_COOKIE = "memorymap_media"
-MEDIA_COOKIE_PATHS = ("/media", "/files")
+# `/mermaid-frame` too: the diagram frame is a page load, which sends no header.
+MEDIA_COOKIE_PATHS = ("/media", "/files", "/mermaid-frame")
 # ticket -> the session token it was issued for
 _media_tickets: dict[str, str] = {}
 register_cache_reset(_media_tickets.clear)

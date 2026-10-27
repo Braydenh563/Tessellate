@@ -360,7 +360,7 @@ function mermaidSoon(block) {
   setTimeout(() => {
     if (!block.isConnected || block.dataset.mermaidState) return;
     ensureModule("mermaid").then((ok) => {
-      if (ok && block.isConnected && typeof mermaidDrawBlock === "function") mermaidDrawBlock(block);
+      if (ok && block.isConnected) mermaidDrawBlock(block);
     });
   }, 400);
 }

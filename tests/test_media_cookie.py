@@ -64,7 +64,8 @@ def test_unlocking_sets_a_media_cookie_scoped_to_the_two_media_paths(client):
     client.cookies.clear()
     response = client.post("/auth/unlock", json={"password": "correct horse"})
     cookies = _media_cookies(response)
-    assert sorted(re.search(r"Path=([^;]+)", c).group(1) for c in cookies) == ["/files", "/media"]
+    # 2026-10-27: and the diagram frame's page, a load that sends no header; never "/".
+    assert sorted(re.search(r"Path=([^;]+)", c).group(1) for c in cookies) == ["/files", "/media", "/mermaid-frame"]
     for cookie in cookies:
         assert "HttpOnly" in cookie
         assert "SameSite=strict" in cookie or "SameSite=Strict" in cookie

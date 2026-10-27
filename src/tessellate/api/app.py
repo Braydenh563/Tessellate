@@ -1419,15 +1419,16 @@ def _add_system_routes(app: FastAPI, locked: list) -> None:
         because `RevalidatedStatic` lives here and that import would be a cycle."""
         return {"cleared": True, "files": clear_static_cache()}
 
-    @app.get("/mermaid-frame", include_in_schema=False)
+    @app.get("/mermaid-frame", include_in_schema=False, dependencies=[Depends(routes_auth.require_unlock_media)])
     def mermaid_frame() -> Response:
         """The page the diagram frame loads (frontend/js/mermaid-frame.js).
 
         A route, not a file under frontend/, because it must answer with a
         policy of its own: the middleware only `setdefault`s the app's policy,
         so this one wins, and `X-Frame-Options` is relaxed to SAMEORIGIN for the
-        same reason (the app frames it, nothing else may). No data is behind
-        it, so it is not behind the lock either.
+        same reason (the app frames it, nothing else may). Behind the media
+        lock like every route (tests/test_every_route_is_locked.py): a frame's
+        load carries the media cookie, not the token header.
         """
         return Response(
             content=security.MERMAID_FRAME_HTML,

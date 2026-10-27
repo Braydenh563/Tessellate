@@ -61,6 +61,10 @@ EXTRA_ASSETS = (
     "/manifest.webmanifest",
     "/sw.js",
     "/favicon.svg",
+    # The diagram frame's page is a route (security.MERMAID_FRAME_HTML), so its two
+    # scripts are named here.
+    "/js/mermaid-frame.js",
+    "/vendor/mermaid/mermaid.min.js",
 )
 
 

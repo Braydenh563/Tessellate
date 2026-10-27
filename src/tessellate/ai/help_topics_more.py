@@ -2195,6 +2195,7 @@ TOPIC_META: dict[str, dict] = {
     "learned": {"title": "What it learned", "path": "Settings, What it learned"},
     "general-settings": {"title": "General settings", "path": "Settings, General"},
     "search-index": {"title": "Search and index", "path": "Settings, Search and index"},
+    "search-engine-moved": {"title": "Old search files", "path": "Settings, Search and index, Old search files"},
     "answer-style": {"title": "Answer style", "path": "Settings, Personas, Answer style"},
     "background-tasks": {"title": "Background tasks", "path": "Settings, Background tasks"},
     "health": {"title": "Health", "path": "Settings, About, Health"},
@@ -2360,7 +2361,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     )),
     ("Models and the AI", (
         "models", "what-is-atlas", "model-downloads", "model-bench", "tools-setting", "autonomous", "websearch",
-        "search-index", "packages",
+        "search-index", "search-engine-moved", "packages",
     )),
     ("Privacy and your data", (
         "privacy", "security", "encryption", "lock", "phone", "lan-networks", "two-computers", "delete-data", "storage", "import-export", "import-apps", "usage-ledger", "background-tasks", "activity", "health",

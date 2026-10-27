@@ -81,6 +81,10 @@ const mermaidState = {
   bad: new Map(),
   draws: new Set(),
   listening: false,
+  //: The colour probe, the theme read once per burst, the theme-move debounce.
+  probe: null,
+  themeMemo: null,
+  redrawTimer: 0,
 };
 const MERMAID_CACHE_MAX = 80;
 const MERMAID_WAIT_MS = 25000;
@@ -134,21 +138,20 @@ function mermaidEnsureFrame() {
 
 // --- the app's colours, as Mermaid's variables --------------------------------
 
-let mermaidProbe = null;
 
 //: Any CSS colour as [r, g, b, a]: a canvas pixel, so `color-mix()` and every
 //: other spelling the stylesheet uses come out as numbers.
 function mermaidRgba(css) {
-  if (!mermaidProbe) {
+  if (!mermaidState.probe) {
     const canvas = document.createElement("canvas");
     canvas.width = canvas.height = 1;
-    mermaidProbe = canvas.getContext("2d", { willReadFrequently: true });
+    mermaidState.probe = canvas.getContext("2d", { willReadFrequently: true });
   }
-  mermaidProbe.clearRect(0, 0, 1, 1);
-  mermaidProbe.fillStyle = "#000";
-  mermaidProbe.fillStyle = css || "#000";
-  mermaidProbe.fillRect(0, 0, 1, 1);
-  const [r, g, b, a] = mermaidProbe.getImageData(0, 0, 1, 1).data;
+  mermaidState.probe.clearRect(0, 0, 1, 1);
+  mermaidState.probe.fillStyle = "#000";
+  mermaidState.probe.fillStyle = css || "#000";
+  mermaidState.probe.fillRect(0, 0, 1, 1);
+  const [r, g, b, a] = mermaidState.probe.getImageData(0, 0, 1, 1).data;
   return [r, g, b, a / 255];
 }
 
@@ -264,16 +267,15 @@ function mermaidTheme() {
 // --- asking the frame ---------------------------------------------------------
 
 //: The theme read once per burst: a page of figures asks for it per figure.
-let mermaidThemeMemo = null;
 
 function mermaidThemeNow() {
-  if (!mermaidThemeMemo) {
-    mermaidThemeMemo = mermaidTheme();
+  if (!mermaidState.themeMemo) {
+    mermaidState.themeMemo = mermaidTheme();
     setTimeout(() => {
-      mermaidThemeMemo = null;
+      mermaidState.themeMemo = null;
     }, 50);
   }
-  return mermaidThemeMemo;
+  return mermaidState.themeMemo;
 }
 
 function mermaidCacheKey(themeKey, source) {
@@ -428,22 +430,21 @@ function mermaidInlineForExport(live, clone) {
 
 // --- the theme moved ----------------------------------------------------------
 
-let mermaidRedrawTimer = 0;
 
 function mermaidRedrawAll() {
-  mermaidThemeMemo = mermaidTheme();
-  const now = mermaidThemeMemo.key;
+  mermaidState.themeMemo = mermaidTheme();
+  const now = mermaidState.themeMemo.key;
   for (const figure of document.querySelectorAll("figure.md-mermaid")) {
     if (figure.mermaidSource && figure.mermaidKey !== now) mermaidFill(figure, figure.mermaidSource);
   }
 }
 
-if (typeof MutationObserver === "function") {
+{
   //: `style` too, because an accent colour is written there; the key compare
   //: above means a change that moves no colour redraws nothing.
   new MutationObserver(() => {
-    clearTimeout(mermaidRedrawTimer);
-    mermaidRedrawTimer = setTimeout(mermaidRedrawAll, 120);
+    clearTimeout(mermaidState.redrawTimer);
+    mermaidState.redrawTimer = setTimeout(mermaidRedrawAll, 120);
   }).observe(document.documentElement, {
     attributes: true,
     attributeFilter: ["data-theme", "data-mode", "data-contrast", "class", "style"],

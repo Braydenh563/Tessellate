@@ -57,6 +57,7 @@
  "meetings.js::raf": 5,
  "menus.js::mutation-observer": 1,
  "menus.js::raf": 2,
+ "mermaid-draw.js::mutation-observer": 1,
  "navigation.js::mutation-observer": 3,
  "navigation.js::raf": 4,
  "note-cards.js::resize-observer": 2,

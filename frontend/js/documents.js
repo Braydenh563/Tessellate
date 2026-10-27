@@ -10437,26 +10437,25 @@ function mermaidFlowLayout(graph, measure = (t) => t.length * 7.4) {
 //: asks the diagram frame and swaps the fence for its picture; one the parser
 //: refuses stays the code block with the reason under it. The promise is kept
 //: so an export or a print can wait for the pictures before it saves the page.
-let docMermaidDrawn = Promise.resolve();
-
 function docRenderMermaidIn(container) {
   if (!container.querySelector('.code-block code[data-lang="mermaid"]')) return;
-  docMermaidDrawn = ensureModule("mermaid")
-    .then((ok) => (ok && typeof mermaidDrawIn === "function" ? mermaidDrawIn(container) : null))
+  docPhase2State.mermaidDrawn = ensureModule("mermaid")
+    .then((ok) => (ok ? mermaidDrawIn(container) : null))
     .catch(() => null);
 }
 
 //: Resolves when the pictures of the page being saved or printed are in.
 async function docMermaidWhenDrawn() {
-  await docMermaidDrawn;
-  if (typeof mermaidSettled === "function") await mermaidSettled();
+  await docPhase2State.mermaidDrawn;
+  //: Only a page that loaded the module has pictures to wait for.
+  if (await lazyModuleLoads.get("mermaid")) await mermaidSettled();
 }
 
 //: Live: a mermaid fence the caret is outside of is its figure, through a
 //: state field for the reason the columns block gives (a replace that spans
 //: line breaks may not come from a plugin). Pressing the figure puts the
 //: caret on the fence's first line, which shows the text to edit.
-const docPhase2State = { mermaidFieldCache: null, imageRefocus: null, printSheet: null };
+const docPhase2State = { mermaidDrawn: Promise.resolve(), mermaidReady: false, mermaidFieldCache: null, imageRefocus: null, printSheet: null };
 
 function docMermaidBlocks(text) {
   const blocks = [];
@@ -10498,7 +10497,8 @@ function docMermaidField(CM) {
       //: Async: the placeholder holds the room, then the picture replaces it
       //: and the editor measures the widget again.
       ensureModule("mermaid").then((ok) => {
-        if (!ok || typeof mermaidFill !== "function") return;
+        if (!ok) return;
+        docPhase2State.mermaidReady = true;
         mermaidFill(figure, this.source, (result) => {
           if (result.svg) view.requestMeasure();
           else view.dispatch({ effects: recheck.of(this.source) });
@@ -10534,7 +10534,8 @@ function docMermaidField(CM) {
     const sel = state.selection.main;
     const ranges = [];
     for (const block of docMermaidBlocks(text)) {
-      const reason = typeof mermaidFailure === "function" ? mermaidFailure(block.source) : "";
+      //: A reason exists only once the module drew here (the widget above).
+      const reason = docPhase2State.mermaidReady ? mermaidFailure(block.source) : "";
       //: A fence the frame refused stays the code it is, with its reason under it.
       if (reason) {
         ranges.push(Decoration.widget({ widget: new DocMermaidReason(reason), block: true, side: 1 }).range(block.to));
@@ -12076,7 +12077,7 @@ async function exportDocumentHtml() {
       clone.removeAttribute("class");
       //: A saved file outlives this page's blob: URLs, so each diagram goes in as
       //: a data: URL of its own SVG, before the image pass below can drop it.
-      if (typeof mermaidInlineForExport === "function") mermaidInlineForExport($("doc-preview"), clone);
+      if (await lazyModuleLoads.get("mermaid")) mermaidInlineForExport($("doc-preview"), clone);
       docExportClean(clone);
       const images = await docExportInlineImages(clone);
       const savedOn = `${currentDoc.title || "Untitled"} · exported ${new Date().toLocaleDateString()}`;

@@ -95,15 +95,14 @@ function mermaidFrameConfigure(variables) {
   });
 }
 
-let mermaidFrameSeq = 0;
-let mermaidFrameChain = Promise.resolve();
+const mermaidFrameRun = { seq: 0, chain: Promise.resolve() };
 
 async function mermaidFrameDraw(request) {
   const source = request.source.trim();
   if (!source) return { error: "The diagram is empty." };
   if (source.length > MERMAID_FRAME_MAX_SOURCE) return { error: "This diagram is too long to draw here." };
   mermaidFrameConfigure(mermaidFrameVariables(request.themeVariables));
-  const domId = `mmd${++mermaidFrameSeq}`;
+  const domId = `mmd${++mermaidFrameRun.seq}`;
   try {
     await mermaid.parse(source);
     const { svg } = await mermaid.render(domId, source);
@@ -122,7 +121,7 @@ window.addEventListener("message", (event) => {
   if (!mermaidFrameAccepts(event, window.parent, location.origin)) return;
   const id = event.data.id;
   //: Mermaid keeps one global config, so draws run one at a time.
-  mermaidFrameChain = mermaidFrameChain
+  mermaidFrameRun.chain = mermaidFrameRun.chain
     .then(() => mermaidFrameDraw(event.data))
     .then((result) => window.parent.postMessage({ type: "result", id, ...result }, location.origin));
 });
