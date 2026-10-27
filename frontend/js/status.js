@@ -2839,6 +2839,10 @@ function renderSettings() {
     ollamaLine.textContent = `${ollamaLine.textContent.replace(/\.$/, "")}. Until a model is connected, Atlas answers with its built-in composer: from your notes, no AI.`;
   }
   renderBackendPicker(status);
+  //: The one-time question before search by meaning is downloaded
+  //: (semantic-notice.js, lazy): opened while the server says it is owed,
+  //: closed once it is answered.
+  if (status.semantic_offer || lazyModuleLoads.has("semanticNotice")) semanticOffer(Boolean(status.semantic_offer));
   const embeddingError = $("embedding-error");
   embeddingError.classList.toggle("hidden", !status.embedding_error);
   //: A missing optional package arrives as a sentence the backend wrote for
@@ -2958,8 +2962,6 @@ async function refreshBackgroundTasks() {
     tasksState.beat = setTimeout(() => refreshBackgroundTasks().catch(() => {}), TASKS_RUNNING_MS);
   }
   noticeTaskTransitions(backgroundTasks, (body && body.history) || []);
-  const auto = backgroundTasks.find((t) => t.auto);
-  if (auto || lazyModuleLoads.has("semanticNotice")) semanticInstallNotice(auto);
   renderStatusBar();
   // One fetch, not two: the panel renders from this payload rather than asking
   // again a few milliseconds later.

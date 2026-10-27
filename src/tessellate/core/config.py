@@ -108,13 +108,15 @@ DEFAULT_PREFERENCES: dict[str, Any] = {
     # Bring the user's own SearXNG up with the app. Off by default: starting a
     # container is not something a local-first app does unasked.
     "searxng_autostart": False,
-    # Install `sentence-transformers` (about 2 GB with PyTorch) on its own the
-    # first time search by meaning finds it missing (ai/embeddings.py). On by
-    # default because the built-in engine is the default engine; the owner:
-    # "the user should be able to cancel or refuse the auto install", so off
-    # means it is never started, search stays on keywords, and Settings,
-    # Packages keeps its manual Install.
-    "semantic_auto_install": True,
+    # Whether the app may download search by meaning by itself: the package
+    # `sentence-transformers` (about 2 GB with PyTorch) and the model from
+    # huggingface.co. Off until a yes (the owner, 2026-10-27: it used to
+    # download on the first save, unasked): off means nothing is fetched and
+    # search stays on keywords, and Settings, Packages keeps its manual Install.
+    "semantic_auto_install": False,
+    # The one-time question has been answered, either way (the same ask-once
+    # shape as `update_choice_made`): the notice is not offered again.
+    "semantic_choice_made": False,
     # Whisper's options (ai/voice.py `options_from`, Brief 87 step 2): skip
     # the silence and hum around a clip (Silero VAD, no download); a language
     # ("" detects it); names and terms to expect, as Whisper's prompt.

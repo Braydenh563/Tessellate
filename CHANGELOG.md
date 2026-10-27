@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Search by meaning downloads only after a yes. It used to fetch about 2 GB (the package from PyPI, the model from huggingface.co) on the first saved note, unasked. Now the first save offers it once in a notice (Download or No thanks) and keeps the answer; Settings, Search and index has Download search by meaning to change it later. Search uses keywords meanwhile with no error. `TESSELLATE_NO_AUTO_INSTALL` still stops it for good, and the outbound-network test no longer needs it.
 - The name stands alone: "Tessellate", without "notes", centred over the tagline on the Windows splash, the desktop loading window, the boot splash, About, the README and the website. The boot splash and loading window now stack the mark over the name (the name's centre was 71px right of the mark's in the boot splash; now 0).
 - The composer's cold import is 15% lighter (0.117 to 0.099 s here): the two largest patterns compile on first use, so 3.13 CI is back under its 0.2 s budget.
 - Timeline calendar: a month taller than its pane (at 1280 by 800, 729px in 579) fades the pane's bottom edge while rows wait below the fold, and the shortcuts sheet, Settings keys list and the Guide now say that a formatting toolbar is one Tab stop with Left and Right between its buttons.

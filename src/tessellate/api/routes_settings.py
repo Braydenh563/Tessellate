@@ -842,7 +842,8 @@ def _preferences_from(config) -> dict:
         "update_beta": config.get_preference("update_beta", False) is True,
         "searxng_url": config.get_preference("searxng_url", ""),
         "searxng_autostart": config.get_preference("searxng_autostart", False),
-        "semantic_auto_install": config.get_preference("semantic_auto_install", True),
+        "semantic_auto_install": config.get_preference("semantic_auto_install", False),
+        "semantic_choice_made": config.get_preference("semantic_choice_made", False) is True,
         "search_provider": websearch.normalise_provider(
             config.get_preference("search_provider", websearch.DEFAULT_PROVIDER)
         ),
@@ -1086,6 +1087,17 @@ def _apply_preference(config, session: Session, key: str, value) -> None:
     """One validated preference written, with the side effects its key carries."""
     value = _validated_preference(key, value)
     config.set_preference(key, value)
+    if key == "semantic_auto_install":
+        # Either answer settles the ask-once question (frontend/js/semantic-notice.js).
+        config.set_preference("semantic_choice_made", True)
+        if value:
+            # A yes starts the download now, as a visible task, rather than
+            # at the next save: reset the "not allowed" state and embed once.
+            service = deps.get_embeddings()
+            service.reset_failure_state()
+            from tessellate.core import jobs
+
+            jobs.enqueue("embed-warm", service.embed_text, "warm up", name="search by meaning")
     if key in ("update_check_enabled", "auto_update_enabled"):
         # Either switch is an answer to the ask-once question (routes_update).
         config.set_preference("update_choice_made", True)

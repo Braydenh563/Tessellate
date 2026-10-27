@@ -42,15 +42,18 @@ def _allow_auto_install(monkeypatch):
     extras.reset_for_tests()
 
 
-def test_the_preference_defaults_to_on():
-    assert config_module.DEFAULT_PREFERENCES["semantic_auto_install"] is True
+def test_the_preference_defaults_to_off():
+    # The owner, 2026-10-27: no download without a yes (test_semantic_consent_1027.py).
+    assert config_module.DEFAULT_PREFERENCES["semantic_auto_install"] is False
 
 
 def test_the_preference_round_trips_through_the_api(client):
-    assert client.get("/preferences").json()["semantic_auto_install"] is True
-    saved = client.put("/preferences", json={"semantic_auto_install": False})
+    before = client.get("/preferences").json()["semantic_auto_install"]
+    assert before is False
+    saved = client.put("/preferences", json={"semantic_auto_install": True})
     assert saved.status_code == 200
-    assert client.get("/preferences").json()["semantic_auto_install"] is False
+    after = client.get("/preferences").json()["semantic_auto_install"]
+    assert after is True
 
 
 def test_refusing_the_install_never_starts_pip(app_state, monkeypatch):
@@ -93,6 +96,7 @@ def test_the_auto_install_says_it_is_automatic(app_state, monkeypatch):
         return False, "mocked"
 
     monkeypatch.setattr(extras, "start", fake_start)
+    deps.get_config().set_preference("semantic_auto_install", True)
     service.embed_text("a note")
     assert seen == [("semantic", True)]
 
@@ -142,7 +146,7 @@ def test_stopping_the_automatic_install_stops_the_job(client, monkeypatch):
 def test_settings_has_the_switch_with_a_help_popover():
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert 'id="pref-semantic-auto-install"' in html
-    assert "Install search by meaning automatically" in html
+    assert "Download search by meaning" in html
     assert 'data-help-for="semantic-auto-install-help"' in html
     assert 'id="semantic-auto-install-help"' in html
 
@@ -163,30 +167,29 @@ def test_the_guide_tells_the_choice():
         + Path(help_topics_more.__file__).read_text(encoding="utf-8")
     )
     joined = re.sub(r'"\s*\n\s*"', "", text)
-    assert "Install search by meaning automatically" in joined
+    assert "Download search by meaning" in joined
 
 
 # --- the first-time notice (a lazy module) ----------------------------------
 
 
-def test_the_notice_is_lazy_and_reached_from_the_task_poll():
+def test_the_notice_is_lazy_and_reached_from_the_status_poll():
     js = ROOT / "frontend" / "js"
     assert 'semanticNotice: ["/js/semantic-notice.js"]' in (js / "app.js").read_text(encoding="utf-8")
     status = (js / "status.js").read_text(encoding="utf-8")
-    assert "backgroundTasks.find((t) => t.auto)" in status
-    assert "semanticInstallNotice(auto)" in status
-    assert '"semanticInstallNotice", "semanticOnboardingOffer"' in (js / "app.js").read_text(encoding="utf-8")
+    assert "status.semantic_offer" in status
+    assert "semanticOffer(Boolean(status.semantic_offer))" in status
+    assert '"semanticOffer", "semanticOnboardingOffer"' in (js / "app.js").read_text(encoding="utf-8")
     # Lazy means not a boot script.
     assert "semantic-notice.js" not in (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 
 
-def test_the_notice_says_the_size_and_can_refuse_and_undo():
+def test_the_notice_says_the_size_and_source_and_can_say_no():
     text = (ROOT / "frontend" / "js" / "semantic-notice.js").read_text(encoding="utf-8")
-    assert "about 2 GB" in text and "Keyword search" in text
-    assert "Don't install" in text
-    assert '"/tasks/cancel"' in text
-    assert "semantic_auto_install: on" in text
-    assert '"Undo"' in text and "/extras/semantic/install" in text
+    assert "about 2 GB" in text and "Keyword search" in text and "huggingface.co" in text
+    assert "Download" in text and "No thanks" in text
+    assert "semanticSetAutoInstall" in text and "semantic_auto_install: on" in text
+    assert '"Undo"' in text
     assert "\u2014" not in text
 
 

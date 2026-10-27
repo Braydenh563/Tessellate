@@ -740,7 +740,7 @@ async function renderPrefs() {
   if (prefsSaveInFlight) await prefsSaveInFlight.catch(() => {});
   prefsCache = await apiJson("/preferences");
   $("pref-display-name").value = prefsCache.display_name || "";
-  $("pref-semantic-auto-install").checked = prefsCache.semantic_auto_install ?? true;
+  $("pref-semantic-auto-install").checked = prefsCache.semantic_auto_install ?? false;
   //: The saved look, and its controls (avatars.js).
   if (typeof setOwnNameMarkStyle === "function") {
     setOwnNameMarkStyle(prefsCache.avatar_style || {});

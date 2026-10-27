@@ -36,8 +36,8 @@ These are the constraints that shaped every decision. When in doubt, they win.
    opt-in features can reach the internet, web search and the update check:
    web search is off by default, the update check waits for the answer to a
    question the first start asks once, and both are clearly marked. The rest is a short list of
-   one-off downloads that you start (a model, an optional package) or that the
-   search model makes on first use; [PRIVACY.md](PRIVACY.md) lists them all and
+   one-off downloads that you start (a model, an optional package) or say yes to
+   (the search model, asked once); [PRIVACY.md](PRIVACY.md) lists them all and
    Settings, Privacy records every connection the app makes. When web search
    *is* on it is built to reveal as little as possible: an ordinary
    browser User-Agent rather than one naming the app, no cookie jar, no

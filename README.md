@@ -365,15 +365,15 @@ version for first-time terminal users.
    Settings, Models.
 3. Write a note, then ask about it in Notes, Ask.
 
-**A first install needs the internet once.** The first setup downloads the search model and the packages you chose; after that Tessellate works offline.
+**A first install needs the internet once.** The first setup downloads the packages you chose; after that Tessellate works offline. Search by meaning is a separate download that waits for your yes.
 
-**The first launch downloads the search model.** Search and filing by meaning
-use a built-in model that needs the `sentence-transformers` package. If it is
-missing, the app installs it the first time it is needed: a one-time download
-of several hundred MB (more on Windows, where it brings torch) that needs the
-internet and can take several minutes. Settings, Search and index, Search
-engine says when it is running. To avoid the download, pull `nomic-embed-text`
-in Ollama and pick it in the same place.
+**Search by meaning asks before it downloads.** Search and filing by meaning
+use a built-in model that needs the `sentence-transformers` package and a small
+model from huggingface.co: about 2 GB, once, and several minutes. Nothing is
+fetched until you say yes. The first saved note offers it once (Download or No
+thanks), and Settings, Search and index, Download search by meaning turns it on
+later; until then search uses keywords. To avoid the download, pull
+`nomic-embed-text` in Ollama and pick it in the same place.
 
 ## Requirements and optional extras
 
