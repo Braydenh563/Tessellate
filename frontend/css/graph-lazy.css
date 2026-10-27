@@ -493,8 +493,11 @@
   width: max(var(--control-h), var(--target-min));
   height: max(var(--control-h), var(--target-min));
 }
+/* The chevron stops a gap short of the "?" rather than touching its box
+   (the owner, 2026-10-27: "these dropdown arrows are very close to the '?'":
+   measured 0px between the chevron's edge and the button's). */
 #graph-options .graph-fold-wrap > details > summary:not(.icon-only):not(.icon-button) {
-  padding-inline-end: max(var(--control-h), var(--target-min));
+  padding-inline-end: calc(max(var(--control-h), var(--target-min)) + var(--space-4));
 }
 
 /* **Actions that pair up share a row** (INBOX 1400): Trace with Legend, Suggest

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The popup agent has a Send button beside the box (Enter still sends), and the graph Options section chevrons sit a gap short of their "?" instead of touching it.
 - Picture viewer: Open in a new tab works from the desktop window. The system browser has no session there, so it gets a two-minute link to that one file. The lag log no longer counts the other-devices long-poll as a slow request every 25 seconds.
 - Chat: the weather goes to the model or the web when either is on (it came back as the app's own "not something this app knows"), and a local web search carries the city of your timezone. The no-model badge's help no longer nudges the bubble 2px taller on hover.
 - Reminders from where they are said: a reminder's menu has Add to Google Calendar and Add to Outlook (the add-event page filled in, opened only when pressed, a private note's words never in it, beside the .ics whose events all carry an alert), a selection in a note makes a reminder linked to that note, and a chat message like "I need to call the dentist on Friday" gets a Make this a reminder chip under the reply (rules only, nothing made until pressed; no chip for a question or something already done).

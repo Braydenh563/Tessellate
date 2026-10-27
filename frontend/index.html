@@ -695,6 +695,10 @@
         <button type="button" id="command-palette-attach" class="ghost icon-only small" title="Attach files to your next message" aria-label="Attach files to your next message"><i class="ph ph-paperclip" aria-hidden="true"></i></button>
         <input type="file" id="command-palette-attach-input" class="hidden" multiple aria-label="Choose files to attach to your next message">
         <button type="button" id="command-palette-clear" class="ghost icon-only small field-clear hidden" title="Clear" aria-label="Clear"><i class="ph ph-eraser" aria-hidden="true"></i></button>
+        <!-- Send, beside the box like Chat's and the Guide's (the owner,
+             2026-10-27: "there's no send button on the popup agent"); Enter
+             still sends; an empty box sends nothing. -->
+        <button type="button" id="command-palette-send" class="icon-only icon-primary small" title="Send (Enter)" aria-label="Send"><i class="ph ph-paper-plane-right" aria-hidden="true"></i></button>
       </div>
       <div id="command-palette-attachments" class="chat-attachments command-palette-attachments hidden" role="group" aria-label="Files attached to your next message"></div>
       <div id="command-palette-results" class="command-palette-results"></div>

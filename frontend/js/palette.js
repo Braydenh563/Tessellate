@@ -1553,12 +1553,19 @@ cmdPaletteInput.addEventListener("keydown", (e) => {
   }
   if (e.key !== "Enter" || e.shiftKey || e.isComposing || e.keyCode === 229) return;
   e.preventDefault(); // or the newline lands in the box we are about to clear
-  if (!cmdPaletteInput.value.trim()) return;
+  cmdPaletteSend();
+});
+
+//: Enter and the Send button take the same path.
+function cmdPaletteSend() {
   const text = cmdPaletteInput.value.trim();
+  if (!text) return;
   cmdPaletteInput.value = "";
   cmdPaletteGrow();
   cmdPaletteAsk(text);
-});
+  cmdPaletteInput.focus();
+}
+$("command-palette-send").addEventListener("click", cmdPaletteSend);
 
 
 $("command-palette-attach")?.addEventListener("click", () => $("command-palette-attach-input").click());
