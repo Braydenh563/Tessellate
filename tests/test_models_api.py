@@ -602,3 +602,50 @@ def test_suggested_shares_the_status_polls_model_list(client, monkeypatch):
     release.set()
     entry = next(m for models in body.values() for m in models if m["name"] == name)
     assert entry["size_source"] == "measured"
+
+
+def test_suggested_does_not_wait_for_a_busy_runner_even_on_the_first_call(client, monkeypatch):
+    """INBOX 1419: /models/suggested took 4.1s on a runner busy loading. With
+    no answer known yet it used to wait for the whole list call; the shortlist
+    now answers from the shipped sizes within the budget, and the launch
+    warm-up has usually filled the list before anyone opens Settings."""
+    import threading
+    import time
+
+    from tessellate.ai.ollama_client import OllamaClient
+    from tessellate.api import routes_models
+    from tessellate.core import deps
+
+    ollama = OllamaClient("http://127.0.0.1:9")
+    monkeypatch.setattr(deps, "get_ollama", lambda: ollama)
+    monkeypatch.setattr(routes_models, "INSTALLED_REFRESH_BUDGET", 0.3)
+    release = threading.Event()
+    monkeypatch.setattr(ollama, "list_models", lambda: release.wait(30) or [])
+    monkeypatch.setattr(ollama, "loaded_models", lambda: release.wait(30) or [])
+    started = time.monotonic()
+    body = client.get("/models/suggested")
+    elapsed = time.monotonic() - started
+    release.set()
+    assert body.status_code == 200
+    assert elapsed < 5
+
+
+def test_the_launch_warm_up_fills_the_list_the_first_poll_reads(client, monkeypatch):
+    import time
+
+    from tessellate.ai.ollama_client import OllamaClient
+    from tessellate.api import routes_models
+    from tessellate.core import deps
+
+    ollama = OllamaClient("http://127.0.0.1:9")
+    monkeypatch.setattr(deps, "get_ollama", lambda: ollama)
+    monkeypatch.setattr(ollama, "list_models", lambda: [{"name": "model-a", "size": 1}])
+    key = routes_models._flight_key(ollama)
+    routes_models._installed_known.pop(key, None)
+    routes_models.prewarm_installed()
+    deadline = time.monotonic() + 5
+    while key not in routes_models._installed_known and time.monotonic() < deadline:
+        time.sleep(0.01)
+    assert routes_models._installed_known[key][0]["name"] == "model-a"
+    # the status poll's capability wrapper shares that flight and its answer
+    assert routes_models._flight_key(routes_models._CachedCapabilities(ollama)) == key
