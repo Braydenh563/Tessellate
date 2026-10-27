@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The default board keeps its picture (INBOX 1418): a board thumbnail was fingerprinted on the newest write to any note on its cards, so a pin, a body edit or the janitor re-filing a note retired the stored picture and the Library card went back to the drawn preview until the board was opened again; it is now fingerprinted on the card titles it shows, and boards of drawings were never affected.
 - Lighter Python, same behaviour: the CI complexity and perf scan fell from 86 findings to 27 (every PERF finding fixed; fourteen long functions split into named steps or lookup tables), and `tests/test_complexity_ratchet.py` keeps the count from rising.
 - Motion and failed reads (INBOX 1415): ten floating panels (Spaces, the bell, the clock, the history lists, the model, skills, More and Attach panels, Find on this page, the graph's note card) open and close on the menu's fade and grow instead of between two frames; Boards, Images, Contents, Bookmarks, Documents and Recordings now say they could not load, with Try again, instead of claiming nothing is there or printing the server's line; the dashboard's loading outline follows the grid by `translate` and the "Add your name" offer is not drawn under the Get started card, which took layout shift at boot from 0.105 to 0.011.
 

@@ -34,9 +34,6 @@ with its owner named in the entry.
 
 ## Open items
 
-1418. **The owner, 2026-10-27, verbatim** (screenshot, dark: Library "Boards & maps", the "Default board" card shows the drawn placeholder preview, grey blocks and teal strokes, not its picture; "Sequence diagram" beside it shows its real picture). "the default board thumbnail keeps getting deleted"
-     This PR, agent boardthumb-1027 (Sonnet): reproduce why the board's raster thumbnail (thumbs1317, PUT /whiteboard/boards/{id}/thumbnail, /media/board-thumb/{id}) is lost for the default board, fix the cause, test it.
-
 1419. **The owner, 2026-10-27, verbatim.** "also is there a way to have the app start up or launch a little faster?? if not its fine." With a log: /models/status 4480ms and /models/suggested 4137ms at boot; boot frames: settings.js 194ms (forced layout 131ms), dashboard.js follow 61ms, avatars.js setTimeout 360ms (forced layout 266ms), nameMarkBuddyTick 221ms (161ms layout), navigation.js notes-subtabs click 85ms, settings-find.js build 119ms, chat-input pointerdown 63ms.
      This PR, agent launch-1027 (Sonnet): measure launch to first usable frame (server import and start, then the browser boot), cut what is cheap and safe, and the boot forced layouts in the log.
 

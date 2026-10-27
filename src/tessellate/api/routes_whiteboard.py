@@ -2002,23 +2002,24 @@ def _preview_items(
 PREVIEW_ASPECT_RANGE = (0.5, 3.0)
 
 
-def _card_preview_rows(db: Session, on) -> list[tuple]:  # noqa: ANN001
-    """One preview row per card on the board."""
+def _card_label(entry: Entry | None) -> str:
+    """What is written on a card in a thumbnail: its note's title."""
     from tessellate.entry import manager
 
+    if entry is None or entry.is_private:
+        return ""
+    # A card *is* a note, so its own title (or first words) is what is written
+    # on it. A private note contributes its position and nothing else: the
+    # same rule the Connections block and the Library's file-usage chips follow.
+    text = manager.readable_content(entry)
+    return (manager.extract_title(text) or text.strip().split("\n")[0])[:PREVIEW_LABEL_CHARS]
+
+
+def _card_preview_rows(db: Session, on) -> list[tuple]:  # noqa: ANN001
+    """One preview row per card on the board."""
     rows: list[tuple] = []
     for node in db.scalars(select(WhiteboardNode).where(on(WhiteboardNode))):
-        entry = db.get(Entry, node.entry_id)
-        label = ""
-        if entry is not None and not entry.is_private:
-            # A card *is* a note, so its own title (or first words) is what
-            # is written on it. A private note contributes its position and
-            # nothing else: the same rule the Connections block and the
-            # Library's file-usage chips follow.
-            text = manager.readable_content(entry)
-            label = (manager.extract_title(text) or text.strip().split("\n")[0])[
-                :PREVIEW_LABEL_CHARS
-            ]
+        label = _card_label(db.get(Entry, node.entry_id))
         rows.append(
             (
                 float(node.x),
@@ -2377,7 +2378,6 @@ def _preview_fields(db: Session, board_id: int | None) -> dict:
     # Copied on the way out: the cached lists are shared with every later
     # caller, and a response model that a caller mutated in place would poison
     # every board list after it.
-    fp = _thumb_fp(key)
     #: The default board has no note behind it, so no id: its file is stored
     #: under 0 (`DEFAULT_BOARD_THUMB_ID`), the id the client sends for it.
     stored = board_thumbs.stored_fp(deps.get_config().data_dir, board_id or DEFAULT_BOARD_THUMB_ID)
@@ -2385,14 +2385,38 @@ def _preview_fields(db: Session, board_id: int | None) -> dict:
         "preview_items": [dict(item) for item in items],
         "preview_edges": [dict(edge) for edge in edges],
         "preview_aspect": aspect,
-        "thumb_v": fp if stored == fp else None,
+        # Labels are read only for a board that has a stored picture to compare.
+        "thumb_v": stored if stored is not None and stored == _thumb_fp(db, key) else None,
     }
 
 
-def _thumb_fp(key: tuple) -> str:
+def _thumb_fp(db: Session, key: tuple) -> str:
     """The fingerprint a raster thumbnail is stored against: the cache key
-    without the database identity, so it survives a restart."""
-    return board_thumbs.fingerprint_hash(key[1:])
+    without the database identity, so it survives a restart.
+
+    The cards' note stamp (`max(Entry.updated_at)`) is swapped for the labels
+    the picture actually shows. That stamp moves on any write to a note (a
+    body edit, a pin, the janitor re-filing it, a tag), none of which changes
+    a card's title, so every such write retired the stored picture and the
+    card fell back to the drawn preview until the board was opened again (the
+    owner, INBOX 1418: "the default board thumbnail keeps getting deleted";
+    a board of drawings only has no such stamp, which is why only boards with
+    note cards lost theirs). The preview cache key keeps the stamp: its miss
+    path is what reads the notes.
+    """
+    scope = key[2]
+    stamps = key[3][:3]
+    node_scope = WhiteboardNode.board_id.is_(None) if scope is None else WhiteboardNode.board_id == scope
+    labels = [
+        _card_label(entry)
+        for entry in db.scalars(
+            select(Entry)
+            .join(WhiteboardNode, WhiteboardNode.entry_id == Entry.id)
+            .where(node_scope)
+            .order_by(WhiteboardNode.id)
+        )
+    ]
+    return board_thumbs.fingerprint_hash((key[1], scope, stamps, key[4], tuple(labels)))
 
 
 #: The default board is the one board with no note, so no id to name it by in
@@ -2410,7 +2434,7 @@ def _current_thumb_fp(db: Session, board_id: int) -> str:
     entry = db.get(Entry, board_id) if board_id > 0 else None
     palette_name = (_board_theme(entry).get("palette") if entry else None) or "classic"
     scope = board_id if board_id != DEFAULT_BOARD_THUMB_ID else None
-    return _thumb_fp((*_preview_fingerprint(db, scope), palette_name))
+    return _thumb_fp(db, (*_preview_fingerprint(db, scope), palette_name))
 
 
 @router.get("/boards/{board_id}/thumbnail/state")

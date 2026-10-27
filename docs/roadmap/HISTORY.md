@@ -51287,6 +51287,10 @@ Rows moved out of `agent-remaining/OPEN.md` after a check of CHANGELOG.md and HI
 
 Quick sketch, the same day (the owner's screenshots): a thick arrow's shaft ran to the tip with a round cap and poked out past its head; it now stops at the head's base (`spArrow`, sketch-pad.js; alpha 0 measured 2 to 12px past the tip at size 27). The paper colour's picker opened in the window's top left corner because its input was `display: none`; it is now a 1px anchor under the More button (`.sp-picker-anchor`, measured at x 1264, y 94) and opens with `showPicker()`. `tests/test_sketch_pad.py`.
 
+1418. **The owner, 2026-10-27, verbatim** (screenshot, dark: Library "Boards & maps", the "Default board" card shows the drawn placeholder preview, grey blocks and teal strokes, not its picture; "Sequence diagram" beside it shows its real picture). "the default board thumbnail keeps getting deleted"
+     This PR, agent boardthumb-1027 (Sonnet): reproduce why the board's raster thumbnail (thumbs1317, PUT /whiteboard/boards/{id}/thumbnail, /media/board-thumb/{id}) is lost for the default board, fix the cause, test it.
+     **Fixed (boardthumb-1027).** Cause: the thumbnail fingerprint (routes_whiteboard.py _preview_fingerprint) included max(Entry.updated_at) of the notes on the cards, which any note write moves (body edit, pin, janitor); thumb_v then went null and the card drew the fallback until the board was reopened. Reproduced on :8826: thumbnail PUT 200, file 0-1593794fb04d7d36.webp present and kept across a server restart (thumb_v current), then one body edit and one pin of a card note turned thumb_v to null with the file still on disk. Boards of drawings only (Sequence diagram) have no note stamp, hence only boards with note cards lost theirs. Fix: _thumb_fp hashes the card titles instead; test_thumb_survives_a_card_note_write_that_leaves_its_title.
+
 ## Moved from the plans, 2026-10-27 (wb-1027)
 
 1404. **The owner, 2026-10-27, verbatim** (screenshot, dark: "test Label" beside a green curved connector, no grip visible). "I cant drag labels on arrows or connectors around"
