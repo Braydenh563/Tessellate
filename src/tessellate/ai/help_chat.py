@@ -249,12 +249,12 @@ HELP_TOPICS: list[dict] = [
             "The Dashboard is the at-a-glance home: a greeting with a line "
             "composed from your notes (what you wrote today or last, worded a "
             "little differently each visit and every few minutes), what is due and a pattern your notes show (a subject you "
-            "keep writing about, a busy week; Tidy lists them), a search box, the Quick access tiles, "
-            "and widgets such as reminders, recent notes, the Digest (your day "
+            "keep writing about, a busy week; Tidy lists them), a search box, the Quick access tiles "
+            "and widgets. Widgets include reminders, recent notes, stats, your streak, "
+            "Most opened this month and Filings to check. The Digest widget is your day "
             "with no AI: what is due, open questions, what changed since "
             "yesterday and topics gone quiet, each line a count or a quote that "
-            "opens its note; the week on request, written by Atlas or, with no model, composed from your notes: what you made, edited and binned, what is overdue and coming), "
-            "stats, your streak, Most opened this month and Filings to check. Customise, beside the search box, has Edit "
+            "opens its note. The Digest's week, on request, is written by Atlas or, with no model, composed from your notes: what you made, edited and binned, what is overdue and coming. Customise, beside the search box, has Edit "
             "layout and Widgets to show, hide and rearrange them; the layout is "
             "remembered per user."
         ),
@@ -423,6 +423,8 @@ HELP_TOPICS: list[dict] = [
             "look different; it ships with the app and works offline. "
             "Density's Auto, the default, is Compact on a window "
             "700px tall or less and the look's own spacing on a taller one. "
+            "Glass controls, beside the frosted-glass blur, puts icon buttons in "
+            "the same glass; it does nothing while the blur is off. "
             "Performance mode (Effects & accessibility) turns off "
             "the frosted-glass blur, the large animations and the animated "
             "background and slows the graph physics, for a slow or small machine; Auto "
@@ -3058,7 +3060,7 @@ def help_sentences(body: str) -> list[str]:
     Guide's gold: "Skills are one-click requests shown above the chat box
     (e." was a lead)."""
     out, start = [], 0
-    for m in re.finditer(r"[.!?](?=\s+[\"“(\[*]?[A-Z0-9]|\s*$)", body):
+    for m in re.finditer(r"[.!?](?=\s+(?:/[a-z]|[\"“(\[*]?[A-Z0-9])|\s*$)", body):
         chunk = body[start:m.end()]
         if _ABBREVIATION.search(chunk) or chunk.endswith(".."):
             continue

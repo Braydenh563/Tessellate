@@ -8,6 +8,10 @@ below). Versioning is `0.x` while the app stabilises.
 ## [Unreleased]
 - Documents: in focus mode the sidebar and the suggestions panel can be resized by dragging their edge (or the arrow keys), and the sidebar width is the one it has outside focus mode.
 - Grammar: fewer wrong suggestions; a file name (start.bat), an interface word (draggable, scrollbars), a dotfile and "back to normal" are no longer marked, and real errors still are.
+- Settings, Appearance: Glass controls (off by default) puts icon buttons in the image chip's frosted glass, only while the glass blur is on; its styles are fetched only when it is on.
+- Atlas guide: a long help sentence no longer leads whole (over 40 words, its best clause leads), the Dashboard help is split into short sentences, and the slash commands list is one command a sentence.
+- Dates: "next fortnight", "the coming fortnight" and "in the next fortnight" are read as the fourteen days after today ("last weekend" and "this weekend" already were).
+- Atlas: standing on the status bar, its tail no longer counts as touching the bar's buttons (it is tested down to the soles); 19 of 31 stands along the bar read as blocked, now none.
 - Diagrams: every ```mermaid fence now draws (flowchart, sequence, class, state, entity relationship, Gantt, pie, mind map, timeline, journey and the rest) in Read, Live, a print, the HTML export, chat and Ask replies, using the vendored Mermaid 12.2.0 loaded on first use inside a hidden same-origin frame with its own policy (the app's policy is unchanged); pictures take the app's colours, redraw on a theme or contrast switch, and a fence Mermaid cannot read stays code with one line of reason under it.
 - Pictures: deleting a picture while a model is captioning or reading it no longer raises an error; the read is skipped, and a slow read no longer holds the database open.
 - Library: the image ⋯ chip is glass only while the glass look is on; with it off the chip is solid.

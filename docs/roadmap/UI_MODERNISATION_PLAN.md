@@ -1593,4 +1593,3 @@ Rows: T1 and T2 (owner: voiceup, with V7's dialog work); T3 learnaudit; T4 gramm
 
 ## Placed from INBOX, 2026-10-27
 
-1409. **The owner, 2026-10-27, verbatim.** "those glass styles were pretty cool, cna they be applied as a glass aesthetic globally in the appearances?. also they should only be glass is the glass aesthetic is enabled". Second half built (image ⋯ chip: glass with glass on, solid `--modal-bg` off). Open, recommendation (taken): one `.glass-chip` recipe in DESIGN.md (80% panel, `--glass-filter-clear`, ink glyph, hairline, solid off) for icon controls resting on content (canvas toolbars, tile actions, floating icon buttons), under Settings, Appearance, Glass as a "Glass controls" switch, off by default; recipe lint in `test_ui_recipes.py`. Next free Sonnet slot.
