@@ -1809,7 +1809,9 @@ def _set_reminder(session: Session, args: dict) -> dict:
 PRIVATE_REMINDER = "A reminder on a private note"
 
 
-def _private_notes(session: Session, ids: list) -> set[int]:
+def private_note_ids(session: Session, ids: list) -> set[int]:
+    """Which of these note ids are private (`PRIVATE_REMINDER`; the day's
+    activity reads it too, `ai/activity.py`)."""
     wanted = {i for i in ids if i is not None}
     if not wanted:
         return set()
@@ -1838,7 +1840,7 @@ def _list_reminders(session: Session, args: dict) -> dict:
     rows = session.scalars(
         select(Reminder).where(*filters).order_by(Reminder.due_at).limit(limit).offset(offset)
     ).all()
-    private = _private_notes(session, [r.entry_id for r in rows])
+    private = private_note_ids(session, [r.entry_id for r in rows])
     reminders = [
         {
             "id": r.id,

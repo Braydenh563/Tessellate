@@ -425,6 +425,24 @@ def test_a_private_notes_reminder_sends_no_words_to_the_model(ai_client, fake_ol
     assert "pay rent" in sent
 
 
+@SURFACES
+@pytest.mark.parametrize("question", ["what did I do today", "what reminders did I make today"])
+def test_a_private_notes_reminder_stays_out_of_the_days_activity(ai_client, fake_ollama, session, fixed_clock, question, use_tools):
+    """The day's activity (`ai/activity.py`) is a statistic, so it reaches
+    the model as facts; it read every reminder's words (the second review's
+    privacy note, measured)."""
+    _private_reminder(ai_client, session)
+    for row in session.query(Reminder).all():
+        row.created_at = datetime(2026, 10, 27, 8)
+    session.commit()
+    fake_ollama.chat_calls.clear()
+    fake_ollama.librarian_reply = "You made two reminders."
+    _events, answer = _stream(ai_client, question, use_tools)
+    sent = "\n".join(str(m.get("content") or "") for call in fake_ollama.chat_calls for m in call)
+    assert fake_ollama.chat_calls and "pay rent" in sent
+    assert "4471" not in sent and "4471" not in answer
+
+
 def test_the_facts_prompt_is_budgeted() -> None:
     """Prompt text is budgeted (CLAUDE.md section 7): the brief is one short
     paragraph, and the facts are cut to a fixed size however long the list."""

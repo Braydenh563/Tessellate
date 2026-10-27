@@ -214,6 +214,7 @@ def _document_events(session: Session, lo: datetime, hi: datetime, inside) -> li
 
 
 def _reminder_events(session: Session, lo: datetime, hi: datetime, inside) -> list[_Event]:  # noqa: ANN001
+    from tessellate.ai.tools import PRIVATE_REMINDER, private_note_ids
     from tessellate.core.database import Reminder
 
     out: list[_Event] = []
@@ -222,8 +223,11 @@ def _reminder_events(session: Session, lo: datetime, hi: datetime, inside) -> li
             ((Reminder.done_at >= lo) & (Reminder.done_at < hi)) | ((Reminder.created_at >= lo) & (Reminder.created_at < hi))
         )
     ).all()
+    #: The answer is a statistic, so with a model up it goes to the model as
+    #: facts: a reminder made from a private note says none of its words.
+    private = private_note_ids(session, [r.entry_id for r in reminders])
     for reminder in reminders:
-        text = (reminder.text or "").strip()[:80]
+        text = PRIVATE_REMINDER if reminder.entry_id in private else (reminder.text or "").strip()[:80]
         done, made = inside(reminder.done_at), inside(reminder.created_at)
         if reminder.done and done:
             out.append((done, "done", "reminder", text))
