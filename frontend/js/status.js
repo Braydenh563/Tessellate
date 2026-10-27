@@ -958,7 +958,8 @@ function toastYield(target = document.activeElement) {
   if (!box?.children.length || !target || box.contains(target) || target === document.body) return box?.classList.remove("is-yielding");
   const meets = (b, r) => r.width > 0 && b.left < r.right && b.right > r.left && b.top < r.bottom && b.bottom > r.top;
   const focused = target.getBoundingClientRect();
-  const work = [...(target.closest("form, section")?.querySelectorAll("button") || [])].map((el) => el.getBoundingClientRect());
+  //: Skipped content-visibility buttons are not drawn; measuring one lays it out alone (INBOX 1415).
+  const work = [...(target.closest("form, section")?.querySelectorAll("button") || [])].map((el) => el.checkVisibility({ contentVisibilityAuto: true }) && el.getBoundingClientRect());
   box.classList.toggle("is-yielding", [...box.children].some((el) => {
     const b = el.getBoundingClientRect();
     return meets(b, focused) || (!el.toastTimer && work.some((r) => meets(b, r)));

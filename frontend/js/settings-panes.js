@@ -1140,7 +1140,7 @@ function setZoom(percent) {
   if (slider) slider.value = next;
   const readout = $("zoom-value");
   if (readout) readout.textContent = `${next}%`;
-  applyAppearance();
+  applyZoomVar();
   return next;
 }
 

@@ -10,6 +10,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 - A thrown companion lands without the hitch: the landing spot is worked out after the first frame (not in the release), its landing act waits one frame after the move, the splat face a few frames after the splat, the whiteboard box is not measured off its tab, and letting go no longer forces the selection popup's layout read (landing call 26 to 83ms before, 0 to 7ms after at 1x CPU).
 - Settings' suggested model list no longer waits on a busy model runner or the graphics card probe (INBOX 1415).
+- Interface: forced layouts the owner's lag log named are out of the key, frame and tab paths: a zoom keypress writes one property and no longer re-runs the font probe, Settings no longer lays out every skipped button on each focus (Help section 2.1 s to 0.3 s at 4x CPU), the OCR pinch zooms once per frame and fits words in one read pass, the dashboard map card is sized from its observer entry, and boot draws the brand emblems after asking all six slots, and idle was measured per tab (INBOX 1415).
 
 ## [0.6.2] - 2026-10-27
 - Companion: a throw is smooth again. Its whole flight and where it comes down are worked out the moment it is let go, on one measure of the page, so no frame of the flight reads the page (the landing's search had run in the last frame, 11 to 40ms, and 217ms on a slowed machine), and the check for popups waits until it is down.

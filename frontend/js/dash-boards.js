@@ -51,12 +51,10 @@ function dashMapFeature(board) {
   button.appendChild(caption);
   button.addEventListener("click", () => openWhiteboardBoard(board.id));
   const items = Array.isArray(board.preview_items) ? board.preview_items.length : 0;
-  const size = () => {
-    const width = button.clientWidth;
-    if (width > 0) svg.style.height = `${dashMapFeatureHeight(width, board.preview_aspect, items)}px`;
-  };
-  if (typeof ResizeObserver === "function") new ResizeObserver(size).observe(button);
-  requestAnimationFrame(size);
+  //: INBOX 1415: the width is the observer entry's, not a layout read.
+  new ResizeObserver(([{ contentRect }]) => {
+    if (contentRect.width > 0) svg.style.height = `${dashMapFeatureHeight(contentRect.width, board.preview_aspect, items)}px`;
+  }).observe(button);
   return button;
 }
 

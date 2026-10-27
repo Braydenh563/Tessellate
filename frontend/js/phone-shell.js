@@ -261,10 +261,10 @@ function renderBrandLogo() {
 const emblemPending = new Map();
 
 function renderEmblemWhenShown(holder, size, animate) {
-  if (holder.getClientRects().length || typeof IntersectionObserver === "undefined") {
+  if (holder.getClientRects().length) {
     emblemPending.delete(holder);
     emblemState.lazyObserver?.unobserve(holder);
-    renderEmblem(holder, size, { animate });
+    setTimeout(renderEmblem, 0, holder, size, { animate });
     return;
   }
   if (!emblemState.lazyObserver) {
