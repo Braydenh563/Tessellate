@@ -12623,24 +12623,24 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_amounts` | src/tessellate/ai/fact_check.py:144 |
-| `_clock_or_year` | src/tessellate/ai/fact_check.py:169 |
-| `_dated` | src/tessellate/ai/fact_check.py:127 |
-| `_figures` | src/tessellate/ai/fact_check.py:174 |
-| `_is_span` | src/tessellate/ai/fact_check.py:274 |
-| `_kept` | src/tessellate/ai/fact_check.py:294 |
-| `_noun_after` | src/tessellate/ai/fact_check.py:117 |
-| `_noun_of_key` | src/tessellate/ai/fact_check.py:207 |
-| `_pronoun_one` | src/tessellate/ai/fact_check.py:135 |
-| `_says_asked` | src/tessellate/ai/fact_check.py:325 |
-| `_span_kept` | src/tessellate/ai/fact_check.py:283 |
-| `_spans` | src/tessellate/ai/fact_check.py:278 |
-| `_value` | src/tessellate/ai/fact_check.py:99 |
-| `keeps` | src/tessellate/ai/fact_check.py:305 |
-| `merged` | src/tessellate/ai/fact_check.py:266 |
-| `result_counts` | src/tessellate/ai/fact_check.py:214 |
-| `rows_counts` | src/tessellate/ai/fact_check.py:251 |
-| `said_counts` | src/tessellate/ai/fact_check.py:197 |
+| `_amounts` | src/tessellate/ai/fact_check.py:161 |
+| `_clock_or_year` | src/tessellate/ai/fact_check.py:186 |
+| `_dated` | src/tessellate/ai/fact_check.py:133 |
+| `_figures` | src/tessellate/ai/fact_check.py:191 |
+| `_is_span` | src/tessellate/ai/fact_check.py:291 |
+| `_kept` | src/tessellate/ai/fact_check.py:311 |
+| `_noun_after` | src/tessellate/ai/fact_check.py:123 |
+| `_noun_of_key` | src/tessellate/ai/fact_check.py:224 |
+| `_pronoun_one` | src/tessellate/ai/fact_check.py:141 |
+| `_says_asked` | src/tessellate/ai/fact_check.py:342 |
+| `_span_kept` | src/tessellate/ai/fact_check.py:300 |
+| `_spans` | src/tessellate/ai/fact_check.py:295 |
+| `_value` | src/tessellate/ai/fact_check.py:105 |
+| `keeps` | src/tessellate/ai/fact_check.py:322 |
+| `merged` | src/tessellate/ai/fact_check.py:283 |
+| `result_counts` | src/tessellate/ai/fact_check.py:231 |
+| `rows_counts` | src/tessellate/ai/fact_check.py:268 |
+| `said_counts` | src/tessellate/ai/fact_check.py:214 |
 
 ### src/tessellate/ai/factgraph.py (18)
 

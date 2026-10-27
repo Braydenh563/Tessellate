@@ -103,6 +103,15 @@ def test_a_span_the_engine_did_not_compute_is_the_models(ai_client, fake_ollama,
         ("One is due soon.", False),
         ("You have 3 reminders. One of them, call mum, is due tomorrow.", True),
         ("You have 3 reminders; the first one is call mum.", True),
+        # The third review: a modifier between the determiner and "one".
+        ("You have 3 reminders; the urgent one is call mum.", True),
+        ("You have 3 reminders; the dentist one is tomorrow.", True),
+        ("You have 3 reminders; the rent one is the biggest.", True),
+        ("You have 3 reminders; no one is overdue.", True),
+        ("You have 3 reminders; your dentist one is tomorrow.", True),
+        ("You have 3 reminders; only one is overdue.", False),
+        ("You have 3 reminders; just one is overdue.", False),
+        ("You have 3 reminders; the rest are fine and one is overdue.", False),
     ],
 )
 def test_a_bare_one_counts_unless_it_points(ai_client, fake_ollama, session, prose, ok, use_tools):

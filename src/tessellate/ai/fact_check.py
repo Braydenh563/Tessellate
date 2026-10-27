@@ -86,6 +86,12 @@ _ONE_PRONOUN = {
     "the", "this", "that", "each", "every", "which", "any", "first", "next", "last", "other", "another", "same",
     "latest", "earliest", "newest", "oldest", "soonest",
 }
+#: A determiner before up to two modifiers makes "one" a pronoun: "the urgent
+#: one", "the dentist one", "your rent one", "no one" (`_pronoun_one`).
+_DETERMINERS = {
+    "the", "this", "that", "these", "those", "each", "every", "which", "any", "another", "either", "neither", "no",
+    "my", "your", "his", "her", "its", "our", "their", "whose",
+}
 #: Amounts said as words: "a couple of reminders" is 2 reminders, "two
 #: dozen" is 24, "not a single note" is none (`_amounts`).
 _AMOUNTS = {"single": 1, "couple": 2, "pair": 2, "dozen": 12, "hundred": 100, "thousand": 1000}
@@ -134,11 +140,22 @@ def _dated(tokens: list[str], i: int) -> bool:
 
 def _pronoun_one(tokens: list[str], i: int) -> bool:
     """Whether a bare "one" points at a thing rather than counting them:
-    "one of them is due", "the first one". "Only one is waiting" counts."""
+    "one of them is due", "the first one", "the urgent one is call mum", "no
+    one is overdue". The class is a determiner, then up to two plain words
+    (an adjective or a noun used as one), then "one". "Only one is waiting"
+    and "and one is overdue" count: "only" is no determiner and a stop word
+    or a figure ends the reach back."""
     if tokens[i] != "one":
         return False
     after = tokens[i + 1] if i + 1 < len(tokens) else ""
-    return after == "of" or (i > 0 and tokens[i - 1] in _ONE_PRONOUN)
+    if after == "of" or (i > 0 and tokens[i - 1] in _ONE_PRONOUN):
+        return True
+    for word in reversed(tokens[max(0, i - 3) : i]):
+        if word in _DETERMINERS:
+            return True
+        if word == "only" or word in _STOPS or not word[0].isalpha() or _value(word) is not None:
+            return False
+    return False
 
 
 def _amounts(tokens: list[str]) -> list[str]:
