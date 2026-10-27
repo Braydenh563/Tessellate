@@ -40,3 +40,4 @@ date | item | type | rung | rework | note
 2026-10-26 | graph round 6: node grid, cached curves, step-off order | ui | sonnet | 0 | 
 2026-10-26 | OCR workbench O1-O3: page switch lag, whole-doc wait, overlay blink | perf | sonnet | 0 | 
 2026-10-26 | composer round 6: year words, since/before/until | feature | sonnet | 0 | 
+2026-10-27 | 11 CI reds on 75cdd0a fixed in 3e25f15 | ci-fix | opus | 0 | 
