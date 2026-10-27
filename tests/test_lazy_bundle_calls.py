@@ -110,6 +110,7 @@ REACHED_AFTER_LOAD = {
     "docDropIfUntouched": "confirmLeavingUnsavedWork, past its `typeof docDirty` return: docDirty is declared by the same library bundle, so the call is reached only once it has loaded",
     "docTurnIntoMenu": "the selection bar's Turn into button, which selectionBarShow hides until the library bundle defines it",
     "wbSelectionBarFit": "selectionBarShow on a board box, which exists only once whiteboard.js (library bundle) has drawn the board; elsewhere there is nothing to fit",
+    "mermaidDrawBlock": "mermaidSoon (navigation.js), inside the then of ensureModule('mermaid'): it runs only once the bundle has loaded",
     "findSettings":"settingsUi, called by filterSettings only when renderSettingResults (same bundle) returned a count",
     "companionPathPlan": "companionMenu, fetched with the mind at the first tick; a far move walks until then (typeof check)",
     "nameMarkBuddyThrow": "companionThrow, fetched on the carry's first move; the release checks typeof and drops otherwise",

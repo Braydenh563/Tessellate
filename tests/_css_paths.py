@@ -116,6 +116,8 @@ CSS_FILES = [
     CSS_DIR / "companion-throw-lazy.css",
     #: The guided equation editor (lazy-entries.js `mathEditor`, DOCUMENTS_PLAN 16).
     CSS_DIR / "math-editor-lazy.css",
+    #: Mermaid diagrams: the figure, its placeholder and the hidden frame (mermaid-draw.js).
+    CSS_DIR / "mermaid-lazy.css",
 ]
 
 

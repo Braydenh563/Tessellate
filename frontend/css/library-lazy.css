@@ -757,23 +757,6 @@ body.printing-doc #doc-preview p,
   gap: var(--space-1);
 }
 
-.md-mermaid svg {
-  display: block;
-  max-width: 100%;
-  height: auto;
-  margin: 0 auto;
-  font-family: var(--font-sans);
-  font-size: var(--text-md);
-}
-
-.md-mermaid .md-mermaid-label {
-  font-size: var(--text-sm);
-}
-
-.cm-md-mermaid {
-  cursor: text;
-}
-
 @media (max-width: 599.98px) {
 #tab-library .library-card-preview {
     -webkit-line-clamp: 3;
